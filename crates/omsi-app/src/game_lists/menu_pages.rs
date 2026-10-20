@@ -299,6 +299,8 @@ pub(super) fn vehicle_pages(app: &App) -> Vec<Page> {
     let mut display: Vec<(String, String)> = Vec::new();
     if has {
         display.push(opens("Destination display", "Change the current destination", "dest"));
+        // Omsi-Hub: a text taking turns with the destination
+        display.push(opens("Extra text", "A text taking turns with the destination on the displays", "extra_text"));
         display.push(opens("Depot file (HOF)", "Change the current depot file (used for the timetable)", "hof"));
         display.push(opens("Fleet number", "Change the vehicle's current fleet number", "number"));
     }

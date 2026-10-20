@@ -12,8 +12,11 @@
 use omsi_plugin::ui::{Align, Element, Kind, Panel, Rgba, RowAlign, UiState, Weight};
 
 mod dest_form;
+// Omsi-Hub: the extra text taking turns with the destination
+mod extra_form;
 mod move_here;
 pub(crate) use dest_form::open as open_dest_form;
+pub(crate) use extra_form::open as open_extra_form;
 pub(crate) use move_here::ask as ask_move;
 pub(crate) mod quick_menu;
 pub(crate) mod trip_summary;
@@ -37,6 +40,7 @@ pub(crate) struct GamePanels {
     pub(crate) quick: Option<quick_menu::QuickMenu>,
     pub(crate) trip: Option<trip_summary::TripPanel>,
     pub(crate) dest: Option<dest_form::DestForm>,
+    pub(crate) extra: Option<extra_form::ExtraForm>,
     pub(crate) view: Option<view_editor::ViewEditor>,
     /// Where the map camera's click asks to move the bus to.
     pub(crate) move_to: Option<glam::DVec3>,
@@ -45,7 +49,7 @@ pub(crate) struct GamePanels {
 impl GamePanels {
     /// Whether any panel is open.
     pub(crate) fn any(&self) -> bool {
-        self.quick.is_some() || self.trip.is_some() || self.dest.is_some() || self.view.is_some() || self.move_to.is_some()
+        self.quick.is_some() || self.trip.is_some() || self.dest.is_some() || self.extra.is_some() || self.view.is_some() || self.move_to.is_some()
     }
 
     /// Whether the panels have the mouse.
@@ -122,6 +126,7 @@ impl crate::App {
                 "quick" => quick_menu::click(self, el),
                 "trip" => trip_summary::click(self, el),
                 "dest" => dest_form::click(self, el),
+                "extra" => extra_form::click(self, el),
                 "view" => view_editor::click(self, el),
                 "move" => move_here::click(self, el),
                 _ => {}
@@ -132,6 +137,7 @@ impl crate::App {
             match c.panel.as_str() {
                 "view" => view_editor::change(self, &c.element, &c.value),
                 "dest" => dest_form::change(self, &c.element, &c.value),
+                "extra" => extra_form::change(self, &c.element, &c.value),
                 _ => {}
             }
         }
@@ -153,6 +159,7 @@ impl crate::App {
             ("view", self.menus.game_panels.view.as_ref().map(|v| v.panel(self))),
             ("trip", self.menus.game_panels.trip.as_ref().map(|t| t.panel())),
             ("dest", self.menus.game_panels.dest.as_ref().map(|d| d.panel())),
+            ("extra", self.menus.game_panels.extra.as_ref().map(|d| d.panel())),
             ("quick", self.menus.game_panels.quick.as_ref().map(|q| q.panel(self))),
             ("move", self.menus.game_panels.move_to.map(move_here::panel)),
         ];

@@ -103,6 +103,11 @@ pub(crate) fn click(app: &mut crate::App, id: &str) {
 
 /// Set the bus's displays to `form` (or empty them); what was done, in words.
 fn set(app: &mut crate::App, form: &DestForm, clear: bool) -> String {
+    // Omsi-Hub: (the extra text's turn over first, the destination's own texts back on the
+    // bus: the extra text takes turns with the new destination, `player::extra_sign`)
+    if let Some(p) = app.player.as_mut() {
+        p.pause_extra_sign();
+    }
     if !clear && !form.route.trim().is_empty() {
         crate::game_lists::set_route_by_hand(app, &form.route);
     }

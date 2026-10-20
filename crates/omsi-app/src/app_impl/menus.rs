@@ -311,6 +311,7 @@ impl App {
             // (the game's own panels, by name for the plugins and the input script)
             "view_editor" => crate::game_panels::view_editor::open(self),
             "dest_form" => crate::game_panels::open_dest_form(self),
+            "extra_text" => crate::game_panels::open_extra_form(self),
             "quick_menu" => crate::game_panels::quick_menu::toggle(self),
             "driver" => self.open_list(crate::game_lists::ListKind::Drivers),
             "number" => self.open_list(crate::game_lists::ListKind::Numbers),

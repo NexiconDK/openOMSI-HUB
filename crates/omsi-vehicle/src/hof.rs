@@ -79,15 +79,18 @@ impl Hof {
     /// the first line, the second the second, every other the first again (a side or rear
     /// sign of one line shows the destination's main line); a display that reads its text
     /// through the scripts' `GetTerminusString` shows them. Both empty: a destination with
-    /// nothing to show, the display cleared. Its code is the file's highest and one, so no
-    /// destination of the file is taken for it. Returns the file and its index.
+    /// nothing to show, the display cleared. Its code is one no destination of the file has,
+    /// below 1000 (Omsi-Hub: the Krüger matrices take a code above 1000 for a plug-in sign,
+    /// code - 1000: the highest code of Ahlheim 5, 1014, and one put Einsatzwagen, code 15,
+    /// on the displays): the one after the file's highest below 1000, else the lowest free
+    /// one. Returns the file and its index.
     pub fn with_free_text(&self, lines: [&str; 2]) -> (Hof, usize) {
         let mut hof = self.clone();
         let n = self.string_count_terminus.max(self.termini.iter().map(|t| t.strings.len()).max().unwrap_or(0)).max(2);
         let (a, b) = (lines[0].trim(), lines[1].trim());
         let strings = (0..n).map(|k| if k == 1 { b } else { a }.to_string()).collect();
         let index = hof.termini.iter().position(|t| t.texture_id == FREE_TEXT).unwrap_or(hof.termini.len());
-        let code = self.termini.iter().filter(|t| t.texture_id != FREE_TEXT).map(|t| t.code).max().unwrap_or(0) + 1;
+        let code = free_text_code(&self.termini);
         let t = Terminus { code, texture_id: FREE_TEXT.to_string(), terminus_stop: None, all_exit: true, strings };
         if index == hof.termini.len() {
             hof.termini.push(t);
@@ -579,8 +582,30 @@ pub fn depot_anywhere(name: &str) -> Option<Hof> {
     h
 }
 
+/// Omsi-Hub: the code of the free text's destination (see `Hof::with_free_text`).
+fn free_text_code(termini: &[Terminus]) -> i32 {
+    let used: std::collections::HashSet<i32> = termini.iter().filter(|t| t.texture_id != FREE_TEXT).map(|t| t.code).collect();
+    let after = termini.iter().filter(|t| t.texture_id != FREE_TEXT && t.code < 1000).map(|t| t.code).max().unwrap_or(0) + 1;
+    if after < 1000 && !used.contains(&after) {
+        return after;
+    }
+    (1..1000).find(|c| !used.contains(c)).unwrap_or_else(|| used.iter().copied().max().unwrap_or(0) + 1)
+}
+
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn free_text_is_no_plug_in_sign() {
+        let t = |code: i32| Terminus { code, texture_id: format!("t{code}"), ..Default::default() };
+        // Ahlheim 5: up to 916, and 1014 (Leerfahrt): 1015 was plug-in sign 15, Einsatzwagen
+        let ahlheim = Hof { termini: vec![t(0), t(15), t(916), t(1014)], ..Default::default() };
+        let (h, i) = ahlheim.with_free_text(["Ebeltoft", ""]);
+        assert_eq!(h.termini[i].code, 917);
+        // the codes below 1000 all taken up to 999: the lowest free one
+        let full = Hof { termini: vec![t(1), t(2), t(999), t(1001)], ..Default::default() };
+        assert_eq!(full.with_free_text(["X", ""]).0.termini[4].code, 3);
+    }
+
     #[test]
     fn free_text_is_a_destination_of_its_own() {
         let hof = Hof {

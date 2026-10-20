@@ -13,3 +13,7 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 - **AI-busserne** kører på kortet i deres linjes farve med linjenummer og antal passagerer. Klik på en for at se dens tur, forsinkelse, næste stop og vognnummer. De kan slås fra under "Vis på kortet".
 - **Passagerer**: spillernes og AI-bussernes antal passagerer vises (`passengers` i `GET /players`).
 - Til andre værktøjer: `GET /kort/kort.json` (kortet og køreplanen), `GET /kort/rute/<n>` (en turs rute) og `GET /kort/busser` (AI-busserne lige nu).
+
+### Skilte
+- **Egen tekst på skiltet viser ikke længere "Einsatzwagen"**: En egen tekst i destinationsvinduet fik en kode over 1000 (i Ahlheim 5: 1015). Krüger-matricerne (fx Urbino) tager sådan en kode for et indstikskilt nr. 15, som i Ahlheim er "Einsatzwagen". Nu får teksten en ledig kode under 1000 (i Ahlheim: 917) og står på skiltet, som den er skrevet.
+- **Ekstra tekst på skiltet**: Ny menu "Extra text" under køretøjet i spillets menu, lige under "Destination display". Skriv en tekst på to linjer, fx "EKSTRABUS" eller "Via Hovedbanen", og tryk "Turn on". Så skifter den med destinationen på bussens skilte, som standard hvert 4. sekund (antal sekunder kan vælges). Den bliver ved, også når du skifter destination eller tur, indtil du trykker "Turn off". IBIS'en og passagererne mærker intet til det: destinationen, dens kode og navn er de samme hele tiden. Et rullebånd kan ikke vise ekstra tekst.

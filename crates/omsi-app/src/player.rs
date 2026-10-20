@@ -4,6 +4,9 @@ use super::*;
 
 mod cameras;
 mod doors;
+// Omsi-Hub: an extra text taking turns with the destination
+mod extra_sign;
+pub(crate) use extra_sign::{ExtraSign, ExtraText, EVERY_DEFAULT as EXTRA_EVERY};
 mod gears;
 mod ibis;
 mod mouse;
@@ -245,6 +248,12 @@ pub(crate) struct Player {
     /// A destination picked by hand for the bus's roller blind, kept until the electrics are
     /// on and the auto-start is done (`schedule::turn_roller_blind`).
     pub(crate) blind_pick: Option<schedule::BlindPick>,
+    /// Omsi-Hub: an extra text taking turns with the destination on the displays: as the
+    /// driver switched it on, its turns with the destination shown now, and the wait before
+    /// they start (s).
+    pub(crate) extra_text: Option<ExtraText>,
+    pub(crate) extra_sign: Option<ExtraSign>,
+    pub(crate) extra_wait: f32,
     /// The IBIS being typed, with the line and terminus it is typed for.
     pub(crate) ibis_typist: Option<(omsi_sim::ibis::Typist, String, String, Vec<String>)>,
     /// The duty is typed into the IBIS by itself (after Shift+U or `--autostart`): a new
@@ -798,6 +807,7 @@ impl Player {
         self.apply_html_requests();
         self.tick_ibis(dt);
         schedule::turn_roller_blind(&mut self.vehicle, &mut self.blind_pick, self.startup.is_some());
+        self.tick_extra_sign(dt);
         let Some(mut s) = self.startup.take() else {
             return false;
         };
