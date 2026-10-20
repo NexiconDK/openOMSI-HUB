@@ -182,9 +182,12 @@ fn car_display(v: &omsi_sim::VehicleInstance) -> (String, String) {
 /// again by the row's sign text, it was the first row with that text anywhere on its sign:
 /// Spandau's buses to U Ruhleben (282) showed Machandelweg (194), whose second line reads
 /// RUHLEBEN.
-fn show_car_destination(v: &mut omsi_sim::VehicleInstance, hof: Option<&omsi_vehicle::Hof>, line: &str, destination: &str) {
+/// Omsi-Hub: the depot file goes onto the bus too: its scripts read the destination text
+/// from it (`GetTerminusString`), and without it the host's AI buses showed the line alone.
+fn show_car_destination(v: &mut omsi_sim::VehicleInstance, hof: Option<&Arc<omsi_vehicle::Hof>>, line: &str, destination: &str) {
     let row = destination.strip_prefix('#').and_then(|n| n.parse::<usize>().ok());
     if let (Some(ti), Some(hof)) = (row, hof) {
+        v.host.hof = Some(hof.clone());
         crate::schedule::set_ai_destination_at(v, hof, line, ti, &[]);
     }
 }
@@ -1148,7 +1151,7 @@ impl Mirror {
             if let Some(k) = car.vehicle.ty.program.str_var("Linie") {
                 car.vehicle.state.str_vars[k as usize] = line.clone();
             }
-            show_car_destination(&mut car.vehicle, hof.as_deref(), line, destination);
+            show_car_destination(&mut car.vehicle, hof.as_ref(), line, destination);
             m.shown.insert(id, want);
         }
 
@@ -1488,10 +1491,14 @@ mod tests {
     fn a_hosts_timetable_bus_shows_the_row_it_was_given() {
         let t = |code: i32, id: &str, s: &[&str]| omsi_vehicle::hof::Terminus { code, texture_id: id.into(), strings: s.iter().map(|x| x.to_string()).collect(), ..Default::default() };
         let hof = omsi_vehicle::Hof { termini: vec![t(0, "Empty", &[""]), t(194, "Machandelweg", &["MACHANDELWEG", "RUHLEBEN"]), t(282, "U Ruhleben", &["RUHLEBEN", "U-BAHNHOF"])], ..Default::default() };
-        let mut v = crate::schedule::tests::script_test_vehicle("{frame}\n{end}\n", "AI_target_index\nIBIS_TerminusIndex\nIBIS_TerminusCode\n", "SetLineTo\n");
+        let hof = std::sync::Arc::new(hof);
+        // (the sign as the stock scripts write it: the row's text from the depot file)
+        let osc = "{frame}\n{end}\n{trigger:ai_scheduled_settarget}\n(L.L.AI_target_index) 0 (M.V.GetTerminusString) (S.$.sign)\n{end}\n";
+        let mut v = crate::schedule::tests::script_test_vehicle(osc, "AI_target_index\nIBIS_TerminusIndex\nIBIS_TerminusCode\n", "SetLineTo\nsign\n");
         super::show_car_destination(&mut v, Some(&hof), "5", "#2");
-        assert_eq!((v.var("AI_target_index"), v.var("IBIS_TerminusCode")), (Some(2.0), Some(282.0)));
+        assert_eq!(v.var("AI_target_index"), Some(2.0));
         assert_eq!(v.str_var("SetLineTo"), "5");
+        assert_eq!(v.str_var("sign"), "RUHLEBEN");
         // no such row, or no depot file: nothing changes
         super::show_car_destination(&mut v, Some(&hof), "5", "#7");
         super::show_car_destination(&mut v, None, "5", "#1");
