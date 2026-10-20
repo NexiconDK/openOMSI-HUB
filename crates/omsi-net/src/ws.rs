@@ -54,6 +54,11 @@ pub struct ServerInfo {
     pub players_public: bool,
     /// The players now, for `GET /players`.
     pub player_list: Vec<PlayerInfo>,
+    /// Omsi-Hub: the live map's files (`GET /kort/…`, shared with the players' positions),
+    /// once the server has put them together.
+    pub web_map: Option<Arc<WebMapFiles>>,
+    /// Omsi-Hub: the timetable buses on the road now (`GET /kort/busser`, a JSON array).
+    pub bus_list: Arc<String>,
     /// `POST /admin` from this machine with this password (empty: no such door).
     pub local_admin_password: String,
     /// The admin commands that came in that way, for the host loop to run.
@@ -63,6 +68,23 @@ pub struct ServerInfo {
     /// A dedicated server's shared world now (`"world"` in `GET /status`); none elsewhere.
     pub world: Option<WorldCounts>,
 }
+
+/// Omsi-Hub: the files of a dedicated server's live map (`GET /kort`): the map (its ways,
+/// stops and tours, `kort.json`) and each trip's route (`rute/<n>`).
+#[derive(Clone, Default)]
+pub struct WebMapFiles {
+    pub map: Vec<u8>,
+    pub routes: Vec<Vec<u8>>,
+}
+
+impl std::fmt::Debug for WebMapFiles {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "WebMapFiles({} bytes, {} routes)", self.map.len(), self.routes.len())
+    }
+}
+
+/// Omsi-Hub: the live map's page (`GET /kort`).
+pub const KORT_PAGE: &str = include_str!("kort.html");
 
 /// What a dedicated server's shared world holds: the AI cars on the roads (`cars`), its
 /// timetable buses (`buses`), the cars put to sleep far from every player (`dormant`), the
@@ -111,6 +133,8 @@ pub struct PlayerInfo {
     pub aboard: Option<u32>,
     /// Where that is on the earth, on a `[worldcoordinates]` map.
     pub lat_lon: Option<(f64, f64)>,
+    /// Omsi-Hub: the passengers in the bus driven.
+    pub passengers: u32,
 }
 
 impl PlayerInfo {
@@ -121,7 +145,7 @@ impl PlayerInfo {
             None => ("null".into(), "null".into()),
         };
         format!(
-            "{{\"id\":{},\"name\":{},\"bus\":{},\"line\":{},\"destination\":{},\"tour\":{},\"x\":{},\"y\":{},\"heading\":{},\"speed_kmh\":{},\"on_foot\":{},\"aboard\":{},\"lat\":{},\"lon\":{}}}",
+            "{{\"id\":{},\"name\":{},\"bus\":{},\"line\":{},\"destination\":{},\"tour\":{},\"x\":{},\"y\":{},\"heading\":{},\"speed_kmh\":{},\"on_foot\":{},\"aboard\":{},\"lat\":{},\"lon\":{},\"passengers\":{}}}",
             self.id,
             json_str(&self.name),
             json_str(&self.bus),
@@ -135,7 +159,8 @@ impl PlayerInfo {
             self.on_foot,
             self.aboard.map(|a| a.to_string()).unwrap_or_else(|| "null".into()),
             lat,
-            lon
+            lon,
+            self.passengers
         )
     }
 }
@@ -604,7 +629,25 @@ fn serve(stream: TcpStream, slot: Option<SourceSlot>, target: SocketAddr, info: 
         // (the request is read off the socket before the answer: some proxies wait)
         let got = s.read(&mut head).unwrap_or(0);
         let mut request = head[..got].to_vec();
-        let (status, ctype, body): (&str, &str, Vec<u8>) = match path.as_str() {
+        // (a page's own query, `?demo`, is the page's)
+        let route = path.split('?').next().unwrap_or("/");
+        let public = info.lock().unwrap_or_else(|e| e.into_inner()).players_public;
+        let (status, ctype, body): (&str, &str, Vec<u8>) = match route {
+            // Omsi-Hub: the live map
+            "/kort" | "/kort/" | "/kort.html" => ("200 OK", "text/html; charset=utf-8", KORT_PAGE.as_bytes().to_vec()),
+            r if r.starts_with("/kort/") && !public => ("404 Not Found", "text/plain", b"this server does not share its players' positions".to_vec()),
+            "/kort/kort.json" => match info.lock().unwrap_or_else(|e| e.into_inner()).web_map.clone() {
+                Some(m) => ("200 OK", "application/json", m.map.clone()),
+                None => ("503 Service Unavailable", "text/plain", b"the map is being put together".to_vec()),
+            },
+            "/kort/busser" => ("200 OK", "application/json", info.lock().unwrap_or_else(|e| e.into_inner()).bus_list.as_bytes().to_vec()),
+            r if r.starts_with("/kort/rute/") => {
+                let m = info.lock().unwrap_or_else(|e| e.into_inner()).web_map.clone();
+                match (m, r["/kort/rute/".len()..].parse::<usize>().ok()) {
+                    (Some(m), Some(n)) if n < m.routes.len() => ("200 OK", "application/json", m.routes[n].clone()),
+                    _ => ("404 Not Found", "text/plain", b"no such trip".to_vec()),
+                }
+            }
             "/admin" => {
                 read_body(&mut s, &mut request);
                 let (status, text) = local_admin(&request, peer, info);
@@ -629,11 +672,19 @@ fn serve(stream: TcpStream, slot: Option<SourceSlot>, target: SocketAddr, info: 
             }
             _ => {
                 let i = info.lock().unwrap_or_else(|e| e.into_inner()).clone();
-                let page = format!("<!doctype html><meta charset=utf-8><title>{0}</title><body style=\"font-family:sans-serif;background:#16181c;color:#eee;padding:40px\"><h1>{0}</h1><p>{1}</p><p>Map: {2} &middot; {3}/{4} players</p><p>Add this address in openOMSI &rarr; Multiplayer &rarr; Servers.</p>", html(&i.name), html(&i.motd), html(&i.map), i.players, i.max_players);
+                let map_link = if i.players_public { "<p><a style=\"color:#f2a33a\" href=\"/kort\">Livekort &rarr;</a></p>" } else { "" };
+                let page = format!("<!doctype html><meta charset=utf-8><title>{0}</title><body style=\"font-family:sans-serif;background:#16181c;color:#eee;padding:40px\"><h1>{0}</h1><p>{1}</p><p>Map: {2} &middot; {3}/{4} players</p><p>Add this address in openOMSI &rarr; Multiplayer &rarr; Servers.</p>{map_link}", html(&i.name), html(&i.motd), html(&i.map), i.players, i.max_players);
                 ("200 OK", "text/html; charset=utf-8", page.into_bytes())
             }
         };
-        let hdr = format!("HTTP/1.1 {status}\r\nContent-Type: {ctype}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n", body.len());
+        // Omsi-Hub: (the live map's few megabytes packed, for a browser that takes them so -
+        // through a tunnel they take a while)
+        let gzip = body.len() > 64 * 1024 && route.starts_with("/kort/") && header(&req, "accept-encoding").is_some_and(|v| v.to_ascii_lowercase().contains("gzip"));
+        let (body, encoding) = match gzip.then(|| gzip_bytes(&body)).flatten() {
+            Some(z) => (z, "Content-Encoding: gzip\r\n"),
+            None => (body, ""),
+        };
+        let hdr = format!("HTTP/1.1 {status}\r\nContent-Type: {ctype}\r\nContent-Length: {}\r\n{encoding}Access-Control-Allow-Origin: *\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n", body.len());
         s.write_all(hdr.as_bytes()).map_err(|e| e.to_string())?;
         s.write_all(&body).map_err(|e| e.to_string())?;
         return Ok(());
@@ -661,6 +712,13 @@ fn serve(stream: TcpStream, slot: Option<SourceSlot>, target: SocketAddr, info: 
     let r = pump(&mut ws, &udp, |u, d| u.send_to(d, target).map(|_| ()), stop);
     connected.fetch_sub(1, Ordering::Relaxed);
     r
+}
+
+/// Omsi-Hub: `b` packed with gzip.
+fn gzip_bytes(b: &[u8]) -> Option<Vec<u8>> {
+    let mut z = flate2::write::GzEncoder::new(Vec::with_capacity(b.len() / 4), flate2::Compression::fast());
+    z.write_all(b).ok()?;
+    z.finish().ok()
 }
 
 fn html(s: &str) -> String {
@@ -1062,8 +1120,8 @@ mod tests {
         assert!(j.starts_with("[{\"id\":3,\"name\":\"Anna \\\"A\\\"\""), "{j}");
         assert!(j.contains("\"line\":\"37\""), "{j}");
         assert!(j.contains("\"x\":894179.7,"), "{j}");
-        assert!(j.contains("\"on_foot\":false,\"aboard\":null,\"lat\":52.535412,\"lon\":13.199642}"), "{j}");
-        assert!(j.contains("\"id\":4,") && j.contains("\"x\":null") && j.ends_with("\"lat\":null,\"lon\":null}]"), "{j}");
+        assert!(j.contains("\"on_foot\":false,\"aboard\":null,\"lat\":52.535412,\"lon\":13.199642,\"passengers\":0}"), "{j}");
+        assert!(j.contains("\"id\":4,") && j.contains("\"x\":null") && j.ends_with("\"lat\":null,\"lon\":null,\"passengers\":0}]"), "{j}");
         assert_eq!(players_json(&[]), "[]");
     }
 
@@ -1204,9 +1262,20 @@ mod tests {
             r
         };
         assert!(get("/players").starts_with("HTTP/1.1 404"));
+        // (Omsi-Hub: the live map's page always, its data with the positions)
+        assert!(get("/kort").starts_with("HTTP/1.1 200"));
+        assert!(get("/kort/busser").starts_with("HTTP/1.1 404"));
         gw.info.lock().unwrap().players_public = true;
         gw.info.lock().unwrap().player_list = vec![PlayerInfo { id: 1, name: "p".into(), ..Default::default() }];
         let r = get("/players");
-        assert!(r.starts_with("HTTP/1.1 200") && r.ends_with("\"lat\":null,\"lon\":null}]"), "{r}");
+        assert!(r.starts_with("HTTP/1.1 200") && r.ends_with("\"lat\":null,\"lon\":null,\"passengers\":0}]"), "{r}");
+        assert!(get("/kort/kort.json").starts_with("HTTP/1.1 503"));
+        gw.info.lock().unwrap().web_map = Some(Arc::new(WebMapFiles { map: b"{}".to_vec(), routes: vec![b"{\"p\":[1,2]}".to_vec()] }));
+        gw.info.lock().unwrap().bus_list = Arc::new("[]".into());
+        assert!(get("/kort/kort.json").ends_with("\r\n\r\n{}"));
+        assert!(get("/kort/rute/0").ends_with("{\"p\":[1,2]}"));
+        assert!(get("/kort/rute/1").starts_with("HTTP/1.1 404"));
+        assert!(get("/kort/busser").ends_with("\r\n\r\n[]"));
+        assert!(get("/kort?demo").starts_with("HTTP/1.1 200"));
     }
 }

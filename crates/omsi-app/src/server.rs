@@ -105,3 +105,26 @@ pub(crate) fn tick_status(lan: &omsi_net::LanSession, time: f64, weather: &str) 
     let list = poses.iter().filter_map(|q| player_info(q, |id| poses.iter().copied().find(|o| o.id == id))).collect();
     crate::lan::update_server_players(list);
 }
+
+/// Omsi-Hub: every second of a server run, the live map's timetable buses (`GET /kort/busser`);
+/// once, its map and routes (`GET /kort/kort.json`, `/kort/rute/<n>`), put together on a
+/// thread of their own, which reads the map's tiles again.
+pub(crate) fn tick_web_map(world: &World, map: &str, schedule: Option<&crate::schedule::Schedule>, traffic: Option<&crate::traffic::Traffic>, humans: Option<&crate::humans::Humans>) {
+    static STARTED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+    if let (Some(s), Some(t)) = (schedule, traffic) {
+        let aboard = humans.map(|h| h.ai_aboard()).unwrap_or_default();
+        omsi_lan::gateway::update_server_buses(s.sim.web_buses_json(&t.sim, &aboard));
+    }
+    if STARTED.swap(true, std::sync::atomic::Ordering::Relaxed) {
+        return;
+    }
+    let tt = schedule.map(|s| s.sim.web_timetable()).unwrap_or_default();
+    let (dir, name) = (world.map_dir.clone(), map.to_string());
+    let spawned = std::thread::Builder::new().name("live map".into()).spawn(move || {
+        let m = omsi_sim::timetable_run::build_web_map(&dir, &name, &tt);
+        omsi_lan::gateway::update_server_web_map(omsi_net::ws::WebMapFiles { map: m.map, routes: m.routes });
+    });
+    if let Err(e) = spawned {
+        log::warn!("live map: {e}");
+    }
+}

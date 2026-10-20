@@ -14,6 +14,8 @@ mod place;
 mod route;
 mod take_on;
 mod tours;
+// Omsi-Hub: the dedicated server's live map
+mod web_map;
 
 use super::*;
 use crate::ai_traffic::TrafficSim;
@@ -26,6 +28,7 @@ pub use choice::{depot_file, pool_depot};
 pub use company::{CompanyBus, TimetableCompany};
 pub use dispatch::{tour_entry, TOUR_ENTRY_LANES};
 pub use place::Placing;
+pub use web_map::{build_web_map, WebCall, WebMap, WebTimetable, WebTrip};
 
 /// What the timetable needs of the loaded map: its folders, the AI lists, the tiles, the
 /// date and the places of the stops. The world snapshot (`crate::world_data::WorldData`)

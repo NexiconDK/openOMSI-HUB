@@ -101,7 +101,8 @@ metar_station =
 vehicles =
 
 # tell anyone who asks the web port (GET /players) the players' names, buses, lines and
-# positions - for a live map of the server on a website; tell your players when it is on
+# positions - for a live map of the server on a website; tell your players when it is on.
+# The server draws such a map itself: http://<this machine>:<web_port>/kort (Omsi-Hub)
 share_positions = 0
 
 # voice chat: the players hear each other where they stand, through GreenTeaSpeak and its
@@ -230,6 +231,8 @@ pub fn player_info<'a>(q: &omsi_net::Pose, pose_of: impl Fn(u32) -> Option<&'a o
         on_foot: !driving,
         aboard,
         lat_lon: omsi_map::world_to_lat_lon(x, y),
+        // Omsi-Hub: (the bus driven's)
+        passengers: if driving { q.passengers } else { 0 },
     })
 }
 

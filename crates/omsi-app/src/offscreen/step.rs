@@ -55,6 +55,7 @@ impl Offscreen<'_> {
             ref mut sim_view,
             ref humans_off,
             ref mut real_time,
+            ref schedule,
             ..
         } = *self;
         *srv_clock += dt as f64 * lan_off.as_ref().map(|l| l.clock_speed).unwrap_or(1.0);
@@ -182,6 +183,8 @@ impl Offscreen<'_> {
                 let (walking, waiting, aboard) = humans_off.as_ref().map(|h| h.counts()).unwrap_or_default();
                 let target = traffic.as_ref().map(|t| t.target).unwrap_or(0);
                 crate::lan::update_server_world(omsi_net::ws::WorldCounts { cars, buses, dormant, parked, walking, waiting, aboard, traffic: target });
+                // Omsi-Hub: the live map (`GET /kort`)
+                crate::server::tick_web_map(world, &args.map, schedule.as_ref(), traffic.as_ref(), humans_off.as_ref());
             }
         }
         if lan_off.is_none() {

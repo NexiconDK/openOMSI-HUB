@@ -146,6 +146,19 @@ impl PeopleSim {
             .collect()
     }
 
+    /// Omsi-Hub: how many people sit in each timetable bus (for the server's live map).
+    pub fn ai_aboard(&self) -> HashMap<u64, usize> {
+        let mut aboard: HashMap<u64, usize> = HashMap::new();
+        for p in &self.people {
+            if let State::Pax(x) = &p.state {
+                if let Some(BusId::Ai(id)) = x.inside {
+                    *aboard.entry(id).or_insert(0) += 1;
+                }
+            }
+        }
+        aboard
+    }
+
     /// Timetable buses to hold at their stop, for the traffic.
     pub fn take_holds(&mut self) -> Vec<(u64, Option<i64>, f32)> {
         std::mem::take(&mut self.holds)

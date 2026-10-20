@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Livekort</title>
+<style>
+  :root {
+    --bg: #111418; --panel: #1a1e24; --panel-2: #222831; --line: #2c333d;
+    --text: #e8ebef; --dim: #8d96a3; --accent: #f2a33a; --ok: #4cc38a; --bad: #e5534b;
+    --land: #181d24; --vej: #4d5a6b; --sti: #2a323c; --skinne: #6e5a45; --stop: #9fb3c8; --depot: #f2a33a; --grid: rgba(255,255,255,0.045); --grid-km: rgba(255,255,255,0.09);
+    --driven: #59616c;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+  header { height: 52px; display: flex; align-items: center; gap: 14px; padding: 0 16px;
+    background: var(--panel); border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 16px; margin: 0; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--bad); flex: none; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .stat { color: var(--dim); white-space: nowrap; }
+  .stat b { color: var(--text); font-weight: 600; }
+  .spacer { flex: 1; }
+  button, input { font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 7px; padding: 6px 10px; }
+  button { cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  main { position: absolute; top: 52px; left: 0; right: 0; bottom: 0; display: flex; }
+  #side { width: 290px; flex: none; background: var(--panel); border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+  #side h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim);
+    margin: 14px 14px 6px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  #side h2 .spacer { flex: 1; }
+  #side h2 button { font-size: 11px; padding: 2px 8px; text-transform: none; letter-spacing: 0; color: var(--dim); }
+  #list { padding: 0 8px 8px; }
+  .p { display: grid; grid-template-columns: 12px 1fr auto; gap: 4px 10px; align-items: center;
+    padding: 9px 8px; border-radius: 8px; cursor: pointer; }
+  .p:hover { background: var(--panel-2); }
+  .p.sel { background: var(--panel-2); outline: 1px solid var(--accent); }
+  .p .sw { width: 12px; height: 12px; border-radius: 3px; }
+  .p .n { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .p .v { color: var(--dim); font-variant-numeric: tabular-nums; }
+  .p .d { grid-column: 2 / 4; color: var(--dim); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .empty { color: var(--dim); padding: 10px 8px; }
+  .p .st { grid-column: 2 / 4; display: flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--text); min-width: 0; }
+  .p .st span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip { flex: none; padding: 1px 7px; border-radius: 10px; font-weight: 650; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .chip.ok { background: rgba(76,195,138,.18); color: #6fd6a3; }
+  .chip.late { background: rgba(229,83,75,.2); color: #ff8a80; }
+  .chip.early { background: rgba(242,163,58,.2); color: #f5b860; }
+  .chip.pause { background: rgba(120,150,220,.2); color: #a9bdf0; }
+  .chip.none { background: rgba(141,150,163,.16); color: var(--dim); }
+  #lines { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 12px; }
+  .ln { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 14px; font-size: 12.5px;
+    font-weight: 600; background: var(--panel-2); border: 1px solid var(--line); cursor: pointer; user-select: none; }
+  .ln i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+  .ln:hover { border-color: var(--accent); }
+  .ln.on { border-color: currentColor; }
+  #layers { padding: 0 14px 14px; display: grid; gap: 6px; color: var(--dim); font-size: 13px; }
+  #layers label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  #layers input { accent-color: var(--accent); width: 15px; height: 15px; padding: 0; }
+  #msg { color: var(--dim); font-size: 12.5px; padding: 0 14px 12px; min-height: 1.4em; }
+  #wrap { position: relative; flex: 1; min-width: 0; }
+  canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+  canvas.drag { cursor: grabbing; }
+  #tools { position: absolute; right: 12px; top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  #tools button { width: 38px; height: 38px; padding: 0; font-size: 18px; background: rgba(26,30,36,.92); }
+  #tools button.on { border-color: var(--accent); color: var(--accent); }
+  #info { position: absolute; left: 12px; top: 12px; max-width: min(360px, calc(100% - 74px)); background: rgba(26,30,36,.94);
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: none; }
+  #info .t { font-weight: 650; display: flex; gap: 8px; align-items: center; }
+  #info .t span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #info .r { color: var(--dim); font-size: 12.5px; margin-top: 3px; }
+  #info .next { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 13px; }
+  #info .next b { font-size: 14.5px; }
+  #info .close { position: absolute; right: 6px; top: 4px; border: 0; background: none; color: var(--dim); padding: 2px 6px; }
+  #scale { position: absolute; left: 14px; bottom: 12px; color: var(--dim); font-size: 12px; }
+  #scale i { display: block; height: 6px; border: 1px solid var(--dim); border-top: 0; margin-bottom: 3px; }
+  #hint { position: absolute; right: 14px; bottom: 12px; color: var(--dim); font-size: 12px; text-align: right; }
+  #menu { display: none; }
+  @media (max-width: 760px) {
+    header { gap: 10px; padding: 0 12px; }
+    header .stat.wide { display: none; }
+    #menu { display: inline-block; }
+    #side { position: absolute; z-index: 5; top: 0; bottom: 0; left: 0; transform: translateX(-100%);
+      transition: transform .2s; width: min(290px, 86vw); }
+    #side.open { transform: none; }
+    #hint { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <button id="menu" title="Spillere og linjer">&#9776;</button>
+  <span class="dot" id="live"></span>
+  <h1 id="title">Livekort</h1>
+  <span class="stat" id="clock"></span>
+  <span class="stat" id="count"></span>
+  <span class="stat wide" id="world"></span>
+  <span class="spacer"></span>
+</header>
+<main>
+  <aside id="side">
+    <h2>Spillere</h2>
+    <div id="list"><div class="empty">Venter på serveren …</div></div>
+    <h2>Linjer <span class="spacer"></span><button id="allLines" title="Vis eller skjul alle linjer">Vis alle</button></h2>
+    <div id="lines"><div class="empty">Venter på kortet …</div></div>
+    <h2>Vis på kortet</h2>
+    <div id="layers">
+      <label><input type="checkbox" id="showAi" checked> AI-busser</label>
+      <label><input type="checkbox" id="showStops" checked> Stoppesteder</label>
+      <label><input type="checkbox" id="showPaths" checked> Fortove og stier</label>
+    </div>
+    <div id="msg"></div>
+  </aside>
+  <div id="wrap">
+    <canvas id="map"></canvas>
+    <div id="info"></div>
+    <div id="tools">
+      <button id="zin" title="Zoom ind">+</button>
+      <button id="zout" title="Zoom ud">&minus;</button>
+      <button id="fit" title="Vis alle spillere">&#9635;</button>
+      <button id="follow" title="Følg den valgte bus">&#9737;</button>
+    </div>
+    <div id="scale"><i id="bar"></i><span id="barTxt"></span></div>
+    <div id="hint">Træk for at flytte · rul for at zoome · klik på en bus for at følge den<br>Veje, stoppesteder og køreplan fra kortets egne filer · forsinkelsen måles ved stoppestederne</div>
+  </div>
+</main>
+<script>
+"use strict";
+// Livekort (Omsi-Hub): the dedicated server's players (GET /players, with share_positions = 1
+// in server.cfg) and timetable buses (GET /kort/busser) on the map the server runs
+// (GET /kort/kort.json: its ways, stops and tours), each trip's route (GET /kort/rute/<n>).
+// x is metres east, y metres north.
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+
+const canvas = $("map"), ctx = canvas.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+const view = { x: 0, y: 0, scale: 0.25 };          // centre (m) and pixels per metre
+let fitted = false, mapFitted = false;
+// what is chosen and followed: {kind: "p" (a player) | "a" (an AI bus), id}
+let selected = null, following = false;
+let kort = null, mapName = "";
+const players = new Map();                          // id -> {from, to, t0, trail[], info}
+const buses = new Map();                            // the AI buses, the same way
+const shownLines = new Set(store.get("livekort-linjer", []));
+const layers = { ai: store.get("livekort-ai", true), stops: store.get("livekort-stop", true), paths: store.get("livekort-stier", true) };
+$("showAi").checked = layers.ai; $("showStops").checked = layers.stops; $("showPaths").checked = layers.paths;
+const TRAIL_MAX = 240;
+
+function resize() {
+  const r = $("wrap").getBoundingClientRect();
+  DPR = window.devicePixelRatio || 1;
+  W = r.width; H = r.height;
+  canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+}
+window.addEventListener("resize", resize);
+
+function colour(name) {
+  let h = 0;
+  for (const c of String(name)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return `hsl(${h % 360}, 70%, 60%)`;
+}
+const lineName = l => String(l || "").replace(/^linje\s*/i, "");
+// each line of the map a colour of its own, in the order of the list (a hash gave 131 to
+// 135 the same green)
+const PALETTE = ["#ff6b6b", "#4dabf7", "#51cf66", "#fcc419", "#cc5de8", "#ff922b", "#22b8cf", "#f06595",
+  "#94d82d", "#845ef7", "#20c997", "#e8590c", "#74c0fc", "#ffe066", "#e599f7", "#63e6be",
+  "#ffa94d", "#a9e34b", "#91a7ff", "#c2255c", "#3bc9db", "#fab005", "#9775fa", "#2f9e44"];
+const lineColours = new Map();
+const lineColour = l => lineColours.get(lineName(l)) || colour(lineName(l));
+const toScreen = (x, y) => [(x - view.x) * view.scale + W / 2, -(y - view.y) * view.scale + H / 2];
+const toWorld = (sx, sy) => [(sx - W / 2) / view.scale + view.x, -(sy - H / 2) / view.scale + view.y];
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n);
+
+// ---------------------------------------------------------------- the map
+// the ways as Path2Ds in world metres, a few per 1.2 km square and width, built once
+function build(k) {
+  const CH = 1200, B = { vej: [4, 7, 10, 14, 20], sti: [1.5, 3, 6], skinne: [3] }, lag = {};
+  for (const kind of Object.keys(B)) {
+    const cells = new Map();
+    for (const a of k.veje[kind] || []) {
+      const w0 = a[0] / 10, w = B[kind].reduce((m, b) => Math.abs(b - w0) < Math.abs(m - w0) ? b : m);
+      let x = a[1] / 10, y = a[2] / 10;
+      const cx = Math.floor(x / CH), cy = Math.floor(y / CH), key = cx + "," + cy + "," + w;
+      let c = cells.get(key);
+      if (!c) { c = { p: new Path2D(), w, x0: cx * CH - 300, y0: cy * CH - 300, x1: (cx + 1) * CH + 300, y1: (cy + 1) * CH + 300 }; cells.set(key, c); }
+      c.p.moveTo(x, y);
+      for (let i = 3; i < a.length; i += 2) { x += a[i] / 10; y += a[i + 1] / 10; c.p.lineTo(x, y); }
+    }
+    lag[kind] = [...cells.values()].sort((a, b) => a.w - b.w);
+  }
+  k.lag = lag;
+  k.tripIx = new Map(k.ture.trips.map((n, i) => [n, i]));
+  lineColours.clear();
+  [...k.ture.lines].map(l => lineName(l[0])).sort((a, b) => a.localeCompare(b, "da", { numeric: true }))
+    .forEach((l, i) => lineColours.set(l, PALETTE[i % PALETTE.length]));
+  // the stops each line calls at
+  k.lineStops = new Map();
+  for (const [key, entries] of Object.entries(k.ture.tours)) {
+    const line = key.slice(0, key.lastIndexOf("/"));
+    let set = k.lineStops.get(line);
+    if (!set) k.lineStops.set(line, set = new Set());
+    for (const e of entries) { set.add(e[2]); for (let j = 3; j < e.length; j += 2) set.add(e[j]); }
+  }
+}
+let mapTry = 0;
+async function loadMap() {
+  try {
+    const r = await fetch("/kort/kort.json", { cache: "no-store" });
+    if (r.status === 503) { $("lines").innerHTML = '<div class="empty">Serveren lægger kortet sammen …</div>'; setTimeout(loadMap, 4000); return; }
+    if (!r.ok) throw new Error("Serveren svarede " + r.status);
+    const k = await r.json();
+    build(k);
+    kort = k; tourIndex = null; mapFitted = false;
+    renderLines();
+  } catch (e) {
+    $("lines").innerHTML = '<div class="empty">' + esc(e.message || "Kortet kunne ikke hentes") + "</div>";
+    setTimeout(loadMap, Math.min(30000, 3000 * ++mapTry));
+  }
+}
+
+// the routes of the trips, fetched when wanted: {pts: [[x, y]], cum: [m along], path: Path2D}
+const routes = new Map();
+function route(i) {
+  if (i == null || i < 0) return null;
+  if (!routes.has(i)) {
+    routes.set(i, null);
+    fetch("/kort/rute/" + i, { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject()).then(j => {
+      const pts = [], cum = [], path = new Path2D();
+      let x = 0, y = 0, d = 0;
+      for (let k = 0; k + 1 < j.p.length; k += 2) {
+        if (k === 0) { x = j.p[0] / 10; y = j.p[1] / 10; } else { x += j.p[k] / 10; y += j.p[k + 1] / 10; }
+        if (pts.length) d += Math.hypot(x - pts[pts.length - 1][0], y - pts[pts.length - 1][1]);
+        pts.push([x, y]); cum.push(d);
+        k === 0 ? path.moveTo(x, y) : path.lineTo(x, y);
+      }
+      routes.set(i, { pts, cum, path, stops: j.s });
+    }).catch(() => setTimeout(() => routes.delete(i), 10000));
+  }
+  return routes.get(i);
+}
+// where on a route a place is: {along (m), d (m off it), k (segment)}; near `hint` first
+function onRoute(r, x, y) {
+  let best = null;
+  for (let k = 0; k + 1 < r.pts.length; k++) {
+    const [ax, ay] = r.pts[k], [bx, by] = r.pts[k + 1], dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+    const t = l2 > 0 ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l2)) : 0;
+    const d = Math.hypot(ax + dx * t - x, ay + dy * t - y);
+    if (!best || d < best.d - 0.01) best = { d, k, t, along: r.cum[k] + Math.sqrt(l2) * t };
+  }
+  return best;
+}
+
+// ---------------------------------------------------------------- the server
+async function getJSON(path) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 2500);
+  try {
+    const r = await fetch(path, { signal: ctl.signal, cache: "no-store" });
+    if (!r.ok) throw new Error(r.status === 404 && path === "/players"
+      ? "Serveren deler ikke positioner: sæt share_positions = 1 i server.cfg og genstart den"
+      : "Serveren svarede " + r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+function setLive(ok, text) {
+  $("live").classList.toggle("ok", ok);
+  $("msg").textContent = text || "";
+}
+async function pollStatus() {
+  try {
+    const s = await getJSON("/status");
+    $("title").textContent = s.name || "Livekort";
+    document.title = (s.name || "Livekort") + " – livekort";
+    $("clock").innerHTML = s.time ? `kl. <b>${esc(s.time)}</b>` : "";
+    setClock(s.time);
+    $("count").innerHTML = `<b>${s.players}</b>/${s.max_players} spillere`;
+    const w = s.world;
+    $("world").innerHTML = w ? `<b>${w.cars}</b> biler · <b>${w.buses}</b> busser · <b>${w.waiting + w.aboard}</b> passagerer`
+                             : (s.map ? esc(s.map.replace(/^maps\//, "").replace(/\/global\.cfg$/, "")) : "");
+    if ((s.map || "") !== mapName) { mapName = s.map || ""; loadMap(); }
+  } catch (e) { /* the players' poll says what is wrong */ }
+}
+async function pollPlayers() {
+  try {
+    const list = await getJSON("/players");
+    setLive(true, "");
+    take(players, list, false);
+    renderList();
+  } catch (e) {
+    setLive(false, e.name === "AbortError" || e instanceof TypeError
+      ? "Ingen forbindelse til serveren – kører den stadig?" : e.message);
+  }
+}
+async function pollBuses() {
+  if (!layers.ai && !(selected && selected.kind === "a")) { if (buses.size) buses.clear(); return; }
+  try { take(buses, await getJSON("/kort/busser"), true); } catch (e) { /* the players' poll says it */ }
+}
+
+// a new position for each: they glide there over the next second
+function take(into, list, ai) {
+  const now = performance.now(), seen = new Set();
+  for (const p of list) {
+    seen.add(p.id);
+    const pos = [p.x, p.y, p.heading || 0];
+    let s = into.get(p.id);
+    if (!s) { s = { from: pos, to: pos, t0: now, trail: [], info: p }; into.set(p.id, s); }
+    else {
+      s.from = current(s, now);
+      if (Math.hypot(pos[0] - s.to[0], pos[1] - s.to[1]) > 150) s.from = pos;   // teleported
+      s.to = pos; s.t0 = now; s.info = p;
+    }
+    if (ai) continue;
+    track(s, p);
+    if (!p.on_foot && p.aboard == null) {
+      const last = s.trail[s.trail.length - 1];
+      if (!last || Math.hypot(last[0] - pos[0], last[1] - pos[1]) > 3) s.trail.push([pos[0], pos[1]]);
+      if (s.trail.length > TRAIL_MAX) s.trail.shift();
+    }
+  }
+  for (const id of [...into.keys()]) if (!seen.has(id)) into.delete(id);
+  if (selected && !chosen()) { selected = null; following = false; $("follow").classList.remove("on"); }
+  if (!ai && !fitted && players.size) { fitAll(); fitted = true; }
+}
+const chosen = () => selected ? (selected.kind === "p" ? players : buses).get(selected.id) : null;
+
+// ---------------------------------------------------------------- the timetable
+// Where each driver is in his tour: the server says which tour (line/tour) and its clock;
+// the tour's stops and departures are the map's own (kort.ture). Passing or leaving a stop
+// of the tour gives the delay; standing at the end of a trip before the next one leaves is
+// the break.
+const R_STOP = 35, ON_TIME_EARLY = -60, ON_TIME_LATE = 180;
+let clock = null;                                   // {sec: seconds of the day at .at, at}
+function setClock(text) {
+  const m = /^(\d{1,2}):(\d{2})/.exec(text || "");
+  if (!m) return;
+  const sec = (+m[1]) * 3600 + (+m[2]) * 60;
+  if (!clock || clock.sec !== sec) clock = { sec, at: performance.now() };
+}
+function nowSec() {
+  if (!clock) return null;
+  return (clock.sec + Math.min(59.9, (performance.now() - clock.at) / 1000)) % 86400;
+}
+const dayDiff = (a, b) => { let d = (a - b) % 86400; if (d > 43200) d -= 86400; if (d < -43200) d += 86400; return d; };
+const hhmm = s => { s = ((Math.round(s / 60) * 60) % 86400 + 86400) % 86400; return String(Math.floor(s / 3600)).padStart(2, "0") + ":" + String(Math.floor(s / 60) % 60).padStart(2, "0"); };
+const normTour = k => String(k || "").toLowerCase().replace(/linje\s*/g, "").replace(/\s+/g, "");
+let tourIndex = null;
+function tourOf(key) {
+  const T = kort && kort.ture;
+  if (!T || !key) return null;
+  if (!tourIndex) { tourIndex = new Map(); for (const k of Object.keys(T.tours)) tourIndex.set(normTour(k), k); }
+  const k = tourIndex.get(normTour(key));
+  if (!k) return null;
+  if (!T.cache) T.cache = new Map();
+  if (!T.cache.has(k)) {
+    // flat, in the order they are driven: {trip (run of the tour), g (trip of the map), i, stop, dep, term, last}
+    const calls = [];
+    T.tours[k].forEach((e, trip) => {
+      let dep = e[1];
+      const term = T.terms[e[0]], g = (T.tt[k] || [])[trip];
+      calls.push({ trip, g, i: 0, stop: e[2], dep, term });
+      for (let j = 3, i = 1; j < e.length; j += 2, i++) { dep += e[j + 1]; calls.push({ trip, g, i, stop: e[j], dep, term }); }
+      calls[calls.length - 1].last = true;
+    });
+    T.cache.set(k, calls);
+  }
+  return T.cache.get(k);
+}
+const stopName = c => (kort.ture.stops[c.stop] || ["?"])[0];
+const stopXY = c => { const s = kort.ture.stops[c.stop]; return s && s[1] != null ? [s[1], s[2]] : null; };
+
+function track(s, p) {
+  const key = p.tour || "";
+  if (!s.duty || s.duty.key !== key || s.duty.calls !== tourOf(key)) s.duty = { key, calls: tourOf(key), last: -1, at: -1, delay: null, still: 0, stamp: 0 };
+  const d = s.duty, now = nowSec(), t = performance.now();
+  const dt = d.stamp ? (t - d.stamp) / 1000 : 0;
+  d.stamp = t;
+  if (!d.calls || now == null || p.on_foot || p.aboard != null) return;
+  const v = p.speed_kmh || 0;
+  d.still = v < 2 ? d.still + dt : 0;
+  // the calls of the tour close by, the one due nearest now (after the last one passed)
+  let best = -1, bt = 1e9;
+  for (let n = 0; n < d.calls.length; n++) {
+    const c = d.calls[n], xy = stopXY(c);
+    if (!xy || Math.hypot(xy[0] - p.x, xy[1] - p.y) > R_STOP) continue;
+    const off = Math.abs(dayDiff(c.dep, now)) + (n < d.last ? 3600 : 0);
+    if (off < bt && off < 5400) { best = n; bt = off; }
+  }
+  if (best >= 0) {
+    if (v < 3) d.at = best;                       // standing at it
+    else { d.last = Math.max(d.last, best); d.at = -1; d.delay = dayDiff(now, d.calls[best].dep); }   // passing
+  } else if (d.at >= 0) {
+    // drove off from the stop: that was the departure
+    d.last = Math.max(d.last, d.at); d.delay = dayDiff(now, d.calls[d.at].dep); d.at = -1;
+  }
+}
+// where in the tour: at a stop, else the last one passed, else (none passed yet) by the clock
+function posOf(d, now) {
+  let n = d.at >= 0 ? d.at : d.last;
+  if (n < 0) { n = d.calls.findIndex(c => dayDiff(c.dep, now) > -60); if (n < 0) n = d.calls.length - 1; n = Math.max(0, n - 1); }
+  return n;
+}
+const delayChip = delay => delay == null ? { cls: "none", chip: "–" }
+  : delay > ON_TIME_LATE ? { cls: "late", chip: "+" + Math.round(delay / 60) + " min" }
+  : delay < ON_TIME_EARLY ? { cls: "early", chip: "−" + Math.round(-delay / 60) + " min" }
+  : { cls: "ok", chip: "Til tiden" };
+const toward = c => /betriebsfahrt|einsetz|aussetz|garage|depot/i.test(c.term) ? "garagekørsel" : "mod " + c.term;
+// what a driver is doing, for the list and the map: {chip, cls, text}
+function statusOf(s) {
+  const p = s.info, d = s.duty;
+  if (p.aboard != null) { const h = players.get(p.aboard); return { cls: "none", chip: "Passager", text: h ? "i " + genitiv(h.info.name) + " bus" : "i en bus" }; }
+  if (p.on_foot) return { cls: "none", chip: "Til fods", text: "" };
+  if (!p.tour) return { cls: "none", chip: "Ingen tur", text: (p.speed_kmh || 0) > 2 ? "kører" : "holder" };
+  if (!d || !d.calls) return { cls: "none", chip: "Tur " + p.tour.split("/").pop(), text: kort ? "findes ikke i kortets køreplan" : "venter på kortet" };
+  const now = nowSec();
+  if (now == null) return { cls: "none", chip: "…", text: "venter på serverens ur" };
+  const C = d.calls, n = posOf(d, now);
+  const here = C[n], next = d.at >= 0 ? here : C[Math.min(C.length - 1, n + 1)];
+  // the delay: measured at the last stop, or growing while it waits too long
+  let delay = d.delay;
+  if (d.at >= 0) { const late = dayDiff(now, here.dep); if (late > 0) delay = Math.max(delay ?? late, late); }
+  const chip = delayChip(delay);
+  // a break: at the end of a trip (or the start of the next) before it is due, or a trip
+  // called Pause; the next trip a run to or from the garage says so
+  const following = C[n + 1];
+  if (d.at >= 0 && here.last && following && dayDiff(following.dep, now) > 60)
+    return { cls: "pause", chip: "Pause", text: "afg. " + hhmm(following.dep) + " · " + toward(following) };
+  if (d.at >= 0 && here.i === 0 && dayDiff(here.dep, now) > 60)
+    return { cls: "pause", chip: "Pause", text: "afg. " + hhmm(here.dep) + " · " + toward(here) };
+  if (/^pause$/i.test(next.term) && (p.speed_kmh || 0) < 2)
+    return { cls: "pause", chip: "Pause", text: "" };
+  if (d.at >= 0) return { ...chip, text: "ved " + stopName(here) + " · afg. " + hhmm(here.dep) };
+  if (d.still > 15) return { ...chip, text: "holder stille · næste " + stopName(next) + " " + hhmm(next.dep) };
+  return { ...chip, text: "→ " + stopName(next) + " " + hhmm(next.dep) };
+}
+// an AI bus: the server says its delay, where it stands and its next stop
+function busStatus(b) {
+  if (b.layover && b.at_stop) return { cls: "pause", chip: "Pause", text: "venter ved " + (b.next || "endestationen") };
+  const chip = delayChip(b.delay);
+  return { ...chip, text: (b.at_stop ? "ved " : "→ ") + (b.next || b.destination || "") };
+}
+
+// The trip a chosen bus drives now, for its route: the trip of the map (`g`, an index of
+// kort.ture.trips) and its calls in this run of the tour (names, times, places).
+function tripOf(s, kind) {
+  if (!kort) return null;
+  const now = nowSec();
+  if (kind === "p") {
+    const d = s.duty;
+    if (!d || !d.calls || now == null || s.info.on_foot || s.info.aboard != null) return null;
+    const C = d.calls, n = posOf(d, now), run = C[d.at >= 0 ? n : Math.min(C.length - 1, n + 1)].trip;
+    const calls = C.filter(c => c.trip === run);
+    return { g: calls[0].g, calls, first: C.indexOf(calls[0]), n };
+  }
+  const b = s.info, g = kort.tripIx.get(b.trip);
+  if (g == null) return null;
+  const C = tourOf(b.tour);
+  if (!C || now == null) return { g, calls: [] };
+  // the run of the tour that drives this trip now: the one whose times hold now, else the
+  // one leaving next
+  const runs = new Map();
+  for (const c of C) if (c.g === g) { const r = runs.get(c.trip) || []; r.push(c); runs.set(c.trip, r); }
+  let best = null, bd = 1e9;
+  for (const r of runs.values()) {
+    const a = dayDiff(r[0].dep, now), z = dayDiff(r[r.length - 1].dep, now);
+    const off = a <= 600 && z >= -300 ? 0 : Math.min(Math.abs(a), Math.abs(z));
+    if (off < bd) { bd = off; best = r; }
+  }
+  return { g, calls: best || [] };
+}
+
+// ---------------------------------------------------------------- the lists
+function esc(t) { return String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]); }
+function genitiv(n) { return /[sxz]$/i.test(n) ? n + "'" : n + "s"; }
+function busName(file) { return (file || "").split("/").pop().replace(/\.bus$/i, ""); }
+const pax = n => n === 1 ? "1 passager" : n + " passagerer";
+function describe(p) {
+  if (p.aboard != null) { const h = players.get(p.aboard); return "passager i " + (h ? genitiv(h.info.name) + " bus" : "en bus"); }
+  if (p.on_foot) return "til fods";
+  const parts = [];
+  if (p.line) parts.push("Linje " + lineName(p.line) + (p.destination ? " → " + p.destination : ""));
+  else if (p.destination) parts.push(p.destination);
+  if (p.passengers) parts.push(pax(p.passengers));
+  parts.push(busName(p.bus));
+  return parts.join(" · ");
+}
+function statusRow(s) {
+  if (s.info.on_foot || s.info.aboard != null) return "";
+  const st = statusOf(s);
+  return `<span class="st"><span class="chip ${st.cls}">${esc(st.chip)}</span><span>${esc(st.text)}</span></span>`;
+}
+function renderList() {
+  const el = $("list");
+  if (!players.size) { el.innerHTML = '<div class="empty">Ingen spillere på serveren lige nu.</div>'; return; }
+  const rows = [...players.values()].sort((a, b) => a.info.name.localeCompare(b.info.name, "da"));
+  el.innerHTML = rows.map(s => {
+    const p = s.info, sel = selected && selected.kind === "p" && selected.id === p.id ? " sel" : "";
+    const v = p.on_foot || p.aboard != null ? "" : Math.round(p.speed_kmh || 0) + " km/t";
+    return `<div class="p${sel}" data-id="${p.id}"><span class="sw" style="background:${colour(p.name)}"></span>`
+      + `<span class="n">${esc(p.name)}</span><span class="v">${v}</span><span class="d">${esc(describe(p))}</span>`
+      + statusRow(s) + `</div>`;
+  }).join("");
+}
+$("list").addEventListener("click", e => {
+  const row = e.target.closest(".p");
+  if (!row) return;
+  choose({ kind: "p", id: Number(row.dataset.id) }, true);
+  $("side").classList.remove("open");
+});
+function renderLines() {
+  const el = $("lines");
+  if (!kort || !kort.ture.lines.length) { el.innerHTML = '<div class="empty">Kortet har ingen køreplan.</div>'; return; }
+  const sorted = [...kort.ture.lines].sort((a, b) => lineName(a[0]).localeCompare(lineName(b[0]), "da", { numeric: true }));
+  el.innerHTML = sorted.map(([name]) => {
+    const on = shownLines.has(name), col = lineColour(name);
+    return `<span class="ln${on ? " on" : ""}" data-l="${esc(name)}" style="${on ? "color:" + col : ""}"><i style="background:${col}"></i>${esc(lineName(name))}</span>`;
+  }).join("");
+  $("allLines").textContent = shownLines.size ? "Skjul alle" : "Vis alle";
+}
+$("lines").addEventListener("click", e => {
+  const el = e.target.closest(".ln");
+  if (!el) return;
+  const l = el.dataset.l;
+  shownLines.has(l) ? shownLines.delete(l) : shownLines.add(l);
+  store.set("livekort-linjer", [...shownLines]);
+  renderLines();
+});
+$("allLines").onclick = () => {
+  if (!kort) return;
+  if (shownLines.size) shownLines.clear(); else for (const [l] of kort.ture.lines) shownLines.add(l);
+  store.set("livekort-linjer", [...shownLines]);
+  renderLines();
+};
+for (const [id, key, name] of [["showAi", "ai", "livekort-ai"], ["showStops", "stops", "livekort-stop"], ["showPaths", "paths", "livekort-stier"]])
+  $(id).onchange = () => { layers[key] = $(id).checked; store.set(name, layers[key]); if (key === "ai") pollBuses(); };
+
+// the box over the map: what the chosen bus does and its next stop
+function renderInfo() {
+  const el = $("info"), s = chosen();
+  if (!s) { el.style.display = "none"; return; }
+  const now = nowSec();
+  let title, rows = [], st, next = null;
+  if (selected.kind === "p") {
+    const p = s.info;
+    st = p.on_foot || p.aboard != null ? null : statusOf(s);
+    title = `<span>${esc(p.name)}</span>`;
+    rows.push(describe(p));
+    if (!p.on_foot && p.aboard == null) rows.push(Math.round(p.speed_kmh || 0) + " km/t");
+  } else {
+    const b = s.info;
+    st = busStatus(b);
+    title = `<span>Linje ${esc(lineName(b.line))} → ${esc(b.destination)}</span>`;
+    rows.push([b.number ? "Vogn " + b.number : "", b.bus, pax(b.passengers || 0), Math.round(b.speed_kmh || 0) + " km/t"].filter(Boolean).join(" · "));
+  }
+  // the next stop: its time, and how far along the route
+  const trip = s.trip, r = trip && route(trip.g);
+  if (trip && trip.calls.length && now != null) {
+    let c = null;
+    if (selected.kind === "p" && s.duty) {
+      const d = s.duty, C = d.calls, n = posOf(d, now);
+      c = d.at >= 0 ? C[n] : C[Math.min(C.length - 1, n + 1)];
+      if (c && c.trip !== trip.calls[0].trip) c = trip.calls[0];
+    } else if (s.info.next) c = trip.calls.find(x => stopName(x) === s.info.next) || null;
+    if (c) {
+      let dist = "";
+      const xy = stopXY(c);
+      if (r && xy) {
+        const me = onRoute(r, s.to[0], s.to[1]), at = onRoute(r, xy[0], xy[1]);
+        if (me && at && me.d < 60) { const m = at.along - me.along; if (m > 30) dist = m >= 1000 ? (m / 1000).toFixed(1).replace(".", ",") + " km" : Math.round(m / 10) * 10 + " m"; }
+      }
+      const due = Math.round(dayDiff(c.dep, now) / 60);
+      next = `Næste stop: <b>${esc(stopName(c))}</b><div class="r">afg. ${hhmm(c.dep)}${due > 0 ? " · om " + due + " min" : ""}${dist ? " · " + dist : ""}${c.term ? " · " + esc(toward(c)) : ""}</div>`;
+    }
+  }
+  el.innerHTML = `<button class="close" title="Luk">✕</button><div class="t">${title}${st ? `<span class="chip ${st.cls}">${esc(st.chip)}</span>` : ""}</div>`
+    + rows.map(r => `<div class="r">${esc(r)}</div>`).join("") + (st && st.text ? `<div class="r">${esc(st.text)}</div>` : "")
+    + (next ? `<div class="next">${next}</div>` : "");
+  el.style.display = "block";
+  el.querySelector(".close").onclick = () => choose(null);
+}
+function choose(sel, follow) {
+  selected = sel; following = !!(sel && follow);
+  $("follow").classList.toggle("on", following);
+  const s = chosen();
+  if (s && follow) { view.x = s.to[0]; view.y = s.to[1]; if (view.scale < 0.6) view.scale = 1; }
+  renderList(); renderInfo();
+}
+
+// ---------------------------------------------------------------- drawing
+function niceStep(px) {           // a grid step near px pixels, in round metres
+  const m = px / view.scale, p = Math.pow(10, Math.floor(Math.log10(m)));
+  return [1, 2, 5, 10].map(k => k * p).find(s => s >= m) || m;
+}
+function worldTransform() {
+  ctx.setTransform(DPR * view.scale, 0, 0, -DPR * view.scale, DPR * (W / 2 - view.x * view.scale), DPR * (H / 2 + view.y * view.scale));
+}
+function strokeRoute(path, col, px, alpha) {
+  ctx.save(); worldTransform();
+  ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.globalAlpha = alpha;
+  ctx.strokeStyle = "#111418"; ctx.lineWidth = (px + 3) / view.scale; ctx.stroke(path);
+  ctx.strokeStyle = col; ctx.lineWidth = px / view.scale; ctx.stroke(path);
+  ctx.restore();
+}
+function label(txt, sx, sy, col = "#e8ebef") {
+  const tw = ctx.measureText(txt).width;
+  ctx.fillStyle = "rgba(17,20,24,.8)"; ctx.fillRect(sx + 9, sy - 9, tw + 8, 17);
+  ctx.fillStyle = col; ctx.fillText(txt, sx + 13, sy + 4);
+}
+function draw(now) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = css("--bg");
+  ctx.fillRect(0, 0, W, H);
+  const sel = chosen();
+  if (following && sel) { const c = current(sel, now); view.x = c[0]; view.y = c[1]; }
+  if (!mapFitted && !players.size && kort && W) { fitMap(); mapFitted = true; }
+  // the map's land: its 300 m tiles
+  if (kort) {
+    ctx.fillStyle = css("--land");
+    const ts = kort.tile, px = ts * view.scale + 0.6;
+    for (const [tx, ty] of kort.tiles) {
+      const [sx, sy] = toScreen(tx * ts, (ty + 1) * ts);
+      if (sx > W || sy > H || sx + px < 0 || sy + px < 0) continue;
+      ctx.fillRect(sx, sy, px, px);
+    }
+  }
+  // grid: fine lines, and every kilometre a stronger one
+  const step = niceStep(70), [x0, y1] = toWorld(0, 0), [x1, y0] = toWorld(W, H);
+  ctx.lineWidth = 1;
+  for (const [st, col] of [[step, "--grid"], [1000, "--grid-km"]]) {
+    if (st < step) continue;
+    ctx.strokeStyle = css(col);
+    ctx.beginPath();
+    for (let x = Math.floor(x0 / st) * st; x <= x1; x += st) { const [sx] = toScreen(x, 0); ctx.moveTo(Math.round(sx) + .5, 0); ctx.lineTo(Math.round(sx) + .5, H); }
+    for (let y = Math.floor(y0 / st) * st; y <= y1; y += st) { const [, sy] = toScreen(0, y); ctx.moveTo(0, Math.round(sy) + .5); ctx.lineTo(W, Math.round(sy) + .5); }
+    ctx.stroke();
+  }
+  // the map's ways: paths (when close enough to see them), rails, roads - at their width,
+  // and never thinner than a pixel or so
+  if (kort && kort.lag) {
+    ctx.save(); worldTransform();
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    const px = 1 / view.scale;
+    for (const [kind, col, minPx, show] of [["sti", "--sti", 1, layers.paths && view.scale >= 0.3], ["skinne", "--skinne", 1, true], ["vej", "--vej", 1.4, true]]) {
+      if (!show) continue;
+      ctx.strokeStyle = css(col);
+      for (const c of kort.lag[kind]) {
+        if (c.x1 < x0 || c.x0 > x1 || c.y1 < y0 || c.y0 > y1) continue;
+        ctx.lineWidth = Math.max(c.w, minPx * px);
+        ctx.stroke(c.p);
+      }
+    }
+    ctx.restore();
+  }
+  // the lines chosen in the list: every trip of theirs, and their stops
+  const lineStops = new Map();
+  if (kort && shownLines.size) {
+    for (const [name, trips] of kort.ture.lines) {
+      if (!shownLines.has(name)) continue;
+      const col = lineColour(name);
+      for (const g of trips) { const r = route(g); if (r) strokeRoute(r.path, col, 3.5, .85); }
+      for (const ix of kort.lineStops.get(name) || []) if (!lineStops.has(ix)) lineStops.set(ix, col);
+    }
+  }
+  // the map's stops (and depots, square), named when there is room
+  if (kort && layers.stops) {
+    const named = view.scale >= 0.16, lines = view.scale >= 0.45;
+    ctx.font = "12px system-ui, sans-serif";
+    for (const s of kort.stops) {
+      const [sx, sy] = toScreen(s.x, s.y);
+      if (sx < -200 || sx > W + 200 || sy < -20 || sy > H + 20) continue;
+      ctx.fillStyle = css(s.d ? "--depot" : "--stop");
+      if (s.d) ctx.fillRect(sx - 3.5, sy - 3.5, 7, 7);
+      else { ctx.beginPath(); ctx.arc(sx, sy, 3.5, 0, 7); ctx.fill(); }
+      if (named) {
+        ctx.fillStyle = "rgba(200,210,222,.85)";
+        ctx.fillText(s.n, sx + 7, sy + 4);
+        if (lines && s.l) { ctx.fillStyle = "rgba(141,150,163,.9)"; ctx.fillText(s.l, sx + 7, sy + 18); }
+      }
+    }
+  }
+  if (lineStops.size) {
+    ctx.font = "600 12px system-ui, sans-serif";
+    const named = view.scale >= 0.25;
+    for (const [ix, col] of lineStops) {
+      const st = kort.ture.stops[ix];
+      if (!st || st[1] == null) continue;
+      const [sx, sy] = toScreen(st[1], st[2]);
+      if (sx < -200 || sx > W + 200 || sy < -20 || sy > H + 20) continue;
+      ctx.beginPath(); ctx.arc(sx, sy, 4.5, 0, 7); ctx.fillStyle = col; ctx.fill();
+      ctx.strokeStyle = "#111418"; ctx.lineWidth = 2; ctx.stroke();
+      if (named) label(st[0], sx, sy);
+    }
+  }
+  // the chosen bus's trip: the route still ahead in its colour, the part driven grey, the
+  // stops ahead named with their times
+  if (sel) {
+    const kind = selected.kind, trip = tripOf(sel, kind);
+    sel.trip = trip;
+    const col = kind === "p" ? colour(sel.info.name) : lineColour(sel.info.line);
+    const r = trip && route(trip.g);
+    let passedTo = -1;
+    if (r && r.pts.length > 1) {
+      const c = current(sel, now), me = onRoute(r, c[0], c[1]);
+      if (me && me.d < 60) {
+        const done = new Path2D(), ahead = new Path2D();
+        for (let k = 0; k <= me.k; k++) k ? done.lineTo(...r.pts[k]) : done.moveTo(...r.pts[k]);
+        const [ax, ay] = r.pts[me.k], [bx, by] = r.pts[me.k + 1], mx = ax + (bx - ax) * me.t, my = ay + (by - ay) * me.t;
+        done.lineTo(mx, my); ahead.moveTo(mx, my);
+        for (let k = me.k + 1; k < r.pts.length; k++) ahead.lineTo(...r.pts[k]);
+        strokeRoute(done, css("--driven"), 4, 1);
+        strokeRoute(ahead, col, 5, 1);
+        passedTo = me.along;
+      } else strokeRoute(r.path, col, 5, 1);
+    }
+    if (trip && trip.calls.length) {
+      ctx.font = "600 12px system-ui, sans-serif";
+      for (const c of trip.calls) {
+        const xy = stopXY(c);
+        if (!xy) continue;
+        let ahead = true;
+        if (r && passedTo >= 0) { const at = onRoute(r, xy[0], xy[1]); ahead = !at || at.along >= passedTo - 15; }
+        const [sx, sy] = toScreen(xy[0], xy[1]);
+        ctx.beginPath(); ctx.arc(sx, sy, ahead ? 6 : 4, 0, 7);
+        ctx.fillStyle = ahead ? col : "#3a424d"; ctx.fill();
+        ctx.strokeStyle = "#111418"; ctx.lineWidth = 2; ctx.stroke();
+        if (ahead && view.scale >= 0.08) label(stopName(c) + "  " + hhmm(c.dep), sx, sy);
+      }
+    }
+  }
+  // the AI buses: small, in their line's colour, the line on them when close enough
+  if (layers.ai || (selected && selected.kind === "a")) {
+    const L = Math.max(14, Math.min(30, 10 * view.scale)), Wd = L * 0.5;
+    ctx.font = "700 10.5px system-ui, sans-serif"; ctx.textAlign = "center";
+    for (const s of buses.values()) {
+      if (!layers.ai && !(selected && selected.id === s.info.id)) continue;
+      const c = current(s, now), [sx, sy] = toScreen(c[0], c[1]);
+      if (sx < -40 || sx > W + 40 || sy < -40 || sy > H + 40) continue;
+      const isSel = selected && selected.kind === "a" && selected.id === s.info.id;
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(c[2] * Math.PI / 180);
+      ctx.fillStyle = lineColour(s.info.line); ctx.strokeStyle = isSel ? "#fff" : "#111418"; ctx.lineWidth = isSel ? 2.5 : 1.5;
+      ctx.beginPath(); ctx.roundRect(-Wd / 2, -L / 2, Wd, L, Wd * 0.35); ctx.fill(); ctx.stroke(); ctx.restore();
+      if (view.scale >= 0.3 || isSel) {
+        const t = lineName(s.info.line) + (s.info.passengers ? " · " + s.info.passengers : "");
+        const tw = ctx.measureText(t).width;
+        ctx.fillStyle = "rgba(17,20,24,.8)"; ctx.beginPath(); ctx.roundRect(sx - tw / 2 - 5, sy - L / 2 - 20, tw + 10, 16, 5); ctx.fill();
+        ctx.fillStyle = "#e8ebef"; ctx.fillText(t, sx, sy - L / 2 - 8);
+      }
+    }
+    ctx.textAlign = "start";
+  }
+  // each player's last stretch, then the buses and people
+  for (const s of players.values()) {
+    if (s.trail.length < 2) continue;
+    ctx.strokeStyle = colour(s.info.name); ctx.globalAlpha = .55; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    s.trail.forEach((p, i) => { const q = toScreen(p[0], p[1]); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); });
+    const c = current(s, now), q = toScreen(c[0], c[1]); ctx.lineTo(q[0], q[1]);
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  const isChosen = p => selected && selected.kind === "p" && selected.id === p.id;
+  const order = [...players.values()].sort((a, b) => isChosen(a.info) - isChosen(b.info));
+  for (const s of order) {
+    const p = s.info;
+    if (p.aboard != null) continue;                          // drawn as the bus they sit in
+    const c = current(s, now), [sx, sy] = toScreen(c[0], c[1]), col = colour(p.name);
+    const isSel = isChosen(p);
+    if (p.on_foot) {
+      ctx.fillStyle = col; ctx.beginPath(); ctx.arc(sx, sy, 5, 0, 7); ctx.fill();
+      ctx.strokeStyle = "#111418"; ctx.lineWidth = 2; ctx.stroke();
+    } else {
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(c[2] * Math.PI / 180);
+      const L = Math.max(24, Math.min(44, 12 * view.scale)), Wd = L * 0.5;
+      ctx.fillStyle = col; ctx.strokeStyle = isSel ? "#fff" : "#111418"; ctx.lineWidth = isSel ? 2.5 : 2;
+      ctx.beginPath();
+      ctx.moveTo(0, -L / 2 - Wd * 0.55);                     // a bus with a pointed nose: the way it faces
+      ctx.lineTo(Wd / 2, -L / 2 + Wd * 0.15); ctx.lineTo(Wd / 2, L / 2);
+      ctx.lineTo(-Wd / 2, L / 2); ctx.lineTo(-Wd / 2, -L / 2 + Wd * 0.15); ctx.closePath();
+      ctx.fill(); ctx.stroke(); ctx.restore();
+    }
+    const riders = [...players.values()].filter(r => r.info.aboard === p.id).length;
+    const st = p.on_foot ? null : statusOf(s);
+    const txt = p.name + (p.line && !p.on_foot ? " · " + lineName(p.line) : "") + (riders ? ` (+${riders})` : "")
+      + (st && st.cls !== "none" ? " · " + st.chip : "");
+    ctx.font = "600 12.5px system-ui, sans-serif";
+    const tw = ctx.measureText(txt).width, lx = sx + 16, ly = sy - 16;
+    ctx.fillStyle = "rgba(17,20,24,.85)"; ctx.beginPath(); ctx.roundRect(lx - 6, ly - 13, tw + 12, 20, 6); ctx.fill();
+    if (isSel) { ctx.strokeStyle = "#f2a33a"; ctx.lineWidth = 1.5; ctx.stroke(); }
+    ctx.fillStyle = st && st.cls === "late" ? "#ff8a80" : st && st.cls === "early" ? "#f5b860" : st && st.cls === "pause" ? "#a9bdf0" : "#e8ebef";
+    ctx.fillText(txt, lx, ly + 2);
+  }
+  // the scale bar
+  const m = niceStep(110), px = m * view.scale;
+  $("bar").style.width = px + "px";
+  $("barTxt").textContent = m >= 1000 ? (m / 1000) + " km" : m + " m";
+  requestAnimationFrame(draw);
+}
+function current(s, now) {
+  const f = Math.min(1, (now - s.t0) / 1000);
+  let dh = ((s.to[2] - s.from[2] + 540) % 360) - 180;
+  return [s.from[0] + (s.to[0] - s.from[0]) * f, s.from[1] + (s.to[1] - s.from[1]) * f, s.from[2] + dh * f];
+}
+
+// ---------------------------------------------------------------- moving about
+function fitAll() {
+  const pts = [...players.values()].map(s => s.to);
+  if (!pts.length) { fitMap(); return; }
+  fitBox(Math.min(...pts.map(p => p[0])), Math.min(...pts.map(p => p[1])), Math.max(...pts.map(p => p[0])), Math.max(...pts.map(p => p[1])));
+}
+function fitMap() {
+  if (!kort) return;
+  const xs = kort.tiles.map(t => t[0]), ys = kort.tiles.map(t => t[1]), ts = kort.tile;
+  fitBox(Math.min(...xs) * ts, Math.min(...ys) * ts, (Math.max(...xs) + 1) * ts, (Math.max(...ys) + 1) * ts);
+}
+function fitBox(ax, ay, bx, by) {
+  view.x = (ax + bx) / 2; view.y = (ay + by) / 2;
+  const span = Math.max(bx - ax, by - ay, 400);
+  view.scale = Math.min(2, Math.min(W, H) * 0.8 / span);
+}
+function zoom(f, sx = W / 2, sy = H / 2) {
+  const [wx, wy] = toWorld(sx, sy);
+  view.scale = Math.max(0.01, Math.min(8, view.scale * f));
+  if (!following) { const [nx, ny] = toWorld(sx, sy); view.x += wx - nx; view.y += wy - ny; }
+}
+let drag = null;
+const pointers = new Map();
+canvas.addEventListener("pointerdown", e => {
+  canvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, [e.offsetX, e.offsetY]);
+  drag = { x: e.offsetX, y: e.offsetY, vx: view.x, vy: view.y, moved: false, dist: null };
+  canvas.classList.add("drag");
+});
+canvas.addEventListener("pointermove", e => {
+  if (!pointers.has(e.pointerId) || !drag) return;
+  pointers.set(e.pointerId, [e.offsetX, e.offsetY]);
+  if (pointers.size === 2) {                                  // pinch
+    const [a, b] = [...pointers.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    if (drag.dist) zoom(d / drag.dist, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2);
+    drag.dist = d; drag.moved = true; return;
+  }
+  const dx = e.offsetX - drag.x, dy = e.offsetY - drag.y;
+  if (Math.hypot(dx, dy) > 4) {
+    if (!drag.moved && following) { following = false; $("follow").classList.remove("on"); drag.vx = view.x; drag.vy = view.y; }
+    drag.moved = true;
+    view.x = drag.vx - dx / view.scale; view.y = drag.vy + dy / view.scale;
+  }
+});
+canvas.addEventListener("pointerup", e => {
+  pointers.delete(e.pointerId);
+  canvas.classList.remove("drag");
+  if (drag && !drag.moved) pick(e.offsetX, e.offsetY);
+  if (!pointers.size) drag = null;
+});
+canvas.addEventListener("wheel", e => { e.preventDefault(); zoom(Math.exp(-e.deltaY * 0.0015), e.offsetX, e.offsetY); }, { passive: false });
+function pick(sx, sy) {
+  let best = null, bd = 28;
+  const now = performance.now();
+  for (const s of players.values()) {
+    if (s.info.aboard != null) continue;
+    const c = current(s, now), [px, py] = toScreen(c[0], c[1]), d = Math.hypot(px - sx, py - sy);
+    if (d < bd) { best = { kind: "p", id: s.info.id }; bd = d; }
+  }
+  if (!best && layers.ai) {
+    bd = 20;
+    for (const s of buses.values()) {
+      const c = current(s, now), [px, py] = toScreen(c[0], c[1]), d = Math.hypot(px - sx, py - sy);
+      if (d < bd) { best = { kind: "a", id: s.info.id }; bd = d; }
+    }
+  }
+  choose(best, !!best);
+}
+$("zin").onclick = () => zoom(1.5);
+$("zout").onclick = () => zoom(1 / 1.5);
+$("fit").onclick = () => { following = false; $("follow").classList.remove("on"); fitAll(); };
+$("follow").onclick = () => {
+  if (following) { following = false; $("follow").classList.remove("on"); return; }
+  const sel = selected && chosen() ? selected : (players.size ? { kind: "p", id: [...players.keys()][0] } : null);
+  if (sel) choose(sel, true);
+};
+$("menu").onclick = () => $("side").classList.toggle("open");
+
+// ---------------------------------------------------------------- start
+resize();
+pollStatus(); pollPlayers(); pollBuses();
+setInterval(pollPlayers, 1000);
+setInterval(pollBuses, 1000);
+setInterval(pollStatus, 5000);
+setInterval(renderInfo, 1000);
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

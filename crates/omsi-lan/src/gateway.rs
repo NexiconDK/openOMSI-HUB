@@ -317,6 +317,28 @@ pub fn update_server_players(list: Vec<omsi_net::ws::PlayerInfo>) {
     }
 }
 
+/// Omsi-Hub: a server run: the live map's files, once they are put together.
+pub fn update_server_web_map(files: omsi_net::ws::WebMapFiles) {
+    if let Ok(w) = WS_PATH.lock() {
+        if let Some(g) = w.as_ref().and_then(|w| w.gateway.as_ref()) {
+            if let Ok(mut i) = g.info.lock() {
+                i.web_map = Some(std::sync::Arc::new(files));
+            }
+        }
+    }
+}
+
+/// Omsi-Hub: a server run: the timetable buses on the road now (`GET /kort/busser`).
+pub fn update_server_buses(json: String) {
+    if let Ok(w) = WS_PATH.lock() {
+        if let Some(g) = w.as_ref().and_then(|w| w.gateway.as_ref()) {
+            if let Ok(mut i) = g.info.lock() {
+                i.bus_list = std::sync::Arc::new(json);
+            }
+        }
+    }
+}
+
 /// A server run: the admin commands that came to the web gateway's `POST /admin`.
 pub fn take_local_admin() -> Vec<String> {
     if let Ok(w) = WS_PATH.lock() {
