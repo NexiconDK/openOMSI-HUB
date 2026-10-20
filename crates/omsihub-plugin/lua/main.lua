@@ -13,7 +13,7 @@
 --   data/status.json      plugin -> Omsi-Hub: how the duty stands (for the dispatcher)
 -- A game without the file functions gets the handshake and the reports in its log instead.
 
-local VERSION = "1.6.0"
+local VERSION = "1.6.1"
 local BRIDGE = 1
 local PANEL = "omsihub"
 

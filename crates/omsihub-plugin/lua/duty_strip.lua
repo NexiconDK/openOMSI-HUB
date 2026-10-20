@@ -37,6 +37,26 @@ local told = {}
 local fuel = { level = nil, low = false, most = nil, told = false }
 local fault = { base = nil, at = -FAULT_EVERY, clock = 0 }
 local look = 0
+-- (NexiconDK: the strip took the mouse for a form of its own - which one - and gives it back
+-- when it closes)
+local took_focus = false
+local focus_form = nil
+
+-- a form opened takes the mouse once (F10 gives it back to the driving as ever); a form
+-- closed gives back what it took
+local function form_focus()
+  if not (omsi.ui and omsi.ui.focus and omsi.ui.focused) then return end
+  if open and open ~= focus_form then
+    focus_form = open
+    if not omsi.ui.focused() then
+      omsi.ui.focus(true)
+      took_focus = true
+    end
+  elseif not open then
+    if took_focus and omsi.ui.focused() then omsi.ui.focus(false) end
+    took_focus, focus_form = false, nil
+  end
+end
 
 -- `translate` the plugin's texts, `c` the assignment's crew (nil: not a company's duty),
 -- `send(kind, fields)` a report to Omsi-Hub, `say(icon, title, text)` a notification
@@ -257,6 +277,10 @@ function M.rows(now)
   elseif open == "check" then
     check_form(children)
   else
+    -- (the buttons answer only while the panels have the mouse)
+    if not (omsi.ui and omsi.ui.focused and omsi.ui.focused()) then
+      add({ type = "text", text = tr("F10: use the panel with the mouse"), size = 12, color = DIM })
+    end
     add({ type = "row", children = {
       { type = "button", id = "strip_note", text = tr("Leave a note"), icon = "sticky_note_2", grow = true },
       { type = "button", id = "strip_check", text = tr("Defect check"), icon = "build", grow = true },
@@ -269,12 +293,18 @@ end
 function M.update(on)
   if not (crew and omsi.ui and omsi.ui.set) then return end
   if not (enabled and on) then
+    -- (the strip gone: the mouse it took back to the driving)
+    if took_focus and omsi.ui.focus and omsi.ui.focused and omsi.ui.focused() then omsi.ui.focus(false) end
+    took_focus, focus_form = false, nil
     if shown then
       omsi.ui.remove(PANEL)
       shown = false
     end
     return
   end
+  -- (NexiconDK: a form open - the walk-around at sign-off, a note - takes the mouse, so that
+  -- its boxes and buttons can be clicked without F10)
+  form_focus()
   omsi.ui.set(PANEL, { anchor = "bottom_left", x = 16, y = 16, width = 340, accent = ACCENT, draggable = true, children = M.rows(minute()) })
   shown = true
 end

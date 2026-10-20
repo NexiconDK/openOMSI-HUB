@@ -571,6 +571,9 @@ fn the_duty_strip_shows_the_duty_and_takes_the_notes_and_the_walk_around() {
     for want in ["Line 5 to Rathaus until 08:20", "Next break", "Rathaus  08:20 · in 20 min", "Next relief", "Zoo  09:20 · in 1 h 20 min", "End of duty", "Overtime today: 25 min", "Leave a note", "Defect check"] {
         assert!(strip.contains(want), "{want}: {strip}");
     }
+    // (NexiconDK: the buttons answer only with the mouse on the panels: the strip says how)
+    assert!(strip.contains("F10: use the panel with the mouse"), "{strip}");
+    assert!(!ps.ui.borrow().focused());
     // the note left on the bus, as a card at sign-on
     assert!(ps.ui.borrow().toasts().iter().any(|t| t.text == "Bus 101: A door sticks"));
     // a note for the next driver: a template and a word of one's own
@@ -582,10 +585,13 @@ fn the_duty_strip_shows_the_duty_and_takes_the_notes_and_the_walk_around() {
     game.events = vec![ui("ui_click", &["omsihub_strip", "strip_check"])];
     ps.frame(&mut game);
     assert!(panel_text(&ps, "omsihub_strip").unwrap().contains("Walk-around check of bus 101"));
+    // (NexiconDK: the open form has the mouse by itself, without F10)
+    assert!(ps.ui.borrow().focused(), "the walk-around takes the mouse");
     game.events = vec![tick("ui_change", "omsihub_strip", "strip_chk_tyres", true), ui("ui_click", &["omsihub_strip", "strip_chk_send"])];
     ps.frame(&mut game);
     game.events.clear();
     ps.frame(&mut game);
+    assert!(!ps.ui.borrow().focused(), "and gives it back once sent");
     let reports = ReportReader::default().read_new(&dir);
     let note = reports.iter().find(|r| r.kind == "note").expect("the note reported");
     assert_eq!((note.template.as_str(), note.text.as_str(), note.bus_id, note.issued), ("door_sticks", "rear door", 7, issued()));
