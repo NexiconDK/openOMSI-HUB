@@ -24,6 +24,11 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 
 - **Egen tekst og ekstra tekst virker nu på Krüger-matricerne**: En tekst skrevet i destinationsvinduet blev også lagt på den plads i hof-filen, hvor Krüger-skiltene har et billede af destinationen. Så ledte skiltet efter en billedfil med tekstens navn (fx `Anzeigen\Krueger\Aarhus Rtb`), fandt ingen og viste ingenting. Nu får billedpladsen ingen tekst, og det samme gælder pladser, som hof-filens destinationer næsten altid lader stå tomme, fx indstikskiltet. Teksten står igen på skiltet, og det gælder også "Extra text".
 
+### Line and tour (i spillets menu)
+- **Turens side viser nu hele turen** (som rutebogen fra openOMSI PR #2936): Vælger man en tur, vises turens ture under turlisten, hver med start (åben ring), slut (fyldt prik), tiderne, linjen og pausen til næste tur. Klik på en tur for at starte derfra. Øverst til højre står, hvor den valgte tur starter og slutter.
+- **IBIS-boksen**: Over "Start trip" står den linje- og rutekode, man skal taste i IBIS'en til netop den tur, fremhævet ud fra bussens hof-fil, og linjens andre ruter står under. Har hof-filen ingen rute til turen, står det, og så vises linjen og destinationskoden i stedet.
+- **Kort over ruten**: Midt på siden vises turens rute på et kort med vejene omkring og stoppestederne med tider. Første stop er en ring, sidste en fyldt prik, og det stop, man starter fra, er markeret. Kortet vises, når navigatoren har læst kortet, og kun hvis vinduet er bredt nok.
+
 ### Til fods
 - **Ctrl+Shift+G virker igen**: Når "Ability to get up" er slået til, rejser chaufføren sig nu altid fra sædet med Ctrl+Shift+G, som i vores main. Før blev tasten ignoreret, hvis Ctrl+Shift+G også stod i en `keyboard.cfg`, og så skete der ingenting. Er indstillingen slået fra, bruger tasten det, den er sat til i `keyboard.cfg`.
 

@@ -794,7 +794,7 @@ pub(crate) fn menu_extras(
                         (what, when)
                     })
                     .collect();
-                Some(Preview { title: line_title(schedule, line), meta: format!("{} {}", line.tours.iter().filter(|t| schedule.is_some_and(|s| tour_listed(s, &line.name, t, now))).count(), tr("tours")), rows, chosen: None, button: None, time: None })
+                Some(Preview { title: line_title(schedule, line), meta: format!("{} {}", line.tours.iter().filter(|t| schedule.is_some_and(|s| tour_listed(s, &line.name, t, now))).count(), tr("tours")), rows, chosen: None, button: None, time: None, ..Default::default() })
             });
             // (the small line above: the driver's personnel number and code, to sign on with)
             (MenuKind::Lines, Some((title("Line and tour..."), crate::companion::duty_menu_note())), preview)
@@ -821,7 +821,34 @@ pub(crate) fn menu_extras(
                 let chosen = pick.as_ref().filter(|p| p.0 == num).map(|p| p.1).unwrap_or(0).min(stops.len().saturating_sub(1));
                 let rows = stops.iter().map(|s| (s.2.trim().to_string(), hm((s.3 / 60.0) as f32))).collect();
                 let trip_line = tour_line(ln, num).unwrap_or_else(|| line_sign(schedule, line));
+                // Omsi-Hub: the tour's trips, each from its first stop to its last, with the
+                // break between them, and the chosen one's ends (openOMSI #2936's roadbook)
+                let ends_of = |calls: &[(usize, usize, String, f64)]| -> Option<crate::ui::TripEnds> {
+                    let (a, b) = (calls.first()?, calls.last()?);
+                    Some(crate::ui::TripEnds { from: a.2.trim().to_string(), dep: hm((a.3 / 60.0) as f32), to: b.2.trim().to_string(), arr: hm((b.3 / 60.0) as f32) })
+                };
+                let mut by_trip: Vec<Vec<(usize, usize, String, f64)>> = Vec::new();
+                for c in sch.tour_stops(ln, num) {
+                    match by_trip.iter_mut().find(|t| t[0].0 == c.0) {
+                        Some(t) => t.push(c),
+                        None => by_trip.push(vec![c]),
+                    }
+                }
+                by_trip.sort_by(|a, b| a[0].3.total_cmp(&b[0].3).then(a[0].0.cmp(&b[0].0)));
+                let trips: Vec<crate::ui::TripRow> = by_trip
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, calls)| {
+                        let ends = ends_of(calls)?;
+                        let line = tour_trip_name(sch, tour, calls[0].0).map(|n| trip_of(&n).0).filter(|l| !l.is_empty()).unwrap_or_else(|| trip_line.clone());
+                        let gap = by_trip.get(i + 1).map(|next| ((next[0].3 - calls.last().map(|c| c.3).unwrap_or(0.0)) / 60.0).round()).filter(|m| *m >= 1.0).map(|m| format!("{} min {}", m as i64, tr("break"))).unwrap_or_default();
+                        Some(crate::ui::TripRow { line, ends, gap })
+                    })
+                    .collect();
                 Some(Preview {
+                    ends: ends_of(&stops),
+                    trips,
+                    trip,
                     title: format!("{} {}", tr("Tour"), num.trim()),
                     meta: format!("{} {}  |  {} {}/{}  |  {}", tr("Line"), trip_line, tr("Trip"), trip + 1, n_trips.max(1), tr("Choose the stop to start from")),
                     rows,
@@ -829,6 +856,7 @@ pub(crate) fn menu_extras(
                     button: Some(tr("Start trip")),
                     // (the time of the trip: between the arrows that step through the tour's trips)
                     time: Some(hm((at / 60.0) as f32)),
+                    ..Default::default()
                 })
             });
             let chosen_line = action.strip_prefix("tour ").and_then(|rest| rest.split_once('\u{1}')).and_then(|(ln, num)| tour_line(ln, num));

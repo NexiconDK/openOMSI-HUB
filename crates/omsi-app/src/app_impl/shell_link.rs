@@ -73,7 +73,25 @@ impl App {
             _ => None,
         };
         let chooser_list = self.menus.admin_list.as_ref().unwrap_or(&self.menus.vehicle_list);
-        let (kind, head, preview) = crate::game_lists::menu_extras(self.menus.list_kind.as_ref(), self.menus.admin_list.as_deref(), self.menus.chooser, crate::duty_book::timetable(self), self.clock.time);
+        let (kind, head, mut preview) = crate::game_lists::menu_extras(self.menus.list_kind.as_ref(), self.menus.admin_list.as_deref(), self.menus.chooser, crate::duty_book::timetable(self), self.clock.time);
+        // Omsi-Hub: a tour's page: what to type into the IBIS for the trip chosen, and its map
+        // (made once a trip, on the navigator's map of the whole map)
+        if let (Some(p), Some(c)) = (preview.as_mut(), crate::game_lists::chosen_trip(self)) {
+            p.ibis = self.player.as_ref().and_then(|pl| pl.vehicle.host.hof.as_deref()).and_then(|hof| crate::game_lists::ibis_box(hof, &c));
+            p.map = self.menus.tour_map.as_ref().filter(|m| m.0 == c.name).map(|m| m.1.clone());
+            if p.map.is_none() {
+                let made = (|| {
+                    let nav = self.menus.navigator.as_ref()?;
+                    let (net, places) = (nav.map_net()?, nav.places()?);
+                    let sch = crate::duty_book::timetable(self)?;
+                    Some(std::sync::Arc::new(crate::game_lists::trip_map(sch, net, places, &c)))
+                })();
+                if let Some(m) = made.as_ref() {
+                    self.menus.tour_map = Some((c.name.clone(), m.clone()));
+                }
+                p.map = made;
+            }
+        }
         let camera_tab = matches!(self.menus.list_kind, Some(ListKind::Options(t)) if Some(t) == tabs.as_ref().and_then(|(titles, _)| titles.iter().position(|x| x == omsi_ui::tr("Camera").as_ref())));
         let list = self.menus.chooser.map(|sel| ListView {
             kind,

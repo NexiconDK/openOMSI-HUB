@@ -70,6 +70,8 @@ pub(crate) struct Shell {
     pub(crate) over_ui: bool,
     /// The line the keyboard chose last frame (to scroll it into view when it changes).
     pub(crate) last_sel: Option<(u64, usize)>,
+    /// Omsi-Hub: the trip lit on a tour's page last (its list scrolls to a new one).
+    pub(crate) last_trip: Option<(u64, usize)>,
     /// Where the open drop-down's field was drawn last (its list lies under it).
     pub(crate) dd_anchor: Option<omsi_ui::Rect>,
     /// The screens cover the whole window (the photo mode's photo): it is cleared first.
@@ -87,7 +89,7 @@ impl Shell {
         // (the desktop launcher's calm look: graphite surfaces, no edges)
         let mut ui = Ui::new();
         ui.flat = true;
-        Shell { ui, gpu: None, shot_gpu: None, drawn: None, actions: Vec::new(), picture: None, picture_tex: None, logo_tex: None, shot_logo: None, logo_key: None, shot_logo_key: None, scale: 1.0, over_ui: false, last_sel: None, dd_anchor: None, opaque: false }
+        Shell { ui, gpu: None, shot_gpu: None, drawn: None, actions: Vec::new(), picture: None, picture_tex: None, logo_tex: None, shot_logo: None, logo_key: None, shot_logo_key: None, scale: 1.0, over_ui: false, last_sel: None, last_trip: None, dd_anchor: None, opaque: false }
     }
 
     /// A frame of the screens begins: the window's size in physical pixels and how many of

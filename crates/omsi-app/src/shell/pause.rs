@@ -686,7 +686,7 @@ fn code_and_name(label: &str) -> Option<(&str, &str)> {
 }
 
 /// The lines or a line's tours, with the timetable of the chosen one beside them.
-fn timetable_lists(sh: &mut Shell, v: &PauseView, list: &ListView, body: Rect) {
+pub(super) fn timetable_lists(sh: &mut Shell, v: &PauseView, list: &ListView, body: Rect) {
     // (narrow - a phone: the timetable with its Start under the list instead of beside it;
     // without it a tour could be marked but not started)
     if let (Some(p), true) = (list.preview, body.w < 760.0) {
@@ -695,6 +695,27 @@ fn timetable_lists(sh: &mut Shell, v: &PauseView, list: &ListView, body: Rect) {
         sh.ui.panel(top);
         list_rows(sh, v, list, Rect::new(top.x + 10.0, top.y + 10.0, top.w - 20.0, top.h - 20.0), list.kind == MenuKind::Tours);
         preview(sh, p, list, Rect::new(body.x, top.bottom() + GAP, body.w, body.h - lh - GAP));
+        return;
+    }
+    // Omsi-Hub: a tour's page (after openOMSI's roadbook, #2936): the tours above the tour's
+    // trips on the left, the chosen trip's route on a map in the middle (where there is room)
+    // and its stops, the IBIS to type and the start on the right
+    if let Some(p) = list.preview.filter(|p| list.kind == MenuKind::Tours && !p.trips.is_empty()) {
+        let wide = body.w >= 1000.0;
+        let pane_w = (body.w * if wide { 0.3 } else { 0.46 }).clamp(300.0, 420.0);
+        let lw = if wide { (body.w * 0.3).clamp(300.0, 400.0) } else { body.w - pane_w - GAP * 2.0 };
+        let left = Rect::new(body.x, body.y, lw, body.h);
+        let tours_h = (list.items.len() as f32 * LIST_ROW + 24.0).clamp(LIST_ROW * 2.0 + 24.0, left.h * 0.4);
+        let top = Rect::new(left.x, left.y, left.w, tours_h);
+        sh.ui.panel(top);
+        list_rows(sh, v, list, Rect::new(top.x + 10.0, top.y + 10.0, top.w - 20.0, top.h - 20.0), true);
+        trips_panel(sh, p, list, Rect::new(left.x, top.bottom() + GAP, left.w, left.h - tours_h - GAP));
+        let right = Rect::new(body.right() - pane_w, body.y, pane_w, body.h);
+        preview(sh, p, list, right);
+        if wide {
+            let x = left.right() + GAP * 2.0;
+            route_map(sh, p, Rect::new(x, body.y, right.x - GAP * 2.0 - x, body.h));
+        }
         return;
     }
     let pane_w = if list.preview.is_some() { (body.w * 0.46).min(440.0) } else { 0.0 };
@@ -717,6 +738,11 @@ fn preview(sh: &mut Shell, p: &Preview, list: &ListView, r: Rect) {
     ui.text_in(&p.title, Rect::new(inner.x, inner.y, inner.w, 24.0), 16.0, Weight::Bold, TEXT, Align::Left);
     ui.text_in(&p.meta, Rect::new(inner.x, inner.y + 26.0, inner.w, 18.0), 12.0, Weight::Regular, TEXT_DIM, Align::Left);
     let mut top = inner.y + 54.0;
+    // Omsi-Hub: where the trip starts and where it ends (#2936)
+    if let Some(e) = p.ends.as_ref() {
+        trip_ends(ui, e, Rect::new(inner.x, top, inner.w, 40.0), true);
+        top += 46.0;
+    }
     top += 6.0;
     if let Some(time) = p.time.as_ref() {
         let bh = 34.0;
@@ -735,7 +761,16 @@ fn preview(sh: &mut Shell, p: &Preview, list: &ListView, r: Rect) {
     match (p.chosen, p.button.as_ref()) {
         (Some(chosen), Some(button)) => {
             let go = Rect::new(inner.x, inner.bottom() - 44.0, inner.w, 44.0);
-            let rows_r = Rect::new(inner.x - 8.0, top, inner.w + 16.0, (go.y - 10.0 - top).max(lh));
+            // Omsi-Hub: the IBIS to type for the trip, over the start (#2936)
+            let ibis_h = p.ibis.as_ref().map(|b| 36.0 + b.rows.len() as f32 * 28.0 + 22.0).unwrap_or(0.0).min((go.y - top) * 0.5);
+            let rows_bottom = if let Some(b) = p.ibis.as_ref() {
+                let r = Rect::new(inner.x, go.y - 10.0 - ibis_h, inner.w, ibis_h);
+                ibis_box(ui, b, r);
+                r.y - 10.0
+            } else {
+                go.y - 10.0
+            };
+            let rows_r = Rect::new(inner.x - 8.0, top, inner.w + 16.0, (rows_bottom - top).max(lh));
             let key = format!("pause-pane-{}", list.key);
             let mut first_view: Option<f32> = None;
             ui.scroll_area(&key, rows_r, &mut |ui, view| {
@@ -788,6 +823,183 @@ fn preview(sh: &mut Shell, p: &Preview, list: &ListView, r: Rect) {
         }
     }
     sh.actions.extend(acts);
+}
+
+/// Omsi-Hub: a ring of radius `r` (the trip's first stop, as the roadbook draws it).
+fn ring(ui: &mut Ui, c: Vec2, r: f32, w: f32, ink: Color) {
+    let pts: Vec<Vec2> = (0..=24).map(|k| c + Vec2::from_angle(k as f32 / 24.0 * std::f32::consts::TAU) * r).collect();
+    ui.p().stroke(&pts, w, ink);
+}
+
+/// Omsi-Hub: a trip's ends as a journey line (openOMSI #2936): an open ring at the first stop
+/// with its departure, a line down to a filled dot at the last with its arrival.
+fn trip_ends(ui: &mut Ui, e: &crate::ui::TripEnds, r: Rect, lit: bool) {
+    let ink = if lit { accent() } else { TEXT_DIM };
+    let x = r.x + 6.0;
+    let (y0, y1) = (r.y + r.h * 0.25, r.y + r.h * 0.75);
+    ui.p().line(Vec2::new(x, y0 + 5.0), Vec2::new(x, y1 - 4.0), 2.0, ink.alpha(0.6));
+    ring(ui, Vec2::new(x, y0), 4.5, 2.0, ink);
+    ui.p().circle(Vec2::new(x, y1), 4.5, ink);
+    let tx = r.x + 20.0;
+    let tw = 44.0;
+    let half = r.h * 0.5;
+    for (k, (time, name)) in [(&e.dep, &e.from), (&e.arr, &e.to)].into_iter().enumerate() {
+        let row = Rect::new(tx, r.y + k as f32 * half, r.w - 20.0, half);
+        ui.text_in(time, Rect::new(row.x, row.y, tw, row.h), 12.5, Weight::Bold, if lit { TEXT } else { TEXT_SOFT }, Align::Left);
+        ui.text_in(name, Rect::new(row.x + tw + 4.0, row.y, row.w - tw - 4.0, row.h), 12.5, if k == 1 { Weight::Medium } else { Weight::Regular }, if lit { TEXT } else { TEXT_SOFT }, Align::Left);
+    }
+}
+
+/// Omsi-Hub: the tour's trips on its page (openOMSI #2936's roadbook): each from its first
+/// stop to its last with the times, its line, and the break before the next; a click picks it.
+fn trips_panel(sh: &mut Shell, p: &Preview, list: &ListView, r: Rect) {
+    let mut acts = Vec::new();
+    let ui = &mut sh.ui;
+    ui.panel(r);
+    let inner = Rect::new(r.x + 16.0, r.y + 14.0, r.w - 32.0, r.h - 28.0);
+    ui.text_in(&omsi_ui::tr("Trips of the tour"), Rect::new(inner.x, inner.y, inner.w, 20.0), 14.0, Weight::Bold, TEXT, Align::Left);
+    if let (Some(a), Some(b)) = (p.trips.first(), p.trips.last()) {
+        let facts = format!("{} {}  ·  {} – {}  ·  {}", p.trips.len(), omsi_ui::tr("trips"), a.ends.dep, b.ends.arr, omsi_ui::tr("Click a trip to start the tour there"));
+        ui.text_in(&facts, Rect::new(inner.x, inner.y + 22.0, inner.w, 16.0), 11.5, Weight::Regular, TEXT_DIM, Align::Left);
+    }
+    let top = inner.y + 46.0;
+    let rows_r = Rect::new(inner.x - 8.0, top, inner.w + 16.0, (inner.bottom() - top).max(40.0));
+    let (rh, gap_h) = (50.0, 18.0);
+    let key = format!("pause-trips-{}", list.key);
+    let mut chosen_y = None;
+    ui.scroll_area(&key, rows_r, &mut |ui, view| {
+        let mut y = view.y;
+        for (i, t) in p.trips.iter().enumerate() {
+            let row = Rect::new(view.x, y, view.w - 8.0, rh);
+            if ui.row(&format!("pause-trip-row-{i}"), row, i == p.trip) {
+                acts.push(Action::Pane(usize::MAX - 10 - i));
+            }
+            if i == p.trip {
+                chosen_y = Some(y - view.y);
+            }
+            let tw = (ui.width(&t.line, 12.0, Weight::Bold) + 14.0).max(34.0);
+            let tile = Rect::new(row.right() - 10.0 - tw, row.y + (rh - 22.0) * 0.5, tw, 22.0);
+            ui.p().rounded(tile, 5.0, accent().alpha(0.16));
+            ui.text_in(&t.line, tile, 12.0, Weight::Bold, accent(), Align::Center);
+            trip_ends(ui, &t.ends, Rect::new(row.x + 10.0, row.y + 5.0, tile.x - row.x - 18.0, rh - 10.0), i == p.trip);
+            y += rh;
+            if !t.gap.is_empty() {
+                ui.text_in(&t.gap, Rect::new(row.x + 30.0, y, row.w - 40.0, gap_h), 11.0, Weight::Regular, TEXT_FAINT, Align::Left);
+                y += gap_h;
+            }
+        }
+        y - view.y
+    });
+    if let Some(y) = chosen_y {
+        if sh.last_trip != Some((id_of(&key), p.trip)) {
+            sh.ui.scroll_to(&key, y, rh, rows_r.h);
+        }
+    }
+    sh.last_trip = Some((id_of(&key), p.trip));
+    sh.actions.extend(acts);
+}
+
+/// Omsi-Hub: what to type into the IBIS for the trip (openOMSI #2936): its line's routes of
+/// the depot file, the trip's own first and lit, the line and route codes as tiles.
+fn ibis_box(ui: &mut Ui, b: &crate::ui::IbisBox, r: Rect) {
+    ui.p().rounded(r, 10.0, FIELD);
+    let inner = Rect::new(r.x + 12.0, r.y + 10.0, r.w - 24.0, r.h - 20.0);
+    ui.text_in("IBIS", Rect::new(inner.x, inner.y, inner.w, 16.0), 11.0, Weight::Bold, TEXT_DIM, Align::Left);
+    let mut y = inner.y + 24.0;
+    let (lt, rt) = (omsi_ui::tr("line").into_owned(), omsi_ui::tr("route").into_owned());
+    for (name, line, route, mine) in &b.rows {
+        if y + 26.0 > inner.bottom() - 18.0 {
+            break;
+        }
+        let row = Rect::new(inner.x, y, inner.w, 24.0);
+        if *mine {
+            ui.p().rounded(Rect::new(row.x - 6.0, row.y - 2.0, row.w + 12.0, row.h + 4.0), 6.0, accent().alpha(0.12));
+        }
+        let tile = |ui: &mut Ui, x: f32, label: &str, code: &str| -> f32 {
+            let lw = ui.width(label, 10.5, Weight::Regular) + 6.0;
+            ui.text_in(label, Rect::new(x, row.y, lw, row.h), 10.5, Weight::Regular, TEXT_FAINT, Align::Left);
+            let t = Rect::new(x + lw, row.y + 2.0, 40.0, row.h - 4.0);
+            ui.p().rounded(t, 5.0, if *mine { accent() } else { SURFACE_3 });
+            ui.text_in(code, t, 12.0, Weight::Bold, if *mine { on_accent() } else { TEXT_SOFT }, Align::Center);
+            x + lw + 40.0 + 10.0
+        };
+        let codes_w = ui.width(&lt, 10.5, Weight::Regular) + ui.width(&rt, 10.5, Weight::Regular) + 12.0 + 100.0;
+        let x = row.right() - codes_w;
+        let x = tile(ui, x, &lt, line);
+        tile(ui, x, &rt, route);
+        ui.text_in(name, Rect::new(row.x, row.y, row.right() - codes_w - row.x - 8.0, row.h), 12.0, if *mine { Weight::Medium } else { Weight::Regular }, if *mine { TEXT } else { TEXT_SOFT }, Align::Left);
+        y += 28.0;
+    }
+    ui.text_in(&b.note, Rect::new(inner.x, inner.bottom() - 16.0, inner.w, 16.0), 11.0, Weight::Regular, TEXT_FAINT, Align::Left);
+}
+
+/// Omsi-Hub: the chosen trip's route on a map (openOMSI #2936's route map): the streets round
+/// it faint, its way, its stops with their times - the first a ring, the last a filled dot,
+/// the one to start from lit - named where there is room.
+fn route_map(sh: &mut Shell, p: &Preview, r: Rect) {
+    let ui = &mut sh.ui;
+    ui.panel(r);
+    let inner = Rect::new(r.x + 12.0, r.y + 12.0, r.w - 24.0, r.h - 24.0);
+    let Some(m) = p.map.as_ref().filter(|m| m.max.x >= m.min.x) else {
+        ui.text_in(&omsi_ui::tr("The map of the route comes once the navigator has read the map"), inner, 12.5, Weight::Regular, TEXT_DIM, Align::Center);
+        return;
+    };
+    let size = (m.max - m.min).max(Vec2::splat(50.0));
+    let room = Vec2::new(inner.w - 120.0, inner.h - 60.0).max(Vec2::splat(40.0));
+    let k = (room.x / size.x).min(room.y / size.y);
+    let mid = (m.min + m.max) * 0.5;
+    let c = inner.center();
+    let at = |q: Vec2| Vec2::new(c.x + (q.x - mid.x) * k, c.y - (q.y - mid.y) * k);
+    ui.push_clip(inner, 10.0);
+    for road in &m.roads {
+        let pts: Vec<Vec2> = road.iter().map(|q| at(*q)).collect();
+        ui.p().stroke(&pts, 1.6, Color::rgba(255, 255, 255, 0.09));
+    }
+    for way in &m.route {
+        let pts: Vec<Vec2> = way.iter().map(|q| at(*q)).collect();
+        ui.p().stroke(&pts, 7.0, Color::rgba(0, 0, 0, 0.35));
+        ui.p().stroke(&pts, 4.5, accent());
+    }
+    let last = m.stops.iter().map(|s| s.3).max().unwrap_or(0);
+    let chosen = p.chosen.unwrap_or(0);
+    for (q, _, _, i) in &m.stops {
+        let q = at(*q);
+        if *i == 0 {
+            ui.p().circle(q, 7.0, PANEL);
+            ring(ui, q, 6.0, 2.5, accent());
+        } else if *i == last {
+            ui.p().circle(q, 7.5, PANEL);
+            ui.p().circle(q, 6.0, accent());
+        } else {
+            ui.p().circle(q, 4.5, PANEL);
+            ui.p().circle(q, 3.2, TEXT);
+        }
+        if *i == chosen {
+            ring(ui, q, 10.0, 2.0, TEXT);
+        }
+    }
+    // (the names: the first, the last and the chosen first, then the rest where they fit)
+    let mut order: Vec<&(Vec2, String, String, usize)> = m.stops.iter().collect();
+    order.sort_by_key(|s| if s.3 == chosen { 0 } else if s.3 == 0 || s.3 == last { 1 } else { 2 });
+    let mut taken: Vec<Rect> = Vec::new();
+    for (q, name, time, i) in order {
+        let q = at(*q);
+        let text = format!("{time}  {name}");
+        let w = ui.width(&text, 11.5, Weight::Medium) + 14.0;
+        let label = Rect::new(q.x + 10.0, q.y - 11.0, w, 22.0);
+        let label = if label.right() > inner.right() { Rect::new(q.x - 10.0 - w, label.y, w, label.h) } else { label };
+        let grown = Rect::new(label.x - 3.0, label.y - 3.0, label.w + 6.0, label.h + 6.0);
+        if taken.iter().any(|o| o.x < grown.right() && grown.x < o.right() && o.y < grown.bottom() && grown.y < o.bottom()) {
+            continue;
+        }
+        taken.push(grown);
+        ui.p().rounded(label, 5.0, ON_MAP);
+        let lit = *i == chosen;
+        ui.text_in(time, Rect::new(label.x + 7.0, label.y, 40.0, label.h), 11.5, Weight::Bold, accent(), Align::Left);
+        let tw = ui.width(time, 11.5, Weight::Bold);
+        ui.text_in(name, Rect::new(label.x + 7.0 + tw + 6.0, label.y, label.w - tw - 18.0, label.h), 11.5, Weight::Medium, if lit { TEXT } else { TEXT_SOFT }, Align::Left);
+    }
+    ui.pop_clip();
 }
 
 #[cfg(test)]

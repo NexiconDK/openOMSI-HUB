@@ -278,3 +278,99 @@ pub(super) fn start_duty(app: &mut App, line: &str, tour: &str) {
         Err(e) => app.service_msg = Some((omsi_ui::tr("No duty: %{error}").replace("%{error}", &e.to_string()), 8.0)),
     }
 }
+
+/// Omsi-Hub: the trip chosen on a tour's page: its name, line and terminus, its stops (name,
+/// time, station) and the stop chosen to start from.
+pub(crate) struct ChosenTrip {
+    pub name: String,
+    pub line: String,
+    pub terminus: String,
+    pub stops: Vec<(String, f64, i64)>,
+    pub at: usize,
+}
+
+pub(crate) fn chosen_trip(app: &App) -> Option<ChosenTrip> {
+    let k = app.menus.chooser?;
+    if !matches!(app.menus.list_kind, Some(ListKind::Tours(..))) {
+        return None;
+    }
+    let (line, tour) = tour_at(app, k)?;
+    let (_, at, trip, _) = tour_choice(app, k)?;
+    let sch = crate::duty_book::timetable(app)?;
+    let t = sch.data.lines.iter().find(|l| l.name == line)?.tours.iter().find(|t| t.number == tour)?;
+    let calls = sch.tour_trip_stops(&line, &tour, trip);
+    let name = tour_trip_name(sch, t, calls.first()?.0)?;
+    let tt = sch.data.trips.iter().find(|x| x.name.eq_ignore_ascii_case(&name))?;
+    let stations = omsi_sim::timetable_run::trip_stations(tt);
+    let stops = calls.iter().map(|c| (c.2.trim().to_string(), c.3, stations.get(c.1).copied().unwrap_or(-1))).collect();
+    Some(ChosenTrip { name, line: tt.line.trim().to_string(), terminus: tt.terminus.trim().to_string(), stops, at })
+}
+
+/// Omsi-Hub: what to type into the IBIS for trip `c` (after openOMSI #2936): the routes of its
+/// line in the depot file of the bus driven, the one the trip runs (as the game types it,
+/// `ibis_codes`) first and marked. None without a bus, a depot file or a terminus.
+pub(crate) fn ibis_box(hof: &omsi_vehicle::Hof, c: &ChosenTrip) -> Option<crate::ui::IbisBox> {
+    let tr = |t: &str| omsi_ui::tr(t).into_owned();
+    if c.terminus.is_empty() {
+        return None;
+    }
+    let names: Vec<&str> = c.stops.iter().map(|s| s.0.as_str()).collect();
+    let (codes, ti) = omsi_sim::timetable_run::ibis_codes(hof, &c.line, &c.terminus, &names)?;
+    let digits: String = c.line.chars().take_while(|ch| ch.is_ascii_digit()).collect();
+    let number = digits.parse::<u32>().ok();
+    let mut rows: Vec<(String, String, String, bool)> = hof
+        .info_trips
+        .iter()
+        .filter_map(|t| {
+            let code = t.code.trim().parse::<u32>().ok()?;
+            let of_line = number.is_some_and(|n| code / 100 == n) || t.line.trim().eq_ignore_ascii_case(&c.line);
+            if !of_line {
+                return None;
+            }
+            let chosen = codes.route.is_some_and(|r| code % 100 == r) && codes.line.is_none_or(|l| l / 100 == code / 100);
+            Some((t.name.trim().to_string(), (code / 100).to_string(), format!("{:02}", code % 100), chosen))
+        })
+        .collect();
+    // (the trip's own first; a route listed twice once)
+    rows.dedup();
+    rows.sort_by_key(|r| !r.3);
+    rows.truncate(5);
+    let dest = hof.termini.get(ti).map(|t| t.menu_name()).unwrap_or_default();
+    let note = match (codes.route, codes.terminus) {
+        (Some(_), _) => format!("{} {}", tr("Depot file"), hof.name.trim()),
+        (None, Some(code)) => format!("{}: {} {}, {} {code} ({dest})", tr("No route of the depot file for this trip"), tr("line"), codes.line.map(|l| (l / 100).to_string()).unwrap_or_else(|| c.line.clone()), tr("destination")),
+        (None, None) => tr("No route of the depot file for this trip"),
+    };
+    Some(crate::ui::IbisBox { rows, note })
+}
+
+/// Omsi-Hub: trip `c` on a map: its way on the whole map's lanes (`trip_route_in`), the
+/// streets around it, and its stops where the map has them (`places`).
+pub(crate) fn trip_map(sch: &crate::schedule::Schedule, net: &omsi_sim::traffic::Network, places: &hashbrown::HashMap<i64, glam::DVec3>, c: &ChosenTrip) -> crate::ui::RouteMap {
+    use glam::Vec2;
+    let hm = |s: f64| format!("{:02}:{:02}", (s / 3600.0) as i64 % 24, ((s % 3600.0) / 60.0) as i64);
+    let lanes = sch.trip_route_in(net, &c.name);
+    let route: Vec<Vec<Vec2>> = lanes.iter().filter_map(|&l| net.lanes.get(l)).map(|l| l.points.iter().map(|p| Vec2::new(p.x as f32, p.y as f32)).collect::<Vec<_>>()).filter(|p| p.len() >= 2).collect();
+    let stops: Vec<(Vec2, String, String, usize)> = c.stops.iter().enumerate().filter_map(|(i, (name, t, id))| places.get(id).map(|p| (Vec2::new(p.x as f32, p.y as f32), name.clone(), hm(*t), i))).collect();
+    let mut min = Vec2::splat(f32::MAX);
+    let mut max = Vec2::splat(f32::MIN);
+    for p in route.iter().flatten().chain(stops.iter().map(|s| &s.0)) {
+        min = min.min(*p);
+        max = max.max(*p);
+    }
+    if min.x > max.x {
+        return crate::ui::RouteMap::default();
+    }
+    // (the streets within a margin round it, each way of a two-way street once)
+    let pad = ((max - min).max_element() * 0.12).max(150.0);
+    let (lo, hi) = (min - Vec2::splat(pad), max + Vec2::splat(pad));
+    let roads: Vec<Vec<Vec2>> = net
+        .lanes
+        .iter()
+        .filter(|l| l.kind == omsi_sim::traffic::LaneKind::Street && !l.reversed && l.points.len() >= 2)
+        .filter(|l| l.points.iter().any(|p| (p.x as f32) > lo.x && (p.x as f32) < hi.x && (p.y as f32) > lo.y && (p.y as f32) < hi.y))
+        .take(6000)
+        .map(|l| l.points.iter().map(|p| Vec2::new(p.x as f32, p.y as f32)).collect())
+        .collect();
+    crate::ui::RouteMap { roads, route, stops, min, max }
+}

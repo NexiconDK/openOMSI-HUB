@@ -253,6 +253,7 @@ pub enum MenuKind {
 
 /// The timetable beside a list of lines or tours: a title, a line of facts and rows of
 /// (what, time).
+#[derive(Default)]
 pub struct Preview {
     pub title: String,
     pub meta: String,
@@ -264,6 +265,53 @@ pub struct Preview {
     /// The time of the timetable the rows are of, with buttons to put it ahead (the trip of
     /// a tour to take on later), when it can be set.
     pub time: Option<String>,
+    /// Omsi-Hub: a tour's page (after openOMSI's roadbook, #2936) - the trip's first and
+    /// last stop with their times, the tour's trips (the chosen one `trip`), the IBIS codes
+    /// to type for the trip, and its route on a map.
+    pub ends: Option<TripEnds>,
+    pub trips: Vec<TripRow>,
+    pub trip: usize,
+    pub ibis: Option<IbisBox>,
+    pub map: Option<std::sync::Arc<RouteMap>>,
+}
+
+/// Omsi-Hub: where a trip starts and ends: the first stop and its departure, the last and
+/// its arrival.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct TripEnds {
+    pub from: String,
+    pub dep: String,
+    pub to: String,
+    pub arr: String,
+}
+
+/// Omsi-Hub: a trip of a tour as its page lists it: its line, its ends, and the break
+/// after it ("" for none or the last).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct TripRow {
+    pub line: String,
+    pub ends: TripEnds,
+    pub gap: String,
+}
+
+/// Omsi-Hub: what to type into the IBIS for a trip: its line's routes of the depot file
+/// (name, line code, route code), the trip's own first and marked.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct IbisBox {
+    pub rows: Vec<(String, String, String, bool)>,
+    /// What the box says under them (the depot file, or why there is no route).
+    pub note: String,
+}
+
+/// Omsi-Hub: a trip's route on a map (world metres, x east and y north): the roads around
+/// it, its way, and its stops (place, name, time, and which of the trip's stops it is).
+#[derive(Debug, Clone, Default)]
+pub struct RouteMap {
+    pub roads: Vec<Vec<glam::Vec2>>,
+    pub route: Vec<Vec<glam::Vec2>>,
+    pub stops: Vec<(glam::Vec2, String, String, usize)>,
+    pub min: glam::Vec2,
+    pub max: glam::Vec2,
 }
 
 

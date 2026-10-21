@@ -383,6 +383,9 @@ pub(crate) struct MenuState {
     /// The timetable beside the tours scrolled with the wheel: (the tour's line in the list,
     /// the first stop shown).
     pub(crate) pane_scroll: Option<(usize, usize)>,
+    /// Omsi-Hub: the map of the trip chosen on a tour's page (`game_lists::trip_map`), made
+    /// once a trip: the trip's name and the map.
+    pub(crate) tour_map: Option<(String, std::sync::Arc<crate::ui::RouteMap>)>,
     /// The digits of a time being typed in the world page of the game menu (None: not typing).
     pub(crate) menu_edit: Option<String>,
     pub(crate) menu_edit_icao: bool,

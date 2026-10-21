@@ -23,11 +23,16 @@ fn picture(app: &mut crate::App, name: &str, (w, h): (u32, u32)) {
     for _ in 0..2 {
         app.draw_pause(w as f32, h as f32, 1.0, 1.0);
     }
-    let sh = &mut app.shell;
+    render(&mut app.shell, &mut gpu, &device, &queue, name, (w, h));
+}
+
+/// What `sh` drew last, written to `name` over a stand-in for the street.
+fn render(sh: &mut super::Shell, gpu: &mut Gpu, device: &wgpu::Device, queue: &wgpu::Queue, name: &str, (w, h): (u32, u32)) {
+    let format = wgpu::TextureFormat::Rgba8UnormSrgb;
     let d = sh.drawn.as_ref().expect("drawn");
     sh.ui.atlas.mark_all_dirty();
-    gpu.upload(&device, &queue, 0, &d.verts);
-    gpu.upload_atlas(&queue, &mut sh.ui.atlas);
+    gpu.upload(device, queue, 0, &d.verts);
+    gpu.upload_atlas(queue, &mut sh.ui.atlas);
     let draws: Vec<Draw> = d.ranges.iter().enumerate().map(|(k, (range, tex))| Draw { buffer: 0, range: range.clone(), layer: k, texture: *tex }).collect();
     let target = device.create_texture(&wgpu::TextureDescriptor {
         label: None,
@@ -41,7 +46,7 @@ fn picture(app: &mut crate::App, name: &str, (w, h): (u32, u32)) {
     });
     let view = target.create_view(&Default::default());
     let mut enc = device.create_command_encoder(&Default::default());
-    gpu.render(&device, &queue, &mut enc, &view, (w, h), Some(wgpu::Color::TRANSPARENT), &d.layers, &draws);
+    gpu.render(device, queue, &mut enc, &view, (w, h), Some(wgpu::Color::TRANSPARENT), &d.layers, &draws);
     // read back, laid over sky, houses and the street
     let stride = (w * 4).div_ceil(256) * 256;
     let buf = device.create_buffer(&wgpu::BufferDescriptor { label: None, size: (stride * h) as u64, usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ, mapped_at_creation: false });
@@ -90,5 +95,70 @@ fn preview() {
         app.open_list(kind);
         picture(&mut app, name, (1920, 1080));
         app.close_list();
+    }
+}
+
+/// Omsi-Hub: a tour's page (after openOMSI's roadbook, #2936) with made-up tours, trips, IBIS
+/// routes and a route map, drawn as the menu draws it.
+#[test]
+#[ignore]
+fn tour_page() {
+    use crate::ui::{IbisBox, MenuKind, Preview, RouteMap, TripEnds, TripRow};
+    use glam::Vec2;
+    let ends = |a: &str, d: &str, b: &str, r: &str| TripEnds { from: a.into(), dep: d.into(), to: b.into(), arr: r.into() };
+    let trips = vec![
+        TripRow { line: "131".into(), ends: ends("Zeche Hindenburg", "20:08", "Kursker Allee", "20:52"), gap: "6 min break".into() },
+        TripRow { line: "131".into(), ends: ends("Kursker Allee", "20:58", "Zeche Hindenburg", "21:42"), gap: "26 min break".into() },
+        TripRow { line: "131".into(), ends: ends("Zeche Hindenburg", "22:08", "Kursker Allee", "22:52"), gap: "8 min break".into() },
+        TripRow { line: "N31".into(), ends: ends("Kursker Allee", "23:00", "Betriebshof", "23:20"), gap: String::new() },
+    ];
+    let names = ["Zeche Hindenburg", "Amelatzestr.", "Hindenburgstr.", "Rathaus Sternenberg", "Sternenberger Markt", "Trautmannsfeld", "Viermännerhöfe", "Lidersbaum S", "Kursker Allee"];
+    let rows: Vec<(String, String)> = names.iter().enumerate().map(|(i, n)| (n.to_string(), format!("22:{:02}", 8 + i * 5))).collect();
+    let way: Vec<Vec2> = (0..=60).map(|k| { let t = k as f32 / 60.0; Vec2::new(t * 3000.0, (t * 7.0).sin() * 500.0 + t * 800.0) }).collect();
+    let stops = names.iter().enumerate().map(|(i, n)| (way[i * 60 / (names.len() - 1)], n.to_string(), format!("22:{:02}", 8 + i * 5), i)).collect();
+    let mut roads = Vec::new();
+    for k in 0..30 {
+        let x = -400.0 + k as f32 * 130.0;
+        roads.push(vec![Vec2::new(x, -900.0), Vec2::new(x + 80.0, 1900.0)]);
+        roads.push(vec![Vec2::new(-500.0, -900.0 + k as f32 * 100.0), Vec2::new(3500.0, -800.0 + k as f32 * 100.0)]);
+    }
+    let map = RouteMap { roads, route: vec![way.clone()], stops, min: Vec2::new(0.0, -500.0), max: Vec2::new(3000.0, 1300.0) };
+    let ibis = IbisBox {
+        rows: vec![
+            ("Zeche Hindenburg - Kursker Allee".into(), "131".into(), "02".into(), true),
+            ("Kursker Allee - Zeche Hindenburg".into(), "131".into(), "01".into(), false),
+            ("Zeche Hindenburg - Lidersbaum S".into(), "131".into(), "03".into(), false),
+        ],
+        note: "Depot file Ahlheim 5".into(),
+    };
+    let p = Preview {
+        title: "Tour 131H12".into(),
+        meta: "Line 131  |  Trip 3/4  |  Choose the stop to start from".into(),
+        rows,
+        chosen: Some(0),
+        button: Some("Start trip".into()),
+        time: Some("22:08".into()),
+        ends: Some(ends("Zeche Hindenburg", "22:08", "Kursker Allee", "22:52")),
+        trips,
+        trip: 2,
+        ibis: Some(ibis),
+        map: Some(std::sync::Arc::new(map)),
+    };
+    let items: Vec<(&str, &str)> = vec![("tour 131\u{1}131H09", "Tour 131H09"), ("tour 131\u{1}131H10", "Tour 131H10"), ("tour 131\u{1}131H11", "Tour 131H11"), ("tour 131\u{1}131H12", "Tour 131H12"), ("back", "Back")];
+    let list = super::pause::ListView { kind: MenuKind::Tours, head: Some(("Line and tour".into(), "Line 131".into())), tabs: None, items, sel: 3, preview: Some(&p), pane_first: None, dropdown: None, key: "tours131".into() };
+    let v = super::pause::PauseView { paused: true, rail: &[], rail_sel: None, rail_open: None, list: None, kbd: false, keys: false, summary: Default::default() };
+    let instance = wgpu::Instance::default();
+    let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).expect("adapter");
+    let (device, queue) = pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).expect("device");
+    let mut sh = super::Shell::new();
+    let mut gpu = Gpu::new(&device, wgpu::TextureFormat::Rgba8UnormSrgb, 1, sh.ui.atlas.size);
+    for (name, w, h) in [("tour-page.png", 1600u32, 900u32), ("tour-page-narrow.png", 900, 700)] {
+        for _ in 0..2 {
+            sh.begin(w as f32, h as f32, 1.0, 1.0);
+            sh.ui.p().rounded(omsi_ui::Rect::new(0.0, 0.0, w as f32, h as f32), 0.0, omsi_ui::theme::BG);
+            super::pause::timetable_lists(&mut sh, &v, &list, omsi_ui::Rect::new(24.0, 24.0, w as f32 - 48.0, h as f32 - 48.0));
+            sh.finish();
+        }
+        render(&mut sh, &mut gpu, &device, &queue, name, (w, h));
     }
 }

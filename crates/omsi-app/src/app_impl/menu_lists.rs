@@ -465,12 +465,21 @@ impl App {
     }
 
     /// A click in the timetable beside the tours: stop `i` as the start, or (`usize::MAX`)
-    /// the button that starts the trip; `usize::MAX - 1` / `- 2` the trip before / after.
+    /// the button that starts the trip; `usize::MAX - 1` / `- 2` the trip before / after;
+    /// `usize::MAX - 10 - t` trip `t` of the tour's list.
     pub(crate) fn tour_pane_click(&mut self, i: usize) {
         let k = self.menus.chooser.unwrap_or(0);
         // (the arrows beside the time: `usize::MAX - 1` the trip before, `- 2` the next)
         if i == usize::MAX - 1 || i == usize::MAX - 2 {
             self.trip_step(i == usize::MAX - 2);
+            return;
+        }
+        // Omsi-Hub: a trip of the tour's list (`usize::MAX - 10 - trip`), to start from its
+        // first stop
+        if (usize::MAX - 10 - 4096..=usize::MAX - 10).contains(&i) {
+            let Some((line, tour)) = crate::game_lists::tour_at(self, k) else { return };
+            self.menus.pane_scroll = None;
+            self.menus.list_kind = Some(crate::game_lists::ListKind::Tours(line, Some((tour, 0, usize::MAX - 10 - i))));
             return;
         }
         let (Some((line, tour)), Some((n, at, trip, _))) = (crate::game_lists::tour_at(self, k), crate::game_lists::tour_choice(self, k)) else { return };
