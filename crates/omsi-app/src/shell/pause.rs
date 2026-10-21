@@ -762,7 +762,7 @@ fn preview(sh: &mut Shell, p: &Preview, list: &ListView, r: Rect) {
         (Some(chosen), Some(button)) => {
             let go = Rect::new(inner.x, inner.bottom() - 44.0, inner.w, 44.0);
             // Omsi-Hub: the IBIS to type for the trip, over the start (#2936)
-            let ibis_h = p.ibis.as_ref().map(|b| 36.0 + b.rows.len() as f32 * 28.0 + 22.0).unwrap_or(0.0).min((go.y - top) * 0.5);
+            let ibis_h = p.ibis.as_ref().map(|b| 40.0 + b.rows.len() as f32 * 28.0 + 26.0).unwrap_or(0.0).min((go.y - top) * 0.5);
             let rows_bottom = if let Some(b) = p.ibis.as_ref() {
                 let r = Rect::new(inner.x, go.y - 10.0 - ibis_h, inner.w, ibis_h);
                 ibis_box(ui, b, r);
@@ -834,7 +834,11 @@ fn ring(ui: &mut Ui, c: Vec2, r: f32, w: f32, ink: Color) {
 /// Omsi-Hub: a trip's ends as a journey line (openOMSI #2936): an open ring at the first stop
 /// with its departure, a line down to a filled dot at the last with its arrival.
 fn trip_ends(ui: &mut Ui, e: &crate::ui::TripEnds, r: Rect, lit: bool) {
-    let ink = if lit { accent() } else { TEXT_DIM };
+    trip_ends_in(ui, e, r, lit, if lit { accent() } else { TEXT_DIM });
+}
+
+/// `trip_ends` with the journey line in `ink` (white on a lit row, which is the accent).
+fn trip_ends_in(ui: &mut Ui, e: &crate::ui::TripEnds, r: Rect, lit: bool, ink: Color) {
     let x = r.x + 6.0;
     let (y0, y1) = (r.y + r.h * 0.25, r.y + r.h * 0.75);
     ui.p().line(Vec2::new(x, y0 + 5.0), Vec2::new(x, y1 - 4.0), 2.0, ink.alpha(0.6));
@@ -877,11 +881,13 @@ fn trips_panel(sh: &mut Shell, p: &Preview, list: &ListView, r: Rect) {
             if i == p.trip {
                 chosen_y = Some(y - view.y);
             }
+            // (the lit row is the accent: its marks and tile in white on it)
+            let lit = i == p.trip;
             let tw = (ui.width(&t.line, 12.0, Weight::Bold) + 14.0).max(34.0);
             let tile = Rect::new(row.right() - 10.0 - tw, row.y + (rh - 22.0) * 0.5, tw, 22.0);
-            ui.p().rounded(tile, 5.0, accent().alpha(0.16));
-            ui.text_in(&t.line, tile, 12.0, Weight::Bold, accent(), Align::Center);
-            trip_ends(ui, &t.ends, Rect::new(row.x + 10.0, row.y + 5.0, tile.x - row.x - 18.0, rh - 10.0), i == p.trip);
+            ui.p().rounded(tile, 5.0, if lit { Color::rgba(255, 255, 255, 0.22) } else { accent().alpha(0.16) });
+            ui.text_in(&t.line, tile, 12.0, Weight::Bold, if lit { Color::WHITE } else { accent() }, Align::Center);
+            trip_ends_in(ui, &t.ends, Rect::new(row.x + 10.0, row.y + 5.0, tile.x - row.x - 18.0, rh - 10.0), lit, if lit { Color::WHITE } else { TEXT_DIM });
             y += rh;
             if !t.gap.is_empty() {
                 ui.text_in(&t.gap, Rect::new(row.x + 30.0, y, row.w - 40.0, gap_h), 11.0, Weight::Regular, TEXT_FAINT, Align::Left);
