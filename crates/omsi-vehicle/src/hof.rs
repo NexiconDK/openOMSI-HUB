@@ -634,11 +634,12 @@ enum StringKind {
     Empty,
 }
 
-/// Omsi-Hub: a string naming a picture: a file (`Ziel.bmp`), or a Krüger++ bitmap
+/// Omsi-Hub: a string naming a picture: a file (`Ziel.bmp`, `Ahlheim\\Ziel`), or a Krüger++ bitmap
 /// (`{{folder\file.png*POLY}}`).
 fn is_picture(s: &str) -> bool {
     let l = s.trim().to_ascii_lowercase();
-    l.starts_with("{{") || [".tga", ".bmp", ".png", ".dds", ".jpg", ".jpeg"].iter().any(|e| l.ends_with(e))
+    // (or a path: a folder of pictures with the file, written without its ending)
+    l.starts_with("{{") || l.contains('\\') || [".tga", ".bmp", ".png", ".dds", ".jpg", ".jpeg"].iter().any(|e| l.ends_with(e))
 }
 
 /// Omsi-Hub: the code of the free text's destination (see `Hof::with_free_text`).
