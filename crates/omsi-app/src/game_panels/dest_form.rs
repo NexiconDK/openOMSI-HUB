@@ -5,7 +5,7 @@
 //! included; any other text becomes a destination of its own (`Hof::with_free_text`), which
 //! the matrix displays show through their scripts.
 
-use super::{button, card, grow_row, input, note, text, title};
+use super::{button, card, grow_row, input, note, sign_tabs, text, title};
 use omsi_plugin::api::Value;
 use omsi_plugin::ui::{Anchor, Panel, Weight};
 
@@ -21,6 +21,8 @@ impl DestForm {
     pub(crate) fn panel(&self) -> Panel {
         let children = vec![
             title("Destination display"),
+            // Omsi-Hub: the destination and the extra text, tabs of one window
+            sign_tabs(0),
             text("Route number", 13.0, Weight::Medium),
             input("route", &self.route, "137", 12),
             text("Destination, two lines", 13.0, Weight::Medium),
@@ -55,6 +57,9 @@ pub(crate) fn open(app: &mut crate::App) {
 
 /// A field typed into.
 pub(crate) fn change(app: &mut crate::App, id: &str, value: &Value) {
+    if id == "sign_tab" {
+        return super::sign_tab(app, value);
+    }
     let (Some(f), Value::Str(s)) = (app.menus.game_panels.dest.as_mut(), value) else { return };
     match id {
         "route" => f.route = s.clone(),

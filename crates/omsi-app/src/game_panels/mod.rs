@@ -105,6 +105,27 @@ pub(super) fn input(id: &str, value: &str, placeholder: &str, max: usize) -> Ele
     Element { grow: true, ..el(Some(id), Kind::Input { text: value.to_string(), placeholder: placeholder.to_string(), max }) }
 }
 
+/// Omsi-Hub: the destination window's tabs: the destination (1) and the extra text (2) - two
+/// cards of the same size in the same place, so a tab changes what the window shows.
+pub(super) fn sign_tabs(selected: usize) -> Element {
+    el(Some("sign_tab"), Kind::Tabs { tabs: vec!["Destination".into(), "Extra text".into()], selected })
+}
+
+/// Omsi-Hub: a tab of the destination window picked (`sign_tabs`): the other card in its place.
+pub(super) fn sign_tab(app: &mut crate::App, value: &omsi_plugin::api::Value) {
+    match value {
+        omsi_plugin::api::Value::Int(1) if app.menus.game_panels.extra.is_some() => {
+            app.menus.game_panels.extra = None;
+            dest_form::open(app);
+        }
+        omsi_plugin::api::Value::Int(2) if app.menus.game_panels.dest.is_some() => {
+            app.menus.game_panels.dest = None;
+            extra_form::open(app);
+        }
+        _ => {}
+    }
+}
+
 pub(super) fn divider() -> Element {
     el(None, Kind::Divider)
 }
@@ -240,7 +261,7 @@ impl crate::App {
             if gp.quick.take().is_some() {
                 return true;
             }
-            return gp.trip.is_some() || gp.dest.is_some() || gp.move_to.is_some();
+            return gp.trip.is_some() || gp.dest.is_some() || gp.extra.is_some() || gp.move_to.is_some();
         };
         match (pr.kind, pr.element.as_deref()) {
             (crate::plugin_ui::HitKind::Slider, Some(el)) => {
@@ -291,7 +312,7 @@ impl crate::App {
     /// the view editor - which keeps what was set without saving it). True when one did.
     pub(crate) fn close_game_panel(&mut self) -> bool {
         let gp = &mut self.menus.game_panels;
-        if gp.quick.take().is_some() || gp.move_to.take().is_some() || gp.dest.take().is_some() || gp.trip.take().is_some() {
+        if gp.quick.take().is_some() || gp.move_to.take().is_some() || gp.dest.take().is_some() || gp.extra.take().is_some() || gp.trip.take().is_some() {
             return true;
         }
         if gp.view.is_some() {

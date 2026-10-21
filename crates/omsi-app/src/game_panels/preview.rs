@@ -101,6 +101,8 @@ fn preview() {
     picture("game-panels-trip.png", &[(trip_summary::TripPanel::new(summary()).panel(), Some("save"))]);
     let form = dest_form::DestForm { route: "137".into(), lines: ["Sonderfahrt".into(), "Betriebshof".into()], ..Default::default() };
     picture("game-panels-dest.png", &[(form.panel(), Some("select"))]);
+    let extra = extra_form::ExtraForm { lines: ["EKSTRABUS".into(), String::new()], every: "4".into(), on: true, said: None };
+    picture("game-panels-extra.png", &[(extra.panel(), Some("on"))]);
     let values = view_editor::ViewValues { seat: [0.05, -0.12, 0.03], pitch: -4.0, yaw: 6.5, fov: Some(62.0), mirrors: vec![[2.5, -1.0], [-3.0, 0.5]] };
     picture("game-panels-view.png", &[(view_editor::ViewEditor::default().panel_of(&values), None)]);
     picture("game-panels-move.png", &[(move_here::panel(glam::DVec3::new(-1948.9, -174.7, 8.8)), Some("yes"))]);

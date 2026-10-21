@@ -1,8 +1,9 @@
 //! Omsi-Hub: the extra text window - a text of two lines ("EKSTRABUS", "Via Hovedbanen")
 //! that takes turns with the destination on the bus's displays every few seconds, switched
-//! on and off here (`player::extra_sign`). It stays on through a change of destination.
+//! on and off here (`player::extra_sign`). It stays on through a change of destination. The
+//! destination window's second tab (`sign_tabs`), and the vehicle menu's "Extra text".
 
-use super::{button, card, grow_row, input, note, text, title};
+use super::{button, card, grow_row, input, note, sign_tabs, text, title};
 use omsi_plugin::api::Value;
 use omsi_plugin::ui::{Anchor, Panel, Weight};
 
@@ -21,7 +22,8 @@ impl ExtraForm {
     pub(crate) fn panel(&self) -> Panel {
         let state = if self.on { "On: the extra text takes turns with the destination" } else { "Off" };
         let children = vec![
-            title("Extra text"),
+            title("Destination display"),
+            sign_tabs(1),
             text(state, 13.0, Weight::Medium),
             text("Extra text, two lines", 13.0, Weight::Medium),
             input("line1", &self.lines[0], "EKSTRABUS", 60),
@@ -50,6 +52,9 @@ pub(crate) fn open(app: &mut crate::App) {
 
 /// A field typed into.
 pub(crate) fn change(app: &mut crate::App, id: &str, value: &Value) {
+    if id == "sign_tab" {
+        return super::sign_tab(app, value);
+    }
     let (Some(f), Value::Str(s)) = (app.menus.game_panels.extra.as_mut(), value) else { return };
     match id {
         "line1" => f.lines[0] = s.clone(),
@@ -87,6 +92,20 @@ fn every_of(typed: &str) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The destination window's two tabs: the destination's card has the first picked, the
+    /// extra text's the second, and both are the same window (its title, width and place).
+    #[test]
+    fn the_destination_and_the_extra_text_are_tabs_of_one_window() {
+        use omsi_plugin::ui::Kind;
+        let tab = |p: &Panel| p.children.iter().find(|e| e.id.as_deref() == Some("sign_tab")).map(|e| e.kind.clone());
+        let dest = super::super::dest_form::DestForm::default().panel();
+        let extra = ExtraForm::default().panel();
+        assert!(matches!(tab(&dest), Some(Kind::Tabs { selected: 0, ref tabs }) if tabs.len() == 2));
+        assert!(matches!(tab(&extra), Some(Kind::Tabs { selected: 1, .. })));
+        assert_eq!((dest.width, dest.x, dest.y), (extra.width, extra.x, extra.y));
+        assert_eq!(format!("{:?}", dest.children[0]), format!("{:?}", extra.children[0]), "the same title");
+    }
 
     #[test]
     fn the_seconds_typed() {
