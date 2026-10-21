@@ -169,11 +169,14 @@ impl TrafficSim {
                 self.light_waits.remove(&k);
                 continue;
             }
-            let t = self.light_waits.entry(k).or_insert(0.0);
-            *t += dt;
-            if *t >= self.unstick_lights && self.lights_out.insert(k) {
+            let t = {
+                let t = self.light_waits.entry(k).or_insert(0.0);
+                *t += dt;
+                *t
+            };
+            if t >= self.unstick_lights && self.lights_out.insert(k) {
                 let (x, y) = self.light_place(k);
-                log::warn!("traffic light {}.{} at ({x:.0}, {y:.0}): cars held {:.0} s without a green - taken for out of order (the right of way decides) until it shows green", k.0, k.1, *t);
+                log::warn!("traffic light {}.{} at ({x:.0}, {y:.0}): cars held {t:.0} s without a green - taken for out of order (the right of way decides) until it shows green", k.0, k.1);
             }
         }
         let lights = &self.lights;
