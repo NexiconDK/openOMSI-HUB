@@ -17,6 +17,8 @@ mod tours;
 // Omsi-Hub: the dedicated server's live map
 mod web_map;
 
+pub use tours::{TourPlan, TourPlanTrip};
+
 use super::*;
 use crate::ai_traffic::TrafficSim;
 use crate::VehicleType;
