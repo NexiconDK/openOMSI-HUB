@@ -32,6 +32,9 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 ### Køreplanssedlen i førerpladsen
 - **Køreplanssedlen virker igen** (`file_schedule`, papiret med turens stop og tider): HUB tegnede den i `~\.openomsi\cache\schedules`, men måtte ikke vise den, fordi et billede med fuld sti kun læses fra indholdsmapperne (OMSI og mods). Nu er netop den mappe tilladt, så sedlen vises som i main. Alt andet er stadig begrænset til indholdsmapperne.
 
+### Fodgængere
+- **Ingen tilfældige fodgængere på stier med trafiktæthed 0** (openOMSI PR #2968 af VlastikYoutubeKo): Kortets stier med tæthed 0, fx små trafikøer, får ikke længere tilfældige fodgængere. Stierne kan stadig bruges af dem, der allerede går, og af passagererne.
+
 ### Til fods
 - **Ctrl+Shift+G virker igen**: Når "Ability to get up" er slået til, rejser chaufføren sig nu altid fra sædet med Ctrl+Shift+G, som i vores main. Før blev tasten ignoreret, hvis Ctrl+Shift+G også stod i en `keyboard.cfg`, og så skete der ingenting. Er indstillingen slået fra, bruger tasten det, den er sat til i `keyboard.cfg`.
 

@@ -366,7 +366,11 @@ impl PeopleSim {
             .keys()
             .copied()
             .filter(|&l| {
-                (net.lanes[l].start() - center).truncate().length() < STROLL_RADIUS * 0.9
+                // (no strollers start on a path of traffic density 0, a traffic island: the
+                // path stays in the network for those walking and the passengers, openOMSI
+                // PR #2968 by VlastikYoutubeKo)
+                net.lanes[l].density > 0.0
+                    && (net.lanes[l].start() - center).truncate().length() < STROLL_RADIUS * 0.9
                     && net.lanes[l].length() > 4.0
             })
             .collect();
