@@ -202,3 +202,39 @@ fn a_held_program_runs_on_when_the_side_road_asks() {
     }
     assert!(c.time > 50.0, "still at {}", c.time);
 }
+
+/// Omsi-Hub: a light that never turns green (east-west red for good) holds its cars until
+/// the guard of a dedicated server (`unstick_lights`) takes it for out of order: then they
+/// go by the right of way, and the light is back in its program once it shows green.
+#[test]
+fn a_light_that_never_turns_green_is_taken_for_out_of_order() {
+    let f = Fixture::new();
+    let (net, ins) = crossroads(Build::default());
+    let mut t = traffic(&f, net);
+    t.unstick_lights = 30.0;
+    let mut seed = 0x400;
+    let mut red_cars = Vec::new();
+    for (d, pair) in ins.iter().enumerate() {
+        if d % 2 == 1 {
+            for &lane in pair {
+                seed += 0x13;
+                red_cars.push((add_car(&mut t, &f, lane, 140.0, seed, Some(0.0)), lane));
+            }
+        }
+    }
+    let gone = |t: &TrafficSim| red_cars.iter().filter(|(id, lane)| t.cars.iter().find(|c| c.id == *id).is_none_or(|c| c.state.lane != *lane)).count();
+    for _ in 0..(20.0 / super::fixed_step::SIM_DT) as usize {
+        t.tick(super::fixed_step::SIM_DT, None);
+    }
+    assert_eq!(gone(&t), 0, "before the guard's time the red holds");
+    assert!(t.lights_out.is_empty());
+    for _ in 0..(40.0 / super::fixed_step::SIM_DT) as usize {
+        t.tick(super::fixed_step::SIM_DT, None);
+    }
+    assert!(t.lights_out.contains(&(0, 1)), "the red light is taken for out of order");
+    assert_eq!(gone(&t), red_cars.len(), "the cars it held went");
+    // green again: back to its program
+    t.lights[0] = TrafficLightController::new(vec![vec![(0, 1000.0)], vec![(6, 1000.0)]], 0.0);
+    t.tick(super::fixed_step::SIM_DT, None);
+    assert!(t.lights_out.is_empty());
+}

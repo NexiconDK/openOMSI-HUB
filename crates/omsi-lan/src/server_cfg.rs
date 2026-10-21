@@ -42,6 +42,9 @@ pub struct ServerCfg {
     pub share_positions: bool,
     /// Omsi-Hub: the map's timetable goes to the players' launchers (`GET /ttdata.zip`).
     pub share_timetable: bool,
+    /// Omsi-Hub: a traffic light that has held standing cars this many seconds without a
+    /// green is taken for out of order until it shows green (0: never).
+    pub unstick_lights: f32,
     /// The GreenTeaSpeak server and channel the players talk in (`voice`).
     pub voice: Option<crate::voice::VoiceServer>,
 }
@@ -112,6 +115,11 @@ share_positions = 0
 # server's lines and tours (Omsi-Hub)
 share_timetable = 1
 
+# a traffic light that has held standing cars this many seconds without ever showing them
+# green is taken for out of order - the cars go by the right of way, as at a failed signal -
+# until it shows green again; logged with where it stands. 0: never (Omsi-Hub)
+unstick_lights = 180
+
 # voice chat: the players hear each other where they stand, through GreenTeaSpeak and its
 # openOMSI plugin (as SaltyChat does for FiveM). voice_server_uid is the voice server's unique
 # id (its info panel; needed: without it there is no voice chat), voice_channel the in-game
@@ -172,6 +180,7 @@ impl ServerCfg {
             vehicles: kv.get("vehicles").map(|v| v.split(';').map(|x| x.trim().replace('\\', "/")).filter(|x| !x.is_empty()).collect()).unwrap_or_default(),
             share_positions: flag("share_positions", false),
             share_timetable: flag("share_timetable", true),
+            unstick_lights: kv.get("unstick_lights").and_then(|v| v.trim().parse::<f32>().ok()).filter(|v| v.is_finite()).unwrap_or(180.0).clamp(0.0, 3600.0),
             voice: crate::voice::VoiceServer::from_kv(|k| kv.get(k).cloned()),
         })
     }

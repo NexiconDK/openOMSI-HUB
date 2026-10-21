@@ -40,6 +40,7 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 
 ### Lyskryds
 - **Busser ved et bussignal, der deler sit spring med et andet signal, får grønt** (openOMSI PR #3009 af thibautgnt): Nogle kryds springer en fase over, når ingen beder om den ved to lys på én gang, fx ind- og udkørslen af en busterminal. Før fik fasen kun grønt, når der holdt en bus ved begge lys samtidig, så en bus ved kun det ene stod i kø for altid. Nu er én bus nok.
+- **"Løsn op"-sikring for lyskryds på serveren**: Har et lys holdt holdende biler eller busser i 3 minutter uden at give dem grønt, regner serveren det for gået i stykker. Bilerne kører så efter vigepligten, som ved et slukket lyskryds, indtil lyset viser grønt igen og kører videre i sit program. Serverens log skriver, hvilket lys det er, og hvor det står, så vi kan finde den egentlige fejl. Tiden sættes med `unstick_lights` i `server.cfg` (sekunder, standard 180, 0 slår det fra). Det gælder kun den dedikerede server.
 
 ### Til fods
 - **Ctrl+Shift+G virker igen**: Når "Ability to get up" er slået til, rejser chaufføren sig nu altid fra sædet med Ctrl+Shift+G, som i vores main. Før blev tasten ignoreret, hvis Ctrl+Shift+G også stod i en `keyboard.cfg`, og så skete der ingenting. Er indstillingen slået fra, bruger tasten det, den er sat til i `keyboard.cfg`.

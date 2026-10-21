@@ -175,6 +175,10 @@ impl Offscreen<'_> {
             return false;
         }
         if i.is_multiple_of(super::steps_in(1.0)) {
+            // Omsi-Hub: the guard against a light that never lets the cars go
+            if let Some(t) = traffic.as_mut() {
+                t.sim.unstick_lights = crate::server::unstick_lights();
+            }
             if let Some(l) = lan_off.as_mut() {
                 crate::server::enforce_vehicles(l);
                 crate::server::tick_status(l, parse_time(&args.time) + *srv_clock + srv_admin.shift, srv_weather_name.as_str());

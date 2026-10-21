@@ -44,6 +44,7 @@ pub(crate) fn prepare(args: &mut Args, path: &Path) -> Result<ServerCfg> {
     let cfg = ServerCfg::load(path, crate::game_lists::TRAFFIC_MAX)?;
     SERVER_MODE.store(true, std::sync::atomic::Ordering::Relaxed);
     SERVER_SHARE_TIMETABLE.store(cfg.share_timetable, std::sync::atomic::Ordering::Relaxed);
+    SERVER_UNSTICK_LIGHTS.store(cfg.unstick_lights.to_bits(), std::sync::atomic::Ordering::Relaxed);
     let _ = SERVER_ADMIN.set((cfg.admin_password.clone(), if cfg.real_time { 1.0 } else { cfg.time_speed }));
     crate::real_time::set_server_real(cfg.real_time);
     let _ = SERVER_VEHICLES.set(cfg.vehicles.clone());
@@ -95,6 +96,14 @@ pub(crate) static SERVER_ADMIN: std::sync::OnceLock<(String, f64)> = std::sync::
 /// Omsi-Hub: a dedicated server shares its timetable with the players' launchers
 /// (`share_timetable`).
 pub(crate) static SERVER_SHARE_TIMETABLE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// Omsi-Hub: `unstick_lights` (s, as bits), for the traffic's guard (`TrafficSim::light_guard`).
+static SERVER_UNSTICK_LIGHTS: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+
+/// Omsi-Hub: the seconds after which the server takes a light that holds cars without a
+/// green for out of order (`unstick_lights`; 0: never).
+pub(crate) fn unstick_lights() -> f32 {
+    f32::from_bits(SERVER_UNSTICK_LIGHTS.load(std::sync::atomic::Ordering::Relaxed))
+}
 
 /// A dedicated server run: graphics without a device, the whole world by interest.
 pub(crate) static SERVER_MODE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);

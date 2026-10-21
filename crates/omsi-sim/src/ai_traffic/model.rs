@@ -131,6 +131,8 @@ pub struct AiCar {
     pub pass_retry: f32,
     /// The traffic light it waited for in the last frame: distance from its origin.
     pub light_at: Option<f32>,
+    /// Omsi-Hub: which light that was (controller, light), for `TrafficSim::light_guard`.
+    pub light_by: Option<(usize, usize)>,
     /// A car that was parked at the kerb: seconds it still stands there, indicating, before
     /// it pulls out (see `Traffic::pull_out_parked`).
     pub pull_out: f32,
@@ -655,6 +657,7 @@ impl TrafficSim {
             pass_room,
             pass_retry: 0.0,
             light_at: None,
+            light_by: None,
             pull_out: 0.0,
             rail_trail: Default::default(),
             ai_secs: 0.0,

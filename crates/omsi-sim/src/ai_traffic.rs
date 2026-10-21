@@ -137,6 +137,14 @@ pub struct TrafficSim {
     pub camera: Option<DVec3>,
     pub lights: Vec<TrafficLightController>,
     pub controller_of_object: HashMap<i64, usize>,
+    /// Omsi-Hub: a light that has held standing cars this many seconds without a green is
+    /// taken for out of order (`light_guard`); 0: never. A dedicated server sets it
+    /// (`unstick_lights` in `server.cfg`).
+    pub unstick_lights: f32,
+    /// Omsi-Hub: the lights holding a standing car now and how long they have without a green,
+    /// and those taken for out of order until they show green again.
+    pub light_waits: HashMap<(usize, usize), f32>,
+    pub lights_out: hashbrown::HashSet<(usize, usize)>,
     /// Coupled vehicle types by file.
     pub trailer_types: HashMap<std::path::PathBuf, Option<Arc<VehicleType>>>,
     pub root: std::path::PathBuf,

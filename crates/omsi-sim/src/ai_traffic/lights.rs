@@ -75,6 +75,7 @@ impl TrafficSim {
         // (it stood at this light's line when it went green: it was the first in the queue)
         let mut started = car.amber_start;
         let waited_here = car.light_hold;
+        let mut held_by = None;
         for (k, &(_, d)) in way.iter().enumerate().skip(1) {
             if d > 150.0 {
                 break;
@@ -89,7 +90,10 @@ impl TrafficSim {
             let comfortable = v * v / (2.0 * st.decel * 1.4) + 1.0;
             let possible = v * v / (2.0 * MAX_BRAKE * 0.8);
             let on_its_way = amber_holds(v, gap) || (started && amber == Some((c, li)) && v > 0.3);
-            let go = match TrafficLightController::aspect(ctl.state(li)) {
+            // (Omsi-Hub: a light taken for out of order, `light_guard`: dark - the right of
+            // way decides, as at a signal that has failed)
+            let aspect = if self.lights_out.contains(&(c, li)) { Aspect::Dark } else { TrafficLightController::aspect(ctl.state(li)) };
+            let go = match aspect {
                 Aspect::Green | Aspect::Dark => {
                     // at the line when it showed green: that car goes, whatever comes next
                     // (a light that is green for a second a cycle - Westcountry's lights on
@@ -125,6 +129,7 @@ impl TrafficSim {
             };
             if !go {
                 stop = Some(d);
+                held_by = Some((c, li));
                 break;
             }
         }
@@ -140,7 +145,49 @@ impl TrafficSim {
         }
         self.cars[i].amber = amber;
         self.cars[i].amber_start = started && amber.is_some();
+        self.cars[i].light_by = held_by;
         stop
+    }
+
+    /// Omsi-Hub: the guard against a light that never lets the cars go (a dedicated server's,
+    /// `unstick_lights`): a light holding a standing car runs a clock that a green of it
+    /// stops; after `unstick_lights` seconds without one it is taken for out of order - dark,
+    /// the cars go by the right of way, as at a failed signal - until it shows green again.
+    /// The buses of a bus station queued for good behind a light whose program waited for a
+    /// request it never got. Both are logged with where the light is.
+    pub(super) fn light_guard(&mut self, dt: f32) {
+        if self.unstick_lights <= 0.0 {
+            self.light_waits.clear();
+            self.lights_out.clear();
+            return;
+        }
+        let green = |lights: &[TrafficLightController], k: (usize, usize)| lights.get(k.0).is_none_or(|c| matches!(TrafficLightController::aspect(c.state(k.1)), Aspect::Green));
+        let holding: hashbrown::HashSet<(usize, usize)> = self.cars.iter().filter(|c| c.light_hold && c.state.speed < 0.5).filter_map(|c| c.light_by).collect();
+        self.light_waits.retain(|k, _| holding.contains(k));
+        for k in holding {
+            if green(&self.lights, k) {
+                self.light_waits.remove(&k);
+                continue;
+            }
+            let t = self.light_waits.entry(k).or_insert(0.0);
+            *t += dt;
+            if *t >= self.unstick_lights && self.lights_out.insert(k) {
+                let (x, y) = self.light_place(k);
+                log::warn!("traffic light {}.{} at ({x:.0}, {y:.0}): cars held {:.0} s without a green - taken for out of order (the right of way decides) until it shows green", k.0, k.1, *t);
+            }
+        }
+        let lights = &self.lights;
+        let back: Vec<(usize, usize)> = self.lights_out.iter().copied().filter(|&k| green(lights, k)).collect();
+        for k in back {
+            self.lights_out.remove(&k);
+            let (x, y) = self.light_place(k);
+            log::info!("traffic light {}.{} at ({x:.0}, {y:.0}) shows green again: back to its program", k.0, k.1);
+        }
+    }
+
+    /// Omsi-Hub: where light `k` stands: the start of a lane it controls.
+    fn light_place(&self, k: (usize, usize)) -> (f64, f64) {
+        self.net.lanes.iter().find(|l| l.traffic_light == Some(k)).map(|l| (l.start().x, l.start().y)).unwrap_or((0.0, 0.0))
     }
 
     /// The railway signals' aspects from where the trains are: a signal shows go (1, or 2
