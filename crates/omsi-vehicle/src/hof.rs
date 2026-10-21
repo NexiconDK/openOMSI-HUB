@@ -86,9 +86,7 @@ impl Hof {
     /// one. Returns the file and its index.
     pub fn with_free_text(&self, lines: [&str; 2]) -> (Hof, usize) {
         let mut hof = self.clone();
-        let n = self.string_count_terminus.max(self.termini.iter().map(|t| t.strings.len()).max().unwrap_or(0)).max(2);
-        let (a, b) = (lines[0].trim(), lines[1].trim());
-        let strings = (0..n).map(|k| if k == 1 { b } else { a }.to_string()).collect();
+        let strings = self.text_strings(lines);
         let index = hof.termini.iter().position(|t| t.texture_id == FREE_TEXT).unwrap_or(hof.termini.len());
         let code = free_text_code(&self.termini);
         let t = Terminus { code, texture_id: FREE_TEXT.to_string(), terminus_stop: None, all_exit: true, strings };
@@ -98,6 +96,51 @@ impl Hof {
             hof.termini[index] = t;
         }
         (hof, index)
+    }
+
+    /// Omsi-Hub: the strings of a destination of this file showing `lines` (a free text, an
+    /// extra text), as many as its destinations have: the first holds the first line, the
+    /// second the second, and every other the first again (a side or rear sign of one line
+    /// shows the main line) - except a string that is no text in the file's destinations:
+    /// a picture (the Krüger matrices' bitmap, `..\..\Anzeigen\Krueger\<file>`, shown
+    /// instead of the text: a text there is a file not found and a blank sign), or one
+    /// (almost) always empty (the extra plug-in sign, the special trip's mark). A picture
+    /// string gets the file most destinations share (a blank roller blind), else nothing; an
+    /// empty one stays empty.
+    pub fn text_strings(&self, lines: [&str; 2]) -> Vec<String> {
+        let n = self.string_count_terminus.max(self.termini.iter().map(|t| t.strings.len()).max().unwrap_or(0)).max(2);
+        let (a, b) = (lines[0].trim(), lines[1].trim());
+        (0..n)
+            .map(|k| match (k, self.string_kind(k)) {
+                (1, _) => b.to_string(),
+                (0, _) | (_, StringKind::Text) => a.to_string(),
+                (_, StringKind::Picture(common)) => common,
+                (_, StringKind::Empty) => String::new(),
+            })
+            .collect()
+    }
+
+    /// What the file's destinations (not a free text) hold in string `k`.
+    fn string_kind(&self, k: usize) -> StringKind {
+        let own: Vec<&Terminus> = self.termini.iter().filter(|t| t.texture_id != FREE_TEXT).collect();
+        if own.is_empty() {
+            return StringKind::Text;
+        }
+        let vals: Vec<&str> = own.iter().filter_map(|t| t.strings.get(k)).map(|s| s.trim()).filter(|s| !s.is_empty()).collect();
+        // (an empty string in nearly every destination: one only a few use)
+        if vals.len() * 4 < own.len() {
+            return StringKind::Empty;
+        }
+        let files: Vec<&str> = vals.iter().copied().filter(|s| is_picture(s)).collect();
+        if files.len() * 2 <= vals.len() {
+            return StringKind::Text;
+        }
+        let mut count: std::collections::HashMap<&str, usize> = std::collections::HashMap::new();
+        for f in &files {
+            *count.entry(f).or_default() += 1;
+        }
+        let common = count.into_iter().filter(|(_, c)| *c >= 2).max_by(|x, y| x.1.cmp(&y.1).then(y.0.cmp(x.0))).map(|(f, _)| f.to_string());
+        StringKind::Picture(common.unwrap_or_default())
     }
 
     pub fn load(path: &Path) -> Result<Hof, omsi_cfg::CfgError> {
@@ -582,6 +625,22 @@ pub fn depot_anywhere(name: &str) -> Option<Hof> {
     h
 }
 
+/// Omsi-Hub: what a string of a depot file's destinations holds (`Hof::text_strings`).
+#[derive(Debug, Clone, PartialEq)]
+enum StringKind {
+    Text,
+    /// A picture, with the file most destinations share ("" when none is shared).
+    Picture(String),
+    Empty,
+}
+
+/// Omsi-Hub: a string naming a picture: a file (`Ziel.bmp`), or a Krüger++ bitmap
+/// (`{{folder\file.png*POLY}}`).
+fn is_picture(s: &str) -> bool {
+    let l = s.trim().to_ascii_lowercase();
+    l.starts_with("{{") || [".tga", ".bmp", ".png", ".dds", ".jpg", ".jpeg"].iter().any(|e| l.ends_with(e))
+}
+
 /// Omsi-Hub: the code of the free text's destination (see `Hof::with_free_text`).
 fn free_text_code(termini: &[Terminus]) -> i32 {
     let used: std::collections::HashSet<i32> = termini.iter().filter(|t| t.texture_id != FREE_TEXT).map(|t| t.code).collect();
@@ -604,6 +663,33 @@ mod tests {
         // the codes below 1000 all taken up to 999: the lowest free one
         let full = Hof { termini: vec![t(1), t(2), t(999), t(1001)], ..Default::default() };
         assert_eq!(full.with_free_text(["X", ""]).0.termini[4].code, 3);
+    }
+
+    /// The Krüger matrices show a destination's bitmap (string 7 of OMSI's layout) instead of
+    /// its text: a free text there was a file not found and a blank sign ("Aarhus Rtb"); the
+    /// extra plug-in sign (string 6, nearly always empty) showed it too.
+    #[test]
+    fn free_text_leaves_the_pictures_and_the_unused_strings_alone() {
+        let t = |code: i32, s: [&str; 8]| Terminus { code, texture_id: format!("t{code}"), strings: s.iter().map(|x| x.to_string()).collect(), ..Default::default() };
+        let hof = Hof {
+            string_count_terminus: 8,
+            termini: vec![
+                t(1, ["Rathaus", "RATHAUS", "", "Rathaus", "Rollband\\leer.tga", "Rathaus", "", "Rathaus.bmp"]),
+                t(2, ["Hbf", "HAUPTBAHNHOF", "via Markt", "Hbf", "Rollband\\leer.tga", "Hbf", "", ""]),
+                t(3, ["Markt", "MARKT", "", "Markt", "Rollband\\leer.tga", "Markt", "", "Markt.bmp"]),
+                t(4, ["Depot", "BETRIEBSHOF", "", "Depot", "Rollband\\depot.tga", "Depot", "EINSATZ", "{{Krueger\\Depot.png*POLY}}"]),
+                t(5, ["Nord", "NORD", "", "Nord", "Rollband\\leer.tga", "Nord", "", ""]),
+            ],
+            ..Default::default()
+        };
+        let s = hof.text_strings(["Aarhus Rtb", "via motorvejen"]);
+        // (string 2 is empty in all destinations but one: left empty as well)
+        assert_eq!(s, ["Aarhus Rtb", "via motorvejen", "", "Aarhus Rtb", "Rollband\\leer.tga", "Aarhus Rtb", "", ""]);
+        let (free, i) = hof.with_free_text(["Aarhus Rtb", "via motorvejen"]);
+        assert_eq!(free.termini[i].strings, s);
+        // (a file with no destinations: text everywhere, as before)
+        let empty = Hof { string_count_terminus: 3, ..Default::default() };
+        assert_eq!(empty.text_strings(["A", "B"]), ["A", "B", "A"]);
     }
 
     #[test]

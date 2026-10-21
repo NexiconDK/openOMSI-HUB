@@ -45,9 +45,11 @@ impl ExtraSign {
         }
         let own = hof.termini.get(row)?;
         // (as many texts as the row has: the first line where the row has one text, the
-        // second on its second, and the first again on the rest - the side and rear signs)
-        let n = own.strings.len().max(2);
-        let strings: Vec<String> = (0..n).map(|k| if k == 1 { b } else { a }.to_string()).collect();
+        // second on its second, and the first again on the rest - the side and rear signs;
+        // not the destination's picture, which a Krüger matrix shows instead of the text, nor
+        // the strings the file leaves empty, the plug-in sign's: `Hof::text_strings`)
+        let mut strings = hof.text_strings([a, b]);
+        strings.resize(own.strings.len().max(2), String::new());
         let mut extra = (*hof).clone();
         extra.termini[row].strings = strings;
         Some(ExtraSign { main: hof, extra: Arc::new(extra), row, line: line.trim().to_string(), every: every.clamp(1.0, 60.0), t: 0.0, showing_extra: false, seen: false })
