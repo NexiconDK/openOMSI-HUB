@@ -1094,7 +1094,7 @@
       "name": "duty.set_auto_ibis",
       "group": "duty",
       "since": "0.2.22",
-      "doc": "Whether the game types each trip of the duty into the bus's IBIS as it begins (line, route and destination) - on as the game starts; off, the driver types them (or the plugin, with `duty.type_ibis`). For the bus the player drives now; `true` when there is one.",
+      "doc": "Whether the game types the duty into the bus's IBIS by itself - line, route, destination and the stop, at Shift+U and `--autostart` and again as each trip begins (on as a bus is taken). Off, the driver types them, or the plugin with `duty.type_ibis`. For the bus the player drives now, and while the plugin runs: when it stops or is switched off the game types the IBIS again, unless another plugin still leaves it to the driver. `true` when there is a bus.",
       "params": [
         {
           "name": "on",
@@ -1197,7 +1197,7 @@
     {
       "name": "duty.tour",
       "group": "duty",
-      "since": "0.3.40",
+      "since": "0.2.22",
       "doc": "The complete source tour of the selected duty, even when only one trip was selected. Same structure as `timetable.tour`; times align with the active duty's service day, with `time_offset` seconds applied to all trips and stops.",
       "params": [],
       "returns": "table or nil",
@@ -1234,7 +1234,7 @@
       "name": "duty.type_ibis",
       "group": "duty",
       "since": "0.2.22",
-      "doc": "Types the trip under way into the bus's IBIS now (line, route and destination), as the game does when a trip begins; `true` when there was a duty and a bus.",
+      "doc": "Types the trip under way into the bus's IBIS now - line, route, destination and the stop the bus is at - as Shift+U does (`bus.set_line` types the line only); with `duty.set_auto_ibis` on, the next trips follow by themselves. `true` when there is a duty and a bus.",
       "params": [],
       "returns": "boolean",
       "multi": false,
@@ -1731,7 +1731,7 @@
     {
       "name": "game.queries",
       "group": "data",
-      "since": "0.3.40",
+      "since": "0.2.22",
       "doc": "Read-only game data getters: `{name, args = {{name, type}, ...}, result}`. Names and zero-based indices follow the M.V. getter names, but plugins read the game data directly without executing scripts. `rgba` means four results in the range 0–255.",
       "params": [],
       "returns": "list of tables",
@@ -1741,7 +1741,7 @@
     {
       "name": "game.query",
       "group": "data",
-      "since": "0.3.40",
+      "since": "0.2.22",
       "doc": "Read a getter listed by `game.queries` from the player's vehicle's HOF, timetable, passengers, tickets, radio, fonts or textures. Arguments are an ordered list (empty by default). No script callback is invoked. `STReadPixel` returns RGBA without changing the bus's drawing colour. Supply a loaded scripted map object's id as `object` to read its data, including `GetArrBus*` on departure boards, without needing a player vehicle. Object ids can be found through `map.objects_near`. Without `object`, reads use the player's vehicle. Unknown names, mutating operations and invalid arguments raise an error; no vehicle returns nil and a reason.",
       "params": [
         {
@@ -3060,7 +3060,7 @@
     {
       "name": "timetable.tour",
       "group": "duty",
-      "since": "0.3.40",
+      "since": "0.2.22",
       "doc": "Read a full tour without taking it: `{line, number, ai_group, extra, today, time_offset, trips}`. Each trip has `number`, `source_number` (both from 1), `name`, `line`, `terminus`, `track`, `reverse`, `profile_index` (from 0), `profile` (`name`, `factor`), `departure`, `arrival`, and all `stops` (`id`, `name`, `arrival`, `departure`, `stops`, optional `x,y,z`). Times are seconds from service-day midnight and can exceed 86400; passing stops are retained. Unknown trip references are skipped, retaining their source numbers. No AI vehicle is reserved.",
       "params": [
         {
