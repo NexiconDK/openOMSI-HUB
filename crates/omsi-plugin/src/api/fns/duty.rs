@@ -48,8 +48,8 @@ fn duty(d: &Duty) -> Value {
 }
 
 pub static FNS: &[ApiFn] = &[
-    def!("duty.tour", "duty", [], "table or nil", "The complete source tour of the selected duty, even when only one trip was selected. Same structure as `timetable.tour`; times align with the active duty's service day, with `time_offset` seconds applied to all trips and stops.", "0.3.40", None, false, |c, a| c.io().duty_tour()),
-    def!("timetable.tour", "duty", [p("line", "string"), p("tour", "string")], "table, or nil and reason", "Read a full tour without taking it: `{line, number, ai_group, extra, today, time_offset, trips}`. Each trip has `number`, `source_number` (both from 1), `name`, `line`, `terminus`, `track`, `reverse`, `profile_index` (from 0), `profile` (`name`, `factor`), `departure`, `arrival`, and all `stops` (`id`, `name`, `arrival`, `departure`, `stops`, optional `x,y,z`). Times are seconds from service-day midnight and can exceed 86400; passing stops are retained. Unknown trip references are skipped, retaining their source numbers. No AI vehicle is reserved.", "0.3.40", None, true, |c, a| {
+    def!("duty.tour", "duty", [], "table or nil", "The complete source tour of the selected duty, even when only one trip was selected. Same structure as `timetable.tour`; times align with the active duty's service day, with `time_offset` seconds applied to all trips and stops.", NEW, None, false, |c, a| c.io().duty_tour()),
+    def!("timetable.tour", "duty", [p("line", "string"), p("tour", "string")], "table, or nil and reason", "Read a full tour without taking it: `{line, number, ai_group, extra, today, time_offset, trips}`. Each trip has `number`, `source_number` (both from 1), `name`, `line`, `terminus`, `track`, `reverse`, `profile_index` (from 0), `profile` (`name`, `factor`), `departure`, `arrival`, and all `stops` (`id`, `name`, `arrival`, `departure`, `stops`, optional `x,y,z`). Times are seconds from service-day midnight and can exceed 86400; passing stops are retained. Unknown trip references are skipped, retaining their source numbers. No AI vehicle is reserved.", NEW, None, true, |c, a| {
         let (line, tour) = (a.str(0)?, a.str(1)?);
         Ok::<_, ApiError>(Value::List(match c.io().timetable_tour(&line, &tour) { Ok(v) => vec![v], Err(e) => vec![Value::Nil, e.into()] }))
     }),
@@ -75,11 +75,16 @@ pub static FNS: &[ApiFn] = &[
         Ok::<_, ApiError>(super::core::ok_or_reason(c.io().duty_start(&line, &tour, trip, stop)))
     }),
     def!("duty.finish", "duty", [], "boolean", "Gives the duty up (the bus drives on without a timetable); `true` when there was one.", NEW, WorldWrite, false, |c, a| c.io().duty_end()),
-    def!("duty.set_auto_ibis", "duty", [p("on", "bool")], "boolean", "Whether the game types each trip of the duty into the bus's IBIS as it begins (line, route and destination) - on as the game starts; off, the driver types them (or the plugin, with `duty.type_ibis`). For the bus the player drives now; `true` when there is one.", NEW, VehicleWrite, false, |c, a| {
+    def!("duty.set_auto_ibis", "duty", [p("on", "bool")], "boolean", "Whether the game types the duty into the bus's IBIS by itself - line, route, destination and the stop, at Shift+U and `--autostart` and again as each trip begins (on as a bus is taken). Off, the driver types them, or the plugin with `duty.type_ibis`. For the bus the player drives now, and while the plugin runs: when it stops or is switched off the game types the IBIS again, unless another plugin still leaves it to the driver. `true` when there is a bus.", NEW, VehicleWrite, false, |c, a| {
         let on = a.flag(0, true);
-        c.io().duty_set_auto_ibis(on)
+        let (io, s) = c.both();
+        let done = io.duty_set_auto_ibis(s.owner, on);
+        if done {
+            s.ibis_held = !on;
+        }
+        done
     }),
-    def!("duty.type_ibis", "duty", [], "boolean", "Types the trip under way into the bus's IBIS now (line, route and destination), as the game does when a trip begins; `true` when there was a duty and a bus.", NEW, VehicleWrite, false, |c, a| c.io().duty_type_ibis()),
+    def!("duty.type_ibis", "duty", [], "boolean", "Types the trip under way into the bus's IBIS now - line, route, destination and the stop the bus is at - as Shift+U does (`bus.set_line` types the line only); with `duty.set_auto_ibis` on, the next trips follow by themselves. `true` when there is a duty and a bus.", NEW, VehicleWrite, false, |c, a| c.io().duty_type_ibis()),
     def!("duty.set_closed_stops", "duty", [p("stops", "table"), o("via", "string")], "boolean", "The stops closed today on the duty's route (a list of names) - a diversion, roadworks - and the way round (`via`): the navigator strikes them through and says the way round; an empty list takes them away. `true` when the game shows them.", NEW, Ui, false, |c, a| {
         let stops: Vec<String> = a.get(0).items().iter().filter_map(|v| v.as_str()).map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect();
         let via = a.opt_str(1)?.unwrap_or_default();

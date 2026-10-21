@@ -259,15 +259,16 @@ pub(crate) struct Player {
     /// The duty is typed into the IBIS by itself (after Shift+U or `--autostart`): a new
     /// trip of the duty is typed too.
     pub(crate) duty_typed: bool,
+    /// The plugins (by owner mark) that leave the IBIS to the driver (`duty.set_auto_ibis`):
+    /// the game types the duty into it by itself (Shift+U, `--autostart`, each new trip) only
+    /// while there is none. Each plugin lets go of its own hold as it goes.
+    pub(crate) ibis_holds: std::collections::BTreeSet<u64>,
     /// The stop a page asked the duty to go on with (`omsi.setNextStop`), for the game to
     /// hand to the duty.
     pub(crate) html_next_stop: Option<usize>,
     /// The IBIS typing looks for its keys on a worker thread (in the window: the trials
     /// would hold a frame up to a second and a half; an offscreen run waits for them).
     pub(crate) ibis_background: bool,
-    /// The game types the duty into the IBIS (a plugin may leave it to the driver:
-    /// `duty.set_auto_ibis`); off, the driver does.
-    pub(crate) ibis_auto: bool,
     /// The outside camera's arm (how far out it is swung right now).
     pub(crate) arm: camera_arm::SpringArm,
     /// What `Z`/`X`/`C` last turned on, so a repeat press of the same key turns it back off

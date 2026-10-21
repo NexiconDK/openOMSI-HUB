@@ -75,29 +75,34 @@ pub(crate) fn start(app: &mut App, line: &str, tour: &str, trip: usize, stop: us
     }
 }
 
+/// Plugin `owner` leaves the player's bus's IBIS to the driver, or gives it back: the game
+/// types the duty's trips by itself while no plugin holds it (`Player::ibis_holds`).
+pub(crate) fn set_auto_ibis(app: &mut App, owner: u64, on: bool) -> bool {
+    let Some(p) = app.player.as_mut() else { return false };
+    if on {
+        p.ibis_holds.remove(&owner);
+    } else {
+        p.ibis_holds.insert(owner);
+    }
+    true
+}
+
+/// The trip under way typed into the player's bus's IBIS now, as Shift+U types it; the
+/// duty's next trips follow by themselves unless the IBIS is left to the driver.
+pub(crate) fn type_ibis(app: &mut App) -> bool {
+    let (Some(d), Some(p)) = (app.session.duty.as_ref(), app.player.as_mut()) else { return false };
+    let (trip, stop) = d.trip_for_ibis();
+    let holds = std::mem::take(&mut p.ibis_holds);
+    p.set_duty_destination(trip, stop);
+    p.ibis_holds = holds;
+    true
+}
+
 pub(crate) fn finish(app: &mut App) -> bool {
     if app.session.duty.is_none() {
         return false;
     }
     crate::game_lists::end_duty(app);
-    true
-}
-
-/// The game types the duty's trips into the player's bus's IBIS, or leaves that to the
-/// driver (`Player::ibis_auto`).
-pub(crate) fn set_auto_ibis(app: &mut App, on: bool) -> bool {
-    let Some(p) = app.player.as_mut() else { return false };
-    p.ibis_auto = on;
-    true
-}
-
-/// The trip under way typed into the player's bus's IBIS now, as at a trip's start.
-pub(crate) fn type_ibis(app: &mut App) -> bool {
-    let (Some(d), Some(p)) = (app.session.duty.as_ref(), app.player.as_mut()) else { return false };
-    let (trip, stop) = d.trip_for_ibis();
-    let auto = std::mem::replace(&mut p.ibis_auto, true);
-    p.set_duty_destination(trip, stop);
-    p.ibis_auto = auto;
     true
 }
 

@@ -84,7 +84,7 @@ impl PluginIo for Game {
         self.asked.push(format!("action {name}"));
         true
     }
-    fn duty_set_auto_ibis(&mut self, on: bool) -> bool {
+    fn duty_set_auto_ibis(&mut self, _owner: u64, on: bool) -> bool {
         self.ibis.push(if on { "auto on" } else { "auto off" }.into());
         true
     }

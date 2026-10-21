@@ -25,5 +25,9 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 ### Til fods
 - **Ctrl+Shift+G virker igen**: Når "Ability to get up" er slået til, rejser chaufføren sig nu altid fra sædet med Ctrl+Shift+G, som i vores main. Før blev tasten ignoreret, hvis Ctrl+Shift+G også stod i en `keyboard.cfg`, og så skete der ingenting. Er indstillingen slået fra, bruger tasten det, den er sat til i `keyboard.cfg`.
 
+### Plugins
+- **Plugins kan læse spillets data og hele ture** (openOMSI PR #3102 af Burst99325): `omsi.game.query` læser det samme som bussens scripts (skilte, køreplan, billetter osv.), også fra fx et afgangsskilt ved et stoppested. `omsi.game.queries()` viser, hvad der kan læses. `omsi.timetable.tour(linje, tur)` giver hele turen med alle stop og tider uden at tage den, og `omsi.duty.tour()` giver hele den tur, man kører. Plugins kan kun læse med dem, ikke ændre noget.
+- **IBIS'en kommer tilbage, når et plugin stopper** (openOMSI PR #2877 af Luc Ruigrok): Et plugin, der overlader IBIS'en til chaufføren (`omsi.duty.set_auto_ibis(false)`), giver den nu tilbage til spillet, når pluginet stopper eller slås fra. Før blev IBIS'en ved med ikke at blive udfyldt. Har to plugins hver taget den, giver hvert kun sin egen tilbage. Shift+U siger nu "A plugin leaves the IBIS for you to type", så en tom IBIS ikke ligner en fejl.
+
 ### Bus Company
 - **Gennemgangen af bussen ("Walk-around check") og noten til næste chauffør kan klikkes med det samme**: De tager selv musen, når de åbner, og giver den tilbage, når de er sendt. Før skulle man først trykke F10, og det stod ingen steder. Vagtstrimlen viser nu også "F10: use the panel with the mouse", når panelerne ikke har musen.

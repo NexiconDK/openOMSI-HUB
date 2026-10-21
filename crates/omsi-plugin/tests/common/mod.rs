@@ -36,6 +36,8 @@ pub struct Game {
     pub log: RefCell<Vec<String>>,
     pub sounds: RefCell<Vec<(PathBuf, Sound)>>,
     pub lan_sent: Vec<(String, u32, String)>,
+    /// The plugins (owner marks) that leave the IBIS to the driver.
+    pub ibis_holds: std::collections::BTreeSet<u64>,
 }
 
 impl Game {
@@ -319,8 +321,13 @@ impl PluginIo for Game {
     fn duty_end(&mut self) -> bool {
         self.duty.take().is_some()
     }
-    fn duty_set_auto_ibis(&mut self, on: bool) -> bool {
+    fn duty_set_auto_ibis(&mut self, owner: u64, on: bool) -> bool {
         self.did(format!("auto ibis {on}"));
+        if on {
+            self.ibis_holds.remove(&owner);
+        } else {
+            self.ibis_holds.insert(owner);
+        }
         true
     }
     fn duty_type_ibis(&mut self) -> bool {

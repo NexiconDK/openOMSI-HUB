@@ -377,3 +377,63 @@ fn derived_events() {
         assert!(msg.contains(want), "{want} is missing from: {msg}");
     }
 }
+
+/// A plugin that left the IBIS to the driver gives it back to the game when it goes:
+/// stopped, or switched off (review of #2877).
+#[test]
+fn the_ibis_is_given_back_when_its_plugin_goes() {
+    // (a plugin's calls in its first frame, where it has the game)
+    let once = |body: &str| format!("local done = false
+function on_frame()
+if done then return end
+done = true
+{body}
+end");
+    // stopped (loaded again after a change, say)
+    let mut g = Game::new();
+    let mut p = run("ibisstop", &once("assert(omsi.duty.set_auto_ibis(false))"), &mut g, 1);
+    assert_eq!(g.log.borrow().as_slice(), ["auto ibis false"]);
+    p.lua[0].stop(&mut g);
+    assert_eq!(g.log.borrow().as_slice(), ["auto ibis false", "auto ibis true"]);
+    // switched off
+    let mut g = Game::new();
+    run("ibisoff", &once("assert(omsi.duty.set_auto_ibis(false))
+omsi.plugin.disable('done')"), &mut g, 2);
+    assert_eq!(g.log.borrow().as_slice(), ["auto ibis false", "auto ibis true"]);
+    // (one that turned it on again has nothing to give back)
+    let mut g = Game::new();
+    let mut p = run("ibisagain", &once("omsi.duty.set_auto_ibis(false)
+omsi.duty.set_auto_ibis(true)"), &mut g, 1);
+    p.lua[0].stop(&mut g);
+    assert_eq!(g.log.borrow().as_slice(), ["auto ibis false", "auto ibis true"]);
+}
+
+/// Two plugins that both leave the IBIS to the driver: the one that goes lets go of its own
+/// hold only, and the game types the IBIS again once the last one is gone (review of #2877).
+#[test]
+fn a_plugin_that_goes_lets_go_of_its_own_ibis_hold_only() {
+    let src = "local done = false
+function on_frame()
+if done then return end
+done = true
+assert(omsi.duty.set_auto_ibis(false))
+end";
+    let d = common::dir("ibistwo");
+    for name in ["ibis_a", "ibis_b"] {
+        std::fs::write(d.join(format!("{name}.lua")), src).unwrap();
+    }
+    let mut g = Game::new();
+    let mut p = omsi_plugin::Plugins::load(&[d], &omsi_plugin::HostConfig::default());
+    assert_eq!(p.lua.len(), 2, "{:?}", g.messages);
+    p.frame(&mut g);
+    assert_eq!(g.ibis_holds.len(), 2);
+    let at = |p: &omsi_plugin::Plugins, name: &str| p.lua.iter().position(|l| l.name == name).unwrap();
+    let (a, b) = (at(&p, "ibis_a"), at(&p, "ibis_b"));
+    let b_owner = p.lua[b].state().owner;
+    // A stops: B still leaves the IBIS to the driver
+    p.lua[a].stop(&mut g);
+    assert_eq!(g.ibis_holds.iter().copied().collect::<Vec<_>>(), [b_owner]);
+    // B stops too: the game types the IBIS again
+    p.lua[b].stop(&mut g);
+    assert!(g.ibis_holds.is_empty());
+}
