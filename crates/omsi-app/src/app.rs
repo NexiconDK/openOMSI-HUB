@@ -703,9 +703,14 @@ impl App {
                             }
                         }
                         self.session.schedule = Some(sch);
-                    } else if !crate::rail_drive::args_rail(&self.args) && self.args.lan_join.is_none() {
+                    } else if !crate::rail_drive::args_rail(&self.args) {
                         // (the timetable is still the map's to read and pick a duty from: a
-                        // book, nothing of it runs - see `SessionState::timetable_book`)
+                        // book, nothing of it runs - see `SessionState::timetable_book`.
+                        // Omsi-Hub: a player who joined a server as well - the server's own
+                        // TTData when it shares it (its content folder's, `omsi_lan::mods`) -
+                        // who had "No timetable on this map" without a duty from the launcher;
+                        // a duty picked from it runs without timetable buses of its own, the
+                        // host's are drawn)
                         self.session.timetable_book =
                             Some(schedule::Schedule::new(&self.args.root, &w, &start_clock(&self.args)));
                     }
