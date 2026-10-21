@@ -29,6 +29,9 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 - **IBIS-boksen**: Over "Start trip" står den linje- og rutekode, man skal taste i IBIS'en til netop den tur, fremhævet ud fra bussens hof-fil, og linjens andre ruter står under. Har hof-filen ingen rute til turen, står det, og så vises linjen og destinationskoden i stedet.
 - **Kort over ruten**: Midt på siden vises turens rute på et kort med vejene omkring og stoppestederne med tider. Første stop er en ring, sidste en fyldt prik, og det stop, man starter fra, er markeret. Kortet vises, når navigatoren har læst kortet, og kun hvis vinduet er bredt nok.
 
+### Køreplanssedlen i førerpladsen
+- **Køreplanssedlen virker igen** (`file_schedule`, papiret med turens stop og tider): HUB tegnede den i `~\.openomsi\cache\schedules`, men måtte ikke vise den, fordi et billede med fuld sti kun læses fra indholdsmapperne (OMSI og mods). Nu er netop den mappe tilladt, så sedlen vises som i main. Alt andet er stadig begrænset til indholdsmapperne.
+
 ### Til fods
 - **Ctrl+Shift+G virker igen**: Når "Ability to get up" er slået til, rejser chaufføren sig nu altid fra sædet med Ctrl+Shift+G, som i vores main. Før blev tasten ignoreret, hvis Ctrl+Shift+G også stod i en `keyboard.cfg`, og så skete der ingenting. Er indstillingen slået fra, bruger tasten det, den er sat til i `keyboard.cfg`.
 

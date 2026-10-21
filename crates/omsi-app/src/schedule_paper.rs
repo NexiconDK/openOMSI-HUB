@@ -114,7 +114,11 @@ fn cache_dir() -> Result<PathBuf> {
         .or_else(|| std::env::var_os("USERPROFILE"))
         .map(PathBuf::from)
         .ok_or_else(|| anyhow!("cannot locate the openOMSI user data folder"))?;
-    Ok(home.join(".openomsi").join("cache").join("schedules"))
+    let dir = home.join(".openomsi").join("cache").join("schedules");
+    // Omsi-Hub: the models may name the drawings there in full (a name in full is otherwise
+    // taken only under the content roots: the paper stayed blank)
+    omsi_texture::allow_folder(&dir);
+    Ok(dir)
 }
 
 fn set_filename(vehicle: &mut VehicleInstance, value: &str) {

@@ -438,7 +438,22 @@ fn names_another_machine(name: &str) -> bool {
 
 fn under_content_root(path: &Path) -> bool {
     !path.components().any(|c| matches!(c, std::path::Component::ParentDir))
-        && omsi_cfg::content_roots().iter().any(|r| path.starts_with(r))
+        && (omsi_cfg::content_roots().iter().any(|r| path.starts_with(r)) || OWN_FOLDERS.lock().iter().any(|r| path.starts_with(r)))
+}
+
+/// Omsi-Hub: folders of the game's own, outside the content, whose pictures a model may name
+/// in full (`allow_folder`).
+static OWN_FOLDERS: Mutex<Vec<PathBuf>> = Mutex::new(Vec::new());
+
+/// Omsi-Hub: a folder the game draws pictures into for the models to show, named in full by a
+/// script string - the paper timetable in the cab (`[matl_freetex] file_schedule`, drawn into
+/// `~/.openomsi/cache/schedules`). A name in full is otherwise taken only under the content
+/// roots, and the paper stayed the model's blank sheet.
+pub fn allow_folder(dir: &Path) {
+    let mut own = OWN_FOLDERS.lock();
+    if !own.iter().any(|d| d == dir) {
+        own.push(dir.to_path_buf());
+    }
 }
 
 fn stays_inside(dir: &Path, name: &str) -> bool {
@@ -862,6 +877,25 @@ mod tests {
             find_texture("\\New Territories East\\Freetex_Lolipop\\x.bmp", &[tex.as_path()]),
             Some(sub.join("x.bmp"))
         );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    /// Omsi-Hub: the paper timetable's drawing, named in full in a folder of the game's own
+    /// (`allow_folder`), is found; a picture beside it in another folder is not.
+    #[test]
+    fn a_picture_of_the_games_own_folder_is_found_by_its_full_name() {
+        let dir = std::env::temp_dir().join(format!("omsi-own-folder-{}", std::process::id()));
+        let own = dir.join("cache/schedules");
+        let other = dir.join("other");
+        std::fs::create_dir_all(&own).unwrap();
+        std::fs::create_dir_all(&other).unwrap();
+        std::fs::write(own.join("schedule-v7-1.png"), b"x").unwrap();
+        std::fs::write(other.join("secret.png"), b"x").unwrap();
+        let full = own.join("schedule-v7-1.png");
+        assert_eq!(find_texture_uncached(&full.to_string_lossy(), &[]), None, "not yet allowed");
+        allow_folder(&own);
+        assert_eq!(find_texture_uncached(&full.to_string_lossy(), &[]), Some(full.clone()));
+        assert_eq!(find_texture_uncached(&other.join("secret.png").to_string_lossy(), &[]), None);
         std::fs::remove_dir_all(&dir).ok();
     }
 
