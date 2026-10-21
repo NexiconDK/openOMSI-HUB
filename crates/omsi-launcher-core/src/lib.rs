@@ -22,6 +22,8 @@ pub mod mods;
 pub mod owndepot;
 pub mod qr;
 pub mod service;
+// Omsi-Hub: the timetable of the server a player joins
+pub mod server_timetable;
 pub mod ttstore;
 
 use anyhow::{anyhow, Context, Result};
@@ -4061,6 +4063,14 @@ fn duty_args_for_root(d: &Duty, root: &Path) -> Result<Vec<String>> {
             let target = target.trim();
             omsi_net::describe_join(target).map_err(|e| anyhow!("LAN join: {e}"))?;
             a.extend(["--lan-join".into(), if target.is_empty() { "auto".into() } else { target.to_string() }]);
+            // Omsi-Hub: the server's timetable, as the launcher listed its tours (fetched when
+            // the server was picked, `server_timetable`; a server that shares none, or a friend's
+            // session by its code: the player's own)
+            if !target.is_empty() {
+                if let Some(z) = server_timetable::zip_for(target) {
+                    a.extend(["--content-zip".into(), z.to_string_lossy().into_owned()]);
+                }
+            }
         } else {
             return Err(anyhow!("LAN play: '{lan}' is neither host nor join:<code or address>"));
         }

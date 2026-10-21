@@ -43,6 +43,7 @@ pub(crate) fn info_of(cfg: &ServerCfg) -> omsi_net::ws::ServerInfo {
 pub(crate) fn prepare(args: &mut Args, path: &Path) -> Result<ServerCfg> {
     let cfg = ServerCfg::load(path, crate::game_lists::TRAFFIC_MAX)?;
     SERVER_MODE.store(true, std::sync::atomic::Ordering::Relaxed);
+    SERVER_SHARE_TIMETABLE.store(cfg.share_timetable, std::sync::atomic::Ordering::Relaxed);
     let _ = SERVER_ADMIN.set((cfg.admin_password.clone(), if cfg.real_time { 1.0 } else { cfg.time_speed }));
     crate::real_time::set_server_real(cfg.real_time);
     let _ = SERVER_VEHICLES.set(cfg.vehicles.clone());
@@ -91,6 +92,10 @@ pub(crate) use omsi_lan::voice::SERVER_VOICE;
 /// A dedicated server's admin password and clock speed (for the host loop).
 pub(crate) static SERVER_ADMIN: std::sync::OnceLock<(String, f64)> = std::sync::OnceLock::new();
 
+/// Omsi-Hub: a dedicated server shares its timetable with the players' launchers
+/// (`share_timetable`).
+pub(crate) static SERVER_SHARE_TIMETABLE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
 /// A dedicated server run: graphics without a device, the whole world by interest.
 pub(crate) static SERVER_MODE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
@@ -120,11 +125,79 @@ pub(crate) fn tick_web_map(world: &World, map: &str, schedule: Option<&crate::sc
     }
     let tt = schedule.map(|s| s.sim.web_timetable()).unwrap_or_default();
     let (dir, name) = (world.map_dir.clone(), map.to_string());
+    let share_tt = SERVER_SHARE_TIMETABLE.load(std::sync::atomic::Ordering::Relaxed);
     let spawned = std::thread::Builder::new().name("live map".into()).spawn(move || {
+        // (the timetable for the players' launchers first: it is quick)
+        if share_tt {
+            match timetable_zip(&dir, &name) {
+                Ok((id, zip, n)) => {
+                    log::info!("server: the timetable ({n} files, {:.1} MB, id {id}) goes to the players' launchers", zip.len() as f64 / 1e6);
+                    omsi_lan::gateway::update_server_ttdata(id, zip);
+                }
+                Err(e) => log::warn!("server: the timetable could not be packed: {e}"),
+            }
+        }
         let m = omsi_sim::timetable_run::build_web_map(&dir, &name, &tt);
         omsi_lan::gateway::update_server_web_map(omsi_net::ws::WebMapFiles { map: m.map, routes: m.routes });
     });
     if let Err(e) = spawned {
         log::warn!("live map: {e}");
+    }
+}
+
+/// Omsi-Hub: the map's `TTData` the server runs (the content folder's copy when it has one,
+/// `omsi_cfg::resolve_path`) as a zip of `<map folder>/TTData/<file>` - `map` as `server.cfg`
+/// names it, `maps/<name>/global.cfg` - with its id (the first 16 hex digits of its SHA-256)
+/// and how many files it holds.
+pub(crate) fn timetable_zip(map_dir: &Path, map: &str) -> Result<(String, Vec<u8>, usize), String> {
+    use sha2::Digest;
+    use std::io::Write;
+    let tt = omsi_cfg::resolve_path(map_dir, "TTData");
+    let mut files = omsi_cfg::vfs::read_dir_paths(&tt);
+    files.sort();
+    if files.is_empty() {
+        return Err(format!("no timetable in {}", tt.display()));
+    }
+    let folder = map.replace('\\', "/");
+    let folder = folder.rsplit_once('/').map(|(d, _)| d).unwrap_or("").trim_matches('/');
+    let mut w = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
+    let opts = zip::write::SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+    let mut n = 0;
+    for p in &files {
+        let Some(name) = p.file_name().map(|f| f.to_string_lossy().into_owned()) else { continue };
+        // (a sub-folder or an archive of its own is no part of the timetable)
+        if name.to_ascii_lowercase().ends_with(".zip") || omsi_cfg::vfs::is_dir(p) {
+            continue;
+        }
+        let data = omsi_cfg::vfs::read(p).map_err(|e| format!("{}: {e}", p.display()))?;
+        w.start_file(format!("{folder}/TTData/{name}"), opts).map_err(|e| e.to_string())?;
+        w.write_all(&data).map_err(|e| e.to_string())?;
+        n += 1;
+    }
+    let zip = w.finish().map_err(|e| e.to_string())?.into_inner();
+    let hash = sha2::Sha256::digest(&zip);
+    let id: String = hash.iter().take(8).map(|b| format!("{b:02x}")).collect();
+    Ok((id, zip, n))
+}
+
+#[cfg(test)]
+mod timetable_zip_tests {
+    #[test]
+    fn the_timetable_goes_as_a_zip_of_the_map_folder() {
+        let dir = std::env::temp_dir().join(format!("omsi_ttzip_{}", std::process::id()));
+        let tt = dir.join("TTData");
+        std::fs::create_dir_all(&tt).unwrap();
+        std::fs::write(tt.join("131.ttl"), b"[newtour]").unwrap();
+        std::fs::write(tt.join("131_A-B.ttp"), b"[trip]").unwrap();
+        std::fs::write(tt.join("TTData.zip"), b"old backup").unwrap();
+        let (id, zip, n) = super::timetable_zip(&dir, "maps/Ahlheim 5/global.cfg").unwrap();
+        assert_eq!((n, id.len()), (2, 16));
+        let mut a = zip::ZipArchive::new(std::io::Cursor::new(zip.clone())).unwrap();
+        let mut names: Vec<String> = (0..a.len()).map(|i| a.by_index(i).unwrap().name().to_string()).collect();
+        names.sort();
+        assert_eq!(names, ["maps/Ahlheim 5/TTData/131.ttl", "maps/Ahlheim 5/TTData/131_A-B.ttp"]);
+        // the same files, the same id
+        assert_eq!(super::timetable_zip(&dir, "maps/Ahlheim 5/global.cfg").unwrap().0, id);
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

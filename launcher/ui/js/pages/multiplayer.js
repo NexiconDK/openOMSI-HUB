@@ -7,7 +7,23 @@ import { t } from '../i18n.js';
 import { call } from '../api.js';
 import { Icon } from '../icons.js';
 import { Button, Card, Field, Input, Empty, PageHead, Spinner, Tabs, Toggle, Notice, Tag } from '../ui.js';
-import { choose, cached, serverJoined, allowedBus } from '../data.js';
+import { choose, cached, serverJoined, allowedBus, reloadLines } from '../data.js';
+
+/** NexiconDK: the timetable of the server picked (`core::server_timetable`): its lines and
+ * tours on the drive pages, and the game's duty one of them; none (a friend's session, a
+ * server that shares none): the player's own. */
+function serverTimetable(addr) {
+  call('hub_server_timetable', { addr })
+    .then(() => {
+      reloadLines();
+      toast(t("The server's timetable is used: the drive pages list its lines and tours"), 'ok');
+    })
+    .catch(() => call('hub_server_timetable_off').then(reloadLines).catch(() => {}));
+}
+
+function ownTimetable() {
+  call('hub_server_timetable_off').then(reloadLines).catch(() => {});
+}
 
 export function MultiplayerPage() {
   const [tab, setTab] = useState('code');
@@ -42,6 +58,8 @@ function ByCode() {
     if (known?.map && S.maps?.some((m) => m.file.toLowerCase() === known.map.replace(/\\/g, '/').toLowerCase())) choose({ map: known.map.replace(/\\/g, '/') });
     choose({ lan_mode: 'join', lan_addr: code.trim(), lan_map: known?.map || '', ...serverJoined(known) });
     choose(allowedBus());
+    if (known) serverTimetable(code.trim());
+    else ownTimetable();
     set({ page: 'drive' });
   };
   return html`<div class="grid-2" style="align-items:start">
@@ -50,6 +68,7 @@ function ByCode() {
         <p class="muted">${t('Your next duty opens a session. Give the code to your friends: it works at home and over the internet.')}</p>
         <${Toggle} checked=${hosting} label="Host my next duty" onChange=${(on) => {
           choose({ lan_mode: on ? 'host' : 'off' });
+          ownTimetable();
           if (on) call('prepare_tunnel').catch(() => {});
         }} />
         ${session
@@ -116,6 +135,7 @@ function Servers() {
     choose({ lan_mode: 'join', lan_addr: !web && i.reached_at ? i.reached_at : x.address, lan_map: i.map || '', ...serverJoined({ ...i, name: x.name || i.name }) });
     choose(allowedBus());
     toast(t('Joined {} - choose your bus and duty, then Start the duty', [x.name || i.name]), 'ok');
+    serverTimetable(!web && i.reached_at ? i.reached_at : x.address);
     set({ page: 'drive' });
   };
   return html`<div class="stack">

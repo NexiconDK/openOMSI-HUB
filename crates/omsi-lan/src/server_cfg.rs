@@ -40,6 +40,8 @@ pub struct ServerCfg {
     pub vehicles: Vec<String>,
     /// `GET /players` on the web port tells who drives what and where (for a web map).
     pub share_positions: bool,
+    /// Omsi-Hub: the map's timetable goes to the players' launchers (`GET /ttdata.zip`).
+    pub share_timetable: bool,
     /// The GreenTeaSpeak server and channel the players talk in (`voice`).
     pub voice: Option<crate::voice::VoiceServer>,
 }
@@ -105,6 +107,11 @@ vehicles =
 # The server draws such a map itself: http://<this machine>:<web_port>/kort (Omsi-Hub)
 share_positions = 0
 
+# the timetable this server runs (its map's TTData - the content folder's copy when there is
+# one) goes to the launcher of every player who picks the server, so that everyone drives the
+# server's lines and tours (Omsi-Hub)
+share_timetable = 1
+
 # voice chat: the players hear each other where they stand, through GreenTeaSpeak and its
 # openOMSI plugin (as SaltyChat does for FiveM). voice_server_uid is the voice server's unique
 # id (its info panel; needed: without it there is no voice chat), voice_channel the in-game
@@ -164,6 +171,7 @@ impl ServerCfg {
             metar_station: kv.get("metar_station").map(|v| v.chars().filter(|c| c.is_ascii_alphabetic()).take(4).collect::<String>().to_ascii_uppercase()).unwrap_or_default(),
             vehicles: kv.get("vehicles").map(|v| v.split(';').map(|x| x.trim().replace('\\', "/")).filter(|x| !x.is_empty()).collect()).unwrap_or_default(),
             share_positions: flag("share_positions", false),
+            share_timetable: flag("share_timetable", true),
             voice: crate::voice::VoiceServer::from_kv(|k| kv.get(k).cloned()),
         })
     }

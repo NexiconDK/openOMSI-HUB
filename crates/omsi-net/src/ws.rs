@@ -59,6 +59,11 @@ pub struct ServerInfo {
     pub web_map: Option<Arc<WebMapFiles>>,
     /// Omsi-Hub: the timetable buses on the road now (`GET /kort/busser`, a JSON array).
     pub bus_list: Arc<String>,
+    /// Omsi-Hub: the timetable the server runs, its map's `TTData` as a zip (`GET /ttdata.zip`,
+    /// `share_timetable`), and its id (`"ttdata"` in `GET /status`: the zip's hash, empty for
+    /// none) - read by the launcher of a player who joins, so that all drive the server's.
+    pub ttdata: Option<Arc<Bytes>>,
+    pub ttdata_id: String,
     /// `POST /admin` from this machine with this password (empty: no such door).
     pub local_admin_password: String,
     /// The admin commands that came in that way, for the host loop to run.
@@ -80,6 +85,16 @@ pub struct WebMapFiles {
 impl std::fmt::Debug for WebMapFiles {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "WebMapFiles({} bytes, {} routes)", self.map.len(), self.routes.len())
+    }
+}
+
+/// Omsi-Hub: a file's bytes (its `Debug` says how many, not what).
+#[derive(Clone, Default, PartialEq)]
+pub struct Bytes(pub Vec<u8>);
+
+impl std::fmt::Debug for Bytes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Bytes({})", self.0.len())
     }
 }
 
@@ -173,7 +188,7 @@ pub fn players_json(players: &[PlayerInfo]) -> String {
 impl ServerInfo {
     pub fn to_json(&self) -> String {
         format!(
-            "{{\"name\":{},\"motd\":{},\"map\":{},\"players\":{},\"max_players\":{},\"version\":{},\"icon\":{},\"time\":{},\"date\":{},\"weather\":{},\"password\":{},\"protocol\":{},\"vehicles\":{},\"world\":{}}}",
+            "{{\"name\":{},\"motd\":{},\"map\":{},\"players\":{},\"max_players\":{},\"version\":{},\"icon\":{},\"time\":{},\"date\":{},\"weather\":{},\"password\":{},\"protocol\":{},\"vehicles\":{},\"world\":{},\"ttdata\":{}}}",
             json_str(&self.name),
             json_str(&self.motd),
             json_str(&self.map),
@@ -187,7 +202,8 @@ impl ServerInfo {
             self.password,
             crate::PROTOCOL,
             json_str(&self.vehicles.join(";")),
-            self.world.map(|w| w.to_json()).unwrap_or_else(|| "null".into())
+            self.world.map(|w| w.to_json()).unwrap_or_else(|| "null".into()),
+            if self.ttdata_id.is_empty() { "null".to_string() } else { json_str(&self.ttdata_id) }
         )
     }
 
@@ -209,6 +225,7 @@ impl ServerInfo {
             password: json_value(s, "password").map(|v| v.trim() == "true").unwrap_or(false),
             vehicles: text("vehicles").map(|v| v.split(';').map(|x| x.trim().to_string()).filter(|x| !x.is_empty()).collect()).unwrap_or_default(),
             reached_at: String::new(),
+            ttdata_id: text("ttdata").filter(|t| t != "null").unwrap_or_default(),
             ..Default::default()
         })
     }
@@ -325,6 +342,19 @@ pub fn web_bases(target: &str) -> Vec<String> {
         add(format!("http://{host}"));
     }
     out
+}
+
+/// Omsi-Hub: a file of a server's web port (`base` as `query` reached it, `path` from `/`), at
+/// most `max` bytes.
+pub fn download(base: &str, path: &str, max: u64) -> Result<Vec<u8>, String> {
+    let agent = ureq::AgentBuilder::new().timeout(Duration::from_secs(60)).user_agent("openOMSI").build();
+    let r = agent.get(&format!("{}{path}", base.trim_end_matches('/'))).call().map_err(|e| e.to_string())?;
+    let mut out = Vec::new();
+    r.into_reader().take(max + 1).read_to_end(&mut out).map_err(|e| e.to_string())?;
+    if out.len() as u64 > max {
+        return Err(format!("{path} is larger than {} MB", max / 1_000_000));
+    }
+    Ok(out)
 }
 
 /// Ask a server (by its address as typed) about itself: its status and its icon.
@@ -639,6 +669,11 @@ fn serve(stream: TcpStream, slot: Option<SourceSlot>, target: SocketAddr, info: 
             "/kort/kort.json" => match info.lock().unwrap_or_else(|e| e.into_inner()).web_map.clone() {
                 Some(m) => ("200 OK", "application/json", m.map.clone()),
                 None => ("503 Service Unavailable", "text/plain", b"the map is being put together".to_vec()),
+            },
+            // Omsi-Hub: the server's timetable
+            "/ttdata.zip" => match info.lock().unwrap_or_else(|e| e.into_inner()).ttdata.clone() {
+                Some(z) => ("200 OK", "application/zip", z.0.clone()),
+                None => ("404 Not Found", "text/plain", b"this server does not share its timetable".to_vec()),
             },
             "/kort/busser" => ("200 OK", "application/json", info.lock().unwrap_or_else(|e| e.into_inner()).bus_list.as_bytes().to_vec()),
             r if r.starts_with("/kort/rute/") => {
@@ -1072,10 +1107,10 @@ mod tests {
     #[test]
     fn status_counts_a_servers_world() {
         let mut i = ServerInfo { name: "NEROSY".into(), players: 2, vehicles: vec!["Vehicles/A/a.bus".into()], ..Default::default() };
-        assert!(i.to_json().ends_with(",\"world\":null}"));
+        assert!(i.to_json().ends_with(",\"world\":null,\"ttdata\":null}"));
         i.world = Some(WorldCounts { cars: 41, buses: 7, dormant: 12, parked: 230, walking: 55, waiting: 18, aboard: 9, traffic: 30 });
         let j = i.to_json();
-        assert!(j.ends_with(",\"world\":{\"cars\":41,\"buses\":7,\"dormant\":12,\"parked\":230,\"walking\":55,\"waiting\":18,\"aboard\":9,\"traffic\":30}}"), "{j}");
+        assert!(j.ends_with(",\"world\":{\"cars\":41,\"buses\":7,\"dormant\":12,\"parked\":230,\"walking\":55,\"waiting\":18,\"aboard\":9,\"traffic\":30},\"ttdata\":null}"), "{j}");
         // the launcher still reads the rest (the world's keys are none of the server's own)
         let back = ServerInfo::from_json(&j).unwrap();
         assert_eq!((back.name.as_str(), back.players, back.vehicles.len()), ("NEROSY", 2, 1));
@@ -1277,5 +1312,13 @@ mod tests {
         assert!(get("/kort/rute/1").starts_with("HTTP/1.1 404"));
         assert!(get("/kort/busser").ends_with("\r\n\r\n[]"));
         assert!(get("/kort?demo").starts_with("HTTP/1.1 200"));
+        // (Omsi-Hub: the server's timetable, and its id in the status)
+        assert!(get("/ttdata.zip").starts_with("HTTP/1.1 404"));
+        gw.info.lock().unwrap().ttdata = Some(Arc::new(Bytes(b"PK zip".to_vec())));
+        gw.info.lock().unwrap().ttdata_id = "0123456789abcdef".into();
+        assert!(get("/ttdata.zip").ends_with("PK zip"));
+        let st = get("/status");
+        let body = &st[st.find("\r\n\r\n").unwrap() + 4..];
+        assert_eq!(ServerInfo::from_json(body).unwrap().ttdata_id, "0123456789abcdef");
     }
 }

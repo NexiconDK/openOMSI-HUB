@@ -206,6 +206,12 @@ export function choose(patch) {
   else if (c.hof !== before.hof || c.hof_manual !== before.hof_manual) loadIbis();
 }
 
+/** NexiconDK: the lines read anew (the server's timetable was put in or taken away). */
+export function reloadLines() {
+  set({ lines: { ...S.lines, key: '', loading: false } });
+  loadLines();
+}
+
 export async function loadLines() {
   const c = S.choice;
   if (!c?.map) return;

@@ -8,6 +8,7 @@
 import { html, useEffect, useLayoutEffect, useState } from '../../vendor/preact-htm.js';
 import { S, set, useStore } from '../store.js';
 import { call, onPhone } from '../api.js';
+import { reloadLines } from '../data.js';
 import { applyHubTheme } from './theme.js';
 import { Bar, Palette } from './bar.js';
 import { Flow, STEP_NAMES, goStep } from './flow.js';
@@ -159,7 +160,13 @@ export function HubShell({ pages, Toasts }) {
         startPage(b?.page, pages);
       })
       .catch(() => {})
-      .then(welcomeAtStart);
+      .then(welcomeAtStart)
+      // (NexiconDK: a server picked before the launcher closed - its timetable again, from
+      // the cache, so that the drive pages list its tours)
+      .then(() => {
+        const c = S.choice || {};
+        if (c.lan_mode === 'join' && c.lan_addr) call('hub_server_timetable', { addr: c.lan_addr }).then(reloadLines).catch(() => {});
+      });
   }, []);
   useUpdates();
   // (the update's dialog and its notice over whatever is drawn, and upstream's word on a game

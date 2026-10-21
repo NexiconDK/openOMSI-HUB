@@ -328,6 +328,18 @@ pub fn update_server_web_map(files: omsi_net::ws::WebMapFiles) {
     }
 }
 
+/// Omsi-Hub: a server run: its timetable as a zip, and the zip's id (`GET /ttdata.zip`).
+pub fn update_server_ttdata(id: String, zip: Vec<u8>) {
+    if let Ok(w) = WS_PATH.lock() {
+        if let Some(g) = w.as_ref().and_then(|w| w.gateway.as_ref()) {
+            if let Ok(mut i) = g.info.lock() {
+                i.ttdata = Some(std::sync::Arc::new(omsi_net::ws::Bytes(zip)));
+                i.ttdata_id = id;
+            }
+        }
+    }
+}
+
 /// Omsi-Hub: a server run: the timetable buses on the road now (`GET /kort/busser`).
 pub fn update_server_buses(json: String) {
     if let Ok(w) = WS_PATH.lock() {

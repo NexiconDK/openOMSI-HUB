@@ -117,6 +117,15 @@ pub fn call(cmd: &str, args: &Value, p: &dyn Platform) -> Option<Answer> {
         })(),
         "hub_duty_extras" => (|| hub_duty_extras(&arg::<String>(args, "bus")?, &arg::<String>(args, "date")?, arg::<i32>(args, "minutes")?, arg::<bool>(args, "free")?))(),
         "hub_map_facts" => (|| hub_map_facts(&arg::<Vec<String>>(args, "maps")?))(),
+        // Omsi-Hub: the timetable of the server a player picked (`core::server_timetable`)
+        "hub_server_timetable" => (|| {
+            let f = core::server_timetable::fetch(&arg::<String>(args, "addr")?)?;
+            Ok(json!({ "id": f.id, "downloaded": f.downloaded, "bytes": f.bytes }))
+        })(),
+        "hub_server_timetable_off" => {
+            core::server_timetable::clear();
+            Ok(json!({}))
+        }
         "hub_weather_extras" => (|| hub_weather_extras(&arg::<String>(args, "map")?))(),
         "hub_own_lines" => (|| hub_own_lines(&arg::<String>(args, "map")?))(),
         "hub_photo" => hub_photo(args, p),

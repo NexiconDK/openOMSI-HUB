@@ -7,6 +7,8 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 
 - **Vælg vagt inde i spillet på serveren**: En spiller, der er tilsluttet en server uden at have valgt tur i launcheren, fik "No timetable on this map". Nu kan man vælge og skifte tur inde i spillet (Timetable i menuen), ud fra serverens ur. Lægger serveren en kopi af kortets `TTData` i sin egen indholdsmappe (fx `openOMSI-HUB\maps\Ahlheim 5\TTData`), får alle, der tilslutter sig, den køreplan med, og så kører alle efter serverens køreplan.
 
+- **Alle kører efter serverens køreplan**: Serveren pakker den køreplan, den selv kører efter (kortets `TTData`, eller kopien i serverens indholdsmappe hvis der er en), og deler den på web-porten (`/ttdata.zip`, slås fra med `share_timetable = 0` i `server.cfg`). Når man vælger serveren under Multiplayer, henter launcheren den (gemmes til næste gang i `~/.openomsi/server-timetables`) og viser serverens linjer og ture under "Tour" og "Work shift". Spillet får samme køreplan med, når man starter. Ingen behøver at kopiere `TTData`. Vælger man "Host" eller en vens kode, bruges ens egen køreplan igen.
+
 ### Livekort på den dedikerede server
 - Serveren viser nu selv et livekort i browseren på `http://<serverens ip>:<web_port>/kort` (fx `http://192.168.1.169:27026/kort`). Det kræver `share_positions = 1` i `server.cfg`. Forsiden af web-porten har et link til kortet.
 - Kortet tegnes ud fra kortets egne filer: veje, fortove, skinner, stoppesteder og hele køreplanen. Serveren lægger det sammen, når den starter (det tager et øjeblik), og det virker på alle kort.
