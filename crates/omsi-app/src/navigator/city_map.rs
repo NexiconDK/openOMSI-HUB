@@ -64,7 +64,19 @@ pub struct CityMap {
     /// does what.
     pub(super) card: Rect,
     pub(super) card_hits: Vec<(Rect, crate::nav_pins::CardHit)>,
+    /// Where the cursor is over the map (the window's own pixels): the pin under it shows a
+    /// cross that takes it away.
+    pub(super) pointer: Option<Vec2>,
+    /// The crosses shown (the pin the cursor is on), and the entry points' dots and names,
+    /// where a press does what (the window's own pixels).
+    pub(super) pin_cross: Vec<(Rect, usize)>,
+    pub(super) entry_hits: Vec<(Rect, usize)>,
+    /// A press on an entry point: a pin there when it comes up without dragging the map.
+    pub(super) entry_tap: Option<usize>,
 }
+
+/// The map's entry points on the city map: an orange nothing else on it has.
+const ENTRY: Color = Color::rgba(239, 145, 35, 1.0);
 
 /// A pin dragged on the city map: which, where the press began and where the cursor is now
 /// (the window's own pixels), and whether it has moved far enough to be a drag.
@@ -412,7 +424,13 @@ impl Navigator {
         let local = Vec2::new(x - self.city.rect[0], y - self.city.rect[1]);
         let hit = self.city.buttons.iter().find(|(r, _)| r.contains(local)).map(|b| b.1);
         // (a pin under the press, not one under the column or the card)
-        let pin = (hit.is_none() && !self.city.sheet.contains(local) && !self.city.card.contains(local) && !self.full_view()).then(|| self.pin_under(local)).flatten();
+        let on_map = hit.is_none() && !self.city.sheet.contains(local) && !self.city.card.contains(local) && !self.full_view();
+        // a pin's cross: that pin taken away, nothing else (no drag, no pin)
+        if let Some(k) = self.city.pin_cross.iter().find(|(r, _)| on_map && r.contains(local)).map(|c| c.1) {
+            self.pins.ops.push(crate::nav_pins::Op::Remove(k));
+            return;
+        }
+        let pin = on_map.then(|| self.pin_under(local)).flatten();
         match hit {
             Some(0) => self.city.follow = true,
             Some(1) => self.city.mpp = (self.city.mpp / 1.6).max(0.25),
@@ -454,9 +472,12 @@ impl Navigator {
             _ => {
                 self.city.drag = Some((x, y));
                 self.city.travel = 0.0;
+                // (an entry point's dot or name: a pin there, by its name, as the press comes
+                // up without dragging the map - with the pin tool too)
+                self.city.entry_tap = self.city.entry_hits.iter().rev().find(|(r, _)| r.contains(local)).map(|e| e.1);
                 // (with the pin tool a press that comes up where it went down sets a pin;
                 // the header is no place for one)
-                if self.city.pin_tool && local.y > 44.0 * self.city.sheet_scale.max(0.5) {
+                if self.city.pin_tool && self.city.entry_tap.is_none() && local.y > 44.0 * self.city.sheet_scale.max(0.5) {
                     self.city.tap = Some((x, y, false));
                 }
             }
@@ -570,10 +591,18 @@ impl Navigator {
         }
         let click = self.city.drag.take().is_some() && self.city.travel < 6.0;
         self.city.column_drag = None;
+        if let Some(i) = self.city.entry_tap.take() {
+            if click {
+                self.pins.ops.push(Op::Entry(i));
+                // (the click is the entry point's, not one to move the bus by)
+                return false;
+            }
+        }
         click
     }
 
     pub fn map_move(&mut self, x: f32, y: f32) {
+        self.city.pointer = Some(Vec2::new(x - self.city.rect[0], y - self.city.rect[1]));
         // a pin dragged follows the cursor (past a few pixels: a press alone moves nothing)
         if let Some(d) = self.city.pin_drag.as_mut() {
             let local = Vec2::new(x - self.city.rect[0], y - self.city.rect[1]);
@@ -893,6 +922,32 @@ impl Navigator {
             let dot = far && kind == crate::stop_signs::Kind::Ahead;
             crate::stop_signs::draw(&mut ui, signs, kind, p, if dot { 6.0 } else { 13.0 } * s);
         }
+        // the map's entry points (openOMSI #3074): an orange dot, its name beside it where
+        // there is room; a click on either sets a pin there
+        self.city.entry_hits.clear();
+        for (i, (at, name)) in self.entries.iter().enumerate() {
+            let p = to_screen(at.extend(0.0));
+            if !win.contains(p) || p.y < 50.0 * s {
+                continue;
+            }
+            ui.circle(p, 7.5 * s, crate::nav_pins::PIN_EDGE);
+            ui.circle(p, 5.5 * s, ENTRY);
+            self.city.entry_hits.push((Rect::new(p.x - 10.0 * s, p.y - 10.0 * s, 20.0 * s, 20.0 * s), i));
+            if name.is_empty() {
+                continue;
+            }
+            let px = 11.5 * s;
+            let label = self.fonts.fit(name, px, Weight::Medium, 190.0 * s);
+            let r = Rect::new(p.x + 11.0 * s, p.y - 10.0 * s, self.fonts.width(&label, px, Weight::Medium) + 12.0 * s, 20.0 * s);
+            if !win.contains(Vec2::new(r.right(), r.bottom())) || taken.iter().any(|o| rects_overlap(o, &r)) {
+                continue;
+            }
+            taken.push(r);
+            ui.rounded(r, 5.0 * s, crate::nav_pins::PIN_EDGE);
+            ui.rounded(r.pad(1.0 * s, 1.0 * s), 4.5 * s, ENTRY);
+            ui.text_in(&mut self.atlas, &self.fonts, &label, px, Weight::Medium, r, Align::Center, Color::WHITE);
+            self.city.entry_hits.push((r, i));
+        }
         // the player's own pins (`nav_pins`): the destination's flag, the vias numbered - the
         // one being dragged where the cursor has it
         let dragged = self.city.pin_drag.filter(|d| d.moved);
@@ -907,6 +962,37 @@ impl Navigator {
                 crate::nav_pins::Role::Destination => crate::nav_pins::draw_destination(&mut ui, &mut self.atlas, p, crate::nav_pins::DEST_R * s, self.pins.arrived.is_some(), alpha),
                 crate::nav_pins::Role::Via(n) => crate::nav_pins::draw_via(&mut ui, &mut self.atlas, &self.fonts, p, n, crate::nav_pins::VIA_R * s, alpha),
             }
+        }
+        // the pin the cursor is on: a cross above it that takes it away (openOMSI #3074) - over
+        // all the pins, as a press finds it first; the cursor keeps it on its way to the cross
+        self.city.pin_cross.clear();
+        let pointer = self.city.pointer.filter(|_| dragged.is_none() && self.city.drag.is_none());
+        for k in 0..self.pins.list.len() {
+            let Some(q) = pointer else { break };
+            let p = to_screen(self.pins.list[k].at.extend(0.0));
+            let marker = match self.pins.role(k) {
+                crate::nav_pins::Role::Destination => {
+                    let r = crate::nav_pins::DEST_R * s;
+                    let head = crate::nav_pins::destination_head(p, r);
+                    Rect::new(head.x - r, head.y - r, 2.0 * r, p.y - head.y + r)
+                }
+                crate::nav_pins::Role::Via(_) => {
+                    let r = crate::nav_pins::VIA_R * s;
+                    Rect::new(p.x - r, p.y - r, 2.0 * r, 2.0 * r)
+                }
+            };
+            let size = 20.0 * s;
+            let cross = Rect::new(marker.right() - 4.0 * s, marker.y - size + 4.0 * s, size, size);
+            let hover = Rect::new(marker.x, cross.y, cross.right() - marker.x, marker.bottom() - cross.y);
+            if hover.contains(q) && !self.city.card.contains(q) && !self.city.sheet.contains(q) {
+                self.city.pin_cross.push((cross, k));
+                break;
+            }
+        }
+        for (r, _) in &self.city.pin_cross {
+            ui.circle(r.center(), r.w * 0.5 + 1.0 * s, crate::nav_pins::PIN_EDGE);
+            ui.circle(r.center(), r.w * 0.5 - 0.5 * s, Color::WHITE);
+            ui.icon(&mut self.atlas, "close", r.center(), r.w * 0.72, crate::nav_pins::PIN_EDGE);
         }
         // the other players: an arrow the way they face and their name (as on the small map)
         for pl in &f.players {

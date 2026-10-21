@@ -1126,3 +1126,42 @@ fn crowded_stop_markers_and_labels_do_not_overlap() {
     assert!(edge.right() < 600.0);
     assert!(stop_label_rect(p, 150.0, 1.0, win, &[win]).is_none());
 }
+
+/// The map's entry points on the city map (openOMSI #3074): a click on one asks for a pin
+/// there (a drag of the map none), and the pin is called by the entry point's name; the cross
+/// over the pin under the cursor takes that pin away and drags nothing.
+#[test]
+fn entry_points_set_pins_and_a_pins_cross_takes_it_away() {
+    let mut n = Navigator::new(true, 0.85, "bottom-left");
+    n.toggle_map();
+    n.city.rect = [100.0, 50.0, 1100.0, 850.0];
+    n.city.center = DVec2::ZERO;
+    n.city.mpp = 1.0;
+    n.city.sheet_scale = 1.0;
+    // (the window's own pixels: the press at 600, 450 is at 500, 400 in it)
+    n.city.entry_hits = vec![(Rect::new(490.0, 390.0, 20.0, 20.0), 0)];
+    n.map_press(600.0, 450.0);
+    assert!(!n.map_release(), "the entry point's click, not one to move the bus by");
+    assert_eq!(n.pins.ops, vec![Op::Entry(0)]);
+    n.pins.ops.clear();
+    n.map_press(600.0, 450.0);
+    n.map_move(660.0, 450.0);
+    n.map_release();
+    assert!(n.pins.ops.is_empty(), "a drag of the map");
+    // the cross
+    n.city.center = DVec2::ZERO;
+    n.city.pin_cross = vec![(Rect::new(600.0, 300.0, 20.0, 20.0), 2)];
+    n.map_press(710.0, 360.0);
+    assert_eq!(n.pins.ops, vec![Op::Remove(2)]);
+    assert!(n.city.drag.is_none() && n.city.pin_drag.is_none());
+    // the pin by the entry point's name
+    let mut n = Navigator::new(true, 0.85, "bottom-left");
+    on_grid(&mut n, 3);
+    n.entries = vec![(DVec2::new(398.5, 300.0), "Depot Nord".into()), (DVec2::new(100.0, 198.5), String::new())];
+    n.pins.ops = vec![Op::Entry(0), Op::Entry(1), Op::Entry(7)];
+    n.follow(&at((1.5, 20.0), 0.0));
+    assert_eq!(n.pins.list.len(), 2);
+    // (the first set is the destination, last on the route)
+    assert_eq!(n.pins.list[1].name, "Depot Nord");
+    assert!(!n.pins.list[0].name.is_empty() && n.pins.list[0].name != "Depot Nord", "no name of its own: the stop's or street's");
+}

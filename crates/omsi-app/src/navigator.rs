@@ -418,6 +418,9 @@ pub struct Navigator {
     pins: crate::nav_pins::Pins,
     /// The timetable's stops by their map objects, for the pins' names (given once).
     stop_names: Option<Vec<(i64, String)>>,
+    /// The map's entry points (where a bus is put on the map) and their names: orange markers
+    /// on the city map, and a click on one sets a pin there (openOMSI #3074).
+    entries: Vec<(DVec2, String)>,
 }
 
 /// A press held on the small navigator: where the cursor was, the panel then (x0, y0, x1,
@@ -562,6 +565,7 @@ impl Navigator {
             qr: (String::new(), f32::MIN, None),
             pins: crate::nav_pins::Pins::default(),
             stop_names: None,
+            entries: Vec::new(),
         }
     }
 
@@ -570,6 +574,15 @@ impl Navigator {
         if self.building.is_some() || self.global.is_some() {
             return;
         }
+        self.entries = world
+            .global
+            .entry_points
+            .iter()
+            .filter_map(|ep| {
+                let (p, _) = world.entry_point_place(ep)?;
+                p.is_finite().then(|| (p.truncate(), ep.name.trim().to_string()))
+            })
+            .collect();
         let (tx, rx) = std::sync::mpsc::channel();
         std::thread::Builder::new()
             .name("navigator map".into())
@@ -920,34 +933,45 @@ impl Navigator {
     }
 
     /// Do what the city map asked of the pins.
+    /// A pin set where the map was clicked (`p`), named `name` or after the stop or street
+    /// there.
+    fn add_pin(&mut self, net: &Network, f: &NavFrame, p: DVec2, name: Option<String>) {
+        use crate::nav_pins::{self as pins, Note, Pin};
+        // (set while the last destination still says "arrived": a new drive)
+        if self.pins.arrived.is_some() {
+            self.end_pins(net, f);
+        }
+        let Some(at) = pins::snap(net, p, pins::SNAP_REACH) else {
+            self.pins.say(Note::NoRoad);
+            return;
+        };
+        if self.pins.list.is_empty() {
+            // a new set: a diversion of the trip whose route this is, or a free drive's
+            // destination; a diversion goes back onto the trip's route ahead
+            let key = &self.route.key;
+            self.pins.trip = (!key.is_empty() && key != DEST_KEY).then(|| key.clone());
+            self.pins.passed = 0;
+            let r = &self.route;
+            self.pins.rest = if self.pins.trip.is_some() && !r.provisional { r.lanes[r.progress.min(r.lanes.len())..].to_vec() } else { Vec::new() };
+        }
+        self.pins.made += 1;
+        let name = name.unwrap_or_else(|| self.pin_name(net, at.at, self.pins.made));
+        let pin = Pin { at: at.at, name, n: self.pins.made };
+        let diversion = self.pins.diversion();
+        match pins::add(&mut self.pins.list, pin, diversion) {
+            Some(_) => self.pins.dirty = true,
+            None => self.pins.say(Note::Full),
+        }
+    }
+
     fn pin_op(&mut self, net: &Network, f: &NavFrame, op: crate::nav_pins::Op) {
         use crate::nav_pins::{self as pins, Note, Op, Pin};
         match op {
-            Op::Add(p) => {
-                // (set while the last destination still says "arrived": a new drive)
-                if self.pins.arrived.is_some() {
-                    self.end_pins(net, f);
-                }
-                let Some(at) = pins::snap(net, p, pins::SNAP_REACH) else {
-                    self.pins.say(Note::NoRoad);
-                    return;
-                };
-                if self.pins.list.is_empty() {
-                    // a new set: a diversion of the trip whose route this is, or a free drive's
-                    // destination; a diversion goes back onto the trip's route ahead
-                    let key = &self.route.key;
-                    self.pins.trip = (!key.is_empty() && key != DEST_KEY).then(|| key.clone());
-                    self.pins.passed = 0;
-                    let r = &self.route;
-                    self.pins.rest = if self.pins.trip.is_some() && !r.provisional { r.lanes[r.progress.min(r.lanes.len())..].to_vec() } else { Vec::new() };
-                }
-                self.pins.made += 1;
-                let name = self.pin_name(net, at.at, self.pins.made);
-                let pin = Pin { at: at.at, name, n: self.pins.made };
-                let diversion = self.pins.diversion();
-                match pins::add(&mut self.pins.list, pin, diversion) {
-                    Some(_) => self.pins.dirty = true,
-                    None => self.pins.say(Note::Full),
+            Op::Add(p) => self.add_pin(net, f, p, None),
+            // (an entry point clicked: a pin there, by its name)
+            Op::Entry(i) => {
+                if let Some((p, name)) = self.entries.get(i).cloned() {
+                    self.add_pin(net, f, p, Some(name).filter(|n| !n.is_empty()));
                 }
             }
             Op::Move(k, to, from) => {

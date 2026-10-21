@@ -51,7 +51,7 @@ const U_TURN: f32 = 400.0;
 /// and blue, the traffic and the route blue, green, yellow and red).
 pub(crate) const PIN: Color = Color::hex(0x9B5CF6);
 pub(crate) const PIN_LIGHT: Color = Color::hex(0xC9B0FF);
-const PIN_EDGE: Color = Color::rgba(22, 10, 44, 0.92);
+pub(crate) const PIN_EDGE: Color = Color::rgba(22, 10, 44, 0.92);
 /// The markers' sizes on the city map at scale 1: the destination's head, a via's disc.
 pub(crate) const DEST_R: f32 = 11.0;
 pub(crate) const VIA_R: f32 = 10.0;
@@ -473,6 +473,8 @@ impl Note {
 pub(crate) enum Op {
     /// A pin where the map was clicked.
     Add(DVec2),
+    /// A pin at entry point k of the map (`Navigator::entries`), by its name.
+    Entry(usize),
     /// Pin k dragged to a place, from where it was (it goes back there with no road near).
     Move(usize, DVec2, DVec2),
     Remove(usize),
