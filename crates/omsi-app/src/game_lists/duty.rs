@@ -279,14 +279,13 @@ pub(super) fn start_duty(app: &mut App, line: &str, tour: &str) {
     }
 }
 
-/// Omsi-Hub: the trip chosen on a tour's page: its name, line and terminus, its stops (name,
-/// time, station) and the stop chosen to start from.
+/// Omsi-Hub: the trip chosen on a tour's page: its name, line and terminus, and its stops
+/// (name, time, station).
 pub(crate) struct ChosenTrip {
     pub name: String,
     pub line: String,
     pub terminus: String,
     pub stops: Vec<(String, f64, i64)>,
-    pub at: usize,
 }
 
 pub(crate) fn chosen_trip(app: &App) -> Option<ChosenTrip> {
@@ -295,7 +294,7 @@ pub(crate) fn chosen_trip(app: &App) -> Option<ChosenTrip> {
         return None;
     }
     let (line, tour) = tour_at(app, k)?;
-    let (_, at, trip, _) = tour_choice(app, k)?;
+    let (_, _, trip, _) = tour_choice(app, k)?;
     let sch = crate::duty_book::timetable(app)?;
     let t = sch.data.lines.iter().find(|l| l.name == line)?.tours.iter().find(|t| t.number == tour)?;
     let calls = sch.tour_trip_stops(&line, &tour, trip);
@@ -303,7 +302,7 @@ pub(crate) fn chosen_trip(app: &App) -> Option<ChosenTrip> {
     let tt = sch.data.trips.iter().find(|x| x.name.eq_ignore_ascii_case(&name))?;
     let stations = omsi_sim::timetable_run::trip_stations(tt);
     let stops = calls.iter().map(|c| (c.2.trim().to_string(), c.3, stations.get(c.1).copied().unwrap_or(-1))).collect();
-    Some(ChosenTrip { name, line: tt.line.trim().to_string(), terminus: tt.terminus.trim().to_string(), stops, at })
+    Some(ChosenTrip { name, line: tt.line.trim().to_string(), terminus: tt.terminus.trim().to_string(), stops })
 }
 
 /// Omsi-Hub: what to type into the IBIS for trip `c` (after openOMSI #2936): the routes of its

@@ -56,6 +56,7 @@ impl ExtraSign {
     }
 
     /// The text shown now is the extra one.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn showing_extra(&self) -> bool {
         self.showing_extra
     }
