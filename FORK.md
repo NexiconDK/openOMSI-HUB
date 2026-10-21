@@ -2,6 +2,9 @@
 
 Vores egen udgave af Omsi-Hub med disse ændringer.
 
+### Opdateringer
+- **Spillet og launcheren opdaterer fra vores egen GitHub** (github.com/NexiconDK/openOMSI-HUB): Opdateringstjekket, både i launcheren og i baggrunden under spillet, kigger nu på vores egne udgivelser i stedet for Omsi-Hubs (Luc-nbr/openOMSI). Knapperne "GitHub" og linket i opdateringsvinduet peger også dertil. Den første version med det skal hentes med hånden, fordi de ældre versioner stadig kigger hos Omsi-Hub. Derefter kommer opdateringerne af sig selv.
+
 ### Multiplayer og dedicated server
 - Værtens AI-busser viser nu både linje **og destination** hos spillerne. Før stod kun linjen på skiltet, fordi spillerens kopi af bussen ikke fik hof-filen med, som destinationsteksten hentes fra. Det er kun spillerne, der skal have den nye version; serveren skal ikke ændres.
 
