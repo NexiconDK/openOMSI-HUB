@@ -71,6 +71,7 @@ impl Traffic {
         state.length = front + rear;
         let body = AiBody::new(&ty.def, MotionKind::Road);
         self.sim.cars.push(AiCar {
+            light_by: None,
             id,
             state,
             vehicle,
