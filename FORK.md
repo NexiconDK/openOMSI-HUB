@@ -38,6 +38,9 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 ### Passagerer
 - **Passagererne betaler også med sedler** (openOMSI PR #2952 af insus100): Ved kontant betaling kan passagererne nu også lægge sedler, ikke kun mønter, ud fra kortets valuta. De bruger højst den mindste seddel, der dækker prisen, så en billet til 24 kr. ikke betales med en 1000-kroneseddel. Plugin-delen af PR'en (`payment` i `omsi.people.set_ticket`) er ikke med, fordi HUB ikke har den billet-API.
 
+### Lyskryds
+- **Busser ved et bussignal, der deler sit spring med et andet signal, får grønt** (openOMSI PR #3009 af thibautgnt): Nogle kryds springer en fase over, når ingen beder om den ved to lys på én gang, fx ind- og udkørslen af en busterminal. Før fik fasen kun grønt, når der holdt en bus ved begge lys samtidig, så en bus ved kun det ene stod i kø for altid. Nu er én bus nok.
+
 ### Til fods
 - **Ctrl+Shift+G virker igen**: Når "Ability to get up" er slået til, rejser chaufføren sig nu altid fra sædet med Ctrl+Shift+G, som i vores main. Før blev tasten ignoreret, hvis Ctrl+Shift+G også stod i en `keyboard.cfg`, og så skete der ingenting. Er indstillingen slået fra, bruger tasten det, den er sat til i `keyboard.cfg`.
 

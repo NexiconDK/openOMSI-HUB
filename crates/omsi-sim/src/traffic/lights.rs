@@ -145,7 +145,14 @@ impl TrafficLightController {
             self.time = (self.time + d).rem_euclid(cycle);
             left -= d;
             let p = self.stops[k];
-            let asked = self.request.get(p.light).copied().unwrap_or(false);
+            // (a skip of several lights at one time and to one place, taken while nobody asks:
+            // one of them asking holds it - a bus at only one of the two lights of Winsenburg's
+            // bus station queued for good, openOMSI PR #3009)
+            let asked = if p.if_request {
+                self.stops.iter().any(|q| q.if_request && q.time == p.time && q.jump_to == p.jump_to && self.request.get(q.light).copied().unwrap_or(false))
+            } else {
+                self.request.get(p.light).copied().unwrap_or(false)
+            };
             let active = if p.if_request { !asked } else { asked };
             if !active {
                 self.passed.push(k);
