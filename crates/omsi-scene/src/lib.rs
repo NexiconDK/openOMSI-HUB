@@ -32,6 +32,9 @@ use std::sync::Arc;
 pub mod camera_arm;
 pub mod driver;
 pub mod lights;
+// (openOMSI PRs #2782, #2929: the map's picture for the navigator, its road markings)
+pub mod mapgen;
+pub mod road_paint;
 pub mod money;
 pub mod puddles;
 pub mod rain;

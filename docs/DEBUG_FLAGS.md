@@ -115,6 +115,7 @@ effect. On Android, `openOMSI/env.txt` holds `NAME=value` lines that are set bef
 | `OMSI_LAN_TRACE` | text | - | use | app | LAN CSV file: where the host's people are drawn. |
 | `OMSI_LIST_ALIGNED` | bool | off | use | scene | Log the splines aligned to the terrain. |
 | `OMSI_LIVERY_ZONES` | bool | off | use | omsihub-game | The livery studio shows the zones it found on the bus's texture. |
+| `OMSI_NO_MAP_CACHE` | bool | off | use | scene | Read the map's navigator layers (houses, ground, paving) again instead of from the cache. |
 | `OMSI_PROFILE` | bool | off | use | app, render, scene, sim, xr | Time per stage of the frame, logged. |
 | `OMSI_PROFILE_GPU` | bool | off | use | app | Profile: wait for the GPU so its time shows as a stage of its own. |
 | `OMSI_PROFILE_JSON` | text | - | use | app | With OMSI_PROFILE and --exit-after: the exit summary (after the 15 s warm-up) as JSON into this file, see scripts/compare-performance.py. |

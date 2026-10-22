@@ -808,6 +808,39 @@ impl Painter {
         }
     }
 
+    /// A triangle in the world at its own depth (a [`crate::Layer::depth`] layer: walls and
+    /// roofs), one colour per corner. (openOMSI PR #2782)
+    pub fn solid_tri(&mut self, a: Vec3, b: Vec3, c: Vec3, ca: Color, cb: Color, cc: Color) {
+        let v = |p: Vec3, col: Color| Vertex { pos: p.to_array(), color: col.0, mode: [2.0, 0.0], ..Default::default() };
+        self.verts.extend([v(a, ca), v(b, cb), v(c, cc)]);
+    }
+
+    /// A shadow triangle on the ground (see `Vertex::mode`): each corner a point and how far
+    /// the shadow moves it (scaled with the layer's `height`).
+    pub fn shadow_tri(&mut self, p: [(Vec2, Vec2); 3], col: Color) {
+        let v = |(q, d): (Vec2, Vec2)| Vertex { pos: [q.x, q.y, 0.0], uv: d.to_array(), color: col.0, mode: [3.0, 0.0], ..Default::default() };
+        self.verts.extend([v(p[0]), v(p[1]), v(p[2])]);
+    }
+
+    /// A world triangle grown by `w_px` pixels (at least `w_m` metres) all round: drawn
+    /// under the same triangles at their own size, a seamless outline of any shape made of
+    /// triangles (the casing of the roads' surfaces).
+    pub fn grown_tri(&mut self, p: [Vec3; 3], w_m: f32, w_px: f32, c: Color) {
+        let mut ext = [Vec2::ZERO; 3];
+        for i in 0..3 {
+            let (a, b, q) = (p[i].truncate(), p[(i + 1) % 3].truncate(), p[(i + 2) % 3].truncate());
+            let (e1, e2) = ((a - b).normalize_or_zero(), (a - q).normalize_or_zero());
+            let bis = (e1 + e2).normalize_or_zero();
+            // (as far along the bisector as keeps both edges a whole width out; a sliver's
+            // sharp corner is held to three widths)
+            let s = (1.0 - e1.dot(bis).powi(2)).max(1e-4).sqrt();
+            ext[i] = bis * (1.0 / s).min(3.0);
+        }
+        for i in 0..3 {
+            self.verts.push(Self::wv(p[i], ext[i], w_m, w_px, c));
+        }
+    }
+
     /// A convex polygon on the ground (world points).
     pub fn world_poly(&mut self, pts: &[Vec3], c: Color) {
         for k in 1..pts.len().saturating_sub(1) {

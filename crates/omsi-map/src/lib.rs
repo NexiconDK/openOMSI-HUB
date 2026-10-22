@@ -5,6 +5,8 @@
 pub mod ailists;
 pub mod calendar;
 pub mod global;
+// (openOMSI PR #2782: the map's own picture for the navigator)
+pub mod layers;
 pub mod package;
 pub mod terrain;
 pub mod tile;

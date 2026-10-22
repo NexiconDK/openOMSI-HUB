@@ -360,6 +360,7 @@ flags! {
     OMSI_NO_ANIMPARENT: Bool, Switch, Use, "off", "Every mesh animated on its own, without [animparent] (A/B).";
     OMSI_NO_AO: Bool, Switch, Frame, "off", "No ambient occlusion pass.";
     OMSI_NO_ATTACH_FALLBACK: Bool, Switch, Use, "off", "Drop attachments that have no fallback instead of placing them (A/B).";
+    OMSI_NO_MAP_CACHE: Bool, Test, Use, "off", "Read the map's navigator layers (houses, ground, paving) again instead of from the cache.";
     OMSI_NO_BC: Bool, Switch, Use, "off", "Upload all textures as RGBA instead of keeping BC compression.";
     OMSI_NO_BOUNDS_CACHE: Bool, Switch, Use, "off", "No cache of instance bounds.";
     OMSI_NO_BRIDGE: Bool, Switch, Use, "off", "LAN: leave the internet alone - no rendezvous bridge, no tunnel (tests, LAN parties).";

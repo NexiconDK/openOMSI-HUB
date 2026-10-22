@@ -7,5 +7,9 @@ description = "Map loading: global.cfg, tiles, terrain, calendar, AI lists, chro
 
 [dependencies]
 omsi-cfg = { path = "../omsi-cfg" }
+bytemuck.workspace = true
+memmap2 = "0.9"
+glam = { workspace = true, features = ["bytemuck"] }
+hashbrown.workspace = true
 log.workspace = true
 thiserror.workspace = true

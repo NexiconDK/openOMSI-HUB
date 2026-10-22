@@ -2,7 +2,7 @@
 struct U {
     view_proj: mat4x4<f32>,
     viewport: vec4<f32>,   // x, y, w, h (target pixels) the world is drawn into
-    target_size: vec4<f32>, // w, h of the target, 0, 0
+    target_size: vec4<f32>, // w, h of the target, how tall the solid shapes stand, 0
     clip: vec4<f32>,       // x0, y0, x1, y1: everything outside fades out
     params: vec4<f32>,     // clip corner radius, opacity, metres per pixel per unit depth, 0
 };
@@ -45,11 +45,25 @@ fn vs_main(v: VIn) -> VOut {
         // in pixels (an untextured world vertex's `uv.x`: a road's casing, a hair wide at any
         // zoom)
         let mpp = max(c.w, 0.01) * u.params.z;
-        let edge = select(0.0, v.uv.x, v.mode.y < 0.5);
+        // (the edge only on flat ground: a solid shape's and a shadow's `uv` is no edge)
+        let edge = select(0.0, v.uv.x, v.mode.y < 0.5 && v.mode.x < 1.5);
         let w = max(v.width.x, v.width.y * mpp) + edge * mpp;
-        let wp = v.pos + vec3<f32>(v.ext * w, 0.0);
+        // solid shapes stand `target_size.z` times as tall; a shadow's corner is moved by its
+        // offset (in `uv`) as far (openOMSI PR #2782: the navigator's houses)
+        let k = u.target_size.z;
+        var base = v.pos;
+        if (v.mode.x > 1.5 && v.mode.x < 2.5) {
+            base = vec3<f32>(v.pos.xy, v.pos.z * k);
+        } else if (v.mode.x > 2.5) {
+            base = vec3<f32>(v.pos.xy + v.uv * k, v.pos.z);
+        }
+        let wp = base + vec3<f32>(v.ext * w, 0.0);
         o.clip = u.view_proj * vec4<f32>(wp, 1.0);
-        o.clip.z = 0.5 * o.clip.w;
+        // mode 1: flat on the map (no depth); 2: a solid shape at its own depth; 3: a shadow
+        // on the ground (the stencil keeps two shadows from darkening it twice)
+        if (v.mode.x < 1.5 || v.mode.x > 2.5) {
+            o.clip.z = 0.5 * o.clip.w;
+        }
     }
     o.uv = v.uv;
     o.color = vec4<f32>(to_linear(v.color.rgb), v.color.a);

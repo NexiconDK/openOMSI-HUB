@@ -1045,7 +1045,7 @@ fn preview_panel_shapes() {
         let (hw, hh) = (cw as f64 * 0.5 * mpp, ch as f64 * 0.5 * mpp);
         let proj = Mat4::orthographic_rh(-hw as f32, hw as f32, -hh as f32, hh as f32, -1000.0, 1000.0);
         let row = Rect::new(0.0, k as f32 * ch, cw, ch);
-        let layer = Layer { view_proj: proj, viewport: [row.x, row.y, row.w, row.h], clip: [0.0; 4], radius: 0.0, opacity: 1.0, px_scale: mpp as f32 };
+        let layer = Layer { view_proj: proj, viewport: [row.x, row.y, row.w, row.h], clip: [0.0; 4], radius: 0.0, opacity: 1.0, px_scale: mpp as f32, depth: false, shadow: false, height: 1.0 };
         let row_of: Vec<MapVehicle> = vehicles.iter().enumerate().map(|(j, v)| MapVehicle { at: DVec3::new((-(cw as f64) * 0.5 + 50.0 + j as f64 * 72.0) * mpp, 0.0, 0.0), ..v.clone() }).collect();
         let mut p = Painter::new();
         paint_vehicles(&mut p, &row_of, &|q: DVec3| Vec3::new(q.x as f32, q.y as f32, 0.0), mpp as f32, 1.2);
