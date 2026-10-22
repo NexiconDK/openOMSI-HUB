@@ -99,25 +99,56 @@ impl Hof {
     }
 
     /// Omsi-Hub: the strings of a destination of this file showing `lines` (a free text, an
-    /// extra text), as many as its destinations have: the first holds the first line, the
-    /// second the second, and every other the first again (a side or rear sign of one line
-    /// shows the main line) - except a string that is no text in the file's destinations:
-    /// a picture (the Krüger matrices' bitmap, `..\..\Anzeigen\Krueger\<file>`, shown
-    /// instead of the text: a text there is a file not found and a blank sign), or one
-    /// (almost) always empty (the extra plug-in sign, the special trip's mark). A picture
-    /// string gets the file most destinations share (a blank roller blind), else nothing; an
-    /// empty one stays empty.
+    /// extra text), as many as its destinations have: the two lines go where the file's own
+    /// destinations have their two lines (`line_layout`: Ahlheim 5's "Betriebshof
+    /// Eichenhöhe" is strings 1 and 2, string 0 the IBIS's short name - the Krüger matrix
+    /// shows string 1 on top and 2 below, and the second line typed had come out on top),
+    /// and every other text string the whole destination (a side or rear sign, the IBIS) -
+    /// except a string that is no text in the file's destinations: a picture (the Krüger
+    /// matrices' bitmap, `..\..\Anzeigen\Krueger\<file>`, shown instead of the text: a text
+    /// there is a file not found and a blank sign), or one (almost) always empty (the extra
+    /// plug-in sign, the special trip's mark). A picture string gets the file most
+    /// destinations share (a blank roller blind), else nothing; an empty one stays empty.
     pub fn text_strings(&self, lines: [&str; 2]) -> Vec<String> {
-        let n = self.string_count_terminus.max(self.termini.iter().map(|t| t.strings.len()).max().unwrap_or(0)).max(2);
+        let ((top, bottom), learned) = self.line_layout();
+        let n = self.string_count_terminus.max(self.termini.iter().map(|t| t.strings.len()).max().unwrap_or(0)).max(2).max(bottom + 1);
         let (a, b) = (lines[0].trim(), lines[1].trim());
+        // (a sign of one line - the IBIS's, a side sign - shows both lines as one, where the
+        // file's own destinations say which strings the two lines are; else the first line,
+        // as before)
+        let whole = if b.is_empty() || !learned { a.to_string() } else { format!("{a} {b}") };
         (0..n)
-            .map(|k| match (k, self.string_kind(k)) {
-                (1, _) => b.to_string(),
-                (0, _) | (_, StringKind::Text) => a.to_string(),
-                (_, StringKind::Picture(common)) => common,
-                (_, StringKind::Empty) => String::new(),
+            .map(|k| match self.string_kind(k) {
+                _ if k == top => a.to_string(),
+                _ if k == bottom => b.to_string(),
+                StringKind::Text => whole.clone(),
+                StringKind::Picture(common) => common,
+                StringKind::Empty => String::new(),
             })
             .collect()
+    }
+
+    /// Omsi-Hub: the strings the file's destinations put their two lines in (top, bottom):
+    /// the pair whose texts make the destination's name ("Betriebshof" + "Eichenhöhe") in
+    /// the most of them, and whether one was found at all (else strings 0 and 1).
+    fn line_layout(&self) -> ((usize, usize), bool) {
+        let mut seen: Vec<((usize, usize), usize)> = Vec::new();
+        for t in self.termini.iter().filter(|t| t.texture_id != FREE_TEXT) {
+            let name = t.texture_id.split_whitespace().collect::<Vec<_>>().join(" ");
+            let s: Vec<&str> = t.strings.iter().map(|x| x.trim()).collect();
+            for a in 0..s.len() {
+                for b in 0..s.len() {
+                    if a != b && !s[a].is_empty() && !s[b].is_empty() && format!("{} {}", s[a], s[b]).split_whitespace().collect::<Vec<_>>().join(" ") == name {
+                        match seen.iter_mut().find(|x| x.0 == (a, b)) {
+                            Some(x) => x.1 += 1,
+                            None => seen.push(((a, b), 1)),
+                        }
+                    }
+                }
+            }
+        }
+        // (the pair most destinations have; of equals, the first found)
+        seen.iter().rev().max_by_key(|x| x.1).map(|x| (x.0, true)).unwrap_or(((0, 1), false))
     }
 
     /// What the file's destinations (not a free text) hold in string `k`.
@@ -1001,5 +1032,32 @@ mod tests {
         assert_eq!(h.info_busstop_lists[0], vec!["ZOB", "Hoheneck"]);
         assert!(h.info_busstop_lists[1].is_empty());
         assert_eq!(h.info_busstop_lists[2], vec!["Hauptbahnhof", "Markt", "Bergerfuerth"]);
+    }
+}
+
+#[cfg(test)]
+mod line_layout_tests {
+    use super::*;
+
+    fn term(name: &str, strings: &[&str]) -> Terminus {
+        Terminus { code: 1, texture_id: name.into(), terminus_stop: None, all_exit: true, strings: strings.iter().map(|s| s.to_string()).collect() }
+    }
+
+    /// Ahlheim 5: string 0 the IBIS's short name, 1 and 2 the matrix's two lines - the two
+    /// lines typed go there (the second had come out on top), the IBIS gets them as one.
+    #[test]
+    fn the_two_lines_go_where_the_files_destinations_have_theirs() {
+        let mut h = Hof::default();
+        h.termini = vec![
+            term("Betriebshof Eichenhöhe", &["B.EICHENHÖHE", "Betriebshof", "Eichenhöhe", "", "Betriebshof Eichenhöhe.tga", "Betr. Eichenhöhe"]),
+            term("Betriebshof Kranenburg", &["B.KRANENBURG", "Betriebshof", "Kranenburg", "", "Betriebshof Kranenburg.tga", "Betr. Kranenburg"]),
+            term("Betriebsfahrt", &["BETRIEBSFAHRT", "Betriebsfahrt", "", "", "Betriebsfahrt.tga", "Betriebsfahrt"]),
+        ];
+        let s = h.text_strings(["Aarhus Rtb", "via motorvejen"]);
+        assert_eq!((s[1].as_str(), s[2].as_str()), ("Aarhus Rtb", "via motorvejen"));
+        assert_eq!(s[0], "Aarhus Rtb via motorvejen");
+        // one line: the first, the bottom empty
+        let s = h.text_strings(["Aarhus Rtb", ""]);
+        assert_eq!((s[0].as_str(), s[1].as_str(), s[2].as_str()), ("Aarhus Rtb", "Aarhus Rtb", ""));
     }
 }
