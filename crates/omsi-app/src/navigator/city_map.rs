@@ -53,6 +53,10 @@ pub struct CityMap {
     pub(super) phone_view: Rect,
     /// The column dragged up or down (a finger has no wheel): the cursor's height before.
     pub(super) column_drag: Option<f32>,
+    /// Omsi-Hub: how far the duty sheet's list is scrolled, and the seconds since the player
+    /// scrolled it (it follows the trip under way again after a while).
+    pub(super) duty_scroll: f32,
+    pub(super) duty_wheel: Option<f32>,
     /// The pin tool (the header's pin button): a click or a tap on the map sets a pin there.
     pub(super) pin_tool: bool,
     /// A press on the map with the pin tool on: where (window pixels), and whether it has
@@ -118,6 +122,9 @@ pub(super) enum Left {
     #[default]
     Nothing,
     SignOn,
+    /// Omsi-Hub: the duty sheet - every trip of the duty with its times, the breaks and the
+    /// changes of line, the trip under way opened up (`nav_duty::sheet`, as openOMSI's has it).
+    Duty,
 }
 
 /// What the left column shows at the companion's `stage`, with a duty or without: the
@@ -128,6 +135,8 @@ pub(super) fn left_page(choice: Option<(Left, Stage)>, stage: Stage, duty: bool)
         Some((l, at)) if at == stage => l,
         _ if stage == Stage::SignOn && !duty => Left::Nothing,
         _ if stage != Stage::OnDuty => Left::SignOn,
+        // (on duty: the duty sheet, every trip and break)
+        _ if duty => Left::Duty,
         _ => Left::Nothing,
     }
 }
@@ -448,6 +457,11 @@ impl Navigator {
             Some(8) => self.resize_by(1),
             // the pin tool: a click (a tap) on the map sets a pin
             Some(9) => self.city.pin_tool = !self.city.pin_tool,
+            // the duty sheet shown or put away
+            Some(10) => {
+                self.city.choose(Left::Duty);
+                self.city.duty_wheel = None;
+            }
             // the pins' card: its buttons (and no drag of the map under it)
             _ if self.city.card.contains(local) => {
                 use crate::nav_pins::{CardHit, Op};
@@ -624,7 +638,12 @@ impl Navigator {
         // the left column dragged: its list or page follows the cursor (kept in range when it
         // is drawn)
         if let Some(py) = self.city.column_drag {
-            self.city.phone.scroll = (self.city.phone.scroll - (y - py)).max(0.0);
+            if self.city.shown == Left::Duty {
+                self.city.duty_scroll = (self.city.duty_scroll - (y - py)).max(0.0);
+                self.city.duty_wheel = Some(0.0);
+            } else {
+                self.city.phone.scroll = (self.city.phone.scroll - (y - py)).max(0.0);
+            }
             self.city.column_drag = Some(y);
             return;
         }
@@ -650,7 +669,12 @@ impl Navigator {
         // over the left column: the companion's page scrolls (kept in range when it is drawn)
         if self.city.sheet.contains(Vec2::new(x - r[0], y - r[1])) {
             let by = amount * 48.0 * self.city.sheet_scale.max(0.5);
-            self.city.phone.scroll = (self.city.phone.scroll - by).max(0.0);
+            if self.city.shown == Left::Duty {
+                self.city.duty_scroll = (self.city.duty_scroll - by).max(0.0);
+                self.city.duty_wheel = Some(0.0);
+            } else {
+                self.city.phone.scroll = (self.city.phone.scroll - by).max(0.0);
+            }
             return;
         }
         let (w, h) = ((r[2] - r[0]) as f64, (r[3] - r[1]) as f64);
@@ -1061,6 +1085,27 @@ impl Navigator {
             self.city.phone_view = view;
             list_clip = [view.x, view.y, view.right(), view.bottom()];
         }
+        // Omsi-Hub: the duty sheet (as openOMSI's beside its city map): its head here, every
+        // trip and break in the clipped layer - scrolled to the trip under way, unless the
+        // player scrolled it a moment ago
+        if let (Left::Duty, Some(d)) = (left, duty) {
+            let view = crate::nav_duty::draw_sheet_head(&mut crate::nav_duty::Pen { p: &mut ui, atlas: &mut self.atlas, fonts: &self.fonts }, d, sheet, f.time, s);
+            let rows = crate::nav_duty::sheet(d);
+            let content = (crate::nav_duty::sheet_height(&rows) + 12.0) * s;
+            self.city.duty_wheel = self.city.duty_wheel.map(|t| t + f.dt).filter(|t| *t < 8.0);
+            if self.city.duty_wheel.is_none() {
+                self.city.duty_scroll = crate::nav_duty::sheet_focus(&rows) * s - view.h * 0.3;
+            }
+            let max = (content - view.h).max(0.0);
+            self.city.duty_scroll = self.city.duty_scroll.clamp(0.0, max);
+            crate::nav_duty::draw_sheet_list(&mut crate::nav_duty::Pen { p: &mut list, atlas: &mut self.atlas, fonts: &self.fonts }, &rows, view, self.city.duty_scroll, s);
+            if max > 0.0 {
+                let thumb = (view.h * view.h / content).max(24.0 * s);
+                let y = view.y + (view.h - thumb) * self.city.duty_scroll / max;
+                ui.rounded(Rect::new(view.right() - 6.0 * s, y, 3.0 * s, thumb), 1.5 * s, Color::WHITE.alpha(0.18));
+            }
+            list_clip = [view.x, view.y, view.right(), view.bottom()];
+        }
         // the pins' card, and a note of theirs under the header (in the middle of the map the
         // column and the card leave)
         self.city.card_hits.clear();
@@ -1075,8 +1120,10 @@ impl Navigator {
         }
         // header: the line and where it goes, the next stop; the size and the buttons on the
         // right (the pin tool's, the companion's page's)
-        let buttons: &[(&str, u8)] = &[("close", 3), ("zoom_out", 2), ("zoom_in", 1), ("my_location", 0), ("location_on", 9), ("badge", 5)];
-        self.city_head(&mut ui, f, w, s, buttons, left, companion.stage, true);
+        // (with a duty: the duty sheet's button too)
+        let all: [(&str, u8); 7] = [("close", 3), ("zoom_out", 2), ("zoom_in", 1), ("my_location", 0), ("location_on", 9), ("view_list", 10), ("badge", 5)];
+        let buttons: Vec<(&str, u8)> = all.into_iter().filter(|b| b.1 != 10 || duty.is_some()).collect();
+        self.city_head(&mut ui, f, w, s, &buttons, left, companion.stage, true);
         let pad = 16.0 * s;
         self.draw_credit(&mut ui, w, h, s);
         // a scale bar, bottom left
@@ -1178,7 +1225,7 @@ impl Navigator {
         let mut bx = w - pad - bs;
         for &(icon, id) in buttons {
             let r = Rect::new(bx, head.y + (head.h - bs) * 0.5, bs, bs);
-            let on = (id == 0 && self.city.follow) || (id == 5 && left == Left::SignOn) || (id == 9 && self.city.pin_tool);
+            let on = (id == 0 && self.city.follow) || (id == 5 && left == Left::SignOn) || (id == 9 && self.city.pin_tool) || (id == 10 && left == Left::Duty);
             ui.rounded(r, 5.0 * s, if on { crate::nav_duty::accent() } else { Color::rgba(36, 44, 62, 1.0) });
             ui.icon(&mut self.atlas, icon, r.center(), 18.0 * s, TEXT);
             // (an amber dot while the duty is not signed and the page is put away)

@@ -103,7 +103,7 @@ fn the_left_column_takes_the_wheel_and_the_press() {
 
 /// The left column shows the companion's page while a phone has a duty waiting to be
 /// signed for; a button chooses for as long as the stage is the same, a second press on it
-/// puts the column away. At work the map has the whole view.
+/// puts the column away. At work the duty sheet shows; on a free drive the map has the whole view.
 #[test]
 fn the_left_column_follows_the_signing_on() {
     assert_eq!(left_page(None, Stage::SignOn, true), Left::SignOn);
@@ -111,7 +111,7 @@ fn the_left_column_follows_the_signing_on() {
     assert_eq!(left_page(None, Stage::SignOn, false), Left::Nothing);
     assert_eq!(left_page(None, Stage::DutyMenu, false), Left::SignOn);
     assert_eq!(left_page(None, Stage::DutyOrder, true), Left::SignOn);
-    assert_eq!(left_page(None, Stage::OnDuty, true), Left::Nothing);
+    assert_eq!(left_page(None, Stage::OnDuty, true), Left::Duty, "on duty: the duty sheet");
     assert_eq!(left_page(None, Stage::OnDuty, false), Left::Nothing, "a free drive: the whole map");
     let mut c = CityMap { stage: Stage::SignOn, shown: Left::Nothing, ..CityMap::default() };
     // signed on (here or on a phone): the choice was for the stage before
@@ -1382,4 +1382,54 @@ fn preview_map_styles() {
             img.save(format!("{dir}/citymap-{city}-{}.png", if light { "light" } else { "dark" })).unwrap();
         }
     }
+}
+
+/// Omsi-Hub: the city map with the duty sheet in its left column (every trip, the breaks),
+/// as on duty: `OMSI_MAP_STYLES_PREVIEW=<folder> cargo test -p omsi-app --lib duty_sheet -- --ignored`.
+#[test]
+#[ignore]
+fn preview_duty_sheet() {
+    let Ok(dir) = std::env::var("OMSI_MAP_STYLES_PREVIEW") else { return };
+    crate::ui_language("ENG");
+    let instance = wgpu::Instance::default();
+    let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).expect("adapter");
+    let (device, queue) = pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).expect("device");
+    let format = wgpu::TextureFormat::Rgba8UnormSrgb;
+    let (w, h) = (1500.0f32, 860.0f32);
+    let mut n = Navigator::new(true, 0.85, "bottom-left");
+    n.atlas = Atlas::new(2048);
+    let net = on_grid(&mut n, 3);
+    let signs = vec![(DVec3::new(10.0, 300.0, 0.0), 90.0, "Hauptstraße".to_string()), (DVec3::new(300.0, 190.0, 0.0), 0.0, "Kirchweg".to_string())];
+    n.streets = Some(std::sync::Arc::new(build_streets(&net, &signs)));
+    n.gpu = Some(Gpu::with_depth(&device, format, 4, n.atlas.size));
+    let route: Vec<usize> = (0..3).map(|j| find(&net, (1.5, j as f64 * 200.0), (1.5, (j + 1) as f64 * 200.0))).collect();
+    n.set_route("0/trip", route, true, n.global_version + (1 << 40));
+    n.toggle_map();
+    n.city.rect = [0.0, 0.0, w, h];
+    n.city.mpp = 0.85;
+    n.city.follow = false;
+    n.city.center = DVec2::new(180.0, 290.0);
+    let f = NavFrame { line: Some("134".into()), terminus: Some("Lühr, Am Frommholz".into()), time: 11.0 * 3600.0 + 30.0 * 60.0, language: "ENG", ..at((1.5, 60.0), 0.0) };
+    n.follow(&f);
+    let (trips, tours) = crate::nav_duty::tests::duty();
+    let state = crate::nav_duty::tests::state(&trips, &tours, 0, 3, false, 40.0);
+    n.city.roads = None;
+    n.city.route.0 = (u64::MAX, 0, 0, 0);
+    n.atlas.begin_frame();
+    let companion = crate::nav_signon::tests::listening(crate::nav_signon::tests::hans());
+    let s = 1.0;
+    let p = n.paint_city(&f, &companion, Some(&state), Left::Duty, w, h, s);
+    let t = device.create_texture(&wgpu::TextureDescriptor {
+        label: None,
+        size: wgpu::Extent3d { width: w as u32, height: h as u32, depth_or_array_layers: 1 },
+        mip_level_count: 1,
+        sample_count: 1,
+        dimension: wgpu::TextureDimension::D2,
+        format,
+        usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
+        view_formats: &[],
+    });
+    let view = t.create_view(&Default::default());
+    n.render_city(&device, &queue, &view, (w as u32, h as u32), p, s);
+    read_back(&device, &queue, &t, (w as u32, h as u32), [70, 84, 96]).save(format!("{dir}/citymap-duty-sheet.png")).unwrap();
 }
