@@ -1165,3 +1165,221 @@ fn entry_points_set_pins_and_a_pins_cross_takes_it_away() {
     assert_eq!(n.pins.list[1].name, "Depot Nord");
     assert!(!n.pins.list[0].name.is_empty() && n.pins.list[0].name != "Depot Nord", "no name of its own: the stop's or street's");
 }
+
+/// Omsi-Hub: a made-up town on the grid of `grid(3)` (streets every 200 m): grass, a pond, a
+/// park with trees, every street paved with its pavements and middle line, the blocks lined
+/// with houses, and a railway.
+fn grid_town() -> omsi_map::layers::Layers {
+    use omsi_map::layers::{self as ml, Building, Layers, Line};
+    let mut l = Layers::empty(DVec2::ZERO);
+    l.tiles = vec![[-150.0, -150.0, 750.0, 750.0]];
+    let quad = |x0: f32, y0: f32, x1: f32, y1: f32| vec![Vec2::new(x0, y0), Vec2::new(x1, y0), Vec2::new(x1, y1), Vec2::new(x0, y0), Vec2::new(x1, y1), Vec2::new(x0, y1)];
+    l.land[ml::LAND_GRASS] = quad(-150.0, -150.0, 750.0, 750.0);
+    l.land[ml::LAND_WATER] = quad(430.0, 30.0, 570.0, 170.0);
+    l.land[ml::LAND_FOREST] = quad(215.0, 415.0, 385.0, 585.0);
+    let (mut road, mut inner, mut foot, mut paint) = (Vec::new(), Vec::new(), Vec::new(), Vec::new());
+    for k in 0..4 {
+        let c = k as f32 * 200.0;
+        for (a, b) in [((c - 4.0, -150.0), (c + 4.0, 750.0)), ((-150.0, c - 4.0), (750.0, c + 4.0))] {
+            road.extend(quad(a.0, a.1, b.0, b.1));
+        }
+        inner.extend(quad(c - 1.5, -150.0, c + 1.5, 750.0));
+        inner.extend(quad(-150.0, c - 1.5, 750.0, c + 1.5));
+        for (x0, x1) in [(c - 7.0, c - 4.0), (c + 4.0, c + 7.0)] {
+            foot.extend(quad(x0, -150.0, x1, 750.0));
+            foot.extend(quad(-150.0, x0, 750.0, x1));
+        }
+        for j in -15..75 {
+            let t = j as f32 * 10.0;
+            paint.extend(quad(c - 0.08, t, c + 0.08, t + 5.0));
+            paint.extend(quad(t, c - 0.08, t + 5.0, c + 0.08));
+        }
+    }
+    l.paved[ml::PAVE_ROAD] = road;
+    l.paved[ml::PAVE_INNER] = inner;
+    l.paved[ml::PAVE_FOOT] = foot;
+    l.paint[ml::PAINT_WHITE] = paint;
+    // houses round every block but the pond's and the park's, and along the west side
+    let mut k = 0u32;
+    let mut house = |x: f32, y: f32, w: f32, d: f32, l: &mut Layers| {
+        k += 1;
+        let outline = vec![Vec2::new(x, y), Vec2::new(x + w, y), Vec2::new(x + w, y + d), Vec2::new(x, y + d)];
+        l.buildings.push(Building { outline, roof: vec![[0, 1, 2], [0, 2, 3]], height: 8.0 + (k % 5) as f32 * 4.5, open: false, has_mesh: false, inst: u32::MAX });
+    };
+    for bx in 0..3 {
+        for by in 0..3 {
+            if (bx, by) == (2, 0) || (bx, by) == (1, 2) {
+                continue;
+            }
+            let (x0, y0) = (bx as f32 * 200.0, by as f32 * 200.0);
+            for i in 0..5 {
+                let t = 14.0 + i as f32 * 36.0;
+                house(x0 + 12.0, y0 + t, 16.0, 30.0, &mut l);
+                house(x0 + 172.0, y0 + t, 16.0, 30.0, &mut l);
+                if (1..4).contains(&i) {
+                    house(x0 + t, y0 + 12.0, 30.0, 16.0, &mut l);
+                    house(x0 + t, y0 + 172.0, 30.0, 16.0, &mut l);
+                }
+            }
+        }
+    }
+    for i in 0..18 {
+        house(-40.0, -100.0 + i as f32 * 42.0, 26.0, 32.0, &mut l);
+    }
+    for i in 0..40 {
+        l.trees.push([225.0 + (i % 8) as f32 * 20.0, 425.0 + (i / 8) as f32 * 34.0, 5.5]);
+    }
+    l.lines.push(Line { class: ml::LINE_RAIL, width: 3.0, points: vec![Vec2::new(-150.0, 700.0), Vec2::new(750.0, 660.0)] });
+    l
+}
+
+/// What a texture holds, laid over `under` (the drawing is premultiplied).
+fn read_back(device: &wgpu::Device, queue: &wgpu::Queue, t: &wgpu::Texture, (w, h): (u32, u32), under: [u8; 3]) -> image::RgbaImage {
+    let stride = (w * 4).div_ceil(256) * 256;
+    let buf = device.create_buffer(&wgpu::BufferDescriptor { label: None, size: (stride * h) as u64, usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ, mapped_at_creation: false });
+    let mut enc = device.create_command_encoder(&Default::default());
+    enc.copy_texture_to_buffer(t.as_image_copy(), wgpu::TexelCopyBufferInfo { buffer: &buf, layout: wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(stride), rows_per_image: None } }, wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 });
+    queue.submit([enc.finish()]);
+    buf.slice(..).map_async(wgpu::MapMode::Read, |_| {});
+    device.poll(wgpu::PollType::wait_indefinitely()).ok();
+    let data = buf.slice(..).get_mapped_range();
+    image::RgbaImage::from_fn(w, h, |x, y| {
+        let i = (y * stride + x * 4) as usize;
+        let a = data[i + 3] as f32 / 255.0;
+        let px = |c: usize| (data[i + c] as f32 + under[c] as f32 * (1.0 - a)).min(255.0) as u8;
+        image::Rgba([px(0), px(1), px(2), 255])
+    })
+}
+
+/// Omsi-Hub: pictures of the small navigator and the city map in every look of `nav_map`
+/// (classic, flat 2D, 3D) and `city_map` (classic, the map's own picture), dark and light,
+/// rendered on the GPU as the game draws them, on `grid_town`:
+/// `OMSI_MAP_STYLES_PREVIEW=<folder> cargo test -p omsi-app --lib map_styles -- --ignored`.
+#[test]
+#[ignore]
+fn preview_map_styles() {
+    use crate::nav_panel as np;
+    let Ok(dir) = std::env::var("OMSI_MAP_STYLES_PREVIEW") else { return };
+    crate::ui_language("ENG");
+    let instance = wgpu::Instance::default();
+    let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).expect("adapter");
+    let (device, queue) = pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).expect("device");
+    let format = wgpu::TextureFormat::Rgba8UnormSrgb;
+    let target = |w: u32, h: u32| {
+        device.create_texture(&wgpu::TextureDescriptor {
+            label: None,
+            size: wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 },
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
+            view_formats: &[],
+        })
+    };
+    let signs = vec![(DVec3::new(10.0, 300.0, 0.0), 90.0, "Hauptstraße".to_string()), (DVec3::new(300.0, 190.0, 0.0), 0.0, "Kirchweg".to_string())];
+    let layers = std::sync::Arc::new(grid_town());
+    let setup = |nav: &str, city: &str, light: bool| {
+        let mut n = Navigator::new(true, 0.85, "bottom-left");
+        n.atlas = Atlas::new(2048);
+        let net = on_grid(&mut n, 3);
+        n.streets = Some(std::sync::Arc::new(build_streets(&net, &signs)));
+        n.light = light;
+        n.look.data = Some(std::sync::Arc::new(omsi_mapdraw::MapData::new(layers.clone())));
+        n.look.data_version = 1;
+        n.set_styles(nav, city);
+        n.gpu = Some(Gpu::with_depth(&device, format, 4, n.atlas.size));
+        (n, net)
+    };
+    // (a build on its worker: waited for, the carriageways' list first)
+    let settle = |n: &mut Navigator, mut step: Box<dyn FnMut(&mut Navigator) -> Option<ground::Built> + '_>| -> Option<ground::Built> {
+        let mut last = None;
+        for _ in 0..600 {
+            n.look.poll();
+            if let Some(b) = step(n) {
+                last = Some(b);
+            }
+            let roads_in = n.look.roads.is_some();
+            let done = |g: Option<ground::PanelGround>| g.is_some_and(|g| (g.key >> 60) & 1 == 1);
+            if roads_in && done(n.look.panel.or(n.look.city_ground)) && n.look.panel_job.is_none() && n.look.city_job.is_none() && last.is_some() {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(15));
+        }
+        last
+    };
+    // --- the small navigator: dark and light, classic, flat and 3D, side by side
+    let s = 1.6f32;
+    let (pw, gap) = (np::WIDTH * s, 24.0f32);
+    let mut sheet: Option<image::RgbaImage> = None;
+    for (row, light) in [false, true].into_iter().enumerate() {
+        for (col, style) in ["classic", "flat", "3d"].into_iter().enumerate() {
+            let (mut n, net) = setup(style, "classic", light);
+            let route: Vec<usize> = (0..3).map(|j| find(&net, (1.5, j as f64 * 200.0), (1.5, (j + 1) as f64 * 200.0))).collect();
+            n.set_route("0/trip", route, true, n.global_version + (1 << 40));
+            let stop = |name: &str, y: f64, min: f64| NavStop { object_id: 0, position: DVec3::new(4.0, y, 0.0), name: name.into(), arrival: 7.0 * 3600.0 + min * 60.0, closed: None };
+            let f = NavFrame { line: Some("314".into()), terminus: Some("Großweier".into()), stops: vec![stop("Stadttheater", 300.0, 52.0), stop("Altstadtring", 450.0, 53.0), stop("Alter Bahnhof", 590.0, 55.0)], delay: Some(20.0), speed_kmh: 34.0, time: 7.0 * 3600.0 + 51.0 * 60.0, language: "ENG", ..at((1.5, 60.0), 0.0) };
+            n.follow(&f);
+            n.follow(&f);
+            n.speed_avg = 9.0;
+            n.next_dist = Some(160.0);
+            n.zoom = 110.0 + 34.0 * 2.2;
+            let new_look = style != "classic";
+            let bus = f.bus.truncate();
+            let built = if new_look { settle(&mut n, Box::new(move |n: &mut Navigator| n.panel_ground(bus))) } else { None };
+            let ph = ((pw * 0.62).round() + (np::HEAD * s).round() + (np::NEXT * s).round()).round();
+            let lay = np::layout(pw, ph, s, None, false, true);
+            let ph = lay.next.bottom();
+            n.roads = None;
+            n.route_mesh.0 = u64::MAX;
+            let vehicles = traffic_round();
+            let p = n.paint_panel((pw, ph), &lay, &f, 0, &vehicles);
+            let (w, h) = (pw as u32, ph as u32);
+            let t = target(w, h);
+            let view = t.create_view(&Default::default());
+            n.render_panel(&device, &queue, &view, (w, h), p, built, new_look);
+            let img = read_back(&device, &queue, &t, (w, h), [70, 84, 96]);
+            let sh = sheet.get_or_insert_with(|| image::RgbaImage::from_pixel((3.0 * (pw + gap) + gap) as u32, (2.0 * (ph + gap) + gap) as u32, image::Rgba([70, 84, 96, 255])));
+            image::imageops::overlay(sh, &img, (gap + col as f32 * (pw + gap)) as i64, (gap + row as f32 * (ph + gap)) as i64);
+            img.save(format!("{dir}/minimap-{style}-{}.png", if light { "light" } else { "dark" })).unwrap();
+        }
+    }
+    if let Some(sh) = sheet {
+        sh.save(format!("{dir}/minimap-all.png")).unwrap();
+    }
+    // --- the city map: classic and the map's own picture, dark and light
+    let (w, h) = (1280.0f32, 760.0f32);
+    let cs = 1.0f32;
+    for light in [false, true] {
+        for city in ["classic", "new"] {
+            let (mut n, _) = setup("classic", city, light);
+            n.toggle_map();
+            n.city.rect = [0.0, 0.0, w, h];
+            n.city.mpp = 0.65;
+            n.city.follow = false;
+            n.city.center = DVec2::new(260.0, 260.0);
+            let f = NavFrame { speed_kmh: 32.0, language: "ENG", ..at((1.5, 60.0), 0.0) };
+            n.follow(&f);
+            let half = (w.max(h) as f64) * 0.5 * n.city.mpp;
+            let (centre, mpp) = (n.city.center, n.city.mpp);
+            if city == "new" {
+                if let Some(b) = settle(&mut n, Box::new(move |n: &mut Navigator| n.city_ground_step(centre, half, mpp))) {
+                    let gpu = n.gpu.as_mut().unwrap();
+                    for (k, v) in b.verts.iter().enumerate() {
+                        gpu.upload(&device, &queue, ground::CITY_BUFFERS + k, v);
+                    }
+                }
+            }
+            n.city.roads = None;
+            n.city.route.0 = (u64::MAX, 0, 0, 0);
+            n.atlas.begin_frame();
+            let companion = crate::nav_signon::tests::listening(crate::nav_signon::tests::hans());
+            let p = n.paint_city(&f, &companion, None, Left::Nothing, w, h, cs);
+            let t = target(w as u32, h as u32);
+            let view = t.create_view(&Default::default());
+            n.render_city(&device, &queue, &view, (w as u32, h as u32), p, cs);
+            let img = read_back(&device, &queue, &t, (w as u32, h as u32), [70, 84, 96]);
+            img.save(format!("{dir}/citymap-{city}-{}.png", if light { "light" } else { "dark" })).unwrap();
+        }
+    }
+}

@@ -1097,11 +1097,19 @@ impl Navigator {
     pub(super) fn city_to_gpu(&mut self, renderer: &Renderer, scene: &mut Scene, paint: CityPaint, win: [f32; 4], s: f32) {
         let [x0, y0, w, h] = win;
         let (tw, th) = (w as u32, h as u32);
-        let CityPaint { bg, dots, ui, list, list_clip, roads: roads_verts, surface: surface_verts, surface_n, route: route_verts, world, ground, ground_layer, .. } = paint;
-        let (n_bg, n_dots) = (bg.len(), dots.len());
         let Some((tex, _, _)) = self.city.target else { return };
         let Some(view) = renderer.texture_view(scene, tex) else { return };
-        let (Some(gpu), device, queue) = (self.gpu.as_mut(), &renderer.device, &renderer.queue) else { return };
+        self.render_city(&renderer.device, &renderer.queue, &view, (tw, th), paint, s);
+        scene.overlays.push((tex, [x0, y0, x0 + w, y0 + h]));
+    }
+
+    /// The city map as painted (`paint`) onto the GPU and drawn into `view` (`size` pixels).
+    pub(super) fn render_city(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, view: &wgpu::TextureView, size: (u32, u32), paint: CityPaint, s: f32) {
+        let (tw, th) = size;
+        let (w, h) = (tw as f32, th as f32);
+        let CityPaint { bg, dots, ui, list, list_clip, roads: roads_verts, surface: surface_verts, surface_n, route: route_verts, world, ground, ground_layer, .. } = paint;
+        let (n_bg, n_dots) = (bg.len(), dots.len());
+        let Some(gpu) = self.gpu.as_mut() else { return };
         if let Some(v) = roads_verts {
             gpu.upload(device, queue, 3, &v);
         }
@@ -1144,9 +1152,8 @@ impl Navigator {
             Draw { buffer: 5, range: n_list..all.len() as u32, layer: 2, texture: 0 },
         ];
         let mut enc = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("city map") });
-        gpu.render(device, queue, &mut enc, &view, (tw, th), Some(wgpu::Color::TRANSPARENT), &layers, &draws);
+        gpu.render(device, queue, &mut enc, view, (tw, th), Some(wgpu::Color::TRANSPARENT), &layers, &draws);
         queue.submit([enc.finish()]);
-        scene.overlays.push((tex, [x0, y0, x0 + w, y0 + h]));
     }
 
     /// The city map's header along the top of a view `w` pixels wide (opaque: the route and

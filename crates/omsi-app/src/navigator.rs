@@ -1539,9 +1539,16 @@ impl Navigator {
         let new_look = self.look.nav.new_look() && self.look.data.is_some();
         let ground_built = if new_look { self.panel_ground(f.bus.truncate()) } else { None };
         let p = self.paint_panel((size.0 as f32, size.1 as f32), lay, f, sched, &vehicles);
+        self.render_panel(&renderer.device, &renderer.queue, target, size, p, ground_built, new_look);
+    }
+
+    /// The small navigator as painted (`p`) onto the GPU and drawn into `target`, with the
+    /// map's own picture under it when `new_look` (a ground just built goes up first).
+    #[allow(clippy::too_many_arguments)]
+    fn render_panel(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, target: &wgpu::TextureView, size: (u32, u32), p: PanelPaint, ground_built: Option<ground::Built>, new_look: bool) {
         let ground = self.look.panel.filter(|_| new_look);
         let three_d = self.look.nav == ground::MapStyle::ThreeD;
-        let (Some(gpu), device, queue) = (self.gpu.as_mut(), &renderer.device, &renderer.queue) else { return };
+        let Some(gpu) = self.gpu.as_mut() else { return };
         if let Some(b) = ground_built {
             for (k, v) in b.verts.iter().enumerate() {
                 gpu.upload(device, queue, ground::PANEL_BUFFERS + k, v);
