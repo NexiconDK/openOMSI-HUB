@@ -117,7 +117,7 @@ fn route_numbers(app: &App) -> Vec<String> {
 /// Whether a line can be represented by the numeric IBIS line/suffix variables openOMSI
 /// already knows how to encode. Everything else must stay as display text: turning "-10"
 /// or "EXP" into a number loses information.
-fn numeric_ibis_line(line: &str) -> bool {
+pub(crate) fn numeric_ibis_line(line: &str) -> bool {
     let line = line.trim();
     if line.is_empty() {
         return false;
@@ -162,11 +162,7 @@ pub(crate) fn set_route_by_hand(app: &mut App, line: &str) {
             // OMSI's route-number field is also used as arbitrary display text. Do not
             // force symbols/unknown letters through IBIS_LinieKurs: that would turn "-10"
             // into line 0 (and matrix scripts would then blank or rewrite the rear sign).
-            for name in ["SetLineTo", "Matrix_Nr", "Linie"] {
-                if let Some(i) = p.vehicle.ty.program.str_var(name) {
-                    p.vehicle.state.str_vars[i as usize] = line.to_string();
-                }
-            }
+            route_text_on_display(&mut p.vehicle, line);
         }
         log::info!(
             "route number set by hand: {line} (IBIS_LinieKurs {:?}, Matrix_Nr {:?})",
@@ -177,9 +173,19 @@ pub(crate) fn set_route_by_hand(app: &mut App, line: &str) {
     }
 }
 
+/// A route number the IBIS cannot hold ("NE21", "-10") put on the displays as it is typed:
+/// the matrix's number, the roller blind's and the route's text.
+pub(crate) fn route_text_on_display(v: &mut omsi_sim::VehicleInstance, line: &str) {
+    for name in ["SetLineTo", "Matrix_Nr", "Linie"] {
+        if let Some(i) = v.ty.program.str_var(name) {
+            v.state.str_vars[i as usize] = line.to_string();
+        }
+    }
+}
+
 /// The route number the bus shows: its matrix's (`Matrix_Nr`), else the one it was set to
 /// (`SetLineTo`), else its IBIS's line number.
-fn line_shown(v: &omsi_sim::VehicleInstance) -> Option<String> {
+pub(crate) fn line_shown(v: &omsi_sim::VehicleInstance) -> Option<String> {
     [v.str_var("Matrix_Nr"), v.str_var("SetLineTo")]
         .into_iter()
         .map(|s| s.trim().to_string())
@@ -1129,8 +1135,14 @@ pub(crate) fn run_move(app: &mut App, kind: &ListKind, action: &str, mv: Move) -
                 if let Some((hof, t)) = hof.as_ref().and_then(|h| h.termini.get(ti).map(|t| (h, t))) {
                     // (the line on the IBIS stays; only the destination changes)
                     let line = destination_line(&p.vehicle);
+                    // NexiconDK: and a route number on the displays the IBIS cannot hold
+                    // ("NE21", typed by hand) stays there too
+                    let text = line_shown(&p.vehicle).filter(|l| !numeric_ibis_line(l));
                     let name = t.menu_name();
                     p.set_destination_by_hand(hof, &line, ti);
+                    if let Some(text) = text {
+                        route_text_on_display(&mut p.vehicle, &text);
+                    }
                     log::info!("destination display set by hand: {} {} (terminus code now {:?})", t.code, name.trim(), p.vehicle.var("IBIS_TerminusCode"));
                     app.service_msg = Some((omsi_ui::tr("Destination: %{name}").replace("%{name}", name.trim()), 3.0));
                 }
@@ -1224,6 +1236,21 @@ mod tests {
                 assert_eq!(super::preset_now(&file), None);
             }
         }
+    }
+
+    /// NexiconDK: a route number the IBIS cannot hold ("NE21") is put on the displays as
+    /// typed, read back as the bus shows it (the form opens with it), and the destination is
+    /// set with the IBIS's own number beside it.
+    #[test]
+    fn a_route_number_the_ibis_cannot_hold_stays_as_typed() {
+        assert!(!super::numeric_ibis_line("NE21") && !super::numeric_ibis_line("-10"));
+        assert!(super::numeric_ibis_line("N21") && super::numeric_ibis_line("92E") && super::numeric_ibis_line("152"));
+        let mut v = crate::schedule::tests::script_test_vehicle("{frame}\n{end}\n", "IBIS_LinieKurs\n", "Matrix_Nr\nSetLineTo\nLinie\n");
+        v.set_var("IBIS_LinieKurs", 152.0);
+        super::route_text_on_display(&mut v, "NE21");
+        assert_eq!((v.str_var("Matrix_Nr"), v.str_var("SetLineTo"), v.str_var("Linie")), ("NE21".to_string(), "NE21".to_string(), "NE21".to_string()));
+        assert_eq!(super::line_shown(&v).as_deref(), Some("NE21"));
+        assert_eq!(super::destination_line(&v), "152");
     }
 
     /// A destination picked from the list keeps the route number the bus shows, its letter

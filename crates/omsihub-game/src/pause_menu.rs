@@ -196,9 +196,10 @@ fn card_of(state: &nav_duty::DutyState, free: bool, now: f64, weather: String, d
     })?;
     let status = (!free).then(|| {
         let fill = match status {
+            // (NexiconDK, as the navigator's board and openOMSI_DK: late orange, early red)
             Status::Running(late) => match nav_duty::punctuality(late) {
-                Punctuality::Late => nav_duty::LATE,
-                Punctuality::Early => nav_duty::EARLY,
+                Punctuality::Late => nav_duty::BEHIND,
+                Punctuality::Early => nav_duty::LATE,
                 Punctuality::OnTime => nav_duty::ON_TIME,
             },
             Status::Break(left) if left < 0.0 => nav_duty::LATE,

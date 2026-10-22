@@ -44,6 +44,7 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 
 ### Skilte og Line and tour (rettelser)
 - **De to linjer kommer i rigtig rækkefølge**: Teksten fra det øverste felt står nu øverst på skiltet. HUB lægger linjerne i de samme strenge, som hof-filens egne destinationer bruger (i Ahlheim 5 er det streng 1 og 2). Før havnede den anden linje øverst på Krüger-matricerne.
+- **Et linjenummer, IBIS'en ikke kan rumme, bliver stående** (fx "NE21"): Destinationsvinduet åbner med den nuværende destination udfyldt, så "Select" satte også destinationen, og det skete med IBIS'ens nummer, der straks lagde sig over "NE21". Nu lægges det skrevne nummer på skiltene igen bagefter, og vinduet åbner med det nummer, skiltet viser. Vælger man en destination fra listen, bliver "NE21" også stående. IBIS'en selv kan kun tal, evt. med ét bogstav ("N21", "92E"), og beholder sit eget nummer.
 - **"Clear display" fjerner også linjenummeret**: Før blev IBIS'ens linjenummer skrevet tilbage på det tomme skilt.
 - **Pilen til højre ved turens tid i "Line and tour" vises igen**: Ikonet manglede i HUB's ikonsæt.
 
@@ -83,7 +84,7 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 ### Navigatorens vagt-tavle: til tiden, forsinket, foran (som i vores main)
 - **Status-mærket viser, hvor meget du er foran eller bagud, på sekundet**: grøn "On time - 01:45" (til tiden, op til 2 minutter forsinket), orange "04:10", når du er mere end 2 minutter forsinket, og rød "00:32", når du er foran køreplanen, bare ét sekund. Før var det grøn "on time" uden tid, rød for forsinket fra 3 minutter og blå for foran fra 2 minutter.
 - **Forventet ankomst**: Under turens navn står "planned 11:46 · expected 11:50" for ankomsten til endestationen, når den forventede tid er et andet minut end den planlagte. Ved hvert stop står "sched. 11:32  exp. 11:36", den forventede i farven for foran, til tiden eller forsinket. Kører du på minuttet, står kun den planlagte tid.
-- Navigatorens egen forsinkelse (uden tavlen) og dens stopliste bruger de samme farver: rød foran, orange forsinket.
+- Navigatorens egen forsinkelse (uden tavlen), dens stopliste og turens kort i pausemenuen bruger de samme farver: rød foran, orange forsinket.
 
 ### Minimap og bykort: kortets udseende
 - **Kortets eget billede som i openOMSI** (openOMSI PR #2782, #2831 og #2929, kun selve kortet): Under Esc → Options → Gameplay står nu to valg. *Minimap's map*: "Classic (as before)" er vejene som hidtil, "Flat 2D map" er kortets eget billede set lige oppefra (grønt land, vand, skov, de belagte gader med deres striber og husene), og "Map in 3D" er det samme billede på skrå med husene stående i 3D. *City map's map*: "Classic (as before)" eller "The map's own picture". Skiftet sker med det samme. Resten af navigatoren og bykortet (ruten, stoppestederne, knapperne) er som før.

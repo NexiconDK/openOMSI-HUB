@@ -107,17 +107,17 @@ fn the_card_tells_the_trip_as_the_board_does() {
     let c = card_of(&state(&trips, &tours, 0, 3, false, 250.0), false, 11.0 * 3600.0 + 35.0 * 60.0, "Rain".into(), 92.4).unwrap();
     assert_eq!(c.line.as_deref(), Some("35"));
     assert_eq!((c.from.as_str(), c.to.as_str()), ("Hauptbahnhof", "Diakonissenkrankenhaus"));
-    assert_eq!(c.status.as_ref().map(|s| (s.0.as_str(), s.1)), Some(("+4:10", nav_duty::LATE)));
+    assert_eq!(c.status.as_ref().map(|s| (s.0.as_str(), s.1)), Some(("04:10", nav_duty::BEHIND)));
     assert_eq!(c.sub, "Tour 1  \u{b7}  trip 1 of 3");
     let stops: Vec<_> = c.stops.iter().map(|s| (s.name.as_str(), s.time.as_str(), s.next)).collect();
     assert_eq!(stops, [("Kirchweg", "11:32", true), ("Rathaus", "11:35", false), ("Schule", "11:38", false), ("Park", "11:41", false)]);
     assert_eq!(c.stats, vec![("schedule", "Time", "11:35".to_string()), ("partly_cloudy_day", "Weather", "Rain".to_string()), ("speed", "Score", "92 %".to_string())]);
     // on time, and early
     let c = card_of(&state(&trips, &tours, 0, 3, false, 30.0), false, 0.0, String::new(), 100.0).unwrap();
-    assert_eq!(c.status.as_ref().map(|s| (s.0.as_str(), s.1)), Some(("On time", nav_duty::ON_TIME)));
+    assert_eq!(c.status.as_ref().map(|s| (s.0.as_str(), s.1)), Some(("On time - 00:30", nav_duty::ON_TIME)));
     assert!(!c.stats.iter().any(|s| s.1 == "Weather"), "an unknown weather is left out");
     let c = card_of(&state(&trips, &tours, 0, 3, false, -200.0), false, 0.0, String::new(), 100.0).unwrap();
-    assert_eq!(c.status.map(|s| s.1), Some(nav_duty::EARLY));
+    assert_eq!(c.status.map(|s| s.1), Some(nav_duty::LATE), "early: red");
     // a free drive keeps no time: no chip, no times
     let c = card_of(&state(&trips, &tours, 0, 3, false, 0.0), true, 0.0, String::new(), 100.0).unwrap();
     assert!(c.status.is_none() && c.stops.iter().all(|s| s.time.is_empty()));

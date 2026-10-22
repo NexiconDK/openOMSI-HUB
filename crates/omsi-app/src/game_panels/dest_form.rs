@@ -43,7 +43,9 @@ pub(crate) fn open(app: &mut crate::App) {
         app.service_msg = Some(("No vehicle to set a destination for".into(), 3.0));
         return;
     };
-    let route = crate::game_lists::destination_line(&p.vehicle);
+    // (the route number as the displays show it - "NE21" too, which the IBIS cannot hold:
+    // Select again keeps it, NexiconDK)
+    let route = crate::game_lists::line_shown(&p.vehicle).unwrap_or_else(|| crate::game_lists::destination_line(&p.vehicle));
     let shown = p.vehicle.host.hof.as_deref().and_then(|hof| {
         let ti = crate::schedule::shown_destination(&p.vehicle, hof, p.blind_pick.as_ref())?;
         hof.termini.get(ti).map(|t| t.menu_name())
@@ -134,7 +136,7 @@ fn set(app: &mut crate::App, form: &DestForm, clear: bool) -> String {
     if !clear && lines.iter().all(|l| l.trim().is_empty()) {
         return omsi_ui::tr("Route number set").into_owned();
     }
-    match named(&hof, &lines) {
+    let said = match named(&hof, &lines) {
         Some(ti) => {
             p.set_destination_by_hand(&hof, &line, ti);
             format!("{} {}", omsi_ui::tr("Destination:"), hof.termini[ti].menu_name())
@@ -147,7 +149,16 @@ fn set(app: &mut crate::App, form: &DestForm, clear: bool) -> String {
             log::info!("destination display set to free text: {:?} / {:?}", lines[0], lines[1]);
             if clear { omsi_ui::tr("Display cleared").into_owned() } else { omsi_ui::tr("Destination set as typed").into_owned() }
         }
+    };
+    // NexiconDK: a route number typed that the IBIS cannot hold ("NE21") stays on the
+    // displays: the destination above was set with the IBIS's number (`destination_line`),
+    // which put the old one back over it at once
+    let typed = form.route.trim();
+    if !clear && !typed.is_empty() && !crate::game_lists::numeric_ibis_line(typed) {
+        crate::game_lists::route_text_on_display(&mut p.vehicle, typed);
+        log::info!("route number kept as typed over the destination: {typed}");
     }
+    said
 }
 
 #[cfg(test)]
