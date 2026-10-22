@@ -115,7 +115,6 @@ effect. On Android, `openOMSI/env.txt` holds `NAME=value` lines that are set bef
 | `OMSI_LAN_TRACE` | text | - | use | app | LAN CSV file: where the host's people are drawn. |
 | `OMSI_LIST_ALIGNED` | bool | off | use | scene | Log the splines aligned to the terrain. |
 | `OMSI_LIVERY_ZONES` | bool | off | use | omsihub-game | The livery studio shows the zones it found on the bus's texture. |
-| `OMSI_NO_MAP_CACHE` | bool | off | use | scene | Read the map's navigator layers (houses, ground, paving) again instead of from the cache. |
 | `OMSI_PROFILE` | bool | off | use | app, render, scene, sim, xr | Time per stage of the frame, logged. |
 | `OMSI_PROFILE_GPU` | bool | off | use | app | Profile: wait for the GPU so its time shows as a stage of its own. |
 | `OMSI_PROFILE_JSON` | text | - | use | app | With OMSI_PROFILE and --exit-after: the exit summary (after the 15 s warm-up) as JSON into this file, see scripts/compare-performance.py. |
@@ -206,6 +205,8 @@ effect. On Android, `openOMSI/env.txt` holds `NAME=value` lines that are set bef
 | `OMSI_LIVERY_LOOK` | text | - | test | omsihub-game | Tests: a folder for pictures of the livery studio. |
 | `OMSI_LIVERY_WINDOWS` | text | - | test | omsihub-game | Tests: pictures of a print on the windows (<OMSI folder>\|<out folder>\|<bus>[;<bus>...]). |
 | `OMSI_MAP` | text | - | test | launcher-core | Tests: the map the timetable tests read. |
+| `OMSI_MAP_LOOK_PREVIEW` | text | - | test | app | Tests: a folder for pictures of the minimap's map looks on a made-up town. |
+| `OMSI_MAP_STYLES_PREVIEW` | text | - | test | app | Tests: a folder for pictures of every map look and the city map's duty sheet. |
 | `OMSI_MENU_LOOK` | text | - | test | app | Tests: a folder for pictures of the pause menu. |
 | `OMSI_MOBILE` | bool | off | use | app | The phone layout on a computer (screen cut-outs). |
 | `OMSI_MUTE` | bool | off | use | audio | Mix everything as usual but play nothing. |
@@ -217,6 +218,7 @@ effect. On Android, `openOMSI/env.txt` holds `NAME=value` lines that are set bef
 | `OMSI_NAV_PROBE` | text | - | use | app | x,y[,r]: the network lanes that start or end within r of that point. |
 | `OMSI_NAV_SCHEDULE` | bool | off | use | app | Navigation map shows the schedule. |
 | `OMSI_NAV_SIGNON_PREVIEW` | text | - | test | app | Tests: a picture of the navigator's sign-on page. |
+| `OMSI_NO_MAP_CACHE` | bool | off | use | scene | Read the map's navigator layers (houses, ground, paving) again instead of from the cache. |
 | `OMSI_ONLY_MESH` | text | - | use | scene | a\|b: draw only the meshes whose file names contain one of the parts. |
 | `OMSI_ONLY_OBJECT` | text | - | use | scene | Load only the objects whose file name contains this text. |
 | `OMSI_ONLY_SURFACES` | bool | off | frame | render | Draw only the surfaces. |

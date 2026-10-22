@@ -341,6 +341,8 @@ flags! {
     OMSI_LIVERY_WINDOWS: Text, Test, Test, "-", "Tests: pictures of a print on the windows (<OMSI folder>|<out folder>|<bus>[;<bus>...]).";
     OMSI_LIVERY_ZONES: Bool, Debug, Use, "off", "The livery studio shows the zones it found on the bus's texture.";
     OMSI_MAP: Text, Test, Test, "-", "Tests: the map the timetable tests read.";
+    OMSI_MAP_LOOK_PREVIEW: Text, Test, Test, "-", "Tests: a folder for pictures of the minimap's map looks on a made-up town.";
+    OMSI_MAP_STYLES_PREVIEW: Text, Test, Test, "-", "Tests: a folder for pictures of every map look and the city map's duty sheet.";
     OMSI_MAX_FPS: Num, Tuning, Use, "settings", "Frame rate limit for this run.";
     OMSI_MENU_LOOK: Text, Test, Test, "-", "Tests: a folder for pictures of the pause menu.";
     OMSI_METER: Text, Tuning, Use, "-", "gain,target,dark,bright,bias,night: the exposure metering.";
@@ -360,7 +362,6 @@ flags! {
     OMSI_NO_ANIMPARENT: Bool, Switch, Use, "off", "Every mesh animated on its own, without [animparent] (A/B).";
     OMSI_NO_AO: Bool, Switch, Frame, "off", "No ambient occlusion pass.";
     OMSI_NO_ATTACH_FALLBACK: Bool, Switch, Use, "off", "Drop attachments that have no fallback instead of placing them (A/B).";
-    OMSI_NO_MAP_CACHE: Bool, Test, Use, "off", "Read the map's navigator layers (houses, ground, paving) again instead of from the cache.";
     OMSI_NO_BC: Bool, Switch, Use, "off", "Upload all textures as RGBA instead of keeping BC compression.";
     OMSI_NO_BOUNDS_CACHE: Bool, Switch, Use, "off", "No cache of instance bounds.";
     OMSI_NO_BRIDGE: Bool, Switch, Use, "off", "LAN: leave the internet alone - no rendezvous bridge, no tunnel (tests, LAN parties).";
@@ -381,6 +382,7 @@ flags! {
     OMSI_NO_LAN_MODS: Bool, Switch, Use, "off", "LAN: do not exchange mods.";
     OMSI_NO_LIGHT_MAP: Bool, Switch, Use, "off", "No night light maps on the tiles (A/B).";
     OMSI_NO_MAIN_SPLIT: Bool, Switch, Frame, "off", "Do not split the main pass's bundles in two.";
+    OMSI_NO_MAP_CACHE: Bool, Test, Use, "off", "Read the map's navigator layers (houses, ground, paving) again instead of from the cache.";
     OMSI_NO_MATERIAL_SPLINE_BATCHING: Bool, Switch, Use, "off", "No batching of splines by material.";
     OMSI_NO_MODEL_ORDER: Bool, Switch, Use, "off", "Draw the opaque parts of ordered models first again (A/B).";
     OMSI_NO_MSAA_PREPASS: Bool, Switch, Frame, "off", "No depth prepass with multisampling.";
