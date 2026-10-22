@@ -54,6 +54,9 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 - **Valg mellem OMSI's egne animationer og HUB's "Natural"**: Under Esc → Options → Gameplay står nu "Passenger animations". *Original OMSI* bruger figurernes egne animationsfiler, som i OMSI 2 og openOMSI. *Natural (procedural)* er HUB's egne stillinger med fødderne på jorden og hænderne på stængerne. Skiftet sker med det samme. Før kunne man kun vælge i den gamle launcher, så man kørte altid med Natural.
 - **Stille passagerer forklares i loggen**: Siger en passager ikke noget, står grunden én gang i loggen (`passenger voices: ...`): ingen billetpakke, en figur uden `[voice]`, eller en lydfil der mangler.
 
+### AI-trafik
+- **Ingen kvartsekunds-frysere, når en flise med en meget lang AI-sti indlæses** (openOMSI PR #2956 af BECHARD Thibault): Spillet finder de felter i trafikkens gitter, en sti går igennem. Før blev hvert nyt felt tjekket mod alle dem, stien allerede havde. GPM-kortets `TCSP8.sco` har en sti på 968 km med ca. 19.600 felter, og så frøs spillet i et kvart sekund. Nu tjekkes hvert felt kun én gang. Resultatet er det samme.
+
 ### Fodgængere
 - **Ingen tilfældige fodgængere på stier med trafiktæthed 0** (openOMSI PR #2968 af VlastikYoutubeKo): Kortets stier med tæthed 0, fx små trafikøer, får ikke længere tilfældige fodgængere. Stierne kan stadig bruges af dem, der allerede går, og af passagererne.
 
