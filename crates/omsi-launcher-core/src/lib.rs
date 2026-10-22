@@ -2894,6 +2894,25 @@ pub fn head_tracking_value(key: &str, v: Option<f64>) -> f64 {
 /// Head tracking's numbers as `settings.cfg` has them (`head_tracking_value`).
 pub const HEAD_TRACKING_VALUES: [&str; 6] = ["head_tracking_yaw", "head_tracking_pitch", "head_tracking_roll", "head_tracking_move", "head_tracking_smoothing", "head_tracking_dead_zone"];
 
+/// Omsi-Hub: how the navigator's map is drawn (`nav_map`): "classic" (Omsi-Hub's roads, as
+/// before), "flat" (the map's own picture, openOMSI #2782/#2929, seen from above, houses as
+/// footprints) or "3d" (the same tilted, the houses standing).
+pub fn nav_map_style(v: &str) -> &'static str {
+    match v.trim().to_ascii_lowercase().as_str() {
+        "flat" | "2d" => "flat",
+        "3d" => "3d",
+        _ => "classic",
+    }
+}
+
+/// Omsi-Hub: how the city map is drawn (`city_map`): "classic" or "new" (the map's own picture).
+pub fn city_map_style(v: &str) -> &'static str {
+    match v.trim().to_ascii_lowercase().as_str() {
+        "new" => "new",
+        _ => "classic",
+    }
+}
+
 /// The stop signs on the navigator's map (`stop_style`): "de" (the German H), "uk" (the
 /// British bus stop flag) or "fr" (the French arrêt); anything else the German.
 pub fn stop_style(v: &str) -> &'static str {
@@ -3020,6 +3039,8 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
     // (German, British or French)
     v["nav_scale"] = json!(1.0);
     v["stop_style"] = json!("de");
+    v["nav_map"] = json!("classic");
+    v["city_map"] = json!("classic");
     // head tracking: opentrack's or a Tobii eye tracker's (natively), a look at the screen's
     // edges turning further, and how strongly the turns and the head's way are taken
     v["head_tracking_source"] = json!("auto");
@@ -3094,6 +3115,8 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
             "welcome_done" => v[&k] = json!(b(val)),
             "nav_scale" => v[&k] = json!(nav_scale(val.parse::<f64>().ok())),
             "stop_style" => v[&k] = json!(stop_style(val)),
+            "nav_map" => v[&k] = json!(nav_map_style(val)),
+            "city_map" => v[&k] = json!(city_map_style(val)),
             // (Omsi-Hub's speed unit of before: miles an hour are the British units now, unless
             // a `units` line says otherwise)
             "speed_unit" if speed_unit(val) == "mph" && v["units"] == "metric" => v["units"] = json!("uk"),
@@ -3595,6 +3618,7 @@ pub fn settings_to_text(v: &Value, old: Option<&str>) -> String {
     text.push_str(&format!("animations={}\npage_bus={}\ndark_mode={}\nbus_lead={}\n", b("animations", true), b("page_bus", false), b("dark_mode", false), bus_lead(Some(n("bus_lead", BUS_LEAD_DEFAULT)))));
     text.push_str(&format!("welcome_done={}\n", b("welcome_done", false)));
     text.push_str(&format!("nav_scale={}\nstop_style={}\n", nav_scale(v.get("nav_scale").and_then(|x| x.as_f64())), stop_style(v.get("stop_style").and_then(|x| x.as_str()).unwrap_or("de"))));
+    text.push_str(&format!("nav_map={}\ncity_map={}\n", nav_map_style(v.get("nav_map").and_then(|x| x.as_str()).unwrap_or("classic")), city_map_style(v.get("city_map").and_then(|x| x.as_str()).unwrap_or("classic"))));
     text.push_str(&format!(
         "head_tracking_source={}\ntobii_edges={}\n",
         head_tracking_source(v.get("head_tracking_source").and_then(|x| x.as_str()).unwrap_or("auto")),

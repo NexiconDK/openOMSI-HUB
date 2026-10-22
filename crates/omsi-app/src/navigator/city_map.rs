@@ -106,6 +106,10 @@ pub(super) struct CityPaint {
     pub(super) world: Layer,
     #[cfg_attr(not(test), allow(dead_code))]
     pub(super) anchor: DVec2,
+    /// Omsi-Hub: the map's own picture (`city_map = new`): a ground built anew to go on the
+    /// GPU, and the layer it is drawn in (None: the classic roads).
+    pub(super) ground: Option<super::ground::Built>,
+    pub(super) ground_layer: Option<Layer>,
 }
 
 /// What the city map's left column shows.
@@ -809,6 +813,13 @@ impl Navigator {
         let proj = Mat4::orthographic_rh((c.x - hw) as f32, (c.x + hw) as f32, (c.y - hh) as f32, (c.y + hh) as f32, -1000.0, 1000.0);
         let vp = [0.0, 0.0, w, h];
         let world = Layer { view_proj: proj, viewport: vp, clip: [0.0, 0.0, w, h], radius: 10.0 * s, opacity: 1.0, px_scale: self.city.mpp as f32, depth: false, shadow: false, height: 1.0 };
+        // Omsi-Hub: the map's own picture under it (`city_map = new`; openOMSI #2782/#2929)
+        let new_look = self.look.city.new_look() && self.look.data.is_some();
+        let ground_built = if new_look { self.city_ground_step(self.city.center, hw.max(hh), self.city.mpp) } else { None };
+        let ground_layer = self.look.city_ground.filter(|_| new_look).map(|g| {
+            let off = g.anchor - anchor;
+            Layer { view_proj: proj * Mat4::from_translation(Vec3::new(off.x as f32, off.y as f32, 0.0)), ..world }
+        });
         let to_screen = |q: DVec3| -> Vec2 {
             let d = q.truncate() - self.city.center;
             Vec2::new((w as f64 * 0.5 + d.x / self.city.mpp) as f32, (h as f64 * 0.5 - d.y / self.city.mpp) as f32)
@@ -817,7 +828,13 @@ impl Navigator {
         let mut bg = Painter::new();
         // (the opacity setting the map's ground too; the roads, names and header stay solid)
         // (Omsi-Hub's night blue under the roads, unless the map's own surface lies there)
-        let ground = if self.show_surface && self.surface.is_some() { self.city_ground() } else { Color::rgba(12, 16, 26, crate::ui::backdrop(self.opacity).min(1.0)) };
+        let ground = if new_look {
+            omsi_mapdraw::style::palette(self.light).land
+        } else if self.show_surface && self.surface.is_some() {
+            self.city_ground()
+        } else {
+            Color::rgba(12, 16, 26, crate::ui::backdrop(self.opacity).min(1.0))
+        };
         bg.rounded(win, 10.0 * s, ground);
         // traffic: blue dots, the public transport in its colours with its line (as on the
         // small map)
@@ -1072,7 +1089,7 @@ impl Navigator {
         ui.rect(Rect::new(sx, by, len, 2.0 * s), TEXT_DIM);
         ui.text(&mut self.atlas, &self.fonts, &if metres >= 1000.0 { format!("{:.0} km", metres / 1000.0) } else { format!("{metres:.0} m") }, 12.0 * s, Weight::Medium, Vec2::new(sx + len + 8.0 * s, by + 4.0 * s), Align::Left, TEXT_DIM);
         ui.rounded_border(win, 10.0 * s, 1.0, Color::WHITE.alpha(0.08));
-        CityPaint { bg, dots, ui, list, list_clip, roads: roads_verts, surface: surface_verts, surface_n, route: route_verts, world, anchor }
+        CityPaint { bg, dots, ui, list, list_clip, roads: roads_verts, surface: surface_verts, surface_n, route: route_verts, world, anchor, ground: ground_built, ground_layer }
     }
 
     /// The city map as [`Navigator::paint_city`] painted it, into its texture and over the
@@ -1080,7 +1097,7 @@ impl Navigator {
     pub(super) fn city_to_gpu(&mut self, renderer: &Renderer, scene: &mut Scene, paint: CityPaint, win: [f32; 4], s: f32) {
         let [x0, y0, w, h] = win;
         let (tw, th) = (w as u32, h as u32);
-        let CityPaint { bg, dots, ui, list, list_clip, roads: roads_verts, surface: surface_verts, surface_n, route: route_verts, world, .. } = paint;
+        let CityPaint { bg, dots, ui, list, list_clip, roads: roads_verts, surface: surface_verts, surface_n, route: route_verts, world, ground, ground_layer, .. } = paint;
         let (n_bg, n_dots) = (bg.len(), dots.len());
         let Some((tex, _, _)) = self.city.target else { return };
         let Some(view) = renderer.texture_view(scene, tex) else { return };
@@ -1094,6 +1111,11 @@ impl Navigator {
         if let Some(v) = route_verts {
             gpu.upload(device, queue, 4, &v);
         }
+        if let Some(b) = ground {
+            for (k, v) in b.verts.iter().enumerate() {
+                gpu.upload(device, queue, super::ground::CITY_BUFFERS + k, v);
+            }
+        }
         let mut all = bg.verts;
         all.extend(dots.verts);
         let n_ui = all.len() as u32;
@@ -1103,12 +1125,19 @@ impl Navigator {
         gpu.upload(device, queue, 5, &all);
         gpu.upload_atlas(queue, &mut self.atlas);
         let flat = Layer::flat([0.0, 0.0, w, h], 10.0 * s, 1.0);
-        let layers = [flat, world, Layer::flat(list_clip, 0.0, 1.0)];
-        let roads_n = self.city.roads.map(|r| r.1).unwrap_or(0);
+        let layers = [flat, world, Layer::flat(list_clip, 0.0, 1.0), ground_layer.unwrap_or(world)];
+        // (the map's own picture in place of the classic surface and roads)
+        let counts = ground_layer.and(self.look.city_ground).map(|g| g.counts);
+        let roads_n = if counts.is_some() { 0 } else { self.city.roads.map(|r| r.1).unwrap_or(0) };
+        let surface_n = if counts.is_some() { 0 } else { surface_n };
+        let [g_n, _, _, fl_n] = counts.unwrap_or_default();
+        let gb = super::ground::CITY_BUFFERS;
         let draws = [
             Draw { buffer: 5, range: 0..n_bg, layer: 0, texture: 0 },
             Draw { buffer: 7, range: 0..surface_n, layer: 1, texture: 0 },
             Draw { buffer: 3, range: 0..roads_n, layer: 1, texture: 0 },
+            Draw { buffer: gb, range: 0..g_n, layer: 3, texture: 0 },
+            Draw { buffer: gb + 3, range: 0..fl_n, layer: 3, texture: 0 },
             Draw { buffer: 4, range: 0..self.city.route.1, layer: 1, texture: 0 },
             Draw { buffer: 5, range: n_bg..n_bg + n_dots, layer: 1, texture: 0 },
             Draw { buffer: 5, range: n_ui..n_list, layer: 0, texture: 0 },

@@ -141,6 +141,12 @@ pub(crate) fn dropdown_apply(app: &mut App, action: &str) {
                 remember_setting(key, value);
                 // (a corner chosen: the navigator goes there, a place it was dragged to is
                 // forgotten - its size stays)
+                // Omsi-Hub: the maps' look, at once
+                if key == "nav_map" || key == "city_map" {
+                    if let Some(n) = app.menus.navigator.as_mut() {
+                        n.set_styles(omsi_launcher_lib::nav_map_style(if key == "nav_map" { value } else { &app.settings.nav_map }), omsi_launcher_lib::city_map_style(if key == "city_map" { value } else { &app.settings.city_map }));
+                    }
+                }
                 if key == "navigator_corner" {
                     let size = omsi_launcher_lib::nav_rect_parts(&app.settings.nav_rect).1;
                     remember_setting("nav_rect", &omsi_launcher_lib::nav_rect_text(None, size));
@@ -273,6 +279,8 @@ pub(super) fn select_options(key: &str) -> Vec<(&'static str, &'static str)> {
         "texture_memory" => vec![("0", "Automatic"), ("500", "500 MB"), ("1000", "1 GB"), ("1500", "1.5 GB"), ("2000", "2 GB"), ("3000", "3 GB"), ("4000", "4 GB"), ("6000", "6 GB")],
         "drive_keys" => vec![("omsi", "Custom controls (Controls page)"), ("simple", "W A S D + arrows"), ("wasd", "W A S D only"), ("arrows", "Arrow keys only")],
         "resolution" => vec![("auto", "Automatic"), ("1280x720", "1280 x 720"), ("1280x800", "1280 x 800 (Steam Deck)"), ("1366x768", "1366 x 768"), ("1600x900", "1600 x 900"), ("1920x1080", "1920 x 1080"), ("1920x1200", "1920 x 1200"), ("2560x1440", "2560 x 1440"), ("3840x2160", "3840 x 2160")],
+        "nav_map" => vec![("classic", "Classic (as before)"), ("flat", "Flat 2D map"), ("3d", "Map in 3D")],
+        "city_map" => vec![("classic", "Classic (as before)"), ("new", "The map's own picture")],
         "navigator_corner" => vec![("top-left", "Top left"), ("top-right", "Top right"), ("bottom-left", "Bottom left"), ("bottom-right", "Bottom right")],
         "boarding" => vec![("auto", "Pay and take the ticket"), ("pay", "The driver sells the ticket"), ("walk", "Just walk in")],
         "standing_chance" => vec![("0", "Never"), ("5", "5%"), ("10", "10%"), ("25", "25%"), ("50", "50%"), ("100", "Always")],

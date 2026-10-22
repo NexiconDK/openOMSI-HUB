@@ -421,6 +421,9 @@ pub struct Navigator {
     /// The map's entry points (where a bus is put on the map) and their names: orange markers
     /// on the city map, and a click on one sets a pin there (openOMSI #3074).
     entries: Vec<(DVec2, String)>,
+    /// Omsi-Hub: the map's own picture under the small map and the city map (`nav_map`,
+    /// `city_map`; openOMSI #2782/#2929): its layers and the ground built from them.
+    look: ground::MapLook,
 }
 
 /// A press held on the small navigator: where the cursor was, the panel then (x0, y0, x1,
@@ -566,11 +569,40 @@ impl Navigator {
             pins: crate::nav_pins::Pins::default(),
             stop_names: None,
             entries: Vec::new(),
+            look: ground::MapLook::default(),
         }
+    }
+
+    /// Omsi-Hub: how the small map and the city map are drawn (`nav_map`: "classic", "flat",
+    /// "3d"; `city_map`: "classic", "new"). The map's layers are read when one of them wants
+    /// them, and the ground is built again.
+    pub fn set_styles(&mut self, nav: &str, city: &str) {
+        self.look.nav = ground::MapStyle::from_setting(nav);
+        self.look.city = if omsi_launcher_lib::city_map_style(city) == "new" { ground::MapStyle::Flat } else { ground::MapStyle::Classic };
+        self.look.panel = None;
+        self.look.city_ground = None;
+        self.look.start();
+        self.drawn_at = f32::MIN;
+    }
+
+    /// The map's layers are wanted and not there yet (an offscreen picture reads them itself).
+    pub fn wants_layers(&self) -> bool {
+        self.look.wanted() && self.look.data.is_none()
+    }
+
+    /// The map's layers, given at once (an offscreen picture reads them on its own thread).
+    pub fn set_layers(&mut self, layers: omsi_map::layers::Layers) {
+        self.look.data = Some(std::sync::Arc::new(omsi_mapdraw::MapData::new(std::sync::Arc::new(layers))));
+        self.look.data_version += 1;
     }
 
     /// Read the whole map's road network on a worker (once per session).
     pub fn start_map(&mut self, world: std::sync::Arc<crate::scene::World>) {
+        // (Omsi-Hub: the map's own picture, read when a setting wants it)
+        if self.look.world.is_none() {
+            self.look.world = Some(world.clone());
+            self.look.start();
+        }
         if self.building.is_some() || self.global.is_some() {
             return;
         }
@@ -1296,6 +1328,7 @@ impl Navigator {
             self.shown = target;
         }
         self.time += f.dt;
+        self.look.poll();
         if let Some(rx) = self.building.as_ref() {
             if let Ok((net, pos, streets, surface)) = rx.try_recv() {
                 log::info!("navigator: the map's road network is there ({} lanes, {} streets named)", net.lanes.len(), streets.names.len());
@@ -1463,7 +1496,8 @@ impl Navigator {
         }
 
         if self.gpu.is_none() {
-            self.gpu = Some(Gpu::new(&renderer.device, renderer.format(), map_samples(renderer.format()), self.atlas.size));
+            // (with a depth buffer: the map's houses standing in 3D, `nav_map = 3d`)
+            self.gpu = Some(Gpu::with_depth(&renderer.device, renderer.format(), map_samples(renderer.format()), self.atlas.size));
         }
         let resized = self.target.map(|t| (t.1, t.2) != (w, h)).unwrap_or(true);
         if resized {
@@ -1501,8 +1535,18 @@ impl Navigator {
     fn draw(&mut self, renderer: &Renderer, target: &wgpu::TextureView, size: (u32, u32), lay: &crate::nav_panel::Layout, f: &NavFrame, sched: usize) {
         let reach = self.map_zoom(lay) * 3.5 + 150.0;
         let vehicles = map_vehicles(f.traffic.filter(|_| self.show_ai), f.bus, reach);
+        // (Omsi-Hub: the map's own picture under it, `nav_map`)
+        let new_look = self.look.nav.new_look() && self.look.data.is_some();
+        let ground_built = if new_look { self.panel_ground(f.bus.truncate()) } else { None };
         let p = self.paint_panel((size.0 as f32, size.1 as f32), lay, f, sched, &vehicles);
+        let ground = self.look.panel.filter(|_| new_look);
+        let three_d = self.look.nav == ground::MapStyle::ThreeD;
         let (Some(gpu), device, queue) = (self.gpu.as_mut(), &renderer.device, &renderer.queue) else { return };
+        if let Some(b) = ground_built {
+            for (k, v) in b.verts.iter().enumerate() {
+                gpu.upload(device, queue, ground::PANEL_BUFFERS + k, v);
+            }
+        }
         if let Some(v) = p.roads {
             if let Some(r) = self.roads.as_mut() {
                 r.verts = v.len();
@@ -1528,15 +1572,24 @@ impl Navigator {
         // (the opacity setting is the background's: the map and the text stay solid)
         let flat = Layer::flat(clip_panel, p.radius, 1.0);
         let backdrop = Layer::flat(clip_panel, p.radius, if self.cockpit_display { self.opacity } else { crate::ui::backdrop(self.opacity).min(1.0) });
-        let mut layers = [flat, p.map_layer, backdrop];
+        // (the ground is built round its own anchor: its layers are moved there)
+        let off = ground.map(|g| g.anchor - p.anchor).unwrap_or_default();
+        let ground_layer = Layer { view_proj: p.map_layer.view_proj * Mat4::from_translation(Vec3::new(off.x as f32, off.y as f32, 0.0)), ..p.map_layer };
+        let mut layers = [flat, p.map_layer, backdrop, ground_layer, ground_layer.with_shadow(), ground_layer.with_depth()];
         for l in layers.iter_mut() {
             l.opacity *= self.shown;
         }
-        let roads_n = self.roads.as_ref().map(|r| r.verts as u32).unwrap_or(0);
+        let roads_n = if ground.is_some() { 0 } else { self.roads.as_ref().map(|r| r.verts as u32).unwrap_or(0) };
+        let surface_n = if ground.is_some() { 0 } else { p.surface_n };
+        let [g_n, sh_n, so_n, fl_n] = ground.map(|g| g.counts).unwrap_or_default();
         let draws = [
             Draw { buffer: 2, range: 0..n_bg, layer: 2, texture: 0 },
-            Draw { buffer: 6, range: 0..p.surface_n, layer: 1, texture: 0 },
+            Draw { buffer: 6, range: 0..surface_n, layer: 1, texture: 0 },
             Draw { buffer: 0, range: 0..roads_n, layer: 1, texture: 0 },
+            Draw { buffer: ground::PANEL_BUFFERS, range: 0..g_n, layer: 3, texture: 0 },
+            Draw { buffer: ground::PANEL_BUFFERS + 3, range: 0..if three_d { 0 } else { fl_n }, layer: 3, texture: 0 },
+            Draw { buffer: ground::PANEL_BUFFERS + 1, range: 0..if three_d { sh_n } else { 0 }, layer: 4, texture: 0 },
+            Draw { buffer: ground::PANEL_BUFFERS + 2, range: 0..if three_d { so_n } else { 0 }, layer: 5, texture: 0 },
             Draw { buffer: 2, range: n_bg..n_bg + n_traffic, layer: 1, texture: 0 },
             Draw { buffer: 1, range: 0..self.route_mesh.3, layer: 1, texture: 0 },
             Draw { buffer: 2, range: n_bg + n_traffic..n_bg + n_world, layer: 1, texture: 0 },
@@ -1601,10 +1654,12 @@ impl Navigator {
         let hd = self.cam_heading.to_radians();
         let fwd = DVec2::new(hd.sin(), hd.cos());
         let look_at = f.bus.truncate() - anchor + fwd * zoom * 0.28;
-        let pitch = PITCH.to_radians();
+        // (Omsi-Hub's flat 2D map, `nav_map = flat`: seen from above)
+        let flat_map = self.look.nav == ground::MapStyle::Flat && self.look.data.is_some();
+        let pitch = if flat_map { 88.0f64 } else { PITCH }.to_radians();
         let back = fwd * zoom * pitch.cos();
         let eye = DVec3::new(look_at.x - back.x, look_at.y - back.y, zoom * pitch.sin());
-        let view = Mat4::look_at_rh(eye.as_vec3(), Vec3::new(look_at.x as f32, look_at.y as f32, 0.0), Vec3::Z);
+        let view = Mat4::look_at_rh(eye.as_vec3(), Vec3::new(look_at.x as f32, look_at.y as f32, 0.0), Vec3::new(fwd.x as f32, fwd.y as f32, 0.0).lerp(Vec3::Z, 0.02).normalize());
         let map_layer = Layer::world(view, FOV.to_radians(), vp, [map.x, map.y, map.right(), map.bottom()], 0.0, 1.0);
         let vpm = map_layer.view_proj;
 
@@ -1631,7 +1686,9 @@ impl Navigator {
         let mut bg = Painter::new();
         bg.rounded(panel, radius, if self.cockpit_display { Color::rgba(10, 10, 10, 1.0) } else { PANEL });
         // the map's own ground under the roads (the panel's opacity setting dims it as it does the panel)
-        if let (true, Some(sf)) = (self.show_surface, self.surface.as_ref()) {
+        if self.look.nav.new_look() && self.look.data.is_some() {
+            bg.rect(map, omsi_mapdraw::style::palette(self.light).land);
+        } else if let (true, Some(sf)) = (self.show_surface, self.surface.as_ref()) {
             bg.rect(map, ground(sf, self.light));
         }
 
@@ -1857,7 +1914,7 @@ impl Navigator {
             }
         }
 
-        PanelPaint { bg, traffic: dy, vehicles: cars, ui, roads: road_verts, route: route_verts, surface: surface_verts, surface_n, map_layer, radius }
+        PanelPaint { bg, traffic: dy, vehicles: cars, ui, roads: road_verts, route: route_verts, surface: surface_verts, surface_n, map_layer, radius, anchor }
     }
 }
 
@@ -1877,6 +1934,8 @@ struct PanelPaint {
     surface_n: u32,
     map_layer: Layer,
     radius: f32,
+    /// What the map's world coordinates are relative to.
+    anchor: DVec2,
 }
 
 /// What the mouse is over on the small navigator: the board's handle, or what a press
@@ -2299,6 +2358,8 @@ mod roads;
 pub(crate) use roads::*;
 mod surface;
 use surface::ground;
+// Omsi-Hub: the map's own picture (openOMSI #2782/#2929)
+pub(crate) mod ground;
 mod city_map;
 pub use city_map::*;
 #[cfg(test)]

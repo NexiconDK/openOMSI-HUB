@@ -3491,6 +3491,7 @@ dependencies = [
  "omsi-launcher-core",
  "omsi-launcher-model",
  "omsi-map",
+ "omsi-mapdraw",
  "omsi-model",
  "omsi-net",
  "omsi-o3d",

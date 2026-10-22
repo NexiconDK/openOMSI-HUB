@@ -324,6 +324,7 @@ impl Offscreen<'_> {
                 crate::units::Units::from_setting(&settings.units).set();
                 nav.show_surface = settings.nav_surface;
                 nav.light = settings.nav_light;
+                nav.set_styles(&settings.nav_map, &settings.city_map);
                 if omsi_cfg::flags::OMSI_NAV_MAP.is_set() {
                     nav.toggle_map();
                 }
@@ -332,6 +333,10 @@ impl Offscreen<'_> {
                 }
                 nav.set_map(world.navigation_map());
                 nav.set_surface(omsi_map::package::Package::open(&world.map_dir));
+                // (Omsi-Hub: the map's own picture, when a setting wants it)
+                if nav.wants_layers() {
+                    nav.set_layers(world.map_layers());
+                }
                 let (line, terminus, stops, trip) = navigator::duty_parts(duty.as_ref(), &Default::default());
                 if let (Some((key, name)), Some(sch)) = (trip, schedule.as_ref()) {
                     let lanes = sch.trip_route_in(nav.map_net().unwrap(), &name);
