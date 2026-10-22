@@ -27,10 +27,23 @@ export const depotRun = (x) => !x.line?.trim() || /betriebsfahrt|leerfahrt|diens
 export function tripAt(tour, now) {
   // a night tour's times run on past 24:00: at 03:25, before the tour's first trip of the
   // day, its trip of 27:30 is the one at 03:30 (the tour begun the evening before, #2166)
+  // (NexiconDK, as openOMSI_DK: only a tour that ran the day before - else its trips past
+  // 24:00 are the coming night's, and the start is this evening's first trip)
   const n = tour.trips.length;
-  if (n && now < 86400 && tour.trips[0].departure > now && tour.trips[n - 1].departure >= now + 86400 - 120) now += 86400;
+  if (n && now < 86400 && (tour.yesterday_night ?? true) && tour.trips[0].departure > now && tour.trips[n - 1].departure >= now + 86400 - 120) now += 86400;
   const i = tour.trips.findIndex((x) => x.departure >= now - 120);
   return i >= 0 ? i : tour.trips.length ? tour.trips.length - 1 : -1;
+}
+
+/** Whether a tour runs at `now` (seconds of the chosen day): a tour of the day itself, or
+ * the day before's night tour while its trips past 24:00 are still to come - not all day
+ * (NexiconDK, as openOMSI_DK: Thursday's night tour is no tour of Friday afternoon's). */
+export function runsAt(tour, now) {
+  if (tour.today === undefined) return tour.runs;
+  if (tour.today) return true;
+  const n = tour.trips.length;
+  const end = n ? tour.trips[n - 1].arrival ?? tour.trips[n - 1].departure : tour.last;
+  return !!tour.yesterday_night && now < 86400 && now + 86400 <= end + 60;
 }
 
 export const lineMatches = (l, q) => !q || `${l.name} ${l.termini.join(' ')}`.toLowerCase().includes(q);

@@ -1739,7 +1739,7 @@ mod tests {
     fn the_map_lines_at_a_stop_count_once() {
         use crate::{StopInfo, TourInfo, TripInfo};
         let trip = |stops: &[(i64, &str)]| TripInfo { name: String::new(), index: 1, line: String::new(), from: String::new(), terminus: String::new(), departure: 0.0, arrival: 0.0, stops: stops.iter().map(|(id, n)| StopInfo { name: n.to_string(), id: *id, arr: 0.0, dep: 0.0 }).collect(), km: 1.0 };
-        let li = |name: &str, stops: &[(i64, &str)]| LineInfo { name: name.into(), user_allowed: true, termini: Vec::new(), tours: vec![TourInfo { number: "1".into(), ai_group: String::new(), first: 0.0, last: 0.0, days: String::new(), runs: true, next_run: None, trips: vec![trip(stops)] }] };
+        let li = |name: &str, stops: &[(i64, &str)]| LineInfo { name: name.into(), user_allowed: true, termini: Vec::new(), tours: vec![TourInfo { number: "1".into(), ai_group: String::new(), first: 0.0, last: 0.0, days: String::new(), runs: true, today: true, yesterday_night: false, next_run: None, trips: vec![trip(stops)] }] };
         let lines = vec![li("A", &[(1, "Markt"), (2, "Bahnhof")]), li("B", &[(11, "Markt")]), li("oo_9", &[(1, "Markt")])];
         let s = StopLines::of(&lines, "oo_9");
         // by its object and across the road by its name

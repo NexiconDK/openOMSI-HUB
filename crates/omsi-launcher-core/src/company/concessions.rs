@@ -1187,7 +1187,7 @@ pub(crate) mod tests {
             name: name.into(),
             user_allowed: true,
             termini: vec!["A".into(), "B".into()],
-            tours: (0..tours).map(|t| TourInfo { number: (t + 1).to_string(), ai_group: String::new(), first: 0.0, last: 0.0, days: "daily".into(), runs, next_run: None, trips: (0..4).map(trip).collect() }).collect(),
+            tours: (0..tours).map(|t| TourInfo { number: (t + 1).to_string(), ai_group: String::new(), first: 0.0, last: 0.0, days: "daily".into(), runs, today: runs, yesterday_night: false, next_run: None, trips: (0..4).map(trip).collect() }).collect(),
         }
     }
 

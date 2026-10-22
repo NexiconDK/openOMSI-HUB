@@ -224,7 +224,7 @@ export async function loadLines() {
     set({ lines: { key, list, loading: false, error: null } });
     // a line or tour that is not there on this date gives way to the first one
     const line = list.find((l) => l.name === S.choice.line) || list.find((l) => l.user_allowed && l.tours.length) || null;
-    const tour = line?.tours.find((x) => x.number === S.choice.tour) || line?.tours.find((x) => x.runs) || line?.tours[0] || null;
+    const tour = line?.tours.find((x) => x.number === S.choice.tour) || line?.tours.find((x) => x.today ?? x.runs) || line?.tours.find((x) => x.runs) || line?.tours[0] || null;
     if (line?.name !== S.choice.line || tour?.number !== S.choice.tour) choose({ line: line?.name ?? null, tour: tour?.number ?? null });
   } catch (e) {
     if (S.lines.key === key) set({ lines: { key, list: [], loading: false, error: e.message } });

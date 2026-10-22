@@ -60,7 +60,7 @@ fn timetable() -> Vec<crate::LineInfo> {
         name: "Linie5".into(),
         user_allowed: true,
         termini: Vec::new(),
-        tours: vec![crate::TourInfo { number: "2".into(), ai_group: String::new(), first: 360.0 * 60.0, last: 470.0 * 60.0, days: "daily".into(), runs: true, next_run: None, trips: vec![info("5 A-B", 1, 360), info("5 B-A", 2, 400), info("5 A-B", 3, 440)] }],
+        tours: vec![crate::TourInfo { number: "2".into(), ai_group: String::new(), first: 360.0 * 60.0, last: 470.0 * 60.0, days: "daily".into(), runs: true, today: true, yesterday_night: false, next_run: None, trips: vec![info("5 A-B", 1, 360), info("5 B-A", 2, 400), info("5 A-B", 3, 440)] }],
     }]
 }
 

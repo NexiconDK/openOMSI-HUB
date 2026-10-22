@@ -40,6 +40,7 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 - **I går aftens nattur kun efter midnat, mens den kører**: Torsdagens nattur stod også på listen fredag eftermiddag. Nu står den der kun efter midnat og kun til dens sidste tur er kørt. Efter midnat vises i går aftens nattur, ikke dagens egen, som først starter om aftenen.
 - **Den rigtige tur efter midnat**: Vælger man i går aftens nattur fx kl. 02:18, starter man med turen, der kører nu (turens 26:18), ikke med turens første tur om aftenen.
 - **Ture vises fra 2 timer før de starter** (før en halv time), som i vores main.
+- **Det samme i launcheren** (vagtvalget i "Duty" og på telefonen): I går aftens nattur regnes kun som "kører i dag" i de tidlige timer, mens dens ture efter 24:00 stadig kører. Ellers står den nedtonet med sine dage, og et klik flytter datoen til en dag, hvor den kører. Før stod torsdagens nattur som en af fredagens ture hele fredagen, og så startede man med torsdagens første tur. En tur, der kun kører i dag, starter ikke længere midt om natten med sine ture efter 24:00, når man vælger et tidspunkt tidligt om morgenen.
 
 ### Skilte og Line and tour (rettelser)
 - **De to linjer kommer i rigtig rækkefølge**: Teksten fra det øverste felt står nu øverst på skiltet. HUB lægger linjerne i de samme strenge, som hof-filens egne destinationer bruger (i Ahlheim 5 er det streng 1 og 2). Før havnede den anden linje øverst på Krüger-matricerne.

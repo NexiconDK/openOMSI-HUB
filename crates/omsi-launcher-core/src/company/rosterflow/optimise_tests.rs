@@ -28,7 +28,7 @@ fn line(tours: Vec<TourInfo>) -> LineInfo {
 }
 
 fn tour(no: &str, trips: Vec<TripInfo>) -> TourInfo {
-    TourInfo { number: no.into(), ai_group: String::new(), first: 0.0, last: 0.0, days: "daily".into(), runs: true, next_run: None, trips }
+    TourInfo { number: no.into(), ai_group: String::new(), first: 0.0, last: 0.0, days: "daily".into(), runs: true, today: true, yesterday_night: false, next_run: None, trips }
 }
 
 /// Line 5 from A to B only (Luc's line 880 runs one way): a trip of 20 minutes every half hour

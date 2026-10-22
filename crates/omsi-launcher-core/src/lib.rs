@@ -1453,6 +1453,11 @@ pub struct TourInfo {
     pub days: String,
     /// It runs on the date asked for (the game's timetable has only these tours that day).
     pub runs: bool,
+    /// (NexiconDK, as openOMSI_DK) Its mask has the date asked for itself: `runs` is also the
+    /// day before's night tour, whose trips past 24:00 run that morning (`yesterday_night`)
+    /// - only in the early hours, while they are still to come (the launcher's `runsAt`).
+    pub today: bool,
+    pub yesterday_night: bool,
     /// The first date from the one asked for on which it runs (`YYYY-MM-DD`): the game's
     /// timetable dialog lists only the tours of the chosen day, so a
     /// tour of another day is picked by moving the date to it.
@@ -1598,7 +1603,9 @@ fn lines_on(map_dir: &Path, date: &str) -> Result<Vec<LineInfo>> {
             };
             // (and yesterday's night tour: its trips past 24:00 run today, #1576)
             let night = t.trips.iter().any(|tt| tt.departure >= 24.0 * 60.0);
-            let runs = runs || (night && runs_on(day_before(code)));
+            let today = runs;
+            let yesterday_night = night && runs_on(day_before(code));
+            let runs = today || yesterday_night;
             let next_run = (0..400).map(|k| add_days(code, k)).find(|c| runs_on(*c)).map(|c| format!("{:04}-{:02}-{:02}", c / 10000, c / 100 % 100, c % 100));
             let mut trips = Vec::new();
             for tt in &t.trips {
@@ -1650,7 +1657,7 @@ fn lines_on(map_dir: &Path, date: &str) -> Result<Vec<LineInfo>> {
             }
             let first = trips.first().map(|t| t.departure).unwrap_or(0.0);
             let last = trips.last().map(|t| t.arrival).unwrap_or(0.0);
-            tours.push(TourInfo { number: t.number.clone(), ai_group: t.ai_group.clone(), first, last, days: days_of(mask), runs, next_run, trips });
+            tours.push(TourInfo { number: t.number.clone(), ai_group: t.ai_group.clone(), first, last, days: days_of(mask), runs, today, yesterday_night, next_run, trips });
         }
         tours.sort_by(|a, b| a.first.total_cmp(&b.first));
         if let Some((_, first, last)) = ends {
@@ -4786,6 +4793,38 @@ mod tests {
         assert!(!now.iter().any(|l| l == "5 & 5N") && now.iter().any(|l| l == "130 & N30"), "{now:?}");
         assert!(names("1991-06-01").iter().any(|l| l == "5 & 5N") && !names("1991-06-02").iter().any(|l| l == "5 & 5N"));
         assert!(lines_on(&map, "someday").is_err());
+    }
+
+    /// A tour of the day itself and the day before's night tour told apart (NexiconDK, as
+    /// openOMSI_DK): on a Friday, Thursday's night tour runs (its trips past 24:00 that
+    /// morning) but is not one of Friday's own, and Saturday's does not run at all.
+    #[test]
+    fn the_day_befores_night_tour_is_not_the_days_own() {
+        let dir = std::env::temp_dir().join(format!("omsihub-launcher-night-{}", std::process::id()));
+        let tt = dir.join("TTData");
+        std::fs::create_dir_all(&tt).unwrap();
+        std::fs::write(tt.join("T.ttp"), "[trip]\r\n\r\nNochem\r\nTEST\r\n\r\n[profile]\r\nStandard\r\n40\r\n").unwrap();
+        let mut ttl = String::new();
+        for (name, mask, off) in [("TEST-FRE", 784, 0), ("TEST-TOR", 776, 5), ("TEST-LOR", 800, 10)] {
+            ttl += &format!("[newtour]\r\n{name}\r\nBus\r\n{mask}\r\n\r\n");
+            for m in [1320, 1380, 1450, 1510] {
+                ttl += &format!("[addtrip]\r\nT\r\n0\r\n{}.000\r\n\r\n", m + off);
+            }
+        }
+        std::fs::write(tt.join("TEST.ttl"), ttl).unwrap();
+        let tours = |date: &str| {
+            let lines = lines_on(&dir, date).unwrap();
+            lines.iter().flat_map(|l| l.tours.iter()).map(|t| (t.number.clone(), (t.runs, t.today, t.yesterday_night))).collect::<std::collections::HashMap<_, _>>()
+        };
+        let friday = tours("2026-10-09");
+        assert_eq!(friday["TEST-FRE"], (true, true, false));
+        assert_eq!(friday["TEST-TOR"], (true, false, true));
+        assert_eq!(friday["TEST-LOR"], (false, false, false));
+        let saturday = tours("2026-10-10");
+        assert_eq!(saturday["TEST-FRE"], (true, false, true));
+        assert_eq!(saturday["TEST-LOR"], (true, true, false));
+        assert_eq!(saturday["TEST-TOR"], (false, false, false));
+        std::fs::remove_dir_all(dir).ok();
     }
 
     #[test]

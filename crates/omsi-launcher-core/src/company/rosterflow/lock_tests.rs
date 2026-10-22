@@ -34,6 +34,8 @@ fn line5() -> LineInfo {
         last: 0.0,
         days: "daily".into(),
         runs: true,
+        today: true,
+        yesterday_night: false,
         next_run: None,
         trips: (0..8).map(|k| if k % 2 == 0 { tt(&format!("5 {no}-{k}"), "A", "B", from + k * 60, from + k * 60 + 50) } else { tt(&format!("5 {no}-{k}"), "B", "A", from + k * 60, from + k * 60 + 50) }).collect(),
     };

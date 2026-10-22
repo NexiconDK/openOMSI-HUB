@@ -9,7 +9,7 @@ import { html, useEffect, useRef, useState } from '../../../vendor/preact-htm.js
 import { S, set, useStore } from '../../store.js';
 import { call } from '../../api.js';
 import { choose, curLine, curTour, pickedTrip, realDate } from '../../data.js';
-import { tripAt, pickTrip, hms } from '../../pages/drive.js';
+import { tripAt, pickTrip, hms, runsAt } from '../../pages/drive.js';
 import { Select } from '../../ui.js';
 import { Actions, Caps, Chips, Foot, Head, Icon, Radio, Seg, Slider, tr, length, count, Button } from '../bits.js';
 import { goStep, nextOf, previousOf, chosenLine } from '../flow.js';
@@ -157,15 +157,17 @@ function Tours({ c }) {
   };
   const line = curLine();
   const tour = curTour();
-  const tours = line ? [...line.tours].sort((a, b) => b.runs - a.runs || natural(a.number, b.number)) : [];
-  const cards = tours.map((t) => ({ key: [t.number], cells: [t.number, hhmm(t.trips[0]?.departure ?? t.first), hhmm(t.trips[t.trips.length - 1]?.arrival ?? t.last)], clock: false, note: t.runs ? '' : t.days, trips: t.trips.map((x, k) => ({ ...x, stops: x.stops.length, pause: k ? Math.max(0, x.departure - t.trips[k - 1].arrival) : 0 })) }));
+  // (a tour runs at the chosen time: the day before's night tour only in the early hours)
+  const runs = (t) => runsAt(t, c.time * 60);
+  const tours = line ? [...line.tours].sort((a, b) => runs(b) - runs(a) || natural(a.number, b.number)) : [];
+  const cards = tours.map((t) => ({ key: [t.number], cells: [t.number, hhmm(t.trips[0]?.departure ?? t.first), hhmm(t.trips[t.trips.length - 1]?.arrival ?? t.last)], clock: false, note: runs(t) ? '' : t.days, trips: t.trips.map((x, k) => ({ ...x, stops: x.stops.length, pause: k ? Math.max(0, x.departure - t.trips[k - 1].arrival) : 0 })) }));
   const chosen = tour ? tours.findIndex((t) => t.number === tour.number) : -1;
   const first = tour ? (pickedTrip() != null ? Math.max(0, tour.trips.findIndex((x) => x.index === pickedTrip())) : Math.max(0, tripAt(tour, c.time * 60))) : null;
   const pickTour = (k) => {
     const t = tours[k];
     if (!t || t.number === tour?.number) return;
     const patch = { tour: t.number, start_trip: null };
-    if (!t.runs && t.next_run && !realDate()) patch.date = t.next_run;
+    if (!runs(t) && t.next_run && !realDate()) patch.date = t.next_run;
     choose(patch);
   };
   return html`
@@ -177,7 +179,7 @@ function Tours({ c }) {
         ? html`<p style="color:var(--hub-text-dim)">${tr(s.lines.loading ? 'Reading the timetable…' : mine ? 'Make one in Editor → Line editor' : 'No lines on this date.')}</p>`
         : html`<${Select} raw value=${line && lines.includes(line) ? line.name : ''} placeholder=${tr('Choose a line…')} options=${lines.map((l) => [l.name, label(l)])} onChange=${(name) => {
             const l = lines.find((x) => x.name === name);
-            choose({ line: name, tour: (l?.tours.find((x) => x.runs) || l?.tours[0])?.number ?? null, start_trip: null });
+            choose({ line: name, tour: (l?.tours.find(runs) || l?.tours[0])?.number ?? null, start_trip: null });
           }} />`}
     </div>
     <${List} heads=${['Tour', 'Departure', 'Arrival']} cards=${cards} chosen=${chosen >= 0 ? chosen : null} first=${chosen >= 0 ? first : null} onPick=${pickTour}
@@ -201,7 +203,7 @@ export function DutyStep() {
     const n = s.hubShifts?.list?.length ?? 0;
     foot = (line ? `${line} · ` : '') + (n === 1 ? tr('one shift available') : tr('%{n} shifts available', { n }));
   } else if (curLine()) {
-    const n = curLine().tours.filter((t) => t.runs).length;
+    const n = curLine().tours.filter((t) => runsAt(t, c.time * 60)).length;
     foot = (line ? `${line} · ` : '') + (n === 1 ? tr('one tour on this day') : tr('%{n} tours on this day', { n }));
   } else {
     const n = (s.lines.list || []).filter((l) => l.user_allowed).length;

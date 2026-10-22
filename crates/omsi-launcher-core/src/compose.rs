@@ -474,7 +474,7 @@ mod tests {
     }
 
     fn tour(number: &str, runs: bool, trips: Vec<TripInfo>) -> TourInfo {
-        TourInfo { number: number.into(), ai_group: String::new(), first: trips[0].departure, last: trips[trips.len() - 1].arrival, days: "daily".into(), runs, next_run: None, trips }
+        TourInfo { number: number.into(), ai_group: String::new(), first: trips[0].departure, last: trips[trips.len() - 1].arrival, days: "daily".into(), runs, today: runs, yesterday_night: false, next_run: None, trips }
     }
 
     fn line(name: &str, tours: Vec<TourInfo>) -> LineInfo {

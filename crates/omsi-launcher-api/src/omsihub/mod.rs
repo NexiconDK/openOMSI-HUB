@@ -651,7 +651,7 @@ mod tests {
     #[test]
     fn a_shift_read_back_from_its_legs() {
         let trip = |index: usize, dep: f64, arr: f64, from: &str, to: &str| core::TripInfo { name: format!("t{index}"), index, line: "5".into(), from: from.into(), terminus: to.into(), departure: dep, arrival: arr, stops: Vec::new(), km: 0.0 };
-        let tour = core::TourInfo { number: "2".into(), ai_group: String::new(), first: 3600.0, last: 9000.0, days: "daily".into(), runs: true, next_run: None, trips: vec![trip(1, 3600.0, 5400.0, "A", "B"), trip(2, 5700.0, 7500.0, "B", "A"), trip(3, 7800.0, 9000.0, "A", "B")] };
+        let tour = core::TourInfo { number: "2".into(), ai_group: String::new(), first: 3600.0, last: 9000.0, days: "daily".into(), runs: true, today: true, yesterday_night: false, next_run: None, trips: vec![trip(1, 3600.0, 5400.0, "A", "B"), trip(2, 5700.0, 7500.0, "B", "A"), trip(3, 7800.0, 9000.0, "A", "B")] };
         let lines = vec![LineInfo { name: "Linie5".into(), user_allowed: true, termini: Vec::new(), tours: vec![tour] }];
         let d = shift_of_legs(&["Linie5|2|1|2".to_string()], &lines).unwrap();
         assert_eq!(d.legs.len(), 2);

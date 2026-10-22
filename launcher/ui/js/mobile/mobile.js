@@ -11,7 +11,7 @@ import { Spinner, Toggle, Slider } from '../ui.js';
 import { BusPreview } from '../preview.js';
 import { RouteMap } from '../routemap.js';
 import { choose, curMap, curBus, curLine, curTour, pickedTrip, realTime, realDate, start, weatherName, weatherOfItsOwn, askJoined, noServerBus, mapName, serverBuses, busFile } from '../data.js';
-import { hms, mapPicture, tripAt, depotRun, pickTrip, lineMatches, findTours, chooseLine, chooseTour, setSeason, localNow, SEASONS, PHASES } from '../pages/drive.js';
+import { hms, mapPicture, tripAt, depotRun, pickTrip, runsAt, lineMatches, findTours, chooseLine, chooseTour, setSeason, localNow, SEASONS, PHASES } from '../pages/drive.js';
 import { MultiplayerPage } from '../pages/multiplayer.js';
 import { ProfilePage } from '../pages/profile.js';
 import { ModsPage } from '../pages/mods.js';
@@ -232,7 +232,7 @@ function TourSheet({ close }) {
       const trip = x.trips[at];
       const found = tq && trip && !x.number.toLowerCase().includes(tq);
       const what = found ? `${hms(trip.departure)} ${trip.from} → ${trip.terminus}${via ? ` (${t('via {stop}', { stop: via })})` : ''}` : `${x.days} - ${x.trips.length} ${t('trips')}${x.trips.length ? ` - ${hms(x.first)}-${hms(x.last)}` : ''}`;
-      return pick(x.number === s.choice.tour, () => (chooseTour(x, found ? trip : null), close()), html`<span class="m-pick-text"><b>${t('Tour')} ${x.number}</b><small>${what}${!x.runs ? ` - ${t('not on this day')}` : ended ? ` - ${t('ended')}` : ''}</small></span>`, x.runs && !ended ? '' : ' dim');
+      return pick(x.number === s.choice.tour, () => (chooseTour(x, found ? trip : null), close()), html`<span class="m-pick-text"><b>${t('Tour')} ${x.number}</b><small>${what}${!runsAt(x, s.choice.time * 60) ? ` - ${t('not on this day')}` : ended ? ` - ${t('ended')}` : ''}</small></span>`, runsAt(x, s.choice.time * 60) && !ended ? '' : ' dim');
     })}
   </div>`;
 }

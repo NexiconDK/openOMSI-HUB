@@ -318,7 +318,7 @@ mod tests {
             name: name.into(),
             user_allowed: allowed,
             termini: vec![],
-            tours: vec![TourInfo { number: "1".into(), ai_group: String::new(), first: 0.0, last: 0.0, days: "daily".into(), runs: true, next_run: None, trips: trips.iter().enumerate().map(trip).collect() }],
+            tours: vec![TourInfo { number: "1".into(), ai_group: String::new(), first: 0.0, last: 0.0, days: "daily".into(), runs: true, today: true, yesterday_night: false, next_run: None, trips: trips.iter().enumerate().map(trip).collect() }],
         }
     }
 

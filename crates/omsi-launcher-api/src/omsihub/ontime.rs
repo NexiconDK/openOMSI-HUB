@@ -334,7 +334,7 @@ mod tests {
             let stops = names.iter().enumerate().map(|(j, n)| StopInfo { name: n.to_string(), id: j as i64, arr: dep + j as f64 * 180.0, dep: dep + j as f64 * 180.0 }).collect();
             TripInfo { name: format!("5 {no}-{k}"), index: k + 1, line: "5".into(), from: names[0].into(), terminus: names[3].into(), departure: dep, arrival: dep + 540.0, stops, km: 4.0 }
         };
-        let tour = |no: &str, from: f64| TourInfo { number: no.into(), ai_group: String::new(), first: 0.0, last: 0.0, days: "daily".into(), runs: true, next_run: None, trips: vec![trip(no, 0, from), trip(no, 1, from + 900.0)] };
+        let tour = |no: &str, from: f64| TourInfo { number: no.into(), ai_group: String::new(), first: 0.0, last: 0.0, days: "daily".into(), runs: true, today: true, yesterday_night: false, next_run: None, trips: vec![trip(no, 0, from), trip(no, 1, from + 900.0)] };
         let l = LineInfo { name: "Linie5".into(), user_allowed: true, termini: vec!["A".into(), "D".into()], tours: vec![tour("1", 21_600.0), tour("2", 22_080.0), tour("3", 22_560.0)] };
         let mut c = co::found(&co::Founding { name: "OnTime".into(), game_mode: GameMode::Normal, date: "2024-03-04".into(), ..Default::default() }, "Luc");
         c.cash += 5_000_000_00;

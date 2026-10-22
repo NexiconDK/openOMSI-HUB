@@ -1793,6 +1793,8 @@ mod tests {
             last: 0.0,
             days: "daily".into(),
             runs: true,
+            today: true,
+            yesterday_night: false,
             next_run: None,
             trips: (0..n)
                 .map(|k| {
