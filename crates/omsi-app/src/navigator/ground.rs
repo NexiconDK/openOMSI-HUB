@@ -350,3 +350,119 @@ impl Navigator {
         built
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use omsi_map::layers::{self, Building, Layers, Line};
+
+    /// A made-up town: grass, a pond, a cross of streets with pavements and lane lines, blocks
+    /// of houses along them, trees and a railway.
+    fn town() -> Layers {
+        let mut l = Layers::empty(DVec2::ZERO);
+        l.tiles = vec![[-600.0, -600.0, 600.0, 600.0]];
+        let quad = |x0: f32, y0: f32, x1: f32, y1: f32| vec![Vec2::new(x0, y0), Vec2::new(x1, y0), Vec2::new(x1, y1), Vec2::new(x0, y0), Vec2::new(x1, y1), Vec2::new(x0, y1)];
+        l.land[layers::LAND_GRASS] = quad(-600.0, -600.0, 600.0, 600.0);
+        l.land[layers::LAND_WATER] = quad(120.0, 160.0, 260.0, 260.0);
+        l.land[layers::LAND_FOREST] = quad(-500.0, 150.0, -300.0, 450.0);
+        // two streets 12 m wide, pavements beside them
+        l.paved[layers::PAVE_ROAD] = [quad(-6.0, -600.0, 6.0, 600.0), quad(-600.0, -6.0, 600.0, 6.0)].concat();
+        l.paved[layers::PAVE_INNER] = [quad(-3.0, -600.0, 3.0, 600.0), quad(-600.0, -3.0, 600.0, 3.0)].concat();
+        l.paved[layers::PAVE_FOOT] = [quad(-10.0, -600.0, -6.0, 600.0), quad(6.0, -600.0, 10.0, 600.0), quad(-600.0, -10.0, 600.0, -6.0), quad(-600.0, 6.0, 600.0, 10.0)].concat();
+        // the middle lines, dashed
+        let mut paint = Vec::new();
+        for k in -60..60 {
+            let y = k as f32 * 10.0;
+            paint.extend(quad(-0.08, y, 0.08, y + 5.0));
+            paint.extend(quad(y, -0.08, y + 5.0, 0.08));
+        }
+        l.paint[layers::PAINT_WHITE] = paint;
+        // blocks of houses along the streets
+        for (i, &(x, y)) in [(20.0, 20.0), (20.0, -60.0), (-70.0, 20.0), (-70.0, -60.0), (20.0, 100.0), (-70.0, 100.0), (100.0, -60.0), (100.0, 20.0), (-150.0, 20.0), (-150.0, -60.0)].iter().enumerate() {
+            let (w, d) = (40.0 + (i % 3) as f32 * 8.0, 30.0);
+            let outline = vec![Vec2::new(x, y), Vec2::new(x + w, y), Vec2::new(x + w, y + d), Vec2::new(x, y + d)];
+            l.buildings.push(Building { outline, roof: vec![[0, 1, 2], [0, 2, 3]], height: 9.0 + (i % 4) as f32 * 6.0, open: false, has_mesh: false, inst: u32::MAX });
+        }
+        for k in 0..30 {
+            l.trees.push([-490.0 + (k % 6) as f32 * 30.0, 170.0 + (k / 6) as f32 * 50.0, 5.0]);
+        }
+        l.lines.push(Line { class: layers::LINE_RAIL, width: 3.0, points: vec![Vec2::new(-600.0, -300.0), Vec2::new(600.0, -260.0)] });
+        l
+    }
+
+    /// Pictures of the small map in the flat and the 3D look, rendered on the GPU as the game
+    /// does: `OMSI_MAP_LOOK_PREVIEW=<folder> cargo test -p omsi-app --lib map_look -- --ignored`.
+    #[test]
+    #[ignore]
+    fn preview_map_look() {
+        let Ok(dir) = std::env::var("OMSI_MAP_LOOK_PREVIEW") else { return };
+        let md = Arc::new(MapData::new(Arc::new(town())));
+        let parts = GroundParts { roads: Arc::default(), md, net: None };
+        let instance = wgpu::Instance::default();
+        let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).expect("adapter");
+        let (device, queue) = pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).expect("device");
+        let format = wgpu::TextureFormat::Rgba8UnormSrgb;
+        for (name, three_d, light) in [("map-flat", false, false), ("map-3d", true, false), ("map-3d-light", true, true)] {
+            let pal = *omsi_mapdraw::style::palette(light);
+            let bus = DVec2::new(1.5, -80.0);
+            let b = build(&parts, bus, PANEL_REACH, &pal, GroundLook { surfaces: true, trees: true, dashes: true }, true, Some(PANEL_MODELS));
+            let (w, h) = (720u32, 460u32);
+            let mut gpu = Gpu::with_depth(&device, format, 4, 256);
+            for (k, v) in b.verts.iter().enumerate() {
+                gpu.upload(&device, &queue, 1 + k, v);
+            }
+            let mut bg = Painter::new();
+            bg.rect(Rect::new(0.0, 0.0, w as f32, h as f32), pal.land);
+            // the route up the street and the bus
+            let mut route = Painter::new();
+            route.ribbon(&[Vec3::new(1.5, 0.0, 0.0), Vec3::new(1.5, 400.0, 0.0)], 2.6, 5.0, pal.route, true);
+            route.world_disc(Vec3::ZERO, 2.5, 7.0, Color::WHITE);
+            gpu.upload(&device, &queue, 0, &bg.verts);
+            gpu.upload(&device, &queue, 5, &route.verts);
+            let zoom = 260.0f64;
+            let pitch = if three_d { PITCH } else { 88.0 }.to_radians();
+            let fwd = DVec2::new(0.0, 1.0);
+            let look_at = fwd * zoom * 0.28;
+            let back = fwd * zoom * pitch.cos();
+            let eye = DVec3::new(look_at.x - back.x, look_at.y - back.y, zoom * pitch.sin());
+            let view = Mat4::look_at_rh(eye.as_vec3(), Vec3::new(look_at.x as f32, look_at.y as f32, 0.0), Vec3::new(0.0, 1.0, 0.0).lerp(Vec3::Z, 0.02).normalize());
+            let vp = [0.0, 0.0, w as f32, h as f32];
+            let map = Layer::world(view, FOV.to_radians(), vp, [0.0, 0.0, w as f32, h as f32], 12.0, 1.0);
+            let layers = [Layer::flat([0.0, 0.0, w as f32, h as f32], 12.0, 1.0), map, map.with_shadow(), map.with_depth()];
+            let n = |i: usize| b.verts[i].len() as u32;
+            let draws = [
+                Draw { buffer: 0, range: 0..bg.verts.len() as u32, layer: 0, texture: 0 },
+                Draw { buffer: 1, range: 0..n(0), layer: 1, texture: 0 },
+                Draw { buffer: 4, range: 0..if three_d { 0 } else { n(3) }, layer: 1, texture: 0 },
+                Draw { buffer: 2, range: 0..if three_d { n(1) } else { 0 }, layer: 2, texture: 0 },
+                Draw { buffer: 3, range: 0..if three_d { n(2) } else { 0 }, layer: 3, texture: 0 },
+                Draw { buffer: 5, range: 0..route.verts.len() as u32, layer: 1, texture: 0 },
+            ];
+            let target = device.create_texture(&wgpu::TextureDescriptor {
+                label: None,
+                size: wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format,
+                usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
+                view_formats: &[],
+            });
+            let view_t = target.create_view(&Default::default());
+            let mut enc = device.create_command_encoder(&Default::default());
+            gpu.render(&device, &queue, &mut enc, &view_t, (w, h), Some(wgpu::Color::BLACK), &layers, &draws);
+            let stride = (w * 4).div_ceil(256) * 256;
+            let buf = device.create_buffer(&wgpu::BufferDescriptor { label: None, size: (stride * h) as u64, usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ, mapped_at_creation: false });
+            enc.copy_texture_to_buffer(target.as_image_copy(), wgpu::TexelCopyBufferInfo { buffer: &buf, layout: wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(stride), rows_per_image: None } }, wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 });
+            queue.submit([enc.finish()]);
+            buf.slice(..).map_async(wgpu::MapMode::Read, |_| {});
+            device.poll(wgpu::PollType::wait_indefinitely()).ok();
+            let data = buf.slice(..).get_mapped_range();
+            let img = image::RgbaImage::from_fn(w, h, |x, y| {
+                let i = (y * stride + x * 4) as usize;
+                image::Rgba([data[i], data[i + 1], data[i + 2], 255])
+            });
+            img.save(std::path::Path::new(&dir).join(format!("{name}.png"))).unwrap();
+        }
+    }
+}
