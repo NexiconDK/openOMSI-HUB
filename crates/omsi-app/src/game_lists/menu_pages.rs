@@ -60,6 +60,7 @@ pub(super) fn options_pages(app: &App) -> Vec<Page> {
             .filter(|_| matches!(crate::settings::graphics_mode(&app.settings.graphics), "enhanced" | "enhanced_plus") && app.settings.clouds),
         pick("rain_quality", "Rain quality", "Lower is faster: the drops on the glass painted less often, less spray and fewer streaks; Low shows OMSI 2's own rain on the glass (from the next bus loaded)"),
         switch_row(app, "windy_trees", "Windy trees", "The trees' leaves bend and sway in the wind and its gusts; with no wind they stand still"),
+        switch_row(app, "road_snow", "Snow builds up on the roads", "While it snows the roads turn white bit by bit, with ruts, tyre tracks and snow on the roofs; it thaws when it is warm or rains. Off: the weather's snow on the road all at once, as in OMSI 2"),
     ]
         .into_iter()
         .flatten()

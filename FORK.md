@@ -54,6 +54,11 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 - **Valg mellem OMSI's egne animationer og HUB's "Natural"**: Under Esc → Options → Gameplay står nu "Passenger animations". *Original OMSI* bruger figurernes egne animationsfiler, som i OMSI 2 og openOMSI. *Natural (procedural)* er HUB's egne stillinger med fødderne på jorden og hænderne på stængerne. Skiftet sker med det samme. Før kunne man kun vælge i den gamle launcher, så man kørte altid med Natural.
 - **Stille passagerer forklares i loggen**: Siger en passager ikke noget, står grunden én gang i loggen (`passenger voices: ...`): ingen billetpakke, en figur uden `[voice]`, eller en lydfil der mangler.
 
+### Sne på vejene
+- **Sneen lægger sig på vejene lidt efter lidt** (openOMSI PR #1902 af Bulekoo, endnu ikke flettet ind i openOMSI): Mens det sner, bliver vejene hvide gradvist, først pletter og kanter og så et lukket lag. Et kraftigt snefald dækker en vej på ca. 10 minutter. Sneen tør, når det er varmt eller regner. Trafikken holder to hjulspor pr. vognbane fri, ned til våd grå slush. Bussen og AI-bilerne laver dækspor i ny sne, og sporene fyldes igen, mens det sner. Busser og biler får sne på taget, som blæser af i fart (ca. 400 m ved 50 km/t). Det virker på alle modeller.
+- **Indstilling**: Esc → Options → Graphics → "Snow builds up on the roads" (slået til som standard). Slået fra er det som før: vejret har sne på vejen eller ej på én gang, med årstidens `WinterSnowfall`-vejtexturer. Det skifter med det samme. `OMSI_ROAD_SNOW=off` slår det også fra, og et tal, fx `0.6`, giver det snedække, man starter med.
+- Når det er slået til, bruges `WinterSnowfall`-vejtexturerne ikke, så kort med egne snedækkede vejtexturer ser anderledes ud. Under OpenGL og i det klassiske Vanilla-billede er alt som før. Sporene huskes kun inden for 256 m omkring kameraet.
+
 ### AI-trafik
 - **Ingen kvartsekunds-frysere, når en flise med en meget lang AI-sti indlæses** (openOMSI PR #2956 af BECHARD Thibault): Spillet finder de felter i trafikkens gitter, en sti går igennem. Før blev hvert nyt felt tjekket mod alle dem, stien allerede havde. GPM-kortets `TCSP8.sco` har en sti på 968 km med ca. 19.600 felter, og så frøs spillet i et kvart sekund. Nu tjekkes hvert felt kun én gang. Resultatet er det samme.
 
