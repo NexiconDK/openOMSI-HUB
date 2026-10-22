@@ -94,6 +94,7 @@ impl TrafficSim {
             unstick_lights: 0.0,
             light_waits: HashMap::new(),
             lights_out: Default::default(),
+            light_age: HashMap::new(),
             trailer_types: HashMap::new(),
             root: root.to_path_buf(),
             held_at_red: 0,

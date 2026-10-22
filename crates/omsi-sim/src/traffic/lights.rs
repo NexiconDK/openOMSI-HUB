@@ -93,6 +93,15 @@ impl TrafficLightController {
         }
     }
 
+    /// Omsi-Hub: start the program again from the time of day (as at the session's start):
+    /// a program stuck in one state (`TrafficSim::light_guard`) runs its cycle anew.
+    pub fn restart(&mut self) {
+        self.started = false;
+        self.held = false;
+        self.passed.clear();
+        self.rewound = None;
+    }
+
     /// Request distance of light `i` (m).
     pub fn approach_dist(&self, i: usize) -> f32 {
         self.approach.get(i).copied().flatten().unwrap_or(DEFAULT_APPROACH)

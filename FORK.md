@@ -32,6 +32,11 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 - **IBIS-boksen**: Over "Start trip" står den linje- og rutekode, man skal taste i IBIS'en til netop den tur, fremhævet ud fra bussens hof-fil, og linjens andre ruter står under. Har hof-filen ingen rute til turen, står det, og så vises linjen og destinationskoden i stedet.
 - **Kort over ruten**: Midt på siden vises turens rute på et kort med vejene omkring og stoppestederne med tider. Første stop er en ring, sidste en fyldt prik, og det stop, man starter fra, er markeret. Kortet vises, når navigatoren har læst kortet, og kun hvis vinduet er bredt nok.
 
+### Skilte og Line and tour (rettelser)
+- **De to linjer kommer i rigtig rækkefølge**: Teksten fra det øverste felt står nu øverst på skiltet. HUB lægger linjerne i de samme strenge, som hof-filens egne destinationer bruger (i Ahlheim 5 er det streng 1 og 2). Før havnede den anden linje øverst på Krüger-matricerne.
+- **"Clear display" fjerner også linjenummeret**: Før blev IBIS'ens linjenummer skrevet tilbage på det tomme skilt.
+- **Pilen til højre ved turens tid i "Line and tour" vises igen**: Ikonet manglede i HUB's ikonsæt.
+
 ### Køreplanssedlen i førerpladsen
 - **Køreplanssedlen virker igen** (`file_schedule`, papiret med turens stop og tider): HUB tegnede den i `~\.openomsi\cache\schedules`, men måtte ikke vise den, fordi et billede med fuld sti kun læses fra indholdsmapperne (OMSI og mods). Nu er netop den mappe tilladt, så sedlen vises som i main. Alt andet er stadig begrænset til indholdsmapperne.
 
@@ -44,6 +49,7 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 ### Lyskryds
 - **Busser ved et bussignal, der deler sit spring med et andet signal, får grønt** (openOMSI PR #3009 af thibautgnt): Nogle kryds springer en fase over, når ingen beder om den ved to lys på én gang, fx ind- og udkørslen af en busterminal. Før fik fasen kun grønt, når der holdt en bus ved begge lys samtidig, så en bus ved kun det ene stod i kø for altid. Nu er én bus nok.
 - **"Løsn op"-sikring for lyskryds på serveren**: Har et lys holdt holdende biler eller busser i 3 minutter uden at give dem grønt, regner serveren det for gået i stykker. Bilerne kører så efter vigepligten, som ved et slukket lyskryds, indtil lyset viser grønt igen og kører videre i sit program. Serverens log skriver, hvilket lys det er, og hvor det står, så vi kan finde den egentlige fejl. Tiden sættes med `unstick_lights` i `server.cfg` (sekunder, standard 180, 0 slår det fra). Det gælder kun den dedikerede server.
+- **Et lyskryds, der hænger, starter forfra**: Viser et lys det samme i 3 minutter, mens der holder biler ved det, eller står det i gul eller rød-gul så længe (det skal kun vare et par sekunder), starter serveren krydsets lysprogram forfra. Det står i serverens log med programmets nummer og position. Tiden er den samme `unstick_lights`.
 
 ### Til fods
 - **Ctrl+Shift+G virker igen**: Når "Ability to get up" er slået til, rejser chaufføren sig nu altid fra sædet med Ctrl+Shift+G, som i vores main. Før blev tasten ignoreret, hvis Ctrl+Shift+G også stod i en `keyboard.cfg`, og så skete der ingenting. Er indstillingen slået fra, bruger tasten det, den er sat til i `keyboard.cfg`.

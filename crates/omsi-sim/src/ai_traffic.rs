@@ -145,6 +145,8 @@ pub struct TrafficSim {
     /// and those taken for out of order until they show green again.
     pub light_waits: HashMap<(usize, usize), f32>,
     pub lights_out: hashbrown::HashSet<(usize, usize)>,
+    /// Omsi-Hub: each light's state and how long it has shown it (`light_guard`).
+    pub light_age: HashMap<(usize, usize), (i32, f32)>,
     /// Coupled vehicle types by file.
     pub trailer_types: HashMap<std::path::PathBuf, Option<Arc<VehicleType>>>,
     pub root: std::path::PathBuf,

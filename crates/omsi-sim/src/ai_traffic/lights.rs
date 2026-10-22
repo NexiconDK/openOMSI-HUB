@@ -159,8 +159,10 @@ impl TrafficSim {
         if self.unstick_lights <= 0.0 {
             self.light_waits.clear();
             self.lights_out.clear();
+            self.light_age.clear();
             return;
         }
+        self.restart_stuck_programs(dt);
         let green = |lights: &[TrafficLightController], k: (usize, usize)| lights.get(k.0).is_none_or(|c| matches!(TrafficLightController::aspect(c.state(k.1)), Aspect::Green));
         let holding: hashbrown::HashSet<(usize, usize)> = self.cars.iter().filter(|c| c.light_hold && c.state.speed < 0.5).filter_map(|c| c.light_by).collect();
         self.light_waits.retain(|k, _| holding.contains(k));
@@ -185,6 +187,45 @@ impl TrafficSim {
             self.lights_out.remove(&k);
             let (x, y) = self.light_place(k);
             log::info!("traffic light {}.{} at ({x:.0}, {y:.0}) shows green again: back to its program", k.0, k.1);
+        }
+    }
+
+    /// Omsi-Hub: a program stuck in one state is started again: a light that has shown the
+    /// same state for `unstick_lights` seconds while cars stand at it, or that long in yellow
+    /// or red-and-yellow (a passing state, never meant to last), restarts its program from
+    /// the time of day - a crossing of Ahlheim stood in yellow for good. Logged.
+    fn restart_stuck_programs(&mut self, dt: f32) {
+        let waiting: hashbrown::HashSet<(usize, usize)> = self.cars.iter().filter(|c| c.light_hold && c.state.speed < 0.5).filter_map(|c| c.light_by).collect();
+        let mut stuck: Vec<(usize, usize, i32, f32)> = Vec::new();
+        for (ci, c) in self.lights.iter().enumerate() {
+            for li in 0..c.lights.len() {
+                let s = c.state(li);
+                let e = self.light_age.entry((ci, li)).or_insert((s, 0.0));
+                if e.0 != s {
+                    *e = (s, 0.0);
+                    continue;
+                }
+                e.1 += dt;
+                let passing = matches!(TrafficLightController::aspect(s), Aspect::Yellow | Aspect::RedYellow);
+                if e.1 >= self.unstick_lights && (passing || waiting.contains(&(ci, li))) {
+                    stuck.push((ci, li, s, e.1));
+                }
+            }
+        }
+        let mut done: Vec<usize> = Vec::new();
+        for (ci, li, s, t) in stuck {
+            if done.contains(&ci) {
+                continue;
+            }
+            done.push(ci);
+            let (x, y) = self.light_place((ci, li));
+            log::warn!("traffic light program {ci} at ({x:.0}, {y:.0}): light {li} showed {:?} ({s}) for {t:.0} s - the program starts again", TrafficLightController::aspect(s));
+            if let Some(c) = self.lights.get_mut(ci) {
+                c.restart();
+                c.start(self.day_time);
+            }
+            self.light_age.retain(|k, _| k.0 != ci);
+            self.light_waits.retain(|k, _| k.0 != ci);
         }
     }
 

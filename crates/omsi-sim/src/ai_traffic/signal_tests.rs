@@ -238,3 +238,25 @@ fn a_light_that_never_turns_green_is_taken_for_out_of_order() {
     t.tick(super::fixed_step::SIM_DT, None);
     assert!(t.lights_out.is_empty());
 }
+
+/// Omsi-Hub: a program that stands in yellow is started again once it has shown it for
+/// `unstick_lights` seconds, cars or none.
+#[test]
+fn a_program_stuck_in_yellow_starts_again() {
+    let f = Fixture::new();
+    let (net, _) = crossroads(Build::default());
+    let mut t = traffic(&f, net);
+    t.unstick_lights = 30.0;
+    // held at a stop point at 5 s, light 0 yellow there, nobody to ask
+    t.lights[0] = TrafficLightController::from_program(vec![(vec![(6, 2.0), (9, 10.0), (0, 10.0)], None), (vec![(0, 22.0)], None)], Some(22.0), &[[0.0, 5.0, 1.0]], &[]);
+    for _ in 0..(20.0 / super::fixed_step::SIM_DT) as usize {
+        t.tick(super::fixed_step::SIM_DT, None);
+    }
+    assert_eq!(t.lights[0].state(0), 9, "stands in yellow");
+    let mut green = false;
+    for _ in 0..(40.0 / super::fixed_step::SIM_DT) as usize {
+        t.tick(super::fixed_step::SIM_DT, None);
+        green |= t.lights[0].state(0) == 6;
+    }
+    assert!(green, "the program started again and showed green");
+}
