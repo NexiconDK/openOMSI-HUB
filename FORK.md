@@ -5,6 +5,9 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 ### Opdateringer
 - **Spillet og launcheren opdaterer fra vores egen GitHub** (github.com/NexiconDK/openOMSI-HUB): Opdateringstjekket, både i launcheren og i baggrunden under spillet, kigger nu på vores egne udgivelser i stedet for Omsi-Hubs (Luc-nbr/openOMSI). Knapperne "GitHub" og linket i opdateringsvinduet peger også dertil. Den første version med det skal hentes med hånden, fordi de ældre versioner stadig kigger hos Omsi-Hub. Derefter kommer opdateringerne af sig selv.
 
+### Launcher: dag og vejr
+- **Vejret passer til årstiden** (fra openOMSI PR #3036 af Isaac S.): Skifter man årstid eller dato i "Day & weather", og passer det valgte vejr ikke længere (fx sne om sommeren), skiftes der til kortets eget vejr ("Map default"), og en besked siger det. Før blev det gamle vejr stående uden at stå i listen. Det valgte vejr står altid i listen, også når det ikke passer. Under listen kan "Show the ... that do not fit the season" slås til, så de frasorterede også vises, hvis man vil have sne om sommeren med vilje. Holder man musen over et vejr, vises dets egen beskrivelse.
+
 ### Multiplayer og dedicated server
 - Værtens AI-busser viser nu både linje **og destination** hos spillerne. Før stod kun linjen på skiltet, fordi spillerens kopi af bussen ikke fik hof-filen med, som destinationsteksten hentes fra. Det er kun spillerne, der skal have den nye version; serveren skal ikke ændres.
 
@@ -65,6 +68,7 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 ### Minimap og bykort: kortets udseende
 - **Kortets eget billede som i openOMSI** (openOMSI PR #2782, #2831 og #2929, kun selve kortet): Under Esc → Options → Gameplay står nu to valg. *Minimap's map*: "Classic (as before)" er vejene som hidtil, "Flat 2D map" er kortets eget billede set lige oppefra (grønt land, vand, skov, de belagte gader med deres striber og husene), og "Map in 3D" er det samme billede på skrå med husene stående i 3D. *City map's map*: "Classic (as before)" eller "The map's own picture". Skiftet sker med det samme. Resten af navigatoren og bykortet (ruten, stoppestederne, knapperne) er som før.
 - Om kortet er mørkt eller lyst, styres stadig af "Light map" lige over dem, og det gælder også det nye billede.
+- Kortet holder kun hver trekant én gang i hukommelsen (openOMSI PR #3066 er med).
 - Billedet regnes ud første gang, et kort åbnes, og gemmes i `~\.openomsi\cache\mapgen`, så det går hurtigt næste gang. Indtil det er klar, vises det klassiske kort.
 
 ### Bykortet (Shift+M)

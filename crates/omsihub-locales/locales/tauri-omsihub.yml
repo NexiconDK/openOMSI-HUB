@@ -89,6 +89,24 @@ _version: 2
   uk: "Читання автобусів… {done} з {total}"
   pl: "Wczytywanie autobusów… {done} z {total}"
 
+# --- the day and the weather (NexiconDK, from openOMSI PR #3036) ------------------------------
+"Show the %{n} that do not fit the season":
+  en: "Show the %{n} that do not fit the season"
+  nl: "Toon de %{n} die niet bij het seizoen passen"
+  de: "Die %{n} zeigen, die nicht zur Jahreszeit passen"
+  fr: "Afficher les %{n} qui ne conviennent pas à la saison"
+  ru: "Показать %{n}, не подходящих к сезону"
+  uk: "Показати %{n}, що не підходять до сезону"
+  pl: "Pokaż %{n} niepasujących do pory roku"
+"%{name} does not fit the season: Map default instead":
+  en: "%{name} does not fit the season: Map default instead"
+  nl: "%{name} past niet bij het seizoen: Standaard van de kaart in plaats daarvan"
+  de: "%{name} passt nicht zur Jahreszeit: stattdessen Karten-Standard"
+  fr: "%{name} ne convient pas à la saison : Par défaut de la carte à la place"
+  ru: "%{name} не подходит к сезону: вместо этого по умолчанию карты"
+  uk: "%{name} не підходить до сезону: натомість типова для мапи"
+  pl: "%{name} nie pasuje do pory roku: zamiast tego domyślna mapy"
+
 # --- the driver ----------------------------------------------------------------------------------
 "Personnel file of {name} deleted.":
   en: "Personnel file of {name} deleted."

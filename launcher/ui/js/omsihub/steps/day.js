@@ -4,7 +4,7 @@
 // of an airport, the weather cycle, or one of the presets that fit the season.
 
 import { html, useEffect, useState } from '../../../vendor/preact-htm.js';
-import { S, set, useStore } from '../../store.js';
+import { S, set, useStore, toast } from '../../store.js';
 import { call } from '../../api.js';
 import { choose, curTour, pickedTrip, realTime, realDate, saveSettings } from '../../data.js';
 import { tripAt } from '../../pages/drive.js';
@@ -79,37 +79,59 @@ function DateField({ value, onChange, disabled }) {
     <input type="date" value=${value} disabled=${disabled} onChange=${(e) => e.currentTarget.value && onChange(e.currentTarget.value)} /></label>`;
 }
 
+/** The season a choice means: the one chosen, else the date's ("winter" ...). */
+const seasonKey = (c) => (c.season && c.season !== 'auto' ? c.season : seasonOf(parseDate(c.date)[1]).toLowerCase());
+
+/** A weather preset that makes sense in the season (no summer shower in the snow, no snow in
+ * spring: `state::weather_fits`). */
+function weatherFits(w, season) {
+  const rain = (w.precip || '').startsWith('rain');
+  if (season === 'winter') return w.snow || (rain ? w.temp <= 10 : w.temp <= 16);
+  if (w.snow || w.temp <= 0) return false;
+  return season !== 'summer' || w.temp >= 8;
+}
+
+/** A change of the date or the season (`next`), and with it the map's own weather instead of
+ * a chosen preset that does not fit the new season - said once (openOMSI PR #3036). */
+function chooseWhen(next) {
+  const c = S.choice;
+  const w = (S.weather || []).find((x) => x.file === c.weather);
+  if (w && !weatherFits(w, seasonKey({ ...c, ...next }))) {
+    toast(tr('%{name} does not fit the season: Map default instead', { name: w.name }));
+    return choose({ ...next, weather: '' });
+  }
+  return choose(next);
+}
+
 /** The weather's choices (`DayCtx::of`): the map's own, the current one of an airport, the
- * cycle, the presets that fit the season (`state::weather_fits`). */
-function weatherItems(c, airport) {
-  const [, m] = parseDate(c.date);
-  const season = c.season && c.season !== 'auto' ? c.season : seasonOf(m).toLowerCase();
-  const fits = (w) => {
-    const rain = (w.precip || '').startsWith('rain');
-    if (season === 'winter') return w.snow || (rain ? w.temp <= 10 : w.temp <= 16);
-    if (w.snow || w.temp <= 0) return false;
-    return season !== 'summer' || w.temp >= 8;
-  };
+ * cycle, the presets that fit the season (`state::weather_fits`) - the chosen one always, all
+ * of them with `all` - and how many presets do not fit. */
+function weatherItems(c, airport, all) {
+  const season = seasonKey(c);
   const code = c.weather?.startsWith('metar:') ? c.weather.slice(6) : airport || 'EDDB';
   const items = [
     ['', 'Map default', 'Whatever the map starts with', 'wb_sunny'],
     [`metar:${code}`, 'Current weather', tr('METAR of %{code} (fetched at the start)', { code }), 'public'],
     ['cycle', 'Weather cycle', 'Changes every 25-60 minutes, as the month allows', 'autorenew'],
   ];
+  let unfitting = 0;
   for (const w of S.weather || []) {
-    if (!fits(w)) continue;
+    const fits = weatherFits(w, season);
+    if (!fits) unfitting += 1;
+    if (!fits && !all && w.file !== c.weather) continue;
     const clouds = (w.clouds || '').toLowerCase();
     const icon = w.snow || (w.precip || '').startsWith('snow') ? 'weather_snowy' : (w.precip || '').startsWith('rain') ? 'rainy' : w.fog_m < 1500 ? 'foggy' : clouds.includes('overcast') ? 'cloud' : clouds.includes('cumulus') ? 'partly_cloudy_day' : 'wb_sunny';
     const vis = w.fog_m >= 20000 ? tr('clear air') : `${Math.round(w.fog_m)} m`;
-    items.push([w.file, w.name, `${Math.round(w.temp)} °C · ${w.precip} · ${vis}`, icon, true]);
+    items.push([w.file, w.name, `${Math.round(w.temp)} °C · ${w.precip} · ${vis}`, icon, true, (w.description || '').trim()]);
   }
-  return items;
+  return [items, unfitting];
 }
 
 export function DayStep() {
   const s = useStore();
   const c = s.choice;
   const [wx, setWx] = useState(null);
+  const [allSeasons, setAllSeasons] = useState(false);
   useEffect(() => {
     if (!c.map) return;
     call('hub_weather_extras', { map: c.map }).then(setWx).catch(() => setWx(null));
@@ -119,11 +141,11 @@ export function DayStep() {
   const [y, m, d] = parseDate(c.date);
   const seasonAt = SEASONS.findIndex(([v]) => v === c.season);
   const setSeason = (v) => {
-    if (v === 'auto') return choose({ season: 'auto' });
+    if (v === 'auto') return chooseWhen({ season: 'auto' });
     const month = { spring: 4, summer: 7, autumn: 10, winter: 1 }[v];
-    choose({ season: v, date: `${String(y).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(Math.min(d, daysIn(y, month))).padStart(2, '0')}` });
+    chooseWhen({ season: v, date: `${String(y).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(Math.min(d, daysIn(y, month))).padStart(2, '0')}` });
   };
-  const items = weatherItems(c, wx?.airport);
+  const [items, unfitting] = weatherItems(c, wx?.airport, allSeasons);
   items.splice(1, 0, customItem(c));
   const lines = s.lines.list;
   const running = lines ? lines.filter((l) => l.tours.some((t) => t.runs)).length : null;
@@ -140,11 +162,11 @@ export function DayStep() {
           <${Caps} title="When" value=${dayName(c.date)} />
           <div class="hub-two">
             <${TimeField} minutes=${c.time} disabled=${realTime()} onChange=${(time) => choose({ time })} />
-            <${DateField} value=${c.date} disabled=${realDate()} onChange=${(date) => choose({ date, season: 'auto' })} />
+            <${DateField} value=${c.date} disabled=${realDate()} onChange=${(date) => chooseWhen({ date, season: 'auto' })} />
           </div>
           <div class="hub-two" style="margin-top:10px">
             <${Button} label="Current time" onClick=${() => choose({ time: now()[1] })} />
-            <${Button} label="Current date" onClick=${() => choose({ date: now()[0], season: 'auto' })} />
+            <${Button} label="Current date" onClick=${() => chooseWhen({ date: now()[0], season: 'auto' })} />
           </div>
         </div>
         ${lead != null && html`<div class="hub-section">
@@ -170,13 +192,14 @@ export function DayStep() {
           <${Caps} title="Weather" value=${c.weather ? weatherName(c.weather) : tr('Map default')} />
           ${isCustom(c.weather) ? html`<${CustomWeather} />` : html`<${EditAsCustom} weather=${c.weather} />
           <div class="hub-weather">
-            ${items.map(([value, name, meta, icon, raw]) => {
+            ${items.map(([value, name, meta, icon, raw, about]) => {
               const on = value === c.weather || (value.startsWith('metar:') && metar);
-              return html`<button type="button" class=${'hub-wx' + (on ? ' on' : '')} onClick=${() => choose({ weather: value })}>
+              return html`<button type="button" class=${'hub-wx' + (on ? ' on' : '')} title=${about || undefined} onClick=${() => choose({ weather: value })}>
                 <${Icon} name=${icon} size=${20} /><span><b>${raw ? name : tr(name)}</b><small>${raw ? meta : tr(meta)}</small></span>${on ? html`<span class="hub-radio on"></span>` : html`<span class="hub-radio"></span>`}
               </button>`;
             })}
           </div>
+          ${unfitting > 0 && html`<div style="margin-top:10px"><${Switch} raw label=${tr('Show the %{n} that do not fit the season', { n: unfitting })} checked=${allSeasons} onChange=${setAllSeasons} /></div>`}
           ${metar && wx?.airports?.length > 0 && html`<div style="display:flex;align-items:center;gap:10px;margin-top:10px">
             <span style="color:var(--hub-text-soft);width:70px">${tr('Airport')}</span>
             <span style="flex:1"><${Select} raw value=${c.weather.slice(6)} options=${wx.airports} onChange=${(code) => choose({ weather: `metar:${code}` })} /></span>
