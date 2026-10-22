@@ -245,15 +245,19 @@ impl PeopleSim {
             Some(vp) if !vp.trim().is_empty() => Some(omsi_cfg::resolve_path(&self.root, vp.trim())),
             _ => t.path.parent().map(|p| p.to_path_buf()),
         }) else {
+            silent_once("no ticket pack: the passengers have no voices", "");
             return;
         };
         let voice = self.people[i].ty.def.voice.trim().to_string();
         if voice.is_empty() {
+            let who = self.people[i].ty.def.path.display().to_string();
+            silent_once("a passenger type names no [voice]", &who);
             return;
         }
         let dir = omsi_cfg::resolve_path(&base, &voice);
         let path = omsi_cfg::resolve_path(&dir, &format!("{name}.wav"));
         if !omsi_cfg::vfs::is_file(&path) {
+            silent_once("a passenger's voice file is not there", &path.display().to_string());
             return;
         }
         if limited {
@@ -774,5 +778,17 @@ fn human_key(p: &str) -> String {
     match p.rfind("humans/") {
         Some(k) => p[k + 7..].to_string(),
         None => p,
+    }
+}
+
+/// Omsi-Hub: why a passenger said nothing, logged once per reason and file (passengers were
+/// silent with no word why, where openOMSI spoke).
+fn silent_once(why: &str, what: &str) {
+    static SEEN: std::sync::Mutex<Vec<String>> = std::sync::Mutex::new(Vec::new());
+    let key = format!("{why}|{what}");
+    let Ok(mut seen) = SEEN.lock() else { return };
+    if seen.len() < 64 && !seen.contains(&key) {
+        seen.push(key);
+        log::info!("passenger voices: {why} {what}");
     }
 }

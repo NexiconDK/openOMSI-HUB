@@ -40,6 +40,10 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 ### Køreplanssedlen i førerpladsen
 - **Køreplanssedlen virker igen** (`file_schedule`, papiret med turens stop og tider): HUB tegnede den i `~\.openomsi\cache\schedules`, men måtte ikke vise den, fordi et billede med fuld sti kun læses fra indholdsmapperne (OMSI og mods). Nu er netop den mappe tilladt, så sedlen vises som i main. Alt andet er stadig begrænset til indholdsmapperne.
 
+### Passagerernes bevægelser
+- **Valg mellem OMSI's egne animationer og HUB's "Natural"**: Under Esc → Options → Gameplay står nu "Passenger animations". *Original OMSI* bruger figurernes egne animationsfiler, som i OMSI 2 og openOMSI. *Natural (procedural)* er HUB's egne stillinger med fødderne på jorden og hænderne på stængerne. Skiftet sker med det samme. Før kunne man kun vælge i den gamle launcher, så man kørte altid med Natural.
+- **Stille passagerer forklares i loggen**: Siger en passager ikke noget, står grunden én gang i loggen (`passenger voices: ...`): ingen billetpakke, en figur uden `[voice]`, eller en lydfil der mangler.
+
 ### Fodgængere
 - **Ingen tilfældige fodgængere på stier med trafiktæthed 0** (openOMSI PR #2968 af VlastikYoutubeKo): Kortets stier med tæthed 0, fx små trafikøer, får ikke længere tilfældige fodgængere. Stierne kan stadig bruges af dem, der allerede går, og af passagererne.
 

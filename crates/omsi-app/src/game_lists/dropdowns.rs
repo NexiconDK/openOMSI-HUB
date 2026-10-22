@@ -141,6 +141,10 @@ pub(crate) fn dropdown_apply(app: &mut App, action: &str) {
                 remember_setting(key, value);
                 // (a corner chosen: the navigator goes there, a place it was dragged to is
                 // forgotten - its size stays)
+                // Omsi-Hub: the people's poses, at once
+                if key == "passenger_animation" {
+                    app.gfx.sim_view.people.enhanced_poses = value.eq_ignore_ascii_case("enhanced");
+                }
                 // Omsi-Hub: the maps' look, at once
                 if key == "nav_map" || key == "city_map" {
                     if let Some(n) = app.menus.navigator.as_mut() {
@@ -279,6 +283,7 @@ pub(super) fn select_options(key: &str) -> Vec<(&'static str, &'static str)> {
         "texture_memory" => vec![("0", "Automatic"), ("500", "500 MB"), ("1000", "1 GB"), ("1500", "1.5 GB"), ("2000", "2 GB"), ("3000", "3 GB"), ("4000", "4 GB"), ("6000", "6 GB")],
         "drive_keys" => vec![("omsi", "Custom controls (Controls page)"), ("simple", "W A S D + arrows"), ("wasd", "W A S D only"), ("arrows", "Arrow keys only")],
         "resolution" => vec![("auto", "Automatic"), ("1280x720", "1280 x 720"), ("1280x800", "1280 x 800 (Steam Deck)"), ("1366x768", "1366 x 768"), ("1600x900", "1600 x 900"), ("1920x1080", "1920 x 1080"), ("1920x1200", "1920 x 1200"), ("2560x1440", "2560 x 1440"), ("3840x2160", "3840 x 2160")],
+        "passenger_animation" => vec![("original", "Original OMSI"), ("enhanced", "Natural (procedural)")],
         "nav_map" => vec![("classic", "Classic (as before)"), ("flat", "Flat 2D map"), ("3d", "Map in 3D")],
         "city_map" => vec![("classic", "Classic (as before)"), ("new", "The map's own picture")],
         "navigator_corner" => vec![("top-left", "Top left"), ("top-right", "Top right"), ("bottom-left", "Bottom left"), ("bottom-right", "Bottom right")],
