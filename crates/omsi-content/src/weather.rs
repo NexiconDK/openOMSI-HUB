@@ -24,6 +24,11 @@ pub struct Weather {
     pub ground_wet: [f32; 3],
     pub snow: bool,
     pub snow_on_road: bool,
+    /// A thunderstorm the weather reports itself (NexiconDK): 0 none, else how strong (a
+    /// METAR's `TS`: 0.7, `+TS` 1, `-TS` 0.45; `VCTS`, one in the vicinity: 0.3). An `.owt`
+    /// file has no such entry: `omsi_weather::lightning::thunder_level` reads its clouds,
+    /// rain and name instead.
+    pub thunder: f32,
 }
 
 impl Weather {
@@ -160,7 +165,14 @@ pub fn from_metar(station: &str, text: &str) -> Weather {
             Some('+') => (230.0, &t[1..]),
             _ => (150.0, t),
         };
-        let rest = rest.trim_start_matches("VC").trim_start_matches("SH").trim_start_matches("TS").trim_start_matches("FZ");
+        // (a thunderstorm: "TS", "+TSRA", "-TSRAGR", "VCTS" in the vicinity)
+        let vicinity = rest.starts_with("VC");
+        let after_vc = rest.trim_start_matches("VC");
+        if after_vc.starts_with("TS") {
+            let level = if vicinity { 0.3 } else { match strength as i32 { 230 => 1.0, 70 => 0.45, _ => 0.7 } };
+            w.thunder = w.thunder.max(level);
+        }
+        let rest = after_vc.trim_start_matches("SH").trim_start_matches("TS").trim_start_matches("FZ");
         let kind = if rest.starts_with("SN") || rest.starts_with("SG") || rest.starts_with("PL") { Some(2.0) } else if rest.starts_with("RA") || rest.starts_with("DZ") || rest.starts_with("GR") || rest.starts_with("GS") { Some(1.0) } else { None };
         if let Some(k) = kind {
             let s = if rest.starts_with("DZ") { strength * 0.5 } else { strength };
@@ -217,5 +229,23 @@ mod metar_tests {
         assert_eq!(c.temp.0, -3.0);
         let s = super::from_metar("EDDT", "EDDT 241250Z 30012G25KT 1200 +SN VV008 M02/M03 Q1005");
         assert!(s.snow && s.precip[0] == 2.0 && s.fog.0 == 1200.0);
+        assert_eq!((w.thunder, s.thunder), (0.0, 0.0));
+    }
+
+    /// NexiconDK: a thunderstorm in the report, by its strength; one in the vicinity is
+    /// weak; the rain of it is the rain as before.
+    #[test]
+    fn thunderstorms() {
+        let at = |m: &str| super::from_metar("EKCH", &format!("EKCH 221520Z 24014KT 3000 {m} BKN025CB 22/18 Q1006"));
+        assert_eq!(at("TSRA").thunder, 0.7);
+        assert_eq!(at("+TSRA").thunder, 1.0);
+        assert_eq!(at("-TSRA").thunder, 0.45);
+        assert_eq!(at("TS").thunder, 0.7);
+        assert_eq!(at("VCTS").thunder, 0.3);
+        assert_eq!(at("-RA").thunder, 0.0);
+        let w = at("+TSRA");
+        assert_eq!((w.precip[0], w.precip[1]), (1.0, 230.0));
+        // (after TEMPO it is a forecast: no thunder now)
+        assert_eq!(super::from_metar("EKCH", "EKCH 221520Z 24014KT 9999 SCT030 22/18 Q1006 TEMPO TSRA").thunder, 0.0);
     }
 }

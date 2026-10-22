@@ -7,7 +7,9 @@
 
 pub mod condensation;
 pub mod conditions;
+pub mod lightning;
 pub mod season_phase;
+pub mod thunder;
 pub mod weather_cycle;
 pub mod weather_model;
 pub mod window_drops;

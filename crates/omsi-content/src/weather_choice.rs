@@ -158,7 +158,7 @@ impl CustomWeather {
             path:std::path::PathBuf::from(c.encode()),name:"Custom weather".into(),description:"User-defined weather".into(),
             fog:(c.visibility_m,1.0),wind:(c.wind_dir,c.wind_speed),temp:(c.temp_c,absolute_humidity(c.temp_c,c.humidity)),
             pressure:c.pressure,clouds:(cloud.into(),c.cloud_base_m),cloud_cover:Some(c.cloud_cover),precip:vec![c.precip as f32,c.precip_intensity,0.0,0.0,0.0],
-            ground_wet:[c.road_wetness*255.0,0.0,0.0],snow:c.snow_cover,snow_on_road:c.snow_on_road}
+            ground_wet:[c.road_wetness*255.0,0.0,0.0],snow:c.snow_cover,snow_on_road:c.snow_on_road,thunder:0.0}
     }
 }
 fn saturation_vapour_pressure(temp_c:f32)->f32{6.112*((17.67*temp_c)/(temp_c+243.5)).exp()}
