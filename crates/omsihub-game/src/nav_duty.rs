@@ -49,6 +49,10 @@ pub const EARLY: Color = Color::rgba(42, 117, 247, 1.0);
 pub const LATE_INK: Color = Color::hex(0xFF5F57);
 pub const ON_TIME_INK: Color = Color::hex(0x37D67A);
 pub const EARLY_INK: Color = Color::hex(0x4DA3FF);
+/// (NexiconDK, as openOMSI_DK) Late, orange: ahead of the timetable is the worse (red), as
+/// the drivers have it.
+pub const BEHIND: Color = Color::rgba(222, 120, 22, 1.0);
+pub const BEHIND_INK: Color = Color::hex(0xFFA23F);
 /// The stop the bus heads for, and the advice about what comes next.
 pub const NOW: Color = Color::hex(0xF0B429);
 /// The stops' rail ahead of the bus (the route: the accent) and behind it.
@@ -71,8 +75,10 @@ const ADVICE: Color = Color::rgba(245, 230, 200, 1.0);
 // --- punctuality --------------------------------------------------------------------------
 
 /// Later than this after the timetable is late, and more than this before it early (s).
-pub const LATE_AFTER: f64 = 180.0;
-pub const EARLY_BEFORE: f64 = 120.0;
+/// (NexiconDK, as openOMSI_DK) Late from two minutes on; ahead of it at all is early (by a
+/// whole second, as the chip writes it).
+pub const LATE_AFTER: f64 = 120.0;
+pub const EARLY_BEFORE: f64 = 0.5;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Punctuality {
@@ -96,17 +102,18 @@ impl Punctuality {
     /// Its colour as letters on the dark panel.
     pub fn ink(self) -> Color {
         match self {
-            Punctuality::Early => EARLY_INK,
+            // (NexiconDK, as openOMSI_DK: early red, late orange)
+            Punctuality::Early => LATE_INK,
             Punctuality::OnTime => ON_TIME_INK,
-            Punctuality::Late => LATE_INK,
+            Punctuality::Late => BEHIND_INK,
         }
     }
 
     fn fill(self) -> Color {
         match self {
-            Punctuality::Early => EARLY,
+            Punctuality::Early => LATE,
             Punctuality::OnTime => ON_TIME,
-            Punctuality::Late => LATE,
+            Punctuality::Late => BEHIND,
         }
     }
 }
@@ -121,6 +128,23 @@ pub fn hhmm(t: f64) -> String {
 pub fn offset(delay: f64) -> String {
     let s = delay.abs().round() as i64;
     format!("{}{}:{:02}", if delay < 0.0 { '\u{2212}' } else { '+' }, s / 60, s % 60)
+}
+
+/// (NexiconDK, as openOMSI_DK) How far off the timetable without its sign, `mm:ss` (`00:32`,
+/// `02:15`), an hour or more `hh:mm:ss`: the chip's colour tells early from late.
+pub fn clock(delay: f64) -> String {
+    let s = delay.abs().round() as i64;
+    if s >= 3600 {
+        format!("{:02}:{:02}:{:02}", s / 3600, s / 60 % 60, s % 60)
+    } else {
+        format!("{:02}:{:02}", s / 60, s % 60)
+    }
+}
+
+/// `text` with its first letter a capital ("on time" - "On time").
+fn capitalized(text: &str) -> String {
+    let mut c = text.chars();
+    c.next().map(|f| f.to_uppercase().chain(c).collect()).unwrap_or_default()
 }
 
 /// Whole minutes, rounded up (a break with 20 s left is not over).
@@ -248,9 +272,11 @@ impl Status {
     pub fn label(self) -> String {
         match self {
             Status::DepartsIn(s) => tr_with("leaves in %{m} min", &[("m", minutes_up(s).max(1).to_string())]),
+            // (NexiconDK, as openOMSI_DK) how far off, to the second, whichever way: its
+            // colour says which; on time named as well ("On time - 01:45")
             Status::Running(d) => match punctuality(d) {
-                Punctuality::OnTime => omsi_ui::tr("on time").into_owned(),
-                _ => offset(d),
+                Punctuality::OnTime => format!("{} - {}", capitalized(&omsi_ui::tr("on time")), clock(d)),
+                _ => clock(d),
             },
             Status::Break(left) if left >= 0.0 => tr_with("break, %{m} min left", &[("m", minutes_up(left).to_string())]),
             Status::Break(left) => tr_with("%{m} min over", &[("m", minutes_up(-left).max(1).to_string())]),
@@ -302,7 +328,8 @@ fn stop_state(j: usize, now: usize) -> StopState {
 pub enum Row {
     /// The trip: its line (None: an empty run), where it goes, which of how many, when it
     /// gets there (during the break: when it leaves), and how the duty stands.
-    Head { line: Option<String>, terminus: String, index: usize, count: usize, time: f64, status: Status },
+    /// (NexiconDK, as openOMSI_DK) `expected`: when it will get there, where that is off the plan.
+    Head { line: Option<String>, terminus: String, index: usize, count: usize, time: f64, expected: Option<f64>, status: Status },
     /// A stop: its planned time, when the bus will be there when that is off the timetable,
     /// its name, where it is for the bus, and whether it is the trip's last.
     Stop { planned: f64, expected: Option<f64>, name: String, state: StopState, last: bool },
@@ -329,7 +356,11 @@ pub fn board(state: Option<&DutyState>, ahead: usize) -> Vec<Row> {
     let Some(trip) = d.trips.get(k) else { return vec![Row::NoDuty] };
     let on_break = matches!(status, Status::Break(_));
     let terminus = trip.terminus.trim().to_string();
-    let mut rows = vec![Row::Head { line: d.shown_line(k), terminus: terminus.clone(), index: k + 1, count: d.trips.len(), time: if on_break { trip.departure } else { trip.end }, status }];
+    let head_expected = match status {
+        Status::Running(late) => Some(trip.end + late).filter(|e| hhmm(*e) != hhmm(trip.end)),
+        _ => None,
+    };
+    let mut rows = vec![Row::Head { line: d.shown_line(k), terminus: terminus.clone(), index: k + 1, count: d.trips.len(), time: if on_break { trip.departure } else { trip.end }, expected: head_expected, status }];
     if status == Status::Finished {
         rows.push(Row::Finished);
         return rows;
@@ -341,8 +372,10 @@ pub fn board(state: Option<&DutyState>, ahead: usize) -> Vec<Row> {
     }
     // when the bus will be at the stops ahead, when it is off the timetable (at the stop it
     // stands at it is there now)
+    // (NexiconDK, as openOMSI_DK: at any delay, the time is shown where its minute differs
+    // from the plan)
     let late = match status {
-        Status::Running(late) if punctuality(late) != Punctuality::OnTime => Some(late),
+        Status::Running(late) => Some(late),
         _ => None,
     };
     let (stops, now) = served(trip, d.at());
@@ -521,21 +554,30 @@ impl Pen<'_> {
                 self.p.circle(Vec2::new(x, cy), 2.5 * s, SHEET);
             }
         }
-        // the times on the right: the planned one, and before it when the bus will be there
+        // the time on the right: the planned one; off the plan (NexiconDK, as openOMSI_DK),
+        // "sched. 11:36  exp. 11:40" - when it was to be there and, in the colour of how late
+        // or early, when it will
         let tpx = 12.0 * s;
         let mut right = r.right();
         if let Some(planned) = planned {
-            let text = hhmm(planned);
-            let (weight, c) = time_style(state);
-            let tw = self.width(&text, tpx, weight);
-            self.text_in(&text, tpx, weight, Rect::new(right - tw - 2.0 * s, r.y, tw + 2.0 * s, r.h), Align::Right, c);
-            right -= tw + 8.0 * s;
-            if let Some(e) = expected {
-                let et = hhmm(e);
-                let ew = self.width(&et, tpx, Weight::Bold);
-                let ink = punctuality(e - planned).ink();
-                self.text_in(&et, tpx, Weight::Bold, Rect::new(right - ew - 2.0 * s, r.y, ew + 2.0 * s, r.h), Align::Right, ink);
-                right -= ew + 8.0 * s;
+            match expected.filter(|e| hhmm(*e) != hhmm(planned)) {
+                Some(e) => {
+                    let et = tr_with("exp. %{time}", &[("time", hhmm(e))]);
+                    let ew = self.width(&et, tpx, Weight::Bold);
+                    self.text_in(&et, tpx, Weight::Bold, Rect::new(right - ew - 2.0 * s, r.y, ew + 2.0 * s, r.h), Align::Right, punctuality(e - planned).ink());
+                    right -= ew + 7.0 * s;
+                    let pt = tr_with("sched. %{time}", &[("time", hhmm(planned))]);
+                    let pw = self.width(&pt, 11.0 * s, Weight::Medium);
+                    self.text_in(&pt, 11.0 * s, Weight::Medium, Rect::new(right - pw - 2.0 * s, r.y, pw + 2.0 * s, r.h), Align::Right, TEXT_DIM);
+                    right -= pw + 8.0 * s;
+                }
+                None => {
+                    let text = hhmm(planned);
+                    let (weight, c) = time_style(state);
+                    let tw = self.width(&text, tpx, weight);
+                    self.text_in(&text, tpx, weight, Rect::new(right - tw - 2.0 * s, r.y, tw + 2.0 * s, r.h), Align::Right, c);
+                    right -= tw + 8.0 * s;
+                }
             }
         }
         if last {
@@ -582,14 +624,19 @@ pub fn draw_board(pen: &mut Pen, rows: &[Row], area: Rect, s: f32) {
         let h = row_height(row) * s;
         let r = Rect::new(x0, y, w, h);
         match row {
-            Row::Head { line, terminus, index, count, time, status } => {
+            Row::Head { line, terminus, index, count, time, expected, status } => {
                 let cy = r.y + 15.0 * s;
                 let pw = pen.plate(line.as_deref(), x0, cy, s);
                 let cw = pen.chip(*status, x1, cy, s);
                 let tx = x0 + pw + 8.0 * s;
                 pen.text_in(terminus, 14.0 * s, Weight::Bold, Rect::new(tx, cy - 10.0 * s, (x1 - cw - 8.0 * s - tx).max(0.0), 20.0 * s), Align::Left, TEXT);
                 let when = if matches!(status, Status::Break(_)) { "leaves %{time}" } else { "arrives %{time}" };
-                let sub = format!("{}  ·  {}", tr_with("trip %{k} of %{n}", &[("k", index.to_string()), ("n", count.to_string())]), tr_with(when, &[("time", hhmm(*time))]));
+                // (NexiconDK, as openOMSI_DK) off the plan: when it was to get there and when it will
+                let when = match expected {
+                    Some(e) => format!("{}  ·  {}", tr_with("planned %{time}", &[("time", hhmm(*time))]), tr_with("expected %{time}", &[("time", hhmm(*e))])),
+                    None => tr_with(when, &[("time", hhmm(*time))]),
+                };
+                let sub = format!("{}  ·  {}", tr_with("trip %{k} of %{n}", &[("k", index.to_string()), ("n", count.to_string())]), when);
                 pen.text_in(&sub, 11.5 * s, Weight::Medium, Rect::new(x0, r.y + 28.0 * s, w, 16.0 * s), Align::Left, TEXT_DIM);
             }
             Row::Stop { planned, expected, name, state, last } => {
@@ -875,10 +922,14 @@ pub mod tests {
 
     #[test]
     fn punctuality_is_omsis() {
-        assert_eq!(punctuality(180.0), Punctuality::OnTime);
-        assert_eq!(punctuality(181.0), Punctuality::Late);
-        assert_eq!(punctuality(-120.0), Punctuality::OnTime);
-        assert_eq!(punctuality(-121.0), Punctuality::Early);
+        assert_eq!(punctuality(120.0), Punctuality::OnTime);
+        assert_eq!(punctuality(121.0), Punctuality::Late);
+        assert_eq!(punctuality(0.0), Punctuality::OnTime);
+        assert_eq!(punctuality(-1.0), Punctuality::Early);
+        assert_eq!(clock(-32.0), "00:32");
+        assert_eq!(clock(135.0), "02:15");
+        assert_eq!(clock(3725.0), "01:02:05");
+        assert_eq!(capitalized("on time"), "On time");
         assert_eq!(offset(192.0), "+3:12");
         assert_eq!(offset(-150.0), "\u{2212}2:30");
         assert_eq!(hhmm(11.0 * 3600.0 + 26.0 * 60.0 + 59.0), "11:26");
@@ -896,7 +947,8 @@ pub mod tests {
         let d = state(&trips, &tours, 0, 3, false, 40.0);
         let rows = board(Some(&d), 3);
         match &rows[0] {
-            Row::Head { line, terminus, index, count, time, status } => {
+            Row::Head { line, terminus, index, count, time, expected, status } => {
+                assert_eq!(expected.map(hhmm).as_deref(), None, "40 s late: the same minute");
                 assert_eq!(line.as_deref(), Some("35"));
                 assert_eq!(terminus, "Diakonissenkrankenhaus");
                 assert_eq!((*index, *count), (1, 3));
@@ -907,11 +959,17 @@ pub mod tests {
         }
         assert_eq!(names(&rows), [("Markt".to_string(), StopState::Done), ("Kirchweg".into(), StopState::Now), ("Rathaus".into(), StopState::Ahead), ("Schule".into(), StopState::Ahead)]);
         assert!(rows.contains(&Row::More { count: 2, terminus: "Diakonissenkrankenhaus".into() }));
-        // on time: no second time beside the planned one
-        assert!(rows.iter().all(|r| !matches!(r, Row::Stop { expected: Some(_), .. })));
+        // 40 s late: when the bus will be there, at the stops ahead (drawn only where its
+        // minute differs from the plan); none at the stop behind it
+        assert!(rows.iter().all(|r| match r {
+            Row::Stop { planned, expected, state, .. } => (*state == StopState::Done) == expected.is_none() && expected.is_none_or(|e| e == planned + 40.0),
+            _ => true,
+        }));
         // the next trip of the same tour: its break, no change of line
         assert_eq!(rows.last(), Some(&Row::Next { departure: (12.0 * 60.0 + 1.0) * 60.0, line: Some("35".into()), terminus: "Hauptbahnhof".into(), pause: 15, change: None }));
-        assert_eq!(Status::Running(40.0).label(), "on time");
+        assert_eq!(Status::Running(40.0).label(), format!("{} - 00:40", capitalized(&omsi_ui::tr("on time"))));
+        assert_eq!(Status::Running(40.0).colours().0, ON_TIME);
+        assert_eq!(Status::Running(-32.0).colours().0, LATE, "ahead: red");
     }
 
     /// Late: the stops ahead say when the bus will be there, the one behind it does not.
@@ -922,8 +980,10 @@ pub mod tests {
         let rows = board(Some(&d), 2);
         let expected: Vec<Option<String>> = rows.iter().filter_map(|r| match r { Row::Stop { expected, .. } => Some(expected.map(hhmm)), _ => None }).collect();
         assert_eq!(expected, [None, Some("11:36".to_string()), Some("11:39".to_string())]);
-        assert_eq!(Status::Running(250.0).label(), "+4:10");
-        assert_eq!(Status::Running(250.0).colours().0, LATE);
+        assert_eq!(Status::Running(250.0).label(), "04:10");
+        assert_eq!(Status::Running(250.0).colours().0, BEHIND, "late: orange");
+        // the terminus: planned and expected
+        assert!(matches!(&rows[0], Row::Head { time, expected: Some(e), .. } if hhmm(*time) == "11:46" && hhmm(*e) == "11:50"));
         // standing at the stop it is due at: it is there now
         let d = DutyState { at_stop: true, ..d };
         assert!(matches!(board(Some(&d), 2)[2], Row::Stop { state: StopState::Now, expected: None, .. }));
@@ -1079,7 +1139,7 @@ pub mod tests {
     /// Every text of the panel is in the tables for the languages that matter most.
     #[test]
     fn the_panel_is_translated() {
-        let keys = ["No duty running", "Empty run", "trip %{k} of %{n}", "arrives %{time}", "leaves %{time}", "leaves in %{m} min", "break, %{m} min left", "%{m} min over", "Duty finished", "and %{n} more to %{terminus}", "terminus", "Next %{time}", "%{m} min break", "Continue on line %{line}, tour %{tour}", "In the game", "Delay", "line %{line}", "1 stop", "%{n} stops", "Duty", "Trip", "on time", "%{n} trip", "%{n} trips"];
+        let keys = ["No duty running", "Empty run", "trip %{k} of %{n}", "arrives %{time}", "leaves %{time}", "leaves in %{m} min", "break, %{m} min left", "%{m} min over", "Duty finished", "and %{n} more to %{terminus}", "terminus", "Next %{time}", "%{m} min break", "Continue on line %{line}, tour %{tour}", "In the game", "Delay", "line %{line}", "1 stop", "%{n} stops", "Duty", "Trip", "on time", "%{n} trip", "%{n} trips", "planned %{time}", "expected %{time}", "sched. %{time}", "exp. %{time}"];
         for language in ["nl", "de", "fr", "ru", "uk", "pl"] {
             for key in keys {
                 let t = crate::_rust_i18n_try_translate(language, key);
@@ -1131,19 +1191,19 @@ pub mod tests {
         }
     }
 
-    /// Pictures of the board (late, at the break before a change of line, before the first
-    /// stop) under a stand-in for the small map, and of the sheet, in Dutch:
+    /// Pictures of the board (early, on time and late: red, green and orange, as
+    /// openOMSI_DK) under a stand-in for the small map, and of the sheet, in English:
     /// `OMSI_NAV_DUTY_PREVIEW=<folder> cargo test -p omsi-app --lib nav_duty -- --ignored`.
     #[test]
     #[ignore]
     fn preview_pictures() {
         let Ok(dir) = std::env::var("OMSI_NAV_DUTY_PREVIEW") else { return };
-        crate::ui_language("NLD");
+        crate::ui_language("ENG");
         let (trips, tours) = duty();
         let fonts = Fonts::hanken();
         let mut atlas = Atlas::new(2048);
         let s = 2.0;
-        let states = [state(&trips, &tours, 0, 3, false, 250.0), state(&trips, &tours, 1, 2, true, -480.0), DutyState { at_stop: true, ..state(&trips, &tours, 0, 0, false, -299.0) }];
+        let states = [state(&trips, &tours, 0, 3, false, -92.0), state(&trips, &tours, 0, 3, false, 105.0), state(&trips, &tours, 0, 3, false, 250.0)];
         let (pw, map_h, bars) = (360.0 * s, 223.0 * s, 80.0 * s);
         let boards: Vec<Vec<Row>> = states.iter().map(|d| board(Some(d), 4)).collect();
         let tall = boards.iter().map(|b| board_height(b) * s).fold(0.0, f32::max) + map_h + bars;

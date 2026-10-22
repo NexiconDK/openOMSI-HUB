@@ -125,7 +125,6 @@ const TEXT: Color = Color::rgba(235, 235, 235, 1.0);
 const TEXT_DIM: Color = Color::rgba(178, 178, 178, 1.0);
 // (punctuality in Omsi-Hub's colours, as the duty board writes it)
 const LATE: Color = crate::nav_duty::LATE_INK;
-const EARLY: Color = crate::nav_duty::EARLY_INK;
 const ON_TIME: Color = crate::nav_duty::ON_TIME_INK;
 const WARN: Color = Color::rgba(235, 170, 60, 1.0);
 const STOP_REQUEST: Color = Color::hex(0xF0A030);
@@ -2139,11 +2138,13 @@ impl Navigator {
                 }
                 // (OMSI 2's punctuality; a plugin's board under the bar says it on its own)
                 if let Some(d) = f.delay.filter(|_| !(self.schedule && self.dock.is_some())) {
-                    let (txt, c) = match crate::nav_duty::punctuality(d) {
-                        crate::nav_duty::Punctuality::Late => (crate::nav_duty::offset(d), LATE),
-                        crate::nav_duty::Punctuality::Early => (crate::nav_duty::offset(d), EARLY),
-                        crate::nav_duty::Punctuality::OnTime => (wd.on_time.to_string(), ON_TIME),
+                    // (NexiconDK, as openOMSI_DK: early red, on time green, late orange)
+                    let p = crate::nav_duty::punctuality(d);
+                    let txt = match p {
+                        crate::nav_duty::Punctuality::OnTime => wd.on_time.to_string(),
+                        _ => crate::nav_duty::offset(d),
                     };
+                    let c = p.ink();
                     ui.text_in(&mut self.atlas, &self.fonts, &txt, 12.5 * s, Weight::Bold, y2, Align::Right, c);
                 }
             }
@@ -2211,7 +2212,7 @@ impl Navigator {
             // when the bus will be there at this lateness
             let exp = st.arrival + late;
             let e = format!("{:02}:{:02}", (exp / 3600.0).rem_euclid(24.0) as i32, ((exp.rem_euclid(3600.0)) / 60.0) as i32);
-            ui.text_in(&mut self.atlas, &self.fonts, &e, 12.5 * s, Weight::Medium, r, Align::Right, if late > 59.0 { LATE } else if late < -59.0 { EARLY } else { TEXT_DIM });
+            ui.text_in(&mut self.atlas, &self.fonts, &e, 12.5 * s, Weight::Medium, r, Align::Right, if late > 59.0 { crate::nav_duty::BEHIND_INK } else if late < -59.0 { crate::nav_duty::LATE_INK } else { TEXT_DIM });
             y += 22.0 * s;
         }
     }

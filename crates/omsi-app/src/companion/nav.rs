@@ -451,7 +451,7 @@ pub(crate) fn board_json(rows: &[Row]) -> Value {
     Value::Array(
         rows.iter()
             .map(|r| match r {
-                Row::Head { line, terminus, index, count, time, status } => json!({ "row": "head", "line": line, "terminus": terminus, "index": index, "count": count, "time": time.round(), "status": status_json(*status) }),
+                Row::Head { line, terminus, index, count, time, expected, status } => json!({ "row": "head", "line": line, "terminus": terminus, "index": index, "count": count, "time": time.round(), "expected": expected.map(f64::round), "status": status_json(*status) }),
                 Row::Stop { planned, expected, name, state, last } => json!({ "row": "stop", "planned": planned.round(), "expected": expected.map(f64::round), "name": name, "state": stop_state_key(*state), "last": last }),
                 Row::More { count, terminus } => json!({ "row": "more", "count": count, "terminus": terminus }),
                 Row::Next { departure, line, terminus, pause, change } => json!({ "row": "next", "departure": departure.round(), "line": line, "terminus": terminus, "pause": pause, "change": change.as_ref().map(|c| [c.0.clone(), c.1.clone()]) }),
@@ -775,7 +775,7 @@ mod tests {
     #[test]
     fn the_board_and_the_sheet_go_to_the_page_as_the_game_has_them() {
         let rows = vec![
-            Row::Head { line: Some("307".into()), terminus: "Markgraf".into(), index: 1, count: 2, time: 69_000.4, status: Status::Running(250.0) },
+            Row::Head { line: Some("307".into()), terminus: "Markgraf".into(), index: 1, count: 2, time: 69_000.4, expected: None, status: Status::Running(250.0) },
             Row::Stop { planned: 68_700.0, expected: Some(68_950.0), name: "Barbarossastrasse".into(), state: StopState::Now, last: false },
             Row::More { count: 14, terminus: "Markgraf".into() },
             Row::Next { departure: 72_420.0, line: Some("307".into()), terminus: "Bismarckplatz".into(), pause: 39, change: Some(("307".into(), "16".into())) },
