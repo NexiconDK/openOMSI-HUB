@@ -35,6 +35,12 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 - **IBIS-boksen**: Over "Start trip" står den linje- og rutekode, man skal taste i IBIS'en til netop den tur, fremhævet ud fra bussens hof-fil, og linjens andre ruter står under. Har hof-filen ingen rute til turen, står det, og så vises linjen og destinationskoden i stedet.
 - **Kort over ruten**: Midt på siden vises turens rute på et kort med vejene omkring og stoppestederne med tider. Første stop er en ring, sidste en fyldt prik, og det stop, man starter fra, er markeret. Kortet vises, når navigatoren har læst kortet, og kun hvis vinduet er bredt nok.
 
+### Turlisterne og natture (som i vores main)
+- **En tur står kun på listen på sine egne dage**: En nattur (med ture efter 24:00) blev også vist aftenen før sin dag, så fx fredagens ture stod i "Line and tour" torsdag aften. Nu står en tur kun på listen de dage, den kører. Trafikken kørte dem hele tiden kun på deres egne dage.
+- **I går aftens nattur kun efter midnat, mens den kører**: Torsdagens nattur stod også på listen fredag eftermiddag. Nu står den der kun efter midnat og kun til dens sidste tur er kørt. Efter midnat vises i går aftens nattur, ikke dagens egen, som først starter om aftenen.
+- **Den rigtige tur efter midnat**: Vælger man i går aftens nattur fx kl. 02:18, starter man med turen, der kører nu (turens 26:18), ikke med turens første tur om aftenen.
+- **Ture vises fra 2 timer før de starter** (før en halv time), som i vores main.
+
 ### Skilte og Line and tour (rettelser)
 - **De to linjer kommer i rigtig rækkefølge**: Teksten fra det øverste felt står nu øverst på skiltet. HUB lægger linjerne i de samme strenge, som hof-filens egne destinationer bruger (i Ahlheim 5 er det streng 1 og 2). Før havnede den anden linje øverst på Krüger-matricerne.
 - **"Clear display" fjerner også linjenummeret**: Før blev IBIS'ens linjenummer skrevet tilbage på det tomme skilt.

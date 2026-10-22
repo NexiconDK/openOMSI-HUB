@@ -14,6 +14,8 @@ mod place;
 mod route;
 mod take_on;
 mod tours;
+#[cfg(test)]
+mod night_tests;
 // Omsi-Hub: the dedicated server's live map
 mod web_map;
 
@@ -234,8 +236,6 @@ pub struct ScheduleSim {
     /// Per departure: for a night trip of yesterday's tour (`Departure::yesterday`), the
     /// same trip as tonight's (24:30), and the other way round.
     night_twin: Vec<Option<usize>>,
-    /// The weekday bit of the next day (night tours run on into it).
-    next_day_bit: i32,
     /// Where today's midnight lies on the traffic's clock (`Traffic::day_time` counts on past
     /// 24:00): a departure leaves at `day_base + time` (`dep_time`), and the date moves on
     /// when the clock passes the next midnight.

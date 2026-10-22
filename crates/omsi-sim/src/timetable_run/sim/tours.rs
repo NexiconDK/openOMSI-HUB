@@ -141,7 +141,9 @@ impl ScheduleSim {
             }
         }
         order.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal).then(a.0.cmp(&b.0)));
-        order.iter().position(|o| o.2 >= now - 60.0).unwrap_or(0)
+        // (the day before's tour, under way after midnight, or this day's)
+        let yesterday = self.data.lines.iter().find(|l| l.name == line).and_then(|l| l.tours.iter().find(|t| t.number == tour)).is_some_and(|t| self.tour_runs_yesterday(t));
+        trip_at(&order, now, yesterday)
     }
 
     /// All the stops of the trip in position `pos` of the tour's trips in order of the time
@@ -580,6 +582,18 @@ impl ScheduleSim {
         d.tours = tours;
         Ok(d)
     }
+}
+
+/// Of a tour's trips in order (`(trip, departure, last arrival)`), the one under way or next
+/// to leave at `now` (seconds of the day). After midnight a night tour of the day before
+/// counts its trips past 24:00: 2:18 is its 26:18, under way since the evening (the tour
+/// showed the evening's first trip, hours over). `yesterday`: the tour ran the day before
+/// (else its night trips are the coming night's). (NexiconDK, as openOMSI_DK.)
+pub(super) fn trip_at(order: &[(usize, f64, f64)], now: f64, yesterday: bool) -> usize {
+    let start = order.first().map_or(0.0, |o| o.1);
+    let end = order.iter().map(|o| o.2).fold(f64::MIN, f64::max);
+    let now = if yesterday && now < start && now + DAY >= start && now + DAY <= end + 60.0 { now + DAY } else { now };
+    order.iter().position(|o| o.2 >= now - 60.0).unwrap_or(0)
 }
 
 #[cfg(test)]

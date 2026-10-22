@@ -273,7 +273,6 @@ impl ScheduleSim {
             day_bits: (day_bit, school_bit),
             yesterday_bits: (0, 0),
             night_twin,
-            next_day_bit: 1 << ((clock.weekday() + 1) % 7),
             day_base: 0.0,
             date_clock: clock.clone(),
             car_use,
@@ -380,16 +379,27 @@ impl ScheduleSim {
     }
 
     /// Whether a tour is offered on the current day (the lists of lines and tours): its day
-    /// mask has the day (and school day or holiday), or - for a night tour with trips after
-    /// 24:00 - the next day's weekday, as the night belongs to both, or the day before's
-    /// (its trips after midnight run today, #1576).
+    /// mask has the day (and school day or holiday), or it is the day before's night tour
+    /// still under way (its trips after midnight run this morning, #1576). A tour of the
+    /// next day is not offered the evening before (NexiconDK, as openOMSI_DK): a Friday's
+    /// night tour begins on Friday evening, and Thursday's lists showed it beside
+    /// Thursday's own. The traffic ran them on their own days all along.
     pub fn tour_available(&self, tour: &omsi_timetable::Tour) -> bool {
-        let m = tour.extra.trim().parse::<i32>().unwrap_or(1023);
-        if m & self.day_bits.0 != 0 && m & self.day_bits.1 != 0 {
+        if self.tour_runs_today(tour) {
             return true;
         }
-        let night = tour.trips.iter().any(|t| t.departure >= 24.0 * 60.0);
-        night && ((m & self.next_day_bit != 0 && m & self.day_bits.1 != 0) || self.tour_runs_on(tour, self.yesterday_bits()))
+        let last = tour.trips.iter().map(|t| t.departure as f64 * 60.0).fold(f64::MIN, f64::max);
+        last >= DAY && last - DAY >= self.last_tod && self.tour_runs_yesterday(tour)
+    }
+
+    /// Whether a tour runs on the current day, by its mask.
+    pub fn tour_runs_today(&self, tour: &omsi_timetable::Tour) -> bool {
+        self.tour_runs_on(tour, self.day_bits)
+    }
+
+    /// Whether a tour ran the day before: its trips past 24:00 run this morning.
+    pub fn tour_runs_yesterday(&self, tour: &omsi_timetable::Tour) -> bool {
+        self.tour_runs_on(tour, self.yesterday_bits)
     }
 
     /// Whether a tour's day mask has these day bits (`day_bits`).
@@ -472,7 +482,6 @@ impl ScheduleSim {
         self.day_bits = day_bits(&self.calendar, clock);
         self.yesterday_bits = self.yesterday_bits();
         self.mark_company();
-        self.next_day_bit = 1 << ((clock.weekday() + 1) % 7);
         // (only when the clock runs on over midnight: set back, every bus went already)
         if forward {
             self.night_trips_to_yesterday();
