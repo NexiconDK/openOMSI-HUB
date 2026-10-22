@@ -7,6 +7,7 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 
 ### Launcher: dag og vejr
 - **Vejret passer til årstiden** (fra openOMSI PR #3036 af Isaac S.): Skifter man årstid eller dato i "Day & weather", og passer det valgte vejr ikke længere (fx sne om sommeren), skiftes der til kortets eget vejr ("Map default"), og en besked siger det. Før blev det gamle vejr stående uden at stå i listen. Det valgte vejr står altid i listen, også når det ikke passer. Under listen kan "Show the ... that do not fit the season" slås til, så de frasorterede også vises, hvis man vil have sne om sommeren med vilje. Holder man musen over et vejr, vises dets egen beskrivelse.
+- **Udgivelsen bygges kun til Windows**: Mac-byggene er taget ud af GitHub-workflowet (`omsihub-release.yml`). De fejlede og brugte tid på hver udgivelse.
 
 ### Multiplayer og dedicated server
 - Værtens AI-busser viser nu både linje **og destination** hos spillerne. Før stod kun linjen på skiltet, fordi spillerens kopi af bussen ikke fik hof-filen med, som destinationsteksten hentes fra. Det er kun spillerne, der skal have den nye version; serveren skal ikke ændres.
@@ -79,6 +80,7 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 
 ### Plugins
 - **Plugins kan læse spillets data og hele ture** (openOMSI PR #3102 af Burst99325): `omsi.game.query` læser det samme som bussens scripts (skilte, køreplan, billetter osv.), også fra fx et afgangsskilt ved et stoppested. `omsi.game.queries()` viser, hvad der kan læses. `omsi.timetable.tour(linje, tur)` giver hele turen med alle stop og tider uden at tage den, og `omsi.duty.tour()` giver hele den tur, man kører. Plugins kan kun læse med dem, ikke ændre noget.
+- **Plugins kan læse bussens hof-fil** (openOMSI PR #3186 af Burst99325, endnu ikke flettet ind i openOMSI): `omsi.hof.get()` giver en kopi af den indlæste hof-fil med alle destinationer, stoppesteder og IBIS-ruter. `omsi.hof.terminus(navn)` og `omsi.hof.busstop(navn)` slår én destination eller ét stop op ud fra deres interne navn, fx for hver tur i `omsi.duty.tour()`. De kan kun læse, ikke ændre noget, og åbner ingen filer. Er en egen tekst sat på skiltet, er dens destination med.
 - **IBIS'en kommer tilbage, når et plugin stopper** (openOMSI PR #2877 af Luc Ruigrok): Et plugin, der overlader IBIS'en til chaufføren (`omsi.duty.set_auto_ibis(false)`), giver den nu tilbage til spillet, når pluginet stopper eller slås fra. Før blev IBIS'en ved med ikke at blive udfyldt. Har to plugins hver taget den, giver hvert kun sin egen tilbage. Shift+U siger nu "A plugin leaves the IBIS for you to type", så en tom IBIS ikke ligner en fejl.
 
 ### Navigatorens vagt-tavle: til tiden, forsinket, foran (som i vores main)

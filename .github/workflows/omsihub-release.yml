@@ -11,27 +11,15 @@
 # the rename - the one archive the builds before it look for and can install; the new program
 # renames them at its first start.
 #
-# The Mac (job `mac`): builds Omsi-Hub.app for Apple silicon and Intel as upstream's
-# release.yml does (scripts/build-macos.sh), signed ad hoc (no Apple Developer account: the
-# player opens it once with right-click > Open), as a .dmg and the zips the updater knows
-# (Omsi-Hub-<v>-macos-<arch>.zip; openOMSI-<v>-macos-<arch>.zip with the binaries by their old
-# names, for the builds before the rename). On beta it carries the release's version,
-# and job `mac-publish` adds its files to beta's release beside the Windows zip (Luc,
-# 2026-10-14: "release voor windows en mac"). A push to the branch mac-test, or a run by hand
-# with "mac" ticked on any branch, is a test build instead (<v> like 0.2.48-hub-mac14.318,
-# which the updater never replaces): the run's artifacts only, without a release.
-# docs/omsihub/MACOS.md says how to start it and what to test.
+# NexiconDK: Windows only. The Mac builds (jobs `mac` and `mac-publish`) are taken out: they
+# failed in the latest runs and took the runners' time; scripts/build-macos.sh and docs/omsihub/MACOS.md
+# are still there should they come back.
 name: Omsi-Hub release
 
 on:
   push:
-    branches: [beta, mac-test]
+    branches: [beta]
   workflow_dispatch:
-    inputs:
-      mac:
-        description: Only the Mac test build of this branch (artifacts, no release)
-        type: boolean
-        default: false
   workflow_call:
     inputs:
       tested:
@@ -51,8 +39,8 @@ env:
 
 jobs:
   release:
-    # (beta's Windows release; a Mac test build publishes nothing)
-    if: ${{ github.ref == 'refs/heads/beta' && !inputs.mac }}
+    # (beta's Windows release)
+    if: ${{ github.ref == 'refs/heads/beta' }}
     runs-on: windows-latest
     outputs:
       version: ${{ steps.v.outputs.version }}
@@ -165,15 +153,6 @@ jobs:
             echo
             echo "\`openOMSI-$v-windows-x64.zip\` is the same release for the updater of older Omsi-Hub builds (its programs carry their old names until the first start renames them)."
             echo
-            echo "### Mac"
-            echo "The Mac files are added to this release a little after the Windows zip, once they are built."
-            echo "1. Download \`Omsi-Hub-$v-macos-arm64.dmg\` for Apple silicon (M1 and later), or \`Omsi-Hub-$v-macos-x64.dmg\` for an Intel Mac (Apple menu > About This Mac shows the chip)."
-            echo "2. Open the \`.dmg\` and drag the app to Applications."
-            echo "3. The app is not signed with an Apple Developer account: the first time, right-click it, choose **Open**, then **Open** again. If macOS says it \"is damaged\", run \`xattr -dr com.apple.quarantine /Applications/Omsi-Hub.app\` once in Terminal."
-            echo "4. Copy OMSI 2's content (maps, buses, sceneries) into Omsi-Hub's content folder: \"Read me first (Mac)\" in the \`.dmg\` says where."
-            echo
-            echo "The \`Omsi-Hub-$v-macos-*.zip\` files are the same app in the form the updater installs, the \`openOMSI-$v-macos-*.zip\` ones that for older Omsi-Hub builds."
-            echo
             if [ -n "$prev" ]; then
               echo "### Changes since ${prev#v}"
               git log --no-merges --format='- %s' "$prev..HEAD" -- . ':(exclude).github' | head -60
@@ -183,116 +162,3 @@ jobs:
           } > notes.md
           gh release create "v$v" "out/Omsi-Hub-$v-windows-x64.zip" "out/openOMSI-$v-windows-x64.zip" -R "$GITHUB_REPOSITORY" \
             --target "$(git rev-parse HEAD)" --title "Omsi-Hub $v" --notes-file notes.md --latest
-
-  mac:
-    # (beta: the release's Mac build; mac-test or "mac" ticked: a test build)
-    if: ${{ github.ref == 'refs/heads/beta' || github.ref == 'refs/heads/mac-test' || inputs.mac }}
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: aarch64-apple-darwin
-            arch: arm64
-          # Intel Macs: built on the Apple silicon runner for x86_64 (as release.yml)
-          - target: x86_64-apple-darwin
-            arch: x64
-    env:
-      OPENOMSI_TARGET: ${{ matrix.target }}
-      MACOSX_DEPLOYMENT_TARGET: '11.0'
-      RELEASE_BUILD: ${{ github.ref == 'refs/heads/beta' && !inputs.mac }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      # (on beta the release's own version, as job `release` reckons it from the same commit;
-      # a test build: "-hub" in its version, so the updater never replaces it with a release,
-      # `updater::is_test_build` - 0.2.48-hub-mac14.318. scripts/build-macos.sh hands Tauri
-      # and the bundle the first three numbers)
-      - name: Version
-        run: |
-          git remote add upstream https://github.com/openOMSI-Project/openOMSI.git
-          git fetch --no-tags upstream main
-          v4="$(sh scripts/omsihub-version.sh)"
-          if [ "$RELEASE_BUILD" = true ]; then
-            v="$v4"
-            echo "### Omsi-Hub $v for the Mac (${{ matrix.arch }}), for the release" >> "$GITHUB_STEP_SUMMARY"
-          else
-            v="${v4%.*}-hub-mac${{ github.run_number }}.${v4##*.}"
-            echo "### Omsi-Hub $v for the Mac (${{ matrix.arch }}), a test build" >> "$GITHUB_STEP_SUMMARY"
-          fi
-          echo "OPENOMSI_VERSION=$v" >> "$GITHUB_ENV"
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: omsihub-mac-${{ matrix.target }}
-          workspaces: |
-            . -> target
-            launcher/src-tauri -> target
-      - name: Build
-        run: scripts/build-macos.sh
-      # (scripts/build-macos.sh names it Omsi-Hub.app, scripts/macos/Info.plist), signed again
-      # ad hoc: no Apple Developer account
-      - name: Signed ad hoc
-        run: |
-          app=dist/macos/Omsi-Hub.app
-          codesign --force --deep --sign - "$app"
-          codesign --verify --deep --verbose=2 "$app"
-      - name: Package (.dmg and the updater's zip)
-        run: |
-          mkdir -p out dmg
-          v="$OPENOMSI_VERSION"
-          cp README.md LICENSE dist/macos/
-          (cd dist/macos && ditto -c -k --sequesterRsrc --keepParent Omsi-Hub.app "../../out/Omsi-Hub-$v-macos-${{ matrix.arch }}.zip")
-          # the same app with its binaries by their names before the rename, for the builds
-          # before it: they look for openOMSI-<v>-macos-<arch>.zip only and start the bundle's
-          # openomsi after the update (docs/omsihub/RENAME.md); its bundle's name does not
-          # matter (the updater replaces the running bundle, whatever it is called)
-          mkdir -p compat
-          cp -R dist/macos/Omsi-Hub.app compat/
-          m=compat/Omsi-Hub.app/Contents/MacOS
-          mv "$m/omsi-hub-game" "$m/openomsi"
-          mv "$m/Omsi-Hub" "$m/openomsi-launcher-app"
-          mv "$m/omsi-hub-cli" "$m/openomsi-launcher"
-          plutil -replace CFBundleExecutable -string "openomsi" compat/Omsi-Hub.app/Contents/Info.plist
-          codesign --force --deep --sign - compat/Omsi-Hub.app
-          codesign --verify --deep --verbose=2 compat/Omsi-Hub.app
-          (cd compat && ditto -c -k --sequesterRsrc --keepParent Omsi-Hub.app "../out/openOMSI-$v-macos-${{ matrix.arch }}.zip")
-          cp -R dist/macos/Omsi-Hub.app dmg/
-          cp docs/omsihub/MACOS.md "dmg/Read me first (Mac).md"
-          ln -s /Applications dmg/Applications
-          hdiutil create -volname "Omsi-Hub" -srcfolder dmg -ov -format UDZO "out/Omsi-Hub-$v-macos-${{ matrix.arch }}.dmg"
-          ls -la out
-      - uses: actions/upload-artifact@v7
-        with:
-          retention-days: 14
-          name: omsihub-macos-${{ matrix.arch }}
-          path: out/*
-
-  mac-publish:
-    # (beta's release gets the Mac's .dmg and updater zips once both Macs and the Windows
-    # release are done; a version already released is left alone, as job `release` does)
-    needs: [release, mac]
-    if: ${{ github.ref == 'refs/heads/beta' && !inputs.mac && needs.release.outputs.exists != 'true' }}
-    runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ github.token }}
-      VERSION: ${{ needs.release.outputs.version }}
-    steps:
-      - uses: actions/download-artifact@v8
-        with:
-          path: out
-          pattern: omsihub-macos-*
-          merge-multiple: true
-      # (the Macs reckoned the version themselves: their files must carry the release's)
-      - name: Add the Mac files to v${{ needs.release.outputs.version }}
-        run: |
-          ls -l out
-          for a in arm64 x64; do
-            for f in "out/Omsi-Hub-$VERSION-macos-$a.dmg" "out/Omsi-Hub-$VERSION-macos-$a.zip" "out/openOMSI-$VERSION-macos-$a.zip"; do
-              [ -f "$f" ] || { echo "missing $f: the Mac build's version differs from the release's" >&2; exit 1; }
-            done
-          done
-          gh release upload "v$VERSION" out/*.dmg out/*.zip -R "$GITHUB_REPOSITORY" --clobber
