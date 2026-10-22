@@ -224,8 +224,9 @@ impl TrafficSim {
                 c.restart();
                 c.start(self.day_time);
             }
+            // (the cars' wait goes on: a program that shows them no green after its restart
+            // either is taken for out of order all the same)
             self.light_age.retain(|k, _| k.0 != ci);
-            self.light_waits.retain(|k, _| k.0 != ci);
         }
     }
 
