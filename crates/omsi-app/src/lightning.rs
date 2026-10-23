@@ -16,8 +16,6 @@ use std::sync::Arc;
 /// A flash still lit or still to be heard.
 struct Live {
     strike: Strike,
-    /// The ground under it (m).
-    ground: f64,
     /// Its channel (none for a flash in the cloud).
     channel: Vec<Piece>,
 }
@@ -74,15 +72,18 @@ pub(crate) fn storm_wind(w: &omsi_content::weather::Weather) -> DVec2 {
     DVec2::new(dir.sin(), dir.cos()) * speed
 }
 
-/// The map's centre (the middle of its tiles), where the storm's cells pass.
-fn map_centre(w: &crate::scene::World) -> DVec2 {
+/// The map's centre (the middle of its tiles), where the storm's cells pass, and how far its
+/// tiles reach from it (m): every player has the same.
+fn map_extent(w: &crate::scene::World) -> (DVec2, f64) {
     let ts = omsi_map::tile_size();
     let tiles = &w.global.tiles;
     if tiles.is_empty() {
-        return DVec2::ZERO;
+        return (DVec2::ZERO, 5000.0);
     }
-    let sum = tiles.iter().fold(DVec2::ZERO, |a, t| a + DVec2::new((t.x as f64 + 0.5) * ts, (t.y as f64 + 0.5) * ts));
-    sum / tiles.len() as f64
+    let middle = |t: &omsi_map::global::MapTileRef| DVec2::new((t.x as f64 + 0.5) * ts, (t.y as f64 + 0.5) * ts);
+    let centre = tiles.iter().fold(DVec2::ZERO, |a, t| a + middle(t)) / tiles.len() as f64;
+    let half = tiles.iter().map(|t| (middle(t) - centre).length()).fold(0.0, f64::max) + ts * 0.5;
+    (centre, half)
 }
 
 impl Lightning {
@@ -112,7 +113,8 @@ impl Lightning {
         let map = if world.global.name.is_empty() { world.map_dir.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default() } else { world.global.name.clone() };
         let seed = lightning::storm_seed(m.room, &map, &w.name);
         let cloud_base = if w.clouds.1 > 100.0 { w.clouds.1 as f64 } else { 1200.0 };
-        let storm = Storm::new(seed, map_centre(world), storm_wind(w), level, cloud_base);
+        let (centre, half) = map_extent(world);
+        let storm = Storm::new(seed, centre, half, storm_wind(w), level, cloud_base);
         if self.storm.as_ref() != Some(&storm) {
             if self.storm.as_ref().is_some_and(|s| s.seed != storm.seed) {
                 // (another weather: another storm)
@@ -143,7 +145,7 @@ impl Lightning {
                         }
                     });
                 }
-                self.live.push(Live { strike: s, ground, channel });
+                self.live.push(Live { strike: s, channel });
             }
             self.taken_to = Some(t);
         }
@@ -227,11 +229,13 @@ impl Lightning {
     }
 }
 
-/// How much of the sound outside comes through a vehicle's bodywork, and its low-pass: as
-/// the ambience has it (`soundscape`) - quieter and dull, unless the doors stand open.
+/// How much of the thunder outside comes through a vehicle's bodywork, and its low-pass:
+/// quieter and dull unless the doors stand open - but less so than the ambience's sounds
+/// (`soundscape`): thunder is mostly the deep notes a bus's sides let through, and a strike
+/// near shakes it.
 fn through_bodywork(inside: bool, open: f32) -> (f32, f32) {
     let open = if inside { open.clamp(0.0, 1.0) } else { 1.0 };
-    (0.22 + 0.78 * open, if open < 0.95 { 500.0 + 6000.0 * open * open } else { 0.0 })
+    (0.45 + 0.55 * open, if open < 0.95 { 900.0 + 6000.0 * open * open } else { 0.0 })
 }
 
 #[cfg(test)]
@@ -253,6 +257,6 @@ mod tests {
         let d = omsi_sim::SimClock { day_of_year: 201, ..c.clone() };
         assert_eq!(game_time(&d) - game_time(&c), 86_400.0);
         assert_eq!(through_bodywork(false, 0.0), (1.0, 0.0));
-        assert!(through_bodywork(true, 0.0).0 < 0.3);
+        assert!((0.3..0.6).contains(&through_bodywork(true, 0.0).0));
     }
 }

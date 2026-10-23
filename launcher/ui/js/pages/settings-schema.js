@@ -399,6 +399,7 @@ const general = {
         { type: 'toggle', key: 'nav_ai', label: 'AI vehicles on the map' },
         { type: 'toggle', key: 'nav_surface', label: 'Map surface under the roads' },
         { type: 'toggle', key: 'nav_light', label: 'Light map' },
+        { type: 'select', key: 'nav_entries', label: 'Entry points on the city map', options: [['names', 'Dots and names'], ['dots', 'Dots only'], ['off', 'Off']], help: "The map's entry points as orange dots with their names (a click sets a pin there), only the dots, or none" },
         { type: 'custom', id: 'corner' },
       ],
     },

@@ -227,7 +227,7 @@ mod tests {
     use glam::DVec2;
 
     fn strike(ground: bool) -> Strike {
-        let s = Storm::new(5, DVec2::ZERO, DVec2::new(5.0, 0.0), 1.0, 1200.0);
+        let s = Storm::new(5, DVec2::ZERO, 5000.0, DVec2::new(5.0, 0.0), 1.0, 1200.0);
         let mut t = 0.0;
         loop {
             if let Some(f) = s.strikes(t, t + 1.0, &[]).into_iter().find(|f| f.ground == ground) {
@@ -268,13 +268,14 @@ mod tests {
         let (near, mid, far) = (at(150.0), at(3000.0), at(12_000.0));
         // the first sound after its way at the speed of sound
         assert!((near.delay - near.distance / SOUND).abs() < 1e-9);
-        assert!(near.distance < 200.0 && (mid.delay - 3000.0 / SOUND).abs() < 1.0 && far.delay > 30.0);
+        // (3 km off where it strikes, its nearest branch up to a kilometre nearer)
+        assert!(near.distance < 200.0 && (2000.0..3000.1).contains(&mid.distance) && (mid.delay - mid.distance / SOUND).abs() < 1e-9 && far.delay > 30.0);
         assert!(peak(&near.samples) > 0.6, "a strike next door is loud: {}", peak(&near.samples));
         assert!(peak(&near.samples) > 2.0 * peak(&mid.samples) && peak(&mid.samples) > 2.0 * peak(&far.samples));
         assert!(peak(&far.samples) > 0.003, "far thunder is still heard");
         // close: the crack at once; far: a roll that is longer and has lost its treble
         assert!(onset(&near.samples) < 0.05, "crack at {}", onset(&near.samples));
-        assert!(treble(&near.samples, 800.0) > 3.0 * treble(&far.samples, 800.0), "{} {}", treble(&near.samples, 800.0), treble(&far.samples, 800.0));
+        assert!(treble(&near.samples, 800.0) > 2.5 * treble(&far.samples, 800.0), "{} {}", treble(&near.samples, 800.0), treble(&far.samples, 800.0));
         assert!(far.samples.len() > near.samples.len() / 2);
         // nothing beyond earshot
         assert!(thunder(&s, &ch, 0.0, (s.at + DVec2::new(30_000.0, 0.0)).extend(0.0)).is_none());

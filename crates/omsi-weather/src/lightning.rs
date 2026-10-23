@@ -7,26 +7,41 @@
 //! nothing is drawn by chance per frame. Time is cut into one-second slots; whether a slot
 //! holds a flash, where and how strong is a pure function of the seed and the slot's number.
 //!
-//! A storm is a row of cells. Cell `j` grows, matures and dies over an hour or so; its path is
-//! a straight line along the wind that passes the map's centre at some distance to the side,
-//! halfway through its life - so a storm comes up from one side, passes (sometimes right over
-//! the players, mostly beside them) and moves off to the other, and the next one follows on
-//! its own track. Most flashes stay in the cloud and only light it; about one in three is a
-//! strike to the ground with a visible channel. When a cell is over a player, one flash in
-//! about twenty-five strikes close to them (`CLOSE`).
+//! A storm is a row of cells. Cell `j` grows, matures and dies over half an hour to an hour; its path
+//! is a straight line along the wind that crosses the map halfway through its life - so a cell
+//! comes up from one side, passes and moves off to the other, and the next ones follow on
+//! their own tracks. A storm in the vicinity has a cell now and then, passing beside the map;
+//! a stronger one has them more often and over the map, a heavy one so often (`cell_every`)
+//! that wherever a player is on the map, there is one over them or near most of the time - it
+//! does not move off and leave them in the quiet. Most flashes stay in the cloud and only
+//! light it; a quarter to two fifths (the stronger, the more) are strikes to the ground with a
+//! visible channel. When a cell is over a player, some of its flashes strike close to them
+//! (`close_share`).
 
 use glam::{DVec2, DVec3, Vec3};
 
 /// The speed of sound (m/s): a flash's thunder comes this much later per metre.
 pub const SOUND: f64 = 343.0;
 
-/// The share of the flashes of a cell over a player that strike close to them (60..300 m).
+/// The share of the flashes of a cell over a player that strike close to them (60..300 m), in
+/// a thunderstorm of level 0.2 (`close_share`: twice that in a heavy one).
 pub const CLOSE: f64 = 0.04;
 
-/// A new cell starts every this many seconds (each one's start drawn within its slot).
+/// The share of the flashes of a cell over a player that strike close to them in a storm of
+/// level `level`.
+pub fn close_share(level: f32) -> f64 {
+    CLOSE * (0.75 + 1.25 * level.clamp(0.0, 1.0) as f64)
+}
+
+/// Up to this level (`thunder_level`) a storm is one in the vicinity: its cells pass beside the
+/// map, now and then.
+const VICINITY: f32 = 0.35;
+
+/// A new cell starts every this many seconds in a storm in the vicinity (each one's start drawn
+/// within its slot); a stronger one starts them more often (`Storm::cell_every`).
 const CELL_EVERY: f64 = 25.0 * 60.0;
 /// A cell lives this long (s), drawn per cell.
-const CELL_LIFE: (f64, f64) = (55.0 * 60.0, 95.0 * 60.0);
+const CELL_LIFE: (f64, f64) = (30.0 * 60.0, 50.0 * 60.0);
 /// The slots flashes are drawn in (s).
 const SLOT: f64 = 1.0;
 /// Flashes farther than this from every player are left out (m): no glow reaches that far.
@@ -82,7 +97,9 @@ pub struct Storm {
     pub seed: u64,
     /// Where the cells pass (the map's centre, m).
     pub centre: DVec2,
-    /// How the cells move (m/s): with the weather's wind, faster than it at the ground.
+    /// How far the map reaches from its centre (m): the cells pass over all of it.
+    pub half: f64,
+    /// How the cells move (m/s): with the weather's wind (some 10 to 40 km/h).
     pub drift: DVec2,
     /// How strong (`thunder_level`): how often it flashes; a weak one (a METAR's `VCTS`, in
     /// the vicinity) passes farther away.
@@ -122,10 +139,13 @@ pub struct Strike {
 }
 
 impl Storm {
-    /// A storm drawn from `seed` over the map round `centre`, carried by `wind` (m/s, the
-    /// direction the air moves, as the snowfall and the clouds take it).
-    pub fn new(seed: u64, centre: DVec2, wind: DVec2, level: f32, cloud_base: f64) -> Storm {
-        let speed = (wind.length() * 1.4).clamp(4.0, 18.0);
+    /// A storm drawn from `seed` over the map round `centre` (reaching `half` m from it),
+    /// carried by `wind` (m/s, the direction the air moves, as the snowfall and the clouds
+    /// take it).
+    pub fn new(seed: u64, centre: DVec2, half: f64, wind: DVec2, level: f32, cloud_base: f64) -> Storm {
+        // (a storm moves at some 10 to 40 km/h: faster, and a cell over the players had left
+        // them within minutes)
+        let speed = wind.length().clamp(3.0, 11.0);
         let dir = if wind.length() > 0.5 {
             wind.normalize()
         } else {
@@ -133,39 +153,57 @@ impl Storm {
             let a = Draw::new(seed ^ 0x6472_6966_74).u() * std::f64::consts::TAU;
             DVec2::new(a.sin(), a.cos())
         };
-        Storm { seed, centre, drift: dir * speed, level: level.clamp(0.0, 1.0), cloud_base: cloud_base.clamp(500.0, 3000.0) }
+        Storm { seed, centre, half: half.clamp(2_000.0, 25_000.0), drift: dir * speed, level: level.clamp(0.0, 1.0), cloud_base: cloud_base.clamp(500.0, 3000.0) }
+    }
+
+    /// Seconds between two cells' starts: `CELL_EVERY` in a storm in the vicinity; a stronger
+    /// one has them more often, a heavy one five times as often (on a map some 10 km across:
+    /// on a wider one more often still, the same number over every part of it) - so many that
+    /// wherever a player is, one is over them or near most of the time.
+    fn cell_every(&self) -> f64 {
+        if self.level <= VICINITY {
+            return CELL_EVERY;
+        }
+        let strength = 1.0 + 4.0 * ((self.level as f64 - 0.3) / 0.7).clamp(0.0, 1.0);
+        let band = 2.0 * (self.half + 4_000.0);
+        (CELL_EVERY / strength * 18_000.0 / band).clamp(90.0, CELL_EVERY)
     }
 
     /// Cell `j`: when it starts, how long it lives, where it is halfway through its life,
     /// its radius and how often it flashes when mature (per second). Some slots hold none.
     fn cell(&self, j: i64) -> Option<(f64, f64, DVec2, f64, f64)> {
         let mut d = Draw::new(self.seed ^ (j as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ 0x63656c6c);
-        if d.u() > 0.75 {
+        let vicinity = self.level <= VICINITY;
+        if d.u() > if vicinity { 0.75 } else { 0.9 } {
             return None;
         }
-        let birth = j as f64 * CELL_EVERY + d.range(0.0, 0.6) * CELL_EVERY;
+        let every = self.cell_every();
+        let birth = j as f64 * every + d.range(0.0, 0.6) * every;
         let life = d.range(CELL_LIFE.0, CELL_LIFE.1);
         let along = self.drift.normalize_or_zero();
         let side = DVec2::new(-along.y, along.x);
-        // (beside the map's centre: within 12 km either side; a storm in the vicinity
-        // only passes 9 to 20 km off)
-        let off = if self.level <= 0.35 {
-            d.range(9_000.0, 20_000.0) * if d.u() < 0.5 { -1.0 } else { 1.0 }
+        // (over the map, from 4 km off either side of it - a storm in the vicinity only passes
+        // beside it, 5 to 15 km off its edge)
+        let off = if vicinity {
+            (self.half + d.range(5_000.0, 15_000.0)) * if d.u() < 0.5 { -1.0 } else { 1.0 }
         } else {
-            d.range(-12_000.0, 12_000.0)
+            d.range(-1.0, 1.0) * (self.half + 4_000.0)
         };
-        let mid = self.centre + side * off + along * d.range(-3_000.0, 3_000.0);
-        let radius = d.range(2_500.0, 4_500.0);
-        // (a mature cell flashes one to four times a minute: a storm has its quiet spells)
-        let per_minute = d.range(1.0, 3.5) * (0.4 + 0.8 * self.level as f64);
+        let mid = self.centre + side * off + along * d.range(-1.0, 1.0) * self.half;
+        let radius = d.range(2_500.0, 4_500.0) * (1.0 + 0.25 * self.level as f64);
+        // (a mature cell flashes once to three times a minute in a weak storm, twice to five
+        // times in a heavy one - with the cells round a player some four flashes a minute
+        // within 5 km, a strike within 1.5 km every two minutes: a storm has its quiet spells)
+        let per_minute = d.range(1.0, 3.0) * (0.4 + 1.2 * self.level as f64);
         Some((birth, life, mid, radius, per_minute / 60.0))
     }
 
     /// The cells alive at `t` (game time, s).
     pub fn cells_at(&self, t: f64) -> Vec<Cell> {
         let mut out = Vec::new();
-        let first = ((t - CELL_LIFE.1) / CELL_EVERY).floor() as i64 - 1;
-        let last = (t / CELL_EVERY).floor() as i64;
+        let every = self.cell_every();
+        let first = ((t - CELL_LIFE.1) / every).floor() as i64 - 1;
+        let last = (t / every).floor() as i64;
         for j in first..=last {
             let Some((birth, life, mid, radius, peak)) = self.cell(j) else { continue };
             if t < birth || t >= birth + life {
@@ -174,7 +212,7 @@ impl Storm {
             let age = (t - birth) / life;
             let at = mid + self.drift * (t - (birth + life * 0.5));
             // (it grows, matures and dies away)
-            let rate = peak * (std::f64::consts::PI * age).sin().powi(2);
+            let rate = peak * (std::f64::consts::PI * age).sin().max(0.0);
             out.push(Cell { index: j, at, radius, rate });
         }
         out
@@ -222,15 +260,15 @@ impl Storm {
         let a = d.u() * std::f64::consts::TAU;
         let mut at = cell.at + DVec2::new(a.sin(), a.cos()) * r;
         let t = tk + d.range(0.0, 0.98) * SLOT;
-        let mut ground = d.u() < 0.3;
+        let mut ground = d.u() < 0.25 + 0.15 * self.level as f64;
         let mut energy = (d.range(0.5, 1.2) * (0.8 + 0.4 * self.level as f64)) as f32;
         // one of the rare ones close to a player under the cell: each player's chance is
-        // CLOSE. (The draws are made whoever is where: a game that sees another player a few
+        // `close_share`. (The draws are made whoever is where: a game that sees another player a few
         // metres off where that player's own game has them - the network's delay - draws the
         // rest of the flash all the same, and the two stay in step.)
         let (roll, pick, a, r) = (d.u(), d.u(), d.u() * std::f64::consts::TAU, d.range(60.0, 300.0));
         let player = players.get(((pick * players.len() as f64) as usize).min(players.len().saturating_sub(1)));
-        let close = player.is_some_and(|p| roll < (CLOSE * players.len() as f64).min(1.0) && (p.1 - cell.at).length() < cell.radius * 1.2);
+        let close = player.is_some_and(|p| roll < (close_share(self.level) * players.len() as f64).min(1.0) && (p.1 - cell.at).length() < cell.radius * 1.2);
         if let Some(p) = player.filter(|_| close) {
             at = p.1 + DVec2::new(a.sin(), a.cos()) * r;
             ground = true;
@@ -427,7 +465,7 @@ mod tests {
     use omsi_content::weather::Weather;
 
     fn storm() -> Storm {
-        Storm::new(42, DVec2::new(1500.0, 2500.0), DVec2::new(6.0, 0.0), 0.8, 1200.0)
+        Storm::new(42, DVec2::new(1500.0, 2500.0), 5000.0, DVec2::new(6.0, 0.0), 0.8, 1200.0)
     }
 
     /// A day of the storm's flashes, slot by slot as the frames take them.
@@ -473,8 +511,8 @@ mod tests {
             }
         }
         assert!(seen > 500);
-        // (the wind east: the storm goes east, at 1.4 times the wind)
-        assert!((s.drift - DVec2::new(8.4, 0.0)).length() < 1e-9);
+        // (the wind east: the storm goes east, with the wind)
+        assert!((s.drift - DVec2::new(6.0, 0.0)).length() < 1e-9);
         // the flashes are in the cells
         for f in flashes(&s, &[], 0.0, 4.0 * 3600.0, 0.5) {
             let cells = s.cells_at(f.t.floor());
@@ -484,7 +522,7 @@ mod tests {
 
     #[test]
     fn strikes_close_to_a_player_are_rare_and_only_under_a_cell() {
-        let s = Storm::new(9, DVec2::ZERO, DVec2::new(0.0, 5.0), 1.0, 1200.0);
+        let s = Storm::new(9, DVec2::ZERO, 5000.0, DVec2::new(0.0, 5.0), 1.0, 1200.0);
         let mut under = 0usize;
         let mut close = 0usize;
         // a player wherever a cell is (the worst case: always under one)
@@ -507,7 +545,7 @@ mod tests {
             t += 1.0;
         }
         let share = close as f64 / under as f64;
-        assert!(under > 1000 && (0.02..0.07).contains(&share), "{close} close of {under}: {share:.3}");
+        assert!(under > 1000 && (0.05..0.11).contains(&share), "{close} close of {under}: {share:.3}");
         // nobody under a cell: none close
         let far = [(5u32, DVec2::new(500_000.0, 0.0))];
         assert!(flashes(&s, &far, 0.0, 10.0 * 3600.0, 1.0).iter().all(|f| !f.close));
@@ -569,7 +607,7 @@ mod tests {
     #[ignore]
     fn storm_statistics() {
         for level in [0.3f32, 0.7, 1.0] {
-            let s = Storm::new(11, DVec2::ZERO, DVec2::new(4.0, 3.0), level, 1200.0);
+            let s = Storm::new(11, DVec2::ZERO, 5000.0, DVec2::new(4.0, 3.0), level, 1200.0);
             let p = [(1u32, DVec2::ZERO)];
             let all = flashes(&s, &p, 0.0, 24.0 * 3600.0, 1.0);
             let near = |m: f64| all.iter().filter(|f| f.at.length() < m).count();
@@ -580,6 +618,32 @@ mod tests {
                 all.len() as f64 / 24.0, near(1000.0), near(3000.0), near(8000.0), near(16000.0), near(40000.0)
             );
         }
+    }
+
+    /// A heavy storm stays round the players wherever they are on the map: a flash within
+    /// 5 km in most minutes, a strike within 1.5 km every few minutes - more than in a
+    /// thunderstorm, where it is still mostly near; a storm in the vicinity stays beside the
+    /// map.
+    #[test]
+    fn a_heavy_storm_stays_round_the_players_wherever_they_are() {
+        let day = 100.0 * 86_400.0;
+        let hours = 3.0;
+        let feel = |level: f32, at: DVec2| {
+            let s = Storm::new(11, DVec2::ZERO, 5000.0, DVec2::new(4.0, 3.0), level, 1200.0);
+            let all = flashes(&s, &[(1, at)], day, day + hours * 3600.0, 1.0);
+            let minutes: std::collections::HashSet<i64> = all.iter().filter(|f| (f.at - at).length() < 5000.0).map(|f| (f.t / 60.0) as i64).collect();
+            let strikes = all.iter().filter(|f| f.ground && (f.at - at).length() < 1500.0).count();
+            (minutes.len() as f64 / (hours * 60.0), strikes as f64 / hours, all.len() as f64 / (hours * 60.0))
+        };
+        for at in [DVec2::ZERO, DVec2::new(4000.0, -3000.0)] {
+            let (minutes, strikes, per_minute) = feel(1.0, at);
+            assert!(minutes > 0.75 && strikes > 15.0 && per_minute < 25.0, "heavy at {at}: {minutes:.2} of the minutes, {strikes:.0} strikes near an hour, {per_minute:.1} flashes a minute");
+            let (m7, s7, _) = feel(0.7, at);
+            assert!(m7 > 0.5 && m7 < minutes && s7 < strikes, "a thunderstorm at {at}: {m7:.2}, {s7:.0}");
+        }
+        let s = Storm::new(11, DVec2::ZERO, 5000.0, DVec2::new(4.0, 3.0), 0.3, 1200.0);
+        let all = flashes(&s, &[(1, DVec2::ZERO)], day, day + 6.0 * 3600.0, 1.0);
+        assert!(!all.is_empty() && all.iter().all(|f| f.at.length() > 5000.0), "in the vicinity: beside the map");
     }
 
     #[test]

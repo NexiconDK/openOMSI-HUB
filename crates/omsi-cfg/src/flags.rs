@@ -178,6 +178,7 @@ flags! {
     OMSI_CLICK_ALL: Bool, Test, Use, "off", "Check: aim at every clickable item of the cab and report which one would actually be operated.";
     OMSI_CLOUDFLARED: Text, Setup, Use, "-", "Path of the cloudflared binary for the LAN tunnel (searched after the game's folder, before the PATH).";
     OMSI_CLOUDFLARED_OWN: Bool, Test, Use, "off", "LAN tunnel: only the game's own downloaded cloudflared, to test the download.";
+    OMSI_CLOUD_PICTURES: Text, Test, Test, "-", "Tests: a folder for pictures of the enhanced clouds drifting over a dozen window frames (`cargo test -p omsi-render the_clouds_glide -- --ignored`).";
     OMSI_COMPANION_HOST: Text, Setup, Use, "-", "The companion app server: the address it listens on instead of every interface.";
     OMSI_CONDENSATION: Text, Test, Use, "-", "Offscreen: minutes,people[,engine] - the cabin air and condensation on the glass after that long.";
     OMSI_CONTENT: Text, Setup, Use, "beside the game", "The content folder (mods, archives, screenshots). Set at runtime on Android and iOS.";

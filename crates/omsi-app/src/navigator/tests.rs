@@ -1433,3 +1433,34 @@ fn preview_duty_sheet() {
     n.render_city(&device, &queue, &view, (w as u32, h as u32), p, s);
     read_back(&device, &queue, &t, (w as u32, h as u32), [70, 84, 96]).save(format!("{dir}/citymap-duty-sheet.png")).unwrap();
 }
+
+/// (NexiconDK) The map's entry points on the city map as the setting `nav_entries` has them:
+/// the dots with their names (a click on either sets a pin), the dots alone, or none.
+#[test]
+fn the_entry_points_show_as_the_setting_has_them() {
+    let mut n = Navigator::new(true, 0.85, "bottom-left");
+    n.atlas = Atlas::new(2048);
+    on_grid(&mut n, 3);
+    n.entries = vec![(DVec2::new(300.0, 300.0), "Depot Nord".into())];
+    let f = at((1.5, 20.0), 0.0);
+    n.follow(&f);
+    let companion = crate::nav_signon::tests::listening(crate::nav_signon::tests::hans());
+    let mut hits = |n: &mut Navigator, shown: EntryPoints| {
+        n.entry_points = shown;
+        // (the map held on the entry point, not following the bus)
+        n.city.follow = false;
+        n.city.center = DVec2::new(300.0, 300.0);
+        n.city.mpp = 1.5;
+        n.atlas.begin_frame();
+        let _ = n.paint_city(&f, &companion, None, Left::Nothing, 1536.0, 886.0, 1.0);
+        n.city.entry_hits.len()
+    };
+    assert_eq!(hits(&mut n, EntryPoints::Named), 2, "the dot and its name");
+    assert_eq!(hits(&mut n, EntryPoints::Dots), 1, "the dot alone");
+    assert_eq!(hits(&mut n, EntryPoints::Hidden), 0, "none");
+    // the setting's words
+    assert_eq!(EntryPoints::from_setting("dots"), EntryPoints::Dots);
+    assert_eq!(EntryPoints::from_setting("off"), EntryPoints::Hidden);
+    assert_eq!(EntryPoints::from_setting("names"), EntryPoints::Named);
+    assert_eq!(EntryPoints::from_setting(""), EntryPoints::Named, "as before when not set");
+}

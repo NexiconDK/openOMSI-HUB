@@ -730,10 +730,23 @@ impl Renderer {
         };
         // the sky cube's eye (see Probe::cube_eye): the correction for a camera that moved
         // away from it is exact for the base of the clouds, and wrong by up to the layer's
-        // depth over their distance; a climb shows far sooner than driving along
-        let cam_w = ro + cam_rel.as_dvec3();
+        // depth over their distance; a climb shows far sooner than driving along.
+        // (NexiconDK) The eye is kept in the clouds' own frame, which drifts with the wind
+        // (`cloud_offset`): to the clouds a camera standing still moves against the wind. The
+        // cube - drawn a slice at a time over the frames and blended over them - then holds
+        // one picture of the clouds, which the sky shows moved on by the drift since, in
+        // every frame. Kept on the ground, every slice took the clouds' new place when it was
+        // redrawn (each one every 24th frame), a fifth of it blended into the old: the
+        // clouds hopped along instead of gliding.
+        let drift = DVec3::new(lighting.cloud_offset[0] as f64 * 2500.0, lighting.cloud_offset[1] as f64 * 2500.0, 0.0);
+        let cam_w = ro + cam_rel.as_dvec3() + drift;
         let eye_off = match self.tone.probe.as_mut() {
             Some(p) => {
+                // (the drift went round its wrap: the same clouds - the wrap is a whole number
+                // of the periods of all they are read from - and the eye with them)
+                for e in [p.cube_eye.as_mut(), p.sched.staging_eye.as_mut()].into_iter().flatten() {
+                    *e = unwrap_drift(*e, cam_w);
+                }
                 let to_clouds = (1400.0 - cam_rel.z as f64).max(120.0);
                 let far = match p.cube_eye {
                     Some(e) if p.cube_filled => {
@@ -830,6 +843,17 @@ pub(crate) const CLOUD_STEPS_LOW: u32 = 20;
 /// degree as a 1600-pixel-wide picture has pixels at half its size (at 512 the clouds'
 /// edges stood in blocks of three or four pixels).
 pub(crate) const SKY_CUBE_SIZE: u32 = 1024;
+
+/// The clouds' drift goes round after this (m): `omsi_weather::conditions::CLOUD_DRIFT_WRAP`
+/// 2500 m tiles (a test in omsi-app holds the two together).
+pub const CLOUD_DRIFT_WRAP_M: f64 = 4368.0 * 2500.0;
+
+/// The sky cube's eye `e` (in the clouds' frame) moved by whole wraps of the drift to the
+/// camera's `c`: after the drift went round, the clouds are where they were.
+pub(crate) fn unwrap_drift(e: DVec3, c: DVec3) -> DVec3 {
+    let w = CLOUD_DRIFT_WRAP_M;
+    DVec3::new(e.x + ((c.x - e.x) / w).round() * w, e.y + ((c.y - e.y) / w).round() * w, e.z)
+}
 /// Redraw rounds of a sky cube face: each starts the clouds' steps elsewhere, and the
 /// rounds are averaged (all of them at once for a picture on its own or a new sky).
 pub(crate) const SKY_CUBE_ROUNDS: u32 = 8;
@@ -892,5 +916,23 @@ mod beam_tests {
         }
         // above the floor's horizon the low beam is cut off either way
         assert!(headlamp_profile((pitched * 30.0 + Vec3::new(0.0, -p.sin(), p.cos()) * 1.0).normalize(), pitched, true) < 0.05);
+    }
+}
+
+#[cfg(test)]
+mod drift_tests {
+    use super::{unwrap_drift, CLOUD_DRIFT_WRAP_M};
+    use glam::DVec3;
+
+    /// The sky cube's eye goes round with the clouds' drift: a camera whose drift has just
+    /// wrapped finds the eye a few metres off as before, not ten thousand kilometres.
+    #[test]
+    fn the_cube_eye_follows_the_drift_round_its_wrap() {
+        let e = DVec3::new(CLOUD_DRIFT_WRAP_M - 30.0, 500.0, 2.0);
+        let c = DVec3::new(20.0, 520.0, 2.0);
+        let u = unwrap_drift(e, c);
+        assert!((u - DVec3::new(-30.0, 500.0, 2.0)).length() < 1e-6, "{u:?}");
+        // nothing to do without a wrap
+        assert_eq!(unwrap_drift(DVec3::new(100.0, -40.0, 1.0), DVec3::new(160.0, 0.0, 1.0)), DVec3::new(100.0, -40.0, 1.0));
     }
 }

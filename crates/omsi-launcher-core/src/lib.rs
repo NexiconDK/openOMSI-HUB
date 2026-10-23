@@ -2920,6 +2920,16 @@ pub fn city_map_style(v: &str) -> &'static str {
     }
 }
 
+/// NexiconDK: the map's entry points on the city map (`nav_entries`): "names" (orange dots
+/// with their names, as before), "dots" (the dots alone) or "off".
+pub fn nav_entries(v: &str) -> &'static str {
+    match v.trim().to_ascii_lowercase().as_str() {
+        "dots" => "dots",
+        "off" | "none" | "0" | "false" | "no" => "off",
+        _ => "names",
+    }
+}
+
 /// The stop signs on the navigator's map (`stop_style`): "de" (the German H), "uk" (the
 /// British bus stop flag) or "fr" (the French arrêt); anything else the German.
 pub fn stop_style(v: &str) -> &'static str {
@@ -3048,6 +3058,8 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
     v["stop_style"] = json!("de");
     v["nav_map"] = json!("classic");
     v["city_map"] = json!("classic");
+    // NexiconDK: the map's entry points on the city map
+    v["nav_entries"] = json!("names");
     // NexiconDK: snow builds up on the roads, with ruts and tracks (openOMSI PR #1902)
     v["road_snow"] = json!(true);
     // NexiconDK: thunderstorms with lightning and thunder (off for flashing light)
@@ -3127,6 +3139,7 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
             "nav_scale" => v[&k] = json!(nav_scale(val.parse::<f64>().ok())),
             "stop_style" => v[&k] = json!(stop_style(val)),
             "nav_map" => v[&k] = json!(nav_map_style(val)),
+            "nav_entries" => v[&k] = json!(nav_entries(val)),
             "city_map" => v[&k] = json!(city_map_style(val)),
             // (Omsi-Hub's speed unit of before: miles an hour are the British units now, unless
             // a `units` line says otherwise)
@@ -3632,6 +3645,7 @@ pub fn settings_to_text(v: &Value, old: Option<&str>) -> String {
     text.push_str(&format!("nav_scale={}\nstop_style={}\n", nav_scale(v.get("nav_scale").and_then(|x| x.as_f64())), stop_style(v.get("stop_style").and_then(|x| x.as_str()).unwrap_or("de"))));
     text.push_str(&format!("road_snow={}\n", b("road_snow", true)));
     text.push_str(&format!("thunderstorms={}\n", b("thunderstorms", true)));
+    text.push_str(&format!("nav_entries={}\n", nav_entries(v.get("nav_entries").and_then(|x| x.as_str()).unwrap_or("names"))));
     text.push_str(&format!("nav_map={}\ncity_map={}\n", nav_map_style(v.get("nav_map").and_then(|x| x.as_str()).unwrap_or("classic")), city_map_style(v.get("city_map").and_then(|x| x.as_str()).unwrap_or("classic"))));
     text.push_str(&format!(
         "head_tracking_source={}\ntobii_edges={}\n",

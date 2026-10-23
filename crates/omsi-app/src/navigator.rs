@@ -129,6 +129,27 @@ const ON_TIME: Color = crate::nav_duty::ON_TIME_INK;
 const WARN: Color = Color::rgba(235, 170, 60, 1.0);
 const STOP_REQUEST: Color = Color::hex(0xF0A030);
 
+/// (NexiconDK) How the map's entry points show on the city map (`nav_entries`): orange dots
+/// with their names (openOMSI #3074), the dots alone, or not at all.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub enum EntryPoints {
+    #[default]
+    Named,
+    Dots,
+    Hidden,
+}
+
+impl EntryPoints {
+    /// From the setting's word (`omsi_launcher_lib::nav_entries`).
+    pub fn from_setting(v: &str) -> EntryPoints {
+        match omsi_launcher_lib::nav_entries(v) {
+            "dots" => EntryPoints::Dots,
+            "off" => EntryPoints::Hidden,
+            _ => EntryPoints::Named,
+        }
+    }
+}
+
 pub(crate) fn stop_requested(vehicle: &omsi_sim::vehicle::VehicleInstance) -> bool {
     ["haltewunsch", "haltewunschlampe"].iter().any(|name| vehicle.var(name).is_some_and(|v| v > 0.5))
 }
@@ -385,6 +406,9 @@ pub struct Navigator {
     pub show_surface: bool,
     /// The light look of the maps (the `nav_light` setting).
     pub light: bool,
+    /// (NexiconDK) How the map's entry points show on the city map (the `nav_entries`
+    /// setting).
+    pub entry_points: EntryPoints,
     /// The small map's surface mesh (buffer 6): the surface version and anchor it was built for, and its size.
     surface_mesh: Option<(u64, DVec2, u32)>,
     /// How far the panel has faded in (Shift+N fades it in and out rather than cutting).
@@ -551,6 +575,7 @@ impl Navigator {
             surface_version: 0,
             show_surface: true,
             light: false,
+            entry_points: EntryPoints::Named,
             surface_mesh: None,
             shown: if enabled { 1.0 } else { 0.0 },
             stop_spots: Vec::new(),

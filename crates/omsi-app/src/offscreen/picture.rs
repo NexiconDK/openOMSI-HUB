@@ -324,6 +324,7 @@ impl Offscreen<'_> {
                 crate::units::Units::from_setting(&settings.units).set();
                 nav.show_surface = settings.nav_surface;
                 nav.light = settings.nav_light;
+                nav.entry_points = crate::navigator::EntryPoints::from_setting(&settings.nav_entries);
                 nav.set_styles(&settings.nav_map, &settings.city_map);
                 if omsi_cfg::flags::OMSI_NAV_MAP.is_set() {
                     nav.toggle_map();

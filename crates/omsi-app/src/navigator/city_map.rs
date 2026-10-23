@@ -964,9 +964,11 @@ impl Navigator {
             crate::stop_signs::draw(&mut ui, signs, kind, p, if dot { 6.0 } else { 13.0 } * s);
         }
         // the map's entry points (openOMSI #3074): an orange dot, its name beside it where
-        // there is room; a click on either sets a pin there
+        // there is room; a click on either sets a pin there. (NexiconDK: the dots alone, or
+        // none, by the setting `nav_entries`)
         self.city.entry_hits.clear();
-        for (i, (at, name)) in self.entries.iter().enumerate() {
+        let shown = if self.entry_points == super::EntryPoints::Hidden { &[][..] } else { &self.entries[..] };
+        for (i, (at, name)) in shown.iter().enumerate() {
             let p = to_screen(at.extend(0.0));
             if !win.contains(p) || p.y < 50.0 * s {
                 continue;
@@ -974,7 +976,7 @@ impl Navigator {
             ui.circle(p, 7.5 * s, crate::nav_pins::PIN_EDGE);
             ui.circle(p, 5.5 * s, ENTRY);
             self.city.entry_hits.push((Rect::new(p.x - 10.0 * s, p.y - 10.0 * s, 20.0 * s, 20.0 * s), i));
-            if name.is_empty() {
+            if name.is_empty() || self.entry_points == super::EntryPoints::Dots {
                 continue;
             }
             let px = 11.5 * s;

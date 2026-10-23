@@ -599,6 +599,8 @@ mod tests {
     #[test]
     fn the_weather_drifts_the_classic_clouds_over_the_renderers_tiling() {
         assert_eq!(omsi_weather::conditions::CLOUD_PERIOD, omsi_render::VANILLA_CLOUD_PERIOD);
+        // (and the enhanced clouds' drift goes round where the sky cube's eye expects it)
+        assert_eq!(omsi_weather::conditions::CLOUD_DRIFT_WRAP * 2500.0, omsi_render::CLOUD_DRIFT_WRAP_M);
     }
 
     #[test]

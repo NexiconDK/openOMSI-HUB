@@ -777,6 +777,15 @@ pub fn sheet_focus(rows: &[SheetRow]) -> f32 {
     trip.unwrap_or(0.0)
 }
 
+/// (NexiconDK) The sheet's title: the tour from the timetable the trip under way belongs to
+/// ("Tour 137H10"), as the duty is known at the depot; "Duty" for a duty without one.
+pub fn sheet_title(d: &DutyState) -> String {
+    match d.leg(d.trip).1.trim() {
+        "" => omsi_ui::tr("Duty").into_owned(),
+        tour => tr_with("Tour %{tour}", &[("tour", tour.to_string())]),
+    }
+}
+
 /// The sheet's top part above the list (at scale 1): the title and the tiles.
 pub const SHEET_HEAD: f32 = 128.0;
 
@@ -794,7 +803,7 @@ pub fn draw_sheet_head(pen: &mut Pen, d: &DutyState, r: Rect, time: f64, s: f32)
     let status = d.status();
     let cw = pen.chip(status, x1, r.y + 27.0 * s, s);
     let tx = x0 + 28.0 * s;
-    pen.text_in("Duty", 18.0 * s, Weight::Bold, Rect::new(tx, r.y + 15.0 * s, (x1 - cw - 8.0 * s - tx).max(0.0), 24.0 * s), Align::Left, TEXT);
+    pen.text_in(&sheet_title(d), 18.0 * s, Weight::Bold, Rect::new(tx, r.y + 15.0 * s, (x1 - cw - 8.0 * s - tx).max(0.0), 24.0 * s), Align::Left, TEXT);
     let span = match (d.trips.first(), d.trips.last()) {
         (Some(a), Some(b)) => format!("{}  ·  {} – {}", tr_with(if d.trips.len() == 1 { "%{n} trip" } else { "%{n} trips" }, &[("n", d.trips.len().to_string())]), hhmm(a.departure), hhmm(b.end)),
         _ => String::new(),
@@ -1001,6 +1010,11 @@ pub mod tests {
         let rows = board(Some(&d), 4);
         assert!(matches!(&rows[0], Row::Head { line: Some(l), terminus, index: 3, .. } if l == "25" && terminus == "Eichstedt"));
         assert_eq!(rows[1], Row::Change { line: "25".into(), tour: "3".into() });
+        // the sheet is titled by the tour of the trip under way: the first part's, then the
+        // second's; a duty without a tour by "Duty"
+        assert_eq!(sheet_title(&d), "Tour 1");
+        assert_eq!(sheet_title(&DutyState { trip: 2, ..d }), "Tour 3");
+        assert_eq!(sheet_title(&DutyState { tours: &[], tour: " ", ..d }), "Duty");
         assert_eq!(names(&rows), [("Hauptbahnhof".to_string(), StopState::Now), ("Eichstedt".into(), StopState::Ahead)]);
         assert!(rows.iter().all(|r| !matches!(r, Row::Next { .. } | Row::More { .. })));
         assert!(matches!(rows.last(), Some(Row::Stop { last: true, .. })));
@@ -1139,7 +1153,7 @@ pub mod tests {
     /// Every text of the panel is in the tables for the languages that matter most.
     #[test]
     fn the_panel_is_translated() {
-        let keys = ["No duty running", "Empty run", "trip %{k} of %{n}", "arrives %{time}", "leaves %{time}", "leaves in %{m} min", "break, %{m} min left", "%{m} min over", "Duty finished", "and %{n} more to %{terminus}", "terminus", "Next %{time}", "%{m} min break", "Continue on line %{line}, tour %{tour}", "In the game", "Delay", "line %{line}", "1 stop", "%{n} stops", "Duty", "Trip", "on time", "%{n} trip", "%{n} trips", "planned %{time}", "expected %{time}", "sched. %{time}", "exp. %{time}"];
+        let keys = ["No duty running", "Empty run", "trip %{k} of %{n}", "arrives %{time}", "leaves %{time}", "leaves in %{m} min", "break, %{m} min left", "%{m} min over", "Duty finished", "and %{n} more to %{terminus}", "terminus", "Next %{time}", "%{m} min break", "Continue on line %{line}, tour %{tour}", "Tour %{tour}", "In the game", "Delay", "line %{line}", "1 stop", "%{n} stops", "Duty", "Trip", "on time", "%{n} trip", "%{n} trips", "planned %{time}", "expected %{time}", "sched. %{time}", "exp. %{time}"];
         for language in ["nl", "de", "fr", "ru", "uk", "pl"] {
             for key in keys {
                 let t = crate::_rust_i18n_try_translate(language, key);

@@ -7,6 +7,7 @@ mod lights;
 mod sky_sched;
 
 pub(crate) use enhanced::*;
+pub use enhanced::CLOUD_DRIFT_WRAP_M;
 pub use flash::Bolt;
 pub(crate) use flash::*;
 pub use lights::*;

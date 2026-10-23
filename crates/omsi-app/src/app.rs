@@ -580,6 +580,7 @@ impl App {
                     n.set_rect(&self.settings.nav_rect);
                     n.show_surface = self.settings.nav_surface;
                     n.light = self.settings.nav_light;
+                    n.entry_points = crate::navigator::EntryPoints::from_setting(&self.settings.nav_entries);
                     n.set_styles(&self.settings.nav_map, &self.settings.city_map);
                 }
                 crate::stop_signs::set_style(crate::stop_signs::Style::from_setting(&self.settings.stop_style));

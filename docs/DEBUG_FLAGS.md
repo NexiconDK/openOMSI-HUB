@@ -163,6 +163,7 @@ effect. On Android, `openOMSI/env.txt` holds `NAME=value` lines that are set bef
 | `OMSI_CHURN` | text | - | use | app | Offscreen: x,y - load the tiles round that point and unload/reload the start area (streaming test). |
 | `OMSI_CLICK_ALL` | bool | off | use | app | Check: aim at every clickable item of the cab and report which one would actually be operated. |
 | `OMSI_CLOUDFLARED_OWN` | bool | off | use | net | LAN tunnel: only the game's own downloaded cloudflared, to test the download. |
+| `OMSI_CLOUD_PICTURES` | text | - | test | render | Tests: a folder for pictures of the enhanced clouds drifting over a dozen window frames (`cargo test -p omsi-render the_clouds_glide -- --ignored`). |
 | `OMSI_CONDENSATION` | text | - | use | app | Offscreen: minutes,people[,engine] - the cabin air and condensation on the glass after that long. |
 | `OMSI_DATE` | text | - | test | launcher-core | Tests: YYYY-MM-DD taken as today. |
 | `OMSI_DAY_AIR` | text | - | once | render | haze,angstrom[,height,strat]: fix the day's air (twilight colours) instead of the varying one. |

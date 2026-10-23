@@ -16,6 +16,7 @@ pub(super) fn options_pages(app: &App) -> Vec<Page> {
         switch_row(app, "nav_light", "Light map", "The Minimap and the city map in a light look"),
         pick("nav_map", "Minimap's map", "Classic: the roads as before. Flat 2D map and Map in 3D: the map's own picture - green land, water, woods, the paved streets with their markings and the houses (standing in 3D)"),
         pick("city_map", "City map's map", "Classic: the roads as before. The map's own picture: green land, water, woods, the paved streets with their markings and the houses"),
+        pick("nav_entries", "Entry points on the city map", "The map's entry points as orange dots with their names (a click sets a pin there), only the dots, or none"),
         switch_row(app, "nav_arrows", "Route arrows (as in OMSI 2)", "Shows OMSI 2's route arrows over the road"),
         pick("navigator_corner", "Corner", later),
         Some(button("Reset navigator", "Reset", "Back to its corner and its own size (drag its edges and corners to size it)", "nav_reset")),

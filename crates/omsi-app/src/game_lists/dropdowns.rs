@@ -317,6 +317,7 @@ pub(super) fn select_options(key: &str) -> Vec<(&'static str, &'static str)> {
         "passenger_animation" => vec![("original", "Original OMSI"), ("enhanced", "Natural (procedural)")],
         "nav_map" => vec![("classic", "Classic (as before)"), ("flat", "Flat 2D map"), ("3d", "Map in 3D")],
         "city_map" => vec![("classic", "Classic (as before)"), ("new", "The map's own picture")],
+        "nav_entries" => vec![("names", "Dots and names"), ("dots", "Dots only"), ("off", "Off")],
         "navigator_corner" => vec![("top-left", "Top left"), ("top-right", "Top right"), ("bottom-left", "Bottom left"), ("bottom-right", "Bottom right")],
         "boarding" => vec![("auto", "Pay and take the ticket"), ("pay", "The driver sells the ticket"), ("walk", "Just walk in")],
         "standing_chance" => vec![("0", "Never"), ("5", "5%"), ("10", "10%"), ("25", "25%"), ("50", "50%"), ("100", "Always")],
@@ -403,6 +404,7 @@ pub(super) fn sync_live(app: &mut App) {
     }
     if let Some(n) = app.menus.navigator.as_mut() {
         n.arrows = s.nav_arrows;
+        n.entry_points = crate::navigator::EntryPoints::from_setting(&s.nav_entries);
     }
     if let Some(h) = app.session.humans.as_mut() {
         h.exact_fare = s.exact_fare;
