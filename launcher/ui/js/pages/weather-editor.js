@@ -6,6 +6,9 @@ import { Button, Dialog, Select, Slider, Toggle, Spinner } from '../ui.js';
 import { choose } from '../data.js';
 
 const PRECIP = [['0', 'None'], ['1', 'Rain'], ['2', 'Snow']];
+/** (NexiconDK) How strong a thunderstorm, with rain or without (`weather_choice::THUNDER_LEVELS`). */
+const THUNDER = [['0', 'Off'], ['0.3', 'In the vicinity'], ['0.7', 'Thunderstorm'], ['1', 'Heavy thunderstorm']];
+const thunderValue = (x) => THUNDER.reduce((best, [v]) => (Math.abs(Number(v) - (x || 0)) < Math.abs(Number(best) - (x || 0)) ? v : best), '0');
 
 export const isCustomWeather = (w) => /^(custom|CUSTOM):/.test(w || '');
 
@@ -51,6 +54,10 @@ export function WeatherEditor({ from, onClose }) {
         <${Select} value=${String(w.precip)} options=${PRECIP} onChange=${(v) => put({ precip: Number(v) })} />
       </div>
       <${Slider} label="Precipitation strength" value=${w.precip_intensity} min=${0} max=${255} step=${1} onChange=${(precip_intensity) => put({ precip_intensity })} format=${(v) => `${Math.round(v)} / 255`} />
+      <div class="slider">
+        <div class="top"><span>${t('Thunder')}</span><span></span></div>
+        <${Select} value=${thunderValue(w.thunder)} options=${THUNDER} onChange=${(v) => put({ thunder: Number(v) })} />
+      </div>
       <${Toggle} checked=${w.snow_cover} onChange=${(snow_cover) => put({ snow_cover })} label="Snow cover" />
       <${Toggle} checked=${w.snow_on_road} onChange=${(snow_on_road) => put({ snow_on_road })} label="Snow on road" />
     </div>`}

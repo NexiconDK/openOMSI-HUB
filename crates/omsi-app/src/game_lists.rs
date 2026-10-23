@@ -929,7 +929,7 @@ pub(crate) fn run_move(app: &mut App, kind: &ListKind, action: &str, mv: Move) -
                     app.menus.list_dirty = true;
                 }
                 // (the preset, the clouds and the precipitation are picked from a drop-down: `App::chooser_pick`)
-                "weather" | "cloudkind" | "precipkind" | "metar_src" | "sel" | "preset" | "gfxprofile" | "reset" => {}
+                "weather" | "cloudkind" | "precipkind" | "thunderkind" | "metar_src" | "sel" | "preset" | "gfxprofile" | "reset" => {}
                 "metar_icao_edit" if step => {
                     if app.menus.menu_edit_icao { app.apply_icao_edit(); } else { app.start_icao_edit(); }
                 }

@@ -151,6 +151,7 @@ fn custom_weather(weather: String) -> Answer {
     Ok(json!({
         "visibility_m": c.visibility_m, "brightness": c.brightness, "wind_dir": c.wind_dir, "wind_speed": c.wind_speed, "temp_c": c.temp_c, "humidity": c.humidity, "pressure": c.pressure,
         "cloud_cover": c.cloud_cover, "cloud_base_m": c.cloud_base_m, "precip": c.precip, "precip_intensity": c.precip_intensity, "road_wetness": c.road_wetness, "snow_cover": c.snow_cover, "snow_on_road": c.snow_on_road,
+        "thunder": c.thunder,
     }))
 }
 
@@ -173,6 +174,7 @@ fn custom_weather_text(w: Value) -> Answer {
         road_wetness: n("road_wetness", d.road_wetness),
         snow_cover: on("snow_cover"),
         snow_on_road: on("snow_on_road"),
+        thunder: n("thunder", d.thunder),
     };
     Ok(json!(c.encode()))
 }

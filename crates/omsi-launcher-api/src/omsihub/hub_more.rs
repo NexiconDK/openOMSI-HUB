@@ -256,6 +256,7 @@ fn custom_json(c: &CustomWeather) -> Value {
         "temp_c": c.temp_c, "humidity": c.humidity, "pressure": c.pressure, "cloud_cover": c.cloud_cover,
         "cloud_base_m": c.cloud_base_m, "precip": c.precip, "precip_intensity": c.precip_intensity,
         "road_wetness": c.road_wetness, "snow_cover": c.snow_cover, "snow_on_road": c.snow_on_road,
+        "thunder": c.thunder,
     })
 }
 
@@ -278,6 +279,7 @@ fn custom_of(v: &Value) -> CustomWeather {
     c.road_wetness = f("road_wetness", c.road_wetness);
     c.snow_cover = b("snow_cover", c.snow_cover);
     c.snow_on_road = b("snow_on_road", c.snow_on_road);
+    c.thunder = f("thunder", c.thunder);
     c.normalize();
     c
 }
@@ -451,6 +453,19 @@ mod tests {
         assert!(read["as_custom"].is_null());
         let back = weather_write(&json!({ "custom": read["custom"] })).unwrap();
         assert_eq!(back["weather"], w);
+        // (the day step offers the ready thunderstorms as the game writes them)
+        let page = std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../launcher/ui/js/omsihub/steps/day-more.js")).unwrap();
+        for dry in [false, true] {
+            let spec = omsi_content::weather_choice::thunderstorm(dry).encode();
+            assert!(page.contains(&format!("'{spec}'")), "day-more.js THUNDERSTORMS lacks {spec}");
+        }
+        // (a thunderstorm, the dry one too, keeps its thunder through the editor)
+        for dry in [false, true] {
+            let storm = omsi_content::weather_choice::thunderstorm(dry).encode();
+            let read = weather_read(&json!({ "weather": storm })).unwrap();
+            assert_eq!(read["custom"]["thunder"].as_f64().map(|t| (t * 100.0).round()), Some(70.0));
+            assert_eq!(weather_write(&json!({ "custom": read["custom"] })).unwrap()["weather"], storm);
+        }
         // (out of range made sound, a preset's word is not one's own weather)
         let back = weather_write(&json!({ "custom": { "visibility_m": 10.0, "precip": 7 } })).unwrap();
         assert_eq!((back["custom"]["visibility_m"].as_f64(), back["custom"]["precip"].as_i64()), (Some(50.0), Some(2)));

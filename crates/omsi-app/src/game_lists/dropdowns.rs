@@ -31,17 +31,34 @@ pub(crate) struct Dropdown {
 /// The drop-down of the row `row` whose action is `id`, if that row has one.
 pub(crate) fn dropdown_for(app: &App, row: usize, id: &str) -> Option<Dropdown> {
     let tr = |t: &str| omsi_ui::tr(t).into_owned();
-    if app.metar_locked() && matches!(id, "weather" | "cloudkind" | "precipkind") {
+    if app.metar_locked() && matches!(id, "weather" | "cloudkind" | "precipkind" | "thunderkind") {
         return None;
     }
     let mut current: Option<usize> = None;
     let items: Vec<(String, String)> = match id {
         "weather" => {
             let now = weather_name(app);
-            weather_files()
+            // (NexiconDK: the ready thunderstorms first - with rain and without - as hand-set
+            // weathers to change further, then the weather files)
+            let storms = [(false, "Thunderstorm"), (true, "Dry thunderstorm")];
+            let chosen = app.args.weather.as_deref();
+            let mut items: Vec<(String, String)> = storms
+                .iter()
+                .enumerate()
+                .map(|(i, (dry, name))| {
+                    let spec = omsi_content::weather_choice::thunderstorm(*dry).encode();
+                    if chosen == Some(spec.as_str()) {
+                        current = Some(i);
+                    }
+                    (tr(name), format!("wx {spec}"))
+                })
+                .collect();
+            let first = items.len();
+            items.extend(weather_files()
                 .into_iter()
                 .enumerate()
                 .map(|(i, f)| {
+                    let i = i + first;
                     let stem = f.rsplit('/').next().unwrap_or(&f).rsplit_once('.').map(|x| x.0).unwrap_or(&f).trim_start_matches('#').to_string();
                     if stem.eq_ignore_ascii_case(&now) {
                         current = Some(i);
@@ -49,8 +66,8 @@ pub(crate) fn dropdown_for(app: &App, row: usize, id: &str) -> Option<Dropdown> 
                     // (shown by its name in the interface's language, not its German file name)
                     let name = omsi_launcher_lib::content_path(&f).map(|p| omsi_launcher_lib::weather_name(&p)).unwrap_or(stem);
                     (omsi_ui::tr(&name).into_owned(), format!("wx {f}"))
-                })
-                .collect()
+                }));
+            items
         }
         "metar_src" => {
             let mut v = vec![(tr("Automatic (nearest the map)"), "metar_src ".to_string())];
@@ -71,6 +88,11 @@ pub(crate) fn dropdown_for(app: &App, row: usize, id: &str) -> Option<Dropdown> 
         "precipkind" => {
             current = app.session.weather.as_ref().map(|w| (w.precip.first().copied().unwrap_or(0.0).max(0.0) as usize).min(PRECIP_KINDS.len() - 1));
             PRECIP_KINDS.iter().enumerate().map(|(i, n)| (tr(*n), format!("precip {i}"))).collect()
+        }
+        // (NexiconDK) the thunderstorm, with the rain or without it
+        "thunderkind" => {
+            current = Some(omsi_content::weather_choice::thunder_index(app.session.weather.as_ref().map(omsi_content::weather_choice::thunder_level).unwrap_or(0.0)));
+            omsi_content::weather_choice::THUNDER_LEVELS.iter().enumerate().map(|(i, (_, n))| (tr(n), format!("thunder {i}"))).collect()
         }
         "preset" => {
             let file = settings_file();
@@ -97,7 +119,7 @@ pub(crate) fn dropdown_for(app: &App, row: usize, id: &str) -> Option<Dropdown> 
 /// Do an entry of a drop-down.
 pub(crate) fn dropdown_apply(app: &mut App, action: &str) {
     let (verb, arg) = action.split_once(' ').unwrap_or((action, ""));
-    if app.metar_locked() && matches!(verb, "wx" | "cloud" | "precip") {
+    if app.metar_locked() && matches!(verb, "wx" | "cloud" | "precip" | "thunder") {
         app.service_msg = Some(("The weather cannot be changed while the METAR sync is on".into(), 3.0));
         return;
     }
@@ -134,6 +156,15 @@ pub(crate) fn dropdown_apply(app: &mut App, action: &str) {
         "precip" => {
             if let Some(i) = arg.trim().parse::<usize>().ok().filter(|i| *i < PRECIP_KINDS.len()) {
                 set_precip(app, i);
+            }
+        }
+        // (NexiconDK) the thunderstorm set by hand: the weather in force with its thunder (a
+        // weather file's own thunder is kept as it was until changed here)
+        "thunder" => {
+            if let Some(&(level, _)) = arg.trim().parse::<usize>().ok().and_then(|i| omsi_content::weather_choice::THUNDER_LEVELS.get(i)) {
+                let mut c = custom_state(app);
+                c.thunder = level;
+                app.set_custom_weather(c);
             }
         }
         "pick" => {

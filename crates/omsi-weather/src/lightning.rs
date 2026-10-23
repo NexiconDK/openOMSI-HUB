@@ -16,7 +16,6 @@
 //! about twenty-five strikes close to them (`CLOSE`).
 
 use glam::{DVec2, DVec3, Vec3};
-use omsi_content::weather::Weather;
 
 /// The speed of sound (m/s): a flash's thunder comes this much later per metre.
 pub const SOUND: f64 = 343.0;
@@ -33,26 +32,10 @@ const SLOT: f64 = 1.0;
 /// Flashes farther than this from every player are left out (m): no glow reaches that far.
 pub const REACH: f64 = 40_000.0;
 
-/// How strong a thunderstorm `w` has (0: none, up to 1). A METAR says so itself
-/// (`Weather::thunder`); an `.owt` file by its name ("Gewitter", "thunder" ...) or by towering
-/// clouds over a warm downpour, as the ambience took a thundery sky (`soundscape`).
-pub fn thunder_level(w: &Weather) -> f32 {
-    if w.thunder > 0.0 {
-        return w.thunder.clamp(0.0, 1.0);
-    }
-    let (kind, rate) = crate::conditions::precip_of(w);
-    let rain = if kind == 1 { rate } else { 0.0 };
-    let text = format!("{} {} {}", w.name, w.clouds.0, w.path.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default()).to_lowercase();
-    let named = ["gewitter", "thunder", "onweer", "orage", "burza", "гроза", "torden", "åska", "temporale", "tormenta"].iter().any(|n| text.contains(n));
-    if named {
-        return (0.55 + 0.45 * rain).clamp(0.3, 1.0);
-    }
-    let c = w.clouds.0.to_ascii_lowercase();
-    if (c.contains("cumulus 3") || c.contains("cumulonimbus")) && rain > 0.45 && w.temp.0 > 8.0 {
-        return (0.4 + 0.6 * (rain - 0.45) / 0.55).clamp(0.3, 1.0);
-    }
-    0.0
-}
+/// How strong a thunderstorm `w` has (0: none, up to 1): `omsi_content`'s
+/// `weather_choice::thunder_level` - the weather set by hand and a METAR say it themselves, a
+/// weather file by its name or a warm downpour under towering clouds.
+pub use omsi_content::weather_choice::thunder_level;
 
 /// The seed a storm is drawn from: the session's room seed in multiplayer (every player has
 /// it), else the map's name; and the weather (a new weather, a new storm).
@@ -441,6 +424,7 @@ pub fn glow(strikes: &[Strike], t: f64, eye: DVec3, ground: f64) -> Option<Glow>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use omsi_content::weather::Weather;
 
     fn storm() -> Storm {
         Storm::new(42, DVec2::new(1500.0, 2500.0), DVec2::new(6.0, 0.0), 0.8, 1200.0)

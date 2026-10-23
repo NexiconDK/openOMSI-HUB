@@ -18,6 +18,17 @@ export const isCustom = (w) => /^custom:/i.test(w || '');
 /** OMSI's kinds of precipitation (`weather_choice::CUSTOM_PRECIP`). */
 const PRECIP = ['None', 'Rain', 'Snow'];
 
+/** (NexiconDK) How strong a thunderstorm (`weather_choice::THUNDER_LEVELS`). */
+const THUNDER = [[0, 'Off'], [0.3, 'In the vicinity'], [0.7, 'Thunderstorm'], [1, 'Heavy thunderstorm']];
+const thunderIndex = (t) => (t > 0 ? THUNDER.reduce((best, [v], k) => (k > 0 && Math.abs(v - t) < Math.abs(THUNDER[best][0] - t) ? k : best), 2) : 0);
+
+/** (NexiconDK) The ready thunderstorms, with rain and without (`weather_choice::thunderstorm`,
+ * written as `CustomWeather::encode` writes them - a test holds the two the same). */
+export const THUNDERSTORMS = [
+  ['custom:vis=5000;br=0.55;wd=230;ws=9.0;t=23.0;rh=82;p=1004;c=0.950;cb=800;pt=1;pi=215;wet=0.85;snow=0;snowroad=0;ts=0.70', 'Thunderstorm', 'Lightning and thunder over a heavy shower', 'thunderstorm'],
+  ['custom:vis=25000;br=0.75;wd=220;ws=7.0;t=27.0;rh=45;p=1006;c=0.800;cb=1600;pt=0;pi=32;wet=0.00;snow=0;snowroad=0;ts=0.70', 'Dry thunderstorm', 'Lightning and thunder without rain', 'bolt'],
+];
+
 /** The dew point of a temperature and a relative humidity (`weather_choice::dew_point_c`). */
 function dew(t, rh) {
   const g = Math.log(Math.min(Math.max(rh, 0.1), 100) / 100) + (17.67 * t) / (243.5 + t);
@@ -88,6 +99,8 @@ export function CustomWeather() {
       <div class="hub-cwx-precip"><span>${tr('Precipitation')}</span>
         <${Select} value=${String(Math.min(2, Math.max(0, v.precip)))} options=${PRECIP.map((p, k) => [String(k), p])} onChange=${(k) => change('precip', Number(k))} /></div>
       ${slider('precip_intensity', 'Precipitation intensity', 0, 255, 1, (x) => `${Math.round(x)} / 255`)}
+      <div class="hub-cwx-precip"><span>${tr('Thunder')}</span>
+        <${Select} value=${String(thunderIndex(v.thunder || 0))} options=${THUNDER.map(([, name], k) => [String(k), name])} onChange=${(k) => change('thunder', THUNDER[Number(k)][0])} /></div>
       ${slider('road_wetness', 'Road wetness', 0, 1, 0.05, pct)}
       <${Switch} label="Snow cover" checked=${v.snow_cover} onChange=${(x) => change('snow_cover', x)} />
       <${Switch} label="Snow on road" checked=${v.snow_on_road} onChange=${(x) => change('snow_on_road', x)} />

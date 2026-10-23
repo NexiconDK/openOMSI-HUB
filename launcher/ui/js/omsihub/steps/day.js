@@ -12,7 +12,7 @@ import { Actions, Caps, Chips, Foot, Head, Icon, Slider, Switch, tr, Button } fr
 import { goStep, nextOf, previousOf, freeDrive } from '../flow.js';
 import { MapBehind } from './mapbehind.js';
 import { Select } from '../../ui.js';
-import { CustomWeather, EditAsCustom, customItem, isCustom } from './day-more.js';
+import { CustomWeather, EditAsCustom, customItem, isCustom, THUNDERSTORMS } from './day-more.js';
 
 export const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -43,6 +43,8 @@ export const dateText = (d) => {
 export function weatherName(w) {
   if (!w) return tr('As on the map');
   if (w === 'cycle') return tr('Weather cycle');
+  const storm = THUNDERSTORMS.find((x) => x[0] === w);
+  if (storm) return tr(storm[1]);
   if (isCustom(w)) return tr('Custom weather');
   if (w.startsWith('metar:')) return tr('Current weather at %{code}', { code: w.slice(6) });
   return S.weather?.find((x) => x.file === w)?.name || w;
@@ -113,6 +115,7 @@ function weatherItems(c, airport, all) {
     ['', 'Map default', 'Whatever the map starts with', 'wb_sunny'],
     [`metar:${code}`, 'Current weather', tr('METAR of %{code} (fetched at the start)', { code }), 'public'],
     ['cycle', 'Weather cycle', 'Changes every 25-60 minutes, as the month allows', 'autorenew'],
+    ...THUNDERSTORMS,
   ];
   let unfitting = 0;
   for (const w of S.weather || []) {

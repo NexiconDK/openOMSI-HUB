@@ -440,6 +440,10 @@ pub(super) fn world_pages(app: &App) -> Vec<Page> {
         let kind = app.session.weather.as_ref().map(|w| (w.precip.first().copied().unwrap_or(0.0).max(0.0) as usize).min(PRECIP_KINDS.len() - 1)).unwrap_or(0);
         weather.push((row("Precipitation", 'o', PRECIP_KINDS[kind], "Rain or snow.", None), "precipkind".to_string()));
         weather.extend(slider_row(app, "rain_amt", "Precipitation strength", "How hard it rains or snows.", &pct));
+        // (NexiconDK) a thunderstorm, with or without the rain
+        let thunder = app.session.weather.as_ref().map(omsi_content::weather_choice::thunder_level).unwrap_or(0.0);
+        let thunder = omsi_content::weather_choice::THUNDER_LEVELS[omsi_content::weather_choice::thunder_index(thunder)].1;
+        weather.push((row("Thunder", 'o', thunder, "Lightning and thunder: none, a storm passing in the distance, a thunderstorm or a heavy one - with rain or without.", None), "thunderkind".to_string()));
         weather.extend(slider_row(app, "wet", "Wet roads", "How wet the roads are now (they dry in the sun, wet in the rain).", &pct));
         weather.extend(switch_row(app,"snow_cover","Snow cover","Snow lying on the world and ground."));
         weather.extend(switch_row(app,"snow_road","Snow on road","Treat the road surface as snow-covered."));

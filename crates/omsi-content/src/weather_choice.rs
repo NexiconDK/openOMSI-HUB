@@ -66,6 +66,43 @@ pub fn cover_of(w: &Weather) -> f32 {
 }
 pub const CUSTOM_PRECIP: [&str; 3] = ["None", "Rain", "Snow"];
 
+/// (NexiconDK) How strong a thunderstorm can be set (`CustomWeather::thunder`), and what the
+/// launcher and the game call it: none, one passing in the vicinity (flashes and rumble far off,
+/// a METAR's `VCTS`), a thunderstorm (`TS`), a heavy one (`+TS`).
+pub const THUNDER_LEVELS: [(f32, &str); 4] = [(0.0, "Off"), (0.3, "In the vicinity"), (0.7, "Thunderstorm"), (1.0, "Heavy thunderstorm")];
+
+/// The entry of `THUNDER_LEVELS` nearest `level`.
+pub fn thunder_index(level: f32) -> usize {
+    if level <= 0.0 {
+        return 0;
+    }
+    (1..THUNDER_LEVELS.len()).min_by(|a, b| (THUNDER_LEVELS[*a].0 - level).abs().total_cmp(&(THUNDER_LEVELS[*b].0 - level).abs())).unwrap_or(2)
+}
+
+/// (NexiconDK) How strong a thunderstorm the weather `w` has (0 none .. 1). A weather set by
+/// hand (`custom:`) and a METAR report say it themselves (`Weather::thunder`), none included:
+/// a hand-set weather with thunder off has none, however hard it rains. An `.owt` file has no
+/// such entry: its name says so ("Gewitter", "thunder" ...), or towering clouds over a warm
+/// downpour do, as the ambience took a thundery sky.
+pub fn thunder_level(w: &Weather) -> f32 {
+    let custom = w.path.to_string_lossy().to_ascii_lowercase().starts_with("custom:");
+    if w.thunder > 0.0 || custom || w.name.starts_with("METAR ") {
+        return w.thunder.clamp(0.0, 1.0);
+    }
+    let kind = w.precip.first().copied().unwrap_or(0.0) as i32;
+    let rain = if kind == 1 { (w.precip.get(1).copied().unwrap_or(0.0) / 255.0).clamp(0.0, 1.0) } else { 0.0 };
+    let text = format!("{} {} {}", w.name, w.clouds.0, w.path.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default()).to_lowercase();
+    let named = ["gewitter", "thunder", "onweer", "orage", "burza", "гроза", "torden", "åska", "temporale", "tormenta"].iter().any(|n| text.contains(n));
+    if named {
+        return (0.55 + 0.45 * rain).clamp(0.3, 1.0);
+    }
+    let c = w.clouds.0.to_ascii_lowercase();
+    if (c.contains("cumulus 3") || c.contains("cumulonimbus")) && rain > 0.45 && w.temp.0 > 8.0 {
+        return (0.4 + 0.6 * (rain - 0.45) / 0.55).clamp(0.3, 1.0);
+    }
+    0.0
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct CustomWeather {
     pub visibility_m: f32,
@@ -83,12 +120,27 @@ pub struct CustomWeather {
     pub road_wetness: f32,
     pub snow_cover: bool,
     pub snow_on_road: bool,
+    /// (NexiconDK) A thunderstorm (0 none .. 1, see `THUNDER_LEVELS`): lightning and thunder,
+    /// with rain or without.
+    pub thunder: f32,
 }
 impl Default for CustomWeather {
     fn default() -> Self {
         Self { visibility_m: 50_000.0, brightness: 1.0, wind_dir: 0.0, wind_speed: 0.0,
             temp_c: 15.0, humidity: 51.0, pressure: 1013.0, cloud_cover: 0.0, cloud_base_m: 50.0,
-            precip: 0, precip_intensity: 32.0, road_wetness: 0.0, snow_cover: false, snow_on_road: false }
+            precip: 0, precip_intensity: 32.0, road_wetness: 0.0, snow_cover: false, snow_on_road: false, thunder: 0.0 }
+    }
+}
+
+/// (NexiconDK) The ready thunderstorms the launcher and the game offer: a warm, humid
+/// afternoon's under a low, heavy deck with a downpour and gusts, or (`dry`) one without rain -
+/// a higher cloud base over drier air, the flashes and the thunder all the same. Starting
+/// points: as hand-set weathers, everything of them can be changed.
+pub fn thunderstorm(dry: bool) -> CustomWeather {
+    if dry {
+        CustomWeather { visibility_m: 25_000.0, brightness: 0.75, wind_dir: 220.0, wind_speed: 7.0, temp_c: 27.0, humidity: 45.0, pressure: 1006.0, cloud_cover: 0.8, cloud_base_m: 1600.0, thunder: 0.7, ..Default::default() }
+    } else {
+        CustomWeather { visibility_m: 5_000.0, brightness: 0.55, wind_dir: 230.0, wind_speed: 9.0, temp_c: 23.0, humidity: 82.0, pressure: 1004.0, cloud_cover: 0.95, cloud_base_m: 800.0, precip: 1, precip_intensity: 215.0, road_wetness: 0.85, thunder: 0.7, ..Default::default() }
     }
 }
 impl CustomWeather {
@@ -105,6 +157,7 @@ impl CustomWeather {
         self.precip=self.precip.clamp(0,2);
         self.precip_intensity=self.precip_intensity.clamp(0.0,255.0);
         self.road_wetness=self.road_wetness.clamp(0.0,1.0);
+        self.thunder=if self.thunder.is_finite(){self.thunder.clamp(0.0,1.0)}else{0.0};
     }
     pub fn parse(text:&str)->Option<Self>{
         let body=text.strip_prefix("custom:").or_else(||text.strip_prefix("CUSTOM:"))?;
@@ -131,6 +184,7 @@ impl CustomWeather {
                 "wet"=>if let Some(v)=n{c.road_wetness=v},
                 "snow"=>if let Some(v)=n{c.snow_cover=v>=0.5},
                 "snowroad"=>if let Some(v)=n{c.snow_on_road=v>=0.5},
+                "ts"=>if let Some(v)=n{c.thunder=v},
                 _=>{}
             }
         }
@@ -141,6 +195,8 @@ impl CustomWeather {
         format!("custom:vis={:.0};br={:.2};wd={:.0};ws={:.1};t={:.1};rh={:.0};p={:.0};c={:.3};cb={:.0};pt={};pi={:.0};wet={:.2};snow={};snowroad={}",
             c.visibility_m,c.brightness,c.wind_dir,c.wind_speed,c.temp_c,c.humidity,c.pressure,c.cloud_cover,c.cloud_base_m,
             c.precip,c.precip_intensity,c.road_wetness,c.snow_cover as u8,c.snow_on_road as u8)
+            // (a thunderstorm only where there is one: the texts of before stay as they were)
+            +&if c.thunder>0.0{format!(";ts={:.2}",c.thunder)}else{String::new()}
     }
     pub fn from_weather(w:&Weather,brightness:f32,wetness:f32)->Self{
         let cloud_cover=cover_of(w);
@@ -148,7 +204,8 @@ impl CustomWeather {
             visibility_m:w.fog.0,brightness,wind_dir:w.wind.0,wind_speed:w.wind.1,temp_c:w.temp.0,
             humidity:relative_humidity(w.temp.0,w.temp.1),pressure:if w.pressure>0.0{w.pressure}else{1013.0},
             cloud_cover,cloud_base_m:w.clouds.1.max(50.0),precip:w.precip.first().copied().unwrap_or(0.0).round() as i32,
-            precip_intensity:w.precip.get(1).copied().unwrap_or(32.0),road_wetness:wetness,snow_cover:w.snow,snow_on_road:w.snow_on_road};
+            precip_intensity:w.precip.get(1).copied().unwrap_or(32.0),road_wetness:wetness,snow_cover:w.snow,snow_on_road:w.snow_on_road,
+            thunder:thunder_level(w)};
         c.normalize(); c
     }
     pub fn to_weather(&self)->Weather{
@@ -158,7 +215,7 @@ impl CustomWeather {
             path:std::path::PathBuf::from(c.encode()),name:"Custom weather".into(),description:"User-defined weather".into(),
             fog:(c.visibility_m,1.0),wind:(c.wind_dir,c.wind_speed),temp:(c.temp_c,absolute_humidity(c.temp_c,c.humidity)),
             pressure:c.pressure,clouds:(cloud.into(),c.cloud_base_m),cloud_cover:Some(c.cloud_cover),precip:vec![c.precip as f32,c.precip_intensity,0.0,0.0,0.0],
-            ground_wet:[c.road_wetness*255.0,0.0,0.0],snow:c.snow_cover,snow_on_road:c.snow_on_road,thunder:0.0}
+            ground_wet:[c.road_wetness*255.0,0.0,0.0],snow:c.snow_cover,snow_on_road:c.snow_on_road,thunder:c.thunder}
     }
 }
 fn saturation_vapour_pressure(temp_c:f32)->f32{6.112*((17.67*temp_c)/(temp_c+243.5)).exp()}
@@ -192,4 +249,46 @@ pub fn metar_airports(root:&std::path::Path)->Vec<(String,String)>{
 /// Whether a weather choice means the physical model: `natural`, or none at all.
 pub fn is_natural(choice: Option<&str>) -> bool {
     choice.is_none_or(|w| w.trim().eq_ignore_ascii_case("natural"))
+}
+
+#[cfg(test)]
+mod thunder_tests {
+    use super::*;
+
+    /// A hand-set weather keeps its thunderstorm through its text, with rain or without; a text
+    /// of before (no `ts`) reads as none, and one without thunder is written as before.
+    #[test]
+    fn a_hand_set_thunderstorm_goes_through_its_text() {
+        for dry in [false, true] {
+            let c = thunderstorm(dry);
+            let text = c.encode();
+            assert!(text.ends_with(";ts=0.70"), "{text}");
+            let back = CustomWeather::parse(&text).unwrap();
+            assert_eq!(back.thunder, 0.7);
+            assert_eq!((back.precip == 0), dry, "the dry one has no rain");
+            let w = back.to_weather();
+            assert_eq!((w.thunder, thunder_level(&w)), (0.7, 0.7));
+        }
+        let plain = CustomWeather::default().encode();
+        assert!(!plain.contains("ts="));
+        assert_eq!(CustomWeather::parse(&plain).unwrap().thunder, 0.0);
+        assert_eq!(THUNDER_LEVELS[thunder_index(0.3)].1, "In the vicinity");
+        assert_eq!(thunder_index(0.0), 0);
+        assert_eq!(thunder_index(0.95), 3);
+    }
+
+    /// Thunder off in a hand-set weather is off, however hard and warm it rains; a weather
+    /// file's own downpour under towering clouds is still a thunderstorm, and edited by hand
+    /// it stays one.
+    #[test]
+    fn a_hand_set_weather_decides_its_thunder_itself() {
+        let downpour = CustomWeather { temp_c: 24.0, cloud_cover: 0.75, precip: 1, precip_intensity: 230.0, ..Default::default() };
+        assert_eq!(thunder_level(&downpour.to_weather()), 0.0);
+        let file = Weather { path: "Weather/Schauer.owt".into(), name: "Schauer".into(), clouds: ("Cumulus 3".into(), 900.0), temp: (24.0, 12.0), precip: vec![1.0, 230.0], ..Default::default() };
+        let level = thunder_level(&file);
+        assert!(level > 0.5, "{level}");
+        assert!((CustomWeather::from_weather(&file, 1.0, 0.5).thunder - level).abs() < 1e-6);
+        let report = Weather { name: "METAR EKCH".into(), ..file.clone() };
+        assert_eq!(thunder_level(&report), 0.0, "a report without TS has no thunder");
+    }
 }
