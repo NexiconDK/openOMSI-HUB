@@ -1560,6 +1560,12 @@ pub fn list_lines(map: &str, date: &str) -> Result<Vec<LineInfo>> {
     lines_on(&map_dir, date)
 }
 
+/// (NexiconDK, Bus Company Online) The lines of the map in `map_dir` on `date`, as `list_lines`
+/// gives them for a map of the launcher's OMSI folder: a server has the map's folder itself.
+pub fn lines_in_map_dir(map_dir: &Path, date: &str) -> Result<Vec<LineInfo>> {
+    lines_on(map_dir, date)
+}
+
 fn lines_on(map_dir: &Path, date: &str) -> Result<Vec<LineInfo>> {
     let date = if date.trim().is_empty() { DEFAULT_DATE } else { date.trim() };
     let code = omsi_map::date_code(date).with_context(|| format!("'{date}' is not a date (YYYY-MM-DD)"))?;

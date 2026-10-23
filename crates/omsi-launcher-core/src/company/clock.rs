@@ -672,6 +672,13 @@ fn begin_day(c: &mut Company, w: &mut dyn World) -> Result<(), String> {
     Ok(())
 }
 
+/// (NexiconDK, Bus Company Online) The company enters its day now, if it has not yet
+/// (`begin_day`: the roster filled or repaired, the day's events written) - before its plan
+/// goes to a server's world.
+pub fn enter_day(c: &mut Company, w: &mut dyn World) -> Result<(), String> {
+    begin_day(c, w)
+}
+
 // --- what comes next, and its doing -------------------------------------------------------------
 
 #[derive(Clone, Copy, Debug, PartialEq)]

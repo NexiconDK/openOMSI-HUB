@@ -258,11 +258,14 @@ pub struct Disk<'a> {
     /// The day whose close took the live file in (once a simulation: the company is saved
     /// with it at the end, `simulate`).
     took: Option<String>,
+    /// (NexiconDK) The map's folder, where a server has it: its timetables read from there, not
+    /// through the launcher's OMSI folder (`crate::list_lines`).
+    map_dir: Option<PathBuf>,
 }
 
 impl<'a> Disk<'a> {
     pub fn new(data: &'a Path) -> Self {
-        Disk { data, read: Vec::new(), took: None }
+        Disk { data, read: Vec::new(), took: None, map_dir: None }
     }
 
     /// The timetable of a date read already (the pages have the company's day).
@@ -270,6 +273,31 @@ impl<'a> Disk<'a> {
         self.read.push((map.to_string(), date.to_string(), lines));
         self
     }
+
+    /// (NexiconDK, Bus Company Online) The timetables read before, by an earlier `Disk` (its
+    /// `into_parts`): a company run for good (on a server) reads a date's timetable once, not at
+    /// every step.
+    pub fn with_read(data: &'a Path, read: Vec<(String, String, Vec<crate::LineInfo>)>) -> Self {
+        Disk { data, read, took: None, map_dir: None }
+    }
+
+    /// (NexiconDK) The map's timetables read from its folder `map_dir` (a server's).
+    pub fn on_map(mut self, map_dir: Option<&Path>) -> Self {
+        self.map_dir = map_dir.map(Path::to_path_buf);
+        self
+    }
+
+    /// (NexiconDK) The timetables this one read, for the next (`with_read`), and the day whose
+    /// close took the live file in (the company is to be saved with it: `forget_taken`).
+    pub fn into_parts(self) -> (Vec<(String, String, Vec<crate::LineInfo>)>, Option<String>) {
+        (self.read, self.took)
+    }
+}
+
+/// (NexiconDK, Bus Company Online) The company was saved after the close of `date` took the
+/// live file in: what it took goes (as `simulate` does it).
+pub fn forget_taken(data: &Path, id: &str, date: &str) {
+    saved_with_live(data, id, date);
 }
 
 impl super::clock::World for Disk<'_> {
@@ -277,7 +305,11 @@ impl super::clock::World for Disk<'_> {
         if let Some(x) = self.read.iter().find(|x| x.0 == c.map && x.1 == date) {
             return Ok(x.2.clone());
         }
-        let lines = crate::list_lines(&c.map, date).map_err(|e| format!("{e:#}"))?;
+        let lines = match &self.map_dir {
+            Some(dir) => crate::lines_in_map_dir(dir, date),
+            None => crate::list_lines(&c.map, date),
+        }
+        .map_err(|e| format!("{e:#}"))?;
         // (the last few days are enough)
         if self.read.len() > 3 {
             self.read.remove(0);
