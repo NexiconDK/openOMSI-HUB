@@ -138,6 +138,23 @@ impl VehicleInstance {
         self.cabin_air = Some((t, hum, t));
     }
 
+    /// Change cabin temperature once without changing heater controls or coolant (openOMSI
+    /// PR #3184). The coupled parts read the leading vehicle's state (here no car runs its
+    /// scripts on its own, as openOMSI's `CarRun` does).
+    pub fn set_cabin_temperature(&mut self, temperature: f32) {
+        if !temperature.is_finite() {
+            return;
+        }
+        let humidity = self
+            .ev(Ev::CabinAbsHum)
+            .filter(|h| h.is_finite() && *h >= 0.0)
+            .unwrap_or_else(|| self.cabin_air.map_or(9.0, |(_, h, _)| h));
+        self.set_engine_ev(Ev::CabinTemp, temperature);
+        self.set_engine_ev(Ev::CabinAbsHum, humidity);
+        self.set_engine_ev(Ev::CabinRelHum, relative_humidity(temperature, humidity));
+        self.cabin_air = Some((temperature, humidity, temperature));
+    }
+
     /// Run one simulation frame: physics, scripts, then animations.
     pub fn update(&mut self, dt: f32) {
         self.host.clock.advance(dt);

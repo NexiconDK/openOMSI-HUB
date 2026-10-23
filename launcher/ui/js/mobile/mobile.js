@@ -13,6 +13,7 @@ import { RouteMap } from '../routemap.js';
 import { choose, curMap, curBus, curLine, curTour, pickedTrip, realTime, realDate, start, weatherName, weatherOfItsOwn, askJoined, noServerBus, mapName, serverBuses, busFile } from '../data.js';
 import { hms, mapPicture, tripAt, depotRun, pickTrip, runsAt, lineMatches, findTours, chooseLine, chooseTour, setSeason, localNow, SEASONS, PHASES } from '../pages/drive.js';
 import { MultiplayerPage } from '../pages/multiplayer.js';
+import { CabinTemperatureOption } from '../pages/drive-day.js';
 import { ProfilePage } from '../pages/profile.js';
 import { ModsPage } from '../pages/mods.js';
 import { SettingsPage } from '../pages/settings.js';
@@ -141,6 +142,7 @@ function MobileDrive() {
         <${Toggle} checked=${c.passengers} onChange=${(passengers) => choose({ passengers })} label="Passengers" />
         <${Toggle} checked=${c.schedule} onChange=${(schedule) => choose({ schedule })} label="Timetable buses" />
         <${Toggle} checked=${c.autostart} onChange=${(autostart) => choose({ autostart })} label="Bus ready to go" />
+        <${CabinTemperatureOption} />
         <${Toggle} checked=${c.on_foot} onChange=${(on_foot) => choose({ on_foot })} label="Start on foot" />
       </div>
       ${!joined && s.situations?.length > 0 && html`<div class="m-group">

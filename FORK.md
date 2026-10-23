@@ -7,6 +7,7 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 
 ### Launcher: dag og vejr
 - **Vejret passer til årstiden** (fra openOMSI PR #3036 af Isaac S.): Skifter man årstid eller dato i "Day & weather", og passer det valgte vejr ikke længere (fx sne om sommeren), skiftes der til kortets eget vejr ("Map default"), og en besked siger det. Før blev det gamle vejr stående uden at stå i listen. Det valgte vejr står altid i listen, også når det ikke passer. Under listen kan "Show the ... that do not fit the season" slås til, så de frasorterede også vises, hvis man vil have sne om sommeren med vilje. Holder man musen over et vejr, vises dets egen beskrivelse.
+- **Behagelig temperatur i bussen ved start** (openOMSI PR #3184 af wmalt): Under "Day & weather" → "At the start" er der et nyt valg, "Start with a comfortable cabin temperature". Slået til er kabinen 22 °C (72 °F med amerikanske enheder), når en ny tur starter, i stedet for udetemperaturen. Det sker én gang ved start: motoren startes ikke, kølevandet varmes ikke op, og varmeknapperne røres ikke, så bussens egen varme og ventilation tager over bagefter. Det er uafhængigt af "Put the bus into service on start", slået fra som standard og huskes. En gemt tur, der genoptages, beholder sin gemte temperatur, og starter man til fods, sker det, når den første bus bliver sat ud.
 - **Udgivelsen bygges kun til Windows**: Mac-byggene er taget ud af GitHub-workflowet (`omsihub-release.yml`). De fejlede og brugte tid på hver udgivelse.
 
 ### Multiplayer og dedicated server

@@ -8,6 +8,18 @@ import { choose, realTime, realDate, weatherName, weatherOfItsOwn } from '../dat
 import { WeatherEditor, isCustomWeather, editableWeather } from './weather-editor.js';
 import { SEASONS, PHASES, setSeason, localNow, TimeInput, DateInput } from './drive.js';
 
+/** The cabin warm (or cool) at 22 °C as the drive starts (openOMSI PR #3184): the switch and
+ * what it does. */
+export function CabinTemperatureOption() {
+  const s = useStore();
+  const c = s.choice;
+  const temperature = s.settings?.units === 'us' ? '72°F' : '22°C';
+  return html`<div class="stack" style="gap:4px">
+    <${Toggle} checked=${c.comfortable_cabin_on_start} onChange=${(comfortable_cabin_on_start) => choose({ comfortable_cabin_on_start })} label="Start with a comfortable cabin temperature" />
+    <div class="muted small">${t('Sets the cabin to {temperature} when starting a drive.', { temperature })}</div>
+  </div>`;
+}
+
 function WeatherTile({ on, icon, name, sub, onClick }) {
   return html`<button type="button" class=${'weather-tile' + (on ? ' on' : '')} aria-pressed=${on} onClick=${onClick} title=${sub || name}>
     <${Icon} name=${icon} size=${22} />
@@ -97,5 +109,6 @@ export function DayStep() {
       ].map(([key, label, help]) => html`<div title=${t(help)}><${Toggle} checked=${c[key]} onChange=${(v) => choose({ [key]: v })} label=${label} /></div>`)}
     </div>
     ${!joined && html`<${Weather} />`}
+    <${CabinTemperatureOption} />
   </div>`;
 }

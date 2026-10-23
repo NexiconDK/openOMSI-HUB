@@ -186,6 +186,8 @@ export function DayStep() {
         <div class="hub-section">
           <${Caps} title="At the start" />
           <${Switch} label="Put the bus into service on start (Shift+U)" checked=${c.autostart} onChange=${(autostart) => choose({ autostart })} />
+          <${Switch} label="Start with a comfortable cabin temperature" checked=${c.comfortable_cabin_on_start} onChange=${(comfortable_cabin_on_start) => choose({ comfortable_cabin_on_start })} />
+          ${c.comfortable_cabin_on_start && html`<p class="hub-fnote" style="margin:2px 4px 8px">${tr('Sets the cabin to {temperature} when starting a drive.').replace('{temperature}', S.settings?.units === 'us' ? '72°F' : '22°C')}</p>`}
           <${Switch} label="Start on foot (place a bus from the game menu)" checked=${c.on_foot} onChange=${(on_foot) => choose({ on_foot })} />
         </div>
         <div class="hub-section">

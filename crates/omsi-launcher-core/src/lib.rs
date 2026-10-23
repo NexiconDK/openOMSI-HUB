@@ -3744,6 +3744,7 @@ pub struct Duty {
     pub passengers: Option<bool>,
     pub schedule: Option<bool>,
     pub autostart: Option<bool>,
+    pub comfortable_cabin_on_start: Option<bool>,
     /// Start as a pedestrian beside the bus (which is then left out): a bus is placed or
     /// taken over from the game menu later.
     #[serde(default)]
@@ -4084,6 +4085,9 @@ fn duty_args_for_root(d: &Duty, root: &Path) -> Result<Vec<String>> {
     }
     if d.autostart.unwrap_or(false) {
         a.push("--autostart".into());
+    }
+    if d.comfortable_cabin_on_start.unwrap_or(false) {
+        a.push("--comfortable-cabin-on-start".into());
     }
     if d.on_foot.unwrap_or(false) {
         a.push("--on-foot".into());
@@ -4462,6 +4466,17 @@ mod tests {
         assert_eq!((a[k + 1].as_str(), a[k + 2].as_str()), ("5", "--whole-tour"));
         let alone = duty_args_for_root(&Duty { whole_tour: false, ..d }, Path::new("test-omsi")).unwrap();
         assert!(!alone.iter().any(|x| x == "--whole-tour"));
+    }
+
+    /// The comfortable cabin at the start (openOMSI PR #3184) is a switch of its own: off,
+    /// nothing; on, its flag - and not the bus ready to go with it.
+    #[test]
+    fn comfortable_cabin_is_an_independent_opt_in_launch_flag() {
+        let d = Duty { map: "maps/x/global.cfg".into(), bus: "Vehicles/x.bus".into(), time: "09:00".into(), ..Default::default() };
+        assert!(!duty_args_for_root(&d, Path::new("test-omsi")).unwrap().iter().any(|a| a == "--comfortable-cabin-on-start"));
+        let enabled = duty_args_for_root(&Duty { comfortable_cabin_on_start: Some(true), ..d }, Path::new("test-omsi")).unwrap();
+        assert!(enabled.iter().any(|a| a == "--comfortable-cabin-on-start"));
+        assert!(!enabled.iter().any(|a| a == "--autostart"));
     }
 
     /// A composed duty goes to the game part by part, after its first part's line and tour.
