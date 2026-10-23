@@ -694,6 +694,7 @@ impl Renderer {
         self.encode_probe(&mut enc.prepass, scene, probe_redraw, &mut timers);
         let main_parts = self.encode_main_pass(&mut enc.picture, scene, &f, &plan, &main_bundles, &mut timers);
         let puddles_on = self.encode_scene_reflections(&mut enc.picture, scene, &f, &plan, &cu, &mut timers);
+        self.encode_ordered_depth(&mut enc.picture, scene, &f, &plan.ordered_depth_batches);
         self.encode_fog_lamps(&mut enc.picture, scene, &f, vp_mat, puddles_on, &mut timers);
         self.encode_rain_film(&mut enc.picture, scene, &f, &plan.rain_batches, puddles_on);
         self.encode_classic_present(&mut enc.picture, scene, &f, puddles_on);

@@ -21,6 +21,11 @@ pub(crate) struct DrawPlan {
     /// the blended (and, drawn in model order, all) slots of the vehicle the camera is in
     pub cab_batches: Vec<Batch>,
     pub prepass_batches: Vec<Batch>,
+    /// The depth of the models drawn in model order (see `Instance::ordered`), which the
+    /// prepass leaves out: written into its depth after the main pass, for what reads that
+    /// depth then - the lamps' light in the fog stopped at a bus's dashboard instead of being
+    /// summed through it, out to the road under the headlights.
+    pub ordered_depth_batches: Vec<Batch>,
     pub msaa_safe_batches: Vec<Batch>,
     pub presurface_batch_end: usize,
     /// the rain films on the panes, drawn over the finished picture (see `glass_on`)
@@ -62,21 +67,22 @@ impl DrawPlan {
 }
 
 // the depth prepass: opaque and alpha-tested, single-sampled
-fn prepass_items(scene: &Scene, visible: &[(usize, f32, bool)], deferred: bool) -> (Vec<u32>, Vec<Batch>, Vec<Batch>) {
+fn prepass_items(scene: &Scene, visible: &[(usize, f32, bool)], deferred: bool) -> (Vec<u32>, Vec<Batch>, Vec<Batch>, Vec<Batch>) {
     let mut items: Vec<DrawItem> = Vec::new();
     let mut list: Vec<u32> = Vec::new();
     let mut batches: Vec<Batch> = Vec::new();
     let mut safe_items = Vec::new();
     let mut safe_batches = Vec::new();
+    let mut ordered_items = Vec::new();
+    let mut ordered_batches = Vec::new();
     for &(i, _, _) in visible {
         let inst = &scene.instances[i];
         // A model drawn in its own order has no depth before it is drawn: an opaque part
         // that a depth-writing pane before it hides (a scroll box's line under its invisible
         // cover) put its depth here, kept the wall behind it from being drawn, and then
-        // failed against the pane itself - a hole of the clear colour (#2059).
-        if inst.ordered {
-            continue;
-        }
+        // failed against the pane itself - a hole of the clear colour (#2059). Its depth
+        // goes in after the main pass instead (`DrawPlan::ordered_depth_batches`).
+        let ordered = inst.ordered;
         let cull = culls_back_faces(scene, inst);
         for (ri, (_, _, slot)) in scene.meshes[inst.mesh].ranges.iter().enumerate() {
             let mat_id = inst.materials.get(*slot as usize).copied().unwrap_or(0);
@@ -100,6 +106,10 @@ fn prepass_items(scene: &Scene, visible: &[(usize, f32, bool)], deferred: bool) 
                     look,
                     entry: inst.base + *slot,
                 };
+                if ordered {
+                    ordered_items.push(item);
+                    continue;
+                }
                 // Ground must finish composing before its coverage can occlude later layers.
                 if deferred && effective_render_phase(inst) as u8 >= RenderPhase::BeforeNormal as u8 {
                     safe_items.push(item);
@@ -110,7 +120,8 @@ fn prepass_items(scene: &Scene, visible: &[(usize, f32, bool)], deferred: bool) 
     }
     batch_items(scene, &mut items, true, &mut list, &mut batches);
     batch_items(scene, &mut safe_items, true, &mut list, &mut safe_batches);
-    (list, batches, safe_batches)
+    batch_items(scene, &mut ordered_items, true, &mut list, &mut ordered_batches);
+    (list, batches, safe_batches, ordered_batches)
 }
 
 /// The surfaces' covered ground pixels committed to depth, before the normal phase.
@@ -263,6 +274,7 @@ impl Renderer {
         let mut items: Vec<DrawItem> = Vec::new();
         let has_presurface = visible.iter().any(|&(i, _, _)| scene.instances[i].presurface);
         let mut prepass_batches: Vec<Batch> = Vec::new();
+        let mut ordered_depth_batches: Vec<Batch> = Vec::new();
         let mut msaa_safe_batches = Vec::new();
         let deferred = has_presurface && f.enhanced && self.options.msaa > 1;
         let prepass_job = || { prepass_items(scene, visible, deferred) };
@@ -343,14 +355,15 @@ impl Renderer {
             batch_items(scene, &mut cab_items, false, list, &mut cab_batches);
             take_prepass();
         });
-        if let Some((pre_list, mut pre_batches, mut safe_batches)) = prepass_found.into_inner().unwrap_or_else(|e| e.into_inner()) {
+        if let Some((pre_list, mut pre_batches, mut safe_batches, mut ordered_batches)) = prepass_found.into_inner().unwrap_or_else(|e| e.into_inner()) {
             let offset = list.len() as u32;
-            for b in pre_batches.iter_mut().chain(&mut safe_batches) {
+            for b in pre_batches.iter_mut().chain(&mut safe_batches).chain(&mut ordered_batches) {
                 b.instances = b.instances.start + offset..b.instances.end + offset;
             }
             list.extend(pre_list);
             prepass_batches = pre_batches;
             msaa_safe_batches = safe_batches;
+            ordered_depth_batches = ordered_batches;
         }
         // OMSI_SKIP_PIPE=3,1: leave pipeline kinds out of the main pass (0 opaque, 1 alpha
         // tested, 2 blended, 3 blended without depth writes, 4 surface depth, 5 terrain
@@ -370,7 +383,7 @@ impl Renderer {
         if f.env.debug_draws {
             log::info!("  main pass: {} opaque/alpha-tested and {} blended draws in {} batches; prepass {} batches; draw list {} entries", main_draws[0], main_draws[1], main_batches.len(), prepass_batches.len(), list.len());
         }
-        DrawPlan { list: draw_list, main_batches, cab_batches, prepass_batches, msaa_safe_batches, presurface_batch_end, rain_batches: Vec::new(), main_draws, has_presurface }
+        DrawPlan { list: draw_list, main_batches, cab_batches, prepass_batches, ordered_depth_batches, msaa_safe_batches, presurface_batch_end, rain_batches: Vec::new(), main_draws, has_presurface }
     }
 
     /// The order a phase's blended draws are drawn in: (rank, distance, instance), far

@@ -116,3 +116,41 @@ fn oversized_colour_texture_keeps_its_silhouette_when_fitted() {
             && p[3] == 64
     }));
 }
+
+/// A model drawn in model order is in the prepass's depth after the main pass, at MSAA 1 and
+/// 4: what reads that depth then - the lamps' light in the fog, the rain on the panes - stops
+/// at it. Left out (as the prepass itself must leave it, #2059), the light in the fog was summed
+/// through a bus's dashboard out to the road under its headlights, two beams over the cab.
+#[test]
+#[ignore = "requires a graphics adapter; run with --ignored on a GPU host"]
+fn a_model_drawn_in_model_order_is_in_the_depth_after_the_main_pass() {
+    let adapter = wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle());
+    for msaa in [1, 4] {
+        let mut renderer = pollster::block_on(Renderer::new_with(
+            &adapter,
+            None,
+            Some(wgpu::TextureFormat::Rgba8UnormSrgb),
+            RenderOptions { msaa, ssao: false, shadow_size: 1024, fxaa: false, render_scale: 1.0, ..Default::default() },
+        ))
+        .expect("test renderer");
+        let mut scene = renderer.new_scene();
+        let grey = renderer.add_material(&mut scene, None, AlphaMode::Opaque, [0.5, 0.5, 0.5, 1.0], true);
+        let quad = |y: f32, half: f32| [Vec3::new(-half, y, -half), Vec3::new(half, y, -half), Vec3::new(half, y, half), Vec3::new(-half, y, half)];
+        let mesh = |r: &Renderer, s: &mut Scene, y: f32, half: f32| {
+            r.add_mesh(s, &MeshData { positions: quad(y, half).to_vec(), normals: vec![-Vec3::Y; 4], uvs: vec![glam::Vec2::ZERO; 4], ranges: vec![(0, 6, 0)], indices: vec![0, 1, 2, 0, 2, 3], one_sided: false })
+        };
+        // a wall 20 m off, and a dashboard 3 m ahead drawn in model order
+        let wall = mesh(&renderer, &mut scene, 20.0, 40.0);
+        renderer.add_instance(&mut scene, wall, DVec3::ZERO, Mat4::IDENTITY, vec![grey]);
+        let dash = mesh(&renderer, &mut scene, 3.0, 1.0);
+        let i = renderer.add_instance(&mut scene, dash, DVec3::ZERO, Mat4::IDENTITY, vec![grey]);
+        renderer.set_ordered(&mut scene, i, true);
+        let camera = Camera { position: DVec3::ZERO, yaw: 0.0, pitch: 0.0, roll: 0.0, fov_deg: 90.0, near: 0.1, far: 100.0 };
+        let lighting = Lighting { enhanced: true, shadows: false, fog_density: 0.0, ..Default::default() };
+        let (_, depth) = renderer.render_to_image_with_depth(&mut scene, 64, 64, &camera, &lighting).unwrap();
+        let depth = depth.expect("the prepass's depth");
+        let (middle, edge) = (depth[32 * 64 + 32], depth[32 * 64 + 2]);
+        assert!((middle - 3.0).abs() < 0.2, "the ordered model in the depth (MSAA {msaa}): {middle} m");
+        assert!((edge - 20.0).abs() < 2.5, "the wall beside it (MSAA {msaa}): {edge} m");
+    }
+}

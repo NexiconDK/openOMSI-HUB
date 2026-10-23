@@ -57,6 +57,9 @@ pub(crate) struct FrameEnv {
     pub no_snowfall: bool,
     pub no_coronas: bool,
     pub no_glare: bool,
+    /// The models drawn in model order kept out of the prepass's depth after the main pass,
+    /// as before (`OMSI_NO_ORDERED_DEPTH`, A/B).
+    pub no_ordered_depth: bool,
     pub debug_fog_lamps: bool,
     pub no_rt_grade: bool,
 }
@@ -94,6 +97,7 @@ impl FrameEnv {
             no_snowfall: omsi_cfg::flags::OMSI_NO_SNOWFALL.is_set(),
             no_coronas: omsi_cfg::flags::OMSI_NO_CORONAS.is_set(),
             no_glare: omsi_cfg::flags::OMSI_NO_GLARE.is_set(),
+            no_ordered_depth: omsi_cfg::flags::OMSI_NO_ORDERED_DEPTH.is_set(),
             debug_fog_lamps: omsi_cfg::flags::OMSI_DEBUG_FOG_LAMPS.is_set(),
             no_rt_grade: omsi_cfg::flags::OMSI_NO_RT_GRADE.is_set(),
         }

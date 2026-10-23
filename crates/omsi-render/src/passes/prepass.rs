@@ -75,6 +75,33 @@ impl Renderer {
         }
     }
 
+    /// The depth of the models drawn in model order into the prepass's depth, after the main
+    /// pass (`DrawPlan::ordered_depth_batches`): what reads that depth from then on - the
+    /// lamps' light in the fog and the sun's shafts, the rain on the panes - sees the bus the
+    /// camera is in and the other buses drawn so. The prepass itself leaves them out (#2059);
+    /// the light in the fog was summed through the dashboard out to the road under the
+    /// headlights, two beams over the cab.
+    pub(crate) fn encode_ordered_depth(&self, encoder: &mut wgpu::CommandEncoder, scene: &Scene, f: &FrameCtx, batches: &[Batch]) {
+        if !f.prepass_on || batches.is_empty() || f.env.no_ordered_depth {
+            return;
+        }
+        let (Some(ao), Some(cam_bg)) = (self.targets.ao.as_ref(), scene.camera_bind_group.as_ref()) else { return };
+        let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            label: Some("ordered models' depth"),
+            color_attachments: &[],
+            depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                view: &ao.depth_view,
+                depth_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Load, store: wgpu::StoreOp::Store }),
+                stencil_ops: None,
+            }),
+            timestamp_writes: None,
+            occlusion_query_set: None,
+            multiview_mask: None,
+        });
+        pass.set_bind_group(0, cam_bg, &[]);
+        encode_batches(&mut pass, scene, batches, |pipe| &self.prepass_pipelines[pipe as usize]);
+    }
+
     // --- the enhanced sky cube: a slice of a face a frame (all six faces the first time and
     // for a new sky), drawn in the window's frame only (see `SkySched`)
     pub(crate) fn encode_sky_cube(&mut self, prepass_encoder: &mut wgpu::CommandEncoder, scene: &Scene, f: &FrameCtx, probe_redraw: bool, timers: &mut PassTimers) {

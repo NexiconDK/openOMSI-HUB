@@ -314,6 +314,7 @@ effect. On Android, `openOMSI/env.txt` holds `NAME=value` lines that are set bef
 | `OMSI_NO_MATERIAL_SPLINE_BATCHING` | bool | off | use | scene | No batching of splines by material. |
 | `OMSI_NO_MODEL_ORDER` | bool | off | use | scene | Draw the opaque parts of ordered models first again (A/B). |
 | `OMSI_NO_MSAA_PREPASS` | bool | off | frame | render | No depth prepass with multisampling. |
+| `OMSI_NO_ORDERED_DEPTH` | bool | off | frame | render | Leave the models drawn in model order out of the prepass depth after the main pass, as before (A/B: the lamps' light in the fog showed over a bus's cab). |
 | `OMSI_NO_PBR` | bool | off | use | scene | No PBR materials. |
 | `OMSI_NO_PIPELINE_CACHE` | bool | off | use | render | Compile every pipeline at each start (no ~/.openomsi/cache/pipelines-*.bin). |
 | `OMSI_NO_PLUGINS` | bool | off | use | app, guard | No plugins loaded. |

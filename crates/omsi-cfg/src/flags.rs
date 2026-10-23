@@ -387,6 +387,7 @@ flags! {
     OMSI_NO_MATERIAL_SPLINE_BATCHING: Bool, Switch, Use, "off", "No batching of splines by material.";
     OMSI_NO_MODEL_ORDER: Bool, Switch, Use, "off", "Draw the opaque parts of ordered models first again (A/B).";
     OMSI_NO_MSAA_PREPASS: Bool, Switch, Frame, "off", "No depth prepass with multisampling.";
+    OMSI_NO_ORDERED_DEPTH: Bool, Switch, Frame, "off", "Leave the models drawn in model order out of the prepass depth after the main pass, as before (A/B: the lamps' light in the fog showed over a bus's cab).";
     OMSI_NO_PBR: Bool, Switch, Use, "off", "No PBR materials.";
     OMSI_NO_PIPELINE_CACHE: Bool, Switch, Use, "off", "Compile every pipeline at each start (no ~/.openomsi/cache/pipelines-*.bin).";
     OMSI_NO_PLUGINS: Bool, Switch, Use, "off", "No plugins loaded.";
