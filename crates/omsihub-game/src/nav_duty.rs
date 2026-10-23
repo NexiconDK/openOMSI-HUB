@@ -777,12 +777,13 @@ pub fn sheet_focus(rows: &[SheetRow]) -> f32 {
     trip.unwrap_or(0.0)
 }
 
-/// (NexiconDK) The sheet's title: the tour from the timetable the trip under way belongs to
-/// ("Tour 137H10"), as the duty is known at the depot; "Duty" for a duty without one.
+/// (NexiconDK) The sheet's title: "Duty" with the tour from the timetable the trip under way
+/// belongs to ("Duty 137H10"), as the duty is known at the depot; "Duty" alone without one.
 pub fn sheet_title(d: &DutyState) -> String {
+    let duty = omsi_ui::tr("Duty").into_owned();
     match d.leg(d.trip).1.trim() {
-        "" => omsi_ui::tr("Duty").into_owned(),
-        tour => tr_with("Tour %{tour}", &[("tour", tour.to_string())]),
+        "" => duty,
+        tour => format!("{duty} {tour}"),
     }
 }
 
@@ -1012,8 +1013,8 @@ pub mod tests {
         assert_eq!(rows[1], Row::Change { line: "25".into(), tour: "3".into() });
         // the sheet is titled by the tour of the trip under way: the first part's, then the
         // second's; a duty without a tour by "Duty"
-        assert_eq!(sheet_title(&d), "Tour 1");
-        assert_eq!(sheet_title(&DutyState { trip: 2, ..d }), "Tour 3");
+        assert_eq!(sheet_title(&d), "Duty 1");
+        assert_eq!(sheet_title(&DutyState { trip: 2, ..d }), "Duty 3");
         assert_eq!(sheet_title(&DutyState { tours: &[], tour: " ", ..d }), "Duty");
         assert_eq!(names(&rows), [("Hauptbahnhof".to_string(), StopState::Now), ("Eichstedt".into(), StopState::Ahead)]);
         assert!(rows.iter().all(|r| !matches!(r, Row::Next { .. } | Row::More { .. })));
@@ -1153,7 +1154,7 @@ pub mod tests {
     /// Every text of the panel is in the tables for the languages that matter most.
     #[test]
     fn the_panel_is_translated() {
-        let keys = ["No duty running", "Empty run", "trip %{k} of %{n}", "arrives %{time}", "leaves %{time}", "leaves in %{m} min", "break, %{m} min left", "%{m} min over", "Duty finished", "and %{n} more to %{terminus}", "terminus", "Next %{time}", "%{m} min break", "Continue on line %{line}, tour %{tour}", "Tour %{tour}", "In the game", "Delay", "line %{line}", "1 stop", "%{n} stops", "Duty", "Trip", "on time", "%{n} trip", "%{n} trips", "planned %{time}", "expected %{time}", "sched. %{time}", "exp. %{time}"];
+        let keys = ["No duty running", "Empty run", "trip %{k} of %{n}", "arrives %{time}", "leaves %{time}", "leaves in %{m} min", "break, %{m} min left", "%{m} min over", "Duty finished", "and %{n} more to %{terminus}", "terminus", "Next %{time}", "%{m} min break", "Continue on line %{line}, tour %{tour}", "In the game", "Delay", "line %{line}", "1 stop", "%{n} stops", "Duty", "Trip", "on time", "%{n} trip", "%{n} trips", "planned %{time}", "expected %{time}", "sched. %{time}", "exp. %{time}"];
         for language in ["nl", "de", "fr", "ru", "uk", "pl"] {
             for key in keys {
                 let t = crate::_rust_i18n_try_translate(language, key);
