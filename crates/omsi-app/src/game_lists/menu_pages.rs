@@ -29,6 +29,8 @@ pub(super) fn options_pages(app: &App) -> Vec<Page> {
         switch_row(app, "exact_fare", "Passengers pay the exact fare", "No change is given at the cash desk"),
         pick("boarding", "Boarding", "How passengers get their tickets"),
         pick("standing_chance", "Standing passengers", "The chance a passenger stands although a seat is free"),
+        pick("pax_sit", "Passengers' wish to sit", "How passengers choose their place: window seats, the seat across the aisle from the driver for the elderly, groups who sit together, and a seat that comes free for somebody standing. Off: a free place at random, as before"),
+        pick("pax_runners", "Passengers running for the bus", "Now and then, with a player's bus standing at a stop near you, somebody late runs for it"),
         pick("passenger_animation", "Passenger animations", "Original OMSI: the people move with their own animation files, as in OMSI 2. Natural: poses the game works out itself - the feet on the ground, the hands on the rails"),
         pick("maintenance", "Maintenance", later),
         pick("ai_unsched_factor", "Random traffic", later),

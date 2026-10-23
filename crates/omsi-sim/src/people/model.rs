@@ -272,6 +272,14 @@ pub struct PeopleSim {
     pub ai_visits: HashMap<u64, (i64, f64)>,
     /// When each bus last had a door open (the passengers' clock).
     pub last_door_open: HashMap<BusId, f64>,
+    /// The players' buses that have had their roll for somebody running up late at the stop
+    /// they stand at (`runners_tick`): (stop, bus), forgotten once the bus has left.
+    pub runner_rolls: HashSet<(i64, BusId)>,
+    /// Somebody may be late now (`runners_tick` looks four times a second, a new runner sets
+    /// it): while not, `runner_step` does nothing for anybody.
+    pub runners_live: bool,
+    /// (the fork) When `runners_tick` last looked (`RUNNER_EVERY`).
+    pub runner_at: f64,
     /// Timetable buses to keep at their stop for a few seconds more (for the traffic): the
     /// bus, the stop it must be serving for it (none: any), the seconds.
     pub holds: Vec<(u64, Option<i64>, f32)>,
@@ -382,6 +390,23 @@ pub struct PeopleSim {
     pub stamped: Vec<BusId>,
     /// Pedestrians to keep strolling near the player (scaled by `density`).
     pub pedestrians: usize,
+    /// (the fork) The `pax_sit` setting, the passengers' wish to sit: 0 a free place at
+    /// random (`reserve_place`); else they choose it as people do (`seating`), the wish
+    /// 0.5 .. 2.
+    pub sit_wish: f32,
+    /// (the fork) The `pax_runners` setting: the chance somebody late runs for a bus at a stop
+    /// near the player (`runners`), 0..1; `OMSI_RUNNER_CHANCE` overrides it.
+    pub runner_chance: f32,
+    /// (the fork) Seconds to the next look for a seat to change to (`reseat_player_bus`).
+    pub reseat_t: f32,
+    /// (the fork) When (`time`) somebody last stood up for an elderly passenger in the
+    /// player's bus: now and then, not every time.
+    pub gave_seat_at: f64,
+    /// (the fork) The places kept for the members of a group still to get in: (group,
+    /// bus) -> (places, since when).
+    pub group_places: HashMap<(u32, BusId), (Vec<usize>, f64)>,
+    /// (the fork) The next group's number.
+    pub next_group: u32,
     /// Omsi.exe's people (`[AIMaxCountRandom]`'s second line, the `ai_max_humans` setting):
     /// it makes that many at the start (0x709274) and draws everybody waiting at a stop,
     /// walking the pavements or riding from them - never more; at most half of them walk

@@ -63,6 +63,9 @@ impl PeopleSim {
                 self.scratch.refile_blocker(i, was, now);
             }
         }
+        // (the fork) standing riders of the player's bus take the seats that come free
+        self.reseat_player_bus(dt, buses, bus_ix);
+        self.group_places_tick();
         self.scratch.drop_blockers();
         self.scratch.gone = gone;
         // (where every passenger stands: in a bus's frame, or the world's - and the people
@@ -200,6 +203,7 @@ impl PeopleSim {
                 None => p.discomfort = 0.0,
             }
         }
+        self.runner_step(i, dt, world, buses, bus_ix);
         self.pax_move(i, dt, dt_ms, world, buses, bus_ix);
         self.pax_task(i, dt, world, buses, bus_ix, at_stops, player_bus, taken_ticket, remove);
         // (got off: a pedestrian now)

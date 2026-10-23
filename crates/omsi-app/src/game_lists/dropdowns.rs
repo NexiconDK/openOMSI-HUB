@@ -320,6 +320,8 @@ pub(super) fn select_options(key: &str) -> Vec<(&'static str, &'static str)> {
         "navigator_corner" => vec![("top-left", "Top left"), ("top-right", "Top right"), ("bottom-left", "Bottom left"), ("bottom-right", "Bottom right")],
         "boarding" => vec![("auto", "Pay and take the ticket"), ("pay", "The driver sells the ticket"), ("walk", "Just walk in")],
         "standing_chance" => vec![("0", "Never"), ("5", "5%"), ("10", "10%"), ("25", "25%"), ("50", "50%"), ("100", "Always")],
+        "pax_sit" => vec![("0", "Off (a free place at random)"), ("50", "Little"), ("100", "Normal"), ("150", "Much"), ("200", "Very much")],
+        "pax_runners" => vec![("0", "Off"), ("5", "Now and then"), ("15", "Often"), ("30", "Very often")],
         "units" => vec![("metric", "Metric (km/h, km, °C)"), ("uk", "British (mph, miles, yards, °C)"), ("us", "American (mph, miles, feet, °F)")],
         "pax_voices" => vec![("all", "Greetings and tickets"), ("tickets", "Only the ticket asked for"), ("off", "Silent")],
         "perf_overlay" => vec![("off", "Off"), ("compact", "Compact"), ("detailed", "Detailed")],
@@ -406,6 +408,8 @@ pub(super) fn sync_live(app: &mut App) {
         h.exact_fare = s.exact_fare;
         h.boarding = s.boarding.clone();
         h.stand_chance = s.standing_chance;
+        h.sit_wish = s.pax_sit;
+        h.runner_chance = s.pax_runners;
         h.voices = match s.pax_voices.as_str() {
             "off" => 2,
             "tickets" => 1,

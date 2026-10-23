@@ -190,6 +190,18 @@ pub struct Pax {
     pub bad_at: [f32; 3],
     /// Distance moved this frame (+0x644, `LastMovedDist`).
     pub moved: f32,
+    /// (the fork) The group they travel with (`seating`): they wait, ride and get off
+    /// together; None alone.
+    pub group: Option<u32>,
+    /// (the fork) The group's buyer: the tickets still to buy for the others (ticket ids as
+    /// `ticket_id`), one after the other at the desk.
+    pub group_tickets: Vec<u8>,
+    /// (the fork) They chose to stand although a seat was free (`wants_seat`): they do not
+    /// change to one that comes free (`reseat_player_bus`).
+    pub stands_by_choice: bool,
+    /// Late for a bus pulling in to the stop: walking up to it, then hurrying for it (see
+    /// `runners`).
+    pub late: Option<Late>,
 }
 
 impl Pax {
@@ -257,6 +269,10 @@ impl Pax {
             complaint: 0,
             bad_at: [0.0; 3],
             moved: 0.0,
+            group: None,
+            group_tickets: Vec::new(),
+            stands_by_choice: false,
+            late: None,
         }
     }
 
@@ -672,14 +688,17 @@ pub fn build_routes(n: usize, links: &[(i32, i32, bool)]) -> Vec<Vec<RouteLink>>
 
 /// Whether passenger `x` keeps timetable bus `bus` at its stop (Omsi.exe 0x7d9e8b): on the
 /// way out of it (`Some(None)`, at whatever stop), or walking up to its doors from stop `s`
-/// (`Some(Some(s))`: only while the bus serves that stop). Anybody else, not.
+/// (`Some(Some(s))`: only while the bus serves that stop). Anybody else, not - but for
+/// somebody hurrying up to it from along the street (`Late::holds`), for a few seconds.
 pub fn holds_bus(x: &Pax, bus: BusId) -> Option<Option<i64>> {
     if x.bus != Some(bus) {
         return None;
     }
     match x.task {
         Task::InBusToExit if x.inside == Some(bus) => Some(None),
-        Task::WalkingToBus => Some(x.stop),
+        // (somebody late who has hurried for longer than a bus waits: not any more)
+        Task::WalkingToBus => x.late.is_none_or(|l| l.holds()).then_some(x.stop),
+        Task::ToBus | Task::WalkingToBusstop if x.inside.is_none() && x.late.is_some_and(|l| l.holds()) => Some(x.stop),
         _ => None,
     }
 }

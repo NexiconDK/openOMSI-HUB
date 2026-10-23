@@ -324,6 +324,8 @@ const gameplay = {
       rows: [
         { type: 'select', key: 'boarding', label: 'Boarding', options: [['auto', 'Pay and take the ticket'], ['pay', 'The driver sells the ticket'], ['walk', 'Just walk in']] },
         { type: 'select', key: 'standing_chance', label: 'Standing passengers', options: [['0', 'Never'], ['5', '5%'], ['10', '10%'], ['25', '25%'], ['50', '50%'], ['100', 'Always']] },
+        { type: 'select', key: 'pax_sit', label: "Passengers' wish to sit", options: [['0', 'Off (a free place at random)'], ['50', 'Little'], ['100', 'Normal'], ['150', 'Much'], ['200', 'Very much']], help: 'How passengers choose their place: window seats, the seat across the aisle from the driver for the elderly, groups who sit together, and a seat that comes free for somebody standing. Off: a free place at random, as before' },
+        { type: 'select', key: 'pax_runners', label: 'Passengers running for the bus', options: [['0', 'Off'], ['5', 'Now and then'], ['15', 'Often'], ['30', 'Very often']], help: "Now and then, with a player's bus standing at a stop near you, somebody late runs for it" },
         { type: 'select', key: 'passenger_animation', label: 'Passenger animations', options: [['enhanced', 'Natural (procedural)'], ['original', 'Original OMSI']] },
         // (drawn on this computer only; the avatars are downloaded once, about 310 MB)
         { type: 'select', key: 'character_models', label: 'Character models', options: [['original', 'Original'], ['improved', 'High quality (improved)']], help: 'High quality draws the people with the Microsoft Rocketbox avatars and their living faces, on this computer only: servers and other players keep their own. They are downloaded once (about 310 MB).' },

@@ -259,10 +259,11 @@ impl PeopleSim {
             }
             let mut count = count;
             while count < want {
-                if self.spawn_waiting(world, id).is_none() {
+                let came = self.spawn_waiting_some(world, id, want - count);
+                if came == 0 {
                     break;
                 }
-                count += 1;
+                count += came;
                 if !changed {
                     break;
                 }
@@ -315,8 +316,16 @@ impl PeopleSim {
             return None;
         }
         let k = self.take_spot(id)?;
-        let sp = self.stops[&id].spots[k].clone();
         let (dest, line) = self.draw_dest(id);
+        self.spawn_waiting_at(world, id, k, dest, line, None, None)
+    }
+
+    /// Somebody at waiting place `k` of stop `id` (taken for them already), going to `dest`
+    /// (`line`: the stop's line record of it); `kind`: their figure (None: any), `group`:
+    /// the group they travel with.
+    #[allow(clippy::too_many_arguments)]
+    fn spawn_waiting_at(&mut self, world: &dyn World, id: i64, k: usize, dest: Option<String>, line: Option<usize>, kind: Option<usize>, group: Option<u32>) -> Option<usize> {
+        let sp = self.stops[&id].spots[k].clone();
         let walk = 1.1 + (self.rand_f() as f32 * 2.0 - 1.0) * 0.2;
         let mut pax = Pax::new(walk, self.rand_f());
         pax.stop = Some(id);
@@ -326,7 +335,9 @@ impl PeopleSim {
         pax.dest = dest;
         pax.line = line;
         pax.st = 0;
-        let Some(i) = self.spawn(world, sp.pos, sp.face, State::Pax(Box::new(pax))) else {
+        pax.group = group;
+        let made = if self.pool_room() { self.spawn_as(world, sp.pos, sp.face, State::Pax(Box::new(pax)), kind) } else { None };
+        let Some(i) = made else {
             self.free_spot(id, k);
             return None;
         };
@@ -335,9 +346,82 @@ impl PeopleSim {
         self.set_task(i, Task::WalkingToBusstop, &dummy_b, &dummy_ix, world);
         if debug_pax() {
             let d = self.pax(i).and_then(|p| p.dest.clone());
-            log::info!("t={:.1} pax {} waits at stop {id} place {k}, for {:?}", self.time, self.people[i].label(), d);
+            log::info!("t={:.1} pax {} waits at stop {id} place {k}, for {:?}{}", self.time, self.people[i].label(), d, group.map(|g| format!(" (group {g})")).unwrap_or_default());
         }
         Some(i)
+    }
+
+    /// (the fork) The people coming to wait at stop `id`, `room` more wanted: one - or, as
+    /// people choose their places (`seating`), now and then (`GROUP_SHARE`) a group of two
+    /// to four with one destination and one ride, at waiting places next to one another:
+    /// grown-ups, or (where the map has children's figures) a grown-up with one or two
+    /// children. How many came.
+    pub fn spawn_waiting_some(&mut self, world: &dyn World, id: i64, room: usize) -> usize {
+        use super::seating::{CHILD, GROUP_SHARE};
+        if !self.seating() || room < 2 || self.rand_f() >= GROUP_SHARE {
+            return self.spawn_waiting(world, id).is_some() as usize;
+        }
+        self.use_map_humans(world);
+        let age = |t: &Arc<HumanType>| t.def.age.map(|a| a as f32).unwrap_or(40.0);
+        let kids: Vec<usize> = (0..self.types.len()).filter(|&k| age(&self.types[k]) < CHILD).collect();
+        let adults: Vec<usize> = (0..self.types.len()).filter(|&k| age(&self.types[k]) >= CHILD).collect();
+        if adults.is_empty() {
+            return self.spawn_waiting(world, id).is_some() as usize;
+        }
+        let r = self.rand_f();
+        let size = (if r < 0.6 { 2 } else if r < 0.85 { 3 } else { 4 }).min(room);
+        let with_kids = !kids.is_empty() && self.rand_f() < 0.35;
+        let mut kinds: Vec<usize> = Vec::new();
+        for n in 0..size {
+            let from = if with_kids && n > 0 { &kids } else { &adults };
+            if with_kids && n > 2 {
+                break;
+            }
+            kinds.push(from[(self.rand() as usize) % from.len()]);
+        }
+        // the waiting places: a free one, then the free ones nearest it
+        let Some(first) = self.take_spot(id) else { return 0 };
+        let mut spots = vec![first];
+        while spots.len() < kinds.len() {
+            let s = &self.stops[&id];
+            let at = s.spots[first].pos;
+            let next = (0..s.spots.len()).filter(|k| !s.taken[*k]).min_by(|a, b| (s.spots[*a].pos - at).length().total_cmp(&(s.spots[*b].pos - at).length()));
+            match next.filter(|k| (s.spots[*k].pos - at).length() < 6.0) {
+                Some(k) => {
+                    self.stops.get_mut(&id).unwrap().taken[k] = true;
+                    spots.push(k);
+                }
+                None => break,
+            }
+        }
+        let (dest, line) = self.draw_dest(id);
+        let g = self.next_group;
+        self.next_group += 1;
+        let mut made: Vec<usize> = Vec::new();
+        for (k, kind) in spots.iter().zip(&kinds) {
+            if let Some(i) = self.spawn_waiting_at(world, id, *k, dest.clone(), line, Some(*kind), Some(g)) {
+                made.push(i);
+            }
+        }
+        for k in spots.iter().skip(kinds.len()) {
+            self.free_spot(id, *k);
+        }
+        // one ride for all of them (each drew their own on the way to the stop)
+        if let Some(km) = made.first().and_then(|&i| self.pax(i)).map(|p| p.ride_km) {
+            for &i in &made {
+                if let Some(p) = self.pax_mut(i) {
+                    p.ride_km = km;
+                }
+            }
+        }
+        if made.len() == 1 {
+            // (alone after all: no group)
+            if let Some(p) = self.pax_mut(made[0]) {
+                p.group = None;
+            }
+        }
+        log::debug!("stop {id}: a group of {} waits{}", made.len(), if with_kids { " (with children)" } else { "" });
+        made.len()
     }
 
     /// Keep strollers on the pavements near the player, and people walking up to the stops.

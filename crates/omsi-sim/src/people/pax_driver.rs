@@ -292,6 +292,19 @@ impl PeopleSim {
             }
             self.change_due = None;
             self.request = None;
+            // (the fork) a group's buyer: the next ticket of the others, at the desk still
+            if let Some(next) = self.pax_mut(i).and_then(|pp| pp.group_tickets.pop()) {
+                let price = self.tickets.as_ref().and_then(|t| t.tickets.get(next.saturating_sub(1) as usize)).map(|t| t.value).unwrap_or(0.0);
+                self.served += 1;
+                let pp = self.pax_mut(i).unwrap();
+                pp.ticket_id = next;
+                pp.price = price;
+                pp.paid = 0.0;
+                pp.sub = 3;
+                pp.reach = false;
+                pp.timer = 0.6;
+                return;
+            }
             self.desk_busy = None;
             self.boarded += 1;
             self.served += 1;

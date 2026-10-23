@@ -458,6 +458,7 @@ flags! {
     OMSI_ROOT: Text, Setup, Use, "found", "The OMSI 2 installation folder (also the content root for tests that need real content).";
     OMSI_ROSTERFLOW_PDF: Text, Test, Test, "-", "Tests: a folder RosterFlow's bus and duty graphs are printed into without the save dialog.";
     OMSI_RT_REFL_HALF: Bool, Switch, Use, "off", "Trace reflections at half size.";
+    OMSI_RUNNER_CHANCE: Num, Tuning, Use, "settings", "Chance a late passenger runs for a bus standing at a stop (0: never, 1: every bus); over the setting pax_runners.";
     OMSI_SAFE_GPU: Num, Setup, Use, "0", "Restarts after a lost graphics device: lighter on the card each time. Set at runtime on Android and by the restart.";
     OMSI_SAFE_MODE: Bool, Setup, Use, "off", "Safe mode, set by the start guard after failed starts: the basic render pipelines and no plugins.";
     OMSI_SCENE_DIGEST: Bool, Test, Use, "off", "Log a hash of the renderer's scene (its instances in order, their places, materials and parameters) before each offscreen picture: two runs whose renderers saw the same calls log the same digests.";
