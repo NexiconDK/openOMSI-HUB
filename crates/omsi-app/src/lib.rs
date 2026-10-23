@@ -88,6 +88,7 @@ mod quit;
 use omsi_weather::condensation;
 use omsi_scene::{rain, window_wipers};
 mod scene;
+mod lightning;
 mod company_live;
 mod season_phase;
 mod schedule;
@@ -655,6 +656,7 @@ fn assemble_app(args: Args, settings: settings::Settings) -> App {
             metar_once: false,
             metar_next: 0.0,
             sky,
+            lightning: Default::default(),
         },
         menus: MenuState {
             list_dirty: false,

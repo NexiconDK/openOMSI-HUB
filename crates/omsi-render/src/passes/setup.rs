@@ -130,6 +130,8 @@ impl Renderer {
         if exclude_texture.is_none() {
             self.prepare_smoke(scene, camera.position);
         }
+        // (the lightning's channels: in the mirrors as well - they are a few hundred parts)
+        self.prepare_bolts(scene);
         // ambient occlusion only for the real picture, not for the mirrors
         // Enhanced+: the window's picture traces its sun shadow and ambient occlusion (not the
         // mirrors, a headset's eyes or a triple screen's panels: they keep the shadow map)
@@ -233,9 +235,21 @@ impl Renderer {
         }
         {
             let v = &lighting.vanilla_sky;
+            // (and a lightning flash's glow in the clouds: towards it and how wide, how bright
+            // in the classic picture's terms and in the enhanced picture's radiance)
+            let (flash, flash_glow) = match lighting.lightning.as_ref() {
+                Some(f) => (
+                    f.dir.normalize_or_zero().extend(f.spread.max(0.05)).to_array(),
+                    // (the enhanced glow as the eye takes it, by the exposure it has come to)
+                    [classic_flash(f, lighting.night).1, flash_seen(f, self.tone.exposure.map(f32::exp).unwrap_or(1.0)).sky, 0.0, 0.0],
+                ),
+                None => ([0.0, 0.0, 1.0, 1.0], [0.0; 4]),
+            };
             let u = VanillaSkyUniform {
                 cloud: [v.cloud_height, v.cloud_size, v.cloud_offset[0], v.cloud_offset[1]],
                 haze: [v.fog_range, v.visibility, if v.overcast { 1.0 } else { 0.0 }, ro.z as f32],
+                flash,
+                flash_glow,
             };
             self.queue.write_buffer(&self.sky.vanilla_sky_buf, 0, bytemuck::bytes_of(&u));
         }
@@ -255,6 +269,12 @@ impl Renderer {
             ];
             self.queue.write_buffer(&self.lights.snow_track_uniform, 0, bytemuck::cast_slice(&v));
         }
+        // a lightning flash lights the classic picture's street and fog (the enhanced
+        // picture's light is the sky's, `prepare_enhanced`)
+        let flash = match lighting.lightning.as_ref().filter(|_| !enhanced) {
+            Some(f) => FLASH_RGB * classic_flash(f, lighting.night).0,
+            None => Vec3::ZERO,
+        };
         let cu = CameraUniform {
             post: [
                 if enhanced { 1.0 } else { 0.0 },
@@ -283,11 +303,10 @@ impl Renderer {
                 .normalize()
                 .extend(lighting.sun_intensity)
                 .to_array(),
-            ambient: lighting
-                .ambient
+            ambient: (lighting.ambient + flash)
                 .extend(lighting.snow.clamp(0.0, 1.0))
                 .to_array(),
-            fog: lighting.fog_color.extend(lighting.fog_density).to_array(),
+            fog: (lighting.fog_color + flash * 0.6).extend(lighting.fog_density).to_array(),
             sun_color: lighting.sun_color.extend(lighting.night_maps.unwrap_or(lighting.night)).to_array(),
             sky_color: lighting
                 .secondary

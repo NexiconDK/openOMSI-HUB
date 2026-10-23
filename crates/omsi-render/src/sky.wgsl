@@ -148,12 +148,26 @@ fn vs_main(@location(0) pos: vec3<f32>) -> VsOut {
 // cloud: x height H (m over the map's zero), y the type's size (m a tile; 0: no clouds),
 // zw the wind's drift (m); haze: x the weather's fog range (m), y the visibility (m),
 // z 1 for an overcast type, w the render origin's height.
+// flash: a lightning flash, towards it (xyz) and how wide its glow spreads (w, rad);
+// flash_glow: how bright the clouds glow round it, x in the classic picture's terms, y the
+// enhanced picture's radiance (sky.rs `VanillaSkyUniform`).
 struct VanillaSkyUniform {
     cloud: vec4<f32>,
     haze: vec4<f32>,
+    flash: vec4<f32>,
+    flash_glow: vec4<f32>,
 };
 @group(1) @binding(9) var t_vclouds: texture_2d<f32>;
 @group(1) @binding(10) var<uniform> vsky: VanillaSkyUniform;
+
+// A lightning flash's glow in the sky towards d: round where it is, and a little all over
+// the cloud deck it lights from within; none under the horizon.
+const FLASH_RGB = vec3<f32>(0.86, 0.92, 1.08);
+fn flash_glow(d: vec3<f32>) -> vec3<f32> {
+    let a = acos(clamp(dot(d, vsky.flash.xyz), -1.0, 1.0));
+    let s = max(vsky.flash.w, 0.05);
+    return FLASH_RGB * ((exp(-(a * a) / (s * s)) + 0.12) * smoothstep(-0.03, 0.08, d.z));
+}
 
 // The v of the sky textures towards elevation `e` (rad), as Omsi.exe's dome
 // (helper\skybox.x) has it: rings at the horizon, at 45 degrees and at the zenith with v
@@ -265,6 +279,7 @@ fn fs_main(in: VsOut) -> @location(0) vec4<f32> {
         let c = vanilla_clouds(d, fog, ctex, reach.x, encoded);
         col = mix(col, c.rgb, c.a);
     }
+    col = col + flash_glow(d) * vsky.flash_glow.x;
     if (encoded) {
         return vec4<f32>(srgb_decode(col), 1.0);
     }

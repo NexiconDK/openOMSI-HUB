@@ -68,6 +68,9 @@ pub struct Soundscape {
     rng: u64,
     /// What is heard (for `OMSI_DEBUG_SOUND` and the debug line).
     pub last: String,
+    /// The game's thunderstorm is on (`lightning`): its thunder comes with its flashes, and
+    /// the recordings' thunder keeps quiet (NexiconDK).
+    pub own_thunder: bool,
 }
 
 impl Soundscape {
@@ -97,6 +100,7 @@ impl Soundscape {
             now: 0.0,
             rng: 0x9E37_79B9_7F4A_7C15,
             last: String::new(),
+            own_thunder: false,
         }
     }
 
@@ -217,7 +221,7 @@ impl Soundscape {
         self.wet_trees = if rain > 0.05 { (self.wet_trees + m.dt * rain / 120.0).min(1.0) } else { (self.wet_trees - m.dt / 1200.0).max(0.0) };
         // a thunderstorm: towering clouds over a warm shower (thunder in a snowfall is a rarity
         // not worth making up)
-        let storm = m.weather.is_some_and(|w| {
+        let storm = !self.own_thunder && m.weather.is_some_and(|w| {
             let c = w.clouds.0.to_ascii_lowercase();
             (c.contains("cumulus 3") || c.contains("cumulonimbus") || c.contains("gewitter") || c.contains("thunder")) && kind == 1 && rate > 0.45 && w.temp.0 > 8.0
         });

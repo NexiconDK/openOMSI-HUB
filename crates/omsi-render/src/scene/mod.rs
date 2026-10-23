@@ -186,6 +186,10 @@ pub struct Scene {
     pub interior_lights: Vec<PointLight>,
     pub(crate) interior_free: Vec<(u32, u32)>,
     pub coronas: Vec<Corona>,
+    /// The lightning's channels for the next frame (set by the app every frame; mostly none).
+    pub bolts: Vec<Bolt>,
+    pub(crate) bolt_buf: Option<wgpu::Buffer>,
+    pub(crate) bolt_count: u32,
     /// Smoke particles for the next frame (set by the app every frame).
     pub smoke: Vec<SmokeParticle>,
     pub(crate) smoke_buf: Option<wgpu::Buffer>,

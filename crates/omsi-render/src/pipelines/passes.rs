@@ -1,7 +1,7 @@
 //! The main pass's pipelines for each of the three ways the scene is drawn: vanilla into
 //! the target, enhanced into the high-range picture, and vanilla with reflections.
 
-use super::coronas::{Coronas, Snow, ADDITIVE, ALPHA_BLEND, SCREEN};
+use super::coronas::{Bolts, Coronas, Snow, ADDITIVE, ALPHA_BLEND, SCREEN};
 use super::scene::SceneBase;
 use super::sky::SkyBase;
 use crate::*;
@@ -12,6 +12,7 @@ pub(crate) struct PassKit<'a> {
     pub scene: &'a SceneBase,
     pub coronas: &'a Coronas,
     pub snow: &'a Snow,
+    pub bolts: &'a Bolts,
     pub sky: &'a SkyBase,
     pub msaa: u32,
 }
@@ -23,6 +24,7 @@ struct PassShaders<'a> {
     corona_blend: wgpu::BlendState,
     smoke: &'a str,
     snow: &'a str,
+    bolt: &'a str,
     sky: &'a str,
 }
 
@@ -55,18 +57,19 @@ impl PassKit<'_> {
             corona_pipeline: self.coronas.pipeline(device, f, fs.corona, fs.corona_blend, self.msaa),
             smoke_pipeline: self.coronas.pipeline(device, f, fs.smoke, ALPHA_BLEND, self.msaa),
             snow_pipeline: (!basic_pipelines()).then(|| optional_pipeline(device, "the snowfall", || self.snow.pipeline(device, f, fs.snow, self.msaa))).flatten(),
+            bolt_pipeline: optional_pipeline(device, "the lightning", || self.bolts.pipeline(device, f, fs.bolt, self.msaa)),
             sky_pipeline: self.sky.pipeline(device, f, fs.sky, self.msaa),
         }
     }
 
     pub(crate) fn build(&self, format: wgpu::TextureFormat, hdr_format: wgpu::TextureFormat, leave_out_enhanced: bool) -> Passes {
-        let pass = self.pass(format, PassShaders { scene: "fs_main", corona: "fs_main", corona_blend: SCREEN, smoke: "fs_smoke", snow: "fs_snow", sky: "fs_main" });
+        let pass = self.pass(format, PassShaders { scene: "fs_main", corona: "fs_main", corona_blend: SCREEN, smoke: "fs_smoke", snow: "fs_snow", bolt: "fs_bolt", sky: "fs_main" });
         let sky_mirror_pipeline = (!leave_out_enhanced).then(|| self.sky.pipeline(self.device, format, "fs_enhanced_mirror", self.msaa));
         let hdr_pass = (!leave_out_enhanced).then(|| {
-            self.pass(hdr_format, PassShaders { scene: "fs_enhanced", corona: "fs_enhanced", corona_blend: ADDITIVE, smoke: "fs_smoke_enhanced", snow: "fs_snow_enhanced", sky: "fs_enhanced" })
+            self.pass(hdr_format, PassShaders { scene: "fs_enhanced", corona: "fs_enhanced", corona_blend: ADDITIVE, smoke: "fs_smoke_enhanced", snow: "fs_snow_enhanced", bolt: "fs_bolt_enhanced", sky: "fs_enhanced" })
         });
         let reflection_pass = (!leave_out_enhanced && !GL_BACKEND.load(std::sync::atomic::Ordering::Relaxed)).then(|| {
-            self.pass(hdr_format, PassShaders { scene: "fs_vanilla_reflections", corona: "fs_main", corona_blend: SCREEN, smoke: "fs_smoke", snow: "fs_snow", sky: "fs_main" })
+            self.pass(hdr_format, PassShaders { scene: "fs_vanilla_reflections", corona: "fs_main", corona_blend: SCREEN, smoke: "fs_smoke", snow: "fs_snow", bolt: "fs_bolt", sky: "fs_main" })
         });
         Passes { pass, hdr_pass, sky_mirror_pipeline, reflection_pass, leave_out_enhanced }
     }

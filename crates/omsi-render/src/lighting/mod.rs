@@ -2,9 +2,12 @@
 //! the coronas and smoke, and the enhanced sky, fog and exposure model.
 
 mod enhanced;
+mod flash;
 mod lights;
 mod sky_sched;
 
 pub(crate) use enhanced::*;
+pub use flash::Bolt;
+pub(crate) use flash::*;
 pub use lights::*;
 pub(crate) use sky_sched::*;

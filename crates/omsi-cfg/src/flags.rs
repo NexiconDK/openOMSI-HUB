@@ -336,6 +336,7 @@ flags! {
     OMSI_LAUNCHER_SLOW: Num, Test, Use, "-", "The interface kit's animations this many times slower (to look at them).";
     OMSI_LAUNCHER_TOUR: Text, Test, Use, "-", "Desktop launcher: start the guided tour (at this stop).";
     OMSI_LAUNCHER_WELCOME: Text, Test, Use, "-", "Desktop launcher: off skips the welcome (pictures, tests).";
+    OMSI_LIGHTNING_PICTURES: Text, Test, Test, "-", "Tests: a folder for pictures of a lightning strike in each graphics mode (`cargo test -p omsi-render lightning_pictures -- --ignored`).";
     OMSI_LIST_ALIGNED: Bool, Debug, Use, "off", "Log the splines aligned to the terrain.";
     OMSI_LIVERY_LOOK: Text, Test, Test, "-", "Tests: a folder for pictures of the livery studio.";
     OMSI_LIVERY_WINDOWS: Text, Test, Test, "-", "Tests: pictures of a print on the windows (<OMSI folder>|<out folder>|<bus>[;<bus>...]).";
@@ -478,6 +479,7 @@ flags! {
     OMSI_TEST_WINE_DIR: Text, Test, Test, "-", "Plugin demo test: folder holding omsi-plugin-host.exe for Wine.";
     OMSI_TEXTURE_MEMORY: Num, Tuning, Use, "settings", "Texture budget in MB.";
     OMSI_TEXTURE_RAIN: Bool, Switch, Use, "off", "OMSI 2's own texture rain on the glass instead of the drops.";
+    OMSI_THUNDER_WAV: Text, Test, Test, "-", "Tests: a folder for the synthesized thunder as WAV files, near and far (`cargo test -p omsi-weather thunder_samples -- --ignored`).";
     OMSI_TOBII_DLL: Text, Setup, Use, "-", "The Tobii Stream Engine DLL to load instead of the Tobii Experience's.";
     OMSI_TOBII_RAW: Text, Test, Test, "-", "Tests: a file for the Tobii tracker's raw poses (record_the_tracker_here).";
     OMSI_TOBII_SECS: Num, Test, Test, "8", "Tests: how long the Tobii tracker is recorded.";

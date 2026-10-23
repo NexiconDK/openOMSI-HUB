@@ -205,6 +205,22 @@ pub struct Lighting {
     pub air: Option<[f32; 3]>,
     /// Simulation seconds for scene animation; standalone views use elapsed real time.
     pub animation_time: Option<f32>,
+    /// A lightning flash's light this frame (none between flashes): it lights the street
+    /// and the air, and the clouds glow round where it is (every path).
+    pub lightning: Option<Flash>,
+}
+
+/// The light of a lightning flash at the camera (omsi-weather's `lightning::Glow`).
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Flash {
+    /// Towards where it shines from (world, unit).
+    pub dir: Vec3,
+    /// How much it lights the ground (1 = 10 000 lux, the enhanced picture's units).
+    pub ground: f32,
+    /// How bright the clouds glow round it (radiance in the same units).
+    pub sky: f32,
+    /// How wide that glow spreads round `dir` (radians).
+    pub spread: f32,
 }
 
 impl Lighting {
@@ -287,6 +303,7 @@ impl Default for Lighting {
             veil: 0.0,
             air: None,
             animation_time: None,
+            lightning: None,
         }
     }
 }

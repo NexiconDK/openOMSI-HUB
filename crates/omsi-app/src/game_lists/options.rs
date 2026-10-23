@@ -424,6 +424,7 @@ pub(super) fn toggle_now(app: &App, id: &str) -> Option<bool> {
         "clouds" => s.clouds,
         "windy_trees" => s.windy_trees,
         "road_snow" => s.road_snow,
+        "thunderstorms" => s.thunderstorms,
         "mirror_hud_every_frame" => s.mirror_hud_every_frame,
         "ambient" => s.ambient,
         "fullscreen" => s.fullscreen,
@@ -696,6 +697,11 @@ fn toggle_set_graphics_and_controls(app: &mut App, id: &str, on: bool, bit: Stri
             app.settings.road_snow = on;
             omsi_scene::road_snow::set_setting(on);
             Some(("road_snow", bit))
+        }
+        "thunderstorms" => {
+            // (at once: the next frame has no flashes, or the storm's)
+            app.settings.thunderstorms = on;
+            Some(("thunderstorms", bit))
         }
         "mirror_hud_every_frame" => { app.settings.mirror_hud_every_frame = on; Some(("mirror_hud_every_frame", bit)) }
         "ambient" => { app.settings.ambient = on; Some(("ambient", bit)) }

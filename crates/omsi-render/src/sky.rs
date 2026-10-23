@@ -37,6 +37,11 @@ pub(crate) struct VanillaSkyUniform {
     pub(crate) cloud: [f32; 4],
     /// fog range, visibility, 1 for an overcast type, the render origin's height
     pub(crate) haze: [f32; 4],
+    /// A lightning flash: towards it (xyz) and how wide its glow spreads (w, radians)
+    pub(crate) flash: [f32; 4],
+    /// how bright the clouds glow round it: x in the classic picture's terms, y the
+    /// enhanced picture's radiance
+    pub(crate) flash_glow: [f32; 4],
 }
 
 /// The enhanced clouds' noise textures (clouds.rs), made once: the shape map (2-D RGBA8)

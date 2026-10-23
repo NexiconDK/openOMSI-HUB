@@ -94,6 +94,8 @@ struct PassPipelines {
     /// The snowfall (snow.wgsl), opaque over the scene (premultiplied); none with
     /// `basic_pipelines`.
     snow_pipeline: Option<wgpu::RenderPipeline>,
+    /// The lightning's channels (bolt.wgsl); none where the driver failed on it.
+    bolt_pipeline: Option<wgpu::RenderPipeline>,
     sky_pipeline: wgpu::RenderPipeline,
 }
 

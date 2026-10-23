@@ -193,6 +193,12 @@ pub(crate) fn snow_shader_source() -> String {
     src
 }
 
+/// The lightning's channels (bolt.wgsl), with what the enhanced picture's air is worked
+/// out from.
+pub(crate) fn bolt_shader_source() -> String {
+    [include_str!("../bolt.wgsl"), include_str!("../enhanced_common.wgsl")].join("\n")
+}
+
 #[repr(C)]
 #[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
 pub(crate) struct SnowUniform {

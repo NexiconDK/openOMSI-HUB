@@ -334,8 +334,8 @@ impl Renderer {
         self.encode_main_late(&mut pass, scene, f, plan, pp);
     }
 
-    /// What the main pass draws after the batches: the smoke, the snowfall, the coronas
-    /// with the cab, the HUD.
+    /// What the main pass draws after the batches: the smoke, the snowfall, the lightning,
+    /// the coronas with the cab, the HUD.
     fn encode_main_late<'p>(&self, pass: &mut wgpu::RenderPass<'p>, scene: &'p Scene, f: &FrameCtx, plan: &DrawPlan, pp: &'p PassPipelines) {
         let lighting = f.lighting;
         let cab_batches = &plan.cab_batches;
@@ -366,6 +366,13 @@ impl Renderer {
             pass.set_bind_group(0, scene.camera_bind_group.as_ref().unwrap(), &[]);
             pass.set_bind_group(1, &self.lights.snow_bind_group, &[]);
             pass.draw(0..6, 0..counts.iter().sum::<u32>());
+        }
+        // the lightning's channels, over the world and the sky (bolt.wgsl)
+        if let (Some(bolts), Some(bb)) = (pp.bolt_pipeline.as_ref().filter(|_| scene.bolt_count > 0), scene.bolt_buf.as_ref()) {
+            pass.set_pipeline(bolts);
+            pass.set_bind_group(0, scene.camera_bind_group.as_ref().unwrap(), &[]);
+            pass.set_vertex_buffer(0, bb.slice(..));
+            pass.draw(0..6, 0..scene.bolt_count);
         }
         // light coronas, additive: the world's, then the vehicle the camera is in -
         // drawn over them as Omsi.exe draws it last (see `cab_items`) - then its own

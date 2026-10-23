@@ -1,4 +1,5 @@
-//! The lamps' coronas and the smoke puffs: sprites drawn over the scene; and the snowfall.
+//! The lamps' coronas and the smoke puffs: sprites drawn over the scene; the snowfall; and
+//! the lightning's channels.
 
 use super::common::*;
 use super::scene::SceneBase;
@@ -206,5 +207,63 @@ impl Snow {
             .depth(depth_test(wgpu::CompareFunction::GreaterEqual))
             .samples(msaa)
             .create(device)
+    }
+}
+
+/// The larger of the picture and the lightning's channel (bolt.wgsl): their parts overlap.
+const MAX_BLEND: wgpu::BlendState = wgpu::BlendState {
+    color: wgpu::BlendComponent { src_factor: wgpu::BlendFactor::One, dst_factor: wgpu::BlendFactor::One, operation: wgpu::BlendOperation::Max },
+    alpha: wgpu::BlendComponent::REPLACE,
+};
+
+const BOLT_ATTRIBUTES: [wgpu::VertexAttribute; 2] = wgpu::vertex_attr_array![0 => Float32x4, 1 => Float32x4];
+
+/// The lightning's channels (bolt.wgsl): the camera group, a part of a channel an instance.
+pub(crate) struct Bolts {
+    shader: wgpu::ShaderModule,
+    pl: wgpu::PipelineLayout,
+}
+
+impl Bolts {
+    pub(crate) fn new(device: &wgpu::Device, camera_layout: &wgpu::BindGroupLayout) -> Bolts {
+        let shader = compile_shader(device, wgpu::ShaderModuleDescriptor {
+            label: Some("lightning"),
+            source: wgpu::ShaderSource::Wgsl(bolt_shader_source().into()),
+        });
+        let pl = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: Some("lightning"),
+            bind_group_layouts: &[Some(camera_layout)],
+            immediate_size: 0,
+        });
+        Bolts { shader, pl }
+    }
+
+    pub(crate) fn pipeline(&self, device: &wgpu::Device, f: wgpu::TextureFormat, fs: &str, msaa: u32) -> wgpu::RenderPipeline {
+        let layout = wgpu::VertexBufferLayout {
+            array_stride: std::mem::size_of::<GpuBolt>() as u64,
+            step_mode: wgpu::VertexStepMode::Instance,
+            attributes: &BOLT_ATTRIBUTES,
+        };
+        compile_pipeline(device, &wgpu::RenderPipelineDescriptor {
+            label: Some("lightning"),
+            layout: Some(&self.pl),
+            vertex: wgpu::VertexState {
+                module: &self.shader,
+                entry_point: Some("vs_bolt"),
+                buffers: &[layout],
+                compilation_options: Default::default(),
+            },
+            primitive: wgpu::PrimitiveState { topology: wgpu::PrimitiveTopology::TriangleList, cull_mode: None, ..Default::default() },
+            depth_stencil: Some(depth_test(wgpu::CompareFunction::GreaterEqual)),
+            multisample: wgpu::MultisampleState { count: msaa, mask: !0, alpha_to_coverage_enabled: false },
+            fragment: Some(wgpu::FragmentState {
+                module: &self.shader,
+                entry_point: Some(fs),
+                targets: &color_targets(f, Some(MAX_BLEND), wgpu::ColorWrites::COLOR, false, false),
+                compilation_options: Default::default(),
+            }),
+            multiview_mask: None,
+            cache: crate::pipeline_cache::get(device).as_ref(),
+        })
     }
 }

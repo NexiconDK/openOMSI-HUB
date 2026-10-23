@@ -521,6 +521,8 @@ pub(crate) struct SessionState {
     pub(crate) metar_next: f64,
     /// The sky's cloud type and the physical weather model (see `weather_setup::SkyState`).
     pub(crate) sky: crate::weather_setup::SkyState,
+    /// The thunderstorm: its flashes, their light and their thunder (NexiconDK, `lightning`).
+    pub(crate) lightning: crate::lightning::Lightning,
 }
 
 /// The fuel pump or the bus wash running (`SessionState::pumping`).

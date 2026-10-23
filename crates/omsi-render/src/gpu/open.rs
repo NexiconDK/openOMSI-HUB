@@ -482,9 +482,10 @@ impl Renderer {
         let defaults = defaults::build(&device, &queue, options.anisotropy);
         let (coronas, corona_texture) = coronas::Coronas::new(&device, &queue, &scene);
         let snow = coronas::Snow::new(&device, &scene.camera_layout);
+        let bolts = coronas::Bolts::new(&device, &scene.camera_layout);
         drop(corona_texture);
         let sky = sky::SkyBase::new(&device, &queue, &scene.camera_layout, !leave_out_enhanced);
-        let passes = passes::PassKit { device: &device, scene: &scene, coronas: &coronas, snow: &snow, sky: &sky, msaa }
+        let passes = passes::PassKit { device: &device, scene: &scene, coronas: &coronas, snow: &snow, bolts: &bolts, sky: &sky, msaa }
             .build(format, hdr_format, leave_out_enhanced);
         let (sky_sampler, sky_mesh) = sky::dome(&device, &queue);
         let overlays = overlays::Overlays::new(&device, format, msaa);

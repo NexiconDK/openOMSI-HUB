@@ -55,7 +55,7 @@ crate::app::stage_ctx!(
 
 /// The lights (the lamps' cones, the light maps, every light that shines), the rain and
 /// the snow, the cabin air, the tyres' spray and the sounds of the street.
-pub(super) fn lights(cx: LightsCx, dt: f32, daylight: omsi_sim::Daylight, behind: f32) {
+pub(super) fn lights(mut cx: LightsCx, dt: f32, daylight: omsi_sim::Daylight, behind: f32) {
     // the lamps' cones in fog and falling rain or snow, and new light pictures
     let cone = cx.weather.weather.as_ref().map(|wt| lights::ConeWeather::new(wt.fog.0, daylight.night)).unwrap_or_default();
     if let Some(r) = cx.gfx.renderer.as_mut() {
@@ -244,6 +244,42 @@ pub(super) fn lights(cx: LightsCx, dt: f32, daylight: omsi_sim::Daylight, behind
         if let Some(t) = cx.traffic.traffic.as_mut() {
             t.sim.show_actual();
         }
+    }
+    // the thunderstorm (NexiconDK): its flashes, their channels and their thunder
+    if let Some(eye) = cx.view.camera.as_ref().map(|c| c.position) {
+        thunderstorm(&mut cx, eye);
+    }
+}
+
+/// A frame of the thunderstorm (`lightning`): every player's place for the rare close
+/// strikes, the flashes into the scene and the picture's light, the thunder heard.
+fn thunderstorm(cx: &mut LightsCx, eye: glam::DVec3) {
+    let lan = cx.net.lan.as_ref();
+    let me = lan.map(|l| l.my_id).unwrap_or(0);
+    let mut players: Vec<(u32, glam::DVec2)> = Vec::new();
+    if let Some(p) = cx.player.player.as_ref() {
+        players.push((me, p.vehicle.position.truncate()));
+    } else {
+        players.push((me, eye.truncate()));
+    }
+    players.extend(cx.net.remotes.remotes.iter().map(|(id, rv)| (*id, rv.vehicle().position.truncate())));
+    let moment = crate::lightning::Moment {
+        on: cx.common.settings.thunderstorms,
+        weather: cx.weather.weather.as_ref(),
+        world: cx.world.world.as_deref(),
+        room: lan.map(lan::population_seed),
+        players,
+        clock: &*cx.clock.clock,
+        paused: *cx.clock.paused,
+        eye,
+        inside: cx.view.cam.in_cab,
+        open: cx.player.player.as_ref().and_then(|p| p.vehicle.var("Snd_OutsideVol")).unwrap_or(0.0),
+        volume: cx.common.settings.vol_ambient,
+    };
+    let Some(scene) = cx.gfx.scene.as_mut() else { return };
+    cx.weather.lightning.frame(moment, &mut scene.bolts, cx.sound.audio.as_ref());
+    if let Some(s) = cx.sound.soundscape.as_mut() {
+        s.own_thunder = cx.weather.lightning.active();
     }
 }
 

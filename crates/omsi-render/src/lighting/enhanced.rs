@@ -702,6 +702,12 @@ impl Renderer {
         for (k, c) in st.sh.iter().enumerate() {
             sh[k] = c.extend(0.0).to_array();
         }
+        // a lightning flash's light, with the sky's (and in the fog), as the eye takes it
+        let flash = lighting.lightning.as_ref().map(|f| flash_seen(f, pre));
+        if let Some(f) = flash.as_ref() {
+            add_flash_light(&mut sh, f);
+        }
+        let fog_rgb = fog_rgb + flash_fog(flash.as_ref());
         // the probe is drawn every half second (`PROBE_EVERY`), and for a new sky on the frame
         // after it is taken in (its table upload and the probe's six faces and blurrier
         // levels were one frame's work); it holds the sky divided by the table scale it was

@@ -360,6 +360,8 @@ fn enhanced_sky(in: VsOut) -> vec4<f32> {
         sun_px = l;
     }
     col = col + night_sky(d, cube.a, fwidth(d));
+    // a lightning flash lights the clouds from within (the clear air between them a little)
+    col = col + flash_glow(d) * (vsky.flash_glow.y * (0.2 + 0.8 * cube.a));
     // the dome is drawn pre-exposed; the disc only a little over white: the eye's glare round
     // it is drawn from its light (fog_lamps.wgsl `sun_glare`), and from the disc's pixels
     // as well the glow would have counted it twice

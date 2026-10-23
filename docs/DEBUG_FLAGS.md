@@ -202,6 +202,7 @@ effect. On Android, `openOMSI/env.txt` holds `NAME=value` lines that are set bef
 | `OMSI_LAUNCHER_SLOW` | num | - | use | ui | The interface kit's animations this many times slower (to look at them). |
 | `OMSI_LAUNCHER_TOUR` | text | - | use | launcher-api | Desktop launcher: start the guided tour (at this stop). |
 | `OMSI_LAUNCHER_WELCOME` | text | - | use | launcher-api | Desktop launcher: off skips the welcome (pictures, tests). |
+| `OMSI_LIGHTNING_PICTURES` | text | - | test | render | Tests: a folder for pictures of a lightning strike in each graphics mode (`cargo test -p omsi-render lightning_pictures -- --ignored`). |
 | `OMSI_LIVERY_LOOK` | text | - | test | omsihub-game | Tests: a folder for pictures of the livery studio. |
 | `OMSI_LIVERY_WINDOWS` | text | - | test | omsihub-game | Tests: pictures of a print on the windows (<OMSI folder>\|<out folder>\|<bus>[;<bus>...]). |
 | `OMSI_MAP` | text | - | test | launcher-core | Tests: the map the timetable tests read. |
@@ -254,6 +255,7 @@ effect. On Android, `openOMSI/env.txt` holds `NAME=value` lines that are set bef
 | `OMSI_TEST_AVATAR` | text | - | test | sim | Test only: an avatar FBX for the avatar loading test (`cargo test -p omsi-sim a_rocketbox_avatar_loads -- --ignored`). |
 | `OMSI_TEST_CONTENT` | text | - | test | o3d, scene | Content root for tests that need real OMSI content. |
 | `OMSI_TEST_WINE_DIR` | text | - | test | plugin | Plugin demo test: folder holding omsi-plugin-host.exe for Wine. |
+| `OMSI_THUNDER_WAV` | text | - | test | weather | Tests: a folder for the synthesized thunder as WAV files, near and far (`cargo test -p omsi-weather thunder_samples -- --ignored`). |
 | `OMSI_TOBII_RAW` | text | - | test | input | Tests: a file for the Tobii tracker's raw poses (record_the_tracker_here). |
 | `OMSI_TOBII_SECS` | num | 8 | test | input | Tests: how long the Tobii tracker is recorded. |
 | `OMSI_TOUCH` | bool | off | use | app | The on-screen touch controls on a computer. |

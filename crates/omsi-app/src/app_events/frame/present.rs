@@ -18,7 +18,7 @@ pub(super) fn lighting(cx: LightingCx, dt: f32, daylight: omsi_sim::Daylight) ->
         Some(rv) => Some(rv.vehicle()),
         None => cx.player.player.as_ref().map(|p| &p.vehicle),
     };
-    steps::picture_lighting(
+    let mut l = steps::picture_lighting(
         &daylight,
         cx.weather.weather.as_ref(),
         *cx.weather.cloud_drift,
@@ -30,7 +30,10 @@ pub(super) fn lighting(cx: LightingCx, dt: f32, daylight: omsi_sim::Daylight) ->
         cx.common.settings,
         cx.clock.clock.run_time as f32,
         &*cx.weather.sky,
-    )
+    );
+    // (NexiconDK: a lightning flash's light, see `lightning`)
+    l.lightning = cx.weather.lightning.flash;
+    l
 }
 
 impl App {

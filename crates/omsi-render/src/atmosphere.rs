@@ -482,7 +482,7 @@ pub(crate) fn smoothstep(e0: f32, e1: f32, x: f32) -> f32 {
 }
 
 /// Real spherical harmonics up to order 2 in direction d.
-fn sh_basis(d: Vec3) -> [f32; 9] {
+pub(crate) fn sh_basis(d: Vec3) -> [f32; 9] {
     [
         0.282_095,
         0.488_603 * d.y,

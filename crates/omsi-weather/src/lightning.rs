@@ -241,13 +241,15 @@ impl Storm {
         let t = tk + d.range(0.0, 0.98) * SLOT;
         let mut ground = d.u() < 0.3;
         let mut energy = (d.range(0.5, 1.2) * (0.8 + 0.4 * self.level as f64)) as f32;
-        // one of the rare ones close to a player under the cell
-        let under: Vec<&(u32, DVec2)> = players.iter().filter(|p| (p.1 - cell.at).length() < cell.radius * 1.2).collect();
-        let close = !under.is_empty() && d.u() < CLOSE;
-        if close {
-            let p = under[((d.u() * under.len() as f64) as usize).min(under.len() - 1)];
-            let a = d.u() * std::f64::consts::TAU;
-            at = p.1 + DVec2::new(a.sin(), a.cos()) * d.range(60.0, 300.0);
+        // one of the rare ones close to a player under the cell: each player's chance is
+        // CLOSE. (The draws are made whoever is where: a game that sees another player a few
+        // metres off where that player's own game has them - the network's delay - draws the
+        // rest of the flash all the same, and the two stay in step.)
+        let (roll, pick, a, r) = (d.u(), d.u(), d.u() * std::f64::consts::TAU, d.range(60.0, 300.0));
+        let player = players.get(((pick * players.len() as f64) as usize).min(players.len().saturating_sub(1)));
+        let close = player.is_some_and(|p| roll < (CLOSE * players.len() as f64).min(1.0) && (p.1 - cell.at).length() < cell.radius * 1.2);
+        if let Some(p) = player.filter(|_| close) {
+            at = p.1 + DVec2::new(a.sin(), a.cos()) * r;
             ground = true;
             energy = energy.max(1.0);
         }
@@ -525,6 +527,15 @@ mod tests {
         // nobody under a cell: none close
         let far = [(5u32, DVec2::new(500_000.0, 0.0))];
         assert!(flashes(&s, &far, 0.0, 10.0 * 3600.0, 1.0).iter().all(|f| !f.close));
+        // two games that see a player a few metres apart (the network's delay) draw the
+        // same flashes - only a close one by that player lands where each sees them
+        let a = flashes(&s, &[(1, DVec2::new(800.0, 0.0)), (2, DVec2::new(-3000.0, 900.0))], 0.0, 10.0 * 3600.0, 1.0);
+        let b = flashes(&s, &[(1, DVec2::new(803.0, 2.0)), (2, DVec2::new(-3000.0, 900.0))], 0.0, 10.0 * 3600.0, 1.0);
+        assert_eq!(a.len(), b.len());
+        for (x, y) in a.iter().zip(&b) {
+            assert_eq!((x.id, x.t, x.ground, &x.strokes), (y.id, y.t, y.ground, &y.strokes));
+            assert!((x.at - y.at).length() < 5.0);
+        }
     }
 
     #[test]
