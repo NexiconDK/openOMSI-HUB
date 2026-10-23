@@ -442,8 +442,10 @@ fn the_driver_signs_on_accepts_the_duty_and_has_the_board() {
     ps.frame(&mut game);
     let board = panel_text(&ps, "omsihub_board").expect("the duty board");
     // (in the navigator's board: the stop it heads for marked on the rail, four minutes late:
-    // when it will be there)
-    assert!(board.contains("anchor: Navigator") && board.contains("name: \"Markt\", time: \"08:05\", expected: \"08:09\"") && board.contains("state: Now") && board.contains("+4:00"), "{board}");
+    // when it was to be there and, in the colour of late, when it will be - as openOMSI_DK has
+    // it; the chip to the second, orange; the terminus planned and expected)
+    assert!(board.contains("anchor: Navigator") && board.contains("name: \"Markt\", time: \"exp. 08:09\"") && board.contains("expected: \"sched. 08:05\"") && board.contains("state: Now"), "{board}");
+    assert!(board.contains("text: \"04:00\"") && board.contains("planned 08:10  ·  expected 08:14"), "{board}");
     // (the coach: late on the duty's last trip)
     assert!(board.contains("last trip of the duty"), "{board}");
 }

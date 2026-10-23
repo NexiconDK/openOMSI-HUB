@@ -85,8 +85,8 @@ impl Layout<'_> {
     }
 
     /// One stop on the rail: its pin with the rail through it (grey where the bus has been),
-    /// its name, and on the right its time, before it when the bus will be there, and its
-    /// tag.
+    /// its name, and on the right its time (in `time_color` when it has one), before it when
+    /// the bus will be there, and its tag.
     fn stop(&mut self, s: &Stop, r: Rect, size: f32, rail: Color, above: bool, below: bool) {
         let k = size / 13.0;
         let (x, cy) = (r.x + RAIL_X * k, r.y + r.h * 0.5);
@@ -118,6 +118,11 @@ impl Layout<'_> {
                 StopState::Done => (Weight::Medium, TEXT_FAINT),
                 StopState::Now => (Weight::Bold, rail),
                 StopState::Ahead => (Weight::Medium, TEXT_DIM),
+            };
+            // (a colour of its own: bold, as the expected time)
+            let (wt, c) = match s.time_color {
+                Some(own) => (Weight::Bold, color(own)),
+                None => (wt, c),
             };
             let tw = self.width(&s.time, tpx, wt);
             let base = self.baseline(r.y, lh, tpx, wt);

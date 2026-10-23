@@ -22,8 +22,9 @@ local AHEAD = 4
 -- Omsi-Hub's colours (the launcher's dark theme): the line's plate, punctuality as fills (a
 -- chip) and as letters, the advice's tint and ink, the texts
 local PLATE, ON_PLATE = "#FFD23F", "#1A1400"
-local LATE, ON_TIME, EARLY, FIELD = "#D93A30", "#1A8A4F", "#2A75F7", "#1B2231"
-local LATE_INK, ON_TIME_INK, EARLY_INK = "#FF5F57", "#37D67A", "#4DA3FF"
+-- (NexiconDK, as openOMSI_DK: ahead of the timetable red, late orange - early is the worse)
+local LATE, ON_TIME, EARLY, FIELD = "#DE7816", "#1A8A4F", "#D93A30", "#1B2231"
+local LATE_INK, ON_TIME_INK, EARLY_INK = "#FFA23F", "#37D67A", "#FF5F57"
 local ACCENT, ADVICE = "#F58620", "#F5E6C8"
 local TEXT, DIM, FAINT = "#E8EBF2", "#959DB0", "#6E7688"
 
@@ -42,9 +43,17 @@ local function hhmm(t)
   return string.format("%02d:%02d", (m // 60) % 24, m % 60)
 end
 
-local function offset(d)
-  local s = career.round(math.abs(d))
-  return string.format("%s%d:%02d", d < 0 and "−" or "+", s // 60, s % 60)
+-- (NexiconDK, as openOMSI_DK) how far off the timetable, to the second and without its sign
+-- ("00:32", "04:10"; an hour or more "01:02:05"): the chip's colour says which way
+local function clock_of(d)
+  local s = math.floor(math.abs(d) + 0.5)
+  if s >= 3600 then return string.format("%02d:%02d:%02d", s // 3600, (s // 60) % 60, s % 60) end
+  return string.format("%02d:%02d", s // 60, s % 60)
+end
+
+-- "on time" - "On time"
+local function capitalized(t)
+  return (t:gsub("^%l", string.upper))
 end
 
 -- whole minutes, rounded up (a break with 20 s left is not over)
@@ -52,10 +61,12 @@ local function minutes_up(s)
   return math.max(math.ceil(s / 60), 0)
 end
 
--- OMSI 2's punctuality: more than three minutes late, more than two early
+-- (NexiconDK, as openOMSI_DK) the board's punctuality: late from two minutes on, ahead of the
+-- timetable by a second already early (the career still counts as OMSI 2 does, `career.lua`)
+local LATE_AFTER, EARLY_BEFORE = 120, -0.5
 local function punctuality(d)
-  if d > career.LATE_ARRIVAL then return "late" end
-  if d < career.EARLY_DEPARTURE then return "early" end
+  if d > LATE_AFTER then return "late" end
+  if d < EARLY_BEFORE then return "early" end
   return "on_time"
 end
 
@@ -83,8 +94,9 @@ local function status(d, trips, clock)
   end
   local delay = d.delay or 0
   local p = punctuality(delay)
-  if p == "on_time" then return tr("on time"), ON_TIME, "#FFFFFF", "running" end
-  return offset(delay), p == "late" and LATE or EARLY, "#FFFFFF", "running"
+  -- (to the second, whichever way; on time named as well: "On time - 01:45")
+  if p == "on_time" then return capitalized(tr("on time")) .. " - " .. clock_of(delay), ON_TIME, "#FFFFFF", "running" end
+  return clock_of(delay), p == "late" and LATE or EARLY, "#FFFFFF", "running"
 end
 
 -- the line's plate (an empty run: a tag saying so)
@@ -104,6 +116,12 @@ function M.rows(d, trips, stops, clock, ahead, old)
   local trip = trips[k] or {}
   local line = trip.line or ""
   local when = phase == "break" and "leaves %{time}" or "arrives %{time}"
+  -- (NexiconDK, as openOMSI_DK) off the plan: when it was to get there and when it will
+  local planned_at = phase == "break" and trip.departure or trip.arrival
+  local sub = tr(when, { time = hhmm(planned_at) })
+  if phase == "running" and trip.arrival and hhmm(trip.arrival + (d.delay or 0)) ~= hhmm(trip.arrival) then
+    sub = tr("planned %{time}", { time = hhmm(trip.arrival) }) .. "  ·  " .. tr("expected %{time}", { time = hhmm(trip.arrival + (d.delay or 0)) })
+  end
   local children = {
     { type = "row", gap = 8, children = {
       plate(line),
@@ -111,7 +129,7 @@ function M.rows(d, trips, stops, clock, ahead, old)
       { type = "badge", text = chip, color = fill, text_color = ink, weight = "bold" },
     } },
     { type = "text", size = 11.5, weight = "medium", color = DIM, wrap = false,
-      text = tr("trip %{k} of %{n}", { k = k, n = #trips }) .. "  ·  " .. tr(when, { time = hhmm(phase == "break" and trip.departure or trip.arrival) }) },
+      text = tr("trip %{k} of %{n}", { k = k, n = #trips }) .. "  ·  " .. sub },
   }
   local function add(x) children[#children + 1] = x end
   local function advice(icon, text, tint)
@@ -143,17 +161,26 @@ function M.rows(d, trips, stops, clock, ahead, old)
     end
   end
   now = math.min(now or #served, #served)
-  local late = phase == "running" and punctuality(d.delay or 0) ~= "on_time" and (d.delay or 0) or nil
+  -- (NexiconDK, as openOMSI_DK: at any delay, where the expected minute is another than the
+  -- planned one: "sched. 11:32  exp. 11:36", the expected in the colour of how early or late)
+  local late = phase == "running" and (d.delay or 0) or nil
   local from, to = math.max(now - 1, 1), math.min(now + ahead - 1, #served)
   local list = {}
   for j = from, to do
     local s = served[j]
     local state = j < now and "done" or (j == now and "now" or "ahead")
+    local planned = hhmm(s.arrival)
     local expected = (late and (state == "ahead" or (state == "now" and not d.at_stop))) and hhmm(s.arrival + late) or ""
-    list[#list + 1] = {
-      name = s.name or "", time = hhmm(s.arrival), expected = expected, expected_color = expected ~= "" and INK[punctuality(late)] or nil,
-      state = state, tag = j == #served and tr("terminus") or "",
-    }
+    local stop = { name = s.name or "", time = planned, expected = "", state = state, tag = j == #served and tr("terminus") or "" }
+    if expected ~= "" and expected ~= planned then
+      if old then
+        stop.expected = expected
+      else
+        stop.expected, stop.expected_color = tr("sched. %{time}", { time = planned }), DIM
+        stop.time, stop.time_color = tr("exp. %{time}", { time = expected }), INK[punctuality(late)]
+      end
+    end
+    list[#list + 1] = stop
   end
   if #list > 0 then
     if old then

@@ -235,12 +235,14 @@ pub enum StopState {
     Ahead,
 }
 
-/// A stop of a `stops` list: its name and time, when the bus will be there (in its colour),
-/// where it is for the bus and a tag after its name ("terminus").
+/// A stop of a `stops` list: its name and time (in a colour of its own, or the one of where the
+/// stop is for the bus), when the bus will be there (in its colour), where it is for the bus
+/// and a tag after its name ("terminus").
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Stop {
     pub name: String,
     pub time: String,
+    pub time_color: Option<Rgba>,
     pub expected: String,
     pub expected_color: Option<Rgba>,
     pub state: StopState,
@@ -1044,6 +1046,7 @@ impl Reader<'_> {
                 Ok(Stop {
                     name: r.string("name")?.unwrap_or_default(),
                     time: r.string("time")?.unwrap_or_default(),
+                    time_color: r.color("time_color")?,
                     expected: r.string("expected")?.unwrap_or_default(),
                     expected_color: r.color("expected_color")?,
                     state: match r.string("state")?.as_deref() {
@@ -1245,7 +1248,7 @@ mod tests {
         let p = panel(
             r##"{ anchor = "navigator", grab = true, children = {
                 { type = "box", color = "#F58620", children = { { type = "text", text = "Next 08:10" } } },
-                { type = "stops", stops = { { name = "Markt", time = "08:05", expected = "08:09", expected_color = "#FF5F57", state = "now" }, { name = "Rathaus", time = "08:12", tag = "terminus" } } },
+                { type = "stops", stops = { { name = "Markt", time = "08:05", expected = "08:09", expected_color = "#FF5F57", state = "now" }, { name = "Rathaus", time = "08:12", time_color = "#FFA23F", tag = "terminus" } } },
                 { type = "bar", segments = { { value = 2, color = "#2A75F7" }, { value = 5 } } },
                 { type = "table", aligns = { "left", "right" }, rows = { { "Zoo", { text = "+3:12", color = "#FF5F57" } }, { "Markt", "12:05" } } },
                 { type = "table", rows = { { "Zoo", "12:01" } } },
@@ -1258,6 +1261,7 @@ mod tests {
         let Kind::Stops { stops, size } = &p.children[1].kind else { panic!("{:?}", p.children[1]) };
         assert_eq!((stops[0].state, stops[1].state, stops[1].tag.as_str(), *size), (StopState::Now, StopState::Ahead, "terminus", 13.0));
         assert_eq!(stops[0].expected_color, Rgba::parse("#FF5F57"));
+        assert_eq!((stops[0].time_color, stops[1].time_color), (None, Rgba::parse("#FFA23F")));
         let Kind::Bar { segments, .. } = &p.children[2].kind else { panic!("{:?}", p.children[2]) };
         assert_eq!(segments, &[(2.0, Rgba([0x2A, 0x75, 0xF7, 255])), (5.0, Rgba([232, 160, 48, 255]))]);
         let Kind::Table { rows, aligns, inks, .. } = &p.children[3].kind else { panic!("{:?}", p.children[3]) };

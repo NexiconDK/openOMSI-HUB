@@ -19,7 +19,7 @@ use std::path::{Path, PathBuf};
 /// The plugin's name: its folder in the plugins folder.
 pub const NAME: &str = "omsihub";
 /// The plugin's version; `lua/main.lua` says the same (a test keeps the two the same).
-pub const VERSION: &str = "1.6.1";
+pub const VERSION: &str = "1.6.2";
 /// The plugin's files.
 pub const FILES: &[(&str, &str)] = &[
     ("main.lua", include_str!("../lua/main.lua")),
@@ -108,6 +108,11 @@ pub const TEXTS: &[&str] = &[
     "%{m} min break",
     "arrives %{time}",
     "leaves %{time}",
+    // (NexiconDK, as openOMSI_DK: off the plan, when it was to be there and when it will)
+    "planned %{time}",
+    "expected %{time}",
+    "sched. %{time}",
+    "exp. %{time}",
     "terminus",
     // the board's company parts (`lua/company.lua`) and their switches (`lua/main.lua`)
     "On the duty board",
