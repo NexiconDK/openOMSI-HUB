@@ -1214,6 +1214,8 @@ pub mod tests {
         let Ok(dir) = std::env::var("OMSI_NAV_DUTY_PREVIEW") else { return };
         crate::ui_language("ENG");
         let (trips, tours) = duty();
+        // (the tours named as a timetable names them: "35H01", "25H03")
+        let tours: Vec<(String, String, usize)> = tours.into_iter().map(|(l, t, k)| (l.clone(), format!("{l}H{t:0>2}"), k)).collect();
         let fonts = Fonts::hanken();
         let mut atlas = Atlas::new(2048);
         let s = 2.0;
