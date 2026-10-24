@@ -92,12 +92,39 @@ a company of 3 lines (74 tours a day), 18 buses, 150 staff:
   the control room's messages, the depot's building) still runs only there: to be moved to the
   host in this phase.
 
+### In the server
+
+`server.cfg` (the keys are not in its defaults yet - the feature is off until it is ready):
+
+```
+company = <the company's id>     # a file <id>.json of <company_dir>/companies
+company_dir = company            # beside server.cfg unless absolute
+```
+
+- The server opens the company (`server::start_company`, `crate::company_server::start`) once
+  the OMSI folder is known, before the world: caught up, its day planned, saved; the company's
+  map must be the server's. The world starts at the company's date and time.
+- The host runs on a thread of its own (`company host`), a step every 2 s; it is saved when
+  the server stops (`company_server::stop`).
+- The server's clock follows the company's (`company_server::clock`: the host's course, to the
+  second) as a server on the real time follows the machine's: a company makes the server run
+  1:1 (the speed 1, the administration's clock ignored, as with `real_time = 1`).
+- The timetable takes the company's plan from the server's folder (`CompanyLive::for_server`):
+  the company's tours with its buses, its lines' other tours kept in their depots, the map's
+  lines no company has run as the map has them. The plan carries the company's lines for that
+  (`LivePlan::lines`). Whenever the host writes the plan anew (`plan_gen`) the timetable takes
+  it in for the same day (`ScheduleSim::reload_company`), the trips told already staying told.
+- Midnight: the world's day rolls on its own; until the host has written the new day's plan
+  (a second or a few), the company's lines stay in their depots.
+
+Tested: `company::online::tests` (the world's clock between the steps, over midnight),
+`company_live::tests::on_a_server_the_maps_other_lines_run`, `server_cfg::tests::
+the_company_and_its_folder`.
+
 ### Still to do in phase 1
 
-- `server.cfg`: `company = <id>` and `company_dir` (default: the server's `company` folder).
-- The host on its own thread in the server; its `now()` sets the world's date and clock; a new
-  `plan_gen` makes the timetable take the plan in (`CompanyLive::set_day`), not only at midnight.
-- `Schedule::set_company` with the server's company folder (today the launcher's data folder).
-- Saved when the server stops.
-- Creating the company on the server (phase 1: copied from a launcher; phase 2: from the
-  launcher with the admin code).
+- What the launcher's pages do besides (a line's change on its day, the dealer's deliveries,
+  the control room's messages, the depot's building) moved to the host.
+- Creating the company on the server (phase 1: copied from a launcher's `~/.openomsi/companies`;
+  phase 2: from the launcher with the admin code).
+- A run on a real server with the whole map (Ahlheim), measured.

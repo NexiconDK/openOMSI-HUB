@@ -90,6 +90,7 @@ use omsi_scene::{rain, window_wipers};
 mod scene;
 mod lightning;
 mod company_live;
+mod company_server;
 mod season_phase;
 mod schedule;
 mod schedule_paper;
@@ -437,6 +438,13 @@ pub(crate) fn make_app(mut args: Args, server_cfg: Option<server::ServerCfg>) ->
         args.situation = Some(tutorial::SITUATIONS[n - 1].to_string());
     }
     apply_situation(&mut args)?;
+    // Bus Company Online: the server's company opened, the world on its clock
+    if let Some(cfg) = server_cfg.as_ref().filter(|c| !c.company.is_empty()) {
+        if let Err(e) = server::start_company(&mut args, cfg) {
+            eprintln!("server: {e:#}");
+            std::process::exit(2);
+        }
+    }
     // `openomsi`: the official server, wherever its tunnel is today (see omsi_net::official)
     if let Some(t) = args.lan_join.clone().filter(|t| omsi_net::official::is_alias(t)) {
         match omsi_net::official::resolve_target(&t) {
@@ -530,6 +538,8 @@ pub(crate) fn make_app(mut args: Args, server_cfg: Option<server::ServerCfg>) ->
             args.take_lan_config(&c);
         }
         let r = run_offscreen(&args, &out, lan, lan_game);
+        // (a server's company saved as it stops)
+        company_server::stop();
         lan_mods::clean_up();
         return r.map(|_| None);
     }

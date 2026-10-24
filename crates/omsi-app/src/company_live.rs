@@ -12,6 +12,12 @@
 //! (`Schedule::choose`), a dropped tour does not run, the map's other timetable buses stay in
 //! their depots (`keeps_off`), and each trip a company bus drives to its end is reported
 //! once.
+//!
+//! On a dedicated server (Bus Company Online, `crate::company_server`) the company lives in the
+//! server's folder and the world is everybody's: the company's tours run with its buses as its
+//! plan has them, its lines' other tours do not run (what its planners left open), and the map's
+//! lines no company has run as the map has them. The plan is taken in again whenever the
+//! company's host writes it anew (`ScheduleSim::reload_company`), not only at midnight.
 
 use omsi_launcher_lib::company::plan::{self, LivePlan, LiveTour};
 use omsi_launcher_lib::company::store;
@@ -29,6 +35,13 @@ pub struct CompanyLive {
     /// of the player's own, the map's timetable as ever.
     company: Option<String>,
     plan: Option<LivePlan>,
+    /// A dedicated server's company (`for_server`): the map's other lines run.
+    server: bool,
+    /// The company's lines as its last plan had them (a server's: kept off the map's buses
+    /// while the new day's plan is not written yet).
+    lines: Vec<String>,
+    /// The day the plan is for (yyyymmdd).
+    day: i32,
     /// The plan is the company's own day: what its buses drive is reported (a later day's,
     /// for a duty driven ahead, only puts them on the road).
     reports: bool,
@@ -60,11 +73,24 @@ impl CompanyLive {
         c
     }
 
-    /// The day moved on (midnight): the plan of the new day, if there is one.
+    /// A dedicated server's company `id` (Bus Company Online): its plan of this map and date,
+    /// from the server's company folder `data`; the map's lines no company has run as ever.
+    pub fn for_server(map_dir: &Path, date_code: i32, data: PathBuf, id: &str) -> CompanyLive {
+        let mut c = CompanyLive { map_dir: map_dir.to_path_buf(), data, company: Some(id.trim().to_string()), server: true, ..Default::default() };
+        c.set_day(date_code);
+        c
+    }
+
+    /// The day moved on (midnight): the plan of the new day, if there is one. The same day
+    /// again: its plan taken in anew (a server's host wrote it again, `plan_gen`).
     pub fn set_day(&mut self, date_code: i32) {
         self.plan = None;
         self.reports = false;
-        self.reported.clear();
+        // (the same day's plan taken in again: its trips told already stay told)
+        if date_code != self.day {
+            self.reported.clear();
+        }
+        self.day = date_code;
         let Some(id) = self.company.clone() else { return };
         let date = date_of(date_code);
         let fits = |p: &LivePlan| p.company == id && p.is_for(&self.map_dir, &date);
@@ -74,31 +100,44 @@ impl CompanyLive {
         } else {
             self.plan = plan::drive_plan(&self.data, &id).filter(|p| fits(p));
         }
-        match &self.plan {
-            Some(p) => {
+        if let Some(p) = self.plan.as_ref().filter(|p| !p.lines.is_empty()) {
+            self.lines = p.lines.clone();
+        }
+        match (&self.plan, self.server) {
+            (Some(p), true) => {
+                let buses = p.tours.iter().filter(|t| t.vehicle.is_some()).count();
+                let dropped = p.tours.iter().filter(|t| t.dropped).count();
+                log::info!("company {id} ({date}): {buses} of its tours with its buses, {dropped} not run; its {} lines' other tours stay in their depots, the map's other lines run as ever", self.lines.len());
+            }
+            (Some(p), false) => {
                 let buses = p.tours.iter().filter(|t| t.vehicle.is_some()).count();
                 let dropped = p.tours.iter().filter(|t| t.dropped).count();
                 log::info!("company {id}: only its own buses run today ({date}): {buses} of its tours with its buses, {dropped} dropped; the map's other timetable buses stay in their depots");
             }
-            None => log::info!("company {id}: no plan of it for {date} on this map - none of the map's timetable buses run"),
+            (None, true) => log::info!("company {id}: no plan of it for {date} yet - its lines stay in their depots until it is written"),
+            (None, false) => log::info!("company {id}: no plan of it for {date} on this map - none of the map's timetable buses run"),
         }
     }
+
 
     pub fn active(&self) -> bool {
         self.plan.is_some()
     }
 
-    /// A drive from the company's planning: only its buses run, plan for the day or not.
+    /// A drive from the company's planning: only its buses run, plan for the day or not (not
+    /// on a server: the map's other lines run there).
     pub fn own_only(&self) -> bool {
-        self.company.is_some()
+        self.company.is_some() && !self.server
     }
 
     /// Whether the timetable keeps a tour off the road: one the company dropped today, and in
     /// a drive for the company every tour of the map's own buses (`map_bus`) that is not the
     /// company's. Trains and planes run as ever.
+    /// On a server: a tour of one of the company's lines it does not run today.
     pub fn keeps_off(&self, line: &str, tour: &str, map_bus: bool) -> bool {
         match self.tour(line, tour) {
             Some(t) => t.dropped,
+            None if self.server => map_bus && self.lines.iter().any(|l| l.trim().eq_ignore_ascii_case(line.trim())),
             None => self.own_only() && map_bus,
         }
     }
@@ -171,6 +210,7 @@ mod tests {
                 LiveTour { line: "Linie5".into(), number: "5".into(), tour: "1".into(), vehicle: Some(3), bus: "Vehicles/X/x.bus".into(), ..Default::default() },
                 LiveTour { line: "Linie5".into(), number: "5".into(), tour: "2".into(), dropped: true, ..Default::default() },
             ],
+            lines: Vec::new(),
         };
         plan::save_live_plan(&data, &lp).unwrap();
         let grundorf = Path::new("C:/OMSI 2/maps/Grundorf");
@@ -212,6 +252,46 @@ mod tests {
         assert_eq!(again.live.len(), 1);
         assert_eq!(plan::live_plans(&data).len(), 1);
         assert!(plan::drive_plan(&data, "../x").is_none());
+        let _ = std::fs::remove_dir_all(&data);
+    }
+
+    /// On a server (Bus Company Online) the company's tours run with its buses, its lines'
+    /// other tours (and those it dropped) stay in their depots, and the map's other lines run
+    /// as ever; the plan written anew for the same day is taken in without telling a trip
+    /// twice, and a new day without its plan yet keeps the company's lines off still.
+    #[test]
+    fn on_a_server_the_maps_other_lines_run() {
+        let data = std::env::temp_dir().join(format!("openomsi-company-server-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&data);
+        let c = omsi_launcher_lib::company::found(&omsi_launcher_lib::company::Founding { name: "Server".into(), date: "2024-03-04".into(), map: "maps/Grundorf/global.cfg".into(), ..Default::default() }, "Luc");
+        store::save(&data, &c).unwrap();
+        let mut lp = LivePlan {
+            company: c.id.clone(),
+            map: c.map.clone(),
+            date: c.date.clone(),
+            tours: vec![LiveTour { line: "Linie5".into(), number: "5".into(), tour: "1".into(), vehicle: Some(3), bus: "Vehicles/X/x.bus".into(), ..Default::default() }],
+            lines: vec!["Linie5".into()],
+            ..Default::default()
+        };
+        plan::save_live_plan(&data, &lp).unwrap();
+        let grundorf = Path::new("C:/OMSI 2/maps/Grundorf");
+        let mut live = CompanyLive::for_server(grundorf, 20240304, data.clone(), &c.id);
+        assert!(live.active() && !live.own_only());
+        assert!(!live.keeps_off("Linie5", "1", true), "its tour with its bus");
+        assert!(live.keeps_off("Linie5", "2", true), "its line's tour nobody planned");
+        assert!(!live.keeps_off("Linie9", "1", true), "the map's other line");
+        live.report(17, "Linie5", "1", 6 * 60, 12.5, 14, 0.0);
+        // a planner gave tour 2 a bus: the plan written anew, taken in for the same day
+        lp.tours.push(LiveTour { line: "Linie5".into(), number: "5".into(), tour: "2".into(), vehicle: Some(4), bus: "Vehicles/X/x.bus".into(), ..Default::default() });
+        plan::save_live_plan(&data, &lp).unwrap();
+        live.set_day(20240304);
+        assert!(!live.keeps_off("Linie5", "2", true));
+        live.report(17, "Linie5", "1", 6 * 60, 12.5, 14, 0.0);
+        assert_eq!(store::peek_live(&data, &c.id, 0).len(), 1, "a trip told once");
+        // midnight before the host wrote the new day's plan: its lines stay off, the rest runs
+        live.set_day(20240305);
+        assert!(!live.active());
+        assert!(live.keeps_off("Linie5", "1", true) && !live.keeps_off("Linie9", "1", true));
         let _ = std::fs::remove_dir_all(&data);
     }
 }

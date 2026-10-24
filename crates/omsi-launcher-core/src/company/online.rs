@@ -217,6 +217,26 @@ impl Host {
     pub fn now(&self) -> (String, u32) {
         (self.company.date.clone(), self.company.clock.minute)
     }
+
+    /// The company's course (`clock::course`): the real time (Unix seconds) and its time
+    /// (`clock::now`) it went in step at - where the real clock has it at any moment
+    /// (`clock_at`), between the steps too. Not in step: its time now.
+    pub fn course(&self, real: i64) -> (i64, i64) {
+        let c = &self.company;
+        match c.clock.real.synced.filter(|_| c.clock.real.on) {
+            Some(s) => (s.real, s.minute),
+            None => (real, clock::now(c)),
+        }
+    }
+}
+
+/// Where a company on its course (`Host::course`) is at the real time `real` (Unix seconds,
+/// with their fraction): its date and the second of that day - the server's world clock.
+pub fn clock_at(course: (i64, i64), real: f64) -> (String, f64) {
+    let at = course.1 as f64 * 60.0 + (real - course.0 as f64).max(0.0);
+    let day_s = clock::DAY as f64 * 60.0;
+    let day = (at / day_s).floor();
+    (super::dates::fmt(day as i64), at - day * day_s)
 }
 
 #[cfg(test)]
@@ -323,6 +343,11 @@ mod tests {
         // (an hour: as an absence - caught up the same)
         h.tick_in(at(1.0 + 10.0 / 60.0), &mut w).unwrap();
         assert_eq!(h.now().1, 6 * 60 + 10);
+        // the world's clock between the steps: to the second, on over midnight
+        let course = h.course(at(2.0));
+        let (date, s) = clock_at(course, at(1.0 + 10.0 / 60.0) as f64 + 12.5);
+        assert_eq!((date.as_str(), s), ("2024-03-04", (6.0 * 60.0 + 10.0) * 60.0 + 12.5));
+        assert_eq!(clock_at(course, at(19.0) as f64 + 30.0), ("2024-03-05".to_string(), 30.0));
         let _ = std::fs::remove_dir_all(&data);
     }
 

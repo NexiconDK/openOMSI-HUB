@@ -55,17 +55,28 @@ impl Offscreen<'_> {
             ref mut sim_view,
             ref humans_off,
             ref mut real_time,
-            ref schedule,
+            ref mut schedule,
             ..
         } = *self;
         *srv_clock += dt as f64 * lan_off.as_ref().map(|l| l.clock_speed).unwrap_or(1.0);
-        // a server on the real time (server.cfg): its clock reads this machine's
+        // a server on the real time (server.cfg): its clock reads this machine's - with its bus
+        // company (Bus Company Online) the company's, which runs 1:1 with it
         if i.is_multiple_of(super::steps_in(1.0)) && crate::real_time::server_real() {
-            if let Some(n) = crate::real_time::now() {
+            let want = match crate::company_server::clock() {
+                Some((_, s)) => Some(s),
+                None => crate::real_time::now().map(|n| n.secs),
+            };
+            if let Some(want) = want {
                 let have = (parse_time(&args.time) + *srv_clock + srv_admin.shift).rem_euclid(86400.0);
-                let off = (n.secs - have + 43_200.0).rem_euclid(86_400.0) - 43_200.0;
+                let off = (want - have + 43_200.0).rem_euclid(86_400.0) - 43_200.0;
                 if off.abs() > 0.5 {
                     srv_admin.shift += off;
+                }
+            }
+            // the company's plan written anew (its host's day, a planner's change): taken in
+            if crate::company_server::take_new_plan() {
+                if let Some(s) = schedule.as_mut() {
+                    s.reload_company();
                 }
             }
         }

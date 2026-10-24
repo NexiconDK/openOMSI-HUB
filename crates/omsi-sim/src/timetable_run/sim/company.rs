@@ -63,9 +63,21 @@ impl ScheduleSim {
         self.day
     }
 
+    /// The company's plan of the day written anew (Bus Company Online: the server's host wrote
+    /// it again): taken in for the same day, and what it keeps off the road marked again. The
+    /// buses on the road go on.
+    pub fn reload_company(&mut self) {
+        let day = self.day;
+        if let Some(c) = self.company.as_deref_mut() {
+            c.set_day(day);
+        }
+        self.mark_company();
+    }
+
     /// Which departures the company keeps off the road today (`TimetableCompany::keeps_off`).
     pub(super) fn mark_company(&mut self) {
-        let Some(company) = self.company.as_deref().filter(|c| c.own_only() || c.active()) else {
+        // (a server's company without its day's plan yet keeps its lines off too: asked always)
+        let Some(company) = self.company.as_deref() else {
             self.company_off.clear();
             return;
         };

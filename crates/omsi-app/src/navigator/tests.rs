@@ -1445,7 +1445,7 @@ fn the_entry_points_show_as_the_setting_has_them() {
     let f = at((1.5, 20.0), 0.0);
     n.follow(&f);
     let companion = crate::nav_signon::tests::listening(crate::nav_signon::tests::hans());
-    let mut hits = |n: &mut Navigator, shown: EntryPoints| {
+    let hits = |n: &mut Navigator, shown: EntryPoints| {
         n.entry_points = shown;
         // (the map held on the entry point, not following the bus)
         n.city.follow = false;

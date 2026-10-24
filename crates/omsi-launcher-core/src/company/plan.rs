@@ -2092,9 +2092,19 @@ pub struct LivePlan {
     #[serde(default)]
     pub game_mode: GameMode,
     pub tours: Vec<LiveTour>,
+    /// The company's lines (their timetable names), in service or not: on a server
+    /// (Bus Company Online) the map's own buses do not run them - only the company's tours
+    /// do, as its plan has them - while the map's other lines run as ever.
+    #[serde(default)]
+    pub lines: Vec<String>,
 }
 
 impl LivePlan {
+    /// Whether `line` is one of the company's (`lines`).
+    pub fn has_line(&self, line: &str) -> bool {
+        self.lines.iter().any(|l| same(l, line))
+    }
+
     pub fn tour(&self, line: &str, tour: &str) -> Option<&LiveTour> {
         self.tours.iter().find(|t| same(&t.line, line) && same(&t.tour, tour))
     }
@@ -2147,7 +2157,8 @@ pub fn live_plan(c: &Company, dp: &DayPlan) -> LivePlan {
             lt
         })
         .collect();
-    LivePlan { company: c.id.clone(), map: c.map.clone(), date: dp.date.clone(), depot: c.depot.clone(), game_mode: c.game_mode, tours }
+    let lines = c.lines.iter().map(|l| l.name.clone()).collect();
+    LivePlan { company: c.id.clone(), map: c.map.clone(), date: dp.date.clone(), depot: c.depot.clone(), game_mode: c.game_mode, tours, lines }
 }
 
 pub fn live_plan_file(data: &Path, id: &str) -> PathBuf {

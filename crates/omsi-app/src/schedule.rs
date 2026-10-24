@@ -129,9 +129,14 @@ impl Schedule {
     }
 
     /// A drive for the player's bus company (`--company`): its plan of the day, and the map's
-    /// own buses kept in their depots. Called before `precache`.
+    /// own buses kept in their depots. On a server with its company (Bus Company Online,
+    /// `company_server`): the plan from the server's company folder, and the map's lines no
+    /// company has run as ever. Called before `precache`.
     pub fn set_company(&mut self, world: &World, id: &str) {
-        let company = crate::company_live::CompanyLive::for_company(&world.map_dir, self.sim.day(), crate::company_live::data_dir(), id);
+        let company = match crate::company_server::data_dir() {
+            Some(data) => crate::company_live::CompanyLive::for_server(&world.map_dir, self.sim.day(), data, id),
+            None => crate::company_live::CompanyLive::for_company(&world.map_dir, self.sim.day(), crate::company_live::data_dir(), id),
+        };
         self.sim.set_company(Box::new(company));
     }
 

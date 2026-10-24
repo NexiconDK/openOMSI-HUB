@@ -45,8 +45,11 @@ pub(crate) fn prepare(args: &mut Args, path: &Path) -> Result<ServerCfg> {
     SERVER_MODE.store(true, std::sync::atomic::Ordering::Relaxed);
     SERVER_SHARE_TIMETABLE.store(cfg.share_timetable, std::sync::atomic::Ordering::Relaxed);
     SERVER_UNSTICK_LIGHTS.store(cfg.unstick_lights.to_bits(), std::sync::atomic::Ordering::Relaxed);
-    let _ = SERVER_ADMIN.set((cfg.admin_password.clone(), if cfg.real_time { 1.0 } else { cfg.time_speed }));
-    crate::real_time::set_server_real(cfg.real_time);
+    // (Bus Company Online: the company's time is the world's, 1:1 with the real clock - the
+    // server's clock follows it as it follows this machine's on the real time)
+    let real = cfg.real_time || !cfg.company.is_empty();
+    let _ = SERVER_ADMIN.set((cfg.admin_password.clone(), if real { 1.0 } else { cfg.time_speed }));
+    crate::real_time::set_server_real(real);
     let _ = SERVER_VEHICLES.set(cfg.vehicles.clone());
     let _ = SERVER_VOICE.set(cfg.voice.clone());
     args.map = cfg.map.clone();
@@ -70,6 +73,12 @@ pub(crate) fn prepare(args: &mut Args, path: &Path) -> Result<ServerCfg> {
     let _ = SERVER_METAR.set(station);
     args.traffic = cfg.traffic;
     args.schedule = cfg.timetable;
+    if !cfg.company.is_empty() {
+        args.company = Some(cfg.company.clone());
+        if !cfg.timetable {
+            log::warn!("server: the company {} has no buses in the world without the timetable (timetable = 1)", cfg.company);
+        }
+    }
     args.passengers = cfg.passengers;
     args.lan_host = Some(cfg.port);
     args.lan_join = None;
@@ -82,6 +91,20 @@ pub(crate) fn prepare(args: &mut Args, path: &Path) -> Result<ServerCfg> {
     }
     log::info!("server '{}': map {}, {} at {}, traffic {}, timetable {}, passengers {}, UDP {} / web {}, at most {} players", cfg.name, cfg.map, cfg.date.as_deref().unwrap_or("today"), cfg.time, cfg.traffic, cfg.timetable, cfg.passengers, cfg.port, cfg.web_port, cfg.max_players);
     Ok(cfg)
+}
+
+/// Bus Company Online: the company `server.cfg` names opened from the server's company folder
+/// and its host started (`company_server`); the world starts at the company's date and time.
+/// (Once the OMSI folder and the content roots are known: the map's folder is found there.)
+pub(crate) fn start_company(args: &mut Args, cfg: &ServerCfg) -> Result<()> {
+    let map_cfg = omsi_cfg::resolve_path(&args.root, &args.map);
+    let map_dir = map_cfg.parent().map(Path::to_path_buf).unwrap_or_default();
+    let (date, time) = crate::company_server::start(&cfg.company_dir, &cfg.company, &map_dir)?;
+    args.date = Some(date);
+    args.day_of_year = None;
+    args.time = time;
+    args.start_synced = true;
+    Ok(())
 }
 
 /// The airport whose METAR report a dedicated server's weather follows (None: no METAR sync).
