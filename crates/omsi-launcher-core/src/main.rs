@@ -8,7 +8,10 @@ fn main() {
     omsi_cfg::migrate_legacy_data_dir();
     let args: Vec<String> = std::env::args().collect();
     if args.get(1).map(|a| a == "--company-server").unwrap_or(false) {
-        let dir = std::path::PathBuf::from(args.get(2).cloned().unwrap_or_else(|| "company-server".into()));
+        // (the folder may be given without quotes: a path with spaces arrives in pieces - `OPEN OMSI
+        // - FORK` made a folder `OPEN`)
+        let rest = args[2..].join(" ");
+        let dir = std::path::PathBuf::from(if rest.trim().is_empty() { "company-server" } else { rest.trim() });
         if let Err(e) = omsi_launcher_lib::company::main_server::run(&dir) {
             eprintln!("company server: {e:#}");
             std::process::exit(1);
