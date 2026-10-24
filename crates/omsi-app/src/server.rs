@@ -45,9 +45,9 @@ pub(crate) fn prepare(args: &mut Args, path: &Path) -> Result<ServerCfg> {
     SERVER_MODE.store(true, std::sync::atomic::Ordering::Relaxed);
     SERVER_SHARE_TIMETABLE.store(cfg.share_timetable, std::sync::atomic::Ordering::Relaxed);
     SERVER_UNSTICK_LIGHTS.store(cfg.unstick_lights.to_bits(), std::sync::atomic::Ordering::Relaxed);
-    // (Bus Company Online: the company's time is the world's, 1:1 with the real clock - the
-    // server's clock follows it as it follows this machine's on the real time)
-    let real = cfg.real_time || !cfg.company.is_empty();
+    // (Bus Company Online: the companies run on the server's clock, 1:1 with the real one - the
+    // world follows it as it follows this machine's on the real time)
+    let real = cfg.real_time || cfg.companies;
     let _ = SERVER_ADMIN.set((cfg.admin_password.clone(), if real { 1.0 } else { cfg.time_speed }));
     crate::real_time::set_server_real(real);
     let _ = SERVER_VEHICLES.set(cfg.vehicles.clone());
@@ -73,11 +73,8 @@ pub(crate) fn prepare(args: &mut Args, path: &Path) -> Result<ServerCfg> {
     let _ = SERVER_METAR.set(station);
     args.traffic = cfg.traffic;
     args.schedule = cfg.timetable;
-    if !cfg.company.is_empty() {
-        args.company = Some(cfg.company.clone());
-        if !cfg.timetable {
-            log::warn!("server: the company {} has no buses in the world without the timetable (timetable = 1)", cfg.company);
-        }
+    if cfg.companies && !cfg.timetable {
+        log::warn!("server: the bus companies have no buses in the world without the timetable (timetable = 1)");
     }
     args.passengers = cfg.passengers;
     args.lan_host = Some(cfg.port);
@@ -93,17 +90,38 @@ pub(crate) fn prepare(args: &mut Args, path: &Path) -> Result<ServerCfg> {
     Ok(cfg)
 }
 
-/// Bus Company Online: the company `server.cfg` names opened from the server's company folder
-/// and its host started (`company_server`); the world starts at the company's date and time.
-/// (Once the OMSI folder and the content roots are known: the map's folder is found there.)
-pub(crate) fn start_company(args: &mut Args, cfg: &ServerCfg) -> Result<()> {
+/// Bus Company Online: the date and second of the day the server's clock starts on (the first
+/// time, and on the real time every time): this machine's today and now with `real_time = 1`
+/// (`prepare` set the arguments to them), else `server.cfg`'s date (empty: today) and time.
+fn clock_start(args: &Args) -> (String, i64) {
+    let today = crate::real_time::now().map(|n| format!("{:04}-{:02}-{:02}", n.year, n.month, n.day)).unwrap_or_else(|| "2024-01-01".into());
+    (args.date.clone().filter(|d| !d.trim().is_empty()).unwrap_or(today), parse_time(&args.time) as i64)
+}
+
+/// Bus Company Online (`companies = 1`): the server's clock set or taken up again, its companies
+/// opened from its company folder and their hosts started (`company_server`); the world starts at
+/// the clock's date and time. (Once the OMSI folder and the content roots are known: the map's
+/// folder is found there.)
+pub(crate) fn start_companies(args: &mut Args, cfg: &ServerCfg) -> Result<()> {
     let map_cfg = omsi_cfg::resolve_path(&args.root, &args.map);
     let map_dir = map_cfg.parent().map(Path::to_path_buf).unwrap_or_default();
-    let (date, time) = crate::company_server::start(&cfg.company_dir, &cfg.company, &map_dir)?;
+    let (date, time) = crate::company_server::start(&cfg.company_dir, &map_dir, cfg.real_time, clock_start(args))?;
     args.date = Some(date);
     args.day_of_year = None;
     args.time = time;
     args.start_synced = true;
+    Ok(())
+}
+
+/// `--found-company <name>`: a new company founded in the server's company folder, on its map and
+/// clock; its id printed.
+pub(crate) fn found_company(args: &Args, cfg: &ServerCfg, name: &str) -> Result<()> {
+    let id = crate::company_server::found(&cfg.company_dir, &cfg.map, name, &args.company_mode, cfg.real_time, clock_start(args))?;
+    if !cfg.companies {
+        println!("(companies = 1 in server.cfg puts the companies on the server)");
+    }
+    println!("{id}");
+    log::info!("server: the company {name} founded ({id}) in {}", cfg.company_dir.display());
     Ok(())
 }
 

@@ -48,10 +48,11 @@ pub struct ServerCfg {
     /// The GreenTeaSpeak server and channel the players talk in (`voice`).
     pub voice: Option<crate::voice::VoiceServer>,
     /// Omsi-Hub, Bus Company Online (in the making, docs/omsihub/BUS_COMPANY_ONLINE.md; not in
-    /// `DEFAULT_CFG` until it is ready): the bus company that lives on this server (its id, a
-    /// file `<id>.json` of `company_dir`'s `companies`; empty: none). Its time is the world's,
-    /// 1:1 with the real clock, and its buses drive its tours.
-    pub company: String,
+    /// `DEFAULT_CFG` until it is ready): the bus companies live on this server (`companies = 1`;
+    /// off: none) - every company of `company_dir`, founded there, on the server's clock (the real
+    /// time, or `date` and `time` the first time, then 1:1 and on where it was after a restart),
+    /// each line of theirs run by its company's buses in the shared world.
+    pub companies: bool,
     /// The folder the server's companies are kept in (`company_dir`, beside `server.cfg`
     /// unless absolute; default `company`).
     pub company_dir: std::path::PathBuf,
@@ -190,7 +191,7 @@ impl ServerCfg {
             share_timetable: flag("share_timetable", true),
             unstick_lights: kv.get("unstick_lights").and_then(|v| v.trim().parse::<f32>().ok()).filter(|v| v.is_finite()).unwrap_or(180.0).clamp(0.0, 3600.0),
             voice: crate::voice::VoiceServer::from_kv(|k| kv.get(k).cloned()),
-            company: kv.get("company").map(|v| v.trim().to_string()).unwrap_or_default(),
+            companies: flag("companies", false),
             company_dir: dir.join(get("company_dir", "company")),
         })
     }
@@ -267,19 +268,20 @@ pub fn player_info<'a>(q: &omsi_net::Pose, pose_of: impl Fn(u32) -> Option<&'a o
 mod vehicles_tests {
     use super::{admin_password, allows, ServerCfg};
 
-    /// Bus Company Online: the company named, its folder beside server.cfg (or where it says).
+    /// Bus Company Online: the companies on or off, their folder beside server.cfg (or where it
+    /// says).
     #[test]
-    fn the_company_and_its_folder() {
+    fn the_companies_and_their_folder() {
         let dir = std::env::temp_dir().join(format!("openomsi-server-cfg-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("server.cfg");
         std::fs::write(&path, "map = maps/Ahlheim/global.cfg\n").unwrap();
         let c = ServerCfg::load(&path, 100).unwrap();
-        assert_eq!((c.company.as_str(), c.company_dir.clone()), ("", dir.join("company")));
+        assert_eq!((c.companies, c.company_dir.clone()), (false, dir.join("company")));
         let elsewhere = std::env::temp_dir().join("companies");
-        std::fs::write(&path, format!("company = ahlheim-bus \ncompany_dir = {}\n", elsewhere.display())).unwrap();
+        std::fs::write(&path, format!("companies = 1\ncompany_dir = {}\n", elsewhere.display())).unwrap();
         let c = ServerCfg::load(&path, 100).unwrap();
-        assert_eq!((c.company.as_str(), c.company_dir.clone()), ("ahlheim-bus", elsewhere));
+        assert_eq!((c.companies, c.company_dir.clone()), (true, elsewhere));
         let _ = std::fs::remove_dir_all(&dir);
     }
 

@@ -12,16 +12,20 @@
 //! numbers - one more `plan_gen` each time) and saves itself now and then and after each close,
 //! so that a server started again goes on where it was.
 //!
-//! The server's game clock follows the company's (`now`): its date and minute are the world's.
+//! Every company of a server runs on the server's clock (`ServerClock`, the owner's choice in
+//! `server.cfg`: the real date and time, or a date of his own, and from then on 1:1 with the real
+//! clock, going on where it was after a restart): its course is pinned to it (`Host::open`'s
+//! `clock`), and the server's world runs on it too. Companies are founded on the server, at its
+//! date and minute (`found_on_server`); each line belongs to at most one of them.
 //!
 //! What the launcher's pages do besides on their tick (a line's change on its day, the dealer's
 //! deliveries, the control room's messages) is not run here yet: the phases after this one.
 
-use super::clock::{self, Away, World};
+use super::clock::{self, Away, Synced, World};
 use serde::{Deserialize, Serialize};
 use super::day::DayReport;
 use super::model::Company;
-use super::{network, plan, store};
+use super::{dates, network, plan, store, Founding};
 use crate::LineInfo;
 use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
@@ -40,6 +44,83 @@ pub struct Online {
     /// run as the map has them.
     #[serde(default)]
     pub on_server: bool,
+}
+
+/// A server's clock: every company on the server runs on it, and the server's world. Set once to
+/// `at` (seconds of the companies' calendar: `dates::parse`'s day times 86 400, and the second of
+/// that day) at the real time `real` (Unix seconds), it runs 1:1 with the real clock from there,
+/// and goes on where it was after a restart - the time the server was off included
+/// (`server_clock`).
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ServerClock {
+    pub real: i64,
+    pub at: i64,
+}
+
+/// The server's clock in its company folder.
+pub const CLOCK_FILE: &str = "clock.json";
+
+const DAY_S: i64 = clock::DAY * 60;
+
+impl ServerClock {
+    /// Set to the second `secs` of `date` (YYYY-MM-DD) at the real time `real`.
+    pub fn starting(date: &str, secs: i64, real: i64) -> Option<ServerClock> {
+        Some(ServerClock { real, at: dates::parse(date)? * DAY_S + secs.clamp(0, DAY_S - 1) })
+    }
+
+    /// Its date and the second of that day at the real time `real` (Unix seconds, with their
+    /// fraction): the server's world clock.
+    pub fn at_real(&self, real: f64) -> (String, f64) {
+        let at = self.at as f64 + (real - self.real as f64);
+        let day = (at / DAY_S as f64).floor();
+        (dates::fmt(day as i64), at - day * DAY_S as f64)
+    }
+
+    /// The companies' minute (`clock::moment`) at the real time `real`.
+    pub fn minute(&self, real: i64) -> i64 {
+        (self.at + (real - self.real)).div_euclid(60)
+    }
+
+    /// The course a company on this clock keeps (`clock::course`), to the second.
+    fn synced(&self) -> Synced {
+        Synced { real: self.real - self.at.rem_euclid(60), minute: self.at.div_euclid(60) }
+    }
+}
+
+/// The server's clock kept in its company folder `data` (`CLOCK_FILE`), at the real time `real`:
+/// as it was set the first time, going on 1:1. `start`: the date and second of the day the server
+/// starts on - the first time, and on a server on the real time (`follow`) every time it starts,
+/// unless that would take its clock back (the clocks set back an hour in the autumn: the
+/// companies cannot go back, the server keeps its course).
+pub fn server_clock(data: &Path, real: i64, follow: bool, start: (String, i64)) -> Result<ServerClock> {
+    let path = data.join(CLOCK_FILE);
+    let kept: Option<ServerClock> = std::fs::read_to_string(&path).ok().and_then(|t| serde_json::from_str(&t).ok());
+    let fresh = ServerClock::starting(&start.0, start.1, real).with_context(|| format!("the server's date {} is no date (YYYY-MM-DD)", start.0))?;
+    let sc = match kept {
+        Some(k) if !follow || fresh.minute(real) < k.minute(real) => k,
+        _ => fresh,
+    };
+    if kept != Some(sc) {
+        std::fs::create_dir_all(data).with_context(|| format!("cannot make {}", data.display()))?;
+        std::fs::write(&path, serde_json::to_string_pretty(&sc)?).with_context(|| format!("cannot write {}", path.display()))?;
+    }
+    Ok(sc)
+}
+
+/// A new company founded on the server (companies are founded there, never brought along): on
+/// the server's clock - its first day the server's date, its minute the server's - and running on
+/// a server (`Online::on_server`), saved in `data` under an id not taken yet. Its id.
+pub fn found_on_server(data: &Path, f: &Founding, founder: &str, sc: ServerClock, real: i64) -> Result<String> {
+    let (date, secs) = sc.at_real(real as f64);
+    let mut c = super::found(&Founding { date, ..f.clone() }, founder);
+    c.id = store::unused_id(data, &c.name);
+    c.clock.minute = (secs / 60.0) as u32;
+    c.online.on_server = true;
+    c.clock.real.on = true;
+    c.clock.real.lead = 0;
+    c.clock.real.synced = Some(sc.synced());
+    store::save(data, &c)?;
+    Ok(c.id)
 }
 
 /// The company on a server.
@@ -61,6 +142,8 @@ pub struct Host {
     /// When it was saved last (real seconds), and whether it changed since.
     saved_at: i64,
     dirty: bool,
+    /// The server's clock the company runs on (None: its own course, as on a player's computer).
+    server: Option<ServerClock>,
 }
 
 /// What a step came to.
@@ -80,10 +163,11 @@ impl Host {
     /// The company `id` of the server's folder `data`, caught up with the real clock (`real`,
     /// Unix seconds) and saved, its day's plan written. A company that did not run with the real
     /// clock does from now on (a server's always does), from where it is.
-    /// `map_dir`: the map's folder as the server has it.
-    pub fn open(data: &Path, id: &str, real: i64, map_dir: Option<&Path>) -> Result<(Host, Option<Away>)> {
+    /// `map_dir`: the map's folder as the server has it; `clock`: the server's clock, the
+    /// company's course pinned to it.
+    pub fn open(data: &Path, id: &str, real: i64, map_dir: Option<&Path>, clock: Option<ServerClock>) -> Result<(Host, Option<Away>)> {
         let c = store::load(data, id).with_context(|| format!("the company {id} in {}", data.display()))?;
-        let mut h = Host::new(data, c, real);
+        let mut h = Host::new(data, c, real, clock);
         h.map_dir = map_dir.map(Path::to_path_buf);
         let mut disk = store::Disk::with_read(data, std::mem::take(&mut h.read)).on_map(map_dir);
         let r = h.open_with(real, &mut disk);
@@ -92,24 +176,37 @@ impl Host {
     }
 
     /// `open` with the world given (the timetable and the night: a test's own).
-    pub fn open_in(data: &Path, id: &str, real: i64, w: &mut dyn World) -> Result<(Host, Option<Away>)> {
+    pub fn open_in(data: &Path, id: &str, real: i64, w: &mut dyn World, clock: Option<ServerClock>) -> Result<(Host, Option<Away>)> {
         let c = store::load(data, id)?;
-        let mut h = Host::new(data, c, real);
+        let mut h = Host::new(data, c, real, clock);
         let away = h.open_with(real, w)?;
         Ok((h, away))
     }
 
-    fn new(data: &Path, mut company: Company, real: i64) -> Host {
+    fn new(data: &Path, mut company: Company, real: i64, server: Option<ServerClock>) -> Host {
         if !company.clock.real.on {
             clock::set_realtime(&mut company, true);
         }
         company.online.on_server = true;
         let seen = (company.date.clone(), 0);
-        Host { data: data.to_path_buf(), map_dir: None, company, read: Vec::new(), planned: None, plan_gen: 0, seen, saved_at: real, dirty: false }
+        let mut h = Host { data: data.to_path_buf(), map_dir: None, company, read: Vec::new(), planned: None, plan_gen: 0, seen, saved_at: real, dirty: false, server };
+        h.pin();
+        h
+    }
+
+    /// On the server's clock: the company's course is the server's (a lead it took - a step
+    /// ahead of it - waits for the server to come up to it).
+    fn pin(&mut self) -> bool {
+        let Some(sc) = self.server else { return false };
+        let r = &mut self.company.clock.real;
+        let was = (r.on, r.synced, r.lead);
+        (r.on, r.synced, r.lead) = (true, Some(sc.synced()), 0);
+        was != (r.on, r.synced, r.lead)
     }
 
     fn open_with(&mut self, real: i64, w: &mut dyn World) -> Result<Option<Away>> {
         let away = clock::catch_up(&mut self.company, real, w).map_err(anyhow::Error::msg)?;
+        self.pin();
         self.seen = (self.company.date.clone(), 0);
         self.write_plan(w)?;
         self.save(real)?;
@@ -130,6 +227,9 @@ impl Host {
     pub fn tick_in(&mut self, real: i64, w: &mut dyn World) -> Result<Stepped> {
         let mut s = Stepped::default();
         let before = self.company.date.clone();
+        if self.pin() {
+            self.dirty = true;
+        }
         let c = &mut self.company;
         // never in step yet: in step from now (a company that did not run with the real clock)
         if c.clock.real.synced.is_none() {
@@ -217,26 +317,6 @@ impl Host {
     pub fn now(&self) -> (String, u32) {
         (self.company.date.clone(), self.company.clock.minute)
     }
-
-    /// The company's course (`clock::course`): the real time (Unix seconds) and its time
-    /// (`clock::now`) it went in step at - where the real clock has it at any moment
-    /// (`clock_at`), between the steps too. Not in step: its time now.
-    pub fn course(&self, real: i64) -> (i64, i64) {
-        let c = &self.company;
-        match c.clock.real.synced.filter(|_| c.clock.real.on) {
-            Some(s) => (s.real, s.minute),
-            None => (real, clock::now(c)),
-        }
-    }
-}
-
-/// Where a company on its course (`Host::course`) is at the real time `real` (Unix seconds,
-/// with their fraction): its date and the second of that day - the server's world clock.
-pub fn clock_at(course: (i64, i64), real: f64) -> (String, f64) {
-    let at = course.1 as f64 * 60.0 + (real - course.0 as f64).max(0.0);
-    let day_s = clock::DAY as f64 * 60.0;
-    let day = (at / day_s).floor();
-    (super::dates::fmt(day as i64), at - day * day_s)
 }
 
 #[cfg(test)]
@@ -329,7 +409,7 @@ mod tests {
     fn a_server_company_runs_with_the_real_clock() {
         let data = temp("clock");
         let (id, mut w) = company(&data);
-        let (mut h, away) = Host::open_in(&data, &id, at(0.0), &mut w).unwrap();
+        let (mut h, away) = Host::open_in(&data, &id, at(0.0), &mut w, None).unwrap();
         assert!(away.is_none(), "never in step before: nothing caught up");
         assert_eq!(h.now(), ("2024-03-04".to_string(), 5 * 60));
         assert_eq!(h.plan_gen, 1);
@@ -343,11 +423,6 @@ mod tests {
         // (an hour: as an absence - caught up the same)
         h.tick_in(at(1.0 + 10.0 / 60.0), &mut w).unwrap();
         assert_eq!(h.now().1, 6 * 60 + 10);
-        // the world's clock between the steps: to the second, on over midnight
-        let course = h.course(at(2.0));
-        let (date, s) = clock_at(course, at(1.0 + 10.0 / 60.0) as f64 + 12.5);
-        assert_eq!((date.as_str(), s), ("2024-03-04", (6.0 * 60.0 + 10.0) * 60.0 + 12.5));
-        assert_eq!(clock_at(course, at(19.0) as f64 + 30.0), ("2024-03-05".to_string(), 30.0));
         let _ = std::fs::remove_dir_all(&data);
     }
 
@@ -357,7 +432,7 @@ mod tests {
     fn its_days_are_closed_planned_and_saved() {
         let data = temp("days");
         let (id, mut w) = company(&data);
-        let (mut h, _) = Host::open_in(&data, &id, at(0.0), &mut w).unwrap();
+        let (mut h, _) = Host::open_in(&data, &id, at(0.0), &mut w, None).unwrap();
         let history = h.company.history.len();
         // to 00:05 of the next day
         let s = h.tick_in(at(19.0 + 5.0 / 60.0), &mut w).unwrap();
@@ -381,7 +456,7 @@ mod tests {
         for (mode, runs) in [(GameMode::Normal, false), (GameMode::Realistic, false), (GameMode::Casual, true)] {
             let data = temp("open");
             let (id, mut w) = company_of(&data, mode, false);
-            let (h, _) = Host::open_in(&data, &id, at(0.0), &mut w).unwrap();
+            let (h, _) = Host::open_in(&data, &id, at(0.0), &mut w, None).unwrap();
             assert!(h.company.online.on_server);
             let p = plan::live_plans(&data).into_iter().find(|p| p.company == id).unwrap();
             assert!(!p.tours.is_empty());
@@ -390,13 +465,74 @@ mod tests {
         }
     }
 
+    /// The server's clock: set the first time, then 1:1 with the real clock, on where it was
+    /// after a restart (the time it was off included); on the real time it follows the day it
+    /// starts on - but never back.
+    #[test]
+    fn the_servers_clock_goes_on_where_it_was() {
+        let data = temp("server-clock");
+        let sc = server_clock(&data, at(0.0), false, ("2024-03-04".into(), 8 * 3600)).unwrap();
+        assert_eq!(sc.at_real(at(0.0) as f64 + 0.5), ("2024-03-04".to_string(), 8.0 * 3600.0 + 0.5));
+        assert_eq!(sc.minute(at(1.0)), clock::moment("2024-03-04", 9 * 60));
+        // over midnight, to the second
+        assert_eq!(sc.at_real(at(16.0) as f64 + 30.0), ("2024-03-05".to_string(), 30.0));
+        // started again three hours later with another start in server.cfg: on where it was
+        let again = server_clock(&data, at(3.0), false, ("2030-01-01".into(), 0)).unwrap();
+        assert_eq!(again, sc);
+        assert_eq!(again.at_real(at(3.0) as f64).1, 11.0 * 3600.0);
+        // on the real time: the day it starts on - an hour on (spring) taken, an hour back not
+        let real = server_clock(&data, at(3.0), true, ("2024-03-04".into(), 12 * 3600)).unwrap();
+        assert_eq!(real.at_real(at(3.0) as f64).1, 12.0 * 3600.0);
+        let back = server_clock(&data, at(3.0), true, ("2024-03-04".into(), 11 * 3600)).unwrap();
+        assert_eq!(back, real, "never back");
+        assert!(ServerClock::starting("not a date", 0, 0).is_none());
+        let _ = std::fs::remove_dir_all(&data);
+    }
+
+    /// Every company of a server runs on the server's clock: one behind it catches up when it is
+    /// opened, one ahead of it waits for it; and a company founded there starts on its date and
+    /// minute, under an id of its own.
+    #[test]
+    fn the_companies_run_on_the_servers_clock() {
+        let data = temp("on-the-clock");
+        let (id, mut w) = company(&data);
+        // the server at 07:30 when the company (at 05:00) comes onto it
+        let sc = ServerClock::starting("2024-03-04", 7 * 3600 + 1800, at(0.0)).unwrap();
+        let (mut h, away) = Host::open_in(&data, &id, at(0.0), &mut w, Some(sc)).unwrap();
+        assert!(away.is_some(), "the two and a half hours caught up");
+        assert_eq!(h.now(), ("2024-03-04".to_string(), 7 * 60 + 30));
+        h.tick_in(at(1.0), &mut w).unwrap();
+        assert_eq!(h.now().1, 8 * 60 + 30);
+        // a server whose clock is behind the company's (04:00): the company waits for it
+        let behind = ServerClock::starting("2024-03-04", 4 * 3600, at(2.0)).unwrap();
+        h.save(at(2.0)).unwrap();
+        drop(h);
+        let (mut h, _) = Host::open_in(&data, &id, at(2.0), &mut w, Some(behind)).unwrap();
+        h.tick_in(at(3.0), &mut w).unwrap();
+        assert_eq!(h.now().1, 8 * 60 + 30, "waits");
+        h.tick_in(at(7.0), &mut w).unwrap();
+        assert_eq!(h.now().1, 9 * 60, "on with the server once it is there");
+        // founded on the server: its date and minute, an id of its own, on a server
+        let f = Founding { name: "Online".into(), map: "maps/Grundorf/global.cfg".into(), date: "1999-01-01".into(), ..Default::default() };
+        let a = found_on_server(&data, &f, "owner", sc, at(1.0)).unwrap();
+        let b = found_on_server(&data, &f, "owner", sc, at(1.0)).unwrap();
+        assert_ne!(a, b);
+        assert_ne!(a, id);
+        let c = store::load(&data, &b).unwrap();
+        assert_eq!((c.date.as_str(), c.clock.minute, c.online.on_server), ("2024-03-04", 8 * 60 + 30, true));
+        let (h, away) = Host::open_in(&data, &b, at(1.0), &mut w, Some(sc)).unwrap();
+        assert!(away.is_none(), "nothing to catch up");
+        assert_eq!(h.now(), ("2024-03-04".to_string(), 8 * 60 + 30));
+        let _ = std::fs::remove_dir_all(&data);
+    }
+
     /// A server stopped and started again goes on where the company was saved: the time it was
     /// away caught up, nothing closed twice.
     #[test]
     fn a_server_started_again_goes_on_where_it_was() {
         let data = temp("restart");
         let (id, mut w) = company(&data);
-        let (mut h, _) = Host::open_in(&data, &id, at(0.0), &mut w).unwrap();
+        let (mut h, _) = Host::open_in(&data, &id, at(0.0), &mut w, None).unwrap();
         h.tick_in(at(20.0), &mut w).unwrap();
         assert_eq!(h.now(), ("2024-03-05".to_string(), 60));
         // (the minutes after the last save are the server's; saved on the way down)
@@ -404,7 +540,7 @@ mod tests {
         let days = h.company.history.len();
         drop(h);
         // five hours later
-        let (h, away) = Host::open_in(&data, &id, at(25.0), &mut w).unwrap();
+        let (h, away) = Host::open_in(&data, &id, at(25.0), &mut w, None).unwrap();
         let away = away.expect("the five hours caught up");
         assert_eq!((away.caught.from, away.caught.to), (clock::moment("2024-03-05", 60), clock::moment("2024-03-05", 6 * 60)));
         assert_eq!(h.now(), ("2024-03-05".to_string(), 6 * 60));
@@ -418,7 +554,7 @@ mod tests {
     fn the_worlds_reports_are_told_once() {
         let data = temp("live");
         let (id, mut w) = company(&data);
-        let (mut h, _) = Host::open_in(&data, &id, at(0.0), &mut w).unwrap();
+        let (mut h, _) = Host::open_in(&data, &id, at(0.0), &mut w, None).unwrap();
         let trip = day::LiveEvent::Trip { line: "5".into(), tour: "1".into(), vehicle: Some(1), passengers: 31, km: 10.0, delay: 45.0, completed: true, dep: Some(6 * 60) };
         store::append_live(&data, &id, &trip).unwrap();
         store::append_live(&data, &id, &trip).unwrap();
@@ -479,7 +615,7 @@ mod tests {
         c.clock.minute = 5 * 60;
         store::save(&data, &c).unwrap();
         let t = std::time::Instant::now();
-        let (mut h, _) = Host::open(&data, &id, at(0.0), Some(&dir)).unwrap();
+        let (mut h, _) = Host::open(&data, &id, at(0.0), Some(&dir), None).unwrap();
         eprintln!("opened in {:.2} s: {} lines in service, {} tours today, {} buses, {} staff", t.elapsed().as_secs_f32(), h.company.lines.len(), tours, h.company.fleet.len(), h.company.staff.len());
         let p = plan::live_plans(&data).into_iter().find(|p| p.company == id).unwrap();
         eprintln!("the world's plan: {} tours, {} with a bus, {} dropped", p.tours.len(), p.tours.iter().filter(|t| t.vehicle.is_some()).count(), p.tours.iter().filter(|t| t.dropped).count());

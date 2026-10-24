@@ -47,8 +47,11 @@ impl<'a> Offscreen<'a> {
         let mut sim_view = crate::view_sync::SimView::default();
         let mut schedule = if args.schedule {
             let mut s = schedule::Schedule::new(&args.root, &world, &start_clock(args));
-            // (a duty of the player's bus company: only its buses on the map)
-            if let Some(id) = args.company.as_deref().filter(|_| args.lan_join.is_none()) {
+            // (a dedicated server's bus companies, Bus Company Online: each line of theirs for its
+            // company; a duty of the player's bus company: only its buses on the map)
+            if let Some(data) = crate::company_server::data_dir() {
+                s.set_server_companies(&world, data);
+            } else if let Some(id) = args.company.as_deref().filter(|_| args.lan_join.is_none()) {
                 s.set_company(&world, id);
             }
             Some(s)

@@ -95,6 +95,32 @@ impl TimetableCompany for crate::company_live::CompanyLive {
     }
 }
 
+/// Every company of a dedicated server (Bus Company Online, `company_live::ServerCompanies`):
+/// each tour asked of the company whose line it is.
+impl TimetableCompany for crate::company_live::ServerCompanies {
+    fn active(&self) -> bool {
+        crate::company_live::ServerCompanies::active(self)
+    }
+    fn own_only(&self) -> bool {
+        false
+    }
+    fn set_day(&mut self, date_code: i32) {
+        crate::company_live::ServerCompanies::set_day(self, date_code)
+    }
+    fn keeps_off(&self, line: &str, tour: &str, map_bus: bool) -> bool {
+        crate::company_live::ServerCompanies::keeps_off(self, line, tour, map_bus)
+    }
+    fn runs_tour(&self, line: &str, tour: &str) -> bool {
+        self.tour(line, tour).is_some()
+    }
+    fn report(&mut self, index: usize, line: &str, tour: &str, dep: i32, km: f64, stops: usize, delay: f64) {
+        crate::company_live::ServerCompanies::report(self, index, line, tour, dep, km, stops, delay)
+    }
+    fn bus(&mut self, root: &Path, line: &str, tour: &str) -> Option<CompanyBus> {
+        TimetableCompany::bus(self.company_of(line)?, root, line, tour)
+    }
+}
+
 impl Schedule {
     /// `clock` gives the date: tours carry a validity mask (bits 0-6 Monday…Sunday, 7 public
     /// holiday, 8 school days, 9 school holidays) that selects which run today.
@@ -129,15 +155,18 @@ impl Schedule {
     }
 
     /// A drive for the player's bus company (`--company`): its plan of the day, and the map's
-    /// own buses kept in their depots. On a server with its company (Bus Company Online,
-    /// `company_server`): the plan from the server's company folder, and the map's lines no
-    /// company has run as ever. Called before `precache`.
+    /// own buses kept in their depots. Called before `precache`.
     pub fn set_company(&mut self, world: &World, id: &str) {
-        let company = match crate::company_server::data_dir() {
-            Some(data) => crate::company_live::CompanyLive::for_server(&world.map_dir, self.sim.day(), data, id),
-            None => crate::company_live::CompanyLive::for_company(&world.map_dir, self.sim.day(), crate::company_live::data_dir(), id),
-        };
+        let company = crate::company_live::CompanyLive::for_company(&world.map_dir, self.sim.day(), crate::company_live::data_dir(), id);
         self.sim.set_company(Box::new(company));
+    }
+
+    /// A dedicated server's companies (Bus Company Online, `company_server`: its company folder
+    /// `data`): each line of theirs runs for its company, with its buses as its plan has them;
+    /// the map's other lines run as ever. Called before `precache`.
+    pub fn set_server_companies(&mut self, world: &World, data: PathBuf) {
+        let companies = crate::company_live::ServerCompanies::load(&world.map_dir, self.sim.day(), data);
+        self.sim.set_company(Box::new(companies));
     }
 
     /// A duty of trips from several tours, as the launcher puts one together (`--duty-leg`,

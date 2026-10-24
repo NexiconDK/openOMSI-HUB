@@ -438,9 +438,17 @@ pub(crate) fn make_app(mut args: Args, server_cfg: Option<server::ServerCfg>) ->
         args.situation = Some(tutorial::SITUATIONS[n - 1].to_string());
     }
     apply_situation(&mut args)?;
-    // Bus Company Online: the server's company opened, the world on its clock
-    if let Some(cfg) = server_cfg.as_ref().filter(|c| !c.company.is_empty()) {
-        if let Err(e) = server::start_company(&mut args, cfg) {
+    // Bus Company Online: a company founded on the server (and nothing more), or the server's
+    // companies opened and the world on the server's clock
+    if let (Some(cfg), Some(name)) = (server_cfg.as_ref(), args.found_company.clone()) {
+        if let Err(e) = server::found_company(&args, cfg, &name) {
+            eprintln!("server: {e:#}");
+            std::process::exit(2);
+        }
+        return Ok(None);
+    }
+    if let Some(cfg) = server_cfg.as_ref().filter(|c| c.companies) {
+        if let Err(e) = server::start_companies(&mut args, cfg) {
             eprintln!("server: {e:#}");
             std::process::exit(2);
         }
