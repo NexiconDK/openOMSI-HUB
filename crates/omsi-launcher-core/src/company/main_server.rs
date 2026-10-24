@@ -17,8 +17,8 @@
 //! played.
 //!
 //! The settings are `<folder>/company-server.cfg` (written with the defaults and a comment for
-//! every key when it is missing); the console takes `help`, `status`, `start`, `stop`, `found` and
-//! `quit`. A company on the server is always founded there, new: nothing of a player's own
+//! every key when it is missing); the console takes `help`, `status`, `maps`, `start`, `stop`,
+//! `found` and `quit`. A company on the server is always founded there, new: nothing of a player's own
 //! companies comes along.
 
 use super::model::GameMode;
@@ -191,18 +191,25 @@ pub fn map_dir_of(root: &Path, map: &str) -> PathBuf {
 /// content root).
 pub fn find_map(root: &Path, name: &str) -> Option<String> {
     let want = map_folder(name.trim());
+    installed_maps(root).into_iter().find(|f| f.to_lowercase() == want).map(|f| format!("maps/{f}/global.cfg"))
+}
+
+/// The maps installed under `root` and the content roots (their folders, `Ahlheim 5`), sorted.
+pub fn installed_maps(root: &Path) -> Vec<String> {
     let mut dirs = vec![root.join("maps")];
     dirs.extend(omsi_cfg::content_roots().into_iter().map(|r| r.join("maps")));
+    let mut out: Vec<String> = Vec::new();
     for d in dirs {
         let Ok(rd) = std::fs::read_dir(&d) else { continue };
         for e in rd.flatten() {
             let folder = e.file_name().to_string_lossy().to_string();
-            if folder.to_lowercase() == want && e.path().join("global.cfg").is_file() {
-                return Some(format!("maps/{folder}/global.cfg"));
+            if e.path().join("global.cfg").is_file() && !out.iter().any(|f| f.eq_ignore_ascii_case(&folder)) {
+                out.push(folder);
             }
         }
     }
-    None
+    out.sort_by_key(|f| f.to_lowercase());
+    out
 }
 
 /// A game mode by its name.
@@ -382,7 +389,7 @@ impl MainServer {
     pub fn found(&mut self, name: &str, map: &str, mode: &str) -> Result<String> {
         anyhow::ensure!(!name.trim().is_empty(), "the company needs a name");
         let game_mode = game_mode_of(mode)?;
-        let map = find_map(&self.cfg.root, map).with_context(|| format!("no map '{map}' under {}", self.cfg.root.display()))?;
+        let map = find_map(&self.cfg.root, map).with_context(|| format!("no map '{map}' installed - maps lists them"))?;
         let f = Founding { name: name.trim().to_string(), map: map.clone(), map_name: map_folder(&map), game_mode, ..Default::default() };
         let id = online::found_on_server(&self.data, &f, "owner", self.clock, unix_now())?;
         self.scan();
@@ -392,7 +399,7 @@ impl MainServer {
     /// The world of `map`, started if it is not running (on the first free ports). An error: no
     /// such map, all `max_worlds` running, or the game program would not start.
     pub fn start_world(&mut self, map: &str) -> Result<&World> {
-        let map = find_map(&self.cfg.root, map).with_context(|| format!("no map '{map}' under {}", self.cfg.root.display()))?;
+        let map = find_map(&self.cfg.root, map).with_context(|| format!("no map '{map}' installed - maps lists them"))?;
         if let Some(k) = self.worlds.iter().position(|w| map_folder(&w.map) == map_folder(&map)) {
             return Ok(&self.worlds[k]);
         }
@@ -478,6 +485,7 @@ impl MainServer {
 pub const HELP: &str = "\
 help                          this list
 status                        the clock, the companies, the worlds
+maps                          the maps installed (by their folders' names)
 start <map>                   start a map's world (Lemmental, Ahlheim 5, ...)
 stop <map>                    stop a map's world
 found <name>; <map>; [mode]   found a company on a map (mode: casual, normal, realistic)
@@ -491,6 +499,14 @@ pub fn command(m: &mut MainServer, line: &str) -> Option<String> {
         "" => String::new(),
         "help" | "?" => HELP.to_string(),
         "status" => m.status(),
+        "maps" => {
+            let maps = installed_maps(&m.cfg.root);
+            if maps.is_empty() {
+                format!("no maps under {}", m.cfg.root.display())
+            } else {
+                maps.join("\n")
+            }
+        }
         "start" => match m.start_world(rest) {
             Ok(w) => format!("world of {}: UDP {}, web {}", map_folder(&w.map), w.port, w.web_port),
             Err(e) => format!("not started: {e:#}"),
@@ -648,6 +664,7 @@ mod tests {
         assert_eq!(find_map(&root, "lemmental").as_deref(), Some("maps/Lemmental/global.cfg"));
         assert_eq!(find_map(&root, "maps/Ahlheim 5/global.cfg").as_deref(), Some("maps/Ahlheim 5/global.cfg"));
         assert!(find_map(&root, "Grundorf").is_none());
+        assert_eq!(command(&mut m, "maps").unwrap(), "Ahlheim 5\nLemmental");
         let gen = online::plans_gen(&data);
         let a = command(&mut m, "found Lemtal Trafik; Lemmental; casual").unwrap();
         let b = command(&mut m, "found Bergbus; lemmental").unwrap();

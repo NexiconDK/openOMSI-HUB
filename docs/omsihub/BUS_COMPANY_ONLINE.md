@@ -69,7 +69,7 @@ worlds' game program, ports, how many at once and their idle minutes, and what t
   company saved at `quit`. One main server per folder (`online::lock_folder`, `server.lock`).
 - Whenever a plan is written, a company comes on or the clock is set, the worlds are told
   (`online::bump_plans`, `plans.gen`).
-- The console: `help`, `status`, `start <map>`, `stop <map>`, `found <name>; <map>; [mode]`
+- The console: `help`, `status`, `maps` (the installed maps by their folders), `start <map>`, `stop <map>`, `found <name>; <map>; [mode]`
   (`online::found_on_server`: new, on the server's date and minute - nothing of a player's own
   companies comes along), `quit`. Its log: `<folder>/company-server.log`. Until the launcher uses
   the server (phase 2) a new company has no lines, buses or staff.
