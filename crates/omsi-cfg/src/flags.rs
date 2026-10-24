@@ -180,6 +180,7 @@ flags! {
     OMSI_CLOUDFLARED_OWN: Bool, Test, Use, "off", "LAN tunnel: only the game's own downloaded cloudflared, to test the download.";
     OMSI_CLOUD_PICTURES: Text, Test, Test, "-", "Tests: a folder for pictures of the enhanced clouds drifting over a dozen window frames (`cargo test -p omsi-render the_clouds_glide -- --ignored`).";
     OMSI_COMPANION_HOST: Text, Setup, Use, "-", "The companion app server: the address it listens on instead of every interface.";
+    OMSI_COMPANY_MAP_DIR: Text, Test, Test, "-", "Tests: a map's folder for Bus Company Online's measurement of a server's company on a real map (`cargo test -p omsi-launcher-core --lib online::tests::on_a_real_map -- --ignored --nocapture`).";
     OMSI_CONDENSATION: Text, Test, Use, "-", "Offscreen: minutes,people[,engine] - the cabin air and condensation on the glass after that long.";
     OMSI_CONTENT: Text, Setup, Use, "beside the game", "The content folder (mods, archives, screenshots). Set at runtime on Android and iOS.";
     OMSI_CONTENT_ZIP: Text, Setup, Use, "-", "Extra content archives, separated like PATH (as --content-zip).";
