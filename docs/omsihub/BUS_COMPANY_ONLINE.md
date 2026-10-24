@@ -70,9 +70,9 @@ worlds' game program, ports, how many at once and their idle minutes, and what t
 - Whenever a plan is written, a company comes on or the clock is set, the worlds are told
   (`online::bump_plans`, `plans.gen`).
 - The console: `help`, `status`, `start <map>`, `stop <map>`, `found <name>; <map>; [mode]`
-  (`online::found_on_server`: on the server's date and minute), `testcopy <id>` (for a test until
-  phase 2: a copy of one of the machine's launcher companies, moved to the server's date without
-  simulating between: `online::copy_to_server`), `quit`. Its log: `<folder>/company-server.log`.
+  (`online::found_on_server`: new, on the server's date and minute - nothing of a player's own
+  companies comes along), `quit`. Its log: `<folder>/company-server.log`. Until the launcher uses
+  the server (phase 2) a new company has no lines, buses or staff.
 
 **A map's world**: `start <map>` writes `<folder>/worlds/<map>/server.cfg` (`main_server::world_cfg`)
 and starts `omsi-hub-game --server` with it on the next free ports (UDP `first_port + 2k`, web
@@ -86,8 +86,8 @@ into the folder once (`store::append_live`), which the main server's host tells 
 `idle_stop` (minutes): the world stops by itself that long after its last player; the main server
 lets it go (`reap_worlds`).
 
-Tested: `company::online::tests`, `company::main_server::tests` (companies on two maps, founded and
-copied from the console, restarted), `company_live::tests`, `company_server::tests`,
+Tested: `company::online::tests`, `company::main_server::tests` (companies on two maps, founded from
+the console, restarted), `company_live::tests`, `company_server::tests`,
 `server::idle_tests`, `server_cfg::tests`. Not run yet on a real server with a real map.
 
 Still to do in phase 1: measured on a real map (a world's memory and CPU, how long it takes to

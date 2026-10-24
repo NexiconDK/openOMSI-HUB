@@ -187,28 +187,6 @@ pub fn found_on_server(data: &Path, f: &Founding, founder: &str, sc: ServerClock
     Ok(c.id)
 }
 
-/// For a test until the launcher founds companies on the server (phase 2; on the server they are
-/// always founded new): a copy of a launcher's company `c` brought onto the server - moved to the
-/// server's date (nothing between simulated: `clock::move_to`) and minute (a company ahead of it
-/// on the same day waits), running on its clock, saved in `data` under an id not taken yet. Its
-/// id. An error: its books go past the server's date.
-pub fn copy_to_server(data: &Path, mut c: Company, sc: ServerClock, real: i64) -> Result<String> {
-    let (date, secs) = sc.at_real(real as f64);
-    let minute = (secs / 60.0) as u32;
-    let same_day = c.date == date;
-    clock::move_to(&mut c, &date).map_err(anyhow::Error::msg)?;
-    if !same_day || c.clock.minute < minute {
-        c.clock.minute = minute;
-    }
-    c.id = store::unused_id(data, &c.name);
-    c.online.on_server = true;
-    c.clock.real.on = true;
-    c.clock.real.lead = 0;
-    c.clock.real.synced = Some(sc.synced());
-    store::save(data, &c)?;
-    Ok(c.id)
-}
-
 /// The company on a server.
 pub struct Host {
     /// The server's company folder (`store::dir` in it): the company, its live file, its plan.
@@ -554,25 +532,6 @@ mod tests {
     /// The server's clock: set the first time, then 1:1 with the real clock, on where it was
     /// after a restart (the time it was off included); on the real time it follows the day it
     /// starts on - but never back.
-    /// A launcher's company copied onto the server (a test's): on the server's date and minute,
-    /// the original as it was.
-    #[test]
-    fn a_copy_onto_the_server() {
-        let src = temp("copy-src");
-        let data = temp("copy-dst");
-        let (id, mut w) = company(&src);
-        let sc = ServerClock::starting("2024-03-09", 14 * 3600, at(0.0)).unwrap();
-        let c = store::load(&src, &id).unwrap();
-        let new = copy_to_server(&data, c, sc, at(0.0)).unwrap();
-        let (h, away) = Host::open_in(&data, &new, at(0.0), &mut w, Some(sc)).unwrap();
-        assert!(away.is_none(), "nothing between simulated");
-        assert_eq!(h.now(), ("2024-03-09".to_string(), 14 * 60));
-        assert!(h.company.online.on_server);
-        assert_eq!(store::load(&src, &id).unwrap().date, "2024-03-04", "the original as it was");
-        let _ = std::fs::remove_dir_all(&src);
-        let _ = std::fs::remove_dir_all(&data);
-    }
-
     /// One main server at a time on a folder; the plans' generation the worlds watch.
     #[test]
     fn one_main_server_on_a_folder_and_the_plans_generation() {

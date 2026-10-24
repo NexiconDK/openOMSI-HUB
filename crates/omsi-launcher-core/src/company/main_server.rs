@@ -17,9 +17,9 @@
 //! played.
 //!
 //! The settings are `<folder>/company-server.cfg` (written with the defaults and a comment for
-//! every key when it is missing); the console takes `help`, `status`, `start`, `stop`, `found`,
-//! `testcopy` (until the launcher founds companies on the server, phase 2: a copy of one of this
-//! machine's launcher companies, to see its buses in a world) and `quit`.
+//! every key when it is missing); the console takes `help`, `status`, `start`, `stop`, `found` and
+//! `quit`. A company on the server is always founded there, new: nothing of a player's own
+//! companies comes along.
 
 use super::model::GameMode;
 use super::online::{self, company_ids, map_folder, Host, ServerClock};
@@ -389,16 +389,6 @@ impl MainServer {
         Ok(id)
     }
 
-    /// For a test (until phase 2): a copy of the launcher's company `id` of this machine
-    /// (`crate::data_dir`) brought onto the server and opened. Its id on the server.
-    pub fn test_copy(&mut self, id: &str) -> Result<String> {
-        let c = store::load(&crate::data_dir(), id.trim()).with_context(|| format!("no company '{}' in this machine's launcher", id.trim()))?;
-        anyhow::ensure!(map_dir_of(&self.cfg.root, &c.map).join("global.cfg").is_file(), "its map {} is not installed under {}", c.map, self.cfg.root.display());
-        let new = online::copy_to_server(&self.data, c, self.clock, unix_now())?;
-        self.scan();
-        Ok(new)
-    }
-
     /// The world of `map`, started if it is not running (on the first free ports). An error: no
     /// such map, all `max_worlds` running, or the game program would not start.
     pub fn start_world(&mut self, map: &str) -> Result<&World> {
@@ -491,7 +481,6 @@ status                        the clock, the companies, the worlds
 start <map>                   start a map's world (Lemmental, Ahlheim 5, ...)
 stop <map>                    stop a map's world
 found <name>; <map>; [mode]   found a company on a map (mode: casual, normal, realistic)
-testcopy <id>                 for a test: a copy of one of this machine's launcher companies
 quit                          save every company, stop the worlds and end";
 
 /// What the console's line `line` does; the answer to print. None: `quit`.
@@ -523,10 +512,6 @@ pub fn command(m: &mut MainServer, line: &str) -> Option<String> {
                 _ => "found <name>; <map>; [mode]".to_string(),
             }
         }
-        "testcopy" => match m.test_copy(rest) {
-            Ok(id) => format!("copied onto the server: {id}"),
-            Err(e) => format!("not copied: {e:#}"),
-        },
         "quit" | "exit" => return None,
         other => format!("'{other}' is no command - help lists them"),
     })
@@ -681,7 +666,7 @@ mod tests {
         assert!(s.contains("companies: 3") && s.contains("lemtal-trafik") && s.contains("worlds: 0"), "{s}");
         assert!(command(&mut m, "stop Lemmental").unwrap().contains("no world"));
         assert!(command(&mut m, "fly").unwrap().contains("no command"));
-        assert!(command(&mut m, "testcopy no-such-company-here").unwrap().starts_with("not copied"));
+        assert!(command(&mut m, "testcopy x").unwrap().contains("no command"), "nothing of a player's own companies comes along");
         assert!(world_cfg(&m.cfg, &data, "maps/Ahlheim 5/global.cfg", 1, 2).contains("name = Bus Company Online - Ahlheim 5"));
         assert!(command(&mut m, "quit").is_none());
         m.shutdown();
