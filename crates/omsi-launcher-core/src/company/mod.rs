@@ -61,7 +61,8 @@ pub mod model;
 pub mod names;
 pub mod network;
 pub mod ontime;
-// (NexiconDK: Bus Company Online, the company on a server)
+// (NexiconDK: Bus Company Online - the companies on the main server, and the main server itself)
+pub mod main_server;
 pub mod online;
 pub mod ownline;
 pub mod parts;

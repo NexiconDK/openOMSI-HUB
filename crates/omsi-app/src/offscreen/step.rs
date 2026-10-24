@@ -191,6 +191,12 @@ impl Offscreen<'_> {
                 t.sim.unstick_lights = crate::server::unstick_lights();
             }
             if let Some(l) = lan_off.as_mut() {
+                // Omsi-Hub: without players for its idle_stop minutes, the server ends (a map's
+                // world of Bus Company Online: its main server starts it again)
+                if crate::server::idle_stop_due(l.peers().filter(|p| p.has_info).count()) {
+                    log::info!("server: no players for its idle_stop minutes - stopping");
+                    return false;
+                }
                 crate::server::enforce_vehicles(l);
                 crate::server::tick_status(l, parse_time(&args.time) + *srv_clock + srv_admin.shift, srv_weather_name.as_str());
                 // the shared world, counted for GET /status

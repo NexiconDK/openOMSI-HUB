@@ -73,6 +73,7 @@ pub(crate) fn prepare(args: &mut Args, path: &Path) -> Result<ServerCfg> {
     let _ = SERVER_METAR.set(station);
     args.traffic = cfg.traffic;
     args.schedule = cfg.timetable;
+    IDLE_STOP.store(cfg.idle_stop, std::sync::atomic::Ordering::Relaxed);
     if cfg.companies && !cfg.timetable {
         log::warn!("server: the bus companies have no buses in the world without the timetable (timetable = 1)");
     }
@@ -90,22 +91,11 @@ pub(crate) fn prepare(args: &mut Args, path: &Path) -> Result<ServerCfg> {
     Ok(cfg)
 }
 
-/// Bus Company Online: the date and second of the day the server's clock starts on (the first
-/// time, and on the real time every time): this machine's today and now with `real_time = 1`
-/// (`prepare` set the arguments to them), else `server.cfg`'s date (empty: today) and time.
-fn clock_start(args: &Args) -> (String, i64) {
-    let today = crate::real_time::now().map(|n| format!("{:04}-{:02}-{:02}", n.year, n.month, n.day)).unwrap_or_else(|| "2024-01-01".into());
-    (args.date.clone().filter(|d| !d.trim().is_empty()).unwrap_or(today), parse_time(&args.time) as i64)
-}
-
-/// Bus Company Online (`companies = 1`): the server's clock set or taken up again, its companies
-/// opened from its company folder and their hosts started (`company_server`); the world starts at
-/// the clock's date and time. (Once the OMSI folder and the content roots are known: the map's
-/// folder is found there.)
+/// Bus Company Online (`companies = 1`): a map's world - the companies of the main server's
+/// folder (`company_dir`) on its clock (`company_server`); the world starts at the clock's date
+/// and time.
 pub(crate) fn start_companies(args: &mut Args, cfg: &ServerCfg) -> Result<()> {
-    let map_cfg = omsi_cfg::resolve_path(&args.root, &args.map);
-    let map_dir = map_cfg.parent().map(Path::to_path_buf).unwrap_or_default();
-    let (date, time) = crate::company_server::start(&cfg.company_dir, &map_dir, cfg.real_time, clock_start(args))?;
+    let (date, time) = crate::company_server::start(&cfg.company_dir)?;
     args.date = Some(date);
     args.day_of_year = None;
     args.time = time;
@@ -113,16 +103,26 @@ pub(crate) fn start_companies(args: &mut Args, cfg: &ServerCfg) -> Result<()> {
     Ok(())
 }
 
-/// `--found-company <name>`: a new company founded in the server's company folder, on its map and
-/// clock; its id printed.
-pub(crate) fn found_company(args: &Args, cfg: &ServerCfg, name: &str) -> Result<()> {
-    let id = crate::company_server::found(&cfg.company_dir, &cfg.map, name, &args.company_mode, cfg.real_time, clock_start(args))?;
-    if !cfg.companies {
-        println!("(companies = 1 in server.cfg puts the companies on the server)");
+/// A dedicated server's `idle_stop` (minutes; 0: never) and when it last had a player.
+static IDLE_STOP: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+static LAST_PLAYER: std::sync::Mutex<Option<std::time::Instant>> = std::sync::Mutex::new(None);
+
+/// Omsi-Hub: every second of a server run, with `players` in it: whether it has been without
+/// players for its `idle_stop` (then it stops - a map's world of Bus Company Online, which its
+/// main server starts again when somebody wants to drive there).
+pub(crate) fn idle_stop_due(players: usize) -> bool {
+    let minutes = IDLE_STOP.load(std::sync::atomic::Ordering::Relaxed);
+    let mut last = LAST_PLAYER.lock().unwrap_or_else(|e| e.into_inner());
+    let now = std::time::Instant::now();
+    if players > 0 || last.is_none() {
+        *last = Some(now);
     }
-    println!("{id}");
-    log::info!("server: the company {name} founded ({id}) in {}", cfg.company_dir.display());
-    Ok(())
+    idle_for(last.unwrap_or(now), now, minutes)
+}
+
+/// Without players since `since`: whether that is `minutes` (0: never).
+fn idle_for(since: std::time::Instant, now: std::time::Instant, minutes: u32) -> bool {
+    minutes > 0 && now.saturating_duration_since(since) >= std::time::Duration::from_secs(minutes as u64 * 60)
 }
 
 /// The airport whose METAR report a dedicated server's weather follows (None: no METAR sync).
@@ -249,5 +249,19 @@ mod timetable_zip_tests {
         // the same files, the same id
         assert_eq!(super::timetable_zip(&dir, "maps/Ahlheim 5/global.cfg").unwrap().0, id);
         let _ = std::fs::remove_dir_all(&dir);
+    }
+}
+
+#[cfg(test)]
+mod idle_tests {
+    use super::idle_for;
+    use std::time::{Duration, Instant};
+
+    #[test]
+    fn a_server_without_players_stops_after_its_idle_minutes() {
+        let t = Instant::now();
+        assert!(!idle_for(t, t + Duration::from_secs(9 * 60 + 59), 10));
+        assert!(idle_for(t, t + Duration::from_secs(10 * 60), 10));
+        assert!(!idle_for(t, t + Duration::from_secs(24 * 3600), 0), "0: never");
     }
 }

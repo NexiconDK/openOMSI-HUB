@@ -1,22 +1,24 @@
-//! Bus Company Online (NexiconDK, phase 1 of docs/omsihub/BUS_COMPANY_ONLINE.md): a bus company
-//! that lives on a server and runs there for good, with the real clock - its days, its plan and
-//! its books going on whether anybody is there or not, and its own buses driving its tours in
-//! the server's world.
+//! Bus Company Online (NexiconDK, phase 1 of docs/omsihub/BUS_COMPANY_ONLINE.md): the bus
+//! companies of every map live on one main server and run there for good, with the real clock -
+//! their days, plans and books going on whether anybody is there or not - while a world per map
+//! in use (the dedicated server) runs their buses for the players (`main_server`).
 //!
-//! `Host` is the company as the server keeps it. Opened, it catches up with the real time it was
-//! away (`clock::catch_up`: the days between closed, the dispatcher deciding), and from then on
-//! each `tick` moves its time on to where the real clock has it (`clock::advance`, quick: nobody
-//! is asked), tells what the server's world reported of its buses as it comes (`store::peek_live`,
+//! `Host` is a company as the main server keeps it. Opened, it catches up with the real time it
+//! was away (`clock::catch_up`: the days between closed, the dispatcher deciding), and from then
+//! on each `tick` moves its time on to where the real clock has it (`clock::advance`, quick: nobody
+//! is asked), tells what its map's world reported of its buses as it comes (`store::peek_live`,
 //! `clock::tell_live`; the day's close books it), closes its days at their midnights, writes the
 //! day's plan for the world (`plan::save_live_plan`: the tours with their buses, paints and
 //! numbers - one more `plan_gen` each time) and saves itself now and then and after each close,
 //! so that a server started again goes on where it was.
 //!
-//! Every company of a server runs on the server's clock (`ServerClock`, the owner's choice in
-//! `server.cfg`: the real date and time, or a date of his own, and from then on 1:1 with the real
-//! clock, going on where it was after a restart): its course is pinned to it (`Host::open`'s
-//! `clock`), and the server's world runs on it too. Companies are founded on the server, at its
-//! date and minute (`found_on_server`); each line belongs to at most one of them.
+//! Every company runs on the server's clock (`ServerClock`, the owner's choice: the real date and
+//! time, or a date of his own, and from then on 1:1 with the real clock, going on where it was
+//! after a restart): its course is pinned to it (`Host::open`'s `clock`), and the maps' worlds run
+//! on it too (`read_server_clock`). Companies are founded on the server, on a map of their choice
+//! for good, at the server's date and minute (`found_on_server`); on a map each line belongs to at
+//! most one of them. The worlds take the plans in again whenever the main server says so
+//! (`PLANS_FILE`).
 //!
 //! What the launcher's pages do besides on their tick (a line's change on its day, the dealer's
 //! deliveries, the control room's messages) is not run here yet: the phases after this one.
@@ -107,6 +109,68 @@ pub fn server_clock(data: &Path, real: i64, follow: bool, start: (String, i64)) 
     Ok(sc)
 }
 
+/// The server's clock as its folder keeps it (`CLOCK_FILE`), not set nor moved: what a map's
+/// world runs on (the main server keeps it).
+pub fn read_server_clock(data: &Path) -> Option<ServerClock> {
+    serde_json::from_str(&std::fs::read_to_string(data.join(CLOCK_FILE)).ok()?).ok()
+}
+
+/// Held by the main server that runs on the folder (`lock_folder`).
+pub const LOCK_FILE: &str = "server.lock";
+/// One more each time a company's plan was written, a company came on or the clock was set: the
+/// maps' worlds take the plans (and the clock) in again (`bump_plans`, `plans_gen`).
+pub const PLANS_FILE: &str = "plans.gen";
+
+/// The plans' generation of the folder `data` (0: none written yet).
+pub fn plans_gen(data: &Path) -> u64 {
+    std::fs::read_to_string(data.join(PLANS_FILE)).ok().and_then(|t| t.trim().parse().ok()).unwrap_or(0)
+}
+
+/// One more plans' generation in the folder `data` (written whole: a world never reads half of
+/// it). The new one.
+pub fn bump_plans(data: &Path) -> Result<u64> {
+    let g = plans_gen(data) + 1;
+    std::fs::create_dir_all(data).with_context(|| format!("cannot make {}", data.display()))?;
+    let tmp = data.join(format!("{PLANS_FILE}.tmp"));
+    std::fs::write(&tmp, g.to_string()).with_context(|| format!("cannot write {}", tmp.display()))?;
+    std::fs::rename(&tmp, data.join(PLANS_FILE)).with_context(|| format!("cannot write {}", data.join(PLANS_FILE).display()))?;
+    Ok(g)
+}
+
+/// A map's folder name from a map path (`maps/Ahlheim/global.cfg`: `ahlheim`).
+pub fn map_folder(p: &str) -> String {
+    p.replace('\\', "/").trim_end_matches("/global.cfg").trim_end_matches('/').rsplit('/').next().unwrap_or("").to_lowercase()
+}
+
+/// The ids of the companies in a server's folder (`<id>.json` of its `companies`; a plan beside
+/// one, `<id>.liveplan.json`, is none), sorted.
+pub fn company_ids(data: &Path) -> Vec<String> {
+    let Ok(rd) = std::fs::read_dir(store::dir(data)) else { return Vec::new() };
+    let mut ids: Vec<String> = rd
+        .flatten()
+        .filter_map(|e| {
+            let n = e.file_name().to_string_lossy().to_string();
+            n.strip_suffix(".json").filter(|id| !id.contains('.') && !id.is_empty()).map(str::to_string)
+        })
+        .collect();
+    ids.sort();
+    ids
+}
+
+/// The folder taken for this main server (`LOCK_FILE`, held as long as the file lives - the
+/// process gone, the system lets it go): two main servers on one folder would write the same
+/// companies. An error: another one runs on it.
+pub fn lock_folder(data: &Path) -> Result<std::fs::File> {
+    std::fs::create_dir_all(data).with_context(|| format!("cannot make {}", data.display()))?;
+    let path = data.join(LOCK_FILE);
+    let f = std::fs::OpenOptions::new().create(true).truncate(false).write(true).open(&path).with_context(|| format!("cannot open {}", path.display()))?;
+    match f.try_lock() {
+        Ok(()) => Ok(f),
+        Err(std::fs::TryLockError::WouldBlock) => anyhow::bail!("another main server runs on the company folder {} - one main server per folder", data.display()),
+        Err(std::fs::TryLockError::Error(e)) => Err(e).with_context(|| format!("cannot lock {}", path.display())),
+    }
+}
+
 /// A new company founded on the server (companies are founded there, never brought along): on
 /// the server's clock - its first day the server's date, its minute the server's - and running on
 /// a server (`Online::on_server`), saved in `data` under an id not taken yet. Its id.
@@ -115,6 +179,28 @@ pub fn found_on_server(data: &Path, f: &Founding, founder: &str, sc: ServerClock
     let mut c = super::found(&Founding { date, ..f.clone() }, founder);
     c.id = store::unused_id(data, &c.name);
     c.clock.minute = (secs / 60.0) as u32;
+    c.online.on_server = true;
+    c.clock.real.on = true;
+    c.clock.real.lead = 0;
+    c.clock.real.synced = Some(sc.synced());
+    store::save(data, &c)?;
+    Ok(c.id)
+}
+
+/// For a test until the launcher founds companies on the server (phase 2; on the server they are
+/// always founded new): a copy of a launcher's company `c` brought onto the server - moved to the
+/// server's date (nothing between simulated: `clock::move_to`) and minute (a company ahead of it
+/// on the same day waits), running on its clock, saved in `data` under an id not taken yet. Its
+/// id. An error: its books go past the server's date.
+pub fn copy_to_server(data: &Path, mut c: Company, sc: ServerClock, real: i64) -> Result<String> {
+    let (date, secs) = sc.at_real(real as f64);
+    let minute = (secs / 60.0) as u32;
+    let same_day = c.date == date;
+    clock::move_to(&mut c, &date).map_err(anyhow::Error::msg)?;
+    if !same_day || c.clock.minute < minute {
+        c.clock.minute = minute;
+    }
+    c.id = store::unused_id(data, &c.name);
     c.online.on_server = true;
     c.clock.real.on = true;
     c.clock.real.lead = 0;
@@ -468,6 +554,40 @@ mod tests {
     /// The server's clock: set the first time, then 1:1 with the real clock, on where it was
     /// after a restart (the time it was off included); on the real time it follows the day it
     /// starts on - but never back.
+    /// A launcher's company copied onto the server (a test's): on the server's date and minute,
+    /// the original as it was.
+    #[test]
+    fn a_copy_onto_the_server() {
+        let src = temp("copy-src");
+        let data = temp("copy-dst");
+        let (id, mut w) = company(&src);
+        let sc = ServerClock::starting("2024-03-09", 14 * 3600, at(0.0)).unwrap();
+        let c = store::load(&src, &id).unwrap();
+        let new = copy_to_server(&data, c, sc, at(0.0)).unwrap();
+        let (h, away) = Host::open_in(&data, &new, at(0.0), &mut w, Some(sc)).unwrap();
+        assert!(away.is_none(), "nothing between simulated");
+        assert_eq!(h.now(), ("2024-03-09".to_string(), 14 * 60));
+        assert!(h.company.online.on_server);
+        assert_eq!(store::load(&src, &id).unwrap().date, "2024-03-04", "the original as it was");
+        let _ = std::fs::remove_dir_all(&src);
+        let _ = std::fs::remove_dir_all(&data);
+    }
+
+    /// One main server at a time on a folder; the plans' generation the worlds watch.
+    #[test]
+    fn one_main_server_on_a_folder_and_the_plans_generation() {
+        let data = temp("folder");
+        let held = lock_folder(&data).unwrap();
+        assert!(format!("{:#}", lock_folder(&data).unwrap_err()).contains("another"));
+        drop(held);
+        lock_folder(&data).unwrap();
+        assert_eq!(plans_gen(&data), 0);
+        assert_eq!((bump_plans(&data).unwrap(), bump_plans(&data).unwrap()), (1, 2));
+        assert_eq!(plans_gen(&data), 2);
+        assert_eq!(map_folder("maps\\Ahlheim 5\\global.cfg"), "ahlheim 5");
+        let _ = std::fs::remove_dir_all(&data);
+    }
+
     #[test]
     fn the_servers_clock_goes_on_where_it_was() {
         let data = temp("server-clock");

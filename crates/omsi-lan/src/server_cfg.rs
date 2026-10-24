@@ -48,14 +48,17 @@ pub struct ServerCfg {
     /// The GreenTeaSpeak server and channel the players talk in (`voice`).
     pub voice: Option<crate::voice::VoiceServer>,
     /// Omsi-Hub, Bus Company Online (in the making, docs/omsihub/BUS_COMPANY_ONLINE.md; not in
-    /// `DEFAULT_CFG` until it is ready): the bus companies live on this server (`companies = 1`;
-    /// off: none) - every company of `company_dir`, founded there, on the server's clock (the real
-    /// time, or `date` and `time` the first time, then 1:1 and on where it was after a restart),
-    /// each line of theirs run by its company's buses in the shared world.
+    /// `DEFAULT_CFG` until it is ready): this server is a map's world (`companies = 1`; off: none)
+    /// - the bus companies of the main server's folder `company_dir` that have its map, each line
+    /// of theirs run by its company's buses, on the main server's clock. The main server writes
+    /// such a server.cfg when it starts the world.
     pub companies: bool,
-    /// The folder the server's companies are kept in (`company_dir`, beside `server.cfg`
-    /// unless absolute; default `company`).
+    /// The main server's folder (`company_dir`, beside `server.cfg` unless absolute; default
+    /// `company`).
     pub company_dir: std::path::PathBuf,
+    /// Omsi-Hub: the server stops by itself after this many minutes without players (`idle_stop`;
+    /// 0: never) - a map's world of Bus Company Online, which its main server starts again.
+    pub idle_stop: u32,
 }
 
 pub const DEFAULT_CFG: &str = "\
@@ -193,6 +196,7 @@ impl ServerCfg {
             voice: crate::voice::VoiceServer::from_kv(|k| kv.get(k).cloned()),
             companies: flag("companies", false),
             company_dir: dir.join(get("company_dir", "company")),
+            idle_stop: num("idle_stop", 0).clamp(0, 24 * 60) as u32,
         })
     }
 }
@@ -277,11 +281,11 @@ mod vehicles_tests {
         let path = dir.join("server.cfg");
         std::fs::write(&path, "map = maps/Ahlheim/global.cfg\n").unwrap();
         let c = ServerCfg::load(&path, 100).unwrap();
-        assert_eq!((c.companies, c.company_dir.clone()), (false, dir.join("company")));
+        assert_eq!((c.companies, c.company_dir.clone(), c.idle_stop), (false, dir.join("company"), 0));
         let elsewhere = std::env::temp_dir().join("companies");
-        std::fs::write(&path, format!("companies = 1\ncompany_dir = {}\n", elsewhere.display())).unwrap();
+        std::fs::write(&path, format!("companies = 1\ncompany_dir = {}\nidle_stop = 10\n", elsewhere.display())).unwrap();
         let c = ServerCfg::load(&path, 100).unwrap();
-        assert_eq!((c.companies, c.company_dir.clone()), (true, elsewhere));
+        assert_eq!((c.companies, c.company_dir.clone(), c.idle_stop), (true, elsewhere, 10));
         let _ = std::fs::remove_dir_all(&dir);
     }
 

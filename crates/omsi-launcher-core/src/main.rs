@@ -1,11 +1,20 @@
 //! `omsi-hub-cli` (Omsi-Hub's name for openOMSI's `openomsi-launcher`): the launcher's commands
-//! for a terminal (`--cli <command> [json]`), and otherwise the game binary beside this one
-//! with the same arguments (a plain start of it opens the app, `Omsi-Hub`). Nothing starts it
-//! by itself: it is for a terminal and for scripts.
+//! for a terminal (`--cli <command> [json]`), Bus Company Online's main server
+//! (`--company-server <folder>`, NexiconDK: `company::main_server`), and otherwise the game binary
+//! beside this one with the same arguments (a plain start of it opens the app, `Omsi-Hub`).
+//! Nothing starts it by itself: it is for a terminal and for scripts.
 
 fn main() {
     omsi_cfg::migrate_legacy_data_dir();
     let args: Vec<String> = std::env::args().collect();
+    if args.get(1).map(|a| a == "--company-server").unwrap_or(false) {
+        let dir = std::path::PathBuf::from(args.get(2).cloned().unwrap_or_else(|| "company-server".into()));
+        if let Err(e) = omsi_launcher_lib::company::main_server::run(&dir) {
+            eprintln!("company server: {e:#}");
+            std::process::exit(1);
+        }
+        return;
+    }
     if args.get(1).map(|a| a == "--cli").unwrap_or(false) {
         let cmd = args.get(2).cloned().unwrap_or_default();
         let arg = args.get(3).cloned().unwrap_or_else(|| "{}".into());

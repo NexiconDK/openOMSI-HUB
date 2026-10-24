@@ -120,6 +120,12 @@ pub fn without_own_args(args: &[String]) -> Vec<String> {
 /// path, next to the launcher, or the development build in the source tree. Omsi-Hub: the
 /// game by its name now (`omsi-hub-game`) first, then by openOMSI's (`openomsi`) - an install
 /// of the old names, or a folder of openOMSI's own (`omsi_cfg::product`).
+/// (NexiconDK, Bus Company Online) The game program as the launcher finds it: the one the main
+/// server starts the maps' worlds in.
+pub fn game_program() -> Option<PathBuf> {
+    find_game(&load_config_raw().game)
+}
+
 fn find_game(configured: &str) -> Option<PathBuf> {
     game_candidates(configured, chosen_game().map(|g| g.exe), std::env::current_exe().ok(), std::env::current_dir().ok()).into_iter().find(|p| p.is_file())
 }

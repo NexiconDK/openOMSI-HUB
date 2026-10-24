@@ -82,13 +82,6 @@ pub(crate) struct Args {
     /// missing), with no window, no sound and no graphics card.
     #[arg(long)]
     pub(crate) server: Option<PathBuf>,
-    /// Bus Company Online (in the making), with --server: found a new bus company in the
-    /// server's company folder (`company_dir`) on its map and clock, print its id and end.
-    #[arg(long, requires = "server")]
-    pub(crate) found_company: Option<String>,
-    /// With --found-company: its game mode (casual, normal, realistic).
-    #[arg(long, default_value = "normal")]
-    pub(crate) company_mode: String,
     /// Your name as the other players see it.
     #[arg(long, default_value = "Driver")]
     pub(crate) lan_name: String,
