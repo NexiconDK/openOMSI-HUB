@@ -286,6 +286,16 @@ pub fn run() -> Result<()> {
     // The launcher itself runs the game with a full command line (--no-menu, --map, ...).
     let bare = std::env::args().len() == 1;
     let Some((args, server_cfg)) = prepare(args, bare)? else { return Ok(()) };
+    // Bus Company Online: one company's own process on the main server (no window), started by
+    // the main server (`omsi_launcher_api::omsihub::company_host`)
+    if let Some(dir) = args.company_host.clone() {
+        let id = args.company.clone().unwrap_or_default();
+        if let Err(e) = omsi_launcher_api::omsihub::company_host::run(&dir, &id) {
+            eprintln!("company {id}: {e}");
+            std::process::exit(2);
+        }
+        return Ok(());
+    }
     if bare && !args.menu {
         // the launcher, another program (it starts the game again with a full command
         // line): OMSI_LAUNCHER=<program>, else the desktop launcher beside the game

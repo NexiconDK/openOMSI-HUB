@@ -48,11 +48,21 @@ fn home() -> PathBuf {
     std::env::var_os("HOME").or_else(|| std::env::var_os("USERPROFILE")).map(PathBuf::from).unwrap_or_default()
 }
 
+/// (NexiconDK, Bus Company Online) The data folder of this process instead of `~/.openomsi`: a
+/// company's process on the main server keeps its company, its launcher settings and its pages'
+/// state in the server's folder (`company::main_server`). Set once, before anything reads it.
+static DATA_DIR: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+
+/// (NexiconDK) This process keeps its data in `dir` (`data_dir`); false when it was set already.
+pub fn set_data_dir(dir: &Path) -> bool {
+    DATA_DIR.set(dir.to_path_buf()).is_ok()
+}
+
 pub fn data_dir() -> PathBuf {
     // (made once: asked for dozens of times a second - the launcher's frames, its polls - and
     // made each time, two system calls for a folder that was there)
     static MADE: std::sync::Mutex<Option<PathBuf>> = std::sync::Mutex::new(None);
-    let d = home().join(".openomsi");
+    let d = DATA_DIR.get().cloned().unwrap_or_else(|| home().join(".openomsi"));
     let mut made = MADE.lock().unwrap_or_else(|e| e.into_inner());
     if made.as_ref() != Some(&d) && std::fs::create_dir_all(&d).is_ok() {
         *made = Some(d.clone());

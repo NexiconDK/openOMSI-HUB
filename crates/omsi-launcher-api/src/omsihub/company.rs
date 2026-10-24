@@ -1428,6 +1428,18 @@ fn boot(s: &mut Session) -> Answer {
     Ok(json!({ "open": s.company.as_ref().map(|c| c.id.clone()), "chooser": chooser::view(s) }))
 }
 
+/// (NexiconDK, Bus Company Online) The company `c` opened in the session as it is, whatever the
+/// list of the driver's companies says: a company's process on the main server (`company_host`).
+pub(crate) fn open_company(s: &mut Session, c: Company) {
+    if let Some(list) = s.companies.as_mut() {
+        match list.iter_mut().find(|x| x.id == c.id) {
+            Some(x) => *x = c.clone(),
+            None => list.push(c.clone()),
+        }
+    }
+    switch_company(s, Some(c));
+}
+
 fn open(s: &mut Session, id: &str) -> Answer {
     let Some(c) = s.companies.as_ref().and_then(|l| l.iter().find(|c| c.id == id).cloned()) else { return Err(format!("no company {id}")) };
     switch_company(s, Some(c));

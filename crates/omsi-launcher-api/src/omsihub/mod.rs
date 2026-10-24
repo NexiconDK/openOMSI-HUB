@@ -34,6 +34,8 @@ pub mod lak;
 pub mod update;
 // Beta 58: "Play together" in the bus company (`together.rs`)
 pub mod together;
+// NexiconDK: Bus Company Online - a company's own process on the main server
+pub mod company_host;
 // Omsi-Hub as an add-on of the player's own openOMSI (`addon.rs`, docs/omsihub/ADDON_PLAN.md)
 pub mod addon;
 // Omsi-Hub online: the optional account and the friends (`online.rs`, docs/omsihub/ONLINE.md)

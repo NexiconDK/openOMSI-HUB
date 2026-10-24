@@ -24,6 +24,8 @@ use omsi_launcher_lib::company::together::{Perm, Role};
 use serde_json::{json, Value};
 
 pub use host::{closing_company, give_to_guest, online_guests, quit, rail_badge, tile_line};
+// (NexiconDK: a company's process on Bus Company Online's main server - `company_host`)
+pub(crate) use host::{start_with, stop_now};
 
 /// The code of the company session hosted now (None: none, or "Play together" switched off).
 pub fn session_code() -> Option<String> {

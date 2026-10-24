@@ -3,10 +3,14 @@
 //! runs around the clock on the server's machine.
 //!
 //! It keeps every bus company of every map in its folder (`<folder>/companies`), each on its map
-//! for good, on the server's clock (`online::ServerClock`, kept in `<folder>/clock.json`): their
-//! hosts (`online::Host`) step every `STEP` - the worlds' reports told, the time moved on, the days
-//! closed at midnight and planned, saved - and a company founded meanwhile is taken on (`SCAN`).
-//! A midnight costs a company a second or more: nothing here answers a player in the meantime.
+//! for good, on the server's clock (`online::ServerClock`, kept in `<folder>/clock.json`). Each
+//! company runs in a process of its own (`omsi-hub-game --company-host`, phase 2: its boss
+//! without a window - the launcher's session with the company open, shared with "Play together"
+//! on the company's own port under a code that stays the same, its time run by `online::Host`):
+//! the players come to it from their launchers with its code and use its pages as their roles
+//! allow, its founder with every permission. The main server starts the processes, starts one
+//! again that ended (after `HOLD`), takes on a company founded meanwhile, and tells them to quit
+//! (each saves its company) when it ends.
 //!
 //! The players drive in a **world per map**: the dedicated server (`omsi-hub-game --server`) with
 //! `companies = 1`, which runs the map with every company's buses in their paint on the server's
@@ -18,14 +22,14 @@
 //!
 //! The settings are `<folder>/company-server.cfg` (written with the defaults and a comment for
 //! every key when it is missing); the console takes `help`, `status`, `maps`, `start`, `stop`,
-//! `found` and `quit`. A company on the server is always founded there, new: nothing of a player's own
+//! `found`, `role` and `quit`. A company on the server is always founded there, new: nothing of a player's own
 //! companies comes along.
 
 use super::model::GameMode;
-use super::online::{self, company_ids, map_folder, Host, ServerClock};
+use super::online::{self, company_ids, map_folder, ServerClock};
 use super::{store, Founding};
 use anyhow::{Context, Result};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -52,10 +56,6 @@ macro_rules! warn {
     ($($a:tt)*) => { note("warning: ", format!($($a)*)) };
 }
 
-/// How often the companies step (real time).
-pub const STEP: Duration = Duration::from_secs(2);
-/// How often the folder is looked through for companies founded since (real time).
-pub const SCAN: Duration = Duration::from_secs(30);
 /// The main server's settings in its folder.
 pub const CFG_FILE: &str = "company-server.cfg";
 
@@ -81,6 +81,11 @@ first_port = 27015
 max_worlds = 4
 world_idle = 10
 
+# the companies' own ports, from this one on (the players' launchers come to a company there:
+# \"Join a company\" with its code - status shows it). tunnel below starts a free Cloudflare
+# tunnel for each company and world, for players across the internet
+first_company_port = 27045
+
 # what each world runs (as server.cfg's keys of the same names)
 traffic = 30
 passengers = 1
@@ -101,6 +106,7 @@ pub struct MainCfg {
     pub first_port: u16,
     pub max_worlds: usize,
     pub world_idle: u32,
+    pub first_company_port: u16,
     pub traffic: usize,
     pub passengers: bool,
     pub max_players: usize,
@@ -144,6 +150,7 @@ impl MainCfg {
             first_port: num("first_port", 27015).clamp(1, 65000) as u16,
             max_worlds: num("max_worlds", 4).clamp(1, 64) as usize,
             world_idle: num("world_idle", 10).clamp(0, 24 * 60) as u32,
+            first_company_port: num("first_company_port", 27045).clamp(1, 65000) as u16,
             traffic: num("traffic", 30).max(0) as usize,
             passengers: flag("passengers", true),
             max_players: num("max_players", 16).clamp(1, 64) as usize,
@@ -280,118 +287,181 @@ pub struct World {
     child: Child,
 }
 
-/// The main server: the companies of its folder on its clock, and the maps' worlds it started.
+/// A company's own process (`omsi-hub-game --company-host`): its boss on the server - the
+/// launcher's session with the company open, shared with "Play together" on the company's port,
+/// its time run on the server's clock (`omsi_launcher_api::omsihub::company_host`).
+pub struct CompanyProc {
+    pub id: String,
+    pub port: u16,
+    pub started: Instant,
+    child: Child,
+    stdin: Option<std::process::ChildStdin>,
+}
+
+/// The main server: the companies of its folder on its clock (each in a process of its own),
+/// and the maps' worlds it started.
 pub struct MainServer {
     pub data: PathBuf,
     pub cfg: MainCfg,
     pub clock: ServerClock,
-    pub hosts: Vec<Host>,
-    /// The companies looked at (opened, or left: another map not installed, would not open).
-    seen: HashSet<String>,
-    /// Each company's last error, said once.
-    errors: HashMap<String, String>,
+    pub companies: Vec<CompanyProc>,
+    /// A company whose process could not start or ended: not started again before this.
+    held: HashMap<String, Instant>,
+    /// What was said of a company that is not run (its map not installed), said once.
+    said: HashMap<String, String>,
     pub worlds: Vec<World>,
     /// The folder taken for this main server, as long as it runs.
     _lock: std::fs::File,
 }
 
+/// How long a company whose process ended waits before it is started again.
+pub const HOLD: Duration = Duration::from_secs(30);
+
 impl MainServer {
     /// The main server of the folder `data`: the folder taken, the clock set or taken up again,
-    /// every company opened on it (caught up with the time the server was off, planned, saved),
-    /// and the worlds told to take the plans and the clock in.
+    /// the launcher settings its companies' processes read (the OMSI folder, the game), the
+    /// worlds told to take the plans and the clock in, and every company's process started.
     pub fn open(data: &Path, cfg: MainCfg) -> Result<MainServer> {
         let lock = online::lock_folder(data)?;
         let real = unix_now();
         let clock = online::server_clock(data, real, cfg.real_time, cfg.clock_start())?;
-        let mut m = MainServer { data: data.to_path_buf(), cfg, clock, hosts: Vec::new(), seen: HashSet::new(), errors: HashMap::new(), worlds: Vec::new(), _lock: lock };
-        m.open_new();
+        let game = cfg.game.clone().or_else(crate::game_program).map(|g| g.to_string_lossy().to_string()).unwrap_or_default();
+        let launcher = crate::Config { root: cfg.root.to_string_lossy().to_string(), game, profile: SERVER_PROFILE.to_string() };
+        std::fs::write(data.join("launcher.json"), serde_json::to_vec_pretty(&launcher)?).with_context(|| format!("cannot write {}", data.join("launcher.json").display()))?;
+        let mut m = MainServer { data: data.to_path_buf(), cfg, clock, companies: Vec::new(), held: HashMap::new(), said: HashMap::new(), worlds: Vec::new(), _lock: lock };
         online::bump_plans(data)?;
+        m.scan();
         Ok(m)
     }
 
-    /// The companies of the folder not looked at yet, opened on the server's clock. How many.
-    pub fn open_new(&mut self) -> usize {
+    /// The folder's own, absolute (the processes are handed it).
+    fn data_abs(&self) -> PathBuf {
+        std::path::absolute(&self.data).unwrap_or_else(|_| self.data.clone())
+    }
+
+    /// Every company of the folder whose process does not run (and is not held) started - one on
+    /// a map that is not installed left in the folder. How many were started.
+    pub fn scan(&mut self) -> usize {
         let mut n = 0;
         for id in company_ids(&self.data) {
-            if !self.seen.insert(id.clone()) {
+            if self.companies.iter().any(|p| p.id == id) || self.held.get(&id).is_some_and(|t| Instant::now() < *t) {
                 continue;
             }
-            let c = match store::load(&self.data, &id) {
-                Ok(c) => c,
-                Err(e) => {
-                    warn!("company {id}: not opened: {e:#}");
-                    continue;
-                }
+            let why = match store::load(&self.data, &id) {
+                Ok(c) if map_dir_of(&self.cfg.root, &c.map).join("global.cfg").is_file() => None,
+                Ok(c) => Some(format!("its map {} is not installed under {} - left in the folder", c.map, self.cfg.root.display())),
+                Err(e) => Some(format!("not opened: {e:#}")),
             };
-            let dir = map_dir_of(&self.cfg.root, &c.map);
-            if !dir.join("global.cfg").is_file() {
-                warn!("company {id}: its map {} is not installed under {} - left in the folder", c.map, self.cfg.root.display());
+            if let Some(why) = why {
+                if self.said.get(&id) != Some(&why) {
+                    warn!("company {id}: {why}");
+                    self.said.insert(id.clone(), why);
+                }
                 continue;
             }
-            match Host::open(&self.data, &id, unix_now(), Some(&dir), Some(self.clock)) {
-                Ok((h, away)) => {
-                    if let Some(a) = away.as_ref() {
-                        let result: i64 = a.reports.iter().map(|r| r.result).sum();
-                        info!("company {id}: caught up the time the server was off - {} days closed, a result of {:.2}", a.reports.len(), result as f64 / 100.0);
-                    }
-                    info!("company {id} ({}, {}, {}): {} lines, {} buses, {} staff", h.company.name, map_folder(&h.company.map), h.company.game_mode.label(), h.company.lines.len(), h.company.fleet.len(), h.company.staff.len());
-                    self.hosts.push(h);
-                    n += 1;
-                }
-                Err(e) => warn!("company {id}: not opened: {e:#}"),
-            }
-        }
-        n
-    }
-
-    /// Every company a step on (`Host::tick`); whether a plan was written (the worlds told).
-    pub fn step(&mut self) -> bool {
-        let mut planned = false;
-        for h in self.hosts.iter_mut() {
-            let id = h.company.id.clone();
-            match h.tick(unix_now()) {
-                Ok(s) => {
-                    self.errors.remove(&id);
-                    for d in &s.closed {
-                        info!("company {id}: the day {} closed - {} of {} tours run, {} km, a result of {:.2}", d.date, d.covered, d.tours, d.km.round(), d.result as f64 / 100.0);
-                    }
-                    if s.planned {
-                        info!("company {id}: the plan of {} written", h.company.date);
-                        planned = true;
-                    }
-                }
+            self.said.remove(&id);
+            match self.start_company(&id) {
+                Ok(()) => n += 1,
                 Err(e) => {
-                    let text = format!("{e:#}");
-                    if self.errors.get(&id) != Some(&text) {
-                        warn!("company {id}: {text}");
-                        self.errors.insert(id, text);
-                    }
+                    warn!("company {id}: its process would not start: {e:#}");
+                    self.held.insert(id, Instant::now() + HOLD);
                 }
             }
         }
-        if planned {
-            let _ = online::bump_plans(&self.data);
-        }
-        planned
+        n
     }
 
-    /// The folder looked through: companies founded since taken on (the worlds told).
-    pub fn scan(&mut self) -> usize {
-        let n = self.open_new();
-        if n > 0 {
-            let _ = online::bump_plans(&self.data);
+    /// Company `id`'s own process started: its session kept (port, code), its output to
+    /// `<folder>/hosts/<id>.out`.
+    fn start_company(&mut self, id: &str) -> Result<()> {
+        let kept = online::kept_session(&self.data, id, self.cfg.first_company_port)?;
+        let game = self.cfg.game.clone().or_else(crate::game_program).context("no game program to run the company in (game in company-server.cfg)")?;
+        let dir = self.data.join("hosts");
+        std::fs::create_dir_all(&dir).with_context(|| format!("cannot make {}", dir.display()))?;
+        let out = std::fs::OpenOptions::new().create(true).append(true).open(dir.join(format!("{id}.out"))).ok();
+        let mut cmd = Command::new(&game);
+        cmd.arg("--company-host").arg(self.data_abs()).arg("--company").arg(id).arg("--root").arg(&self.cfg.root).stdin(Stdio::piped());
+        if !self.cfg.tunnel {
+            cmd.env("OMSI_NO_TUNNEL", "1");
         }
-        n
+        match out.and_then(|f| Some((f.try_clone().ok()?, f))) {
+            Some((a, b)) => {
+                cmd.stdout(a).stderr(b);
+            }
+            None => {
+                cmd.stdout(Stdio::null()).stderr(Stdio::null());
+            }
+        }
+        let mut child = cmd.spawn().with_context(|| format!("starting {}", game.display()))?;
+        let stdin = child.stdin.take();
+        info!("company {id}: its process started (players' port {})", kept.port);
+        self.companies.push(CompanyProc { id: id.to_string(), port: kept.port, started: Instant::now(), child, stdin });
+        Ok(())
+    }
+
+    /// The companies' processes that ended let go (started again after `HOLD`).
+    pub fn reap_companies(&mut self) {
+        let held = &mut self.held;
+        self.companies.retain_mut(|p| match p.child.try_wait() {
+            Ok(Some(status)) => {
+                warn!("company {}: its process ended ({status}) - started again in {} s", p.id, HOLD.as_secs());
+                held.insert(p.id.clone(), Instant::now() + HOLD);
+                false
+            }
+            _ => true,
+        });
+    }
+
+    /// A line for company `id`'s process (its console: `role …`). Whether it went.
+    pub fn tell_company(&mut self, id: &str, line: &str) -> bool {
+        use std::io::Write;
+        let Some(p) = self.companies.iter_mut().find(|p| p.id == id) else { return false };
+        p.stdin.as_mut().is_some_and(|s| writeln!(s, "{line}").and_then(|_| s.flush()).is_ok())
+    }
+
+    /// Every company's process told to quit (it saves its company), waited for a while, the rest
+    /// ended.
+    pub fn stop_companies(&mut self) {
+        let ids: Vec<String> = self.companies.iter().map(|p| p.id.clone()).collect();
+        for id in &ids {
+            self.tell_company(id, "quit");
+        }
+        let until = Instant::now() + Duration::from_secs(20);
+        for p in self.companies.iter_mut() {
+            p.stdin = None;
+            loop {
+                match p.child.try_wait() {
+                    Ok(Some(_)) => break,
+                    _ if Instant::now() >= until => {
+                        warn!("company {}: its process did not end - stopped", p.id);
+                        let _ = p.child.kill();
+                        let _ = p.child.wait();
+                        break;
+                    }
+                    _ => std::thread::sleep(Duration::from_millis(100)),
+                }
+            }
+            info!("company {}: stopped", p.id);
+        }
+        self.companies.clear();
     }
 
     /// A new company founded on the server: `name`, on the map `map` (a name `find_map` knows)
-    /// for good, in the game mode `mode`; opened at once. Its id.
-    pub fn found(&mut self, name: &str, map: &str, mode: &str) -> Result<String> {
+    /// for good, in the game mode `mode`, its owner the player called `owner` (his launcher's name:
+    /// the first of that name to come is the owner); its process started at once. Its id.
+    pub fn found(&mut self, name: &str, map: &str, mode: &str, owner: &str) -> Result<String> {
         anyhow::ensure!(!name.trim().is_empty(), "the company needs a name");
         let game_mode = game_mode_of(mode)?;
         let map = find_map(&self.cfg.root, map).with_context(|| format!("no map '{map}' installed - maps lists them"))?;
         let f = Founding { name: name.trim().to_string(), map: map.clone(), map_name: map_folder(&map), game_mode, ..Default::default() };
-        let id = online::found_on_server(&self.data, &f, "owner", self.clock, unix_now())?;
+        let id = online::found_on_server(&self.data, &f, SERVER_PROFILE, self.clock, unix_now())?;
+        if !owner.trim().is_empty() {
+            let mut c = store::load(&self.data, &id)?;
+            c.online.owner = owner.trim().to_string();
+            store::save(&self.data, &c)?;
+        }
+        info!("company {id} ({}, {}, {}) founded{}", name.trim(), map_folder(&map), game_mode.label(), if owner.trim().is_empty() { String::new() } else { format!(", its owner {}", owner.trim()) });
+        self.held.remove(&id);
         self.scan();
         Ok(id)
     }
@@ -451,36 +521,45 @@ impl MainServer {
         });
     }
 
-    /// Every company saved (and the worlds stopped): the server goes down.
+    /// The worlds stopped and every company's process told to quit (each saves its company): the
+    /// server goes down.
     pub fn shutdown(&mut self) {
         let maps: Vec<String> = self.worlds.iter().map(|w| w.map.clone()).collect();
         for m in maps {
             self.stop_world(&m);
         }
-        let real = unix_now();
-        for h in self.hosts.iter_mut() {
-            match h.save(real) {
-                Ok(()) => info!("company {}: saved ({} {})", h.company.id, h.company.date, hhmmss(h.company.clock.minute as f64 * 60.0)),
-                Err(e) => warn!("company {}: not saved: {e:#}", h.company.id),
-            }
-        }
+        self.stop_companies();
     }
 
     /// What `status` says.
     pub fn status(&self) -> String {
         let (date, secs) = self.clock.at_real(unix_now() as f64);
-        let mut out = format!("server's clock: {date} {}\ncompanies: {}\n", hhmmss(secs), self.hosts.len());
-        for h in &self.hosts {
-            let c = &h.company;
-            out += &format!("  {} \"{}\" on {} ({}): {} {}, cash {:.2}, {} lines, {} buses, {} staff\n", c.id, c.name, map_folder(&c.map), c.game_mode.label(), c.date, hhmmss(c.clock.minute as f64 * 60.0), c.cash as f64 / 100.0, c.lines.len(), c.fleet.len(), c.staff.len());
+        let ids = company_ids(&self.data);
+        let mut out = format!("server's clock: {date} {}\ncompanies: {}\n", hhmmss(secs), ids.len());
+        for id in ids {
+            let Ok(c) = store::load(&self.data, &id) else { continue };
+            let state = match self.companies.iter().find(|p| p.id == id) {
+                Some(p) => format!("runs, port {}", p.port),
+                None if self.said.contains_key(&id) => "not run (its map)".to_string(),
+                None => "waits to start".to_string(),
+            };
+            let owner = if c.online.owner.is_empty() { String::new() } else { format!(", owner {}", c.online.owner) };
+            out += &format!("  {id} \"{}\" on {} ({}{owner}): {} {}, cash {:.2}, {} lines, {} buses, {} staff - {state}\n", c.name, map_folder(&c.map), c.game_mode.label(), c.date, hhmmss(c.clock.minute as f64 * 60.0), c.cash as f64 / 100.0, c.lines.len(), c.fleet.len(), c.staff.len());
+            if let Ok(code) = std::fs::read_to_string(online::code_file(&self.data, &id)) {
+                out += &format!("    code: {}\n", code.trim());
+            }
         }
         out += &format!("worlds: {} of at most {}\n", self.worlds.len(), self.cfg.max_worlds);
         for w in &self.worlds {
-            out += &format!("  {}: UDP {}, web {}, for {} min\n", map_folder(&w.map), w.port, w.web_port, w.started.elapsed().as_secs() / 60);
+            out += &format!("  {}: UDP {}, web {} (the launcher's server list: <this machine>:{}), for {} min\n", map_folder(&w.map), w.port, w.web_port, w.web_port, w.started.elapsed().as_secs() / 60);
         }
         out
     }
 }
+
+/// The profile the server's companies are founded under (`Company::profile`), and the one its
+/// companies' processes read their companies as.
+pub const SERVER_PROFILE: &str = "owner";
 
 pub const HELP: &str = "\
 help                          this list
@@ -488,8 +567,12 @@ status                        the clock, the companies, the worlds
 maps                          the maps installed (by their folders' names)
 start <map>                   start a map's world (Lemmental, Ahlheim 5, ...)
 stop <map>                    stop a map's world
-found <name>; <map>; [mode]   found a company on a map (mode: casual, normal, realistic)
-quit                          save every company, stop the worlds and end";
+found <name>; <map>; [mode]; [owner]
+                              found a company on a map (mode: casual, normal, realistic; owner:
+                              the player's name in his launcher - he gets every permission)
+role <company>; <player>; <role>
+                              give a player of a company a role (driver, planner, manager, owner)
+quit                          stop the worlds, save every company and end";
 
 /// What the console's line `line` does; the answer to print. None: `quit`.
 pub fn command(m: &mut MainServer, line: &str) -> Option<String> {
@@ -521,13 +604,23 @@ pub fn command(m: &mut MainServer, line: &str) -> Option<String> {
         "found" => {
             let parts: Vec<&str> = rest.split(';').map(str::trim).collect();
             match (parts.first().filter(|p| !p.is_empty()), parts.get(1).filter(|p| !p.is_empty())) {
-                (Some(name), Some(map)) => match m.found(name, map, parts.get(2).copied().unwrap_or("")) {
-                    Ok(id) => format!("founded: {id}"),
+                (Some(name), Some(map)) => match m.found(name, map, parts.get(2).copied().unwrap_or(""), parts.get(3).copied().unwrap_or("")) {
+                    Ok(id) => format!("founded: {id} - its code comes in status when its process runs"),
                     Err(e) => format!("not founded: {e:#}"),
                 },
-                _ => "found <name>; <map>; [mode]".to_string(),
+                _ => "found <name>; <map>; [mode]; [owner]".to_string(),
             }
         }
+        "role" => match rest.split_once(';') {
+            Some((company, who)) if !company.trim().is_empty() && who.contains(';') => {
+                if m.tell_company(company.trim(), &format!("role {}", who.trim())) {
+                    format!("told {} (its log: hosts\\{}.out)", company.trim(), company.trim())
+                } else {
+                    format!("company {} does not run", company.trim())
+                }
+            }
+            _ => "role <company>; <player>; <role>".to_string(),
+        },
         "quit" | "exit" => return None,
         other => format!("'{other}' is no command - help lists them"),
     })
@@ -577,7 +670,7 @@ pub fn run(dir: &Path) -> Result<()> {
             }
         }
     })?;
-    let (mut next, mut scan, mut reap) = (Instant::now() + STEP, Instant::now() + SCAN, Instant::now());
+    let (mut scan, mut reap) = (Instant::now() + Duration::from_secs(5), Instant::now());
     'run: while !STOP.load(Ordering::SeqCst) {
         while let Ok(line) = rx.try_recv() {
             match command(&mut m, &line) {
@@ -590,18 +683,15 @@ pub fn run(dir: &Path) -> Result<()> {
         if now >= reap {
             reap = now + Duration::from_secs(1);
             m.reap_worlds();
+            m.reap_companies();
         }
         if now >= scan {
-            scan = now + SCAN;
+            scan = now + Duration::from_secs(5);
             m.scan();
-        }
-        if now >= next {
-            next = now + STEP;
-            m.step();
         }
         std::thread::sleep(Duration::from_millis(100));
     }
-    println!("saving the companies and stopping the worlds ...");
+    println!("stopping the worlds and saving the companies ...");
     m.shutdown();
     Ok(())
 }
@@ -658,29 +748,36 @@ mod tests {
         let dir = temp("maps");
         let root = omsi_with_maps(&dir);
         let data = dir.join("bco");
-        let cfg = MainCfg { root: root.clone(), ..MainCfg::parse("real_time = 0\ndate = 2024-03-04\ntime = 06:00\n") };
+        // (no game program: the companies' processes do not start here, they wait)
+        let cfg = MainCfg { root: root.clone(), game: Some(dir.join("no-game")), ..MainCfg::parse("real_time = 0\ndate = 2024-03-04\ntime = 06:00\n") };
         let mut m = MainServer::open(&data, cfg.clone()).unwrap();
         assert!(MainServer::open(&data, cfg.clone()).is_err(), "one main server per folder");
+        let launcher: crate::Config = serde_json::from_str(&std::fs::read_to_string(data.join("launcher.json")).unwrap()).unwrap();
+        assert_eq!((PathBuf::from(&launcher.root), launcher.profile.as_str()), (root.clone(), SERVER_PROFILE), "what the companies' processes read");
         assert_eq!(find_map(&root, "lemmental").as_deref(), Some("maps/Lemmental/global.cfg"));
         assert_eq!(find_map(&root, "maps/Ahlheim 5/global.cfg").as_deref(), Some("maps/Ahlheim 5/global.cfg"));
         assert!(find_map(&root, "Grundorf").is_none());
         assert_eq!(command(&mut m, "maps").unwrap(), "Ahlheim 5\nLemmental");
-        let gen = online::plans_gen(&data);
-        let a = command(&mut m, "found Lemtal Trafik; Lemmental; casual").unwrap();
+        let a = command(&mut m, "found Lemtal Trafik; Lemmental; casual; Mathias").unwrap();
         let b = command(&mut m, "found Bergbus; lemmental").unwrap();
         let c = command(&mut m, "found Lemtal Ahlheim; Ahlheim 5; normal").unwrap();
         assert!(a.starts_with("founded:") && b.starts_with("founded:") && c.starts_with("founded:"), "{a} / {b} / {c}");
         assert!(command(&mut m, "found X; Grundorf").unwrap().contains("no map"));
         assert!(command(&mut m, "found X; Lemmental; sandbox").unwrap().contains("no game mode"));
         assert!(command(&mut m, "found ; Lemmental").unwrap().starts_with("found <name>"));
-        assert_eq!(m.hosts.len(), 3);
-        assert!(online::plans_gen(&data) > gen, "the worlds told");
-        let maps: HashSet<String> = m.hosts.iter().map(|h| map_folder(&h.company.map)).collect();
+        let ids = company_ids(&data);
+        assert_eq!(ids.len(), 3);
+        let all: Vec<crate::company::Company> = ids.iter().map(|id| store::load(&data, id).unwrap()).collect();
+        let maps: std::collections::HashSet<String> = all.iter().map(|c| map_folder(&c.map)).collect();
         assert_eq!(maps, ["lemmental", "ahlheim 5"].map(String::from).into_iter().collect());
-        assert!(m.hosts.iter().all(|h| h.company.date == "2024-03-04" && h.company.online.on_server));
-        m.step();
+        assert!(all.iter().all(|c| c.date == "2024-03-04" && c.online.on_server && c.profile == SERVER_PROFILE));
+        assert_eq!(store::load(&data, "lemtal-trafik").unwrap().online.owner, "Mathias");
+        // (the processes would not start: held, said in status)
+        assert!(m.companies.is_empty());
         let s = command(&mut m, "status").unwrap();
-        assert!(s.contains("companies: 3") && s.contains("lemtal-trafik") && s.contains("worlds: 0"), "{s}");
+        assert!(s.contains("companies: 3") && s.contains("lemtal-trafik") && s.contains("owner Mathias") && s.contains("waits to start") && s.contains("worlds: 0"), "{s}");
+        assert!(command(&mut m, "role lemtal-trafik; Jonas; planner").unwrap().contains("does not run"));
+        assert!(command(&mut m, "role lemtal-trafik").unwrap().starts_with("role <company>"));
         assert!(command(&mut m, "stop Lemmental").unwrap().contains("no world"));
         assert!(command(&mut m, "fly").unwrap().contains("no command"));
         assert!(command(&mut m, "testcopy x").unwrap().contains("no command"), "nothing of a player's own companies comes along");
@@ -688,9 +785,37 @@ mod tests {
         assert!(command(&mut m, "quit").is_none());
         m.shutdown();
         drop(m);
-        // started again: every company back
+        // started again: the companies there, their sessions (ports) kept apart
         let m = MainServer::open(&data, cfg).unwrap();
-        assert_eq!(m.hosts.len(), 3);
+        assert_eq!(company_ids(&m.data).len(), 3);
+        let ports: std::collections::HashSet<u16> = ids.iter().map(|id| online::kept_session(&data, id, 27045).unwrap().port).collect();
+        assert_eq!(ports.len(), 3);
         let _ = std::fs::remove_dir_all(&dir);
     }
+
+    /// A company's process started, told and ended (a stand-in for the game program: `sh`, which
+    /// reads its console and quits on it). (Unix: the release's tests run on Windows without it.)
+    #[cfg(unix)]
+    #[test]
+    fn a_companys_process_is_started_told_and_stopped() {
+        let dir = temp("procs");
+        let root = omsi_with_maps(&dir);
+        let data = dir.join("bco");
+        let game = dir.join("fake-game.sh");
+        std::fs::write(&game, "#!/bin/sh\nwhile read line; do echo \"got $line\"; [ \"$line\" = quit ] && exit 0; done\n").unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&game, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let cfg = MainCfg { root, game: Some(game), ..MainCfg::parse("real_time = 0\ndate = 2024-03-04\n") };
+        let mut m = MainServer::open(&data, cfg).unwrap();
+        command(&mut m, "found Lemtal Trafik; Lemmental; casual; Mathias").unwrap();
+        assert_eq!(m.companies.len(), 1);
+        assert!(command(&mut m, "status").unwrap().contains("runs, port 27045"));
+        assert!(command(&mut m, "role lemtal-trafik; Jonas; planner").unwrap().starts_with("told"));
+        m.shutdown();
+        assert!(m.companies.is_empty());
+        let out = std::fs::read_to_string(data.join("hosts").join("lemtal-trafik.out")).unwrap();
+        assert!(out.contains("got role Jonas; planner") && out.contains("got quit"), "{out}");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
 }

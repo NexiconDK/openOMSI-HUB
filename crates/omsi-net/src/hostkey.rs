@@ -18,6 +18,25 @@ impl HostKey {
         None
     }
 
+    /// (NexiconDK, Bus Company Online) A new key and its PKCS#8 bytes, to be kept: a company on
+    /// the main server keeps its session (and with it its code) across restarts.
+    pub fn generate_kept() -> Option<(HostKey, Vec<u8>)> {
+        let rng = ring::rand::SystemRandom::new();
+        for _ in 0..8 {
+            let pkcs8 = Ed25519KeyPair::generate_pkcs8(&rng).ok()?;
+            let key = HostKey { pair: Ed25519KeyPair::from_pkcs8(pkcs8.as_ref()).ok()? };
+            if key.session() != 0 {
+                return Some((key, pkcs8.as_ref().to_vec()));
+            }
+        }
+        None
+    }
+
+    /// (NexiconDK) A key kept as its PKCS#8 bytes (`generate_kept`).
+    pub fn from_pkcs8(bytes: &[u8]) -> Option<HostKey> {
+        Ed25519KeyPair::from_pkcs8(bytes).ok().map(|pair| HostKey { pair })
+    }
+
     pub fn public(&self) -> &[u8] {
         self.pair.public_key().as_ref()
     }
@@ -127,5 +146,18 @@ mod tests {
         assert!(fresh(now - 23 * 3600, now, MAX_AGE));
         assert!(!fresh(now - 25 * 3600, now, MAX_AGE));
         assert!(!fresh(now - 61, now, 60));
+    }
+}
+
+#[cfg(test)]
+mod kept_tests {
+    use super::HostKey;
+
+    #[test]
+    fn a_kept_key_is_the_same_key() {
+        let (k, bytes) = HostKey::generate_kept().unwrap();
+        let again = HostKey::from_pkcs8(&bytes).unwrap();
+        assert_eq!((k.session(), k.public()), (again.session(), again.public()));
+        assert!(HostKey::from_pkcs8(b"nonsense").is_none());
     }
 }

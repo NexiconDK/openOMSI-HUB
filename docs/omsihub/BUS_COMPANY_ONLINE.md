@@ -94,6 +94,38 @@ Still to do in phase 1: measured on a real map (a world's memory and CPU, how lo
 start); what the launcher's pages do besides (a line's change on its day, the dealer's
 deliveries, the control room's messages, the depot's building) moved to the hosts.
 
+## Phase 2, step 1: each company in its own process, its pages from the players' launchers
+
+The players reach a company with "Play together" ("Join a company"), as they reach a friend's
+company today: the server is every company's boss.
+
+- **A company's process** (`omsi-hub-game --company-host <folder> --company <id> --root <OMSI>`,
+  `omsi_launcher_api::omsihub::company_host`): no window; its data folder is the server's
+  (`core::set_data_dir`; the main server writes `<folder>/launcher.json` with the OMSI folder,
+  the game and the profile `owner` the server's companies are founded under). It opens the company
+  in the launcher's session (`company::open_company`) and shares it on the company's own port
+  with a code that stays the same across restarts (`online::kept_session`: `<id>.session` with
+  the port, the secret and the session key; `together::start_with`), written to `<id>.code`.
+  The players' launchers use the company's pages as their roles allow (`together::relay`).
+- **Its time** is run by `online::Host` on the server's clock, not by the launcher's clock (which
+  waits for a boss to answer its questions and its day's report): every `STEP` (2 s) what the
+  pages changed goes to the host (its plan for the world written again: `Host::replan`), the host
+  steps (days, plan, the world's reports, saving) and what it did goes back to the pages.
+- **The owner**: `found <name>; <map>; [mode]; [owner]` names him by his launcher's name; the
+  first player of that name to come is the owner with every permission (`Role::CoOwner`), from
+  then on only he (by the id his launcher keeps: `online::seat_owner`, `Online::owner_id`).
+  Other players come as drivers; `role <company>; <player>; <role>` on the main server's console
+  gives a role (driver, planner, manager, owner). Phase 2's step 2 puts the Steam ID there.
+- **The main server** supervises: a process for every company whose map is installed, its output
+  in `<folder>/hosts/<id>.out`; one that ended is started again after `HOLD` (30 s); a company
+  founded is started at once; `quit` tells each to quit (each saves its company) and ends what
+  does not within 20 s. A process whose main server is gone (its console closed) quits by itself.
+  `status` shows each company's state, port and code. `tunnel = 1` gives the companies (and the
+  worlds) a Cloudflare tunnel each, for players across the internet; else their LAN addresses.
+
+Step 2: "Bus Company Online" in the launcher - the server's list of companies, log in with the
+Steam ID and key, found a company there - so that nobody needs a code or the console.
+
 ### Measured on a real map (Ahlheim: 30 lines, 418 tours a day)
 
 `OMSI_COMPANY_MAP_DIR=<map folder> cargo test -p omsi-launcher-core --lib online::tests::on_a_real_map -- --ignored --nocapture`,

@@ -82,6 +82,10 @@ pub(crate) struct Args {
     /// missing), with no window, no sound and no graphics card.
     #[arg(long)]
     pub(crate) server: Option<PathBuf>,
+    /// Bus Company Online: run one company of the main server's folder (this one; `--company`
+    /// names it) as its own process without a window - the main server starts it.
+    #[arg(long)]
+    pub(crate) company_host: Option<PathBuf>,
     /// Your name as the other players see it.
     #[arg(long, default_value = "Driver")]
     pub(crate) lan_name: String,

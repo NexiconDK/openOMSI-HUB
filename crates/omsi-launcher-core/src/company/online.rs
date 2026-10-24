@@ -46,6 +46,101 @@ pub struct Online {
     /// run as the map has them.
     #[serde(default)]
     pub on_server: bool,
+    /// The player who founded it (his name as his launcher says it): the first player of that
+    /// name who comes to the company is its owner (every permission: `together::Role::CoOwner`),
+    /// and from then on only he (`owner_id`: the id his launcher keeps). Phase 2 puts his Steam
+    /// ID here instead.
+    #[serde(default)]
+    pub owner: String,
+    #[serde(default)]
+    pub owner_id: String,
+}
+
+/// What a company keeps on the main server for its players' launchers ("Play together": the
+/// company's session, `together::code`): its port, the code's secret and the session's key, so
+/// that its code stays the same across restarts (`<data>/companies/<id>.session`).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct KeptSession {
+    pub port: u16,
+    /// The code's secret and the session key's PKCS#8 bytes (hex).
+    pub secret: String,
+    pub key: String,
+}
+
+impl KeptSession {
+    /// The code's secret.
+    pub fn secret_bytes(&self) -> [u8; 8] {
+        let mut out = [0u8; 8];
+        if let Some(b) = omsi_net::hostkey::unhex(&self.secret) {
+            for (o, x) in out.iter_mut().zip(b) {
+                *o = x;
+            }
+        }
+        out
+    }
+
+    /// The session's key.
+    pub fn host_key(&self) -> Option<omsi_net::hostkey::HostKey> {
+        omsi_net::hostkey::HostKey::from_pkcs8(&omsi_net::hostkey::unhex(&self.key)?)
+    }
+}
+
+/// The file of a company's kept session.
+pub fn session_file(data: &Path, id: &str) -> PathBuf {
+    store::dir(data).join(format!("{id}.session"))
+}
+
+/// The file the company's process writes its code to, for the main server's `status`.
+pub fn code_file(data: &Path, id: &str) -> PathBuf {
+    store::dir(data).join(format!("{id}.code"))
+}
+
+/// Company `id`'s kept session in the folder `data`, made the first time: the first port from
+/// `first_port` no other company of the folder has, a new secret and key.
+pub fn kept_session(data: &Path, id: &str, first_port: u16) -> Result<KeptSession> {
+    let path = session_file(data, id);
+    if let Some(k) = std::fs::read_to_string(&path).ok().and_then(|t| serde_json::from_str::<KeptSession>(&t).ok()).filter(|k| k.host_key().is_some()) {
+        return Ok(k);
+    }
+    let taken: Vec<u16> = company_ids(data)
+        .iter()
+        .filter(|other| other.as_str() != id)
+        .filter_map(|other| std::fs::read_to_string(session_file(data, other)).ok())
+        .filter_map(|t| serde_json::from_str::<KeptSession>(&t).ok())
+        .map(|k| k.port)
+        .collect();
+    let port = (first_port..=u16::MAX).find(|p| !taken.contains(p)).context("no port left for the company")?;
+    let (_, pkcs8) = omsi_net::hostkey::HostKey::generate_kept().context("no key for the company's session")?;
+    let secret: [u8; 8] = omsi_net::http::random_bytes();
+    let k = KeptSession { port, secret: omsi_net::hostkey::hex(&secret), key: omsi_net::hostkey::hex(&pkcs8) };
+    std::fs::create_dir_all(store::dir(data)).with_context(|| format!("cannot make {}", store::dir(data).display()))?;
+    std::fs::write(&path, serde_json::to_string_pretty(&k)?).with_context(|| format!("cannot write {}", path.display()))?;
+    Ok(k)
+}
+
+/// The owner made so among the company's players (`Online::owner`): the first player of the
+/// owner's name, from then on only the one with his id, gets every permission. Whether it
+/// changed anything.
+pub fn seat_owner(c: &mut Company) -> bool {
+    use super::together::{Perm, Role};
+    let name = c.online.owner.trim().to_lowercase();
+    if name.is_empty() {
+        return false;
+    }
+    let pinned = c.online.owner_id.clone();
+    let Some(g) = c.together.guests.iter().find(|g| if pinned.is_empty() { g.name.trim().to_lowercase() == name } else { g.id == pinned }) else { return false };
+    let (no, id) = (g.no, g.id.clone());
+    let all: Vec<Perm> = Perm::ALL.to_vec();
+    let done = g.role == Role::CoOwner && g.perms() == all && !g.banned && pinned == id;
+    if done {
+        return false;
+    }
+    c.online.owner_id = id;
+    c.together.set_role(no, Role::CoOwner, &all);
+    if let Some(g) = c.together.guest_mut(no) {
+        g.banned = false;
+    }
+    true
 }
 
 /// A server's clock: every company on the server runs on it, and the server's world. Set once to
@@ -354,6 +449,13 @@ impl Host {
         Ok(())
     }
 
+    /// The company changed from outside (a page of its owner's): its day's plan for the world is
+    /// written again at the next step.
+    pub fn replan(&mut self) {
+        self.planned = None;
+        self.dirty = true;
+    }
+
     /// Saved now.
     pub fn save(&mut self, real: i64) -> Result<()> {
         store::save(&self.data, &self.company)?;
@@ -532,6 +634,40 @@ mod tests {
     /// The server's clock: set the first time, then 1:1 with the real clock, on where it was
     /// after a restart (the time it was off included); on the real time it follows the day it
     /// starts on - but never back.
+    /// A company's session kept: its port its own, the same code after a restart; the owner
+    /// seated by his name the first time, by his id from then on.
+    #[test]
+    fn the_session_kept_and_the_owner_seated() {
+        let data = temp("kept");
+        let (a, _) = company(&data);
+        let mut c = store::load(&data, &a).unwrap();
+        c.id = "second".into();
+        store::save(&data, &c).unwrap();
+        let ka = kept_session(&data, &a, 27045).unwrap();
+        let kb = kept_session(&data, "second", 27045).unwrap();
+        assert_eq!((ka.port, kb.port), (27045, 27046));
+        assert_eq!(kept_session(&data, &a, 27045).unwrap(), ka, "kept");
+        assert_eq!(ka.host_key().unwrap().session(), kept_session(&data, &a, 27045).unwrap().host_key().unwrap().session());
+        assert_ne!(ka.secret_bytes(), [0u8; 8]);
+        // the owner
+        let mut c = store::load(&data, &a).unwrap();
+        assert!(!seat_owner(&mut c), "no owner named");
+        c.online.owner = "Mathias".into();
+        let other = c.together.guest_of("pc-2", "Jonas").unwrap();
+        assert!(!seat_owner(&mut c), "not here yet");
+        let me = c.together.guest_of("pc-1", "mathias").unwrap();
+        assert!(seat_owner(&mut c));
+        assert_eq!(c.together.guest(me).unwrap().role, super::super::together::Role::CoOwner);
+        assert_eq!(c.online.owner_id, "pc-1");
+        assert!(!seat_owner(&mut c), "seated once");
+        // another of the name later: not the owner
+        let impostor = c.together.guest_of("pc-3", "Mathias").unwrap();
+        seat_owner(&mut c);
+        assert_eq!(c.together.guest(impostor).unwrap().role, super::super::together::Role::Driver);
+        assert_eq!(c.together.guest(other).unwrap().role, super::super::together::Role::Driver);
+        let _ = std::fs::remove_dir_all(&data);
+    }
+
     /// One main server at a time on a folder; the plans' generation the worlds watch.
     #[test]
     fn one_main_server_on_a_folder_and_the_plans_generation() {

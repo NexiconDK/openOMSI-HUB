@@ -420,25 +420,39 @@ fn start(s: &mut Session) -> Answer {
     if hosting().as_ref().is_some_and(|h| h.company == c.id) {
         return Ok(json!({}));
     }
-    stop(s);
-    let Some(c) = s.company.as_ref() else { return Ok(json!({})) };
-    let key = Arc::new(omsi_net::hostkey::HostKey::generate().ok_or("no key for the session")?);
+    let key = omsi_net::hostkey::HostKey::generate().ok_or("no key for the session")?;
     let secret: [u8; 8] = omsi_net::http::random_bytes();
-    let server = match Server::start(0, false, Arc::new(|body: &str| handle(body))) {
-        Ok(x) => x,
+    match start_with(s, 0, secret, key) {
+        Ok(_) => Ok(json!({})),
         Err(e) => {
-            let text = trf("No port for the session: %{e}", &[("e", &e.to_string())]);
-            return Ok(json!({ "popup": company::popup(s, Popup::new("error", "The session could not start", text, tr("Close what uses the port, or start the launcher again."), None)) }));
+            let text = trf("No port for the session: %{e}", &[("e", &e)]);
+            Ok(json!({ "popup": company::popup(s, Popup::new("error", "The session could not start", text, tr("Close what uses the port, or start the launcher again."), None)) }))
         }
-    };
+    }
+}
+
+/// The session of the open company started on `port` (0: the first free from the default) with
+/// the code's `secret` and the session's `key` - a launcher's fresh ones, or what a company on
+/// Bus Company Online's main server keeps (NexiconDK: `company_host`), so that its code stays the
+/// same across restarts. Its code; an error: no port.
+pub(crate) fn start_with(s: &mut Session, port: u16, secret: [u8; 8], key: omsi_net::hostkey::HostKey) -> Result<String, String> {
+    stop(s);
+    let Some(c) = s.company.as_ref() else { return Err("no company open".into()) };
+    let key = Arc::new(key);
+    let server = Server::start(port, false, Arc::new(|body: &str| handle(body))).map_err(|e| e.to_string())?;
     let ips: Vec<std::net::Ipv4Addr> = omsi_net::code_ipv4s().into_iter().filter(|ip| !ip.is_loopback()).collect();
     let code = CompanyCode { secret, session: key.session(), version: code::VERSION, port: server.port(), company: code::tag_of(&c.id), ips };
     server.open_tunnel(key.clone());
     let text = code.encode();
     core::log_to_file(&format!("company: Play together for {} on port {}", c.id, server.port()));
-    *hosting() = Some(Hosting { company: c.id.clone(), text, server, st: HostState::new(&c.id, &c.profile, secret), plan: None, told: 0, viewers: HashMap::new() });
+    *hosting() = Some(Hosting { company: c.id.clone(), text: text.clone(), server, st: HostState::new(&c.id, &c.profile, secret), plan: None, told: 0, viewers: HashMap::new() });
     keep_watch(secret);
-    Ok(json!({}))
+    Ok(text)
+}
+
+/// (NexiconDK) The session ended at once (`end`): the company's process on the main server stops.
+pub(crate) fn stop_now(s: &mut Session) {
+    end(s);
 }
 
 /// End the session of the open company, if one runs (`end`).
