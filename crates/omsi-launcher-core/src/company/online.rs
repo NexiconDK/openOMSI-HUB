@@ -18,6 +18,7 @@
 //! deliveries, the control room's messages) is not run here yet: the phases after this one.
 
 use super::clock::{self, Away, World};
+use serde::{Deserialize, Serialize};
 use super::day::DayReport;
 use super::model::Company;
 use super::{network, plan, store};
@@ -28,6 +29,18 @@ use std::path::{Path, PathBuf};
 /// How often the company is saved while nothing closes (real seconds): a server stopped hard
 /// loses at most this much of its day (the day's close saves at once).
 pub const SAVE_EVERY: i64 = 60;
+
+/// What the company keeps of its life on a server (`Company::online`).
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+pub struct Online {
+    /// It runs on a server. In Normal and Realistic its roster is its planners' alone: the day's
+    /// repair of the roster (`plan::repair_day`: a driver ill, a bus broken) is not run for
+    /// them, and what nobody filled does not run. The easy mode's own routine fills the roster
+    /// as it does on a player's computer (`autopilot::morning`). The map's lines no company has
+    /// run as the map has them.
+    #[serde(default)]
+    pub on_server: bool,
+}
 
 /// The company on a server.
 pub struct Host {
@@ -90,6 +103,7 @@ impl Host {
         if !company.clock.real.on {
             clock::set_realtime(&mut company, true);
         }
+        company.online.on_server = true;
         let seen = (company.date.clone(), 0);
         Host { data: data.to_path_buf(), map_dir: None, company, read: Vec::new(), planned: None, plan_gen: 0, seen, saved_at: real, dirty: false }
     }
@@ -238,11 +252,11 @@ mod tests {
         d
     }
 
-    /// A company of a line in service with its buses and drivers, in the easy mode (its own
-    /// routine fills the roster every morning: `autopilot`), saved in `data`.
-    fn company(data: &Path) -> (String, Fake) {
+    /// A company of a line in service with its buses and drivers, saved in `data`; `planned`:
+    /// its planners filled the roster of every weekday.
+    fn company_of(data: &Path, mode: GameMode, planned: bool) -> (String, Fake) {
         let lines = vec![line("Linie5", "5", 3, true), line("Linie7", "7", 2, true)];
-        let mut c = found(&Founding { name: "Online".into(), game_mode: GameMode::Casual, date: "2024-03-04".into(), ..Default::default() }, "Luc");
+        let mut c = found(&Founding { name: "Online".into(), game_mode: mode, date: "2024-03-04".into(), ..Default::default() }, "Luc");
         c.cash += 5_000_000_00;
         network::add_line(&mut c, &lines[0], None).unwrap();
         network::start_service(&mut c, "Linie5", 0).unwrap();
@@ -266,10 +280,21 @@ mod tests {
             e.sick_until = None;
             e.holiday_until = None;
         }
+        if planned {
+            for k in 0..7 {
+                let date = super::super::dates::add("2024-03-04", k);
+                let tours = network::tours_of_day(&c, &lines, &date);
+                plan::fill_day(&mut c, &date, tours);
+            }
+        }
         // (the company's morning: in step with the real clock from when it is opened)
         c.clock.minute = 5 * 60;
         store::save(data, &c).unwrap();
         (id, Fake(lines))
+    }
+
+    fn company(data: &Path) -> (String, Fake) {
+        company_of(data, GameMode::Normal, true)
     }
 
     /// Real time: Unix seconds `hours` after the moment the tests start from (to the minute).
@@ -324,6 +349,22 @@ mod tests {
         let _ = std::fs::remove_dir_all(&data);
     }
 
+    /// On a server the roster of a Normal or Realistic company is its planners': what they left
+    /// open does not run. The easy mode's own routine fills it, as on a player's computer.
+    #[test]
+    fn what_the_planners_leave_open_does_not_run_but_the_easy_mode_fills_it() {
+        for (mode, runs) in [(GameMode::Normal, false), (GameMode::Realistic, false), (GameMode::Casual, true)] {
+            let data = temp("open");
+            let (id, mut w) = company_of(&data, mode, false);
+            let (h, _) = Host::open_in(&data, &id, at(0.0), &mut w).unwrap();
+            assert!(h.company.online.on_server);
+            let p = plan::live_plans(&data).into_iter().find(|p| p.company == id).unwrap();
+            assert!(!p.tours.is_empty());
+            assert_eq!(p.tours.iter().any(|t| t.vehicle.is_some() && !t.dropped), runs, "{mode:?}: {:?}", p.tours);
+            let _ = std::fs::remove_dir_all(&data);
+        }
+    }
+
     /// A server stopped and started again goes on where the company was saved: the time it was
     /// away caught up, nothing closed twice.
     #[test]
@@ -375,7 +416,7 @@ mod tests {
         let t = std::time::Instant::now();
         let all = crate::lines_in_map_dir(&dir, date).unwrap();
         eprintln!("the map's lines read in {:.2} s: {} lines, {} tours today", t.elapsed().as_secs_f32(), all.len(), all.iter().map(|l| l.tours.iter().filter(|t| t.today).count()).sum::<usize>());
-        let mut c = found(&Founding { name: "Server".into(), game_mode: GameMode::Casual, date: date.into(), map: "maps/X/global.cfg".into(), ..Default::default() }, "Server");
+        let mut c = found(&Founding { name: "Server".into(), game_mode: GameMode::Normal, date: date.into(), map: "maps/X/global.cfg".into(), ..Default::default() }, "Server");
         c.cash += 50_000_000_00;
         // the three lines with the most tours today
         let mut lines: Vec<&LineInfo> = all.iter().filter(|l| l.user_allowed).collect();
@@ -404,6 +445,12 @@ mod tests {
             c.taken = Default::default();
         }
         c.id = id.clone();
+        // (its planners fill the roster of the two days)
+        for d in [date.to_string(), super::super::dates::add(date, 1)] {
+            let lines = crate::lines_in_map_dir(&dir, &d).unwrap();
+            let tours = network::tours_of_day(&c, &lines, &d);
+            plan::fill_day(&mut c, &d, tours);
+        }
         c.clock.minute = 5 * 60;
         store::save(&data, &c).unwrap();
         let t = std::time::Instant::now();

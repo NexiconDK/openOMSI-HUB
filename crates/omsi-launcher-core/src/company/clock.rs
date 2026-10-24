@@ -660,7 +660,10 @@ fn begin_day(c: &mut Company, w: &mut dyn World) -> Result<(), String> {
         super::autopilot::morning(c, &date, &lines);
     }
     let tours = network::in_service_only(network::tours_of_day(c, &lines, &date));
-    if c.game_mode.rules().repair_roster {
+    // (NexiconDK: on a server the roster of a Normal or Realistic company is its planners'
+    // alone - a driver ill or a bus broken is theirs to cover; the easy mode's routine above
+    // fills it as ever)
+    if c.game_mode.rules().repair_roster && !c.online.on_server {
         let r = plan::repair_day(c, &date, tours.clone());
         plan::tell_repaired(c, &r);
     }

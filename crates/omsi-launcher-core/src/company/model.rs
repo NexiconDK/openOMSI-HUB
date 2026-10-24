@@ -959,6 +959,9 @@ pub struct Company {
     /// drove for the company (`together`).
     #[serde(default)]
     pub together: super::together::Together,
+    /// (NexiconDK) Bus Company Online: the company on a server (`online`).
+    #[serde(default)]
+    pub online: super::online::Online,
     /// What raised or lowered the reputation lately (`reputation`).
     #[serde(default)]
     pub reputation_log: super::reputation::Log,

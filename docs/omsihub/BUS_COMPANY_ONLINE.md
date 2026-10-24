@@ -14,6 +14,7 @@ plan" (udkast 2, 24 October 2026).
 | Where the company lives | On the server (the owner creates it there; it runs while he is away) |
 | The world | Persistent, real time 1:1; the day closes at midnight; saved as it runs, goes on after a restart, catches up what it missed |
 | Tours nobody drives | The company's own buses (its liveries, numbers, plates) drive them as AI in the world |
+| The roster | The easy mode's routine fills it; in Normal and Realistic the planners alone, what they leave open does not run; the map's lines no company has run as the map has them |
 | Control room | Live, from the first playable version on |
 | Identity | The Steam ID read on the player's computer (`Steam/config/loginusers.vdf`) and a secret key the server gives that computer; the owner approves new players and resets a key |
 | Host | The server program on a PC or VPS, and a button in the launcher |
@@ -78,9 +79,11 @@ a company of 3 lines (74 tours a day), 18 buses, 150 staff:
 - **The host runs on a thread of its own.** A midnight costs about a second (six from a cold
   disk): on the world's frame loop that stalls everybody's world. The world and the host meet
   through the plan file (`plan_gen`) and the live file, as the game and the launcher do today.
-- **The roster must be filled.** A Normal or Realistic company whose roster nobody planned
-  drops its tours: on the server, either the dispatcher fills what is left open each morning
-  (as the easy mode's routine does, `autopilot::morning`), or planners do it. To decide.
+- **The roster is the planners'.** Decided (24 October): in the easy mode the company's own
+  routine fills the roster on the server as on a player's computer (`autopilot::morning`); in
+  Normal and Realistic it is the planners' alone - not even a driver ill or a bus broken is
+  covered for them (`plan::repair_day` is not run: `Online::on_server`) - and what nobody
+  filled does not run. The map's lines no company has run as the map has them.
 - **Tours far from the players.** The timetable runs a tour wherever its lanes are loaded; a
   server loads the whole map by default (`radius = 0`), so every tour of the company drives in
   the world and reports its trips (measured). With a smaller radius the tours out of reach wait,

@@ -205,6 +205,7 @@ pub fn found(f: &Founding, profile: &str) -> Company {
         autopilot: Default::default(),
         vehicles: f.vehicles.clone(),
         together: Default::default(),
+        online: Default::default(),
         reputation_log: Default::default(),
         complaints: Default::default(),
         lateness: Default::default(),
