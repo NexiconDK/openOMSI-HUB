@@ -256,8 +256,9 @@ pub enum WorldUpdate {
     Slew(f64),
     /// Use this weather file (None: the map's default).
     Weather(Option<String>),
-    /// Host: the timetable tours the other players drive (line, tour; lower case).
-    Tours(hashbrown::HashSet<(String, String)>),
+    /// Host: what the other players drive (their tours, and of each the trips of their duties
+    /// still to come).
+    Tours(hashbrown::HashSet<omsi_sim::timetable_run::LanClaim>),
 }
 
 /// What the game keeps about a session besides the transport: the other players' buses,
@@ -275,8 +276,8 @@ pub struct LanGame {
     tables: hashbrown::HashMap<PathBuf, Arc<SyncTable>>,
     /// The welcome whose world was taken over (`LanSession::welcomes`).
     adopted: u32,
-    /// Host: the tours the other players drive, as last told the timetable.
-    tours: hashbrown::HashSet<(String, String)>,
+    /// Host: what the other players drive, as last told the timetable.
+    tours: hashbrown::HashSet<omsi_sim::timetable_run::LanClaim>,
     /// Clock difference still to catch up (s).
     slew: f64,
     status_t: f32,
@@ -309,7 +310,8 @@ pub struct LanInput<'a> {
     pub riders: usize,
     /// The game's clock (None: an offscreen client, which keeps the one it started with).
     pub clock: Option<&'a omsi_sim::SimClock>,
-    /// The timetable tour we drive, `<line>/<tour>` (the host's timetable leaves it to us).
+    /// What we drive, as the host's timetable leaves it to us: our duty's claims
+    /// (`omsi_sim::timetable_run::lan_claims_text`; an older game's: `<line>/<tour>`).
     pub tour: Option<String>,
     /// We are out of the seat, walking about.
     pub walker: Option<omsi_net::Walker>,
@@ -2050,13 +2052,9 @@ pub fn tick_send(
     // (only while driving: on foot or as a passenger the radio key does nothing)
     mine.radio_keyed = frame.radio_keyed && frame.walker.is_none() && mine.has_vehicle();
     if lan.role == Role::Host {
-        // the tours the others drive are theirs, not the timetable's
-        let tours: hashbrown::HashSet<(String, String)> = lan
-            .peers()
-            .filter_map(|p| p.pose.tour.split_once('/'))
-            .map(|(l, t)| (l.trim().to_lowercase(), t.trim().to_lowercase()))
-            .filter(|(l, t)| !l.is_empty() && !t.is_empty())
-            .collect();
+        // what the others drive is theirs, not the timetable's (of a tour the trips of their
+        // duties still to come: `omsi_sim::timetable_run::LanClaim`)
+        let tours: hashbrown::HashSet<omsi_sim::timetable_run::LanClaim> = lan.peers().flat_map(|p| omsi_sim::timetable_run::lan_claims(&p.pose.tour)).collect();
         if tours != game.tours {
             game.tours = tours.clone();
             updates.push(WorldUpdate::Tours(tours));

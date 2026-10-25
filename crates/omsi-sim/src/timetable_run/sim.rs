@@ -19,7 +19,7 @@ mod night_tests;
 // Omsi-Hub: the dedicated server's live map
 mod web_map;
 
-pub use tours::{TourPlan, TourPlanTrip};
+pub use tours::{lan_claims, lan_claims_text, LanClaim, TourPlan, TourPlanTrip, LAN_CLAIMS_MAX};
 
 use super::*;
 use crate::ai_traffic::TrafficSim;
@@ -200,9 +200,9 @@ pub struct ScheduleSim {
     player_trips: Vec<(String, String, f64)>,
     /// A player tour was just taken over: its buses already on the road go at the next tick.
     purge_player_tour: bool,
-    /// LAN play (host): the tours the other players drive (line, tour; lower case), left to
-    /// them like our own.
-    lan_tours: HashSet<(String, String)>,
+    /// LAN play (host): what the other players drive (their tours, and of each the trips of
+    /// their duties still to come: `LanClaim`), left to them like our own.
+    lan_tours: HashSet<LanClaim>,
     /// Time of today's timetable at the last tick (s).
     last_tod: f64,
     /// The lines the date's chrono folders take off the timetable, with the folder that does

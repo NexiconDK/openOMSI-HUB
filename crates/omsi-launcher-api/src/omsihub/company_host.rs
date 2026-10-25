@@ -126,11 +126,19 @@ fn step(s: &mut Session, host: &mut Host, data: &Path) -> bool {
     let (trips, to) = co_store::world_trips_from(data, &host.company.id, read);
     if to != read {
         if let Some(lines) = host.lines_today().map(<[core::LineInfo]>::to_vec) {
+            let left = |s: &Session| s.company.as_ref().map(|c| c.together.claims.iter().map(|x| x.ai.clone()).collect::<Vec<_>>());
+            let before = left(s);
             let paid = together::take_world_trips(s, &lines, &trips, unix_now() as u64);
+            // (a duty's part its player left moved on past a trip the world saw him drive: what
+            // the world keeps off the road with it - phase 3 step 3)
+            let moved = left(s) != before;
             if let Some(c) = s.company.as_mut() {
                 c.online.world_trips_read = to;
                 host.company = c.clone();
                 host.mark_changed();
+                if moved {
+                    host.replan();
+                }
                 changed = true;
             }
             for p in &paid {

@@ -34,6 +34,7 @@
 .tg-hero-icon.pulse { animation: tg-pulse 1.6s ease-in-out infinite; }
 @keyframes tg-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(var(--hub-accent-rgb), 0.45); } 50% { box-shadow: 0 0 0 14px rgba(var(--hub-accent-rgb), 0); } }
 .tg-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.tg-stats.six { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .tg-stats > div { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: var(--hub-r); background: rgba(var(--co-white), 0.04); min-width: 0; }
 .tg-stats span { font-size: var(--co-caps); color: var(--hub-text-dim); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tg-stats b { font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

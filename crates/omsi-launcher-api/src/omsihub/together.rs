@@ -97,6 +97,12 @@ pub fn ai_label(name: &str) -> String {
     trf("AI (%{name} left)", &[("name", name)])
 }
 
+/// Who drives a duty of a player who left it when the company drops what a player leaves:
+/// nobody - "Dropped (Jan left)" (Bus Company Online).
+pub fn dropped_label(name: &str) -> String {
+    trf("Dropped (%{name} left)", &[("name", name)])
+}
+
 /// A player of "Play together" as the company's pages name him on his duties: his name, or "AI
 /// (his name left)" while the AI drives a duty he left (`book::guest_left`).
 pub fn guest_label(c: &omsi_launcher_lib::company::Company, g: u32) -> String {

@@ -332,10 +332,13 @@ pub enum DropWhy {
     NoBlock,
     /// The bus had an accident on its tour, and nothing took the trips over.
     Crashed,
+    /// A player of the company left his duty halfway, and the company drops what he left (Bus
+    /// Company Online, its owner's choice: `together::Together::left_dropped`).
+    Left,
 }
 
 impl DropWhy {
-    pub const LABELS: [&'static str; 6] = ["No bus", "No driver", "The bus broke down on the way", "The driver came late", "On no bus: the trips wait on RosterFlow's stack", "The bus had an accident on the way"];
+    pub const LABELS: [&'static str; 7] = ["No bus", "No driver", "The bus broke down on the way", "The driver came late", "On no bus: the trips wait on RosterFlow's stack", "The bus had an accident on the way", "Its player left the duty"];
 
     pub fn label(self) -> &'static str {
         Self::LABELS[self as usize]
@@ -818,7 +821,9 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                 if reported(trip) {
                     continue;
                 }
-                let fate = why_not(c, tp, k, j, broken_at);
+                // (what a player left of his duty, which the company drops: nobody drives it)
+                let left = ai && super::together::book::dropped_runs(c, &date, &tp.tour.line, &tp.tour.tour, k, j - d.start, tp.tour.trips[j].whole_dep());
+                let fate = if left { Some((DropWhy::Left, None, Some(k))) } else { why_not(c, tp, k, j, broken_at) };
                 if let Some((why, problem, duty)) = fate {
                     if counts {
                         lines[li].dropped += 1;

@@ -696,6 +696,67 @@ fn a_player_leaving_mid_duty_leaves_the_rest_to_the_ai_and_keeps_what_he_drove()
     assert_eq!((g.trips, g.passengers), (1, 30), "his own results are his trip's");
 }
 
+/// (NexiconDK, Bus Company Online phase 3 step 3) The owner drops what a player leaves of his
+/// duty: nobody drives the rest - the close books its trips as dropped, the world keeps them off
+/// the road (`plan::live_plan`); his card counts the duty he left.
+#[test]
+fn a_duty_its_player_left_is_dropped_when_the_owner_says_so() {
+    let mut b = boss();
+    b.c.together.left_dropped = true;
+    let duty = jan_drives(&mut b, &[360]);
+    ask(&mut b, "piet", "hello", |_| {});
+    b.c.clock.minute = 395;
+    assert_eq!(ask(&mut b, "jan", "leave", |_| {})["ok"], true);
+    let a = b.c.together.claim_of(&duty).and_then(|x| x.ai_now()).cloned().unwrap();
+    assert_eq!((a.from, a.dropped), (2, true));
+    let jan = guest_no(&b, "jan");
+    assert_eq!(b.c.together.guest(jan).unwrap().stats.left, 1, "his card counts it");
+    let s = snap(&ask(&mut b, "piet", "snapshot", |_| {}));
+    assert!(s.duties[0].ai && s.duties[0].dropped);
+    assert!(s.notices.iter().any(|n| n.text == host::DROPPED_REST));
+    // the world keeps the rest off the road, his trip not
+    let p = b.plan();
+    let lp = super::super::plan::live_plan(&b.c, &p);
+    let off: Vec<i32> = lp.tours.iter().flat_map(|t| t.off.clone()).collect();
+    assert!(lp.drops_left && off.contains(&400) && off.contains(&440) && !off.contains(&360), "{off:?}");
+    // the close: his trip measured, the rest dropped - its player left it
+    let (report, _) = close(&mut b);
+    assert_eq!((report.measured, report.dropped), (1, 2), "{report:?}");
+    assert!(!report.drops.is_empty() && report.drops.iter().all(|d| d.why == super::super::day::DropWhy::Left), "{:?}", report.drops);
+    // (a saved company of before reads with the AI driving what is left)
+    let mut v = serde_json::to_value(&b.c).unwrap();
+    v["together"].as_object_mut().unwrap().remove("left_dropped");
+    assert!(!serde_json::from_value::<Company>(v).unwrap().together.left_dropped);
+}
+
+/// (Bus Company Online) His game ended after a trip whose check by the world had not come yet:
+/// the AI took over from that trip; the world's check of it moves the AI on past it, and of his
+/// last trip ends the AI's part - he drove all of it, he did not leave it.
+#[test]
+fn a_trip_the_world_saw_him_drive_after_he_left_is_his() {
+    let mut b = boss();
+    let duty = jan_drives(&mut b, &[360]);
+    let jan = guest_no(&b, "jan");
+    b.c.clock.minute = 395;
+    ask(&mut b, "jan", "report", |r| {
+        r.duty = Some(duty.clone());
+        r.done = true;
+    });
+    let from = |b: &Boss| b.c.together.claim_of(&duty).and_then(|x| x.ai_now()).map(|a| a.from);
+    assert_eq!((from(&b), b.c.together.guest(jan).unwrap().stats.left), (Some(2), 1));
+    let p = b.plan();
+    assert!(!book::world_saw(&mut b.c, Some(&p), &duty, jan, &run(360, 30, 0)), "a trip before the AI's part");
+    assert!(book::world_saw(&mut b.c, Some(&p), &duty, jan, &run(400, 30, 0)));
+    assert_eq!(from(&b), Some(3));
+    assert_eq!(book::report(&mut b.c, Some(&p), &duty, jan, &[run(400, 30, 0)], now()), Ok((1, 0)));
+    assert!(book::world_saw(&mut b.c, Some(&p), &duty, jan, &run(440, 30, 0)));
+    assert_eq!(book::report(&mut b.c, Some(&p), &duty, jan, &[run(440, 30, 0)], now()), Ok((1, 0)));
+    let x = b.c.together.claim_of(&duty).cloned().unwrap();
+    assert_eq!((x.ai.len(), x.state, b.c.together.guest(jan).unwrap().stats.left), (0, ClaimState::Done, 0), "{x:?}");
+    let (report, _) = close(&mut b);
+    assert_eq!((report.measured, report.dropped), (3, 0), "{report:?}");
+}
+
 #[test]
 fn a_player_back_takes_his_duty_back_from_the_ai_at_its_next_trip() {
     let mut b = boss();

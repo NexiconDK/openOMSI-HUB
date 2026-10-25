@@ -29,6 +29,17 @@ pub trait TimetableCompany: Send + Sync {
     /// files are found in). None: not the company's tour, or a rental bus - the map's own
     /// vehicle then.
     fn bus(&mut self, root: &Path, line: &str, tour: &str) -> Option<CompanyBus>;
+    /// A departure of the company's tour it keeps off the road today (`dep`: minute of the
+    /// day): the trips of a duty its player left, dropped (Bus Company Online, its owner's
+    /// choice).
+    fn keeps_off_departure(&self, _line: &str, _tour: &str, _dep: i32) -> bool {
+        false
+    }
+    /// The company of `line` drops what a LAN player leaves of his duty: nobody drives it (else
+    /// the AI drives it from its next departure).
+    fn drops_left(&self, _line: &str) -> bool {
+        false
+    }
 }
 
 /// A bus of the player's company for one of its tours (`TimetableCompany::bus`).
@@ -93,7 +104,7 @@ impl ScheduleSim {
                 .get(&d.line.to_ascii_lowercase())
                 .or_else(|| self.depots.get(&group))
                 .is_some_and(|v| !v.is_empty() && v.iter().all(|x| x.0.def.is_rail()));
-            off.push(company.keeps_off(&d.line, &d.tour, is_map_bus(train, on_track, stops, all_rail)));
+            off.push(company.keeps_off(&d.line, &d.tour, is_map_bus(train, on_track, stops, all_rail)) || company.keeps_off_departure(&d.line, &d.tour, (d.time / 60.0).round() as i32));
         }
         self.company_off = off;
         let kept = (0..self.departures.len()).filter(|&i| self.company_off[i] && {

@@ -155,6 +155,17 @@ impl CompanyLive {
         self.plan.as_ref()?.tour(line, tour)
     }
 
+    /// A departure (minute of the day) of its tour it keeps off the road: of a duty its player
+    /// left, dropped (`LiveTour::off`).
+    pub fn keeps_off_departure(&self, line: &str, tour: &str, dep: i32) -> bool {
+        self.tour(line, tour).is_some_and(|t| t.off.iter().any(|m| m.rem_euclid(1440) == dep.rem_euclid(1440)))
+    }
+
+    /// It drops what a player leaves of his duty on its line `line` (`LivePlan::drops_left`).
+    pub fn drops_left(&self, line: &str) -> bool {
+        self.plan.as_ref().is_some_and(|p| p.drops_left && (p.has_line(line) || p.tours.iter().any(|t| t.line.trim().eq_ignore_ascii_case(line.trim()))))
+    }
+
     /// The depot file the company's buses carry.
     pub fn depot(&self) -> Option<&str> {
         self.plan.as_ref().map(|p| p.depot.as_str()).filter(|d| !d.trim().is_empty())
@@ -309,6 +320,7 @@ mod tests {
                 LiveTour { line: "Linie5".into(), number: "5".into(), tour: "2".into(), dropped: true, ..Default::default() },
             ],
             lines: Vec::new(),
+            drops_left: false,
         };
         plan::save_live_plan(&data, &lp).unwrap();
         let grundorf = Path::new("C:/OMSI 2/maps/Grundorf");
@@ -386,6 +398,16 @@ mod tests {
         assert!(!live.keeps_off("Linie5", "2", true));
         live.report(17, "Linie5", "1", 6 * 60, 12.5, 14, 0.0);
         assert_eq!(store::peek_live(&data, &c.id, 0).len(), 1, "a trip told once");
+        // (its owner drops what a player leaves of his duty: its trips off the road - phase 3
+        // step 3)
+        assert!(!live.drops_left("Linie5") && !live.keeps_off_departure("Linie5", "1", 7 * 60));
+        lp.drops_left = true;
+        lp.tours[0].off = vec![7 * 60];
+        plan::save_live_plan(&data, &lp).unwrap();
+        live.set_day(20240304);
+        assert!(live.drops_left("linie5") && !live.drops_left("Linie9"));
+        assert!(live.keeps_off_departure("Linie5", "1", 7 * 60) && live.keeps_off_departure("Linie5", "1", 7 * 60 + 1440));
+        assert!(!live.keeps_off_departure("Linie5", "1", 8 * 60) && !live.keeps_off_departure("Linie5", "2", 7 * 60));
         // midnight before the host wrote the new day's plan: its lines stay off, the rest runs
         live.set_day(20240305);
         assert!(!live.active());

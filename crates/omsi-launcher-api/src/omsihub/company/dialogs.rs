@@ -78,17 +78,40 @@ fn online_part(c: &co::Company) -> Value {
         "share": share, "options": (0..=20).map(|k| k * 5).collect::<Vec<u8>>(),
         "say": trf("The company keeps %{share} % of what a trip of its players brings in; the rest is the driver's pay, into his money on the server.", &[("share", &share.to_string())]),
         "next": c.online.share_next.map(|n| trf("From tomorrow: %{share} %", &[("share", &n.to_string())])),
+        // (phase 3 step 3: what a player leaves of his duty - its owner's choice)
+        "left_caps": tr("When a player leaves his duty halfway").to_uppercase(),
+        "left": if c.together.left_dropped { "dropped" } else { "ai" },
+        "left_options": [
+            { "value": "ai", "label": tr("The AI drives the rest") },
+            { "value": "dropped", "label": tr("Its trips are dropped") },
+        ],
+        "left_say": tr(if c.together.left_dropped { LEFT_DROPPED } else { LEFT_AI }),
     })
 }
 
+/// What becomes of the rest of a duty its player left, as the settings say it.
+const LEFT_AI: &str = "The AI drives the rest of his duty in the world, and the company books its trips. He is paid for what he drove; his card counts the duties he left.";
+const LEFT_DROPPED: &str = "Nobody drives the rest of his duty: its trips are dropped, the company loses their takings and pays the authority's penalties. He is paid for what he drove; his card counts the duties he left.";
+
 /// (NexiconDK) The settings' share chosen (`online_share {share}`): the company keeps it from the
-/// next day on (`online::Online::share_next`) - a company on Bus Company Online's server only.
+/// next day on (`online::Online::share_next`); what a player leaves of his duty (`online_left
+/// {left: "ai" | "dropped"}`: `together::Together::left_dropped`, at once) - a company on Bus
+/// Company Online's server only.
 pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, String>> {
-    if what != "online_share" {
+    if what != "online_share" && what != "online_left" {
         return None;
     }
-    let share = args.get("share").and_then(Value::as_u64).map(|v| v.min(100) as u8);
     let Some(c) = s.company.as_mut().filter(|c| c.online.on_server) else { return Some(Ok(json!({}))) };
+    if what == "online_left" {
+        let dropped = args.get("left").and_then(Value::as_str) == Some("dropped");
+        if c.together.left_dropped != dropped {
+            c.together.left_dropped = dropped;
+            super::changed(s);
+            s.say(tr(if dropped { "From now on what a player leaves of his duty is dropped." } else { "From now on the AI drives what a player leaves of his duty." }), false);
+        }
+        return Some(Ok(json!({})));
+    }
+    let share = args.get("share").and_then(Value::as_u64).map(|v| v.min(100) as u8);
     let Some(share) = share else { return Some(Ok(json!({}))) };
     c.online.share_next = (share != c.online.share).then_some(share);
     super::changed(s);

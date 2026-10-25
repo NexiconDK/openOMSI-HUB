@@ -93,7 +93,9 @@ export function Stats({ st, w }) {
     [w.fares, st.fares, 'ok'],
     [w.fines, st.fines, st.fined ? 'danger' : ''],
   ];
-  return html`<div class="tg-stats">${cells.map(([k, v, tone]) => html`<div><span>${k}</span><b class=${tone ? 't-' + tone : ''}>${v}</b></div>`)}</div>`;
+  // (the duties he left halfway, once there are any - and the words for them)
+  if (st.left > 0 && w.left) cells.push([w.left, st.left, 'warn']);
+  return html`<div class=${cells.length > 5 ? 'tg-stats six' : 'tg-stats'}>${cells.map(([k, v, tone]) => html`<div><span>${k}</span><b class=${tone ? 't-' + tone : ''}>${v}</b></div>`)}</div>`;
 }
 
 /** The roles to choose from, and each permission as a tick: the role's ticked, the boss's own

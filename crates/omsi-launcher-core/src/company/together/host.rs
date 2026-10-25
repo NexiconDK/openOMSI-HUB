@@ -86,11 +86,14 @@ pub const AI_ALL: &str = "%{name} left duty %{k} of line %{n} (tour %{tour}) bef
 pub const LEFT_OPEN: &str = "%{name} left duty %{k} of line %{n} (tour %{tour}) before its first trip: it is open for another player.";
 pub const TOOK_BACK: &str = "%{name} takes duty %{k} of line %{n} (tour %{tour}) back from the AI at its next trip.";
 pub const BACK_AGAIN: &str = "%{name} is back: duty %{k} of line %{n} (tour %{tour}) is his again.";
+/// A duty its player left that the company drops (Bus Company Online, its owner's choice).
+pub const DROPPED_REST: &str = "%{name} left duty %{k} of line %{n} (tour %{tour}): the rest of it is dropped.";
+pub const DROPPED_ALL: &str = "%{name} left duty %{k} of line %{n} (tour %{tour}) before its first trip: all of it is dropped.";
 pub const CLOSING: &str = "The host closed this session.";
 
 /// Every English text of this file (for the translations' check).
 pub fn texts() -> Vec<&'static str> {
-    vec![BAD_SECRET, READING, UNKNOWN, NOT_OPEN_COMPANY, BUSY, NOT_ALLOWED, BANNED, KICKED, NO_PLAYER, NO_TICKET, NOT_ABOVE, CLOSED, JOINED, LEFT, TOOK, ASKS, GAVE, REFUSED, BACK, OFF, DRIVES, FINISHED, SAYS, ROLE_SET, SENT_AWAY, REMOVED, LET_BACK, AI_REST, AI_ALL, LEFT_OPEN, TOOK_BACK, BACK_AGAIN]
+    vec![BAD_SECRET, READING, UNKNOWN, NOT_OPEN_COMPANY, BUSY, NOT_ALLOWED, BANNED, KICKED, NO_PLAYER, NO_TICKET, NOT_ABOVE, CLOSED, JOINED, LEFT, TOOK, ASKS, GAVE, REFUSED, BACK, OFF, DRIVES, FINISHED, SAYS, ROLE_SET, SENT_AWAY, REMOVED, LET_BACK, AI_REST, AI_ALL, LEFT_OPEN, TOOK_BACK, BACK_AGAIN, DROPPED_REST, DROPPED_ALL]
 }
 
 /// A player as the session knows him now.
@@ -299,9 +302,7 @@ impl HostState {
             if let Some(r) = req.driving.as_ref().filter(|_| req.in_game) {
                 let silent = c.together.claim_of(r).filter(|x| x.guest == guest).and_then(|x| x.ai_now()).is_some_and(|a| a.why == LeftWhy::Silent);
                 if silent {
-                    if let Some(x) = c.together.claims.iter_mut().find(|x| book::same_duty(&x.duty, r)) {
-                        x.ai.pop();
-                    }
+                    book::not_left(c, r, guest);
                     let mut a = vec![("name".to_string(), name)];
                     a.extend(duty_args(None, r));
                     self.tell(now, BACK_AGAIN, a);
@@ -639,9 +640,12 @@ impl HostState {
         let args = claim_args(c, here.plan, r);
         let minute = c.clock.minute as i32;
         let Ok(handed) = book::hand_to_ai(c, here.plan, r, guest, why, here.now, minute) else { return false };
+        let dropped = c.together.claim_of(r).and_then(|x| x.ai_now()).is_some_and(|a| a.dropped);
         let text = match handed {
             Handed::Over => return false,
             Handed::Open => LEFT_OPEN,
+            Handed::Ai(0) if dropped => DROPPED_ALL,
+            Handed::Ai(_) if dropped => DROPPED_REST,
             Handed::Ai(0) => AI_ALL,
             Handed::Ai(_) => AI_REST,
         };
@@ -841,6 +845,7 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                 // (the AI on a duty its player left: from where, and whether he may take it back)
                 if let Some(a) = claim.and_then(|x| x.ai_now()) {
                     sd.ai = true;
+                    sd.dropped = a.dropped;
                     sd.ai_from = trips.get(a.from).map(|x| x.dep);
                     sd.back = mine && book::back_at(c, Some(p), &r, now).is_some();
                 }

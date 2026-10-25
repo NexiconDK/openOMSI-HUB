@@ -151,6 +151,9 @@ pub(crate) fn take_world_trips(s: &mut Session, lines: &[core::LineInfo], trips:
             .collect();
         let mut booked = false;
         for r in &duties {
+            // (his launcher said he left before the world's check of his last trip came: the
+            // AI's part, or the dropped one, begins after it)
+            book::world_saw(c, Some(&p), r, no, t);
             if let Ok((1, _)) = book::report(c, Some(&p), r, no, std::slice::from_ref(t), now) {
                 let kept = c.together.trips.last().map(|g| g.trip.clone()).unwrap_or_else(|| t.clone());
                 let money = book::trip_money(c, &kept);
@@ -176,7 +179,7 @@ fn lines_of(s: &Session) -> Vec<core::LineInfo> {
 }
 
 /// The notices the boss is told in the company's corner (the rest are on his Multiplayer page).
-const TOLD: [&str; 9] = [th::JOINED, th::LEFT, th::ASKS, th::FINISHED, th::SAYS, th::AI_REST, th::AI_ALL, th::LEFT_OPEN, th::TOOK_BACK];
+const TOLD: [&str; 11] = [th::JOINED, th::LEFT, th::ASKS, th::FINISHED, th::SAYS, th::AI_REST, th::AI_ALL, th::LEFT_OPEN, th::TOOK_BACK, th::DROPPED_REST, th::DROPPED_ALL];
 
 /// Tell the boss what came since he was last told (in his page's language).
 fn tell_boss(s: &mut Session, h: &mut Hosting) {
@@ -681,6 +684,8 @@ pub fn stats_json(st: &book::GuestStats) -> Value {
         "score": (st.trips > 0).then(|| st.score()),
         "fares": eur(st.fares), "fines": eur(st.fines), "fined": st.fines > 0,
         "late": st.late,
+        // (the duties he left halfway: the AI drove the rest, or the company dropped it)
+        "left": st.left,
     })
 }
 
@@ -694,7 +699,7 @@ fn duty_row(c: &Company, d: &omsi_launcher_lib::company::together::wire::SnapDut
         "open": d.state == DutyState::Open || d.state == DutyState::Company,
         "facts": format!("{}  ·  {} km", trf("%{n} trips", &[("n", &d.trips.to_string())]), d.km),
         "late": c.together.claim_of(&d.duty).is_some_and(|x| x.late),
-        "ai": d.ai, "ai_who": d.ai.then(|| super::ai_label(&d.who)),
+        "ai": d.ai, "ai_who": d.ai.then(|| if d.dropped { super::dropped_label(&d.who) } else { super::ai_label(&d.who) }),
     })
 }
 
@@ -718,6 +723,7 @@ fn player_row(c: &Company, st: Option<&HostState>, g: &book::Guest, p: Option<&D
         .map(|x| {
             let num = if x.number.is_empty() { number(&x.duty) } else { x.number.clone() };
             let state = match x.state {
+                _ if x.ai_now().is_some_and(|a| a.dropped) => tr("Left it: the rest is dropped"),
                 _ if x.ai_now().is_some() => tr("Left it: the AI drives the rest"),
                 ClaimState::Asked => tr("Asked for"),
                 ClaimState::Driving => tr("Driving it now"),
@@ -763,7 +769,7 @@ fn view(s: &mut Session) -> Value {
         "kick": tr("Send away"), "ban": tr("Remove"), "back": tr("Let back in"), "off": tr("Take off"),
         "duties_caps": tr("Duties").to_uppercase(), "no_duties": tr("No duties today."),
         "stats_caps": tr("For the company").to_uppercase(),
-        "trips": tr("Trips"), "punctuality": tr("On time"), "score": tr("Score"), "fares": tr("Fares"), "fines": tr("Fines"),
+        "trips": tr("Trips"), "punctuality": tr("On time"), "score": tr("Score"), "fares": tr("Fares"), "fines": tr("Fines"), "left": tr("Duties left"),
         "online": tr("online"), "kick_tip": tr("Send away from this session: they can join again with a new code."), "ban_tip": tr("Remove from the company: they cannot join again until you let them back in."),
         "left_label": tr("Open a duty its player left before its first trip"), "left_note": tr("Off: the AI drives a duty its player left, all of it or from where they got to. The route carries on either way."),
         "not_shared": tr("Not shared: the players keep their roles, but cannot reach you."),

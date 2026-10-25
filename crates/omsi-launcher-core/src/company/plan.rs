@@ -2077,6 +2077,11 @@ pub struct LiveTour {
     /// The depot file the bus carries on this line (empty: the plan's `depot`).
     #[serde(default)]
     pub hof: String,
+    /// Its departures (minutes of the day) kept off the road: of a duty its player left, which
+    /// the company drops (`together::book::dropped_departures`; Bus Company Online, its owner's
+    /// choice).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub off: Vec<i32>,
 }
 
 /// The company's day for the game (`companies/<id>.liveplan.json`).
@@ -2097,6 +2102,10 @@ pub struct LivePlan {
     /// do, as its plan has them - while the map's other lines run as ever.
     #[serde(default)]
     pub lines: Vec<String>,
+    /// What a player leaves of his duty nobody drives (`together::Together::left_dropped`): the
+    /// world keeps its later departures off the road at once (else its AI drives them).
+    #[serde(default)]
+    pub drops_left: bool,
 }
 
 impl LivePlan {
@@ -2131,6 +2140,8 @@ impl LivePlan {
 /// game knows the timetable's tours: a block the scheduling studio laid out runs each of them
 /// it holds most of with its bus (`studio::origins`).
 pub fn live_plan(c: &Company, dp: &DayPlan) -> LivePlan {
+    // (the trips of duties their players left, dropped: off the road)
+    let off = super::together::book::dropped_departures(c, dp);
     let tours = dp
         .tours
         .iter()
@@ -2154,11 +2165,12 @@ pub fn live_plan(c: &Company, dp: &DayPlan) -> LivePlan {
                 None => lt.dropped = true,
             }
             lt.dropped |= t.bus.is_some() && t.duties.iter().all(|d| d.who.is_none());
+            lt.off = off.iter().filter(|(l, t, _)| same(l, &lt.line) && same(t, &lt.tour)).map(|x| x.2).collect();
             lt
         })
         .collect();
     let lines = c.lines.iter().map(|l| l.name.clone()).collect();
-    LivePlan { company: c.id.clone(), map: c.map.clone(), date: dp.date.clone(), depot: c.depot.clone(), game_mode: c.game_mode, tours, lines }
+    LivePlan { company: c.id.clone(), map: c.map.clone(), date: dp.date.clone(), depot: c.depot.clone(), game_mode: c.game_mode, tours, lines, drops_left: c.together.left_dropped }
 }
 
 pub fn live_plan_file(data: &Path, id: &str) -> PathBuf {

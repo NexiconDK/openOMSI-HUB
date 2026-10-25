@@ -75,8 +75,8 @@ pub(crate) fn take_new_plan() -> bool {
 
 // --- phase 3: the trips the players drive in the world ------------------------------------------
 
-/// Where the world saw a player's bus: when (Unix seconds), where (the map's metres) and on
-/// which tour (`Pose::tour`, `<line>/<tour>`).
+/// Where the world saw a player's bus: when (Unix seconds), where (the map's metres) and what he
+/// drove (`Pose::tour`: `omsi_sim::timetable_run::lan_claims`).
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Seen {
     pub at: f64,
@@ -119,7 +119,8 @@ pub(crate) fn check(track: &std::collections::VecDeque<Seen>, t: &omsi_launcher_
     }
     let end = t.time as f64;
     let from = end - t.seconds.max(0.0) - SKEW;
-    let on_tour = |s: &&Seen| s.at >= from && s.at <= end + SKEW && s.tour.rsplit('/').next().is_some_and(|x| x.trim().eq_ignore_ascii_case(t.tour.trim()));
+    // (what his game says it drives: a tour, or of tours the trips of his duty - `LanClaim`)
+    let on_tour = |s: &&Seen| s.at >= from && s.at <= end + SKEW && omsi_sim::timetable_run::lan_claims(&s.tour).iter().any(|c| c.tour.eq_ignore_ascii_case(t.tour.trim()));
     let seen: Vec<&Seen> = track.iter().filter(on_tour).collect();
     if seen.len() < 3 {
         return Err("the world did not see his bus on that tour then");
@@ -223,6 +224,7 @@ mod tests {
         // (its bus seen every 2 s on its tour, 7 m a second)
         let seen = |tour: &str, speed: f64| -> std::collections::VecDeque<Seen> { (0..=450).map(|k| Seen { at: 9_100.0 + 2.0 * k as f64, x: 2.0 * k as f64 * speed, z: 0.0, tour: tour.into() }).collect() };
         assert_eq!(check(&seen("Linie5/3", 7.0), &t), Ok(()));
+        assert_eq!(check(&seen("linie5/3@480~540;linie7/2@560~600", 7.0), &t), Ok(()), "his duty's trips of that tour");
         assert!(check(&seen("Linie5/4", 7.0), &t).is_err(), "another tour");
         assert!(check(&seen("Linie5/3", 0.5), &t).is_err(), "hardly moved");
         assert!(check(&std::collections::VecDeque::new(), &t).is_err(), "never seen");

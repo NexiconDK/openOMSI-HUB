@@ -93,6 +93,12 @@ impl TimetableCompany for crate::company_live::CompanyLive {
         let scheme = if lt.paint.trim().is_empty() { None } else { ty.paint_schemes.iter().position(|s| s.name.trim().eq_ignore_ascii_case(lt.paint.trim())) };
         Some(CompanyBus { ty, number: (lt.fleet_number.clone(), lt.plate.clone()), hof, scheme })
     }
+    fn keeps_off_departure(&self, line: &str, tour: &str, dep: i32) -> bool {
+        crate::company_live::CompanyLive::keeps_off_departure(self, line, tour, dep)
+    }
+    fn drops_left(&self, line: &str) -> bool {
+        crate::company_live::CompanyLive::drops_left(self, line)
+    }
 }
 
 /// Every company of a dedicated server (Bus Company Online, `company_live::ServerCompanies`):
@@ -118,6 +124,12 @@ impl TimetableCompany for crate::company_live::ServerCompanies {
     }
     fn bus(&mut self, root: &Path, line: &str, tour: &str) -> Option<CompanyBus> {
         TimetableCompany::bus(self.company_of(line)?, root, line, tour)
+    }
+    fn keeps_off_departure(&self, line: &str, tour: &str, dep: i32) -> bool {
+        self.owner_of(line).is_some_and(|k| self.companies[k].keeps_off_departure(line, tour, dep))
+    }
+    fn drops_left(&self, line: &str) -> bool {
+        self.owner_of(line).is_some_and(|k| self.companies[k].drops_left(line))
     }
 }
 

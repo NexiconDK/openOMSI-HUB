@@ -142,6 +142,8 @@ pub struct SnapDuty {
     pub ai: bool,
     pub ai_from: Option<i32>,
     pub back: bool,
+    /// Nobody drives what its player left of it: the company drops it (`book::AiPart::dropped`).
+    pub dropped: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]

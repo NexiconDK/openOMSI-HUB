@@ -23,7 +23,7 @@ impl App {
             muffled: self.cam.in_cab || self.net.inside_remote.is_some(),
             riders: self.session.humans.as_ref().map(|h| h.riding()).unwrap_or(0),
             clock: Some(&self.clock),
-            tour: self.session.duty.as_ref().map(|d| format!("{}/{}", d.line, d.tour)),
+            tour: self.session.duty.as_ref().map(|d| omsi_sim::timetable_run::lan_claims_text(&d.lan_claims())),
             walker,
             inside_of: self.net.inside_remote,
             radio_keyed,

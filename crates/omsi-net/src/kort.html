@@ -349,7 +349,10 @@ function nowSec() {
 }
 const dayDiff = (a, b) => { let d = (a - b) % 86400; if (d > 43200) d -= 86400; if (d < -43200) d += 86400; return d; };
 const hhmm = s => { s = ((Math.round(s / 60) * 60) % 86400 + 86400) % 86400; return String(Math.floor(s / 3600)).padStart(2, "0") + ":" + String(Math.floor(s / 60) % 60).padStart(2, "0"); };
-const normTour = k => String(k || "").toLowerCase().replace(/linje\s*/g, "").replace(/\s+/g, "");
+// (a player's game names the tour it drives first, then "@" the minutes of his trips of it and
+// ";" the tours after: `omsi_sim::timetable_run::lan_claims`)
+const firstTour = k => String(k || "").split(";")[0].split("@")[0];
+const normTour = k => firstTour(k).toLowerCase().replace(/linje\s*/g, "").replace(/\s+/g, "");
 let tourIndex = null;
 function tourOf(key) {
   const T = kort && kort.ture;
@@ -376,7 +379,7 @@ const stopName = c => (kort.ture.stops[c.stop] || ["?"])[0];
 const stopXY = c => { const s = kort.ture.stops[c.stop]; return s && s[1] != null ? [s[1], s[2]] : null; };
 
 function track(s, p) {
-  const key = p.tour || "";
+  const key = firstTour(p.tour);
   if (!s.duty || s.duty.key !== key || s.duty.calls !== tourOf(key)) s.duty = { key, calls: tourOf(key), last: -1, at: -1, delay: null, still: 0, stamp: 0 };
   const d = s.duty, now = nowSec(), t = performance.now();
   const dt = d.stamp ? (t - d.stamp) / 1000 : 0;
@@ -417,7 +420,7 @@ function statusOf(s) {
   if (p.aboard != null) { const h = players.get(p.aboard); return { cls: "none", chip: "Passager", text: h ? "i " + genitiv(h.info.name) + " bus" : "i en bus" }; }
   if (p.on_foot) return { cls: "none", chip: "Til fods", text: "" };
   if (!p.tour) return { cls: "none", chip: "Ingen tur", text: (p.speed_kmh || 0) > 2 ? "kører" : "holder" };
-  if (!d || !d.calls) return { cls: "none", chip: "Tur " + p.tour.split("/").pop(), text: kort ? "findes ikke i kortets køreplan" : "venter på kortet" };
+  if (!d || !d.calls) return { cls: "none", chip: "Tur " + firstTour(p.tour).split("/").pop(), text: kort ? "findes ikke i kortets køreplan" : "venter på kortet" };
   const now = nowSec();
   if (now == null) return { cls: "none", chip: "…", text: "venter på serverens ur" };
   const C = d.calls, n = posOf(d, now);

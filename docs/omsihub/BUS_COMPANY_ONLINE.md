@@ -275,8 +275,39 @@ Tested: `online::tests::the_worlds_trips_and_the_players_pay`, `a_new_share_coun
 `company_server::tests::a_trip_is_taken_as_the_world_saw_it`, the gateway's door
 (`ws::tests`).
 
-Still to come: a duty that is part of a tour (the LAN takes the whole tour off the AI while he
-drives: step 3).
+## Phase 3, step 3: a duty that is a part of a tour, and a duty left halfway
+
+Decided 25 October 2026: what a player leaves of his duty the AI drives, or it is dropped - the
+company's owner chooses; he is paid for what he drove, and his card counts the duties he left.
+
+- **His game claims his trips, not the tour** (`omsi_sim::timetable_run::LanClaim`): `Pose::tour`
+  says, of each tour of his duty in the order he drives them, the departures of his trips still
+  to come from the one under way (`linie5/3@570~795;linie7/2@800~860`, minutes of the day; as
+  many whole claims as fit in the INFO field's 64 characters, the trip under way first; nothing
+  once his last trip is driven: `PlayerDuty::lan_claims`, `lan_claims_text`). An older game's
+  `<line>/<tour>` claims the whole tour, as before.
+- **The world leaves him those alone** (`ScheduleSim::set_lan_tours`, `is_player_tour`): the AI
+  drives the tour up to his first departure - its bus drives off at the terminus where he takes
+  the tour over, and one already on his departure goes (`purge_player_tour`): no two buses on one
+  tour - and a bus of its own comes for the tour's trips after his last.
+- **Left halfway** (his launcher says "leave", his game ended before the duty, or he was not heard
+  from: `together::host::left_duty`, as Beta 63 had it): the AI drives the rest from the trip after
+  the last he reported (`AiPart`), or - the owner's choice in the company's settings, at once
+  (`dialogs::online_part`, `online_left`, his alone: `relay::OWNER_ON_SERVER`;
+  `Together::left_dropped`) - nobody does (`AiPart::dropped`): the world keeps those departures
+  off the road at once when his claim goes (`TimetableCompany::drops_left`, `LivePlan::drops_left`)
+  and from the plan after (`LiveTour::off`, `book::dropped_departures`), and the day's close books
+  them as dropped (`DropWhy::Left`: no takings, the authority's penalties). His card counts it
+  (`GuestStats::left`, "Duties left"; not when the boss ends the session or sends him away; taken
+  off again when his game drove on after all, `book::not_left`).
+- **A trip the world checked after his launcher said he left** is his (`book::world_saw`): the
+  AI's part begins after it, and goes when it was his last.
+
+Tested: `tours::tests::a_lan_players_duty_takes_only_its_trips_from_the_ai`,
+`together::tests::a_duty_its_player_left_is_dropped_when_the_owner_says_so`,
+`a_trip_the_world_saw_him_drive_after_he_left_is_his`,
+`company_live::tests::on_a_server_the_maps_other_lines_run`,
+`company_server::tests::a_trip_is_taken_as_the_world_saw_it`.
 
 ### Measured on a real map (Ahlheim: 30 lines, 418 tours a day)
 

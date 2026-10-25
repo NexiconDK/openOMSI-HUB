@@ -811,7 +811,7 @@ impl Offscreen<'_> {
                 muffled: false,
                 riders: humans_off.as_ref().map(|h| h.riding()).unwrap_or(0),
                 clock,
-                tour: duty.as_ref().map(|d| format!("{}/{}", d.line, d.tour)),
+                tour: duty.as_ref().map(|d| omsi_sim::timetable_run::lan_claims_text(&d.lan_claims())),
                 walker: None,
                 inside_of: None,
                 radio_keyed: false,

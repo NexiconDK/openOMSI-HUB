@@ -219,25 +219,35 @@ impl ScheduleSim {
         n
     }
 
-    /// LAN play (host): the tours the other players drive now. A tour taken leaves the
-    /// timetable like the player's own (its bus on the road goes); one given up (the player
-    /// left, or took another duty) runs again from its next departure.
-    pub fn set_lan_tours(&mut self, tours: HashSet<(String, String)>) {
+    /// LAN play (host): what the other players drive now (`LanClaim`: a tour, or the trips of
+    /// a duty on it). What is taken leaves the timetable like the player's own (its bus on the
+    /// road goes; the AI's bus of the tour before drives off at the terminus where the player
+    /// takes it over, and one of its own comes for the trips after); what is given up (the
+    /// player left, or took another duty) runs again from its next departure - unless the
+    /// company of its line drops what a player left (`TimetableCompany::drops_left`: Bus
+    /// Company Online, its owner's choice), when nobody drives it.
+    pub fn set_lan_tours(&mut self, tours: HashSet<LanClaim>) {
         if tours == self.lan_tours {
             return;
         }
-        let added: Vec<(String, String)> = tours.difference(&self.lan_tours).cloned().collect();
-        let removed: Vec<(String, String)> = self.lan_tours.difference(&tours).cloned().collect();
+        let added: Vec<LanClaim> = tours.difference(&self.lan_tours).cloned().collect();
+        let removed: Vec<LanClaim> = self.lan_tours.difference(&tours).cloned().collect();
         self.lan_tours = tours;
-        let of = |d: &Departure, t: &(String, String)| d.line.eq_ignore_ascii_case(&t.0) && d.tour.eq_ignore_ascii_case(&t.1);
         for t in &removed {
             let later: Vec<usize> = (0..self.departures.len())
-                .filter(|&i| of(&self.departures[i], t) && self.departures[i].time > self.last_tod && !self.is_player_tour(i))
+                .filter(|&i| t.has(&self.departures[i].line, &self.departures[i].tour, self.departures[i].time) && self.departures[i].time > self.last_tod && !self.is_player_tour(i))
                 .collect();
+            if later.is_empty() {
+                continue;
+            }
+            if self.company.as_deref().is_some_and(|c| c.drops_left(&t.line)) {
+                log::info!("timetable: {} is no LAN player's any more: its company drops its {} later departures", t.text(), later.len());
+                continue;
+            }
             for &i in &later {
                 self.departures[i].spawned = false;
             }
-            log::info!("timetable: line {} tour {} is no LAN player's any more: its {} later departures run again", t.0, t.1, later.len());
+            log::info!("timetable: {} is no LAN player's any more: its {} later departures run again", t.text(), later.len());
         }
         if !added.is_empty() {
             let mine: Vec<bool> = (0..self.departures.len()).map(|i| self.is_player_tour(i)).collect();
@@ -251,7 +261,7 @@ impl ScheduleSim {
             self.retry_at.retain(|i, _| !mine[*i]);
             self.purge_player_tour = true;
             for t in &added {
-                log::info!("timetable: line {} tour {} left to a LAN player", t.0, t.1);
+                log::info!("timetable: {} left to a LAN player", t.text());
             }
         }
     }
@@ -259,7 +269,7 @@ impl ScheduleSim {
     /// Does a player drive departure `i` (we, or another LAN player)?
     pub(super) fn is_player_tour(&self, i: usize) -> bool {
         if let Some(d) = self.departures.get(i) {
-            if self.lan_tours.iter().any(|t| d.line.eq_ignore_ascii_case(&t.0) && d.tour.eq_ignore_ascii_case(&t.1)) {
+            if self.lan_tours.iter().any(|t| t.has(&d.line, &d.tour, d.time)) {
                 return true;
             }
             if self.player_trips.iter().any(|(line, tour, time)| d.line.eq_ignore_ascii_case(line) && d.tour.eq_ignore_ascii_case(tour) && (d.time - time).abs() < 30.0) {
@@ -584,6 +594,120 @@ impl ScheduleSim {
     }
 }
 
+/// What a LAN player drives, as his game tells the host (`omsi_net::Pose::tour`): a tour of a
+/// line (lower case) and of it the departures of his duty's trips still to come, the first and
+/// the last (minutes of the day; None: the whole tour - an older game's `<line>/<tour>`). The
+/// host's timetable leaves those to him and the rest of the tour to the AI: a duty that is a part
+/// of a tour has the AI before it and after it (NexiconDK, Bus Company Online phase 3 step 3; the
+/// whole tour used to leave the AI while he drove a part of it).
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct LanClaim {
+    pub line: String,
+    pub tour: String,
+    pub window: Option<(i32, i32)>,
+}
+
+/// The longest text of claims a game sends (the INFO field of `omsi_net`): whole claims, the one
+/// of the trip under way first.
+pub const LAN_CLAIMS_MAX: usize = 64;
+
+impl LanClaim {
+    /// Departure `time` (s of the day) of `line`/`tour` is his (a minute either side; the
+    /// service day's 24:xx as well as 0:xx).
+    pub fn has(&self, line: &str, tour: &str, time: f64) -> bool {
+        if !line.trim().eq_ignore_ascii_case(&self.line) || !tour.trim().eq_ignore_ascii_case(&self.tour) {
+            return false;
+        }
+        let Some((a, b)) = self.window else { return true };
+        let (from, to) = (a as f64 * 60.0 - 30.0, b as f64 * 60.0 + 30.0);
+        [time, time + DAY, time - DAY].iter().any(|t| *t >= from && *t <= to)
+    }
+
+    /// As the game sends it: `<line>/<tour>`, `@<first>~<last>` with a window.
+    pub fn code(&self) -> String {
+        match self.window {
+            Some((a, b)) => format!("{}/{}@{a}~{b}", self.line, self.tour),
+            None => format!("{}/{}", self.line, self.tour),
+        }
+    }
+
+    /// As the logs say it.
+    pub fn text(&self) -> String {
+        let hm = |m: i32| format!("{:02}:{:02}", m.rem_euclid(1440) / 60, m.rem_euclid(60));
+        match self.window {
+            Some((a, b)) => format!("line {} tour {} ({} - {})", self.line, self.tour, hm(a), hm(b)),
+            None => format!("line {} tour {}", self.line, self.tour),
+        }
+    }
+}
+
+/// The claims of a game's text (`lan_claims_text`): `;` between them; one that does not read as
+/// a claim is left out.
+pub fn lan_claims(text: &str) -> Vec<LanClaim> {
+    text.split(';')
+        .filter_map(|part| {
+            let (head, window) = match part.rsplit_once('@') {
+                Some((h, w)) => {
+                    let (a, b) = w.split_once('~')?;
+                    (h, Some((a.trim().parse::<i32>().ok()?, b.trim().parse::<i32>().ok()?)))
+                }
+                None => (part, None),
+            };
+            let (line, tour) = head.split_once('/')?;
+            let (line, tour) = (line.trim().to_lowercase(), tour.trim().to_lowercase());
+            (!line.is_empty() && !tour.is_empty()).then(|| LanClaim { line, tour, window: window.map(|(a, b): (i32, i32)| (a.min(b), a.max(b))) })
+        })
+        .collect()
+}
+
+/// The text a game sends of `claims`: as many whole ones as fit in `LAN_CLAIMS_MAX` characters.
+pub fn lan_claims_text(claims: &[LanClaim]) -> String {
+    let mut out = String::new();
+    for c in claims {
+        let code = c.code();
+        let len = out.chars().count() + code.chars().count() + usize::from(!out.is_empty());
+        if len > LAN_CLAIMS_MAX {
+            break;
+        }
+        if !out.is_empty() {
+            out.push(';');
+        }
+        out.push_str(&code);
+    }
+    out
+}
+
+impl PlayerDuty {
+    /// What the player drives, for the LAN host (`LanClaim`): of each tour of his duty, in the
+    /// order he drives them, the trips still to come from the one under way; nothing once its
+    /// last trip is driven, nor on a free drive.
+    pub fn lan_claims(&self) -> Vec<LanClaim> {
+        if self.free || self.trips.is_empty() || (self.done && self.trip_index + 1 >= self.trips.len()) {
+            return Vec::new();
+        }
+        let mut out: Vec<LanClaim> = Vec::new();
+        for (i, trip) in self.trips.iter().enumerate().skip(self.trip_index) {
+            let (line, tour) = match self.tours.get(i) {
+                Some((l, t, _)) => (l.trim(), t.trim()),
+                None => (self.line.trim(), self.tour.trim()),
+            };
+            if line.is_empty() || tour.is_empty() || !trip.departure.is_finite() {
+                continue;
+            }
+            let dep = (trip.departure / 60.0).round() as i32;
+            match out.last_mut().filter(|c| c.line.eq_ignore_ascii_case(line) && c.tour.eq_ignore_ascii_case(tour)) {
+                Some(c) => {
+                    if let Some(w) = c.window.as_mut() {
+                        *w = (w.0.min(dep), w.1.max(dep));
+                    }
+                }
+                None => out.push(LanClaim { line: line.to_lowercase(), tour: tour.to_lowercase(), window: Some((dep, dep)) }),
+            }
+        }
+        out
+    }
+}
+
 /// Of a tour's trips in order (`(trip, departure, last arrival)`), the one under way or next
 /// to leave at `now` (seconds of the day). After midnight a night tour of the day before
 /// counts its trips past 24:00: 2:18 is its 26:18, under way since the evening (the tour
@@ -706,5 +830,97 @@ mod tests {
         assert_eq!(duty.trips.len(), 1);
         assert_eq!(duty.first_trip, 1);
         assert_eq!(s.tour_plan(&w, "N1", "1").unwrap().trips.len(), 2);
+    }
+
+    /// A company that drops what a LAN player leaves of his duty (Bus Company Online).
+    struct Drops;
+    impl TimetableCompany for Drops {
+        fn active(&self) -> bool {
+            true
+        }
+        fn own_only(&self) -> bool {
+            false
+        }
+        fn set_day(&mut self, _: i32) {}
+        fn keeps_off(&self, _: &str, _: &str, _: bool) -> bool {
+            false
+        }
+        fn runs_tour(&self, _: &str, _: &str) -> bool {
+            true
+        }
+        fn report(&mut self, _: usize, _: &str, _: &str, _: i32, _: f64, _: usize, _: f64) {}
+        fn bus(&mut self, _: &Path, _: &str, _: &str) -> Option<CompanyBus> {
+            None
+        }
+        fn drops_left(&self, line: &str) -> bool {
+            line.eq_ignore_ascii_case("linie5")
+        }
+        fn keeps_off_departure(&self, _: &str, tour: &str, dep: i32) -> bool {
+            tour == "3" && dep == 12 * 60
+        }
+    }
+
+    /// LAN play (NexiconDK, Bus Company Online phase 3 step 3): a player's duty that is a part
+    /// of a tour takes only its trips from the AI - those before it and after it stay the AI's
+    /// (the whole tour used to leave the AI); given up halfway, its later trips run again, or
+    /// stay off when the company drops what a player left; and what the game sends of it.
+    #[test]
+    fn a_lan_players_duty_takes_only_its_trips_from_the_ai() {
+        let w = World { path: std::env::temp_dir().join(format!("omsi_lan_claims_{}", std::process::id())), ai: Default::default(), positions: Default::default() };
+        let mut s = ScheduleSim::new(&w.path, &w, &crate::SimClock::default());
+        s.data.trips.push(omsi_timetable::Trip { name: "5a".into(), line: "Linie5".into(), stations: vec![1, 2], ..Default::default() });
+        let d = |h: f64| Departure { time: h * 3600.0, trip: 0, profile: 0, line: "Linie5".into(), ai_group: "depot".into(), tour: "3".into(), mask: -1, spawned: false, yesterday: false };
+        let fresh = |s: &mut ScheduleSim| {
+            s.departures = vec![d(8.0), d(9.0), d(10.0), d(11.0), d(12.0)];
+            s.lan_tours.clear();
+        };
+        fresh(&mut s);
+        let claims = lan_claims("Linie5/3@540~600");
+        assert_eq!(claims, vec![LanClaim { line: "linie5".into(), tour: "3".into(), window: Some((540, 600)) }]);
+        s.last_tod = 8.5 * 3600.0;
+        s.set_lan_tours(claims.iter().cloned().collect());
+        assert_eq!((0..4).map(|i| s.is_player_tour(i)).collect::<Vec<_>>(), [false, true, true, false], "his 9:00 and 10:00 only");
+        assert!(s.departures[1].spawned && s.departures[2].spawned && !s.departures[3].spawned, "the 11:00 stays the AI's");
+        // (he left at 9:30: the AI drives his 10:00 - the 9:00 under way it cannot)
+        s.last_tod = 9.5 * 3600.0;
+        s.set_lan_tours(HashSet::new());
+        assert!(!s.departures[2].spawned && s.departures[1].spawned);
+        // (the window moving on as he drives gives nothing back to the AI)
+        fresh(&mut s);
+        s.last_tod = 8.5 * 3600.0;
+        s.set_lan_tours(lan_claims("linie5/3@540~600").into_iter().collect());
+        s.last_tod = 9.9 * 3600.0;
+        s.set_lan_tours(lan_claims("linie5/3@600~600").into_iter().collect());
+        assert!(s.departures[2].spawned && s.is_player_tour(2) && !s.is_player_tour(1));
+        // an older game's claim: the whole tour
+        fresh(&mut s);
+        s.set_lan_tours(lan_claims("Linie5/3").into_iter().collect());
+        assert!((0..5).all(|i| s.is_player_tour(i)));
+        // a company that drops what a player left: his 10:00 stays off, and so does the
+        // departure its plan drops
+        fresh(&mut s);
+        s.set_company(Box::new(Drops));
+        assert!(s.kept_off(4) && !s.kept_off(3), "the 12:00 its plan drops");
+        s.last_tod = 8.5 * 3600.0;
+        s.set_lan_tours(lan_claims("Linie5/3@540~600").into_iter().collect());
+        s.last_tod = 9.5 * 3600.0;
+        s.set_lan_tours(HashSet::new());
+        assert!(s.departures[2].spawned, "nobody drives what he left");
+        // what the game sends: whole claims that fit, the trip under way first; nothing once
+        // the duty is over
+        let trip = |dep: f64| crate::timetable_run::tests::planned(dep, &[(0.0, dep, dep), (900.0, dep + 900.0, dep + 900.0)]);
+        let mut duty = PlayerDuty::new("Linie5".into(), "3".into(), vec![trip(32_400.0), trip(36_000.0), trip(39_600.0)], 1, 0, true);
+        duty.tours = vec![("Linie5".into(), "3".into(), 3), ("Linie5".into(), "3".into(), 4), ("Linie7".into(), "Mo-Fr 2".into(), 0)];
+        let mine = duty.lan_claims();
+        assert_eq!(lan_claims_text(&mine), "linie5/3@600~600;linie7/mo-fr 2@660~660");
+        assert_eq!(lan_claims(&lan_claims_text(&mine)), mine);
+        let long: Vec<LanClaim> = (0..9).map(|k| LanClaim { line: format!("line{k}"), tour: "10".into(), window: Some((600, 700)) }).collect();
+        let text = lan_claims_text(&long);
+        assert!(text.chars().count() <= LAN_CLAIMS_MAX && lan_claims(&text).len() == 3 && lan_claims(&text)[0] == long[0], "{text}");
+        assert!(lan_claims("x@1~;/3;5/@1~2;ok/1@-30~20").iter().map(LanClaim::code).eq(["ok/1@-30~20".to_string()]), "what does not read as a claim is left out");
+        duty.trip_index = 2;
+        duty.done = true;
+        assert!(duty.lan_claims().is_empty(), "his last trip driven");
+        assert!(PlayerDuty { free: true, ..PlayerDuty::new("5".into(), "1".into(), vec![trip(0.0)], 0, 0, false) }.lan_claims().is_empty(), "a free drive claims nothing");
     }
 }

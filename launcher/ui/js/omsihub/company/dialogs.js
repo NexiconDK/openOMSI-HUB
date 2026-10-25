@@ -105,7 +105,7 @@ function SettingsDialog({ d }) {
     <span class="rest"></span>
     <${Btn} kind=${v.move ? '' : 'primary'} label=${v.close} onClick=${close} />
     ${v.move && html`<${Btn} kind="primary" icon="calendar_month" label=${v.move} onClick=${moveTo} />`}`;
-  const h = (v.buying ? 786 : 722) + (v.addons ? 40 : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0) + (v.online ? 84 : 0);
+  const h = (v.buying ? 786 : 722) + (v.addons ? 40 : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0) + (v.online ? 180 : 0);
   // (Beta 61: a career or a sandbox - turned into a sandbox once, after a confirmation)
   const cm = v.company_mode;
   const vh = v.vehicles;
@@ -122,7 +122,10 @@ function SettingsDialog({ d }) {
           <p class="co-note">${v.country.note}</p></div>`}
       ${v.online && html`<div class="co-caps">${v.online.caps}</div>
         <div class="pair"><${Select} value=${v.online.options.indexOf(v.online.share)} options=${v.online.options.map((n) => n + ' %')} onChange=${(i) => act('online_share', { share: v.online.options[i] })} style="width:160px;flex:none" />
-          <p class="co-note">${v.online.say}${v.online.next ? ' ' + v.online.next : ''}</p></div>`}
+          <p class="co-note">${v.online.say}${v.online.next ? ' ' + v.online.next : ''}</p></div>
+        <div class="co-caps">${v.online.left_caps}</div>
+        <div class="pair"><${Seg} value=${v.online.left} options=${v.online.left_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_left', { left: k })} style="width:320px;height:40px" />
+          <p class="co-note">${v.online.left_say}</p></div>`}
       <div class="co-caps">${v.mode_caps}</div>
       <div class="pair"><${Seg} value=${k} options=${v.modes.map((m, i) => [i, m.label])} onChange=${(i) => setCo({ dialog: { kind: 'confirm', what: 'game_mode', name: v.modes[i].key, settings: v.date } })} style="width:320px;height:40px" />
         <p class="co-note">${v.mode_info}</p></div>

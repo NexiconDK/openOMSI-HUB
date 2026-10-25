@@ -102,6 +102,10 @@ pub struct GuestStats {
     pub crashes: u32,
     /// The trips that came after their day had closed.
     pub late: u32,
+    /// The duties he left halfway (or after they began, before his first trip): the AI drove
+    /// the rest, or the company dropped it (`AiPart`; not when the boss ended the session or sent
+    /// him away).
+    pub left: u32,
 }
 
 impl GuestStats {
@@ -203,11 +207,23 @@ pub struct AiPart {
     /// When it was handed over (Unix seconds) and the company's clock then (minutes of its day).
     pub at: u64,
     pub minute: i32,
+    /// Nobody drives it: the company drops what a player leaves (`Together::left_dropped`; the
+    /// day's close books its trips as dropped, the world keeps them off the road).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub dropped: bool,
 }
 
 impl AiPart {
     pub fn has(&self, i: usize) -> bool {
         i >= self.from && self.until.is_none_or(|u| i < u)
+    }
+}
+
+impl LeftWhy {
+    /// He left it himself (counted in his figures, `GuestStats::left`): not the boss ending the
+    /// session or sending him away.
+    pub fn his(self) -> bool {
+        matches!(self, LeftWhy::Left | LeftWhy::Quit | LeftWhy::Silent)
     }
 }
 
@@ -232,11 +248,16 @@ pub struct Together {
     /// else (the default) the AI drives all of it.
     #[serde(default)]
     pub left_open: bool,
+    /// What a player leaves of his duty nobody drives: its trips are dropped (the company loses
+    /// their takings and pays the authority's penalties); else (the default) the AI drives them.
+    /// The owner's choice on Bus Company Online (NexiconDK, 25 October 2026).
+    #[serde(default)]
+    pub left_dropped: bool,
 }
 
 impl Default for Together {
     fn default() -> Self {
-        Together { open_claims: true, guests: Vec::new(), claims: Vec::new(), trips: Vec::new(), left_open: false }
+        Together { open_claims: true, guests: Vec::new(), claims: Vec::new(), trips: Vec::new(), left_open: false, left_dropped: false }
     }
 }
 
@@ -748,10 +769,57 @@ pub fn hand_to_ai(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32,
         c.together.claims.retain(|x| !same_duty(&x.duty, r));
         return Ok(Handed::Open);
     }
+    // (or nobody drives it, when the company drops what a player leaves - its owner's choice)
+    let dropped = c.together.left_dropped;
     if let Some(x) = c.together.claim_mut(r) {
-        x.ai.push(AiPart { from, until: None, why, at: now_unix, minute });
+        x.ai.push(AiPart { from, until: None, why, at: now_unix, minute, dropped });
+    }
+    if why.his() {
+        if let Some(g) = c.together.guest_mut(guest) {
+            g.stats.left += 1;
+        }
     }
     Ok(Handed::Ai(from))
+}
+
+/// Player `guest` did not leave his duty after all (his game drove on while his launcher was not
+/// heard from, or he took it back before the AI drove a trip of it): the AI's part of it, from
+/// where he got to, goes, and his figures forget that he left.
+pub fn not_left(c: &mut Company, r: &DutyRef, guest: u32) {
+    let Some(x) = c.together.claim_mut(r).filter(|x| x.guest == guest) else { return };
+    let Some(a) = x.ai.pop() else { return };
+    if a.why.his() {
+        if let Some(g) = c.together.guest_mut(guest) {
+            g.stats.left = g.stats.left.saturating_sub(1);
+        }
+    }
+}
+
+/// The world saw player `guest` drive trip `run` of his duty `r` (Bus Company Online): when its
+/// report came after he had left the duty (his launcher said so first; the world checks a trip
+/// before it is booked), the part the AI drives - or that is dropped - begins after it, and goes
+/// when nothing is left of it (he drove all of it: he did not leave it). Whether it changed.
+pub fn world_saw(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, run: &TripRun) -> bool {
+    let Some(x) = c.together.claim_of(r).filter(|x| x.guest == guest && x.ai_now().is_some()) else { return false };
+    let today = r.date == c.date && p.is_some_and(|p| p.today);
+    let (tour, planned, number) = match p.filter(|_| today).and_then(|p| find(p, r).ok()) {
+        Some((_, k, t)) => (t.tour.tour.clone(), t.tour.trips[t.duties[k].start..t.duties[k].end].to_vec(), t.tour.number.clone()),
+        None => (r.tour.clone(), x.sheet.clone(), x.number.clone()),
+    };
+    let sheet = Sheet { tour: &tour, number: &number, bus: String::new(), planned: &planned };
+    let Some(i) = trip_of(&sheet, run).and_then(|px| planned.iter().position(|y| std::ptr::eq(y, px))) else { return false };
+    if x.ai_now().is_none_or(|a| a.from > i) {
+        return false;
+    }
+    if planned.iter().skip(i + 1).any(reportable) {
+        if let Some(a) = c.together.claim_mut(r).and_then(|x| x.ai.last_mut()) {
+            a.from = i + 1;
+        }
+    } else {
+        not_left(c, r, guest);
+        let _ = set_state(c, r, guest, ClaimState::Done);
+    }
+    true
 }
 
 /// Player `guest` takes his duty `r` back from the AI, at a trip's end: from its next trip with
@@ -762,13 +830,11 @@ pub fn take_back(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, 
     let a = x.ai_now().ok_or(NO_AI)?.clone();
     let trips = trips_now(c, p, r);
     let back = (a.from..trips.len()).find(|&i| reportable(&trips[i]) && clock::moment(&r.date, trips[i].dep as i64) >= now).ok_or(AI_DONE)?;
-    if let Some(x) = c.together.claim_mut(r) {
-        // (the AI drove none of it yet: as if it never had it)
-        if back == a.from {
-            x.ai.pop();
-        } else if let Some(last) = x.ai.last_mut() {
-            last.until = Some(back);
-        }
+    // (the AI drove none of it yet: as if it never had it - nor did he leave it)
+    if back == a.from {
+        not_left(c, r, guest);
+    } else if let Some(last) = c.together.claim_mut(r).and_then(|x| x.ai.last_mut()) {
+        last.until = Some(back);
     }
     Ok(back)
 }
@@ -792,10 +858,39 @@ pub fn ai_on(c: &Company, date: &str, line: &str, tour: &str, k: usize) -> bool 
 }
 
 /// Trip `i` of that duty (an index into its trips, `dep` its departure) is the AI's: in a part
-/// the AI drives, and not one its player reported.
+/// its player left (the AI drives it, or it is dropped: `dropped_runs`), and not one he reported.
 pub fn ai_runs(c: &Company, date: &str, line: &str, tour: &str, k: usize, i: usize, dep: i32) -> bool {
     let r = duty_ref(date, line, tour, k);
     ai_on(c, date, line, tour, k) && c.together.claim_of(&r).is_some_and(|x| x.ai_drives(i)) && !reported(c, &r).contains(&dep)
+}
+
+/// That trip is one nobody drives: in a part its player left that the company drops
+/// (`AiPart::dropped`), and not one he reported.
+pub fn dropped_runs(c: &Company, date: &str, line: &str, tour: &str, k: usize, i: usize, dep: i32) -> bool {
+    let r = duty_ref(date, line, tour, k);
+    ai_runs(c, date, line, tour, k, i, dep) && c.together.claim_of(&r).is_some_and(|x| x.ai.iter().any(|a| a.dropped && a.has(i)))
+}
+
+/// The departures of today's duties their players left that nobody drives (`dropped_runs`), for
+/// the world (`plan::LiveTour::off`): (the timetable's line, its tour as the timetable names it,
+/// the minute of the day).
+pub fn dropped_departures(c: &Company, p: &DayPlan) -> Vec<(String, String, i32)> {
+    let mut out = Vec::new();
+    if p.date != c.date {
+        return out;
+    }
+    for x in c.together.claims.iter().filter(|x| x.duty.date == c.date && !x.late && x.ai.iter().any(|a| a.dropped)) {
+        let Ok((_, k, t)) = find(p, &x.duty) else { continue };
+        let d = &t.duties[k];
+        let deps = reported(c, &x.duty);
+        for (i, y) in t.tour.trips[d.start..d.end].iter().enumerate() {
+            if x.ai.iter().any(|a| a.dropped && a.has(i)) && !deps.contains(&y.whole_dep()) {
+                let tour = if y.origin.trim().is_empty() { t.tour.tour.clone() } else { y.origin.clone() };
+                out.push((t.tour.line.clone(), tour, y.whole_dep()));
+            }
+        }
+    }
+    out
 }
 
 /// The AI as the day's model has it drive a duty its player left: a driver of average skills (as
