@@ -17,7 +17,10 @@
 //! * `companies` - every company of the server, with his role in each;
 //! * `join` - a company's code and the server's ticket for him (`online::ticket`): his launcher
 //!   joins the company with them as "Play together" does, no code to type;
-//! * `found` - a company founded on a map from his own money (`found_price`), he its owner.
+//! * `found` - a company founded on a map from his own money (`found_price`), he its owner;
+//! * `world` - (phase 3) the world of a company's map for one of its players, started when it
+//!   does not run: its ports, its tunnel, and whether it answers yet - his game joins it to
+//!   drive a duty of the company.
 //!
 //! Every answer is JSON, `{ok: true, …}` or `{ok: false, error}`, the error in English (a key of
 //! the launcher's translations, with its numbers beside it).
@@ -63,10 +66,12 @@ pub const NO_MODE: &str = "That is no game mode.";
 pub const NOT_ENOUGH: &str = "Founding a company costs %{price}: you have %{money}.";
 pub const NOT_FOUNDED: &str = "The server could not found the company: it says why in its log.";
 pub const UNREACHED: &str = "The server does not answer. Is it running? Over the internet its tunnel must be up (tunnel = 1), or its port open.";
+pub const NOT_MEMBER: &str = "You are not a player of this company: join it first.";
+pub const NO_WORLD: &str = "The server could not start the map's world: it says why in its log.";
 
 /// Every text of the door's (for the translations' test).
 pub fn texts() -> Vec<&'static str> {
-    let mut v = vec![BAD_SECRET, NEWER, UNKNOWN, LOGGED_OUT, NO_COMPANY, STARTING, NO_NAME, NO_MAP, NO_MODE, NOT_ENOUGH, NOT_FOUNDED, UNREACHED];
+    let mut v = vec![BAD_SECRET, NEWER, UNKNOWN, LOGGED_OUT, NO_COMPANY, STARTING, NO_NAME, NO_MAP, NO_MODE, NOT_ENOUGH, NOT_FOUNDED, UNREACHED, NOT_MEMBER, NO_WORLD];
     v.extend(super::server_players::texts());
     v
 }
@@ -187,12 +192,13 @@ impl Api {
         match ask.what.as_str() {
             "info" => self.info(),
             "login" => self.login(&ask, now),
-            "companies" | "join" | "found" | "me" => {
+            "companies" | "join" | "found" | "me" | "world" => {
                 let Some(id) = self.player_of(&ask.session, now) else { return refusal(LOGGED_OUT) };
                 match ask.what.as_str() {
                     "companies" => self.companies(&id),
                     "join" => self.join(&id, &ask.company),
                     "found" => self.found(&id, &ask),
+                    "world" => self.world(&id, &ask.company),
                     _ => self.me(&id),
                 }
             }
@@ -286,6 +292,43 @@ impl Api {
         }
         let Some(secret) = online::read_server_secret(&m.data) else { return refusal(STARTING) };
         json!({ "ok": true, "code": code.trim(), "ticket": online::ticket(&secret, cid, &me.id, &me.name), "player": me.id, "name": me.name })
+    }
+
+    /// (Phase 3) The world of company `company`'s map for its player `id`: started when it does
+    /// not run; whether it answers yet (its web gateway on this machine), its ports, its tunnel.
+    fn world(&self, id: &str, company: &str) -> Value {
+        let (map, slot, port, web_port, since) = {
+            let mut m = self.server();
+            let Some(me) = m.players.get(id).cloned() else { return refusal(LOGGED_OUT) };
+            let cid = company.trim();
+            if cid.is_empty() || !company_ids(&m.data).iter().any(|c| c == cid) {
+                return refusal(NO_COMPANY);
+            }
+            let Ok(c) = store::load(&m.data, cid) else { return refusal(NO_COMPANY) };
+            let member = c.online.owner_id == me.id || c.together.guests.iter().any(|g| g.id == me.id && !g.banned);
+            if !member {
+                return refusal(NOT_MEMBER);
+            }
+            let fresh = !m.worlds.iter().any(|w| map_folder(&w.map) == map_folder(&c.map));
+            match m.start_world(&c.map) {
+                Ok(w) => {
+                    let x = (w.map.clone(), w.slot, w.port, w.web_port, w.started.elapsed().as_secs());
+                    if fresh {
+                        m.say(&format!("world of {}: started for {} ({}), to drive for {}", super::main_server::map_name(&c.map), me.name, me.id, c.name));
+                    }
+                    x
+                }
+                Err(e) => {
+                    m.say_warning(&format!("the world of {} for {}: {e:#}", super::main_server::map_name(&c.map), me.name));
+                    return refusal(NO_WORLD);
+                }
+            }
+        };
+        // (it answers once its map is loaded and its gateway is up - not held meanwhile)
+        let ready = omsi_net::ws::query(&format!("http://127.0.0.1:{web_port}"), false).is_ok();
+        let status = super::main_server::world_status(slot);
+        let tunnel = status.as_ref().and_then(|s| s.get("tunnel")).and_then(Value::as_str).filter(|t| !t.is_empty()).map(str::to_string);
+        json!({ "ok": true, "ready": ready, "map": super::main_server::map_name(&map), "port": port, "web_port": web_port, "tunnel": tunnel, "since": since })
     }
 
     fn found(&self, id: &str, ask: &Ask) -> Value {
@@ -457,9 +500,16 @@ mod tests {
         assert_eq!(q("join", json!({ "company": "nope" }))["error"], NO_COMPANY);
         assert_eq!(q("join", json!({ "company": cid }))["error"], STARTING);
         assert_eq!(q("me", json!({}))["player"]["money"], 5000);
+        // (phase 3: the world of its map for one of its players - no game program here to start
+        // it; not for one who is none of its players)
+        assert_eq!(q("world", json!({ "company": cid }))["error"], NO_WORLD);
+        assert_eq!(q("world", json!({ "company": "nope" }))["error"], NO_COMPANY);
+        let eve = ask(json!({ "v": API_VERSION, "secret": secret, "do": "login", "steam": "76561198000000077", "name": "Eve" }));
+        let not_his = ask(json!({ "v": API_VERSION, "secret": secret, "do": "world", "session": eve["session"], "company": cid }));
+        assert_eq!(not_his["error"], NOT_MEMBER);
         // (the players kept)
         let kept_players = crate::company::server_players::Players::load(&api.server().data).unwrap();
-        assert_eq!(kept_players.players.len(), 1);
+        assert_eq!(kept_players.players.len(), 2);
         assert_eq!(kept_players.players[0].money, 500_000);
         let _ = std::fs::remove_dir_all(&dir);
     }

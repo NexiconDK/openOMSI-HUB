@@ -77,7 +77,50 @@ async function driveDuty(d, name = 'tg_drive') {
     toast(e.message, 'error');
     return;
   }
-  await run(name, { duty: d.duty, base });
+  // (NexiconDK: a company of a Bus Company Online server - driven in its map's world, started on
+  // the server first when it does not run)
+  let world;
+  if (bcoCompany) {
+    world = await worldOf(bcoCompany);
+    if (!world) return;
+  }
+  await run(name, { duty: d.duty, base, world });
+}
+
+/** The company of a Bus Company Online server the player is in (`tg_view`'s `bco`). */
+let bcoCompany = null;
+let worldWaiting = false;
+
+/** The world of a server company's map: asked until it answers (the server starts it - a minute
+ * or so), its address; null when it would not come. */
+async function worldOf(company) {
+  if (worldWaiting) return null;
+  worldWaiting = true;
+  try {
+    let said = '';
+    for (let k = 0; k < 120; k++) {
+      let r;
+      try {
+        r = await cmd('bco_world', { company });
+      } catch (e) {
+        toast(e.message, 'error');
+        return null;
+      }
+      if (r?.error) {
+        toast(r.error, 'error');
+        return null;
+      }
+      if (r?.address) return r.address;
+      if (r?.waiting && r.waiting !== said) {
+        said = r.waiting;
+        toast(said, 'ok');
+      }
+      await new Promise((ok) => setTimeout(ok, 3000));
+    }
+    return null;
+  } finally {
+    worldWaiting = false;
+  }
 }
 
 /** The duties a player's card is printed of: his own (`company::dutycard::relayed`). */
@@ -372,6 +415,7 @@ function Joined({ v, ask }) {
 export function JoinPage() {
   const [v, ask] = usePoll('tg_view', 2000);
   if (!v) return null;
+  bcoCompany = v.bco?.company || null;
   const w = v.words || {};
   const back = () => setCo({ chooser: 'mode' });
   if (!v.joined) return html`<${JoinCode} v=${v} ask=${ask} />`;

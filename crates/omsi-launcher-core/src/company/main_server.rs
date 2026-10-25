@@ -325,6 +325,20 @@ pub fn world_cfg(cfg: &MainCfg, data: &Path, map: &str, port: u16, web_port: u16
     )
 }
 
+/// The `OMSI_INSTANCE` a world of slot `slot` runs under: its LAN status file is
+/// `~/.openomsi/lan/<it>.json` (`omsi_lan::status_path`).
+pub fn world_instance(slot: usize) -> String {
+    format!("bco-world-{slot}")
+}
+
+/// What the world of slot `slot` says of its session (`omsi_lan`'s status file: its code, its
+/// tunnel, its players), when it has written it.
+pub fn world_status(slot: usize) -> Option<serde_json::Value> {
+    let home = std::env::var_os("HOME").or_else(|| std::env::var_os("USERPROFILE"))?;
+    let path = PathBuf::from(home).join(".openomsi").join("lan").join(format!("{}.json", world_instance(slot)));
+    serde_json::from_slice(&std::fs::read(path).ok()?).ok()
+}
+
 /// The ports of the `k`-th world (UDP, web).
 pub fn ports_of(first: u16, k: usize) -> (u16, u16) {
     let p = first as usize + 2 * k;
@@ -575,6 +589,9 @@ impl MainServer {
         let out = std::fs::File::create(dir.join("world.out")).ok();
         let mut cmd = Command::new(&game);
         cmd.arg("--server").arg(&cfg_path).arg("--root").arg(&self.cfg.root).stdin(Stdio::null());
+        // (its LAN status - its session code, its tunnel - where the main server finds it:
+        // `world_status`)
+        cmd.env("OMSI_INSTANCE", world_instance(slot));
         match out.and_then(|f| Some((f.try_clone().ok()?, f))) {
             Some((a, b)) => {
                 cmd.stdout(a).stderr(b);

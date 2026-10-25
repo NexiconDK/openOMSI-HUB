@@ -620,9 +620,19 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
     let base: core::Duty = serde_json::from_value(args.get("base").cloned().unwrap_or(Value::Null)).map_err(|e| format!("base: {e}"))?;
     let name = driver();
     let mut d = start.duty(base);
+    // (NexiconDK, Bus Company Online phase 3: a company of the server is driven in its map's
+    // world - the game joins it with the duty's line and tour, and the world takes the tour's AI
+    // bus off; its timetable is the world's)
+    if let Some(world) = args.get("world").and_then(Value::as_str).map(str::trim).filter(|w| !w.is_empty()) {
+        if let Err(e) = core::server_timetable::fetch(world) {
+            core::log_to_file(&format!("company session: the world's timetable not fetched ({e}): the game's own"));
+        }
+        d.lan = Some(format!("join:{world}"));
+        d.lan_name = joined().as_ref().map(|j| j.me.name.clone());
+    }
     d.display_font = core::busfonts::BusFonts::load().font_for(&start.bus);
     d.set_vars = super::super::hub_more::setvars(&start.bus, &start.paint);
-    core::log_to_file(&format!("company session: {} drives {} {} duty {} for the boss's company", name, start.line, start.tour, r.duty + 1));
+    core::log_to_file(&format!("company session: {} drives {} {} duty {} for the boss's company{}", name, start.line, start.tour, r.duty + 1, d.lan.as_deref().and_then(|l| l.strip_prefix("join:")).map(|w| format!(", in the world at {w}")).unwrap_or_default()));
     let launched = core::launch(&d).map_err(|e| format!("{e:#}"))?;
     core::log_to_file(&format!("game {}: {}", launched.pid, launched.command));
     p.launched();
@@ -769,6 +779,8 @@ fn view() -> Value {
     let pages = (0..TABS.len()).any(|t| t != company::MAP_TAB && relay::tab_need(t).met(&you.perms));
     json!({
         "joined": true, "words": words, "code": j.text, "lost": lost, "said": said,
+        // (NexiconDK: a company of a Bus Company Online server - Drive joins its map's world)
+        "bco": (!j.me.ticket.is_empty()).then(|| json!({ "company": s.card.id })),
         "mark": { "short": s.card.short, "colours": s.card.colours, "logo": j.logo },
         "name": s.card.name, "boss": s.card.boss, "map": s.card.map_name,
         "sub": trf("Boss: %{name}  ·  %{map}", &[("name", &s.card.boss), ("map", &s.card.map_name)]),

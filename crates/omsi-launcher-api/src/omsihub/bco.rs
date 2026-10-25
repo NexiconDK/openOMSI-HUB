@@ -19,7 +19,9 @@
 //! * `bco_refresh` - its companies again (logged in again when the login ran out);
 //! * `bco_join {company}` - the company joined (the page then shows "Play together"'s menu);
 //! * `bco_found {name, map, mode}` - a company founded;
-//! * `bco_forget` - the server's code forgotten, logged out.
+//! * `bco_forget` - the server's code forgotten, logged out;
+//! * `bco_world {company}` - (phase 3) the world of the company's map, to drive a duty in: its
+//!   address once it answers (Drive then joins it: `together::join`'s `drive` with `world`).
 //!
 //! Every text comes in the page's language (`lang`); the server's refusals are keys of the
 //! translations (`server_api::texts`).
@@ -266,6 +268,33 @@ fn found(args: &Value) -> Value {
     }
 }
 
+/// (Phase 3) The world of company `company`'s map, to drive a duty in: asked of the main server
+/// (it starts the world when it does not run), and where this computer joins it - the server's
+/// own address with the world's web port on a network, its tunnel over the internet. `{address}`
+/// once it answers, `{waiting}` while it starts, `{error}`.
+fn world(company: &str) -> Value {
+    let base = state().linked.as_ref().map(|l| l.base.clone());
+    let Some(base) = base else { return json!({ "error": tr(NOT_LINKED) }) };
+    match question("world", json!({ "company": company })) {
+        Ok(v) if v.get("ready").and_then(Value::as_bool) == Some(true) => {
+            let tunnel = v.get("tunnel").and_then(Value::as_str).map(str::to_string);
+            let web = v.get("web_port").and_then(Value::as_u64).unwrap_or(0);
+            // (the main server reached on a network: its machine, the world's web port; reached
+            // through its tunnel: the world's own tunnel)
+            let address = match base.strip_prefix("http://").and_then(|h| h.split(['/', ':']).next()).filter(|h| !h.is_empty()) {
+                Some(host) if web > 0 => Some(format!("http://{host}:{web}")),
+                _ => tunnel,
+            };
+            match address {
+                Some(a) => json!({ "address": a, "map": v.get("map") }),
+                None => json!({ "waiting": tr("The map's world has no way in over the internet yet: its tunnel is starting.") }),
+            }
+        }
+        Ok(v) => json!({ "waiting": trf("Starting the world of %{map} on the server… (about a minute)", &[("map", v.get("map").and_then(Value::as_str).unwrap_or(""))]) }),
+        Err((e, a)) => json!({ "error": words_of(&e, &a) }),
+    }
+}
+
 /// The page's words for a refusal and its arguments.
 fn words_of(e: &str, args: &[(String, String)]) -> String {
     let refs: Vec<(&str, &str)> = args.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
@@ -360,6 +389,7 @@ pub fn call(cmd: &str, args: &Value) -> Option<Answer> {
         "bco_refresh" => refresh(),
         "bco_join" => join(&s("company")),
         "bco_found" => found(args),
+        "bco_world" => world(&s("company")),
         "bco_forget" => {
             *state() = State::default();
             keep(|k| {

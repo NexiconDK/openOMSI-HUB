@@ -211,6 +211,32 @@ the company's own pages for the server's players (the pages do it as in "Play to
 stable address for the tunnel (a quick tunnel's address changes at every start; the code finds
 it through the game's relay).
 
+## Phase 3, step 1: Drive in the map's world
+
+Drive on a duty of a server company joins the company's map's world, the game driving the duty's
+bus there - everybody on the map in one world - instead of starting the game alone:
+
+- **The world asked for** (`server_api`'s `world {company}`): of one of the company's players
+  (its owner, or a player of its book not sent away; else `NOT_MEMBER`), the main server starts
+  the map's world when it does not run (`MainServer::start_world`, the world's LAN status under
+  `OMSI_INSTANCE = bco-world-<slot>`: `main_server::world_status`) and says whether it answers
+  yet (its web gateway on the machine), its ports and its tunnel.
+- **The launcher waits for it** (`bco_world`, `together.js`'s `worldOf`: asked every 3 s, "Starting
+  the world of … (about a minute)" said), then joins it at the server's own address with the
+  world's web port (the main server reached on a network), or at the world's tunnel (reached
+  through the main server's).
+- **The game joins it** (`join.rs`'s `drive` with `world`): the duty's launch with `lan =
+  join:<world>` and the world's timetable (`server_timetable::fetch`, `--content-zip`), under the
+  server's name for the player; the world takes the tour's AI bus off while he drives it (the
+  LAN's own: the player's `Pose.tour`, `ScheduleSim::set_lan_tours`) and its clock is the
+  world's.
+- His trips go to the company as before (his game's plugin, his launcher, the company's book):
+  the world does not report a player's trips (only its AI buses'), so nothing counts twice.
+
+Still to come: the world measuring the player's trips itself, the company's share and his pay
+(step 2); a duty that is part of a tour (the LAN takes the whole tour off the AI while he drives:
+step 3).
+
 ### Measured on a real map (Ahlheim: 30 lines, 418 tours a day)
 
 `OMSI_COMPANY_MAP_DIR=<map folder> cargo test -p omsi-launcher-core --lib online::tests::on_a_real_map -- --ignored --nocapture`,
