@@ -2169,7 +2169,9 @@ pub fn live_plan(c: &Company, dp: &DayPlan) -> LivePlan {
             lt
         })
         .collect();
-    let lines = c.lines.iter().map(|l| l.name.clone()).collect();
+    // (a line whose concession begins on a later day is not the company's yet: on a server another
+    // company may run it until then - the market's renewal won by another, `shared_tenders`)
+    let lines = c.lines.iter().filter(|l| super::concessions::of_line(c, &l.name).is_none_or(|h| super::dates::between(&dp.date, &h.from) <= 0)).map(|l| l.name.clone()).collect();
     LivePlan { company: c.id.clone(), map: c.map.clone(), date: dp.date.clone(), depot: c.depot.clone(), game_mode: c.game_mode, tours, lines, drops_left: c.together.left_dropped }
 }
 

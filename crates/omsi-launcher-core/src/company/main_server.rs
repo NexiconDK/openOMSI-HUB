@@ -429,6 +429,8 @@ impl MainServer {
     pub fn scan(&mut self) -> usize {
         // (the players' pay the companies booked since)
         self.take_pay();
+        // (every map's tenders, shared by its companies)
+        self.markets();
         let mut n = 0;
         for id in company_ids(&self.data) {
             if self.companies.iter().any(|p| p.id == id) || self.held.get(&id).is_some_and(|t| Instant::now() < *t) {
@@ -456,6 +458,36 @@ impl MainServer {
             }
         }
         n
+    }
+
+    /// (NexiconDK, 25 October 2026) Every map's market of tenders a step on (`shared_tenders`: a
+    /// map's companies bid in the same tenders, live against each other): what the companies
+    /// applied for, a new round, the renewals, the tenders decided at their close. A map is read
+    /// (its lines of the day, its companies) only when its market needs it.
+    pub fn markets(&mut self) {
+        let (date, secs) = self.clock.at_real(unix_now() as f64);
+        let now = super::clock::moment(&date, (secs / 60.0) as i64);
+        // (the maps with companies: by the plans they write for the worlds)
+        let mut maps: Vec<(String, String)> = super::plan::live_plans(&self.data).into_iter().map(|p| (super::shared_tenders::key_of(&p.map), p.map)).filter(|m| !m.0.is_empty()).collect();
+        maps.sort();
+        maps.dedup_by(|a, b| a.0 == b.0);
+        for (key, map) in maps {
+            let (data, root) = (self.data.clone(), self.cfg.root.clone());
+            let mut read = || {
+                let lines = match crate::lines_in_map_dir(&map_dir_of(&root, &map), &date) {
+                    Ok(l) => l,
+                    Err(e) => {
+                        warn!("{}: its timetable of {date} not read for its tenders: {e:#}", map_name(&map));
+                        return None;
+                    }
+                };
+                let companies: Vec<super::model::Company> = company_ids(&data).into_iter().filter_map(|id| store::load(&data, &id).ok()).filter(|c| super::shared_tenders::key_of(&c.map) == key).collect();
+                Some(super::shared_tenders::MapNow { lines, companies, template: super::shared_tenders::template(&map, &date) })
+            };
+            for line in super::shared_tenders::step(&self.data, &key, &map, &date, now, &mut read) {
+                info!("tenders: {line}");
+            }
+        }
     }
 
     /// (Phase 3) What the companies booked as their players' pay since (`online::pay_file`) paid

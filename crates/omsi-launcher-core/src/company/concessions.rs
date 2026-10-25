@@ -214,7 +214,42 @@ pub struct Tender {
     pub work: Work,
     #[serde(default)]
     pub cost: Cents,
+    /// (NexiconDK, Bus Company Online) A tender of its map's market, the same for every company
+    /// of the map (`shared_tenders`); None: the company's own.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub market: Option<Shared>,
 }
+
+/// (NexiconDK, Bus Company Online) What a company keeps of a tender of its map's market
+/// (`shared_tenders`, decided 25 October 2026: every company of a map bids in the same tenders,
+/// live against each other and against the map's other operators): the market and the tender's
+/// id there, the operators that bid in it, the other companies' bids as they came, and - a
+/// concession of a company put out again - which company holds it and the day its new term
+/// begins (the winner runs the line from then; open to every company of the map).
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct Shared {
+    pub key: String,
+    pub id: u32,
+    pub rivals: Vec<Rival>,
+    pub others: Vec<OtherBids>,
+    pub holder: String,
+    pub from: String,
+}
+
+/// Another company's bids in a tender of the market: its id, its name, its quality in the
+/// tender (at its first bid) and its bids (when, how much).
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct OtherBids {
+    pub company: String,
+    pub name: String,
+    pub quality: f64,
+    pub offers: Vec<(i64, Cents)>,
+}
+
+/// Why something cannot be done with a tender on Bus Company Online's server.
+pub const NOT_ON_SERVER: &str = "On the Bus Company Online server every line is won in its tender: it cannot be bought outright.";
 
 impl Tender {
     /// Not decided yet (announced or running).
@@ -327,6 +362,11 @@ pub fn rules_of(c: &Company) -> Rules {
     if super::sandbox::unlocked(c) {
         r.direct = true;
     }
+    // (NexiconDK: on Bus Company Online's server every line of the map is won in the map's
+    // tenders - none taken on directly, none renewing by itself)
+    if c.online.on_server {
+        r.direct = false;
+    }
     r
 }
 
@@ -361,21 +401,58 @@ pub fn ensure_rivals(c: &mut Company) -> bool {
     if !c.concessions.rivals.is_empty() {
         return false;
     }
-    let mut rng = Rng::of(&[&c.id, &c.map, "rivals"], 0);
+    c.concessions.rivals = make_rivals(Rng::of(&[&c.id, &c.map, "rivals"], 0));
+    true
+}
+
+/// Six operators of a map drawn with `rng`: an aggressive and a cautious one, a big and a small
+/// one among them (a company's own, `ensure_rivals`; a map's market's, `shared_tenders`).
+pub fn make_rivals(mut rng: Rng) -> Vec<Rival> {
     let mut names = NAMES.to_vec();
     let mut chars = Character::ALL.to_vec();
     chars.push(Character::ALL[rng.int(0, 3) as usize]);
     chars.push(Character::ALL[rng.int(0, 3) as usize]);
+    let mut out = Vec::new();
     for (k, ch) in chars.into_iter().enumerate() {
         let name = names.remove(rng.int(0, names.len() as i64 - 1) as usize);
         let (lo, hi) = ch.quality();
-        c.concessions.rivals.push(Rival { id: k as u32 + 1, name: name.to_string(), character: ch, quality: rng.range(lo, hi).round() });
+        out.push(Rival { id: k as u32 + 1, name: name.to_string(), character: ch, quality: rng.range(lo, hi).round() });
     }
-    true
+    out
 }
 
 pub fn rival(c: &Company, id: u32) -> Option<&Rival> {
     c.concessions.rivals.iter().find(|r| r.id == id)
+}
+
+/// A rival of tender `t`: the company's own, or of the map's market (a shared tender).
+pub fn rival_of<'a>(c: &'a Company, t: &'a Tender, id: u32) -> Option<&'a Rival> {
+    match &t.market {
+        Some(m) => m.rivals.iter().find(|r| r.id == id),
+        None => rival(c, id),
+    }
+}
+
+/// The companies of players bidding in tender `t`, in the one order every company of the map
+/// keeps (by their ids): (id, name, quality, bids), this company among them; and its place. A
+/// tender of the company's own: the company alone.
+pub fn humans_of(c: &Company, t: &Tender) -> (Vec<(String, String, f64, Vec<(i64, Cents)>)>, usize) {
+    let mine = (c.id.clone(), c.name.clone(), quality_in(c, t), t.offers.clone());
+    let Some(m) = &t.market else { return (vec![mine], 0) };
+    let mut all: Vec<_> = m.others.iter().filter(|o| o.company != c.id).map(|o| (o.company.clone(), o.name.clone(), o.quality, o.offers.clone())).collect();
+    all.push(mine);
+    all.sort_by(|a, b| a.0.cmp(&b.0));
+    let me = all.iter().position(|h| h.0 == c.id).unwrap_or(0);
+    (all, me)
+}
+
+/// The game mode a tender's rivals bid by: the company's, or Normal in the map's market.
+fn mode_of(c: &Company, t: &Tender) -> GameMode {
+    if t.market.is_some() {
+        GameMode::Normal
+    } else {
+        c.game_mode
+    }
 }
 
 /// How the authority sees the company's quality for a tender (0-100): its track record - 100 %
@@ -547,12 +624,24 @@ fn new_tender(c: &mut Company, l: &LineInfo, opens_at: i64, renewal: bool) -> u3
     let r = rules_of(c);
     c.concessions.counter += 1;
     let id = c.concessions.counter;
-    let mut rng = Rng::of(&[&c.id, "tender", &l.name], id as i64);
+    let pool: Vec<u32> = c.concessions.rivals.iter().map(|r| r.id).collect();
+    let key = c.id.clone();
+    let t = make_tender(c, l, id, opens_at, renewal, &key, &pool, r.rivals);
+    c.concessions.tenders.push(t);
+    id
+}
+
+/// A tender `id` of line `l`, its auction opening at `opens_at` (minutes) for a few hours, priced
+/// at the costs of `c`: its draws by `key` (the company's id; a map's market's key), its rivals
+/// from `pool` (as many as `rivals` says, from, to).
+#[allow(clippy::too_many_arguments)]
+pub fn make_tender(c: &Company, l: &LineInfo, id: u32, opens_at: i64, renewal: bool, key: &str, pool: &[u32], rivals: (i64, i64)) -> Tender {
+    let mut rng = Rng::of(&[key, "tender", &l.name], id as i64);
     let closes_at = opens_at + rng.int(HOURS.0 * 4, HOURS.1 * 4) * 15;
     let work = bc::work_of(l);
     let (day_tours, day_km) = (work.buses, work.km);
-    let mut pool: Vec<u32> = c.concessions.rivals.iter().map(|r| r.id).collect();
-    let n = (rng.int(r.rivals.0, r.rivals.1).max(1) as usize).min(pool.len());
+    let mut pool: Vec<u32> = pool.to_vec();
+    let n = (rng.int(rivals.0, rivals.1).max(1) as usize).min(pool.len());
     let mut bidders = Vec::new();
     for _ in 0..n {
         bidders.push(pool.remove(rng.int(0, pool.len() as i64 - 1) as usize));
@@ -594,10 +683,10 @@ fn new_tender(c: &mut Company, l: &LineInfo, opens_at: i64, renewal: bool) -> u3
         years,
         work,
         cost: 0,
+        market: None,
     };
     price(c, &mut t);
-    c.concessions.tenders.push(t);
-    id
+    t
 }
 
 /// The market as the day `lines` were read for has it: a new round of tenders every four
@@ -615,6 +704,9 @@ pub fn refresh(c: &mut Company, lines: &[LineInfo]) -> bool {
     let now = clock::now(c);
     // renewals: on an easy economy they renew by themselves
     let ending: Vec<Concession> = c.concessions.held.iter().filter(|h| dates::between(&today, &h.until) <= RENEW_BEFORE).cloned().collect();
+    // (NexiconDK: on Bus Company Online's server the map's market puts them out - open to every
+    // company of the map - and its rounds: `shared_tenders`)
+    let ending = if c.online.on_server { Vec::new() } else { ending };
     for h in ending {
         if r.direct {
             if let Some(x) = c.concessions.held.iter_mut().find(|x| x.line == h.line) {
@@ -641,7 +733,7 @@ pub fn refresh(c: &mut Company, lines: &[LineInfo]) -> bool {
     }
     // a new round
     let round = dates::week_of(&today) / ROUND_WEEKS;
-    if c.concessions.round != round {
+    if c.concessions.round != round && !c.online.on_server {
         c.concessions.round = round;
         changed = true;
         c.concessions.tenders.retain(|t| t.open() || dates::between(&t.closes, &today) < 56);
@@ -773,7 +865,12 @@ pub fn apply(c: &mut Company, l: &LineInfo) -> Result<u32, &'static str> {
 /// authority reckons it, within the game mode's band around it (`econ_uk::ModeFactors::
 /// rival_bids`) where its character bids (`Character::band`).
 pub fn floor_range(c: &Company, t: &Tender, ch: Character) -> (f64, f64) {
-    let (lo, hi) = econ_uk::mode(c.game_mode).rival_bids;
+    floor_in(mode_of(c, t), t, ch)
+}
+
+/// `floor_range` in game mode `mode`.
+fn floor_in(mode: GameMode, t: &Tender, ch: Character) -> (f64, f64) {
+    let (lo, hi) = econ_uk::mode(mode).rival_bids;
     let (a, b) = ch.band();
     // (a tender of an older file, closed before there was a cost price: the cap's)
     let cost = if t.cost > 0 { t.cost as f64 } else { t.reference.max(1) as f64 / econ_uk::TENDER_CAP };
@@ -783,12 +880,28 @@ pub fn floor_range(c: &Company, t: &Tender, ch: Character) -> (f64, f64) {
 /// The rivals of a tender as its auction knows them: their floors drawn per tender (secret;
 /// a floor above the cap never bids), when they open, who keeps quiet until the end.
 pub fn bidders(c: &Company, t: &Tender) -> Vec<Bidder> {
+    match &t.market {
+        // (a tender of the map's market: its draws the market's, the same for every company)
+        Some(_) => market_bidders(t),
+        None => bidders_of(t, c.game_mode, &c.id, t.id, &|id| rival(c, id)),
+    }
+}
+
+/// The rivals of a tender of a map's market as its auction knows them (`bidders`), whoever looks:
+/// a company of the map, or the main server deciding it.
+pub fn market_bidders(t: &Tender) -> Vec<Bidder> {
+    let Some(m) = &t.market else { return Vec::new() };
+    bidders_of(t, GameMode::Normal, &m.key, m.id, &|id| m.rivals.iter().find(|r| r.id == id))
+}
+
+/// `bidders` with the rivals' game mode, the draws' key and number and where its rivals are found.
+fn bidders_of<'a>(t: &Tender, mode: GameMode, key: &str, tid: u32, rival: &dyn Fn(u32) -> Option<&'a Rival>) -> Vec<Bidder> {
     let mut nobody_opened = true;
     let mut out = Vec::new();
     for (k, id) in t.bidders.iter().enumerate() {
-        let Some(rv) = rival(c, *id) else { continue };
-        let mut rng = Rng::of(&[&c.id, "bidder", &rv.name], t.id as i64);
-        let (lo, hi) = floor_range(c, t, rv.character);
+        let Some(rv) = rival(*id) else { continue };
+        let mut rng = Rng::of(&[key, "bidder", &rv.name], tid as i64);
+        let (lo, hi) = floor_in(mode, t, rv.character);
         // (in whole hundreds, as the bids go)
         let floor = (rng.range(lo, hi) / auction::ROUND as f64).ceil() as Cents * auction::ROUND;
         let quiet = rng.chance(rv.character.quiet());
@@ -810,14 +923,21 @@ pub fn bids(c: &Company, t: &Tender, until: i64) -> Vec<Placed> {
     if t.reference <= 0 || until < t.opens_at {
         return Vec::new();
     }
-    auction::replay(&t.lot(), &bidders(c, t), &t.offers, quality_in(c, t), until)
+    if t.market.is_none() {
+        return auction::replay(&t.lot(), &bidders(c, t), &t.offers, quality_in(c, t), until);
+    }
+    // (the map's market: every company's bids, in their one order)
+    let (all, me) = humans_of(c, t);
+    let humans: Vec<auction::Human> = all.iter().map(|h| auction::Human { quality: h.2, offers: &h.3 }).collect();
+    auction::replay_many(&t.lot(), &bidders(c, t), &humans, Some(me), until)
 }
 
 /// The name a bid was placed under (the player's: empty).
 pub fn bidder_name(c: &Company, t: &Tender, who: Who) -> String {
     match who {
         Who::Player => String::new(),
-        Who::Rival(i) => t.bidders.get(i).and_then(|id| rival(c, *id)).map(|r| r.name.clone()).unwrap_or_default(),
+        Who::Rival(i) => t.bidders.get(i).and_then(|id| rival_of(c, t, *id)).map(|r| r.name.clone()).unwrap_or_default(),
+        Who::Other(k) => humans_of(c, t).0.get(k).map(|h| h.1.clone()).unwrap_or_default(),
     }
 }
 
@@ -826,7 +946,9 @@ pub fn bidder_name(c: &Company, t: &Tender, who: Who) -> String {
 pub fn min_bid(c: &Company, t: &Tender) -> Cents {
     let placed = bids(c, t, clock::now(c));
     let rivals = bidders(c, t);
-    auction::player_to_lead(&placed, &rivals, quality_in(c, t), &t.lot())
+    let (all, me) = humans_of(c, t);
+    let hq: Vec<f64> = all.iter().map(|h| h.2).collect();
+    auction::human_to_lead(&placed, &rivals, &hq, me, &t.lot())
 }
 
 /// The ask recommended now (Normal): the most that leads and wins with `RECOMMEND_CHANCE` as
@@ -860,7 +982,7 @@ pub fn chance(c: &Company, t: &Tender, amount: Cents) -> f64 {
         .iter()
         .enumerate()
         .filter_map(|(i, id)| {
-            let r = rival(c, *id)?;
+            let r = rival_of(c, t, *id)?;
             let last = placed.iter().rev().find(|p| p.who == Who::Rival(i)).map(|p| p.amount);
             Some(Seen { floor: floor_range(c, t, r.character), quality: r.quality, last })
         })
@@ -943,6 +1065,10 @@ pub fn my_bid(c: &Company, t: &Tender, now: i64) -> Option<MyBid> {
 /// Buy the line at once for the buy-out price (the fee too, if not paid yet): the tender is
 /// won and closed; the line is run from tomorrow.
 pub fn buy_out(c: &mut Company, id: u32) -> Result<Event, &'static str> {
+    // (NexiconDK: decided 25 October 2026 - on the server every line is won in its tender)
+    if c.online.on_server {
+        return Err(NOT_ON_SERVER);
+    }
     let now = clock::now(c);
     let Some(t) = c.concessions.tenders.iter().find(|t| t.id == id).cloned() else { return Err("There is no such tender.") };
     if !t.running(now) {
@@ -991,6 +1117,9 @@ pub fn asking_price_of(c: &Company, l: &LineInfo) -> Cents {
 /// tender has opened yet or not): paid now, won and closed - a new line is run from tomorrow,
 /// a renewal adds its term. Returns what came of it and what it cost.
 pub fn take_at_asking(c: &mut Company, id: u32) -> Result<(Event, Cents), &'static str> {
+    if c.online.on_server {
+        return Err(NOT_ON_SERVER);
+    }
     let Some(t) = c.concessions.tenders.iter().find(|t| t.id == id).cloned() else { return Err("There is no such tender.") };
     if !t.open() {
         return Err("This tender is closed.");
@@ -1031,7 +1160,9 @@ pub fn take_line(c: &mut Company, l: &LineInfo) -> Result<(Event, Cents), &'stat
 
 /// Every bidder's points from its last bid, best first (the company's name empty).
 pub fn standings(c: &Company, t: &Tender, placed: &[Placed]) -> Vec<Standing> {
-    auction::points(placed, &bidders(c, t), quality_in(c, t)).into_iter().map(|p| Standing { name: bidder_name(c, t, p.who), amount: p.amount, price: p.price, quality: p.quality, total: p.total }).collect()
+    let (all, me) = humans_of(c, t);
+    let hq: Vec<f64> = all.iter().map(|h| h.2).collect();
+    auction::points_many(placed, &bidders(c, t), &hq, Some(me)).into_iter().map(|p| Standing { name: bidder_name(c, t, p.who), amount: p.amount, price: p.price, quality: p.quality, total: p.total }).collect()
 }
 
 /// The rivals' last bids, best first.
@@ -1040,7 +1171,7 @@ fn last_bids(c: &Company, t: &Tender, placed: &[Placed]) -> Vec<RivalBid> {
         .into_iter()
         .filter(|s| !s.name.is_empty())
         .map(|s| {
-            let quality = c.concessions.rivals.iter().find(|r| r.name == s.name).map_or(0.0, |r| r.quality);
+            let quality = t.bidders.iter().filter_map(|id| rival_of(c, t, *id)).find(|r| r.name == s.name).map(|r| r.quality).or_else(|| humans_of(c, t).0.into_iter().find(|h| h.1 == s.name).map(|h| h.2)).unwrap_or(0.0);
             RivalBid { name: s.name, price: t.share(s.amount), quality, score: s.total, amount: s.amount }
         })
         .collect()
@@ -1066,17 +1197,22 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
         }
         return Event::Won { number: t.number.clone(), until };
     }
-    let until = dates::add(&tomorrow, days - 1);
-    let k = bc::make(c, &t.line, &t.number, t.kind, t.period, amount, &work, &tomorrow, &until);
+    // (a concession of another company of the map put out again: the line is the winner's from
+    // the day its new term begins - the other runs it until then)
+    let from = t.market.as_ref().map(|m| m.from.clone()).filter(|f| dates::parse(f).is_some() && dates::between(&tomorrow, f) > 0).unwrap_or(tomorrow);
+    let until = dates::add(&from, days - 1);
+    let k = bc::make(c, &t.line, &t.number, t.kind, t.period, amount, &work, &from, &until);
     c.concessions.contracts.push(k);
-    c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from: tomorrow, until: until.clone(), price, direct: false });
+    c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false });
     Event::Won { number: t.number.clone(), until }
 }
 
 /// Close a tender at its minute: the best 70/30 score wins; won by the company, the line runs
 /// at its ask. Returns what came of it and the winning ask (None: closed already).
 pub fn close(c: &mut Company, id: u32) -> Option<(Event, Cents)> {
-    let t = c.concessions.tenders.iter().find(|t| t.id == id && t.open())?.clone();
+    // (a tender of the map's market: the main server decides it for every company at once -
+    // `shared_tenders::decided`)
+    let t = c.concessions.tenders.iter().find(|t| t.id == id && t.open() && t.market.is_none())?.clone();
     let placed = bids(c, &t, t.closes_at);
     let rivals = last_bids(c, &t, &placed);
     let board = standings(c, &t, &placed);
@@ -1093,6 +1229,33 @@ pub fn close(c: &mut Company, id: u32) -> Option<(Event, Cents)> {
             (o, ev, p.amount)
         }
         None => (Outcome::NoBid { winner: String::new(), amount: 0 }, Event::Lost { number: t.number.clone(), winner: String::new() }, 0),
+    };
+    if let Some(x) = c.concessions.tenders.iter_mut().find(|x| x.id == id) {
+        x.outcome = Some(outcome);
+        x.standings = board;
+    }
+    Some((event, amount))
+}
+
+/// (NexiconDK, Bus Company Online) A tender of the map's market as the main server decided it for
+/// every company (`shared_tenders`): won by the company (`mine`), else by `winner` - another
+/// company or one of the map's operators; empty: nobody bid - with `amount`, every bidder's points
+/// kept. What came of it, as `close` says it (None: decided already, or no such tender).
+pub fn decide_shared(c: &mut Company, id: u32, mine: bool, winner: &str, amount: Cents, board: Vec<Standing>) -> Option<(Event, Cents)> {
+    let t = c.concessions.tenders.iter().find(|t| t.id == id && t.open() && t.market.is_some())?.clone();
+    // (its own name in the points as the company's: empty, as in a tender of its own)
+    let board: Vec<Standing> = board.into_iter().map(|s| if s.name == c.name { Standing { name: String::new(), ..s } } else { s }).collect();
+    let me = board.iter().find(|s| s.name.is_empty()).map_or(0.0, |s| s.total);
+    let rivals: Vec<RivalBid> = board.iter().filter(|s| !s.name.is_empty()).map(|s| RivalBid { name: s.name.clone(), price: t.share(s.amount), quality: s.quality / auction::QUALITY_POINTS * 100.0, score: s.total, amount: s.amount }).collect();
+    let (outcome, event) = if mine {
+        let ev = take(c, &t, amount);
+        (Outcome::Won { score: me, rivals, amount, bought: false }, ev)
+    } else if winner.is_empty() {
+        (Outcome::NoBid { winner: String::new(), amount: 0 }, Event::Lost { number: t.number.clone(), winner: String::new() })
+    } else if t.offers.is_empty() {
+        (Outcome::NoBid { winner: winner.to_string(), amount }, Event::Lost { number: t.number.clone(), winner: winner.to_string() })
+    } else {
+        (Outcome::Lost { score: me, winner: winner.to_string(), rivals, amount }, Event::Lost { number: t.number.clone(), winner: winner.to_string() })
     };
     if let Some(x) = c.concessions.tenders.iter_mut().find(|x| x.id == id) {
         x.outcome = Some(outcome);

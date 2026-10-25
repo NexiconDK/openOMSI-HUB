@@ -50,6 +50,8 @@ own world - then the AI buses and the traffic are not the same for everybody).
    the head office's view and approvals.
 5. **Competition and control room**: tenders between the players' companies on each map; a
    control room per depot.
+   (The tenders brought forward on 25 October 2026, before the depots: "Phase 5 brought forward"
+   below.)
 6. **Polish**: courses required to found a company; maps kept running if the machine can carry
    them; translations and guides.
 
@@ -312,6 +314,47 @@ Tested: `tours::tests::a_lan_players_duty_takes_only_its_trips_from_the_ai`,
 `a_trip_the_world_saw_him_drive_after_he_left_is_his`,
 `company_live::tests::on_a_server_the_maps_other_lines_run`,
 `company_server::tests::a_trip_is_taken_as_the_world_saw_it`.
+
+## Phase 5 brought forward: the map's tenders, shared by its companies
+
+Decided 25 October 2026 (two companies on one map each bid in a market of their own and never saw
+each other): every company of a map bids in the same tenders, live against each other and
+against the map's operators; a concession ending goes out again open to every company; no line is
+bought outright on the server; the operators still bid.
+
+- **The main server keeps a market a map** (`shared_tenders`, `<folder>/market/<map>.json`,
+  `MainServer::markets` at every scan): every four weeks of the server's date some of the map's
+  lines no company runs go out to tender (the Normal rules' number and one more a company of the
+  map), one a day in the office hours; a company's concession ending within `RENEW_BEFORE` days
+  goes out again, open to every company - the winner runs the line from the day the old term
+  ends (`Shared::from`), the holder until then; a company's application (its Lines page's
+  "Apply": `shared_tenders::ask`, `<map>.asks.jsonl`) opens its tender at once, or is refused when
+  another company runs the line. Prices, caps and the operators are the market's: priced at the
+  costs of a company founded on the map that day (`template`), the operators drawn once for the
+  map, bidding by the Normal rules.
+- **Every company bids in it**: its process takes the market's open tenders among its own
+  (`sync`, each step of `online::Host`; `concessions::Tender::market`), its pages and clock as
+  ever - its bids go into the market (`shared_tenders::bid`, `<map>.bids.jsonl`), the others'
+  come in at its next step, and the auction is replayed with every company's bids in one order
+  for all (`auction::replay_many`, `Who::Other`), so each sees the same auction from its side.
+  Its own tenders of before are withdrawn, their fees paid back.
+- **The main server decides** each tender a minute after its last minute, every bid in
+  (`CLOSE_AFTER`, `decide`): won by a company - its process takes the concession and its contract,
+  its line the company's at once (`take_on`), the others lost to it by name - by an operator (the
+  map's own buses run the line until it goes out again), or by nobody. A company's clock no longer
+  closes such a tender itself.
+- **Not on the server**: buying a line outright (`concessions::NOT_ON_SERVER`, its button gone),
+  taking a line on directly or a concession renewing by itself (`rules_of`: `direct` off), the
+  company's own rounds and renewals.
+- **The easy mode** (it has no auction page): its "take the line" applies for it in the market,
+  and it bids the recommended ask by itself, once, on a line it applied for and on its own
+  concession put out again (`sync`).
+- A line whose concession begins on a later day is not in the company's plan for the world yet
+  (`plan::live_plan`'s `lines`): the holder's buses run it until then.
+
+Tested: `auction::tests::two_companies_in_one_tender_see_the_same_auction`,
+`shared_tenders::tests::two_companies_bid_against_each_other_in_the_maps_tenders`,
+`a_concession_ending_goes_out_to_every_company`, `an_easy_company_bids_by_itself`.
 
 ### Measured on a real map (Ahlheim: 30 lines, 418 tours a day)
 

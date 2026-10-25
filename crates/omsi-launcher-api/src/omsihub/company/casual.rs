@@ -713,6 +713,17 @@ pub fn act(s: &mut Session, what: &str, args: &Value, _p: &dyn crate::Platform) 
             let Some(all) = s.map_lines().map(|l| l.to_vec()) else { return Some(Ok(json!({}))) };
             let Some(line) = all.iter().find(|x| x.name == name).cloned() else { return Some(Ok(json!({}))) };
             let number = co::specials::number_of(&line, &[&c.depot]);
+            // (NexiconDK: on Bus Company Online's server the line goes out to tender for every company
+            // of the map; the easy mode bids the recommended ask by itself - `shared_tenders::sync`)
+            if c.online.on_server {
+                return Some(Ok(match co::shared_tenders::ask(&super::data(), &c, &line) {
+                    Ok(_) => {
+                        s.say(trf("Line %{n} goes out to tender for every company of the map: your company bids for it by itself.", &[("n", &number)]), false);
+                        json!({ "tab": LINES, "focus": line.name })
+                    }
+                    Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
+                }));
+            }
             let direct = co::concessions::may_add_directly(&c);
             let r = if direct {
                 let date = c.date.clone();

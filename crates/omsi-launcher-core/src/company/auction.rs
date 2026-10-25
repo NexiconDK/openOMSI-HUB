@@ -157,7 +157,11 @@ pub struct Bidder {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Who {
     Rival(usize),
+    /// The company the auction is seen from.
     Player,
+    /// Another company of players in the same tender (Bus Company Online: every company of a map
+    /// bids in the map's tenders), by its place among the auction's companies (`Human`).
+    Other(usize),
 }
 
 /// A bid placed.
@@ -201,12 +205,26 @@ pub fn to_lead(others: &[(Cents, f64)], quality: f64, lot: &Lot) -> Cents {
     lo * ROUND
 }
 
-/// The standing bids (the last of each bidder) but `who`'s: ask and quality.
-fn standing(last: &[Option<Cents>], rivals: &[Bidder], player: Option<Cents>, player_quality: f64, who: Who) -> Vec<(Cents, f64)> {
-    let mut out: Vec<(Cents, f64)> = last.iter().enumerate().filter(|(i, _)| who != Who::Rival(*i)).filter_map(|(i, a)| a.map(|a| (a, rivals[i].quality))).collect();
-    if who != Who::Player {
-        out.extend(player.map(|a| (a, player_quality)));
-    }
+/// A company of players in an auction: its quality and its bids (when, how much). The player's
+/// company alone, or on Bus Company Online's server every company of the map that bids in the
+/// tender - in one order for all of them (`replay_many`), so that each sees the same auction.
+#[derive(Clone, Copy, Debug)]
+pub struct Human<'a> {
+    pub quality: f64,
+    pub offers: &'a [(i64, Cents)],
+}
+
+/// Who of the auction's bidders is meant: a rival, or a company of players by its place.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Seat {
+    Rival(usize),
+    Human(usize),
+}
+
+/// The standing bids (the last of each bidder) but `but`'s: ask and quality.
+fn standing(last: &[Option<Cents>], rivals: &[Bidder], hl: &[Option<Cents>], hq: &[f64], but: Seat) -> Vec<(Cents, f64)> {
+    let mut out: Vec<(Cents, f64)> = last.iter().enumerate().filter(|(i, _)| but != Seat::Rival(*i)).filter_map(|(i, a)| a.map(|a| (a, rivals[i].quality))).collect();
+    out.extend(hl.iter().enumerate().filter(|(k, _)| but != Seat::Human(*k)).filter_map(|(k, a)| a.map(|a| (a, hq.get(k).copied().unwrap_or(0.0)))));
     out
 }
 
@@ -214,16 +232,26 @@ fn standing(last: &[Option<Cents>], rivals: &[Bidder], player: Option<Cents>, pl
 /// the rivals' bids, and the player's (`player`: when, how much; a bid that does not lead
 /// when it comes is left out).
 pub fn replay(lot: &Lot, rivals: &[Bidder], player: &[(i64, Cents)], player_quality: f64, until: i64) -> Vec<Placed> {
+    replay_many(lot, rivals, &[Human { quality: player_quality, offers: player }], Some(0), until)
+}
+
+/// `replay` with several companies of players (`humans`, in the one order every company keeps):
+/// within a minute the rivals first, then the companies in their order, each bid that leads when
+/// it comes. Seen from company `me` (its bids `Who::Player`, the others' `Who::Other`; None: from
+/// none of them, as the main server decides a tender).
+pub fn replay_many(lot: &Lot, rivals: &[Bidder], humans: &[Human], me: Option<usize>, until: i64) -> Vec<Placed> {
     let end = until.min(lot.closes - 1);
     let n = rivals.len();
+    let label = |k: usize| if Some(k) == me { Who::Player } else { Who::Other(k) };
+    let hq: Vec<f64> = humans.iter().map(|h| h.quality).collect();
     let mut rngs: Vec<Rng> = rivals.iter().map(|b| Rng::new(b.seed)).collect();
     let mut next: Vec<Option<i64>> = rivals.iter().map(|b| if b.quiet_until.is_some() { None } else { b.opening }).collect();
     let mut out = vec![false; n];
     let mut woke = vec![false; n];
     let mut placed: Vec<Placed> = Vec::new();
     let mut last: Vec<Option<Cents>> = vec![None; n];
-    let mut mine: Option<Cents> = None;
-    let mut leader: Option<Who> = None;
+    let mut hl: Vec<Option<Cents>> = vec![None; humans.len()];
+    let mut leader: Option<Seat> = None;
     let mut m = lot.opens;
     while m <= end {
         for i in 0..n {
@@ -235,10 +263,10 @@ pub fn replay(lot: &Lot, rivals: &[Bidder], player: &[(i64, Cents)], player_qual
                 woke[i] = true;
             }
             next[i] = None;
-            if out[i] || leader == Some(Who::Rival(i)) {
+            if out[i] || leader == Some(Seat::Rival(i)) {
                 continue;
             }
-            let need = to_lead(&standing(&last, rivals, mine, player_quality, Who::Rival(i)), rivals[i].quality, lot);
+            let need = to_lead(&standing(&last, rivals, &hl, &hq, Seat::Rival(i)), rivals[i].quality, lot);
             if need < rivals[i].floor {
                 out[i] = true;
                 continue;
@@ -247,20 +275,29 @@ pub fn replay(lot: &Lot, rivals: &[Bidder], player: &[(i64, Cents)], player_qual
             let amount = (need - extra).max(rivals[i].floor);
             placed.push(Placed { at: m, who: Who::Rival(i), amount });
             last[i] = Some(amount);
-            leader = Some(Who::Rival(i));
+            leader = Some(Seat::Rival(i));
             answer(&mut next, &mut rngs, rivals, &out, &woke, Some(i), m);
         }
-        for &(_, amount) in player.iter().filter(|p| p.0 == m) {
-            let need = to_lead(&standing(&last, rivals, mine, player_quality, Who::Player), player_quality, lot);
-            if amount >= ROUND && amount <= need {
-                placed.push(Placed { at: m, who: Who::Player, amount });
-                mine = Some(amount);
-                leader = Some(Who::Player);
-                answer(&mut next, &mut rngs, rivals, &out, &woke, None, m);
+        for (k, h) in humans.iter().enumerate() {
+            for &(_, amount) in h.offers.iter().filter(|p| p.0 == m) {
+                let need = to_lead(&standing(&last, rivals, &hl, &hq, Seat::Human(k)), h.quality, lot);
+                if amount >= ROUND && amount <= need {
+                    placed.push(Placed { at: m, who: label(k), amount });
+                    hl[k] = Some(amount);
+                    leader = Some(Seat::Human(k));
+                    answer(&mut next, &mut rngs, rivals, &out, &woke, None, m);
+                }
             }
         }
         // (on to the next minute anything happens)
-        let soonest = next.iter().flatten().copied().chain(rivals.iter().zip(&woke).filter(|(_, w)| !**w).filter_map(|(b, _)| b.quiet_until)).chain(player.iter().map(|p| p.0)).filter(|t| *t > m).min();
+        let soonest = next
+            .iter()
+            .flatten()
+            .copied()
+            .chain(rivals.iter().zip(&woke).filter(|(_, w)| !**w).filter_map(|(b, _)| b.quiet_until))
+            .chain(humans.iter().flat_map(|h| h.offers.iter().map(|p| p.0)))
+            .filter(|t| *t > m)
+            .min();
         m = match soonest {
             Some(t) => t,
             None => break,
@@ -285,22 +322,40 @@ fn answer(next: &mut [Option<i64>], rngs: &mut [Rng], rivals: &[Bidder], out: &[
 
 /// The last bid of each bidder in `placed` (the rivals by index, then the player's).
 pub fn last_of(placed: &[Placed], n: usize) -> (Vec<Option<Cents>>, Option<Cents>) {
+    let (last, hl) = lasts(placed, n, 1, Some(0));
+    (last, hl[0])
+}
+
+/// The last bid of each bidder in `placed`: the rivals by index, the `h` companies of players by
+/// theirs (`Who::Player` is company `me`).
+fn lasts(placed: &[Placed], n: usize, h: usize, me: Option<usize>) -> (Vec<Option<Cents>>, Vec<Option<Cents>>) {
     let mut last = vec![None; n];
-    let mut mine = None;
+    let mut hl = vec![None; h];
     for p in placed {
         match p.who {
             Who::Rival(i) if i < n => last[i] = Some(p.amount),
-            Who::Player => mine = Some(p.amount),
+            Who::Player => {
+                if let Some(x) = me.and_then(|k| hl.get_mut(k)) {
+                    *x = Some(p.amount);
+                }
+            }
+            Who::Other(k) if k < h => hl[k] = Some(p.amount),
             _ => {}
         }
     }
-    (last, mine)
+    (last, hl)
 }
 
 /// The most the player may ask now to lead.
 pub fn player_to_lead(placed: &[Placed], rivals: &[Bidder], player_quality: f64, lot: &Lot) -> Cents {
-    let (last, mine) = last_of(placed, rivals.len());
-    to_lead(&standing(&last, rivals, mine, player_quality, Who::Player), player_quality, lot)
+    human_to_lead(placed, rivals, &[player_quality], 0, lot)
+}
+
+/// The most company `me` of the auction's companies (their qualities `hq`, in their order) may ask
+/// now to lead.
+pub fn human_to_lead(placed: &[Placed], rivals: &[Bidder], hq: &[f64], me: usize, lot: &Lot) -> Cents {
+    let (last, hl) = lasts(placed, rivals.len(), hq.len(), Some(me));
+    to_lead(&standing(&last, rivals, &hl, hq, Seat::Human(me)), hq.get(me).copied().unwrap_or(0.0), lot)
 }
 
 /// A bidder's standing: its last ask and its points (price, quality, total).
@@ -315,9 +370,15 @@ pub struct Points {
 
 /// Every bidder's points from its last bid, best first.
 pub fn points(placed: &[Placed], rivals: &[Bidder], player_quality: f64) -> Vec<Points> {
-    let (last, mine) = last_of(placed, rivals.len());
+    points_many(placed, rivals, &[player_quality], Some(0))
+}
+
+/// `points` with several companies of players (their qualities `hq`, in their order; seen from
+/// company `me`).
+pub fn points_many(placed: &[Placed], rivals: &[Bidder], hq: &[f64], me: Option<usize>) -> Vec<Points> {
+    let (last, hl) = lasts(placed, rivals.len(), hq.len(), me);
     let mut all: Vec<(Who, Cents, f64)> = last.iter().enumerate().filter_map(|(i, a)| a.map(|a| (Who::Rival(i), a, rivals[i].quality))).collect();
-    all.extend(mine.map(|a| (Who::Player, a, player_quality)));
+    all.extend(hl.iter().enumerate().filter_map(|(k, a)| a.map(|a| (if Some(k) == me { Who::Player } else { Who::Other(k) }, a, hq[k]))));
     let Some(lowest) = all.iter().map(|x| x.1).min() else { return Vec::new() };
     let mut out: Vec<Points> = all.into_iter().map(|(who, amount, q)| Points { who, amount, price: price_points(amount, lowest), quality: quality_points(q), total: score(amount, q, lowest) }).collect();
     // (equal totals: the better price points, then the better quality)
@@ -422,6 +483,36 @@ mod tests {
         // a bid that does not lead is not taken
         let high = replay(&l, &rivals, &[(at, l.ceiling + ROUND)], 60.0, l.closes);
         assert!(!high.iter().any(|b| b.who == Who::Player));
+    }
+
+    /// (Bus Company Online) Two companies of players in one tender see the same auction - each
+    /// its own bids as the player's, the other's as another company's - and a bid that no longer
+    /// leads when it comes (the other bid lower the same minute, first in their order) is left out.
+    #[test]
+    fn two_companies_in_one_tender_see_the_same_auction() {
+        let l = lot();
+        let rivals = vec![rival(Character::Big, 85_000_00, 7, Some(620), None)];
+        let a = [(650, 90_000_00), (700, 80_000_00)];
+        let b = [(660, 86_000_00), (700, 79_900_00)];
+        let humans = [Human { quality: 60.0, offers: &a }, Human { quality: 60.0, offers: &b }];
+        let neutral = replay_many(&l, &rivals, &humans, None, l.closes);
+        let seen = |me: usize| replay_many(&l, &rivals, &humans, Some(me), l.closes);
+        // (the same bids, each company itself the player)
+        let plain = |p: &[Placed], me: Option<usize>| p.iter().map(|x| (x.at, if x.who == Who::Player { Who::Other(me.unwrap()) } else { x.who }, x.amount)).collect::<Vec<_>>();
+        assert_eq!(plain(&seen(0), Some(0)), plain(&neutral, None));
+        assert_eq!(plain(&seen(1), Some(1)), plain(&neutral, None));
+        assert!(seen(0).iter().any(|p| p.who == Who::Player && p.amount == 80_000_00));
+        assert!(seen(0).iter().any(|p| p.who == Who::Other(1) && p.amount == 86_000_00));
+        assert!(!neutral.iter().any(|p| p.who == Who::Other(1) && p.at == 700), "B's 79 900 leads A's 80 000 by too little: {neutral:?}");
+        // the points and what each may ask to lead, from either side
+        let pts = points_many(&neutral, &rivals, &[60.0, 60.0], None);
+        assert_eq!(pts[0].who, neutral.last().unwrap().who);
+        let from_a = seen(0);
+        assert!(points_many(&from_a, &rivals, &[60.0, 60.0], Some(0)).iter().any(|p| p.who == Who::Player));
+        let lead_b = human_to_lead(&seen(1), &rivals, &[60.0, 60.0], 1, &l);
+        assert!(lead_b < from_a.iter().filter(|p| p.who == Who::Player).map(|p| p.amount).last().unwrap_or(l.ceiling));
+        // one company alone is the plain auction
+        assert_eq!(replay_many(&l, &rivals, &humans[..1], Some(0), l.closes), replay(&l, &rivals, &a, 60.0, l.closes));
     }
 
     #[test]

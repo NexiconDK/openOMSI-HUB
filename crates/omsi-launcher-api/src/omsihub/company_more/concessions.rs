@@ -19,6 +19,7 @@ use omsi_launcher_lib::company::auction::{Placed, Who};
 use omsi_launcher_lib::company::bus_contracts::{self as bc, Period};
 use omsi_launcher_lib::company::clock::{self as ck, Step};
 use omsi_launcher_lib::company::concessions::{self as cn, Outcome, Tender, Week};
+use omsi_launcher_lib::company::shared_tenders as co_tenders;
 use omsi_launcher_lib::company::{dates, Company};
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -306,8 +307,14 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         { "label": tr("The cap").to_uppercase(), "value": eur(t.reference), "tone": "text", "tip": tr("The most the authority pays a year: an ask above it does not count.") },
         { "label": tr("Advice").to_uppercase(), "value": eur(advice), "tone": "ok", "tip": tr("The work's cost price at your own costs, with a 5 % margin: drivers' paid hours, fuel, the workshop, a bus and its fixed costs, less BSOG.") },
         if t.open() { json!({ "label": tr("Ask at most now").to_uppercase(), "value": eur(least), "tone": "text" }) } else { json!({ "label": tr("Term").to_uppercase(), "value": trf("%{n} years", &[("n", &t.term_years().to_string())]), "tone": "text" }) },
-        { "label": tr("Buy outright").to_uppercase(), "value": eur(t.buy_out()), "tone": "accent2" },
     ]);
+    // (NexiconDK: no line is bought outright on Bus Company Online's server)
+    let mut figures = figures;
+    if !c.online.on_server {
+        if let Some(f) = figures.as_array_mut() {
+            f.push(json!({ "label": tr("Buy outright").to_uppercase(), "value": eur(t.buy_out()), "tone": "accent2" }));
+        }
+    }
     let (_, ext) = bc::term(t.kind);
     let terms = t.scored().then(|| trf("%{kind}, %{per}  ·  %{years} years and up to %{ext} more  ·  asks are a price a year", &[("kind", &tr(t.kind.label())), ("per", &per_text(t.period)), ("years", &t.term_years().to_string()), ("ext", &ext.to_string())]));
     let len = (t.closes_at - t.opens_at).max(1);
@@ -330,22 +337,30 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         .iter()
         .enumerate()
         .filter_map(|(i, id)| {
-            let r = cn::rival(c, *id)?;
+            let r = cn::rival_of(c, t, *id)?;
             let last = placed.iter().rev().find(|p| p.who == Who::Rival(i)).map(|p| p.amount);
             let kind = points_of(&r.name).unwrap_or_else(|| format!("{}  ·  {}", tr(r.character.label()), trf("quality %{q}", &[("q", &format!("{:.0}", r.quality))])));
             Some(json!({ "name": r.name, "kind": kind, "value": last.map(eur).unwrap_or_else(|| tr("no bid")), "has": last.is_some(), "leads": leader == Some(Who::Rival(i)) }))
         })
         .collect();
+    // (NexiconDK: the other companies of the map bidding in a tender of its market)
+    let (humans, me) = cn::humans_of(c, t);
+    let others: Vec<(usize, String, f64)> = humans.iter().enumerate().filter(|(k, _)| *k != me).map(|(k, h)| (k, h.1.clone(), h.2)).collect();
+    for (k, name, q) in &others {
+        let last = placed.iter().rev().find(|p| p.who == Who::Other(*k)).map(|p| p.amount);
+        let kind = points_of(name).unwrap_or_else(|| format!("{}  ·  {}", tr("a company of the server"), trf("quality %{q}", &[("q", &format!("{q:.0}"))])));
+        bidders.push(json!({ "name": name, "kind": kind, "value": last.map(eur).unwrap_or_else(|| tr("no bid")), "has": last.is_some(), "leads": leader == Some(Who::Other(*k)) }));
+    }
     let mine_last = placed.iter().rev().find(|p| p.who == Who::Player).map(|p| p.amount);
     let kind = points_of("").unwrap_or_else(|| trf("your quality %{q}", &[("q", &format!("{:.0}", cn::quality_in(c, t)))]));
     bidders.push(json!({ "name": tr("You"), "kind": kind, "value": mine_last.map(eur).unwrap_or_else(|| tr("no bid")), "has": mine_last.is_some(), "leads": leader == Some(Who::Player) }));
     // (Luc 2026-10-16: the rivals as a table - their kind, quality and where their bid stands)
-    let rivals: Vec<Value> = t
+    let mut rivals: Vec<Value> = t
         .bidders
         .iter()
         .enumerate()
         .filter_map(|(i, id)| {
-            let r = cn::rival(c, *id)?;
+            let r = cn::rival_of(c, t, *id)?;
             let last = placed.iter().rev().find(|p| p.who == Who::Rival(i)).map(|p| p.amount);
             let leads = leader == Some(Who::Rival(i));
             let (bid, tone) = match last {
@@ -358,6 +373,17 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
             Some(json!({ "name": r.name, "kind": tr(r.character.label()), "quality": r.quality / 100.0, "quality_text": format!("{:.0}", r.quality), "bid": bid, "tone": tone, "leads": leads, "points": points_of(&r.name) }))
         })
         .collect();
+    // (the other companies of the map: theirs among the rivals, as a company of the server)
+    for (k, name, q) in &others {
+        let last = placed.iter().rev().find(|p| p.who == Who::Other(*k)).map(|p| p.amount);
+        let leads = leader == Some(Who::Other(*k));
+        let (bid, tone) = match last {
+            Some(a) if leads => (trf("%{amount}, leads", &[("amount", &eur(a))]), "warn"),
+            Some(a) => (eur(a), "text"),
+            None => (tr("no bid"), "dim"),
+        };
+        rivals.push(json!({ "name": name, "kind": tr("a company of the server"), "quality": q / 100.0, "quality_text": format!("{q:.0}"), "bid": bid, "tone": tone, "leads": leads, "points": points_of(name) }));
+    }
     let log: Vec<Value> = placed.iter().rev().take(30).map(|p| json!({ "at": ck::hhmm(p.at), "who": if p.who == Who::Player { tr("You") } else { cn::bidder_name(c, t, p.who) }, "amount": eur(p.amount), "me": p.who == Who::Player })).collect();
     // what to do
     let actions = if t.running(now) {
@@ -385,7 +411,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
             "recommend": normal.then(|| trf("Recommended: %{amount} (%{s} % of the cap), about %{p} % to win", &[("amount", &eur(rec)), ("s", &format!("{:.0}", t.share(rec) * 100.0)), ("p", &format!("{:.0}", rec_chance * 100.0))])),
             "recommend_amount": rec as f64 / 100.0,
             "bid": trf("Ask %{amount}", &[("amount", &eur(amount))]),
-            "buy": trf("Buy outright, %{amount}", &[("amount", &eur(t.buy_out()))]), "buy_tip": tr("Certain: the auction ends at once in your favour"),
+            "buy": (!c.online.on_server).then(|| trf("Buy outright, %{amount}", &[("amount", &eur(t.buy_out()))])), "buy_tip": tr("Certain: the auction ends at once in your favour"),
             // (NexiconDK: on Bus Company Online's server its clock runs for everybody: no step)
             "plus15": (!c.online.on_server).then(|| tr("+15 min")), "to_close": (!c.online.on_server).then(|| tr("To its close")),
         })
@@ -468,7 +494,9 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {
                 let least = trf("Ask at least %{amount}.", &[("amount", &eur(omsi_launcher_lib::company::auction::ROUND))]);
                 return Some(Ok(json!({ "popup": super::super::kit::Popup::new("error", "This cannot be done", least, "", None).json(false) })));
             }
-            match apply(s, |c| cn::bid(c, id, amount)) {
+            // (NexiconDK: a tender of the map's market on the server - the bid goes to every company)
+            let data = super::super::data();
+            match apply(s, |c| if c.online.on_server { co_tenders::bid(&data, c, id, amount) } else { cn::bid(c, id, amount) }) {
                 Ok(_) => {
                     s.say(tr("Your bid is in. The rivals answer as the clock goes on."), false);
                     Ok(json!({}))

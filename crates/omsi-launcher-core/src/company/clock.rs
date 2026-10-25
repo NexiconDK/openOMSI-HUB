@@ -714,7 +714,11 @@ fn next_due(c: &Company, limit: i64) -> Option<(i64, Due)> {
         if let Some(p) = cn::bids(c, t, t.closes_at).get(t.told) {
             consider(p.at, Due::Bid(t.id));
         }
-        consider(t.closes_at, Due::Close(t.id));
+        // (a tender of the map's market on Bus Company Online's server: the main server closes
+        // it for every company at once - `shared_tenders::decided`)
+        if t.market.is_none() {
+            consider(t.closes_at, Due::Close(t.id));
+        }
     }
     best
 }

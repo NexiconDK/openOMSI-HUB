@@ -565,6 +565,17 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
             let direct = co::concessions::may_add_directly(&c) || own.is_some();
             let easy = co::autopilot::on(&c);
             let number = own.as_ref().map(|o| o.number.clone()).unwrap_or_else(|| co::specials::number_of(&line, &[&c.depot]));
+            // (NexiconDK: on Bus Company Online's server the map's market puts it out to tender for
+            // every company of the map - `shared_tenders::ask`)
+            if c.online.on_server && own.is_none() {
+                return Some(Ok(match co::shared_tenders::ask(&super::data(), &c, &line) {
+                    Ok(said) => {
+                        s.say(tr(said), false);
+                        json!({ "done": true, "hand_over": super::CONCESSIONS_TAB.to_string() })
+                    }
+                    Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
+                }));
+            }
             if easy && !direct {
                 return Some(match apply(s, |c| co::autopilot::take_line(c, &line)) {
                     Ok(_) => {

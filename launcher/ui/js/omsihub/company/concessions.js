@@ -94,7 +94,7 @@ function Auction({ a, st }) {
     <div class="co-pg-actions">
       ${running &&
       html`<${Btn} kind="primary" icon="payments" label=${act.bid} onClick=${() => actMore('tender_bid', { id: act.id, amount: Math.round(amount * 100) })} />
-        <${Btn} icon="check_circle" label=${act.buy} title=${act.buy_tip} onClick=${() => actMore('tender_buy', { id: act.id })} />
+        ${act.buy && html`<${Btn} icon="check_circle" label=${act.buy} title=${act.buy_tip} onClick=${() => actMore('tender_buy', { id: act.id })} />`}
         ${act.plus15 && html`<${Btn} kind="ghost" icon="timer" label=${act.plus15} onClick=${() => actMore('tender_step', { id: act.id, to: '15' })} />`}
         ${act.to_close && html`<${Btn} kind="ghost" icon="sports_score" label=${act.to_close} onClick=${() => actMore('tender_step', { id: act.id, to: 'close' })} />`}`}
       ${act.kind === 'wait' && act.label && html`<${Btn} kind="primary" icon="schedule" label=${act.label} onClick=${() => actMore('tender_step', { id: act.id, to: 'open' })} />`}

@@ -519,6 +519,18 @@ impl Host {
             s.told = clock::tell_live(c, &live);
             self.dirty = true;
         }
+        // (the map's tenders, shared by its companies: the other companies' bids, what the main
+        // server decided - a line won is the company's at once, to be planned for its first day)
+        let (changed, won) = super::shared_tenders::sync(&self.data, c);
+        if changed {
+            self.dirty = true;
+        }
+        if won {
+            let date = c.date.clone();
+            let lines = w.lines(c, &date).map_err(anyhow::Error::msg)?;
+            super::concessions::take_on(c, &lines);
+            self.planned = None;
+        }
         // (a question left waiting - by a step taken on a page before 25 October 2026: nobody
         // answers it on a server, the dispatcher decides it)
         if c.clock.ask.is_some() {
