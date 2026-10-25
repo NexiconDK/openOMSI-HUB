@@ -84,9 +84,19 @@ export function useView(name, args = {}, on = true) {
 /** The view is the one asked for (not the last one shown meanwhile). */
 export const fresh = (v) => v && !v.error;
 
+/** (NexiconDK) A duty driven from the pages of a company joined from afar ("Play together", Bus
+ * Company Online): the session's own start - `together.js`'s `driveDuty`, set there - for the
+ * boss's duty launcher is his alone (`together::relay`). */
+export const remoteDrive = { go: null };
+
 /** Take an action (`co_act`): what it says - a popup, a page handed over, a page to go to - is
  * carried out here; the answer goes back to the page for what is its own. */
 export async function act(name, args = {}) {
+  if (S.co?.remote && name === 'drive_duty' && remoteDrive.go) {
+    await remoteDrive.go(args.duty);
+    refresh();
+    return {};
+  }
   let r;
   try {
     r = await cmd('co_act', { act: name, ...args });

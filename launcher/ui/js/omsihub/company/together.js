@@ -10,7 +10,7 @@
 
 import { S, set, toast } from '../../store.js';
 import { duty } from '../../data.js';
-import { html, useEffect, useState, tr, setCo, cmd, freshCo, goTab, Icon, Mark, Btn } from './kit.js';
+import { html, useEffect, useState, tr, setCo, cmd, freshCo, goTab, Icon, Mark, Btn, remoteDrive } from './kit.js';
 import { togetherOn, blockedLabel } from './gate.js';
 import { usePoll, run, Chip, Face, RoleBadge, Stats, RoleEditor, MultiplayerDialog } from './multiplayer.js';
 import { SessionEnded } from './session.js';
@@ -86,6 +86,9 @@ async function driveDuty(d, name = 'tg_drive') {
   }
   await run(name, { duty: d.duty, base, world });
 }
+
+// ("Drive this duty" on the company's pages, joined from afar: the session's start - `kit.js`)
+remoteDrive.go = (duty) => driveDuty({ duty });
 
 /** The company of a Bus Company Online server the player is in (`tg_view`'s `bco`). */
 let bcoCompany = null;
