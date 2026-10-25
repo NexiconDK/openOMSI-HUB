@@ -50,7 +50,7 @@ export function setUi(page, patch) {
 
 /** The company's commands a friend of "Play together" relays to the boss's launcher while he
  * looks at the boss's company's pages (`together::relay::RELAYED`). */
-const RELAYED = new Set(['co_tick', 'co_view', 'co_act', 'co_more_view', 'co_more_act', 'co_line_of']);
+const RELAYED = new Set(['co_tick', 'co_view', 'co_act', 'co_more_view', 'co_more_act', 'co_more_map', 'co_line_of']);
 
 /** A command of the bus company in the page's language (Beta 61: relayed to the boss's launcher
  * on the pages of a company joined with "Play together", `S.co.remote`). */

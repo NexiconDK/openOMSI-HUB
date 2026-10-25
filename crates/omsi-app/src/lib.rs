@@ -290,6 +290,12 @@ pub fn run() -> Result<()> {
     // the main server (`omsi_launcher_api::omsihub::company_host`)
     if let Some(dir) = args.company_host.clone() {
         let id = args.company.clone().unwrap_or_default();
+        // (the fleet map's roads for its players, read here: this process has no launcher
+        // service - `launcher/service.rs`'s "map" request)
+        omsi_launcher_api::omsihub::company::set_map_reader(|map, date, trips| {
+            let global = omsi_cfg::find_in_roots(map).map(|(_, p)| p).or_else(|| omsi_launcher_lib::content_path(map).ok()).unwrap_or_else(|| std::path::PathBuf::from(map));
+            omsi_launcher_model::mapview::hub_fleet::export(map, &global, date, trips, 0.6)
+        });
         if let Err(e) = omsi_launcher_api::omsihub::company_host::run(&dir, &id) {
             eprintln!("company {id}: {e}");
             std::process::exit(2);

@@ -167,6 +167,16 @@ Nobody needs a company's code or the console any more: the bus company's start h
   doing from afar what the boss alone does elsewhere where it makes sense there
   (`relay::OWNER_ON_SERVER`: the country). The server's clock is nobody's to change: the real
   time switched off is refused with a word why (`relay::SERVER_CLOCK_ACTS`, `Need::Clock`).
+- **The pages read once for everybody** (25 October 2026, the first test at home: the Fleet
+  page said "Reading the installed buses…" and the Map "Reading the map…" for good): a player of
+  "Play together" has the pages' state of his own swapped in while his command runs
+  (`company::Viewer`), and what his page started reading came back into the session's after it,
+  never into his. The showroom's catalogue (`dealer::swap_catalogue`) and the map's roads and
+  routes (`fleetmap::swap_shared`) stay the session's now, read once for every player. The map's
+  roads are read where the company is (`co_more_map` relayed; `fleetmap::roads_for_guest`): the
+  company's process on the server reads them itself (it is the game program: `omsi-app` gives it
+  `company::set_map_reader`, the launcher service's "map" request), on a thread, kept for every
+  player; on a boss's own launcher a player is told it is the boss's (it had read for good).
 - **The console** besides: `players` (each with how he logs in, his money and his companies),
   `money <player>; <amount>` (set, or `+`/`-` to add or take), `owner <company>; <player>` (a
   player of the server a company's owner - one founded from the console without one, say: the

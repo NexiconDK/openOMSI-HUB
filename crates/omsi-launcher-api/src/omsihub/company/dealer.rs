@@ -57,6 +57,19 @@ pub struct DealerState {
     discard_armed: bool,
 }
 
+/// (NexiconDK) The showroom's catalogue (its listings read, what they were read for, the reading
+/// under way) swapped between two dealers' states: the catalogue is the session's, not a
+/// viewer's. A player of "Play together" has a dealer's state of his own (his sheet open,
+/// `company::Viewer`), swapped in while his command runs; the catalogue stays the session's, or
+/// the reading his page starts would come back into the session's after his command, and his
+/// own would wait for it for good ("Reading the installed buses…" on Bus Company Online's
+/// server, 25 October 2026).
+pub fn swap_catalogue(a: &mut DealerState, b: &mut DealerState) {
+    std::mem::swap(&mut a.listings, &mut b.listings);
+    std::mem::swap(&mut a.listings_key, &mut b.listings_key);
+    std::mem::swap(&mut a.busy, &mut b.busy);
+}
+
 // --- the catalogue and the dealer's clock ------------------------------------------------------
 
 /// Natural order: DL9 before DL10, case not counting (`buspick::name_cmp`).

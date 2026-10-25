@@ -58,6 +58,9 @@ mod repair;
 // (the rest of the pages, Trello "Tauri 3/6": a child of this module in a file of its own)
 #[path = "company_more.rs"]
 mod more;
+// (NexiconDK: the fleet map's roads read in the company's own process on Bus Company Online's
+// server - `omsi-app` gives the reader)
+pub use more::{set_map_reader, MapReader};
 
 use crate::{Answer, Platform};
 use omsi_launcher_lib as core;
@@ -1340,6 +1343,8 @@ pub struct Viewer {
 impl Viewer {
     fn swap(&mut self, s: &mut Session) {
         std::mem::swap(&mut self.dealer, &mut s.dealer);
+        // (the showroom's catalogue stays the session's: it is read once, for everybody)
+        dealer::swap_catalogue(&mut self.dealer, &mut s.dealer);
         std::mem::swap(&mut self.notices, &mut s.notices);
         std::mem::swap(&mut self.popup, &mut s.popup);
         std::mem::swap(&mut self.reports, &mut s.reports);
@@ -1789,6 +1794,26 @@ pub fn feed_tone(level: Level) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// (NexiconDK) A player of "Play together" sees the showroom the session read, even when his
+    /// own page started the reading: the catalogue is the session's, his dealer's sheet his own
+    /// (before, his page said "Reading the installed buses…" for good).
+    #[test]
+    fn a_viewer_shares_the_showrooms_catalogue() {
+        let mut s = Session::default();
+        let mut v = Viewer::default();
+        // (his command: the reading started, then he is swapped out)
+        v.swap(&mut s);
+        v.swap(&mut s);
+        // (the reading done, as its thread puts it: into the session's)
+        s.dealer.listings = Some(Arc::new(Vec::new()));
+        // (his next command sees it)
+        v.swap(&mut s);
+        assert!(s.dealer.listings.is_some(), "the viewer sees the session's catalogue");
+        v.swap(&mut s);
+        assert!(s.dealer.listings.is_some(), "and the session keeps it");
+        assert!(v.dealer.listings.is_none());
+    }
 
     #[test]
     fn work_on_several_threads_keeps_its_order() {

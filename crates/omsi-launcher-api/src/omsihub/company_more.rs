@@ -79,11 +79,16 @@ pub struct Kept {
     edit: Option<plan_edit::PlanEdit>,
 }
 
+// (NexiconDK: the map reader of a process without a launcher service - `company_host`)
+pub use fleetmap::{set_map_reader, MapReader};
+
 /// Swap a viewer's own state of this part with the session's (`company::Viewer`).
 pub fn swap_kept(s: &Session, k: &mut Kept) {
     let mut m = more(s);
     std::mem::swap(&mut m.tenders, &mut k.tenders);
     std::mem::swap(&mut m.map, &mut k.map);
+    // (the map's roads stay the session's: read once, for everybody)
+    fleetmap::swap_shared(&mut m.map, &mut k.map);
     std::mem::swap(&mut m.edit, &mut k.edit);
 }
 
@@ -92,6 +97,8 @@ pub fn relayed(s: &mut Session, cmd: &str, args: &Value) -> Answer {
     match cmd {
         "co_more_view" => view(s, args),
         "co_more_act" => act(s, args),
+        // (NexiconDK: the map's roads, read where the company is - `fleetmap::roads_for_guest`)
+        "co_more_map" => fleetmap::roads_for_guest(s),
         other => Err(format!("no command {other}")),
     }
 }

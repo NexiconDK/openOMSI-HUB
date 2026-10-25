@@ -108,6 +108,71 @@ pub struct MapState {
     telemetry_at: Option<Instant>,
 }
 
+/// (NexiconDK) The map's roads and routes are the session's, read once for everybody: a player of
+/// "Play together" has his own map state (his clock, the bus he picked, `company::Viewer`),
+/// swapped in while his command runs, but not his own roads - the reading done while his command
+/// ran would come back into the session's after it, and his map would read for good ("Reading the
+/// map…" on Bus Company Online's server, 25 October 2026).
+pub fn swap_shared(a: &mut MapState, b: &mut MapState) {
+    std::mem::swap(&mut a.routes, &mut b.routes);
+    std::mem::swap(&mut a.origin, &mut b.origin);
+    std::mem::swap(&mut a.built_for, &mut b.built_for);
+    std::mem::swap(&mut a.legend, &mut b.legend);
+    std::mem::swap(&mut a.blocks, &mut b.blocks);
+    std::mem::swap(&mut a.blocks_for, &mut b.blocks_for);
+}
+
+/// (NexiconDK) What reads a map's roads and its trips' routes in this process (the map, the day,
+/// the trips): the launcher service's "map" request (`mapview::hub_fleet`) answered here. The
+/// company's process on Bus Company Online's server is the game program itself and has no
+/// launcher service: `omsi-app` gives it this before it starts (`company::set_map_reader`).
+pub type MapReader = fn(&str, &str, &[String]) -> Value;
+
+static MAP_READER: std::sync::OnceLock<MapReader> = std::sync::OnceLock::new();
+
+/// The map reader of this process (`MapReader`).
+pub fn set_map_reader(f: MapReader) {
+    let _ = MAP_READER.set(f);
+}
+
+/// The roads read for the players of "Play together" (`roads_for_guest`): the company's map and
+/// day, how many lines, and the answer (None: being read).
+static FOR_GUESTS: std::sync::Mutex<Option<((String, String, usize), Option<Value>)>> = std::sync::Mutex::new(None);
+
+/// (NexiconDK) `co_more_map` for a player of "Play together", run where the company is (its
+/// launcher, or its process on Bus Company Online's server): the roads read once by this
+/// process's map reader on a thread of its own and kept for every player (and for the buses:
+/// `keep`), `{reading}` meanwhile - the generation moves on when they are read, so the players'
+/// pages ask again. Without a map reader (a boss's own launcher) it is the boss's own.
+pub fn roads_for_guest(s: &mut Session) -> Answer {
+    let Some(reader) = MAP_READER.get().copied() else { return Err(tr(super::super::super::together::relay::FROM_AFAR)) };
+    let Some(c) = s.company.clone() else { return Ok(json!({ "reading": true })) };
+    let Some(lines) = s.map_lines().map(<[core::LineInfo]>::to_vec) else { return Ok(json!({ "reading": true })) };
+    let key = (c.map.clone(), c.date.clone(), c.lines.len());
+    let mut g = FOR_GUESTS.lock().unwrap_or_else(|e| e.into_inner());
+    match g.as_ref() {
+        Some((k, Some(v))) if *k == key => return Ok(v.clone()),
+        Some((k, None)) if *k == key => return Ok(json!({ "reading": true })),
+        _ => {}
+    }
+    *g = Some((key.clone(), None));
+    drop(g);
+    let trips = trips_of(&c, &lines);
+    std::thread::spawn(move || {
+        let v = reader(&key.0, &key.1, &trips);
+        let answer = super::super::with(|s| {
+            let v = take_roads(s, v, &key.0, &key.1);
+            s.generation += 1;
+            v
+        });
+        let mut g = FOR_GUESTS.lock().unwrap_or_else(|e| e.into_inner());
+        if g.as_ref().is_some_and(|(k, _)| *k == key) {
+            *g = Some((key, Some(answer)));
+        }
+    });
+    Ok(json!({ "reading": true }))
+}
+
 /// A line's colour: its own, else the one RosterFlow's chips give it.
 fn colour_of_line(c: &Company, line: &str) -> String {
     let [r, g, b] = co::rosterflow::line_colour(c, line);
@@ -141,7 +206,13 @@ pub fn roads(_args: &Value, p: &dyn Platform) -> Answer {
     });
     let Some((map, date, trips)) = ask else { return Ok(json!({ "reading": true })) };
     let (_, body) = p.renderer(json!({ "cmd": "map", "map": map, "date": date, "trip": "", "trips": trips }), Duration::from_secs(180))?;
-    let mut v: Value = serde_json::from_slice(&body).map_err(|e| format!("{e:#}"))?;
+    let v: Value = serde_json::from_slice(&body).map_err(|e| format!("{e:#}"))?;
+    Ok(super::super::with(|s| take_roads(s, v, &map, &date)))
+}
+
+/// The map reader's answer (`v`, of `map` on `date`) taken in: the routes kept for the buses, the
+/// lines as the map draws them; what the page is answered.
+fn take_roads(s: &Session, mut v: Value, map: &str, date: &str) -> Value {
     let routes: HashMap<String, (Vec<fm::P>, Vec<Option<fm::P>>)> = v
         .get("tracks")
         .and_then(Value::as_array)
@@ -158,21 +229,21 @@ pub fn roads(_args: &Value, p: &dyn Platform) -> Answer {
         })
         .unwrap_or_default();
     let origin = v.get("origin").and_then(Value::as_array).filter(|o| o.len() == 2).map(|o| [o[0].as_f64().unwrap_or(0.0), o[1].as_f64().unwrap_or(0.0)]);
-    let lines = super::super::with(|s| {
+    let lines = (|| {
         let c = s.company.clone()?;
         if c.map != map || c.date != date {
             return None;
         }
         let lines = s.map_lines()?.to_vec();
         Some(keep(s, &c, &lines, routes, origin))
-    });
+    })();
     if let Some(o) = v.as_object_mut() {
         o.remove("tracks");
     }
     v["lines"] = json!(lines.unwrap_or_default());
     v["map"] = json!(map);
     v["date"] = json!(date);
-    Ok(v)
+    v
 }
 
 /// Keep the routes read for the buses (`map::build`); answers the lines as the map draws them:
@@ -850,6 +921,31 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// (NexiconDK) A viewer's map state swapped in and out as `company::Viewer` does: his clock and
+    /// the bus he picked are his, the roads and routes stay the session's - read while his command
+    /// ran, they are there for his next one (before, his map read for good).
+    #[test]
+    fn a_viewer_shares_the_maps_roads() {
+        let swap = |session: &mut MapState, viewer: &mut MapState| {
+            std::mem::swap(session, viewer);
+            swap_shared(session, viewer);
+        };
+        let (mut session, mut viewer) = (MapState::default(), MapState::default());
+        session.clock = 100.0;
+        viewer.clock = 7.0;
+        swap(&mut session, &mut viewer);
+        assert_eq!(session.clock, 7.0, "his clock while his command runs");
+        // (the roads read meanwhile, kept into what is held)
+        session.built_for = Some(("maps/Lemmental/global.cfg".into(), "2024-03-04".into(), 3));
+        session.routes.insert("trip".into(), (vec![[0.0, 0.0], [1.0, 1.0]], Vec::new()));
+        swap(&mut session, &mut viewer);
+        assert_eq!(session.clock, 100.0);
+        assert!(session.built_for.is_some() && session.routes.contains_key("trip"), "the session keeps the roads");
+        swap(&mut session, &mut viewer);
+        assert!(session.built_for.is_some() && session.routes.contains_key("trip"), "his next command sees them");
+        assert_eq!(session.clock, 7.0);
+    }
 
     #[test]
     fn the_players_bus_is_where_the_game_says_while_it_is_fresh() {

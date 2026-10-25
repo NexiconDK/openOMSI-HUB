@@ -11,7 +11,7 @@ use serde_json::{json, Value};
 
 /// The company's commands a player's launcher relays to the boss's (the rest run on his own:
 /// the installed buses, the map's roads, the portraits) - and RosterFlow's (`relayed_rf`).
-pub const RELAYED: [&str; 7] = ["co_tick", "co_view", "co_act", "co_more_view", "co_more_act", "co_line_of", "co_crew"];
+pub const RELAYED: [&str; 8] = ["co_tick", "co_view", "co_act", "co_more_view", "co_more_act", "co_more_map", "co_line_of", "co_crew"];
 
 /// Whether a player's launcher relays RosterFlow's command `cmd` (all but its tutorial, which is
 /// his launcher's own: what he has seen of it, his lessons' place).
@@ -273,7 +273,8 @@ fn crew_need(act: &str) -> Need {
 pub fn need(cmd: &str, args: &Value) -> Need {
     let s = |k: &str| args.get(k).and_then(Value::as_str).unwrap_or("").to_string();
     match cmd {
-        "co_tick" | "co_line_of" => Member,
+        // (the fleet map's roads: read where the company is, for every player - read only)
+        "co_tick" | "co_line_of" | "co_more_map" => Member,
         "co_view" => view_need(&s("view")),
         "co_act" => act_need(&s("act"), &s("what")),
         "co_more_view" => more_view_need(&s("view")),
