@@ -65,6 +65,10 @@ pub struct Online {
     /// How far the world's trips of the company were taken (bytes of `store::world_trips_file`).
     #[serde(default)]
     pub world_trips_read: u64,
+    /// (Phase 4) A depot of another company of the server, on another map: the head office's id
+    /// (`server_depots`; empty: the company is a head office, or on its own).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub hq: String,
 }
 
 /// The company's share of its players' trips when it is founded (per cent).
@@ -76,7 +80,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0 }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new() }
     }
 }
 

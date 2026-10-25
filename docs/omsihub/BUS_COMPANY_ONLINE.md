@@ -315,6 +315,34 @@ Tested: `tours::tests::a_lan_players_duty_takes_only_its_trips_from_the_ai`,
 `company_live::tests::on_a_server_the_maps_other_lines_run`,
 `company_server::tests::a_trip_is_taken_as_the_world_saw_it`.
 
+## Phase 4: depots
+
+Decided 25 October 2026: moving a bus between maps costs time and money; a lent employee is paid
+by the depot that borrows him; a depot that goes bankrupt closes - its loss the head office's
+when it can pay it, else the head office closes or sells more; what a depot costs is not decided
+yet (`depot_price` in `company-server.cfg`, 250 000 until then). In steps: (1) a depot founded on
+another map; (2) money moved between the head office and its depots, the head office's view of
+them; (3) buses moved between maps, staff lent; (4) a depot's bankruptcy.
+
+### Step 1: a depot founded on another map
+
+- **A depot is a company of the server on another map** (`server_depots`), tied to its head
+  office (`Online::hq`): its own lines, buses, staff, tenders (its map's market) and books, its own
+  process; with the head office's name and the map's ("Umove Ahlheim"), its mark, game mode,
+  country, currency, owner and share of its players' trips.
+- **Its owner founds it** in the head office's settings ("Depots": `dialogs::depots_part`,
+  `depot_found`, his alone: `relay::OWNER_ON_SERVER`): a map of the server the company is not on yet
+  (`maps_for`), and its starting money; the head office pays `depot_price` (booked as
+  construction) and the starting money (capital it puts in) from its own money
+  (`server_depots::found`). The main server starts its process at its next look into the folder.
+- **Its players** join it from "Bus Company Online", where it is listed under its head office
+  ("Depot of Umove": `server_api`'s `companies`, `hq`); its depot leader is a co-owner of the
+  depot the owner names on its Multiplayer page. A depot's settings say whose it is; a depot
+  founds no depots.
+- `depot_price` is added to an older `company-server.cfg` (`DEPOT_CFG`).
+
+Tested: `server_depots::tests::a_head_office_founds_a_depot_on_another_map`.
+
 ## Phase 5 brought forward: the map's tenders, shared by its companies
 
 Decided 25 October 2026 (two companies on one map each bid in a market of their own and never saw
@@ -374,8 +402,6 @@ anything that answers the players.
 
 ## Open questions (udkast 4)
 
-The maps to start with; the price of a company and of a depot; whether moving a bus between maps
-costs money or time; who pays a lent employee; the limit of a big purchase; the company's share
-(a cap, a default); bankruptcy of a depot or the whole company; how often lines go to tender and
-how bids are judged; leaving a duty halfway; working for several companies; who may join the
-server.
+The maps to start with; the price of a company and of a depot (`depot_price` until then); the
+limit of a big purchase; the company's share (a cap); bankruptcy of the whole company; working for
+several companies; who may join the server.

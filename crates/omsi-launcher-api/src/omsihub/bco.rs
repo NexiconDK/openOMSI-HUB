@@ -329,6 +329,8 @@ fn company_json(c: &Value) -> Value {
         "mine": mine, "role": role.map(|r| tr(r.label())), "runs": runs,
         "state": if runs { tr("Open") } else { tr("Starting on the server…") },
         "figures": trf("%{lines} lines · %{buses} buses · %{staff} staff · %{players} players", &[("lines", &n("lines").to_string()), ("buses", &n("buses").to_string()), ("staff", &n("staff").to_string()), ("players", &n("players").to_string())]),
+        // (phase 4: a depot of a head office)
+        "depot_of": (!s("hq").is_empty()).then(|| trf("Depot of %{hq}", &[("hq", &s("hq_name"))])),
     })
 }
 
@@ -411,6 +413,9 @@ mod tests {
     fn every_online_server_text_is_translated() {
         let own = include_str!("bco.rs").split("#[cfg(test)]").next().unwrap_or("");
         let mut texts: Vec<String> = omsi_launcher_lib::company::server_api::texts().into_iter().map(String::from).collect();
+        // (the map's shared tenders and the depots: refusals the pages say)
+        use omsi_launcher_lib::company::{concessions, server_depots, shared_tenders};
+        texts.extend(server_depots::texts().into_iter().chain([shared_tenders::HELD, shared_tenders::ASKED, concessions::NOT_ON_SERVER]).map(String::from));
         texts.push(super::together::SERVER_CODE.to_string());
         texts.push(omsi_launcher_lib::company::together::host::NO_TICKET.to_string());
         for lead in ["tr(\"", "trf(\""] {

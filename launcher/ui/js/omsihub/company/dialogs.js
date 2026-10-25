@@ -5,6 +5,8 @@
 // sheet) - and the popup over all of them.
 
 import { S, set } from '../../store.js';
+import { useState } from '../../../vendor/preact-htm.js';
+import { units, cents } from '../money.js';
 import { call } from '../../api.js';
 import { html, tr, setCo, act, cmd, refresh, useView, goTab, goKey, handOver, Icon, Btn, Seg, Switch, Select, Dialog, Popup, Figure, Mark, Plate, Slider, T, freshCo } from './kit.js';
 import { VehicleDialog, NewDialog } from './fleet.js';
@@ -76,6 +78,25 @@ const close = () => setCo({ dialog: null });
 
 // --- the company's settings -------------------------------------------------------------------
 
+/** (Phase 4) A head office's depots on other maps of the server, and the founding of one: its
+ * map and its starting money (`dialogs::depots_part`, `depot_found`). */
+function DepotsPart({ d }) {
+  const [map, setMap] = useState(0);
+  const [start, setStart] = useState(null);
+  const amount = start ?? Math.round(units(d.start * 100));
+  return html`<div class="co-depots">
+    ${d.rows.map((r) => html`<div class="pair"><b class="cut" style="width:220px;flex:none">${r.name}</b><p class="co-note">${r.map} · ${r.facts} · ${r.cash}</p></div>`)}
+    <p class="co-note">${d.say}</p>
+    ${d.none
+      ? html`<p class="co-note">${d.none}</p>`
+      : html`<div class="pair" style="gap:10px;align-items:flex-end">
+          <label class="co-note" style="display:flex;flex-direction:column;gap:4px">${d.map_label}<${Select} value=${map} options=${d.maps.map((m) => m.label)} onChange=${setMap} style="width:220px" /></label>
+          <label class="co-note" style="display:flex;flex-direction:column;gap:4px">${d.start_label}<input class="co-pg-bidin" type="number" step="10000" min="0" value=${amount} onChange=${(e) => setStart(Number(e.currentTarget.value) || 0)} style="width:160px" /></label>
+          <${Btn} kind="primary" icon="add" label=${d.found} onClick=${() => act('depot_found', { map: d.maps[map]?.key, start: Math.round(cents(amount)) })} />
+        </div>`}
+  </div>`;
+}
+
 /** The company's settings (`settings::dialog`): its mark, its game mode (and add-ons), how it
  * buys, its date and the real clock; deleting it. */
 function SettingsDialog({ d }) {
@@ -105,7 +126,7 @@ function SettingsDialog({ d }) {
     <span class="rest"></span>
     <${Btn} kind=${v.move ? '' : 'primary'} label=${v.close} onClick=${close} />
     ${v.move && html`<${Btn} kind="primary" icon="calendar_month" label=${v.move} onClick=${moveTo} />`}`;
-  const h = (v.buying ? 786 : 722) + (v.addons ? 40 : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0) + (v.online ? 180 : 0);
+  const h = (v.buying ? 786 : 722) + (v.addons ? 40 : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0) + (v.online ? 180 + (v.online.depots ? 120 + 34 * (v.online.depots.rows?.length || 0) : 0) : 0);
   // (Beta 61: a career or a sandbox - turned into a sandbox once, after a confirmation)
   const cm = v.company_mode;
   const vh = v.vehicles;
@@ -125,7 +146,9 @@ function SettingsDialog({ d }) {
           <p class="co-note">${v.online.say}${v.online.next ? ' ' + v.online.next : ''}</p></div>
         <div class="co-caps">${v.online.left_caps}</div>
         <div class="pair"><${Seg} value=${v.online.left} options=${v.online.left_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_left', { left: k })} style="width:320px;height:40px" />
-          <p class="co-note">${v.online.left_say}</p></div>`}
+          <p class="co-note">${v.online.left_say}</p></div>
+        ${v.online.depots && html`<div class="co-caps">${v.online.depots.caps}</div>
+          ${v.online.depots.of ? html`<p class="co-note">${v.online.depots.of}</p>` : html`<${DepotsPart} d=${v.online.depots} />`}`}`}
       <div class="co-caps">${v.mode_caps}</div>
       <div class="pair"><${Seg} value=${k} options=${v.modes.map((m, i) => [i, m.label])} onChange=${(i) => setCo({ dialog: { kind: 'confirm', what: 'game_mode', name: v.modes[i].key, settings: v.date } })} style="width:320px;height:40px" />
         <p class="co-note">${v.mode_info}</p></div>

@@ -86,8 +86,37 @@ fn online_part(c: &co::Company) -> Value {
             { "value": "dropped", "label": tr("Its trips are dropped") },
         ],
         "left_say": tr(if c.together.left_dropped { LEFT_DROPPED } else { LEFT_AI }),
+        // (phase 4: its depots on other maps)
+        "depots": depots_part(c),
     })
 }
+
+/// (NexiconDK, phase 4) A company's depots on other maps of the server, in its settings: a head
+/// office's depots and the founding of one (its owner's: `depot_found`), or the head office a
+/// depot belongs to.
+fn depots_part(c: &co::Company) -> Value {
+    let data = super::data();
+    if !c.online.hq.is_empty() {
+        let hq = co::store::load(&data, &c.online.hq).map(|h| h.name).unwrap_or_else(|_| c.online.hq.clone());
+        return json!({ "caps": tr("Depots").to_uppercase(), "of": trf("A depot of %{hq}: its money, buses and staff are its own.", &[("hq", &hq)]) });
+    }
+    let root = std::path::PathBuf::from(omsi_launcher_lib::load_config().root);
+    let price = co::main_server::MainCfg::load(&data).map(|m| m.depot_price).unwrap_or(250_000_00);
+    let rows: Vec<Value> = co::server_depots::depots_of(&data, &c.id)
+        .iter()
+        .map(|d| json!({ "name": d.name, "map": co::main_server::map_name(&d.map), "cash": eur(d.cash), "facts": trf("%{lines} lines · %{buses} buses · %{staff} staff", &[("lines", &d.lines.to_string()), ("buses", &d.buses.to_string()), ("staff", &d.staff.to_string())]) }))
+        .collect();
+    let maps: Vec<Value> = co::server_depots::maps_for(&data, &root, c).iter().map(|m| json!({ "key": m, "label": co::main_server::map_name(m) })).collect();
+    json!({
+        "caps": tr("Depots").to_uppercase(), "rows": rows, "maps": maps,
+        "say": trf("A depot runs the company on another map of the server: its own lines, buses, staff and tenders there. It costs %{price} of the company's money, besides the starting money you give it.", &[("price", &eur(price))]),
+        "start": DEPOT_START as f64 / 100.0, "start_label": tr("Its starting money"), "map_label": tr("The map"),
+        "found": tr("Found a depot"), "none": maps.is_empty().then(|| tr("The company has a depot on every other map of the server.")),
+    })
+}
+
+/// The starting money the settings propose for a depot (cents).
+const DEPOT_START: i64 = 500_000_00;
 
 /// What becomes of the rest of a duty its player left, as the settings say it.
 const LEFT_AI: &str = "The AI drives the rest of his duty in the world, and the company books its trips. He is paid for what he drove; his card counts the duties he left.";
@@ -98,10 +127,27 @@ const LEFT_DROPPED: &str = "Nobody drives the rest of his duty: its trips are dr
 /// {left: "ai" | "dropped"}`: `together::Together::left_dropped`, at once) - a company on Bus
 /// Company Online's server only.
 pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, String>> {
-    if what != "online_share" && what != "online_left" {
+    if what != "online_share" && what != "online_left" && what != "depot_found" {
         return None;
     }
     let Some(c) = s.company.as_mut().filter(|c| c.online.on_server) else { return Some(Ok(json!({}))) };
+    // (phase 4: a depot on another map, paid from the company's money - its owner's)
+    if what == "depot_found" {
+        let map = args.get("map").and_then(Value::as_str).unwrap_or("").to_string();
+        let start = args.get("start").and_then(Value::as_i64).unwrap_or(0);
+        let data = super::data();
+        let root = std::path::PathBuf::from(omsi_launcher_lib::load_config().root);
+        let price = co::main_server::MainCfg::load(&data).map(|m| m.depot_price).unwrap_or(250_000_00);
+        return Some(Ok(match co::server_depots::found(&data, &root, c, &map, start, price, super::real_now()) {
+            Ok(id) => {
+                let name = co::store::load(&data, &id).map(|d| d.name).unwrap_or(id);
+                super::changed(s);
+                s.say(trf("The depot %{name} is founded: it opens on the server in a moment, under Bus Company Online.", &[("name", &name)]), false);
+                json!({})
+            }
+            Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
+        }));
+    }
     if what == "online_left" {
         let dropped = args.get("left").and_then(Value::as_str) == Some("dropped");
         if c.together.left_dropped != dropped {

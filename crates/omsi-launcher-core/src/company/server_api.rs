@@ -261,8 +261,11 @@ impl Api {
         let m = self.server();
         let Some(me) = m.players.get(id).cloned() else { return refusal(LOGGED_OUT) };
         let mut list = Vec::new();
-        for cid in company_ids(&m.data) {
-            let Ok(c) = store::load(&m.data, &cid) else { continue };
+        let all: Vec<super::model::Company> = company_ids(&m.data).into_iter().filter_map(|cid| store::load(&m.data, &cid).ok()).collect();
+        for c in &all {
+            let cid = c.id.clone();
+            // (phase 4: a depot of a head office on another map - shown under it)
+            let hq_name = (!c.online.hq.is_empty()).then(|| all.iter().find(|x| x.id == c.online.hq).map(|x| x.name.clone()).unwrap_or_default());
             let runs = m.companies.iter().any(|p| p.id == cid) && online::code_file(&m.data, &cid).is_file();
             let guest = c.together.guests.iter().find(|g| g.id == me.id);
             let mine = c.online.owner_id == me.id;
@@ -272,10 +275,12 @@ impl Api {
                 "role": if mine { Some("co_owner") } else { guest.map(|g| g.role.key()) },
                 "runs": runs, "players": c.together.guests.iter().filter(|g| !g.banned).count(),
                 "lines": c.lines.len(), "buses": c.fleet.len(), "staff": c.staff.len(),
+                "hq": c.online.hq, "hq_name": hq_name,
             }));
         }
-        // (his own first, then by name)
-        list.sort_by_key(|c| (!c["mine"].as_bool().unwrap_or(false), c["role"].is_null(), c["name"].as_str().unwrap_or("").to_lowercase()));
+        // (his own first, then by name - a depot right under its head office)
+        let head = |c: &Value| if c["hq"].as_str().unwrap_or("").is_empty() { c["name"].as_str().unwrap_or("").to_lowercase() } else { format!("{}\u{1}{}", c["hq_name"].as_str().unwrap_or("").to_lowercase(), c["name"].as_str().unwrap_or("").to_lowercase()) };
+        list.sort_by_key(|c| (!c["mine"].as_bool().unwrap_or(false), c["role"].is_null(), head(c)));
         json!({ "ok": true, "player": player_json(&me), "companies": list })
     }
 

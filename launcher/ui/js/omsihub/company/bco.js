@@ -44,10 +44,11 @@ function Connect({ v, again }) {
 
 /** A company of the server: its mark, map and mode, its owner, his role in it, Join. */
 function CompanyRow({ c, w, onJoin }) {
-  return html`<div class=${'bco-company' + (c.mine ? ' mine' : '')} data-company=${c.id}>
+  return html`<div class=${'bco-company' + (c.mine ? ' mine' : '') + (c.depot_of ? ' depot' : '')} data-company=${c.id}>
     <${Mark} mark=${{ colours: c.colours, short: c.short }} size=${48} />
     <div class="who">
       <b class="cut" title=${c.name}>${c.name}</b>
+      ${c.depot_of && html`<span class="cut bco-depot-of">${c.depot_of}</span>`}
       <span class="dim cut">${c.map} · ${c.mode} · ${w.owner}: ${c.owner}</span>
       <span class="dim cut">${c.figures}</span>
     </div>

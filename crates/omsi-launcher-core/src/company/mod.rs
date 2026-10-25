@@ -66,6 +66,7 @@ pub mod main_server;
 pub mod online;
 // (NexiconDK, Bus Company Online phase 2 step 2: the players' door and the players)
 pub mod server_api;
+pub mod server_depots;
 pub mod server_players;
 pub mod shared_tenders;
 pub mod ownline;
