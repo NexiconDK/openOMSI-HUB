@@ -467,17 +467,6 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
             cn::Event::Ended { .. } => {}
         }
     }
-    // (the easy mode bids by itself: the recommended ask, once, on its own concession put out again
-    // and on a line it applied for)
-    if super::autopilot::on(c) {
-        let now = clock::now(c);
-        let due: Vec<u32> = c.concessions.tenders.iter().filter(|t| t.market.is_some() && (t.renewal || t.applied) && t.running(now) && t.offers.is_empty()).map(|t| t.id).collect();
-        for id in due {
-            let Some(t) = c.concessions.tenders.iter().find(|t| t.id == id).cloned() else { continue };
-            let (ask, _) = cn::recommended(c, &t);
-            let _ = bid(data, c, id, ask);
-        }
-    }
     // (the decided ones the market no longer keeps go)
     c.concessions.tenders.retain(|t| t.open() || t.market.as_ref().is_none_or(|x| x.key != key || m.tenders.iter().any(|mt| mt.tender.id == x.id)));
     (c.concessions != before || run.told > 0, won)

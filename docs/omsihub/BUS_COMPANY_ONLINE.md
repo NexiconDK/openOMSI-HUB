@@ -346,15 +346,15 @@ bought outright on the server; the operators still bid.
 - **Not on the server**: buying a line outright (`concessions::NOT_ON_SERVER`, its button gone),
   taking a line on directly or a concession renewing by itself (`rules_of`: `direct` off), the
   company's own rounds and renewals.
-- **The easy mode** (it has no auction page): its "take the line" applies for it in the market,
-  and it bids the recommended ask by itself, once, on a line it applied for and on its own
-  concession put out again (`sync`).
+- **A Casual company** bids as every company does (the owner's wish: everything else of it runs
+  by itself): on the server it has the Concessions page (`company::casual_tenders`), its "add a
+  line" applies for the line in the market, and the wizard shows no asking price.
 - A line whose concession begins on a later day is not in the company's plan for the world yet
   (`plan::live_plan`'s `lines`): the holder's buses run it until then.
 
 Tested: `auction::tests::two_companies_in_one_tender_see_the_same_auction`,
 `shared_tenders::tests::two_companies_bid_against_each_other_in_the_maps_tenders`,
-`a_concession_ending_goes_out_to_every_company`, `an_easy_company_bids_by_itself`.
+`a_concession_ending_goes_out_to_every_company`, `an_easy_company_applies_and_bids_itself`.
 
 ### Measured on a real map (Ahlheim: 30 lines, 418 tours a day)
 

@@ -547,7 +547,8 @@ pub(crate) fn outcome(c: &Company, pick: &Pick, freq: Freq, all: &[core::LineInf
                 buses: Some(n.buses),
                 short: n.short().0,
                 drivers: Some(n.drivers),
-                price: (!direct).then(|| co::concessions::asking_price_of(c, line)),
+                // (NexiconDK: no asking price on Bus Company Online's server - the line goes out to tender)
+                price: (!direct && !c.online.on_server).then(|| co::concessions::asking_price_of(c, line)),
             }
         }
     }

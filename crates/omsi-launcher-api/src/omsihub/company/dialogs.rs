@@ -886,7 +886,7 @@ fn ask(s: &mut Session) -> Value {
             json!({
                 "kind": "tender", "icon": "payments", "closable": true,
                 "title": trf(if *outbid { "%{time}  Your bid for line %{n} is beaten" } else { "%{time}  Line %{n} is out to tender" }, &[("time", &when), ("n", &t.number)]),
-                "text": text, "auction": super::pages_of(c.game_mode).contains(&CONCESSIONS_TAB).then(|| tr("To the auction")), "on": tr(if *outbid { "Let it go" } else { "Go on" }),
+                "text": text, "auction": super::pages_for(&c).contains(&CONCESSIONS_TAB).then(|| tr("To the auction")), "on": tr(if *outbid { "Let it go" } else { "Go on" }),
             })
         }
         Ask::Morning { count } => {

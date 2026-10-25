@@ -582,10 +582,10 @@ _version: 2
   pl: "Nie udało się zapisać oferty w przetargach serwera."
   ru: "Не удалось записать ставку в тендеры сервера."
   uk: "Не вдалося записати ставку в тендери сервера."
-"Line %{n} goes out to tender for every company of the map: your company bids for it by itself.":
-  de: "Linie %{n} wird für alle Betriebe der Karte ausgeschrieben: dein Betrieb bietet selbst mit."
-  fr: "La ligne %{n} est mise en appel d'offres pour toutes les entreprises de la carte : votre entreprise enchérit d'elle-même."
-  nl: "Lijn %{n} wordt aanbesteed voor alle bedrijven van de kaart: je bedrijf biedt zelf mee."
-  pl: "Linia %{n} trafia do przetargu dla wszystkich firm z mapy: twoja firma licytuje sama."
-  ru: "Линия %{n} выходит на тендер для всех компаний карты: ваша компания торгуется сама."
-  uk: "Лінія %{n} виходить на тендер для всіх компаній карти: ваша компанія торгується сама."
+"Line %{n} goes out to tender for every company of the map: bid for it on the Concessions page.":
+  de: "Linie %{n} wird für alle Betriebe der Karte ausgeschrieben: biete auf der Seite Konzessionen mit."
+  fr: "La ligne %{n} est mise en appel d'offres pour toutes les entreprises de la carte : enchérissez sur la page Concessions."
+  nl: "Lijn %{n} wordt aanbesteed voor alle bedrijven van de kaart: bied mee op de pagina Concessies."
+  pl: "Linia %{n} trafia do przetargu dla wszystkich firm z mapy: licytuj na stronie Koncesje."
+  ru: "Линия %{n} выходит на тендер для всех компаний карты: делайте ставку на странице «Концессии»."
+  uk: "Лінія %{n} виходить на тендер для всіх компаній карти: робіть ставку на сторінці «Концесії»."

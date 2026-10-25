@@ -294,6 +294,9 @@ export function CompanyScreen() {
   </div>`;
 }
 
+/** The Concessions page (`company::CONCESSIONS_TAB`). */
+const CONCESSIONS_TAB = 8;
+
 /** The page of the tab open (`company::pages`). */
 function Page() {
   const c = S.co;
@@ -302,6 +305,9 @@ function Page() {
   if (sh.sandbox && c.tab === sh.sandbox.tab) return html`<${SandboxPage} />`;
   // (Beta 61: the players of "Play together", in Casual too: `company::TOGETHER_TAB`)
   if (c.tab === TOGETHER_TAB && !c.remote) return html`<${MultiplayerPage} />`;
+  // (NexiconDK: on Bus Company Online's server a Casual company bids in the map's tenders as every
+  // company does - the Concessions page, in Casual too: company::casual_tenders)
+  if (sh.casual && c.tab === CONCESSIONS_TAB && sh.pages?.includes(c.tab)) return html`<${MorePage} tab=${c.tab} />`;
   if (sh.casual) return html`<${CasualPage} tab=${c.tab} />`;
   switch (c.tab) {
     case 0:

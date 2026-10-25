@@ -165,10 +165,11 @@ fn a_concession_ending_goes_out_to_every_company() {
     let _ = std::fs::remove_dir_all(&data);
 }
 
-/// The easy mode bids by itself in the map's market (it has no auction page): the recommended
-/// ask, once, on a line it applied for, as soon as its tender runs.
+/// A Casual company bids in the map's tenders as every company does (decided 25 October 2026: its
+/// Concessions page on the server): its application opens the tender, and it bids nothing by
+/// itself.
 #[test]
-fn an_easy_company_bids_by_itself() {
+fn an_easy_company_applies_and_bids_itself() {
     let data = temp("easy");
     let lines = lines();
     let mut e = company("Easy Bus", "easy");
@@ -182,10 +183,10 @@ fn an_easy_company_bids_by_itself() {
     at(&mut e, now + 2);
     sync(&data, &mut e);
     let t = e.concessions.tenders.iter().find(|t| t.line == "Linie7").unwrap().clone();
-    assert!(t.applied && t.offers.len() == 1, "{t:?}");
-    assert_eq!(bids(&data, &key).iter().filter(|b| b.company == "easy").count(), 1);
-    // (once)
-    sync(&data, &mut e);
+    assert!(t.applied && t.running(now + 2) && t.offers.is_empty(), "{t:?}");
+    assert!(bids(&data, &key).is_empty(), "nothing bid by itself");
+    let ask_e = cn::min_bid(&e, &t);
+    bid(&data, &mut e, t.id, ask_e).unwrap();
     assert_eq!(bids(&data, &key).iter().filter(|b| b.company == "easy").count(), 1);
     let _ = std::fs::remove_dir_all(&data);
 }

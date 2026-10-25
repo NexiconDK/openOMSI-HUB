@@ -263,8 +263,8 @@ pub fn start_lines(c: &mut Company, date: &str) {
 
 /// The renewals of the company's concessions taken at the asking price, before their auction.
 fn renew(c: &mut Company, date: &str) {
-    // (not a tender of the map's market on the server: no line is bought there - the easy mode bids
-    // in it by itself, `shared_tenders::sync`)
+    // (not a tender of the map's market on the server: no line is bought there - a Casual company
+    // bids in it on the Concessions page as every company does)
     let due: Vec<u32> = c.concessions.tenders.iter().filter(|t| t.open() && t.renewal && t.market.is_none() && cn::of_line(c, &t.line).is_some()).map(|t| t.id).collect();
     for id in due {
         let Some(t) = c.concessions.tenders.iter().find(|t| t.id == id).cloned() else { continue };

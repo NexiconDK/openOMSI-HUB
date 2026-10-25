@@ -129,6 +129,11 @@ pub fn pages_of(mode: co::GameMode) -> Vec<usize> {
 /// and a sandbox's own page.
 pub fn pages_for(c: &Company) -> Vec<usize> {
     let mut out = pages_of(c.game_mode);
+    // (NexiconDK: on Bus Company Online's server a Casual company bids in the map's tenders as
+    // every company does - the rest of it runs by itself)
+    if casual_tenders(c) {
+        out.push(CONCESSIONS_TAB);
+    }
     if super::together::enabled() {
         out.push(TOGETHER_TAB);
     }
@@ -1336,6 +1341,10 @@ fn shell(s: &mut Session) -> Value {
             .filter(|g| !g.is_empty())
             .collect()
     };
+    // (a Casual company on the server: the map's tenders, `casual_tenders`)
+    if casual_tenders(&c) {
+        rail.push(vec![json!({ "tab": CONCESSIONS_TAB, "icon": ICONS[CONCESSIONS_TAB], "name": tr(TABS[CONCESSIONS_TAB]), "badge": null, "tip": tr(TABS[CONCESSIONS_TAB]), "away": false, "group": tr(RAIL_HEADS[3]) })]);
+    }
     // (playing together, then a sandbox's own page last, each a group of its own - in Casual too)
     if super::together::enabled() {
         rail.push(vec![together_item()]);
@@ -1363,10 +1372,26 @@ fn shell(s: &mut Session) -> Value {
         "reports": s.reports.is_some(), "away": s.clock.away.is_some(),
         "launch": s.launch.is_some(),
         "sheet": s.dealer.sheet.is_some(),
-        "casual_pages": if casual { together_page(sandbox::casual_pages(&c, casual::pages_json(&c.name))) } else { Value::Null },
+        "casual_pages": if casual { tenders_page(&c, together_page(sandbox::casual_pages(&c, casual::pages_json(&c.name)))) } else { Value::Null },
         "today_read": s.map_lines().is_some(),
         "money": words::money_json(),
     })
+}
+
+/// (NexiconDK) A Casual company on Bus Company Online's server: it bids in the map's tenders on the
+/// Concessions page as every company of the map does (the rest of it runs by itself).
+pub fn casual_tenders(c: &Company) -> bool {
+    c.game_mode.casual() && c.online.on_server
+}
+
+/// Casual's pages with the Concessions page on the server (`casual_tenders`: its crumbs and name).
+fn tenders_page(c: &Company, mut pages: Value) -> Value {
+    if casual_tenders(c) {
+        if let Some(m) = pages.get_mut("pages").and_then(Value::as_object_mut) {
+            m.insert(CONCESSIONS_TAB.to_string(), json!({ "name": tr(TABS[CONCESSIONS_TAB]), "icon": ICONS[CONCESSIONS_TAB], "parent": HOME_TAB }));
+        }
+    }
+    pages
 }
 
 /// Casual's pages with the Multiplayer page while "Play together" is on (its crumbs and its name).
@@ -1871,6 +1896,20 @@ mod tests {
         simulate(&mut s, ck::now(&c) + 120, false);
         assert_eq!(s.company.as_ref().map(|x| x.clock.minute), Some(9 * 60), "the clock stood");
         assert!(!s.closing);
+    }
+
+    /// (NexiconDK) A Casual company on Bus Company Online's server has the Concessions page - it
+    /// bids in the map's tenders as every company does -, elsewhere not.
+    #[test]
+    fn a_casual_company_on_the_server_bids_in_the_tenders() {
+        let mut c = omsi_launcher_lib::company::found(&omsi_launcher_lib::company::Founding { name: "Easy".into(), date: "2024-03-04".into(), game_mode: co::GameMode::Casual, ..Default::default() }, "x");
+        assert!(!pages_for(&c).contains(&CONCESSIONS_TAB));
+        c.online.on_server = true;
+        assert!(casual_tenders(&c) && pages_for(&c).contains(&CONCESSIONS_TAB));
+        let p = tenders_page(&c, json!({ "pages": {} }));
+        assert_eq!(p["pages"][CONCESSIONS_TAB.to_string()]["parent"], json!(HOME_TAB));
+        c.game_mode = co::GameMode::Normal;
+        assert!(!casual_tenders(&c) && pages_for(&c).contains(&CONCESSIONS_TAB), "Normal has it anyway");
     }
 
     /// (NexiconDK) A logo picture goes from afar as base64 and back as it was.
