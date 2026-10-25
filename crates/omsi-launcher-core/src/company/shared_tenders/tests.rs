@@ -92,7 +92,7 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     assert_eq!(cn::bidder_name(&b, &t, theirs.who), "Umove");
     assert!(cn::min_bid(&b, &t) < ask_a, "B has to ask less to lead");
     // (B goes low: below what any operator goes)
-    let low = (t.reference / 2 / auction::ROUND) * auction::ROUND;
+    let low = (t.cost / 2 / auction::ROUND) * auction::ROUND;
     at(&mut b, mid + 1);
     bid(&data, &mut b, tb, low).unwrap();
     sync(&data, &mut a);
@@ -112,6 +112,11 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     assert!(matches!(b.concessions.tenders.iter().find(|t| t.id == tb).unwrap().outcome, Some(cn::Outcome::Won { amount, .. }) if amount == low));
     let h = cn::of_line(&b, &first.line).expect("B holds the line");
     assert_eq!(dates::between(&h.from, &h.until), cn::SERVER_DIESEL_DAYS - 1, "two weeks with diesel buses");
+    // (by the timetable hour: the cap 1 500 kr an hour, the contract paid its ask's hour)
+    let cap_hour = cn::per_hour(&first, first.reference);
+    assert!((cap_hour - crate::company::server_fines::Fines::cents(1500.0) as f64).abs() < 1.0, "{cap_hour}");
+    let k = b.concessions.contracts.iter().find(|k| k.line == first.line).unwrap();
+    assert_eq!(k.per_hour, cn::per_hour(&first, low).round() as Cents);
     sync(&data, &mut a);
     match &a.concessions.tenders.iter().find(|t| t.id == ta).unwrap().outcome {
         Some(cn::Outcome::Lost { winner, amount, .. }) => assert_eq!((winner.as_str(), *amount), ("GoCollective", low)),
@@ -180,7 +185,7 @@ fn a_concession_ending_goes_out_to_every_company() {
     assert!(b.concessions.tenders.iter().find(|t| t.line == "Linie9").unwrap().applied);
     let tb = b.concessions.tenders.iter().find(|t| t.line == "Linie5").unwrap().clone();
     at(&mut b, tb.opens_at + 3);
-    let low = (tb.reference / 2 / auction::ROUND) * auction::ROUND;
+    let low = (tb.cost / 2 / auction::ROUND) * auction::ROUND;
     // (with electric buses: where its level opens them)
     assert_eq!(cn::set_drive(&mut b, tb.id, Drive::Electric), Err(cn::NO_ELECTRIC));
     b.progress.xp = crate::company::levels::LEVEL_XP[2];

@@ -472,6 +472,21 @@ economy's):
   driven, a ticket sold wrong, a red light run). The complaints are drawn by the journey from its
   driver's skills and its bus's condition (`COMPLAINT_*`); a player's red lights are the ones his
   trip ran.
+- **Bids by the timetable hour** (the owner's wish the same evening): an ask is a price a timetable
+  hour (a tour's first departure to its last arrival); the auction keeps a year's sum - the price
+  times the tender's hours a year (`concessions::hours_year`, `per_hour`, `of_hour`) - so the
+  70/30 score is as before, the lowest price winning on equal quality. The cap is the most the
+  authority pays an hour (`cap_per_hour`, 1 500 kr in `company-server.cfg`); the auction's panel
+  shows the cap, the advice, the asks and the bids an hour, and what the ask comes to a week and
+  for the contract's days by the buses bid with.
+- **Paid by the timetable hours run**: a contract won so (`Contract::per_hour`) pays each day
+  the day's timetable hours of the line (`Journeys::timetabled`) less those of the journeys not
+  run, at the ask's price of an hour; nothing else is deducted - the fines are the authority's.
+- **Departures early and late** (2 500 kr each, `fine_early`, `fine_late`): a departure from a
+  stop more than a minute early, or more than 15 minutes late unless the delay was reported to
+  the control room - a player's from his trip's stops (`server_fines::departures`) with the
+  "Report a delay" of his duty (`report_late`, `Together::late_reports`); a modelled journey's
+  as it ran, its delay reported when the dispatcher is on (`clock.dispatcher`).
 - **The buses taken over** (`takeover`): a concession won from another company - the loser offers
   the winner the buses of its own it ran the line with (its roster's tours of the line), at their
   book value; the winner takes all of them or none (the Concessions page's "Buses offered",
@@ -479,8 +494,9 @@ economy's):
   and join the winner's, paid. Through `<folder>/takeover/<id>.offers.jsonl`, `.answers.jsonl`
   and `.buses.jsonl` (`Online::takeover`).
 
-Tested: `shared_tenders::tests` (the renewal's days, the terms by the buses),
+Tested: `shared_tenders::tests` (the renewal's days, the terms by the buses, the cap an hour),
 `bus_contracts::tests::the_authoritys_fines_on_a_server_contract`,
+`a_server_contract_is_paid_by_the_hour_and_its_departures_fined`,
 `server_fines::tests`, `takeover::tests`.
 
 ### Measured on a real map (Ahlheim: 30 lines, 418 tours a day)

@@ -266,7 +266,7 @@ fn rf_need(cmd: &str, args: &Value) -> Need {
 /// his own duty and his own bus only, which the boss's launcher checks besides.
 fn crew_need(act: &str) -> Need {
     match act {
-        "view" | "note" | "defect" | "swap" | "swap_answer" | "sick" | "leave" => Any(&[Perm::Drive]),
+        "view" | "note" | "defect" | "swap" | "swap_answer" | "sick" | "leave" | "late" => Any(&[Perm::Drive]),
         _ => Never,
     }
 }

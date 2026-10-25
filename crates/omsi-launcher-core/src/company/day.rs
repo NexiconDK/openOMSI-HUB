@@ -657,6 +657,13 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         let late = t.average.is_some_and(|a| a >= (economy::LATE_FROM * 60) as f64) || (t.stops > 0 && t.late * 4 > t.stops);
         journeys.ran(&c.lines[li].name, &t.tour, t.worst.map_or(0, |w| (w / 60.0).trunc() as i32), !t.completed, None, None, None);
         journeys.red_lights(&c.lines[li].name, t.red_lights.max(0) as u32);
+        // (on the server: its departures early, and late without the delay reported - by the
+        // tour of the duty it was, `server_fines`)
+        if c.online.on_server {
+            let duty = c.together.trips.iter().find(|g| g.trip == *t).map(|g| (g.duty.line.clone(), g.duty.tour.clone()));
+            let (early, late) = super::server_fines::departures(c, &date, t, duty.as_ref().map(|(l, n)| (l.as_str(), n.as_str())));
+            journeys.departures(&c.lines[li].name, early, late);
+        }
         if t.timed() {
             timed += 1;
             if !late {
@@ -754,6 +761,12 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         let Some(li) = lines.iter().position(|l| l.line.eq_ignore_ascii_case(&tp.tour.line)) else { continue };
         lines[li].tours += 1;
         report.tours += 1;
+        // (its timetabled minutes, first departure to last arrival: the timetable hours a
+        // contract on the server pays by - `bus_contracts`)
+        let counted: Vec<&network::PlannedTrip> = tp.tour.trips.iter().filter(|x| x.counts()).collect();
+        if let (Some(a), Some(b)) = (counted.first(), counted.last()) {
+            journeys.timetabled(&tp.tour.line, b.arr - a.dep);
+        }
         if tp.covered() {
             lines[li].covered += 1;
             report.covered += 1;
@@ -951,6 +964,7 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         report.trips += 1;
         lines[li].dropped += 1;
         report.dropped += 1;
+        journeys.timetabled(line, trip.arr - trip.dep);
         journeys.missed(line, "", trip.arr - trip.dep);
         let (name, number) = (lines[li].line.clone(), lines[li].number.clone());
         note_drop(&mut report.drops, &name, &number, "", None, trip, DropWhy::NoBlock, None, None);

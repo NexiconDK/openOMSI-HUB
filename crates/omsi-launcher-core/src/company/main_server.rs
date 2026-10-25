@@ -124,6 +124,12 @@ fine_temperature = 1500
 fine_route = 2500
 fine_ticket = 2500
 fine_red_light = 2500
+# a departure from a stop more than a minute early, or more than 15 minutes late without the
+# delay reported to the control room (by the departure)
+fine_early = 2500
+fine_late = 2500
+# the companies bid by the timetable hour: the most the authority pays one (kroner)
+cap_per_hour = 1500
 
 # what each world runs (as server.cfg's keys of the same names)
 traffic = 30

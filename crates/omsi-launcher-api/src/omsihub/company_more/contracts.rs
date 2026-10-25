@@ -300,6 +300,11 @@ pub fn kind_text(k: &Contract) -> String {
 
 /// What a contract pays now by its period, and a year.
 pub fn pay_text(c: &Company, k: &Contract) -> String {
+    // (NexiconDK: won by the timetable hour on the server - paid by the hours run)
+    if c.online.on_server && k.per_hour > 0 {
+        let hour = k.per_hour as f64 * c.contract_index / k.index.max(0.01);
+        return trf("%{amount} a timetable hour run", &[("amount", &super::super::words::eur_cents(hour))]);
+    }
     let each = eur(bc::payment(c, k));
     let year = eur(k.year_now(c.contract_index).round() as i64);
     match k.period {

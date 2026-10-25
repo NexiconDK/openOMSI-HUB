@@ -111,10 +111,11 @@ function Auction({ a, st }) {
       ${shown.map((f) => html`<div class=${'co-pg-tile' + (f.tone === 'ok' ? ' good' : '')} title=${f.tip || ''}><span>${f.label}</span><b class=${'t-' + f.tone}>${f.value}</b></div>`)}
       ${running &&
       html`<div class="co-pg-tile bid"><span>${act.label}</span>
-        <input class="co-pg-bidin" type="number" step="100" value=${Math.round(units(amount * 100))} onChange=${(e) => setAmount(cents(e.currentTarget.value) / 100)} />
-        <${Slider} value=${amount} min=${act.lo} max=${act.hi} step=${100} format=${(x) => eur(Math.round(x * 100))} onChange=${setAmount} /></div>`}
+        <input class="co-pg-bidin" type="number" step=${act.per_hour ? 1 : 100} value=${act.per_hour ? Math.round(units(amount * 100) * 100) / 100 : Math.round(units(amount * 100))} onChange=${(e) => setAmount(cents(e.currentTarget.value) / 100)} />
+        <${Slider} value=${amount} min=${act.lo} max=${act.hi} step=${act.per_hour ? Math.max(0.01, cents(1) / 100) : 100} format=${(x) => eur(Math.round(x * 100))} onChange=${setAmount} /></div>`}
     </div>
     ${running && html`<p class=${'co-pg-small t-' + act.chance_tone} style="margin:0;font-weight:700">${act.chance}</p>`}
+    ${running && act.total && html`<p class="co-pg-small" style="margin:0;font-weight:700">${act.total}</p>`}
     ${running && act.recommend && html`<button type="button" class="co-pg-linkbtn" onClick=${() => setAmount(act.recommend_amount)}><${Icon} name="check_circle" size=${15} />${act.recommend}</button>`}
     ${a.score && html`<${Score} s=${a.score} />`}
     ${a.rivals.length > 0 &&
@@ -130,7 +131,7 @@ function Auction({ a, st }) {
       </table></div>`}
     <div class="co-pg-actions">
       ${running &&
-      html`<${Btn} kind="primary" icon="payments" label=${act.bid} onClick=${() => actMore('tender_bid', { id: act.id, amount: Math.round(amount * 100) })} />
+      html`<${Btn} kind="primary" icon="payments" label=${act.bid} onClick=${() => actMore('tender_bid', { id: act.id, amount: Math.round(amount * 100), per_hour: !!act.per_hour })} />
         ${act.buy && html`<${Btn} icon="check_circle" label=${act.buy} title=${act.buy_tip} onClick=${() => actMore('tender_buy', { id: act.id })} />`}
         ${act.plus15 && html`<${Btn} kind="ghost" icon="timer" label=${act.plus15} onClick=${() => actMore('tender_step', { id: act.id, to: '15' })} />`}
         ${act.to_close && html`<${Btn} kind="ghost" icon="sports_score" label=${act.to_close} onClick=${() => actMore('tender_step', { id: act.id, to: 'close' })} />`}`}

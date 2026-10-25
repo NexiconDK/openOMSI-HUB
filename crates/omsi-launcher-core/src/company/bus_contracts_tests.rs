@@ -657,3 +657,40 @@ fn the_authoritys_fines_on_a_server_contract() {
     assert!(more >= want + 2 * Fines::cents(f.diesel_on_electric), "{more}");
     assert!(c.ledger.iter().any(|b| b.text == "Line 5: the authority's fine - 1 journeys not run (30 min)"));
 }
+
+/// (NexiconDK, decided 25 October 2026) A contract won by the timetable hour on the server is
+/// paid each day for the timetable hours run - a journey not run not paid, nothing else
+/// deducted -; departures more than a minute early are fined, and more than 15 minutes late
+/// unless the delay was reported (the dispatcher reports the modelled ones).
+#[test]
+fn a_server_contract_is_paid_by_the_hour_and_its_departures_fined() {
+    use crate::company::server_fines::Fines;
+    let mut c = company(GameMode::Normal);
+    c.online.on_server = true;
+    let today = c.date.clone();
+    let id = with_contract(&mut c, Kind::Gross, Period::Day, 300_000_00, &today);
+    let k = c.concessions.contracts.iter_mut().find(|k| k.id == id).unwrap();
+    k.per_hour = 100_00;
+    let index = k.index;
+    let mut j = Journeys::default();
+    j.timetabled("Linie5", 600);
+    j.missed("Linie5", "1", 30);
+    // (modelled: 3 minutes early, 20 late; a player's own trip: 1 early, 2 late unreported)
+    j.ran("Linie5", "1", -3, false, None, Some(999), None);
+    j.ran("Linie5", "1", 20, false, None, Some(999), None);
+    j.departures("Linie5", 1, 2);
+    let (r, _) = close(&mut c, &j);
+    let pay = booked(&c, BookingKind::Contract);
+    let want = (570.0 / 60.0 * 100_00.0 * c.contract_index / index).round() as Cents;
+    assert_eq!(pay, want, "9.5 hours run");
+    let f = Fines::default();
+    let fines = -booked(&c, BookingKind::Penalty);
+    let timing = Fines::cents(30.0 * f.dropped_minute) + Fines::cents(2.0 * f.early) + Fines::cents(3.0 * f.late);
+    assert!(fines >= timing, "{fines} {timing}");
+    assert_eq!(r.contracts.lines[0].paid, want);
+    // (the dispatcher on: the modelled delay reported, not fined)
+    c.clock.dispatcher = true;
+    c.date = dates::add(&c.date, 1);
+    close(&mut c, &j);
+    assert!(c.ledger.iter().any(|b| b.date == c.date && b.text.ends_with("2 departures more than 15 minutes late, not reported")));
+}

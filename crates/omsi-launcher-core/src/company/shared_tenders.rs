@@ -263,7 +263,7 @@ pub fn step(data: &Path, key: &str, map: &str, date: &str, now: i64, read: &mut 
     let (asks, asks_to): (Vec<MarketAsk>, u64) = lines_from(&asks_file(data, key), m.asks_read);
     if m.day != date || !asks.is_empty() {
         if let Some(now_map) = read() {
-            offer(&mut m, &now_map, &asks, date, now, &mut said);
+            offer(&mut m, &now_map, &asks, date, now, &mut said, super::server_fines::cap_per_hour(data));
             m.asks_read = asks_to;
             m.day = date.to_string();
         }
@@ -297,20 +297,24 @@ fn open_of<'a>(m: &'a Market, line: &str) -> Option<&'a MarketTender> {
 
 /// A new tender of the market, its auction from `opens_at` to `closes_at`: a concession put out
 /// again (`holder` its company, its new term from `from`), or a line no company runs.
-fn add(m: &mut Market, c: &Company, l: &LineInfo, opens_at: i64, closes_at: i64, holder: Option<(&str, &str)>) -> u32 {
+fn add(m: &mut Market, c: &Company, l: &LineInfo, opens_at: i64, closes_at: i64, holder: Option<(&str, &str)>, cap_hour: Cents) -> u32 {
     m.counter += 1;
     let id = m.counter;
     let pool: Vec<u32> = m.rivals.iter().map(|r| r.id).collect();
     let mut t = cn::make_tender(c, l, id, opens_at, holder.is_some(), &m.key, &pool, cn::rules(GameMode::Normal).rivals);
     t.closes_at = closes_at.max(opens_at + 60);
     t.closes = clock::date_of(t.closes_at);
+    // (the cap: the most the authority pays a timetable hour, by the hours of a year)
+    if cap_hour > 0 {
+        t.reference = cn::of_hour(&t, cap_hour as f64);
+    }
     t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default() });
     m.tenders.push(MarketTender { tender: t, applied: Vec::new(), decided: None });
     id
 }
 
 /// What the market offers now: the applications, a new round, the renewals.
-fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: i64, said: &mut Vec<String>) {
+fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: i64, said: &mut Vec<String>, cap_hour: Cents) {
     let MapNow { lines, companies, template } = now_map;
     let held = |line: &str| companies.iter().find(|c| c.lines.iter().any(|x| x.name.eq_ignore_ascii_case(line)));
     // the applications: at once
@@ -326,7 +330,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
         let id = match open_of(m, &l.name) {
             Some(t) => t.tender.id,
             None => {
-                let id = add(m, template, l, now, now + TENDER_DAYS * clock::DAY, None);
+                let id = add(m, template, l, now, now + TENDER_DAYS * clock::DAY, None, cap_hour);
                 said.push(format!("{}: line {} out to tender at once, on the application of {}", m.map, l.name, a.company));
                 id
             }
@@ -362,7 +366,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
         for (k, l) in chosen.into_iter().enumerate() {
             // (one a day, in the office hours, half an hour from now at the soonest; three days each)
             let at = clock::moment(&dates::add(date, k as i64), 9 * 60 + rng.int(0, 24) * 15).max(now + 30);
-            add(m, template, &l, at, at + TENDER_DAYS * clock::DAY, None);
+            add(m, template, &l, at, at + TENDER_DAYS * clock::DAY, None, cap_hour);
             said.push(format!("{}: line {} out to tender from {} {}", m.map, l.name, clock::date_of(at), clock::hhmm(at)));
         }
     }
@@ -384,7 +388,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
             let minute = 9 * 60 + rng.int(0, 24) * 15;
             let opens = clock::moment(&dates::add(&from, -RENEW_OPENS), minute).max(now + 30);
             let closes = clock::moment(&dates::add(&from, -RENEW_DECIDED), minute);
-            add(m, template, l, opens, closes, Some((&c.id, &from)));
+            add(m, template, l, opens, closes, Some((&c.id, &from)), cap_hour);
             said.push(format!("{}: the concession of {} on line {} out to tender again from {} {} to {}, open to every company", m.map, c.name, l.name, clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes)));
         }
     }

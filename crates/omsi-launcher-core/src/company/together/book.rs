@@ -256,11 +256,15 @@ pub struct Together {
     /// The owner's choice on Bus Company Online (NexiconDK, 25 October 2026).
     #[serde(default)]
     pub left_dropped: bool,
+    /// (NexiconDK, Bus Company Online) The delays its players reported to the control room
+    /// (`server_fines::report_late`): their late departures not fined.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub late_reports: Vec<super::super::server_fines::LateReport>,
 }
 
 impl Default for Together {
     fn default() -> Self {
-        Together { open_claims: true, guests: Vec::new(), claims: Vec::new(), trips: Vec::new(), left_open: false, left_dropped: false }
+        Together { open_claims: true, guests: Vec::new(), claims: Vec::new(), trips: Vec::new(), left_open: false, left_dropped: false, late_reports: Vec::new() }
     }
 }
 

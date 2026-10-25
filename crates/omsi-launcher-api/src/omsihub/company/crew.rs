@@ -78,6 +78,10 @@ pub fn view(s: &mut Session, guest: u32) -> Value {
             "bus": tr("Bus %{bus} today"), "notes": tr("Handover notes"), "no_notes": tr("No notes for today."), "note": tr("Leave a note"), "note_ph": tr("Or type a note"), "none": tr("None"),
             "defect": tr("Report a defect"), "defect_ph": tr("What is wrong (optional)"), "report": tr("Report"), "no_bus": tr("No duty with a bus today."),
             "sent": tr("Sent: the boss's launcher carries it out."),
+            // (NexiconDK, Bus Company Online: a delay reported to the control room - its late
+            // departures not fined, `server_fines::report_late`)
+            "late": c.online.on_server.then(|| tr("Report a delay")),
+            "late_tip": c.online.on_server.then(|| tr("Tell the control room you run late: from now on your departures more than 15 minutes late are not fined.")),
         },
     })
 }
@@ -121,6 +125,8 @@ pub fn act(s: &mut Session, guest: u32, args: &Value) -> Answer {
             let Some(Ok(p)) = plan_of(s, &date) else { return Err(tr(crew::NO_SWAP)) };
             super::act(s, |c| crew::answer_swap(c, &p, no, me, yes)).map(|x| json!({ "ok": true, "state": x })).map_err(refused)
         }
+        // (NexiconDK: his delay reported to the control room - Bus Company Online's server)
+        "late" => super::act(s, |c| omsi_launcher_lib::company::server_fines::report_late(c, guest)).map(|_| json!({ "ok": true, "said": tr(omsi_launcher_lib::company::server_fines::REPORTED) })).map_err(refused),
         "sick" => {
             let days = args.get("days").and_then(Value::as_u64).unwrap_or(1) as u32;
             super::act(s, |c| crew::call_in_sick(c, me, days)).map(|until| json!({ "ok": true, "until": until })).map_err(refused)

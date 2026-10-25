@@ -280,6 +280,22 @@ pub fn server_term(drive: Drive, from: &str) -> String {
 /// The days of a diesel contract on the server.
 pub const SERVER_DIESEL_DAYS: i64 = 14;
 
+/// (NexiconDK, decided 25 October 2026) A tender's timetable hours a year (its work: a day's
+/// hours by its days a year): on the server the companies bid by the timetable hour - an ask a
+/// year is that many times the price of an hour.
+pub fn hours_year(t: &Tender) -> f64 {
+    (t.work.hours * t.work.days as f64).max(1.0)
+}
+
+/// An ask a year as a price a timetable hour (cents), and back.
+pub fn per_hour(t: &Tender, amount: Cents) -> f64 {
+    amount as f64 / hours_year(t)
+}
+
+pub fn of_hour(t: &Tender, hour: f64) -> Cents {
+    (hour * hours_year(t)).round() as Cents
+}
+
 /// (NexiconDK, Bus Company Online) What a company keeps of a tender of its map's market
 /// (`shared_tenders`, decided 25 October 2026: every company of a map bids in the same tenders,
 /// live against each other and against the map's other operators): the market and the tender's
@@ -1273,6 +1289,8 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
         if t.market.is_some() {
             k.extensions_left = 0;
             k.electric = t.drive == Drive::Electric;
+            // (paid by the timetable hour run: the ask's price of an hour)
+            k.per_hour = per_hour(t, amount).round() as Cents;
         }
     };
     if let Some(h) = c.concessions.held.iter().find(|h| h.line.eq_ignore_ascii_case(&t.line)).cloned() {

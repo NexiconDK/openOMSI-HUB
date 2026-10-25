@@ -264,7 +264,7 @@ function MyCrew({ mine }) {
           <input class="tg-crew-in" maxlength="140" placeholder=${w.defect_ph} value=${f.defect} onInput=${(e) => put({ defect: e.currentTarget.value })} />
           <${Btn} icon="build" label=${w.report} onClick=${() => (crew({ act: 'defect', bus: bus.id, kind: f.kind, text: f.defect.trim() }), put({ defect: '' }))} /></div>`
       : html`<div class="tg-crew-row dim">${w.no_bus}</div>`}
-    <div class="tg-crew-row"><span class="rest"></span><${Btn} kind="danger" icon="sick" label=${w.sick} onClick=${() => window.confirm(w.sick_confirm) && crew({ act: 'sick', days: 1 })} /></div>
+    <div class="tg-crew-row"><span class="rest"></span>${w.late && html`<${Btn} icon="campaign" label=${w.late} title=${w.late_tip} onClick=${() => crew({ act: 'late' })} />`}<${Btn} kind="danger" icon="sick" label=${w.sick} onClick=${() => window.confirm(w.sick_confirm) && crew({ act: 'sick', days: 1 })} /></div>
   </section>`;
 }
 

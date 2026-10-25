@@ -232,6 +232,10 @@ pub struct Contract {
     /// buses (`concessions::Tender::drive`).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub electric: bool,
+    /// (NexiconDK, Bus Company Online) Won by the timetable hour: what it pays a timetable hour
+    /// run (euro cents at its contract index), each day for the hours run that day.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub per_hour: Cents,
     /// The work it was agreed for: the tender's, changed by its variations (None: an older
     /// file's, `variations::work_of`).
     #[serde(default)]
@@ -652,7 +656,12 @@ pub fn make(c: &mut Company, line: &str, number: &str, kind: Kind, period: Perio
         agreed: None,
         offered: String::new(),
         electric: false,
+        per_hour: 0,
     }
+}
+
+fn is_zero(x: &Cents) -> bool {
+    *x == 0
 }
 
 /// A school contract's price a coach and school day now (cents): the data's day price, by the
@@ -838,12 +847,30 @@ pub struct Journeys {
     /// The red lights the players' own trips ran, by line (the authority's fine for each on the
     /// server, `server_fines`).
     red: Vec<(String, u32)>,
+    /// (NexiconDK) The timetabled minutes of each tour of the day (a line's timetable hours: a
+    /// contract on the server is paid by those run), and the players' own trips' departures
+    /// early and late (unreported), by line (`server_fines::departures`).
+    planned: Vec<(String, i32)>,
+    stops: Vec<(String, u32, u32)>,
 }
 
 impl Journeys {
     /// A journey not run (dropped, or on no bus), of `length` timetabled minutes.
     pub fn missed(&mut self, line: &str, tour: &str, length: i32) {
         self.list.push(Journey { line: line.to_string(), tour: tour.to_string(), minutes: 0, run: false, part: false, bus: None, driver: None, wants: None, length });
+    }
+
+    /// A tour of `line` of the day, `minutes` long by its timetable (its first departure to its
+    /// last arrival).
+    pub fn timetabled(&mut self, line: &str, minutes: i32) {
+        self.planned.push((line.to_string(), minutes.max(0)));
+    }
+
+    /// A player's own trip of `line` left this many stops early, and late (not reported).
+    pub fn departures(&mut self, line: &str, early: u32, late: u32) {
+        if early + late > 0 {
+            self.stops.push((line.to_string(), early, late));
+        }
     }
 
     /// Red lights a player's own trip of `line` ran.
@@ -985,8 +1012,15 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         let timing = pd.slight as f64 * econ_uk::POINTS_SLIGHT + pd.far as f64 * econ_uk::POINTS_FAR + pd.missed as f64 * econ_uk::POINTS_MISSED;
         let raw = timing * observed(n) + pd.vehicle as f64 * econ_uk::POINTS_MISSED + pd.serious as f64 * econ_uk::POINTS_SERIOUS;
         pd.default = raw * strict;
-        // (what it pays today by its period)
+        // (what it pays today by its period - on the server by the timetable hours run today)
+        let hourly = c.online.on_server && k.per_hour > 0;
         let pay = match k.period {
+            _ if hourly => {
+                let planned: i32 = journeys.planned.iter().filter(|p| p.0.eq_ignore_ascii_case(&k.line)).map(|p| p.1).sum();
+                let missed: i32 = mine.iter().filter(|j| !j.run).map(|j| j.length.max(0)).sum();
+                let hours = (planned - missed).max(0) as f64 / 60.0;
+                (hours * k.per_hour as f64 * c.contract_index / k.index.max(0.01)).round() as Cents
+            }
             Period::Day if n > 0 => payment(c, &k),
             Period::Week if sunday => {
                 let held = (dates::between(&k.from, date) + 1).clamp(1, 7);
@@ -1002,13 +1036,15 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         let per = if strict > 0.0 && n > 0 { day_value(c, &k) / n as f64 } else { 0.0 };
         let full = pd.unpaid - weather_half;
         let deducted = if per > 0.0 { (per * (full as f64 + weather_half as f64 * (1.0 - econ_uk::WEATHER_PAID.1))).round() as Cents } else { 0 };
-        let deducted = if strict > 0.0 { deducted } else { 0 };
+        // (on the server a journey not run is not paid by the hour, and fined: nothing deducted)
+        let deducted = if strict > 0.0 && !hourly { deducted } else { 0 };
         if strict <= 0.0 {
             pd.unpaid = 0;
         }
         // (NexiconDK, Bus Company Online: the authority's fines - `server_fines`)
         let red: u32 = journeys.red.iter().filter(|r| r.0.eq_ignore_ascii_case(&k.line)).map(|r| r.1).sum();
-        let fined = if c.online.on_server { authority_fines(c, &k, &mine, red, date) } else { 0 };
+        let stops = journeys.stops.iter().filter(|s| s.0.eq_ignore_ascii_case(&k.line)).fold((0, 0), |a, s| (a.0 + s.1, a.1 + s.2));
+        let fined = if c.online.on_server { authority_fines(c, &k, &mine, red, stops, date) } else { 0 };
         let deducted = deducted + fined;
         pd.deducted = deducted;
         let label = Kind::label(k.kind).to_lowercase();
@@ -1077,13 +1113,16 @@ pub const COMPLAINT_COLD: f64 = 0.003;
 /// contract won with electric buses - with a diesel bus, and each complaint (drawn by the
 /// journey from its driver's skills and its bus's condition; a player's red lights as he ran
 /// them). What they came to.
-fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, date: &str) -> Cents {
+fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, stops: (u32, u32), date: &str) -> Cents {
     use super::server_fines::Fines;
     let f = c.online.fines.unwrap_or_default();
     let mut rng = Rng::of(&[&c.id, "authority fines", &k.line], dates::parse(date).unwrap_or(0));
     let (mut dropped, mut minutes, mut wrong, mut diesel) = (0u32, 0i64, 0u32, 0u32);
     // (the driving, the temperature, the route, a ticket, a red light)
     let mut complaints = [0u32, 0, 0, 0, red];
+    // (departures early and late: the players' own as their trips left their stops; a modelled
+    // journey's as it ran - late not fined when the dispatcher reports delays to the control room)
+    let (mut early, mut late) = stops;
     let lack = |x: f64| (1.2 - x / 100.0).clamp(0.2, 1.2);
     for j in mine {
         if !j.run {
@@ -1100,6 +1139,13 @@ fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, d
             }
             if rng.chance(COMPLAINT_COLD * (1.3 - v.condition / 100.0).clamp(0.3, 1.3)) {
                 complaints[1] += 1;
+            }
+        }
+        if j.driver.is_some() {
+            if j.minutes < -1 {
+                early += 1;
+            } else if j.minutes > super::server_fines::LATE_MINUTES && !c.clock.dispatcher {
+                late += 1;
             }
         }
         if let Some(e) = j.driver.and_then(|d| c.employee(d)) {
@@ -1121,6 +1167,8 @@ fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, d
     fine(c, dropped, minutes as f64 * f.dropped_minute, format!("{dropped} journeys not run ({minutes} min)"));
     fine(c, wrong, wrong as f64 * f.wrong_bus, format!("{wrong} journeys with a smaller bus than the tour's"));
     fine(c, diesel, diesel as f64 * f.diesel_on_electric, format!("{diesel} journeys with a diesel bus on an electric tour"));
+    fine(c, early, early as f64 * f.early, format!("{early} departures more than a minute early"));
+    fine(c, late, late as f64 * f.late, format!("{late} departures more than 15 minutes late, not reported"));
     for (n, kr, what) in [(complaints[0], f.driving, "the driving"), (complaints[1], f.temperature, "the temperature in the bus"), (complaints[2], f.route, "the route driven"), (complaints[3], f.ticket, "a ticket sold wrong"), (complaints[4], f.red_light, "a red light run")] {
         fine(c, n, n as f64 * kr, format!("{n} complaints about {what}"));
     }
