@@ -33,6 +33,8 @@ omsi-timetable = { path = "../omsi-timetable" }
 omsi-content = { path = "../omsi-content" }
 omsi-model = { path = "../omsi-model" }
 omsi-net = { path = "../omsi-net" }
+# (Bus Company Online's main server: a player's Omsi-Hub account checked - `company::server_api`)
+omsihub-online = { path = "../omsihub-online" }
 
 [target.'cfg(unix)'.dependencies]
 libc.workspace = true

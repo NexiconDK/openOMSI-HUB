@@ -75,6 +75,8 @@ pub fn view(s: &mut Session) -> Value {
             "title": tr("How do you want to play?"), "text": tr("Your own company in a time of its own, or one run together with others."),
             "single": { "title": tr("Singleplayer"), "text": tr("Found and run your own companies, in a time of their own that runs while you play."), "foot": if n == 1 { tr("1 company on this computer") } else { trf("%{n} companies on this computer", &[("n", &n.to_string())]) } },
             // (Beta 58: a friend's company joined with its session code - "Play together")
+            // (NexiconDK: Bus Company Online - every company of a big server, phase 2 step 2)
+            "online": super::super::bco::enabled().then(|| json!({ "title": tr("Bus Company Online"), "text": tr("Every company of a big server, on its maps, around the clock: join one, or found your own from the money you earn there."), "foot": tr("With the server's code"), "pill": tr("Test") })),
             "multi": { "title": tr("Join a company"), "text": tr("A friend runs a bus company: join it with their session code, get a role, and drive its duties in your own game."), "foot": tr("With a session code"), "tip": tr("The boss shares the company on its Multiplayer page and sends you the code."), "off": (!super::super::together::enabled()).then(|| tr(super::super::together::BLOCKED)) },
         },
         "companies": {

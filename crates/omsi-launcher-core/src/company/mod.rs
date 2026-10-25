@@ -64,6 +64,9 @@ pub mod ontime;
 // (NexiconDK: Bus Company Online - the companies on the main server, and the main server itself)
 pub mod main_server;
 pub mod online;
+// (NexiconDK, Bus Company Online phase 2 step 2: the players' door and the players)
+pub mod server_api;
+pub mod server_players;
 pub mod ownline;
 pub mod parts;
 // (drivers paid by the hour of duty)

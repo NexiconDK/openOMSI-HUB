@@ -5,17 +5,19 @@
 //! It is the company's boss, without a window: the launcher's session with the company open
 //! (`company::Session`, its data folder the server's: `core::set_data_dir`), shared with "Play
 //! together" on the company's own port with a code that stays the same across restarts
-//! (`online::kept_session`, written to `<id>.code` for the main server's `status`). The players
-//! join it with that code from their own launchers and, as their roles allow, use the company's
-//! pages there - its lines, fleet, staff, planning and duties; the founder is its owner with every
-//! permission (`online::seat_owner`).
+//! (`online::kept_session`, written to `<id>.code` for the main server). The players join it from
+//! "Bus Company Online" in their launchers (phase 2, step 2: the main server's list hands them the
+//! code and a ticket of its own for each - `online::ticket`; without it nobody comes in), and, as
+//! their roles allow, use the company's pages there - its lines, fleet, staff, planning and
+//! duties; the founder is its owner with every permission (`online::seat_owner`).
 //!
 //! The company's time is run by its host (`online::Host`, on the server's clock: its days, its
 //! plan for the map's world, the world's reports), not by the launcher's clock (which waits for a
 //! boss to answer): every `STEP` what the pages changed is handed to the host (its plan for the
 //! world written again), the host steps, and what it did is handed back to the pages.
 //!
-//! Its console (the main server writes to it): `quit`, `role <player>; <role>`.
+//! Its console (the main server writes to it): `quit`, `role <player>; <role>`, `owner <player's
+//! id>; <name>` (the main server's player made its owner).
 
 use super::company::{self, Session};
 use super::together;
@@ -61,6 +63,25 @@ pub fn set_role(c: &mut Company, rest: &str) -> String {
     };
     c.together.set_role(no, role, &role.preset());
     format!("{who} is {} now", role.key())
+}
+
+/// The console's `owner <player's id>; <name>`: the main server's player the company's owner
+/// (every permission once he comes, `online::seat_owner`); the one before keeps his place among
+/// the players, as a driver. What to say.
+pub fn set_owner(c: &mut Company, rest: &str) -> String {
+    let mut parts = rest.split(';').map(str::trim);
+    let (pid, name) = (parts.next().unwrap_or(""), parts.next().unwrap_or(""));
+    if pid.is_empty() || name.is_empty() {
+        return "owner <player's id>; <name>".into();
+    }
+    let before = c.online.owner_id.clone();
+    if let Some(no) = c.together.guests.iter().find(|g| !before.is_empty() && g.id == before && g.id != pid).map(|g| g.no) {
+        c.together.set_role(no, Role::Driver, &Role::Driver.preset());
+    }
+    c.online.owner = name.to_string();
+    c.online.owner_id = pid.to_string();
+    online::seat_owner(c);
+    format!("{name} is its owner now")
 }
 
 /// What the pages changed handed to the host (its plan for the world written again), the host a
@@ -116,9 +137,11 @@ pub fn run(data: &Path, id: &str) -> Result<(), String> {
     }
     let kept = online::kept_session(data, id, omsi_launcher_lib::company::together::server::DEFAULT_PORT).map_err(|e| format!("{e:#}"))?;
     let key = kept.host_key().ok_or("the company's session key is spoilt")?;
+    // (phase 2, step 2: nobody in without the main server's ticket for him)
+    let tickets = online::read_server_secret(data).ok_or_else(|| format!("no server's secret in {} - the main server keeps it", data.display()))?;
     let code = company::with(|s| {
         company::open_company(s, host.company.clone());
-        together::start_with(s, kept.port, kept.secret_bytes(), key)
+        together::start_with(s, kept.port, kept.secret_bytes(), key, Some(tickets))
     })?;
     let _ = std::fs::write(online::code_file(data, id), &code);
     say(id, &format!("{} ({}) open on port {}, code {code}", host.company.name, host.company.map, kept.port));
@@ -153,8 +176,19 @@ pub fn run(data: &Path, id: &str) -> Result<(), String> {
                     });
                     say(id, &said);
                 }
+                "owner" => {
+                    let said = company::with(|s| match s.company.as_mut() {
+                        Some(c) => {
+                            let said = set_owner(c, rest);
+                            company::changed(s);
+                            said
+                        }
+                        None => "no company open".into(),
+                    });
+                    say(id, &said);
+                }
                 "" => {}
-                other => say(id, &format!("'{other}' is no command (quit, role <player>; <role>)")),
+                other => say(id, &format!("'{other}' is no command (quit, role <player>; <role>, owner <id>; <name>)")),
             }
         }
         if quit {
@@ -195,5 +229,12 @@ mod tests {
         assert!(set_role(&mut c, "jonas; boss").contains("no role"));
         assert_eq!(set_role(&mut c, "jonas; planner"), "jonas is planner now");
         assert_eq!(c.together.guest(no).unwrap().role, Role::Planner);
+        // (the server's player made its owner: seated when he is among its players)
+        assert!(set_owner(&mut c, "p1").contains("owner <"));
+        assert_eq!(set_owner(&mut c, "pc-2; Jonas"), "Jonas is its owner now");
+        assert_eq!((c.online.owner_id.as_str(), c.together.guest(no).unwrap().role), ("pc-2", Role::CoOwner));
+        let other = c.together.guest_of("p9", "Eve").unwrap();
+        set_owner(&mut c, "p9; Eve");
+        assert_eq!((c.together.guest(other).unwrap().role, c.together.guest(no).unwrap().role), (Role::CoOwner, Role::Driver));
     }
 }

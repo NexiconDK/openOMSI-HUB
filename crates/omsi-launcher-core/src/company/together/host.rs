@@ -40,6 +40,8 @@ pub const NOT_ALLOWED: &str = "Your role does not allow that.";
 pub const BANNED: &str = "The boss has removed you from this company.";
 pub const KICKED: &str = "The boss sent you away from this session.";
 pub const NO_PLAYER: &str = "That player is no longer in the company.";
+/// (NexiconDK) A company on Bus Company Online's server, joined without the server's ticket.
+pub const NO_TICKET: &str = "This company is on a Bus Company Online server: join it from the server's list in your launcher (Bus Company Online).";
 /// Players may not set their own role, nor one above theirs.
 pub const NOT_ABOVE: &str = "You can only manage players whose permissions you have yourself.";
 /// The boss ended the session (stopped sharing, closed the company, quit his launcher): every
@@ -88,7 +90,7 @@ pub const CLOSING: &str = "The host closed this session.";
 
 /// Every English text of this file (for the translations' check).
 pub fn texts() -> Vec<&'static str> {
-    vec![BAD_SECRET, READING, UNKNOWN, NOT_OPEN_COMPANY, BUSY, NOT_ALLOWED, BANNED, KICKED, NO_PLAYER, NOT_ABOVE, CLOSED, JOINED, LEFT, TOOK, ASKS, GAVE, REFUSED, BACK, OFF, DRIVES, FINISHED, SAYS, ROLE_SET, SENT_AWAY, REMOVED, LET_BACK, AI_REST, AI_ALL, LEFT_OPEN, TOOK_BACK, BACK_AGAIN]
+    vec![BAD_SECRET, READING, UNKNOWN, NOT_OPEN_COMPANY, BUSY, NOT_ALLOWED, BANNED, KICKED, NO_PLAYER, NO_TICKET, NOT_ABOVE, CLOSED, JOINED, LEFT, TOOK, ASKS, GAVE, REFUSED, BACK, OFF, DRIVES, FINISHED, SAYS, ROLE_SET, SENT_AWAY, REMOVED, LET_BACK, AI_REST, AI_ALL, LEFT_OPEN, TOOK_BACK, BACK_AGAIN]
 }
 
 /// A player as the session knows him now.
@@ -118,6 +120,10 @@ pub struct HostState {
     pub notices: Vec<Notice>,
     /// The boss ended the session: every message is answered with `closed_answer`.
     pub closed: bool,
+    /// (NexiconDK) A company on Bus Company Online's main server: the server's secret, and
+    /// nobody comes in without its ticket for him (`online::ticket_ok`) - every player is the
+    /// server's (his id and name there), not what his launcher says.
+    pub tickets: Option<Vec<u8>>,
     next: u64,
 }
 
@@ -248,6 +254,11 @@ impl HostState {
     pub fn member(&mut self, c: &mut Company, req: &Request, now: u64) -> Result<(u32, Vec<Perm>), Value> {
         if c.id != self.company {
             return Err(refusal(NOT_OPEN_COMPANY));
+        }
+        if let Some(secret) = self.tickets.as_ref() {
+            if !crate::company::online::ticket_ok(secret, &c.id, &req.player, &req.name, &req.ticket) {
+                return Err(refusal(NO_TICKET));
+            }
         }
         let Some(guest) = c.together.guest_of(&req.player, &req.name) else { return Err(refusal(book::TOO_MANY)) };
         if c.together.guest(guest).is_some_and(|g| g.banned) {

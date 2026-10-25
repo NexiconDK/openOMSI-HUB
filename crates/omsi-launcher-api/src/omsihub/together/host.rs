@@ -422,7 +422,7 @@ fn start(s: &mut Session) -> Answer {
     }
     let key = omsi_net::hostkey::HostKey::generate().ok_or("no key for the session")?;
     let secret: [u8; 8] = omsi_net::http::random_bytes();
-    match start_with(s, 0, secret, key) {
+    match start_with(s, 0, secret, key, None) {
         Ok(_) => Ok(json!({})),
         Err(e) => {
             let text = trf("No port for the session: %{e}", &[("e", &e)]);
@@ -435,7 +435,7 @@ fn start(s: &mut Session) -> Answer {
 /// the code's `secret` and the session's `key` - a launcher's fresh ones, or what a company on
 /// Bus Company Online's main server keeps (NexiconDK: `company_host`), so that its code stays the
 /// same across restarts. Its code; an error: no port.
-pub(crate) fn start_with(s: &mut Session, port: u16, secret: [u8; 8], key: omsi_net::hostkey::HostKey) -> Result<String, String> {
+pub(crate) fn start_with(s: &mut Session, port: u16, secret: [u8; 8], key: omsi_net::hostkey::HostKey, tickets: Option<Vec<u8>>) -> Result<String, String> {
     stop(s);
     let Some(c) = s.company.as_ref() else { return Err("no company open".into()) };
     let key = Arc::new(key);
@@ -445,7 +445,9 @@ pub(crate) fn start_with(s: &mut Session, port: u16, secret: [u8; 8], key: omsi_
     server.open_tunnel(key.clone());
     let text = code.encode();
     core::log_to_file(&format!("company: Play together for {} on port {}", c.id, server.port()));
-    *hosting() = Some(Hosting { company: c.id.clone(), text: text.clone(), server, st: HostState::new(&c.id, &c.profile, secret), plan: None, told: 0, viewers: HashMap::new() });
+    let mut st = HostState::new(&c.id, &c.profile, secret);
+    st.tickets = tickets;
+    *hosting() = Some(Hosting { company: c.id.clone(), text: text.clone(), server, st, plan: None, told: 0, viewers: HashMap::new() });
     keep_watch(secret);
     Ok(text)
 }

@@ -193,3 +193,22 @@
 .tg-crew-row.dim { opacity: 0.6; }
 .tg-crew-row .rest { flex: 1; }
 .tg-crew-in { flex: 1; min-width: 0; height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid rgba(var(--co-white), 0.12); background: rgba(var(--co-white), 0.05); color: inherit; font: inherit; }
+
+/* (NexiconDK) Bus Company Online: the server's code, then its companies (`bco.js`) */
+.bco-way { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 10px 0 0; font-size: var(--co-note); opacity: 0.75; }
+.bco .bco-me { text-align: right; }
+.bco-list { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 14px 2px 20px; }
+.bco-company { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto auto auto; align-items: center; gap: 14px; padding: 10px 14px;
+  border-radius: var(--hub-r); background: rgba(var(--co-white), 0.03); min-width: 0; }
+.bco-company.mine { box-shadow: inset 0 0 0 1px rgba(var(--hub-accent-rgb), 0.5); }
+.bco-company .who { display: flex; flex-direction: column; gap: 2px; min-width: 0; line-height: 1.4; font-size: var(--co-rows); }
+.bco-company .who b { font-size: var(--co-head); }
+.bco-role { font-size: var(--co-note); font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(var(--hub-accent-rgb), 0.16); white-space: nowrap; }
+.bco-state { display: flex; align-items: center; gap: 6px; font-size: var(--co-note); opacity: 0.75; white-space: nowrap; }
+.bco-state i { width: 8px; height: 8px; border-radius: 50%; background: rgba(var(--co-white), 0.35); }
+.bco-state.on i { background: #4cc38a; }
+.bco-label { display: block; margin: 12px 0 6px; font-size: var(--co-note); font-weight: 600; opacity: 0.75; }
+@media (max-width: 760px) {
+  .bco-company { grid-template-columns: 40px minmax(0, 1fr) auto; }
+  .bco-company .bco-role, .bco-company .bco-state { display: none; }
+}

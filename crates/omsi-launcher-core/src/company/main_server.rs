@@ -20,13 +20,20 @@
 //! its companies' trips are worked out at the day's close, as Bus Company does for the days not
 //! played.
 //!
+//! The players come in through the server's door (phase 2, step 2: `server_api`, on `api_port`,
+//! reached with the server's code that `status` shows): "Bus Company Online" in their launchers
+//! logs them in with their Omsi-Hub accounts or their Steam IDs (`server_players`, kept in
+//! `<folder>/players.json`, each with money of his own), lists the server's companies, joins one
+//! with its code and the server's ticket for him, and founds one on a map from his money.
+//!
 //! The settings are `<folder>/company-server.cfg` (written with the defaults and a comment for
 //! every key when it is missing); the console takes `help`, `status`, `maps`, `start`, `stop`,
-//! `found`, `role` and `quit`. A company on the server is always founded there, new: nothing of a player's own
-//! companies comes along.
+//! `found`, `role`, `players`, `money` and `quit`. A company on the server is always founded
+//! there, new: nothing of a player's own companies comes along.
 
 use super::model::GameMode;
 use super::online::{self, company_ids, map_folder, ServerClock};
+use super::server_players::{Logins, Players};
 use super::{store, Founding};
 use anyhow::{Context, Result};
 use std::collections::HashMap;
@@ -63,6 +70,9 @@ pub const DEFAULT_CFG: &str = "\
 # Omsi-Hub: Bus Company Online, the main server
 # (key = value; lines starting with # are comments)
 
+# the server's name, as the players' launchers show it
+name = Bus Company Online
+
 # the OMSI 2 folder with the maps (empty: the one the launcher on this machine uses)
 root =
 
@@ -86,6 +96,15 @@ world_idle = 10
 # tunnel for each company and world, for players across the internet
 first_company_port = 27045
 
+# the door for the players' launchers (\"Bus Company Online\" with the server's code - status
+# shows it): its port, the ways to log in (account: an Omsi-Hub account, email or Google;
+# steam: the Steam ID of the player's computer and a key the server gives it), the money a new
+# player starts with and what founding a company costs (whole units of money)
+api_port = 27040
+logins = account steam
+start_money = 20000
+found_price = 10000
+
 # what each world runs (as server.cfg's keys of the same names)
 traffic = 30
 passengers = 1
@@ -95,9 +114,23 @@ share_positions = 1
 admin_password =
 ";
 
+/// The players' door's part of the settings (phase 2, step 2), added to a `company-server.cfg`
+/// written before it had them.
+pub const DOOR_CFG: &str = "
+# the door for the players' launchers (\"Bus Company Online\" with the server's code - status
+# shows it): its port, the ways to log in (account: an Omsi-Hub account, email or Google;
+# steam: the Steam ID of the player's computer and a key the server gives it), the money a new
+# player starts with and what founding a company costs (whole units of money)
+api_port = 27040
+logins = account steam
+start_money = 20000
+found_price = 10000
+";
+
 /// What `company-server.cfg` says (see `DEFAULT_CFG`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct MainCfg {
+    pub name: String,
     pub root: PathBuf,
     pub real_time: bool,
     pub date: Option<String>,
@@ -107,6 +140,11 @@ pub struct MainCfg {
     pub max_worlds: usize,
     pub world_idle: u32,
     pub first_company_port: u16,
+    pub api_port: u16,
+    pub logins: Logins,
+    /// Cents.
+    pub start_money: i64,
+    pub found_price: i64,
     pub traffic: usize,
     pub passengers: bool,
     pub max_players: usize,
@@ -123,7 +161,15 @@ impl MainCfg {
             std::fs::create_dir_all(dir).with_context(|| format!("cannot make {}", dir.display()))?;
             std::fs::write(&path, DEFAULT_CFG).with_context(|| format!("writing {}", path.display()))?;
         }
-        let text = std::fs::read_to_string(&path).with_context(|| format!("reading {}", path.display()))?;
+        let mut text = std::fs::read_to_string(&path).with_context(|| format!("reading {}", path.display()))?;
+        // (written before the players' door: its settings added, with their comment)
+        if !text.lines().any(|l| l.trim_start().starts_with("api_port")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(DOOR_CFG.as_bytes());
+            }
+            text.push_str(DOOR_CFG);
+        }
         Ok(MainCfg::parse(&text))
     }
 
@@ -142,6 +188,7 @@ impl MainCfg {
         let flag = |k: &str, d: bool| kv.get(k).map(|v| matches!(v.to_ascii_lowercase().as_str(), "1" | "true" | "yes" | "on")).unwrap_or(d);
         let num = |k: &str, d: i64| kv.get(k).and_then(|v| v.parse::<i64>().ok()).unwrap_or(d);
         MainCfg {
+            name: text("name").unwrap_or_else(|| "Bus Company Online".into()),
             root: text("root").map(PathBuf::from).unwrap_or_else(|| PathBuf::from(crate::load_config().root)),
             real_time: flag("real_time", true),
             date: text("date"),
@@ -151,6 +198,10 @@ impl MainCfg {
             max_worlds: num("max_worlds", 4).clamp(1, 64) as usize,
             world_idle: num("world_idle", 10).clamp(0, 24 * 60) as u32,
             first_company_port: num("first_company_port", 27045).clamp(1, 65000) as u16,
+            api_port: num("api_port", 27040).clamp(1, 65000) as u16,
+            logins: Logins::parse(&text("logins").unwrap_or_default()),
+            start_money: num("start_money", 20000).max(0) * 100,
+            found_price: num("found_price", 10000).max(0) * 100,
             traffic: num("traffic", 30).max(0) as usize,
             passengers: flag("passengers", true),
             max_players: num("max_players", 16).clamp(1, 64) as usize,
@@ -219,6 +270,11 @@ pub fn installed_maps(root: &Path) -> Vec<String> {
     out
 }
 
+/// A map's folder as it is written (`maps/Ahlheim 5/global.cfg`: `Ahlheim 5`).
+pub fn map_name(map: &str) -> String {
+    map.replace('\\', "/").trim_end_matches("/global.cfg").rsplit('/').next().unwrap_or(map).to_string()
+}
+
 /// A game mode by its name.
 pub fn game_mode_of(s: &str) -> Result<GameMode> {
     match s.trim().to_ascii_lowercase().as_str() {
@@ -233,8 +289,7 @@ pub fn game_mode_of(s: &str) -> Result<GameMode> {
 /// `web_port`, its companies from the main server's folder `data`, on its clock, stopping by
 /// itself `world_idle` minutes after its last player.
 pub fn world_cfg(cfg: &MainCfg, data: &Path, map: &str, port: u16, web_port: u16) -> String {
-    // (the map's folder as it is written: "Lemmental", "Ahlheim 5")
-    let name = map.replace('\\', "/").trim_end_matches("/global.cfg").rsplit('/').next().unwrap_or(map).to_string();
+    let name = map_name(map);
     let b = |v: bool| if v { "1" } else { "0" };
     format!(
         "# Bus Company Online: the world of {map}, written by the main server at each start\n\
@@ -310,6 +365,10 @@ pub struct MainServer {
     /// What was said of a company that is not run (its map not installed), said once.
     said: HashMap<String, String>,
     pub worlds: Vec<World>,
+    /// The players who logged in through the door (`server_api`), as `players.json` keeps them.
+    pub players: Players,
+    /// The server's code, its door open (`server_api::server_code`).
+    pub code: Option<String>,
     /// The folder taken for this main server, as long as it runs.
     _lock: std::fs::File,
 }
@@ -328,10 +387,22 @@ impl MainServer {
         let game = cfg.game.clone().or_else(crate::game_program).map(|g| g.to_string_lossy().to_string()).unwrap_or_default();
         let launcher = crate::Config { root: cfg.root.to_string_lossy().to_string(), game, profile: SERVER_PROFILE.to_string() };
         std::fs::write(data.join("launcher.json"), serde_json::to_vec_pretty(&launcher)?).with_context(|| format!("cannot write {}", data.join("launcher.json").display()))?;
-        let mut m = MainServer { data: data.to_path_buf(), cfg, clock, companies: Vec::new(), held: HashMap::new(), said: HashMap::new(), worlds: Vec::new(), _lock: lock };
+        // (the tickets' secret: the companies' processes check the players with it)
+        online::server_secret(data)?;
+        let players = Players::load(data)?;
+        let mut m = MainServer { data: data.to_path_buf(), cfg, clock, companies: Vec::new(), held: HashMap::new(), said: HashMap::new(), worlds: Vec::new(), players, code: None, _lock: lock };
         online::bump_plans(data)?;
         m.scan();
         Ok(m)
+    }
+
+    /// A line for the console and the log.
+    pub fn say(&self, text: &str) {
+        info!("{text}");
+    }
+
+    pub fn say_warning(&self, text: &str) {
+        warn!("{text}");
     }
 
     /// The folder's own, absolute (the processes are handed it).
@@ -450,19 +521,39 @@ impl MainServer {
     /// for good, in the game mode `mode`, its owner the player called `owner` (his launcher's name:
     /// the first of that name to come is the owner); its process started at once. Its id.
     pub fn found(&mut self, name: &str, map: &str, mode: &str, owner: &str) -> Result<String> {
+        self.found_as(name, map, mode, owner, "")
+    }
+
+    /// `found`, its owner's id given (empty: the first player of his name).
+    fn found_as(&mut self, name: &str, map: &str, mode: &str, owner: &str, owner_id: &str) -> Result<String> {
         anyhow::ensure!(!name.trim().is_empty(), "the company needs a name");
         let game_mode = game_mode_of(mode)?;
         let map = find_map(&self.cfg.root, map).with_context(|| format!("no map '{map}' installed - maps lists them"))?;
-        let f = Founding { name: name.trim().to_string(), map: map.clone(), map_name: map_folder(&map), game_mode, ..Default::default() };
+        let f = Founding { name: name.trim().to_string(), map: map.clone(), map_name: map_name(&map), game_mode, ..Default::default() };
         let id = online::found_on_server(&self.data, &f, SERVER_PROFILE, self.clock, unix_now())?;
+        // (its owner set before its process starts: the process keeps the company)
         if !owner.trim().is_empty() {
             let mut c = store::load(&self.data, &id)?;
             c.online.owner = owner.trim().to_string();
+            c.online.owner_id = owner_id.to_string();
             store::save(&self.data, &c)?;
         }
-        info!("company {id} ({}, {}, {}) founded{}", name.trim(), map_folder(&map), game_mode.label(), if owner.trim().is_empty() { String::new() } else { format!(", its owner {}", owner.trim()) });
+        info!("company {id} ({}, {}, {}) founded{}", name.trim(), map_name(&map), game_mode.label(), if owner.trim().is_empty() { String::new() } else { format!(", its owner {}", owner.trim()) });
         self.held.remove(&id);
         self.scan();
+        Ok(id)
+    }
+
+    /// A new company founded on the server by its player `player` (the server's id for him) from
+    /// his own money (`found_price`): he its owner from the start (`Online::owner_id`). Its id.
+    pub fn found_for(&mut self, player: &str, name: &str, map: &str, mode: &str) -> Result<String> {
+        let p = self.players.get(player).cloned().context("no such player")?;
+        anyhow::ensure!(p.money >= self.cfg.found_price, "{} has not money enough", p.name);
+        let id = self.found_as(name, map, mode, &p.name, &p.id)?;
+        let price = self.cfg.found_price;
+        let _ = self.players.pay(&p.id, price);
+        self.players.save(&self.data)?;
+        info!("company {id}: founded by {} ({}) for {:.2} - {:.2} left", p.name, p.id, price as f64 / 100.0, (p.money - price) as f64 / 100.0);
         Ok(id)
     }
 
@@ -535,7 +626,12 @@ impl MainServer {
     pub fn status(&self) -> String {
         let (date, secs) = self.clock.at_real(unix_now() as f64);
         let ids = company_ids(&self.data);
-        let mut out = format!("server's clock: {date} {}\ncompanies: {}\n", hhmmss(secs), ids.len());
+        let mut out = format!("server's clock: {date} {}\n", hhmmss(secs));
+        match &self.code {
+            Some(code) => out += &format!("server's code: {code} (the players' launchers: Bus Company Online; port {})\n", self.cfg.api_port),
+            None => out += "server's code: none - its door is not open\n",
+        }
+        out += &format!("players: {}\ncompanies: {}\n", self.players.players.len(), ids.len());
         for id in ids {
             let Ok(c) = store::load(&self.data, &id) else { continue };
             let state = match self.companies.iter().find(|p| p.id == id) {
@@ -544,7 +640,7 @@ impl MainServer {
                 None => "waits to start".to_string(),
             };
             let owner = if c.online.owner.is_empty() { String::new() } else { format!(", owner {}", c.online.owner) };
-            out += &format!("  {id} \"{}\" on {} ({}{owner}): {} {}, cash {:.2}, {} lines, {} buses, {} staff - {state}\n", c.name, map_folder(&c.map), c.game_mode.label(), c.date, hhmmss(c.clock.minute as f64 * 60.0), c.cash as f64 / 100.0, c.lines.len(), c.fleet.len(), c.staff.len());
+            out += &format!("  {id} \"{}\" on {} ({}{owner}): {} {}, cash {:.2}, {} lines, {} buses, {} staff - {state}\n", c.name, map_name(&c.map), c.game_mode.label(), c.date, hhmmss(c.clock.minute as f64 * 60.0), c.cash as f64 / 100.0, c.lines.len(), c.fleet.len(), c.staff.len());
             if let Ok(code) = std::fs::read_to_string(online::code_file(&self.data, &id)) {
                 out += &format!("    code: {}\n", code.trim());
             }
@@ -572,6 +668,9 @@ found <name>; <map>; [mode]; [owner]
                               the player's name in his launcher - he gets every permission)
 role <company>; <player>; <role>
                               give a player of a company a role (driver, planner, manager, owner)
+owner <company>; <player>      make a player of the server a company's owner (every permission)
+players                       the players who logged in, with their money
+money <player>; <amount>      set a player's money (+500 or -500: add or take)
 quit                          stop the worlds, save every company and end";
 
 /// What the console's line `line` does; the answer to print. None: `quit`.
@@ -621,6 +720,64 @@ pub fn command(m: &mut MainServer, line: &str) -> Option<String> {
             }
             _ => "role <company>; <player>; <role>".to_string(),
         },
+        "owner" => match rest.split_once(';') {
+            Some((company, who)) if !company.trim().is_empty() => match m.players.find(who).cloned() {
+                Some(p) => {
+                    if m.tell_company(company.trim(), &format!("owner {}; {}", p.id, p.name)) {
+                        format!("told {}: {} is its owner (its log: hosts\\{}.out)", company.trim(), p.name, company.trim())
+                    } else {
+                        format!("company {} does not run", company.trim())
+                    }
+                }
+                None => format!("no player '{}' - players lists them (he logs in from Bus Company Online first)", who.trim()),
+            },
+            _ => "owner <company>; <player>".to_string(),
+        },
+        "players" => {
+            if m.players.players.is_empty() {
+                "no player has logged in yet".to_string()
+            } else {
+                m.players
+                    .players
+                    .iter()
+                    .map(|p| {
+                        let owns: Vec<String> = company_ids(&m.data).into_iter().filter(|id| store::load(&m.data, id).is_ok_and(|c| c.online.owner_id == p.id)).collect();
+                        let by = match (p.account.is_empty(), p.steam.is_empty()) {
+                            (false, false) => "account and Steam",
+                            (false, true) => "account",
+                            _ => "Steam",
+                        };
+                        format!("  {} ({}, {by}): money {:.2}{}", p.name, p.id, p.money as f64 / 100.0, if owns.is_empty() { String::new() } else { format!(", owns {}", owns.join(", ")) })
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            }
+        }
+        "money" => match rest.split_once(';') {
+            Some((who, amount)) => {
+                let amount = amount.trim();
+                let cents = amount.trim_start_matches(['+', '-']).replace([' ', ','], "").parse::<f64>().ok().map(|v| (v * 100.0).round() as i64);
+                let id = m.players.find(who).map(|p| p.id.clone());
+                match (id, cents) {
+                    (Some(id), Some(c)) => {
+                        let p = m.players.get_mut(&id).expect("found");
+                        p.money = match amount.chars().next() {
+                            Some('+') => p.money + c,
+                            Some('-') => (p.money - c).max(0),
+                            _ => c,
+                        };
+                        let said = format!("{} has {:.2} now", p.name, p.money as f64 / 100.0);
+                        match m.players.save(&m.data) {
+                            Ok(()) => said,
+                            Err(e) => format!("{said} - not saved: {e:#}"),
+                        }
+                    }
+                    (None, _) => format!("no player '{}' - players lists them", who.trim()),
+                    (_, None) => format!("'{amount}' is no amount"),
+                }
+            }
+            None => "money <player>; <amount>".to_string(),
+        },
         "quit" | "exit" => return None,
         other => format!("'{other}' is no command - help lists them"),
     })
@@ -645,6 +802,11 @@ fn take_signals() {
     }
 }
 
+/// The main server, held (the door's threads hold it too).
+fn lock(m: &std::sync::Mutex<MainServer>) -> std::sync::MutexGuard<'_, MainServer> {
+    m.lock().unwrap_or_else(|e| e.into_inner())
+}
+
 /// The main server program: the folder `dir` (its settings, companies and worlds), run until
 /// `quit` or Ctrl+C.
 pub fn run(dir: &Path) -> Result<()> {
@@ -655,11 +817,26 @@ pub fn run(dir: &Path) -> Result<()> {
         omsi_cfg::add_content_root(c);
     }
     omsi_cfg::add_content_root(cfg.root.clone());
-    let mut m = MainServer::open(dir, cfg)?;
+    let (api_port, tunnel) = (cfg.api_port, cfg.tunnel);
+    let m = std::sync::Arc::new(std::sync::Mutex::new(MainServer::open(dir, cfg)?));
+    // (the players' door: the server's code, its tunnel)
+    let kept = super::server_api::kept(dir, api_port)?;
+    let api = std::sync::Arc::new(super::server_api::Api::new(m.clone(), kept.secret_bytes(), super::server_api::omsihub_verify()));
+    let door = match super::server_api::open(api, &kept, tunnel) {
+        Ok(d) => {
+            lock(&m).code = super::server_api::server_code(&kept).map(|c| c.encode());
+            Some(d)
+        }
+        Err(e) => {
+            warn!("the players' door did not open on port {api_port}: {e} - nobody logs in from the launcher (api_port in {CFG_FILE})");
+            None
+        }
+    };
     take_signals();
     println!("Bus Company Online - main server ({})", dir.display());
-    print!("{}", m.status());
+    print!("{}", lock(&m).status());
     println!("type help for the commands");
+    let mut told_tunnel: Option<String> = None;
     let (tx, rx) = std::sync::mpsc::channel::<String>();
     std::thread::Builder::new().name("console".into()).spawn(move || {
         let stdin = std::io::stdin();
@@ -673,7 +850,7 @@ pub fn run(dir: &Path) -> Result<()> {
     let (mut scan, mut reap) = (Instant::now() + Duration::from_secs(5), Instant::now());
     'run: while !STOP.load(Ordering::SeqCst) {
         while let Ok(line) = rx.try_recv() {
-            match command(&mut m, &line) {
+            match command(&mut lock(&m), &line) {
                 Some(answer) if !answer.is_empty() => println!("{}", answer.trim_end()),
                 Some(_) => {}
                 None => break 'run,
@@ -682,17 +859,26 @@ pub fn run(dir: &Path) -> Result<()> {
         let now = Instant::now();
         if now >= reap {
             reap = now + Duration::from_secs(1);
-            m.reap_worlds();
-            m.reap_companies();
+            let mut g = lock(&m);
+            g.reap_worlds();
+            g.reap_companies();
+            drop(g);
+            if let Some(super::together::server::TunnelState::Ready(url)) = door.as_ref().map(|d| d.tunnel()) {
+                if told_tunnel.as_ref() != Some(&url) {
+                    info!("the players' door is on the internet too: {url} (the server's code finds it)");
+                    told_tunnel = Some(url);
+                }
+            }
         }
         if now >= scan {
             scan = now + Duration::from_secs(5);
-            m.scan();
+            lock(&m).scan();
         }
         std::thread::sleep(Duration::from_millis(100));
     }
     println!("stopping the worlds and saving the companies ...");
-    m.shutdown();
+    drop(door);
+    lock(&m).shutdown();
     Ok(())
 }
 
@@ -726,6 +912,18 @@ mod tests {
         assert_eq!(c.root, PathBuf::from("/srv/OMSI 2"));
         assert_eq!(c.clock_start(), ("2024-03-04".to_string(), 7 * 3600 + 1800));
         assert_eq!((c.max_worlds, c.game.clone()), (2, Some(PathBuf::from("/opt/omsi-hub-game"))));
+        // (the players' door: its defaults, and its part added to a file written before it)
+        assert_eq!((c.api_port, c.logins, c.start_money, c.found_price, c.name.as_str()), (27040, Logins::default(), 2_000_000, 1_000_000, "Bus Company Online"));
+        assert!(DEFAULT_CFG.contains(DOOR_CFG.trim()), "the door's part is the defaults'");
+        std::fs::write(dir.join(CFG_FILE), "root = /srv\nfirst_company_port = 27145\n").unwrap();
+        let old = MainCfg::load(&dir).unwrap();
+        assert_eq!((old.first_company_port, old.api_port), (27145, 27040));
+        let text = std::fs::read_to_string(dir.join(CFG_FILE)).unwrap();
+        assert!(text.contains("api_port = 27040") && text.contains("found_price = 10000"));
+        MainCfg::load(&dir).unwrap();
+        assert_eq!(std::fs::read_to_string(dir.join(CFG_FILE)).unwrap(), text, "added once");
+        let c = MainCfg::parse("start_money = 500\nfound_price = 0\nlogins = steam\napi_port = 0\n");
+        assert_eq!((c.start_money, c.found_price, c.logins.account, c.api_port), (50_000, 0, false, 1));
         let _ = std::fs::remove_dir_all(&dir);
     }
 

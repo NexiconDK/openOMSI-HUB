@@ -29,7 +29,7 @@ own world - then the AI buses and the traffic are not the same for everybody).
 | The roster | The easy mode's routine fills it; in Normal and Realistic the planners alone, what they leave open does not run |
 | Trips | A map's world reports every trip once, the AI buses' and the players' (measured by the server, not by the player's game); a map without a world: the main server works its AI trips out at midnight, as Bus Company does for the days not played |
 | Control room | Per depot: every bus live while the map's world runs (interventions on the AI buses), else where the timetable has them |
-| Identity | The Steam ID read on the player's computer (`Steam/config/loginusers.vdf`) and a secret key the server gives that computer |
+| Identity | The player's Omsi-Hub account (email or Google, checked by the server with Omsi-Hub online), the Steam ID read on his computer (`Steam/config/loginusers.vdf`) with a secret key the server gives that computer, or both as one player (decided 24 October 2026: "Begge dele") |
 | Pay | A trip counts in the company's books (the depot's) and in the player's own career; the company takes a share of the trip's income it chooses (say 25 %), a change counting from the next day |
 | Project | A server program of its own built from Omsi-Hub's code, in modules of its own, behind a switch (off until ready); no new fork, no long-lived branch |
 
@@ -40,7 +40,7 @@ own world - then the AI buses and the traffic are not the same for everybody).
    dedicated server with every company's buses in their paint on the server's clock, started and
    closed by the main server, its trips reported to it; no world: the AI trips worked out at
    midnight. Measured: what a world costs in memory and CPU, how long it takes to start.
-2. **Log in and the company's pages**: "Bus Company Online" in the launcher, Steam ID and key; the
+2. **Log in and the company's pages**: "Bus Company Online" in the launcher, the Omsi-Hub account and/or the Steam ID and key; the
    company's pages as today, with the server's data; found a company on a map from one's own pay;
    roles and permissions; other players hired.
 3. **Drive**: Drive joins the duty's map's world on the server with the duty's bus (the world
@@ -115,7 +115,8 @@ company today: the server is every company's boss.
   first player of that name to come is the owner with every permission (`Role::CoOwner`), from
   then on only he (by the id his launcher keeps: `online::seat_owner`, `Online::owner_id`).
   Other players come as drivers; `role <company>; <player>; <role>` on the main server's console
-  gives a role (driver, planner, manager, owner). Phase 2's step 2 puts the Steam ID there.
+  gives a role (driver, planner, manager, owner). Step 2 (below) knows every player by the server's
+  id for him instead.
 - **The main server** supervises: a process for every company whose map is installed, its output
   in `<folder>/hosts/<id>.out`; one that ended is started again after `HOLD` (30 s); a company
   founded is started at once; `quit` tells each to quit (each saves its company) and ends what
@@ -123,8 +124,66 @@ company today: the server is every company's boss.
   `status` shows each company's state, port and code. `tunnel = 1` gives the companies (and the
   worlds) a Cloudflare tunnel each, for players across the internet; else their LAN addresses.
 
-Step 2: "Bus Company Online" in the launcher - the server's list of companies, log in with the
-Steam ID and key, found a company there - so that nobody needs a code or the console.
+## Phase 2, step 2: "Bus Company Online" in the launcher, the players logged in
+
+Nobody needs a company's code or the console any more: the bus company's start has a third tile,
+**Bus Company Online** (`omsihub::bco`, `bco.js`; behind the kill switch `bco::KILLED` and
+`OMSI_BCO_OFF`, marked "Test").
+
+- **The server's door** (`company::server_api`): plain HTTP on `api_port` (27040), `POST /bco`, and a
+  Cloudflare tunnel in front of it with `tunnel = 1`. The players reach it with the **server's
+  code** (`HUB-…`, the company codes' format: its secret, the session of its kept key -
+  `<folder>/api.session` -, its port and the machine's addresses; the company tag `server_tag()`
+  tells it from a company's), which `status` shows. Questions: `info`, `login`, `companies`,
+  `join`, `found`, `me`, each with the code's secret; a login lasts a day, longer while used.
+- **The players** (`company::server_players`, `<folder>/players.json`): each has the server's id
+  (`p…`, his id in every company there), a name unique on the server, and money of his own
+  (`start_money` to begin with, in whole euros; driving pays into it from phase 3). He logs in with
+  his **Omsi-Hub account** - the launcher hands the server the access token of its session
+  (`online::account_for_server`, only with the privacy statement agreed to), which the server has
+  Omsi-Hub online check (`omsihub_online::verify_access`: `GET /auth/v1/user` and the profile's
+  display name) and does not keep -, with the **Steam ID** of the computer
+  (`omsi_cfg::install_search::steam_user`: Steam's `config/loginusers.vdf`, the user `MostRecent`)
+  and the **key** the server gave that computer the first time (its SHA-256 kept, up to five
+  computers; the launcher keeps the key in `~/.openomsi/bco.json` by the server's session), or
+  with **both**: then the Steam ID is joined to the account's player. A Steam ID alone: the first
+  computer to come with it keeps it; another one is turned away until the account vouches for it.
+  `logins = account steam` says which ways the server takes.
+- **Joining**: the server's list shows every company, with the player's role in each; Join asks
+  the server for the company's code and its **ticket** for him (`online::ticket`: HMAC-SHA256 of
+  the company, his id and name under `<folder>/server.secret`), and his launcher joins as "Play
+  together" does (`together::join_server_company`: its menu, its pages) with the server's id and
+  name for him. The company's process lets nobody in without a ticket
+  (`HostState::tickets`, `host::NO_TICKET`), so a launcher cannot claim another's name or id.
+- **Founding**: a name, a map of the server's and a game mode; `found_price` is paid from the
+  player's money (`MainServer::found_for`), and he is the owner from the start
+  (`Online::owner_id` = his id, set before the company's process starts).
+- **The console** besides: `players` (each with how he logs in, his money and his companies),
+  `money <player>; <amount>` (set, or `+`/`-` to add or take), `owner <company>; <player>` (a
+  player of the server a company's owner - one founded from the console without one, say: the
+  company's process takes `owner <id>; <name>`, `company_host::set_owner`). A company of the
+  server is no longer joined with its code alone ("Join a company"): the ticket is needed.
+
+Tested: `server_players::tests` (a Steam ID alone, an account and Steam as one player, a second
+computer, names, the ways in, money), `server_api::tests` (the code's secret and version, a login
+refused and taken, founding paid and refused, the list, joining a company still starting; the door
+over the loopback), `together::tests::a_server_company_takes_the_servers_ticket_only`,
+`verify::tests` (the account check against a stand-in of Supabase),
+`install_search::tests::the_steam_user_last_signed_in`, `bco::tests` (every text in six
+languages); end to end with the real programs and a stand-in OMSI folder (25 October 2026): an
+older `company-server.cfg` given the door's settings, the server's code shown, a false account
+refused (Omsi-Hub online not reached from the test machine: said so), two players logged in with
+Steam IDs and keys, another computer without the key refused, two companies founded and paid,
+the list with the founder's role, join with code and ticket; at the company's process no ticket,
+a forged one and a ticket with another id refused, the founder seated as owner with every
+permission, another player a driver refused the money page; `money`, `players` and `owner` on
+the console, the new owner kept at `quit`. The page itself looked at in a browser (the server's
+code; the companies; founding).
+
+Still open for phase 2: other players hired by a company (beyond joining it), roles given from
+the company's own pages for the server's players (the pages do it as in "Play together"), a
+stable address for the tunnel (a quick tunnel's address changes at every start; the code finds
+it through the game's relay).
 
 ### Measured on a real map (Ahlheim: 30 lines, 418 tours a day)
 

@@ -64,6 +64,12 @@ impl Server {
     /// Listen on `port` (0: `DEFAULT_PORT` or one of the ten after it, else any free one) on
     /// every address (`local_only`: the loopback alone, for tests).
     pub fn start(port: u16, local_only: bool, handler: Handler) -> std::io::Result<Server> {
+        Self::start_at(port, local_only, "/together", r#"{"app":"omsihub-together","v":1}"#, handler)
+    }
+
+    /// (NexiconDK) As `start`, its messages posted to `path` and `hello` answered to a GET there
+    /// (Bus Company Online's main server: `/bco`).
+    pub fn start_at(port: u16, local_only: bool, path: &'static str, hello: &'static str, handler: Handler) -> std::io::Result<Server> {
         let host = if local_only { [127, 0, 0, 1] } else { [0, 0, 0, 0] };
         let tries: Vec<u16> = if port == 0 { (DEFAULT_PORT..DEFAULT_PORT + 10).chain([0]).collect() } else { vec![port] };
         let mut last = None;
@@ -97,7 +103,7 @@ impl Server {
                 open.fetch_add(1, Ordering::Relaxed);
                 let (h, o) = (handler.clone(), open.clone());
                 let spawned = std::thread::Builder::new().name("company client".into()).spawn(move || {
-                    serve(conn, &h);
+                    serve(conn, &h, path, hello);
                     o.fetch_sub(1, Ordering::Relaxed);
                 });
                 if spawned.is_err() {
@@ -170,13 +176,13 @@ impl Server {
 }
 
 /// One connection: a request read, answered, closed.
-fn serve(mut conn: TcpStream, handler: &Handler) {
+fn serve(mut conn: TcpStream, handler: &Handler, at: &str, hello: &str) {
     let _ = conn.set_read_timeout(Some(Duration::from_secs(15)));
     let _ = conn.set_write_timeout(Some(Duration::from_secs(15)));
     let (status, body) = match read_request(&mut conn) {
         Ok((method, path, body)) => match (method.as_str(), path.split('?').next().unwrap_or("")) {
-            ("POST", "/together") => ("200 OK", handler(&String::from_utf8_lossy(&body))),
-            ("GET", "/together") => ("200 OK", r#"{"app":"omsihub-together","v":1}"#.to_string()),
+            ("POST", p) if p == at => ("200 OK", handler(&String::from_utf8_lossy(&body))),
+            ("GET", p) if p == at => ("200 OK", hello.to_string()),
             _ => ("404 Not Found", r#"{"ok":false}"#.to_string()),
         },
         Err(code) => (code, r#"{"ok":false}"#.to_string()),

@@ -46,10 +46,11 @@ pub struct Online {
     /// run as the map has them.
     #[serde(default)]
     pub on_server: bool,
-    /// The player who founded it (his name as his launcher says it): the first player of that
-    /// name who comes to the company is its owner (every permission: `together::Role::CoOwner`),
-    /// and from then on only he (`owner_id`: the id his launcher keeps). Phase 2 puts his Steam
-    /// ID here instead.
+    /// The player who founded it, by his name: the first player of that name who comes to the
+    /// company is its owner (every permission: `together::Role::CoOwner`), and from then on only
+    /// he (`owner_id`: his id). Founded from the launcher (phase 2, step 2) the owner's id is the
+    /// server's id for the player (`server_players::Player::id`) from the start, his name the
+    /// server's for him.
     #[serde(default)]
     pub owner: String,
     #[serde(default)]
@@ -93,6 +94,46 @@ pub fn session_file(data: &Path, id: &str) -> PathBuf {
 /// The file the company's process writes its code to, for the main server's `status`.
 pub fn code_file(data: &Path, id: &str) -> PathBuf {
     store::dir(data).join(format!("{id}.code"))
+}
+
+/// The main server's own secret in its folder (made the first time): the tickets it gives its
+/// players are signed with it (`ticket`), and its companies' processes check them with it.
+pub const SECRET_FILE: &str = "server.secret";
+
+/// The main server's secret of the folder `data`, made the first time.
+pub fn server_secret(data: &Path) -> Result<Vec<u8>> {
+    if let Some(s) = read_server_secret(data) {
+        return Ok(s);
+    }
+    let s: [u8; 32] = omsi_net::http::random_bytes();
+    std::fs::create_dir_all(data).with_context(|| format!("cannot make {}", data.display()))?;
+    let path = data.join(SECRET_FILE);
+    std::fs::write(&path, omsi_net::hostkey::hex(&s)).with_context(|| format!("cannot write {}", path.display()))?;
+    Ok(s.to_vec())
+}
+
+/// The main server's secret, when it has made one.
+pub fn read_server_secret(data: &Path) -> Option<Vec<u8>> {
+    let text = std::fs::read_to_string(data.join(SECRET_FILE)).ok()?;
+    omsi_net::hostkey::unhex(text.trim()).filter(|b| b.len() == 32)
+}
+
+fn ticket_text(company: &str, player: &str, name: &str) -> String {
+    format!("bco-ticket\n{}\n{}\n{}", company.trim().to_lowercase(), player.trim(), name.trim())
+}
+
+/// Phase 2 (step 2): the ticket the main server gives a player it knows (logged in with his
+/// Omsi-Hub account or his Steam ID and key: `server_players`) for company `company`: he shows it
+/// with every message to the company's process (`wire::Request::ticket`), which lets nobody in
+/// without one (`together::host::HostState::tickets`) - so a player is known to a company by the
+/// server's id for him (`player`) and the server's name (`name`), not by what his launcher says.
+pub fn ticket(secret: &[u8], company: &str, player: &str, name: &str) -> String {
+    omsi_net::hostkey::hex(&omsi_net::http::hmac_sha256(secret, ticket_text(company, player, name).as_bytes()))
+}
+
+/// Whether `ticket` is the main server's for this player and company.
+pub fn ticket_ok(secret: &[u8], company: &str, player: &str, name: &str, ticket: &str) -> bool {
+    omsi_net::hostkey::unhex(ticket.trim()).is_some_and(|t| omsi_net::http::hmac_sha256_ok(secret, ticket_text(company, player, name).as_bytes(), &t))
 }
 
 /// Company `id`'s kept session in the folder `data`, made the first time: the first port from

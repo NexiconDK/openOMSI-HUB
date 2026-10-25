@@ -3739,6 +3739,7 @@ dependencies = [
  "omsi-net",
  "omsi-timetable",
  "omsi-vehicle",
+ "omsihub-online",
  "rayon",
  "rfd",
  "serde",

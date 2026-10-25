@@ -26,6 +26,10 @@ use serde_json::{json, Value};
 pub use host::{closing_company, give_to_guest, online_guests, quit, rail_badge, tile_line};
 // (NexiconDK: a company's process on Bus Company Online's main server - `company_host`)
 pub(crate) use host::{start_with, stop_now};
+// (NexiconDK: a company of a Bus Company Online server joined - `bco.rs`)
+pub(crate) use join::join_server_company;
+#[cfg(test)]
+pub(crate) use join::SERVER_CODE;
 
 /// The code of the company session hosted now (None: none, or "Play together" switched off).
 pub fn session_code() -> Option<String> {

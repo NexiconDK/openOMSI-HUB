@@ -14,6 +14,8 @@ import { mapPicture } from '../../pages/drive.js';
 import { VehiclePicker } from './vehicles.js';
 // (Beta 58: a friend's company joined with its session code)
 import { JoinPage } from './together.js';
+// (NexiconDK: Bus Company Online - the companies of a big server)
+import { OnlinePage } from './bco.js';
 // (Beta 62: the country the company plays in, its people's names)
 import { CountryPick } from './country.js';
 // (Beta 63: a company's cloud save - its badge, the question before it opens)
@@ -30,6 +32,7 @@ export function Chooser() {
   const step = S.co.chooser;
   if (step === 'mode') return html`<${Modes} v=${v.modes} n=${v.companies.tiles.length} />`;
   if (step === 'join') return html`<${JoinPage} />`;
+  if (step === 'online') return html`<${OnlinePage} />`;
   const cv = v.companies;
   const open = async (id) => {
     // (a cloud company: a newer version or a conflict is asked first)
@@ -80,6 +83,10 @@ function Modes({ v }) {
         <span class="mark"><${Icon} name=${v.multi.off ? 'lock' : 'groups'} size=${30} /></span>
         <h3>${v.multi.title}</h3><p>${v.multi.text}</p><span class="foot">${v.multi.off || v.multi.foot}</span>
       </button>
+      ${v.online && html`<button type="button" class="co-tile co-mode" data-mode="online" onClick=${() => setCo({ chooser: 'online' })}>
+        <span class="mark"><${Icon} name="public" size=${30} /></span>
+        <h3>${v.online.title} <span class="co-pill">${v.online.pill}</span></h3><p>${v.online.text}</p><span class="foot">${v.online.foot}</span>
+      </button>`}
     </div>
     <span style="flex:0.6 1 0"></span>
   </div>`;

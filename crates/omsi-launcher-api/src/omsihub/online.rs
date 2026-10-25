@@ -127,6 +127,27 @@ pub(super) fn with<T>(f: impl FnOnce(&mut Client) -> T) -> T {
     f(c)
 }
 
+/// (NexiconDK) The account for a Bus Company Online server (`bco.rs`): its access token, which the
+/// server has Omsi-Hub online check once and does not keep, and its display name - while signed
+/// in with the privacy statement agreed to (else None: the account waits, as its other features
+/// do).
+pub(super) fn account_for_server() -> Option<(String, String)> {
+    with(|c| {
+        if !c.signed_in() {
+            return None;
+        }
+        let token = c.access_token().ok()?;
+        if c.privacy_agreed().is_none() {
+            let _ = c.check_privacy();
+        }
+        if c.privacy_needed() {
+            return None;
+        }
+        let name = c.profile().ok().flatten().map(|p| p.display_name).filter(|n| !n.trim().is_empty()).or_else(|| c.signed_up_name().map(str::to_string)).unwrap_or_default();
+        Some((token, name))
+    })
+}
+
 fn unix_now() -> u64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs())
 }

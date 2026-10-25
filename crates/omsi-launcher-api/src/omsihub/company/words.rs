@@ -143,6 +143,12 @@ fn eur_in(c: Cents, lang: &str) -> String {
     money_in(c as f64, false, Currency::Eur, lang)
 }
 
+/// (NexiconDK) Money in whole euros whatever company is open (a Bus Company Online server's: a
+/// player's own money there, a company's price).
+pub fn euros(c: Cents) -> String {
+    eur_in(c, &language())
+}
+
 /// Money in whole units of the company's currency, grouped as it is written ("€1,234",
 /// "£1,061", "453 125 Ft"; the name is of before the currencies).
 pub fn eur(c: Cents) -> String {

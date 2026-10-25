@@ -153,6 +153,7 @@ flags! {
     OMSI_BACKGROUND: Bool, Test, Use, "off", "A test window that does not take the keyboard focus (OMSI_INPUT drives the handlers directly); with OMSI_INPUT it ignores the real mouse too. The desktop launcher's window as well.";
     OMSI_BASIC_PIPELINES: Bool, Switch, Once, "off", "Use the reduced (basic) render pipelines, as after a driver failed to build the full ones.";
     OMSI_BATCH: Num, Test, Use, "-", "Offscreen: prepare the map tiles this many at a time, as the window's streaming does.";
+    OMSI_BCO_OFF: Bool, Switch, Use, "off", "Bus Company Online's tile at the bus company's start hidden, and every bco_ command refused (the launcher's side of the online server: omsihub::bco).";
     OMSI_BENCH: Num, Test, Use, "-", "Offscreen: draw the final picture this many more times and log the median CPU and GPU-wait time.";
     OMSI_BENCH_FRAMES: Bool, Debug, Use, "off", "With OMSI_BENCH: log every bench frame's times, not only the medians.";
     OMSI_BLEND_AB: Bool, Test, Use, "off", "Offscreen: a second picture with the blended draws in the old order, for a before/after of the draw order.";

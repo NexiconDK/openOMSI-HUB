@@ -60,6 +60,9 @@ pub struct Request {
     pub logo: bool,
     /// The control room's message a `msg_reply` answers.
     pub msg: u64,
+    /// (NexiconDK) Bus Company Online: the main server's ticket for this player and company
+    /// (`online::ticket`) - a company on the server lets nobody in without it.
+    pub ticket: String,
 }
 
 /// The company as the friend's page shows it.

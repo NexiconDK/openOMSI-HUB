@@ -855,3 +855,27 @@ fn a_driver_answers_the_control_room_s_messages_to_the_duty_his_game_drives_and_
     });
     assert_eq!(v["perm"].as_str(), Some("drive"), "{v}");
 }
+
+/// (NexiconDK) A company on Bus Company Online's server lets nobody in without the server's
+/// ticket for him, the ticket of his id and his name there.
+#[test]
+fn a_server_company_takes_the_servers_ticket_only() {
+    let mut b = boss();
+    let secret = vec![9u8; 32];
+    b.st.tickets = Some(secret.clone());
+    let refused = ask(&mut b, "p1", "hello", |_| {});
+    assert_eq!(refused["error"], host::NO_TICKET);
+    assert!(b.c.together.guests.is_empty(), "nobody came in");
+    let id = b.c.id.clone();
+    // (another's ticket, another company's, another name's, another server's: no)
+    for t in [crate::company::online::ticket(&secret, &id, "p2", "P1"), crate::company::online::ticket(&secret, "other", "p1", "P1"), crate::company::online::ticket(&secret, &id, "p1", "Boss"), crate::company::online::ticket(&[1u8; 32], &id, "p1", "P1"), "zz".into()] {
+        assert_eq!(ask(&mut b, "p1", "hello", |r| r.ticket = t.clone())["error"], host::NO_TICKET);
+    }
+    let t = crate::company::online::ticket(&secret, &id, "p1", "P1");
+    let v = ask(&mut b, "p1", "hello", |r| r.ticket = t.clone());
+    assert!(v.get("snapshot").is_some(), "{v}");
+    assert_eq!(b.c.together.guests.len(), 1);
+    // (a company of a player's own takes no tickets)
+    let mut own = boss();
+    assert!(ask(&mut own, "p1", "hello", |_| {}).get("snapshot").is_some());
+}

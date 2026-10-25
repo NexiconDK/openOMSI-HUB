@@ -29,6 +29,8 @@ pub mod oauth;
 pub mod privacy;
 pub mod saves;
 pub mod store;
+// (NexiconDK: Bus Company Online's main server checks a player's token)
+pub mod verify;
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
@@ -42,6 +44,7 @@ pub use client::{Client, Friend, Invite, Profile, Stats};
 pub use codes::Error;
 pub use oauth::{Flow, Handoff};
 pub use saves::{Cloud, SaveError, Slot};
+pub use verify::{verify_access, Verified};
 
 /// The Supabase project `omsi-hub-online` (public, as every client uses it; not a secret).
 pub const URL: &str = "https://mlatjtjjdfifbgddcxzu.supabase.co";

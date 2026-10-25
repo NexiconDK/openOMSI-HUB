@@ -31,8 +31,37 @@ pub fn random_bytes<const N: usize>() -> [u8; N] {
     out
 }
 
+/// HMAC-SHA256 of `msg` under `key` (Bus Company Online's tickets: `omsi_launcher_lib`'s
+/// `company::online::ticket`).
+pub fn hmac_sha256(key: &[u8], msg: &[u8]) -> [u8; 32] {
+    let tag = ring::hmac::sign(&ring::hmac::Key::new(ring::hmac::HMAC_SHA256, key), msg);
+    let mut out = [0u8; 32];
+    out.copy_from_slice(tag.as_ref());
+    out
+}
+
+/// Whether `tag` is the HMAC-SHA256 of `msg` under `key` (compared in constant time).
+pub fn hmac_sha256_ok(key: &[u8], msg: &[u8], tag: &[u8]) -> bool {
+    ring::hmac::verify(&ring::hmac::Key::new(ring::hmac::HMAC_SHA256, key), msg, tag).is_ok()
+}
+
+/// SHA-256 of `bytes` (a key kept as its hash).
+pub fn sha256(bytes: &[u8]) -> [u8; 32] {
+    use sha2::Digest;
+    sha2::Sha256::digest(bytes).into()
+}
+
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_tag_is_checked() {
+        let tag = super::hmac_sha256(b"key", b"message");
+        assert!(super::hmac_sha256_ok(b"key", b"message", &tag));
+        assert!(!super::hmac_sha256_ok(b"key", b"messagf", &tag));
+        assert!(!super::hmac_sha256_ok(b"kez", b"message", &tag));
+        assert_eq!(super::sha256(b"abc")[..4], [0xba, 0x78, 0x16, 0xbf]);
+    }
+
     #[test]
     fn random_bytes_differ() {
         let a: [u8; 16] = super::random_bytes();

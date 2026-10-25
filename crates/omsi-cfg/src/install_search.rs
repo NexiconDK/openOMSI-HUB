@@ -51,6 +51,55 @@ fn steam_roots() -> Vec<PathBuf> {
     v
 }
 
+/// The Steam account this computer's Steam was last signed in with (NexiconDK: Bus Company
+/// Online logs a player in with it): its Steam ID (SteamID64) and the name it shows.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SteamUser {
+    pub id: String,
+    pub name: String,
+}
+
+/// The users of a `loginusers.vdf`: the one marked `MostRecent`, else the one with the latest
+/// `Timestamp`.
+pub fn steam_user_of(vdf: &str) -> Option<SteamUser> {
+    // (`"7656…" { "AccountName" "…" "PersonaName" "…" "MostRecent" "1" "Timestamp" "…" }`)
+    let mut users: Vec<(SteamUser, bool, u64)> = Vec::new();
+    let mut current: Option<(SteamUser, bool, u64)> = None;
+    for line in vdf.lines() {
+        let parts: Vec<&str> = line.split('"').map(str::trim).filter(|s| !s.is_empty()).collect();
+        match parts.as_slice() {
+            [id] if id.len() == 17 && id.bytes().all(|b| b.is_ascii_digit()) => {
+                users.extend(current.take());
+                current = Some((SteamUser { id: id.to_string(), name: String::new() }, false, 0));
+            }
+            [k, v] => {
+                if let Some(u) = current.as_mut() {
+                    match k.to_ascii_lowercase().as_str() {
+                        "personaname" => u.0.name = v.to_string(),
+                        "accountname" if u.0.name.is_empty() => u.0.name = v.to_string(),
+                        "mostrecent" => u.1 = *v == "1",
+                        "timestamp" => u.2 = v.parse().unwrap_or(0),
+                        _ => {}
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    users.extend(current);
+    let best = users.iter().find(|u| u.1).or_else(|| users.iter().max_by_key(|u| u.2))?;
+    Some(best.0.clone())
+}
+
+/// The Steam account this computer's Steam was last signed in with: from the `config/loginusers.vdf`
+/// of the Steam installation the OMSI folder `omsi_root` is in (a library under it), else of the
+/// usual places Steam is installed.
+pub fn steam_user(omsi_root: Option<&Path>) -> Option<SteamUser> {
+    let mut roots: Vec<PathBuf> = omsi_root.map(|r| r.ancestors().skip(1).take(5).map(Path::to_path_buf).collect()).unwrap_or_default();
+    roots.extend(steam_roots());
+    roots.iter().find_map(|r| std::fs::read_to_string(r.join("config/loginusers.vdf")).ok().and_then(|t| steam_user_of(&t)))
+}
+
 fn windows_drives() -> Vec<PathBuf> {
     if !cfg!(windows) {
         return Vec::new();
@@ -219,6 +268,25 @@ pub fn find_original_install(first: &[PathBuf]) -> Option<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The Steam account last signed in on this computer, from Steam's own list.
+    #[test]
+    fn the_steam_user_last_signed_in() {
+        let vdf = "\"users\"\n{\n\t\"76561198000000001\"\n\t{\n\t\t\"AccountName\"\t\t\"old_one\"\n\t\t\"PersonaName\"\t\t\"Old\"\n\t\t\"MostRecent\"\t\t\"0\"\n\t\t\"Timestamp\"\t\t\"1700000000\"\n\t}\n\t\"76561198000000002\"\n\t{\n\t\t\"AccountName\"\t\t\"mathi\"\n\t\t\"PersonaName\"\t\t\"Mathias\"\n\t\t\"mostrecent\"\t\t\"1\"\n\t\t\"Timestamp\"\t\t\"1600000000\"\n\t}\n}\n";
+        assert_eq!(steam_user_of(vdf), Some(SteamUser { id: "76561198000000002".into(), name: "Mathias".into() }));
+        // (none marked: the latest)
+        let unmarked = vdf.replace("\"mostrecent\"\t\t\"1\"", "");
+        assert_eq!(steam_user_of(&unmarked).map(|u| u.id), Some("76561198000000001".into()));
+        assert_eq!(steam_user_of("\"users\" { }"), None);
+        // (found in the Steam installation the OMSI folder is in)
+        let dir = std::env::temp_dir().join(format!("openomsi-steam-user-{}", std::process::id()));
+        let omsi = dir.join("steamapps/common/OMSI 2");
+        std::fs::create_dir_all(&omsi).unwrap();
+        std::fs::create_dir_all(dir.join("config")).unwrap();
+        std::fs::write(dir.join("config/loginusers.vdf"), vdf).unwrap();
+        assert_eq!(steam_user(Some(&omsi)).map(|u| u.name), Some("Mathias".into()));
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 
     #[test]
     fn a_file_or_a_quoted_path_means_its_folder() {

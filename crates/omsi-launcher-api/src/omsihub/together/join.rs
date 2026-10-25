@@ -50,9 +50,13 @@ const HISTORY_KEPT: usize = 300;
 
 /// Who the player is: the id his launcher keeps (per driver), his name.
 #[derive(Clone, Debug)]
-struct Me {
+pub(crate) struct Me {
     id: String,
     name: String,
+    /// (NexiconDK) The driver his launcher drives as (his trips' files are his), and the ticket
+    /// of a Bus Company Online server (`bco.rs`: his id and name the server's then).
+    driver: String,
+    ticket: String,
 }
 
 /// The duty his game drives now.
@@ -144,11 +148,11 @@ fn me() -> Me {
         let _ = std::fs::write(&path, json!({ "id": id }).to_string());
         id
     });
-    Me { id, name }
+    Me { id, driver: name.clone(), name, ticket: String::new() }
 }
 
 fn request(j: &Joined, what: &str) -> Request {
-    Request { v: code::VERSION, secret: j.code.secret_hex(), company: j.code.company, player: j.me.id.clone(), name: j.me.name.clone(), what: what.into(), driving: j.drive.as_ref().map(|d| d.duty.clone()), in_game: j.drive.is_some(), since: j.since, logo: !j.logo_asked, ..Default::default() }
+    Request { v: code::VERSION, secret: j.code.secret_hex(), company: j.code.company, player: j.me.id.clone(), name: j.me.name.clone(), what: what.into(), driving: j.drive.as_ref().map(|d| d.duty.clone()), in_game: j.drive.is_some(), since: j.since, logo: !j.logo_asked, ticket: j.me.ticket.clone(), ..Default::default() }
 }
 
 /// An answer of the boss's launcher taken in: the day, the notices.
@@ -269,7 +273,7 @@ fn run(stop: Arc<AtomicBool>) {
         // (driving: the trips as they end, and the end of the duty when the game ended)
         let mut done = false;
         if let Some(d) = drive.as_ref() {
-            let trips = new_trips(d, &req.name);
+            let trips = new_trips(d, &driver());
             done = !game_runs(d.pid);
             if !trips.is_empty() || done {
                 req.what = "report".into();
@@ -385,7 +389,7 @@ fn remember(j: &Joined, d: &Drive) {
     match res {
         Some(r) => (e.trips, e.score, e.xp, e.passengers, e.km) = (r.trips, r.score, r.xp, r.passengers, r.km),
         None => {
-            let trips: Vec<core::TripRun> = core::trips_of(&data(), &j.me.name).into_iter().filter(|t| t.time >= d.since && t.tour.trim() == d.tour.trim()).collect();
+            let trips: Vec<core::TripRun> = core::trips_of(&data(), &j.me.driver).into_iter().filter(|t| t.time >= d.since && t.tour.trim() == d.tour.trim()).collect();
             let evs: Vec<_> = trips.iter().map(omsi_launcher_lib::company::career::evaluate).collect();
             e.trips = trips.len();
             e.xp = evs.iter().map(|x| x.xp).sum();
@@ -517,6 +521,7 @@ fn check(text: &str) -> Value {
         return json!({ "ok": false });
     }
     match CompanyCode::decode(text) {
+        Ok(c) if c.company == omsi_launcher_lib::company::server_api::server_tag() => json!({ "ok": false, "error": tr(SERVER_CODE) }),
         Ok(_) => json!({ "ok": true }),
         Err(e) => json!({ "ok": false, "error": tr(e) }),
     }
@@ -524,22 +529,38 @@ fn check(text: &str) -> Value {
 
 /// Join the company of `text` (a code): the keeping in touch started, the view.
 fn join(text: &str) -> Value {
+    join_as(text, me())
+}
+
+/// (NexiconDK) Join a company of a Bus Company Online server (`bco.rs`): its code, and the player
+/// as the server knows him - its id and name for him, its ticket.
+pub(crate) fn join_server_company(text: &str, id: &str, name: &str, ticket: &str) -> Value {
+    join_as(text, Me { id: id.to_string(), name: name.to_string(), driver: driver(), ticket: ticket.to_string() })
+}
+
+/// The code of a Bus Company Online server, typed where a company's goes.
+pub const SERVER_CODE: &str = "This is the code of a Bus Company Online server: open Bus Company Online at the start of the bus company and enter it there.";
+
+fn join_as(text: &str, me: Me) -> Value {
     let code = match CompanyCode::decode(text) {
         Ok(c) => c,
         Err(e) => return json!({ "error": tr(e) }),
     };
+    if code.company == omsi_launcher_lib::company::server_api::server_tag() {
+        return json!({ "error": tr(SERVER_CODE) });
+    }
     leave();
     let stop = Arc::new(AtomicBool::new(false));
-    *joined() = Some(Joined { text: text.trim().to_string(), code, me: me(), base: None, snap: None, since: 0, notices: Vec::new(), lost: None, failures: 0, drive: None, stop: stop.clone(), wake: true, said: None, logo: None, logo_asked: false, link: Link::new(unix_now()), ended: None, cut_off: None, replies: Default::default() });
+    *joined() = Some(Joined { text: text.trim().to_string(), code, me, base: None, snap: None, since: 0, notices: Vec::new(), lost: None, failures: 0, drive: None, stop: stop.clone(), wake: true, said: None, logo: None, logo_asked: false, link: Link::new(unix_now()), ended: None, cut_off: None, replies: Default::default() });
     let _ = std::thread::Builder::new().name("company session".into()).spawn(move || run(stop));
     view()
 }
 
 /// Join the same session again, with the code it was joined with (the boss's launcher was lost).
 fn rejoin() -> Value {
-    let text = joined().as_ref().map(|j| j.text.clone());
-    match text {
-        Some(t) => join(&t),
+    let again = joined().as_ref().map(|j| (j.text.clone(), j.me.clone()));
+    match again {
+        Some((t, me)) => join_as(&t, me),
         None => view(),
     }
 }
