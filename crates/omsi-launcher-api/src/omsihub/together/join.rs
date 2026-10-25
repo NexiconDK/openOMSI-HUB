@@ -699,6 +699,11 @@ fn duty_row(d: &SnapDuty, open_claims: bool, ask: bool) -> Value {
         DutyState::Asked => (tr("Asked for: waiting for a yes"), "warn", vec![json!({ "label": tr("Withdraw"), "act": "release", "kind": "" })]),
         DutyState::Driving => (tr("You are driving it"), "ok", vec![json!({ "label": tr("Drive again"), "act": "drive", "kind": "", "icon": "replay" })]),
         DutyState::Done => (tr("Driven"), "dim", Vec::new()),
+        // (NexiconDK: given to him or taken under way on Bus Company Online's server - the world's
+        // AI drives it until he takes it over at its next trip; he did not leave it)
+        DutyState::Ai if d.begun && d.back => (tr("Under way: the AI drives it until you take over"), "ok", vec![json!({ "label": tr("Take over from the next trip"), "act": "take_back", "kind": "primary", "icon": "play_arrow" })]),
+        DutyState::Ai if d.begun => (tr("Under way: no trip of it is left to take over"), "dim", Vec::new()),
+        DutyState::Player if d.ai && d.begun => (trf("%{name} has it", &[("name", &d.who)]), "soft", Vec::new()),
         DutyState::Ai if d.back => (tr(if d.dropped { "You left it: its trips are dropped" } else { "You left it: the AI drives it" }), "warn", vec![json!({ "label": tr("Take the duty back from the next trip"), "act": "take_back", "kind": "primary", "icon": "play_arrow" })]),
         DutyState::Ai if d.dropped => (tr("You left it: the rest of it is dropped"), "warn", Vec::new()),
         DutyState::Ai => (tr("You left it: the AI drives the rest of it"), "warn", Vec::new()),

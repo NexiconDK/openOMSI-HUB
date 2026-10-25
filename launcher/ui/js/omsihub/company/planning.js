@@ -609,7 +609,7 @@ function DayPanel({ s, v, st, inner, drag }) {
         <div style="height:8px"></div>`}
       <div class="pl-caps" style=${`color:${rgba(q.dim)};margin-bottom:4px`}>${s.heads.drivers}</div>
       <div style=${`position:relative;height:24px`}><${TextIn} x=${0} y=${0} w=${w} h=${18} px=${12} color=${rgba(q.dim)}>${s.hint}</${TextIn}></div>
-      ${[s.me, ...s.staff].map((e) => {
+      ${[s.me, ...s.staff].filter(Boolean).map((e) => {
         const arm = { driver: e.who };
         const fill = e.who === 'player' ? rgba(q.accent) : e.colour;
         return html`<div class="pl-slot"><${PickRow} r=${{ x: 0, y: 0, w, h: 30 }} on=${e.on} swatch=${e.who === 'player' ? 'accent' : e.colour} text=${e.name} right=${e.state} rightTone=${e.tone || 'dim'}

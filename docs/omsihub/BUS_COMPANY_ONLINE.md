@@ -315,6 +315,22 @@ Tested: `tours::tests::a_lan_players_duty_takes_only_its_trips_from_the_ai`,
 `company_live::tests::on_a_server_the_maps_other_lines_run`,
 `company_server::tests::a_trip_is_taken_as_the_world_saw_it`.
 
+Fixed 25 October 2026 (the owner could not start a duty given to "You", nor give a duty under way
+to himself):
+
+- **Nobody is "you" of a server company**: its pages offer no "You" among the drivers (the
+  roster's, the planning's, a duty's choices); a duty planned for "you" before is open there
+  (`book::driver_of`) - the world's AI drives it.
+- **A duty under way is a player's from its next trip**: taken or given after it began, the claim
+  gets the AI's part until then (`book::joined_part`, `LeftWhy::Begun`: not counted as left); his
+  list says "Under way: the AI drives it until you take over", and his Drive takes it over at its
+  next trip (`host`'s `start`, as `take_back`). Not when no trip of it is left; elsewhere than on
+  the server a duty under way is still not taken.
+- **"Drive this duty" on the company's pages, joined from afar**, starts it as his menu's Drive
+  does (`kit.js`'s `remoteDrive`), not the boss's duty launcher.
+
+Tested: `together::tests::on_the_server_a_duty_under_way_is_taken_over_at_its_next_trip`.
+
 ## Phase 4: depots
 
 Decided 25 October 2026: moving a bus between maps costs time and money; a lent employee is paid

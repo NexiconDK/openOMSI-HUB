@@ -572,6 +572,10 @@ impl HostState {
             _ => {}
         }
         if x.ai_now().is_some() {
+            // (one under way when he got it, Bus Company Online: he takes it over at its next trip)
+            if x.ai_now().is_some_and(|a| a.why == LeftWhy::Begun) {
+                return self.take_back(c, here, r, guest, name).map(|(st, _)| st);
+            }
             return Err(book::AI_DRIVES);
         }
         // (today's: from the plan as it is now; a closed day's: as it was kept)
@@ -846,6 +850,7 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                 if let Some(a) = claim.and_then(|x| x.ai_now()) {
                     sd.ai = true;
                     sd.dropped = a.dropped;
+                    sd.begun = a.why == LeftWhy::Begun;
                     sd.ai_from = trips.get(a.from).map(|x| x.dep);
                     sd.back = mine && book::back_at(c, Some(p), &r, now).is_some();
                 }
@@ -854,8 +859,9 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                     Some(x) => (DutyState::Player, c.together.name_of(x.guest), String::new()),
                     None if t.by_player => (DutyState::Closed, String::new(), book::DRIVEN.into()),
                     None if !matches!(t.bus, Some(BusOf::Own(_))) => (DutyState::Closed, String::new(), book::NO_BUS.into()),
-                    None if d.who.is_some() => (DutyState::Company, who_of(c, d.who, &boss), String::new()),
-                    None if begun => (DutyState::Closed, String::new(), book::BEGUN.into()),
+                    None if book::driver_of(c, t, k).is_some() => (DutyState::Company, who_of(c, d.who, &boss), String::new()),
+                    // (on Bus Company Online's server one under way is open from its next trip)
+                    None if begun && book::joined_part(c, p, t, k, now).is_none() => (DutyState::Closed, String::new(), book::BEGUN.into()),
                     None => (DutyState::Open, String::new(), String::new()),
                 };
                 s.duties.push(sd);

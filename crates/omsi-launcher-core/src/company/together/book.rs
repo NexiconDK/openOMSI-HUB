@@ -192,6 +192,9 @@ pub enum LeftWhy {
     Removed,
     /// The boss's session ended.
     Closed,
+    /// (NexiconDK, Bus Company Online) Given to him or taken by him after it began: the map's
+    /// world drove it until then, and the AI drives it until he takes it over at its next trip.
+    Begun,
 }
 
 /// A part of a player's duty the AI drives: its trips from `from` (an index into the duty's
@@ -363,6 +366,25 @@ fn begun(p: &DayPlan, t: &DayTour, k: usize, now: i64) -> bool {
     now >= clock::moment(&p.date, t.duties[k].from as i64)
 }
 
+/// Who drives duty `k` of `t` by the plan - on Bus Company Online's server nobody is "you" of
+/// the company (`Who::Player`): its world's AI drives such a duty, as an open one.
+pub fn driver_of(c: &Company, t: &DayTour, k: usize) -> Option<super::super::plan::Who> {
+    t.duties[k].who.filter(|w| !(c.online.on_server && *w == super::super::plan::Who::Player))
+}
+
+/// (NexiconDK, Bus Company Online) A duty of the company's day that has begun is a player's on
+/// the server from its next trip (`now`, the company's clock): the map's world drove it until
+/// then, and the AI drives it until he takes it over (`take_back`) - the part the claim gets.
+/// None: not on the server, or no trip of it is still to begin.
+pub fn joined_part(c: &Company, p: &DayPlan, t: &DayTour, k: usize, now: i64) -> Option<AiPart> {
+    if !c.online.on_server {
+        return None;
+    }
+    let d = &t.duties[k];
+    let trips = &t.tour.trips[d.start..d.end];
+    trips.iter().any(|x| reportable(x) && clock::moment(&p.date, x.dep as i64) >= now).then(|| AiPart { from: 0, until: None, why: LeftWhy::Begun, at: 0, minute: (now - clock::moment(&p.date, 0)) as i32, dropped: false })
+}
+
 /// Whether two duties of the day lie over each other.
 fn overlaps(p: &DayPlan, a: &DutyRef, b: &DutyRef) -> bool {
     let (Some((i, k)), Some((j, m))) = (a.find(p), b.find(p)) else { return false };
@@ -406,17 +428,17 @@ pub fn take(c: &mut Company, p: &DayPlan, r: &DutyRef, guest: u32, now: i64, dir
     if !matches!(t.bus, Some(BusOf::Own(_))) {
         return Err(NO_BUS);
     }
-    if t.duties[k].who.is_some() {
+    if driver_of(c, t, k).is_some() {
         return Err(NOT_OPEN);
     }
-    if begun(p, t, k, now) {
-        return Err(BEGUN);
-    }
+    // (on Bus Company Online's server: his from its next trip, the AI's until then)
+    let part = if begun(p, t, k, now) { Some(joined_part(c, p, t, k, now).ok_or(BEGUN)?) } else { None };
     if overlapping(c, p, r, guest) {
         return Err(OVERLAP);
     }
     let state = if c.together.open_claims || direct { ClaimState::Planned } else { ClaimState::Asked };
-    let claim = claim_of_plan(c, t, k, r, guest, state, false);
+    let mut claim = claim_of_plan(c, t, k, r, guest, state, false);
+    claim.ai.extend(part);
     c.together.claims.push(claim);
     Ok(state)
 }
@@ -441,13 +463,18 @@ pub fn give(c: &mut Company, p: &DayPlan, r: &DutyRef, guest: u32, now: i64) -> 
             _ => {}
         }
     }
-    if begun(p, t, k, now) && t.duties[k].who.is_some() && c.together.claim_of(r).is_none_or(|x| x.guest != guest) {
+    let others = c.together.claim_of(r).is_none_or(|x| x.guest != guest);
+    if begun(p, t, k, now) && driver_of(c, t, k).is_some() && others {
         return Err(BEGUN);
     }
+    // (on Bus Company Online's server a duty under way is his from its next trip, the AI's until
+    // then - not when no trip of it is left)
+    let part = if begun(p, t, k, now) && others && c.online.on_server { Some(joined_part(c, p, t, k, now).ok_or(BEGUN)?) } else { None };
     if overlapping(c, p, r, guest) {
         return Err(OVERLAP);
     }
-    let claim = claim_of_plan(c, t, k, r, guest, ClaimState::Planned, true);
+    let mut claim = claim_of_plan(c, t, k, r, guest, ClaimState::Planned, true);
+    claim.ai.extend(part);
     c.together.claims.retain(|x| !same_duty(&x.duty, r));
     c.together.claims.push(claim);
     Ok(())

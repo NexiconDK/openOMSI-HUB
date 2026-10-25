@@ -988,3 +988,39 @@ fn the_founder_is_the_boss_of_a_server_company() {
     assert_eq!((s.card.boss.as_str(), s.players[0].boss, s.players[0].name.as_str()), ("Luc", true, "Luc"));
     assert_eq!(host::server_owner(&own.c), None);
 }
+
+/// (NexiconDK, Bus Company Online) A duty under way - its world's AI drives it - is a player's on
+/// the server from its next trip: open in his list (one planned for "you", whom nobody plays
+/// there, too), taken with the AI's part until then, and his Drive takes it over at its next trip
+/// - he did not leave it. Elsewhere a duty under way is not taken.
+#[test]
+fn on_the_server_a_duty_under_way_is_taken_over_at_its_next_trip() {
+    let mut b = boss();
+    b.c.together.open_claims = true;
+    let duty = snap(&ask(&mut b, "jan", "hello", |_| {})).duties[0].duty.clone();
+    b.c.clock.minute = 405;
+    assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()))["error"].as_str(), Some(book::BEGUN));
+    b.c.online.on_server = true;
+    let wd = super::super::plan::weekday_of(&b.c.date);
+    super::super::plan::set_driver(&mut b.c, wd, "Linie5", "2", 0, Some(Who::Player));
+    let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
+    assert_eq!(s.duties[0].state, DutyState::Open, "{:?}", s.duties[0]);
+    let v = ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()));
+    assert_eq!(v["state"].as_str(), Some("planned"), "{v}");
+    let x = b.c.together.claim_of(&duty).cloned().unwrap();
+    assert_eq!(x.ai.iter().map(|a| (a.from, a.until, a.why)).collect::<Vec<_>>(), [(0, None, book::LeftWhy::Begun)]);
+    let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
+    assert_eq!((s.duties[0].state, s.duties[0].begun, s.duties[0].back), (DutyState::Ai, true, true));
+    // (his Drive: from the 07:20)
+    let v = ask(&mut b, "jan", "start", |r| r.duty = Some(duty.clone()));
+    assert_eq!(v["ok"].as_bool(), Some(true), "{v}");
+    let start: DriveStart = serde_json::from_value(v["start"].clone()).unwrap();
+    assert_eq!(start.first, 3);
+    let x = b.c.together.claim_of(&duty).cloned().unwrap();
+    assert_eq!((x.state, x.ai[0].until), (ClaimState::Driving, Some(3)));
+    assert_eq!(b.c.together.guest(guest_no(&b, "jan")).unwrap().stats.left, 0, "he did not leave it");
+    // (given by whoever may: the same, when no trip of it is left not)
+    b.c.clock.minute = 460;
+    let v = ask(&mut b, "jan", "release", |r| r.duty = Some(duty.clone()));
+    assert_eq!(v["error"].as_str(), Some(book::UNDER_WAY), "{v}");
+}

@@ -769,7 +769,7 @@ function DayPanel({ d, startDrag, carrying }) {
       <i class=${'bar ' + o.tone}></i><span class=${'ic ' + o.tone}><${Icon} name=${o.hard ? 'error' : 'warning'} size=${14} /></span><b class="cut">${o.title}</b><span class=${'cut t-' + o.tone}>${o.fill}</span><span class="grab"><${Icon} name="open_with" size=${15} /></span></button>`)}</div>`}
     <span class="rf-caps">${tr('Drivers').toUpperCase()}</span>
     <p class="rr-hint">${tr('Tap one, then a duty - or drag it there; or drag a duty here.')}</p>
-    <${PickRow} on=${armIs(s.arm, me)} swatch=${'var(--rf-accent)'} text=${tr('You')} right=${tr('Your own duties')} arm=${me} lit=${target('driver')} onTap=${() => armTap(me)} onPress=${press(me, tr('You'), 'var(--rf-accent)', '#fff')} onMenu=${menuOf({ kind: 'staff', who: 'player' })} />
+    ${d.player !== false && html`<${PickRow} on=${armIs(s.arm, me)} swatch=${'var(--rf-accent)'} text=${tr('You')} right=${tr('Your own duties')} arm=${me} lit=${target('driver')} onTap=${() => armTap(me)} onPress=${press(me, tr('You'), 'var(--rf-accent)', '#fff')} onMenu=${menuOf({ kind: 'staff', who: 'player' })} />`}
     ${(d.guests || []).map((g) => {
       // (Beta 58: the players of "Play together" online, for today)
       const a = { kind: 'driver', who: g.who, name: g.name };

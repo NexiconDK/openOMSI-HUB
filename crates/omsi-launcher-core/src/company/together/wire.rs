@@ -144,6 +144,9 @@ pub struct SnapDuty {
     pub back: bool,
     /// Nobody drives what its player left of it: the company drops it (`book::AiPart::dropped`).
     pub dropped: bool,
+    /// (NexiconDK, Bus Company Online) The AI drives it since before its player had it: it had
+    /// begun (`book::LeftWhy::Begun`) - he takes it over at its next trip, he did not leave it.
+    pub begun: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]

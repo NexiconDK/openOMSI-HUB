@@ -934,3 +934,26 @@ _version: 2
   pl: "%{name} jedzie do %{other} %{day} na %{n} dni."
   ru: "%{name} едет в %{other} %{day} на %{n} дн."
   uk: "%{name} їде до %{other} %{day} на %{n} дн."
+# (NexiconDK) A duty under way given to a player or taken by him on the server: his from its
+# next trip (company::together::book::joined_part, omsihub/together/join.rs).
+"Under way: the AI drives it until you take over":
+  de: "Unterwegs: die KI fährt, bis du übernimmst"
+  fr: "En cours : l'IA conduit jusqu'à ce que vous preniez le relais"
+  nl: "Onderweg: de AI rijdt tot jij het overneemt"
+  pl: "W trakcie: SI prowadzi, dopóki nie przejmiesz"
+  ru: "В пути: ИИ ведёт, пока вы не смените его"
+  uk: "У дорозі: ШІ веде, доки ви не зміните його"
+"Take over from the next trip":
+  de: "Ab der nächsten Fahrt übernehmen"
+  fr: "Prendre le relais au prochain trajet"
+  nl: "Overnemen vanaf de volgende rit"
+  pl: "Przejmij od następnego kursu"
+  ru: "Сменить со следующего рейса"
+  uk: "Змінити з наступного рейсу"
+"Under way: no trip of it is left to take over":
+  de: "Unterwegs: keine Fahrt mehr zum Übernehmen"
+  fr: "En cours : il ne reste aucun trajet à reprendre"
+  nl: "Onderweg: geen rit meer over om over te nemen"
+  pl: "W trakcie: nie został żaden kurs do przejęcia"
+  ru: "В пути: не осталось рейсов, чтобы сменить"
+  uk: "У дорозі: не лишилося рейсів, щоб змінити"

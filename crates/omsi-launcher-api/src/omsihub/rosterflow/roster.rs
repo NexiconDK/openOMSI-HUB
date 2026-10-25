@@ -721,6 +721,9 @@ fn day_side(c: &Company, p: &DayPlan) -> Value {
         "open_rows": open_rows,
         "staff": staff,
         "guests": guest_rows(c, p),
+        // (NexiconDK: on Bus Company Online's server nobody plays as the company itself - its
+        // players, the guests above, drive the duties given to them by name)
+        "player": !c.online.on_server,
         "buses": buses,
     })
 }
@@ -803,6 +806,10 @@ fn duty_side(c: &Company, p: &DayPlan, ti: usize, k: usize) -> Value {
     }
     let current = if t.by_player { Some(Who::Player) } else { d.who };
     let mut cands: Vec<Value> = vec![json!({ "who": Who::Player, "name": tr("You"), "state": tr("Drive it yourself"), "tone": "dim", "swatch": "accent", "on": current == Some(Who::Player) })];
+    // (NexiconDK: nobody is "you" of a company on Bus Company Online's server)
+    if c.online.on_server {
+        cands.clear();
+    }
     // (an agency driver for the whole duty, with what it costs: testers, "no option to use agency")
     let (state, tone) = agency_state(c, p, ti, k);
     cands.push(json!({ "who": Who::Agency, "name": tr("Agency driver"), "state": state, "tone": tone, "swatch": "grey", "on": current == Some(Who::Agency) }));

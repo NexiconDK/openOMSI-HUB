@@ -683,7 +683,9 @@ fn day_panel(c: &Company, p: &DayPlan, arm: Option<Arm>) -> Value {
         "heads": { "morning": tr("This morning").to_uppercase(), "open": tr("Open duties").to_uppercase(), "drivers": tr("Drivers").to_uppercase(), "buses": tr("Buses").to_uppercase() },
         "morning": morning, "open": open_rows,
         "hint": tr("Tap one, then a duty - or drag it there; or drag a duty here."),
-        "me": { "who": "player", "name": tr("You"), "state": tr("Your own duties"), "on": arm == Some(Arm::Driver(Who::Player)) },
+        // (NexiconDK: on Bus Company Online's server nobody plays as the company itself - its
+        // players drive the duties given to them by name)
+        "me": if c.online.on_server { Value::Null } else { json!({ "who": "player", "name": tr("You"), "state": tr("Your own duties"), "on": arm == Some(Arm::Driver(Who::Player)) }) },
         "staff": staff, "no_staff": tr("Nobody on the payroll yet."),
         "buses": buses, "no_buses": tr("No bus in the fleet yet."),
     })
@@ -752,6 +754,10 @@ fn duty_panel(c: &Company, p: &DayPlan, ti: usize, k: usize) -> Value {
     }
     let current = if t.by_player { Some(Who::Player) } else { d.who };
     let mut cands = vec![json!({ "who": "player", "name": tr("You"), "state": tr("Drive it yourself"), "tone": "dim", "swatch": "accent", "on": current == Some(Who::Player) })];
+    // (NexiconDK: nobody is "you" of a company on Bus Company Online's server)
+    if c.online.on_server {
+        cands.clear();
+    }
     for x in pl::candidates(c, p, ti, k) {
         let (s, tone) = fit_of(c, p, ti, k, x.id);
         let name = c.employee(x.id).map(|e| e.name.clone()).unwrap_or_default();
