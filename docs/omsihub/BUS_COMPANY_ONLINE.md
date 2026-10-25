@@ -499,6 +499,28 @@ Tested: `shared_tenders::tests` (the renewal's days, the terms by the buses, the
 `a_server_contract_is_paid_by_the_hour_and_its_departures_fined`,
 `server_fines::tests`, `takeover::tests`.
 
+### Danish time, and a player's trip by its tour
+
+Fixed 25 October 2026 (the night summer time ended the server kept its hour ahead; a player's
+finished duty said "You left it: the rest of it is dropped"):
+
+- **The server keeps Danish time** on the real time (`online::danish`: UTC and an hour, another in
+  the EU's summer time - the owner's choice: Danish time only): behind it, its clock goes on at
+  once; ahead of it - summer time over - it goes back at three in its own night, to two, as the
+  clocks do (`MainServer::keep_danish_time`, `online::set_server_clock`). The companies' processes
+  take the clock in again (`Host::set_server_clock`) and wait the hour out; the worlds take it
+  with the plans; a trip of the world's told again in that hour is booked once
+  (`day::record_live`).
+- **A player's trip is the company's by its tour** (`LivePlan::trip_line`): the world looked for
+  the company by the trip's line among the company's lines alone, and a line whose concession
+  begins on a later day is not among them - the trip went to no company, and his duty stayed as
+  if he had left it. Now the tour of the company's plan it is a trip of decides (its line's
+  timetable name or the number the bus showed), and the trip carries the company's name for the
+  line from there on.
+
+Tested: `main_server::tests::the_server_keeps_danish_time`,
+`plan::trip_line_tests::a_players_trip_is_the_companys_by_its_tour`.
+
 ### Measured on a real map (Ahlheim: 30 lines, 418 tours a day)
 
 `OMSI_COMPANY_MAP_DIR=<map folder> cargo test -p omsi-launcher-core --lib online::tests::on_a_real_map -- --ignored --nocapture`,

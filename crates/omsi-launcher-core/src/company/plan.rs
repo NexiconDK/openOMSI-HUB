@@ -2120,6 +2120,14 @@ impl LivePlan {
         self.tours.iter().find(|t| same(&t.line, line) && same(&t.tour, tour))
     }
 
+    /// (NexiconDK) The company line a player's trip of `line` (its timetable name, or the number
+    /// its bus showed) and `tour` is on: a tour of the company's today - a line it runs from a
+    /// later day too - or else one of its lines. None: not the company's.
+    pub fn trip_line(&self, line: &str, tour: &str) -> Option<String> {
+        let by_tour = self.tours.iter().find(|t| (same(&t.line, line) || same(&t.number, line)) && same(&t.tour, tour)).map(|t| t.line.clone());
+        by_tour.or_else(|| self.has_line(line).then(|| line.trim().to_string()))
+    }
+
     /// What the game reports of a company trip its AI ran to the end: its kilometres, the
     /// passengers the model gives a trip of that length and hour (a depot run carries none),
     /// and how late it ended (s). None: not a tour the company runs.
@@ -2229,6 +2237,23 @@ pub fn live_plans(data: &Path) -> Vec<LivePlan> {
             serde_json::from_str::<LivePlan>(&std::fs::read_to_string(e.path()).ok()?).ok()
         })
         .collect()
+}
+
+#[cfg(test)]
+mod trip_line_tests {
+    use super::*;
+
+    /// (NexiconDK) A player's trip in the world is the company's by its tour - the line's
+    /// timetable name or the number the bus showed, a line not among its lines yet (its
+    /// concession begins on a later day) too -, or by one of its lines; another tour is not.
+    #[test]
+    fn a_players_trip_is_the_companys_by_its_tour() {
+        let p = LivePlan { tours: vec![LiveTour { line: "Linie132".into(), number: "132".into(), tour: "3".into(), ..Default::default() }], lines: vec!["Linie7".into()], ..Default::default() };
+        assert_eq!(p.trip_line("132", "3").as_deref(), Some("Linie132"));
+        assert_eq!(p.trip_line("linie132", "3").as_deref(), Some("Linie132"));
+        assert_eq!(p.trip_line("132", "4"), None);
+        assert_eq!(p.trip_line("Linie7", "1").as_deref(), Some("Linie7"));
+    }
 }
 
 #[cfg(test)]

@@ -172,10 +172,13 @@ pub(crate) fn take_trips(map: &str) {
             log::warn!("server: the trip of {name} on line {} tour {} not taken: {why}", t.line, t.tour);
             continue;
         }
-        let Some(company) = plans.iter().find(|p| same_map(&p.map) && p.has_line(&t.line)).map(|p| p.company.clone()) else {
-            log::warn!("server: the trip of {name} on line {}: no company of the map runs that line", t.line);
+        // (the company of the tour it is a trip of - a line it runs today, its timetable name or
+        // the number the bus showed: the company's name for it from here on)
+        let Some((company, line)) = plans.iter().filter(|p| same_map(&p.map)).find_map(|p| p.trip_line(&t.line, &t.tour).map(|l| (p.company.clone(), l))) else {
+            log::warn!("server: the trip of {name} on line {} tour {}: no company of the map runs that tour", t.line, t.tour);
             continue;
         };
+        let t = omsi_launcher_lib::TripRun { line, ..t };
         let w = omsi_launcher_lib::company::store::WorldTrip { name: name.clone(), trip: t.clone(), at: unix_now() as u64 };
         match omsi_launcher_lib::company::store::append_world_trip(&c.data, &company, &w) {
             Ok(()) => {

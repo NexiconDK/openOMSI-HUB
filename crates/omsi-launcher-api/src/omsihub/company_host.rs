@@ -106,6 +106,12 @@ fn step(s: &mut Session, host: &mut Host, data: &Path) -> bool {
         host.company = c.clone();
         host.replan();
     }
+    // (the server's clock set anew - Danish time, an hour back in the autumn night: its course)
+    if let Some(sc) = online::read_server_clock(data) {
+        if host.set_server_clock(sc) {
+            say(&host.company.id, "the server's clock was set anew: the company keeps to it");
+        }
+    }
     let mut planned = false;
     match host.tick(unix_now()) {
         Ok(st) => {

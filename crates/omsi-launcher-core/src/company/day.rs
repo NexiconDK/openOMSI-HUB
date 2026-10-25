@@ -55,6 +55,13 @@ pub enum LiveEvent {
 /// The hook the game calls with what happened (kept until the day is closed, which books it
 /// as measured and leaves those tours out of the model).
 pub fn record_live(c: &mut Company, ev: LiveEvent) {
+    // (NexiconDK: a trip of the day told again - the world ran an hour again, the server's clock
+    // set back in the autumn night - is booked once)
+    if let LiveEvent::Trip { line, tour, dep: Some(dep), .. } = &ev {
+        if c.live.iter().any(|x| matches!(x, LiveEvent::Trip { line: l, tour: t, dep: Some(d), .. } if l == line && t == tour && d == dep)) {
+            return;
+        }
+    }
     c.live.push(ev);
 }
 

@@ -338,6 +338,33 @@ pub fn server_clock(data: &Path, real: i64, follow: bool, start: (String, i64)) 
     Ok(sc)
 }
 
+/// (NexiconDK, decided 25 October 2026) Danish time at the real time `real` (Unix seconds): its
+/// date and the second of its day - UTC and an hour, and another from the last Sunday of March
+/// to the last Sunday of October (01:00 UTC both), as the EU has it. A server on the real time
+/// keeps it, whatever the zone of its machine (`main_server::MainServer::keep_danish_time`).
+pub fn danish(real: i64) -> (String, i64) {
+    let (y, _, _) = dates::civil_from_days(real.div_euclid(DAY_S));
+    let last_sunday = |m: u32| {
+        let last = dates::days_from_civil(y, m, dates::days_in_month(y, m));
+        last - ((dates::weekday(last) + 1) % 7) as i64
+    };
+    let (from, to) = (last_sunday(3) * DAY_S + 3600, last_sunday(10) * DAY_S + 3600);
+    let local = real + 3600 + if (from..to).contains(&real) { 3600 } else { 0 };
+    (dates::fmt(local.div_euclid(DAY_S)), local.rem_euclid(DAY_S))
+}
+
+/// The server's clock set anew in its folder (`CLOCK_FILE`): the companies' processes and the
+/// maps' worlds take it in (`plans_gen`).
+pub fn set_server_clock(data: &Path, sc: &ServerClock) -> Result<()> {
+    std::fs::create_dir_all(data).with_context(|| format!("cannot make {}", data.display()))?;
+    let path = data.join(CLOCK_FILE);
+    let tmp = data.join(format!("{CLOCK_FILE}.tmp"));
+    std::fs::write(&tmp, serde_json::to_string_pretty(sc)?).with_context(|| format!("cannot write {}", tmp.display()))?;
+    std::fs::rename(&tmp, &path).with_context(|| format!("cannot write {}", path.display()))?;
+    bump_plans(data)?;
+    Ok(())
+}
+
 /// The server's clock as its folder keeps it (`CLOCK_FILE`), not set nor moved: what a map's
 /// world runs on (the main server keeps it).
 pub fn read_server_clock(data: &Path) -> Option<ServerClock> {
@@ -489,6 +516,19 @@ impl Host {
 
     /// On the server's clock: the company's course is the server's (a lead it took - a step
     /// ahead of it - waits for the server to come up to it).
+    /// (NexiconDK) The server's clock set anew (Danish time, `main_server::MainServer::
+    /// keep_danish_time`): the company's course from now on - an hour back, it waits that hour
+    /// out. Whether it changed.
+    pub fn set_server_clock(&mut self, sc: ServerClock) -> bool {
+        if self.server == Some(sc) || self.server.is_none() {
+            return false;
+        }
+        self.server = Some(sc);
+        self.pin();
+        self.dirty = true;
+        true
+    }
+
     fn pin(&mut self) -> bool {
         let Some(sc) = self.server else { return false };
         let r = &mut self.company.clock.real;
