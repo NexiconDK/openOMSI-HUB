@@ -6,7 +6,7 @@
 // rivals with their kind, quality and bid, placing the bid, buying the line outright, the clock
 // stepped on for it - and below, your contracts with their rating and default points.
 
-import { html, ui, setUi, Icon, Btn, Plate, Slider } from './kit.js';
+import { html, ui, setUi, Icon, Btn, Plate, Slider, Dialog, Seg } from './kit.js';
 import { useMore, actMore, eur } from './more.js';
 import { units, cents } from '../money.js';
 import { Card, Empty, Chip, Dot, Track } from './pages-a.js';
@@ -31,10 +31,42 @@ export function ConcessionsPage() {
         </${Card}>
         <${Auction} a=${v.auction} st=${st} />
       </div>
+      ${v.offers && html`<${Offers} o=${v.offers} />`}
       <${Held} h=${v.held} />
     </div>
     <${VaryDialog} />
+    ${st.terms != null && html`<${TermsDialog} r=${t.rows.find((r) => r.id === st.terms)} />`}
   </div>`;
+}
+
+/** (NexiconDK) The buses offered with a line won from another company (`concessions::offers`):
+ * taken over all or none. */
+function Offers({ o }) {
+  return html`<${Card} title=${o.title} icon="directions_bus">
+    <div class="co-pg-list">${o.rows.map(
+      (r) => html`<div class="co-pg-tender" style="cursor:default">
+        <div class="co-pg-line"><${Plate} p=${{ number: r.number }} h=${24} /><b class="co-pg-itemtitle grow co-pg-cut">${r.title}</b></div>
+        <p class="co-pg-note" style="margin:0">${r.say}</p>
+        <div class="co-pg-chips">${r.buses.map(([b, v]) => html`<${Chip} text=${b + ' · ' + v} tone="dim" icon="directions_bus" />`)}</div>
+        <div class="co-pg-line"><${Btn} kind="primary" icon="check_circle" label=${o.yes} onClick=${() => actMore('takeover_yes', { offer: r.id })} />
+          <${Btn} icon="close" label=${o.no} onClick=${() => actMore('takeover_no', { offer: r.id })} /></div>
+      </div>`,
+    )}</div>
+  </${Card}>`;
+}
+
+/** (NexiconDK) What a tender's contract asks (`concessions::requirements`), from its card's
+ * "Contract requirements". */
+function TermsDialog({ r }) {
+  const close = () => setUi('concessions', { terms: null });
+  if (!r?.terms) return null;
+  const d = r.terms;
+  return html`<${Dialog} icon="description" title=${d.title} w=${680} onClose=${close} foot=${html`<span class="rest"></span><${Btn} kind="primary" label=${d.close} onClick=${close} />`}>
+    <div class="co-terms">
+      ${d.groups.map((g) => html`<div class="co-caps">${g.caps}</div>
+        <div class="co-terms-rows">${g.rows.map(([k, v]) => html`<b>${k}</b><span>${v}</span>`)}</div>`)}
+    </div>
+  </${Dialog}>`;
 }
 
 /** A tender's card: its plate and name, its chips, its countdown, its state and your bid. */
@@ -51,6 +83,8 @@ function Tender({ r }) {
       ${r.countdown && html`<span class=${'co-pg-countdown t-' + r.countdown[1]}><${Icon} name="timer" size=${14} />${r.countdown[0]}</span>`}
     </div>
     <span class=${'co-pg-cut co-pg-small t-' + r.bid_tone} title=${r.bid}>${r.bid}</span>
+    ${r.terms && html`<span role="button" tabindex="0" class="co-pg-terms" onClick=${(e) => (e.stopPropagation(), setUi('concessions', { terms: r.id }))}
+      onKeyDown=${(e) => e.key === 'Enter' && (e.stopPropagation(), setUi('concessions', { terms: r.id }))}><${Icon} name="description" size=${15} />${r.terms_label}</span>`}
   </button>`;
 }
 
@@ -68,6 +102,9 @@ function Auction({ a, st }) {
       <div class="grow" style="min-width:0"><b class="co-pg-auctiontitle co-pg-cut" title=${a.caption}>${a.caption}</b><span class=${'co-pg-small co-pg-cut t-' + a.tone}>${a.state}</span></div>
     </div>
     ${a.terms && html`<p class="co-pg-note">${a.terms}</p>`}
+    ${a.drive && html`<div class="co-pg-line" title=${a.drive.say}><span class="co-pg-caps">${a.drive.label}</span>
+      <${Seg} value=${a.drive.value} options=${a.drive.options} onChange=${(k) => actMore('tender_drive', { id: a.id, drive: k })} style="width:300px;height:34px" /></div>
+      <p class="co-pg-note" style="margin:0">${a.drive.say}</p>`}
     ${a.mine && html`<p class=${'co-pg-small t-' + a.mine_tone} style="font-weight:700;margin:0">${a.mine}</p>`}
     <${Timeline} steps=${a.timeline} frac=${a.frac} times=${a.times} />
     <div class="co-pg-tiles">

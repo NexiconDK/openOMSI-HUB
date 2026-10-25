@@ -184,7 +184,7 @@ fn more_act_need(act: &str) -> Need {
         "pe_day" | "pe_sel" | "pe_pdir" | "pe_from" | "pe_close" => RF_VIEW,
         a if a.starts_with("pe_") => Any(&[Perm::Lines, Perm::Plans]),
         "depot_build" | "depot_cancel" | "depot_order" | "parts_auto" | "parts_buy" | "research_info" | "research_start" | "research_pause" | "research_stop" => SPEND,
-        "tender_pick" | "tender_bid" | "tender_buy" | "tender_step" => SPEND,
+        "tender_pick" | "tender_bid" | "tender_buy" | "tender_step" | "tender_drive" | "takeover_yes" | "takeover_no" => SPEND,
         "goal_take" | "goal_give_up" | "net_take" | "net_cancel" | "net_top_up" | "fuel_sign" | "cleaning_sign" | "cleaning_end" | "contract_hand_back" => SPEND,
         // (a tendered line's contract changed, or an offer for it: what the contracts cost)
         "contract_vary" | "contract_offer" => SPEND,

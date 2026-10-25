@@ -228,6 +228,10 @@ pub struct Contract {
     /// What the last months paid (month, net), the latest last: a month's average for leaving.
     #[serde(default)]
     pub paid: Vec<(String, Cents)>,
+    /// (NexiconDK, Bus Company Online) Won with an electric bid: its tours are run with electric
+    /// buses (`concessions::Tender::drive`).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub electric: bool,
     /// The work it was agreed for: the tender's, changed by its variations (None: an older
     /// file's, `variations::work_of`).
     #[serde(default)]
@@ -647,6 +651,7 @@ pub fn make(c: &mut Company, line: &str, number: &str, kind: Kind, period: Perio
         variations: Vec::new(),
         agreed: None,
         offered: String::new(),
+        electric: false,
     }
 }
 
@@ -820,6 +825,9 @@ struct Journey {
     bus: Option<u32>,
     driver: Option<u32>,
     wants: Option<BusSize>,
+    /// Its timetabled minutes (a journey not run: the authority's fine by the minute on the
+    /// server, `server_fines`).
+    length: i32,
 }
 
 /// The day's journeys of every line with passengers, as the close runs them (`day::close_day`
@@ -827,19 +835,29 @@ struct Journey {
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Journeys {
     list: Vec<Journey>,
+    /// The red lights the players' own trips ran, by line (the authority's fine for each on the
+    /// server, `server_fines`).
+    red: Vec<(String, u32)>,
 }
 
 impl Journeys {
-    /// A journey not run (dropped, or on no bus).
-    pub fn missed(&mut self, line: &str, tour: &str) {
-        self.list.push(Journey { line: line.to_string(), tour: tour.to_string(), minutes: 0, run: false, part: false, bus: None, driver: None, wants: None });
+    /// A journey not run (dropped, or on no bus), of `length` timetabled minutes.
+    pub fn missed(&mut self, line: &str, tour: &str, length: i32) {
+        self.list.push(Journey { line: line.to_string(), tour: tour.to_string(), minutes: 0, run: false, part: false, bus: None, driver: None, wants: None, length });
+    }
+
+    /// Red lights a player's own trip of `line` ran.
+    pub fn red_lights(&mut self, line: &str, n: u32) {
+        if n > 0 {
+            self.red.push((line.to_string(), n));
+        }
     }
 
     /// A journey run `minutes` off the timetable (negative early), `part`ly cut short, with that
     /// bus and driver, of a tour that asks for buses of `wants`.
     #[allow(clippy::too_many_arguments)]
     pub fn ran(&mut self, line: &str, tour: &str, minutes: i32, part: bool, bus: Option<u32>, driver: Option<u32>, wants: Option<BusSize>) {
-        self.list.push(Journey { line: line.to_string(), tour: tour.to_string(), minutes, run: true, part, bus, driver, wants });
+        self.list.push(Journey { line: line.to_string(), tour: tour.to_string(), minutes, run: true, part, bus, driver, wants, length: 0 });
     }
 
     pub fn len(&self) -> usize {
@@ -988,13 +1006,17 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         if strict <= 0.0 {
             pd.unpaid = 0;
         }
+        // (NexiconDK, Bus Company Online: the authority's fines - `server_fines`)
+        let red: u32 = journeys.red.iter().filter(|r| r.0.eq_ignore_ascii_case(&k.line)).map(|r| r.1).sum();
+        let fined = if c.online.on_server { authority_fines(c, &k, &mine, red, date) } else { 0 };
+        let deducted = deducted + fined;
         pd.deducted = deducted;
         let label = Kind::label(k.kind).to_lowercase();
         if pay != 0 {
             c.book(BookingKind::Contract, pay, format!("Line {}: {label} contract", k.number), false);
         }
-        if deducted != 0 {
-            c.book(BookingKind::Contract, -deducted, format!("Line {}: {} journeys not paid", k.number, pd.unpaid), false);
+        if deducted - fined != 0 {
+            c.book(BookingKind::Contract, -(deducted - fined), format!("Line {}: {} journeys not paid", k.number, pd.unpaid), false);
         }
         // (the line's day: a gross-cost line's takings went to the authority as they were booked -
         // collected and paid over, `income::book` - so they are only counted here; a contract
@@ -1037,6 +1059,72 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
     }
     report.penalties += out.deducted;
     report.contracts = out;
+}
+
+/// (NexiconDK, decided 25 October 2026) The chance of an authority's complaint on a journey of
+/// a contract line on the server, for a driver of no skill (one of every skill: a fifth of it)
+/// and a bus in no condition: about the driving, the route, a ticket sold wrong, a red light
+/// run, and the temperature in the bus.
+pub const COMPLAINT_DRIVING: f64 = 0.004;
+pub const COMPLAINT_ROUTE: f64 = 0.002;
+pub const COMPLAINT_TICKET: f64 = 0.003;
+pub const COMPLAINT_RED: f64 = 0.002;
+pub const COMPLAINT_COLD: f64 = 0.003;
+
+/// (NexiconDK, Bus Company Online) The authority's fines on contract `k`'s journeys of the day
+/// (`mine`; `red`: the red lights its players' own trips ran), booked as penalties: each minute
+/// of a journey not run, each journey run with a smaller bus than its tour asks for or - a
+/// contract won with electric buses - with a diesel bus, and each complaint (drawn by the
+/// journey from its driver's skills and its bus's condition; a player's red lights as he ran
+/// them). What they came to.
+fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, date: &str) -> Cents {
+    use super::server_fines::Fines;
+    let f = c.online.fines.unwrap_or_default();
+    let mut rng = Rng::of(&[&c.id, "authority fines", &k.line], dates::parse(date).unwrap_or(0));
+    let (mut dropped, mut minutes, mut wrong, mut diesel) = (0u32, 0i64, 0u32, 0u32);
+    // (the driving, the temperature, the route, a ticket, a red light)
+    let mut complaints = [0u32, 0, 0, 0, red];
+    let lack = |x: f64| (1.2 - x / 100.0).clamp(0.2, 1.2);
+    for j in mine {
+        if !j.run {
+            dropped += 1;
+            minutes += j.length.max(0) as i64;
+            continue;
+        }
+        if let Some(v) = j.bus.and_then(|b| c.vehicle(b)) {
+            if j.wants.is_some_and(|w| super::ownline::capacity(v.kind.size) < super::ownline::capacity(w)) {
+                wrong += 1;
+            }
+            if k.electric && v.kind.drive == Drive::Diesel {
+                diesel += 1;
+            }
+            if rng.chance(COMPLAINT_COLD * (1.3 - v.condition / 100.0).clamp(0.3, 1.3)) {
+                complaints[1] += 1;
+            }
+        }
+        if let Some(e) = j.driver.and_then(|d| c.employee(d)) {
+            let (drive, service) = (lack(e.skills.driving), lack(e.skills.service));
+            complaints[0] += rng.chance(COMPLAINT_DRIVING * drive) as u32;
+            complaints[2] += rng.chance(COMPLAINT_ROUTE * drive) as u32;
+            complaints[3] += rng.chance(COMPLAINT_TICKET * service) as u32;
+            complaints[4] += rng.chance(COMPLAINT_RED * drive) as u32;
+        }
+    }
+    let mut total = 0;
+    let mut fine = |c: &mut Company, n: u32, kr: f64, what: String| {
+        let amount = Fines::cents(kr);
+        if n > 0 && amount > 0 {
+            c.book(BookingKind::Penalty, -amount, format!("Line {}: the authority's fine - {what}", k.number), false);
+            total += amount;
+        }
+    };
+    fine(c, dropped, minutes as f64 * f.dropped_minute, format!("{dropped} journeys not run ({minutes} min)"));
+    fine(c, wrong, wrong as f64 * f.wrong_bus, format!("{wrong} journeys with a smaller bus than the tour's"));
+    fine(c, diesel, diesel as f64 * f.diesel_on_electric, format!("{diesel} journeys with a diesel bus on an electric tour"));
+    for (n, kr, what) in [(complaints[0], f.driving, "the driving"), (complaints[1], f.temperature, "the temperature in the bus"), (complaints[2], f.route, "the route driven"), (complaints[3], f.ticket, "a ticket sold wrong"), (complaints[4], f.red_light, "a red light run")] {
+        fine(c, n, n as f64 * kr, format!("{n} complaints about {what}"));
+    }
+    total
 }
 
 /// A contract's event as the day's report notes it.

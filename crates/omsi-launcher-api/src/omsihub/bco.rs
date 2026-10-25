@@ -415,7 +415,10 @@ mod tests {
         let mut texts: Vec<String> = omsi_launcher_lib::company::server_api::texts().into_iter().map(String::from).collect();
         // (the map's shared tenders and the depots: refusals the pages say)
         use omsi_launcher_lib::company::{concessions, server_depots, shared_tenders};
-        texts.extend(server_depots::texts().into_iter().chain([shared_tenders::HELD, shared_tenders::ASKED, concessions::NOT_ON_SERVER]).map(String::from));
+        texts.extend(server_depots::texts().into_iter().chain([shared_tenders::HELD, shared_tenders::ASKED, concessions::NOT_ON_SERVER, concessions::NO_ELECTRIC]).map(String::from));
+        // (the buses of a line changing company: its refusals and messages)
+        use omsi_launcher_lib::company::takeover;
+        texts.extend(takeover::texts().into_iter().chain([takeover::OFFERED.0, takeover::OFFERED.1, takeover::TAKEN.0, takeover::TAKEN.1, takeover::REFUSED.0, takeover::REFUSED.1]).map(String::from));
         texts.push(super::together::SERVER_CODE.to_string());
         texts.push(omsi_launcher_lib::company::together::host::NO_TICKET.to_string());
         for lead in ["tr(\"", "trf(\""] {

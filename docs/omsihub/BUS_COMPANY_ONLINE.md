@@ -442,6 +442,47 @@ Tested: `auction::tests::two_companies_in_one_tender_see_the_same_auction`,
 `shared_tenders::tests::two_companies_bid_against_each_other_in_the_maps_tenders`,
 `a_concession_ending_goes_out_to_every_company`, `an_easy_company_applies_and_bids_itself`.
 
+### The server's own contract rules
+
+Decided 25 October 2026 (the owner's rules; on the server alone - a company elsewhere keeps the UK
+economy's):
+
+- **A tender runs three days** (`shared_tenders::TENDER_DAYS`); a concession is put out again six
+  days before its new term begins and decided three days before it (`RENEW_OPENS`,
+  `RENEW_DECIDED`): the winner has three days to make ready.
+- **The term is by the buses bid with**: the company chooses diesel or electric buses for its
+  bids in the auction (`concessions::set_drive`, `tender_drive`; electric where its level opens
+  them), each bid carries them (`MarketBid::drive`) and the winning bid's decide
+  (`Decided::drive`): two weeks with diesel buses, a month with electric ones
+  (`concessions::server_term`), without extension years; a contract won with electric buses runs
+  its tours with electric buses (`bus_contracts::Contract::electric`).
+- **The buses are the timetable's**: each tour is run with the bus its timetable asks for (its AI
+  group: `network::wants_size`), or a bigger one; the tender keeps its tours by the bus they ask
+  for (`concessions::Sizes`).
+- **The contract requirements** - a button on a tender's card - show all of it: the tours by the
+  day and by the bus, diesel or electric, the three days of bidding, the term's first day, the
+  renewal, the buses taken over, the cap and the fines (`concessions::requirements` in the
+  launcher).
+- **The authority's fines** (`server_fines`, in Danish kroner in `company-server.cfg`, each company
+  paying them in its own currency; `bus_contracts::authority_fines` at the day's close, booked as
+  penalties): 20.83 kr a minute of a journey not run, 2 500 kr a journey with a smaller bus than
+  its tour asks for (the owner gave no amount: proposed), 2 500 kr a journey with a diesel bus on
+  a contract won with electric buses (an electric bus on any tour is no fault), and for each
+  complaint 2 000 kr (the driving), 1 500 kr (the temperature in the bus), 2 500 kr (the route
+  driven, a ticket sold wrong, a red light run). The complaints are drawn by the journey from its
+  driver's skills and its bus's condition (`COMPLAINT_*`); a player's red lights are the ones his
+  trip ran.
+- **The buses taken over** (`takeover`): a concession won from another company - the loser offers
+  the winner the buses of its own it ran the line with (its roster's tours of the line), at their
+  book value; the winner takes all of them or none (the Concessions page's "Buses offered",
+  `takeover_yes`, `takeover_no`); on the new term's first day they leave the loser's fleet, sold,
+  and join the winner's, paid. Through `<folder>/takeover/<id>.offers.jsonl`, `.answers.jsonl`
+  and `.buses.jsonl` (`Online::takeover`).
+
+Tested: `shared_tenders::tests` (the renewal's days, the terms by the buses),
+`bus_contracts::tests::the_authoritys_fines_on_a_server_contract`,
+`server_fines::tests`, `takeover::tests`.
+
 ### Measured on a real map (Ahlheim: 30 lines, 418 tours a day)
 
 `OMSI_COMPANY_MAP_DIR=<map folder> cargo test -p omsi-launcher-core --lib online::tests::on_a_real_map -- --ignored --nocapture`,

@@ -77,6 +77,14 @@ pub struct Online {
     pub buses_read: u64,
     #[serde(default)]
     pub people_read: u64,
+    /// (Decided 25 October 2026) The authority's fines on its contracts, as the server's
+    /// settings have them (`server_fines`; set by its process, not kept: None elsewhere).
+    #[serde(skip)]
+    pub fines: Option<super::server_fines::Fines>,
+    /// (Decided 25 October 2026) The buses of the lines changing company: offered, answered,
+    /// sold, taken over (`takeover`).
+    #[serde(default)]
+    pub takeover: super::takeover::Takeover,
 }
 
 /// The company's share of its players' trips when it is founded (per cent).
@@ -88,7 +96,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0 }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default() }
     }
 }
 
@@ -516,6 +524,10 @@ impl Host {
             self.dirty = true;
         }
         let c = &mut self.company;
+        // (the authority's fines of the server's settings: its contracts' - `server_fines`)
+        if c.online.on_server && c.online.fines.is_none() {
+            c.online.fines = Some(super::server_fines::of_folder(&self.data));
+        }
         // never in step yet: in step from now (a company that did not run with the real clock)
         if c.clock.real.synced.is_none() {
             clock::sync(c, real);
@@ -541,6 +553,11 @@ impl Host {
             self.planned = None;
         }
         if super::server_depots::people_step(&self.data, c) {
+            self.dirty = true;
+            self.planned = None;
+        }
+        // (the buses of the lines changing company - offered, answered, sold, taken over)
+        if super::takeover::step(&self.data, c) {
             self.dirty = true;
             self.planned = None;
         }

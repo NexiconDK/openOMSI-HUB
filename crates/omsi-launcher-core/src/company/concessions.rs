@@ -36,7 +36,7 @@ use super::clock;
 use super::dates;
 use super::econ_uk;
 use super::levels;
-use super::model::{BookingKind, Cents, Company, GameMode};
+use super::model::{BookingKind, BusSize, Cents, Company, Drive, GameMode};
 use super::network;
 use super::rng::Rng;
 use super::specials;
@@ -228,7 +228,57 @@ pub struct Tender {
     /// of the map (`shared_tenders`); None: the company's own.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub market: Option<Shared>,
+    /// (NexiconDK, Bus Company Online) The buses the company bids with on the server: its
+    /// contract runs `server_term` - two weeks with diesel buses, a month with electric ones.
+    #[serde(default)]
+    pub drive: Drive,
+    /// (NexiconDK) The tours of the day it was offered by the bus their timetable asks for: each
+    /// tour of the contract is run with a bus of that size (`network::wants_size`).
+    #[serde(default)]
+    pub sizes: Sizes,
 }
+
+/// (NexiconDK) A line's tours of a day by the bus their timetable asks for (its AI group:
+/// `network::wants_size`); `any`: one that names none.
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[serde(default)]
+pub struct Sizes {
+    pub articulated: u32,
+    pub solo: u32,
+    pub midi: u32,
+    pub double: u32,
+    pub any: u32,
+}
+
+impl Sizes {
+    /// The tours of a line of the day (`l`) that run.
+    pub fn of(l: &LineInfo) -> Sizes {
+        let mut s = Sizes::default();
+        for t in l.tours.iter().filter(|t| t.runs) {
+            match network::wants_size(&t.ai_group) {
+                Some(BusSize::Articulated) => s.articulated += 1,
+                Some(BusSize::Solo) => s.solo += 1,
+                Some(BusSize::Midi) => s.midi += 1,
+                Some(BusSize::Double) => s.double += 1,
+                None => s.any += 1,
+            }
+        }
+        s
+    }
+}
+
+/// (NexiconDK, Bus Company Online) The term of a contract won on the server, by the buses it was
+/// bid with (decided 25 October 2026): a month with electric buses, two weeks with diesel ones -
+/// its last day, from `from`.
+pub fn server_term(drive: Drive, from: &str) -> String {
+    match drive {
+        Drive::Electric => dates::add(&dates::add_month(from), -1),
+        Drive::Diesel => dates::add(from, SERVER_DIESEL_DAYS - 1),
+    }
+}
+
+/// The days of a diesel contract on the server.
+pub const SERVER_DIESEL_DAYS: i64 = 14;
 
 /// (NexiconDK, Bus Company Online) What a company keeps of a tender of its map's market
 /// (`shared_tenders`, decided 25 October 2026: every company of a map bids in the same tenders,
@@ -700,6 +750,8 @@ pub fn make_tender(c: &Company, l: &LineInfo, id: u32, opens_at: i64, renewal: b
         work,
         cost: 0,
         market: None,
+        drive: Drive::Diesel,
+        sizes: Sizes::of(l),
     };
     price(c, &mut t);
     t
@@ -1051,6 +1103,20 @@ pub fn bid(c: &mut Company, id: u32, amount: Cents) -> Result<(), &'static str> 
     Ok(())
 }
 
+/// (NexiconDK, Bus Company Online) The buses the company bids with on tender `id` of the map's
+/// market: diesel (a contract of two weeks) or electric (a month: `server_term`) - its next bid
+/// carries them, and the winning bid's decide. Electric ones only where the company's level
+/// opens them.
+pub const NO_ELECTRIC: &str = "Electric buses open at a higher company level.";
+pub fn set_drive(c: &mut Company, id: u32, drive: Drive) -> Result<(), &'static str> {
+    if drive == Drive::Electric && !levels::unlocked(c, levels::Feature::ElectricBuses) {
+        return Err(NO_ELECTRIC);
+    }
+    let t = c.concessions.tenders.iter_mut().find(|t| t.id == id && t.open() && t.market.is_some()).ok_or("There is no such tender.")?;
+    t.drive = drive;
+    Ok(())
+}
+
 /// The company's own bid on a tender, as the pages show it (testers: "how do I know what I bid
 /// on my tender?"): its last bid and when, how many it placed, whether it leads now, and how it
 /// ended - the winning bid and who won. From the tender's `offers` and `outcome`, both kept with
@@ -1201,10 +1267,19 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
     let price = ((t.share(amount)) * 1000.0).round() / 1000.0;
     let work = if t.work == Work::default() { bc::rough_work(t.day_tours, t.day_km) } else { t.work };
     let days = t.term_years() as i64 * 365;
+    // (NexiconDK: on the server its term is by the buses it was bid with, without extension years)
+    let until_of = |from: &str| if t.market.is_some() { server_term(t.drive, from) } else { dates::add(from, days - 1) };
+    let server = |k: &mut bc::Contract| {
+        if t.market.is_some() {
+            k.extensions_left = 0;
+            k.electric = t.drive == Drive::Electric;
+        }
+    };
     if let Some(h) = c.concessions.held.iter().find(|h| h.line.eq_ignore_ascii_case(&t.line)).cloned() {
         let from = dates::add(&h.until, 1);
-        let until = dates::add(&h.until, days);
-        let k = bc::make(c, &t.line, &t.number, t.kind, t.period, amount, &work, &from, &until);
+        let until = until_of(&from);
+        let mut k = bc::make(c, &t.line, &t.number, t.kind, t.period, amount, &work, &from, &until);
+        server(&mut k);
         c.concessions.contracts.push(k);
         if let Some(h) = c.concessions.held.iter_mut().find(|x| x.line.eq_ignore_ascii_case(&t.line)) {
             h.until = until.clone();
@@ -1216,8 +1291,9 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
     // (a concession of another company of the map put out again: the line is the winner's from
     // the day its new term begins - the other runs it until then)
     let from = t.market.as_ref().map(|m| m.from.clone()).filter(|f| dates::parse(f).is_some() && dates::between(&tomorrow, f) > 0).unwrap_or(tomorrow);
-    let until = dates::add(&from, days - 1);
-    let k = bc::make(c, &t.line, &t.number, t.kind, t.period, amount, &work, &from, &until);
+    let until = until_of(&from);
+    let mut k = bc::make(c, &t.line, &t.number, t.kind, t.period, amount, &work, &from, &until);
+    server(&mut k);
     c.concessions.contracts.push(k);
     c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false });
     Event::Won { number: t.number.clone(), until }
@@ -1257,8 +1333,12 @@ pub fn close(c: &mut Company, id: u32) -> Option<(Event, Cents)> {
 /// every company (`shared_tenders`): won by the company (`mine`), else by `winner` - another
 /// company or one of the map's operators; empty: nobody bid - with `amount`, every bidder's points
 /// kept. What came of it, as `close` says it (None: decided already, or no such tender).
-pub fn decide_shared(c: &mut Company, id: u32, mine: bool, winner: &str, amount: Cents, board: Vec<Standing>) -> Option<(Event, Cents)> {
-    let t = c.concessions.tenders.iter().find(|t| t.id == id && t.open() && t.market.is_some())?.clone();
+pub fn decide_shared(c: &mut Company, id: u32, mine: bool, winner: &str, amount: Cents, board: Vec<Standing>, drive: Drive) -> Option<(Event, Cents)> {
+    let mut t = c.concessions.tenders.iter().find(|t| t.id == id && t.open() && t.market.is_some())?.clone();
+    // (its term by the buses its winning bid was made with)
+    if mine {
+        t.drive = drive;
+    }
     // (its own name in the points as the company's: empty, as in a tender of its own)
     let board: Vec<Standing> = board.into_iter().map(|s| if s.name == c.name { Standing { name: String::new(), ..s } } else { s }).collect();
     let me = board.iter().find(|s| s.name.is_empty()).map_or(0.0, |s| s.total);

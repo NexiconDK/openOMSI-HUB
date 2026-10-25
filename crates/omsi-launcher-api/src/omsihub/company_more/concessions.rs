@@ -9,7 +9,7 @@
 //! (the page says so meanwhile). The Contracts page's "Tender bids" (`bids`) lists the tenders
 //! the company bid on.
 
-use super::super::words::{day_label, eur, grouped, num, span_text, tr, trf};
+use super::super::words::{day_label, eur, eur_cents, grouped, num, span_text, tr, trf};
 use super::super::{act as apply, busy, may_step, simulate, Session};
 use super::contracts as kc;
 use super::{more, more_state, u32_arg};
@@ -20,7 +20,7 @@ use omsi_launcher_lib::company::bus_contracts::{self as bc, Period};
 use omsi_launcher_lib::company::clock::{self as ck, Step};
 use omsi_launcher_lib::company::concessions::{self as cn, Outcome, Tender, Week};
 use omsi_launcher_lib::company::shared_tenders as co_tenders;
-use omsi_launcher_lib::company::{dates, Company};
+use omsi_launcher_lib::company::{dates, Company, Drive};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
@@ -174,7 +174,33 @@ pub fn view(s: &mut Session, args: &Value) -> Value {
         "tenders": tenders(&c, &list, &weeks, reading, today_read, selected),
         "held": held(&c),
         "auction": auction(&c, selected, args),
+        "offers": offers(&c),
     })
+}
+
+/// (NexiconDK, decided 25 October 2026) The buses offered with a line the company won from
+/// another company of the server, not answered yet (`takeover`): each with its buses and their
+/// book value, taken over all or none.
+fn offers(c: &Company) -> Value {
+    let rows: Vec<Value> = c
+        .online
+        .takeover
+        .offers
+        .iter()
+        .filter(|o| o.answer.is_none())
+        .map(|o| {
+            json!({
+                "id": o.id, "number": o.number,
+                "title": trf("%{name}'s buses of line %{n}", &[("name", &o.name), ("n", &o.number)]),
+                "say": trf("%{count} buses at their book value, %{amount} together, taken over on %{date}, the day your term begins.", &[("count", &o.buses.len().to_string()), ("amount", &eur(o.total())), ("date", &day_label(&o.date))]),
+                "buses": o.buses.iter().map(|b| json!([b.label, eur(b.value)])).collect::<Vec<_>>(),
+            })
+        })
+        .collect();
+    if rows.is_empty() {
+        return Value::Null;
+    }
+    json!({ "title": tr("Buses offered"), "rows": rows, "yes": tr("Take them over"), "no": tr("No, thank you") })
 }
 
 /// The tenders: announced and running first, then the results (`concessions::tenders`).
@@ -231,6 +257,8 @@ fn tenders(c: &Company, list: &[Tender], weeks: &HashMap<String, Week>, reading:
                 "id": t.id, "number": t.number, "caption": caption_of(t), "dim": !t.open(), "on": selected == Some(t.id),
                 "figures": figures, "state": state, "tone": tone, "bid": bid, "bid_tone": bid_tone, "badge": badge,
                 "chips": chips, "countdown": countdown,
+                // (NexiconDK, the owner's wish: what the contract asks, behind a button of its card)
+                "terms": t.market.is_some().then(|| requirements(c, t, week)), "terms_label": t.market.is_some().then(|| tr("Contract requirements")),
             })
         })
         .collect();
@@ -285,6 +313,62 @@ fn record_short(c: &Company) -> String {
     trf("Track record: %{pts} default points a contract  ·  %{q} of 30 quality points", &[("pts", &num(pts, 1)), ("q", &num(bc::quality_points(pts), 1))])
 }
 
+/// (NexiconDK, decided 25 October 2026) What a contract of the map's market asks of the company
+/// on Bus Company Online's server, in groups of a label and its words: the buses (its tours by
+/// the day and by the bus their timetable asks for, the term by the buses bid with), the tender
+/// (three days of bidding, the term's first day, the renewal, the buses taken over) and the
+/// authority's fines (`server_fines`, in the company's currency).
+fn requirements(c: &Company, t: &Tender, week: Option<Week>) -> Value {
+    use omsi_launcher_lib::company::server_fines::{self, Fines};
+    let row = |label: &str, text: String| json!([tr(label), text]);
+    let s = t.sizes;
+    let mut sizes: Vec<String> = Vec::new();
+    for (n, key) in [(s.articulated, "%{n} with an articulated bus"), (s.double, "%{n} with a double-decker"), (s.solo, "%{n} with a standard bus"), (s.midi, "%{n} with a midibus"), (s.any, "%{n} with any bus")] {
+        if n > 0 {
+            sizes.push(trf(key, &[("n", &n.to_string())]));
+        }
+    }
+    let tours = match week {
+        Some(wk) if wk.by_day => trf("%{wd} tours Mon–Fri · %{sat} Sat · %{sun} Sun", &[("wd", &wk.mon_fri.to_string()), ("sat", &wk.sat.to_string()), ("sun", &wk.sun.to_string())]),
+        _ => trf("%{n} tours a day", &[("n", &t.day_tours.to_string())]),
+    };
+    let buses = vec![
+        row("Tours", tours),
+        row("Bus types", if sizes.is_empty() { tr("Any bus") } else { sizes.join(" · ") }),
+        row("The rule", tr("Each tour is run with the bus its timetable asks for, or a bigger one.")),
+        row("Diesel or electric", tr("Bid with diesel buses: the contract runs two weeks. Bid with electric buses: it runs a month, and every tour is run with an electric bus.")),
+    ];
+    let from = t.market.as_ref().map(|m| m.from.clone()).filter(|f| !f.is_empty()).unwrap_or_else(|| dates::add(&ck::date_of(t.closes_at), 1));
+    let tender = vec![
+        row("Bidding", trf("Three days: from %{open} to %{close}", &[("open", &when(c, t.opens_at)), ("close", &when(c, t.closes_at))])),
+        row("The term", trf("From %{date}, without extension", &[("date", &day_label(&from))])),
+        row("Renewal", tr("Six days before the term ends the line goes out to tender again, decided three days before it: the winner has three days to make ready.")),
+        row("The buses", tr("The winner may take over the buses its last operator ran the line with, at their book value.")),
+        row("The cap", trf("%{amount} a year: an ask above it does not count", &[("amount", &eur(t.reference))])),
+    ];
+    let f = c.online.fines.unwrap_or_else(|| server_fines::of_folder(&super::super::data()));
+    let kr = |x: f64| eur(Fines::cents(x));
+    let fines = vec![
+        row("A journey not run", trf("%{amount} a minute of its time", &[("amount", &eur_cents(Fines::cents(f.dropped_minute) as f64))])),
+        row("A smaller bus than the tour's", trf("%{amount} a journey", &[("amount", &kr(f.wrong_bus))])),
+        row("A diesel bus on an electric tour", trf("%{amount} a journey", &[("amount", &kr(f.diesel_on_electric))])),
+        row("A complaint about the driving", kr(f.driving)),
+        row("A complaint about the temperature", kr(f.temperature)),
+        row("A complaint about the route", kr(f.route)),
+        row("A ticket sold wrong", kr(f.ticket)),
+        row("A red light run", kr(f.red_light)),
+    ];
+    json!({
+        "title": trf("Contract requirements: line %{n}", &[("n", &t.number)]),
+        "groups": [
+            { "caps": tr("The buses").to_uppercase(), "rows": buses },
+            { "caps": tr("The tender").to_uppercase(), "rows": tender },
+            { "caps": tr("The authority's fines").to_uppercase(), "rows": fines },
+        ],
+        "close": tr("Close"),
+    })
+}
+
 /// How a tender's contract is paid, in words.
 fn per_text(p: Period) -> String {
     match p {
@@ -319,7 +403,19 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         }
     }
     let (_, ext) = bc::term(t.kind);
-    let terms = t.scored().then(|| trf("%{kind}, %{per}  ·  %{years} years and up to %{ext} more  ·  asks are a price a year", &[("kind", &tr(t.kind.label())), ("per", &per_text(t.period)), ("years", &t.term_years().to_string()), ("ext", &ext.to_string())]));
+    let terms = t.scored().then(|| match t.market {
+        // (NexiconDK: on the server its term is by the buses it is bid with)
+        Some(_) => trf("%{kind}, %{per}  ·  two weeks with diesel buses, a month with electric ones  ·  asks are a price a year", &[("kind", &tr(t.kind.label())), ("per", &per_text(t.period))]),
+        None => trf("%{kind}, %{per}  ·  %{years} years and up to %{ext} more  ·  asks are a price a year", &[("kind", &tr(t.kind.label())), ("per", &per_text(t.period)), ("years", &t.term_years().to_string()), ("ext", &ext.to_string())]),
+    });
+    // (and the buses the company bids with: its next bid carries them)
+    let drive = (t.market.is_some() && t.open()).then(|| {
+        json!({
+            "label": tr("Your buses"), "value": if t.drive == Drive::Electric { "electric" } else { "diesel" },
+            "options": [["diesel", tr("Diesel · two weeks")], ["electric", tr("Electric · a month")]],
+            "say": tr("Your next bid is made with these buses: the contract runs two weeks with diesel buses and a month with electric ones, whose tours are then run with electric buses."),
+        })
+    });
     let len = (t.closes_at - t.opens_at).max(1);
     let frac = if t.open() { ((now - t.opens_at) as f64 / len as f64).clamp(0.0, 1.0) } else { 1.0 };
     let times = if !t.open() {
@@ -474,7 +570,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         "rivals_title": tr("Rivals"), "rivals_heads": [tr("Bidder"), tr("Kind"), tr("Quality"), tr("Bid")],
         "title": title, "id": t.id, "number": t.number, "caption": caption_of(t),
         "state": state, "tone": tone, "mine": mine.as_ref().map(|m| &m.0), "mine_tone": mine.map(|m| m.1),
-        "figures": figures, "terms": terms, "frac": frac, "times": times, "bidders": bidders,
+        "figures": figures, "terms": terms, "frac": frac, "times": times, "bidders": bidders, "drive": drive,
         "log_title": tr("Bids").to_uppercase(), "log": log, "no_log": tr("No bid yet."),
         "actions": actions,
     })
@@ -504,6 +600,26 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {
                     s.say(tr("Your bid is in. The rivals answer as the clock goes on."), false);
                     Ok(json!({}))
                 }
+                Err(p) => Ok(json!({ "popup": p })),
+            }
+        }
+        // (NexiconDK: the buses offered with a line won from another company - all or none)
+        "takeover_yes" | "takeover_no" => {
+            let offer = args.get("offer").and_then(Value::as_str).unwrap_or("").to_string();
+            let data = super::super::data();
+            match apply(s, |c| omsi_launcher_lib::company::takeover::answer(&data, c, &offer, what == "takeover_yes")) {
+                Ok(_) => {
+                    s.say(tr(if what == "takeover_yes" { "The buses are yours on the day your term begins." } else { "The buses stay with their company." }), false);
+                    Ok(json!({}))
+                }
+                Err(p) => Ok(json!({ "popup": p })),
+            }
+        }
+        // (NexiconDK: the buses the company bids with on a tender of the map's market)
+        "tender_drive" => {
+            let drive = if args.get("drive").and_then(Value::as_str) == Some("electric") { Drive::Electric } else { Drive::Diesel };
+            match apply(s, |c| cn::set_drive(c, id, drive)) {
+                Ok(_) => Ok(json!({})),
                 Err(p) => Ok(json!({ "popup": p })),
             }
         }

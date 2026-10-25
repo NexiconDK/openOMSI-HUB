@@ -49,7 +49,7 @@ fn close(c: &mut Company, journeys: &Journeys) -> (DayReport, LineDay) {
 /// 20 journeys of the line: one not run, one 12 minutes late, one 7 late, the rest on time.
 fn a_day() -> Journeys {
     let mut j = Journeys::default();
-    j.missed("Linie5", "1");
+    j.missed("Linie5", "1", 30);
     j.ran("Linie5", "1", 12, false, None, None, None);
     j.ran("Linie5", "1", 7, false, None, None, None);
     for _ in 0..17 {
@@ -612,4 +612,48 @@ fn older_saves_of_version_1_and_2_arrive_valid() {
         let again: Company = serde_json::from_str(&serde_json::to_string(&new).unwrap()).unwrap();
         assert_eq!(again.concessions.contracts, new.concessions.contracts);
     }
+}
+
+/// (NexiconDK, Bus Company Online, decided 25 October 2026) The authority's fines on a contract
+/// of a server company, in kroner in the company's books: each minute of a journey not run, each
+/// journey with a smaller bus than its tour asks for, and - won with electric buses - each with a
+/// diesel bus (an electric bus on any tour is no fault); a player's red lights; none off the
+/// server.
+#[test]
+fn the_authoritys_fines_on_a_server_contract() {
+    use crate::company::market::{self, MarketBus, Payment};
+    use crate::company::server_fines::Fines;
+    let mut c = company(GameMode::Normal);
+    c.cash += 10_000_000_00;
+    let solo = market::buy_new(&mut c, &MarketBus { name: "Citaro".into(), kind: BusKind { size: BusSize::Solo, drive: Drive::Diesel }, ..Default::default() }, Payment::Cash, "").unwrap();
+    let today = c.date.clone();
+    let id = with_contract(&mut c, Kind::Gross, Period::Day, 300_000_00, &today);
+    let day = |j: &mut Journeys| {
+        j.missed("Linie5", "1", 30);
+        j.ran("Linie5", "1", 0, false, Some(solo), None, Some(BusSize::Articulated));
+        j.ran("Linie5", "2", 0, false, Some(solo), None, Some(BusSize::Solo));
+        j.red_lights("Linie5", 2);
+    };
+    // (off the server: none)
+    let mut j = Journeys::default();
+    day(&mut j);
+    close(&mut c, &j);
+    assert_eq!(booked(&c, BookingKind::Penalty), 0);
+    // (on it: 30 min, one smaller bus, two red lights - the diesel bus is no fault yet)
+    c.online.on_server = true;
+    let f = Fines::default();
+    c.date = dates::add(&c.date, 1);
+    let (r, l) = close(&mut c, &j);
+    let fines = booked(&c, BookingKind::Penalty);
+    let want = Fines::cents(30.0 * f.dropped_minute) + Fines::cents(f.wrong_bus) + Fines::cents(2.0 * f.red_light);
+    // (and the complaints drawn, a few kroner's worth at most)
+    assert!(-fines >= want, "{fines} {want}");
+    assert!(r.contracts.lines[0].deducted >= want && l.penalty >= want);
+    // (won with electric buses: both journeys with the diesel bus are fined too)
+    c.concessions.contracts.iter_mut().find(|k| k.id == id).unwrap().electric = true;
+    c.date = dates::add(&c.date, 1);
+    close(&mut c, &j);
+    let more = -booked(&c, BookingKind::Penalty);
+    assert!(more >= want + 2 * Fines::cents(f.diesel_on_electric), "{more}");
+    assert!(c.ledger.iter().any(|b| b.text == "Line 5: the authority's fine - 1 journeys not run (30 min)"));
 }

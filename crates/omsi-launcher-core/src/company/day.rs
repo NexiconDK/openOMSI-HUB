@@ -656,6 +656,7 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         // (late by the UK standard on average - `economy::LATE_FROM` - or at a quarter of its stops)
         let late = t.average.is_some_and(|a| a >= (economy::LATE_FROM * 60) as f64) || (t.stops > 0 && t.late * 4 > t.stops);
         journeys.ran(&c.lines[li].name, &t.tour, t.worst.map_or(0, |w| (w / 60.0).trunc() as i32), !t.completed, None, None, None);
+        journeys.red_lights(&c.lines[li].name, t.red_lights.max(0) as u32);
         if t.timed() {
             timed += 1;
             if !late {
@@ -828,7 +829,7 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                     if counts {
                         lines[li].dropped += 1;
                         report.dropped += 1;
-                        journeys.missed(&tp.tour.line, &tp.tour.tour);
+                        journeys.missed(&tp.tour.line, &tp.tour.tour, trip.arr - trip.dep);
                         let broke = broken_at.is_some_and(|x| x.lost(trip.dep));
                         let sent = broken_at.filter(|_| broke).and_then(|x| x.back.map(|b| (b, x.until)));
                         // (the bus and the driver it had, or the roster's that could not come)
@@ -950,7 +951,7 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         report.trips += 1;
         lines[li].dropped += 1;
         report.dropped += 1;
-        journeys.missed(line, "");
+        journeys.missed(line, "", trip.arr - trip.dep);
         let (name, number) = (lines[li].line.clone(), lines[li].number.clone());
         note_drop(&mut report.drops, &name, &number, "", None, trip, DropWhy::NoBlock, None, None);
     }

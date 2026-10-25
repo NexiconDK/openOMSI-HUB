@@ -110,7 +110,8 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     at(&mut b, first.closes_at + 5);
     assert_eq!(sync(&data, &mut b), (true, true));
     assert!(matches!(b.concessions.tenders.iter().find(|t| t.id == tb).unwrap().outcome, Some(cn::Outcome::Won { amount, .. }) if amount == low));
-    assert!(cn::of_line(&b, &first.line).is_some(), "B holds the line");
+    let h = cn::of_line(&b, &first.line).expect("B holds the line");
+    assert_eq!(dates::between(&h.from, &h.until), cn::SERVER_DIESEL_DAYS - 1, "two weeks with diesel buses");
     sync(&data, &mut a);
     match &a.concessions.tenders.iter().find(|t| t.id == ta).unwrap().outcome {
         Some(cn::Outcome::Lost { winner, amount, .. }) => assert_eq!((winner.as_str(), *amount), ("GoCollective", low)),
@@ -138,14 +139,16 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
 
 /// A company's concession ending soon goes out again in the map's market, open to every company:
 /// won by another, its line is the winner's from the day the old term ends; an application for a
-/// line another company runs is refused, one for a free line opens its tender at once.
+/// line another company runs is refused, one for a free line opens its tender at once. (Decided
+/// 25 October 2026: the renewal opens six days before the new term and is decided three days
+/// before it; won with an electric bid, the term is a month.)
 #[test]
 fn a_concession_ending_goes_out_to_every_company() {
     let data = temp("renewal");
     let lines = lines();
     let (mut a, mut b) = (company("Umove", "umove"), company("GoCollective", "gocollective"));
     network::add_line(&mut a, &lines[0], None).unwrap();
-    let until = dates::add(DATE, 30);
+    let until = dates::add(DATE, 5);
     a.concessions.held.retain(|h| h.line != "Linie5");
     a.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.clone(), price: 1.0, direct: false });
     let key = key_of(MAP);
@@ -161,6 +164,8 @@ fn a_concession_ending_goes_out_to_every_company() {
     let renewal = m.tenders.iter().find(|t| t.tender.line == "Linie5").expect("the renewal").tender.clone();
     let x = renewal.market.as_ref().unwrap();
     assert!(renewal.renewal && x.holder == "umove" && x.from == dates::add(&until, 1));
+    assert_eq!(clock::date_of(renewal.closes_at), dates::add(&until, 1 - RENEW_DECIDED), "decided three days before the new term");
+    assert!(renewal.closes_at - renewal.opens_at > 2 * clock::DAY, "{renewal:?}");
     let applied = m.tenders.iter().find(|t| t.tender.line == "Linie9").unwrap();
     assert_eq!((applied.tender.opens_at, applied.applied.clone()), (now, vec!["gocollective".to_string()]), "opens at once");
     // (asked once: the next step offers nothing more)
@@ -176,12 +181,19 @@ fn a_concession_ending_goes_out_to_every_company() {
     let tb = b.concessions.tenders.iter().find(|t| t.line == "Linie5").unwrap().clone();
     at(&mut b, tb.opens_at + 3);
     let low = (tb.reference / 2 / auction::ROUND) * auction::ROUND;
+    // (with electric buses: where its level opens them)
+    assert_eq!(cn::set_drive(&mut b, tb.id, Drive::Electric), Err(cn::NO_ELECTRIC));
+    b.progress.xp = crate::company::levels::LEVEL_XP[2];
+    cn::set_drive(&mut b, tb.id, Drive::Electric).unwrap();
     bid(&data, &mut b, tb.id, low).unwrap();
     step(&data, &key, MAP, &clock::date_of(tb.closes_at), tb.closes_at + CLOSE_AFTER, &mut read);
     at(&mut b, tb.closes_at + 2);
     assert_eq!(sync(&data, &mut b), (true, true));
     let h = cn::of_line(&b, "Linie5").unwrap();
-    assert_eq!((h.from.as_str(), h.until.as_str()), (dates::add(&until, 1).as_str(), dates::add(&until, tb.term_years() as i64 * 365).as_str()), "from the day A's term ends");
+    let from = dates::add(&until, 1);
+    assert_eq!((h.from.clone(), h.until.clone()), (from.clone(), dates::add(&dates::add_month(&from), -1)), "from the day A's term ends, a month");
+    let k = b.concessions.contracts.iter().find(|k| k.line == "Linie5").unwrap();
+    assert!(k.electric && k.extensions_left == 0);
     at(&mut a, tb.closes_at + 2);
     sync(&data, &mut a);
     // (A did not bid on its own renewal: it went to B)

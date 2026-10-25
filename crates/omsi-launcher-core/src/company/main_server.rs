@@ -111,6 +111,20 @@ depot_price = 250000
 bus_move_price = 5000
 bus_move_days = 2
 
+# the authority's fines on a line of a contract won in the map's tenders (Danish kroner; each
+# company pays them in its own currency): a journey not run, by the minute of its time; a tour
+# run with a smaller bus than its timetable asks for, and a diesel bus on a tour of a contract
+# won with electric buses, by the journey; and each complaint about the driving, the
+# temperature in the bus, the route driven, a ticket sold wrong and a red light run
+fine_dropped_minute = 20.83
+fine_wrong_bus = 2500
+fine_diesel_on_electric = 2500
+fine_driving = 2000
+fine_temperature = 1500
+fine_route = 2500
+fine_ticket = 2500
+fine_red_light = 2500
+
 # what each world runs (as server.cfg's keys of the same names)
 traffic = 30
 passengers = 1
@@ -170,6 +184,8 @@ pub struct MainCfg {
     /// (Phase 4 step 3) What moving a bus to another map costs (cents), and the days it is away.
     pub bus_move_price: i64,
     pub bus_move_days: i64,
+    /// (Decided 25 October 2026) The authority's fines on a contract won in the map's market.
+    pub fines: super::server_fines::Fines,
     pub traffic: usize,
     pub passengers: bool,
     pub max_players: usize,
@@ -210,6 +226,13 @@ impl MainCfg {
             }
             text.push_str(MOVE_CFG);
         }
+        if !text.lines().any(|l| l.trim_start().starts_with("fine_dropped_minute")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(super::server_fines::FINES_CFG.as_bytes());
+            }
+            text.push_str(super::server_fines::FINES_CFG);
+        }
         Ok(MainCfg::parse(&text))
     }
 
@@ -245,6 +268,7 @@ impl MainCfg {
             depot_price: num("depot_price", 250_000).max(0) * 100,
             bus_move_price: num("bus_move_price", 5000).max(0) * 100,
             bus_move_days: num("bus_move_days", 2).clamp(0, 60),
+            fines: super::server_fines::Fines::of(&kv),
             traffic: num("traffic", 30).max(0) as usize,
             passengers: flag("passengers", true),
             max_players: num("max_players", 16).clamp(1, 64) as usize,

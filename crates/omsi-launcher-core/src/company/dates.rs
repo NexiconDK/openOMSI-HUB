@@ -48,6 +48,15 @@ pub fn add(date: &str, n: i64) -> String {
     parse(date).map(|d| fmt(d + n)).unwrap_or_else(|| date.to_string())
 }
 
+/// The same day a month after `date` (the month's last when it has fewer days); a date that
+/// cannot be read stays as it is.
+pub fn add_month(date: &str) -> String {
+    let Some(d) = parse(date) else { return date.to_string() };
+    let (y, m, day) = civil_from_days(d);
+    let (y, m) = if m == 12 { (y + 1, 1) } else { (y, m + 1) };
+    fmt(days_from_civil(y, m, day.min(days_in_month(y, m))))
+}
+
 /// Days from `a` to `b` (0 when either cannot be read).
 pub fn between(a: &str, b: &str) -> i64 {
     match (parse(a), parse(b)) {
