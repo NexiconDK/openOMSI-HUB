@@ -29,7 +29,7 @@ pub const NOT_FOUNDED: &str = "The depot could not be founded: the server says w
 
 /// Every text of this file (for the translations' check).
 pub fn texts() -> Vec<&'static str> {
-    vec![NOT_ON_SERVER, DEPOT_OF_DEPOT, NO_MAP, SAME_MAP, HAS_DEPOT, NO_CASH, NO_CLOCK, NOT_FOUNDED]
+    vec![NOT_ON_SERVER, DEPOT_OF_DEPOT, NO_MAP, SAME_MAP, HAS_DEPOT, NO_CASH, NO_CLOCK, NOT_FOUNDED, NOT_RELATED, NO_AMOUNT, NOT_SENT, NO_CASH_SEND]
 }
 
 /// A depot as the head office sees it.
@@ -116,6 +116,98 @@ pub fn found(data: &Path, root: &Path, hq: &mut Company, map: &str, start: Cents
     Ok(id)
 }
 
+// --- step 2: money between the head office and its depots ---------------------------------------
+
+/// Money a company sent another of its own (a head office and its depot), as the receiving
+/// company's process takes it (`<folder>/transfers/<to>.jsonl`).
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct Transfer {
+    pub from: String,
+    pub name: String,
+    pub amount: Cents,
+    /// When it was sent (Unix seconds).
+    pub at: i64,
+}
+
+/// Why money cannot be sent.
+pub const NOT_RELATED: &str = "Money goes only between a head office and its own depots.";
+pub const NO_AMOUNT: &str = "Send at least 100.";
+pub const NOT_SENT: &str = "The money could not be sent: the server says why in its log.";
+
+/// The money sent to company `id`.
+pub fn transfers_file(data: &Path, id: &str) -> std::path::PathBuf {
+    data.join("transfers").join(format!("{id}.jsonl"))
+}
+
+/// Whether companies `a` and `b` are a head office and its depot (either way round), or two depots
+/// of one head office (`hq` of each).
+fn related(a: &Company, b_id: &str, b_hq: &str) -> bool {
+    a.online.hq == b_id || b_hq == a.id || (!a.online.hq.is_empty() && a.online.hq == b_hq)
+}
+
+/// Company `c` sends `amount` of its money to `to` (its head office, one of its depots, or another
+/// depot of its head office): booked out of its books now, into `to`'s at its process's next step
+/// (`take_transfers`). An error: no such company of the server, not one of its own, no money.
+pub fn send(data: &Path, c: &mut Company, to: &str, amount: Cents, real: i64) -> Result<(), &'static str> {
+    if !c.online.on_server {
+        return Err(NOT_ON_SERVER);
+    }
+    let other = store::load(data, to).map_err(|_| NOT_RELATED)?;
+    if other.id == c.id || !related(c, &other.id, &other.online.hq) {
+        return Err(NOT_RELATED);
+    }
+    if amount < 100_00 {
+        return Err(NO_AMOUNT);
+    }
+    if c.cash < amount {
+        return Err(NO_CASH_SEND);
+    }
+    let t = Transfer { from: c.id.clone(), name: c.name.clone(), amount, at: real };
+    let line = serde_json::to_string(&t).map_err(|_| NOT_SENT)?;
+    let path = transfers_file(data, to);
+    let written = (|| -> std::io::Result<()> {
+        use std::io::Write;
+        if let Some(d) = path.parent() {
+            std::fs::create_dir_all(d)?;
+        }
+        let mut f = std::fs::OpenOptions::new().create(true).append(true).open(&path)?;
+        f.write_all(format!("{line}\n").as_bytes())
+    })();
+    written.map_err(|_| NOT_SENT)?;
+    c.book(BookingKind::Capital, -amount, format!("To {}", other.name), false);
+    Ok(())
+}
+
+/// The company has not the money to send.
+pub const NO_CASH_SEND: &str = "The company has not that much money.";
+
+/// The money sent to company `c` since its last look (`Online::transfers_read`), booked into its
+/// books - from a company of its own only. How much came.
+pub fn take_transfers(data: &Path, c: &mut Company) -> Cents {
+    let Ok(bytes) = std::fs::read(transfers_file(data, &c.id)) else { return 0 };
+    let from = c.online.transfers_read as usize;
+    let start = if from > bytes.len() { 0 } else { from };
+    let rest = &bytes[start..];
+    let whole = rest.iter().rposition(|b| *b == b'\n').map_or(0, |k| k + 1);
+    let mut total = 0;
+    for t in String::from_utf8_lossy(&rest[..whole]).lines().filter_map(|l| serde_json::from_str::<Transfer>(l).ok()) {
+        let known = store::load(data, &t.from).ok().is_some_and(|o| related(c, &o.id, &o.online.hq));
+        if !known || t.amount <= 0 {
+            continue;
+        }
+        c.book(BookingKind::Capital, t.amount, format!("From {}", t.name), false);
+        total += t.amount;
+    }
+    c.online.transfers_read = (start + whole) as u64;
+    total
+}
+
+/// A depot of a head office as its view shows it: this month's result besides its figures.
+pub fn month_result(data: &Path, id: &str, month: &str) -> Option<Cents> {
+    store::load(data, id).ok().map(|d| d.month(month).result())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -158,6 +250,34 @@ mod tests {
         let mut own = hq.clone();
         own.online.on_server = false;
         assert_eq!(found(&data, &root, &mut own, "Spandau", 0, 0, 1_800_000_000), Err(NOT_ON_SERVER));
+        // (step 2) money goes between them: out of the sender's books at once, into the other's
+        // at its next step - once; not to a company of another's, not more than there is
+        store::save(&data, &hq).unwrap();
+        let mut d = store::load(&data, &id).unwrap();
+        let (hq_cash, d_cash) = (hq.cash, d.cash);
+        send(&data, &mut hq, &id, 50_000_00, 1).unwrap();
+        assert_eq!(hq.cash, hq_cash - 50_000_00);
+        assert_eq!(take_transfers(&data, &mut d), 50_000_00);
+        assert_eq!(take_transfers(&data, &mut d), 0, "once");
+        assert_eq!(d.cash, d_cash + 50_000_00);
+        send(&data, &mut d, "umove", 20_000_00, 2).unwrap();
+        assert_eq!(take_transfers(&data, &mut hq), 20_000_00);
+        let more = d.cash + 1;
+        assert_eq!(send(&data, &mut d, "umove", more, 3), Err(NO_CASH_SEND));
+        assert_eq!(send(&data, &mut d, "umove", 50, 3), Err(NO_AMOUNT));
+        let mut stranger = super::super::found(&Founding { name: "Other".into(), date: "2024-03-04".into(), map: "maps/Spandau/global.cfg".into(), ..Default::default() }, "y");
+        stranger.id = "other".into();
+        stranger.online.on_server = true;
+        store::save(&data, &stranger).unwrap();
+        assert_eq!(send(&data, &mut stranger, "umove", 100_00, 4), Err(NOT_RELATED));
+        assert_eq!(send(&data, &mut hq, "other", 100_00, 4), Err(NOT_RELATED));
+        // (money a stranger wrote into the file himself is not taken)
+        let forged = Transfer { from: "other".into(), name: "Other".into(), amount: 1_000_000_00, at: 5 };
+        std::fs::write(transfers_file(&data, "umove"), format!("{}\n", serde_json::to_string(&forged).unwrap())).unwrap();
+        let before = hq.cash;
+        hq.online.transfers_read = 0;
+        assert_eq!(take_transfers(&data, &mut hq), 0);
+        assert_eq!(hq.cash, before);
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

@@ -98,13 +98,26 @@ fn depots_part(c: &co::Company) -> Value {
     let data = super::data();
     if !c.online.hq.is_empty() {
         let hq = co::store::load(&data, &c.online.hq).map(|h| h.name).unwrap_or_else(|_| c.online.hq.clone());
-        return json!({ "caps": tr("Depots").to_uppercase(), "of": trf("A depot of %{hq}: its money, buses and staff are its own.", &[("hq", &hq)]) });
+        // (step 2: money back to the head office - its owner's)
+        return json!({
+            "caps": tr("Depots").to_uppercase(), "of": trf("A depot of %{hq}: its money, buses and staff are its own.", &[("hq", &hq)]),
+            "hq": c.online.hq, "send_hq": trf("Send to %{hq}", &[("hq", &hq)]), "send_amount": DEPOT_SEND as f64 / 100.0,
+        });
     }
+    let month = co::dates::month_of(&c.date);
     let root = std::path::PathBuf::from(omsi_launcher_lib::load_config().root);
     let price = co::main_server::MainCfg::load(&data).map(|m| m.depot_price).unwrap_or(250_000_00);
     let rows: Vec<Value> = co::server_depots::depots_of(&data, &c.id)
         .iter()
-        .map(|d| json!({ "name": d.name, "map": co::main_server::map_name(&d.map), "cash": eur(d.cash), "facts": trf("%{lines} lines · %{buses} buses · %{staff} staff", &[("lines", &d.lines.to_string()), ("buses", &d.buses.to_string()), ("staff", &d.staff.to_string())]) }))
+        .map(|d| {
+            // (step 2: its month so far, and money sent to it)
+            let result = co::server_depots::month_result(&data, &d.id, &month).unwrap_or(0);
+            json!({
+                "id": d.id, "name": d.name, "map": co::main_server::map_name(&d.map), "cash": eur(d.cash),
+                "result": trf("this month %{amount}", &[("amount", &eur(result))]), "result_tone": if result < 0 { "danger" } else { "ok" },
+                "facts": trf("%{lines} lines · %{buses} buses · %{staff} staff", &[("lines", &d.lines.to_string()), ("buses", &d.buses.to_string()), ("staff", &d.staff.to_string())]),
+            })
+        })
         .collect();
     let maps: Vec<Value> = co::server_depots::maps_for(&data, &root, c).iter().map(|m| json!({ "key": m, "label": co::main_server::map_name(m) })).collect();
     json!({
@@ -112,8 +125,12 @@ fn depots_part(c: &co::Company) -> Value {
         "say": trf("A depot runs the company on another map of the server: its own lines, buses, staff and tenders there. It costs %{price} of the company's money, besides the starting money you give it.", &[("price", &eur(price))]),
         "start": DEPOT_START as f64 / 100.0, "start_label": tr("Its starting money"), "map_label": tr("The map"),
         "found": tr("Found a depot"), "none": maps.is_empty().then(|| tr("The company has a depot on every other map of the server.")),
+        "send": tr("Send money"), "send_amount": DEPOT_SEND as f64 / 100.0,
     })
 }
+
+/// The money the settings propose to send a depot or the head office (cents).
+const DEPOT_SEND: i64 = 100_000_00;
 
 /// The starting money the settings propose for a depot (cents).
 const DEPOT_START: i64 = 500_000_00;
@@ -127,10 +144,25 @@ const LEFT_DROPPED: &str = "Nobody drives the rest of his duty: its trips are dr
 /// {left: "ai" | "dropped"}`: `together::Together::left_dropped`, at once) - a company on Bus
 /// Company Online's server only.
 pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, String>> {
-    if what != "online_share" && what != "online_left" && what != "depot_found" {
+    if what != "online_share" && what != "online_left" && what != "depot_found" && what != "depot_money" {
         return None;
     }
     let Some(c) = s.company.as_mut().filter(|c| c.online.on_server) else { return Some(Ok(json!({}))) };
+    // (phase 4 step 2: money to its head office or a depot of its - its owner's)
+    if what == "depot_money" {
+        let to = args.get("to").and_then(Value::as_str).unwrap_or("").to_string();
+        let amount = args.get("amount").and_then(Value::as_i64).unwrap_or(0);
+        let data = super::data();
+        return Some(Ok(match co::server_depots::send(&data, c, &to, amount, super::real_now()) {
+            Ok(()) => {
+                let name = co::store::load(&data, &to).map(|d| d.name).unwrap_or(to);
+                super::changed(s);
+                s.say(trf("%{amount} sent to %{name}.", &[("amount", &eur(amount)), ("name", &name)]), false);
+                json!({})
+            }
+            Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
+        }));
+    }
     // (phase 4: a depot on another map, paid from the company's money - its owner's)
     if what == "depot_found" {
         let map = args.get("map").and_then(Value::as_str).unwrap_or("").to_string();

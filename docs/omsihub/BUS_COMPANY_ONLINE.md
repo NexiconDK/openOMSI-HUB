@@ -343,6 +343,19 @@ them; (3) buses moved between maps, staff lent; (4) a depot's bankruptcy.
 
 Tested: `server_depots::tests::a_head_office_founds_a_depot_on_another_map`.
 
+### Step 2: money between the head office and its depots, its view of them
+
+- **Money is sent** by the owner in the settings (`depot_money`, his alone): from the head office to
+  one of its depots, from a depot back to it (`server_depots::send`) - out of the sender's books at
+  once (capital it takes out), into the other's at its process's next step (`take_transfers`, from
+  `Online::transfers_read` in `<folder>/transfers/<id>.jsonl`; money only from a company of its
+  own is taken, nothing twice). Between a head office and its own depots only, at most what the
+  sender has.
+- **The head office's view** of its depots in its settings: each with its map, its lines, buses
+  and staff, its money and this month's result so far, and money to send it.
+
+Tested: the same test, its step 2.
+
 ## Phase 5 brought forward: the map's tenders, shared by its companies
 
 Decided 25 October 2026 (two companies on one map each bid in a market of their own and never saw
