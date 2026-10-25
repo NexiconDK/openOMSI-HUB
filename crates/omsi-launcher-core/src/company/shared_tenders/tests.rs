@@ -120,6 +120,19 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     // no buying outright on the server
     let other = a.concessions.tenders.iter().find(|t| t.open()).unwrap().id;
     assert_eq!(cn::buy_out(&mut a, other), Err(cn::NOT_ON_SERVER));
+    // (the open tenders' weeks read by the main server - not again the day a day was not read -
+    // their tours by the day on the companies' pages)
+    let mut failing = |_: &str| None;
+    assert!(fill_weeks(&data, &key, DATE, &mut failing));
+    assert!(!fill_weeks(&data, &key, DATE, &mut failing), "not again that day");
+    let mut week = |day: &str| Some(if dates::weekday(dates::parse(day).unwrap()) == 6 { Vec::new() } else { lines.clone() });
+    assert!(fill_weeks(&data, &key, "2024-03-05", &mut week));
+    let open = load(&data, &key).unwrap().tenders.iter().find(|t| t.decided.is_none()).unwrap().tender.clone();
+    let w = open.week.expect("its week");
+    assert_eq!((w.by_day, w.sun), (true, 0));
+    assert!(w.mon_fri > 0 && w.sat == w.mon_fri);
+    sync(&data, &mut a);
+    assert_eq!(a.concessions.tenders.iter().find(|t| t.market.as_ref().is_some_and(|x| x.id == open.id)).unwrap().week, Some(w));
     let _ = std::fs::remove_dir_all(&data);
 }
 

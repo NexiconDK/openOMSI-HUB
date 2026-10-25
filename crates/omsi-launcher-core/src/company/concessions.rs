@@ -94,6 +94,16 @@ pub struct Week {
     pub days: u32,
     #[serde(default)]
     pub hours: f64,
+    /// (NexiconDK) Its tours on a weekday (the most of Monday to Friday), on Saturday and on
+    /// Sunday - known when the seven days were read in their order, Monday first (`by_day`).
+    #[serde(default)]
+    pub mon_fri: u32,
+    #[serde(default)]
+    pub sat: u32,
+    #[serde(default)]
+    pub sun: u32,
+    #[serde(default)]
+    pub by_day: bool,
 }
 
 /// A bidder's last bid when a tender closed.
@@ -511,12 +521,18 @@ pub fn advice(c: &Company, t: &Tender) -> Cents {
     round(bc::advice(c, &t.work, t.kind, t.term_years() as f64)).min(t.reference)
 }
 
-/// A line's week from the timetable of seven days (`days`: each day's lines).
+/// A line's week from the timetable of seven days (`days`: each day's lines; Monday to Sunday,
+/// when there are seven - `Week::by_day`).
 pub fn week_of(days: &[Vec<LineInfo>], line: &str) -> Week {
-    let mut w = Week::default();
-    for day in days {
+    let mut w = Week { by_day: days.len() == 7, ..Default::default() };
+    for (k, day) in days.iter().enumerate() {
         let Some(l) = day.iter().find(|l| l.name.eq_ignore_ascii_case(line)) else { continue };
         let runs: Vec<_> = l.tours.iter().filter(|t| t.runs).collect();
+        match k {
+            0..=4 => w.mon_fri = w.mon_fri.max(runs.len() as u32),
+            5 => w.sat = runs.len() as u32,
+            _ => w.sun = runs.len() as u32,
+        }
         w.tours += runs.len() as u32;
         w.peak = w.peak.max(runs.len() as u32);
         for t in runs.iter().flat_map(|t| t.trips.iter()) {
@@ -1397,6 +1413,11 @@ pub(crate) mod tests {
         let w = week_of(&days, "Linie5");
         assert_eq!((w.tours, w.trips, w.peak), (15, 60, 3));
         assert!((w.km - 600.0).abs() < 1e-9);
+        assert!(!w.by_day, "six days: not by the day");
+        // (NexiconDK: and by the day - a Sunday of 2 tours)
+        days.push(vec![line("Linie5", "5", 2, true)]);
+        let w = week_of(&days, "Linie5");
+        assert_eq!((w.mon_fri, w.sat, w.sun, w.by_day), (3, 0, 2, true));
     }
 
     #[test]

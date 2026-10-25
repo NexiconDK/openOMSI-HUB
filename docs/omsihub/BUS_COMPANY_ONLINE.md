@@ -431,6 +431,12 @@ bought outright on the server; the operators still bid.
   line" applies for the line in the market, and the wizard shows no asking price.
 - A line whose concession begins on a later day is not in the company's plan for the world yet
   (`plan::live_plan`'s `lines`): the holder's buses run it until then.
+- **A tender's tours by the day** (the owner's wish, 25 October 2026): the main server reads the
+  week of the map's timetable for the open tenders that have none (`shared_tenders::fill_weeks`,
+  at its scan; not again that day when a day could not be read), the companies take it
+  (`sync`), and the card says "X tours Mon–Fri · Y Sat · Z Sun" (`concessions::Week::mon_fri`,
+  `sat`, `sun`; a company's own page the same from its own reading of the week). A tender's close
+  moved in the market's file is the companies' too.
 
 Tested: `auction::tests::two_companies_in_one_tender_see_the_same_auction`,
 `shared_tenders::tests::two_companies_bid_against_each_other_in_the_maps_tenders`,

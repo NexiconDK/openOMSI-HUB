@@ -530,6 +530,16 @@ impl MainServer {
             for line in super::shared_tenders::step(&self.data, &key, &map, &date, now, &mut read) {
                 info!("tenders: {line}");
             }
+            // (the weeks of its new tenders: their tours Monday to Friday, Saturday and Sunday)
+            let dir = map_dir_of(&root, &map);
+            let mut read_day = |day: &str| match crate::lines_in_map_dir(&dir, day) {
+                Ok(l) => Some(l),
+                Err(e) => {
+                    warn!("{}: its timetable of {day} not read for its tenders' weeks: {e:#}", map_name(&map));
+                    None
+                }
+            };
+            super::shared_tenders::fill_weeks(&self.data, &key, &date, &mut read_day);
         }
     }
 

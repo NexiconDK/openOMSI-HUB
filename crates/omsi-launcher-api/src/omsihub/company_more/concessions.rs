@@ -55,9 +55,10 @@ fn weeks(s: &Session) {
     m.tenders.reading = true;
     let map = c.map.clone();
     let _ = std::thread::Builder::new().name("company weeks".into()).spawn(move || {
-        let days: Vec<Vec<core::LineInfo>> = (0..7).filter_map(|k| core::list_lines(&map, &dates::add(&monday, k)).ok()).collect();
+        // (Monday to Sunday in their order: a day not read is a day without its lines)
+        let days: Vec<Vec<core::LineInfo>> = (0..7).map(|k| core::list_lines(&map, &dates::add(&monday, k)).unwrap_or_default()).collect();
         let mut out = HashMap::new();
-        for l in days.first().map(|d| d.iter().map(|l| l.name.clone()).collect::<Vec<_>>()).unwrap_or_default() {
+        for l in days.iter().find(|d| !d.is_empty()).map(|d| d.iter().map(|l| l.name.clone()).collect::<Vec<_>>()).unwrap_or_default() {
             out.insert(l.to_lowercase(), cn::week_of(&days, &l));
         }
         let mut m = more_state().lock().unwrap_or_else(|e| e.into_inner());
@@ -192,7 +193,9 @@ fn tenders(c: &Company, list: &[Tender], weeks: &HashMap<String, Week>, reading:
             }
             match week {
                 Some(wk) => {
-                    chips.push(json!({ "text": trf("%{n} tours", &[("n", &wk.tours.to_string())]), "tone": "dim", "icon": "directions_bus" }));
+                    // (NexiconDK: its tours by the day - Monday to Friday, Saturday, Sunday)
+                    let text = if wk.by_day { trf("%{wd} tours Mon–Fri · %{sat} Sat · %{sun} Sun", &[("wd", &wk.mon_fri.to_string()), ("sat", &wk.sat.to_string()), ("sun", &wk.sun.to_string())]) } else { trf("%{n} tours", &[("n", &wk.tours.to_string())]) };
+                    chips.push(json!({ "text": text, "tone": "dim", "icon": "directions_bus" }));
                     chips.push(json!({ "text": if wk.km < 1.0 { trf("%{n} trips a week", &[("n", &wk.trips.to_string())]) } else { trf("%{km} km a week", &[("km", &grouped(wk.km))]) }, "tone": "dim", "icon": "route" }));
                 }
                 None => chips.push(json!({ "text": trf("%{n} tours", &[("n", &t.day_tours.to_string())]), "tone": "dim", "icon": "directions_bus" })),

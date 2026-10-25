@@ -957,3 +957,11 @@ _version: 2
   pl: "W trakcie: nie został żaden kurs do przejęcia"
   ru: "В пути: не осталось рейсов, чтобы сменить"
   uk: "У дорозі: не лишилося рейсів, щоб змінити"
+# (NexiconDK) A tender's tours by the day (omsihub/company_more/concessions.rs).
+"%{wd} tours Mon–Fri · %{sat} Sat · %{sun} Sun":
+  de: "%{wd} Umläufe Mo–Fr · %{sat} Sa · %{sun} So"
+  fr: "%{wd} services lun–ven · %{sat} sam · %{sun} dim"
+  nl: "%{wd} omlopen ma–vr · %{sat} za · %{sun} zo"
+  pl: "%{wd} kursów pn–pt · %{sat} sob · %{sun} nd"
+  ru: "%{wd} оборотов пн–пт · %{sat} сб · %{sun} вс"
+  uk: "%{wd} обертів пн–пт · %{sat} сб · %{sun} нд"

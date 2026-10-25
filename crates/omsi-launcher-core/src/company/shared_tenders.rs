@@ -54,6 +54,9 @@ pub struct Market {
     pub tenders: Vec<MarketTender>,
     /// How far the companies' applications were read (bytes of their file).
     pub asks_read: u64,
+    /// The server's date the week of its tenders could not be read on (`fill_weeks`: tried
+    /// again the next day).
+    pub weeks_failed: String,
 }
 
 /// A tender of the market: the tender (its market part: the market's id, the operators, the
@@ -134,6 +137,35 @@ pub fn save(data: &Path, m: &Market) -> Result<()> {
     std::fs::write(&tmp, serde_json::to_vec_pretty(m)?).with_context(|| format!("cannot write {}", tmp.display()))?;
     std::fs::rename(&tmp, &path).with_context(|| format!("cannot write {}", path.display()))?;
     Ok(())
+}
+
+/// The weeks of the market's open tenders that have none (`Tender::week`: their tours Monday to
+/// Friday, Saturday and Sunday on the companies' pages), from the map's timetable of the week of
+/// the server's `date` - each day read by `read` (None: it could not be read; tried again the
+/// next day). Whether the market changed.
+pub fn fill_weeks(data: &Path, key: &str, date: &str, read: &mut dyn FnMut(&str) -> Option<Vec<LineInfo>>) -> bool {
+    let Some(mut m) = load(data, key) else { return false };
+    let missing: Vec<usize> = m.tenders.iter().enumerate().filter(|(_, t)| t.decided.is_none() && t.tender.week.is_none_or(|w| !w.by_day)).map(|(i, _)| i).collect();
+    if missing.is_empty() || m.weeks_failed == date {
+        return false;
+    }
+    let Some(day) = dates::parse(date) else { return false };
+    let monday = day - dates::weekday(day) as i64;
+    let mut days = Vec::new();
+    for k in 0..7 {
+        match read(&dates::fmt(monday + k)) {
+            Some(d) => days.push(d),
+            None => {
+                m.weeks_failed = date.to_string();
+                return save(data, &m).is_ok();
+            }
+        }
+    }
+    for i in missing {
+        let w = cn::week_of(&days, &m.tenders[i].tender.line);
+        m.tenders[i].tender.week = Some(w);
+    }
+    save(data, &m).is_ok()
 }
 
 /// A JSON line added to a file of the market (made when missing).
@@ -443,9 +475,13 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
         if let Some(x) = t.market.as_mut() {
             x.others = others;
         }
-        // (its times are the market's: the server's operator may move them in the market's file)
+        // (its times are the market's: the server's operator may move them in the market's file;
+        // and its week, once the main server read it - `fill_weeks`)
         if t.open() {
             (t.opens_at, t.closes_at) = (mt.tender.opens_at, mt.tender.closes_at);
+            if mt.tender.week.is_some() {
+                t.week = mt.tender.week;
+            }
         }
         if let Some(mine) = mine {
             t.offers = mine;
