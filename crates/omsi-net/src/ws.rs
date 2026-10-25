@@ -701,12 +701,15 @@ fn serve(stream: TcpStream, slot: Option<SourceSlot>, target: SocketAddr, info: 
             // (NexiconDK: a trip a player drove in a map's world of Bus Company Online)
             "/bco/trip" => {
                 let open = info.lock().unwrap_or_else(|e| e.into_inner()).bco_trips_open;
+                // (the body read before any answer: a socket closed with a body unread is reset on
+                // Windows, and the answer never reaches the launcher - the release's tests on
+                // Windows read nothing back of the 404, 25 October 2026)
+                read_body_up_to(&mut s, &mut request, if open { BCO_TRIP_MAX } else { 4096 });
                 if !open {
                     ("404 Not Found", "text/plain", b"this server takes no trips".to_vec())
                 } else if !req.starts_with("POST ") {
                     ("405 Method Not Allowed", "text/plain", b"POST the trip".to_vec())
                 } else {
-                    read_body_up_to(&mut s, &mut request, BCO_TRIP_MAX);
                     let text = String::from_utf8_lossy(&request).to_string();
                     let body = text.split_once("\r\n\r\n").map(|(_, b)| b.to_string()).unwrap_or_default();
                     let mut i = info.lock().unwrap_or_else(|e| e.into_inner());
