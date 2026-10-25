@@ -177,6 +177,13 @@ Nobody needs a company's code or the console any more: the bus company's start h
   company's process on the server reads them itself (it is the game program: `omsi-app` gives it
   `company::set_map_reader`, the launcher service's "map" request), on a thread, kept for every
   player; on a boss's own launcher a player is told it is the boss's (it had read for good).
+- **Nobody steps the clock** (25 October 2026: "Simulate until it opens" on a tender moved a
+  company four hours ahead of the server, stopped there at a question nobody answers): the
+  launcher's simulation never runs on a server company (`company::simulate`, `may_step`, the
+  popup "The server's clock"), the tenders' step buttons are not offered there, a relayed
+  `tender_step` is refused as the real time is (`Need::Clock`), and a question left waiting is
+  decided by the dispatcher at the host's next step (`online::Host::tick_in`). A company already
+  ahead waits for the server's clock (time never goes back: what happened on the way is booked).
 - **The console** besides: `players` (each with how he logs in, his money and his companies),
   `money <player>; <amount>` (set, or `+`/`-` to add or take), `owner <company>; <player>` (a
   player of the server a company's owner - one founded from the console without one, say: the

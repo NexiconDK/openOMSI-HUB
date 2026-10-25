@@ -853,13 +853,16 @@ fn game_leads(s: &mut Session) -> bool {
 
 /// A step may be taken now (no other running, no game leading).
 pub fn may_step(s: &mut Session) -> bool {
-    !s.closing && !game_leads(s) && s.company.as_ref().is_some_and(|c| c.clock.ask.is_none())
+    !s.closing && !game_leads(s) && s.company.as_ref().is_some_and(|c| c.clock.ask.is_none() && !c.online.on_server)
 }
 
-/// Simulate to `to`: within the company's day at once, past its midnight on a thread.
+/// Simulate to `to`: within the company's day at once, past its midnight on a thread. (NexiconDK:
+/// never on Bus Company Online's server - the company's time is its host's there, on the
+/// server's clock, for everybody: `online::Host`. A step taken from a player's page had moved
+/// the company hours ahead of the server, 25 October 2026.)
 pub fn simulate(s: &mut Session, to: i64, quick: bool) {
     let Some(c) = s.company.clone() else { return };
-    if s.closing || game_minute(s, &c).is_some() {
+    if s.closing || game_minute(s, &c).is_some() || c.online.on_server {
         return;
     }
     let midnight = (ck::now(&c).div_euclid(DAY) + 1) * DAY;
@@ -1151,7 +1154,9 @@ fn follow(s: &mut Session, c: &Company) {
 
 /// Why the clock cannot be stepped now, in a popup (`clock::busy`).
 pub fn busy(s: &mut Session) -> Value {
-    let p = if game_leads(s) {
+    let p = if s.company.as_ref().is_some_and(|c| c.online.on_server) {
+        kit::Popup::new("schedule", "The server's clock", tr(super::together::relay::SERVER_CLOCK), "", None)
+    } else if game_leads(s) {
         kit::Popup::new("sports_esports", "The game leads the clock", tr("The game runs on the company's map: the company's day goes along with the game's time."), tr("Simulating is offered again when the game is closed."), None)
     } else if s.company.as_ref().is_some_and(|c| c.clock.ask.is_some()) {
         kit::Popup::new("help", "A decision waits", tr("The company's clock waits for your answer first."), "", None)

@@ -386,10 +386,11 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
             "recommend_amount": rec as f64 / 100.0,
             "bid": trf("Ask %{amount}", &[("amount", &eur(amount))]),
             "buy": trf("Buy outright, %{amount}", &[("amount", &eur(t.buy_out()))]), "buy_tip": tr("Certain: the auction ends at once in your favour"),
-            "plus15": tr("+15 min"), "to_close": tr("To its close"),
+            // (NexiconDK: on Bus Company Online's server its clock runs for everybody: no step)
+            "plus15": (!c.online.on_server).then(|| tr("+15 min")), "to_close": (!c.online.on_server).then(|| tr("To its close")),
         })
     } else if t.open() {
-        json!({ "kind": "wait", "id": t.id, "label": tr("Simulate until it opens") })
+        json!({ "kind": "wait", "id": t.id, "label": (!c.online.on_server).then(|| tr("Simulate until it opens")) })
     } else {
         match &t.outcome {
             Some(Outcome::Lost { winner, amount, .. } | Outcome::NoBid { winner, amount }) if !winner.is_empty() => json!({ "kind": "said", "text": trf(if t.scored() { "%{who} won the line with an ask of %{amount}." } else { "%{who} won the line for %{amount}." }, &[("who", winner), ("amount", &eur(*amount))]), "tone": "soft" }),

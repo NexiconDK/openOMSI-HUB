@@ -344,3 +344,10 @@ _version: 2
   pl: "Założył firmę na serwerze: wszystkie uprawnienia, na stałe."
   ru: "Основал компанию на сервере: все права, навсегда."
   uk: "Заснував компанію на сервері: усі права, назавжди."
+"The server's clock":
+  de: "Die Uhr des Servers"
+  fr: "L'horloge du serveur"
+  nl: "De klok van de server"
+  pl: "Zegar serwera"
+  ru: "Часы сервера"
+  uk: "Годинник сервера"

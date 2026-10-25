@@ -290,10 +290,14 @@ pub fn need(cmd: &str, args: &Value) -> Need {
 /// elsewhere where it makes sense from afar (`OWNER_ON_SERVER`), and the server's clock is
 /// nobody's to change (`SERVER_CLOCK_ACTS`).
 pub fn on_server(need: Need, cmd: &str, args: &Value, owner: bool) -> Need {
+    let act = args.get("act").and_then(Value::as_str).unwrap_or("");
+    // (the auction's clock stepped: +15 min, to its close, until it opens)
+    if cmd == "co_more_act" && act == "tender_step" {
+        return Need::Clock;
+    }
     if cmd != "co_act" {
         return need;
     }
-    let act = args.get("act").and_then(Value::as_str).unwrap_or("");
     if SERVER_CLOCK_ACTS.contains(&act) {
         return Need::Clock;
     }
@@ -390,6 +394,9 @@ mod tests {
         assert!(!n.met(&Perm::ALL));
         assert_eq!(n.refusal()["error"], SERVER_CLOCK);
         // (what the owner may not do elsewhere either: still not)
+        let step = json!({ "act": "tender_step", "id": 1, "to": "open" });
+        assert!(need("co_more_act", &step).met(&[Perm::Spend]), "elsewhere who may spend steps the auction");
+        assert_eq!(on_server(need("co_more_act", &step), "co_more_act", &step, true), Need::Clock);
         let date = json!({ "act": "move_date" });
         assert!(!on_server(need("co_act", &date), "co_act", &date, true).met(&Perm::ALL));
         let view = json!({ "view": "money" });

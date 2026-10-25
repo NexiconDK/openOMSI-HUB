@@ -446,6 +446,12 @@ impl Host {
             s.told = clock::tell_live(c, &live);
             self.dirty = true;
         }
+        // (a question left waiting - by a step taken on a page before 25 October 2026: nobody
+        // answers it on a server, the dispatcher decides it)
+        if c.clock.ask.is_some() {
+            clock::answer(c, None, &mut clock::Run::default());
+            self.dirty = true;
+        }
         // its time on to the real clock's: a long way as an absence is caught up, else step by
         // step (the dispatcher deciding: nobody is asked on a server)
         let now = clock::now(c);
@@ -607,6 +613,27 @@ mod tests {
     /// Real time: Unix seconds `hours` after the moment the tests start from (to the minute).
     fn at(hours: f64) -> i64 {
         1_800_000_000 + (hours * 60.0).round() as i64 * 60
+    }
+
+    /// (NexiconDK) A question left waiting on a server company (a step taken from a page, before
+    /// 25 October 2026) is decided by the dispatcher at the next step - nobody answers there - even
+    /// while the company is ahead of the server's clock, and its time stands until the clock
+    /// is there.
+    #[test]
+    fn a_question_left_waiting_is_decided_on_a_server() {
+        let data = temp("ask");
+        let (id, mut w) = company(&data);
+        let (mut h, _) = Host::open_in(&data, &id, at(0.0), &mut w, None).unwrap();
+        // (a page moved it an hour ahead and stopped there for a question)
+        h.company.clock.minute += 60;
+        h.company.clock.ask = Some(clock::Ask::Notice { text: "A bus broke down".into(), args: Vec::new() });
+        h.company.clock.target = Some(clock::now(&h.company) + 600);
+        h.tick_in(at(5.0 / 60.0), &mut w).unwrap();
+        assert!(h.company.clock.ask.is_none() && h.company.clock.target.is_none(), "decided");
+        assert_eq!(h.now().1, 6 * 60, "ahead: it waits for the clock");
+        h.tick_in(at(1.0 + 10.0 / 60.0), &mut w).unwrap();
+        assert_eq!(h.now().1, 6 * 60 + 10, "and goes on with it");
+        let _ = std::fs::remove_dir_all(&data);
     }
 
     /// Opened, the company goes in step with the real clock and writes its day's plan for the
