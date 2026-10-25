@@ -64,6 +64,18 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     assert!(b.cash > cash, "the fee paid back");
     assert!(!b.concessions.tenders.iter().any(|t| t.id == own));
     assert_eq!((a.concessions.tenders.len(), b.concessions.tenders.len()), (2, 2));
+    // (a close the server's operator moves in the market's file: the companies follow it)
+    let mut moved = m.clone();
+    let last = moved.tenders.iter_mut().max_by_key(|t| t.tender.opens_at).unwrap();
+    let (mid_of, was) = (last.tender.market.as_ref().unwrap().id, last.tender.closes_at);
+    last.tender.closes_at = was + 60;
+    save(&data, &moved).unwrap();
+    sync(&data, &mut a);
+    let close_of = |c: &Company| c.concessions.tenders.iter().find(|t| t.market.as_ref().is_some_and(|x| x.id == mid_of)).unwrap().closes_at;
+    assert_eq!(close_of(&a), was + 60);
+    save(&data, &m).unwrap();
+    sync(&data, &mut a);
+    assert_eq!(close_of(&a), was);
     let first = m.tenders.iter().min_by_key(|t| t.tender.opens_at).unwrap().tender.clone();
     // the auction: A bids, B sees it and bids lower
     let mid = first.opens_at + 10;

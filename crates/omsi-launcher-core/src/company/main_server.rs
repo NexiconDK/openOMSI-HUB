@@ -105,8 +105,11 @@ logins = account steam
 start_money = 20000
 found_price = 10000
 
-# what a company pays from its own money for a depot of its on another map (whole units)
+# what a company pays from its own money for a depot of its on another map (whole units), and
+# what moving one of its buses to another of its maps costs and how many days the bus is away
 depot_price = 250000
+bus_move_price = 5000
+bus_move_days = 2
 
 # what each world runs (as server.cfg's keys of the same names)
 traffic = 30
@@ -136,6 +139,14 @@ pub const DEPOT_CFG: &str = "
 depot_price = 250000
 ";
 
+/// Moving buses between maps (phase 4 step 3), added to a `company-server.cfg` written before it.
+pub const MOVE_CFG: &str = "
+# what moving one of a company's buses to another of its maps costs (whole units), and how many
+# days the bus is away
+bus_move_price = 5000
+bus_move_days = 2
+";
+
 /// What `company-server.cfg` says (see `DEFAULT_CFG`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct MainCfg {
@@ -156,6 +167,9 @@ pub struct MainCfg {
     pub found_price: i64,
     /// (Phase 4) What a company pays from its own money for a depot on another map (cents).
     pub depot_price: i64,
+    /// (Phase 4 step 3) What moving a bus to another map costs (cents), and the days it is away.
+    pub bus_move_price: i64,
+    pub bus_move_days: i64,
     pub traffic: usize,
     pub passengers: bool,
     pub max_players: usize,
@@ -188,6 +202,13 @@ impl MainCfg {
                 let _ = f.write_all(DEPOT_CFG.as_bytes());
             }
             text.push_str(DEPOT_CFG);
+        }
+        if !text.lines().any(|l| l.trim_start().starts_with("bus_move_price")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(MOVE_CFG.as_bytes());
+            }
+            text.push_str(MOVE_CFG);
         }
         Ok(MainCfg::parse(&text))
     }
@@ -222,6 +243,8 @@ impl MainCfg {
             start_money: num("start_money", 20000).max(0) * 100,
             found_price: num("found_price", 10000).max(0) * 100,
             depot_price: num("depot_price", 250_000).max(0) * 100,
+            bus_move_price: num("bus_move_price", 5000).max(0) * 100,
+            bus_move_days: num("bus_move_days", 2).clamp(0, 60),
             traffic: num("traffic", 30).max(0) as usize,
             passengers: flag("passengers", true),
             max_players: num("max_players", 16).clamp(1, 64) as usize,

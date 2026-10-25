@@ -69,9 +69,14 @@ pub struct Online {
     /// (`server_depots`; empty: the company is a head office, or on its own).
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub hq: String,
-    /// How far the money sent to the company was taken (bytes of `server_depots::transfers_file`).
+    /// How far the money sent to the company was taken (bytes of `server_depots::transfers_file`),
+    /// and the buses and people sent to it (`buses_file`, `people_file`).
     #[serde(default)]
     pub transfers_read: u64,
+    #[serde(default)]
+    pub buses_read: u64,
+    #[serde(default)]
+    pub people_read: u64,
 }
 
 /// The company's share of its players' trips when it is founded (per cent).
@@ -83,7 +88,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0 }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0 }
     }
 }
 
@@ -529,6 +534,15 @@ impl Host {
         // (phase 4: the money its head office or a depot of it sent)
         if super::server_depots::take_transfers(&self.data, c) > 0 {
             self.dirty = true;
+        }
+        // (and the buses come by now, the people lent and back - step 3)
+        if super::server_depots::take_buses(&self.data, c) > 0 {
+            self.dirty = true;
+            self.planned = None;
+        }
+        if super::server_depots::people_step(&self.data, c) {
+            self.dirty = true;
+            self.planned = None;
         }
         // (the map's tenders, shared by its companies: the other companies' bids, what the main
         // server decided - a line won is the company's at once, to be planned for its first day)

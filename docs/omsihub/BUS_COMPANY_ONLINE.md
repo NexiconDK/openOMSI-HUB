@@ -356,6 +356,29 @@ Tested: `server_depots::tests::a_head_office_founds_a_depot_on_another_map`.
 
 Tested: the same test, its step 2.
 
+### Step 3: buses moved between maps, staff lent
+
+Decided 25 October 2026 (the owner took the proposed defaults): a move takes `bus_move_days` (2)
+and costs `bus_move_price` (5 000) a bus, both in `company-server.cfg` (`MOVE_CFG` added to an
+older one).
+
+- **A bus of the company's own** moves to its head office or another depot of the owner's
+  (`server_depots::relatives`; `bus_move`, the owner's alone): out of the fleet at once - the
+  month's fixed costs up to the day paid as a sale pays them, the move booked as services
+  (`move_bus`) - and into the other's fleet on the day it arrives (`take_buses`, from
+  `Online::buses_read` in `<folder>/buses/<id>.jsonl`): an id of the other's, its fleet number when
+  that is free, from that day its own. Not a leased or rented bus (its contract stays), not to a
+  depot with no room, not to a company of another's.
+- **An employee is lent** for 1 to 90 days (`staff_lend`, the owner's alone; `lend`): he goes the
+  next day (`people_step`, each step of the process), the guarantee of his week paid by the lender
+  (`pay::settle`), and works at the other with an id of its own (`Employee::lent`) - paid by it
+  while he is there, not to be dismissed by it - and comes back after his last day with his own
+  id (`<folder>/people/<id>.jsonl`, `Online::people_read`).
+- **The settings show** the buses on the way (either way), who is to be lent, who works at another
+  company of the owner's and who is lent to this one (`dialogs::moves_part`).
+
+Tested: `server_depots::tests::a_bus_moves_and_a_driver_is_lent_between_a_head_office_and_its_depot`.
+
 ## Phase 5 brought forward: the map's tenders, shared by its companies
 
 Decided 25 October 2026 (two companies on one map each bid in a market of their own and never saw

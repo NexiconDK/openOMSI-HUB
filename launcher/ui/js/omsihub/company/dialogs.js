@@ -108,6 +108,39 @@ function DepotsPart({ d }) {
   </div>`;
 }
 
+/** (Phase 4 step 3) Buses and staff between the company's maps (`dialogs::moves_part`): a bus
+ * of its own moved (`bus_move`), an employee lent for some days (`staff_lend`), and what is on
+ * the way, lent and borrowed. */
+function MovesPart({ m }) {
+  const [to, setTo] = useState(0);
+  const [bus, setBus] = useState(0);
+  const [man, setMan] = useState(0);
+  const [days, setDays] = useState(m.days);
+  const target = m.targets[to]?.key;
+  const col = 'display:flex;flex-direction:column;gap:4px';
+  return html`<div class="co-depots">
+    <div class="pair" style="gap:10px;align-items:flex-end">
+      <label class="co-note" style=${col}>${m.to_label}<${Select} value=${to} options=${m.targets.map((t) => t.label)} onChange=${setTo} style="width:220px" /></label>
+    </div>
+    <p class="co-note">${m.bus_say}</p>
+    ${m.buses.length > 0 && html`<div class="pair" style="gap:10px;align-items:flex-end">
+      <label class="co-note" style=${col}>${m.bus_label}<${Select} value=${Math.min(bus, m.buses.length - 1)} options=${m.buses.map((b) => b.label)} onChange=${setBus} style="width:320px" /></label>
+      <${Btn} icon="directions_bus" label=${m.move} onClick=${() => act('bus_move', { id: m.buses[Math.min(bus, m.buses.length - 1)]?.key, to: target })} />
+    </div>`}
+    <p class="co-note">${m.lend_say}</p>
+    ${m.staff.length > 0 && html`<div class="pair" style="gap:10px;align-items:flex-end">
+      <label class="co-note" style=${col}>${m.staff_label}<${Select} value=${Math.min(man, m.staff.length - 1)} options=${m.staff.map((e) => e.label)} onChange=${setMan} style="width:320px" /></label>
+      <label class="co-note" style=${col}>${m.days_label}<input class="co-pg-bidin" type="number" step="1" min="1" max="90" value=${days} onChange=${(e) => setDays(Number(e.currentTarget.value) || 1)} style="width:80px" /></label>
+      <${Btn} icon="person" label=${m.lend} onClick=${() => act('staff_lend', { id: m.staff[Math.min(man, m.staff.length - 1)]?.key, to: target, days })} />
+    </div>`}
+    ${m.on_way.length > 0 && html`<div class="co-caps">${m.on_way_caps}</div>${m.on_way.map((t) => html`<p class="co-note">${t}</p>`)}`}
+    ${m.people.length > 0 && html`<div class="co-caps">${m.people_caps}</div>${m.people.map((t) => html`<p class="co-note">${t}</p>`)}`}
+  </div>`;
+}
+
+/** The height the settings give the moves between the maps (`MovesPart`). */
+const movesHeight = (m) => (m ? 300 + 26 * ((m.on_way?.length || 0) + (m.people?.length || 0)) + (m.on_way?.length ? 30 : 0) + (m.people?.length ? 30 : 0) : 0);
+
 /** The company's settings (`settings::dialog`): its mark, its game mode (and add-ons), how it
  * buys, its date and the real clock; deleting it. */
 function SettingsDialog({ d }) {
@@ -137,7 +170,7 @@ function SettingsDialog({ d }) {
     <span class="rest"></span>
     <${Btn} kind=${v.move ? '' : 'primary'} label=${v.close} onClick=${close} />
     ${v.move && html`<${Btn} kind="primary" icon="calendar_month" label=${v.move} onClick=${moveTo} />`}`;
-  const h = (v.buying ? 786 : 722) + (v.addons ? 40 : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0) + (v.online ? 180 + (v.online.depots ? 130 + 48 * (v.online.depots.rows?.length || 0) : 0) : 0);
+  const h = (v.buying ? 786 : 722) + (v.addons ? 40 : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0) + (v.online ? 180 + (v.online.depots ? 130 + 48 * (v.online.depots.rows?.length || 0) + movesHeight(v.online.depots.moves) : 0) : 0);
   // (Beta 61: a career or a sandbox - turned into a sandbox once, after a confirmation)
   const cm = v.company_mode;
   const vh = v.vehicles;
@@ -159,7 +192,8 @@ function SettingsDialog({ d }) {
         <div class="pair"><${Seg} value=${v.online.left} options=${v.online.left_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_left', { left: k })} style="width:320px;height:40px" />
           <p class="co-note">${v.online.left_say}</p></div>
         ${v.online.depots && html`<div class="co-caps">${v.online.depots.caps}</div>
-          ${v.online.depots.of ? html`<p class="co-note">${v.online.depots.of}</p><${SendMoney} to=${v.online.depots.hq} label=${v.online.depots.send_hq} amount=${v.online.depots.send_amount} />` : html`<${DepotsPart} d=${v.online.depots} />`}`}`}
+          ${v.online.depots.of ? html`<p class="co-note">${v.online.depots.of}</p><${SendMoney} to=${v.online.depots.hq} label=${v.online.depots.send_hq} amount=${v.online.depots.send_amount} />` : html`<${DepotsPart} d=${v.online.depots} />`}
+          ${v.online.depots.moves && html`<div class="co-caps">${v.online.depots.moves.caps}</div><${MovesPart} m=${v.online.depots.moves} />`}`}`}
       <div class="co-caps">${v.mode_caps}</div>
       <div class="pair"><${Seg} value=${k} options=${v.modes.map((m, i) => [i, m.label])} onChange=${(i) => setCo({ dialog: { kind: 'confirm', what: 'game_mode', name: v.modes[i].key, settings: v.date } })} style="width:320px;height:40px" />
         <p class="co-note">${v.mode_info}</p></div>

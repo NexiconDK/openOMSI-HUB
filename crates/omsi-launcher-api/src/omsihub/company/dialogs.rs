@@ -102,6 +102,7 @@ fn depots_part(c: &co::Company) -> Value {
         return json!({
             "caps": tr("Depots").to_uppercase(), "of": trf("A depot of %{hq}: its money, buses and staff are its own.", &[("hq", &hq)]),
             "hq": c.online.hq, "send_hq": trf("Send to %{hq}", &[("hq", &hq)]), "send_amount": DEPOT_SEND as f64 / 100.0,
+            "moves": moves_part(c, &data),
         });
     }
     let month = co::dates::month_of(&c.date);
@@ -126,6 +127,65 @@ fn depots_part(c: &co::Company) -> Value {
         "start": DEPOT_START as f64 / 100.0, "start_label": tr("Its starting money"), "map_label": tr("The map"),
         "found": tr("Found a depot"), "none": maps.is_empty().then(|| tr("The company has a depot on every other map of the server.")),
         "send": tr("Send money"), "send_amount": DEPOT_SEND as f64 / 100.0,
+        "moves": moves_part(c, &data),
+    })
+}
+
+/// (Phase 4 step 3) Buses and staff between a company's maps, in its settings: a bus of its own
+/// moved to another company of its owner's (`bus_move`), an employee lent to one (`staff_lend`),
+/// the buses on their way and the people lent and borrowed.
+fn moves_part(c: &co::Company, data: &std::path::Path) -> Value {
+    let targets: Vec<Value> = co::server_depots::relatives(data, c).into_iter().map(|(id, name)| json!({ "key": id, "label": name })).collect();
+    if targets.is_empty() {
+        return Value::Null;
+    }
+    let cfg = co::main_server::MainCfg::load(data).ok();
+    let (price, days) = cfg.map(|m| (m.bus_move_price, m.bus_move_days)).unwrap_or((5000_00, 2));
+    let buses: Vec<Value> = c
+        .fleet
+        .iter()
+        .filter(|v| matches!(v.tenure, Tenure::Owned { .. }))
+        .map(|v| json!({ "key": v.id, "label": format!("{} {}", v.number, v.name) }))
+        .collect();
+    let staff: Vec<Value> = c
+        .staff
+        .iter()
+        .filter(|e| e.notice_until.is_none() && e.lent.is_none() && e.lend.is_none())
+        .map(|e| json!({ "key": e.id, "label": format!("{} ({})", e.name, tr(e.role.label())) }))
+        .collect();
+    let mut on_way: Vec<String> = co::server_depots::buses_on_the_way(data, c)
+        .into_iter()
+        .map(|(bus, other, arrives, out)| {
+            let k = if out { "%{bus} to %{other}, there on %{day}" } else { "%{bus} from %{other}, here on %{day}" };
+            trf(k, &[("bus", &bus), ("other", &other), ("day", &day_label(&arrives))])
+        })
+        .collect();
+    on_way.sort();
+    let mut people: Vec<String> = Vec::new();
+    for e in &c.staff {
+        if let Some(l) = &e.lend {
+            people.push(trf("%{name} goes to %{other} tomorrow for %{n} days", &[("name", &e.name), ("other", &l.name), ("n", &l.days.to_string())]));
+        }
+        if let Some(l) = &e.lent {
+            people.push(trf("%{name} is lent by %{other} until %{day}", &[("name", &e.name), ("other", &l.name), ("day", &day_label(&l.until))]));
+        }
+    }
+    for (id, name) in co::server_depots::relatives(data, c) {
+        let Ok(o) = co::store::load(data, &id) else { continue };
+        for e in o.staff.iter().filter(|e| e.lent.as_ref().is_some_and(|l| l.from == c.id)) {
+            let until = e.lent.as_ref().map(|l| l.until.clone()).unwrap_or_default();
+            people.push(trf("%{name} works at %{other} until %{day}", &[("name", &e.name), ("other", &name), ("day", &day_label(&until))]));
+        }
+    }
+    json!({
+        "caps": tr("Buses and staff between the maps").to_uppercase(),
+        "to_label": tr("To"), "targets": targets,
+        "buses": buses, "bus_label": tr("The bus"), "move": tr("Move the bus"),
+        "bus_say": trf("A bus of the company's own moves to another of its maps for %{price} and is away %{n} days. A leased or rented bus stays with its contract.", &[("price", &eur(price)), ("n", &days.to_string())]),
+        "staff": staff, "staff_label": tr("The employee"), "days_label": tr("Days"), "days": 7, "lend": tr("Lend"),
+        "lend_say": tr("A lent employee goes the next day and works there for the days you choose, paid by the company that borrows him, then comes back."),
+        "on_way_caps": tr("On the way").to_uppercase(), "on_way": on_way,
+        "people_caps": tr("Lent and borrowed").to_uppercase(), "people": people,
     })
 }
 
@@ -144,10 +204,44 @@ const LEFT_DROPPED: &str = "Nobody drives the rest of his duty: its trips are dr
 /// {left: "ai" | "dropped"}`: `together::Together::left_dropped`, at once) - a company on Bus
 /// Company Online's server only.
 pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, String>> {
-    if what != "online_share" && what != "online_left" && what != "depot_found" && what != "depot_money" {
+    if what != "online_share" && what != "online_left" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" {
         return None;
     }
     let Some(c) = s.company.as_mut().filter(|c| c.online.on_server) else { return Some(Ok(json!({}))) };
+    // (phase 4 step 3: a bus of its own to another of its maps - its owner's)
+    if what == "bus_move" {
+        let id = args.get("id").and_then(Value::as_u64).unwrap_or(0) as u32;
+        let to = args.get("to").and_then(Value::as_str).unwrap_or("").to_string();
+        let data = super::data();
+        let (price, days) = co::main_server::MainCfg::load(&data).map(|m| (m.bus_move_price, m.bus_move_days)).unwrap_or((5000_00, 2));
+        let bus = c.vehicle(id).map(|v| format!("{} {}", v.number, v.name)).unwrap_or_default();
+        return Some(Ok(match co::server_depots::move_bus(&data, c, id, &to, price, days) {
+            Ok(arrives) => {
+                let name = co::store::load(&data, &to).map(|d| d.name).unwrap_or(to);
+                super::changed(s);
+                s.say(trf("%{bus} is on its way to %{name}, there on %{day}.", &[("bus", &bus), ("name", &name), ("day", &day_label(&arrives))]), false);
+                json!({})
+            }
+            Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
+        }));
+    }
+    // (and an employee lent to one for some days - its owner's)
+    if what == "staff_lend" {
+        let id = args.get("id").and_then(Value::as_u64).unwrap_or(0) as u32;
+        let to = args.get("to").and_then(Value::as_str).unwrap_or("").to_string();
+        let days = args.get("days").and_then(Value::as_i64).unwrap_or(0);
+        let data = super::data();
+        let name = c.staff.iter().find(|e| e.id == id).map(|e| e.name.clone()).unwrap_or_default();
+        return Some(Ok(match co::server_depots::lend(&data, c, id, &to, days) {
+            Ok(goes) => {
+                let other = co::store::load(&data, &to).map(|d| d.name).unwrap_or(to);
+                super::changed(s);
+                s.say(trf("%{name} goes to %{other} on %{day} for %{n} days.", &[("name", &name), ("other", &other), ("day", &day_label(&goes)), ("n", &days.to_string())]), false);
+                json!({})
+            }
+            Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
+        }));
+    }
     // (phase 4 step 2: money to its head office or a depot of its - its owner's)
     if what == "depot_money" {
         let to = args.get("to").and_then(Value::as_str).unwrap_or("").to_string();

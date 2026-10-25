@@ -443,6 +443,10 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
         if let Some(x) = t.market.as_mut() {
             x.others = others;
         }
+        // (its times are the market's: the server's operator may move them in the market's file)
+        if t.open() {
+            (t.opens_at, t.closes_at) = (mt.tender.opens_at, mt.tender.closes_at);
+        }
         if let Some(mine) = mine {
             t.offers = mine;
         }

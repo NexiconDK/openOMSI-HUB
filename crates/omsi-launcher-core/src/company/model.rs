@@ -592,6 +592,13 @@ pub struct Employee {
     pub week_paid: f64,
     #[serde(default)]
     pub week_due: f64,
+    /// (Bus Company Online, phase 4) Lent by another company of the owner's: from which, until
+    /// when, and the id he has there (`server_depots::lend`; he goes back after that day).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lent: Option<super::server_depots::Lent>,
+    /// To be lent to another company of the owner's: he goes at the company's next day.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lend: Option<super::server_depots::LendOut>,
 }
 
 /// What an employee does.

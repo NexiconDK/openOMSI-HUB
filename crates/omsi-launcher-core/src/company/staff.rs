@@ -1469,6 +1469,8 @@ pub fn hire(c: &mut Company, a: &Applicant) -> Result<u32, &'static str> {
         agency_no: 0,
         week_paid: 0.0,
         week_due: 0.0,
+        lent: None,
+        lend: None,
     });
     // (the induction: the fleet's models)
     if a.role == Role::Driver {
@@ -1490,6 +1492,10 @@ pub fn dismiss(c: &mut Company, id: u32) -> Result<String, &'static str> {
     let Some(e) = c.staff.iter_mut().find(|e| e.id == id) else { return Err("They do not work here.") };
     if e.notice_until.is_some() {
         return Err("They are leaving already.");
+    }
+    // (lent by another company of the owner's: theirs to dismiss, when back - phase 4 step 3)
+    if e.lent.is_some() {
+        return Err(super::server_depots::BORROWED);
     }
     let until = dates::add(&today, r.notice_days);
     e.notice_until = Some(until.clone());

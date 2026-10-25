@@ -1996,6 +1996,8 @@ pub fn agency_driver() -> Employee {
         agency_no: 0,
         week_paid: 0.0,
         week_due: 0.0,
+        lent: None,
+        lend: None,
     }
 }
 
