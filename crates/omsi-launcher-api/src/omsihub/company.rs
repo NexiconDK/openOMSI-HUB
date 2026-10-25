@@ -205,6 +205,60 @@ pub fn logo_picture(path: &str) -> Option<String> {
     read
 }
 
+/// (NexiconDK) A logo picture's kinds (its file's extension), and the largest one taken.
+pub const LOGO_KINDS: [&str; 6] = ["png", "jpg", "jpeg", "gif", "bmp", "webp"];
+pub const LOGO_MAX: usize = 3 << 20;
+
+/// (NexiconDK) A logo picture on this computer read for a company on another (`co_logo_read`:
+/// a player's own computer, the company on Bus Company Online's server): its file's name and
+/// its bytes in base64, for `logo_data`.
+fn logo_read(path: &str) -> Answer {
+    let ext = path.rsplit('.').next().unwrap_or("").to_ascii_lowercase();
+    let bytes = std::fs::read(path).map_err(|e| format!("{e}"))?;
+    if !LOGO_KINDS.contains(&ext.as_str()) || bytes.is_empty() || bytes.len() > LOGO_MAX {
+        return Err(tr("The picture could not be taken: a PNG, JPEG, GIF, BMP or WebP of at most 3 MB."));
+    }
+    let name = std::path::Path::new(path).file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+    Ok(json!({ "name": name, "data": base64(&bytes) }))
+}
+
+/// Base64 read back (`base64`'s): None when it is not.
+pub fn unbase64(text: &str) -> Option<Vec<u8>> {
+    let val = |c: u8| -> Option<u32> {
+        Some(match c {
+            b'A'..=b'Z' => c - b'A',
+            b'a'..=b'z' => c - b'a' + 26,
+            b'0'..=b'9' => c - b'0' + 52,
+            b'+' => 62,
+            b'/' => 63,
+            _ => return None,
+        } as u32)
+    };
+    let clean: Vec<u8> = text.bytes().filter(|b| !b.is_ascii_whitespace()).collect();
+    if clean.len() % 4 != 0 {
+        return None;
+    }
+    let mut out = Vec::with_capacity(clean.len() / 4 * 3);
+    for q in clean.chunks(4) {
+        let pad = q.iter().rev().take_while(|b| **b == b'=').count();
+        if pad > 2 {
+            return None;
+        }
+        let mut n = 0u32;
+        for (k, b) in q.iter().enumerate() {
+            n = n << 6 | if k >= 4 - pad { 0 } else { val(*b)? };
+        }
+        out.push((n >> 16) as u8);
+        if pad < 2 {
+            out.push((n >> 8) as u8);
+        }
+        if pad < 1 {
+            out.push(n as u8);
+        }
+    }
+    Some(out)
+}
+
 fn base64(bytes: &[u8]) -> String {
     const A: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
@@ -852,8 +906,10 @@ fn game_leads(s: &mut Session) -> bool {
 }
 
 /// A step may be taken now (no other running, no game leading).
+/// (Bus Company Online: a company on the server takes bids and purchases as anywhere - only its
+/// clock is never stepped: `simulate` does nothing there, and the steps are refused from afar.)
 pub fn may_step(s: &mut Session) -> bool {
-    !s.closing && !game_leads(s) && s.company.as_ref().is_some_and(|c| c.clock.ask.is_none() && !c.online.on_server)
+    !s.closing && !game_leads(s) && s.company.as_ref().is_some_and(|c| c.clock.ask.is_none())
 }
 
 /// Simulate to `to`: within the company's day at once, past its midnight on a thread. (NexiconDK:
@@ -1555,6 +1611,8 @@ pub fn call(cmd: &str, args: &Value, p: &dyn Platform) -> Option<Answer> {
         "co_open" => with(|s| open(s, &str_arg(args, "id"))),
         "co_reread" => with(|s| reread(s, &str_arg(args, "id"))),
         "co_delete" => with(|s| delete(s, &str_arg(args, "id"))),
+        // (NexiconDK: a logo picture of this computer read for a company on another)
+        "co_logo_read" => logo_read(&str_arg(args, "path")),
         "co_leave" => with(leave),
         "co_found" => with(|s| chooser::found(s, args)),
         "co_wizard" => with(|s| chooser::wizard(s, args)),
@@ -1721,6 +1779,7 @@ fn do_act(s: &mut Session, args: &Value, p: &dyn Platform) -> Answer {
             .or_else(|| ops::act(s, &what, args))
             .or_else(|| sandbox::act(s, &what, args))
             .or_else(|| country::act(s, &what, args))
+            .or_else(|| dialogs::online_act(s, &what, args))
             .unwrap_or_else(|| Err(format!("no action {what}"))),
     };
     r.map(|mut v| {
@@ -1799,6 +1858,30 @@ pub fn feed_tone(level: Level) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// (NexiconDK) A company on Bus Company Online's server takes its players' bids and purchases
+    /// (they wait for no step), and its clock is never stepped from a page.
+    #[test]
+    fn a_server_company_takes_bids_but_no_steps() {
+        let mut c = omsi_launcher_lib::company::found(&omsi_launcher_lib::company::Founding { name: "Online".into(), date: "2024-03-04".into(), ..Default::default() }, "x");
+        c.online.on_server = true;
+        c.clock.minute = 9 * 60;
+        let mut s = Session { company: Some(c.clone()), ..Default::default() };
+        assert!(may_step(&mut s), "bids and purchases go through");
+        simulate(&mut s, ck::now(&c) + 120, false);
+        assert_eq!(s.company.as_ref().map(|x| x.clock.minute), Some(9 * 60), "the clock stood");
+        assert!(!s.closing);
+    }
+
+    /// (NexiconDK) A logo picture goes from afar as base64 and back as it was.
+    #[test]
+    fn base64_goes_and_comes_back() {
+        for b in [&b""[..], b"a", b"ab", b"abc", b"abcd", &[0u8, 255, 128, 7, 9][..]] {
+            assert_eq!(unbase64(&base64(b)).as_deref(), Some(b));
+        }
+        assert_eq!(unbase64("aGVsbG8=").as_deref(), Some(&b"hello"[..]));
+        assert!(unbase64("abc").is_none() && unbase64("a*b=").is_none() && unbase64("a===").is_none());
+    }
 
     /// (NexiconDK) A player of "Play together" sees the showroom the session read, even when his
     /// own page started the reading: the catalogue is the session's, his dealer's sheet his own

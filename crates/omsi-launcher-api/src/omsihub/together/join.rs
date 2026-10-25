@@ -71,6 +71,9 @@ struct Drive {
     pid: u32,
     /// The departures (minutes) reported already.
     sent: Vec<i32>,
+    /// (NexiconDK) The map's world it is driven in (Bus Company Online): its trips go to the
+    /// world, which checks them and gives them to the company - not to the company from here.
+    world: Option<String>,
 }
 
 struct Joined {
@@ -231,6 +234,25 @@ fn new_trips(d: &Drive, name: &str) -> Vec<core::TripRun> {
         .collect()
 }
 
+/// (NexiconDK) The trips `trips` of player `name` posted to the map's world at `world`
+/// (`POST /bco/trip`, its web gateway): the departures (minutes) of those it took. One it does
+/// not take now is posted again with the next.
+fn post_to_world(world: &str, name: &str, trips: &[core::TripRun]) -> Vec<i32> {
+    let url = format!("{}/bco/trip", world.trim_end_matches('/'));
+    let mut taken = Vec::new();
+    for t in trips {
+        let body = json!({ "name": name, "trip": t }).to_string();
+        match omsi_net::http::post_json(&url, &body, Duration::from_secs(10)) {
+            Ok(_) => taken.push((t.departure / 60.0).round() as i32),
+            Err(e) => {
+                core::log_to_file(&format!("company session: a trip of line {} tour {} not posted to the world ({e}): again with the next", t.line, t.tour));
+                break;
+            }
+        }
+    }
+    taken
+}
+
 /// Whether the game of the duty still runs.
 fn game_runs(pid: u32) -> bool {
     core::instances::list().iter().any(|i| i.pid == pid && i.running)
@@ -273,7 +295,19 @@ fn run(stop: Arc<AtomicBool>) {
         // (driving: the trips as they end, and the end of the duty when the game ended)
         let mut done = false;
         if let Some(d) = drive.as_ref() {
-            let trips = new_trips(d, &driver());
+            let mut trips = new_trips(d, &driver());
+            // (NexiconDK: driven in a map's world - its trips to the world, which checks them
+            // against where it saw his bus and gives them to the company; the company is told
+            // only when the duty is over)
+            if let Some(world) = d.world.as_deref() {
+                let posted = post_to_world(world, &req.name, &trips);
+                if !posted.is_empty() {
+                    if let Some(x) = joined().as_mut().and_then(|j| j.drive.as_mut()) {
+                        x.sent.extend(posted);
+                    }
+                }
+                trips.clear();
+            }
             done = !game_runs(d.pid);
             if !trips.is_empty() || done {
                 req.what = "report".into();
@@ -640,7 +674,7 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
     // (his plugin's earlier replies are not this duty's: read from here on)
     let replies = super::super::addon::game_plugin_dir().map(|d| std::fs::metadata(d.join(bridge::DATA_DIR).join(bridge::REPLIES_FILE)).map_or(0, |m| m.len())).unwrap_or(0);
     if let Some(j) = joined().as_mut() {
-        j.drive = Some(Drive { duty: r, number, tour: start.tour.clone(), since: unix_now().saturating_sub(60), pid: launched.pid, sent: Vec::new() });
+        j.drive = Some(Drive { duty: r, number, tour: start.tour.clone(), since: unix_now().saturating_sub(60), pid: launched.pid, sent: Vec::new(), world: d.lan.as_deref().and_then(|l| l.strip_prefix("join:")).map(str::to_string) });
         j.replies = bridge::ReplyReader { offset: replies };
         j.wake = true;
     }

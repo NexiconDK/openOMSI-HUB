@@ -66,6 +66,36 @@ pub fn switch_text(c: &Company, to: GameMode) -> String {
     parts.iter().map(|p| tr(p)).collect::<Vec<_>>().join(" ")
 }
 
+/// (NexiconDK, Bus Company Online phase 3) The settings' share of a company on the server: what
+/// it keeps of what a trip of its players in the map's world brings in (the rest their pay).
+fn online_part(c: &co::Company) -> Value {
+    if !c.online.on_server {
+        return Value::Null;
+    }
+    let share = c.online.share.min(100);
+    json!({
+        "caps": tr("The company's share").to_uppercase(),
+        "share": share, "options": (0..=20).map(|k| k * 5).collect::<Vec<u8>>(),
+        "say": trf("The company keeps %{share} % of what a trip of its players brings in; the rest is the driver's pay, into his money on the server.", &[("share", &share.to_string())]),
+        "next": c.online.share_next.map(|n| trf("From tomorrow: %{share} %", &[("share", &n.to_string())])),
+    })
+}
+
+/// (NexiconDK) The settings' share chosen (`online_share {share}`): the company keeps it from the
+/// next day on (`online::Online::share_next`) - a company on Bus Company Online's server only.
+pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, String>> {
+    if what != "online_share" {
+        return None;
+    }
+    let share = args.get("share").and_then(Value::as_u64).map(|v| v.min(100) as u8);
+    let Some(c) = s.company.as_mut().filter(|c| c.online.on_server) else { return Some(Ok(json!({}))) };
+    let Some(share) = share else { return Some(Ok(json!({}))) };
+    c.online.share_next = (share != c.online.share).then_some(share);
+    super::changed(s);
+    s.say(trf("From tomorrow the company keeps %{share} % of its players' trips.", &[("share", &share.to_string())]), false);
+    Some(Ok(json!({})))
+}
+
 fn settings(s: &mut Session, args: &Value) -> Value {
     let Some(c) = s.company.clone() else { return Value::Null };
     let easy = co::autopilot::on(&c);
@@ -82,6 +112,8 @@ fn settings(s: &mut Session, args: &Value) -> Value {
         "addons": c.game_mode.rules().rosterflow.then(|| json!({ "caps": tr("Add-ons").to_uppercase(), "label": tr(ROSTERFLOW), "note": tr(ROSTERFLOW_NOTE), "on": co::autopilot::rosterflow(&c) })),
         "company_mode": super::sandbox::settings_part(&c),
         "country": super::country::settings_part(&c),
+        // (NexiconDK: a company on Bus Company Online's server - its share of its players' trips)
+        "online": online_part(&c),
         "currency": super::currency::settings_part(&c),
         "buying": (!easy).then(|| {
             let mode = BuyingMode::ALL.iter().position(|m| *m == c.dealer.mode).unwrap_or(1);
@@ -880,6 +912,35 @@ pub fn act(s: &mut Session, what: &str, args: &Value, _p: &dyn crate::Platform) 
                 })),
                 None => Ok(json!({})),
             }
+        }
+        // (NexiconDK: a picture sent from afar - a player's own computer, his launcher read it:
+        // `co_logo_read` - kept beside the company: a company on Bus Company Online's server)
+        "logo_data" => {
+            let Some(bytes) = super::unbase64(&str_of("data")).filter(|b| !b.is_empty() && b.len() <= super::LOGO_MAX) else {
+                return Some(Ok(json!({ "popup": super::kit::Popup::new("image", "The picture", tr("The picture could not be taken: a PNG, JPEG, GIF, BMP or WebP of at most 3 MB."), "", None).json(false) })));
+            };
+            let ext = str_of("name").rsplit('.').next().unwrap_or("").to_ascii_lowercase();
+            if !super::LOGO_KINDS.contains(&ext.as_str()) {
+                return Some(Ok(json!({ "popup": super::kit::Popup::new("image", "The picture", tr("The picture could not be taken: a PNG, JPEG, GIF, BMP or WebP of at most 3 MB."), "", None).json(false) })));
+            }
+            let dir = super::data().join("logos");
+            let path = dir.join(format!("{}-{}.{ext}", c.id, super::real_now()));
+            if let Err(e) = std::fs::create_dir_all(&dir).and_then(|_| std::fs::write(&path, &bytes)) {
+                return Some(Err(format!("{e}")));
+            }
+            let p = path.to_string_lossy().to_string();
+            done(apply(s, |c| {
+                c.logo = Some(p);
+                Ok(())
+            }))
+        }
+        // (NexiconDK: a company on Bus Company Online's server deleted by its owner from afar -
+        // `together::relay::OWNER_ON_SERVER`; elsewhere the boss deletes his own with `co_delete`)
+        "delete_company" => {
+            if !c.online.on_server {
+                return Some(Err(tr(super::super::together::relay::FROM_AFAR)));
+            }
+            super::delete(s, &c.id)
         }
         "currency" => super::currency::set(s, &str_of("code")),
         "logo_remove" => done(apply(s, |c| {

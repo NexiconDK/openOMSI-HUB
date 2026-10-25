@@ -179,11 +179,20 @@ Nobody needs a company's code or the console any more: the bus company's start h
   player; on a boss's own launcher a player is told it is the boss's (it had read for good).
 - **Nobody steps the clock** (25 October 2026: "Simulate until it opens" on a tender moved a
   company four hours ahead of the server, stopped there at a question nobody answers): the
-  launcher's simulation never runs on a server company (`company::simulate`, `may_step`, the
-  popup "The server's clock"), the tenders' step buttons are not offered there, a relayed
+  launcher's simulation never runs on a server company (`company::simulate`; bids and purchases,
+  which wait for no step, go through as anywhere - `may_step` had held them too in 0.2.48.779),
+  the tenders' step buttons are not offered there, a relayed
   `tender_step` is refused as the real time is (`Need::Clock`), and a question left waiting is
   decided by the dispatcher at the host's next step (`online::Host::tick_in`). A company already
   ahead waits for the server's clock (time never goes back: what happened on the way is booked).
+- **The owner deletes his company, and sets its logo** (25 October 2026): `delete_company` from
+  the settings, relayed (`relay::OWNER_ON_SERVER`; the page no longer runs `co_delete` on the
+  player's own computer for a company of the server - one of his of the same id was deleted
+  so), the company's process ending by itself (`company_host`: its session closed, its code and
+  session files gone, the world told; the main server says it was deleted, not restarted); a
+  logo picture read on the player's computer (`co_logo_read`) and sent as it is (`logo_data`,
+  base64, at most 3 MB - the company sessions take 5 MB a message now), kept beside the
+  company (`<folder>/logos/<id>-<time>.<ext>`).
 - **The console** besides: `players` (each with how he logs in, his money and his companies),
   `money <player>; <amount>` (set, or `+`/`-` to add or take), `owner <company>; <player>` (a
   player of the server a company's owner - one founded from the console without one, say: the
@@ -233,9 +242,41 @@ bus there - everybody on the map in one world - instead of starting the game alo
 - His trips go to the company as before (his game's plugin, his launcher, the company's book):
   the world does not report a player's trips (only its AI buses'), so nothing counts twice.
 
-Still to come: the world measuring the player's trips itself, the company's share and his pay
-(step 2); a duty that is part of a tour (the LAN takes the whole tour off the AI while he drives:
-step 3).
+## Phase 3, step 2: the trips checked by the world, the company's share and the player's pay
+
+Decided 25 October 2026: the game reports, the world checks; the company keeps a share its owner
+chooses, the rest is the player's pay.
+
+- **His launcher posts each trip to the world** (`join.rs`'s `post_to_world`: `POST /bco/trip` on
+  the world's web gateway, his name on the server and the trip as his game reported it), not to
+  the company; the company is told only when the duty is over (`done`). A company on the server
+  takes no trips from a launcher any more (`HostState::tickets`: its reports' trips left out).
+- **The world checks it** (`omsi-app`'s `company_server`): it keeps where it saw every player's
+  bus, every second for four hours (`watch`: `Pose` name, place, tour); a trip is taken when it
+  saw his bus on that tour then (ten minutes' slack for his machine's clock) driving at least
+  half as far as the trip says (`check`), once (`TAKEN_TRIPS`), and written for the company whose
+  line it is on the map (`store::append_world_trip`, `<id>.worldtrips.jsonl`). The gateway takes
+  such posts only in a world of Bus Company Online (`ServerInfo::bco_trips_open`, 64 KB a trip,
+  500 waiting at most).
+- **The company books it** (`company_host` every step: `store::world_trips_from` from
+  `Online::world_trips_read`; `together::take_world_trips`): to the duty of his it is a trip of,
+  as a report of his launcher's was (`book::report`), and of what it brings the company
+  (`book::trip_money`) all but the company's share is his pay - booked as wages
+  (`online::pay_of`) and written for the main server (`online::append_pay`,
+  `<folder>/pay/<id>.jsonl`).
+- **The main server pays it** into his money every few seconds (`MainServer::take_pay`, how far
+  kept in `players.json`: nothing twice), and says so in its log.
+- **The share**: 25 % when a company is founded (`online::DEFAULT_SHARE`); its owner sets it in
+  the company's settings (`dialogs::online_part`, `online_share`, his alone:
+  `relay::OWNER_ON_SERVER`), the new one counting from the next day (`Online::share_next`).
+
+Tested: `online::tests::the_worlds_trips_and_the_players_pay`, `a_new_share_counts_from_the_next_day`,
+`main_server::tests::the_players_pay_is_paid_into_their_money`,
+`company_server::tests::a_trip_is_taken_as_the_world_saw_it`, the gateway's door
+(`ws::tests`).
+
+Still to come: a duty that is part of a tour (the LAN takes the whole tour off the AI while he
+drives: step 3).
 
 ### Measured on a real map (Ahlheim: 30 lines, 418 tours a day)
 

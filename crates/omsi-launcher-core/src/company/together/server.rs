@@ -16,8 +16,9 @@ use std::time::{Duration, Instant};
 
 /// The port the server tries first (the next free one after it, else any).
 pub const DEFAULT_PORT: u16 = 27045;
-/// The largest request taken (a duty's trip reports with their stops).
-const MAX_BODY: usize = 1 << 20;
+/// The largest request taken (a duty's trip reports with their stops; a logo picture sent from
+/// afar - `logo_data`, 3 MB in base64).
+const MAX_BODY: usize = 5 << 20;
 const MAX_HEAD: usize = 16 << 10;
 /// At most this many connections at once.
 const MAX_OPEN: usize = 48;

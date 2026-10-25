@@ -4,9 +4,9 @@
 // company's settings, the clock's steps, a confirmation, a bus, a line, a fare, the dealer's
 // sheet) - and the popup over all of them.
 
-import { S } from '../../store.js';
+import { S, set } from '../../store.js';
 import { call } from '../../api.js';
-import { html, tr, setCo, act, cmd, refresh, useView, goTab, goKey, handOver, Icon, Btn, Seg, Switch, Select, Dialog, Popup, Figure, Mark, Plate, Slider, T } from './kit.js';
+import { html, tr, setCo, act, cmd, refresh, useView, goTab, goKey, handOver, Icon, Btn, Seg, Switch, Select, Dialog, Popup, Figure, Mark, Plate, Slider, T, freshCo } from './kit.js';
 import { VehicleDialog, NewDialog } from './fleet.js';
 import { DealerSheet } from './dealer.js';
 import { AddLineDialog } from './lines.js';
@@ -84,7 +84,18 @@ function SettingsDialog({ d }) {
   const k = v.modes.findIndex((m) => m.key === v.mode);
   const pick = async () => {
     const p = await call('pick_file', { title: v.choose_logo }).catch(() => null);
-    if (p) act('logo', { path: p });
+    if (!p) return;
+    // (NexiconDK: a company on another computer - the server's: the picture itself goes there)
+    if (S.co?.remote) {
+      const f = await call('co_logo_read', { path: p }).catch((e) => ({ error: e.message || String(e) }));
+      if (f?.error) {
+        setCo({ notice: { text: f.error, error: true, at: Date.now() } });
+        return;
+      }
+      act('logo_data', { name: f.name, data: f.data });
+      return;
+    }
+    act('logo', { path: p });
   };
   const moveTo = async () => {
     const r = await act('move_date', { date: v.date });
@@ -94,7 +105,7 @@ function SettingsDialog({ d }) {
     <span class="rest"></span>
     <${Btn} kind=${v.move ? '' : 'primary'} label=${v.close} onClick=${close} />
     ${v.move && html`<${Btn} kind="primary" icon="calendar_month" label=${v.move} onClick=${moveTo} />`}`;
-  const h = (v.buying ? 786 : 722) + (v.addons ? 40 : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0);
+  const h = (v.buying ? 786 : 722) + (v.addons ? 40 : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0) + (v.online ? 84 : 0);
   // (Beta 61: a career or a sandbox - turned into a sandbox once, after a confirmation)
   const cm = v.company_mode;
   const vh = v.vehicles;
@@ -109,6 +120,9 @@ function SettingsDialog({ d }) {
       ${v.country && html`<div class="co-caps">${v.country.caps}</div>
         <div class="pair"><${CountryPick} c=${v.country} value=${v.country.key} onChange=${(k) => act('country', { key: k })} style="width:320px;flex:none" />
           <p class="co-note">${v.country.note}</p></div>`}
+      ${v.online && html`<div class="co-caps">${v.online.caps}</div>
+        <div class="pair"><${Select} value=${v.online.options.indexOf(v.online.share)} options=${v.online.options.map((n) => n + ' %')} onChange=${(i) => act('online_share', { share: v.online.options[i] })} style="width:160px;flex:none" />
+          <p class="co-note">${v.online.say}${v.online.next ? ' ' + v.online.next : ''}</p></div>`}
       <div class="co-caps">${v.mode_caps}</div>
       <div class="pair"><${Seg} value=${k} options=${v.modes.map((m, i) => [i, m.label])} onChange=${(i) => setCo({ dialog: { kind: 'confirm', what: 'game_mode', name: v.modes[i].key, settings: v.date } })} style="width:320px;height:40px" />
         <p class="co-note">${v.mode_info}</p></div>
@@ -191,6 +205,16 @@ function ConfirmDialog({ d }) {
   const back = () => setCo({ dialog: d.settings ? { kind: 'settings', date: d.settings } : null });
   const yes = async () => {
     setCo({ dialog: null });
+    // (NexiconDK: the company of the server, deleted by its owner there - never a company of this
+    // computer by the same id)
+    if (d.what === 'delete_company' && S.co?.remote) {
+      const r = await act('delete_company');
+      if (r && !r.error && !r.popup) {
+        await cmd('tg_leave').catch(() => {});
+        set({ co: freshCo({ chooser: 'online' }), page: 'company' });
+      }
+      return;
+    }
     if (d.what === 'delete_company') {
       const id = d.name || S.co.shell?.id;
       await cmd('co_delete', { id });

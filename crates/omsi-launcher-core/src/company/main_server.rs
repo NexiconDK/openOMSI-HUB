@@ -427,6 +427,8 @@ impl MainServer {
     /// Every company of the folder whose process does not run (and is not held) started - one on
     /// a map that is not installed left in the folder. How many were started.
     pub fn scan(&mut self) -> usize {
+        // (the players' pay the companies booked since)
+        self.take_pay();
         let mut n = 0;
         for id in company_ids(&self.data) {
             if self.companies.iter().any(|p| p.id == id) || self.held.get(&id).is_some_and(|t| Instant::now() < *t) {
@@ -454,6 +456,37 @@ impl MainServer {
             }
         }
         n
+    }
+
+    /// (Phase 3) What the companies booked as their players' pay since (`online::pay_file`) paid
+    /// into the players' money; how much was paid.
+    pub fn take_pay(&mut self) -> super::model::Cents {
+        let (mut total, mut moved) = (0, false);
+        for id in company_ids(&self.data) {
+            let from = self.players.paid.get(&id).copied().unwrap_or(0);
+            let (pays, to) = online::pay_from(&self.data, &id, from);
+            if to == from {
+                continue;
+            }
+            moved = true;
+            for p in &pays {
+                match self.players.get_mut(&p.player) {
+                    Some(pl) => {
+                        pl.money += p.cents.max(0);
+                        total += p.cents.max(0);
+                        info!("{} paid {:.2} by {id} for line {} tour {}", pl.name, p.cents as f64 / 100.0, p.line, p.tour);
+                    }
+                    None => warn!("company {id}: pay for a player the server does not know ({}, {}) - not paid", p.name, p.player),
+                }
+            }
+            self.players.paid.insert(id, to);
+        }
+        if moved {
+            if let Err(e) = self.players.save(&self.data) {
+                warn!("the players not saved: {e:#}");
+            }
+        }
+        total
     }
 
     /// Company `id`'s own process started: its session kept (port, code), its output to
@@ -487,7 +520,13 @@ impl MainServer {
     /// The companies' processes that ended let go (started again after `HOLD`).
     pub fn reap_companies(&mut self) {
         let held = &mut self.held;
+        let data = self.data.clone();
         self.companies.retain_mut(|p| match p.child.try_wait() {
+            // (deleted by its owner: gone for good)
+            Ok(Some(_)) if !store::path_of(&data, &p.id).is_file() => {
+                info!("company {}: deleted by its owner", p.id);
+                false
+            }
             Ok(Some(status)) => {
                 warn!("company {}: its process ended ({status}) - started again in {} s", p.id, HOLD.as_secs());
                 held.insert(p.id.clone(), Instant::now() + HOLD);
@@ -1005,6 +1044,34 @@ mod tests {
         assert_eq!(company_ids(&m.data).len(), 3);
         let ports: std::collections::HashSet<u16> = ids.iter().map(|id| online::kept_session(&data, id, 27045).unwrap().port).collect();
         assert_eq!(ports.len(), 3);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// (Phase 3) What the companies booked as their players' pay is paid into their money, once,
+    /// and pay for a player the server does not know is not.
+    #[test]
+    fn the_players_pay_is_paid_into_their_money() {
+        let dir = temp("pay");
+        let root = omsi_with_maps(&dir);
+        let data = dir.join("bco");
+        let cfg = MainCfg::parse(&format!("root = {}\nreal_time = 0\ndate = 2024-03-04\ngame = {}\n", root.display(), dir.join("no-game").display()));
+        let mut m = MainServer::open(&data, cfg).unwrap();
+        let l = super::super::server_players::Login { name: "Jonas".into(), steam: "76561198000000001".into(), ..Default::default() };
+        let id = m.players.login(&l, None, Logins::default(), 1_000_00, 10).unwrap().player.id;
+        let cid = m.found("Pay Trafik", "Lemmental", "", "").unwrap();
+        let pay = |cents| online::Pay { player: id.clone(), name: "Jonas".into(), cents, line: "5".into(), tour: "3".into(), departure: 0.0, at: 1 };
+        online::append_pay(&data, &cid, &pay(250_00)).unwrap();
+        online::append_pay(&data, &cid, &online::Pay { player: "nobody".into(), ..pay(99_00) }).unwrap();
+        assert_eq!(m.take_pay(), 250_00);
+        assert_eq!(m.players.get(&id).unwrap().money, 1_250_00);
+        assert_eq!(m.take_pay(), 0, "once");
+        online::append_pay(&data, &cid, &pay(10_00)).unwrap();
+        assert_eq!(m.take_pay(), 10_00);
+        // (kept: a main server started again pays nothing twice)
+        drop(m);
+        let cfg = MainCfg::parse(&format!("root = {}\nreal_time = 0\ngame = {}\n", root.display(), dir.join("no-game").display()));
+        let mut m = MainServer::open(&data, cfg).unwrap();
+        assert_eq!((m.take_pay(), m.players.get(&id).unwrap().money), (0, 1_260_00));
         let _ = std::fs::remove_dir_all(&dir);
     }
 

@@ -133,11 +133,48 @@ pub fn delete(data: &Path, id: &str) -> Result<()> {
     std::fs::remove_file(path_of(data, id)).with_context(|| format!("cannot delete {id}"))?;
     // (and what lies beside it: a company founded later under the same id starts without the
     // phone's orders, the game's plan and what the game reported of this one)
-    let beside = [live_file(data, id), super::remote::orders_file(data, id), super::plan::live_plan_file(data, id), super::messages::inbox_file(data, id), dir(data).join(format!("{id}.json.tmp"))];
+    let beside = [live_file(data, id), super::remote::orders_file(data, id), super::plan::live_plan_file(data, id), super::messages::inbox_file(data, id), dir(data).join(format!("{id}.json.tmp")), world_trips_file(data, id)];
     for p in beside.into_iter().chain(taken_files(data, id).into_iter().map(|x| x.1)) {
         let _ = std::fs::remove_file(p);
     }
     Ok(())
+}
+
+/// (NexiconDK, Bus Company Online phase 3) A trip a player drove for the company in a map's
+/// world, as the world took it: posted by his launcher, checked against where the world saw his
+/// bus (`omsi-app`'s `company_server`), for the company's process to book (`world_trips_from`).
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq)]
+pub struct WorldTrip {
+    /// The player's name in the world (the server's name for him).
+    pub name: String,
+    pub trip: crate::TripRun,
+    /// When the world took it (Unix seconds).
+    pub at: u64,
+}
+
+/// The company's trips taken by a map's world (`WorldTrip`), a JSON line each.
+pub fn world_trips_file(data: &Path, id: &str) -> PathBuf {
+    dir(data).join(format!("{id}.worldtrips.jsonl"))
+}
+
+/// A trip the world took for company `id`, added to its file.
+pub fn append_world_trip(data: &Path, id: &str, t: &WorldTrip) -> Result<()> {
+    use std::io::Write;
+    std::fs::create_dir_all(dir(data))?;
+    let mut f = std::fs::OpenOptions::new().create(true).append(true).open(world_trips_file(data, id))?;
+    writeln!(f, "{}", serde_json::to_string(t)?)?;
+    Ok(())
+}
+
+/// The world's trips of company `id` from byte `from` of its file on (a whole line each; a line
+/// still being written waits), and where they end - from 0 again when the file is shorter.
+pub fn world_trips_from(data: &Path, id: &str, from: u64) -> (Vec<WorldTrip>, u64) {
+    let Ok(bytes) = std::fs::read(world_trips_file(data, id)) else { return (Vec::new(), 0) };
+    let start = if (from as usize) > bytes.len() { 0 } else { from as usize };
+    let rest = &bytes[start..];
+    let whole = rest.iter().rposition(|b| *b == b'\n').map_or(0, |k| k + 1);
+    let trips = String::from_utf8_lossy(&rest[..whole]).lines().filter_map(|l| serde_json::from_str::<WorldTrip>(l).ok()).collect();
+    (trips, (start + whole) as u64)
 }
 
 /// The live hook's file of a company.

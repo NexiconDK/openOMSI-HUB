@@ -37,7 +37,7 @@ use std::path::{Path, PathBuf};
 pub const SAVE_EVERY: i64 = 60;
 
 /// What the company keeps of its life on a server (`Company::online`).
-#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Online {
     /// It runs on a server. In Normal and Realistic its roster is its planners' alone: the day's
     /// repair of the roster (`plan::repair_day`: a driver ill, a bus broken) is not run for
@@ -55,6 +55,79 @@ pub struct Online {
     pub owner: String,
     #[serde(default)]
     pub owner_id: String,
+    /// (Phase 3) The company's share of the income of a trip its players drive in the map's
+    /// world (per cent); the rest is the player's pay, into his money on the server. Its owner
+    /// sets it, the new one counting from the next day (`share_next`).
+    #[serde(default = "default_share")]
+    pub share: u8,
+    #[serde(default)]
+    pub share_next: Option<u8>,
+    /// How far the world's trips of the company were taken (bytes of `store::world_trips_file`).
+    #[serde(default)]
+    pub world_trips_read: u64,
+}
+
+/// The company's share of its players' trips when it is founded (per cent).
+pub const DEFAULT_SHARE: u8 = 25;
+
+fn default_share() -> u8 {
+    DEFAULT_SHARE
+}
+
+impl Default for Online {
+    fn default() -> Self {
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0 }
+    }
+}
+
+/// What a player is paid for a trip he drove for company `c` in its map's world (cents), out
+/// of what the trip brings the company (`money`): all but the company's share.
+pub fn pay_of(c: &Company, money: super::model::Cents) -> super::model::Cents {
+    let share = c.online.share.min(100) as i64;
+    (money.max(0) * (100 - share)) / 100
+}
+
+/// A player's pay for a trip, as the company's process books it and the main server pays it
+/// into his money (`<folder>/pay/<company>.jsonl`, a JSON line each).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct Pay {
+    /// The server's id for him and his name.
+    pub player: String,
+    pub name: String,
+    pub cents: super::model::Cents,
+    /// What it was for (the line's number, the tour, the trip's departure, s of the day).
+    pub line: String,
+    pub tour: String,
+    pub departure: f64,
+    /// When it was booked (Unix seconds).
+    pub at: u64,
+}
+
+/// The pay file of company `id`.
+pub fn pay_file(data: &Path, id: &str) -> PathBuf {
+    data.join("pay").join(format!("{id}.jsonl"))
+}
+
+/// A player's pay booked by company `id` (for the main server to pay).
+pub fn append_pay(data: &Path, id: &str, p: &Pay) -> Result<()> {
+    use std::io::Write;
+    let path = pay_file(data, id);
+    if let Some(d) = path.parent() {
+        std::fs::create_dir_all(d).with_context(|| format!("cannot make {}", d.display()))?;
+    }
+    let mut f = std::fs::OpenOptions::new().create(true).append(true).open(&path).with_context(|| format!("cannot write {}", path.display()))?;
+    writeln!(f, "{}", serde_json::to_string(p)?)?;
+    Ok(())
+}
+
+/// The pay of company `id` from byte `from` of its file on (whole lines), and where it ends.
+pub fn pay_from(data: &Path, id: &str, from: u64) -> (Vec<Pay>, u64) {
+    let Ok(bytes) = std::fs::read(pay_file(data, id)) else { return (Vec::new(), from) };
+    let start = (from as usize).min(bytes.len());
+    let rest = &bytes[start..];
+    let whole = rest.iter().rposition(|b| *b == b'\n').map_or(0, |k| k + 1);
+    let pays = String::from_utf8_lossy(&rest[..whole]).lines().filter_map(|l| serde_json::from_str::<Pay>(l).ok()).collect();
+    (pays, (start + whole) as u64)
 }
 
 /// What a company keeps on the main server for its players' launchers ("Play together": the
@@ -468,6 +541,11 @@ impl Host {
         let new_day = self.company.date != before;
         if new_day {
             self.seen = (self.company.date.clone(), 0);
+            // (the owner's new share counts from the day after he set it)
+            if let Some(n) = self.company.online.share_next.take() {
+                self.company.online.share = n.min(100);
+                self.dirty = true;
+            }
         }
         if new_day || self.planned.as_deref() != Some(self.company.date.as_str()) {
             self.write_plan(w)?;
@@ -524,6 +602,17 @@ impl Host {
             }
             store::forget_taken(&self.data, &self.company.id, &date);
         }
+    }
+
+    /// The company changed besides what the pages did (its players' trips from the world
+    /// booked): saved with the next save.
+    pub fn mark_changed(&mut self) {
+        self.dirty = true;
+    }
+
+    /// The company's map's timetable of its day, when this host has read it.
+    pub fn lines_today(&self) -> Option<&[LineInfo]> {
+        self.read.iter().find(|x| x.0 == self.company.map && x.1 == self.company.date).map(|x| x.2.as_slice())
     }
 
     /// The company's date and minute of the day: the server's world runs on them.
@@ -613,6 +702,59 @@ mod tests {
     /// Real time: Unix seconds `hours` after the moment the tests start from (to the minute).
     fn at(hours: f64) -> i64 {
         1_800_000_000 + (hours * 60.0).round() as i64 * 60
+    }
+
+    /// (Phase 3) The world's trips of a company read on from where they were (a line still being
+    /// written waits), the players' pay written and read the same way, the company's share
+    /// taken off a trip's money, and the owner's new share counting from the next day.
+    #[test]
+    fn the_worlds_trips_and_the_players_pay() {
+        let data = temp("pay");
+        let t = crate::TripRun { line: "Linie5".into(), tour: "3".into(), departure: 8.0 * 3600.0, ..Default::default() };
+        assert_eq!(store::world_trips_from(&data, "co", 0), (Vec::new(), 0));
+        let w = store::WorldTrip { name: "Jonas".into(), trip: t.clone(), at: 5 };
+        store::append_world_trip(&data, "co", &w).unwrap();
+        let (got, to) = store::world_trips_from(&data, "co", 0);
+        assert_eq!((got, to > 0), (vec![w.clone()], true));
+        // (half a line written: it waits)
+        use std::io::Write;
+        std::fs::OpenOptions::new().append(true).open(store::world_trips_file(&data, "co")).unwrap().write_all(b"{\"name\":\"Ev").unwrap();
+        assert_eq!(store::world_trips_from(&data, "co", to), (Vec::new(), to));
+        // (a file made anew, shorter: from its start)
+        std::fs::write(store::world_trips_file(&data, "co"), format!("{}\n", serde_json::to_string(&w).unwrap())).unwrap();
+        assert_eq!(store::world_trips_from(&data, "co", to + 100).0.len(), 1);
+        // (the pay)
+        let p = Pay { player: "p1".into(), name: "Jonas".into(), cents: 1234, line: "5".into(), tour: "3".into(), departure: 28800.0, at: 7 };
+        append_pay(&data, "co", &p).unwrap();
+        append_pay(&data, "co", &Pay { cents: 66, ..p.clone() }).unwrap();
+        let (pays, end) = pay_from(&data, "co", 0);
+        assert_eq!(pays.iter().map(|p| p.cents).collect::<Vec<_>>(), vec![1234, 66]);
+        assert_eq!(pay_from(&data, "co", end), (Vec::new(), end));
+        // (the share: 25 % kept, the rest his)
+        let (mut c, _) = (found(&Founding { name: "Share".into(), date: "2024-03-04".into(), ..Default::default() }, "x"), ());
+        assert_eq!(c.online.share, DEFAULT_SHARE);
+        assert_eq!(pay_of(&c, 10_000), 7_500);
+        c.online.share = 100;
+        assert_eq!(pay_of(&c, 10_000), 0);
+        assert_eq!(pay_of(&c, -5), 0);
+        // (a company file of before: its share the default)
+        let v: Online = serde_json::from_str(r#"{"on_server":true}"#).unwrap();
+        assert_eq!((v.share, v.share_next, v.world_trips_read), (DEFAULT_SHARE, None, 0));
+        let _ = std::fs::remove_dir_all(&data);
+    }
+
+    /// (Phase 3) The owner's new share counts from the next day of the company's.
+    #[test]
+    fn a_new_share_counts_from_the_next_day() {
+        let data = temp("share");
+        let (id, mut w) = company(&data);
+        let (mut h, _) = Host::open_in(&data, &id, at(0.0), &mut w, None).unwrap();
+        h.company.online.share_next = Some(40);
+        h.tick_in(at(1.0), &mut w).unwrap();
+        assert_eq!((h.company.online.share, h.company.online.share_next), (DEFAULT_SHARE, Some(40)), "today: the old one");
+        h.tick_in(at(20.0), &mut w).unwrap();
+        assert_eq!((h.company.online.share, h.company.online.share_next), (40, None), "from the next day");
+        let _ = std::fs::remove_dir_all(&data);
     }
 
     /// (NexiconDK) A question left waiting on a server company (a step taken from a page, before

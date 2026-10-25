@@ -367,7 +367,10 @@ impl HostState {
             },
             "report" => match req.duty.as_ref() {
                 None => Err(refusal(book::NO_DUTY)),
-                Some(r) => book::report(c, p, r, guest, &req.trips, now).map_err(refusal).map(|(taken, refused)| {
+                // (NexiconDK: a company on Bus Company Online's server takes its players' trips
+                // from its map's world alone, checked there - `store::WorldTrip`: not from their
+                // launchers)
+                Some(r) => book::report(c, p, r, guest, if self.tickets.is_some() { &[] } else { &req.trips }, now).map_err(refusal).map(|(taken, refused)| {
                     extra = json!({ "taken": taken, "refused": refused });
                     // (his game ended before the duty did: the AI drives the rest - Beta 63)
                     let ai = req.done && self.left_duty(c, here, r, guest, LeftWhy::Quit);

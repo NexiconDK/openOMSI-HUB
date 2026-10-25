@@ -72,7 +72,17 @@ pub struct ServerInfo {
     pub local_admin_failures: Vec<Instant>,
     /// A dedicated server's shared world now (`"world"` in `GET /status`); none elsewhere.
     pub world: Option<WorldCounts>,
+    /// (NexiconDK) A map's world of Bus Company Online takes the trips its players drove for
+    /// their companies (`POST /bco/trip`, from their launchers): what came, for the server loop
+    /// to check and book (the source's address, the body). Off elsewhere: the door is not there.
+    pub bco_trips_open: bool,
+    pub bco_trips: Vec<(String, String)>,
 }
+
+/// (NexiconDK) The longest trip a player's launcher posts to a world (`POST /bco/trip`), and how
+/// many wait for the server loop at most.
+pub const BCO_TRIP_MAX: usize = 64 * 1024;
+pub const BCO_TRIPS_WAITING: usize = 500;
 
 /// Omsi-Hub: the files of a dedicated server's live map (`GET /kort`): the map (its ways,
 /// stops and tours, `kort.json`) and each trip's route (`rute/<n>`).
@@ -546,9 +556,14 @@ const ADMIN_LOCK_WINDOW: Duration = Duration::from_secs(120);
 
 /// The rest of a request's body, up to its `Content-Length` (4 KiB at most).
 fn read_body(s: &mut TcpStream, request: &mut Vec<u8>) {
+    read_body_up_to(s, request, 4096)
+}
+
+/// The request's body read on to its `Content-Length` (at most `max` bytes).
+fn read_body_up_to(s: &mut TcpStream, request: &mut Vec<u8>, max: usize) {
     let text = String::from_utf8_lossy(request).to_string();
     let Some(head_end) = text.find("\r\n\r\n") else { return };
-    let want = header(&text[..head_end], "content-length").and_then(|v| v.parse::<usize>().ok()).unwrap_or(0).min(4096);
+    let want = header(&text[..head_end], "content-length").and_then(|v| v.parse::<usize>().ok()).unwrap_or(0).min(max);
     let mut buf = [0u8; 1024];
     while request.len() < head_end + 4 + want {
         match s.read(&mut buf) {
@@ -681,6 +696,28 @@ fn serve(stream: TcpStream, slot: Option<SourceSlot>, target: SocketAddr, info: 
                 match (m, r["/kort/rute/".len()..].parse::<usize>().ok()) {
                     (Some(m), Some(n)) if n < m.routes.len() => ("200 OK", "application/json", m.routes[n].clone()),
                     _ => ("404 Not Found", "text/plain", b"no such trip".to_vec()),
+                }
+            }
+            // (NexiconDK: a trip a player drove in a map's world of Bus Company Online)
+            "/bco/trip" => {
+                let open = info.lock().unwrap_or_else(|e| e.into_inner()).bco_trips_open;
+                if !open {
+                    ("404 Not Found", "text/plain", b"this server takes no trips".to_vec())
+                } else if !req.starts_with("POST ") {
+                    ("405 Method Not Allowed", "text/plain", b"POST the trip".to_vec())
+                } else {
+                    read_body_up_to(&mut s, &mut request, BCO_TRIP_MAX);
+                    let text = String::from_utf8_lossy(&request).to_string();
+                    let body = text.split_once("\r\n\r\n").map(|(_, b)| b.to_string()).unwrap_or_default();
+                    let mut i = info.lock().unwrap_or_else(|e| e.into_inner());
+                    if body.trim().is_empty() || body.len() > BCO_TRIP_MAX {
+                        ("400 Bad Request", "text/plain", b"no trip".to_vec())
+                    } else if i.bco_trips.len() >= BCO_TRIPS_WAITING {
+                        ("503 Service Unavailable", "text/plain", b"too many trips waiting".to_vec())
+                    } else {
+                        i.bco_trips.push((source.clone(), body));
+                        ("202 Accepted", "application/json", b"{\"ok\":true}".to_vec())
+                    }
                 }
             }
             "/admin" => {
@@ -1288,6 +1325,23 @@ mod tests {
         let _ = s.read_to_string(&mut r);
         assert!(r.starts_with("HTTP/1.1 202"), "{r}");
         assert_eq!(gw.info.lock().unwrap().local_admin_queue, ["say hello"]);
+        // (NexiconDK) the trips of a map's world of Bus Company Online: taken there alone, a
+        // long body read whole
+        let post = |body: &str| {
+            let mut s = TcpStream::connect(gw.addr).unwrap();
+            s.write_all(format!("POST /bco/trip HTTP/1.1\r\nHost: x\r\nContent-Length: {}\r\n\r\n", body.len()).as_bytes()).unwrap();
+            std::thread::sleep(Duration::from_millis(30));
+            s.write_all(body.as_bytes()).unwrap();
+            let mut r = String::new();
+            let _ = s.read_to_string(&mut r);
+            r
+        };
+        assert!(post("{}").starts_with("HTTP/1.1 404"), "not a world of Bus Company Online");
+        gw.info.lock().unwrap().bco_trips_open = true;
+        let long = format!("{{\"name\":\"Jonas\",\"pad\":\"{}\"}}", "x".repeat(20_000));
+        assert!(post(&long).starts_with("HTTP/1.1 202"));
+        let got = std::mem::take(&mut gw.info.lock().unwrap().bco_trips);
+        assert_eq!((got.len(), got[0].1.len()), (1, long.len()), "the whole body");
         // the players' positions only when the server shares them
         let get = |path: &str| {
             let mut s = TcpStream::connect(gw.addr).unwrap();

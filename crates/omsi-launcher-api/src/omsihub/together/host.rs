@@ -124,6 +124,52 @@ fn plan_of(s: &Session, h: &mut Hosting) -> Option<DayPlan> {
     Some(p)
 }
 
+/// (NexiconDK, Bus Company Online phase 3) The trips the company's players drove in its map's
+/// world, as the world took them (`store::WorldTrip`, checked there against where it saw their
+/// buses): each booked to the player's duty it is a trip of, as a report of his launcher's was
+/// (`book::report`: once, only his own, of today), the company keeping its share of what it
+/// brings and the rest his pay (`online::pay_of`, booked as wages) - the pay, for the main
+/// server to pay into his money. `lines`: the map's timetable of the company's day.
+pub(crate) fn take_world_trips(s: &mut Session, lines: &[core::LineInfo], trips: &[co::store::WorldTrip], now: u64) -> Vec<co::online::Pay> {
+    let Some(c) = s.company.as_mut() else { return Vec::new() };
+    let tours = co::network::tours_of_day(c, lines, &c.date);
+    let p = co::plan::day_plan(c, &c.date, tours, &[], &[], false);
+    let mut paid = Vec::new();
+    for w in trips {
+        let t = &w.trip;
+        let Some((no, id, name)) = c.together.guests.iter().find(|g| !g.banned && g.name.trim().eq_ignore_ascii_case(w.name.trim())).map(|g| (g.no, g.id.clone(), g.name.clone())) else {
+            core::log_to_file(&format!("company {}: a trip from the world of {} (not a player of the company): not booked", c.id, w.name));
+            continue;
+        };
+        // (his duties of the trip's tour today: the one it is a trip of takes it)
+        let duties: Vec<DutyRef> = c
+            .together
+            .claims
+            .iter()
+            .filter(|x| x.guest == no && x.duty.date == c.date && x.duty.tour.trim() == t.tour.trim() && (t.line.trim().is_empty() || x.duty.line.eq_ignore_ascii_case(t.line.trim())))
+            .map(|x| x.duty.clone())
+            .collect();
+        let mut booked = false;
+        for r in &duties {
+            if let Ok((1, _)) = book::report(c, Some(&p), r, no, std::slice::from_ref(t), now) {
+                let kept = c.together.trips.last().map(|g| g.trip.clone()).unwrap_or_else(|| t.clone());
+                let money = book::trip_money(c, &kept);
+                let pay = co::online::pay_of(c, money);
+                if pay > 0 {
+                    c.book(co::model::BookingKind::Wages, -pay, format!("{name}: line {} tour {} (a player of the company)", kept.line, kept.tour), false);
+                }
+                paid.push(co::online::Pay { player: id.clone(), name: name.clone(), cents: pay, line: kept.line.clone(), tour: kept.tour.clone(), departure: kept.departure, at: now });
+                booked = true;
+                break;
+            }
+        }
+        if !booked {
+            core::log_to_file(&format!("company {}: a trip of {} from the world (line {} tour {}, {:.0}) is no trip of a duty of his today: not booked", c.id, name, t.line, t.tour, t.departure));
+        }
+    }
+    paid
+}
+
 /// The day's timetable as the session has it (empty: not read yet).
 fn lines_of(s: &Session) -> Vec<core::LineInfo> {
     s.map_lines().map(<[core::LineInfo]>::to_vec).unwrap_or_default()

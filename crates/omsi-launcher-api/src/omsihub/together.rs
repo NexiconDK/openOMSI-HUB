@@ -25,7 +25,7 @@ use serde_json::{json, Value};
 
 pub use host::{closing_company, give_to_guest, online_guests, quit, rail_badge, tile_line};
 // (NexiconDK: a company's process on Bus Company Online's main server - `company_host`)
-pub(crate) use host::{start_with, stop_now};
+pub(crate) use host::{start_with, stop_now, take_world_trips};
 // (NexiconDK: a company of a Bus Company Online server joined - `bco.rs`)
 pub(crate) use join::join_server_company;
 #[cfg(test)]

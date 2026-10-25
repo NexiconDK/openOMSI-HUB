@@ -133,6 +133,8 @@ fn key_hash(key: &str) -> String {
 #[serde(default)]
 pub struct Players {
     pub players: Vec<Player>,
+    /// (Phase 3) How far each company's pay file was paid out (bytes of `online::pay_file`).
+    pub paid: std::collections::BTreeMap<String, u64>,
 }
 
 impl Players {

@@ -351,6 +351,32 @@ pub fn update_server_buses(json: String) {
     }
 }
 
+/// (NexiconDK) A map's world of Bus Company Online: its gateway takes the trips the players'
+/// launchers post (`POST /bco/trip`). Whether it was open to say so.
+pub fn open_bco_trips() -> bool {
+    if let Ok(w) = WS_PATH.lock() {
+        if let Some(g) = w.as_ref().and_then(|w| w.gateway.as_ref()) {
+            if let Ok(mut i) = g.info.lock() {
+                i.bco_trips_open = true;
+                return true;
+            }
+        }
+    }
+    false
+}
+
+/// (NexiconDK) The trips posted to the gateway since (`open_bco_trips`): the source, the body.
+pub fn take_bco_trips() -> Vec<(String, String)> {
+    if let Ok(w) = WS_PATH.lock() {
+        if let Some(g) = w.as_ref().and_then(|w| w.gateway.as_ref()) {
+            if let Ok(mut i) = g.info.lock() {
+                return std::mem::take(&mut i.bco_trips);
+            }
+        }
+    }
+    Vec::new()
+}
+
 /// A server run: the admin commands that came to the web gateway's `POST /admin`.
 pub fn take_local_admin() -> Vec<String> {
     if let Ok(w) = WS_PATH.lock() {

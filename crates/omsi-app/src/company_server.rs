@@ -73,6 +73,123 @@ pub(crate) fn take_new_plan() -> bool {
     true
 }
 
+// --- phase 3: the trips the players drive in the world ------------------------------------------
+
+/// Where the world saw a player's bus: when (Unix seconds), where (the map's metres) and on
+/// which tour (`Pose::tour`, `<line>/<tour>`).
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct Seen {
+    pub at: f64,
+    pub x: f64,
+    pub z: f64,
+    pub tour: String,
+}
+
+/// How long the world keeps where it saw a player's bus (s): a long tour's trip and its posting.
+const TRACK_FOR: f64 = 4.0 * 3600.0;
+/// A trip's end may be this far off the world's clock (its game's machine's own) (s).
+const SKEW: f64 = 600.0;
+
+/// The players' buses as the world saw them, by their names (lower case).
+static TRACKS: Mutex<Option<std::collections::HashMap<String, std::collections::VecDeque<Seen>>>> = Mutex::new(None);
+/// The trips taken (the player, the tour, the departure in minutes): each once.
+static TAKEN_TRIPS: Mutex<Vec<(String, String, i64)>> = Mutex::new(Vec::new());
+/// The world's gateway takes trips (`POST /bco/trip`).
+static DOOR_OPEN: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Where the world sees the players' buses now (their names, places, tours), kept for the
+/// trips they post (`take_trips`); at `now` (Unix seconds).
+pub(crate) fn watch(players: impl Iterator<Item = (String, f64, f64, String)>, now: f64) {
+    let mut g = TRACKS.lock().unwrap_or_else(|e| e.into_inner());
+    let tracks = g.get_or_insert_with(Default::default);
+    for (name, x, z, tour) in players {
+        let t = tracks.entry(name.trim().to_lowercase()).or_default();
+        t.push_back(Seen { at: now, x, z, tour });
+        while t.front().is_some_and(|s| now - s.at > TRACK_FOR) {
+            t.pop_front();
+        }
+    }
+    tracks.retain(|_, t| t.back().is_some_and(|s| now - s.at <= TRACK_FOR));
+}
+
+/// Why a posted trip is not taken (the world's log says it).
+pub(crate) fn check(track: &std::collections::VecDeque<Seen>, t: &omsi_launcher_lib::TripRun) -> Result<(), &'static str> {
+    if t.free || t.tour.trim().is_empty() {
+        return Err("not a trip of a tour");
+    }
+    let end = t.time as f64;
+    let from = end - t.seconds.max(0.0) - SKEW;
+    let on_tour = |s: &&Seen| s.at >= from && s.at <= end + SKEW && s.tour.rsplit('/').next().is_some_and(|x| x.trim().eq_ignore_ascii_case(t.tour.trim()));
+    let seen: Vec<&Seen> = track.iter().filter(on_tour).collect();
+    if seen.len() < 3 {
+        return Err("the world did not see his bus on that tour then");
+    }
+    let driven: f64 = seen.windows(2).map(|w| ((w[1].x - w[0].x).powi(2) + (w[1].z - w[0].z).powi(2)).sqrt()).filter(|d| *d < 2000.0).sum();
+    if t.metres > 300.0 && driven < 0.5 * t.metres {
+        return Err("his bus drove far less than the trip says");
+    }
+    Ok(())
+}
+
+/// The trips the players' launchers posted to the world's gateway since: each checked against
+/// where the world saw the player's bus (`check`), taken once, and written for the company whose
+/// line it is on the map `map` (`store::append_world_trip`: its process books it).
+pub(crate) fn take_trips(map: &str) {
+    let Some(c) = COMPANIES.get() else { return };
+    if !DOOR_OPEN.load(Ordering::Relaxed) && crate::lan::open_bco_trips() {
+        DOOR_OPEN.store(true, Ordering::Relaxed);
+        log::info!("server: the players' trips are taken (POST /bco/trip)");
+    }
+    let posted = crate::lan::take_bco_trips();
+    if posted.is_empty() {
+        return;
+    }
+    let plans = omsi_launcher_lib::company::plan::live_plans(&c.data);
+    let same_map = |m: &str| online::map_folder(m) == online::map_folder(map);
+    for (source, body) in posted {
+        let Ok(v) = serde_json::from_str::<serde_json::Value>(&body) else {
+            log::warn!("server: a trip from {source} that is not one");
+            continue;
+        };
+        let name = v.get("name").and_then(serde_json::Value::as_str).unwrap_or("").trim().to_string();
+        let Some(t) = v.get("trip").and_then(|x| serde_json::from_value::<omsi_launcher_lib::TripRun>(x.clone()).ok()) else {
+            log::warn!("server: a trip of {name} from {source} that is not one");
+            continue;
+        };
+        let key = (name.to_lowercase(), t.tour.trim().to_string(), (t.departure / 60.0).round() as i64);
+        if TAKEN_TRIPS.lock().unwrap_or_else(|e| e.into_inner()).contains(&key) {
+            continue;
+        }
+        let verdict = {
+            let g = TRACKS.lock().unwrap_or_else(|e| e.into_inner());
+            match g.as_ref().and_then(|t| t.get(&name.to_lowercase())) {
+                Some(track) => check(track, &t),
+                None => Err("the world never saw him"),
+            }
+        };
+        if let Err(why) = verdict {
+            log::warn!("server: the trip of {name} on line {} tour {} not taken: {why}", t.line, t.tour);
+            continue;
+        }
+        let Some(company) = plans.iter().find(|p| same_map(&p.map) && p.has_line(&t.line)).map(|p| p.company.clone()) else {
+            log::warn!("server: the trip of {name} on line {}: no company of the map runs that line", t.line);
+            continue;
+        };
+        let w = omsi_launcher_lib::company::store::WorldTrip { name: name.clone(), trip: t.clone(), at: unix_now() as u64 };
+        match omsi_launcher_lib::company::store::append_world_trip(&c.data, &company, &w) {
+            Ok(()) => {
+                let mut taken = TAKEN_TRIPS.lock().unwrap_or_else(|e| e.into_inner());
+                taken.push(key);
+                if taken.len() > 5000 {
+                    taken.drain(..1000);
+                }
+                log::info!("server: the trip of {name} on line {} tour {} taken for {company}", t.line, t.tour);
+            }
+            Err(e) => log::warn!("server: the trip of {name} not written for {company}: {e:#}"),
+        }
+    }
+}
+
 /// The plans' generation of the folder, when it is not `taken`.
 fn changed(data: &Path, taken: u64) -> Option<u64> {
     Some(online::plans_gen(data)).filter(|g| *g != taken)
@@ -96,5 +213,29 @@ mod tests {
         assert_eq!(changed(&data, g), None);
         assert_eq!(hhmmss(6.0 * 3600.0 + 10.0 * 60.0 + 12.7), "06:10:12");
         let _ = std::fs::remove_dir_all(&data);
+    }
+
+    /// A player's trip is taken when the world saw his bus on its tour then, driving about as
+    /// far as it says - not one it never saw, on another tour, or standing still.
+    #[test]
+    fn a_trip_is_taken_as_the_world_saw_it() {
+        let t = omsi_launcher_lib::TripRun { time: 10_000, tour: "3".into(), line: "Linie5".into(), seconds: 900.0, metres: 6000.0, departure: 8.0 * 3600.0, ..Default::default() };
+        // (its bus seen every 2 s on its tour, 7 m a second)
+        let seen = |tour: &str, speed: f64| -> std::collections::VecDeque<Seen> { (0..=450).map(|k| Seen { at: 9_100.0 + 2.0 * k as f64, x: 2.0 * k as f64 * speed, z: 0.0, tour: tour.into() }).collect() };
+        assert_eq!(check(&seen("Linie5/3", 7.0), &t), Ok(()));
+        assert!(check(&seen("Linie5/4", 7.0), &t).is_err(), "another tour");
+        assert!(check(&seen("Linie5/3", 0.5), &t).is_err(), "hardly moved");
+        assert!(check(&std::collections::VecDeque::new(), &t).is_err(), "never seen");
+        // (seen hours before: not then)
+        let mut early = seen("Linie5/3", 7.0);
+        early.iter_mut().for_each(|s| s.at -= 5.0 * 3600.0);
+        assert!(check(&early, &t).is_err());
+        assert!(check(&seen("Linie5/3", 7.0), &omsi_launcher_lib::TripRun { free: true, ..t.clone() }).is_err(), "a free drive is no trip of a tour");
+        // (the watch keeps hours, by name)
+        watch([("Jonas".to_string(), 1.0, 2.0, "Linie5/3".to_string())].into_iter(), 100.0);
+        watch([("jonas ".to_string(), 3.0, 4.0, "Linie5/3".to_string())].into_iter(), 102.0);
+        assert_eq!(TRACKS.lock().unwrap().as_ref().unwrap().get("jonas").map(|t| t.len()), Some(2));
+        watch(std::iter::empty(), 102.0 + TRACK_FOR + 1.0);
+        assert!(TRACKS.lock().unwrap().as_ref().unwrap().get("jonas").is_none(), "gone after hours");
     }
 }

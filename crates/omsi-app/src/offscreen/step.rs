@@ -198,6 +198,13 @@ impl Offscreen<'_> {
                     return false;
                 }
                 crate::server::enforce_vehicles(l);
+                // Omsi-Hub (NexiconDK): a map's world of Bus Company Online - its players' buses
+                // watched, the trips their launchers post checked and given to their companies
+                if crate::company_server::data_dir().is_some() {
+                    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs_f64()).unwrap_or(0.0);
+                    crate::company_server::watch(l.peers().filter(|p| p.has_pose).map(|p| (p.pose.name.clone(), p.pose.x, p.pose.z, p.pose.tour.clone())), now);
+                    crate::company_server::take_trips(&args.map);
+                }
                 crate::server::tick_status(l, parse_time(&args.time) + *srv_clock + srv_admin.shift, srv_weather_name.as_str());
                 // the shared world, counted for GET /status
                 let (cars, buses, dormant, parked) = traffic.as_ref().map(|t| t.counts()).unwrap_or_default();

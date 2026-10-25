@@ -27,7 +27,7 @@ pub const SERVER_CLOCK: &str = "On the Bus Company Online server the server's cl
 /// (NexiconDK) What the boss alone does, on his own launcher, that is the owner's from afar on
 /// Bus Company Online's server - there the server's process is the boss, and nobody plays on
 /// it: the company's owner (the player who founded it) does it from his launcher.
-pub const OWNER_ON_SERVER: [&str; 1] = ["country"];
+pub const OWNER_ON_SERVER: [&str; 3] = ["country", "online_share", "delete_company"];
 /// What the server's clock decides on Bus Company Online's server (the company's real time).
 pub const SERVER_CLOCK_ACTS: [&str; 1] = ["realtime"];
 
@@ -149,6 +149,8 @@ fn act_need(act: &str, what: &str) -> Need {
             _ => Never,
         },
         "logo_remove" | "rosterflow" | "realtime" | "game_mode" | "sandbox" | "currency" => SETTINGS,
+        // (NexiconDK: a picture sent from afar, kept beside the company)
+        "logo_data" => SETTINGS,
         "sell" => SPEND,
         "dismiss" | "holiday" => STAFF,
         "ask_spare" | "ask_rental" | "ask_drop" | "ask_on" | "ask_dispatcher" => SERVICE,
@@ -420,7 +422,7 @@ mod tests {
             ("sandbox", include_str!("../company/sandbox.rs")),
         ];
         // (the boss's own: never from afar)
-        let own = ["logo", "move_date", "design_livery"];
+        let own = ["logo", "move_date", "design_livery", "delete_company"];
         let mut missing = Vec::new();
         for (page, src) in pages {
             for a in acts_in(src) {

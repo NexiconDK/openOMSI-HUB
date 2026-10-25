@@ -24,6 +24,7 @@ use super::together;
 use omsi_launcher_lib as core;
 use omsi_launcher_lib::company::online::{self, Host};
 use omsi_launcher_lib::company::together::Role;
+use omsi_launcher_lib::company::store as co_store;
 use omsi_launcher_lib::company::Company;
 use std::path::Path;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -33,6 +34,11 @@ pub const STEP: Duration = Duration::from_secs(2);
 
 fn unix_now() -> i64 {
     SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0)
+}
+
+/// Whether the company's file is in the folder.
+fn store_has(data: &Path, id: &str) -> bool {
+    co_store::path_of(data, id).is_file()
 }
 
 /// A line for the main server's log of this company.
@@ -114,6 +120,29 @@ fn step(s: &mut Session, host: &mut Host, data: &Path) -> bool {
         s.company = Some(host.company.clone());
         changed = true;
     }
+    // (phase 3: the trips its players drove in the map's world, as the world took them: booked,
+    // their pay for the main server to pay)
+    let read = host.company.online.world_trips_read;
+    let (trips, to) = co_store::world_trips_from(data, &host.company.id, read);
+    if to != read {
+        if let Some(lines) = host.lines_today().map(<[core::LineInfo]>::to_vec) {
+            let paid = together::take_world_trips(s, &lines, &trips, unix_now() as u64);
+            if let Some(c) = s.company.as_mut() {
+                c.online.world_trips_read = to;
+                host.company = c.clone();
+                host.mark_changed();
+                changed = true;
+            }
+            for p in &paid {
+                say(&host.company.id, &format!("{} drove line {} tour {} in the world: {:.2} his pay", p.name, p.line, p.tour, p.cents as f64 / 100.0));
+                if p.cents > 0 {
+                    if let Err(e) = online::append_pay(data, &host.company.id, p) {
+                        say(&host.company.id, &format!("the pay of {} not written: {e:#}", p.name));
+                    }
+                }
+            }
+        }
+    }
     if changed {
         company::changed(s);
     }
@@ -193,6 +222,15 @@ pub fn run(data: &Path, id: &str) -> Result<(), String> {
         }
         if quit {
             break;
+        }
+        // (deleted by its owner from his launcher - `dialogs`' `delete_company`: its session
+        // closed, its files gone; the world told, nothing saved, the process ends)
+        if company::with(|s| s.company.is_none() && !store_has(data, id)) {
+            let _ = online::bump_plans(data);
+            let _ = std::fs::remove_file(online::code_file(data, id));
+            let _ = std::fs::remove_file(online::session_file(data, id));
+            say(id, "deleted by its owner - stopped");
+            return Ok(());
         }
         if Instant::now() >= next {
             next = Instant::now() + STEP;
