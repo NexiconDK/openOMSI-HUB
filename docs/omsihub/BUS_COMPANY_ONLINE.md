@@ -59,6 +59,10 @@ own world - then the AI buses and the traffic are not the same for everybody).
 no map, no graphics. `<folder>/company-server.cfg` (written with the defaults the first time): the
 OMSI folder (`root`), the server's clock (`real_time`, or `date` and `time` the first time), the
 worlds' game program, ports, how many at once and their idle minutes, and what they run.
+`start-company-server.cmd` beside the programs (the release's zip; `scripts/server`) starts it
+with a double-click: the first time it asks for the folder and keeps it in
+`company-server-folder.txt` beside it, and a folder without a `company-server.cfg` is started only
+when the owner says so (an Enter by mistake started a new, empty server).
 
 - The server's clock (`online::ServerClock`, `server_clock`, `<folder>/clock.json`): set the first
   time, then 1:1 with the real clock, on where it was after a restart (the time it was off

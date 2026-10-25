@@ -100,6 +100,8 @@ jobs:
           TAURI_CONFIG="{\"version\":\"${OPENOMSI_VERSION%.*}\"}" cargo build --locked --release --target $t --manifest-path launcher/src-tauri/Cargo.toml
           cp launcher/src-tauri/target/$t/release/Omsi-Hub.exe dist/windows/
           cp assets/steam_redist/steam_api64.dll dist/windows/
+          # (Bus Company Online's main server started with a double-click)
+          cp scripts/server/start-company-server.cmd dist/windows/
       # (as release.yml: Microsoft's shader compiler for DirectX 12 beside the program -
       # without it the old FXC overflows its stack on the sky's shaders)
       - name: DirectX shader compiler
