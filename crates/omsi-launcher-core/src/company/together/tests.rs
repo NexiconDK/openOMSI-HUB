@@ -879,3 +879,51 @@ fn a_server_company_takes_the_servers_ticket_only() {
     let mut own = boss();
     assert!(ask(&mut own, "p1", "hello", |_| {}).get("snapshot").is_some());
 }
+
+/// (NexiconDK) On Bus Company Online's server the player who founded the company is its boss:
+/// named so to everyone, shown as its owner, and nobody manages him - not a co-owner either.
+#[test]
+fn the_founder_is_the_boss_of_a_server_company() {
+    let mut b = boss();
+    b.c.online.on_server = true;
+    b.c.online.owner = "Mathias".into();
+    b.c.online.owner_id = "p-owner".into();
+    ask(&mut b, "p-owner", "hello", |r| r.name = "Mathias".into());
+    crate::company::online::seat_owner(&mut b.c);
+    let owner = guest_no(&b, "p-owner");
+    assert_eq!(host::server_owner(&b.c), Some(owner));
+    ask(&mut b, "p-co", "hello", |_| {});
+    let co = guest_no(&b, "p-co");
+    b.c.together.set_role(co, Role::CoOwner, &Perm::ALL);
+    // (the owner's own view: the boss, by his name, himself)
+    let s = snap(&ask(&mut b, "p-owner", "snapshot", |r| r.name = "Mathias".into()));
+    assert_eq!(s.card.boss, "Mathias");
+    assert!(s.you.as_ref().unwrap().owner);
+    let bosses: Vec<_> = s.players.iter().filter(|p| p.boss).collect();
+    assert_eq!((bosses.len(), bosses[0].name.as_str(), bosses[0].me, bosses[0].online), (1, "Mathias", true, true));
+    assert_eq!(s.players.iter().filter(|p| p.name == "Mathias").count(), 1, "not twice");
+    // (a co-owner's: he is not the owner, the owner is among the members, and out of his reach)
+    let s = snap(&ask(&mut b, "p-co", "snapshot", |_| {}));
+    assert!(!s.you.as_ref().unwrap().owner);
+    assert!(s.members.iter().any(|m| m.no == owner && m.owner));
+    let v = ask(&mut b, "p-co", "set_role", |r| {
+        r.target = owner;
+        r.role = Role::Driver;
+        r.perms = vec![Perm::Drive];
+    });
+    assert_eq!(v["error"], host::NOT_ABOVE);
+    assert_eq!(ask(&mut b, "p-co", "kick", |r| r.target = owner)["error"], host::NOT_ABOVE);
+    // (the owner manages the co-owner)
+    let v = ask(&mut b, "p-owner", "set_role", |r| {
+        r.name = "Mathias".into();
+        r.target = co;
+        r.role = Role::Driver;
+        r.perms = vec![Perm::Drive];
+    });
+    assert_eq!(v["ok"], true, "{v}");
+    // (a company of a player's own: the boss is his launcher, as ever)
+    let mut own = boss();
+    let s = snap(&ask(&mut own, "jan", "hello", |_| {}));
+    assert_eq!((s.card.boss.as_str(), s.players[0].boss, s.players[0].name.as_str()), ("Luc", true, "Luc"));
+    assert_eq!(host::server_owner(&own.c), None);
+}

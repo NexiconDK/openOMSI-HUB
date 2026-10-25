@@ -179,9 +179,19 @@ fn claim_args(c: &Company, p: Option<&DayPlan>, r: &DutyRef) -> Vec<(String, Str
     args
 }
 
-/// Whether `actor` may manage player `target`: not himself, and nobody who may do more than he.
+/// (NexiconDK) The player who founded the company on Bus Company Online's server: its owner
+/// (`online::Online::owner_id`), the boss there - None elsewhere, or before he came.
+pub fn server_owner(c: &Company) -> Option<u32> {
+    if !c.online.on_server || c.online.owner_id.is_empty() {
+        return None;
+    }
+    c.together.guests.iter().find(|g| g.id == c.online.owner_id).map(|g| g.no)
+}
+
+/// Whether `actor` may manage player `target`: not himself, nobody who may do more than he, and
+/// never the owner of a company on the server.
 fn may_manage(c: &Company, actor: u32, target: u32) -> Result<(), &'static str> {
-    if actor == target {
+    if actor == target || server_owner(c) == Some(target) {
         return Err(NOT_ABOVE);
     }
     let mine = c.together.perms_of(actor);
@@ -775,8 +785,12 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
         None => Perm::ALL.to_vec(),
     };
     let can = |p: Perm| perms.contains(&p);
+    // (NexiconDK: on Bus Company Online's server the boss is the player who founded the company,
+    // not the server's process that hosts it)
+    let owner = server_owner(c);
+    let boss = if c.online.on_server { c.online.owner.clone() } else { st.boss.clone() };
     let mut s = Snapshot {
-        card: Card { id: c.id.clone(), name: c.name.clone(), short: c.short.clone(), colours: c.colours.clone(), map: c.map.clone(), map_name: c.map_name.clone(), boss: st.boss.clone(), logo: None },
+        card: Card { id: c.id.clone(), name: c.name.clone(), short: c.short.clone(), colours: c.colours.clone(), map: c.map.clone(), map_name: c.map_name.clone(), boss: boss.clone(), logo: None },
         date: c.date.clone(),
         minute: c.clock.minute as i32,
         open_claims: c.together.open_claims,
@@ -832,7 +846,7 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                     Some(x) => (DutyState::Player, c.together.name_of(x.guest), String::new()),
                     None if t.by_player => (DutyState::Closed, String::new(), book::DRIVEN.into()),
                     None if !matches!(t.bus, Some(BusOf::Own(_))) => (DutyState::Closed, String::new(), book::NO_BUS.into()),
-                    None if d.who.is_some() => (DutyState::Company, who_of(c, d.who, &st.boss), String::new()),
+                    None if d.who.is_some() => (DutyState::Company, who_of(c, d.who, &boss), String::new()),
                     None if begun => (DutyState::Closed, String::new(), book::BEGUN.into()),
                     None => (DutyState::Open, String::new(), String::new()),
                 };
@@ -861,13 +875,21 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
     }
     s.duties.sort_by(|a, b| (&a.duty.date, a.from, &a.number, &a.duty.tour).cmp(&(&b.duty.date, b.from, &b.number, &b.duty.tour)));
     // (the boss first, then the players online, then those with a duty today)
-    s.players.push(SnapPlayer { name: st.boss.clone(), boss: true, online: true, role: Role::CoOwner, ..Default::default() });
     let label = |r: &DutyRef| (duty_args(here.plan, r)[0].1.clone(), r.tour.clone(), r.duty + 1);
     let role_of = |g: u32| c.together.guest(g).map(|x| x.role).unwrap_or_default();
-    for o in st.online_now(here.now) {
+    match (c.online.on_server, owner) {
+        // (the server's owner as the boss, online or not)
+        (true, Some(o)) => {
+            let on = st.online_now(here.now).find(|x| x.guest == o);
+            s.players.push(SnapPlayer { no: o, name: c.together.name_of(o), me: Some(o) == guest, boss: true, online: on.is_some(), role: Role::CoOwner, driving: on.and_then(|x| x.driving.as_ref()).map(label) });
+        }
+        (true, None) => {}
+        _ => s.players.push(SnapPlayer { name: st.boss.clone(), boss: true, online: true, role: Role::CoOwner, ..Default::default() }),
+    }
+    for o in st.online_now(here.now).filter(|o| Some(o.guest) != owner) {
         s.players.push(SnapPlayer { no: o.guest, name: o.name.clone(), me: Some(o.guest) == guest, online: true, driving: o.driving.as_ref().map(label), boss: false, role: role_of(o.guest) });
     }
-    for g in &c.together.guests {
+    for g in c.together.guests.iter().filter(|g| Some(g.no) != owner) {
         let busy = c.together.claims.iter().any(|x| x.guest == g.no && x.duty.date == c.date);
         if busy && !g.banned && !st.is_online(g.no, here.now) {
             s.players.push(SnapPlayer { no: g.no, name: g.name.clone(), me: Some(g.no) == guest, online: false, role: g.role, ..Default::default() });
@@ -884,7 +906,7 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
         }
         s.results = duties.iter().map(|r| result_of(c, here.plan, r)).collect();
         if let Some(me) = c.together.guest(g) {
-            s.you = Some(SnapYou { no: g, name: me.name.clone(), role: me.role, perms: perms.clone(), stats: me.stats.clone() });
+            s.you = Some(SnapYou { no: g, name: me.name.clone(), owner: owner == Some(g), role: me.role, perms: perms.clone(), stats: me.stats.clone() });
         }
     }
     // (what managing the players and their duties needs)
@@ -897,6 +919,7 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
             .map(|g| SnapMember {
                 no: g.no,
                 name: g.name.clone(),
+                owner: owner == Some(g.no),
                 role: g.role,
                 perms: g.perms(),
                 online: st.is_online(g.no, here.now),

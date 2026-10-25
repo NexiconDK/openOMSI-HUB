@@ -762,7 +762,7 @@ fn view() -> Value {
         .members
         .iter()
         .filter(|m| m.no != you.no)
-        .map(|m| json!({ "no": m.no, "name": m.name, "role": role_json(m.role), "perms": m.perms.iter().map(|p| p.key()).collect::<Vec<_>>(), "online": m.online, "banned": m.banned, "duties": m.duties, "stats": super::host::stats_json(&m.stats) }))
+        .map(|m| json!({ "no": m.no, "name": m.name, "role": if m.owner { owner_json() } else { role_json(m.role) }, "owner": m.owner, "perms": m.perms.iter().map(|p| p.key()).collect::<Vec<_>>(), "online": m.online, "banned": m.banned, "duties": m.duties, "stats": super::host::stats_json(&m.stats) }))
         .collect();
     let giveable: Vec<Value> = if can(Perm::Assign) { s.duties.iter().filter(|d| matches!(d.state, DutyState::Open | DutyState::Company | DutyState::Player)).map(|d| duty_row(d, s.open_claims, false)).collect() } else { Vec::new() };
     // (the company's own pages his role lets him see, besides the map)
@@ -773,7 +773,7 @@ fn view() -> Value {
         "name": s.card.name, "boss": s.card.boss, "map": s.card.map_name,
         "sub": trf("Boss: %{name}  ·  %{map}", &[("name", &s.card.boss), ("map", &s.card.map_name)]),
         "day": format!("{}  ·  {:02}:{:02}", day_label(&s.date), s.minute / 60, s.minute % 60),
-        "me": { "name": you.name, "role": role_json(you.role), "role_key": you.role.key(), "stats": super::host::stats_json(&you.stats),
+        "me": { "name": you.name, "role": if you.owner { owner_json() } else { role_json(you.role) }, "role_key": if you.owner { "owner" } else { you.role.key() }, "stats": super::host::stats_json(&you.stats),
                 "perms": Perm::ALL.iter().map(|p| { let mut v = perm_json(*p); v["on"] = json!(can(*p)); v }).collect::<Vec<_>>() },
         "can": { "drive": ask, "assign": can(Perm::Assign), "approve": can(Perm::Approve), "players": can(Perm::Players), "pages": pages },
         "reading": s.reading, "next": next, "open": open, "mine": mine, "rest": rest, "players": players, "results": results,
@@ -782,6 +782,12 @@ fn view() -> Value {
         "online": s.players.iter().filter(|p| p.online).count(),
         "take_note": if !ask { tr("Your role does not drive: the boss can change it.") } else if s.open_claims || can(Perm::Approve) { tr("Take an open duty: it is yours at once.") } else { tr("Ask for an open duty: the boss, or a player who may, says yes or no.") },
     })
+}
+
+/// (NexiconDK) The role of the player who founded a company on Bus Company Online's server, as
+/// the pages show it: its owner, with every permission for good.
+fn owner_json() -> Value {
+    json!({ "key": "owner", "label": tr("Owner"), "icon": "star", "about": tr("Founded the company on the server: every permission, for good.") })
 }
 
 /// How the session ended for him, as every page of it says (`session.js`): the boss closed it,

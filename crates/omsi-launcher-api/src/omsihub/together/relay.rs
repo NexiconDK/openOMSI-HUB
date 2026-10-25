@@ -21,6 +21,15 @@ pub fn relayed_rf(cmd: &str) -> bool {
 
 /// Why a relayed command is refused (English: keys of the translations).
 pub const FROM_AFAR: &str = "Only the boss can do this, on his own launcher.";
+/// (NexiconDK) What the server's clock decides on Bus Company Online's server.
+pub const SERVER_CLOCK: &str = "On the Bus Company Online server the server's clock runs the company, in real time for everybody: it cannot be changed here.";
+
+/// (NexiconDK) What the boss alone does, on his own launcher, that is the owner's from afar on
+/// Bus Company Online's server - there the server's process is the boss, and nobody plays on
+/// it: the company's owner (the player who founded it) does it from his launcher.
+pub const OWNER_ON_SERVER: [&str; 1] = ["country"];
+/// What the server's clock decides on Bus Company Online's server (the company's real time).
+pub const SERVER_CLOCK_ACTS: [&str; 1] = ["realtime"];
 
 /// What a command needs of a player.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -31,6 +40,8 @@ pub enum Need {
     Any(&'static [Perm]),
     /// Never from afar.
     Never,
+    /// (NexiconDK) Never on Bus Company Online's server: its clock decides.
+    Clock,
 }
 
 use Need::{Any, Member, Never};
@@ -56,7 +67,7 @@ impl Need {
         match self {
             Member => true,
             Any(ps) => ps.iter().any(|p| perms.contains(p)),
-            Never => false,
+            Never | Need::Clock => false,
         }
     }
 
@@ -64,6 +75,7 @@ impl Need {
     pub fn refusal(self) -> Value {
         match self {
             Any(ps) => json!({ "ok": false, "error": omsi_launcher_lib::company::together::host::NOT_ALLOWED, "perm": ps.first() }),
+            Need::Clock => json!({ "ok": false, "error": SERVER_CLOCK }),
             _ => json!({ "ok": false, "error": FROM_AFAR }),
         }
     }
@@ -272,6 +284,24 @@ pub fn need(cmd: &str, args: &Value) -> Need {
     }
 }
 
+/// (NexiconDK) What a relayed command needs on a company of Bus Company Online's server (`need`
+/// its need elsewhere; `owner`: the player founded it): the owner does what the boss alone does
+/// elsewhere where it makes sense from afar (`OWNER_ON_SERVER`), and the server's clock is
+/// nobody's to change (`SERVER_CLOCK_ACTS`).
+pub fn on_server(need: Need, cmd: &str, args: &Value, owner: bool) -> Need {
+    if cmd != "co_act" {
+        return need;
+    }
+    let act = args.get("act").and_then(Value::as_str).unwrap_or("");
+    if SERVER_CLOCK_ACTS.contains(&act) {
+        return Need::Clock;
+    }
+    if owner && need == Never && OWNER_ON_SERVER.contains(&act) {
+        return Member;
+    }
+    need
+}
+
 /// The company's shell (`company::shell`) as a player with `perms` sees it: the pages he may
 /// see, the money only when he may see it, no clock to run and nothing of the boss's own
 /// (his reports, what happened while he was away, his duty launcher).
@@ -342,6 +372,27 @@ mod tests {
             }
         }
         out
+    }
+
+    /// (NexiconDK) On Bus Company Online's server the owner changes the country (the boss's own
+    /// elsewhere), a co-owner does not, and the server's clock is nobody's to change.
+    #[test]
+    fn the_servers_owner_does_the_bosss_own() {
+        let country = json!({ "act": "country", "key": "dk" });
+        let n = need("co_act", &country);
+        assert_eq!(n, Never, "the boss's own elsewhere");
+        assert!(on_server(n, "co_act", &country, true).met(&[]));
+        assert!(!on_server(n, "co_act", &country, false).met(&Perm::ALL));
+        let rt = json!({ "act": "realtime", "on": false });
+        assert!(need("co_act", &rt).met(&Perm::ALL), "a co-owner switches the real time elsewhere");
+        let n = on_server(need("co_act", &rt), "co_act", &rt, true);
+        assert!(!n.met(&Perm::ALL));
+        assert_eq!(n.refusal()["error"], SERVER_CLOCK);
+        // (what the owner may not do elsewhere either: still not)
+        let date = json!({ "act": "move_date" });
+        assert!(!on_server(need("co_act", &date), "co_act", &date, true).met(&Perm::ALL));
+        let view = json!({ "view": "money" });
+        assert_eq!(on_server(need("co_view", &view), "co_view", &view, true), need("co_view", &view));
     }
 
     /// Every action of the company's pages is in the table (a new one is refused until it is

@@ -281,8 +281,8 @@ function Member({ m, v, again }) {
   };
   return html`<div class=${'tg-player' + (m.online ? ' online' : '') + (m.banned ? ' banned' : '')}>
     <div class="top"><${Face} name=${m.name} online=${m.online} size=${36} /><div class="who"><b class="cut">${m.name}</b><span class="dim cut">${m.online ? w.online : w.offline}</span></div>
-      <${RoleBadge} role=${m.role} /><button type="button" class="tg-more" onClick=${() => setOpen(!open)}><${Icon} name=${open ? 'expand_less' : 'tune'} size=${18} /></button></div>
-    ${open &&
+      <${RoleBadge} role=${m.role} />${!m.owner && html`<button type="button" class="tg-more" onClick=${() => setOpen(!open)}><${Icon} name=${open ? 'expand_less' : 'tune'} size=${18} /></button>`}</div>
+    ${open && !m.owner &&
     html`<${RoleEditor} p=${{ ...m, custom: false }} roles=${v.roles} w=${w} onRole=${(key) => go('tg_role', { guest: m.no, role: key })} onPerms=${(keys) => go('tg_role', { guest: m.no, role: m.role.key, perms: keys })} />
       <div class="foot"><${Btn} small=${true} icon="logout" label=${w.kick} onClick=${() => go('tg_kick', { guest: m.no, ban: false })} /><${Btn} small=${true} kind="danger" icon="close" label=${w.ban} onClick=${() => go('tg_kick', { guest: m.no, ban: true })} /></div>`}
     <${Stats} st=${m.stats} w=${w} />

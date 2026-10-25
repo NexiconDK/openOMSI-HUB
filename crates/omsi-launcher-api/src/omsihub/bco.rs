@@ -402,7 +402,7 @@ mod tests {
                 }
             }
         }
-        for t in [super::NOT_SERVER_CODE, super::NOT_LINKED] {
+        for t in [super::NOT_SERVER_CODE, super::NOT_LINKED, super::together::relay::SERVER_CLOCK] {
             texts.push(t.to_string());
         }
         assert!(texts.len() > 40, "only {} texts found", texts.len());

@@ -230,7 +230,11 @@ fn relay_page(s: &mut Session, req: &Request) -> Value {
 /// it: its answer, or the refusal. A change of the planning made on its own pages is told to the
 /// planners in RosterFlow (theirs is told by RosterFlow itself).
 pub(super) fn page_for(s: &mut Session, viewer: &mut Viewer, perms: &[Perm], cmd: &str, args: &Value) -> Value {
-    let need = relay::need(cmd, args);
+    let mut need = relay::need(cmd, args);
+    // (NexiconDK: a company on Bus Company Online's server - its owner is its boss there)
+    if let Some(c) = s.company.as_ref().filter(|c| c.online.on_server) {
+        need = relay::on_server(need, cmd, args, th::server_owner(c) == Some(viewer.guest));
+    }
     if !need.met(perms) {
         return need.refusal();
     }

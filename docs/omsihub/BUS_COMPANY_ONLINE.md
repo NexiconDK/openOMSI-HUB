@@ -158,6 +158,15 @@ Nobody needs a company's code or the console any more: the bus company's start h
 - **Founding**: a name, a map of the server's and a game mode; `found_price` is paid from the
   player's money (`MainServer::found_for`), and he is the owner from the start
   (`Online::owner_id` = his id, set before the company's process starts).
+- **The owner is the boss** (25 October 2026, after the first test at home: the founder was
+  shown as "Co-owner" and could not change the company's country): the server's process hosts
+  the company, but the player who founded it is its boss to everybody - named so on the pages
+  (`host::server_owner`, the snapshot's boss and `card.boss`; the process's own profile is not
+  shown), shown as **Owner** (`SnapYou::owner`, `SnapMember::owner`), out of every other
+  player's reach (`may_manage`: not even a co-owner changes his role or sends him away), and
+  doing from afar what the boss alone does elsewhere where it makes sense there
+  (`relay::OWNER_ON_SERVER`: the country). The server's clock is nobody's to change: the real
+  time switched off is refused with a word why (`relay::SERVER_CLOCK_ACTS`, `Need::Clock`).
 - **The console** besides: `players` (each with how he logs in, his money and his companies),
   `money <player>; <amount>` (set, or `+`/`-` to add or take), `owner <company>; <player>` (a
   player of the server a company's owner - one founded from the console without one, say: the

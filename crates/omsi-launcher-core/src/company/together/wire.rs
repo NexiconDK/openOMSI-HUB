@@ -197,6 +197,8 @@ pub struct SnapResult {
 pub struct SnapYou {
     pub no: u32,
     pub name: String,
+    /// (NexiconDK) He founded the company on Bus Company Online's server: its owner, for good.
+    pub owner: bool,
     pub role: Role,
     pub perms: Vec<Perm>,
     pub stats: GuestStats,
@@ -208,6 +210,8 @@ pub struct SnapYou {
 pub struct SnapMember {
     pub no: u32,
     pub name: String,
+    /// (NexiconDK) The company's owner on Bus Company Online's server.
+    pub owner: bool,
     pub role: Role,
     pub perms: Vec<Perm>,
     pub online: bool,

@@ -330,3 +330,17 @@ _version: 2
   pl: "Ta firma jest na serwerze Bus Company Online: dołącz do niej z listy serwera w swoim launcherze (Bus Company Online)."
   ru: "Эта компания на сервере Bus Company Online: присоединяйтесь к ней из списка сервера в вашем лаунчере (Bus Company Online)."
   uk: "Ця компанія на сервері Bus Company Online: приєднайтеся до неї зі списку сервера у вашому лаунчері (Bus Company Online)."
+"On the Bus Company Online server the server's clock runs the company, in real time for everybody: it cannot be changed here.":
+  de: "Auf dem Bus-Company-Online-Server führt die Uhr des Servers den Betrieb, in Echtzeit für alle: sie kann hier nicht geändert werden."
+  fr: "Sur le serveur Bus Company Online, l'horloge du serveur fait tourner l'entreprise, en temps réel pour tous : elle ne peut pas être modifiée ici."
+  nl: "Op de Bus Company Online-server laat de klok van de server het bedrijf lopen, in realtime voor iedereen: die kan hier niet worden gewijzigd."
+  pl: "Na serwerze Bus Company Online firmą kieruje zegar serwera, w czasie rzeczywistym dla wszystkich: nie można go tu zmienić."
+  ru: "На сервере Bus Company Online компанией управляют часы сервера, в реальном времени для всех: здесь их изменить нельзя."
+  uk: "На сервері Bus Company Online компанією керує годинник сервера, у реальному часі для всіх: тут його змінити не можна."
+"Founded the company on the server: every permission, for good.":
+  de: "Hat den Betrieb auf dem Server gegründet: alle Rechte, für immer."
+  fr: "A fondé l'entreprise sur le serveur : toutes les autorisations, pour toujours."
+  nl: "Heeft het bedrijf op de server opgericht: alle rechten, voorgoed."
+  pl: "Założył firmę na serwerze: wszystkie uprawnienia, na stałe."
+  ru: "Основал компанию на сервере: все права, навсегда."
+  uk: "Заснував компанію на сервері: усі права, назавжди."
