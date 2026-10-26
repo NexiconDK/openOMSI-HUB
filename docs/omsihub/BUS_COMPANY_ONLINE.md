@@ -338,7 +338,7 @@ by the depot that borrows him; a depot that goes bankrupt closes - its loss the 
 when it can pay it, else the head office closes or sells more; what a depot costs is not decided
 yet (`depot_price` in `company-server.cfg`, 250 000 until then). In steps: (1) a depot founded on
 another map; (2) money moved between the head office and its depots, the head office's view of
-them; (3) buses moved between maps, staff lent; (4) a depot's bankruptcy.
+them; (3) buses moved between maps, staff lent; (4) a depot's bankruptcy - all four done.
 
 ### Step 1: a depot founded on another map
 
@@ -394,6 +394,32 @@ older one).
   company of the owner's and who is lent to this one (`dialogs::moves_part`).
 
 Tested: `server_depots::tests::a_bus_moves_and_a_driver_is_lent_between_a_head_office_and_its_depot`.
+
+### Step 4: a depot that goes bankrupt
+
+Decided 25 October 2026 (the owner: "a depot that goes bankrupt closes - its loss the head
+office's when it can pay it, else the head office closes or sells more"), and 26 October (a
+warning a day or two before):
+
+- **In the red at a day's close** (`server_depots::day_closed`, each closed day of the depot's
+  process): the depot is warned - "%{n} days to go", then "tomorrow" - and so is its head office
+  (`Notice`s through `<folder>/notices/<id>.jsonl`, `take_notices`: into its inbox), `RED_DAYS`
+  (2) times; a close out of the red starts the count again (`Online::red_days`).
+- **Still in the red the day after** (`bankrupt`): its buses sold (a leased one handed back
+  early, a rented one given back), its staff gone (each with his week's guarantee; one lent to it
+  back home), its loans paid off, its lines, concessions and contracts given up - out to tender
+  again -, and what is left handed to the head office with the notice: its loss covered (booked
+  as capital taken out; without the money the head office is in the red, told to sell or close -
+  the whole company's bankruptcy is an open question), or what remains. The depot's files go and
+  its process ends (`Stepped::bankrupt`, `company_host`).
+
+Tested: `server_depots::tests::a_depot_in_the_red_is_warned_twice_then_goes_bankrupt`.
+
+**And a line won for a later day** (fixed 26 October 2026: the world counted "0 of its lines"
+for a company that ran them): it is the company's on the road at once - the map's own buses off
+it - unless it was won from another company of the map, which runs it until then
+(`Concession::after`): then neither the line nor its tours (`plan::live_plan`). Tested:
+`plan::tests::a_line_won_for_later_is_on_the_road_unless_another_runs_it_until_then`.
 
 ## Phase 5 brought forward: the map's tenders, shared by its companies
 

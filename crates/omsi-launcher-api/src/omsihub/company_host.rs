@@ -114,6 +114,18 @@ fn step(s: &mut Session, host: &mut Host, data: &Path) -> bool {
     }
     let mut planned = false;
     match host.tick(unix_now()) {
+        // (NexiconDK, phase 4 step 4: a depot gone bankrupt - its files go, its process ends)
+        Ok(st) if st.bankrupt => {
+            say(&host.company.id, "bankrupt: the depot is closed, what was left of it handed to its head office");
+            let id = host.company.id.clone();
+            if let Err(e) = co_store::delete(data, &id) {
+                say(&id, &format!("its files not removed: {e:#}"));
+            }
+            together::stop_now(s);
+            s.company = None;
+            let _ = online::bump_plans(data);
+            return true;
+        }
         Ok(st) => {
             for d in &st.closed {
                 say(&host.company.id, &format!("the day {} closed - {} of {} tours run, {} km, a result of {:.2}", d.date, d.covered, d.tours, d.km.round(), d.result as f64 / 100.0));
@@ -243,7 +255,7 @@ pub fn run(data: &Path, id: &str) -> Result<(), String> {
             let _ = online::bump_plans(data);
             let _ = std::fs::remove_file(online::code_file(data, id));
             let _ = std::fs::remove_file(online::session_file(data, id));
-            say(id, "deleted by its owner - stopped");
+            say(id, "deleted - stopped");
             return Ok(());
         }
         if Instant::now() >= next {

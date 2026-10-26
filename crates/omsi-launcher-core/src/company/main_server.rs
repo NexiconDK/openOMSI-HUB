@@ -667,7 +667,7 @@ impl MainServer {
         self.companies.retain_mut(|p| match p.child.try_wait() {
             // (deleted by its owner: gone for good)
             Ok(Some(_)) if !store::path_of(&data, &p.id).is_file() => {
-                info!("company {}: deleted by its owner", p.id);
+                info!("company {}: deleted (by its owner, or a depot bankrupt)", p.id);
                 false
             }
             Ok(Some(status)) => {

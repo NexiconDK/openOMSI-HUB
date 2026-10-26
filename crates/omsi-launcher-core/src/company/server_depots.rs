@@ -495,6 +495,170 @@ pub fn people_step(data: &Path, c: &mut Company) -> bool {
     changed
 }
 
+// --- step 4: a depot that goes bankrupt -------------------------------------------------------
+
+/// (Decided 25-26 October 2026) The days a depot may close in the red - warned, and its head
+/// office, each day - before it goes bankrupt: it closes, and its head office covers its loss
+/// (or, without the money, goes into the red itself - and sells, or closes).
+pub const RED_DAYS: u32 = 2;
+
+/// Something told to another company of the server (`<folder>/notices/<id>.jsonl`): a message
+/// for its inbox (English, a key of the translations, with its places), and money booked with it
+/// (a depot's loss covered: negative; what was left of it: positive).
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct Notice {
+    pub title: String,
+    pub text: String,
+    pub args: Vec<(String, String)>,
+    pub bad: bool,
+    pub amount: Cents,
+    pub booking: String,
+}
+
+pub fn notices_file(data: &Path, id: &str) -> std::path::PathBuf {
+    data.join("notices").join(format!("{id}.jsonl"))
+}
+
+/// Tell company `to` (`Notice`).
+pub fn tell(data: &Path, to: &str, n: &Notice) -> std::io::Result<()> {
+    append_line(&notices_file(data, to), &serde_json::to_string(n).map_err(std::io::Error::other)?)
+}
+
+/// What was told to company `c` since: into its inbox, its money booked (as capital put in or
+/// taken out). Whether anything came.
+pub fn take_notices(data: &Path, c: &mut Company) -> bool {
+    use super::inbox::{self, Kind, Message};
+    let mut any = false;
+    for (line, end) in lines_after(&notices_file(data, &c.id), c.online.notices_read) {
+        c.online.notices_read = end;
+        any = true;
+        let Ok(n) = serde_json::from_str::<Notice>(&line) else { continue };
+        if n.amount != 0 {
+            c.book(BookingKind::Capital, n.amount, n.booking.clone(), false);
+        }
+        let mut m = Message::new(Kind::Finance, n.title.clone(), n.text.clone()).level(if n.bad { super::clock::Level::Bad } else { super::clock::Level::Warn });
+        for (k, v) in &n.args {
+            m = m.arg(k, v.clone());
+        }
+        inbox::post(c, m);
+    }
+    any
+}
+
+/// The messages of a depot in the red, and of its end.
+pub const RED_DEPOT: (&str, &str) = ("The depot is in the red: %{n} days to go", "The depot has %{amount} in cash. Still in the red at the close of %{n} more days, it goes bankrupt: it closes, and its head office covers its loss. Sell buses, cut costs, or ask the head office for money.");
+pub const RED_DEPOT_LAST: (&str, &str) = ("The depot goes bankrupt tomorrow", "The depot has %{amount} in cash. Still in the red at tomorrow's close, it goes bankrupt: it closes, and its head office covers its loss. Sell buses, cut costs, or ask the head office for money.");
+pub const RED_HQ: (&str, &str) = ("Depot %{name} is in the red: %{n} days to go", "Depot %{name} has %{amount} in cash. Still in the red at the close of %{n} more days, it goes bankrupt and the head office covers its loss: send it money from the settings' Depots.");
+pub const RED_HQ_LAST: (&str, &str) = ("Depot %{name} goes bankrupt tomorrow", "Depot %{name} has %{amount} in cash. Still in the red at tomorrow's close, it goes bankrupt and the head office covers its loss: send it money from the settings' Depots.");
+pub const BANKRUPT: (&str, &str) = ("Depot %{name} is bankrupt", "Depot %{name} stayed in the red and is closed: its buses sold, its staff gone, its lines out to tender again. The head office covered its loss of %{amount}.");
+pub const BANKRUPT_RED: (&str, &str) = ("Depot %{name} is bankrupt: the head office is in the red", "Depot %{name} stayed in the red and is closed: its buses sold, its staff gone, its lines out to tender again. The head office covered its loss of %{amount} and is in the red now: sell buses, or close the company.");
+pub const BANKRUPT_LEFT: (&str, &str) = ("Depot %{name} is closed", "Depot %{name} stayed in the red and is closed: its buses sold, its staff gone, its lines out to tender again. What was left of it, %{amount}, is the head office's.");
+
+pub fn red_texts() -> Vec<&'static str> {
+    [RED_DEPOT, RED_DEPOT_LAST, RED_HQ, RED_HQ_LAST, BANKRUPT, BANKRUPT_RED, BANKRUPT_LEFT].iter().flat_map(|t| [t.0, t.1]).collect()
+}
+
+/// What a depot's closed day came to (`day_closed`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Red {
+    Fine,
+    /// In the red: this many days to go.
+    Warned(u32),
+    Bankrupt,
+}
+
+/// A depot's day closed: in the red - its money below nothing - it is warned, and its head office
+/// (`RED_DAYS` times: the days to go); out of it, the count starts again; the day after the last
+/// warning, still in the red, it goes bankrupt (`bankrupt`).
+pub fn day_closed(data: &Path, c: &mut Company) -> Red {
+    use super::inbox::{self, Kind, Message};
+    if !c.online.on_server || c.online.hq.is_empty() {
+        return Red::Fine;
+    }
+    if c.cash >= 0 {
+        c.online.red_days = 0;
+        return Red::Fine;
+    }
+    c.online.red_days += 1;
+    if c.online.red_days > RED_DAYS {
+        return Red::Bankrupt;
+    }
+    let left = RED_DAYS + 1 - c.online.red_days;
+    let (own, hq) = if left <= 1 { (RED_DEPOT_LAST, RED_HQ_LAST) } else { (RED_DEPOT, RED_HQ) };
+    let m = Message::new(Kind::Finance, own.0, own.1).arg("amount", c.cash.to_string()).arg("n", left.to_string()).level(super::clock::Level::Bad);
+    inbox::post(c, m);
+    let n = Notice { title: hq.0.into(), text: hq.1.into(), args: vec![("name".into(), c.name.clone()), ("amount".into(), c.cash.to_string()), ("n".into(), left.to_string())], bad: true, amount: 0, booking: String::new() };
+    let _ = tell(data, &c.online.hq.clone(), &n);
+    Red::Warned(left)
+}
+
+/// Depot `c` goes bankrupt: its buses sold (a leased one handed back early, a rented one given
+/// back), its staff gone (each with the guarantee of his week; one lent to it back home), its
+/// loans paid off, its lines, concessions and contracts given up - out to tender again - and
+/// what is left handed to its head office: its loss covered there (the head office's money below
+/// nothing if it has not enough), or what remains. The company's file is the caller's to remove.
+/// What the head office was booked (negative: the loss it covered).
+pub fn bankrupt(data: &Path, c: &mut Company) -> Cents {
+    use super::model::Tenure;
+    let today = c.date.clone();
+    // (its buses)
+    for v in std::mem::take(&mut c.fleet) {
+        super::market::book_part_month(c, &v, &today);
+        let text = format!("{} {}", v.number, v.name);
+        match v.tenure {
+            Tenure::Owned { .. } => {
+                let price = super::market::sale_offer(c, &v);
+                c.book(BookingKind::Sale, price, format!("{text} (bankruptcy)"), false);
+            }
+            Tenure::Leased { monthly, .. } => c.book(BookingKind::Lease, -3 * monthly, format!("{text} (returned early, bankruptcy)"), false),
+            Tenure::Rented { .. } => {}
+        }
+    }
+    // (its staff: one lent to it back home, the rest gone)
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    for id in ids {
+        super::pay::settle(c, id);
+    }
+    for mut e in std::mem::take(&mut c.staff) {
+        if let Some(l) = e.lent.take() {
+            e.id = l.home_id;
+            let m = PeopleMove { from: c.id.clone(), name: c.name.clone(), employee: e, until: String::new() };
+            if let Ok(line) = serde_json::to_string(&m) {
+                let _ = append_line(&people_file(data, &l.from), &line);
+            }
+        }
+    }
+    // (its loans paid off out of what there is)
+    let debt = c.debt();
+    if debt > 0 {
+        c.book(BookingKind::Repayment, -debt, "Loans paid off (bankruptcy)".to_string(), false);
+        c.loans.clear();
+    }
+    // (its lines given up: out to tender again)
+    c.concessions.held.clear();
+    c.concessions.contracts.clear();
+    c.lines.clear();
+    // (the rest: the head office's)
+    let left = c.cash;
+    let hq = c.online.hq.clone();
+    let hq_cash = store::load(data, &hq).map(|h| h.cash).unwrap_or(0);
+    let (title, text) = if left >= 0 {
+        BANKRUPT_LEFT
+    } else if hq_cash + left < 0 {
+        BANKRUPT_RED
+    } else {
+        BANKRUPT
+    };
+    let booking = if left >= 0 { format!("What was left of depot {}", c.name) } else { format!("Depot {} bankrupt: its loss covered", c.name) };
+    let n = Notice { title: title.into(), text: text.into(), args: vec![("name".into(), c.name.clone()), ("amount".into(), left.abs().to_string())], bad: left < 0, amount: left, booking };
+    let _ = tell(data, &hq, &n);
+    if left != 0 {
+        c.book(BookingKind::Capital, -left, "Handed to the head office (bankruptcy)".to_string(), false);
+    }
+    left
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -646,6 +810,64 @@ mod tests {
         assert!(people_step(&data, &mut hq));
         let back = hq.staff.iter().find(|e| e.id == man).expect("back with his own id");
         assert!(back.lent.is_none() && back.lend.is_none());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// (Step 4, decided 25-26 October 2026) A depot in the red is warned at each day's close, and
+    /// its head office - two days to go, then one; out of the red the count starts again -, and
+    /// the day after, still in the red, it goes bankrupt: its buses sold, its staff gone, its
+    /// loans paid off, its lines given up, and its loss covered by its head office (into the red
+    /// when it has not the money).
+    #[test]
+    fn a_depot_in_the_red_is_warned_twice_then_goes_bankrupt() {
+        use super::super::market::{self, MarketBus, Payment};
+        let dir = std::env::temp_dir().join(format!("openomsi-server-bankrupt-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let root = dir.join("omsi");
+        for m in ["Grundorf", "Ahlheim"] {
+            std::fs::create_dir_all(root.join("maps").join(m)).unwrap();
+            std::fs::write(root.join("maps").join(m).join("global.cfg"), "").unwrap();
+        }
+        let data = dir.join("bco");
+        online::server_clock(&data, 1_800_000_000, false, ("2024-03-04".into(), 6 * 3600)).unwrap();
+        let mut hq = super::super::found(&Founding { name: "Umove".into(), short: "UMO".into(), date: "2024-03-04".into(), map: "maps/Grundorf/global.cfg".into(), ..Default::default() }, "x");
+        hq.id = "umove".into();
+        hq.online.on_server = true;
+        hq.cash += 1_000_000_00;
+        store::save(&data, &hq).unwrap();
+        let id = found(&data, &root, &mut hq, "Ahlheim", 100_000_00, 250_000_00, 1_800_000_000).unwrap();
+        store::save(&data, &hq).unwrap();
+        let mut d = store::load(&data, &id).unwrap();
+        d.cash += 1_000_000_00;
+        market::buy_new(&mut d, &MarketBus { name: "Citaro".into(), ..Default::default() }, Payment::Cash, "").unwrap();
+        // (in the red: two days to go, then one; out of it, again from the start)
+        d.cash = -500_000_00;
+        assert_eq!(day_closed(&data, &mut d), Red::Warned(2));
+        d.cash = 1_00;
+        assert_eq!(day_closed(&data, &mut d), Red::Fine);
+        d.cash = -500_000_00;
+        assert_eq!(day_closed(&data, &mut d), Red::Warned(2));
+        assert_eq!(day_closed(&data, &mut d), Red::Warned(1));
+        assert!(d.inbox.messages.iter().any(|m| m.title == RED_DEPOT_LAST.0));
+        assert!(take_notices(&data, &mut hq));
+        assert!(hq.inbox.messages.iter().any(|m| m.title == RED_HQ_LAST.0));
+        // (the next close, still in the red: bankrupt - its bus sold, its loss covered)
+        assert_eq!(day_closed(&data, &mut d), Red::Bankrupt);
+        let left = bankrupt(&data, &mut d);
+        assert!(left < 0 && d.fleet.is_empty() && d.staff.is_empty() && d.lines.is_empty() && d.cash == 0, "{left} {}", d.cash);
+        let before = hq.cash;
+        assert!(take_notices(&data, &mut hq));
+        assert_eq!(hq.cash, before + left);
+        assert!(hq.inbox.messages.iter().any(|m| m.title == BANKRUPT.0));
+        assert!(!take_notices(&data, &mut hq), "once");
+        // (a head office without the money goes into the red)
+        let mut d2 = d.clone();
+        d2.cash = -(hq.cash + 1_000_00);
+        hq.cash = 0;
+        store::save(&data, &hq).unwrap();
+        bankrupt(&data, &mut d2);
+        take_notices(&data, &mut hq);
+        assert!(hq.cash < 0 && hq.inbox.messages.iter().any(|m| m.title == BANKRUPT_RED.0));
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

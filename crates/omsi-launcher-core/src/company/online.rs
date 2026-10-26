@@ -85,6 +85,12 @@ pub struct Online {
     /// sold, taken over (`takeover`).
     #[serde(default)]
     pub takeover: super::takeover::Takeover,
+    /// (Phase 4 step 4) A depot's days closed in the red in a row (`server_depots::day_closed`),
+    /// and how far what other companies told it was read (`server_depots::notices_file`).
+    #[serde(default)]
+    pub red_days: u32,
+    #[serde(default)]
+    pub notices_read: u64,
 }
 
 /// The company's share of its players' trips when it is founded (per cent).
@@ -96,7 +102,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default(), red_days: 0, notices_read: 0 }
     }
 }
 
@@ -477,6 +483,9 @@ pub struct Stepped {
     pub planned: bool,
     /// The company was saved.
     pub saved: bool,
+    /// (Phase 4 step 4) A depot that went bankrupt (`server_depots::bankrupt`): its process ends,
+    /// its files go.
+    pub bankrupt: bool,
 }
 
 impl Host {
@@ -601,6 +610,10 @@ impl Host {
             self.dirty = true;
             self.planned = None;
         }
+        // (what other companies told it: a depot in the red, its end, the money with it)
+        if super::server_depots::take_notices(&self.data, c) {
+            self.dirty = true;
+        }
         // (the map's tenders, shared by its companies: the other companies' bids, what the main
         // server decided - a line won is the company's at once, to be planned for its first day)
         let (changed, won) = super::shared_tenders::sync(&self.data, c);
@@ -631,6 +644,15 @@ impl Host {
                 s.closed = clock::advance(c, to, w, true).map_err(anyhow::Error::msg)?.reports;
             }
             self.dirty = true;
+        }
+        // (a depot's days closed: in the red it is warned, and its head office; then bankrupt)
+        for _ in 0..s.closed.len() {
+            if super::server_depots::day_closed(&self.data, &mut self.company) == super::server_depots::Red::Bankrupt {
+                super::server_depots::bankrupt(&self.data, &mut self.company);
+                s.bankrupt = true;
+                self.dirty = true;
+                return Ok(s);
+            }
         }
         let new_day = self.company.date != before;
         if new_day {
