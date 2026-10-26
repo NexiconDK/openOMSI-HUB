@@ -268,6 +268,11 @@ impl ServerCompanies {
         self.owner.get(&line.trim().to_lowercase()).copied()
     }
 
+    /// The id of the company whose line `line` is (its control room's buses).
+    pub fn owner_id(&self, line: &str) -> Option<String> {
+        self.companies.get(self.owner_of(line)?)?.company.clone()
+    }
+
     /// The company whose line `line` is.
     pub fn company_of(&mut self, line: &str) -> Option<&mut CompanyLive> {
         let k = self.owner_of(line)?;

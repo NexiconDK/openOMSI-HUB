@@ -563,6 +563,40 @@ a company of 3 lines (74 tours a day), 18 buses, 150 staff:
 A midnight costs a company about a second: the companies run on a thread of their own, never on
 anything that answers the players.
 
+## Phase 5: the control room per depot
+
+Decided: "Per depot: every bus live while the map's world runs (interventions on the AI buses),
+else where the timetable has them."
+
+### Step 1: the world's buses live
+
+- **The world writes what it sees** (`omsi-app`'s `company_server::publish_live`, from the
+  server's step): every couple of seconds (`world_live::EVERY`) the companies' timetable buses on
+  its roads (`ScheduleSim::live_buses`: only those of a company's line, `TimetableCompany::owner`)
+  and the players' buses on a company's tour (by the tours their games claim, `lan_claims`), whole,
+  into `live/<map>.json` of the server's folder (`company::world_live`): the company, line, tour,
+  trip and its departure, the place in world metres, heading, speed, delay, passengers, at a stop
+  or at the terminus, the next stop, the fleet number; a player's name and his tours.
+- **The control room** is the depot's fleet map (and with it the Operations page): on the server
+  it reads the file every couple of seconds while it is fresh (`world_live::FRESH`, 15 s), the
+  company's own only, and puts each block's bus where the world has it - an AI bus with the
+  world's delay, the trip it drives (by its departure), what it does and its next stop, a player's
+  bus where his game is; driven on straight from there for up to 3 s, so it glides between the
+  world's writes. A bus the world does not have on its roads (the world not running, the bus in
+  the depot) stays where the timetable has it. The header says "Live: the world's buses (N on its
+  roads)", the card "Live position from the server's world".
+- **Fixed**: the world measured a player's bus by x and z (z is up on the map's ground), so a trip
+  that ran mostly north-south could be refused ("his bus drove far less than the trip says"); x
+  and y now.
+
+Tested: `world_live::tests::a_company_sees_its_own_buses_while_the_world_writes`,
+`fleetmap::tests::a_bus_of_the_world_is_driven_on_between_its_writes`.
+
+### Step 2 (next): interventions on the world's AI buses
+
+The control room's acts (turn back early, out of service to the terminus, a shorter layover, a
+bus swapped in, a trip dropped) reach the AI bus in the world, not only the company's model.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

@@ -69,6 +69,8 @@ pub mod server_api;
 pub mod server_depots;
 pub mod server_fines;
 pub mod takeover;
+// (Bus Company Online phase 5: each depot's control room - the world's buses live)
+pub mod world_live;
 pub mod server_players;
 pub mod shared_tenders;
 pub mod ownline;

@@ -131,6 +131,9 @@ impl TimetableCompany for crate::company_live::ServerCompanies {
     fn drops_left(&self, line: &str) -> bool {
         self.owner_of(line).is_some_and(|k| self.companies[k].drops_left(line))
     }
+    fn owner(&self, line: &str) -> Option<String> {
+        self.owner_id(line)
+    }
 }
 
 impl Schedule {

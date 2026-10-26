@@ -81,7 +81,7 @@ pub(crate) fn take_new_plan() -> bool {
 pub(crate) struct Seen {
     pub at: f64,
     pub x: f64,
-    pub z: f64,
+    pub y: f64,
     pub tour: String,
 }
 
@@ -102,9 +102,9 @@ static DOOR_OPEN: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool:
 pub(crate) fn watch(players: impl Iterator<Item = (String, f64, f64, String)>, now: f64) {
     let mut g = TRACKS.lock().unwrap_or_else(|e| e.into_inner());
     let tracks = g.get_or_insert_with(Default::default);
-    for (name, x, z, tour) in players {
+    for (name, x, y, tour) in players {
         let t = tracks.entry(name.trim().to_lowercase()).or_default();
-        t.push_back(Seen { at: now, x, z, tour });
+        t.push_back(Seen { at: now, x, y, tour });
         while t.front().is_some_and(|s| now - s.at > TRACK_FOR) {
             t.pop_front();
         }
@@ -125,7 +125,7 @@ pub(crate) fn check(track: &std::collections::VecDeque<Seen>, t: &omsi_launcher_
     if seen.len() < 3 {
         return Err("the world did not see his bus on that tour then");
     }
-    let driven: f64 = seen.windows(2).map(|w| ((w[1].x - w[0].x).powi(2) + (w[1].z - w[0].z).powi(2)).sqrt()).filter(|d| *d < 2000.0).sum();
+    let driven: f64 = seen.windows(2).map(|w| ((w[1].x - w[0].x).powi(2) + (w[1].y - w[0].y).powi(2)).sqrt()).filter(|d| *d < 2000.0).sum();
     if t.metres > 300.0 && driven < 0.5 * t.metres {
         return Err("his bus drove far less than the trip says");
     }
@@ -194,6 +194,52 @@ pub(crate) fn take_trips(map: &str) {
     }
 }
 
+// --- phase 5: each depot's control room --------------------------------------------------------
+
+/// When the world last wrote what it sees for the control rooms.
+static LIVE_AT: Mutex<Option<std::time::Instant>> = Mutex::new(None);
+/// The world said once that it could not write it.
+static LIVE_FAILED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Every couple of seconds (`world_live::EVERY`): the companies' timetable buses on the world's
+/// roads, and the players' buses on their tours (`players`, the poses the world has of them),
+/// written for the companies' control rooms (`world_live`, `live/<map>.json` of the folder).
+pub(crate) fn publish_live<'a>(map: &str, schedule: Option<&crate::schedule::Schedule>, traffic: Option<&crate::traffic::Traffic>, humans: Option<&crate::humans::Humans>, players: impl Iterator<Item = &'a omsi_net::Pose>) {
+    use omsi_launcher_lib::company::world_live::{self, WorldBus, WorldLive, WorldPlayer};
+    let Some(c) = COMPANIES.get() else { return };
+    let (Some(s), Some(t)) = (schedule, traffic) else { return };
+    {
+        let mut at = LIVE_AT.lock().unwrap_or_else(|e| e.into_inner());
+        if at.is_some_and(|t| t.elapsed().as_secs_f64() < world_live::EVERY) {
+            return;
+        }
+        *at = Some(std::time::Instant::now());
+    }
+    let aboard = humans.map(|h| h.ai_aboard()).unwrap_or_default();
+    let buses = s
+        .sim
+        .live_buses(&t.sim, &aboard)
+        .into_iter()
+        .map(|b| WorldBus { company: b.company, line: b.line, tour: b.tour, trip: b.trip, dep: b.dep, x: b.x, y: b.y, heading: b.heading, speed_kmh: b.speed_kmh, delay: b.delay, passengers: b.passengers, at_stop: b.at_stop, layover: b.layover, next: b.next, terminus: b.terminus, number: b.number })
+        .collect();
+    let players = players
+        .filter_map(|p| {
+            let tours: Vec<(String, String)> = omsi_sim::timetable_run::lan_claims(&p.tour).into_iter().map(|c| (c.line, c.tour)).collect();
+            let company = tours.iter().find_map(|(line, _)| s.sim.line_owner(line))?;
+            Some(WorldPlayer { name: p.name.trim().to_string(), company, tours, x: p.x, y: p.y, heading: (p.heading as f64).rem_euclid(360.0), speed_kmh: p.speed_kmh as f64, passengers: p.passengers, line: p.line.trim().to_string() })
+        })
+        .collect();
+    let w = WorldLive { updated: unix_now(), map: map.to_string(), buses, players };
+    match world_live::write(&c.data, &w) {
+        Ok(()) => LIVE_FAILED.store(false, Ordering::Relaxed),
+        Err(e) => {
+            if !LIVE_FAILED.swap(true, Ordering::Relaxed) {
+                log::warn!("server: the buses on the roads not written for the control rooms: {e:#}");
+            }
+        }
+    }
+}
+
 /// The plans' generation of the folder, when it is not `taken`.
 fn changed(data: &Path, taken: u64) -> Option<u64> {
     Some(online::plans_gen(data)).filter(|g| *g != taken)
@@ -225,7 +271,7 @@ mod tests {
     fn a_trip_is_taken_as_the_world_saw_it() {
         let t = omsi_launcher_lib::TripRun { time: 10_000, tour: "3".into(), line: "Linie5".into(), seconds: 900.0, metres: 6000.0, departure: 8.0 * 3600.0, ..Default::default() };
         // (its bus seen every 2 s on its tour, 7 m a second)
-        let seen = |tour: &str, speed: f64| -> std::collections::VecDeque<Seen> { (0..=450).map(|k| Seen { at: 9_100.0 + 2.0 * k as f64, x: 2.0 * k as f64 * speed, z: 0.0, tour: tour.into() }).collect() };
+        let seen = |tour: &str, speed: f64| -> std::collections::VecDeque<Seen> { (0..=450).map(|k| Seen { at: 9_100.0 + 2.0 * k as f64, x: 2.0 * k as f64 * speed, y: 0.0, tour: tour.into() }).collect() };
         assert_eq!(check(&seen("Linie5/3", 7.0), &t), Ok(()));
         assert_eq!(check(&seen("linie5/3@480~540;linie7/2@560~600", 7.0), &t), Ok(()), "his duty's trips of that tour");
         assert!(check(&seen("Linie5/4", 7.0), &t).is_err(), "another tour");

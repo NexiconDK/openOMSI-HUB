@@ -10,7 +10,10 @@
 //!   the way, waiting at the terminus between trips, an empty run along its route or straight;
 //!   a bus broken down stands where it broke down, and the bus sent runs the block on;
 //! - the bus the player drives is where the game says it is (its telemetry, `telemetry.json`,
-//!   while the player has it on), else on the timetable by the delay the game reported.
+//!   while the player has it on), else on the timetable by the delay the game reported;
+//! - (NexiconDK) on Bus Company Online's server each depot's map is its control room: every bus
+//!   is where the map's world has it while the world runs (`world_live`, phase 5) - its AI bus
+//!   with the world's delay, a player's where his game is - else where the timetable has it.
 //!
 //! The clock follows the time of day - the game's while it runs on the company's map, else the
 //! company's to the second - or runs by itself, ten or sixty times as fast. The view is asked for
@@ -34,6 +37,7 @@ use omsi_launcher_lib::company::fleetmap::{self as fm, Doing, Live, Run, TripSha
 use omsi_launcher_lib::company::lateness::{self as lt, Model};
 use omsi_launcher_lib::company::network::PlannedTrip;
 use omsi_launcher_lib::company::plan::{AGENCY, PLAYER};
+use omsi_launcher_lib::company::world_live::{self as wl, WorldBus, WorldLive};
 use omsi_launcher_lib::company::{self as co, Company};
 use omsi_launcher_lib::service::ServiceKind;
 use serde_json::{json, Value};
@@ -45,6 +49,10 @@ const SHOWN_BEFORE: f64 = 1800.0;
 /// The game's telemetry is read at most this often, and believed for this long.
 const TELEMETRY_EVERY: f64 = 0.4;
 const TELEMETRY_FRESH: f64 = 10.0;
+/// (Bus Company Online) What the map's world sees is read this often (s).
+const WORLD_EVERY: f64 = 2.0;
+/// A bus is driven on from where the world saw it for this long at most (s).
+const WORLD_AHEAD: f64 = 3.0;
 
 /// A block of today's plan as the map moves its bus.
 struct Block {
@@ -106,6 +114,9 @@ pub struct MapState {
     delays_at: Option<Instant>,
     telemetry: Option<Telemetry>,
     telemetry_at: Option<Instant>,
+    /// (Bus Company Online) What the map's world sees of the company's buses, while it runs.
+    world: Option<WorldLive>,
+    world_at: Option<Instant>,
 }
 
 /// (NexiconDK) The map's roads and routes are the session's, read once for everybody: a player of
@@ -471,6 +482,59 @@ fn telemetry_of(v: &Value, origin: [f64; 2], now: f64) -> Option<Telemetry> {
     })
 }
 
+/// (NexiconDK, Bus Company Online phase 5) What the map's world sees of the company's buses (its
+/// `live/<map>.json` in the server's folder), read every couple of seconds on the server: None
+/// when the world is not running, off the server, or the map's origin is not known.
+fn world(m: &mut MapState, c: &Company) {
+    if !c.online.on_server || m.origin.is_none() {
+        m.world = None;
+        return;
+    }
+    if m.world_at.is_some_and(|t| t.elapsed().as_secs_f64() < WORLD_EVERY) {
+        return;
+    }
+    m.world_at = Some(Instant::now());
+    m.world = wl::read(&data(), &c.map, &c.id, real_secs());
+}
+
+/// Where a bus the world saw `secs` ago at (`x`, `y`), heading `heading` (north 0, clockwise) at
+/// `kmh`, is now in the map's metres from `origin`: driven on straight for up to `WORLD_AHEAD`
+/// seconds (the world writes every couple of them; the page glides between its answers).
+fn world_at(x: f64, y: f64, heading: f64, kmh: f64, secs: f64, origin: [f64; 2]) -> [f64; 2] {
+    let d = kmh.max(0.0) / 3.6 * secs.clamp(0.0, WORLD_AHEAD);
+    let h = heading.to_radians();
+    [x + d * h.sin() - origin[0], y + d * h.cos() - origin[1]]
+}
+
+/// The company's AI bus put where the world has it (`origin`: where the map's metres begin; `age`:
+/// how long ago the world wrote it): its place, heading and delay, the block's trip it drives (by
+/// its departure), what it does and its next stop.
+fn world_place(live: &mut Live, wb: &WorldBus, b: &Block, tp: &co::day::TourPlan, origin: [f64; 2], age: f64) {
+    live.at = Some(world_at(wb.x, wb.y, wb.heading, if wb.at_stop || wb.layover { 0.0 } else { wb.speed_kmh }, age, origin));
+    live.heading = wb.heading.rem_euclid(360.0);
+    live.delay = wb.delay;
+    if let Some(j) = tp.tour.trips.iter().position(|x| x.whole_dep().rem_euclid(1440) == wb.dep.rem_euclid(1440)).filter(|j| *j < b.trips.len()) {
+        live.trip = j;
+    }
+    let counts = tp.tour.trips.get(live.trip).is_some_and(|x| x.counts());
+    let shape = b.trips.get(live.trip);
+    live.doing = if wb.layover {
+        Doing::Layover
+    } else if counts {
+        Doing::Service
+    } else {
+        Doing::Deadhead
+    };
+    if wb.layover {
+        live.next_stop = None;
+        live.next_time = shape.map(|t| t.dep + wb.delay.max(0.0));
+    } else {
+        let next = shape.and_then(|t| t.names.iter().position(|n| same(n, &wb.next)));
+        live.next_stop = next;
+        live.next_time = next.and_then(|k| shape.and_then(|t| t.times.get(k))).map(|t| t + wb.delay);
+    }
+}
+
 /// Whether the player's duty in the game is block `b` (its line and its tour, or a tour of the
 /// timetable it runs).
 fn drives(t: &Telemetry, b: &Block, tp: &co::day::TourPlan) -> bool {
@@ -502,6 +566,8 @@ struct Marker {
     rental: bool,
     /// The player drives it, and the game said where it is.
     player: bool,
+    /// (Bus Company Online) The map's world said where it is.
+    world: bool,
     telemetry: Option<Telemetry>,
 }
 
@@ -557,6 +623,7 @@ pub fn view(s: &mut Session, _args: &Value) -> Value {
     }
     live_delays(m, c, in_game);
     telemetry(m, in_game);
+    world(m, c);
     // the blocks of today's plan, and how its trips run
     let mut markers: Vec<Marker> = Vec::new();
     let clock = m.clock;
@@ -587,7 +654,18 @@ pub fn view(s: &mut Session, _args: &Value) -> Value {
             let rental = after_break && vehicle == tp.bus;
             // (the player's bus: where the game says it is, while it says so)
             let player = tp.by_player || tp.duties.iter().any(|x| x.driver == Some(PLAYER));
-            let tele = m.telemetry.as_ref().filter(|t| player && drives(t, b, tp)).cloned();
+            let mut tele = m.telemetry.as_ref().filter(|t| player && drives(t, b, tp)).cloned();
+            // (Bus Company Online: on the server the world's - the player who drives the tour
+            // there, else the company's AI bus on its roads)
+            let origin = m.origin.unwrap_or_default();
+            let age = m.world.as_ref().map_or(0.0, |w| real_secs() - w.updated);
+            if tele.is_none() {
+                tele = m.world.as_ref().and_then(|w| w.player(&b.line, &b.tour)).map(|p| Telemetry { at: world_at(p.x, p.y, p.heading, p.speed_kmh, age, origin), heading: p.heading.rem_euclid(360.0), delay: None, passengers: Some(p.passengers as f64), speed: p.speed_kmh, line: b.number.clone(), tour: b.tour.clone() });
+            }
+            let world_bus = if tele.is_some() { None } else { m.world.as_ref().and_then(|w| w.bus(&b.line, &b.tour)) };
+            if let Some(wb) = world_bus {
+                world_place(&mut live, wb, b, tp, origin, age);
+            }
             if let Some(t) = &tele {
                 live.at = Some(t.at);
                 live.heading = t.heading;
@@ -598,9 +676,12 @@ pub fn view(s: &mut Session, _args: &Value) -> Value {
                     live.doing = if t.speed > 1.0 { Doing::Deadhead } else { Doing::Layover };
                 }
             }
-            markers.push(Marker { key: key.clone(), b: bi, live, vehicle: if rental { None } else { vehicle }, rental, player: tele.is_some(), telemetry: tele });
+            let by_player = tele.is_some();
+            // (the world's AI bus: what it carries there)
+            let tele = tele.or_else(|| world_bus.map(|wb| Telemetry { passengers: Some(wb.passengers as f64), ..Default::default() }));
+            markers.push(Marker { key: key.clone(), b: bi, live, vehicle: if rental { None } else { vehicle }, rental, player: by_player, world: world_bus.is_some() || by_player && m.world.is_some(), telemetry: tele });
             if let Some(br) = broken {
-                markers.push(Marker { key: format!("{key}|broken"), b: bi, live: br, vehicle: tp.bus, rental: false, player: false, telemetry: None });
+                markers.push(Marker { key: format!("{key}|broken"), b: bi, live: br, vehicle: tp.bus, rental: false, player: false, world: false, telemetry: None });
             }
         }
         m.day = day;
@@ -618,7 +699,7 @@ pub fn view(s: &mut Session, _args: &Value) -> Value {
                 "colour": colour, "tag": tag, "state": doing_key(mk.live.doing), "tone": delay_tone(mk.live.delay),
                 // (its whole minutes late: the Operations page's map colours it by the alert's minutes)
                 "min": (mk.live.delay / 60.0 + 1e-6).floor() as i32,
-                "player": mk.player, "on": picked.as_deref() == Some(mk.key.as_str()),
+                "player": mk.player, "world": mk.world, "on": picked.as_deref() == Some(mk.key.as_str()),
             })
         })
         .collect();
@@ -642,7 +723,12 @@ pub fn view(s: &mut Session, _args: &Value) -> Value {
     json!({
         "built": built,
         "title": tr("Fleet map").to_uppercase(),
-        "live": m.live.then(|| json!({ "text": tr(if in_game { "Live: the game's time" } else { "Live: the company's time" }), "tone": if in_game { "ok" } else { "accent2" } })),
+        "live": m.live.then(|| match (&m.world, in_game) {
+            // (Bus Company Online: the depot's control room, the world's buses)
+            (Some(w), _) => json!({ "text": trf("Live: the world's buses (%{n} on its roads)", &[("n", &(w.buses.len() + w.players.len()).to_string())]), "tone": "ok" }),
+            (None, true) => json!({ "text": tr("Live: the game's time"), "tone": "ok" }),
+            (None, false) => json!({ "text": tr("Live: the company's time"), "tone": "accent2" }),
+        }),
         "clock": hhmmss(clock), "secs": clock,
         "playing": !m.live && m.speed > 0.0, "is_live": m.live, "speed": m.speed,
         "tips": { "run": tr("Run the clock"), "stop": tr("Stop the clock"), "x10": tr("Ten times as fast"), "x60": tr("Sixty times as fast"), "now": tr("Back to now"), "close": tr("Close") },
@@ -802,7 +888,7 @@ fn bus_card(c: &Company, plan: &Plan, d: &Day, m: &MapState, mk: &Marker, clock:
         "head": head_of(c, b, &colour, &tag, bus),
         "photo": photo, "facts": facts,
         "what": what, "state": doing_key(mk.live.doing), "next": next,
-        "source": if mk.player { Some(tr("Live position from the game")) } else { None },
+        "source": if mk.player { Some(tr("Live position from the game")) } else if mk.world { Some(tr("Live position from the server's world")) } else { None },
         "delay": delay_v,
         "rows": rows, "notes": notes, "links": links,
     })
@@ -955,6 +1041,17 @@ mod tests {
         assert_eq!((t.line.as_str(), t.tour.as_str()), ("5", "2"));
         assert!(telemetry_of(&v, [0.0, 0.0], 1100.0).is_none(), "an old file is not believed");
         assert!(telemetry_of(&json!({ "updated": 1000.0, "player": null }), [0.0, 0.0], 1000.0).is_none(), "no bus");
+    }
+
+    /// (Bus Company Online) A bus the world saw is driven on from there, straight, for a few
+    /// seconds at most, until the world writes again.
+    #[test]
+    fn a_bus_of_the_world_is_driven_on_between_its_writes() {
+        let at = world_at(1000.0, 500.0, 90.0, 36.0, 2.0, [1000.0, 0.0]);
+        assert!((at[0] - 20.0).abs() < 1e-6 && (at[1] - 500.0).abs() < 1e-6, "east at 10 m/s for 2 s: {at:?}");
+        let at = world_at(0.0, 0.0, 0.0, 36.0, 60.0, [0.0, 0.0]);
+        assert!(at[0].abs() < 1e-6 && (at[1] - 10.0 * WORLD_AHEAD).abs() < 1e-6, "north, no further than WORLD_AHEAD: {at:?}");
+        assert_eq!(world_at(5.0, 5.0, 0.0, 0.0, 2.0, [0.0, 0.0]), [5.0, 5.0], "standing");
     }
 
     #[test]

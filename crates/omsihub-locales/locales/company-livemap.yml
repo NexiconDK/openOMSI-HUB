@@ -142,3 +142,17 @@ _version: 2
   pl: "%{m} minut opóźnienia: dyspozytor może przywrócić punktualność."
   ru: "Опаздывает на %{m} минут: диспетчер может вернуть его в график."
   uk: "Запізнюється на %{m} хвилин: диспетчер може повернути його в графік."
+"Live: the world's buses (%{n} on its roads)":
+  de: "Live: die Busse der Welt (%{n} auf ihren Straßen)"
+  fr: "En direct : les bus du monde (%{n} sur ses routes)"
+  nl: "Live: de bussen van de wereld (%{n} op haar wegen)"
+  pl: "Na żywo: autobusy świata (%{n} na jego drogach)"
+  ru: "В реальном времени: автобусы мира (%{n} на его дорогах)"
+  uk: "У реальному часі: автобуси світу (%{n} на його дорогах)"
+"Live position from the server's world":
+  de: "Live-Position aus der Welt des Servers"
+  fr: "Position en direct depuis le monde du serveur"
+  nl: "Live positie uit de wereld van de server"
+  pl: "Pozycja na żywo ze świata serwera"
+  ru: "Положение в реальном времени из мира сервера"
+  uk: "Положення в реальному часі зі світу сервера"

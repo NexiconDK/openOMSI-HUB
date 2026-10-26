@@ -32,7 +32,7 @@ pub use choice::{depot_file, pool_depot};
 pub use company::{CompanyBus, TimetableCompany};
 pub use dispatch::{tour_entry, TOUR_ENTRY_LANES};
 pub use place::Placing;
-pub use web_map::{build_web_map, WebCall, WebMap, WebTimetable, WebTrip};
+pub use web_map::{build_web_map, LiveBus, WebCall, WebMap, WebTimetable, WebTrip};
 
 /// What the timetable needs of the loaded map: its folders, the AI lists, the tiles, the
 /// date and the places of the stops. The world snapshot (`crate::world_data::WorldData`)

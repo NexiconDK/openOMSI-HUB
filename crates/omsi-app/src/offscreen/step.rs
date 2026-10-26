@@ -202,8 +202,11 @@ impl Offscreen<'_> {
                 // watched, the trips their launchers post checked and given to their companies
                 if crate::company_server::data_dir().is_some() {
                     let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs_f64()).unwrap_or(0.0);
-                    crate::company_server::watch(l.peers().filter(|p| p.has_pose).map(|p| (p.pose.name.clone(), p.pose.x, p.pose.z, p.pose.tour.clone())), now);
+                    // (the map's ground: x east, y north - z is up)
+                    crate::company_server::watch(l.peers().filter(|p| p.has_pose).map(|p| (p.pose.name.clone(), p.pose.x, p.pose.y, p.pose.tour.clone())), now);
                     crate::company_server::take_trips(&args.map);
+                    // (phase 5: the buses on its roads for the companies' control rooms)
+                    crate::company_server::publish_live(&args.map, schedule.as_ref(), traffic.as_ref(), humans_off.as_ref(), l.peers().filter(|p| p.has_pose).map(|p| &p.pose));
                 }
                 crate::server::tick_status(l, parse_time(&args.time) + *srv_clock + srv_admin.shift, srv_weather_name.as_str());
                 // the shared world, counted for GET /status

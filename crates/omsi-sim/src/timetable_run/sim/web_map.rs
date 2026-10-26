@@ -139,6 +139,67 @@ impl ScheduleSim {
         o.push(']');
         o
     }
+
+    /// (NexiconDK) Bus Company Online's control room: the companies' timetable buses on the
+    /// road now, by their timetable line and tour (as a company's plan names them), in world
+    /// metres. `aboard`: how many people sit in each (`PeopleSim::ai_aboard`).
+    pub fn live_buses(&self, traffic: &TrafficSim, aboard: &HashMap<u64, usize>) -> Vec<LiveBus> {
+        let mut out = Vec::new();
+        for car in &traffic.cars {
+            let Some(&i) = self.car_departure.get(&car.id) else { continue };
+            let Some(b) = car.bus.as_ref() else { continue };
+            let d = &self.departures[i];
+            // (a company's only: the map's own lines are nobody's control room's)
+            let Some(company) = self.line_owner(&d.line) else { continue };
+            let trip = &self.data.trips[d.trip];
+            let next = b.stops.front().and_then(|s| self.data.bus_stops.iter().find(|x| x.object_id == s.id)).map(|x| x.name.trim().to_string()).unwrap_or_default();
+            let pos = car.vehicle.position;
+            out.push(LiveBus {
+                company,
+                line: d.line.trim().to_string(),
+                tour: d.tour.trim().to_string(),
+                trip: trip.name.trim().to_string(),
+                dep: (d.time / 60.0).round() as i32 + if d.yesterday { 1440 } else { 0 },
+                x: pos.x,
+                y: pos.y,
+                heading: car.vehicle.heading.rem_euclid(360.0),
+                speed_kmh: car.state.speed.max(0.0) as f64 * 3.6,
+                delay: if b.delay.is_finite() { b.delay } else { 0.0 },
+                passengers: aboard.get(&car.id).copied().unwrap_or(0),
+                at_stop: car.at_stop(),
+                layover: b.layover,
+                next,
+                terminus: b.terminus.trim().to_string(),
+                number: car.vehicle.str_var("number").trim().to_string(),
+            });
+        }
+        out
+    }
+}
+
+/// (NexiconDK) A timetable bus on the road now (`ScheduleSim::live_buses`).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct LiveBus {
+    /// The company whose line it is (`TimetableCompany::owner`).
+    pub company: String,
+    pub line: String,
+    pub tour: String,
+    pub trip: String,
+    /// The trip's departure, minutes of the day (a night trip after midnight past 1440).
+    pub dep: i32,
+    pub x: f64,
+    pub y: f64,
+    pub heading: f64,
+    pub speed_kmh: f64,
+    /// Seconds late (negative: early).
+    pub delay: f64,
+    pub passengers: usize,
+    pub at_stop: bool,
+    pub layover: bool,
+    pub next: String,
+    pub terminus: String,
+    /// Its fleet number.
+    pub number: String,
 }
 
 /// A JSON string.

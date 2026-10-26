@@ -40,6 +40,11 @@ pub trait TimetableCompany: Send + Sync {
     fn drops_left(&self, _line: &str) -> bool {
         false
     }
+    /// (NexiconDK) Bus Company Online: the id of the company whose line `line` is (None: the
+    /// map's, or not a server's companies).
+    fn owner(&self, _line: &str) -> Option<String> {
+        None
+    }
 }
 
 /// A bus of the player's company for one of its tours (`TimetableCompany::bus`).
@@ -83,6 +88,11 @@ impl ScheduleSim {
             c.set_day(day);
         }
         self.mark_company();
+    }
+
+    /// (NexiconDK) The company whose line `line` is (`TimetableCompany::owner`).
+    pub fn line_owner(&self, line: &str) -> Option<String> {
+        self.company.as_deref()?.owner(line)
     }
 
     /// Which departures the company keeps off the road today (`TimetableCompany::keeps_off`).
