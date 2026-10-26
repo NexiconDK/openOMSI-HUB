@@ -78,6 +78,10 @@ pub struct Concession {
     /// Given without a tender (a line run before concessions, an easy economy).
     #[serde(default)]
     pub direct: bool,
+    /// (NexiconDK, Bus Company Online) Won from another company of the map (its id): that one
+    /// runs the line until `from` (`plan::live_plan`).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub after: String,
 }
 
 /// A line's week, from the timetable of its seven days.
@@ -659,7 +663,7 @@ pub fn ensure(c: &mut Company) -> bool {
     for l in lines.iter().filter(|l| !l.own) {
         if of_line(c, &l.name).is_none() {
             let until = dates::add(&c.date, r.term_weeks as i64 * 7 - 1);
-            c.concessions.held.push(Concession { line: l.name.clone(), number: l.number.clone(), from: c.date.clone(), until, price: 1.0, direct: true });
+            c.concessions.held.push(Concession { line: l.name.clone(), number: l.number.clone(), from: c.date.clone(), until, price: 1.0, direct: true, after: String::new() });
             changed = true;
         }
     }
@@ -1313,7 +1317,9 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
     let mut k = bc::make(c, &t.line, &t.number, t.kind, t.period, amount, &work, &from, &until);
     server(&mut k);
     c.concessions.contracts.push(k);
-    c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false });
+    // (won from another company of the map: it runs the line until then)
+    let after = t.market.as_ref().map(|m| m.holder.clone()).filter(|h| *h != c.id).unwrap_or_default();
+    c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false, after });
     Event::Won { number: t.number.clone(), until }
 }
 

@@ -2152,11 +2152,14 @@ impl LivePlan {
 pub fn live_plan(c: &Company, dp: &DayPlan) -> LivePlan {
     // (the trips of duties their players left, dropped: off the road)
     let off = super::together::book::dropped_departures(c, dp);
+    // (a line won from another company of the map that runs it until its concession begins: not
+    // the company's yet - neither its tours nor the line, on the road)
+    let waits = |line: &str| super::concessions::of_line(c, line).is_some_and(|h| !h.after.is_empty() && super::dates::between(&dp.date, &h.from) > 0);
     let tours = dp
         .tours
         .iter()
         // (a line not in service runs nothing, not even in the game)
-        .filter(|t| !t.by_player && !t.tour.unplanned)
+        .filter(|t| !t.by_player && !t.tour.unplanned && !waits(&t.tour.line))
         .flat_map(|t| super::studio::origins(&dp.tours, t).into_iter().map(move |o| (t, o)))
         .map(|(t, origin)| {
             let hof = c.lines.iter().find(|l| l.name.eq_ignore_ascii_case(&t.tour.line)).map(|l| l.hof.trim().to_string()).unwrap_or_default();
@@ -2179,9 +2182,9 @@ pub fn live_plan(c: &Company, dp: &DayPlan) -> LivePlan {
             lt
         })
         .collect();
-    // (a line whose concession begins on a later day is not the company's yet: on a server another
-    // company may run it until then - the market's renewal won by another, `shared_tenders`)
-    let lines = c.lines.iter().filter(|l| super::concessions::of_line(c, &l.name).is_none_or(|h| super::dates::between(&dp.date, &h.from) <= 0)).map(|l| l.name.clone()).collect();
+    // (the company's lines: every one it runs today - one whose concession begins on a later day
+    // too, the map's own buses off it -, but one another company runs until then, `waits`)
+    let lines = c.lines.iter().filter(|l| !waits(&l.name)).map(|l| l.name.clone()).collect();
     LivePlan { company: c.id.clone(), map: c.map.clone(), date: dp.date.clone(), depot: c.depot.clone(), game_mode: c.game_mode, tours, lines, drops_left: c.together.left_dropped }
 }
 
@@ -2380,6 +2383,23 @@ mod tests {
         // a line that asks for nothing takes any bus
         c.lines[0].plan = None;
         assert!(super::super::ownline::line_allows(&c, "Linie5", &c.fleet[0]));
+    }
+
+    /// (NexiconDK) A line whose concession begins on a later day is the company's on the road all
+    /// the same - the map's own buses off it -, but not one won from another company that runs
+    /// it until then: neither its tours nor the line.
+    #[test]
+    fn a_line_won_for_later_is_on_the_road_unless_another_runs_it_until_then() {
+        let mut c = quiet(1, 1);
+        let p = day_plan(&c, &c.date, vec![tour("1", 6 * 60, 3)], &[], &[], false);
+        let tomorrow = super::super::dates::add(&c.date, 1);
+        c.concessions.held.retain(|h| h.line != "Linie5");
+        c.concessions.held.push(super::super::concessions::Concession { line: "Linie5".into(), number: "5".into(), from: tomorrow.clone(), until: "2030-01-01".into(), price: 1.0, direct: false, after: String::new() });
+        let lp = live_plan(&c, &p);
+        assert_eq!((lp.lines.clone(), lp.tours.len()), (vec!["Linie5".to_string()], 1));
+        c.concessions.held[0].after = "gocollective".into();
+        let lp = live_plan(&c, &p);
+        assert!(lp.lines.is_empty() && lp.tours.is_empty(), "the other company's until then");
     }
 
     #[test]

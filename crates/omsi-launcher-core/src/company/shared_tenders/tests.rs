@@ -155,7 +155,7 @@ fn a_concession_ending_goes_out_to_every_company() {
     network::add_line(&mut a, &lines[0], None).unwrap();
     let until = dates::add(DATE, 5);
     a.concessions.held.retain(|h| h.line != "Linie5");
-    a.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.clone(), price: 1.0, direct: false });
+    a.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.clone(), price: 1.0, direct: false, after: String::new() });
     let key = key_of(MAP);
     let (ca, cb) = (a.clone(), b.clone());
     let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE) });
@@ -197,6 +197,7 @@ fn a_concession_ending_goes_out_to_every_company() {
     let h = cn::of_line(&b, "Linie5").unwrap();
     let from = dates::add(&until, 1);
     assert_eq!((h.from.clone(), h.until.clone()), (from.clone(), dates::add(&dates::add_month(&from), -1)), "from the day A's term ends, a month");
+    assert_eq!(h.after, "umove", "A runs it until then");
     let k = b.concessions.contracts.iter().find(|k| k.line == "Linie5").unwrap();
     assert!(k.electric && k.extensions_left == 0);
     at(&mut a, tb.closes_at + 2);

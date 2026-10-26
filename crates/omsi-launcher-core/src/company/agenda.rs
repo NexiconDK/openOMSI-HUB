@@ -968,7 +968,7 @@ mod tests {
         c.fleet = vec![b1, b2];
         c.history = vec![crate::company::DayRecord { date: "2026-10-14".into(), km: 1_000.0, ..Default::default() }];
         // a concession won, beginning on the 1st of November
-        c.concessions.held.push(Concession { line: "5".into(), number: "5".into(), from: "2026-11-01".into(), until: "2028-10-31".into(), price: 1.0, direct: false });
+        c.concessions.held.push(Concession { line: "5".into(), number: "5".into(), from: "2026-11-01".into(), until: "2028-10-31".into(), price: 1.0, direct: false, after: String::new() });
         let (from, until) = window(&c);
         let v = agenda(&c, &from, &until, &Known::default());
         let find = |kind: Kind| v.iter().find(|e| e.kind == kind).unwrap_or_else(|| panic!("no {kind:?} in {v:#?}"));

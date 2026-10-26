@@ -308,7 +308,7 @@ fn points_make_a_contract_orange_or_red_no_extension_and_an_end() {
     c.date = "2024-01-01".into();
     let id = with_contract(&mut c, Kind::Gross, Period::Day, 312_000_00, "2024-01-01");
     let until = c.concessions.contracts[0].until.clone();
-    c.concessions.held.push(Concession { line: "Linie5".into(), number: "5".into(), from: "2024-01-01".into(), until: until.clone(), price: 0.9, direct: false });
+    c.concessions.held.push(Concession { line: "Linie5".into(), number: "5".into(), from: "2024-01-01".into(), until: until.clone(), price: 0.9, direct: false, after: String::new() });
     // green at its decision: a year longer, the concession with it
     c.date = dates::add(&until, -30);
     let ev = extend_due(&mut c);
@@ -329,7 +329,7 @@ fn points_make_a_contract_orange_or_red_no_extension_and_an_end() {
     let mut c = company(GameMode::Realistic);
     c.date = "2024-03-31".into();
     with_contract(&mut c, Kind::Gross, Period::Day, 312_000_00, "2024-03-01");
-    c.concessions.held.push(Concession { line: "Linie5".into(), number: "5".into(), from: "2024-03-01".into(), until: "2027-02-28".into(), price: 1.0, direct: false });
+    c.concessions.held.push(Concession { line: "Linie5".into(), number: "5".into(), from: "2024-03-01".into(), until: "2027-02-28".into(), price: 1.0, direct: false, after: String::new() });
     c.concessions.contracts[0].record.push(PointsDay { date: "2024-03-20".into(), default: 30.0, ..Default::default() });
     let (r, _) = close(&mut c, &a_day());
     assert!(r.notes.iter().any(|n| matches!(n, Note::Terminated { .. })));
@@ -397,8 +397,8 @@ fn an_older_file_gets_its_contracts() {
     c.lines.push(CompanyLine { name: "Linie7".into(), number: "7".into(), tours: 2, km: 300.0, ..Default::default() });
     c.lines.push(CompanyLine { name: "Linie5".into(), number: "5".into(), tours: 1, km: 100.0, ..Default::default() });
     // a concession won at 90 % of the reference, and one taken on directly
-    c.concessions.held.push(Concession { line: "Linie7".into(), number: "7".into(), from: "2024-01-01".into(), until: "2024-12-29".into(), price: 0.9, direct: false });
-    c.concessions.held.push(Concession { line: "Linie5".into(), number: "5".into(), from: "2024-01-01".into(), until: "2024-12-29".into(), price: 1.0, direct: true });
+    c.concessions.held.push(Concession { line: "Linie7".into(), number: "7".into(), from: "2024-01-01".into(), until: "2024-12-29".into(), price: 0.9, direct: false, after: String::new() });
+    c.concessions.held.push(Concession { line: "Linie5".into(), number: "5".into(), from: "2024-01-01".into(), until: "2024-12-29".into(), price: 1.0, direct: true, after: String::new() });
     c.concessions.rivals.push(cn::Rival { id: 1, name: "Talbus".into(), character: auction::Character::Small, quality: 40.0 });
     c.version = 2;
     let mut json: serde_json::Value = serde_json::to_value(&c).unwrap();
@@ -564,7 +564,7 @@ fn older_saves_of_version_1_and_2_arrive_valid() {
     use crate::company::model::{Role, VERSION};
     let mut c = reference_from(GameMode::Realistic, "gb", "2024-06-03");
     // a concession of the line won in a tender (the old per-km asks: 95 % of the reference)
-    c.concessions.held.push(Concession { line: "Linie5".into(), number: "5".into(), from: "2024-01-01".into(), until: "2026-12-31".into(), price: 0.95, direct: false });
+    c.concessions.held.push(Concession { line: "Linie5".into(), number: "5".into(), from: "2024-01-01".into(), until: "2026-12-31".into(), price: 0.95, direct: false, after: String::new() });
     let today = c.date.clone();
     day::close_day(&mut c, tours_of(&today), &[]);
     let saved = serde_json::to_value(&c).unwrap();
