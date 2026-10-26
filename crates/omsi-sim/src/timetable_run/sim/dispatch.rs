@@ -85,7 +85,8 @@ impl ScheduleSim {
     pub fn may_take_on(&self, j: usize, day_time: f64) -> bool {
         let d = &self.departures[j];
         let open = self.awaiting.contains(&j) || (!d.spawned && self.runs(j));
-        open && !self.is_player_tour(j) && self.day_base + d.time - day_time < TOUR_LAYOVER_MAX
+        // (not one its company's control room swapped a spare bus in at, nor cancelled: phase 5)
+        open && !self.is_player_tour(j) && !self.company_swap(j) && !self.kept_off(j) && self.day_base + d.time - day_time < TOUR_LAYOVER_MAX
     }
 
     /// The tour's bus took departure `j` on.
@@ -253,6 +254,8 @@ impl ScheduleSim {
     /// map is loading (a wide window), when a few more buses are put out at once.
     pub fn queue_due(&mut self, world: &dyn TimetableWorld, traffic: &mut TrafficSim, day_time: f64, window: f64) -> bool {
         let tod = day_time - self.day_base;
+        // (the company's control room: phase 5 step 2)
+        self.company_acts(traffic);
         let window = if std::mem::take(&mut self.restarted) { window.max(20.0 * 60.0) } else { window };
         let loading = window > 60.0;
         let due: Vec<usize> = self
@@ -264,8 +267,9 @@ impl ScheduleSim {
             .collect();
         for i in due {
             self.departures[i].spawned = true;
-            // the tour's bus is still on its way here: it takes the trip on when it arrives
-            if self.tour_prev[i].and_then(|k| self.tour_bus(k, traffic)).is_some() {
+            // the tour's bus is still on its way here: it takes the trip on when it arrives (not
+            // where its company's control room swaps a spare bus in: that one comes on its own)
+            if !self.company_swap(i) && self.tour_prev[i].and_then(|k| self.tour_bus(k, traffic)).is_some() {
                 self.awaiting.insert(i);
                 continue;
             }

@@ -87,11 +87,7 @@ impl TimetableCompany for crate::company_live::CompanyLive {
     /// file, else the company's (None: not the company's tour, or a rental bus).
     fn bus(&mut self, root: &Path, line: &str, tour: &str) -> Option<CompanyBus> {
         let lt = self.tour(line, tour)?.clone();
-        let ty = self.vehicle_type(root, &lt.bus)?;
-        let depot = Some(lt.hof.trim().to_string()).filter(|h| !h.is_empty()).or_else(|| self.depot().map(str::to_string));
-        let hof = depot.and_then(|name| depot_file(&mut self.hofs, ty.def.dir(), &name));
-        let scheme = if lt.paint.trim().is_empty() { None } else { ty.paint_schemes.iter().position(|s| s.name.trim().eq_ignore_ascii_case(lt.paint.trim())) };
-        Some(CompanyBus { ty, number: (lt.fleet_number.clone(), lt.plate.clone()), hof, scheme })
+        company_bus(self, root, &lt)
     }
     fn keeps_off_departure(&self, line: &str, tour: &str, dep: i32) -> bool {
         crate::company_live::CompanyLive::keeps_off_departure(self, line, tour, dep)
@@ -99,6 +95,32 @@ impl TimetableCompany for crate::company_live::CompanyLive {
     fn drops_left(&self, line: &str) -> bool {
         crate::company_live::CompanyLive::drops_left(self, line)
     }
+    fn express(&self, line: &str, tour: &str, dep: i32) -> bool {
+        self.tour(line, tour).is_some_and(|t| t.runs_express(dep))
+    }
+    fn swaps_at(&self, line: &str, tour: &str, dep: i32) -> bool {
+        self.tour(line, tour).is_some_and(|t| t.swaps_at(dep))
+    }
+    /// (Phase 5 step 2) The spare bus its control room swapped in at `dep` or before, in its
+    /// paint, with its fleet number and plate; else the tour's own.
+    fn bus_at(&mut self, root: &Path, line: &str, tour: &str, dep: i32) -> Option<CompanyBus> {
+        let lt = self.tour(line, tour)?.clone();
+        let lt = match lt.swap_for(dep).cloned() {
+            Some(sw) => omsi_launcher_lib::company::plan::LiveTour { vehicle: Some(sw.vehicle), bus: sw.bus, paint: sw.paint, fleet_number: sw.fleet_number, plate: sw.plate, ..lt },
+            None => lt,
+        };
+        company_bus(self, root, &lt)
+    }
+}
+
+/// The company's bus of a tour as its plan has it (`lt`): its file, paint, fleet number and
+/// plate, carrying the line's depot file, else the company's.
+fn company_bus(c: &mut crate::company_live::CompanyLive, root: &Path, lt: &omsi_launcher_lib::company::plan::LiveTour) -> Option<CompanyBus> {
+    let ty = c.vehicle_type(root, &lt.bus)?;
+    let depot = Some(lt.hof.trim().to_string()).filter(|h| !h.is_empty()).or_else(|| c.depot().map(str::to_string));
+    let hof = depot.and_then(|name| depot_file(&mut c.hofs, ty.def.dir(), &name));
+    let scheme = if lt.paint.trim().is_empty() { None } else { ty.paint_schemes.iter().position(|s| s.name.trim().eq_ignore_ascii_case(lt.paint.trim())) };
+    Some(CompanyBus { ty, number: (lt.fleet_number.clone(), lt.plate.clone()), hof, scheme })
 }
 
 /// Every company of a dedicated server (Bus Company Online, `company_live::ServerCompanies`):
@@ -133,6 +155,15 @@ impl TimetableCompany for crate::company_live::ServerCompanies {
     }
     fn owner(&self, line: &str) -> Option<String> {
         self.owner_id(line)
+    }
+    fn express(&self, line: &str, tour: &str, dep: i32) -> bool {
+        self.owner_of(line).is_some_and(|k| TimetableCompany::express(&self.companies[k], line, tour, dep))
+    }
+    fn swaps_at(&self, line: &str, tour: &str, dep: i32) -> bool {
+        self.owner_of(line).is_some_and(|k| TimetableCompany::swaps_at(&self.companies[k], line, tour, dep))
+    }
+    fn bus_at(&mut self, root: &Path, line: &str, tour: &str, dep: i32) -> Option<CompanyBus> {
+        TimetableCompany::bus_at(self.company_of(line)?, root, line, tour, dep)
     }
 }
 

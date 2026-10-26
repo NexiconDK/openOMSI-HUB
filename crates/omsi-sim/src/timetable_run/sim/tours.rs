@@ -860,6 +860,82 @@ mod tests {
         }
     }
 
+    /// A company whose control room acts (Bus Company Online phase 5 step 2): the departures it
+    /// cancelled, runs out of service, and swaps a spare bus in at (minutes of the day).
+    #[derive(Clone, Default)]
+    struct Room(std::sync::Arc<std::sync::Mutex<(Vec<i32>, Vec<i32>, Vec<i32>)>>);
+    impl TimetableCompany for Room {
+        fn active(&self) -> bool {
+            true
+        }
+        fn own_only(&self) -> bool {
+            false
+        }
+        fn set_day(&mut self, _: i32) {}
+        fn keeps_off(&self, _: &str, _: &str, _: bool) -> bool {
+            false
+        }
+        fn runs_tour(&self, _: &str, _: &str) -> bool {
+            true
+        }
+        fn report(&mut self, _: usize, _: &str, _: &str, _: i32, _: f64, _: usize, _: f64) {}
+        fn bus(&mut self, _: &Path, _: &str, _: &str) -> Option<CompanyBus> {
+            None
+        }
+        fn keeps_off_departure(&self, _: &str, _: &str, dep: i32) -> bool {
+            self.0.lock().unwrap().0.contains(&dep)
+        }
+        fn express(&self, _: &str, _: &str, dep: i32) -> bool {
+            self.0.lock().unwrap().1.contains(&dep)
+        }
+        fn swaps_at(&self, _: &str, _: &str, dep: i32) -> bool {
+            self.0.lock().unwrap().2.contains(&dep)
+        }
+    }
+
+    /// (NexiconDK, Bus Company Online phase 5 step 2) What a company's control room does reaches
+    /// the world's buses: a spare bus swapped in at a departure - the tour's bus does not take it
+    /// on, and it does not wait for that bus -; a trip cancelled - its bus goes back to the depot
+    /// when the plan is taken in again, only a trip newly cancelled, and it leaves the queues -;
+    /// a trip run out of service.
+    #[test]
+    fn the_control_rooms_acts_reach_the_buses_on_the_road() {
+        let w = World { path: std::env::temp_dir().join(format!("omsi_control_room_{}", std::process::id())), ai: Default::default(), positions: Default::default() };
+        let mut s = ScheduleSim::new(&w.path, &w, &crate::SimClock::default());
+        s.data.trips.push(omsi_timetable::Trip { name: "5a".into(), line: "Linie5".into(), stations: vec![1, 2], ..Default::default() });
+        let d = |h: f64| Departure { time: h * 3600.0, trip: 0, profile: 0, line: "Linie5".into(), ai_group: "depot".into(), tour: "3".into(), mask: -1, spawned: false, yesterday: false };
+        s.departures = vec![d(8.0), d(9.0), d(10.0), d(11.0), d(12.0)];
+        s.company_off = vec![false; 5];
+        let room = Room::default();
+        s.set_company(Box::new(room.clone()));
+        let mut traffic = crate::sim_thread::empty_traffic();
+        // a spare bus at the 10:00: the tour's bus does not take it on; the 11:00 it would
+        room.0.lock().unwrap().2.push(600);
+        assert!(s.company_swap(2) && !s.company_swap(3));
+        assert!(!s.may_take_on(2, 9.9 * 3600.0) && s.may_take_on(3, 10.9 * 3600.0));
+        // the 9:00 under way (bus 77) cancelled, the 12:00 waiting in the queue too
+        s.car_departure.insert(77, 1);
+        s.car_departure.insert(78, 0);
+        s.pending.push_back(4);
+        room.0.lock().unwrap().0.extend([540, 720]);
+        s.reload_company();
+        assert_eq!(s.purge_company, vec![1, 4]);
+        assert!(!s.may_take_on(4, 11.9 * 3600.0), "nobody takes a cancelled trip on");
+        s.company_acts(&mut traffic);
+        assert!(!s.car_departure.contains_key(&77) && s.car_departure.contains_key(&78), "the bus of the trip cancelled only");
+        assert!(s.pending.is_empty() && s.purge_company.is_empty());
+        // (taken in again with nothing new: nothing goes)
+        s.car_departure.insert(79, 2);
+        s.reload_company();
+        assert!(s.purge_company.is_empty());
+        s.company_acts(&mut traffic);
+        assert!(s.car_departure.contains_key(&79));
+        // the 10:00 run out of service: once
+        room.0.lock().unwrap().1.push(600);
+        s.company_acts(&mut traffic);
+        assert!(s.expressed.contains(&2) && !s.expressed.contains(&0));
+    }
+
     /// LAN play (NexiconDK, Bus Company Online phase 3 step 3): a player's duty that is a part
     /// of a tour takes only its trips from the AI - those before it and after it stay the AI's
     /// (the whole tour used to leave the AI); given up halfway, its later trips run again, or

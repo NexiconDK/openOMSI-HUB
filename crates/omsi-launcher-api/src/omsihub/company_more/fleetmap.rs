@@ -513,7 +513,9 @@ fn world_place(live: &mut Live, wb: &WorldBus, b: &Block, tp: &co::day::TourPlan
     live.at = Some(world_at(wb.x, wb.y, wb.heading, if wb.at_stop || wb.layover { 0.0 } else { wb.speed_kmh }, age, origin));
     live.heading = wb.heading.rem_euclid(360.0);
     live.delay = wb.delay;
-    if let Some(j) = tp.tour.trips.iter().position(|x| x.whole_dep().rem_euclid(1440) == wb.dep.rem_euclid(1440)).filter(|j| *j < b.trips.len()) {
+    let on = |x: &co::network::PlannedTrip| (x.whole_dep() - wb.dep).rem_euclid(1440) <= 1 || (wb.dep - x.whole_dep()).rem_euclid(1440) <= 1;
+    let j = tp.tour.trips.iter().position(|x| same(&x.name, &wb.trip) && on(x)).or_else(|| tp.tour.trips.iter().position(on));
+    if let Some(j) = j.filter(|j| *j < b.trips.len()) {
         live.trip = j;
     }
     let counts = tp.tour.trips.get(live.trip).is_some_and(|x| x.counts());
@@ -662,7 +664,9 @@ pub fn view(s: &mut Session, _args: &Value) -> Value {
             if tele.is_none() {
                 tele = m.world.as_ref().and_then(|w| w.player(&b.line, &b.tour)).map(|p| Telemetry { at: world_at(p.x, p.y, p.heading, p.speed_kmh, age, origin), heading: p.heading.rem_euclid(360.0), delay: None, passengers: Some(p.passengers as f64), speed: p.speed_kmh, line: b.number.clone(), tour: b.tour.clone() });
             }
-            let world_bus = if tele.is_some() { None } else { m.world.as_ref().and_then(|w| w.bus(&b.line, &b.tour)) };
+            // (by a trip of the block and its departure: a block of the scheduling studio may
+            // run tours of the timetable under other names - else by its line and tour)
+            let world_bus = if tele.is_some() { None } else { m.world.as_ref().and_then(|w| tp.tour.trips.iter().find_map(|x| w.bus_on(&x.name, x.whole_dep())).or_else(|| w.bus(&b.line, &b.tour))) };
             if let Some(wb) = world_bus {
                 world_place(&mut live, wb, b, tp, origin, age);
             }
@@ -962,6 +966,7 @@ fn notes_of(c: &Company, tp: &co::day::TourPlan, mk: &Marker, clock: f64) -> Vec
             Act::Layover { saved } => trf("Service control: layover %{m} min shorter before the %{time} trip", &[("m", &saved.to_string()), ("time", &time)]),
             Act::Swap { vehicle, from_bus } => trf("Service control: bus %{spare} took over from bus %{bus} from the %{time} trip", &[("spare", &bus_no(vehicle)), ("bus", &bus_no(from_bus)), ("time", &time)]),
             Act::Cover { duty, from } => trf("Service control: duty %{n} covered from %{time}", &[("n", &(duty + 1).to_string()), ("time", &hm(from))]),
+            Act::Cancel => trf("Service control: the %{time} trip cancelled", &[("time", &time)]),
         };
         out.push(json!({ "icon": "support_agent", "tone": "accent", "text": text }));
     }

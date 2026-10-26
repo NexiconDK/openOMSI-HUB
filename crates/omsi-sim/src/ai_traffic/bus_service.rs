@@ -136,6 +136,9 @@ pub struct BusService {
     /// The terminus of its trip, the name the waiting people read off it (Omsi.exe's bus
     /// +0x7bc) to see whether it goes their way.
     pub terminus: String,
+    /// (NexiconDK, Bus Company Online phase 5 step 2) Its company's control room runs the rest of
+    /// the trip out of service to the terminus: it stops nowhere on the way (a new trip ends it).
+    pub express: bool,
     /// How far the front stop was last frame (m; infinite when not measured yet).
     near_d: f32,
     /// Whether it serves the front stop, once that is settled (`SKIP_DECIDE`).
@@ -385,6 +388,7 @@ impl BusService {
             layover: false,
             route_open: false,
             terminus: String::new(),
+            express: false,
             near_d: f32::INFINITY,
             serve: None,
             last_stop: None,
@@ -488,6 +492,7 @@ impl BusService {
         self.boarded = false;
         self.layover = layover;
         self.put_out = false;
+        self.express = false;
         // (the berths it held are given back by `TrafficSim::reroute`)
         self.held = None;
         self.behind = false;
@@ -845,7 +850,9 @@ impl BusService {
             // near enough to see whether anybody wants it (a train keeps to its stations)
             if self.serve.is_none() && d < SKIP_DECIDE {
                 let rail = ctx.net.lanes.get(st.lane).is_some_and(|l| l.kind == LaneKind::Rail);
-                self.serve = Some(rail || self.must_serve(&stop, ctx.day_time) || ctx.wanted.unwrap_or(true));
+                // (run out of service: none but its terminus)
+                let last = (self.stops.len() == 1 && !self.route_open) || self.last_stop == Some(stop.id);
+                self.serve = Some(if self.express && !last { false } else { rail || self.must_serve(&stop, ctx.day_time) || ctx.wanted.unwrap_or(true) });
             }
             if self.serve == Some(false) {
                 if ctx.debug || omsi_cfg::flags::OMSI_DEBUG_STOPS.is_set() {

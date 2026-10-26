@@ -156,3 +156,10 @@ _version: 2
   pl: "Pozycja na żywo ze świata serwera"
   ru: "Положение в реальном времени из мира сервера"
   uk: "Положення в реальному часі зі світу сервера"
+"Service control: the %{time} trip cancelled":
+  de: "Betriebsleitung: die Fahrt um %{time} gestrichen"
+  fr: "Régulation : trajet de %{time} supprimé"
+  nl: "Verkeersleiding: de rit van %{time} geschrapt"
+  pl: "Dyspozytor: kurs o %{time} odwołany"
+  ru: "Диспетчер: рейс в %{time} отменён"
+  uk: "Диспетчер: рейс о %{time} скасовано"

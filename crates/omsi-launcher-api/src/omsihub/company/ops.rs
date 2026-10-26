@@ -108,6 +108,7 @@ fn act_short(c: &Company, act: &Act) -> String {
         Act::Layover { .. } => tr("Shorter layover"),
         Act::Swap { vehicle, .. } => trf("Spare bus %{bus}", &[("bus", &bus_number(c, Some(vehicle)))]),
         Act::Cover { .. } => tr("Late driver covered"),
+        Act::Cancel => tr("Cancel the trip"),
     }
 }
 
@@ -119,6 +120,7 @@ fn act_label(c: &Company, dp: &DayPlan, act: &Act, dep: i32) -> (String, &'stati
         Act::Layover { saved } => (trf("Shorten the layover before the %{time} trip by %{min} min", &[("time", &time), ("min", &saved.to_string())]), "timer"),
         Act::Swap { vehicle, .. } => (trf("Swap in spare bus %{bus} at the terminus for the %{time} trip", &[("bus", &bus_number(c, Some(*vehicle))), ("time", &time)]), "sync_alt"),
         Act::Cover { .. } => (String::new(), "person"),
+        Act::Cancel => (trf("Cancel the %{time} trip: nobody runs it, the bus takes the next on time", &[("time", &time)]), "block"),
     }
 }
 
@@ -469,6 +471,7 @@ fn what_of(c: &Company, act: &Act) -> String {
         Act::Layover { .. } => tr("Shorter layover"),
         Act::Swap { vehicle, .. } => trf("Spare bus %{bus} swapped in", &[("bus", &bus_number(c, Some(vehicle)))]),
         Act::Cover { .. } => tr("Late driver covered"),
+        Act::Cancel => tr("Trip cancelled"),
     }
 }
 

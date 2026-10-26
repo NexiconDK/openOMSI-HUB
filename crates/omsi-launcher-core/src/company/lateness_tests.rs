@@ -260,3 +260,33 @@ fn the_second_part_of_a_trip_cut_at_a_relief_point_is_the_same_trip() {
     assert!(!o.carried());
     assert!(advice(&c, &Lateness { trips: vec![o], ..Default::default() }).is_empty());
 }
+
+/// (NexiconDK, Bus Company Online phase 5 step 2) The map's world runs the company's buses: the
+/// trip its bus is on there runs as late as the world says and the trips ahead carry it; one
+/// waiting at its first stop leaves now at the latest; the close (no clock) is the model's own.
+#[test]
+fn the_worlds_bus_is_as_late_as_the_world_says() {
+    use crate::company::world_live::{WorldBus, WorldSeen};
+    let (mut c, bus, driver) = company();
+    let p = plan(6 * 60, 3, 10, bus, driver);
+    let date = c.date.clone();
+    let own = |_: usize, _: usize| 0.0;
+    let at = |c: &Company, now: Option<i32>| model_with(c, &p, &date, &[], &[], now, Some(&own));
+    assert_eq!(at(&c, Some(6 * 60 + 30))[0][0].as_ref().unwrap().minutes(), 0);
+    // 25 minutes late on its 06:00 trip, the world says at 06:30
+    c.online.world = WorldSeen { buses: vec![WorldBus { trip: "t360".into(), dep: 360, delay: 25.0 * 60.0, ..Default::default() }], players: Vec::new() };
+    let m = at(&c, Some(6 * 60 + 30));
+    let t0 = m[0][0].as_ref().unwrap();
+    assert!(t0.known);
+    assert_eq!(t0.minutes(), 25);
+    // (the 07:00 after 10 minutes' layover, 3 of them kept: 18 late)
+    assert_eq!(m[0][1].as_ref().unwrap().dep.round() as i32, 18);
+    assert_eq!(at(&c, None)[0][0].as_ref().unwrap().minutes(), 0, "the close: the model's own");
+    // waiting at the first stop of its 07:00 trip at 07:04: it leaves 4 minutes late
+    c.online.world.buses = vec![WorldBus { trip: "t420".into(), dep: 420, layover: true, ..Default::default() }];
+    let m = at(&c, Some(7 * 60 + 4));
+    assert_eq!(m[0][1].as_ref().unwrap().dep.round() as i32, 4);
+    // the world not running: the model's own again
+    c.online.world = WorldSeen::default();
+    assert_eq!(at(&c, Some(7 * 60 + 4))[0][1].as_ref().unwrap().dep.round() as i32, 0);
+}

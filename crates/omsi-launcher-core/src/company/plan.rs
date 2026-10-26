@@ -2084,6 +2084,52 @@ pub struct LiveTour {
     /// choice).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub off: Vec<i32>,
+    /// (NexiconDK, Bus Company Online phase 5 step 2: service control's doing that reaches the
+    /// world's bus) Its departures run out of service to the terminus (`control::Act::Express`)
+    /// - a trip it cancelled is among `off` -, and the spare buses swapped in, each from a
+    /// departure on (`control::Act::Swap`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub express: Vec<i32>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub swaps: Vec<LiveSwap>,
+}
+
+/// A spare bus service control swapped in from departure `dep` (minutes of the day) on: its
+/// fleet's bus, file, paint, number and plate (`LiveTour`'s own).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+pub struct LiveSwap {
+    pub dep: i32,
+    pub vehicle: u32,
+    pub bus: String,
+    #[serde(default)]
+    pub paint: String,
+    #[serde(default)]
+    pub fleet_number: String,
+    #[serde(default)]
+    pub plate: String,
+}
+
+impl LiveTour {
+    /// Whether its departure `dep` (minutes of the day; past midnight the day's too) is the
+    /// same as `m`.
+    fn is_dep(m: i32, dep: i32) -> bool {
+        m.rem_euclid(1440) == dep.rem_euclid(1440)
+    }
+
+    /// Departure `dep` runs out of service to the terminus.
+    pub fn runs_express(&self, dep: i32) -> bool {
+        self.express.iter().any(|m| Self::is_dep(*m, dep))
+    }
+
+    /// A spare bus is swapped in at departure `dep`.
+    pub fn swaps_at(&self, dep: i32) -> bool {
+        self.swaps.iter().any(|x| Self::is_dep(x.dep, dep))
+    }
+
+    /// The spare bus that runs departure `dep` (swapped in at it or before; None: its own).
+    pub fn swap_for(&self, dep: i32) -> Option<&LiveSwap> {
+        self.swaps.iter().filter(|x| x.dep <= dep || Self::is_dep(x.dep, dep)).max_by_key(|x| x.dep)
+    }
 }
 
 /// The company's day for the game (`companies/<id>.liveplan.json`).
@@ -2179,6 +2225,20 @@ pub fn live_plan(c: &Company, dp: &DayPlan) -> LivePlan {
             }
             lt.dropped |= t.bus.is_some() && t.duties.iter().all(|d| d.who.is_none());
             lt.off = off.iter().filter(|(l, t, _)| same(l, &lt.line) && same(t, &lt.tour)).map(|x| x.2).collect();
+            // (phase 5 step 2: service control's doing on the block, for the world's bus of it)
+            for x in super::control::of_day(c, &dp.date).into_iter().filter(|x| same(&x.line, &t.tour.line) && same(&x.tour, &t.tour.tour)) {
+                match x.act {
+                    super::control::Act::Cancel => lt.off.push(x.dep),
+                    super::control::Act::Express { .. } => lt.express.push(x.dep),
+                    super::control::Act::Swap { vehicle, .. } => {
+                        if let Some(v) = c.vehicle(vehicle) {
+                            let paint = v.house_livery.clone().filter(|h| !h.trim().is_empty()).unwrap_or_else(|| v.livery.clone());
+                            lt.swaps.push(LiveSwap { dep: x.dep, vehicle, bus: v.bus.clone(), paint, fleet_number: v.number.clone(), plate: v.plate.clone() });
+                        }
+                    }
+                    _ => {}
+                }
+            }
             lt
         })
         .collect();

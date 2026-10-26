@@ -248,7 +248,7 @@ impl Action {
             Act::Express { part, saved } => What::OutOfService { part, saved },
             Act::Layover { saved } => What::Layover { saved },
             Act::Swap { vehicle, from_bus } => What::Swap { vehicle, from_bus },
-            Act::Cover { .. } => return None,
+            Act::Cover { .. } | Act::Cancel => return None,
         };
         Some(Action { line: line.to_string(), tour: tour.to_string(), dep, what })
     }

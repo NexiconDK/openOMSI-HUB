@@ -147,7 +147,7 @@ impl ScheduleSim {
         let mut out = Vec::new();
         for car in &traffic.cars {
             let Some(&i) = self.car_departure.get(&car.id) else { continue };
-            let Some(b) = car.bus.as_ref() else { continue };
+            let Some(b) = car.bus.as_ref().filter(|_| !car.gone) else { continue };
             let d = &self.departures[i];
             // (a company's only: the map's own lines are nobody's control room's)
             let Some(company) = self.line_owner(&d.line) else { continue };

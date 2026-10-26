@@ -91,6 +91,10 @@ pub struct Online {
     pub red_days: u32,
     #[serde(default)]
     pub notices_read: u64,
+    /// (Phase 5 step 2) What the map's world sees of the company's buses now, for service control
+    /// (`world_live::WorldSeen`; set by its process, not kept, never a change).
+    #[serde(skip)]
+    pub world: super::world_live::WorldSeen,
 }
 
 /// The company's share of its players' trips when it is founded (per cent).
@@ -102,7 +106,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default(), red_days: 0, notices_read: 0 }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default() }
     }
 }
 
@@ -582,6 +586,10 @@ impl Host {
             clock::sync(c, real);
             self.dirty = true;
         }
+        // (phase 5 step 2: what the map's world sees of its buses now, for service control)
+        if c.online.on_server {
+            c.online.world = super::world_live::WorldSeen::of(super::world_live::read(&self.data, &c.map, &c.id, real as f64));
+        }
         // what the world reported of the company's buses since: told as it comes
         if self.seen.0 != c.date {
             self.seen = (c.date.clone(), 0);
@@ -634,6 +642,10 @@ impl Host {
         }
         // its time on to the real clock's: a long way as an absence is caught up, else step by
         // step (the dispatcher deciding: nobody is asked on a server)
+        // (phase 5 step 2: what service control does on the way - Casual's controller by himself -
+        // reaches the world's buses with the plan written again)
+        let acts = |c: &Company| c.clock.today.as_ref().map(|t| (t.date.clone(), t.controls.len()));
+        let acts_before = acts(c);
         let now = clock::now(c);
         if let Some(to) = clock::course(c, real).filter(|to| *to > now) {
             if to - now >= clock::AWAY_TOLD {
@@ -644,6 +656,9 @@ impl Host {
                 s.closed = clock::advance(c, to, w, true).map_err(anyhow::Error::msg)?.reports;
             }
             self.dirty = true;
+        }
+        if acts(&self.company) != acts_before {
+            self.planned = None;
         }
         // (a depot's days closed: in the red it is warned, and its head office; then bankrupt)
         for _ in 0..s.closed.len() {

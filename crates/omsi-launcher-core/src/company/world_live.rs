@@ -5,6 +5,10 @@
 //! `live/<map>.json`, whole each time. A company's fleet map (and with it the Operations page)
 //! puts its buses where the world has them while the file is fresh (`FRESH`), else where the
 //! timetable has them: the world is not running, or the bus is not on its roads.
+//!
+//! Step 2: service control sees the same (`WorldSeen`, kept by the company's process in
+//! `Online::world`): a bus the world has on a trip runs as late as the world says
+//! (`lateness::model_with`), the rest as the company's own model has them.
 
 use super::online;
 use anyhow::{Context, Result};
@@ -104,6 +108,41 @@ fn same(a: &str, b: &str) -> bool {
     a.trim().eq_ignore_ascii_case(b.trim())
 }
 
+/// Whether two departures (minutes of the day) are the same: a minute either way (the world's
+/// are its seconds rounded), past midnight too.
+fn same_minute(a: i32, b: i32) -> bool {
+    matches!((a - b).rem_euclid(1440), 0 | 1 | 1439)
+}
+
+/// (Step 2) What the map's world sees of a company's buses now, as its process keeps it for
+/// service control (`Online::world`): not saved, and never a change of the company - two are
+/// always equal -, so the pages are not drawn again for it every couple of seconds. Empty: the
+/// world is not running.
+#[derive(Clone, Debug, Default)]
+pub struct WorldSeen {
+    pub buses: Vec<WorldBus>,
+    pub players: Vec<WorldPlayer>,
+}
+
+impl PartialEq for WorldSeen {
+    fn eq(&self, _: &WorldSeen) -> bool {
+        true
+    }
+}
+
+impl WorldSeen {
+    /// What a company read of the world (`read`; None: the world is not running).
+    pub fn of(w: Option<WorldLive>) -> WorldSeen {
+        w.map(|w| WorldSeen { buses: w.buses, players: w.players }).unwrap_or_default()
+    }
+
+    /// The company's bus on trip `trip` (its timetable name) leaving at minute `dep`, on the
+    /// world's roads now.
+    pub fn bus_on(&self, trip: &str, dep: i32) -> Option<&WorldBus> {
+        self.buses.iter().find(|b| same(&b.trip, trip) && same_minute(b.dep, dep))
+    }
+}
+
 impl WorldLive {
     /// Only company `id`'s buses and players.
     pub fn of(mut self, id: &str) -> WorldLive {
@@ -115,6 +154,11 @@ impl WorldLive {
     /// The timetable bus of tour `tour` of line `line`, on the roads now.
     pub fn bus(&self, line: &str, tour: &str) -> Option<&WorldBus> {
         self.buses.iter().find(|b| same(&b.line, line) && same(&b.tour, tour))
+    }
+
+    /// The timetable bus on trip `trip` (its timetable name) leaving at minute `dep`.
+    pub fn bus_on(&self, trip: &str, dep: i32) -> Option<&WorldBus> {
+        self.buses.iter().find(|b| same(&b.trip, trip) && same_minute(b.dep, dep))
     }
 
     /// The player who drives tour `tour` of line `line` now.
@@ -152,6 +196,17 @@ mod tests {
         assert!(b.bus("Linie6", "1").is_some() && b.players.is_empty());
         assert!(read(&data, "maps/Grundorf/global.cfg", "alpha", 1000.0 + FRESH + 1.0).is_none(), "a world that stopped writing");
         assert!(read(&data, "maps/Ahlheim/global.cfg", "alpha", 1005.0).is_none(), "another map's world");
+        // (step 2: service control's copy, by the trip and its departure - a minute either way)
+        let seen = WorldSeen::of(read(&data, "maps/Grundorf/global.cfg", "alpha", 1005.0));
+        assert!(seen.bus_on("t1", 360).is_none());
+        let mut w2 = w.clone();
+        w2.buses[0].trip = "5_A".into();
+        w2.buses[0].dep = 1441;
+        write(&data, &w2).unwrap();
+        let seen = WorldSeen::of(read(&data, "maps/Grundorf/global.cfg", "alpha", 1005.0));
+        assert!(seen.bus_on("5_a", 1).is_some() && seen.bus_on("5_A", 0).is_some() && seen.bus_on("5_A", 2).is_some() && seen.bus_on("5_A", 3).is_none());
+        assert!(seen == WorldSeen::default(), "never a change of the company");
+        assert!(WorldSeen::of(None).buses.is_empty());
         let _ = std::fs::remove_dir_all(&data);
     }
 }

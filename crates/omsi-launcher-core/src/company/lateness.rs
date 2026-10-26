@@ -262,6 +262,10 @@ pub fn model_with(c: &Company, plan: &Plan, date: &str, cut: &[Cut], controls: &
             if day::why_not(c, tp, hk, head, broken_at).is_some() {
                 continue;
             }
+            // (a trip service control cancelled: nobody runs it, the bus is free for the next)
+            if mine.iter().any(|m| m.act == Act::Cancel && m.dep == tp.tour.trips[head].dep) {
+                continue;
+            }
             let here: Vec<&Control> = mine.iter().copied().filter(|m| m.dep == x.dep).collect();
             // (the controller swapped a bus in from this trip on: it runs the rest of the block)
             let swap = here.iter().find_map(|m| if let Act::Swap { vehicle, .. } = m.act { Some(vehicle) } else { None });
@@ -342,6 +346,20 @@ pub fn model_with(c: &Company, plan: &Plan, date: &str, cut: &[Cut], controls: &
                     _ => {}
                 }
             }
+            // (NexiconDK, Bus Company Online phase 5 step 2: the map's world runs the company's
+            // buses - its bus on this trip now, as the world has it: waiting at its first stop it
+            // leaves now at the latest, under way it is as late as the world says and its own
+            // minutes from here are not drawn; the trips ahead carry that. `world_live`)
+            let mut world_late: Option<f64> = None;
+            if let Some((m, wb)) = now.and_then(|m| c.online.world.bus_on(&x.name, x.whole_dep()).map(|wb| (m, wb))) {
+                if wb.layover {
+                    dep_delay = (m - x.dep).max(0) as f64;
+                } else {
+                    let w = wb.delay / 60.0;
+                    dep_delay = dep_delay.min(w.max(0.0));
+                    world_late = Some(w);
+                }
+            }
             let mut causes: Vec<Cause> = Vec::new();
             let mut earlier: Vec<Cause> = Vec::new();
             let mut roots: Vec<(&'static str, f64)> = Vec::new();
@@ -374,7 +392,7 @@ pub fn model_with(c: &Company, plan: &Plan, date: &str, cut: &[Cut], controls: &
                 }
             }
             // on the way (known once the trip has begun)
-            let known = now.is_none_or(|m| x.dep as f64 + dep_delay <= m as f64);
+            let known = world_late.is_some() || now.is_none_or(|m| x.dep as f64 + dep_delay <= m as f64);
             let run = (x.arr - x.dep).max(1) as f64;
             let counts = x.counts();
             let mut rng = Rng::of(&[&c.id, "running", &tp.tour.line, &tp.tour.tour], day * 1440 + x.dep as i64);
@@ -384,9 +402,10 @@ pub fn model_with(c: &Company, plan: &Plan, date: &str, cut: &[Cut], controls: &
             let worn = v.map_or(0.0, |v| run * (1.0 - v.condition / 100.0).max(0.0) * 0.06 * factor);
             let events = run * event * 0.4;
             let chance = run * rng.range(-0.03, 0.05) * factor;
-            let parts = match own {
-                Some(f) => [(f(ti, j), Cause::Chance { minutes: 0 }), (0.0, Cause::Traffic { peak, minutes: 0 }), (0.0, Cause::Driver { driver: id, minutes: 0 }), (0.0, Cause::Bus { bus, minutes: 0 }), (0.0, Cause::Event { minutes: 0 })],
-                None => [(traffic, Cause::Traffic { peak, minutes: 0 }), (slow, Cause::Driver { driver: id, minutes: 0 }), (worn, Cause::Bus { bus, minutes: 0 }), (events, Cause::Event { minutes: 0 }), (chance, Cause::Chance { minutes: 0 })],
+            let parts = match (world_late, own) {
+                (Some(w), _) => [(w - dep_delay, Cause::Traffic { peak, minutes: 0 }), (0.0, Cause::Driver { driver: id, minutes: 0 }), (0.0, Cause::Bus { bus, minutes: 0 }), (0.0, Cause::Event { minutes: 0 }), (0.0, Cause::Chance { minutes: 0 })],
+                (None, Some(f)) => [(f(ti, j), Cause::Chance { minutes: 0 }), (0.0, Cause::Traffic { peak, minutes: 0 }), (0.0, Cause::Driver { driver: id, minutes: 0 }), (0.0, Cause::Bus { bus, minutes: 0 }), (0.0, Cause::Event { minutes: 0 })],
+                (None, None) => [(traffic, Cause::Traffic { peak, minutes: 0 }), (slow, Cause::Driver { driver: id, minutes: 0 }), (worn, Cause::Bus { bus, minutes: 0 }), (events, Cause::Event { minutes: 0 }), (chance, Cause::Chance { minutes: 0 })],
             };
             let mut arr_delay = dep_delay;
             if known {

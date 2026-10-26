@@ -138,6 +138,11 @@ fn step(s: &mut Session, host: &mut Host, data: &Path) -> bool {
         s.company = Some(host.company.clone());
         changed = true;
     }
+    // (phase 5 step 2: what the map's world sees of its buses, for service control's pages -
+    // never a change of the company by itself, `world_live::WorldSeen`)
+    if let Some(c) = s.company.as_mut() {
+        c.online.world = host.company.online.world.clone();
+    }
     // (phase 3: the trips its players drove in the map's world, as the world took them: booked,
     // their pay for the main server to pay)
     let read = host.company.online.world_trips_read;

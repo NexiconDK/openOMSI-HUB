@@ -246,7 +246,7 @@ pub fn enabled() -> bool {
 
 /// An empty traffic: nothing on the road, no lanes. It stands in `Traffic::sim` while the real
 /// one is stepped on the sim thread (nothing of the frame looks at the traffic then).
-fn empty_traffic() -> TrafficSim {
+pub(crate) fn empty_traffic() -> TrafficSim {
     TrafficSim::assemble(
         std::path::Path::new(""),
         Default::default(),

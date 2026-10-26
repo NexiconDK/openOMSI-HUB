@@ -96,6 +96,10 @@ pub enum Act {
     /// Someone covers the first trips of duty `duty` (its driver is late) from minute `from`
     /// (who: the planning's choice, `plan::late_key`).
     Cover { duty: usize, from: i32 },
+    /// (NexiconDK, Bus Company Online phase 5) The trip is cancelled: nobody runs it - its
+    /// passengers lost, on a contract the journey not run -, and the bus takes its next trip on
+    /// from there, on time. On the server the world's bus of it goes back to the depot.
+    Cancel,
 }
 
 impl Act {
@@ -106,6 +110,7 @@ impl Act {
             Act::Layover { .. } => "layover",
             Act::Swap { .. } => "swap",
             Act::Cover { .. } => "cover",
+            Act::Cancel => "cancel",
         }
     }
 }
@@ -174,6 +179,11 @@ pub fn cover_from(c: &Company, date: &str, line: &str, tour: &str, duty: usize) 
 
 pub(super) fn same(a: &str, b: &str) -> bool {
     a.trim().eq_ignore_ascii_case(b.trim())
+}
+
+/// Whether service control cancelled the trip of a tour on `date` leaving at `dep` (`Act::Cancel`).
+pub fn cancelled(c: &Company, date: &str, line: &str, tour: &str, dep: i32) -> bool {
+    script(c, date).is_some_and(|s| s.controls.iter().any(|x| x.act == Act::Cancel && x.dep == dep && same(&x.line, line) && same(&x.tour, tour)))
 }
 
 /// What the controller did on `date` (the company's clock's day; none on another).
@@ -424,6 +434,16 @@ pub fn live(c: &Company, dp: &DayPlan) -> Live {
             if let Act::Swap { vehicle, .. } = act {
                 e.cost += swap_cost(c, vehicle);
             }
+            // (a trip cancelled: itself lost - the contract's penalty, its passengers' fares, the
+            // reputation)
+            if let (Act::Cancel, Some(trip)) = (act, t.tour.trips.iter().find(|x| x.dep == dep)) {
+                let line = line_of(c, &t.tour);
+                let fare = line.map_or(0.0, |l| super::fares::per_passenger(c, l));
+                e.lost_trips += 1;
+                e.penalty += drop_cost(c, &t.tour, trip);
+                e.parts_cost += (super::income::expected(line, &c.date, trip.dep, trip.arr) * fare).round() as Cents;
+                e.rep += REP_DROP;
+            }
             let gain = nothing.score() - e.score();
             options.push(Opt { dep, act, effect: e, gain, best: false });
         };
@@ -452,6 +472,10 @@ pub fn live(c: &Company, dp: &DayPlan) -> Live {
                 if gap >= 1 {
                     consider(tn.dep, Act::Layover { saved: MIN_LAYOVER.min(gap) });
                 }
+                // the trip cancelled: the bus takes the next on from there
+                if ta.counts() {
+                    consider(ta.dep, Act::Cancel);
+                }
             }
         }
         // a spare bus at the terminus, for the first trip it can be there for
@@ -465,7 +489,8 @@ pub fn live(c: &Company, dp: &DayPlan) -> Live {
             }
         }
         if !realistic {
-            if let Some(o) = options.iter_mut().filter(|o| o.gain > 0.0).max_by(|x, y| x.gain.partial_cmp(&y.gain).unwrap_or(std::cmp::Ordering::Equal)) {
+            // (a trip cancelled is the controller's to choose, never his suggestion)
+            if let Some(o) = options.iter_mut().filter(|o| o.gain > 0.0 && o.act != Act::Cancel).max_by(|x, y| x.gain.partial_cmp(&y.gain).unwrap_or(std::cmp::Ordering::Equal)) {
                 o.best = true;
             }
         }
@@ -562,6 +587,7 @@ const SHORT_TURNED: &str = "Bus %{bus} on line %{n} turns back early on the %{ti
 const EXPRESSED: &str = "Bus %{bus} on line %{n} runs out of service to the terminus on the %{time} trip";
 const LAYOVER_CUT: &str = "Bus %{bus} on line %{n} takes a shorter layover before the %{time} trip";
 const SWAPPED: &str = "Bus %{spare} takes over from bus %{bus} on line %{n} from the %{time} trip";
+const CANCELLED: &str = "Bus %{bus} on line %{n}: the %{time} trip is cancelled";
 const COVERED: &str = "%{name} drives the first trips of line %{n} tour %{tour} from %{time}";
 const AGENCY_COVERS: &str = "An agency driver drives the first trips of line %{n} tour %{tour} from %{time}";
 const SPARE_COVERS: &str = "The driver of spare line %{spare} drives the first trips of line %{n} tour %{tour} from %{time}";
@@ -573,7 +599,7 @@ pub const LATE_TEXT: &str = "Line %{n} tour %{tour}: %{min} minutes behind. Left
 
 /// The words service control tells (for their translations).
 pub fn texts() -> Vec<&'static str> {
-    vec![SHORT_TURNED, EXPRESSED, LAYOVER_CUT, SWAPPED, COVERED, AGENCY_COVERS, SPARE_COVERS, BACK_ON_TIME, BY_CONTROLLER, LATE_FEED, LATE_TITLE, LATE_TEXT]
+    vec![SHORT_TURNED, EXPRESSED, LAYOVER_CUT, SWAPPED, CANCELLED, COVERED, AGENCY_COVERS, SPARE_COVERS, BACK_ON_TIME, BY_CONTROLLER, LATE_FEED, LATE_TITLE, LATE_TEXT]
 }
 
 fn number(c: &Company, id: Option<u32>) -> String {
@@ -600,6 +626,7 @@ pub fn apply(c: &mut Company, dp: &DayPlan, ti: usize, dep: i32, act: Act, auto:
         Act::Express { .. } => (EXPRESSED, vec![ck::arg("bus", number(c, bus)), ck::arg("n", &t.tour.number), ck::arg("time", time(dep))]),
         Act::Layover { .. } => (LAYOVER_CUT, vec![ck::arg("bus", number(c, bus)), ck::arg("n", &t.tour.number), ck::arg("time", time(dep))]),
         Act::Swap { vehicle, .. } => (SWAPPED, vec![ck::arg("spare", number(c, Some(vehicle))), ck::arg("bus", number(c, bus)), ck::arg("n", &t.tour.number), ck::arg("time", time(dep))]),
+        Act::Cancel => (CANCELLED, vec![ck::arg("bus", number(c, bus)), ck::arg("n", &t.tour.number), ck::arg("time", time(dep))]),
         Act::Cover { .. } => return None,
     };
     let s = c.clock.today.as_mut()?;
@@ -838,6 +865,49 @@ mod tests {
         s.busy = vec![(bus, t.from(), t.to())];
         s.controls.push(x.clone());
         assert_eq!(busy(s), vec![(bus, t.from(), x.dep), (9, x.dep, t.to())]);
+    }
+
+    /// (NexiconDK, Bus Company Online phase 5 step 2) A trip cancelled is not run and the bus
+    /// takes the next on, on time; it is offered for a bus running late - here as late as the
+    /// map's world says - but never the controller's suggestion, and costs the trip; the world's
+    /// plan carries what service control did that reaches its buses.
+    #[test]
+    fn a_trip_cancelled_is_not_run_and_the_bus_takes_the_next_on_time() {
+        use crate::company::world_live::{WorldBus, WorldSeen};
+        let (mut c, p, bus, driver) = day();
+        let t = p.tours[0].tour.clone();
+        let x = control(&p, 1, Act::Cancel);
+        let d = run(&c, &p, None, &[&x]);
+        assert!(d[0].runs && !d[1].runs && d[2].runs);
+        assert_eq!((d[0].late, d[2].start, d[3].start), (20, 0, 0));
+        // a bus 20 minutes late on its 06:00 trip, as the world has it at 06:40
+        c.game_mode = GameMode::Normal;
+        c.clock.minute = 6 * 60 + 40;
+        c.online.world = WorldSeen { buses: vec![WorldBus { trip: t.trips[0].name.clone(), dep: t.trips[0].dep, delay: 20.0 * 60.0, ..Default::default() }], players: Vec::new() };
+        let duty = plan::DayDuty { start: 0, end: 4, from: t.from(), to: t.to(), who: Some(Who::Staff(driver)), ..Default::default() };
+        let dp = DayPlan { date: c.date.clone(), today: true, tours: vec![DayTour { tour: t.clone(), bus: Some(BusOf::Own(bus)), duties: vec![duty], ..Default::default() }], ..Default::default() };
+        let lv = live(&c, &dp);
+        assert_eq!(lv.buses.len(), 1);
+        assert_eq!(lv.buses[0].minutes, 20);
+        let cancel = lv.buses[0].options.iter().find(|o| o.act == Act::Cancel).expect("offered");
+        assert_eq!(cancel.dep, t.trips[0].dep);
+        assert!(!cancel.best, "never the suggestion");
+        assert!(cancel.effect.lost_trips >= 1 && cancel.effect.rep >= REP_DROP);
+        // done: kept with the day, told; the close and the world know it
+        assert!(!cancelled(&c, &c.date.clone(), &t.line, &t.tour, t.trips[0].dep));
+        let (text, _) = apply(&mut c, &dp, 0, t.trips[0].dep, Act::Cancel, false, &mut Run::default()).unwrap();
+        assert_eq!(text, CANCELLED);
+        assert!(cancelled(&c, &c.date.clone(), "linie5", &t.tour, t.trips[0].dep));
+        apply(&mut c, &dp, 0, t.trips[1].dep, Act::Express { part: 0.5, saved: 5 }, false, &mut Run::default()).unwrap();
+        apply(&mut c, &dp, 0, t.trips[2].dep, Act::Swap { vehicle: bus, from_bus: bus }, false, &mut Run::default()).unwrap();
+        let lp = plan::live_plan(&c, &dp);
+        let lt = &lp.tours[0];
+        assert_eq!((lt.off.clone(), lt.express.clone()), (vec![t.trips[0].dep], vec![t.trips[1].dep]));
+        assert_eq!(lt.swaps.len(), 1);
+        assert_eq!((lt.swaps[0].dep, lt.swaps[0].vehicle, lt.swaps[0].bus.as_str()), (t.trips[2].dep, bus, "Vehicles/Citaro/Citaro.bus"));
+        assert!(lt.runs_express(t.trips[1].dep + 1440) && !lt.runs_express(t.trips[2].dep));
+        assert!(lt.swaps_at(t.trips[2].dep) && !lt.swaps_at(t.trips[3].dep));
+        assert!(lt.swap_for(t.trips[3].dep).is_some() && lt.swap_for(t.trips[1].dep).is_none());
     }
 
     #[test]

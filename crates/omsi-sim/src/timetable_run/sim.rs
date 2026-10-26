@@ -257,6 +257,13 @@ pub struct ScheduleSim {
     /// Per departure: kept off the road for the player's bus company
     /// (`TimetableCompany::keeps_off`), worked out with the day's plan.
     company_off: Vec<bool>,
+    /// (NexiconDK, Bus Company Online phase 5 step 2) The departures the company's plan, taken
+    /// in again, keeps off the road that it did not before (its control room cancelled the
+    /// trip): a bus on one goes back to its depot at the next tick.
+    purge_company: Vec<usize>,
+    /// The departures whose bus runs out of service to the terminus already
+    /// (`TimetableCompany::express`).
+    expressed: HashSet<usize>,
     /// Mixed into the draw of a tour's vehicle, so that a tour gets another of its depot's
     /// buses from session to session, as in OMSI (the session's seed; a LAN game's shared
     /// one, `set_lan_seed`). Hashing the tour alone sent the same bus out on it every time

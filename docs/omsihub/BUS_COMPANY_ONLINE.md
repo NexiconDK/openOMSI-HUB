@@ -592,10 +592,40 @@ else where the timetable has them."
 Tested: `world_live::tests::a_company_sees_its_own_buses_while_the_world_writes`,
 `fleetmap::tests::a_bus_of_the_world_is_driven_on_between_its_writes`.
 
-### Step 2 (next): interventions on the world's AI buses
+### Step 2: service control on the world's buses
 
-The control room's acts (turn back early, out of service to the terminus, a shorter layover, a
-bus swapped in, a trip dropped) reach the AI bus in the world, not only the company's model.
+Decided 26 October 2026: while the world runs, service control's delays and alerts are the
+world's; the acts that reach the world's AI bus: out of service to the terminus, a trip
+cancelled, a spare bus swapped in at the terminus (not the short-turn). Without the world the
+company's own model runs as ever - the timetable with the delays it draws.
+
+- **The world's delays**: the company's process keeps what the world sees of its buses
+  (`world_live::WorldSeen` in `Online::world`, read each step; not saved, never a change of the
+  company). The day's one delay model (`lateness::model_with`, while the clock looks - not the
+  close) takes the trip a world's bus is on (by the trip's name and departure) as the world has
+  it: under way it is as late as the world says, its own minutes from there not drawn; waiting at
+  its first stop it leaves now at the latest. The trips ahead carry that along the block as ever,
+  so the Operations page's late buses, its alerts, the badge and Casual's controller go by the
+  world. The other buses run as the model has them.
+- **A trip cancelled** (`control::Act::Cancel`, new): nobody runs it, its bus takes the next on
+  from there; offered for a late bus ("Cancel the trip") with what it costs - the trip's penalty,
+  its passengers' fares, a dropped trip's reputation - but never the controller's suggestion
+  (nor Casual's by himself). The model leaves it out; the close books it dropped, "Cancelled by
+  service control" (`day::DropWhy::Cancelled`).
+- **To the world**: the plan written for the world carries what was done on each tour
+  (`LiveTour::off` with the trips cancelled, `express`, `swaps` with the spare bus's file, paint,
+  number and plate), written again when the controller acts (a page's act, or Casual's in the
+  host's step). The world (`ScheduleSim::company_acts`, each tick): a bus on a trip run out of
+  service stops nowhere but its terminus (`BusService::express`); a bus on a trip newly
+  cancelled goes back to its depot (it drives off) and the trip leaves the queues; at a
+  departure a spare bus is swapped in at, the tour's bus does not take it on - it drives off at
+  the terminus - and the departure gets a bus of its own, the spare in its paint
+  (`TimetableCompany::bus_at`).
+- The world's list of buses leaves out one that drove off (`car.gone`).
+
+Tested: `lateness::tests::the_worlds_bus_is_as_late_as_the_world_says`,
+`control::tests::a_trip_cancelled_is_not_run_and_the_bus_takes_the_next_on_time`,
+`timetable_run::sim::tours::tests::the_control_rooms_acts_reach_the_buses_on_the_road`.
 
 ## Open questions (udkast 4)
 

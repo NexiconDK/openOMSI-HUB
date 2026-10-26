@@ -311,7 +311,7 @@ pub(crate) fn plugin_parts(c: &Company, sheet: &Sheet) -> super::super::addon::P
                     co::control::Act::ShortTurn { saved, .. } | co::control::Act::Express { saved, .. } | co::control::Act::Layover { saved } => note(saved),
                     co::control::Act::Swap { vehicle, .. } => ControlNote { bus: c.vehicle(vehicle).map(|v| v.number.clone()).filter(|n| !n.trim().is_empty()).unwrap_or_default(), ..note(0) },
                     // (a cover is another driver's: it says nothing to this one)
-                    co::control::Act::Cover { .. } => return None,
+                    co::control::Act::Cover { .. } | co::control::Act::Cancel => return None,
                 })
             })
             .collect()

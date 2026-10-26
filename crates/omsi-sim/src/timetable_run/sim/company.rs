@@ -45,6 +45,21 @@ pub trait TimetableCompany: Send + Sync {
     fn owner(&self, _line: &str) -> Option<String> {
         None
     }
+    /// (Phase 5 step 2: the company's control room) Departure `dep` (minute of the day) of its
+    /// tour runs out of service to its terminus: its bus stops nowhere on the way.
+    fn express(&self, _line: &str, _tour: &str, _dep: i32) -> bool {
+        false
+    }
+    /// A spare bus is swapped in at departure `dep` of its tour: the tour's bus does not take it
+    /// on (it drives off to the depot), a bus of its own is put out for it (`bus_at`).
+    fn swaps_at(&self, _line: &str, _tour: &str, _dep: i32) -> bool {
+        false
+    }
+    /// The company's bus for departure `dep` of its tour: a spare swapped in at it or before,
+    /// else the tour's own (`bus`).
+    fn bus_at(&mut self, root: &Path, line: &str, tour: &str, _dep: i32) -> Option<CompanyBus> {
+        self.bus(root, line, tour)
+    }
 }
 
 /// A bus of the player's company for one of its tours (`TimetableCompany::bus`).
@@ -87,12 +102,74 @@ impl ScheduleSim {
         if let Some(c) = self.company.as_deref_mut() {
             c.set_day(day);
         }
+        let before = std::mem::take(&mut self.company_off);
         self.mark_company();
+        // (phase 5 step 2: a trip its control room cancelled goes off the road at the next tick)
+        let newly: Vec<usize> = (0..self.company_off.len()).filter(|&i| self.company_off[i] && !before.get(i).copied().unwrap_or(false)).collect();
+        self.purge_company.extend(newly);
     }
 
     /// (NexiconDK) The company whose line `line` is (`TimetableCompany::owner`).
     pub fn line_owner(&self, line: &str) -> Option<String> {
         self.company.as_deref()?.owner(line)
+    }
+
+    /// Departure `i`'s minute of the day as the company's plan has it (a night trip of
+    /// yesterday's tour past 1440).
+    fn company_minute(&self, i: usize) -> i32 {
+        let d = &self.departures[i];
+        (d.time / 60.0).round() as i32 + if d.yesterday { 1440 } else { 0 }
+    }
+
+    /// The company's control room swaps a spare bus in at departure `i`
+    /// (`TimetableCompany::swaps_at`).
+    pub(super) fn company_swap(&self, i: usize) -> bool {
+        let d = &self.departures[i];
+        self.company.as_deref().is_some_and(|c| c.swaps_at(&d.line, &d.tour, self.company_minute(i)))
+    }
+
+    /// (Phase 5 step 2) What the company's control room did that reaches the buses on the road:
+    /// a bus on a trip run out of service stops nowhere on the way to its terminus; with the plan
+    /// taken in again, a bus on a departure kept off now (a trip cancelled) goes back to its
+    /// depot - it drives off - and the departures kept off leave the queues.
+    pub(super) fn company_acts(&mut self, traffic: &mut TrafficSim) {
+        let Some(company) = self.company.as_deref() else { return };
+        let mut express: Vec<(u64, usize)> = Vec::new();
+        for (&id, &i) in &self.car_departure {
+            if !self.expressed.contains(&i) {
+                let d = &self.departures[i];
+                if company.express(&d.line, &d.tour, self.company_minute(i)) {
+                    express.push((id, i));
+                }
+            }
+        }
+        for (id, i) in express {
+            self.expressed.insert(i);
+            if let Some(b) = traffic.cars.iter_mut().find(|c| c.id == id && !c.gone).and_then(|c| c.bus.as_mut()) {
+                b.express = true;
+                log::info!("timetable: the bus of {} tour {} runs out of service to its terminus (its company's control room)", self.departures[i].line, self.departures[i].tour);
+            }
+        }
+        let newly = std::mem::take(&mut self.purge_company);
+        if newly.is_empty() {
+            return;
+        }
+        let kept: Vec<usize> = newly.into_iter().filter(|&i| self.kept_off(i)).collect();
+        let off: Vec<(u64, usize)> = self.car_departure.iter().filter(|(_, i)| kept.contains(i)).map(|(id, i)| (*id, *i)).collect();
+        for (id, i) in off {
+            self.car_departure.remove(&id);
+            self.running.retain(|r| r.car != id);
+            if let Some(ci) = traffic.cars.iter().position(|c| c.id == id && !c.gone) {
+                traffic.release(ci);
+                log::info!("timetable: the bus of {} tour {} goes back to its depot: its trip is cancelled (its company's control room)", self.departures[i].line, self.departures[i].tour);
+            }
+        }
+        if !kept.is_empty() {
+            self.awaiting.retain(|i| !kept.contains(i));
+            self.pending.retain(|i| !kept.contains(i));
+            self.waiting.retain(|i| !kept.contains(i));
+            self.retry_at.retain(|i, _| !kept.contains(i));
+        }
     }
 
     /// Which departures the company keeps off the road today (`TimetableCompany::keeps_off`).
@@ -165,9 +242,11 @@ impl ScheduleSim {
     /// fleet number and plate, carrying the company's depot (None: not the company's tour,
     /// or a rental bus - the map's own vehicle then).
     pub(super) fn company_choice(&mut self, i: usize, world: &dyn TimetableWorld) -> Option<Choice> {
+        let minute = self.company_minute(i);
         let company = self.company.as_deref_mut().filter(|c| c.active())?;
         let d = &self.departures[i];
-        let bus = company.bus(world.root(), &d.line, &d.tour)?;
+        // (a spare bus its control room swapped in at this departure or before: phase 5 step 2)
+        let bus = company.bus_at(world.root(), &d.line, &d.tour, minute)?;
         let group = d.ai_group.to_ascii_lowercase();
         // (the line's own depot file, else the company's, else the depot group's)
         let hof = bus.hof.or_else(|| self.depots.get(&group).and_then(|v| v.first()).and_then(|x| x.2.clone()));
