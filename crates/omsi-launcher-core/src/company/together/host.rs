@@ -859,6 +859,13 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                     Some(x) => (DutyState::Player, c.together.name_of(x.guest), String::new()),
                     None if t.by_player => (DutyState::Closed, String::new(), book::DRIVEN.into()),
                     None if !matches!(t.bus, Some(BusOf::Own(_))) => (DutyState::Closed, String::new(), book::NO_BUS.into()),
+                    // (on Bus Company Online's server the company's AI driver's, to take over from
+                    // its start - or its next trip, when one is still to come)
+                    None if book::takes_over(c, t, k) => {
+                        sd.begun = begun;
+                        sd.take_over = !begun || book::joined_part(c, p, t, k, now).is_some();
+                        (DutyState::Company, who_of(c, d.who, &boss), String::new())
+                    }
                     None if book::driver_of(c, t, k).is_some() => (DutyState::Company, who_of(c, d.who, &boss), String::new()),
                     // (on Bus Company Online's server one under way is open from its next trip)
                     None if begun && book::joined_part(c, p, t, k, now).is_none() => (DutyState::Closed, String::new(), book::BEGUN.into()),

@@ -1024,3 +1024,63 @@ fn on_the_server_a_duty_under_way_is_taken_over_at_its_next_trip() {
     let v = ask(&mut b, "jan", "release", |r| r.duty = Some(duty.clone()));
     assert_eq!(v["error"].as_str(), Some(book::UNDER_WAY), "{v}");
 }
+
+/// (NexiconDK, Bus Company Online) On the server a duty the company's AI driver has - its own or
+/// an agency's - is a player's to take over (26 October 2026): from its start, asked for or at
+/// once as an open one is, the driver it was planned for free; under way from its next trip, the
+/// AI's until then, given by whoever may as well; not when no trip of it is left. Elsewhere the
+/// boss's drivers keep theirs.
+#[test]
+fn on_the_server_a_player_takes_a_duty_over_from_the_companys_ai_driver() {
+    let mut b = boss();
+    let wd = super::super::plan::weekday_of(&b.c.date);
+    super::super::plan::set_driver(&mut b.c, wd, "Linie5", "2", 0, Some(Who::Agency));
+    let s = snap(&ask(&mut b, "jan", "hello", |_| {}));
+    let duty = s.duties[0].duty.clone();
+    assert_eq!((s.duties[0].state, s.duties[0].take_over), (DutyState::Company, false));
+    assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()))["error"].as_str(), Some(book::NOT_OPEN));
+    // (on the server: his to take over, asked for when the boss says so)
+    b.c.online.on_server = true;
+    b.c.together.open_claims = false;
+    let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
+    assert_eq!((s.duties[0].state, s.duties[0].take_over, s.duties[0].begun, s.duties[0].who.as_str()), (DutyState::Company, true, false, "Agency driver"));
+    let v = ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()));
+    assert_eq!(v["state"].as_str(), Some("asked"), "{v}");
+    assert_eq!(b.plan().tours[0].duties[0].who, Some(Who::Agency), "the AI driver's until a yes");
+    ask(&mut b, "jan", "release", |r| r.duty = Some(duty.clone()));
+    b.c.together.open_claims = true;
+    let v = ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()));
+    assert_eq!(v["state"].as_str(), Some("planned"), "{v}");
+    let jan = guest_no(&b, "jan");
+    assert_eq!(b.plan().tours[0].duties[0].who, Some(Who::Guest(jan)));
+    assert!(b.c.together.claim_of(&duty).unwrap().ai.is_empty(), "his from its start");
+    assert_eq!(snap(&ask(&mut b, "jan", "snapshot", |_| {})).duties[0].state, DutyState::Mine);
+    // (under way: his from its next trip, the AI's until then)
+    ask(&mut b, "jan", "release", |r| r.duty = Some(duty.clone()));
+    b.c.clock.minute = 405;
+    let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
+    assert_eq!((s.duties[0].state, s.duties[0].take_over, s.duties[0].begun), (DutyState::Company, true, true));
+    let v = ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()));
+    assert_eq!(v["state"].as_str(), Some("planned"), "{v}");
+    let x = b.c.together.claim_of(&duty).cloned().unwrap();
+    assert_eq!(x.ai.iter().map(|a| (a.from, a.until, a.why)).collect::<Vec<_>>(), [(0, None, book::LeftWhy::Begun)]);
+    let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
+    assert_eq!((s.duties[0].state, s.duties[0].begun, s.duties[0].back), (DutyState::Ai, true, true));
+    // (given under way by whoever may: the same)
+    ask(&mut b, "jan", "release", |r| r.duty = Some(duty.clone()));
+    ask(&mut b, "eva", "hello", |_| {});
+    let eva = guest_no(&b, "eva");
+    b.st.set_role(&mut b.c, now(), eva, Role::Planner, Role::Planner.preset());
+    let v = ask(&mut b, "eva", "assign", |r| {
+        r.duty = Some(duty.clone());
+        r.target = jan;
+    });
+    assert_eq!(v["ok"], true, "{v}");
+    assert_eq!(b.c.together.claim_of(&duty).map(|x| (x.guest, x.ai.len())), Some((jan, 1)));
+    // (no trip of it left: the AI driver's to its end)
+    ask(&mut b, "jan", "release", |r| r.duty = Some(duty.clone()));
+    b.c.clock.minute = 445;
+    let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
+    assert_eq!((s.duties[0].state, s.duties[0].take_over), (DutyState::Company, false));
+    assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()))["error"].as_str(), Some(book::BEGUN));
+}

@@ -732,6 +732,20 @@ Decided 26 October 2026: both in the launcher and as a document to share.
 - **The document**: "Bus Company Online – spillerguide", a Claude doc with a Danish and an English
   tab, for the server's owner to share with his players.
 
+### A duty taken over from the company's AI driver (26 October 2026)
+
+On the server every driver of the company - its own staff, an agency's - is the world's AI under
+that driver's name, and the dispatcher gives them most duties of the day. A player may take such a
+duty over (`together::book::takes_over`), on the same terms as an open one: at once when the
+company lets players take open duties (or he may approve requests), else asked for. Not begun, it
+is his from its start; under way, from its next trip - the AI drives it until his Drive takes it
+over (`LeftWhy::Begun`, as an open duty taken under way); with no trip of it left, it stays the AI
+driver's. The driver it was planned for is free for other work (the plan puts the player first);
+whoever may give duties can give it the same way. In the launcher: "Duties" → "Driven by the AI",
+each with "Take over this duty" / "Take over from the next trip" (or "Ask to …"). Elsewhere - a
+player's own company - the boss's drivers keep theirs. Tested:
+`together::tests::on_the_server_a_player_takes_a_duty_over_from_the_companys_ai_driver`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

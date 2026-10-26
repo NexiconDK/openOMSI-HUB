@@ -214,6 +214,13 @@ Bus Company online (fase 1 af `docs/omsihub/BUS_COMPANY_ONLINE.md`). Én stor se
   - **Et depot alene** får ikke nødlån. Det får advarsler og går konkurs som før.
 - **Spillerguide (fase 6, trin 5)**: Knappen "The guide" på Bus Company Online-siden, både før og efter login, åbner en guide på spillerens sprog. Den forklarer, hvad det er, hvordan man kommer ind og joiner et firma, kørsel og løn, at stifte et firma (med serverens egne krav), udbud, kontraktens regler, kontrolrummet, depoter, minus og konkurs og serverens ur.
 - **`clock danish` i hovedserverens konsol**: `clock` viser serverens ur og dansk tid. `clock danish` sætter uret til dansk tid med det samme, også midt på dagen. Går serveren foran, venter firmaerne forskellen ud, og verdenen kører tiden igen. Uden kommandoen går uret som før kun tilbage om natten kl. 03.
+- **Overtag en vagt fra AI'en (Bus Company Online)**: På serveren er alle firmaets chauffører (eget personale og vikarer) verdenens AI, og de får de fleste af dagens vagter. Under "Duties" står deres vagter nu i et afsnit for sig, "Driven by the AI", hvor en spiller kan overtage dem på samme vilkår som en åben vagt: med det samme, hvis firmaet lader spillere tage åbne vagter (eller han selv må godkende), ellers som en anmodning.
+  - **Ikke begyndt**: Vagten er hans fra start.
+  - **Undervejs**: Den er hans fra næste tur, og AI'en kører til da.
+  - **Ingen tur tilbage**: Vagten bliver hos AI-chaufføren.
+  - **Chaufføren**: Den chauffør, vagten var planlagt til, bliver fri til andet arbejde.
+  - **Tildeling**: Den, der må tildele vagter, kan give dem videre på samme måde.
+  - **Eget firma**: Uden for serveren beholder chefens chauffører deres vagter som før.
 - **Rettelse: firmaets kort på serveren var tomt**: Firmaets egen proces på Bus Company Online's server læste alle kort med 0 veje (loggen: "map: 0 roads from 0 lanes in 773 tiles"), fordi den ikke havde spillets kortlæser. Derfor var både flådekortet ("Map") og kortet på Operations helt tomme. Nu læser processen kortet som launcheren, og vejene, linjerne og busserne vises.
 - **Rettelse: verdenens tjek af en spillers tur**: Verdenen målte, hvor langt spillerens bus kørte, ud fra øst-vest og højden i stedet for øst-vest og nord-syd. En tur, der mest gik nord-syd, kunne derfor blive afvist med "his bus drove far less than the trip says".
 - Den dedikerede server har fået `idle_stop = <minutter>` i `server.cfg`. Er den sat, lukker serveren af sig selv efter så mange minutter uden spillere.

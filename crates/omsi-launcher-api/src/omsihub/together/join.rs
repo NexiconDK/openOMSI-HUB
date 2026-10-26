@@ -710,6 +710,18 @@ fn duty_row(d: &SnapDuty, open_claims: bool, ask: bool) -> Value {
         DutyState::Player if d.ai && d.dropped => (super::dropped_label(&d.who), "soft", Vec::new()),
         DutyState::Player if d.ai => (super::ai_label(&d.who), "soft", Vec::new()),
         DutyState::Player => (trf("%{name} has it", &[("name", &d.who)]), "soft", Vec::new()),
+        // (NexiconDK, Bus Company Online: the company's AI driver's on the server, to take over -
+        // from its start, or from its next trip when it is under way)
+        DutyState::Company if d.take_over && ask => {
+            let label = match (d.begun, open_claims) {
+                (false, true) => tr("Take over this duty"),
+                (false, false) => tr("Ask to take over this duty"),
+                (true, true) => tr("Take over from the next trip"),
+                (true, false) => tr("Ask to take over from the next trip"),
+            };
+            let state = if d.begun { trf("Under way: the AI drives it as %{name}", &[("name", &tr(&d.who))]) } else { trf("The AI drives it as %{name}", &[("name", &tr(&d.who))]) };
+            (state, "soft", vec![json!({ "label": label, "act": "take", "kind": "primary", "icon": "swap_horiz" })])
+        }
         DutyState::Company => (trf("Driven by %{name}", &[("name", &tr(&d.who))]), "dim", Vec::new()),
         DutyState::Closed => (tr(&d.why), "dim", Vec::new()),
     };
@@ -733,6 +745,8 @@ fn view() -> Value {
         "open_caps": tr("Open duties").to_uppercase(), "no_open": tr("No open duty right now: the boss can give you one."),
         "mine_caps": tr("My duties").to_uppercase(), "no_mine": tr("No duty of yours yet: ask for an open one."),
         "rest_caps": tr("The rest of the day").to_uppercase(),
+        "ai_caps": tr("Driven by the AI").to_uppercase(),
+        "ai_note": tr("The company's AI drivers drive these in the server's world. Take one over: it is yours from its start, or from its next trip when it is under way."),
         "next_caps": tr("Next up").to_uppercase(), "nothing_next": tr("Nothing planned for you. Ask for an open duty, or wait for the boss to give you one."),
         "results_caps": tr("My results").to_uppercase(), "history_caps": tr("My history").to_uppercase(),
         "players_caps": tr("Players").to_uppercase(), "notices_caps": tr("Company news").to_uppercase(),
@@ -768,7 +782,11 @@ fn view() -> Value {
     let rows = |pick: &dyn Fn(&SnapDuty) -> bool| -> Vec<Value> { s.duties.iter().filter(|d| pick(d)).map(|d| duty_row(d, s.open_claims || can(Perm::Approve), ask)).collect() };
     let mine = rows(&|d| matches!(d.state, DutyState::Mine | DutyState::Asked | DutyState::Driving | DutyState::Done | DutyState::Late | DutyState::Ai));
     let open = rows(&|d| d.state == DutyState::Open);
-    let rest = rows(&|d| matches!(d.state, DutyState::Player | DutyState::Company | DutyState::Closed));
+    // (NexiconDK, Bus Company Online: the company's AI drivers' duties on the server, his to take
+    // over - `book::takes_over`)
+    let over = |d: &SnapDuty| ask && d.state == DutyState::Company && d.take_over;
+    let ai = rows(&|d| over(d));
+    let rest = rows(&|d| matches!(d.state, DutyState::Player | DutyState::Company | DutyState::Closed) && !over(d));
     // (what comes next: the duty being driven, else the first of his still to drive)
     let next = s
         .duties
@@ -829,7 +847,7 @@ fn view() -> Value {
         "me": { "name": you.name, "role": if you.owner { owner_json() } else { role_json(you.role) }, "role_key": if you.owner { "owner" } else { you.role.key() }, "stats": super::host::stats_json(&you.stats),
                 "perms": Perm::ALL.iter().map(|p| { let mut v = perm_json(*p); v["on"] = json!(can(*p)); v }).collect::<Vec<_>>() },
         "can": { "drive": ask, "assign": can(Perm::Assign), "approve": can(Perm::Approve), "players": can(Perm::Players), "pages": pages },
-        "reading": s.reading, "next": next, "open": open, "mine": mine, "rest": rest, "players": players, "results": results,
+        "reading": s.reading, "next": next, "open": open, "ai": ai, "mine": mine, "rest": rest, "players": players, "results": results,
         "asks": asks, "members": members, "giveable": giveable, "roles": if can(Perm::Players) { roles_json() } else { Value::Null },
         "history": history_rows(), "driving": driving, "notices": notices, "last_notice": j.notices.last().map(|n| n.n).unwrap_or(0),
         "online": s.players.iter().filter(|p| p.online).count(),

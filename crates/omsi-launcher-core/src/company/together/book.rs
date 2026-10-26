@@ -376,6 +376,14 @@ pub fn driver_of(c: &Company, t: &DayTour, k: usize) -> Option<super::super::pla
     t.duties[k].who.filter(|w| !(c.online.on_server && *w == super::super::plan::Who::Player))
 }
 
+/// (NexiconDK, Bus Company Online) On the server a duty the plan gives the company's own driver
+/// or an agency's - its world's AI drives it under their name - may be taken over by a player
+/// (decided 26 October 2026): from its start, or from its next trip when it is under way
+/// (`joined_part`), as an open one; the driver it was planned for is free for other work.
+pub fn takes_over(c: &Company, t: &DayTour, k: usize) -> bool {
+    c.online.on_server && matches!(driver_of(c, t, k), Some(super::super::plan::Who::Staff(_) | super::super::plan::Who::Agency))
+}
+
 /// (NexiconDK, Bus Company Online) A duty of the company's day that has begun is a player's on
 /// the server from its next trip (`now`, the company's clock): the map's world drove it until
 /// then, and the AI drives it until he takes it over (`take_back`) - the part the claim gets.
@@ -432,10 +440,11 @@ pub fn take(c: &mut Company, p: &DayPlan, r: &DutyRef, guest: u32, now: i64, dir
     if !matches!(t.bus, Some(BusOf::Own(_))) {
         return Err(NO_BUS);
     }
-    if driver_of(c, t, k).is_some() {
+    if driver_of(c, t, k).is_some() && !takes_over(c, t, k) {
         return Err(NOT_OPEN);
     }
-    // (on Bus Company Online's server: his from its next trip, the AI's until then)
+    // (on Bus Company Online's server: his from its next trip, the AI's until then - one the
+    // company's AI drivers have too)
     let part = if begun(p, t, k, now) { Some(joined_part(c, p, t, k, now).ok_or(BEGUN)?) } else { None };
     if overlapping(c, p, r, guest) {
         return Err(OVERLAP);
@@ -468,7 +477,7 @@ pub fn give(c: &mut Company, p: &DayPlan, r: &DutyRef, guest: u32, now: i64) -> 
         }
     }
     let others = c.together.claim_of(r).is_none_or(|x| x.guest != guest);
-    if begun(p, t, k, now) && driver_of(c, t, k).is_some() && others {
+    if begun(p, t, k, now) && driver_of(c, t, k).is_some() && others && !takes_over(c, t, k) {
         return Err(BEGUN);
     }
     // (on Bus Company Online's server a duty under way is his from its next trip, the AI's until
