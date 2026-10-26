@@ -58,19 +58,20 @@ function Connect({ v, again }) {
   </div>`;
 }
 
-/** A company of the server: its mark, map and mode, its owner, his role in it, Join - a head
- * office with its depots (`depots`) folded under it, and the button that unfolds them. */
+/** A company of the server: its mark, map and mode, its owner, his role in it, Join - a company
+ * with depots as the overview of them all (`depots`: how many, folded under it, and the button
+ * that unfolds them; no map of its own), each of its departments under it. */
 function CompanyRow({ c, w, onJoin, depots = 0, open = false, onFold }) {
   return html`<div class=${'bco-company' + (c.mine ? ' mine' : '') + (c.depot_of ? ' depot' : '')} data-company=${c.id}>
     <${Mark} mark=${{ colours: c.colours, short: c.short }} size=${48} />
     <div class="who">
       <b class="cut" title=${c.name}>${c.name}</b>
       ${c.depot_of && html`<span class="cut bco-depot-of">${c.depot_of}</span>`}
-      <span class="dim cut">${c.map} · ${c.mode} · ${w.owner}: ${c.owner}</span>
+      <span class="dim cut">${c.map ? `${c.map} · ` : ''}${c.mode} · ${w.owner}: ${c.owner}</span>
       <span class="dim cut">${c.figures}</span>
       ${depots > 0 &&
       html`<button type="button" class=${'bco-fold' + (open ? ' open' : '')} onClick=${onFold}>
-        <${Icon} name="garage" size=${15} /><span>${depots === 1 ? w.one_depot : w.depots.replace('%{n}', depots)}</span><${Icon} name=${open ? 'expand_less' : 'expand_more'} size=${16} />
+        <${Icon} name="garage" size=${15} /><span>${open ? w.hide_depots : w.show_depots}</span><${Icon} name=${open ? 'expand_less' : 'expand_more'} size=${16} />
       </button>`}
     </div>
     ${c.role && html`<span class="bco-role">${c.mine ? w.mine : `${w.your_role}: ${c.role}`}</span>`}
@@ -135,10 +136,29 @@ function FoundDialog({ v, onClose, done, again }) {
 }
 
 /** The server's companies by head office: each with its depots (a depot whose head office is
- * not on the list stands on its own). */
-function grouped(companies) {
+ * not on the list stands on its own). A company with depots is an overview of its departments -
+ * its lines, buses and depots together, open when one of them is - and its head office one of
+ * those departments, named by its map as the depots are ("Umove Ahlheim 5"). */
+function grouped(companies, w) {
   const ids = new Set(companies.map((c) => c.id));
-  return companies.filter((c) => !c.hq || !ids.has(c.hq)).map((head) => ({ head, depots: companies.filter((c) => c.hq && c.hq === head.id) }));
+  return companies
+    .filter((c) => !c.hq || !ids.has(c.hq))
+    .map((head) => {
+      const depots = companies.filter((c) => c.hq && c.hq === head.id);
+      if (!depots.length) return { head, overview: head, departments: [] };
+      const office = { ...head, name: `${head.name} ${head.map}`, depot_of: w.head_office };
+      const departments = [office, ...depots];
+      const sum = (k) => departments.reduce((n, d) => n + (d[k] || 0), 0);
+      const running = departments.find((d) => d.runs);
+      const overview = {
+        ...head,
+        map: '',
+        figures: w.group_figures.replace('%{lines}', sum('lines')).replace('%{buses}', sum('buses')).replace('%{depots}', departments.length),
+        runs: !!running,
+        state: (running || head).state,
+      };
+      return { head, overview, departments };
+    });
 }
 
 /** The head offices whose depots are unfolded, kept on this computer (a convenience: none when
@@ -162,7 +182,7 @@ function keepOpenDepots(set) {
 /** Join a company with depots: which department - the head office or one of its depots, each
  * with its map, the player's role in it and whether it is open. */
 function WhichDialog({ g, w, onJoin, onClose }) {
-  const all = [g.head, ...g.depots];
+  const all = g.departments;
   const [pick, setPick] = useState(Math.max(0, all.findIndex((c) => c.runs)));
   const c = all[pick];
   return html`<${Dialog} icon="groups" title=${w.which_title} w=${560} onClose=${onClose}
@@ -172,7 +192,7 @@ function WhichDialog({ g, w, onJoin, onClose }) {
       ${all.map((x, k) => html`<button type="button" class=${'bco-pick-row' + (k === pick ? ' on' : '')} disabled=${!x.runs} data-company=${x.id} onClick=${() => setPick(k)}>
         ${k === pick ? html`<${Icon} name="check_circle" size=${18} />` : html`<i class="bco-dot"></i>`}
         <${Mark} mark=${{ colours: x.colours, short: x.short }} size=${32} />
-        <span class="who"><b class="cut">${x.name}</b><span class="dim cut">${k === 0 ? w.head_office : w.depot} · ${x.map}</span></span>
+        <span class="who"><b class="cut">${x.name}</b><span class="dim cut">${x.hq ? w.depot : w.head_office} · ${x.map}</span></span>
         ${x.role && html`<span class="bco-role">${x.mine ? w.mine : `${w.your_role}: ${x.role}`}</span>`}
         <span class=${'bco-state' + (x.runs ? ' on' : '')}><i></i>${x.state}</span>
       </button>`)}
@@ -222,10 +242,10 @@ function Server({ v, again }) {
     <div class="co-scroll bco-list">
       <div class="co-caps">${w.companies_caps}</div>
       ${v.companies.length === 0 && html`<p class="dim">${w.none}</p>`}
-      ${grouped(v.companies).map(
-        (g) => html`<${CompanyRow} c=${g.head} w=${w} depots=${g.depots.length} open=${open.has(g.head.id)} onFold=${() => fold(g.head.id)}
-            onJoin=${() => (g.depots.length ? setWhich(g) : join(g.head.id))} />
-          ${open.has(g.head.id) && g.depots.map((d) => html`<${CompanyRow} c=${d} w=${w} onJoin=${() => join(d.id)} />`)}`,
+      ${grouped(v.companies, w).map(
+        (g) => html`<${CompanyRow} c=${g.overview} w=${w} depots=${g.departments.length} open=${open.has(g.head.id)} onFold=${() => fold(g.head.id)}
+            onJoin=${() => (g.departments.length ? setWhich(g) : join(g.head.id))} />
+          ${open.has(g.head.id) && g.departments.map((d) => html`<${CompanyRow} c=${d} w=${w} onJoin=${() => join(d.id)} />`)}`,
       )}
     </div>
     ${founding && html`<${FoundDialog} v=${v} again=${again} onClose=${() => setFounding(false)} done=${(nv) => (setFounding(false), nv && again(nv))} />`}

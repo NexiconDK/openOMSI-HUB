@@ -447,8 +447,9 @@ fn company_json(c: &Value) -> Value {
         "figures": trf("%{lines} lines · %{buses} buses · %{staff} staff · %{players} players", &[("lines", &n("lines").to_string()), ("buses", &n("buses").to_string()), ("staff", &n("staff").to_string()), ("players", &n("players").to_string())]),
         // (phase 4: a depot of a head office)
         "depot_of": (!s("hq").is_empty()).then(|| trf("Depot of %{hq}", &[("hq", &s("hq_name"))])),
-        // (the head office's id: its depots are folded under it, and chosen from at Join)
-        "hq": s("hq"),
+        // (the head office's id: its depots are folded under it, and chosen from at Join - the
+        // company's figures summed over them)
+        "hq": s("hq"), "lines": n("lines"), "buses": n("buses"), "staff": n("staff"),
     })
 }
 
@@ -471,9 +472,10 @@ fn view() -> Value {
         "price": tr("Founding costs %{price} of your own money: you have %{money}."), "found_go": tr("Found"), "cancel": tr("Cancel"),
         "mine": tr("Yours"), "your_role": tr("Your role"), "owner": tr("Owner"),
         // (a head office's depots, folded under it; Join asks which department)
-        "one_depot": tr("1 depot"), "depots": tr("%{n} depots"),
+        "show_depots": tr("Show depots"), "hide_depots": tr("Hide depots"),
         "which_title": tr("Which department?"), "which_text": tr("The company works on more than one map. Choose the department you join: the head office or one of its depots."),
         "head_office": tr("Head office"), "depot": tr("Depot"),
+        "group_figures": tr("%{lines} lines · %{buses} buses · %{depots} depots"),
         "modes": [{ "key": "casual", "label": tr("Casual") }, { "key": "normal", "label": tr("Normal") }, { "key": "realistic", "label": tr("Realistic") }],
     });
     let error = s.error.as_ref().map(|(e, a)| words_of(e, a));

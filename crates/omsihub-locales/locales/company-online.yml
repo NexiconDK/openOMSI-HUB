@@ -2192,20 +2192,20 @@ _version: 2
   ru: "Смена, которая начинается с автобусом уже на линии, начинается пешком на её остановке: автобус приходит туда, водитель выходит, и G у передней двери — за руль. Не успел в течение пяти минут после отправления — этот рейс ведёт ИИ, а ты принимаешь следующий."
   uk: "Зміна, що починається з автобусом уже на лінії, починається пішки на її зупинці: автобус приходить туди, водій виходить, і G біля передніх дверей — за кермо. Не встиг протягом п'яти хвилин після відправлення — цей рейс веде ШІ, а ти приймаєш наступний."
 # (the server's page: a head office's depots folded under it, the department chosen at Join)
-"1 depot":
-  de: "1 Depot"
-  fr: "1 dépôt"
-  nl: "1 depot"
-  pl: "1 zajezdnia"
-  ru: "1 депо"
-  uk: "1 депо"
-"%{n} depots":
-  de: "%{n} Depots"
-  fr: "%{n} dépôts"
-  nl: "%{n} depots"
-  pl: "Zajezdnie: %{n}"
-  ru: "Депо: %{n}"
-  uk: "Депо: %{n}"
+"Show depots":
+  de: "Depots zeigen"
+  fr: "Voir les dépôts"
+  nl: "Depots tonen"
+  pl: "Pokaż zajezdnie"
+  ru: "Показать депо"
+  uk: "Показати депо"
+"Hide depots":
+  de: "Depots ausblenden"
+  fr: "Masquer les dépôts"
+  nl: "Depots verbergen"
+  pl: "Ukryj zajezdnie"
+  ru: "Скрыть депо"
+  uk: "Сховати депо"
 "Which department?":
   de: "Welche Abteilung?"
   fr: "Quel service ?"
@@ -2227,3 +2227,10 @@ _version: 2
   pl: "Centrala"
   ru: "Главный офис"
   uk: "Головний офіс"
+"%{lines} lines · %{buses} buses · %{depots} depots":
+  de: "%{lines} Linien · %{buses} Busse · %{depots} Depots"
+  fr: "%{lines} lignes · %{buses} bus · %{depots} dépôts"
+  nl: "%{lines} lijnen · %{buses} bussen · %{depots} depots"
+  pl: "Linie: %{lines} · autobusy: %{buses} · zajezdnie: %{depots}"
+  ru: "Маршруты: %{lines} · автобусы: %{buses} · депо: %{depots}"
+  uk: "Маршрути: %{lines} · автобуси: %{buses} · депо: %{depots}"
