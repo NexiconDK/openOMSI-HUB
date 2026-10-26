@@ -335,10 +335,10 @@ impl MainCfg {
     /// real time every time: `online::server_clock`).
     pub fn clock_start(&self) -> (String, i64) {
         let now = crate::local_now();
-        // (NexiconDK, decided 25 October 2026: on the real time, Danish time - its summer time
-        // too - whatever the machine's zone)
+        // (NexiconDK, decided 26 October 2026: on the real time, the machine's own time - its
+        // summer time too - as the dedicated server's machine has it)
         if self.real_time {
-            return online::danish(unix_now());
+            return online::machine_time(unix_now(), crate::utc_offset());
         }
         let today = now.map(|(y, mo, d, _, _)| format!("{y:04}-{mo:02}-{d:02}")).unwrap_or_else(|| crate::DEFAULT_DATE.to_string());
         let mut parts = self.time.split(':').map(|p| p.trim().parse::<i64>().unwrap_or(0));
@@ -536,6 +536,11 @@ impl MainServer {
         let players = Players::load(data)?;
         let mut m = MainServer { data: data.to_path_buf(), cfg, clock, companies: Vec::new(), held: HashMap::new(), said: HashMap::new(), worlds: Vec::new(), machine: Default::default(), load: None, players, code: None, _lock: lock };
         online::bump_plans(data)?;
+        // (phase 7: a head office of before - a company with depots - split into its group's
+        // head office and a depot, before any company's process runs)
+        for line in super::server_hq::split_head_offices(data) {
+            info!("{line}");
+        }
         m.scan();
         Ok(m)
     }
@@ -557,14 +562,16 @@ impl MainServer {
     /// Every company of the folder whose process does not run (and is not held) started - one on
     /// a map that is not installed left in the folder. How many were started.
     pub fn scan(&mut self) -> usize {
-        // (Danish time: summer time on, and back an hour in the night)
-        self.keep_danish_time(unix_now());
+        // (the machine's own time: summer time on and off at once)
+        self.keep_machine_time(unix_now());
         // (the players' pay the companies booked since)
         self.take_pay();
         // (every map's tenders, shared by its companies)
         self.markets();
         // (phase 6: the worlds kept running while the machine can carry them)
         self.keep_worlds(unix_now() as f64);
+        // (phase 7: the groups' head offices a step on)
+        self.groups();
         let mut n = 0;
         for id in company_ids(&self.data) {
             if self.companies.iter().any(|p| p.id == id) || self.held.get(&id).is_some_and(|t| Instant::now() < *t) {
@@ -598,36 +605,34 @@ impl MainServer {
     /// map's companies bid in the same tenders, live against each other): what the companies
     /// applied for, a new round, the renewals, the tenders decided at their close. A map is read
     /// (its lines of the day, its companies) only when its market needs it.
-    /// (NexiconDK, decided 25 October 2026) A server on the real time keeps Danish time
-    /// (`online::danish`): behind it - summer time begun, or a clock set by another zone's
-    /// machine - its clock goes on to it at once; ahead of it - summer time over - it goes back at
-    /// three in the night, its own (to two: as the clocks do), the companies waiting that hour
-    /// out and the worlds taking the clock in again. Whether it was set. `real`: Unix seconds.
-    pub fn keep_danish_time(&mut self, real: i64) -> bool {
-        self.set_danish_time(real, false).is_some()
+    /// (NexiconDK, decided 26 October 2026 - Danish time kept by the server itself before) A
+    /// server on the real time keeps its machine's own time (`online::machine_time`, the
+    /// machine's zone and summer time): a minute or more off it - summer time begun or over, the
+    /// machine's clock set - its clock goes to it at once, on or back (back: the companies wait
+    /// that time out, the worlds take the clock in again). Whether it was set. `real`: Unix
+    /// seconds.
+    pub fn keep_machine_time(&mut self, real: i64) -> bool {
+        self.set_machine_time(real, crate::utc_offset()).is_some()
     }
 
-    /// The server's clock set to Danish time at `real` (Unix seconds): on at once when it is
-    /// behind, back only in the night (its own 03:00-04:00) - or at once, `now` (the console's
-    /// `clock danish`). The minutes it moved (negative: back); None: it did not.
-    pub fn set_danish_time(&mut self, real: i64, now: bool) -> Option<i64> {
+    /// The server's clock set to the machine's time at `real` (Unix seconds), the machine
+    /// `offset` seconds from UTC. The minutes it moved (negative: back); None: in step, or not on
+    /// the real time.
+    pub fn set_machine_time(&mut self, real: i64, offset: i64) -> Option<i64> {
         if !self.cfg.real_time {
             return None;
         }
-        let (date, secs) = online::danish(real);
+        let (date, secs) = online::machine_time(real, offset);
         let want = ServerClock::starting(&date, secs, real)?;
         let off = want.minute(real) - self.clock.minute(real);
-        let (_, own) = self.clock.at_real(real as f64);
-        let night = (3 * 3600..4 * 3600).contains(&(own as i64));
-        let due = if now { off != 0 } else { off >= 1 || (off <= -30 && night) };
-        if !due {
+        if off == 0 {
             return None;
         }
         if let Err(e) = online::set_server_clock(&self.data, &want) {
-            warn!("the server's clock not set to Danish time: {e:#}");
+            warn!("the server's clock not set to the machine's time: {e:#}");
             return None;
         }
-        info!("the server's clock {} to Danish time: {date} {}", if off > 0 { "on" } else { "back" }, hhmmss(secs as f64));
+        info!("the server's clock {} {} min to the machine's time: {date} {}", if off > 0 { "on" } else { "back" }, off.abs(), hhmmss(secs as f64));
         self.clock = want;
         Some(off)
     }
@@ -665,6 +670,28 @@ impl MainServer {
                 }
             };
             super::shared_tenders::fill_weeks(&self.data, &key, &date, &mut read_day);
+        }
+    }
+
+    /// (Phase 7) Every group's head office a step on (`server_hq::step`): what its depots sent and
+    /// told it, its days closed on the server's clock, the depots topped up by their rules - kept
+    /// when it changed; bankrupt, its file removed (its depots told to close).
+    pub fn groups(&mut self) {
+        let real = unix_now();
+        let (date, _) = self.clock.at_real(real as f64);
+        for id in super::server_hq::group_ids(&self.data) {
+            let Ok(mut g) = store::load(&self.data, &id) else { continue };
+            let s = super::server_hq::step(&self.data, &mut g, &date, real);
+            if s.bankrupt {
+                warn!("group {id} ({}): its head office is bankrupt - closed, its depots with it", g.name);
+                let _ = store::delete(&self.data, &id);
+                continue;
+            }
+            if s.changed {
+                if let Err(e) = store::save(&self.data, &g) {
+                    warn!("group {id}: its head office not saved: {e:#}");
+                }
+            }
         }
     }
 
@@ -968,6 +995,12 @@ impl MainServer {
                 out += &format!("    code: {}\n", code.trim());
             }
         }
+        // (phase 7: the groups' head offices, kept by the main server itself)
+        for id in super::server_hq::group_ids(&self.data) {
+            let Ok(g) = store::load(&self.data, &id) else { continue };
+            let depots = super::server_depots::depots_of(&self.data, &id);
+            out += &format!("  group {id} \"{}\" (head office{}): {}, cash {:.2}, debt {:.2}, {} depots: {}\n", g.name, if g.online.owner.is_empty() { String::new() } else { format!(", owner {}", g.online.owner) }, g.date, g.cash as f64 / 100.0, g.debt() as f64 / 100.0, depots.len(), depots.iter().map(|d| d.name.as_str()).collect::<Vec<_>>().join(", "));
+        }
         out += &format!("worlds: {} of at most {}{}\n", self.worlds.len(), self.cfg.max_worlds, if self.cfg.keep.on { " - kept running while the machine can" } else { "" });
         if let Some(l) = self.load {
             out += &format!("machine: {} (limits {} %, {} %)\n", l.text(), self.cfg.keep.max_memory, self.cfg.keep.max_cpu);
@@ -999,7 +1032,7 @@ role <company>; <player>; <role>
 owner <company>; <player>      make a player of the server a company's owner (every permission)
 players                       the players who logged in, with their money
 money <player>; <amount>      set a player's money (+500 or -500: add or take)
-clock [danish]                the server's clock and Danish time; danish: set to Danish time now
+clock [now]                   the server's clock and the machine's time; now: set to it now
                               (ahead, the companies wait the difference out and the worlds run it again)
 grant <player>; <what>        what founding a company asks, given: trips <n>, course, test <class>
                               (midi, solo, articulated, double)
@@ -1115,21 +1148,21 @@ pub fn command(m: &mut MainServer, line: &str) -> Option<String> {
             }
             None => "money <player>; <amount>".to_string(),
         },
-        // (decided 26 October 2026: Danish time at once, not only in the night)
+        // (decided 26 October 2026: the machine's own time, at once)
         "clock" => {
             let real = unix_now();
             let (date, secs) = m.clock.at_real(real as f64);
-            let (dk_date, dk_secs) = online::danish(real);
-            let mut said = format!("server's clock: {date} {} - Danish time: {dk_date} {}", hhmmss(secs), hhmmss(dk_secs as f64));
-            if rest.eq_ignore_ascii_case("danish") {
-                said = match m.set_danish_time(real, true) {
-                    Some(off) if off < 0 => format!("server's clock set back {} min to Danish time: {dk_date} {} - the companies wait it out, the worlds run it again", -off, hhmmss(dk_secs as f64)),
-                    Some(off) => format!("server's clock set on {off} min to Danish time: {dk_date} {}", hhmmss(dk_secs as f64)),
+            let (my_date, my_secs) = online::machine_time(real, crate::utc_offset());
+            let mut said = format!("server's clock: {date} {} - the machine's time: {my_date} {}", hhmmss(secs), hhmmss(my_secs as f64));
+            if rest.eq_ignore_ascii_case("now") || rest.eq_ignore_ascii_case("danish") {
+                said = match m.set_machine_time(real, crate::utc_offset()) {
+                    Some(off) if off < 0 => format!("server's clock set back {} min to the machine's time: {my_date} {} - the companies wait it out, the worlds run it again", -off, hhmmss(my_secs as f64)),
+                    Some(off) => format!("server's clock set on {off} min to the machine's time: {my_date} {}", hhmmss(my_secs as f64)),
                     None if !m.cfg.real_time => "the server's clock does not run on the real time (real_time = 0 in company-server.cfg)".to_string(),
                     None => format!("{said}: in step already"),
                 };
             } else if !rest.is_empty() {
-                said = "clock [danish]".to_string();
+                said = "clock [now]".to_string();
             }
             said
         }
@@ -1390,11 +1423,11 @@ mod tests {
 
     /// (Phase 3) What the companies booked as their players' pay is paid into their money, once,
     /// and pay for a player the server does not know is not.
-    /// (NexiconDK, decided 25 October 2026) A server on the real time keeps Danish time: summer
-    /// time to the hour of the EU's change, and a clock an hour ahead - summer time over - set
-    /// back at three in its night, not before; one behind set on at once.
+    /// (NexiconDK, decided 26 October 2026) A server on the real time keeps its machine's own
+    /// time: a clock an hour ahead - summer time over - set back at once, one behind set on at
+    /// once, in step left alone. (Danish time as the EU changes it, for the record.)
     #[test]
-    fn the_server_keeps_danish_time() {
+    fn the_server_keeps_the_machines_time() {
         let at = |d: &str, h: i64, m: i64| crate::company::dates::parse(d).unwrap() * 86_400 + h * 3600 + m * 60;
         assert_eq!(online::danish(at("2026-10-25", 0, 30)), ("2026-10-25".into(), 2 * 3600 + 30 * 60), "summer time");
         assert_eq!(online::danish(at("2026-10-25", 1, 30)), ("2026-10-25".into(), 2 * 3600 + 30 * 60), "winter time again");
@@ -1410,26 +1443,18 @@ real_time = 1
 game = {}
 ", root.display(), dir.join("no-game").display()));
         let mut m = MainServer::open(&data, cfg).unwrap();
-        // (22:15 Danish time, the clock an hour ahead: kept)
-        let evening = at("2026-10-25", 21, 15);
-        m.clock = ServerClock::starting("2026-10-25", 23 * 3600 + 15 * 60, evening).unwrap();
-        assert!(!m.keep_danish_time(evening));
-        // (its own 03:10 - Danish 02:10: back an hour, the folder's clock with it)
-        let night = evening + (3 * 3600 + 55 * 60);
-        assert!(m.keep_danish_time(night));
-        assert_eq!(m.clock.at_real(night as f64), ("2026-10-26".to_string(), (2 * 3600 + 10 * 60) as f64));
+        // (22:15 on a machine an hour from UTC, the clock an hour ahead: back at once, the
+        // folder's clock with it)
+        let evening = at("2026-10-26", 21, 15);
+        m.clock = ServerClock::starting("2026-10-26", 23 * 3600 + 15 * 60, evening).unwrap();
+        assert_eq!(m.set_machine_time(evening, 3600), Some(-60));
+        assert_eq!(m.clock.at_real(evening as f64), ("2026-10-26".to_string(), (22 * 3600 + 15 * 60) as f64));
         assert_eq!(online::read_server_clock(&data), Some(m.clock));
-        assert!(!m.keep_danish_time(night + 60), "in step");
-        // (behind: on at once)
-        m.clock = ServerClock::starting("2026-10-26", 3600, night).unwrap();
-        assert!(m.keep_danish_time(night));
-        // (the console's `clock danish`: back at once, in the evening too)
-        m.clock = ServerClock::starting("2026-10-25", 23 * 3600 + 15 * 60, evening).unwrap();
-        assert_eq!(m.set_danish_time(evening, true), Some(-60));
-        assert_eq!(m.clock.at_real(evening as f64), ("2026-10-25".to_string(), (22 * 3600 + 15 * 60) as f64));
-        assert_eq!(m.set_danish_time(evening, true), None, "in step");
+        assert_eq!(m.set_machine_time(evening + 60, 3600), None, "in step");
+        // (behind - summer time begun: on at once)
+        assert_eq!(m.set_machine_time(evening, 7200), Some(60));
         assert!(command(&mut m, "clock").is_some_and(|t| t.starts_with("server's clock: ")));
-        assert!(command(&mut m, "clock danish").is_some_and(|t| t.contains("in step already")));
+        assert!(command(&mut m, "clock now").is_some());
         let _ = std::fs::remove_dir_all(&dir);
     }
 

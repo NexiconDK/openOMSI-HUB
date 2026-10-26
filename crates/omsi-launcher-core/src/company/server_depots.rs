@@ -10,6 +10,10 @@
 //! co-owner of the depot). Money moves between them and the head office sees its depots (step
 //! 2: `send`), a bus of their own moves and staff are lent (step 3: `move_bus`, `lend`); a depot
 //! that goes bankrupt comes in the next step.
+//!
+//! (Phase 7) The head office is the group's own now (`server_hq`): no map, no process, kept by
+//! the main server - every department of the group a depot, its first map's too. The files below
+//! reach it by its id as they reached a head office.
 
 use super::main_server::{find_map, map_name};
 use super::model::{BookingKind, Cents, Company};
@@ -63,30 +67,38 @@ pub fn maps_for(data: &Path, root: &Path, hq: &Company) -> Vec<String> {
     super::main_server::installed_maps(root).into_iter().filter(|m| !taken.contains(&m.to_lowercase())).collect()
 }
 
-/// Head office `hq` founds a depot on map `map` (a map's folder or name in `root`), paying `price`
-/// and giving it `start` (cents) from its own money: a company of the server on that map with the
-/// head office's name and the map's, its mark, game mode, country and owner, on the server's clock
-/// (`online::found_on_server`), tied to it (`Online::hq`). The main server starts its process at
-/// its next look into the folder. The depot's id.
-pub fn found(data: &Path, root: &Path, hq: &mut Company, map: &str, start: Cents, price: Cents, real: i64) -> Result<String, &'static str> {
-    if !hq.online.on_server {
+/// Company `c` founds a depot on map `map` (a map's folder or name in `root`), paying `price` and
+/// giving it `start` (cents) from its own money: a company of the server on that map with the
+/// group's name and the map's, its mark, game mode, country and owner, on the server's clock
+/// (`online::found_on_server`), tied to the group's head office (`Online::hq`). The main server
+/// starts its process at its next look into the folder. The depot's id.
+///
+/// (Phase 7) `c` is the group's head office (`server_hq`: its treasury pays), or a company on its
+/// own: then its group is made with it - a head office of its name, the company its first depot,
+/// named by its map as the new one is (`server_hq::join_group`) - and the company pays.
+pub fn found(data: &Path, root: &Path, c: &mut Company, map: &str, start: Cents, price: Cents, real: i64) -> Result<String, &'static str> {
+    if !c.online.on_server {
         return Err(NOT_ON_SERVER);
     }
-    if !hq.online.hq.is_empty() {
+    if !c.online.hq.is_empty() {
         return Err(DEPOT_OF_DEPOT);
     }
     let map = find_map(root, map).ok_or(NO_MAP)?;
-    if map_folder(&map) == map_folder(&hq.map) {
+    let group = super::server_hq::is_group(c);
+    if !group && map_folder(&map) == map_folder(&c.map) {
         return Err(SAME_MAP);
     }
-    if depots_of(data, &hq.id).iter().any(|d| map_folder(&d.map) == map_folder(&map)) {
+    if depots_of(data, &c.id).iter().any(|d| map_folder(&d.map) == map_folder(&map)) {
         return Err(HAS_DEPOT);
     }
     let start = start.max(0);
-    if hq.cash < price + start {
+    if price.max(0).saturating_add(start) > c.cash {
         return Err(NO_CASH);
     }
     let clock = online::read_server_clock(data).ok_or(NO_CLOCK)?;
+    // (the group: the head office's own, or one made for the company on its own - kept once the
+    // depot is founded)
+    let hq = if group { c.clone() } else { super::server_hq::new_group(data, c) };
     let f = Founding {
         name: format!("{} {}", hq.name, map_name(&map)),
         short: hq.short.clone(),
@@ -94,26 +106,31 @@ pub fn found(data: &Path, root: &Path, hq: &mut Company, map: &str, start: Cents
         logo: hq.logo.clone(),
         map: map.clone(),
         map_name: map_name(&map),
-        game_mode: hq.game_mode,
-        company_mode: hq.company_mode,
-        country: hq.country.clone(),
-        currency: hq.currency,
+        game_mode: c.game_mode,
+        company_mode: c.company_mode,
+        country: c.country.clone(),
+        currency: c.currency,
         ..Default::default()
     };
     let id = online::found_on_server(data, &f, super::main_server::SERVER_PROFILE, clock, real).map_err(|_| NOT_FOUNDED)?;
     let mut d = store::load(data, &id).map_err(|_| NOT_FOUNDED)?;
     d.online.hq = hq.id.clone();
-    d.online.owner = hq.online.owner.clone();
-    d.online.owner_id = hq.online.owner_id.clone();
-    d.online.share = hq.online.share;
+    d.online.owner = c.online.owner.clone();
+    d.online.owner_id = c.online.owner_id.clone();
+    d.online.share = c.online.share;
+    // (the group's brand as it is now: `server_hq::take_brand`)
+    d.online.brand = hq.online.group.as_ref().map_or(0, |g| g.brand);
     // (its money the head office's: nothing of a founding's own capital)
     d.cash = 0;
     d.ledger.clear();
     d.months.clear();
     d.book(BookingKind::Capital, start, format!("{}: the head office's money", hq.name), false);
     store::save(data, &d).map_err(|_| NOT_FOUNDED)?;
-    hq.book(BookingKind::Construction, -price, format!("Depot {}", d.name), false);
-    hq.book(BookingKind::Capital, -start, format!("Depot {}: its starting money", d.name), false);
+    if !group {
+        super::server_hq::join_group(data, &hq, c)?;
+    }
+    c.book(BookingKind::Construction, -price, format!("Depot {}", d.name), false);
+    c.book(BookingKind::Capital, -start, format!("Depot {}: its starting money", d.name), false);
     Ok(id)
 }
 
@@ -135,6 +152,13 @@ pub struct Transfer {
 pub const NOT_RELATED: &str = "Money goes only between a head office and its own depots.";
 pub const NO_AMOUNT: &str = "Send at least 100.";
 pub const NOT_SENT: &str = "The money could not be sent: the server says why in its log.";
+
+/// (Phase 7) The files of the server's folder that name company `id` as their reader - what
+/// was sent and told to it, its requests and answers, its head office's orders: removed with it
+/// (`store::delete`), so a company founded later under its id does not take them again.
+pub fn files_of(data: &Path, id: &str) -> Vec<std::path::PathBuf> {
+    vec![transfers_file(data, id), buses_file(data, id), people_file(data, id), notices_file(data, id), asks_file(data, id), answers_file(data, id), super::server_hq::orders_file(data, id)]
+}
 
 /// The money sent to company `id`.
 pub fn transfers_file(data: &Path, id: &str) -> std::path::PathBuf {
@@ -204,6 +228,12 @@ pub fn take_transfers(data: &Path, c: &mut Company) -> Cents {
     total
 }
 
+/// The money sent to company `id` it has not taken yet (its transfers' file after `read`, its
+/// `Online::transfers_read`): what is on its way to it.
+pub fn pending_to(data: &Path, id: &str, read: u64) -> Cents {
+    lines_after(&transfers_file(data, id), read).iter().filter_map(|(l, _)| serde_json::from_str::<Transfer>(l).ok()).map(|t| t.amount.max(0)).sum()
+}
+
 /// A depot of a head office as its view shows it: this month's result besides its figures.
 pub fn month_result(data: &Path, id: &str, month: &str) -> Option<Cents> {
     store::load(data, id).ok().map(|d| d.month(month).result())
@@ -250,7 +280,7 @@ pub fn buses_file(data: &Path, id: &str) -> std::path::PathBuf {
 }
 
 /// A JSON line added to a file of the folder (made when missing).
-fn append_line(path: &Path, line: &str) -> std::io::Result<()> {
+pub(super) fn append_line(path: &Path, line: &str) -> std::io::Result<()> {
     use std::io::Write;
     if let Some(d) = path.parent() {
         std::fs::create_dir_all(d)?;
@@ -260,7 +290,7 @@ fn append_line(path: &Path, line: &str) -> std::io::Result<()> {
 }
 
 /// The whole lines of a file from byte `from` on, each with the byte it ends at.
-fn lines_after(path: &Path, from: u64) -> Vec<(String, u64)> {
+pub(super) fn lines_after(path: &Path, from: u64) -> Vec<(String, u64)> {
     let Ok(bytes) = std::fs::read(path) else { return Vec::new() };
     let mut at = if (from as usize) > bytes.len() { 0 } else { from as usize };
     let mut out = Vec::new();
@@ -279,6 +309,10 @@ fn lines_after(path: &Path, from: u64) -> Vec<(String, u64)> {
 pub fn move_bus(data: &Path, c: &mut Company, id: u32, to: &str, price: Cents, days: i64) -> Result<String, &'static str> {
     if !c.online.on_server {
         return Err(NOT_ON_SERVER);
+    }
+    // (phase 7: a group's head office has no fleet - nothing would take the bus in)
+    if super::server_hq::is_group_id(to) {
+        return Err(NOT_RELATED);
     }
     let other = store::load(data, to).map_err(|_| NOT_RELATED)?;
     if other.id == c.id || !related(c, &other.id, &other.online.hq) {
@@ -406,6 +440,10 @@ pub fn people_file(data: &Path, id: &str) -> std::path::PathBuf {
 pub fn lend(data: &Path, c: &mut Company, id: u32, to: &str, days: i64) -> Result<String, &'static str> {
     if !c.online.on_server {
         return Err(NOT_ON_SERVER);
+    }
+    // (phase 7: nor staff to a head office)
+    if super::server_hq::is_group_id(to) {
+        return Err(NOT_RELATED);
     }
     let other = store::load(data, to).map_err(|_| NOT_RELATED)?;
     if other.id == c.id || !related(c, &other.id, &other.online.hq) {
@@ -552,8 +590,8 @@ pub fn take_notices(data: &Path, c: &mut Company) -> (bool, bool) {
 /// The messages of a depot in the red, and of its end.
 pub const RED_DEPOT: (&str, &str) = ("The depot is in the red: %{n} days to go", "The depot has %{amount} in cash. Still in the red at the close of %{n} more days, it goes bankrupt: it closes, and its head office covers its loss. Sell buses, cut costs, or ask the head office for money.");
 pub const RED_DEPOT_LAST: (&str, &str) = ("The depot goes bankrupt tomorrow", "The depot has %{amount} in cash. Still in the red at tomorrow's close, it goes bankrupt: it closes, and its head office covers its loss. Sell buses, cut costs, or ask the head office for money.");
-pub const RED_HQ: (&str, &str) = ("Depot %{name} is in the red: %{n} days to go", "Depot %{name} has %{amount} in cash. Still in the red at the close of %{n} more days, it goes bankrupt and the head office covers its loss: send it money from the settings' Depots.");
-pub const RED_HQ_LAST: (&str, &str) = ("Depot %{name} goes bankrupt tomorrow", "Depot %{name} has %{amount} in cash. Still in the red at tomorrow's close, it goes bankrupt and the head office covers its loss: send it money from the settings' Depots.");
+pub const RED_HQ: (&str, &str) = ("Depot %{name} is in the red: %{n} days to go", "Depot %{name} has %{amount} in cash. Still in the red at the close of %{n} more days, it goes bankrupt and the head office covers its loss: send it money from the head office's page, or give it a rule that tops it up.");
+pub const RED_HQ_LAST: (&str, &str) = ("Depot %{name} goes bankrupt tomorrow", "Depot %{name} has %{amount} in cash. Still in the red at tomorrow's close, it goes bankrupt and the head office covers its loss: send it money from the head office's page, or give it a rule that tops it up.");
 pub const BANKRUPT: (&str, &str) = ("Depot %{name} is bankrupt", "Depot %{name} stayed in the red and is closed: its buses sold, its staff gone, its lines out to tender again. The head office covered its loss of %{amount}.");
 pub const BANKRUPT_RED: (&str, &str) = ("Depot %{name} is bankrupt: the head office is in the red", "Depot %{name} stayed in the red and is closed: its buses sold, its staff gone, its lines out to tender again. The head office covered its loss of %{amount} and is in the red now: sell buses, or close the company.");
 pub const BANKRUPT_LEFT: (&str, &str) = ("Depot %{name} is closed", "Depot %{name} stayed in the red and is closed: its buses sold, its staff gone, its lines out to tender again. What was left of it, %{amount}, is the head office's.");
@@ -618,7 +656,7 @@ pub const NEEDS_APPROVAL: &str = "A purchase this big needs the head office's ap
 pub const NOT_A_DEPOT: &str = "Only a depot asks its head office.";
 pub const NO_ASK_AMOUNT: &str = "Choose an amount.";
 pub const NO_SUCH_ASK: &str = "There is no such request.";
-pub const ASKED: (&str, &str) = ("Depot %{name} asks for your approval", "Depot %{name} asks to spend up to %{amount}: %{reason}. Approve or refuse it in the settings, under Depots.");
+pub const ASKED: (&str, &str) = ("Depot %{name} asks for your approval", "Depot %{name} asks to spend up to %{amount}: %{reason}. Approve or refuse it on the head office's page.");
 pub const APPROVED: (&str, &str) = ("The head office approved %{amount}", "The head office approved purchases up to %{amount}: the dealer takes them now.");
 pub const REFUSED: (&str, &str) = ("The head office refused %{amount}", "The head office refused purchases up to %{amount}.");
 
@@ -664,6 +702,12 @@ pub fn ask_approval(data: &Path, c: &mut Company, amount: Cents, reason: &str, n
     append_line(&asks_file(data, &c.online.hq), &serde_json::to_string(&a).map_err(|_| NO_ASK_AMOUNT)?).map_err(|_| NO_ASK_AMOUNT)?;
     c.online.asks.push(a);
     Ok(())
+}
+
+/// (Phase 7) The requests that came to head office `hq` after byte `read` of its file (a head
+/// office split into its group's head office and a depot: those not taken yet go with the group).
+pub fn asks_after(data: &Path, hq: &str, read: u64) -> Vec<Approval> {
+    lines_after(&asks_file(data, hq), read).iter().filter_map(|(l, _)| serde_json::from_str::<Approval>(l).ok()).collect()
 }
 
 /// The head office's owner answers request `id`: the depot told, the request gone.
@@ -905,12 +949,16 @@ mod tests {
         assert_eq!(found(&data, &root, &mut hq, "Ahlheim", cash, 250_000_00, 1_800_000_000), Err(NO_CASH));
         let id = found(&data, &root, &mut hq, "Ahlheim", 100_000_00, 250_000_00, 1_800_000_000).unwrap();
         assert_eq!(hq.cash, cash - 350_000_00);
+        // (phase 7: its group made with it - the company its first depot, "Umove Grundorf")
+        store::save(&data, &hq).unwrap();
         let d = store::load(&data, &id).unwrap();
-        assert_eq!((d.name.as_str(), d.short.as_str(), d.online.hq.as_str(), d.online.owner_id.as_str(), d.cash), ("Umove Ahlheim", "UMO", "umove", "p1", 100_000_00));
+        assert_eq!((d.name.as_str(), d.short.as_str(), d.online.hq.as_str(), d.online.owner_id.as_str(), d.cash), ("Umove Ahlheim", "UMO", "umove.hq", "p1", 100_000_00));
         assert!(d.online.on_server && map_folder(&d.map) == "ahlheim" && d.game_mode == hq.game_mode);
-        assert_eq!(depots_of(&data, "umove").iter().map(|x| x.name.as_str()).collect::<Vec<_>>(), ["Umove Ahlheim"]);
-        assert_eq!(maps_for(&data, &root, &hq), ["Spandau"]);
-        assert_eq!(found(&data, &root, &mut hq, "Ahlheim", 0, 250_000_00, 1_800_000_000), Err(HAS_DEPOT));
+        assert_eq!(depots_of(&data, "umove.hq").iter().map(|x| x.name.as_str()).collect::<Vec<_>>(), ["Umove Ahlheim", "Umove Grundorf"]);
+        let mut g = store::load(&data, "umove.hq").unwrap();
+        assert_eq!(maps_for(&data, &root, &g), ["Spandau"]);
+        assert_eq!(found(&data, &root, &mut g, "Ahlheim", 0, 250_000_00, 1_800_000_000), Err(HAS_DEPOT));
+        assert_eq!(found(&data, &root, &mut hq, "Spandau", 0, 0, 1_800_000_000), Err(DEPOT_OF_DEPOT));
         let mut depot = d.clone();
         assert_eq!(found(&data, &root, &mut depot, "Spandau", 0, 0, 1_800_000_000), Err(DEPOT_OF_DEPOT));
         let mut own = hq.clone();
@@ -918,7 +966,6 @@ mod tests {
         assert_eq!(found(&data, &root, &mut own, "Spandau", 0, 0, 1_800_000_000), Err(NOT_ON_SERVER));
         // (step 2) money goes between them: out of the sender's books at once, into the other's
         // at its next step - once; not to a company of another's, not more than there is
-        store::save(&data, &hq).unwrap();
         let mut d = store::load(&data, &id).unwrap();
         let (hq_cash, d_cash) = (hq.cash, d.cash);
         send(&data, &mut hq, &id, 50_000_00, 1).unwrap();
@@ -971,6 +1018,8 @@ mod tests {
         hq.cash += 2_000_000_00;
         store::save(&data, &hq).unwrap();
         let id = found(&data, &root, &mut hq, "Ahlheim", 100_000_00, 250_000_00, 1_800_000_000).unwrap();
+        store::save(&data, &hq).unwrap();
+        // (phase 7: the group's head office is no relative of buses and staff - it has none)
         assert_eq!(relatives(&data, &hq), [(id.clone(), "Umove Ahlheim".to_string())]);
         // (a bus of its own, and one leased)
         let b = MarketBus { file: "Vehicles/MB_Citaro/Citaro.bus".into(), name: "Citaro".into(), kind: BusKind { size: BusSize::Solo, drive: Drive::Diesel }, ..Default::default() };
@@ -1052,6 +1101,10 @@ mod tests {
         store::save(&data, &hq).unwrap();
         let id = found(&data, &root, &mut hq, "Ahlheim", 100_000_00, 250_000_00, 1_800_000_000).unwrap();
         store::save(&data, &hq).unwrap();
+        // (phase 7: the group's head office covers a depot's loss - with money of its own here)
+        let mut g = store::load(&data, "umove.hq").unwrap();
+        g.cash = 1_000_000_00;
+        store::save(&data, &g).unwrap();
         let mut d = store::load(&data, &id).unwrap();
         d.cash += 1_000_000_00;
         market::buy_new(&mut d, &MarketBus { name: "Citaro".into(), ..Default::default() }, Payment::Cash, "").unwrap();
@@ -1064,25 +1117,25 @@ mod tests {
         assert_eq!(day_closed(&data, &mut d), Red::Warned(2));
         assert_eq!(day_closed(&data, &mut d), Red::Warned(1));
         assert!(d.inbox.messages.iter().any(|m| m.title == RED_DEPOT_LAST.0));
-        assert!(take_notices(&data, &mut hq).0);
-        assert!(hq.inbox.messages.iter().any(|m| m.title == RED_HQ_LAST.0));
+        assert!(take_notices(&data, &mut g).0);
+        assert!(g.inbox.messages.iter().any(|m| m.title == RED_HQ_LAST.0));
         // (the next close, still in the red: bankrupt - its bus sold, its loss covered)
         assert_eq!(day_closed(&data, &mut d), Red::Bankrupt);
         let left = bankrupt(&data, &mut d);
         assert!(left < 0 && d.fleet.is_empty() && d.staff.is_empty() && d.lines.is_empty() && d.cash == 0, "{left} {}", d.cash);
-        let before = hq.cash;
-        assert_eq!(take_notices(&data, &mut hq), (true, false));
-        assert_eq!(hq.cash, before + left);
-        assert!(hq.inbox.messages.iter().any(|m| m.title == BANKRUPT.0));
-        assert!(!take_notices(&data, &mut hq).0, "once");
+        let before = g.cash;
+        assert_eq!(take_notices(&data, &mut g), (true, false));
+        assert_eq!(g.cash, before + left);
+        assert!(g.inbox.messages.iter().any(|m| m.title == BANKRUPT.0));
+        assert!(!take_notices(&data, &mut g).0, "once");
         // (a head office without the money goes into the red)
         let mut d2 = d.clone();
-        d2.cash = -(hq.cash + 1_000_00);
-        hq.cash = 0;
-        store::save(&data, &hq).unwrap();
+        d2.cash = -(g.cash + 1_000_00);
+        g.cash = 0;
+        store::save(&data, &g).unwrap();
         bankrupt(&data, &mut d2);
-        take_notices(&data, &mut hq);
-        assert!(hq.cash < 0 && hq.inbox.messages.iter().any(|m| m.title == BANKRUPT_RED.0));
+        take_notices(&data, &mut g);
+        assert!(g.cash < 0 && g.inbox.messages.iter().any(|m| m.title == BANKRUPT_RED.0));
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -1110,26 +1163,29 @@ mod tests {
         hq.cash += 1_000_000_00;
         store::save(&data, &hq).unwrap();
         let id = found(&data, &root, &mut hq, "Ahlheim", 100_000_00, 250_000_00, 1_800_000_000).unwrap();
+        // (phase 7: the head office is the group's, made with its first depot)
+        store::save(&data, &hq).unwrap();
+        let mut g = store::load(&data, "umove.hq").unwrap();
         let mut d = store::load(&data, &id).unwrap();
         d.online.big_purchase = Some(500_000_00);
-        hq.online.big_purchase = Some(500_000_00);
+        g.online.big_purchase = Some(500_000_00);
         // (under the limit, or at the head office: nothing waits)
-        assert!(check_spend(&d, 400_000_00).is_ok() && check_spend(&hq, 900_000_00).is_ok());
+        assert!(check_spend(&d, 400_000_00).is_ok() && check_spend(&g, 900_000_00).is_ok());
         assert_eq!(check_spend(&d, 600_000_00), Err(NEEDS_APPROVAL));
         // asked for
-        assert_eq!(ask_approval(&data, &mut hq, 1, "x", 1), Err(NOT_A_DEPOT));
+        assert_eq!(ask_approval(&data, &mut g, 1, "x", 1), Err(NOT_A_DEPOT));
         assert_eq!(ask_approval(&data, &mut d, 0, "x", 1), Err(NO_ASK_AMOUNT));
         ask_approval(&data, &mut d, 700_000_00, "two articulated buses", 1_800_000_000).unwrap();
         assert_eq!(d.online.asks.len(), 1);
-        assert!(approvals_step(&data, &mut hq));
-        assert!(!approvals_step(&data, &mut hq), "once");
-        assert_eq!((hq.online.asks.len(), hq.online.asks[0].reason.as_str()), (1, "two articulated buses"));
-        assert!(hq.inbox.messages.iter().any(|m| m.title == ASKED.0));
+        assert!(approvals_step(&data, &mut g));
+        assert!(!approvals_step(&data, &mut g), "once");
+        assert_eq!((g.online.asks.len(), g.online.asks[0].reason.as_str()), (1, "two articulated buses"));
+        assert!(g.inbox.messages.iter().any(|m| m.title == ASKED.0));
         // approved
-        let ask = hq.online.asks[0].id;
-        assert_eq!(answer_approval(&data, &mut hq, 999, true), Err(NO_SUCH_ASK));
-        assert_eq!(answer_approval(&data, &mut hq, ask, true).map(|a| a.amount), Ok(700_000_00));
-        assert!(hq.online.asks.is_empty());
+        let ask = g.online.asks[0].id;
+        assert_eq!(answer_approval(&data, &mut g, 999, true), Err(NO_SUCH_ASK));
+        assert_eq!(answer_approval(&data, &mut g, ask, true).map(|a| a.amount), Ok(700_000_00));
+        assert!(g.online.asks.is_empty());
         assert!(approvals_step(&data, &mut d));
         assert_eq!((d.online.approved, d.online.asks.len()), (700_000_00, 0));
         assert!(d.inbox.messages.iter().any(|m| m.title == APPROVED.0));
@@ -1141,9 +1197,9 @@ mod tests {
         assert_eq!(check_spend(&d, 600_000_00), Err(NEEDS_APPROVAL));
         // refused
         ask_approval(&data, &mut d, 800_000_00, "", 1_800_000_100).unwrap();
-        approvals_step(&data, &mut hq);
-        let ask = hq.online.asks[0].id;
-        answer_approval(&data, &mut hq, ask, false).unwrap();
+        approvals_step(&data, &mut g);
+        let ask = g.online.asks[0].id;
+        answer_approval(&data, &mut g, ask, false).unwrap();
         approvals_step(&data, &mut d);
         assert_eq!((d.online.approved, d.online.asks.len()), (100_000_00, 0));
         assert!(d.inbox.messages.iter().any(|m| m.title == REFUSED.0));
@@ -1175,28 +1231,33 @@ mod tests {
         hq.cash += 1_000_000_00;
         store::save(&data, &hq).unwrap();
         let id = found(&data, &root, &mut hq, "Ahlheim", 100_000_00, 250_000_00, 1_800_000_000).unwrap();
+        // (phase 7: the head office is the group's, made with its first depot)
+        store::save(&data, &hq).unwrap();
+        let mut g = store::load(&data, "umove.hq").unwrap();
         // (in the red by 10 000: lent 13 000)
-        hq.cash = -10_000_00;
-        assert_eq!(day_closed(&data, &mut hq), Red::Fine);
-        assert!(emergency_running(&hq));
-        assert_eq!(hq.cash, 3_000_00);
-        let loan = hq.loans.iter().find(|l| l.purpose == EMERGENCY_PURPOSE).unwrap();
+        g.cash = -10_000_00;
+        assert_eq!(day_closed(&data, &mut g), Red::Fine);
+        assert!(emergency_running(&g));
+        assert_eq!(g.cash, 3_000_00);
+        let loan = g.loans.iter().find(|l| l.purpose == EMERGENCY_PURPOSE).unwrap();
         assert_eq!((loan.principal, loan.months_left), (13_000_00, EMERGENCY_MONTHS));
-        assert!(loan.rate > super::super::finance::rate_of(&hq));
-        assert!(hq.inbox.messages.iter().any(|m| m.title == EMERGENCY.0));
+        assert!(loan.rate > super::super::finance::rate_of(&g));
+        assert!(g.inbox.messages.iter().any(|m| m.title == EMERGENCY.0));
         // (out of the red, nothing; in it again while the loan runs: warned twice, then bankrupt)
-        assert_eq!(day_closed(&data, &mut hq), Red::Fine);
-        hq.cash = -1_00;
-        assert_eq!(day_closed(&data, &mut hq), Red::Warned(2));
-        assert_eq!(day_closed(&data, &mut hq), Red::Warned(1));
-        assert!(hq.inbox.messages.iter().any(|m| m.title == RED_COMPANY_LAST.0));
-        assert_eq!(day_closed(&data, &mut hq), Red::Bankrupt);
-        bankrupt(&data, &mut hq);
-        assert!(hq.loans.is_empty() && hq.lines.is_empty());
+        assert_eq!(day_closed(&data, &mut g), Red::Fine);
+        g.cash = -1_00;
+        assert_eq!(day_closed(&data, &mut g), Red::Warned(2));
+        assert_eq!(day_closed(&data, &mut g), Red::Warned(1));
+        assert!(g.inbox.messages.iter().any(|m| m.title == RED_COMPANY_LAST.0));
+        assert_eq!(day_closed(&data, &mut g), Red::Bankrupt);
+        bankrupt(&data, &mut g);
+        assert!(g.loans.is_empty() && g.lines.is_empty());
         // (its depot told to close with it)
         let mut d = store::load(&data, &id).unwrap();
         assert_eq!(take_notices(&data, &mut d), (true, true));
         assert!(d.inbox.messages.iter().any(|m| m.title == HQ_BANKRUPT.0));
+        let mut first = store::load(&data, "umove").unwrap();
+        assert_eq!(take_notices(&data, &mut first), (true, true), "its first depot too");
         // (a depot never gets the emergency loan: it is warned)
         d.cash = -1_00;
         assert_eq!(day_closed(&data, &mut d), Red::Warned(2));

@@ -120,7 +120,9 @@ pub fn list(data: &Path, profile: &str) -> Vec<Company> {
         .flatten()
         .filter_map(|e| {
             let n = e.file_name().to_string_lossy().to_string();
-            let id = n.strip_suffix(".json")?;
+            // (the companies' own files only: an id has no dots - `<id>.liveplan.json` lies
+            // beside them, and a group's head office is `<slug>.hq.json`: `server_hq`)
+            let id = n.strip_suffix(".json").filter(|id| !id.contains('.'))?;
             load(data, id).ok()
         })
         .filter(|c| profile.trim().is_empty() || c.profile.trim().eq_ignore_ascii_case(profile.trim()))
@@ -134,7 +136,9 @@ pub fn delete(data: &Path, id: &str) -> Result<()> {
     // (and what lies beside it: a company founded later under the same id starts without the
     // phone's orders, the game's plan and what the game reported of this one)
     let beside = [live_file(data, id), super::remote::orders_file(data, id), super::plan::live_plan_file(data, id), super::messages::inbox_file(data, id), dir(data).join(format!("{id}.json.tmp")), world_trips_file(data, id)];
-    for p in beside.into_iter().chain(taken_files(data, id).into_iter().map(|x| x.1)) {
+    // (Bus Company Online, phase 7: what the server's companies sent and told it)
+    let server = super::server_depots::files_of(data, id);
+    for p in beside.into_iter().chain(server).chain(taken_files(data, id).into_iter().map(|x| x.1)) {
         let _ = std::fs::remove_file(p);
     }
     Ok(())

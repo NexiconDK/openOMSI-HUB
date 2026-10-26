@@ -305,6 +305,7 @@ function Duties({ v, ask }) {
       <section class="co-section"><div class="co-caps">${w.open_caps}</div><p class="note">${v.take_note}</p>
         ${v.open.length ? v.open.map((d) => html`<${DutyRow} d=${d} again=${ask} />`) : html`<p class="dim">${v.reading ? '…' : w.no_open}</p>`}</section>
       ${v.ai?.length > 0 && html`<section class="co-section"><div class="co-caps">${w.ai_caps}</div><p class="note">${w.ai_note}</p>${v.ai.map((d) => html`<${DutyRow} d=${d} again=${ask} />`)}</section>`}
+      ${v.ai_none && html`<section class="co-section"><div class="co-caps">${w.ai_caps}</div><p class="note">${v.ai_none}</p></section>`}
       ${v.can.assign && v.giveable.length > 0 && html`<section class="co-section"><div class="co-caps">${w.give_caps}</div>${v.giveable.map((d) => html`<${GiveRow} d=${d} v=${v} again=${ask} />`)}</section>`}
       ${v.rest.length > 0 && html`<section class="co-section"><div class="co-caps">${w.rest_caps}</div>${v.rest.map((d) => html`<${DutyRow} d=${d} again=${ask} />`)}</section>`}
     </div>

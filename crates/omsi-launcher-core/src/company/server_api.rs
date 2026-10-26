@@ -101,6 +101,11 @@ pub struct Ask {
     /// (Phase 6) `test`'s class of bus (`career::LicenceClass`: midi, solo, articulated,
     /// double); empty: the test booked called off.
     pub class: String,
+    /// (Phase 7) `hq`'s and `hq_do`'s group (its head office's id), `hq_do`'s act and its
+    /// arguments (`server_hq::act`; `found`: `map`, `start`).
+    pub group: String,
+    pub act: String,
+    pub args: Value,
 }
 
 fn refusal(text: &str) -> Value {
@@ -122,6 +127,34 @@ fn refusal_with(w: super::server_found::Why) -> Value {
     }
     v["args"] = Value::Object(args);
     v
+}
+
+/// (Phase 7) The head office `group` for player `me` to run: a group of the server's, and his.
+fn runs_group(m: &MainServer, me: &Player, group: &str) -> std::result::Result<super::model::Company, &'static str> {
+    let gid = group.trim();
+    if !super::server_hq::is_group_id(gid) {
+        return Err(NO_COMPANY);
+    }
+    let g = store::load(&m.data, gid).map_err(|_| NO_COMPANY)?;
+    if !super::server_hq::may_run(&g, &me.id) {
+        return Err(super::server_hq::NOT_YOURS);
+    }
+    Ok(g)
+}
+
+/// (Phase 7) What a head office's page asks of the main server: which depots run, the price of
+/// a depot and the maps a new one may go on, the server's time.
+fn around(m: &MainServer, g: &super::model::Company) -> super::server_hq::Around {
+    let (_, secs) = m.clock.at_real(unix_now() as f64);
+    let s = secs as i64;
+    super::server_hq::Around {
+        running: m.companies.iter().filter(|p| online::code_file(&m.data, &p.id).is_file()).map(|p| p.id.clone()).collect(),
+        depot_price: m.cfg.depot_price,
+        maps: super::server_depots::maps_for(&m.data, &m.cfg.root, g),
+        time: format!("{:02}:{:02}", s / 3600, (s / 60) % 60),
+        bus_move: (m.cfg.bus_move_price, m.cfg.bus_move_days),
+        players: m.players.players.iter().map(|p| (p.id.clone(), p.name.clone())).collect(),
+    }
 }
 
 /// The server's kept session in its folder (made the first time: a new secret and key; its port
@@ -226,7 +259,7 @@ impl Api {
         match ask.what.as_str() {
             "info" => self.info(),
             "login" => self.login(&ask, now),
-            "companies" | "join" | "found" | "me" | "world" | "course" | "test" => {
+            "companies" | "join" | "found" | "me" | "world" | "course" | "test" | "hq" | "hq_do" => {
                 let Some(id) = self.player_of(&ask.session, now) else { return refusal(LOGGED_OUT) };
                 match ask.what.as_str() {
                     "companies" => self.companies(&id),
@@ -235,6 +268,8 @@ impl Api {
                     "world" => self.world(&id, &ask.company),
                     "course" => self.course(&id),
                     "test" => self.test(&id, &ask.class, now),
+                    "hq" => self.hq(&id, &ask.group),
+                    "hq_do" => self.hq_do(&id, &ask, now),
                     _ => self.me(&id),
                 }
             }
@@ -337,12 +372,23 @@ impl Api {
         let Some(me) = m.players.get(id).cloned() else { return refusal(LOGGED_OUT) };
         let mut list = Vec::new();
         let all: Vec<super::model::Company> = company_ids(&m.data).into_iter().filter_map(|cid| store::load(&m.data, &cid).ok()).collect();
+        // (phase 7: the groups' head offices - no map, the overview of their depots)
+        let groups: Vec<super::model::Company> = super::server_hq::group_ids(&m.data).into_iter().filter_map(|gid| store::load(&m.data, &gid).ok()).collect();
+        for g in &groups {
+            let mine = g.online.owner_id == me.id;
+            list.push(json!({
+                "id": g.id, "name": g.name, "short": g.short, "colours": g.colours, "map": "", "mode": g.game_mode, "date": g.date,
+                "owner": g.online.owner, "mine": mine, "role": mine.then_some("co_owner"), "runs": true, "players": 0,
+                "lines": 0, "buses": 0, "staff": 0, "hq": "", "hq_name": Value::Null, "line_list": [],
+                "group": true, "may_run": super::server_hq::may_run(g, &me.id),
+            }));
+        }
         // (the lines' colours the line editor gave them on each map, read once a map)
         let mut map_colours: std::collections::HashMap<String, std::collections::HashMap<String, String>> = std::collections::HashMap::new();
         for c in &all {
             let cid = c.id.clone();
             // (phase 4: a depot of a head office on another map - shown under it)
-            let hq_name = (!c.online.hq.is_empty()).then(|| all.iter().find(|x| x.id == c.online.hq).map(|x| x.name.clone()).unwrap_or_default());
+            let hq_name = (!c.online.hq.is_empty()).then(|| all.iter().chain(groups.iter()).find(|x| x.id == c.online.hq).map(|x| x.name.clone()).unwrap_or_default());
             let runs = m.companies.iter().any(|p| p.id == cid) && online::code_file(&m.data, &cid).is_file();
             let guest = c.together.guests.iter().find(|g| g.id == me.id);
             let mine = c.online.owner_id == me.id;
@@ -360,6 +406,50 @@ impl Api {
         let head = |c: &Value| if c["hq"].as_str().unwrap_or("").is_empty() { c["name"].as_str().unwrap_or("").to_lowercase() } else { format!("{}\u{1}{}", c["hq_name"].as_str().unwrap_or("").to_lowercase(), c["name"].as_str().unwrap_or("").to_lowercase()) };
         list.sort_by_key(|c| (!c["mine"].as_bool().unwrap_or(false), c["role"].is_null(), head(c)));
         json!({ "ok": true, "player": player_json(&me), "companies": list, "found": founding(&m, &me) })
+    }
+
+    /// (Phase 7) Head office `group`'s page for its owner (`server_hq::view`).
+    fn hq(&self, id: &str, group: &str) -> Value {
+        let m = self.server();
+        let Some(me) = m.players.get(id).cloned() else { return refusal(LOGGED_OUT) };
+        let g = match runs_group(&m, &me, group) {
+            Ok(g) => g,
+            Err(e) => return refusal(e),
+        };
+        json!({ "ok": true, "hq": super::server_hq::view(&m.data, &g, &me.id, &around(&m, &g)) })
+    }
+
+    /// (Phase 7) What the head office's owner does on its page (`server_hq::act`; `found`: a
+    /// depot founded from its treasury on `map` with `start`, its process started at once): kept,
+    /// said in the log, the page again.
+    fn hq_do(&self, id: &str, ask: &Ask, now: i64) -> Value {
+        let mut m = self.server();
+        let Some(me) = m.players.get(id).cloned() else { return refusal(LOGGED_OUT) };
+        let mut g = match runs_group(&m, &me, &ask.group) {
+            Ok(g) => g,
+            Err(e) => return refusal(e),
+        };
+        let done = if ask.act == "found" {
+            let map = ask.args.get("map").and_then(Value::as_str).unwrap_or("").to_string();
+            let start = ask.args.get("start").and_then(Value::as_i64).unwrap_or(0);
+            super::server_depots::found(&m.data, &m.cfg.root, &mut g, &map, start, m.cfg.depot_price, now).map(|d| format!("depot {d} founded on {}", super::main_server::map_name(&map)))
+        } else {
+            super::server_hq::act(&m.data, &mut g, (&me.id, &me.name), &ask.act, &ask.args, now)
+        };
+        match done {
+            Ok(said) => {
+                if let Err(e) = store::save(&m.data, &g) {
+                    m.say_warning(&format!("group {}: its head office not saved: {e:#}", g.id));
+                    return refusal(super::server_hq::NOT_MADE);
+                }
+                m.say(&format!("group {} ({}): {said} - by {} ({})", g.id, g.name, me.name, me.id));
+                if ask.act == "found" {
+                    m.scan();
+                }
+                json!({ "ok": true, "hq": super::server_hq::view(&m.data, &g, &me.id, &around(&m, &g)) })
+            }
+            Err(e) => refusal(e),
+        }
     }
 
     fn join(&self, id: &str, company: &str) -> Value {

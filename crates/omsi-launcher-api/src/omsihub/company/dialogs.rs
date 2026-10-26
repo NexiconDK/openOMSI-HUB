@@ -139,7 +139,7 @@ fn depots_part(c: &co::Company) -> Value {
     json!({
         "asks": asks, "asks_caps": tr("Waiting for your approval").to_uppercase(), "approve": tr("Approve"), "refuse": tr("Refuse"),
         "caps": tr("Depots").to_uppercase(), "rows": rows, "maps": maps,
-        "say": trf("A depot runs the company on another map of the server: its own lines, buses, staff and tenders there. It costs %{price} of the company's money, besides the starting money you give it.", &[("price", &eur(price))]),
+        "say": format!("{} {}", trf("A depot runs the company on another map of the server: its own lines, buses, staff and tenders there. It costs %{price} of the company's money, besides the starting money you give it.", &[("price", &eur(price))]), tr(BECOMES_GROUP)),
         "start": DEPOT_START as f64 / 100.0, "start_label": tr("Its starting money"), "map_label": tr("The map"),
         "found": tr("Found a depot"), "none": maps.is_empty().then(|| tr("The company has a depot on every other map of the server.")),
         "send": tr("Send money"), "send_amount": DEPOT_SEND as f64 / 100.0,
@@ -204,6 +204,9 @@ fn moves_part(c: &co::Company, data: &std::path::Path) -> Value {
         "people_caps": tr("Lent and borrowed").to_uppercase(), "people": people,
     })
 }
+
+/// (Phase 7) What founding the first depot makes of a company on its own (`server_hq`).
+pub const BECOMES_GROUP: &str = "The company becomes a group: a head office with no map above its depots - this company the first of them, named by its map - which its owner runs from Bus Company Online's server page.";
 
 /// The money the settings propose to send a depot or the head office (cents).
 const DEPOT_SEND: i64 = 100_000_00;

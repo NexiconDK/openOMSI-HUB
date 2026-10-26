@@ -667,7 +667,11 @@ fn begin_day(c: &mut Company, w: &mut dyn World) -> Result<(), String> {
         let r = plan::repair_day(c, &date, tours.clone());
         plan::tell_repaired(c, &r);
     }
-    let dp = plan::day_plan(c, &date, tours, &[], &[], false);
+    let mut dp = plan::day_plan(c, &date, tours.clone(), &[], &[], false);
+    // (decided 26 October 2026: the players the roster gives duties of the day - theirs now)
+    if super::together::book::claims_from_roster(c, &dp) {
+        dp = plan::day_plan(c, &date, tours, &[], &[], false);
+    }
     // (when the late drivers arrive, kept: moved to a duty that begins later, they are late
     // for it only when it begins before)
     plan::pin_arrivals(c, &dp);

@@ -107,6 +107,22 @@ pub struct Online {
     pub asks: Vec<super::server_depots::Approval>,
     #[serde(default)]
     pub asks_read: u64,
+    /// (Phase 7) The group's head office (koncern-HQ, `server_hq`): its depots' money rules, its
+    /// people and its brand - on the head office's own file only. None: a company (a depot of a
+    /// group, or on its own).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub group: Option<super::server_hq::Group>,
+    /// (Phase 7 step 4) The group's brand as the depot took it last (`server_hq::Group::brand`).
+    #[serde(default)]
+    pub brand: u32,
+    /// (Phase 7 step 3) How far the head office's orders to the depot were read
+    /// (`server_hq::orders_file`).
+    #[serde(default)]
+    pub orders_read: u64,
+    /// (Phase 7 step 5) The players the group made co-owners of the depot (its management, the
+    /// depot's manager: `server_hq::take_group`) - back to drivers when the group takes it back.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub group_roles: Vec<String>,
 }
 
 /// The company's share of its players' trips when it is founded (per cent).
@@ -118,7 +134,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0 }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, group_roles: Vec::new() }
     }
 }
 
@@ -378,7 +394,7 @@ pub fn server_clock(data: &Path, real: i64, follow: bool, start: (String, i64)) 
 /// (NexiconDK, decided 25 October 2026) Danish time at the real time `real` (Unix seconds): its
 /// date and the second of its day - UTC and an hour, and another from the last Sunday of March
 /// to the last Sunday of October (01:00 UTC both), as the EU has it. A server on the real time
-/// keeps it, whatever the zone of its machine (`main_server::MainServer::keep_danish_time`).
+/// keeps it, whatever the zone of its machine (the server kept it until 26 October 2026: `main_server::MainServer::keep_machine_time` now).
 pub fn danish(real: i64) -> (String, i64) {
     let (y, _, _) = dates::civil_from_days(real.div_euclid(DAY_S));
     let last_sunday = |m: u32| {
@@ -387,6 +403,15 @@ pub fn danish(real: i64) -> (String, i64) {
     };
     let (from, to) = (last_sunday(3) * DAY_S + 3600, last_sunday(10) * DAY_S + 3600);
     let local = real + 3600 + if (from..to).contains(&real) { 3600 } else { 0 };
+    (dates::fmt(local.div_euclid(DAY_S)), local.rem_euclid(DAY_S))
+}
+
+/// (NexiconDK, decided 26 October 2026) The machine's own time at the real time `real` (Unix
+/// seconds), the machine `offset` seconds from UTC (`crate::utc_offset`: its zone and summer
+/// time): its date and the second of its day. A server on the real time keeps it
+/// (`main_server::MainServer::keep_machine_time`).
+pub fn machine_time(real: i64, offset: i64) -> (String, i64) {
+    let local = real + offset;
     (dates::fmt(local.div_euclid(DAY_S)), local.rem_euclid(DAY_S))
 }
 
@@ -501,6 +526,9 @@ pub struct Host {
     dirty: bool,
     /// The server's clock the company runs on (None: its own course, as on a player's computer).
     server: Option<ServerClock>,
+    /// (Phase 7 step 4) When its group's head office was looked at last for its brand (real
+    /// seconds: `server_hq::take_brand`, every `server_hq::BRAND_EVERY`).
+    hq_looked: i64,
 }
 
 /// What a step came to.
@@ -549,15 +577,15 @@ impl Host {
         }
         company.online.on_server = true;
         let seen = (company.date.clone(), 0);
-        let mut h = Host { data: data.to_path_buf(), map_dir: None, company, read: Vec::new(), planned: None, plan_gen: 0, seen, saved_at: real, dirty: false, server };
+        let mut h = Host { data: data.to_path_buf(), map_dir: None, company, read: Vec::new(), planned: None, plan_gen: 0, seen, saved_at: real, dirty: false, server, hq_looked: 0 };
         h.pin();
         h
     }
 
     /// On the server's clock: the company's course is the server's (a lead it took - a step
     /// ahead of it - waits for the server to come up to it).
-    /// (NexiconDK) The server's clock set anew (Danish time, `main_server::MainServer::
-    /// keep_danish_time`): the company's course from now on - an hour back, it waits that hour
+    /// (NexiconDK) The server's clock set anew (the machine's time, `main_server::MainServer::
+    /// keep_machine_time`): the company's course from now on - an hour back, it waits that hour
     /// out. Whether it changed.
     pub fn set_server_clock(&mut self, sc: ServerClock) -> bool {
         if self.server == Some(sc) || self.server.is_none() {
@@ -647,6 +675,23 @@ impl Host {
             self.dirty = true;
             self.planned = None;
         }
+        // (phase 7 step 3: the group's head office's orders - a bus moved, an employee lent, the
+        // treasury's money called in - kept at once: what went out is in the other's file)
+        if super::server_hq::take_orders(&self.data, c) {
+            self.planned = None;
+            store::save(&self.data, c)?;
+            self.saved_at = real;
+            s.saved = true;
+        }
+        // (step 4: the group's brand - its mark, colours and liveries - as the head office has it;
+        // step 5: its roles)
+        if real - self.hq_looked >= super::server_hq::BRAND_EVERY {
+            self.hq_looked = real;
+            if super::server_hq::take_group(&self.data, c) {
+                self.dirty = true;
+                self.planned = None;
+            }
+        }
         // (the buses of the lines changing company - offered, answered, sold, taken over)
         if super::takeover::step(&self.data, c) {
             self.dirty = true;
@@ -710,6 +755,10 @@ impl Host {
                 self.dirty = true;
                 return Ok(s);
             }
+        }
+        // (phase 7: a depot of a group - its surplus over its rule home to the head office)
+        if !s.closed.is_empty() && super::server_hq::sweep(&self.data, &mut self.company, real) > 0 {
+            self.dirty = true;
         }
         let new_day = self.company.date != before;
         if new_day {

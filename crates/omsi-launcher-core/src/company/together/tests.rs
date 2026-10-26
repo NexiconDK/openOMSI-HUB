@@ -1113,3 +1113,37 @@ fn a_trip_the_ai_drove_while_he_was_not_at_his_stop_is_the_ais() {
     assert_eq!(book::ai_kept(&mut b.c, Some(&p), &duty, jan, 500, 1, 300), Err(book::NO_DUTY));
     assert_eq!(book::ai_kept(&mut b.c, Some(&p), &duty, jan + 1, 360, 1, 300), Err(book::NOT_YOURS));
 }
+
+/// (Decided 26 October 2026) A player of the company planned in the roster for a coming day: the
+/// duty his in that day's plan; on the company's day, as it begins, his claim (planned, as given)
+/// - not when somebody has the duty, nor for a player sent away.
+#[test]
+fn a_player_planned_in_the_roster_has_the_duty_on_its_day() {
+    let mut b = boss();
+    b.c.online.on_server = true;
+    ask(&mut b, "jan", "hello", |_| {});
+    let jan = guest_no(&b, "jan");
+    let wd = super::super::plan::weekday_of(&b.c.date);
+    super::super::plan::set_driver(&mut b.c, wd, "Linie5", "2", 0, Some(Who::Guest(jan)));
+    // (a week on: the day to come, his by the roster)
+    let later = super::super::dates::add(&b.c.date, 7);
+    let p = day_plan(&b.c, &later, b.tours.clone(), &[], &[], false);
+    assert!(!p.today);
+    assert_eq!(p.tours[0].duties[0].who, Some(Who::Guest(jan)));
+    // (the company's day: nobody's until it begins - then his claim)
+    let p = b.plan();
+    assert_eq!(p.tours[0].duties[0].who, None, "only his claim puts him on today's duty");
+    assert!(book::claims_from_roster(&mut b.c, &p));
+    assert!(!book::claims_from_roster(&mut b.c, &p), "once");
+    let duty = DutyRef::of(&p, 0, 0).unwrap();
+    assert_eq!(b.c.together.claim_of(&duty).map(|x| (x.guest, x.state)), Some((jan, ClaimState::Planned)));
+    assert_eq!(b.plan().tours[0].duties[0].who, Some(Who::Guest(jan)));
+    assert_eq!(snap(&ask(&mut b, "jan", "snapshot", |_| {})).duties[0].state, DutyState::Mine);
+    // (sent away: not his)
+    b.c.together.claims.clear();
+    b.c.together.guest_mut(jan).unwrap().banned = true;
+    let p = b.plan();
+    assert!(!book::claims_from_roster(&mut b.c, &p));
+    let p = day_plan(&b.c, &later, b.tours.clone(), &[], &[], false);
+    assert_eq!(p.tours[0].duties[0].who, None);
+}

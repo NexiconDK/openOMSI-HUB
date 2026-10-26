@@ -1511,13 +1511,13 @@ _version: 2
   pl: "Zajezdnia %{name} jest na minusie: zostało %{n} dni"
   ru: "Депо %{name} в минусе: осталось %{n} дн."
   uk: "Депо %{name} у мінусі: лишилося %{n} дн."
-"Depot %{name} has %{amount} in cash. Still in the red at the close of %{n} more days, it goes bankrupt and the head office covers its loss: send it money from the settings' Depots.":
-  de: "Depot %{name} hat %{amount} Kasse. Ist es nach Abschluss von %{n} weiteren Tagen noch im Minus, geht es pleite und die Zentrale deckt seinen Verlust: Schicke ihm Geld über die Depots in den Einstellungen."
-  fr: "Le dépôt %{name} a %{amount} en caisse. Encore dans le rouge à la clôture de %{n} jours de plus, il fait faillite et le siège couvre sa perte : envoyez-lui de l'argent depuis les Dépôts des réglages."
-  nl: "Remise %{name} heeft %{amount} in kas. Staat ze na de afsluiting van nog %{n} dagen nog rood, dan gaat ze failliet en dekt het hoofdkantoor het verlies: stuur haar geld via Remises in de instellingen."
-  pl: "Zajezdnia %{name} ma %{amount} w kasie. Jeśli po zamknięciu kolejnych %{n} dni nadal będzie na minusie, zbankrutuje, a centrala pokryje jej stratę: wyślij jej pieniądze z sekcji Zajezdnie w ustawieniach."
-  ru: "У депо %{name} %{amount} в кассе. Если после закрытия ещё %{n} дн. оно останется в минусе, оно обанкротится, и головной офис покроет его убыток: отправьте ему деньги в разделе «Депо» настроек."
-  uk: "Депо %{name} має %{amount} у касі. Якщо після закриття ще %{n} дн. воно лишиться в мінусі, воно збанкрутує, і головний офіс покриє його збиток: надішліть йому гроші в розділі «Депо» налаштувань."
+"Depot %{name} has %{amount} in cash. Still in the red at the close of %{n} more days, it goes bankrupt and the head office covers its loss: send it money from the head office's page, or give it a rule that tops it up.":
+  de: "Depot %{name} hat %{amount} Kasse. Ist es nach Abschluss von %{n} weiteren Tagen noch im Minus, geht es pleite und die Zentrale deckt seinen Verlust: Schicke ihm Geld von der Seite der Zentrale oder gib ihm eine Regel, die es auffüllt."
+  fr: "Le dépôt %{name} a %{amount} en caisse. Encore dans le rouge à la clôture de %{n} jours de plus, il fait faillite et le siège couvre sa perte : envoyez-lui de l'argent depuis la page du siège, ou donnez-lui une règle qui le renfloue."
+  nl: "Remise %{name} heeft %{amount} in kas. Staat ze na de afsluiting van nog %{n} dagen nog rood, dan gaat ze failliet en dekt het hoofdkantoor het verlies: stuur haar geld via de pagina van het hoofdkantoor, of geef haar een regel die haar aanvult."
+  pl: "Zajezdnia %{name} ma %{amount} w kasie. Jeśli po zamknięciu kolejnych %{n} dni nadal będzie na minusie, zbankrutuje, a centrala pokryje jej stratę: wyślij jej pieniądze ze strony centrali albo daj jej regułę, która ją uzupełnia."
+  ru: "У депо %{name} %{amount} в кассе. Если после закрытия ещё %{n} дн. оно останется в минусе, оно обанкротится, и головной офис покроет его убыток: отправьте ему деньги со страницы главного офиса или задайте ему правило пополнения."
+  uk: "Депо %{name} має %{amount} у касі. Якщо після закриття ще %{n} дн. воно лишиться в мінусі, воно збанкрутує, і головний офіс покриє його збиток: надішліть йому гроші зі сторінки головного офісу або задайте йому правило поповнення."
 "Depot %{name} goes bankrupt tomorrow":
   de: "Depot %{name} geht morgen pleite"
   fr: "Le dépôt %{name} fait faillite demain"
@@ -1525,13 +1525,13 @@ _version: 2
   pl: "Zajezdnia %{name} jutro zbankrutuje"
   ru: "Депо %{name} обанкротится завтра"
   uk: "Депо %{name} збанкрутує завтра"
-"Depot %{name} has %{amount} in cash. Still in the red at tomorrow's close, it goes bankrupt and the head office covers its loss: send it money from the settings' Depots.":
-  de: "Depot %{name} hat %{amount} Kasse. Ist es beim morgigen Abschluss noch im Minus, geht es pleite und die Zentrale deckt seinen Verlust: Schicke ihm Geld über die Depots in den Einstellungen."
-  fr: "Le dépôt %{name} a %{amount} en caisse. Encore dans le rouge à la clôture de demain, il fait faillite et le siège couvre sa perte : envoyez-lui de l'argent depuis les Dépôts des réglages."
-  nl: "Remise %{name} heeft %{amount} in kas. Staat ze bij de afsluiting van morgen nog rood, dan gaat ze failliet en dekt het hoofdkantoor het verlies: stuur haar geld via Remises in de instellingen."
-  pl: "Zajezdnia %{name} ma %{amount} w kasie. Jeśli przy jutrzejszym zamknięciu nadal będzie na minusie, zbankrutuje, a centrala pokryje jej stratę: wyślij jej pieniądze z sekcji Zajezdnie w ustawieniach."
-  ru: "У депо %{name} %{amount} в кассе. Если при завтрашнем закрытии оно останется в минусе, оно обанкротится, и головной офис покроет его убыток: отправьте ему деньги в разделе «Депо» настроек."
-  uk: "Депо %{name} має %{amount} у касі. Якщо під час завтрашнього закриття воно лишиться в мінусі, воно збанкрутує, і головний офіс покриє його збиток: надішліть йому гроші в розділі «Депо» налаштувань."
+"Depot %{name} has %{amount} in cash. Still in the red at tomorrow's close, it goes bankrupt and the head office covers its loss: send it money from the head office's page, or give it a rule that tops it up.":
+  de: "Depot %{name} hat %{amount} Kasse. Ist es beim morgigen Abschluss noch im Minus, geht es pleite und die Zentrale deckt seinen Verlust: Schicke ihm Geld von der Seite der Zentrale oder gib ihm eine Regel, die es auffüllt."
+  fr: "Le dépôt %{name} a %{amount} en caisse. Encore dans le rouge à la clôture de demain, il fait faillite et le siège couvre sa perte : envoyez-lui de l'argent depuis la page du siège, ou donnez-lui une règle qui le renfloue."
+  nl: "Remise %{name} heeft %{amount} in kas. Staat ze bij de afsluiting van morgen nog rood, dan gaat ze failliet en dekt het hoofdkantoor het verlies: stuur haar geld via de pagina van het hoofdkantoor, of geef haar een regel die haar aanvult."
+  pl: "Zajezdnia %{name} ma %{amount} w kasie. Jeśli przy jutrzejszym zamknięciu nadal będzie na minusie, zbankrutuje, a centrala pokryje jej stratę: wyślij jej pieniądze ze strony centrali albo daj jej regułę, która ją uzupełnia."
+  ru: "У депо %{name} %{amount} в кассе. Если при завтрашнем закрытии оно останется в минусе, оно обанкротится, и головной офис покроет его убыток: отправьте ему деньги со страницы главного офиса или задайте ему правило пополнения."
+  uk: "Депо %{name} має %{amount} у касі. Якщо під час завтрашнього закриття воно лишиться в мінусі, воно збанкрутує, і головний офіс покриє його збиток: надішліть йому гроші зі сторінки головного офісу або задайте йому правило поповнення."
 "Depot %{name} is bankrupt":
   de: "Depot %{name} ist pleite"
   fr: "Le dépôt %{name} a fait faillite"
@@ -1847,13 +1847,13 @@ _version: 2
   pl: "Zajezdnia %{name} prosi o twoją zgodę"
   ru: "Депо %{name} просит вашего одобрения"
   uk: "Депо %{name} просить вашого схвалення"
-"Depot %{name} asks to spend up to %{amount}: %{reason}. Approve or refuse it in the settings, under Depots.":
-  de: "Depot %{name} möchte bis zu %{amount} ausgeben: %{reason}. Stimme in den Einstellungen unter Depots zu oder lehne ab."
-  fr: "Le dépôt %{name} demande à dépenser jusqu'à %{amount} : %{reason}. Acceptez ou refusez dans les paramètres, sous Dépôts."
-  nl: "Depot %{name} wil tot %{amount} uitgeven: %{reason}. Keur het goed of wijs het af in de instellingen, onder Depots."
-  pl: "Zajezdnia %{name} prosi o wydanie do %{amount}: %{reason}. Zatwierdź lub odrzuć w ustawieniach, w części Zajezdnie."
-  ru: "Депо %{name} просит разрешения потратить до %{amount}: %{reason}. Одобрите или отклоните в настройках, в разделе «Депо»."
-  uk: "Депо %{name} просить дозволу витратити до %{amount}: %{reason}. Схваліть або відхиліть у налаштуваннях, у розділі «Депо»."
+"Depot %{name} asks to spend up to %{amount}: %{reason}. Approve or refuse it on the head office's page.":
+  de: "Depot %{name} möchte bis zu %{amount} ausgeben: %{reason}. Stimme auf der Seite der Zentrale zu oder lehne ab."
+  fr: "Le dépôt %{name} demande à dépenser jusqu'à %{amount} : %{reason}. Acceptez ou refusez sur la page du siège."
+  nl: "Depot %{name} wil tot %{amount} uitgeven: %{reason}. Keur het goed of wijs het af op de pagina van het hoofdkantoor."
+  pl: "Zajezdnia %{name} prosi o wydanie do %{amount}: %{reason}. Zatwierdź lub odrzuć na stronie centrali."
+  ru: "Депо %{name} просит разрешения потратить до %{amount}: %{reason}. Одобрите или отклоните на странице главного офиса."
+  uk: "Депо %{name} просить дозволу витратити до %{amount}: %{reason}. Схваліть або відхиліть на сторінці головного офісу."
 "The head office approved %{amount}":
   de: "Die Zentrale hat %{amount} genehmigt"
   fr: "Le siège a approuvé %{amount}"
@@ -2120,13 +2120,13 @@ _version: 2
   pl: "Zajezdnia, która zamyka dni na minusie, dostaje dwa ostrzeżenia, potem bankrutuje, a centrala pokrywa jej stratę. Centrala na minusie dostaje pożyczkę awaryjną banku; jeśli znów będzie na minusie, gdy pożyczka trwa, dostaje dwa ostrzeżenia, a potem bankrutuje wraz z zajezdniami."
   ru: "Депо, которое закрывает дни в минусе, получает два предупреждения, затем банкротится, и головной офис покрывает его убыток. Головной офис в минусе получает экстренный кредит банка; снова в минусе, пока кредит действует, он получает два предупреждения и затем банкротится вместе со своими депо."
   uk: "Депо, яке закриває дні в мінусі, отримує два попередження, потім банкрутує, і головний офіс покриває його збиток. Головний офіс у мінусі отримує екстрений кредит банку; знову в мінусі, поки кредит діє, він отримує два попередження й потім банкрутує разом зі своїми депо."
-"The server runs on Danish time, summer time too, and nobody can change it. A company's day closes at midnight; when the server was off, the time is caught up.":
-  de: "Der Server läuft nach dänischer Zeit, auch mit Sommerzeit, und niemand kann sie ändern. Der Tag einer Firma schließt um Mitternacht; war der Server aus, wird die Zeit nachgeholt."
-  fr: "Le serveur suit l'heure danoise, heure d'été comprise, et personne ne peut la changer. La journée d'une entreprise se clôture à minuit ; quand le serveur était arrêté, le temps est rattrapé."
-  nl: "De server loopt op Deense tijd, ook zomertijd, en niemand kan die veranderen. De dag van een bedrijf sluit om middernacht; stond de server uit, dan wordt de tijd ingehaald."
-  pl: "Serwer działa według czasu duńskiego, również letniego, i nikt nie może go zmienić. Dzień firmy zamyka się o północy; gdy serwer był wyłączony, czas jest nadrabiany."
-  ru: "Сервер работает по датскому времени, включая летнее, и никто не может его изменить. День компании закрывается в полночь; если сервер был выключен, время навёрстывается."
-  uk: "Сервер працює за данським часом, зокрема літнім, і ніхто не може його змінити. День компанії закривається опівночі; якщо сервер був вимкнений, час надолужується."
+"The server runs on its machine's own time, summer time too, and nobody can change it. A company's day closes at midnight; when the server was off, the time is caught up.":
+  de: "Der Server läuft nach der Uhrzeit seines Rechners, auch mit Sommerzeit, und niemand kann sie ändern. Der Tag einer Firma schließt um Mitternacht; war der Server aus, wird die Zeit nachgeholt."
+  fr: "Le serveur suit l'heure de sa machine, heure d'été comprise, et personne ne peut la changer. La journée d'une entreprise se clôture à minuit ; quand le serveur était arrêté, le temps est rattrapé."
+  nl: "De server loopt op de tijd van zijn eigen machine, ook zomertijd, en niemand kan die veranderen. De dag van een bedrijf sluit om middernacht; stond de server uit, dan wordt de tijd ingehaald."
+  pl: "Serwer działa według czasu swojej maszyny, również letniego, i nikt nie może go zmienić. Dzień firmy zamyka się o północy; gdy serwer był wyłączony, czas jest nadrabiany."
+  ru: "Сервер работает по времени своей машины, включая летнее, и никто не может его изменить. День компании закрывается в полночь; если сервер был выключен, время навёрстывается."
+  uk: "Сервер працює за часом своєї машини, зокрема літнім, і ніхто не може його змінити. День компанії закривається опівночі; якщо сервер був вимкнений, час надолужується."
 # (NexiconDK, Bus Company Online: a duty of the company's AI driver taken over by a player)
 "Take over this duty":
   de: "Diesen Dienst übernehmen"

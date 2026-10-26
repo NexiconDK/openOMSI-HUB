@@ -58,6 +58,9 @@ own world - then the AI buses and the traffic are not the same for everybody).
    below.)
 6. **Polish**: courses required to found a company; maps kept running if the machine can carry
    them; translations and guides.
+7. **The group's head office** (decided 26 October 2026): a company on more than one map is a
+   group - a head office with no map above its depots, the first map's included; the group's
+   treasury, books and loans; its fleet and staff across the maps; its brand; its roles.
 
 ## What is built (phase 1)
 
@@ -716,9 +719,18 @@ Tested: `server_depots::tests::a_head_office_in_the_red_gets_an_emergency_loan_t
 
 ### The console's clock (26 October 2026)
 
-`clock` shows the server's clock and Danish time; `clock danish` sets the clock to Danish time at
-once (`MainServer::set_danish_time`), not only in the night - ahead, the companies wait the
-difference out and the worlds run it again. Tested: `main_server::tests::the_server_keeps_danish_time`.
+`clock` shows the server's clock and the machine's time; `clock now` sets the clock to it at once
+(`MainServer::set_machine_time`) - ahead, the companies wait the difference out and the worlds run
+it again.
+
+### The machine's own time (26 October 2026)
+
+Decided 26 October 2026 (the server's clock still an hour ahead the day after summer time ended):
+a server on the real time keeps its machine's own time - the dedicated server's machine, its zone
+and its summer time (`online::machine_time` with `crate::utc_offset`) - no longer a Danish time
+of its own, and a minute or more off it goes to it at once, on or back, day or night
+(`MainServer::keep_machine_time` at every look into the folder). Tested:
+`main_server::tests::the_server_keeps_the_machines_time`.
 
 ### Step 5: the players' guide
 
@@ -745,6 +757,26 @@ whoever may give duties can give it the same way. In the launcher: "Duties" → 
 each with "Take over this duty" / "Take over from the next trip" (or "Ask to …"). Elsewhere - a
 player's own company - the boss's drivers keep theirs. Tested:
 `together::tests::on_the_server_a_player_takes_a_duty_over_from_the_companys_ai_driver`.
+When none of the AI drivers' duties of the day has a trip left to take over (the evening), the
+Duties tab says so (`join.rs`'s `NO_AI_LEFT`) instead of showing nothing.
+
+### A player in the roster of a coming day (26 October 2026)
+
+The roster (RosterFlow's Roster) of a day to come offers every player of the company (not sent
+away) beside its drivers - before, only the players online, and only for the company's day. Given
+a duty there, the player is in the weekly roster (`Who::Guest`), and the day's plan shows him on it
+(`plan::day_plan`). On the company's day only a claim puts a player on a duty: as the day begins
+the roster's become his claims, planned as given (`together::book::claims_from_roster` in
+`clock::begin_day`) - not when somebody has the duty, it lies over another of his, has no bus of
+the company's, or he was sent away. Tested:
+`together::tests::a_player_planned_in_the_roster_has_the_duty_on_its_day`.
+
+### The day's report for a player (26 October 2026)
+
+"Show the report" of the last day closed opened nothing for a player of the company - the owner
+of a server company too, who is one: the shell a player sees (`relay::shell_for`) hid the day's
+reports as the boss's own, though they are the player's own (`company::Viewer`). They are shown
+now to a player who may see the money. Tested: `relay::tests::the_shell_shows_a_player_only_his_pages`.
 
 ### Relief at the stop (26 October 2026)
 
@@ -802,6 +834,116 @@ Tested: `omsi_sim`'s `ai_traffic::service_tests::a_bus_holds_at_the_stop_its_rel
 `timetable_run::sim::relief::tests::a_lan_player_takes_the_ais_bus_over_at_his_stop`,
 `together::tests::a_trip_the_ai_drove_while_he_was_not_at_his_stop_is_the_ais`,
 `relief::tests::the_same_vehicle_file_however_written`.
+
+## Phase 7: the group's head office (koncern-HQ)
+
+Decided 26 October 2026: a company that runs on more than one map is a **group**. Its head office
+has no map, no lines, no buses and no process of its own; every department of it is a depot -
+the first map's too ("Umove Ahlheim" beside "Umove Grundorf") - with its own money, lines, buses,
+staff and books. The head office keeps the group's treasury and its loans; the depots keep their
+own money, with money moved by hand and by each depot's rule (its surplus over an amount sent
+home, topped up below an amount). Its owner runs it from his launcher; the depots are joined as
+companies are.
+
+### Step 1: the head office, and the head offices of before split
+
+- **The head office** (`company::server_hq`) is a company's file all the same:
+  `<companies>/<slug>.hq.json`, its id `<slug>.hq` - with a dot, which no look into the companies
+  takes for a company (`online::company_ids`, `store::list`): no process, no tenders, no world.
+  The depots' files that name their head office (`server_depots`' transfers, notices, approvals)
+  reach it by its id as they reached a head office; on its own file `Online::group` holds the
+  group's part (`server_hq::Group`: the depots' rules, later its brand and roles).
+- **Made with the first depot**: a company on its own that founds a depot (its settings' Depots)
+  becomes the group's first depot - its head office made with the company's name, mark, game
+  mode, owner and no money (`server_hq::new_group`, kept once the depot is founded:
+  `join_group`), the company named by its map - and the new depot is tied to the head office too.
+  The company pays for it as before. From then on the head office founds the depots, from its
+  treasury (its page's Found a depot: `server_depots::found` with the head office).
+- **The head offices of before** - a company of the server with depots - are split when the main
+  server opens its folder, before any company's process runs (`server_hq::split_head_offices`):
+  the head office made, the company its first depot named by its map, its depots tied to the new
+  head office, the requests for approval waiting for it (taken, or still in its file) the head
+  office's. The company keeps its money and loans - only what it is in the red and the bank's
+  emergency loan are the treasury's; the treasury starts with nothing else. Kept in that order
+  (the head office, the depots, the company last), a split cut short is done again at the next
+  start with the same head office (`<its id>.hq`).
+- **The main server keeps it** (`MainServer::groups`, every look into the folder:
+  `server_hq::step`): the money, the news and the requests the depots sent; its days closed on
+  the server's clock - in the red the bank's emergency loan, in the red again while it runs warned
+  twice and then bankrupt (its depots told to close, its file removed) -, its loans' rates at a
+  new month; the depots below their rule topped up. `status` lists the groups.
+- **The red is the whole group's** (`server_hq::day_closed`): the treasury short at its day's
+  close while the whole group is not in the red, what it lacks is called in from the depots with
+  money - the richest first, each keeping what its rule tops it up to - by an order each
+  (`send_home`, done at the depot's next step; what is on its way home counted); only the whole
+  group in the red brings the bank's emergency loan, the warnings and the end.
+- **What a company removed leaves**: the files that name it as their reader (transfers, buses,
+  people, notices, approvals, the head office's orders: `server_depots::files_of`) go with it
+  (`store::delete`), and a new head office takes no id they are left under - a company founded
+  later under the same id starts afresh.
+- **The server page**: a group is the overview of its depots (their lines, buses and depots
+  summed, its line plates); Join asks which depot; its owner has a Head office button beside it.
+
+### Step 2: the overview, the books and the treasury
+
+The head office's page (`bco.js`'s `HqPage`; `bco_hq.rs`; the door's `hq` and `hq_do`:
+`server_hq::view`, `server_hq::act`), its owner's (`server_hq::may_run`):
+
+- **Overview**: the treasury, the whole group's money, this month's result (last month's under
+  it) and the group's debt; every depot with its money, its month, its lines, buses and staff,
+  whether it runs, its days in the red, the money on its way to it and its rule; the depots'
+  requests for big purchases to approve or refuse; the head office's news (a depot in the red,
+  bankrupt, an emergency loan, a request).
+- **Money and books**: the group's books of this month and the last - the depots' months summed
+  with the head office's (`server_hq::consolidated`; what moved between them is capital, no part
+  of a result) - by kind; money sent to a depot; each depot's rule: what it keeps at most (the
+  rest sent home at its day's close by its own process: `server_hq::sweep`) and below what the
+  head office tops it up from the treasury (`server_hq::top_ups`: what its file says it has and
+  what is on its way to it counted, never more than the treasury has; the top-up never over what
+  it keeps); the head office's loans - the bank lends on the whole group (`server_hq::credit`:
+  its buses, what it earns, less what all of it owes) - borrowed and paid back early; a depot
+  founded from the treasury; the treasury's last bookings.
+- Money is typed in the group's currency (`bco_hq.rs`: `MONEY`) and goes to the server in cents.
+
+### Step 3: the fleet and the staff across the depots
+
+The page's Fleet and staff: every depot's buses (owned, leased, in the workshop) and staff (free,
+lent, to be lent); a bus of a depot's own moved to another depot, an employee lent to one. The
+head office cannot touch a depot's file - its process keeps it - so it gives the depot an
+**order** (`server_hq::order`, `<folder>/hq-orders/<depot>.jsonl`: `move_bus {bus, to}`, `lend
+{employee, to, days}`, checked first: the depots its group's, not the same, the bus owned, the
+employee not borrowed). The depot's process does it at its next step (`server_hq::take_orders`:
+`server_depots::move_bus` at the server's price and days, `server_depots::lend`), told in its
+inbox; what it can no longer do it tells the head office (`ORDER_FAILED`). The page shows the
+buses on their way between the depots and the orders not taken yet.
+
+### Step 4: the brand
+
+The page's Brand: the group's name, short name and colours; a depot's mark - its logo picture,
+chosen in its settings, its short name and colours - made the group's (`server_hq::mark_of_depot`);
+a livery a depot made in the livery studio shared with the whole group
+(`server_hq::share_livery`, its design not paid again), or no longer handed on. Each change is a
+new version of the brand (`Group::brand`); every depot's process looks at its head office every
+`BRAND_EVERY` seconds (`server_hq::take_group`) and takes a newer one (`take_brand`): named "<group>
+<map>", the group's short name, colours and logo, the group's liveries beside its own - its buses
+painted in them in its workshop. The page says which depots have not taken it yet.
+
+### Step 5: the roles
+
+The page's Roles, its owner's to give (`server_hq::set_member`, `Group::members`): the group's
+**management** runs the head office with him (`server_hq::may_run`: the page, the server page's
+Head office button) and is a co-owner of every depot; a **depot manager** is a co-owner of his
+depot (one a depot). Each depot takes them at its look (`server_hq::take_roles`): the players
+co-owners of it (`together::Together::guest_of`, as a player who joined), and who the group made
+one and no longer does (`Online::group_roles`) a driver again. The requests for big purchases go
+to the head office: its owner or its management answers them.
+
+Tested: `server_hq::tests::the_first_depot_makes_a_group_with_its_head_office`,
+`a_head_office_of_before_is_split_into_its_group`, `the_treasury_and_the_depots_rules`,
+`the_groups_books_its_loans_and_its_days`, `the_owners_acts`,
+`the_head_office_moves_buses_and_lends_staff_between_its_depots`,
+`the_groups_brand_reaches_every_depot`, `the_groups_roles_reach_its_depots`; `server_depots`'
+tests with the group's head office; the launcher's page: `bco_hq::tests::the_head_offices_page_from_the_servers_view`.
 
 ## Open questions (udkast 4)
 

@@ -312,8 +312,11 @@ pub fn on_server(need: Need, cmd: &str, args: &Value, owner: bool) -> Need {
 }
 
 /// The company's shell (`company::shell`) as a player with `perms` sees it: the pages he may
-/// see, the money only when he may see it, no clock to run and nothing of the boss's own
-/// (his reports, what happened while he was away, his duty launcher).
+/// see, the money only when he may see it, no clock to run and nothing of the boss's own (what
+/// happened while he was away, his duty launcher, the clock's question). The day's report is his
+/// own (`Viewer`: "Show the report" of the last day closed, his to see with the money) - shown
+/// when he opened it (fixed 26 October 2026: it never opened for a player, the owner of a server
+/// company too).
 pub fn shell_for(mut sh: Value, perms: &[Perm]) -> Value {
     let may = |tab: usize| tab_need(tab).met(perms);
     if let Some(rail) = sh.get_mut("rail").and_then(Value::as_array_mut) {
@@ -342,8 +345,11 @@ pub fn shell_for(mut sh: Value, perms: &[Perm]) -> Value {
         k["speed"] = json!(0.0);
         k["tip"] = Value::Null;
     }
-    for key in ["reports", "away", "launch", "asking"] {
+    for key in ["away", "launch", "asking"] {
         sh[key] = json!(false);
+    }
+    if !Need::met(FINANCES, perms) {
+        sh["reports"] = json!(false);
     }
     sh["casual_pages"] = Value::Null;
     // (the bell is the boss's: his messages, his agenda)
@@ -620,7 +626,11 @@ mod tests {
         assert_eq!(planner["pages"], json!([14, 5, 15, 3, 9, 1]));
         assert_eq!(planner["rail"].as_array().unwrap().len(), 2);
         assert_eq!(planner["status"], json!([{ "icon": "star", "tab": null }]));
-        assert_eq!((planner["clock"]["speed"].as_f64(), planner["reports"].as_bool()), (Some(0.0), Some(false)));
+        assert_eq!((planner["clock"]["speed"].as_f64(), planner["away"].as_bool()), (Some(0.0), Some(false)));
+        // (the day's report his own when he may see the money - a planner may not)
+        assert_eq!(planner["reports"].as_bool(), Some(false));
+        let manager = shell_for(sh.clone(), omsi_launcher_lib::company::together::Role::Manager.preset());
+        assert_eq!((manager["reports"].as_bool(), manager["away"].as_bool()), (Some(true), Some(false)));
         let driver = shell_for(sh, &[Perm::Drive]);
         assert_eq!(driver["pages"], json!([9]));
         assert_eq!(driver["remote"]["perms"], json!(["drive"]));

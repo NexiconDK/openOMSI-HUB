@@ -190,7 +190,7 @@ fn connect(text: &str) -> Value {
 
 /// A question of the logged-in player's (`what`, with `extra`): its answer, logged in again once
 /// when the login ran out.
-fn question(what: &str, extra: Value) -> Result<Value, (String, Vec<(String, String)>)> {
+pub(super) fn question(what: &str, extra: Value) -> Result<Value, (String, Vec<(String, String)>)> {
     let Some((base, code, session)) = state().linked.as_ref().map(|l| (l.base.clone(), l.code.clone(), l.session.clone())) else { return Err((NOT_LINKED.to_string(), Vec::new())) };
     let body = |session: &str| {
         let mut b = extra.clone();
@@ -401,9 +401,9 @@ fn guide() -> Value {
         (tr("Lines and tenders"), tr("On each map a line belongs to one company at most, won in a tender. A tender is open for three days. You bid a price per timetable hour - at most the authority's cap - with diesel buses (a two-week contract) or electric ones (a month); the lowest price weighed with quality wins. A renewal is a new tender: it opens six days before the term ends and is decided three days before.")),
         (tr("The contract's rules"), tr("Each tour is run with the bus size its timetable asks for or a bigger one, and a contract won with electric buses with electric buses. The authority fines journeys not run, a bus too small, departures more than a minute early or more than 15 minutes late without a report, and complaints. A company that wins a line from another is offered the other's buses of it at their book value.")),
         (tr("The control room"), tr("While the map's world runs, the fleet map and the Operations page show every bus where it is in the world, with its real delay; otherwise where the timetable has it. Service control can run a late bus out of service to its terminus, cancel a trip, or swap in a spare bus at the terminus - and the bus in the world does it.")),
-        (tr("Depots"), tr("A company that does well opens a depot on another map: its own lines, buses, staff and money there. The head office's owner sends money, moves buses and lends staff between the maps, and approves a depot's big purchases.")),
+        (tr("Depots"), tr("A company that does well opens a depot on another map: its own lines, buses, staff and money there. The company becomes a group: a head office with no map of its own above its depots, the first map's included. The head office keeps the group's treasury and its loans - the bank lends on the whole group - sends money to the depots by hand or by their rules, moves buses and lends staff between the maps, and approves a depot's big purchases.")),
         (tr("In the red"), tr("A depot that closes its days in the red is warned twice, then goes bankrupt, and its head office covers its loss. A head office in the red gets the bank's emergency loan; in the red again while that loan runs, it is warned twice and then goes bankrupt, its depots with it.")),
-        (tr("The server's clock"), tr("The server runs on Danish time, summer time too, and nobody can change it. A company's day closes at midnight; when the server was off, the time is caught up.")),
+        (tr("The server's clock"), tr("The server runs on its machine's own time, summer time too, and nobody can change it. A company's day closes at midnight; when the server was off, the time is caught up.")),
     ];
     json!({
         "title": tr("Bus Company Online: the guide"), "close": tr("Close"),
@@ -412,7 +412,7 @@ fn guide() -> Value {
 }
 
 /// The page's words for a refusal and its arguments.
-fn words_of(e: &str, args: &[(String, String)]) -> String {
+pub(super) fn words_of(e: &str, args: &[(String, String)]) -> String {
     let refs: Vec<(&str, &str)> = args.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
     if refs.is_empty() {
         tr(e)
@@ -452,6 +452,9 @@ fn company_json(c: &Value) -> Value {
         "hq": s("hq"), "lines": n("lines"), "buses": n("buses"), "staff": n("staff"),
         // (its lines' numbers and colours: a driver chooses a company by them)
         "line_list": c.get("line_list").cloned().unwrap_or(json!([])),
+        // (phase 7: a group's head office - no map, its depots under it; its owner opens it)
+        "group": c.get("group").and_then(Value::as_bool).unwrap_or(false),
+        "may_run": c.get("may_run").and_then(Value::as_bool).unwrap_or(false),
     })
 }
 
@@ -478,6 +481,8 @@ fn view() -> Value {
         "which_title": tr("Which department?"), "which_text": tr("The company works on more than one map. Choose the department you join: the head office or one of its depots."),
         "head_office": tr("Head office"), "depot": tr("Depot"),
         "group_figures": tr("%{lines} lines · %{buses} buses · %{depots} depots"),
+        // (phase 7: a group's head office, its owner's page)
+        "hq": tr("Head office"),
         "modes": [{ "key": "casual", "label": tr("Casual") }, { "key": "normal", "label": tr("Normal") }, { "key": "realistic", "label": tr("Realistic") }],
     });
     let error = s.error.as_ref().map(|(e, a)| words_of(e, a));
@@ -553,10 +558,13 @@ mod tests {
         texts.extend(server_depots::red_texts().into_iter().map(String::from));
         // (phase 6 step 3: a depot's big purchases, its head office's to approve)
         texts.extend(server_depots::approval_texts().into_iter().map(String::from));
+        // (phase 7: a group's head office - its refusals, and its page's words)
+        texts.extend(omsi_launcher_lib::company::server_hq::texts().into_iter().map(String::from));
+        let hq = include_str!("bco_hq.rs").split("#[cfg(test)]").next().unwrap_or("");
         texts.extend(takeover::texts().into_iter().chain([takeover::OFFERED.0, takeover::OFFERED.1, takeover::TAKEN.0, takeover::TAKEN.1, takeover::REFUSED.0, takeover::REFUSED.1]).map(String::from));
         texts.push(super::together::SERVER_CODE.to_string());
         texts.push(omsi_launcher_lib::company::together::host::NO_TICKET.to_string());
-        for lead in ["tr(\"", "trf(\""] {
+        for (lead, own) in ["tr(\"", "trf(\""].into_iter().flat_map(|l| [(l, own), (l, hq)]) {
             let mut rest = own;
             while let Some(k) = rest.find(lead) {
                 let after = &rest[k + lead.len()..];

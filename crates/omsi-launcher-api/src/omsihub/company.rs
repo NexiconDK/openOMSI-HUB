@@ -33,7 +33,7 @@ mod dutycard;
 mod due;
 mod fleet;
 mod home;
-mod inbox;
+pub(crate) mod inbox;
 pub mod kit;
 pub mod late;
 mod launch;

@@ -736,6 +736,10 @@ fn duty_row(d: &SnapDuty, open_claims: bool, ask: bool) -> Value {
     })
 }
 
+/// (NexiconDK, 26 October 2026) The AI drivers' duties of the day, none with a trip left to take
+/// over.
+pub const NO_AI_LEFT: &str = "None of the AI drivers' duties today has a trip left to take over. Take one over tomorrow from its start, or have yourself planned for a coming day in the roster.";
+
 /// The friend's menu: not joined (the code field), looking for the boss, sent away, or the
 /// company as his role sees it.
 fn view() -> Value {
@@ -789,6 +793,8 @@ fn view() -> Value {
     // over - `book::takes_over`)
     let over = |d: &SnapDuty| ask && d.state == DutyState::Company && d.take_over;
     let ai = rows(&|d| over(d));
+    // (none of them left to take over - the day's last trips begun: said, not an empty page)
+    let ai_none = (ask && !j.me.ticket.is_empty() && ai.is_empty() && s.duties.iter().any(|d| d.state == DutyState::Company && !d.who.is_empty())).then(|| tr(NO_AI_LEFT));
     let rest = rows(&|d| matches!(d.state, DutyState::Player | DutyState::Company | DutyState::Closed) && !over(d));
     // (what comes next: the duty being driven, else the first of his still to drive)
     let next = s
@@ -850,7 +856,7 @@ fn view() -> Value {
         "me": { "name": you.name, "role": if you.owner { owner_json() } else { role_json(you.role) }, "role_key": if you.owner { "owner" } else { you.role.key() }, "stats": super::host::stats_json(&you.stats),
                 "perms": Perm::ALL.iter().map(|p| { let mut v = perm_json(*p); v["on"] = json!(can(*p)); v }).collect::<Vec<_>>() },
         "can": { "drive": ask, "assign": can(Perm::Assign), "approve": can(Perm::Approve), "players": can(Perm::Players), "pages": pages },
-        "reading": s.reading, "next": next, "open": open, "ai": ai, "mine": mine, "rest": rest, "players": players, "results": results,
+        "reading": s.reading, "next": next, "open": open, "ai": ai, "ai_none": ai_none, "mine": mine, "rest": rest, "players": players, "results": results,
         "asks": asks, "members": members, "giveable": giveable, "roles": if can(Perm::Players) { roles_json() } else { Value::Null },
         "history": history_rows(), "driving": driving, "notices": notices, "last_notice": j.notices.last().map(|n| n.n).unwrap_or(0),
         "online": s.players.iter().filter(|p| p.online).count(),

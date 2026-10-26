@@ -729,10 +729,18 @@ fn day_side(c: &Company, p: &DayPlan) -> Value {
 }
 
 /// Beta 58: the players of "Play together" online now, to give a duty of the company's day
-/// (`together`): who they are, what they drive.
+/// (`together`): who they are, what they drive. (Decided 26 October 2026) A day to come: every
+/// player of the company (not sent away), to plan in the roster - the duty his on that day
+/// (`together::book::claims_from_roster`).
 fn guest_rows(c: &Company, p: &DayPlan) -> Vec<Value> {
     if !p.today {
-        return Vec::new();
+        return c
+            .together
+            .guests
+            .iter()
+            .filter(|g| !g.banned)
+            .map(|g| json!({ "who": Who::Guest(g.no), "name": super::super::together::guest_label(c, g.no), "state": tr(PLANNED_PLAYER), "colour": super::super::together::GUEST_COLOUR }))
+            .collect();
     }
     super::super::together::online_guests(c)
         .into_iter()
@@ -745,6 +753,9 @@ fn guest_rows(c: &Company, p: &DayPlan) -> Vec<Value> {
         })
         .collect()
 }
+
+/// (Decided 26 October 2026) A player of the company in the roster of a day to come.
+pub const PLANNED_PLAYER: &str = "A player of the company: the duty is his that day";
 
 /// A duty chosen: its times, who drives it and why, who else could; on the company's day what
 /// to do when it is open, and "Drive this duty".
@@ -813,8 +824,9 @@ fn duty_side(c: &Company, p: &DayPlan, ti: usize, k: usize) -> Value {
     // (an agency driver for the whole duty, with what it costs: testers, "no option to use agency")
     let (state, tone) = agency_state(c, p, ti, k);
     cands.push(json!({ "who": Who::Agency, "name": tr("Agency driver"), "state": state, "tone": tone, "swatch": "grey", "on": current == Some(Who::Agency) }));
-    // (Beta 58: the players of "Play together" online, for today - and the one who has it)
-    if p.today && matches!(t.bus, Some(BusOf::Own(_))) {
+    // (Beta 58: the players of "Play together" online, for today - and the one who has it; a day
+    // to come: every player of the company, into the roster)
+    if !p.today || matches!(t.bus, Some(BusOf::Own(_))) {
         let mut guests = guest_rows(c, p);
         if let Some(Who::Guest(g)) = current.filter(|w| !guests.iter().any(|x| x["who"] == json!(w))) {
             guests.push(json!({ "who": Who::Guest(g), "name": co::together::guest_name(c, g), "state": tr("Playing together · offline"), "colour": super::super::together::GUEST_COLOUR }));
@@ -913,11 +925,12 @@ fn tour_side(c: &Company, p: &DayPlan, ti: usize) -> Value {
 /// for it - for today only (`planning::give_driver`). The pieces joined with it in the studio
 /// go to the same driver.
 fn give_driver(s: &mut Session, p: &DayPlan, ti: usize, k: usize, who: Option<Who>) -> Value {
-    // (Beta 58: to a player of "Play together", for today; one who had it gives it up)
-    if let Some(Who::Guest(g)) = who {
+    // (Beta 58: to a player of "Play together", for today; one who had it gives it up - a day to
+    // come: into the roster below, as a driver's)
+    if let Some(Who::Guest(g)) = who.filter(|_| p.today) {
         return super::super::together::give_to_guest(s, p, ti, k, g);
     }
-    if let (Some(Who::Guest(_)), Some(r)) = (p.tours[ti].duties[k].who, co::duty_launch::DutyRef::of(p, ti, k)) {
+    if let (true, Some(Who::Guest(_)), Some(r)) = (p.today, p.tours[ti].duties[k].who, co::duty_launch::DutyRef::of(p, ti, k)) {
         if let Err(p) = company::act(s, |c| co::together::book::release(c, &r, None).map(|_| ())) {
             return json!({ "popup": p });
         }

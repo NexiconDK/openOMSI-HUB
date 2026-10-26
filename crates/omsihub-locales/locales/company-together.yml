@@ -828,3 +828,18 @@ _version: 2
   pl: "Firma szefa jest właśnie zajęta swoim dniem: spróbuj za chwilę."
   ru: "Компания босса сейчас занята своим днём: попробуйте чуть позже."
   uk: "Компанія боса зараз зайнята своїм днем: спробуйте трохи згодом."
+# (NexiconDK, 26 October 2026: no AI duty left to take over today; a player in the roster of a coming day)
+"None of the AI drivers' duties today has a trip left to take over. Take one over tomorrow from its start, or have yourself planned for a coming day in the roster.":
+  de: "Keiner der heutigen Dienste der KI-Fahrer hat noch eine Fahrt zum Übernehmen. Übernimm morgen einen von Anfang an oder lass dich im Dienstplan für einen kommenden Tag einplanen."
+  fr: "Aucun service des chauffeurs IA d'aujourd'hui n'a encore de course à reprendre. Reprenez-en un demain dès son début, ou faites-vous planifier pour un jour à venir dans le roulement."
+  nl: "Geen van de diensten van de AI-chauffeurs van vandaag heeft nog een rit om over te nemen. Neem er morgen een over vanaf het begin, of laat je in het rooster inplannen voor een komende dag."
+  pl: "Żadna z dzisiejszych służb kierowców AI nie ma już kursu do przejęcia. Przejmij jutro którąś od początku albo daj się zaplanować w grafiku na nadchodzący dzień."
+  ru: "Ни у одной сегодняшней смены водителей ИИ не осталось рейса, который можно взять. Возьмите смену завтра с начала или запланируйте себя в графике на один из следующих дней."
+  uk: "Жодна сьогоднішня зміна водіїв ШІ не має рейсу, який ще можна взяти. Візьміть зміну завтра з початку або заплануйте себе в графіку на один із наступних днів."
+"A player of the company: the duty is his that day":
+  de: "Ein Spieler der Firma: Der Dienst gehört an dem Tag ihm"
+  fr: "Un joueur de l'entreprise : le service est à lui ce jour-là"
+  nl: "Een speler van het bedrijf: de dienst is die dag van hem"
+  pl: "Gracz firmy: tego dnia służba należy do niego"
+  ru: "Игрок компании: в этот день смена его"
+  uk: "Гравець компанії: цього дня зміна його"

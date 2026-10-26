@@ -423,6 +423,37 @@ fn claim_of_plan(c: &Company, t: &DayTour, k: usize, r: &DutyRef, guest: u32, st
     Claim { duty: r.clone(), guest, state, given, number: t.tour.number.clone(), from: d.from, to: d.to, sheet: t.tour.trips[d.start..d.end].to_vec(), bus: bus_file(c, t), start: None, late: false, ai: Vec::new() }
 }
 
+/// (NexiconDK, decided 26 October 2026) The duties of the company's day `p` the roster gives a
+/// player of it (`Who::Guest`, planned for that weekday in the Roster) his - planned for him, as a
+/// duty given - when nobody has them, he is not sent away, they have a bus of the company's and
+/// lie over none of his: the day's begin (`clock::begin_day`). Whether any became his.
+pub fn claims_from_roster(c: &mut Company, p: &DayPlan) -> bool {
+    if !p.today || p.date != c.date {
+        return false;
+    }
+    let mut any = false;
+    for (ti, t) in p.tours.iter().enumerate() {
+        if t.by_player || !matches!(t.bus, Some(BusOf::Own(_))) {
+            continue;
+        }
+        let Some(r) = super::super::plan::roster(c, p.weekday, &t.tour.line, &t.tour.tour) else { continue };
+        let wanted: Vec<(usize, u32)> = r.duties.iter().enumerate().filter_map(|(k, w)| match w {
+            Some(super::super::plan::Who::Guest(g)) => Some((k, *g)),
+            _ => None,
+        }).collect();
+        for (k, g) in wanted {
+            let Some(duty) = DutyRef::of(p, ti, k) else { continue };
+            if k >= t.duties.len() || c.together.claim_of(&duty).is_some() || !c.together.guest(g).is_some_and(|x| !x.banned) || overlapping(c, p, &duty, g) {
+                continue;
+            }
+            let claim = claim_of_plan(c, t, k, &duty, g, ClaimState::Planned, true);
+            c.together.claims.push(claim);
+            any = true;
+        }
+    }
+    any
+}
+
 /// A player takes duty `r` of the company's day (`p`, at `now` on the company's clock): his at
 /// once when the boss lets players take open duties or he may approve requests himself
 /// (`direct`), else asked for. What it is now.

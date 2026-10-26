@@ -1703,8 +1703,13 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
             Who::Player if closing => d.problem = Some(Problem::Player),
             // (the player called in sick or is on holiday: open for the dispatcher, `crew`)
             Who::Player if super::crew::player_off(c, date).is_some() => d.problem = super::crew::player_off(c, date),
-            // (a player of "Play together" is never in the roster: only his claim of the day puts
-            // him on a duty)
+            // (a player of "Play together" in the roster - decided 26 October 2026: planned for a
+            // day to come, his there; on the company's day only his claim puts him on a duty, made
+            // from the roster as the day begins: `together::book::claims_from_roster`)
+            Who::Guest(g) if !today && c.together.guest(g).is_some_and(|x| !x.banned) => {
+                d.who = Some(who);
+                d.from_ = Source::Roster;
+            }
             Who::Guest(_) => {}
             Who::Player | Who::Agency => {
                 d.who = Some(who);
