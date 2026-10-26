@@ -291,7 +291,11 @@ pub fn run() -> Result<()> {
     if let Some(dir) = args.company_host.clone() {
         let id = args.company.clone().unwrap_or_default();
         // (the fleet map's roads for its players, read here: this process has no launcher
-        // service - `launcher/service.rs`'s "map" request)
+        // service - `launcher/service.rs`'s "map" request. The map view reads the roads through
+        // the program's side of the launcher's model, as the service does: without it, it read
+        // every map as 0 roads - Bus Company Online's fleet map and control room blank, 26
+        // October 2026)
+        launcher::install();
         omsi_launcher_api::omsihub::company::set_map_reader(|map, date, trips| {
             let global = omsi_cfg::find_in_roots(map).map(|(_, p)| p).or_else(|| omsi_launcher_lib::content_path(map).ok()).unwrap_or_else(|| std::path::PathBuf::from(map));
             omsi_launcher_model::mapview::hub_fleet::export(map, &global, date, trips, 0.6)
