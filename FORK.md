@@ -187,5 +187,13 @@ Bus Company online (fase 1 af `docs/omsihub/BUS_COMPANY_ONLINE.md`). Én stor se
     - "Out of service": bussen stopper ingen steder før endestationen.
     - "Cancel the trip": bussen kører ind i depotet, og turen udgår.
     - Bus-bytte ved endestationen: den forsinkede bus kører ind, og reservebussen sættes ud til næste afgang i sine farver, med sit vognnummer og sin nummerplade.
+- **Krav for at stifte et firma (fase 6, trin 1)**: Ud over prisen skal en spiller nu have:
+  - **Kørt ture**: 20 ture for et firma på serveren, målt af verdenen (`found_trips`).
+  - **Taget lederkurset**: det koster 5.000 af hans egne penge og tager 3 dage på serverens ur (`found_course`, `course_price`, `course_days`).
+  - **Bestået en køreprøve på serveren** (`found_test`): han booker prøven til en bustype (midi, solo, ledbus eller dobbeltdækker), og hans næste tur på serveren med sådan en bus er prøven. Den bedømmes som karrierens prøve: kørt til ende, til tiden, blødt og sikkert. Dumper han, kan han booke den igen.
+  - Alt kan slås fra i `company-server.cfg`, og en ældre fil får nøglerne sat ind af sig selv.
+  - "Found a company" i launcheren viser kravene, hvor langt han er, og knapperne "Book the course", "Book the test" og "Call it off". "Found" åbner først, når alt er gjort.
+  - I hovedserverens konsol viser `players` ture, kursus og prøver, og `grant <spiller>; trips <n> | course | test <klasse>` giver dem.
+  - Hver kørt tur sendes nu til hovedserveren, også en tur uden løn, så den kan tælle.
 - **Rettelse: verdenens tjek af en spillers tur**: Verdenen målte, hvor langt spillerens bus kørte, ud fra øst-vest og højden i stedet for øst-vest og nord-syd. En tur, der mest gik nord-syd, kunne derfor blive afvist med "his bus drove far less than the trip says".
 - Den dedikerede server har fået `idle_stop = <minutter>` i `server.cfg`. Er den sat, lukker serveren af sig selv efter så mange minutter uden spillere.

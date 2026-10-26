@@ -105,6 +105,15 @@ logins = account steam
 start_money = 20000
 found_price = 10000
 
+# what a player must have done to found a company, besides its price: trips driven for a company
+# of the server (0: none), the leadership course (1: asked; its price in whole units and its
+# days) and a driving test passed on the server (1: asked)
+found_trips = 20
+found_course = 1
+course_price = 5000
+course_days = 3
+found_test = 1
+
 # what a company pays from its own money for a depot of its on another map (whole units), and
 # what moving one of its buses to another of its maps costs and how many days the bus is away
 depot_price = 250000
@@ -185,6 +194,8 @@ pub struct MainCfg {
     /// Cents.
     pub start_money: i64,
     pub found_price: i64,
+    /// (Phase 6) What founding asks of a player besides its price (`server_found`).
+    pub found: super::server_found::Needs,
     /// (Phase 4) What a company pays from its own money for a depot on another map (cents).
     pub depot_price: i64,
     /// (Phase 4 step 3) What moving a bus to another map costs (cents), and the days it is away.
@@ -232,6 +243,13 @@ impl MainCfg {
             }
             text.push_str(MOVE_CFG);
         }
+        if !text.lines().any(|l| l.trim_start().starts_with("found_trips")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(super::server_found::FOUND_CFG.as_bytes());
+            }
+            text.push_str(super::server_found::FOUND_CFG);
+        }
         if !text.lines().any(|l| l.trim_start().starts_with("fine_dropped_minute")) {
             use std::io::Write;
             if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
@@ -271,6 +289,7 @@ impl MainCfg {
             logins: Logins::parse(&text("logins").unwrap_or_default()),
             start_money: num("start_money", 20000).max(0) * 100,
             found_price: num("found_price", 10000).max(0) * 100,
+            found: super::server_found::Needs::of(&kv),
             depot_price: num("depot_price", 250_000).max(0) * 100,
             bus_move_price: num("bus_move_price", 5000).max(0) * 100,
             bus_move_days: num("bus_move_days", 2).clamp(0, 60),
@@ -617,7 +636,13 @@ impl MainServer {
                     Some(pl) => {
                         pl.money += p.cents.max(0);
                         total += p.cents.max(0);
-                        info!("{} paid {:.2} by {id} for line {} tour {}", pl.name, p.cents as f64 / 100.0, p.line, p.tour);
+                        if p.cents > 0 {
+                            info!("{} paid {:.2} by {id} for line {} tour {}", pl.name, p.cents as f64 / 100.0, p.line, p.tour);
+                        }
+                        // (phase 6: his trip counted; the driving test he booked, taken)
+                        if let Some(t) = super::server_found::take_trip(pl, p) {
+                            info!("{}: driving test ({}) {} - {} %", pl.name, t.class.label(), if t.passed { "passed" } else { "failed" }, t.score);
+                        }
                     }
                     None => warn!("company {id}: pay for a player the server does not know ({}, {}) - not paid", p.name, p.player),
                 }
@@ -870,6 +895,8 @@ role <company>; <player>; <role>
 owner <company>; <player>      make a player of the server a company's owner (every permission)
 players                       the players who logged in, with their money
 money <player>; <amount>      set a player's money (+500 or -500: add or take)
+grant <player>; <what>        what founding a company asks, given: trips <n>, course, test <class>
+                              (midi, solo, articulated, double)
 quit                          stop the worlds, save every company and end";
 
 /// What the console's line `line` does; the answer to print. None: `quit`.
@@ -946,7 +973,12 @@ pub fn command(m: &mut MainServer, line: &str) -> Option<String> {
                             (false, true) => "account",
                             _ => "Steam",
                         };
-                        format!("  {} ({}, {by}): money {:.2}{}", p.name, p.id, p.money as f64 / 100.0, if owns.is_empty() { String::new() } else { format!(", owns {}", owns.join(", ")) })
+                        // (phase 6: how far he is with what founding asks)
+                        let today = m.clock.at_real(unix_now() as f64).0;
+                        let course = if super::server_found::course_done(p, &today) { "course done".to_string() } else if p.course_until.is_empty() { "no course".to_string() } else { format!("course until {}", p.course_until) };
+                        let tests: Vec<&str> = p.tests.licences.iter().map(|c| c.label()).collect();
+                        let test = if tests.is_empty() { "no test passed".to_string() } else { format!("passed {}", tests.join(", ")) };
+                        format!("  {} ({}, {by}): money {:.2}, {} trips, {course}, {test}{}", p.name, p.id, p.money as f64 / 100.0, p.trips, if owns.is_empty() { String::new() } else { format!(", owns {}", owns.join(", ")) })
                     })
                     .collect::<Vec<_>>()
                     .join("\n")
@@ -976,6 +1008,44 @@ pub fn command(m: &mut MainServer, line: &str) -> Option<String> {
                 }
             }
             None => "money <player>; <amount>".to_string(),
+        },
+        // (phase 6: what founding asks, given by the server's owner)
+        "grant" => match rest.split_once(';') {
+            Some((who, what)) => {
+                let today = m.clock.at_real(unix_now() as f64).0;
+                let Some(id) = m.players.find(who).map(|p| p.id.clone()) else { return Some(format!("no player '{}' - players lists them", who.trim())) };
+                let p = m.players.get_mut(&id).expect("found");
+                let mut words = what.split_whitespace();
+                let said = match (words.next().map(str::to_ascii_lowercase).as_deref(), words.next()) {
+                    (Some("trips"), Some(n)) => match n.parse::<u32>() {
+                        Ok(n) => {
+                            p.trips = n;
+                            format!("{} has {n} trips now", p.name)
+                        }
+                        Err(_) => format!("'{n}' is no number"),
+                    },
+                    (Some("course"), _) => {
+                        p.course_until = today.clone();
+                        format!("{} has taken the leadership course", p.name)
+                    }
+                    (Some("test"), Some(class)) => match super::career::LicenceClass::ALL.into_iter().find(|c| c.label().split_whitespace().next().is_some_and(|w| w.eq_ignore_ascii_case(class)) || format!("{c:?}").eq_ignore_ascii_case(class)) {
+                        Some(c) => {
+                            if !p.tests.licences.contains(&c) {
+                                p.tests.licences.push(c);
+                            }
+                            p.tests.booked = None;
+                            format!("{} has passed the {} test", p.name, c.label())
+                        }
+                        None => format!("'{class}' is no class: midi, solo, articulated, double"),
+                    },
+                    _ => return Some("grant <player>; trips <n> | course | test <class>".to_string()),
+                };
+                match m.players.save(&m.data) {
+                    Ok(()) => said,
+                    Err(e) => format!("{said} - not saved: {e:#}"),
+                }
+            }
+            None => "grant <player>; trips <n> | course | test <class>".to_string(),
         },
         "quit" | "exit" => return None,
         other => format!("'{other}' is no command - help lists them"),
@@ -1238,7 +1308,7 @@ game = {}
         let l = super::super::server_players::Login { name: "Jonas".into(), steam: "76561198000000001".into(), ..Default::default() };
         let id = m.players.login(&l, None, Logins::default(), 1_000_00, 10).unwrap().player.id;
         let cid = m.found("Pay Trafik", "Lemmental", "", "").unwrap();
-        let pay = |cents| online::Pay { player: id.clone(), name: "Jonas".into(), cents, line: "5".into(), tour: "3".into(), departure: 0.0, at: 1 };
+        let pay = |cents| online::Pay { player: id.clone(), name: "Jonas".into(), cents, line: "5".into(), tour: "3".into(), departure: 0.0, at: 1, ..Default::default() };
         online::append_pay(&data, &cid, &pay(250_00)).unwrap();
         online::append_pay(&data, &cid, &online::Pay { player: "nobody".into(), ..pay(99_00) }).unwrap();
         assert_eq!(m.take_pay(), 250_00);

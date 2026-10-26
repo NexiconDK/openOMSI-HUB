@@ -45,6 +45,13 @@ pub struct Player {
     /// When he first came, and last logged in (Unix seconds).
     pub since: i64,
     pub seen: i64,
+    /// (Phase 6: what founding a company asks, `server_found`) The trips he drove for a company
+    /// of the server as its world measured them; the server's day his leadership course ends on
+    /// (empty: not booked); his driving tests on the server (the one booked, the classes passed,
+    /// the last tests taken).
+    pub trips: u32,
+    pub course_until: String,
+    pub tests: super::career::DriverCareer,
 }
 
 /// The ways to log in the server takes (`logins` in company-server.cfg).

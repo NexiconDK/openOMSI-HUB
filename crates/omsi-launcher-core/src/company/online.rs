@@ -118,8 +118,9 @@ pub fn pay_of(c: &Company, money: super::model::Cents) -> super::model::Cents {
 }
 
 /// A player's pay for a trip, as the company's process books it and the main server pays it
-/// into his money (`<folder>/pay/<company>.jsonl`, a JSON line each).
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+/// into his money (`<folder>/pay/<company>.jsonl`, a JSON line each) - every trip of his the
+/// world measured, paid or not: the main server counts them (phase 6, `server_found`).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct Pay {
     /// The server's id for him and his name.
     pub player: String,
@@ -131,6 +132,20 @@ pub struct Pay {
     pub departure: f64,
     /// When it was booked (Unix seconds).
     pub at: u64,
+    /// (Phase 6) The class of the bus he drove it with, and the trip judged as a driving test
+    /// (`career::judge_exam`): the test he booked on the server, when it is of that class.
+    #[serde(default)]
+    pub class: Option<super::career::LicenceClass>,
+    #[serde(default)]
+    pub exam: Option<Judged>,
+}
+
+/// A trip judged as a driving test (`career::judge_exam`).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+pub struct Judged {
+    pub passed: bool,
+    pub score: u32,
+    pub criteria: Vec<super::career::Criterion>,
 }
 
 /// The pay file of company `id`.
@@ -855,7 +870,7 @@ mod tests {
         std::fs::write(store::world_trips_file(&data, "co"), format!("{}\n", serde_json::to_string(&w).unwrap())).unwrap();
         assert_eq!(store::world_trips_from(&data, "co", to + 100).0.len(), 1);
         // (the pay)
-        let p = Pay { player: "p1".into(), name: "Jonas".into(), cents: 1234, line: "5".into(), tour: "3".into(), departure: 28800.0, at: 7 };
+        let p = Pay { player: "p1".into(), name: "Jonas".into(), cents: 1234, line: "5".into(), tour: "3".into(), departure: 28800.0, at: 7, ..Default::default() };
         append_pay(&data, "co", &p).unwrap();
         append_pay(&data, "co", &Pay { cents: 66, ..p.clone() }).unwrap();
         let (pays, end) = pay_from(&data, "co", 0);

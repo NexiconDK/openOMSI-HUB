@@ -17,7 +17,10 @@
 //! * `companies` - every company of the server, with his role in each;
 //! * `join` - a company's code and the server's ticket for him (`online::ticket`): his launcher
 //!   joins the company with them as "Play together" does, no code to type;
-//! * `found` - a company founded on a map from his own money (`found_price`), he its owner;
+//! * `found` - a company founded on a map from his own money (`found_price`), he its owner -
+//!   (phase 6) once he has done what founding asks (`server_found`: trips, the leadership course,
+//!   a driving test); `course` books the course, `test` a driving test (`class`; none: the one
+//!   booked called off);
 //! * `world` - (phase 3) the world of a company's map for one of its players, started when it
 //!   does not run: its ports, its tunnel, and whether it answers yet - his game joins it to
 //!   drive a duty of the company.
@@ -73,6 +76,7 @@ pub const NO_WORLD: &str = "The server could not start the map's world: it says 
 pub fn texts() -> Vec<&'static str> {
     let mut v = vec![BAD_SECRET, NEWER, UNKNOWN, LOGGED_OUT, NO_COMPANY, STARTING, NO_NAME, NO_MAP, NO_MODE, NOT_ENOUGH, NOT_FOUNDED, UNREACHED, NOT_MEMBER, NO_WORLD];
     v.extend(super::server_players::texts());
+    v.extend(super::server_found::texts());
     v
 }
 
@@ -94,10 +98,30 @@ pub struct Ask {
     pub company: String,
     pub map: String,
     pub mode: String,
+    /// (Phase 6) `test`'s class of bus (`career::LicenceClass`: midi, solo, articulated,
+    /// double); empty: the test booked called off.
+    pub class: String,
 }
 
 fn refusal(text: &str) -> Value {
     json!({ "ok": false, "error": text })
+}
+
+/// A refusal with its numbers (`server_found::Why`): money (`price`, `money`, whole units) beside
+/// the error as `NOT_ENOUGH`'s are, the rest under `args`.
+fn refusal_with(w: super::server_found::Why) -> Value {
+    let mut v = refusal(w.0);
+    let mut args = serde_json::Map::new();
+    for (k, x) in w.1 {
+        match (k.as_str(), x.parse::<i64>()) {
+            ("price" | "money", Ok(n)) => v[k.as_str()] = json!(n),
+            _ => {
+                args.insert(k, json!(x));
+            }
+        }
+    }
+    v["args"] = Value::Object(args);
+    v
 }
 
 /// The server's kept session in its folder (made the first time: a new secret and key; its port
@@ -155,6 +179,16 @@ fn whole(cents: i64) -> i64 {
     cents / 100
 }
 
+/// The server's day now (its clock's date).
+fn server_day(m: &MainServer) -> String {
+    m.clock.at_real(unix_now() as f64).0
+}
+
+/// (Phase 6) What founding asks of him, and how far he is (`server_found::status_json`).
+fn founding(m: &MainServer, p: &Player) -> Value {
+    super::server_found::status_json(p, &m.cfg.found, &server_day(m))
+}
+
 /// A player as his launcher shows him.
 pub fn player_json(p: &Player) -> Value {
     json!({ "id": p.id, "name": p.name, "money": whole(p.money), "account": !p.account.is_empty(), "steam": !p.steam.is_empty() })
@@ -192,13 +226,15 @@ impl Api {
         match ask.what.as_str() {
             "info" => self.info(),
             "login" => self.login(&ask, now),
-            "companies" | "join" | "found" | "me" | "world" => {
+            "companies" | "join" | "found" | "me" | "world" | "course" | "test" => {
                 let Some(id) = self.player_of(&ask.session, now) else { return refusal(LOGGED_OUT) };
                 match ask.what.as_str() {
                     "companies" => self.companies(&id),
                     "join" => self.join(&id, &ask.company),
                     "found" => self.found(&id, &ask),
                     "world" => self.world(&id, &ask.company),
+                    "course" => self.course(&id),
+                    "test" => self.test(&id, &ask.class, now),
                     _ => self.me(&id),
                 }
             }
@@ -251,10 +287,49 @@ impl Api {
     }
 
     fn me(&self, id: &str) -> Value {
-        match self.server().players.get(id) {
-            Some(p) => json!({ "ok": true, "player": player_json(p) }),
+        let m = self.server();
+        match m.players.get(id) {
+            Some(p) => json!({ "ok": true, "player": player_json(p), "found": founding(&m, p) }),
             None => refusal(LOGGED_OUT),
         }
+    }
+
+    /// (Phase 6) The leadership course booked from his money.
+    fn course(&self, id: &str) -> Value {
+        let mut m = self.server();
+        let (needs, today) = (m.cfg.found, server_day(&m));
+        let Some(p) = m.players.get_mut(id) else { return refusal(LOGGED_OUT) };
+        if let Err(w) = super::server_found::book_course(p, &needs, &today) {
+            return refusal_with(w);
+        }
+        let (name, until) = (p.name.clone(), p.course_until.clone());
+        if let Err(e) = m.players.save(&m.data) {
+            m.say_warning(&format!("the players not saved: {e:#}"));
+        }
+        m.say(&format!("{name} is on the leadership course until {until}"));
+        drop(m);
+        self.me(id)
+    }
+
+    /// (Phase 6) A driving test booked for a class of bus (`class`), or the one booked called off.
+    fn test(&self, id: &str, class: &str, now: i64) -> Value {
+        let mut m = self.server();
+        let Some(p) = m.players.get_mut(id) else { return refusal(LOGGED_OUT) };
+        let said = if class.trim().is_empty() {
+            super::server_found::cancel_test(p);
+            format!("{}: driving test called off", p.name)
+        } else {
+            match super::server_found::book_test(p, class, now.max(0) as u64) {
+                Ok(c) => format!("{}: driving test booked ({})", p.name, c.label()),
+                Err(w) => return refusal_with(w),
+            }
+        };
+        if let Err(e) = m.players.save(&m.data) {
+            m.say_warning(&format!("the players not saved: {e:#}"));
+        }
+        m.say(&said);
+        drop(m);
+        self.me(id)
     }
 
     fn companies(&self, id: &str) -> Value {
@@ -281,7 +356,7 @@ impl Api {
         // (his own first, then by name - a depot right under its head office)
         let head = |c: &Value| if c["hq"].as_str().unwrap_or("").is_empty() { c["name"].as_str().unwrap_or("").to_lowercase() } else { format!("{}\u{1}{}", c["hq_name"].as_str().unwrap_or("").to_lowercase(), c["name"].as_str().unwrap_or("").to_lowercase()) };
         list.sort_by_key(|c| (!c["mine"].as_bool().unwrap_or(false), c["role"].is_null(), head(c)));
-        json!({ "ok": true, "player": player_json(&me), "companies": list })
+        json!({ "ok": true, "player": player_json(&me), "companies": list, "found": founding(&m, &me) })
     }
 
     fn join(&self, id: &str, company: &str) -> Value {
@@ -350,6 +425,10 @@ impl Api {
         }
         let price = m.cfg.found_price;
         let Some(me) = m.players.get(id).cloned() else { return refusal(LOGGED_OUT) };
+        // (phase 6: what founding asks besides its price)
+        if let Some(w) = super::server_found::missing(&me, &m.cfg.found, &server_day(&m)) {
+            return refusal_with(w);
+        }
         if me.money < price {
             return json!({ "ok": false, "error": NOT_ENOUGH, "price": whole(price), "money": whole(me.money) });
         }
@@ -487,7 +566,40 @@ mod tests {
         assert_eq!(q("found", json!({ "company": " ", "map": "Lemmental" }))["error"], NO_NAME);
         assert_eq!(q("found", json!({ "company": "Ny", "map": "Grundorf" }))["error"], NO_MAP);
         assert_eq!(q("found", json!({ "company": "Ny", "map": "Lemmental", "mode": "hardest" }))["error"], NO_MODE);
-        let f = q("found", json!({ "company": "Lemtal Trafik", "map": "lemmental", "mode": "casual" }));
+        // (phase 6: what founding asks besides its price - his trips first)
+        let lemtal = json!({ "company": "Lemtal Trafik", "map": "lemmental", "mode": "casual" });
+        let not_yet = q("found", lemtal.clone());
+        assert_eq!((not_yet["error"].as_str(), not_yet["args"]["n"].as_str(), not_yet["args"]["need"].as_str()), (Some(crate::company::server_found::NEED_TRIPS), Some("20"), Some("20")));
+        assert_eq!((q("me", json!({}))["found"]["trips"]["need"].as_u64(), q("me", json!({}))["found"]["can"].as_bool()), (Some(20), Some(false)));
+        {
+            // (twenty trips driven for a company, as the companies booked them; and the course's price)
+            let mut m = api.server();
+            let p = m.players.get_mut(&pid).unwrap();
+            p.trips = 20;
+            p.money += 5000_00;
+        }
+        assert_eq!(q("found", lemtal.clone())["error"], crate::company::server_found::NEED_COURSE);
+        let on = q("course", json!({}));
+        assert_eq!((on["player"]["money"].as_i64(), on["found"]["course"]["running"].as_bool(), on["found"]["course"]["until"].as_str()), (Some(20000), Some(true), Some("2024-03-07")));
+        assert_eq!(q("course", json!({}))["error"], crate::company::server_found::COURSE_RUNNING);
+        assert_eq!(q("found", lemtal.clone())["args"]["date"], "2024-03-07");
+        // (its days gone by)
+        api.server().players.get_mut(&pid).unwrap().course_until = "2024-03-04".into();
+        assert_eq!(q("found", lemtal.clone())["error"], crate::company::server_found::NEED_TEST);
+        // a driving test booked, called off, booked again - and passed on his next solo bus trip
+        assert_eq!(q("test", json!({ "class": "tram" }))["error"], crate::company::server_found::NO_CLASS);
+        assert_eq!(q("test", json!({ "class": "solo" }))["found"]["test"]["booked"], "solo");
+        assert!(q("test", json!({ "class": "" }))["found"]["test"]["booked"].is_null());
+        q("test", json!({ "class": "solo" }));
+        {
+            let mut m = api.server();
+            let p = m.players.get_mut(&pid).unwrap();
+            let judged = crate::company::online::Judged { passed: true, score: 100, criteria: Vec::new() };
+            let pay = crate::company::online::Pay { class: Some(crate::company::career::LicenceClass::Solo), exam: Some(judged), at: 1_800_000_001, ..Default::default() };
+            assert!(crate::company::server_found::take_trip(p, &pay).is_some_and(|t| t.passed));
+        }
+        assert_eq!(q("me", json!({}))["found"]["can"], true);
+        let f = q("found", lemtal);
         assert_eq!((f["ok"].as_bool(), f["money"].as_i64()), (Some(true), Some(5000)), "{f}");
         let cid = f["company"].as_str().unwrap().to_string();
         // (he is its owner by the server's id for him)

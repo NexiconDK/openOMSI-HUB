@@ -166,10 +166,9 @@ fn step(s: &mut Session, host: &mut Host, data: &Path) -> bool {
             }
             for p in &paid {
                 say(&host.company.id, &format!("{} drove line {} tour {} in the world: {:.2} his pay", p.name, p.line, p.tour, p.cents as f64 / 100.0));
-                if p.cents > 0 {
-                    if let Err(e) = online::append_pay(data, &host.company.id, p) {
-                        say(&host.company.id, &format!("the pay of {} not written: {e:#}", p.name));
-                    }
+                // (every trip of his, paid or not: the main server counts them - phase 6)
+                if let Err(e) = online::append_pay(data, &host.company.id, p) {
+                    say(&host.company.id, &format!("the pay of {} not written: {e:#}", p.name));
                 }
             }
         }

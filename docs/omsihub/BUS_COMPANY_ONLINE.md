@@ -29,6 +29,10 @@ own world - then the AI buses and the traffic are not the same for everybody).
 | The roster | The easy mode's routine fills it; in Normal and Realistic the planners alone, what they leave open does not run |
 | Trips | A map's world reports every trip once, the AI buses' and the players' (measured by the server, not by the player's game); a map without a world: the main server works its AI trips out at midnight, as Bus Company does for the days not played |
 | Control room | Per depot: every bus live while the map's world runs (interventions on the AI buses), else where the timetable has them |
+| Founding (phase 6) | Decided 26 October 2026: besides the price, trips driven for a company on the server (as the world measured them), a leadership course on the server (money and days), and a driving test passed on the server |
+| Worlds kept running (phase 6) | Decided 26 October 2026: a world is not closed for want of players while the machine can carry it (memory and CPU under limits of `company-server.cfg`); over them, the one empty the longest goes first |
+| Big purchases (phase 6) | Decided 26 October 2026: a depot's purchase over an amount (`big_purchase`) waits for the head office's owner's yes or no |
+| A head office in the red (phase 6) | Decided 26 October 2026: the bank's emergency loan first; bankrupt only when that cannot be paid either |
 | Identity | The player's Omsi-Hub account (email or Google, checked by the server with Omsi-Hub online), the Steam ID read on his computer (`Steam/config/loginusers.vdf`) with a secret key the server gives that computer, or both as one player (decided 24 October 2026: "Begge dele") |
 | Pay | A trip counts in the company's books (the depot's) and in the player's own career; the company takes a share of the trip's income it chooses (say 25 %), a change counting from the next day |
 | Project | A server program of its own built from Omsi-Hub's code, in modules of its own, behind a switch (off until ready); no new fork, no long-lived branch |
@@ -626,6 +630,37 @@ company's own model runs as ever - the timetable with the delays it draws.
 Tested: `lateness::tests::the_worlds_bus_is_as_late_as_the_world_says`,
 `control::tests::a_trip_cancelled_is_not_run_and_the_bus_takes_the_next_on_time`,
 `timetable_run::sim::tours::tests::the_control_rooms_acts_reach_the_buses_on_the_road`.
+
+## Phase 6: polish
+
+### Step 1: what founding a company asks
+
+Decided 26 October 2026: besides the price, trips driven for a company of the server, the
+leadership course and a driving test passed on the server (`company::server_found`; each on or
+off in `company-server.cfg`: `found_trips = 20`, `found_course = 1` with `course_price = 5000`
+and `course_days = 3`, `found_test = 1` - added to an older file the first time).
+
+- **Trips**: every trip of a player's that a company booked from the world's measurement goes to
+  the main server as his pay does (`online::Pay`, written now for a trip paid nothing too), and
+  the main server counts it once (`server_found::take_trip`, kept in `players.json`: `trips`).
+- **The leadership course**: booked from the launcher for `course_price` of his own money; done
+  `course_days` days of the server's clock later (`course_until`).
+- **A driving test**: booked from the launcher for a class of bus (midi, solo, articulated,
+  double-decker); his next trip on the server with a bus of that class is the test, judged by
+  his company's process from the trip the world measured as the career's test is
+  (`career::judge_exam`: driven to its end, punctual, smooth, safe) and sent with the pay
+  (`Pay::class`, `Pay::exam`); passed, the class is his (`tests`), failed, he books it again.
+- **The door**: `me` and `companies` answer what founding asks and how far he is (`found`),
+  `course` books the course, `test` a test (`class`; none: called off), and `found` refuses with
+  what he lacks first ("Drive %{n} more trips…", "Take the leadership course first.", "Your
+  leadership course ends on…", "Pass a driving test on the server first.").
+- **The launcher**: "Found a company" lists what founding asks, each done or not, with "Book the
+  course", the test's class and "Book the test" / "Call it off"; "Found" opens when all is done.
+- **The console**: `players` shows each player's trips, course and tests; `grant <player>; trips
+  <n> | course | test <class>` gives them (the server's owner, his friends before the rules).
+
+Tested: `server_found::tests::a_player_founds_after_his_trips_the_course_and_a_test`,
+`server_api::tests::a_player_logs_in_founds_and_joins`.
 
 ## Open questions (udkast 4)
 

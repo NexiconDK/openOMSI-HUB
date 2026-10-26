@@ -161,7 +161,15 @@ pub(crate) fn take_world_trips(s: &mut Session, lines: &[core::LineInfo], trips:
                 if pay > 0 {
                     c.book(co::model::BookingKind::Wages, -pay, format!("{name}: line {} tour {} (a player of the company)", kept.line, kept.tour), false);
                 }
-                paid.push(co::online::Pay { player: id.clone(), name: name.clone(), cents: pay, line: kept.line.clone(), tour: kept.tour.clone(), departure: kept.departure, at: now });
+                // (phase 6: the class of the duty's bus, and the trip judged as a driving test -
+                // the main server counts his trips and takes the test he booked)
+                let class = p.tours.iter().find(|t| t.tour.line.eq_ignore_ascii_case(&r.line) && t.tour.tour.trim() == r.tour.trim()).and_then(|t| match t.bus {
+                    Some(co::plan::BusOf::Own(v)) => c.vehicle(v).map(|v| co::career::LicenceClass::of(v.kind.size)),
+                    _ => None,
+                });
+                let (passed, score, criteria) = co::career::judge_exam(&kept);
+                let exam = Some(co::online::Judged { passed, score, criteria });
+                paid.push(co::online::Pay { player: id.clone(), name: name.clone(), cents: pay, line: kept.line.clone(), tour: kept.tour.clone(), departure: kept.departure, at: now, class, exam });
                 booked = true;
                 break;
             }

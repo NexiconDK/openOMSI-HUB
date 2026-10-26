@@ -58,8 +58,33 @@ function CompanyRow({ c, w, onJoin }) {
   </div>`;
 }
 
-/** Founding a company on the server: its name, map and game mode, and the price. */
-function FoundDialog({ v, onClose, done }) {
+/** (Phase 6) What founding asks besides its price: each need, done or not, and the way to it -
+ * the leadership course booked, a driving test booked for a class of bus or called off. */
+function Needs({ v, again }) {
+  const [cls, setCls] = useState(1);
+  const [busy, setBusy] = useState(false);
+  const act = async (name, args) => {
+    setBusy(true);
+    const r = await run(name, args);
+    setBusy(false);
+    if (r && !r.error) again(r);
+  };
+  if (!v.needs?.length) return null;
+  return html`<div class="bco-needs">
+    <label class="bco-label">${v.needs_caps}</label>
+    ${v.needs.map((n) => html`<div class=${'bco-need' + (n.ok ? ' ok' : '')} data-need=${n.key}>
+      <${Icon} name=${n.ok ? 'check_circle' : 'radio_button_unchecked'} size=${18} />
+      <span>${n.text}</span>
+      ${n.key === 'test' && n.book && html`<${Select} value=${cls} options=${(n.classes || []).map((c) => c.label)} onChange=${setCls} style="width:160px" />`}
+      ${n.book && html`<${Btn} label=${n.book} disabled=${busy} onClick=${() => (n.key === 'test' ? act('bco_test', { class: n.classes?.[cls]?.key || '' }) : act('bco_course'))} />`}
+      ${n.cancel && html`<${Btn} label=${n.cancel} disabled=${busy} onClick=${() => act('bco_test', { class: '' })} />`}
+    </div>`)}
+  </div>`;
+}
+
+/** Founding a company on the server: its name, map and game mode, what founding asks, and the
+ * price. */
+function FoundDialog({ v, onClose, done, again }) {
   const w = v.words;
   const [name, setName] = useState('');
   const [map, setMap] = useState(0);
@@ -83,6 +108,7 @@ function FoundDialog({ v, onClose, done }) {
     <${Select} value=${map} options=${v.maps.map((m) => m.label)} onChange=${setMap} style="width:100%" />
     <label class="bco-label">${w.mode}</label>
     <${Seg} value=${mode} options=${w.modes.map((m) => [m.key, m.label])} onChange=${setMode} />
+    <${Needs} v=${v} again=${again} />
     <p class=${'co-para ' + (v.me.can_found ? 'dim' : 't-warn')} style="margin-top:14px">${v.price}</p>
   </${Dialog}>`;
 }
@@ -120,7 +146,7 @@ function Server({ v, again }) {
       ${v.companies.length === 0 && html`<p class="dim">${w.none}</p>`}
       ${v.companies.map((c) => html`<${CompanyRow} c=${c} w=${w} onJoin=${() => join(c.id)} />`)}
     </div>
-    ${founding && html`<${FoundDialog} v=${v} onClose=${() => setFounding(false)} done=${(nv) => (setFounding(false), nv && again(nv))} />`}
+    ${founding && html`<${FoundDialog} v=${v} again=${again} onClose=${() => setFounding(false)} done=${(nv) => (setFounding(false), nv && again(nv))} />`}
   </div>`;
 }
 

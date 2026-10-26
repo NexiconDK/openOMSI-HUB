@@ -57,6 +57,8 @@ struct Linked {
     info: Value,
     player: Value,
     companies: Vec<Value>,
+    /// (Phase 6) What founding asks of him and how far he is (`server_found::status_json`).
+    found: Value,
 }
 
 /// What the page shows: the server linked, and what was said last.
@@ -119,6 +121,12 @@ fn refusal_of(v: &Value) -> (String, Vec<(String, String)>) {
             args.push((k.to_string(), euros(n * 100)));
         }
     }
+    // (phase 6: the rest of its numbers - trips, a date)
+    if let Some(o) = v.get("args").and_then(Value::as_object) {
+        for (k, x) in o {
+            args.push((k.clone(), x.as_str().map(str::to_string).unwrap_or_else(|| x.to_string())));
+        }
+    }
     (e, args)
 }
 
@@ -173,7 +181,7 @@ fn connect(text: &str) -> Value {
     };
     {
         let mut s = state();
-        s.linked = Some(Linked { text: text.trim().to_string(), code, base, session, info, player, companies: Vec::new() });
+        s.linked = Some(Linked { text: text.trim().to_string(), code, base, session, info, player, companies: Vec::new(), found: Value::Null });
         s.error = None;
         s.note = note;
     }
@@ -226,6 +234,7 @@ fn refresh() -> Value {
             if let Some(l) = s.linked.as_mut() {
                 l.companies = v.get("companies").and_then(Value::as_array).cloned().unwrap_or_default();
                 l.player = v.get("player").cloned().unwrap_or(Value::Null);
+                l.found = v.get("found").cloned().unwrap_or(Value::Null);
             }
             s.error = None;
             drop(s);
@@ -266,6 +275,70 @@ fn found(args: &Value) -> Value {
         }
         Err((e, a)) => json!({ "error": words_of(&e, &a) }),
     }
+}
+
+/// (Phase 6) The leadership course booked (`course`), or a driving test for a class of bus
+/// (`test` with `class`; none: the one booked called off): the page again, or `{error}`.
+fn needs(what: &str, extra: Value) -> Value {
+    match question(what, extra) {
+        Ok(v) => {
+            if let Some(l) = state().linked.as_mut() {
+                l.player = v.get("player").cloned().unwrap_or(Value::Null);
+                l.found = v.get("found").cloned().unwrap_or(Value::Null);
+            }
+            view()
+        }
+        Err((e, a)) => json!({ "error": words_of(&e, &a) }),
+    }
+}
+
+/// The bus classes a driving test is for (`career::LicenceClass`): their keys and names.
+fn classes() -> Vec<Value> {
+    omsi_launcher_lib::company::career::LicenceClass::ALL.iter().map(|c| json!({ "key": serde_json::to_value(c).unwrap_or(Value::Null), "label": tr(c.label()) })).collect()
+}
+
+/// The name of a class of bus by its key.
+fn class_label(key: &Value) -> String {
+    serde_json::from_value::<omsi_launcher_lib::company::career::LicenceClass>(key.clone()).map(|c| tr(c.label())).unwrap_or_default()
+}
+
+/// (Phase 6) What founding asks, each with how far he is and what he can do about it.
+fn needs_json(f: &Value) -> Vec<Value> {
+    let mut rows = Vec::new();
+    let t = &f["trips"];
+    let n = |v: &Value| v.as_u64().unwrap_or(0).to_string();
+    if t["need"].as_u64().unwrap_or(0) > 0 {
+        rows.push(json!({ "key": "trips", "ok": t["ok"], "text": trf("Trips driven for a company on the server: %{done} of %{need}", &[("done", &n(&t["done"])), ("need", &n(&t["need"]))]) }));
+    }
+    let c = &f["course"];
+    if c["need"].as_bool() == Some(true) {
+        let text = if c["ok"].as_bool() == Some(true) {
+            tr("Leadership course: taken")
+        } else if c["running"].as_bool() == Some(true) {
+            trf("Leadership course: until %{date}", &[("date", c["until"].as_str().unwrap_or(""))])
+        } else {
+            trf("Leadership course: %{price}, %{days} days", &[("price", &euros(c["price"].as_i64().unwrap_or(0) * 100)), ("days", &n(&c["days"]))])
+        };
+        let book = c["ok"].as_bool() != Some(true) && c["running"].as_bool() != Some(true);
+        rows.push(json!({ "key": "course", "ok": c["ok"], "text": text, "book": book.then(|| tr("Book the course")) }));
+    }
+    let x = &f["test"];
+    if x["need"].as_bool() == Some(true) {
+        let passed: Vec<String> = x["passed"].as_array().map(|a| a.iter().map(class_label).collect()).unwrap_or_default();
+        let last = &x["last"];
+        let text = if !passed.is_empty() {
+            trf("Driving test: passed (%{classes})", &[("classes", &passed.join(", "))])
+        } else if !x["booked"].is_null() {
+            trf("Driving test booked: %{class} - your next trip with such a bus is the test", &[("class", &class_label(&x["booked"]))])
+        } else if last["passed"].as_bool() == Some(false) {
+            trf("Driving test: not passed (%{score} %) - book it again", &[("score", &n(&last["score"]))])
+        } else {
+            tr("Driving test: not taken")
+        };
+        let open = passed.is_empty() && x["booked"].is_null();
+        rows.push(json!({ "key": "test", "ok": x["ok"], "text": text, "book": open.then(|| tr("Book the test")), "cancel": (!x["booked"].is_null()).then(|| tr("Call it off")), "classes": classes() }));
+    }
+    rows
 }
 
 /// (Phase 3) The world of company `company`'s map, to drive a duty in: asked of the main server
@@ -371,7 +444,9 @@ fn view() -> Value {
     json!({
         "words": words, "linked": true, "code": l.text, "ways": ways, "problem": error, "note": s.note.as_deref().map(tr),
         "server": { "name": i.get("name").and_then(Value::as_str).unwrap_or(""), "time": format!("{} {}", i.get("date").and_then(Value::as_str).unwrap_or(""), i.get("time").and_then(Value::as_str).unwrap_or("")), "players": i.get("players").and_then(Value::as_u64).unwrap_or(0) },
-        "me": { "name": l.player.get("name").and_then(Value::as_str).unwrap_or(""), "money": euros(money * 100), "by": by.join(" + "), "can_found": money >= price },
+        "me": { "name": l.player.get("name").and_then(Value::as_str).unwrap_or(""), "money": euros(money * 100), "by": by.join(" + "), "can_found": money >= price && l.found.get("can").and_then(Value::as_bool) != Some(false) },
+        // (phase 6: what founding asks besides its price)
+        "needs": needs_json(&l.found), "needs_caps": tr("What founding asks"),
         "price": trf("Founding costs %{price} of your own money: you have %{money}.", &[("price", &euros(price * 100)), ("money", &euros(money * 100))]),
         "maps": maps.iter().map(|m| json!({ "key": m["folder"], "label": m["folder"] })).collect::<Vec<_>>(),
         "companies": l.companies.iter().map(company_json).collect::<Vec<_>>(),
@@ -392,6 +467,8 @@ pub fn call(cmd: &str, args: &Value) -> Option<Answer> {
         "bco_join" => join(&s("company")),
         "bco_found" => found(args),
         "bco_world" => world(&s("company")),
+        "bco_course" => needs("course", json!({})),
+        "bco_test" => needs("test", json!({ "class": s("class") })),
         "bco_forget" => {
             *state() = State::default();
             keep(|k| {

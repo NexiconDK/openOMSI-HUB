@@ -212,6 +212,12 @@
 .bco-state i { width: 8px; height: 8px; border-radius: 50%; background: rgba(var(--co-white), 0.35); }
 .bco-state.on i { background: #4cc38a; }
 .bco-label { display: block; margin: 12px 0 6px; font-size: var(--co-note); font-weight: 600; opacity: 0.75; }
+/* (phase 6) what founding asks: each need, done or not, and its button */
+.bco-needs { display: flex; flex-direction: column; gap: 6px; }
+.bco-need { display: flex; align-items: center; gap: 8px; min-height: 34px; padding: 4px 10px; border-radius: 8px; background: rgba(var(--co-white), 0.04); font-size: var(--co-rows); }
+.bco-need > span { flex: 1; min-width: 0; line-height: 1.35; }
+.bco-need .co-icon, .bco-need > .material-symbols-rounded { opacity: 0.6; }
+.bco-need.ok { color: #4cc38a; }
 @media (max-width: 760px) {
   .bco-company { grid-template-columns: 40px minmax(0, 1fr) auto; }
   .bco-company .bco-role, .bco-company .bco-state { display: none; }

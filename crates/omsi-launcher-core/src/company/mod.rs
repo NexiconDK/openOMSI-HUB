@@ -72,6 +72,8 @@ pub mod takeover;
 // (Bus Company Online phase 5: each depot's control room - the world's buses live)
 pub mod world_live;
 pub mod server_players;
+// (phase 6: what founding a company on the server asks of a player)
+pub mod server_found;
 pub mod shared_tenders;
 pub mod ownline;
 pub mod parts;
