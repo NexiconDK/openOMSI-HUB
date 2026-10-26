@@ -5,7 +5,7 @@
 // `JoinPage`) and a company founded on a map of the server's from his own money there. Every text
 // comes from Rust, translated.
 
-import { html, useEffect, useState, setCo, cmd, Icon, Mark, Btn, Seg, Select, Dialog } from './kit.js';
+import { html, useEffect, useState, setCo, cmd, Icon, Mark, Btn, Seg, Select, Dialog, Plate } from './kit.js';
 import { run } from './multiplayer.js';
 import { toast } from '../../store.js';
 
@@ -69,6 +69,7 @@ function CompanyRow({ c, w, onJoin, depots = 0, open = false, onFold }) {
       ${c.depot_of && html`<span class="cut bco-depot-of">${c.depot_of}</span>`}
       <span class="dim cut">${c.map ? `${c.map} · ` : ''}${c.mode} · ${w.owner}: ${c.owner}</span>
       <span class="dim cut">${c.figures}</span>
+      <${LinePlates} lines=${c.line_list} />
       ${depots > 0 &&
       html`<button type="button" class=${'bco-fold' + (open ? ' open' : '')} onClick=${onFold}>
         <${Icon} name="garage" size=${15} /><span>${open ? w.hide_depots : w.show_depots}</span><${Icon} name=${open ? 'expand_less' : 'expand_more'} size=${16} />
@@ -77,6 +78,20 @@ function CompanyRow({ c, w, onJoin, depots = 0, open = false, onFold }) {
     ${c.role && html`<span class="bco-role">${c.mine ? w.mine : `${w.your_role}: ${c.role}`}</span>`}
     <span class=${'bco-state' + (c.runs ? ' on' : '')}><i></i>${c.state}</span>
     <${Btn} kind="primary" icon="groups" label=${w.join} disabled=${!c.runs} onClick=${onJoin} />
+  </div>`;
+}
+
+/** How many of a company's line plates its row shows (the rest as "+n"). */
+const PLATES = 16;
+
+/** A company's lines as plates in their colours (the map's, as the line editor gave them, or the
+ * company's): what a driver looking for a company sees it drive. */
+function LinePlates({ lines }) {
+  if (!lines?.length) return null;
+  const more = lines.length - PLATES;
+  return html`<div class="bco-lines">
+    ${lines.slice(0, PLATES).map((l) => html`<${Plate} p=${l} h=${22} />`)}
+    ${more > 0 && html`<span class="bco-more">+${more}</span>`}
   </div>`;
 }
 
@@ -150,9 +165,18 @@ function grouped(companies, w) {
       const departments = [office, ...depots];
       const sum = (k) => departments.reduce((n, d) => n + (d[k] || 0), 0);
       const running = departments.find((d) => d.runs);
+      // (its lines: every department's, each once)
+      const seen = new Set();
+      const lines = departments.flatMap((d) => d.line_list || []).filter((l) => {
+        const k = `${l.number}|${l.colour}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
       const overview = {
         ...head,
         map: '',
+        line_list: lines,
         figures: w.group_figures.replace('%{lines}', sum('lines')).replace('%{buses}', sum('buses')).replace('%{depots}', departments.length),
         runs: !!running,
         state: (running || head).state,

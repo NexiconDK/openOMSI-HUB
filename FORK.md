@@ -221,6 +221,8 @@ Bus Company online (fase 1 af `docs/omsihub/BUS_COMPANY_ONLINE.md`). Én stor se
   - **Chaufføren**: Den chauffør, vagten var planlagt til, bliver fri til andet arbejde.
   - **Tildeling**: Den, der må tildele vagter, kan give dem videre på samme måde.
   - **Eget firma**: Uden for serveren beholder chefens chauffører deres vagter som før.
+- **Linjeskilte på Server-siden (Bus Company Online)**: Hvert firma viser sine linjer som små skilte i linjens farve under tallene, så en chauffør kan se, hvem der kører hvad, og vælge, hvor han vil søge ind. Et firma med depoter viser alle afdelingernes linjer, hver én gang, og op til 16 skilte, derefter "+n".
+  - **Farven**: Linjens farve fra linjeeditoren på kortet kommer først. Det gælder serverens egne data og serverejerens egen launcher-mappe (`~/.openomsi/lines`), hvor farverne blev sat, da kortet blev spillet. Derefter kommer firmaets egen farve og til sidst firmaets standardpalet.
 - **Depoter på Server-siden (Bus Company Online)**: Serverens liste viser nu kun firmaerne.
   - **Firma med depoter**: Linjen er et overblik over hele firmaet, med spilletilstand, ejer og antal linjer, busser og depoter. Kortet står ikke på.
   - **Show depots**: Knappen folder afdelingerne ud under firmaet. Hovedkontorets egen afdeling står som "Umove Ahlheim 5" (HEAD OFFICE), og depoterne står under den. Launcheren husker, hvilke firmaer der er foldet ud.

@@ -1657,6 +1657,41 @@ pub fn own_lines_of_map(map_file: &str) -> Vec<OwnLine> {
     own_lines(&load_registry(&path).as_timetable())
 }
 
+/// (NexiconDK, Bus Company Online) The colours the line editor gave the lines of the map whose
+/// `global.cfg` the launcher names `map_file` - its own lines, and the map's lines a colour was
+/// chosen for (not the plates' yellow they come with) - by the timetable's name of each (lower
+/// case): from this data folder's registry and, a server's own, the default one's
+/// (`~/.openomsi`, where its owner drew them while playing the map).
+pub fn map_line_colours(map_file: &str) -> std::collections::HashMap<String, String> {
+    let mut out = std::collections::HashMap::new();
+    let folder = map_folder(map_file);
+    if folder.is_empty() {
+        return out;
+    }
+    let mut paths = vec![registry_path(&folder)];
+    let home = crate::home().join(".openomsi").join("lines").join(format!("{}.json", safe_name(&folder)));
+    if !paths.contains(&home) {
+        paths.push(home);
+    }
+    for path in paths.iter().filter(|p| p.is_file()) {
+        let reg = load_registry(path);
+        let valid = |c: &str| c.trim().len() == 7 && c.trim().starts_with('#') && c.trim()[1..].chars().all(|x| x.is_ascii_hexdigit());
+        for l in &reg.lines {
+            if let Some(m) = l.map.as_ref() {
+                if valid(&l.colour) && !l.colour.trim().eq_ignore_ascii_case(MAP_COLOUR) {
+                    out.entry(m.ttl.trim().to_lowercase()).or_insert_with(|| l.colour.trim().to_string());
+                }
+            }
+        }
+        for o in own_lines(&reg.as_timetable()) {
+            if valid(&o.colour) {
+                out.entry(o.file.trim().to_lowercase()).or_insert_with(|| o.colour.trim().to_string());
+            }
+        }
+    }
+    out
+}
+
 // --- a line of the map's ------------------------------------------------------------------------
 
 impl Registry {

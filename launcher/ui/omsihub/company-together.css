@@ -204,6 +204,10 @@
 .bco-company.mine { box-shadow: inset 0 0 0 1px rgba(var(--hub-accent-rgb), 0.5); }
 /* (phase 4: a depot, under its head office) */
 .bco-company.depot { margin-left: 28px; }
+/* (its lines as plates, in their colours: what a driver sees a company drive) */
+.bco-lines { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; max-width: 640px; }
+.bco-lines .co-plate { font-weight: 800; }
+.bco-more { align-self: center; font-size: var(--co-note); font-weight: 700; opacity: 0.7; padding: 0 4px; }
 /* (its depots folded under a head office, and the department chosen at Join) */
 .bco-fold { align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; padding: 3px 8px 3px 9px; border: 0; border-radius: 999px;
   background: rgba(var(--hub-accent-rgb), 0.14); color: inherit; font: inherit; font-size: var(--co-note); font-weight: 600; cursor: pointer; }

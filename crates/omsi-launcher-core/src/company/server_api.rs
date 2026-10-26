@@ -337,6 +337,8 @@ impl Api {
         let Some(me) = m.players.get(id).cloned() else { return refusal(LOGGED_OUT) };
         let mut list = Vec::new();
         let all: Vec<super::model::Company> = company_ids(&m.data).into_iter().filter_map(|cid| store::load(&m.data, &cid).ok()).collect();
+        // (the lines' colours the line editor gave them on each map, read once a map)
+        let mut map_colours: std::collections::HashMap<String, std::collections::HashMap<String, String>> = std::collections::HashMap::new();
         for c in &all {
             let cid = c.id.clone();
             // (phase 4: a depot of a head office on another map - shown under it)
@@ -351,6 +353,7 @@ impl Api {
                 "runs": runs, "players": c.together.guests.iter().filter(|g| !g.banned).count(),
                 "lines": c.lines.len(), "buses": c.fleet.len(), "staff": c.staff.len(),
                 "hq": c.online.hq, "hq_name": hq_name,
+                "line_list": line_badges(c, map_colours.entry(c.map.clone()).or_insert_with(|| crate::lines::map_line_colours(&c.map))),
             }));
         }
         // (his own first, then by name - a depot right under its head office)
@@ -503,10 +506,41 @@ pub fn find_server(code: &CompanyCode, body: &Value) -> std::result::Result<(Str
     Err(UNREACHED.to_string())
 }
 
+/// (NexiconDK) A company's lines as the server's list shows them, to choose a company by:
+/// each its number and colour - the colour the line editor gave it on the map (`map`: by the
+/// timetable's name, `lines::map_line_colours`), else the company's own, else the one its
+/// pages give it (`rosterflow::line_colour`'s palette).
+pub fn line_badges(c: &super::model::Company, map: &std::collections::HashMap<String, String>) -> Vec<Value> {
+    c.lines
+        .iter()
+        .map(|l| {
+            let colour = map.get(&l.name.trim().to_lowercase()).cloned().unwrap_or_else(|| super::rosterflow::hex(super::rosterflow::line_colour(c, &l.name)));
+            let number = if l.number.trim().is_empty() { l.name.trim() } else { l.number.trim() };
+            json!({ "number": number, "colour": colour })
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::company::main_server::{MainCfg, MainServer};
+
+    /// (NexiconDK) A company's lines on the server's list: the colour the line editor gave a line
+    /// on the map first, else the company's own, else its pages' palette - and its number (its
+    /// timetable name when it has none).
+    #[test]
+    fn a_companys_lines_show_in_the_maps_colours() {
+        let mut c = super::super::found(&super::super::Founding { name: "Umove".into(), date: "2024-03-04".into(), ..Default::default() }, "Luc");
+        let line = |name: &str, number: &str, colour: &str| super::super::model::CompanyLine { name: name.into(), number: number.into(), colour: colour.into(), ..Default::default() };
+        c.lines = vec![line("Linie5", "5", "#112233"), line("Linie7", "7", "#445566"), line("Linie9", "", "")];
+        let map: HashMap<String, String> = [("linie5".to_string(), "#e5484d".to_string())].into_iter().collect();
+        let b = line_badges(&c, &map);
+        assert_eq!(b[0], json!({ "number": "5", "colour": "#e5484d" }), "the map's");
+        assert_eq!(b[1], json!({ "number": "7", "colour": "#445566" }), "the company's");
+        let palette = super::super::rosterflow::hex(super::super::rosterflow::PALETTE[2]);
+        assert_eq!(b[2], json!({ "number": "Linie9", "colour": palette }), "the palette's, by its place");
+    }
 
     fn temp(name: &str) -> std::path::PathBuf {
         let d = std::env::temp_dir().join(format!("openomsi-bco-api-{name}-{}", std::process::id()));

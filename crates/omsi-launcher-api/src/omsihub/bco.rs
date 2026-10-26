@@ -450,6 +450,8 @@ fn company_json(c: &Value) -> Value {
         // (the head office's id: its depots are folded under it, and chosen from at Join - the
         // company's figures summed over them)
         "hq": s("hq"), "lines": n("lines"), "buses": n("buses"), "staff": n("staff"),
+        // (its lines' numbers and colours: a driver chooses a company by them)
+        "line_list": c.get("line_list").cloned().unwrap_or(json!([])),
     })
 }
 
