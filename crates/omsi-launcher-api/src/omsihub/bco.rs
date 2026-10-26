@@ -368,6 +368,49 @@ fn world(company: &str) -> Value {
     }
 }
 
+/// (NexiconDK, phase 6 step 5) The players' guide to Bus Company Online, in sections: what the
+/// founding asks as this server has it (its door's answers; the defaults before it is linked).
+fn guide() -> Value {
+    let (found, price) = {
+        let s = state();
+        let l = s.linked.as_ref();
+        (l.map(|l| l.found.clone()).unwrap_or(Value::Null), l.and_then(|l| l.info.get("found_price").and_then(Value::as_i64)))
+    };
+    let d = omsi_launcher_lib::company::server_found::Needs::default();
+    let trips = found["trips"]["need"].as_u64().unwrap_or(d.trips as u64);
+    let course = found["course"]["need"].as_bool().unwrap_or(d.course);
+    let course_price = found["course"]["price"].as_i64().unwrap_or(d.course_price / 100);
+    let days = found["course"]["days"].as_i64().unwrap_or(d.course_days);
+    let test = found["test"]["need"].as_bool().unwrap_or(d.test);
+    let mut founding = vec![trf("Founding a company costs %{price} of your own money.", &[("price", &euros(price.unwrap_or(10_000) * 100))])];
+    if trips > 0 {
+        founding.push(trf("First you drive %{n} trips for a company on the server.", &[("n", &trips.to_string())]));
+    }
+    if course {
+        founding.push(trf("You take the leadership course: %{price}, %{days} days on the server's clock.", &[("price", &euros(course_price * 100)), ("days", &days.to_string())]));
+    }
+    if test {
+        founding.push(tr("And you pass a driving test on the server: book it in the found dialog - your next trip with a bus of that class is the test, to be driven to its end, on time, smoothly and safely."));
+    }
+    let sections = [
+        (tr("What it is"), tr("Bus Company Online is one big server where the players' bus companies run around the clock, on the server's clock. Each map has a world of its own: everybody on a map drives in the same world, among every company's buses in their own colours. Where nobody drives, the AI drives the companies' tours.")),
+        (tr("Getting in"), tr("Ask the server's owner for its code (HUB-…) and enter it here. You log in with your Omsi-Hub account, this computer's Steam account, or both as one player. Your money on the server is your own: you start with some and earn more by driving.")),
+        (tr("Joining a company"), tr("Join opens a company's pages with the role its owner gave you: driver, planner, manager or co-owner. A driver gets his duties in the planning; Drive starts the map's world on the server if it is not running and puts you on your duty with the company's bus.")),
+        (tr("Driving and pay"), tr("The world measures every trip you drive: it has to see your bus on that tour. The company books the trip and keeps its share (its owner sets it); the rest is your pay, into your money on the server. Running late? Report the delay on your duty: a departure more than 15 minutes late that was not reported is fined.")),
+        (tr("Founding your own company"), founding.join(" ")),
+        (tr("Lines and tenders"), tr("On each map a line belongs to one company at most, won in a tender. A tender is open for three days. You bid a price per timetable hour - at most the authority's cap - with diesel buses (a two-week contract) or electric ones (a month); the lowest price weighed with quality wins. A renewal is a new tender: it opens six days before the term ends and is decided three days before.")),
+        (tr("The contract's rules"), tr("Each tour is run with the bus size its timetable asks for or a bigger one, and a contract won with electric buses with electric buses. The authority fines journeys not run, a bus too small, departures more than a minute early or more than 15 minutes late without a report, and complaints. A company that wins a line from another is offered the other's buses of it at their book value.")),
+        (tr("The control room"), tr("While the map's world runs, the fleet map and the Operations page show every bus where it is in the world, with its real delay; otherwise where the timetable has it. Service control can run a late bus out of service to its terminus, cancel a trip, or swap in a spare bus at the terminus - and the bus in the world does it.")),
+        (tr("Depots"), tr("A company that does well opens a depot on another map: its own lines, buses, staff and money there. The head office's owner sends money, moves buses and lends staff between the maps, and approves a depot's big purchases.")),
+        (tr("In the red"), tr("A depot that closes its days in the red is warned twice, then goes bankrupt, and its head office covers its loss. A head office in the red gets the bank's emergency loan; in the red again while that loan runs, it is warned twice and then goes bankrupt, its depots with it.")),
+        (tr("The server's clock"), tr("The server runs on Danish time, summer time too, and nobody can change it. A company's day closes at midnight; when the server was off, the time is caught up.")),
+    ];
+    json!({
+        "title": tr("Bus Company Online: the guide"), "close": tr("Close"),
+        "sections": sections.iter().map(|(t, x)| json!({ "title": t, "text": x })).collect::<Vec<_>>(),
+    })
+}
+
 /// The page's words for a refusal and its arguments.
 fn words_of(e: &str, args: &[(String, String)]) -> String {
     let refs: Vec<(&str, &str)> = args.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
@@ -419,7 +462,7 @@ fn view() -> Value {
         "code_field": tr("The server's code (HUB-…)"), "connect": tr("Connect"), "connecting": tr("Connecting…"),
         "need": [tr("The server's owner gives you its code: his main server shows it."), tr("You log in with the Omsi-Hub account you are signed in with on the Hub page, or with this computer's Steam account - or with both, as one player.")],
         "companies_caps": tr("The server's companies"), "none": tr("No company on the server yet: found the first."),
-        "join": tr("Join"), "found": tr("Found a company"), "refresh": tr("Refresh"), "forget": tr("Log out"),
+        "join": tr("Join"), "found": tr("Found a company"), "refresh": tr("Refresh"), "forget": tr("Log out"), "guide": tr("The guide"),
         "money": tr("Your money"), "players": tr("Players"), "server_time": tr("Server time"),
         "found_title": tr("Found a company on the server"), "name": tr("Name"), "map": tr("Map"), "mode": tr("Game mode"),
         "found_text": tr("The company stays on its map for good. You are its owner, with every permission."),
@@ -468,6 +511,7 @@ pub fn call(cmd: &str, args: &Value) -> Option<Answer> {
         "bco_found" => found(args),
         "bco_world" => world(&s("company")),
         "bco_course" => needs("course", json!({})),
+        "bco_guide" => guide(),
         "bco_test" => needs("test", json!({ "class": s("class") })),
         "bco_forget" => {
             *state() = State::default();

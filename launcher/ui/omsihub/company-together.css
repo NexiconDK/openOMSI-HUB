@@ -218,6 +218,10 @@
 .bco-need > span { flex: 1; min-width: 0; line-height: 1.35; }
 .bco-need .co-icon, .bco-need > .material-symbols-rounded { opacity: 0.6; }
 .bco-need.ok { color: #4cc38a; }
+/* (phase 6 step 5) the players' guide */
+.bco-guide { display: flex; flex-direction: column; gap: 14px; }
+.bco-guide h3 { margin: 0 0 4px; font-size: var(--co-head); }
+.bco-guide p { margin: 0; line-height: 1.5; }
 @media (max-width: 760px) {
   .bco-company { grid-template-columns: 40px minmax(0, 1fr) auto; }
   .bco-company .bco-role, .bco-company .bco-state { display: none; }

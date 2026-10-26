@@ -9,11 +9,25 @@ import { html, useEffect, useState, setCo, cmd, Icon, Mark, Btn, Seg, Select, Di
 import { run } from './multiplayer.js';
 import { toast } from '../../store.js';
 
+/** (Phase 6 step 5) The players' guide to Bus Company Online (`bco_guide`), section by section. */
+function GuideDialog({ onClose }) {
+  const [g, setG] = useState(null);
+  useEffect(() => {
+    run('bco_guide').then((r) => r && !r.error && setG(r));
+  }, []);
+  if (!g) return null;
+  return html`<${Dialog} icon="menu_book" title=${g.title} w=${720} h=${640} onClose=${onClose}
+    foot=${html`<span class="rest"></span><${Btn} kind="primary" label=${g.close} onClick=${onClose} />`}>
+    <div class="bco-guide">${g.sections.map((s) => html`<section><h3>${s.title}</h3><p class="co-para">${s.text}</p></section>`)}</div>
+  </${Dialog}>`;
+}
+
 /** The server's code and the ways this computer logs in. */
 function Connect({ v, again }) {
   const w = v.words;
   const [code, setCode] = useState(v.code || '');
   const [busy, setBusy] = useState(false);
+  const [guide, setGuide] = useState(false);
   const go = async () => {
     setBusy(true);
     const r = await run('bco_connect', { code });
@@ -36,9 +50,11 @@ function Connect({ v, again }) {
         ${v.problem && html`<p class="t-warn tg-why">${v.problem}</p>`}
         <ul class="tg-need">${(w.need || []).map((t) => html`<li>${t}</li>`)}</ul>
         ${v.ways?.steam && html`<p class="bco-way"><${Icon} name="sports_esports" size=${16} />${v.ways.steam}</p>`}
+        <p class="bco-way"><${Btn} icon="menu_book" label=${w.guide} onClick=${() => setGuide(true)} /></p>
       </div>
       <span style="flex:0.7 1 0"></span>
     </div>
+    ${guide && html`<${GuideDialog} onClose=${() => setGuide(false)} />`}
   </div>`;
 }
 
@@ -117,6 +133,7 @@ function FoundDialog({ v, onClose, done, again }) {
 function Server({ v, again }) {
   const w = v.words;
   const [founding, setFounding] = useState(false);
+  const [guide, setGuide] = useState(false);
   const [busy, setBusy] = useState(false);
   const refresh = async () => {
     setBusy(true);
@@ -135,6 +152,7 @@ function Server({ v, again }) {
       <span class="tg-hero-icon"><${Icon} name="public" size=${26} /></span>
       <div class="who"><b class="cut">${v.server.name}</b><span class="cut">${w.server_time}: ${v.server.time} · ${w.players}: ${v.server.players}</span></div>
       <div class="who bco-me"><b class="cut">${v.me.name}</b><span class="cut">${w.money}: ${v.me.money} · ${v.me.by}</span></div>
+      <${Btn} icon="menu_book" label=${w.guide} onClick=${() => setGuide(true)} />
       <${Btn} icon="refresh" label=${w.refresh} disabled=${busy} onClick=${refresh} />
       <${Btn} kind="primary" icon="add" label=${w.found} onClick=${() => setFounding(true)} />
       <${Btn} icon="logout" label=${w.forget} onClick=${forget} />
@@ -147,6 +165,7 @@ function Server({ v, again }) {
       ${v.companies.map((c) => html`<${CompanyRow} c=${c} w=${w} onJoin=${() => join(c.id)} />`)}
     </div>
     ${founding && html`<${FoundDialog} v=${v} again=${again} onClose=${() => setFounding(false)} done=${(nv) => (setFounding(false), nv && again(nv))} />`}
+    ${guide && html`<${GuideDialog} onClose=${() => setGuide(false)} />`}
   </div>`;
 }
 

@@ -714,6 +714,18 @@ either (`server_depots::day_closed`):
 
 Tested: `server_depots::tests::a_head_office_in_the_red_gets_an_emergency_loan_then_goes_bankrupt`.
 
+### Step 5: the players' guide
+
+Decided 26 October 2026: both in the launcher and as a document to share.
+
+- **In the launcher**: "The guide" on Bus Company Online's page (before and after logging in)
+  opens the guide in the player's language (`bco_guide`, `bco.rs`'s `guide`): what it is, getting
+  in, joining a company, driving and pay, founding your own company (what this server asks, from
+  its door's answers; the defaults before it is linked), lines and tenders, the contract's rules,
+  the control room, depots, the red, the server's clock.
+- **The document**: "Bus Company Online – spillerguide", a Claude doc with a Danish and an English
+  tab, for the server's owner to share with his players.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

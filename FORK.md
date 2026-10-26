@@ -212,5 +212,6 @@ Bus Company online (fase 1 af `docs/omsihub/BUS_COMPANY_ONLINE.md`). Én stor se
   - **Konkurs**: Kommer firmaet i minus igen, mens nødlånet løber, får det advarsler som et depot ("2 dage", så "i morgen"). Er det stadig i minus dagen efter, går hele firmaet konkurs: alt sælges, personalet går, lånene indfries, og linjerne kommer i udbud igen.
   - **Depoterne**: Alle firmaets depoter lukker sammen med det.
   - **Et depot alene** får ikke nødlån. Det får advarsler og går konkurs som før.
+- **Spillerguide (fase 6, trin 5)**: Knappen "The guide" på Bus Company Online-siden, både før og efter login, åbner en guide på spillerens sprog. Den forklarer, hvad det er, hvordan man kommer ind og joiner et firma, kørsel og løn, at stifte et firma (med serverens egne krav), udbud, kontraktens regler, kontrolrummet, depoter, minus og konkurs og serverens ur.
 - **Rettelse: verdenens tjek af en spillers tur**: Verdenen målte, hvor langt spillerens bus kørte, ud fra øst-vest og højden i stedet for øst-vest og nord-syd. En tur, der mest gik nord-syd, kunne derfor blive afvist med "his bus drove far less than the trip says".
 - Den dedikerede server har fået `idle_stop = <minutter>` i `server.cfg`. Er den sat, lukker serveren af sig selv efter så mange minutter uden spillere.
