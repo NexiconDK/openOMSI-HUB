@@ -99,9 +99,17 @@ fn depots_part(c: &co::Company) -> Value {
     if !c.online.hq.is_empty() {
         let hq = co::store::load(&data, &c.online.hq).map(|h| h.name).unwrap_or_else(|_| c.online.hq.clone());
         // (step 2: money back to the head office - its owner's)
+        // (phase 6 step 3: its big purchases, the head office's to approve)
+        let limit = c.online.big_purchase.unwrap_or_else(|| co::server_depots::big_purchase_of(&data));
+        let waiting: Vec<String> = c.online.asks.iter().map(|a| trf("Asked for up to %{amount}: %{reason}", &[("amount", &eur(a.amount)), ("reason", &a.reason)])).collect();
         return json!({
             "caps": tr("Depots").to_uppercase(), "of": trf("A depot of %{hq}: its money, buses and staff are its own.", &[("hq", &hq)]),
             "hq": c.online.hq, "send_hq": trf("Send to %{hq}", &[("hq", &hq)]), "send_amount": DEPOT_SEND as f64 / 100.0,
+            "approval": {
+                "caps": tr("Big purchases").to_uppercase(),
+                "say": trf("A purchase over %{limit} needs the head office's approval. Approved and not spent yet: %{left}.", &[("limit", &eur(limit)), ("left", &eur(c.online.approved))]),
+                "amount": limit as f64 / 100.0, "reason_label": tr("What for"), "ask": tr("Ask the head office"), "waiting": waiting,
+            },
             "moves": moves_part(c, &data),
         });
     }
@@ -121,7 +129,15 @@ fn depots_part(c: &co::Company) -> Value {
         })
         .collect();
     let maps: Vec<Value> = co::server_depots::maps_for(&data, &root, c).iter().map(|m| json!({ "key": m, "label": co::main_server::map_name(m) })).collect();
+    // (phase 6 step 3: its depots' requests for big purchases, waiting for the owner's answer)
+    let asks: Vec<Value> = c
+        .online
+        .asks
+        .iter()
+        .map(|a| json!({ "id": a.id, "text": trf("%{name} asks to spend up to %{amount}: %{reason}", &[("name", &a.name), ("amount", &eur(a.amount)), ("reason", &a.reason)]) }))
+        .collect();
     json!({
+        "asks": asks, "asks_caps": tr("Waiting for your approval").to_uppercase(), "approve": tr("Approve"), "refuse": tr("Refuse"),
         "caps": tr("Depots").to_uppercase(), "rows": rows, "maps": maps,
         "say": trf("A depot runs the company on another map of the server: its own lines, buses, staff and tenders there. It costs %{price} of the company's money, besides the starting money you give it.", &[("price", &eur(price))]),
         "start": DEPOT_START as f64 / 100.0, "start_label": tr("Its starting money"), "map_label": tr("The map"),
@@ -204,10 +220,39 @@ const LEFT_DROPPED: &str = "Nobody drives the rest of his duty: its trips are dr
 /// {left: "ai" | "dropped"}`: `together::Together::left_dropped`, at once) - a company on Bus
 /// Company Online's server only.
 pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, String>> {
-    if what != "online_share" && what != "online_left" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" {
+    if what != "online_share" && what != "online_left" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" && what != "approval_ask" && what != "approval_answer" {
         return None;
     }
     let Some(c) = s.company.as_mut().filter(|c| c.online.on_server) else { return Some(Ok(json!({}))) };
+    // (phase 6 step 3: a depot asks its head office for a big purchase - who spends its money)
+    if what == "approval_ask" {
+        let amount = args.get("amount").and_then(Value::as_i64).unwrap_or(0);
+        let reason = args.get("reason").and_then(Value::as_str).unwrap_or("").to_string();
+        let data = super::data();
+        return Some(Ok(match co::server_depots::ask_approval(&data, c, amount, &reason, super::real_now().max(0) as u64) {
+            Ok(()) => {
+                super::changed(s);
+                s.say(trf("Asked the head office for up to %{amount}.", &[("amount", &eur(amount))]), false);
+                json!({})
+            }
+            Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
+        }));
+    }
+    // (and its owner answers - the head office's)
+    if what == "approval_answer" {
+        let id = args.get("id").and_then(Value::as_u64).unwrap_or(0);
+        let yes = args.get("yes").and_then(Value::as_bool).unwrap_or(false);
+        let data = super::data();
+        return Some(Ok(match co::server_depots::answer_approval(&data, c, id, yes) {
+            Ok(a) => {
+                super::changed(s);
+                let k = if yes { "%{name} may spend up to %{amount}." } else { "%{name}'s request for %{amount} refused." };
+                s.say(trf(k, &[("name", &a.name), ("amount", &eur(a.amount))]), false);
+                json!({})
+            }
+            Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
+        }));
+    }
     // (phase 4 step 3: a bus of its own to another of its maps - its owner's)
     if what == "bus_move" {
         let id = args.get("id").and_then(Value::as_u64).unwrap_or(0) as u32;

@@ -514,6 +514,8 @@ pub struct Notice {
     pub bad: bool,
     pub amount: Cents,
     pub booking: String,
+    /// (Phase 6 step 4) Its head office went bankrupt: the depot closes with it.
+    pub close: bool,
 }
 
 pub fn notices_file(data: &Path, id: &str) -> std::path::PathBuf {
@@ -526,14 +528,15 @@ pub fn tell(data: &Path, to: &str, n: &Notice) -> std::io::Result<()> {
 }
 
 /// What was told to company `c` since: into its inbox, its money booked (as capital put in or
-/// taken out). Whether anything came.
-pub fn take_notices(data: &Path, c: &mut Company) -> bool {
+/// taken out). Whether anything came, and whether its head office went bankrupt (it closes).
+pub fn take_notices(data: &Path, c: &mut Company) -> (bool, bool) {
     use super::inbox::{self, Kind, Message};
-    let mut any = false;
+    let (mut any, mut close) = (false, false);
     for (line, end) in lines_after(&notices_file(data, &c.id), c.online.notices_read) {
         c.online.notices_read = end;
         any = true;
         let Ok(n) = serde_json::from_str::<Notice>(&line) else { continue };
+        close |= n.close;
         if n.amount != 0 {
             c.book(BookingKind::Capital, n.amount, n.booking.clone(), false);
         }
@@ -543,7 +546,7 @@ pub fn take_notices(data: &Path, c: &mut Company) -> bool {
         }
         inbox::post(c, m);
     }
-    any
+    (any, close)
 }
 
 /// The messages of a depot in the red, and of its end.
@@ -556,7 +559,200 @@ pub const BANKRUPT_RED: (&str, &str) = ("Depot %{name} is bankrupt: the head off
 pub const BANKRUPT_LEFT: (&str, &str) = ("Depot %{name} is closed", "Depot %{name} stayed in the red and is closed: its buses sold, its staff gone, its lines out to tender again. What was left of it, %{amount}, is the head office's.");
 
 pub fn red_texts() -> Vec<&'static str> {
-    [RED_DEPOT, RED_DEPOT_LAST, RED_HQ, RED_HQ_LAST, BANKRUPT, BANKRUPT_RED, BANKRUPT_LEFT].iter().flat_map(|t| [t.0, t.1]).collect()
+    [RED_DEPOT, RED_DEPOT_LAST, RED_HQ, RED_HQ_LAST, BANKRUPT, BANKRUPT_RED, BANKRUPT_LEFT, EMERGENCY, RED_COMPANY, RED_COMPANY_LAST, HQ_BANKRUPT].iter().flat_map(|t| [t.0, t.1]).collect()
+}
+
+// --- phase 6 step 3: a depot's big purchases, approved by its head office ------------------------
+
+/// (Decided 26 October 2026) A depot's purchase over this much (`big_purchase` in
+/// `company-server.cfg`, whole units) waits for its head office's owner's yes: the depot asks for
+/// an amount (`ask_approval`), the owner approves or refuses it (`answer_approval`), and what he
+/// approved is the depot's to spend on purchases over the limit (`Online::approved`).
+pub const BIG_PURCHASE: Cents = 500_000_00;
+
+/// The big purchases' part of the settings, added to a `company-server.cfg` written before it.
+pub const BIG_CFG: &str = "
+# a depot's purchase over this much (whole units) waits for the yes of its head office's owner
+big_purchase = 500000
+";
+
+/// The limit of a depot's purchase as the server's settings have it (cents).
+pub fn big_purchase_of(data: &Path) -> Cents {
+    std::fs::read_to_string(data.join(super::main_server::CFG_FILE))
+        .ok()
+        .and_then(|t| t.lines().filter_map(|l| l.split_once('=')).find(|(k, _)| k.trim().eq_ignore_ascii_case("big_purchase")).and_then(|(_, v)| v.trim().parse::<i64>().ok()))
+        .map_or(BIG_PURCHASE, |n| n.max(0) * 100)
+}
+
+/// A depot's request for approval (`<folder>/approvals/<hq>.asks.jsonl`), kept by both.
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct Approval {
+    pub id: u64,
+    pub depot: String,
+    pub name: String,
+    pub amount: Cents,
+    pub reason: String,
+    /// When it was asked (Unix seconds).
+    pub at: u64,
+}
+
+/// The head office's answer (`<folder>/approvals/<depot>.answers.jsonl`).
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct Answer {
+    pub id: u64,
+    pub yes: bool,
+    pub amount: Cents,
+}
+
+fn asks_file(data: &Path, hq: &str) -> std::path::PathBuf {
+    data.join("approvals").join(format!("{hq}.asks.jsonl"))
+}
+
+fn answers_file(data: &Path, depot: &str) -> std::path::PathBuf {
+    data.join("approvals").join(format!("{depot}.answers.jsonl"))
+}
+
+pub const NEEDS_APPROVAL: &str = "A purchase this big needs the head office's approval first: ask for it in the settings, under Depots.";
+pub const NOT_A_DEPOT: &str = "Only a depot asks its head office.";
+pub const NO_ASK_AMOUNT: &str = "Choose an amount.";
+pub const NO_SUCH_ASK: &str = "There is no such request.";
+pub const ASKED: (&str, &str) = ("Depot %{name} asks for your approval", "Depot %{name} asks to spend up to %{amount}: %{reason}. Approve or refuse it in the settings, under Depots.");
+pub const APPROVED: (&str, &str) = ("The head office approved %{amount}", "The head office approved purchases up to %{amount}: the dealer takes them now.");
+pub const REFUSED: (&str, &str) = ("The head office refused %{amount}", "The head office refused purchases up to %{amount}.");
+
+pub fn approval_texts() -> Vec<&'static str> {
+    let mut v = vec![NEEDS_APPROVAL, NOT_A_DEPOT, NO_ASK_AMOUNT, NO_SUCH_ASK];
+    v.extend([ASKED, APPROVED, REFUSED].iter().flat_map(|t| [t.0, t.1]));
+    v
+}
+
+/// Whether a purchase of `amount` waits for the head office: a depot's over the limit, without
+/// enough approved.
+fn over_limit(c: &Company, amount: Cents) -> bool {
+    c.online.on_server && !c.online.hq.is_empty() && amount > c.online.big_purchase.unwrap_or(BIG_PURCHASE)
+}
+
+/// May the company spend `amount` on a purchase (`dealer::sign`, `market::buy_new`): a depot over
+/// the limit only what its head office approved.
+pub fn check_spend(c: &Company, amount: Cents) -> Result<(), &'static str> {
+    if over_limit(c, amount) && c.online.approved < amount {
+        return Err(NEEDS_APPROVAL);
+    }
+    Ok(())
+}
+
+/// A purchase of `amount` made: what was approved for it, spent.
+pub fn spent(c: &mut Company, amount: Cents) {
+    if over_limit(c, amount) {
+        c.online.approved = (c.online.approved - amount).max(0);
+    }
+}
+
+/// A depot asks its head office for purchases up to `amount` (`reason`: what for; `now`: Unix
+/// seconds).
+pub fn ask_approval(data: &Path, c: &mut Company, amount: Cents, reason: &str, now: u64) -> Result<(), &'static str> {
+    if !c.online.on_server || c.online.hq.is_empty() {
+        return Err(NOT_A_DEPOT);
+    }
+    if amount <= 0 {
+        return Err(NO_ASK_AMOUNT);
+    }
+    let id = now * 1000 + c.online.asks.len() as u64;
+    let a = Approval { id, depot: c.id.clone(), name: c.name.clone(), amount, reason: reason.trim().chars().take(200).collect(), at: now };
+    append_line(&asks_file(data, &c.online.hq), &serde_json::to_string(&a).map_err(|_| NO_ASK_AMOUNT)?).map_err(|_| NO_ASK_AMOUNT)?;
+    c.online.asks.push(a);
+    Ok(())
+}
+
+/// The head office's owner answers request `id`: the depot told, the request gone.
+pub fn answer_approval(data: &Path, c: &mut Company, id: u64, yes: bool) -> Result<Approval, &'static str> {
+    let Some(k) = c.online.asks.iter().position(|a| a.id == id) else { return Err(NO_SUCH_ASK) };
+    let a = c.online.asks.remove(k);
+    let ans = Answer { id, yes, amount: a.amount };
+    append_line(&answers_file(data, &a.depot), &serde_json::to_string(&ans).map_err(|_| NO_SUCH_ASK)?).map_err(|_| NO_SUCH_ASK)?;
+    Ok(a)
+}
+
+/// The requests that came to a head office since (its inbox told), or the answers to a depot's
+/// (what was approved, its to spend). Whether anything came.
+pub fn approvals_step(data: &Path, c: &mut Company) -> bool {
+    use super::inbox::{self, Kind, Message};
+    let mut any = false;
+    if c.online.hq.is_empty() {
+        for (line, end) in lines_after(&asks_file(data, &c.id), c.online.asks_read) {
+            c.online.asks_read = end;
+            any = true;
+            let Ok(a) = serde_json::from_str::<Approval>(&line) else { continue };
+            let m = Message::new(Kind::Finance, ASKED.0, ASKED.1).arg("name", a.name.clone()).arg("amount", a.amount.to_string()).arg("reason", a.reason.clone()).level(super::clock::Level::Warn);
+            inbox::post(c, m);
+            c.online.asks.push(a);
+        }
+        return any;
+    }
+    for (line, end) in lines_after(&answers_file(data, &c.id), c.online.asks_read) {
+        c.online.asks_read = end;
+        any = true;
+        let Ok(ans) = serde_json::from_str::<Answer>(&line) else { continue };
+        c.online.asks.retain(|a| a.id != ans.id);
+        if ans.yes {
+            c.online.approved += ans.amount;
+        }
+        let t = if ans.yes { APPROVED } else { REFUSED };
+        inbox::post(c, Message::new(Kind::Finance, t.0, t.1).arg("amount", ans.amount.to_string()).level(if ans.yes { super::clock::Level::Good } else { super::clock::Level::Warn }));
+    }
+    any
+}
+
+// --- phase 6 step 4: a head office in the red -------------------------------------------------
+
+/// (Decided 26 October 2026) A head office that closes its day in the red gets the bank's
+/// emergency loan: the deficit and this share more (whole thousands), over `EMERGENCY_MONTHS`, at
+/// its rate and `EMERGENCY_PREMIUM` more. In the red again while it runs, it is warned
+/// `RED_DAYS` times and then goes bankrupt - its depots with it.
+pub const EMERGENCY_MARGIN: f64 = 0.25;
+pub const EMERGENCY_MONTHS: u32 = 12;
+pub const EMERGENCY_PREMIUM: f64 = 0.05;
+pub const EMERGENCY_PURPOSE: &str = "Emergency loan";
+pub const EMERGENCY: (&str, &str) = ("The bank gave an emergency loan", "The company closed the day %{cost} in the red: the bank lent it %{amount} at %{rate} % over %{months} months. In the red again while it runs, the company goes bankrupt.");
+pub const RED_COMPANY: (&str, &str) = ("The company is in the red: %{n} days to go", "The company has %{amount} in cash and its emergency loan running. Still in the red at the close of %{n} more days, it goes bankrupt: everything is sold and the company closes, its depots with it.");
+pub const RED_COMPANY_LAST: (&str, &str) = ("The company goes bankrupt tomorrow", "The company has %{amount} in cash and its emergency loan running. Still in the red at tomorrow's close, it goes bankrupt: everything is sold and the company closes, its depots with it.");
+pub const HQ_BANKRUPT: (&str, &str) = ("The head office %{name} is bankrupt", "The head office stayed in the red with its emergency loan running and is closed: this depot closes with it.");
+
+/// Whether the bank's emergency loan runs.
+pub fn emergency_running(c: &Company) -> bool {
+    c.loans.iter().any(|l| l.purpose == EMERGENCY_PURPOSE)
+}
+
+/// A head office's day closed in the red: the emergency loan when none runs (the day fine), else
+/// warned (`RED_DAYS` times), then bankrupt.
+fn head_office_red(c: &mut Company) -> Red {
+    use super::inbox::{self, Kind, Message};
+    if !emergency_running(c) {
+        let deficit = -c.cash;
+        let amount = ((deficit as f64 * (1.0 + EMERGENCY_MARGIN) / 1000_00.0).ceil() * 1000_00.0) as Cents;
+        let rate = super::finance::rate_of(c) + EMERGENCY_PREMIUM;
+        super::finance::emergency_loan(c, amount, rate, EMERGENCY_MONTHS, EMERGENCY_PURPOSE);
+        c.online.red_days = 0;
+        let m = Message::new(Kind::Finance, EMERGENCY.0, EMERGENCY.1)
+            .arg("cost", deficit.to_string())
+            .arg("amount", amount.to_string())
+            .arg("rate", format!("{:.1}", rate * 100.0))
+            .arg("months", EMERGENCY_MONTHS.to_string())
+            .level(super::clock::Level::Bad);
+        inbox::post(c, m);
+        return Red::Fine;
+    }
+    c.online.red_days += 1;
+    if c.online.red_days > RED_DAYS {
+        return Red::Bankrupt;
+    }
+    let left = RED_DAYS + 1 - c.online.red_days;
+    let own = if left <= 1 { RED_COMPANY_LAST } else { RED_COMPANY };
+    let m = Message::new(Kind::Finance, own.0, own.1).arg("amount", c.cash.to_string()).arg("n", left.to_string()).level(super::clock::Level::Bad);
+    inbox::post(c, m);
+    Red::Warned(left)
 }
 
 /// What a depot's closed day came to (`day_closed`).
@@ -573,12 +769,16 @@ pub enum Red {
 /// warning, still in the red, it goes bankrupt (`bankrupt`).
 pub fn day_closed(data: &Path, c: &mut Company) -> Red {
     use super::inbox::{self, Kind, Message};
-    if !c.online.on_server || c.online.hq.is_empty() {
+    if !c.online.on_server {
         return Red::Fine;
     }
     if c.cash >= 0 {
         c.online.red_days = 0;
         return Red::Fine;
+    }
+    // (phase 6 step 4: a head office - the bank's emergency loan first)
+    if c.online.hq.is_empty() {
+        return head_office_red(c);
     }
     c.online.red_days += 1;
     if c.online.red_days > RED_DAYS {
@@ -588,7 +788,7 @@ pub fn day_closed(data: &Path, c: &mut Company) -> Red {
     let (own, hq) = if left <= 1 { (RED_DEPOT_LAST, RED_HQ_LAST) } else { (RED_DEPOT, RED_HQ) };
     let m = Message::new(Kind::Finance, own.0, own.1).arg("amount", c.cash.to_string()).arg("n", left.to_string()).level(super::clock::Level::Bad);
     inbox::post(c, m);
-    let n = Notice { title: hq.0.into(), text: hq.1.into(), args: vec![("name".into(), c.name.clone()), ("amount".into(), c.cash.to_string()), ("n".into(), left.to_string())], bad: true, amount: 0, booking: String::new() };
+    let n = Notice { title: hq.0.into(), text: hq.1.into(), args: vec![("name".into(), c.name.clone()), ("amount".into(), c.cash.to_string()), ("n".into(), left.to_string())], bad: true, amount: 0, booking: String::new(), close: false };
     let _ = tell(data, &c.online.hq.clone(), &n);
     Red::Warned(left)
 }
@@ -600,6 +800,39 @@ pub fn day_closed(data: &Path, c: &mut Company) -> Red {
 /// nothing if it has not enough), or what remains. The company's file is the caller's to remove.
 /// What the head office was booked (negative: the loss it covered).
 pub fn bankrupt(data: &Path, c: &mut Company) -> Cents {
+    wind_up(data, c);
+    // (phase 6 step 4: a head office - its depots close with it, nobody takes what is left)
+    if c.online.hq.is_empty() {
+        for d in depots_of(data, &c.id) {
+            let n = Notice { title: HQ_BANKRUPT.0.into(), text: HQ_BANKRUPT.1.into(), args: vec![("name".into(), c.name.clone())], bad: true, close: true, ..Default::default() };
+            let _ = tell(data, &d.id, &n);
+        }
+        return c.cash;
+    }
+    // (the rest: the head office's)
+    let left = c.cash;
+    let hq = c.online.hq.clone();
+    let hq_cash = store::load(data, &hq).map(|h| h.cash).unwrap_or(0);
+    let (title, text) = if left >= 0 {
+        BANKRUPT_LEFT
+    } else if hq_cash + left < 0 {
+        BANKRUPT_RED
+    } else {
+        BANKRUPT
+    };
+    let booking = if left >= 0 { format!("What was left of depot {}", c.name) } else { format!("Depot {} bankrupt: its loss covered", c.name) };
+    let n = Notice { title: title.into(), text: text.into(), args: vec![("name".into(), c.name.clone()), ("amount".into(), left.abs().to_string())], bad: left < 0, amount: left, booking, close: false };
+    let _ = tell(data, &hq, &n);
+    if left != 0 {
+        c.book(BookingKind::Capital, -left, "Handed to the head office (bankruptcy)".to_string(), false);
+    }
+    left
+}
+
+/// A company wound up: its buses sold (a leased one handed back early, a rented one given back),
+/// its staff gone (each with the guarantee of his week; one lent to it back home), its loans paid
+/// off, its lines, concessions and contracts given up - out to tender again.
+fn wind_up(data: &Path, c: &mut Company) {
     use super::model::Tenure;
     let today = c.date.clone();
     // (its buses)
@@ -639,24 +872,6 @@ pub fn bankrupt(data: &Path, c: &mut Company) -> Cents {
     c.concessions.held.clear();
     c.concessions.contracts.clear();
     c.lines.clear();
-    // (the rest: the head office's)
-    let left = c.cash;
-    let hq = c.online.hq.clone();
-    let hq_cash = store::load(data, &hq).map(|h| h.cash).unwrap_or(0);
-    let (title, text) = if left >= 0 {
-        BANKRUPT_LEFT
-    } else if hq_cash + left < 0 {
-        BANKRUPT_RED
-    } else {
-        BANKRUPT
-    };
-    let booking = if left >= 0 { format!("What was left of depot {}", c.name) } else { format!("Depot {} bankrupt: its loss covered", c.name) };
-    let n = Notice { title: title.into(), text: text.into(), args: vec![("name".into(), c.name.clone()), ("amount".into(), left.abs().to_string())], bad: left < 0, amount: left, booking };
-    let _ = tell(data, &hq, &n);
-    if left != 0 {
-        c.book(BookingKind::Capital, -left, "Handed to the head office (bankruptcy)".to_string(), false);
-    }
-    left
 }
 
 #[cfg(test)]
@@ -849,17 +1064,17 @@ mod tests {
         assert_eq!(day_closed(&data, &mut d), Red::Warned(2));
         assert_eq!(day_closed(&data, &mut d), Red::Warned(1));
         assert!(d.inbox.messages.iter().any(|m| m.title == RED_DEPOT_LAST.0));
-        assert!(take_notices(&data, &mut hq));
+        assert!(take_notices(&data, &mut hq).0);
         assert!(hq.inbox.messages.iter().any(|m| m.title == RED_HQ_LAST.0));
         // (the next close, still in the red: bankrupt - its bus sold, its loss covered)
         assert_eq!(day_closed(&data, &mut d), Red::Bankrupt);
         let left = bankrupt(&data, &mut d);
         assert!(left < 0 && d.fleet.is_empty() && d.staff.is_empty() && d.lines.is_empty() && d.cash == 0, "{left} {}", d.cash);
         let before = hq.cash;
-        assert!(take_notices(&data, &mut hq));
+        assert_eq!(take_notices(&data, &mut hq), (true, false));
         assert_eq!(hq.cash, before + left);
         assert!(hq.inbox.messages.iter().any(|m| m.title == BANKRUPT.0));
-        assert!(!take_notices(&data, &mut hq), "once");
+        assert!(!take_notices(&data, &mut hq).0, "once");
         // (a head office without the money goes into the red)
         let mut d2 = d.clone();
         d2.cash = -(hq.cash + 1_000_00);
@@ -868,6 +1083,124 @@ mod tests {
         bankrupt(&data, &mut d2);
         take_notices(&data, &mut hq);
         assert!(hq.cash < 0 && hq.inbox.messages.iter().any(|m| m.title == BANKRUPT_RED.0));
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// (Phase 6 step 3, decided 26 October 2026) A depot's purchase over the limit waits for its
+    /// head office's owner: asked for, approved or refused, what was approved spent on purchases
+    /// over the limit; under it, or at the head office, nothing waits.
+    #[test]
+    fn a_depots_big_purchase_waits_for_its_head_offices_yes() {
+        use super::super::market::{self, MarketBus, Payment};
+        let dir = std::env::temp_dir().join(format!("openomsi-server-approvals-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let root = dir.join("omsi");
+        for m in ["Grundorf", "Ahlheim"] {
+            std::fs::create_dir_all(root.join("maps").join(m)).unwrap();
+            std::fs::write(root.join("maps").join(m).join("global.cfg"), "").unwrap();
+        }
+        let data = dir.join("bco");
+        online::server_clock(&data, 1_800_000_000, false, ("2024-03-04".into(), 6 * 3600)).unwrap();
+        assert_eq!(big_purchase_of(&data), BIG_PURCHASE, "no settings: the default");
+        std::fs::write(data.join(super::super::main_server::CFG_FILE), "name = x\nbig_purchase = 300000\n").unwrap();
+        assert_eq!(big_purchase_of(&data), 300_000_00);
+        let mut hq = super::super::found(&Founding { name: "Umove".into(), date: "2024-03-04".into(), map: "maps/Grundorf/global.cfg".into(), ..Default::default() }, "x");
+        hq.id = "umove".into();
+        hq.online.on_server = true;
+        hq.cash += 1_000_000_00;
+        store::save(&data, &hq).unwrap();
+        let id = found(&data, &root, &mut hq, "Ahlheim", 100_000_00, 250_000_00, 1_800_000_000).unwrap();
+        let mut d = store::load(&data, &id).unwrap();
+        d.online.big_purchase = Some(500_000_00);
+        hq.online.big_purchase = Some(500_000_00);
+        // (under the limit, or at the head office: nothing waits)
+        assert!(check_spend(&d, 400_000_00).is_ok() && check_spend(&hq, 900_000_00).is_ok());
+        assert_eq!(check_spend(&d, 600_000_00), Err(NEEDS_APPROVAL));
+        // asked for
+        assert_eq!(ask_approval(&data, &mut hq, 1, "x", 1), Err(NOT_A_DEPOT));
+        assert_eq!(ask_approval(&data, &mut d, 0, "x", 1), Err(NO_ASK_AMOUNT));
+        ask_approval(&data, &mut d, 700_000_00, "two articulated buses", 1_800_000_000).unwrap();
+        assert_eq!(d.online.asks.len(), 1);
+        assert!(approvals_step(&data, &mut hq));
+        assert!(!approvals_step(&data, &mut hq), "once");
+        assert_eq!((hq.online.asks.len(), hq.online.asks[0].reason.as_str()), (1, "two articulated buses"));
+        assert!(hq.inbox.messages.iter().any(|m| m.title == ASKED.0));
+        // approved
+        let ask = hq.online.asks[0].id;
+        assert_eq!(answer_approval(&data, &mut hq, 999, true), Err(NO_SUCH_ASK));
+        assert_eq!(answer_approval(&data, &mut hq, ask, true).map(|a| a.amount), Ok(700_000_00));
+        assert!(hq.online.asks.is_empty());
+        assert!(approvals_step(&data, &mut d));
+        assert_eq!((d.online.approved, d.online.asks.len()), (700_000_00, 0));
+        assert!(d.inbox.messages.iter().any(|m| m.title == APPROVED.0));
+        // spent on a purchase over the limit; a smaller one spends nothing
+        assert!(check_spend(&d, 600_000_00).is_ok());
+        spent(&mut d, 600_000_00);
+        spent(&mut d, 100_000_00);
+        assert_eq!(d.online.approved, 100_000_00);
+        assert_eq!(check_spend(&d, 600_000_00), Err(NEEDS_APPROVAL));
+        // refused
+        ask_approval(&data, &mut d, 800_000_00, "", 1_800_000_100).unwrap();
+        approvals_step(&data, &mut hq);
+        let ask = hq.online.asks[0].id;
+        answer_approval(&data, &mut hq, ask, false).unwrap();
+        approvals_step(&data, &mut d);
+        assert_eq!((d.online.approved, d.online.asks.len()), (100_000_00, 0));
+        assert!(d.inbox.messages.iter().any(|m| m.title == REFUSED.0));
+        // (the dealer's purchase over the limit waits too)
+        d.cash += 1_000_000_00;
+        d.online.big_purchase = Some(1_00);
+        d.online.approved = 0;
+        assert_eq!(market::buy_new(&mut d, &MarketBus { name: "Citaro".into(), ..Default::default() }, Payment::Cash, ""), Err(NEEDS_APPROVAL));
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// (Phase 6 step 4, decided 26 October 2026) A head office in the red gets the bank's emergency
+    /// loan - the deficit and a quarter more, in whole thousands - and the day is fine; in the red
+    /// again while it runs, it is warned twice and then goes bankrupt, its depots closing with it.
+    #[test]
+    fn a_head_office_in_the_red_gets_an_emergency_loan_then_goes_bankrupt() {
+        let dir = std::env::temp_dir().join(format!("openomsi-server-emergency-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let root = dir.join("omsi");
+        for m in ["Grundorf", "Ahlheim"] {
+            std::fs::create_dir_all(root.join("maps").join(m)).unwrap();
+            std::fs::write(root.join("maps").join(m).join("global.cfg"), "").unwrap();
+        }
+        let data = dir.join("bco");
+        online::server_clock(&data, 1_800_000_000, false, ("2024-03-04".into(), 6 * 3600)).unwrap();
+        let mut hq = super::super::found(&Founding { name: "Umove".into(), date: "2024-03-04".into(), map: "maps/Grundorf/global.cfg".into(), ..Default::default() }, "x");
+        hq.id = "umove".into();
+        hq.online.on_server = true;
+        hq.cash += 1_000_000_00;
+        store::save(&data, &hq).unwrap();
+        let id = found(&data, &root, &mut hq, "Ahlheim", 100_000_00, 250_000_00, 1_800_000_000).unwrap();
+        // (in the red by 10 000: lent 13 000)
+        hq.cash = -10_000_00;
+        assert_eq!(day_closed(&data, &mut hq), Red::Fine);
+        assert!(emergency_running(&hq));
+        assert_eq!(hq.cash, 3_000_00);
+        let loan = hq.loans.iter().find(|l| l.purpose == EMERGENCY_PURPOSE).unwrap();
+        assert_eq!((loan.principal, loan.months_left), (13_000_00, EMERGENCY_MONTHS));
+        assert!(loan.rate > super::super::finance::rate_of(&hq));
+        assert!(hq.inbox.messages.iter().any(|m| m.title == EMERGENCY.0));
+        // (out of the red, nothing; in it again while the loan runs: warned twice, then bankrupt)
+        assert_eq!(day_closed(&data, &mut hq), Red::Fine);
+        hq.cash = -1_00;
+        assert_eq!(day_closed(&data, &mut hq), Red::Warned(2));
+        assert_eq!(day_closed(&data, &mut hq), Red::Warned(1));
+        assert!(hq.inbox.messages.iter().any(|m| m.title == RED_COMPANY_LAST.0));
+        assert_eq!(day_closed(&data, &mut hq), Red::Bankrupt);
+        bankrupt(&data, &mut hq);
+        assert!(hq.loans.is_empty() && hq.lines.is_empty());
+        // (its depot told to close with it)
+        let mut d = store::load(&data, &id).unwrap();
+        assert_eq!(take_notices(&data, &mut d), (true, true));
+        assert!(d.inbox.messages.iter().any(|m| m.title == HQ_BANKRUPT.0));
+        // (a depot never gets the emergency loan: it is warned)
+        d.cash = -1_00;
+        assert_eq!(day_closed(&data, &mut d), Red::Warned(2));
+        assert!(!emergency_running(&d));
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

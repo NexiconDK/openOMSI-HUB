@@ -195,5 +195,22 @@ Bus Company online (fase 1 af `docs/omsihub/BUS_COMPANY_ONLINE.md`). Én stor se
   - "Found a company" i launcheren viser kravene, hvor langt han er, og knapperne "Book the course", "Book the test" og "Call it off". "Found" åbner først, når alt er gjort.
   - I hovedserverens konsol viser `players` ture, kursus og prøver, og `grant <spiller>; trips <n> | course | test <klasse>` giver dem.
   - Hver kørt tur sendes nu til hovedserveren, også en tur uden løn, så den kan tælle.
+- **Kortenes verdener kører videre (fase 6, trin 2)**:
+  - **Ingen lukning uden spillere**: En verden lukker ikke længere af sig selv, fordi der ikke er spillere. Den kører, så længe maskinen kan bære det (`keep_worlds = 1`).
+  - **Måling**: Hvert halve minut ser hovedserveren på maskinens hukommelse og processorer, set over det seneste minut.
+  - **Når maskinen er fuld**: Bruges mere end 85 % af hukommelsen eller 90 % af processorerne (`max_memory`, `max_cpu`), lukkes den verden, der har været tom længst.
+  - **Når alle pladser er optaget**: Beder en spiller om et kort, mens `max_worlds` verdener allerede kører, giver den verden, der har været tom længst, plads.
+  - **`status`** viser maskinens belastning, og hvor længe hver verden har været tom.
+  - **Som før**: Med `keep_worlds = 0` lukker verdener efter `world_idle` minutter som hidtil.
+- **Store køb i et depot (fase 6, trin 3)**:
+  - **Godkendelse**: Et depots køb over 500.000 (`big_purchase`) skal først godkendes af hovedkontorets ejer. Det gælder busser hos forhandleren, både hurtigkøb og kontrakt, nye og brugte, betalt kontant eller med lån.
+  - **Depotet beder om lov**: Under Depots i indstillingerne skriver depotet et beløb og hvad det skal bruges til, og trykker "Ask the head office".
+  - **Ejeren svarer**: Ejeren får en besked og ser anmodningen under Depots ("Waiting for your approval") med "Approve" og "Refuse".
+  - **Brug af beløbet**: Et godkendt beløb kan depotet bruge på køb over grænsen, og hvert køb trækker fra det.
+- **Hovedkontoret i minus (fase 6, trin 4)**:
+  - **Nødlån**: Lukker hovedkontoret en dag i minus, giver banken et nødlån på underskuddet plus en fjerdedel, afrundet til hele tusinder. Lånet løber over 12 måneder med 5 procentpoint mere i rente end normalt.
+  - **Konkurs**: Kommer firmaet i minus igen, mens nødlånet løber, får det advarsler som et depot ("2 dage", så "i morgen"). Er det stadig i minus dagen efter, går hele firmaet konkurs: alt sælges, personalet går, lånene indfries, og linjerne kommer i udbud igen.
+  - **Depoterne**: Alle firmaets depoter lukker sammen med det.
+  - **Et depot alene** får ikke nødlån. Det får advarsler og går konkurs som før.
 - **Rettelse: verdenens tjek af en spillers tur**: Verdenen målte, hvor langt spillerens bus kørte, ud fra øst-vest og højden i stedet for øst-vest og nord-syd. En tur, der mest gik nord-syd, kunne derfor blive afvist med "his bus drove far less than the trip says".
 - Den dedikerede server har fået `idle_stop = <minutter>` i `server.cfg`. Er den sat, lukker serveren af sig selv efter så mange minutter uden spillere.

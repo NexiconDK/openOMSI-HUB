@@ -662,8 +662,60 @@ and `course_days = 3`, `found_test = 1` - added to an older file the first time)
 Tested: `server_found::tests::a_player_founds_after_his_trips_the_course_and_a_test`,
 `server_api::tests::a_player_logs_in_founds_and_joins`.
 
+### Step 2: the maps' worlds kept running while the machine can
+
+Decided 26 October 2026 (`company::server_machine`; `company-server.cfg`: `keep_worlds = 1`,
+`max_memory = 85`, `max_cpu = 90` - added to an older file the first time):
+
+- A world no longer stops by itself for want of players (its `server.cfg`'s `idle_stop = 0`;
+  with `keep_worlds = 0` it does after `world_idle` minutes, as before).
+- Every half minute the main server looks at its worlds - which have had no players since when
+  (each world's LAN status, `world_status`; a world younger than five minutes counts as busy) -
+  and at the machine: its memory in use and its processors busy over the last minute
+  (`/proc/meminfo` and `/proc/stat` on Linux, `GlobalMemoryStatusEx` and `GetSystemTimes` on
+  Windows). Over a limit, the world empty the longest is stopped (one a look); with every world
+  busy, it says so once.
+- A world asked for while `max_worlds` run already takes the place of the one empty the longest.
+- `status` shows the machine's load against its limits and how long each world has been empty.
+
+Tested: `server_machine::tests::the_world_empty_the_longest_goes_when_the_machine_is_full`,
+`main_server::tests::a_worlds_settings`.
+
+### Step 3: a depot's big purchases, approved by its head office
+
+Decided 26 October 2026 (`server_depots`, `company-server.cfg`: `big_purchase = 500000`):
+
+- A depot's purchase over `big_purchase` - a bus from the dealer, quick or by contract, new or
+  used, paid or on a loan (a lease is no purchase) - is refused until its head office approved
+  that much ("A purchase this big needs the head office's approval first…": `check_spend`).
+- The depot asks in its settings, under Depots: an amount and what it is for (`approval_ask`, a
+  player who may spend its money). The request goes to the head office
+  (`approvals/<hq>.asks.jsonl`), into its inbox and its settings' Depots: "Waiting for your
+  approval", Approve or Refuse (`approval_answer`, its owner's). The answer goes back
+  (`approvals/<depot>.answers.jsonl`): approved, the amount is the depot's to spend on purchases
+  over the limit (`Online::approved`, spent by each: `spent`), refused, its inbox says so.
+
+Tested: `server_depots::tests::a_depots_big_purchase_waits_for_its_head_offices_yes`.
+
+### Step 4: a head office in the red
+
+Decided 26 October 2026: the bank's emergency loan first; bankrupt only when that cannot be paid
+either (`server_depots::day_closed`):
+
+- A head office that closes its day in the red gets an emergency loan for the deficit and a
+  quarter more (whole thousands), over 12 months at its rate and 5 points more
+  (`finance::emergency_loan`, "Emergency loan"), and the day is fine; its inbox says so.
+- In the red again while that loan runs, it is warned at each day's close - two days to go, then
+  one - and the day after, still in the red, it goes bankrupt: everything sold, its staff gone,
+  its loans paid off, its lines out to tender again (`wind_up`), and each of its depots told to
+  close with it (a notice with `close`: the depot's process winds it up and ends as its own
+  bankruptcy does).
+- A depot is never lent: it is warned and goes bankrupt as before (phase 4 step 4).
+
+Tested: `server_depots::tests::a_head_office_in_the_red_gets_an_emergency_loan_then_goes_bankrupt`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the
-limit of a big purchase; the company's share (a cap); bankruptcy of the whole company; working for
-several companies; who may join the server.
+company's share (a cap); working for several companies; who may join the server. (The limit of a
+big purchase and the bankruptcy of the whole company: decided 26 October 2026, phase 6.)

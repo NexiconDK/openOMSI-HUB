@@ -27,7 +27,7 @@ pub const SERVER_CLOCK: &str = "On the Bus Company Online server the server's cl
 /// (NexiconDK) What the boss alone does, on his own launcher, that is the owner's from afar on
 /// Bus Company Online's server - there the server's process is the boss, and nobody plays on
 /// it: the company's owner (the player who founded it) does it from his launcher.
-pub const OWNER_ON_SERVER: [&str; 8] = ["country", "online_share", "online_left", "depot_found", "depot_money", "bus_move", "staff_lend", "delete_company"];
+pub const OWNER_ON_SERVER: [&str; 9] = ["country", "online_share", "online_left", "depot_found", "depot_money", "bus_move", "staff_lend", "delete_company", "approval_answer"];
 /// What the server's clock decides on Bus Company Online's server (the company's real time).
 pub const SERVER_CLOCK_ACTS: [&str; 1] = ["realtime"];
 
@@ -152,6 +152,8 @@ fn act_need(act: &str, what: &str) -> Need {
         // (NexiconDK: a picture sent from afar, kept beside the company)
         "logo_data" => SETTINGS,
         "sell" => SPEND,
+        // (NexiconDK, phase 6 step 3: a depot asks its head office for a big purchase)
+        "approval_ask" => SPEND,
         "dismiss" | "holiday" => STAFF,
         "ask_spare" | "ask_rental" | "ask_drop" | "ask_on" | "ask_dispatcher" => SERVICE,
         "morning_fill" => PLANS,

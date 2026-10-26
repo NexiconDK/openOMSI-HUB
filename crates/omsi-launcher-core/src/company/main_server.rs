@@ -16,7 +16,8 @@
 //! `companies = 1`, which runs the map with every company's buses in their paint on the server's
 //! clock and reports their trips into the folder. The main server starts a map's world when it is
 //! asked to (`start_world`; phase 1: the console's `start <map>`), each on ports of its own; a world
-//! stops by itself a while after its last player has gone (`world_idle`). A map without a world:
+//! stops by itself a while after its last player has gone (`world_idle`) - (phase 6) or, with
+//! `keep_worlds`, runs on while the machine can carry it (`server_machine`). A map without a world:
 //! its companies' trips are worked out at the day's close, as Bus Company does for the days not
 //! played.
 //!
@@ -91,6 +92,14 @@ first_port = 27015
 max_worlds = 4
 world_idle = 10
 
+# the maps' worlds kept running without players while the machine can carry them (1), or each
+# stopped world_idle minutes after its last player (0); over max_memory per cent of the
+# machine's memory in use or max_cpu per cent of its processors busy, the world empty the
+# longest is stopped
+keep_worlds = 1
+max_memory = 85
+max_cpu = 90
+
 # the companies' own ports, from this one on (the players' launchers come to a company there:
 # \"Join a company\" with its code - status shows it). tunnel below starts a free Cloudflare
 # tunnel for each company and world, for players across the internet
@@ -119,6 +128,8 @@ found_test = 1
 depot_price = 250000
 bus_move_price = 5000
 bus_move_days = 2
+# a depot's purchase over this much (whole units) waits for the yes of its head office's owner
+big_purchase = 500000
 
 # the authority's fines on a line of a contract won in the map's tenders (Danish kroner; each
 # company pays them in its own currency): a journey not run, by the minute of its time; a tour
@@ -188,6 +199,8 @@ pub struct MainCfg {
     pub first_port: u16,
     pub max_worlds: usize,
     pub world_idle: u32,
+    /// (Phase 6 step 2) The worlds kept running while the machine can (`server_machine`).
+    pub keep: super::server_machine::Keep,
     pub first_company_port: u16,
     pub api_port: u16,
     pub logins: Logins,
@@ -243,6 +256,20 @@ impl MainCfg {
             }
             text.push_str(MOVE_CFG);
         }
+        if !text.lines().any(|l| l.trim_start().starts_with("big_purchase")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(super::server_depots::BIG_CFG.as_bytes());
+            }
+            text.push_str(super::server_depots::BIG_CFG);
+        }
+        if !text.lines().any(|l| l.trim_start().starts_with("keep_worlds")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(super::server_machine::KEEP_CFG.as_bytes());
+            }
+            text.push_str(super::server_machine::KEEP_CFG);
+        }
         if !text.lines().any(|l| l.trim_start().starts_with("found_trips")) {
             use std::io::Write;
             if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
@@ -284,6 +311,7 @@ impl MainCfg {
             first_port: num("first_port", 27015).clamp(1, 65000) as u16,
             max_worlds: num("max_worlds", 4).clamp(1, 64) as usize,
             world_idle: num("world_idle", 10).clamp(0, 24 * 60) as u32,
+            keep: super::server_machine::Keep::of(&kv),
             first_company_port: num("first_company_port", 27045).clamp(1, 65000) as u16,
             api_port: num("api_port", 27040).clamp(1, 65000) as u16,
             logins: Logins::parse(&text("logins").unwrap_or_default()),
@@ -379,7 +407,8 @@ pub fn game_mode_of(s: &str) -> Result<GameMode> {
 
 /// The `server.cfg` of a map's world: the dedicated server running `map` on `port` and
 /// `web_port`, its companies from the main server's folder `data`, on its clock, stopping by
-/// itself `world_idle` minutes after its last player.
+/// itself `world_idle` minutes after its last player - (phase 6) not while the worlds are kept
+/// running (`keep_worlds`: the main server stops one when the machine is full).
 pub fn world_cfg(cfg: &MainCfg, data: &Path, map: &str, port: u16, web_port: u16) -> String {
     let name = map_name(map);
     let b = |v: bool| if v { "1" } else { "0" };
@@ -413,7 +442,7 @@ pub fn world_cfg(cfg: &MainCfg, data: &Path, map: &str, port: u16, web_port: u16
         admin = cfg.admin_password,
         share = b(cfg.share_positions),
         data = data.display(),
-        idle = cfg.world_idle,
+        idle = if cfg.keep.on { 0 } else { cfg.world_idle },
     )
 }
 
@@ -445,6 +474,9 @@ pub struct World {
     pub port: u16,
     pub web_port: u16,
     pub started: Instant,
+    /// (Phase 6 step 2) Since when it has had no players (Unix seconds; None: players, or not
+    /// looked at yet).
+    pub empty_since: Option<f64>,
     child: Child,
 }
 
@@ -471,6 +503,9 @@ pub struct MainServer {
     /// What was said of a company that is not run (its map not installed), said once.
     said: HashMap<String, String>,
     pub worlds: Vec<World>,
+    /// (Phase 6 step 2) The machine as the worlds are kept running on it, and its load last seen.
+    machine: super::server_machine::Machine,
+    pub load: Option<super::server_machine::Load>,
     /// The players who logged in through the door (`server_api`), as `players.json` keeps them.
     pub players: Players,
     /// The server's code, its door open (`server_api::server_code`).
@@ -481,6 +516,9 @@ pub struct MainServer {
 
 /// How long a company whose process ended waits before it is started again.
 pub const HOLD: Duration = Duration::from_secs(30);
+/// (Phase 6 step 2) A world this new is not stopped for want of players: its map loads, its
+/// first player is on his way.
+pub const WORLD_SETTLES: Duration = Duration::from_secs(5 * 60);
 
 impl MainServer {
     /// The main server of the folder `data`: the folder taken, the clock set or taken up again,
@@ -496,7 +534,7 @@ impl MainServer {
         // (the tickets' secret: the companies' processes check the players with it)
         online::server_secret(data)?;
         let players = Players::load(data)?;
-        let mut m = MainServer { data: data.to_path_buf(), cfg, clock, companies: Vec::new(), held: HashMap::new(), said: HashMap::new(), worlds: Vec::new(), players, code: None, _lock: lock };
+        let mut m = MainServer { data: data.to_path_buf(), cfg, clock, companies: Vec::new(), held: HashMap::new(), said: HashMap::new(), worlds: Vec::new(), machine: Default::default(), load: None, players, code: None, _lock: lock };
         online::bump_plans(data)?;
         m.scan();
         Ok(m)
@@ -525,6 +563,8 @@ impl MainServer {
         self.take_pay();
         // (every map's tenders, shared by its companies)
         self.markets();
+        // (phase 6: the worlds kept running while the machine can carry them)
+        self.keep_worlds(unix_now() as f64);
         let mut n = 0;
         for id in company_ids(&self.data) {
             if self.companies.iter().any(|p| p.id == id) || self.held.get(&id).is_some_and(|t| Instant::now() < *t) {
@@ -785,6 +825,16 @@ impl MainServer {
         if let Some(k) = self.worlds.iter().position(|w| map_folder(&w.map) == map_folder(&map)) {
             return Ok(&self.worlds[k]);
         }
+        // (phase 6: every slot taken while the worlds are kept running - the one empty the
+        // longest makes room)
+        if self.cfg.keep.on && self.worlds.len() >= self.cfg.max_worlds {
+            let empty: Vec<(String, Option<f64>)> = self.worlds.iter().map(|w| (w.map.clone(), w.empty_since)).collect();
+            let refs: Vec<(&str, Option<f64>)> = empty.iter().map(|(m, s)| (m.as_str(), *s)).collect();
+            if let Some(gone) = super::server_machine::to_stop(&refs).map(str::to_string) {
+                info!("world of {}: stopped to make room for {} ({} worlds run at most, it had no players)", map_folder(&gone), map_folder(&map), self.cfg.max_worlds);
+                self.stop_world(&gone);
+            }
+        }
         let slot = (0..self.cfg.max_worlds).find(|k| !self.worlds.iter().any(|w| w.slot == *k)).with_context(|| format!("{} worlds run already (max_worlds)", self.cfg.max_worlds))?;
         let (port, web_port) = ports_of(self.cfg.first_port, slot);
         let dir = self.data.join("worlds").join(map_folder(&map));
@@ -809,8 +859,49 @@ impl MainServer {
         }
         let child = cmd.spawn().with_context(|| format!("starting {}", game.display()))?;
         info!("world of {map} started: UDP {port}, web {web_port} ({})", dir.display());
-        self.worlds.push(World { map, slot, port, web_port, started: Instant::now(), child });
+        self.worlds.push(World { map, slot, port, web_port, started: Instant::now(), empty_since: None, child });
         Ok(self.worlds.last().expect("pushed"))
+    }
+
+    /// (Phase 6 step 2) Every `LOOK_EVERY` seconds (`now`: Unix seconds): which worlds have had no
+    /// players since when (`world_status`; one still starting counts as busy), and the machine's
+    /// load - over the limits while the worlds are kept running, the world empty the longest is
+    /// stopped (one a look).
+    fn keep_worlds(&mut self, now: f64) {
+        use super::server_machine::{to_stop, LOOK_EVERY};
+        if now - self.machine.looked < LOOK_EVERY {
+            return;
+        }
+        self.machine.looked = now;
+        for w in self.worlds.iter_mut() {
+            let players = world_status(w.slot).and_then(|s| s.get("players").and_then(serde_json::Value::as_array).map(Vec::len));
+            match players {
+                Some(0) if w.started.elapsed() >= WORLD_SETTLES => {
+                    w.empty_since.get_or_insert(now);
+                }
+                _ => w.empty_since = None,
+            }
+        }
+        let load = self.machine.load(now);
+        let over = self.cfg.keep.on && load.over(&self.cfg.keep);
+        let was_over = self.load.is_some_and(|l| l.over(&self.cfg.keep));
+        self.load = Some(load);
+        if !over {
+            if was_over && self.cfg.keep.on {
+                info!("the machine carries the worlds again ({})", load.text());
+            }
+            return;
+        }
+        let empty: Vec<(String, Option<f64>)> = self.worlds.iter().map(|w| (w.map.clone(), w.empty_since)).collect();
+        let refs: Vec<(&str, Option<f64>)> = empty.iter().map(|(m, s)| (m.as_str(), *s)).collect();
+        match to_stop(&refs).map(str::to_string) {
+            Some(map) => {
+                info!("world of {}: stopped - the machine is full ({}) and it had no players", map_folder(&map), load.text());
+                self.stop_world(&map);
+            }
+            None if !was_over => warn!("the machine is full ({}), but every world has players: none stopped", load.text()),
+            None => {}
+        }
     }
 
     /// The world of `map` stopped. Whether one ran.
@@ -869,9 +960,14 @@ impl MainServer {
                 out += &format!("    code: {}\n", code.trim());
             }
         }
-        out += &format!("worlds: {} of at most {}\n", self.worlds.len(), self.cfg.max_worlds);
+        out += &format!("worlds: {} of at most {}{}\n", self.worlds.len(), self.cfg.max_worlds, if self.cfg.keep.on { " - kept running while the machine can" } else { "" });
+        if let Some(l) = self.load {
+            out += &format!("machine: {} (limits {} %, {} %)\n", l.text(), self.cfg.keep.max_memory, self.cfg.keep.max_cpu);
+        }
+        let now = unix_now() as f64;
         for w in &self.worlds {
-            out += &format!("  {}: UDP {}, web {} (the launcher's server list: <this machine>:{}), for {} min\n", map_folder(&w.map), w.port, w.web_port, w.web_port, w.started.elapsed().as_secs() / 60);
+            let empty = w.empty_since.map(|s| format!(", no players for {} min", ((now - s) / 60.0).max(0.0) as i64)).unwrap_or_default();
+            out += &format!("  {}: UDP {}, web {} (the launcher's server list: <this machine>:{}), for {} min{empty}\n", map_folder(&w.map), w.port, w.web_port, w.web_port, w.started.elapsed().as_secs() / 60);
         }
         out
     }
@@ -1200,11 +1296,15 @@ mod tests {
     /// its clock, the timetable on, and its own end when nobody drives.
     #[test]
     fn a_worlds_settings() {
-        let c = MainCfg::parse("traffic = 12\nworld_idle = 15\ntunnel = 1\n");
+        let c = MainCfg::parse("traffic = 12\nworld_idle = 15\ntunnel = 1\nkeep_worlds = 0\n");
         let t = world_cfg(&c, Path::new("/srv/bco"), "maps/Lemmental/global.cfg", 27017, 27018);
         for want in ["map = maps/Lemmental/global.cfg", "port = 27017", "web_port = 27018", "companies = 1", "company_dir = /srv/bco", "real_time = 1", "timetable = 1", "traffic = 12", "tunnel = 1", "idle_stop = 15", "radius = 0"] {
             assert!(t.lines().any(|l| l.trim() == want), "{want} in\n{t}");
         }
+        // (phase 6: kept running while the machine can - the main server stops it, never itself)
+        let kept = MainCfg::parse("world_idle = 15\n");
+        assert!(kept.keep.on);
+        assert!(world_cfg(&kept, Path::new("/srv/bco"), "maps/Lemmental/global.cfg", 27017, 27018).lines().any(|l| l.trim() == "idle_stop = 0"));
         assert_eq!((ports_of(27015, 0), ports_of(27015, 3)), ((27015, 27016), (27021, 27022)));
     }
 

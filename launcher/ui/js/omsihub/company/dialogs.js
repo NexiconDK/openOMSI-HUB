@@ -88,13 +88,34 @@ function SendMoney({ to, label, amount }) {
   </span>`;
 }
 
+/** (Phase 6 step 3) A depot's big purchases: what the head office approved, and a request for
+ * more (`approval_ask`) with what it is for; the requests waiting. */
+function ApprovalPart({ a }) {
+  const [sum, setSum] = useState(null);
+  const [why, setWhy] = useState('');
+  const shown = sum ?? Math.round(units(a.amount * 100));
+  return html`<div class="co-depots">
+    <p class="co-note">${a.say}</p>
+    <div class="pair" style="gap:10px;align-items:center">
+      <input class="co-pg-bidin" type="number" step="10000" min="0" value=${shown} onChange=${(e) => setSum(Number(e.currentTarget.value) || 0)} style="width:140px" />
+      <input class="co-field" placeholder=${a.reason_label} value=${why} onInput=${(e) => setWhy(e.currentTarget.value)} style="flex:1;height:36px" />
+      <${Btn} icon="approval" label=${a.ask} onClick=${() => act('approval_ask', { amount: Math.round(cents(shown)), reason: why }).then(() => setWhy(''))} />
+    </div>
+    ${a.waiting.map((t) => html`<p class="co-note">${t}</p>`)}
+  </div>`;
+}
+
 /** (Phase 4) A head office's depots on other maps of the server, and the founding of one: its
- * map and its starting money (`dialogs::depots_part`, `depot_found`). */
+ * map and its starting money (`dialogs::depots_part`, `depot_found`); (phase 6 step 3) its
+ * depots' requests for big purchases, approved or refused (`approval_answer`). */
 function DepotsPart({ d }) {
   const [map, setMap] = useState(0);
   const [start, setStart] = useState(null);
   const amount = start ?? Math.round(units(d.start * 100));
   return html`<div class="co-depots">
+    ${d.asks?.length > 0 && html`<div class="co-caps">${d.asks_caps}</div>${d.asks.map((q) => html`<div class="pair"><p class="co-note" style="flex:1">${q.text}</p>
+      <${Btn} kind="primary" icon="check" label=${d.approve} onClick=${() => act('approval_answer', { id: q.id, yes: true })} />
+      <${Btn} icon="close" label=${d.refuse} onClick=${() => act('approval_answer', { id: q.id, yes: false })} /></div>`)}`}
     ${d.rows.map((r) => html`<div class="pair"><b class="cut" style="width:200px;flex:none">${r.name}</b><p class="co-note">${r.map} · ${r.facts} · ${r.cash} · <span class=${'t-' + r.result_tone}>${r.result}</span></p>
       <${SendMoney} to=${r.id} label=${d.send} amount=${d.send_amount} /></div>`)}
     <p class="co-note">${d.say}</p>
@@ -170,7 +191,7 @@ function SettingsDialog({ d }) {
     <span class="rest"></span>
     <${Btn} kind=${v.move ? '' : 'primary'} label=${v.close} onClick=${close} />
     ${v.move && html`<${Btn} kind="primary" icon="calendar_month" label=${v.move} onClick=${moveTo} />`}`;
-  const h = (v.buying ? 786 : 722) + (v.addons ? 40 : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0) + (v.online ? 180 + (v.online.depots ? 130 + 48 * (v.online.depots.rows?.length || 0) + movesHeight(v.online.depots.moves) : 0) : 0);
+  const h = (v.buying ? 786 : 722) + (v.addons ? 40 : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0) + (v.online ? 180 + (v.online.depots ? 130 + 48 * (v.online.depots.rows?.length || 0) + movesHeight(v.online.depots.moves) + (v.online.depots.approval ? 130 + 26 * v.online.depots.approval.waiting.length : 0) + (v.online.depots.asks?.length ? 30 + 48 * v.online.depots.asks.length : 0) : 0) : 0);
   // (Beta 61: a career or a sandbox - turned into a sandbox once, after a confirmation)
   const cm = v.company_mode;
   const vh = v.vehicles;
@@ -192,7 +213,8 @@ function SettingsDialog({ d }) {
         <div class="pair"><${Seg} value=${v.online.left} options=${v.online.left_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_left', { left: k })} style="width:320px;height:40px" />
           <p class="co-note">${v.online.left_say}</p></div>
         ${v.online.depots && html`<div class="co-caps">${v.online.depots.caps}</div>
-          ${v.online.depots.of ? html`<p class="co-note">${v.online.depots.of}</p><${SendMoney} to=${v.online.depots.hq} label=${v.online.depots.send_hq} amount=${v.online.depots.send_amount} />` : html`<${DepotsPart} d=${v.online.depots} />`}
+          ${v.online.depots.of ? html`<p class="co-note">${v.online.depots.of}</p><${SendMoney} to=${v.online.depots.hq} label=${v.online.depots.send_hq} amount=${v.online.depots.send_amount} />
+            ${v.online.depots.approval && html`<div class="co-caps">${v.online.depots.approval.caps}</div><${ApprovalPart} a=${v.online.depots.approval} />`}` : html`<${DepotsPart} d=${v.online.depots} />`}
           ${v.online.depots.moves && html`<div class="co-caps">${v.online.depots.moves.caps}</div><${MovesPart} m=${v.online.depots.moves} />`}`}`}
       <div class="co-caps">${v.mode_caps}</div>
       <div class="pair"><${Seg} value=${k} options=${v.modes.map((m, i) => [i, m.label])} onChange=${(i) => setCo({ dialog: { kind: 'confirm', what: 'game_mode', name: v.modes[i].key, settings: v.date } })} style="width:320px;height:40px" />

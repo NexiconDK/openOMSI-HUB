@@ -497,6 +497,8 @@ mod tests {
         use omsi_launcher_lib::company::takeover;
         texts.extend([omsi_launcher_lib::company::server_fines::NOT_DRIVING, omsi_launcher_lib::company::server_fines::REPORTED].map(String::from));
         texts.extend(server_depots::red_texts().into_iter().map(String::from));
+        // (phase 6 step 3: a depot's big purchases, its head office's to approve)
+        texts.extend(server_depots::approval_texts().into_iter().map(String::from));
         texts.extend(takeover::texts().into_iter().chain([takeover::OFFERED.0, takeover::OFFERED.1, takeover::TAKEN.0, takeover::TAKEN.1, takeover::REFUSED.0, takeover::REFUSED.1]).map(String::from));
         texts.push(super::together::SERVER_CODE.to_string());
         texts.push(omsi_launcher_lib::company::together::host::NO_TICKET.to_string());

@@ -1225,6 +1225,11 @@ pub fn sign(c: &mut Company, k: &Contract, listings: &[Listing], now: &str) -> R
         }
     }
     let name = k.listing.bus.name.clone();
+    // (NexiconDK, Bus Company Online phase 6 step 3: a depot's big purchase, its head office's to
+    // approve first)
+    if k.pay != PayWay::Lease {
+        super::server_depots::check_spend(c, k.total())?;
+    }
     match k.pay {
         PayWay::Cash => pay(c, k.due(), Payment::Cash, &name, k.total())?,
         PayWay::Loan => pay(c, k.due(), Payment::Loan, &name, k.total())?,
@@ -1247,6 +1252,7 @@ pub fn sign(c: &mut Company, k: &Contract, listings: &[Listing], now: &str) -> R
         let what = if k.new { format!("{} × {} (new, contract {})", k.count, name, k.no) } else { format!("{} × {} (used, contract {})", k.count, name, k.no) };
         c.book(BookingKind::Purchase, -k.total(), what, false);
         c.book(BookingKind::Subsidy, k.grants(), name.clone(), false);
+        super::server_depots::spent(c, k.total());
     }
     if let Some(id) = &k.offer {
         let day = id.get(1..).and_then(|s| s.split('-').next()).and_then(|d| d.parse().ok()).unwrap_or(0);

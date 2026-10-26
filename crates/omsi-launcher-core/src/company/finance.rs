@@ -275,6 +275,17 @@ pub fn take_loan(c: &mut Company, amount: Cents, purpose: &str, collateral: Cent
     Ok(id)
 }
 
+/// (NexiconDK, Bus Company Online phase 6 step 4) The bank's emergency loan to a company that
+/// closed its day in the red: lent whatever its credit, at `rate` over `months`. Returns its id.
+pub fn emergency_loan(c: &mut Company, amount: Cents, rate: f64, months: u32, purpose: &str) -> u32 {
+    c.counters.loan += 1;
+    let id = c.counters.loan;
+    let monthly = economy::annuity(amount, rate, months);
+    c.loans.push(Loan { id, taken: c.date.clone(), principal: amount, remaining: amount, rate, monthly, months_left: months, purpose: purpose.to_string() });
+    c.book(BookingKind::Loan, amount, purpose.to_string(), false);
+    id
+}
+
 /// Pay back `amount` of a loan early, from the cash, with the early repayment fee (the rate
 /// stays, the term shortens).
 pub fn repay(c: &mut Company, id: u32, amount: Cents) -> Result<(), &'static str> {

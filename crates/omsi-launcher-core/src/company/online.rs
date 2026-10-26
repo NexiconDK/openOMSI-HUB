@@ -95,6 +95,18 @@ pub struct Online {
     /// (`world_live::WorldSeen`; set by its process, not kept, never a change).
     #[serde(skip)]
     pub world: super::world_live::WorldSeen,
+    /// (Phase 6 step 3) A depot's purchases over this need its head office's approval (the
+    /// server's `big_purchase`; set by its process, not kept); what was approved and not spent;
+    /// the requests waiting (a depot's own, or those that came to a head office), and how far
+    /// their file was read.
+    #[serde(skip)]
+    pub big_purchase: Option<super::model::Cents>,
+    #[serde(default)]
+    pub approved: super::model::Cents,
+    #[serde(default)]
+    pub asks: Vec<super::server_depots::Approval>,
+    #[serde(default)]
+    pub asks_read: u64,
 }
 
 /// The company's share of its players' trips when it is founded (per cent).
@@ -106,7 +118,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0 }
     }
 }
 
@@ -596,6 +608,13 @@ impl Host {
         if c.online.on_server && c.online.fines.is_none() {
             c.online.fines = Some(super::server_fines::of_folder(&self.data));
         }
+        // (phase 6 step 3: a depot's big purchases, its head office's to approve)
+        if c.online.on_server && c.online.big_purchase.is_none() {
+            c.online.big_purchase = Some(super::server_depots::big_purchase_of(&self.data));
+        }
+        if super::server_depots::approvals_step(&self.data, c) {
+            self.dirty = true;
+        }
         // never in step yet: in step from now (a company that did not run with the real clock)
         if c.clock.real.synced.is_none() {
             clock::sync(c, real);
@@ -634,8 +653,16 @@ impl Host {
             self.planned = None;
         }
         // (what other companies told it: a depot in the red, its end, the money with it)
-        if super::server_depots::take_notices(&self.data, c) {
+        let (told, closing) = super::server_depots::take_notices(&self.data, c);
+        if told {
             self.dirty = true;
+        }
+        // (phase 6 step 4: its head office went bankrupt - the depot closes with it)
+        if closing && !c.online.hq.is_empty() {
+            super::server_depots::bankrupt(&self.data, c);
+            s.bankrupt = true;
+            self.dirty = true;
+            return Ok(s);
         }
         // (the map's tenders, shared by its companies: the other companies' bids, what the main
         // server decided - a line won is the company's at once, to be planned for its first day)

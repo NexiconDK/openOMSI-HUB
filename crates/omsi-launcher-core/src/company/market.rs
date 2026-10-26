@@ -367,7 +367,10 @@ pub fn buy_new(c: &mut Company, bus: &MarketBus, how: Payment, livery: &str) -> 
     super::depot::room(c)?;
     kind_allowed(c, bus.kind)?;
     let (price, grant) = new_offer(c, bus);
+    // (NexiconDK: a depot's big purchase, its head office's to approve first)
+    super::server_depots::check_spend(c, price)?;
     pay(c, price - grant, how, &bus.name)?;
+    super::server_depots::spent(c, price);
     c.book(BookingKind::Purchase, -price, format!("{} (new)", bus.name), false);
     c.book(BookingKind::Subsidy, grant, bus.name.clone(), false);
     let date = c.date.clone();
@@ -382,7 +385,9 @@ pub fn buy_used(c: &mut Company, offer: &UsedOffer, how: Payment, livery: &str) 
     if c.taken.week == week && c.taken.used.contains(&offer.no) {
         return Err("This bus has been sold.");
     }
+    super::server_depots::check_spend(c, offer.price)?;
     pay(c, offer.price, how, &offer.bus.name)?;
+    super::server_depots::spent(c, offer.price);
     if c.taken.week != week {
         c.taken = super::model::Taken { week, ..Default::default() };
     }
