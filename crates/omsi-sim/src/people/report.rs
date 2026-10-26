@@ -46,10 +46,13 @@ impl PeopleSim {
 
     /// People currently in the player's bus.
     pub fn riding(&self) -> usize {
-        self.people
-            .iter()
-            .filter(|p| p.inside(BusId::Player))
-            .count()
+        self.riding_in(BusId::Player)
+    }
+
+    /// People currently in bus `bus` (NexiconDK: a timetable bus handed over to a LAN player
+    /// at a stop takes as many with it).
+    pub fn riding_in(&self, bus: BusId) -> usize {
+        self.people.iter().filter(|p| p.inside(bus)).count()
     }
 
     /// People walking the footpaths of the traffic network: (lane, distance along it). The

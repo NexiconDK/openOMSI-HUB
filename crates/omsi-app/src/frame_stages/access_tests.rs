@@ -31,7 +31,7 @@ fn field_group(field: &str) -> Option<Option<Group>> {
         "session.placed" | "session.seat_bus" | "session.safe_pose" | "session.safe_age" | "session.pumping" => Some(Player),
         "session.traffic" | "session.schedule" | "session.timetable_book" | "session.populate_t"
         | "session.traffic_heavy_frame" | "session.first_populate" | "pipeline" => Some(Traffic),
-        "session.humans" | "session.humans_populate_t" | "session.on_foot" => Some(People),
+        "session.humans" | "session.humans_populate_t" | "session.on_foot" | "session.relief" | "session.relief_give" => Some(People),
         "session.duty" | "session.duty_places" | "session.duty_closed" | "session.career" | "session.journey" => Some(Duty),
         "session.world_day" | "session.clock_jump" | "session.pending_time" | "session.autosave_t" => Some(Clock),
         "session.rain" | "session.cabin_air" | "session.spray" | "session.lamps_on" | "session.envir" | "session.weather"

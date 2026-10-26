@@ -486,7 +486,9 @@ impl App {
                 // (once more when it fails: a file read while the start was still reading
                 // others; a failure is said on the screen - the game went on without a bus
                 // and the player found himself on foot, with no word why)
-                let first = spawn_player(&self.args, &w, &renderer, &mut scene);
+                // (NexiconDK: a relief at a stop has no bus of its own yet - the AI's is handed
+                // over to it there: `relief`)
+                let first = if self.args.relief_at.is_some() { Ok(None) } else { spawn_player(&self.args, &w, &renderer, &mut scene) };
                 let spawned = match first {
                     Err(e) if self.args.bus.is_some() => {
                         log::warn!("the bus could not be put down ({e:#}); trying again");
@@ -661,7 +663,8 @@ impl App {
                             self.session.traffic.as_mut(),
                             parse_time(&self.args.time),
                         );
-                        if let (Some(_), Some(p)) = (&self.args.line, self.player.as_mut()) {
+                        // (a relief at a stop has its duty before its bus: `relief`)
+                        if self.args.line.is_some() && (self.player.is_some() || self.args.relief_at.is_some()) {
                             self.session.duty = match crate::duty_start::player_duty(
                                 &mut sch,
                                 &w,
@@ -670,7 +673,7 @@ impl App {
                             ) {
                                 Ok(mut d) => {
                                     crate::duty_start::begin(&mut d, &self.args);
-                                    if self.args.is_resuming() {
+                                    if let (true, Some(p)) = (self.args.is_resuming(), self.player.as_mut()) {
                                         d.resume(&mut p.vehicle, parse_time(&self.args.time), self.args.situation_next_stop);
                                         // the IBIS keeps its saved trip; with --autostart
                                         // the duty's next trips are typed into it again
@@ -687,15 +690,16 @@ impl App {
                             // --autostart in the window puts the duty on the IBIS as well
                             // (it only ever did offscreen: the duty did not exist yet when
                             // the start-up began, and the displays stayed dark)
-                            if let (true, Some(d)) = (
+                            if let (true, Some(d), Some(p)) = (
                                 self.args.autostart && !self.args.is_resuming(),
                                 self.session.duty.as_mut(),
+                                self.player.as_mut(),
                             ) {
                                 d.update(&mut p.vehicle, parse_time(&self.args.time));
                                 let (trip, stop) = d.trip_for_ibis();
                                 p.set_duty_destination(trip, stop);
                             }
-                            if let Some(d) = self.session.duty.as_ref() {
+                            if let (Some(d), Some(p)) = (self.session.duty.as_ref(), self.player.as_mut()) {
                                 let mut fonts = w.fonts.lock();
                                 if let Err(e) = crate::schedule_paper::update_vehicle(
                                     &mut p.vehicle,

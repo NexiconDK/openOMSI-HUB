@@ -103,6 +103,26 @@ pub enum ServiceFault {
     DoorsUnanswered,
 }
 
+/// (NexiconDK, Bus Company Online: relief at the stop, 26 October 2026) A LAN player takes the
+/// bus over at a stop of its trip: it serves that stop whatever else it would do, and holds there
+/// with its doors open until his game takes it (it leaves the world: `timetable_run`'s
+/// `take_relief`) or `until` - then it drives on as the AI's.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ReliefHold {
+    /// The stop's map object and its departure there (seconds of the day, as `Stop::depart`).
+    pub stop: i64,
+    pub depart: f64,
+    /// How long it holds there at most (seconds of the day).
+    pub until: f64,
+}
+
+impl ReliefHold {
+    /// Whether `stop` is the one it holds at.
+    pub fn is(&self, stop: &Stop) -> bool {
+        stop.id == self.stop && (stop.depart - self.depart).abs() < 1.0
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct BusService {
     pub stops: VecDeque<Stop>,
@@ -139,6 +159,8 @@ pub struct BusService {
     /// (NexiconDK, Bus Company Online phase 5 step 2) Its company's control room runs the rest of
     /// the trip out of service to the terminus: it stops nowhere on the way (a new trip ends it).
     pub express: bool,
+    /// A LAN player takes it over at a stop of the trip (`ReliefHold`).
+    pub relief: Option<ReliefHold>,
     /// How far the front stop was last frame (m; infinite when not measured yet).
     near_d: f32,
     /// Whether it serves the front stop, once that is settled (`SKIP_DECIDE`).
@@ -389,6 +411,7 @@ impl BusService {
             route_open: false,
             terminus: String::new(),
             express: false,
+            relief: None,
             near_d: f32::INFINITY,
             serve: None,
             last_stop: None,
@@ -493,6 +516,7 @@ impl BusService {
         self.layover = layover;
         self.put_out = false;
         self.express = false;
+        self.relief = None;
         // (the berths it held are given back by `TrafficSim::reroute`)
         self.held = None;
         self.behind = false;
@@ -514,6 +538,7 @@ impl BusService {
         let last = (self.stops.len() == 1 && !self.route_open) || self.last_stop == Some(stop.id);
         let early = stop.depart - day_time;
         last || self.layover
+            || self.relief.is_some_and(|r| r.is(stop))
             || early > EARLY_STOP
             || self.always.contains(&stop.id)
             || (early > EARLY_STOP_SHORT && self.serve_early.contains(&stop.id))
@@ -574,6 +599,11 @@ impl BusService {
         // every stop it serves, as in Omsi.exe
         let wait = self.stop_wait(depart, ctx.day_time, ctx.timed_waits_only, layover, rail);
         self.leave_at = ctx.day_time + wait;
+        // (the stop a LAN player takes it over at: it holds there, doors open, for him)
+        let relief = self.relief.filter(|r| self.stops.front().is_some_and(|f| r.is(f)));
+        if let Some(r) = relief {
+            self.leave_at = self.leave_at.max(r.until);
+        }
         self.arrived_at = ctx.day_time;
         self.boarding = boarding_time(ctx.id);
         self.held_over = 0.0;
@@ -582,7 +612,7 @@ impl BusService {
         // a bus put out at its stand for its layover opens the doors for the last minute only;
         // anywhere else (a tour's bus at the first stop of its next trip too) people get off
         // and on straight away, and the doors stay open until it is time to go
-        if layover && std::mem::take(&mut self.put_out) && wait > LAYOVER_BOARDING + 10.0 {
+        if layover && std::mem::take(&mut self.put_out) && wait > LAYOVER_BOARDING + 10.0 && relief.is_none() {
             self.set_phase(Phase::Waiting);
         } else {
             self.set_phase(Phase::Boarding);
@@ -852,7 +882,9 @@ impl BusService {
                 let rail = ctx.net.lanes.get(st.lane).is_some_and(|l| l.kind == LaneKind::Rail);
                 // (run out of service: none but its terminus)
                 let last = (self.stops.len() == 1 && !self.route_open) || self.last_stop == Some(stop.id);
-                self.serve = Some(if self.express && !last { false } else { rail || self.must_serve(&stop, ctx.day_time) || ctx.wanted.unwrap_or(true) });
+                // (and the stop a LAN player takes it over at, whatever else)
+                let relief = self.relief.is_some_and(|r| r.is(&stop));
+                self.serve = Some(if self.express && !last && !relief { false } else { rail || self.must_serve(&stop, ctx.day_time) || ctx.wanted.unwrap_or(true) });
             }
             if self.serve == Some(false) {
                 if ctx.debug || omsi_cfg::flags::OMSI_DEBUG_STOPS.is_set() {

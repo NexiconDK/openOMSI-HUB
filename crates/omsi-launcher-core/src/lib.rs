@@ -104,7 +104,7 @@ pub fn chosen_game() -> Option<ChosenGame> {
 
 /// The arguments this launcher's game knows and openOMSI's own release does not, and whether
 /// each takes a value.
-pub const OWN_ARGS: &[(&str, bool)] = &[("--company", true), ("--duty-leg", true), ("--free-line", true)];
+pub const OWN_ARGS: &[(&str, bool)] = &[("--company", true), ("--duty-leg", true), ("--free-line", true), ("--relief", false)];
 
 /// A command line without `OWN_ARGS`, for openOMSI's own release. A free drive along a line
 /// (`--free-line`) goes with its `--line` too: the line alone would be a duty of its first tour.
@@ -3786,6 +3786,11 @@ pub struct Duty {
     /// taken over from the game menu later.
     #[serde(default)]
     pub on_foot: Option<bool>,
+    /// (NexiconDK, Bus Company Online: relief at the stop) In a LAN world, a duty taken over
+    /// from the AI under way: the game starts on foot at the stop it begins at, and the AI's bus
+    /// is handed over there.
+    #[serde(default)]
+    pub relief: Option<bool>,
     pub profile: Option<String>,
     /// LAN play: "host", or "join:<session code | ip[:port] | port | empty = search>".
     pub lan: Option<String>,
@@ -4128,6 +4133,10 @@ fn duty_args_for_root(d: &Duty, root: &Path) -> Result<Vec<String>> {
     }
     if d.on_foot.unwrap_or(false) {
         a.push("--on-foot".into());
+    }
+    // (in a LAN world only: the AI's bus there is handed over)
+    if d.relief.unwrap_or(false) && d.lan.as_deref().is_some_and(|l| l.trim().starts_with("join:")) {
+        a.push("--relief".into());
     }
     let profile = d.profile.clone().filter(|p| !p.trim().is_empty()).unwrap_or_else(|| load_config().profile);
     if let Some(season) = d.season.as_deref().map(str::trim).filter(|x| !x.is_empty() && !x.eq_ignore_ascii_case("auto")) {

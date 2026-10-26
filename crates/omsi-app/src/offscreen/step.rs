@@ -118,6 +118,15 @@ impl Offscreen<'_> {
             let positions = |id: u32| remotes_off.remotes.get(&id).map(|r| (r.vehicle().position, r.vehicle().heading));
             srv_admin.prune(l);
             for (from, text) in l.take_commands() {
+                // (NexiconDK, Bus Company Online: a player waiting at a stop for the bus he
+                // takes over - `relief`)
+                if text.starts_with("relief ") {
+                    let peers = crate::relief::PeerInfo::of(l);
+                    for (to, r) in crate::relief::host_command(from, &text, schedule.as_mut(), traffic.as_mut(), humans_off.as_ref(), &peers) {
+                        l.command(to, &r);
+                    }
+                    continue;
+                }
                 crate::admin::server_command(l, from, &text, srv_admin, &positions);
             }
             // a tool on this machine (POST /admin, checked by the gateway): an admin of its own
@@ -205,6 +214,12 @@ impl Offscreen<'_> {
                     // (the map's ground: x east, y north - z is up)
                     crate::company_server::watch(l.peers().filter(|p| p.has_pose).map(|p| (p.pose.name.clone(), p.pose.x, p.pose.y, p.pose.tour.clone())), now);
                     crate::company_server::take_trips(&args.map);
+                    // (relief at the stop: the trips of players' duties the AI drove after all)
+                    for k in schedule.as_mut().map(|s| s.sim.take_kept_reliefs()).unwrap_or_default() {
+                        if let Some(name) = l.peers().find(|p| p.pose.id == k.peer).map(|p| p.pose.name.clone()) {
+                            crate::company_server::relief_kept(&args.map, &name, &k.line, &k.tour, k.departure);
+                        }
+                    }
                     // (phase 5: the buses on its roads for the companies' control rooms)
                     crate::company_server::publish_live(&args.map, schedule.as_ref(), traffic.as_ref(), humans_off.as_ref(), l.peers().filter(|p| p.has_pose).map(|p| &p.pose));
                 }

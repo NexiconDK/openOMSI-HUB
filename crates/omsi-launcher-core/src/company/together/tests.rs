@@ -1084,3 +1084,32 @@ fn on_the_server_a_player_takes_a_duty_over_from_the_companys_ai_driver() {
     assert_eq!((s.duties[0].state, s.duties[0].take_over), (DutyState::Company, false));
     assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()))["error"].as_str(), Some(book::BEGUN));
 }
+
+/// (NexiconDK, relief at the stop) Not at his stop in time to take the bus over, the AI drives
+/// that trip of his duty (the map's world says so): the AI's part of it goes on to his next trip,
+/// or begins there - he did not leave it -, and with no trip of his after it, the AI drives the
+/// rest.
+#[test]
+fn a_trip_the_ai_drove_while_he_was_not_at_his_stop_is_the_ais() {
+    let mut b = boss();
+    b.c.online.on_server = true;
+    b.c.together.open_claims = true;
+    let duty = snap(&ask(&mut b, "jan", "hello", |_| {})).duties[0].duty.clone();
+    let jan = guest_no(&b, "jan");
+    // taken before it began: his from its start - the AI drove its 06:00 (index 1)
+    ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()));
+    let p = b.plan();
+    assert_eq!(book::ai_kept(&mut b.c, Some(&p), &duty, jan, 360, 1, 300), Ok(1));
+    let parts = |b: &Boss| b.c.together.claim_of(&duty).unwrap().ai.iter().map(|a| (a.from, a.until, a.why)).collect::<Vec<_>>();
+    assert_eq!(parts(&b), [(1, Some(2), book::LeftWhy::Begun)]);
+    // late for the 06:40 as well: the same part goes on to the 07:20
+    assert_eq!(book::ai_kept(&mut b.c, Some(&p), &duty, jan, 400, 1, 300), Ok(2));
+    assert_eq!(parts(&b), [(1, Some(3), book::LeftWhy::Begun)]);
+    assert_eq!(book::ai_kept(&mut b.c, Some(&p), &duty, jan, 400, 1, 300), Ok(2), "once");
+    // and for his last trip: the AI drives the rest
+    assert_eq!(book::ai_kept(&mut b.c, Some(&p), &duty, jan, 440, 1, 300), Ok(3));
+    assert_eq!(parts(&b), [(1, None, book::LeftWhy::Begun)]);
+    assert_eq!(b.c.together.guest(jan).unwrap().stats.left, 0, "he did not leave it");
+    assert_eq!(book::ai_kept(&mut b.c, Some(&p), &duty, jan, 500, 1, 300), Err(book::NO_DUTY));
+    assert_eq!(book::ai_kept(&mut b.c, Some(&p), &duty, jan + 1, 360, 1, 300), Err(book::NOT_YOURS));
+}

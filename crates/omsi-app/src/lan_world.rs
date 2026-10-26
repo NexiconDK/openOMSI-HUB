@@ -106,6 +106,9 @@ struct Mirror {
     bytes_at: u64,
     granted: u32,
     denied: u32,
+    /// (NexiconDK: relief at the stop) The host's buses handed over to us, by when: their
+    /// frames still on the way are not drawn again under our own bus.
+    handed: HashMap<u32, Instant>,
 }
 
 impl Mirror {
@@ -193,6 +196,22 @@ fn show_car_destination(v: &mut omsi_sim::VehicleInstance, hof: Option<&Arc<omsi
 }
 
 impl LanWorld {
+    /// (NexiconDK, Bus Company Online: relief at the stop) The host's car `id` as it described
+    /// it to us: its vehicle file (relative to the content roots) and repaint name.
+    pub fn car_desc(&self, id: u32) -> Option<(String, String)> {
+        match self.mirror.descs.get(&(false, id)) {
+            Some(Desc::Car { file, paint, .. }) => Some((file.clone(), paint.clone())),
+            _ => None,
+        }
+    }
+
+    /// The host handed its car `id` over to us (our own bus stands in its place now): it goes
+    /// from our copy of its world, and its frames still on the way are not drawn again.
+    pub fn forget_car(&mut self, id: u32) {
+        self.mirror.cars.remove(&id);
+        self.mirror.handed.insert(id, Instant::now());
+    }
+
     /// Once a frame, after `LanSession::tick`.
     #[allow(clippy::too_many_arguments)]
     pub fn tick(
@@ -452,22 +471,26 @@ impl LanWorld {
         mut humans: Option<&mut Humans>,
         me: Option<DVec3>,
     ) {
-        // where the players are: the world is kept around them too
-        let players: Vec<(u32, DVec3)> = lan
-            .peers()
-            .filter(|p| p.has_pose && p.pose.has_vehicle())
-            .map(|p| (p.pose.id, DVec3::new(p.pose.x, p.pose.y, p.pose.z)))
-            .collect();
+        // where the players are: the world is kept around them too - around the walker of one
+        // on foot without a bus of his own (NexiconDK: waiting at a stop for the bus he takes
+        // over, `relief`)
+        let at_of = |p: &omsi_net::Peer| -> Option<(DVec3, f64)> {
+            if !p.has_pose {
+                return None;
+            }
+            if p.pose.has_vehicle() {
+                return Some((DVec3::new(p.pose.x, p.pose.y, p.pose.z), p.pose.heading as f64));
+            }
+            p.pose.walker.map(|w| (DVec3::new(w.x, w.y, w.z), w.heading as f64))
+        };
+        let players: Vec<(u32, DVec3)> = lan.peers().filter_map(|p| at_of(p).map(|a| (p.pose.id, a.0))).collect();
         let centers: Vec<DVec3> = players.iter().map(|p| p.1).collect();
         if let Some(t) = traffic.as_deref_mut() {
             t.lan_centers = centers.clone();
             // and what they see: no car may come or go there in front of them either
             // (the list is kept: no allocation a frame)
             t.lan_eyes.clear();
-            t.lan_eyes.extend(lan.peers().filter(|p| p.has_pose && p.pose.has_vehicle()).map(|p| {
-                let at = DVec3::new(p.pose.x, p.pose.y, p.pose.z);
-                crate::traffic::Viewer::lan_player(at, p.pose.heading as f64)
-            }));
+            t.lan_eyes.extend(lan.peers().filter_map(at_of).map(|(at, heading)| crate::traffic::Viewer::lan_player(at, heading)));
         }
         if let Some(h) = humans.as_deref_mut() {
             h.lan_centers = centers;
@@ -835,7 +858,11 @@ impl Mirror {
                 _ => off,
             });
             let ms = f.host_ms as f64;
+            m.handed.retain(|_, t| t.elapsed().as_secs_f32() < 15.0);
             for c in f.cars {
+                if m.handed.contains_key(&c.id) {
+                    continue;
+                }
                 m.cars
                     .entry(c.id)
                     .or_insert_with(|| Track {

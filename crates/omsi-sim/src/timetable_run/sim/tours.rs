@@ -268,6 +268,11 @@ impl ScheduleSim {
 
     /// Does a player drive departure `i` (we, or another LAN player)?
     pub(super) fn is_player_tour(&self, i: usize) -> bool {
+        // (NexiconDK: one a LAN player waits to take over at a stop of it, or that the AI drove
+        // after all, he was not there in time: the AI's - `relief`)
+        if self.relief_ai(i) || self.relief_kept.contains(&i) {
+            return false;
+        }
         if let Some(d) = self.departures.get(i) {
             if self.lan_tours.iter().any(|t| t.has(&d.line, &d.tour, d.time)) {
                 return true;
@@ -682,11 +687,17 @@ impl PlayerDuty {
     /// order he drives them, the trips still to come from the one under way; nothing once its
     /// last trip is driven, nor on a free drive.
     pub fn lan_claims(&self) -> Vec<LanClaim> {
+        self.lan_claims_from(self.trip_index)
+    }
+
+    /// `lan_claims` from trip `first` of the duty on (NexiconDK, relief at the stop: the trip
+    /// whose bus the player waits for is the AI's to bring until it is his).
+    pub fn lan_claims_from(&self, first: usize) -> Vec<LanClaim> {
         if self.free || self.trips.is_empty() || (self.done && self.trip_index + 1 >= self.trips.len()) {
             return Vec::new();
         }
         let mut out: Vec<LanClaim> = Vec::new();
-        for (i, trip) in self.trips.iter().enumerate().skip(self.trip_index) {
+        for (i, trip) in self.trips.iter().enumerate().skip(first.max(self.trip_index)) {
             let (line, tour) = match self.tours.get(i) {
                 Some((l, t, _)) => (l.trim(), t.trim()),
                 None => (self.line.trim(), self.tour.trim()),

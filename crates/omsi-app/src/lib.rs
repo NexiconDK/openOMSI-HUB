@@ -130,6 +130,8 @@ mod memory;
 mod offscreen;
 mod ground_gap;
 mod on_foot;
+// NexiconDK, Bus Company Online: relief at the stop
+mod relief;
 use omsi_scene::route_arrows;
 mod server;
 mod player;
@@ -668,6 +670,8 @@ fn assemble_app(args: Args, settings: settings::Settings) -> App {
             clock_jump: 0.0,
             seat_bus: String::new(),
             on_foot: None,
+            relief: None,
+            relief_give: None,
             safe_pose: None,
             safe_age: 0.0,
             pending_time: None,

@@ -150,6 +150,16 @@ pub(crate) fn take_world_trips(s: &mut Session, lines: &[core::LineInfo], trips:
             .map(|x| x.duty.clone())
             .collect();
         let mut booked = false;
+        // (NexiconDK, relief at the stop: he was not at his stop in time, the AI drove this trip
+        // of his duty - the AI's part of it, not his)
+        if w.kept {
+            let (dep, minute) = ((t.departure / 60.0).round() as i32, c.clock.minute as i32);
+            match duties.iter().find_map(|r| book::ai_kept(c, Some(&p), r, no, dep, now, minute).ok().map(|i| (r.clone(), i))) {
+                Some((r, i)) => core::log_to_file(&format!("company {}: {name} was not at his stop in time: the AI drove trip {} of his duty {} {} {}", c.id, i + 1, r.line, r.tour, r.duty + 1)),
+                None => core::log_to_file(&format!("company {}: the AI drove line {} tour {} at {} for {name}: no duty of his today has that trip", c.id, t.line, t.tour, dep)),
+            }
+            continue;
+        }
         for r in &duties {
             // (his launcher said he left before the world's check of his last trip came: the
             // AI's part, or the dropped one, begins after it)

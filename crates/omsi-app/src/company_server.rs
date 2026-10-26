@@ -179,7 +179,7 @@ pub(crate) fn take_trips(map: &str) {
             continue;
         };
         let t = omsi_launcher_lib::TripRun { line, ..t };
-        let w = omsi_launcher_lib::company::store::WorldTrip { name: name.clone(), trip: t.clone(), at: unix_now() as u64 };
+        let w = omsi_launcher_lib::company::store::WorldTrip { name: name.clone(), trip: t.clone(), at: unix_now() as u64, kept: false };
         match omsi_launcher_lib::company::store::append_world_trip(&c.data, &company, &w) {
             Ok(()) => {
                 let mut taken = TAKEN_TRIPS.lock().unwrap_or_else(|e| e.into_inner());
@@ -191,6 +191,25 @@ pub(crate) fn take_trips(map: &str) {
             }
             Err(e) => log::warn!("server: the trip of {name} not written for {company}: {e:#}"),
         }
+    }
+}
+
+/// (NexiconDK, relief at the stop) Player `name` was not at his stop in time to take the bus of
+/// line `line` tour `tour` over at `departure` (seconds of the day): the AI drove that trip of his
+/// duty - written for the company whose line it is on the map `map` (`WorldTrip::kept`), whose
+/// process books it as the AI's (`book::ai_kept`).
+pub(crate) fn relief_kept(map: &str, name: &str, line: &str, tour: &str, departure: f64) {
+    let Some(c) = COMPANIES.get() else { return };
+    let plans = omsi_launcher_lib::company::plan::live_plans(&c.data);
+    let same_map = |m: &str| online::map_folder(m) == online::map_folder(map);
+    let Some((company, line)) = plans.iter().filter(|p| same_map(&p.map)).find_map(|p| p.trip_line(line, tour).map(|l| (p.company.clone(), l))) else {
+        return;
+    };
+    let trip = omsi_launcher_lib::TripRun { line, tour: tour.trim().to_string(), departure, time: unix_now() as u64, ..Default::default() };
+    let w = omsi_launcher_lib::company::store::WorldTrip { name: name.to_string(), trip, at: unix_now() as u64, kept: true };
+    match omsi_launcher_lib::company::store::append_world_trip(&c.data, &company, &w) {
+        Ok(()) => log::info!("server: {name} was not at his stop in time: the AI drove line {} tour {tour} at {:.0} for {company}", w.trip.line, departure),
+        Err(e) => log::warn!("server: the relief the AI drove not written for {company}: {e:#}"),
     }
 }
 

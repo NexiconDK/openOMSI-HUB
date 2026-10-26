@@ -68,7 +68,7 @@ impl ScheduleSim {
     }
 
     /// The timetable bus on the road that runs departure `k` (not one that has been let go).
-    fn tour_bus(&self, k: usize, traffic: &TrafficSim) -> Option<usize> {
+    pub(super) fn tour_bus(&self, k: usize, traffic: &TrafficSim) -> Option<usize> {
         traffic
             .cars
             .iter()
@@ -256,6 +256,8 @@ impl ScheduleSim {
         let tod = day_time - self.day_base;
         // (the company's control room: phase 5 step 2)
         self.company_acts(traffic);
+        // (the buses LAN players wait to take over at a stop: Bus Company Online)
+        self.relief_tick(traffic, day_time);
         let window = if std::mem::take(&mut self.restarted) { window.max(20.0 * 60.0) } else { window };
         let loading = window > 60.0;
         let due: Vec<usize> = self

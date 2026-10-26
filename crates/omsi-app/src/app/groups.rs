@@ -490,6 +490,11 @@ pub(crate) struct SessionState {
     pub(crate) seat_bus: String,
     /// The player out of the seat, walking about (`on_foot`).
     pub(crate) on_foot: Option<crate::on_foot::OnFoot>,
+    /// (NexiconDK, Bus Company Online) Waiting on foot at a stop for the bus taken over, and
+    /// its driver getting out (`relief`).
+    pub(crate) relief: Option<crate::relief::Relief>,
+    /// Another player waits at a stop to take our bus over there (`relief`).
+    pub(crate) relief_give: Option<crate::relief::Give>,
     /// Where the bus last stood on the ground (and facing where): it is put back there when
     /// it falls through the world (see `admin::guard_fall`).
     pub(crate) safe_pose: Option<(glam::DVec3, f64)>,

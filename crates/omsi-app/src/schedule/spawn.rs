@@ -197,7 +197,9 @@ impl Schedule {
         // the player watched never had its buses, every one of them kept back until the
         // player had driven a stop or two away, while in OMSI 2 they stand there and leave on
         // time (#2235)
-        let due_at_start = leg == 0 && frac < 0.01 && (-30.0..=60.0).contains(&(departure - day_time));
+        // (NexiconDK: and the bus of a LAN player waiting at its stop to take it over, put out
+        // late at his stop: he waits there for it - `relief`)
+        let due_at_start = (leg == 0 && frac < 0.01 && (-30.0..=60.0).contains(&(departure - day_time))) || self.sim.relief_wanted(i);
         if !(self.sim.queued_at_startup(i) && traffic.loading_phase()) && !due_at_start && !traffic.may_appear(world, at_pos) {
             log::debug!("trip {trip_name}: the bus would appear in view");
             return Placed::Busy;

@@ -63,6 +63,12 @@ impl App {
                 self.editor_broadcast(true);
             }
         }
+        // (NexiconDK) --relief: on foot at the stop the duty begins at, waiting for its bus
+        if self.world.is_some() && self.args.relief_at.is_some() {
+            if let Some(at) = self.args.relief_at.take() {
+                self.relief_begin(at);
+            }
+        }
         // --on-foot: the bus the start put down goes, the player stands beside it
         if self.args.on_foot && self.world.is_some() {
             self.args.on_foot = false;
@@ -144,7 +150,9 @@ pub(super) fn humans(cx: HumansCx, dt: f32) {
         // (whom the player's bus takes on: by the duty, or in free drive by its terminus)
         h.set_duty(cx.duty.duty.as_ref());
         // (the riders leave a bus the driver has walked away from)
-        h.driver_away = cx.people.on_foot.as_ref().is_some_and(|f| {
+        // (not a bus taken over at a stop the player walks up to: `relief`)
+        let handed = cx.people.relief.as_ref().is_some_and(|r| r.keeps_riders()) || cx.people.relief_give.is_some();
+        h.driver_away = !handed && cx.people.on_foot.as_ref().is_some_and(|f| {
             let own = Some(crate::humans::BusId::Player);
             f.seat.map(|s| s.0) != own && f.inside.map(|i| i.0) != own
         });

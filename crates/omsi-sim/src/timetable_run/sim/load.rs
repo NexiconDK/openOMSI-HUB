@@ -283,6 +283,11 @@ impl ScheduleSim {
             company_off: Vec::new(),
             purge_company: Vec::new(),
             expressed: HashSet::new(),
+            reliefs: HashMap::new(),
+            relief_kept: HashSet::new(),
+            kept_log: Vec::new(),
+            relief_taken: HashMap::new(),
+            relief_given: HashMap::new(),
             vehicle_seed: omsi_script::session_seed().map(|s| omsi_script::mix_seed(s ^ 0x746f_7572_5f62_7573)).unwrap_or(0),
         };
         s.yesterday_bits = s.yesterday_bits();
@@ -510,6 +515,9 @@ impl ScheduleSim {
             }
         }
         self.startup.clear();
+        self.relief_kept.clear();
+        self.relief_taken.clear();
+        self.relief_given.clear();
         self.boards_made = f64::NEG_INFINITY;
         self.assign_car_use();
         let today = (0..self.departures.len()).filter(|&i| self.runs(i)).count();

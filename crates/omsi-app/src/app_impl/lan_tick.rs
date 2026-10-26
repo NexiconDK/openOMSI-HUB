@@ -23,7 +23,12 @@ impl App {
             muffled: self.cam.in_cab || self.net.inside_remote.is_some(),
             riders: self.session.humans.as_ref().map(|h| h.riding()).unwrap_or(0),
             clock: Some(&self.clock),
-            tour: self.session.duty.as_ref().map(|d| omsi_sim::timetable_run::lan_claims_text(&d.lan_claims())),
+            // (NexiconDK, relief at the stop: the trip whose bus he waits for is the AI's to bring
+            // up to the stop - claimed, its bus would go - his claims begin with the next)
+            tour: self.session.duty.as_ref().map(|d| {
+                let waiting = self.session.relief.as_ref().and_then(|r| r.waiting()).or_else(|| self.args.relief_at.map(|_| d.trip_index));
+                omsi_sim::timetable_run::lan_claims_text(&waiting.map_or_else(|| d.lan_claims(), |k| d.lan_claims_from(k + 1)))
+            }),
             walker,
             inside_of: self.net.inside_remote,
             radio_keyed,
@@ -70,6 +75,11 @@ impl App {
         for (from, text) in cmds {
             self.lan_command(from, &text);
         }
+        // (NexiconDK: waiting at a stop for the bus taken over: `relief`)
+        if self.net.lan.as_ref().is_some_and(|l| l.role == omsi_net::Role::Client) {
+            self.relief_tick(dt);
+            self.relief_give_tick(dt);
+        }
         self.tick_voice(dt);
     }
 
@@ -77,6 +87,21 @@ impl App {
     pub(crate) fn lan_command(&mut self, from: u32, text: &str) {
         let Some(lan) = self.net.lan.as_ref() else { return };
         let my_id = lan.my_id;
+        // (NexiconDK, Bus Company Online: a relief at a stop - asked of the host, its answers)
+        if let Some(rest) = text.strip_prefix("relief ") {
+            if lan.role == omsi_net::Role::Host {
+                let peers = crate::relief::PeerInfo::of(lan);
+                let replies = crate::relief::host_command(from, text, self.session.schedule.as_mut(), self.session.traffic.as_mut(), self.session.humans.as_ref(), &peers);
+                if let Some(l) = self.net.lan.as_mut() {
+                    for (to, r) in replies {
+                        l.command(to, &r);
+                    }
+                }
+            } else if from == 1 {
+                self.relief_answer(rest);
+            }
+            return;
+        }
         if let Some(ev) = text.strip_prefix("trigger ") {
             // a switch worked by a passenger of ours: only by one who is in our bus
             let walker = lan.peers().find(|p| p.pose.id == from).and_then(|p| p.pose.walker);

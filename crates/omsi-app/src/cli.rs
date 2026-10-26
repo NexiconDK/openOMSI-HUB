@@ -65,6 +65,14 @@ pub(crate) struct Args {
     /// from the game menu, or a placed one taken over at its driver's door (G).
     #[arg(long)]
     pub(crate) on_foot: bool,
+    /// (NexiconDK, Bus Company Online: relief at the stop) In a LAN world, a duty taken over
+    /// from the AI: start on foot at the stop it begins at, without a bus - the AI's bus comes
+    /// there and its driver hands it over (`relief`).
+    #[arg(long)]
+    pub(crate) relief: bool,
+    /// Where the relief waits (x, y, z, heading), as `duty_start::place_on_duty` found it.
+    #[arg(skip)]
+    pub(crate) relief_at: Option<[f64; 4]>,
     /// Control preset: `simple` (W/S/A/D and Up/Down drive, Left/Right switch the interior
     /// camera as in OMSI; the default), `wasd`,
     /// `arrows` (leaves W, S and D to the jobs `Inputs/keyboard.cfg` gives them - wipers,

@@ -746,6 +746,63 @@ each with "Take over this duty" / "Take over from the next trip" (or "Ask to …
 player's own company - the boss's drivers keep theirs. Tested:
 `together::tests::on_the_server_a_player_takes_a_duty_over_from_the_companys_ai_driver`.
 
+### Relief at the stop (26 October 2026)
+
+Decided 26 October 2026: a duty that begins with its bus in service - taken over from the AI from
+its next trip, a duty that begins mid-tour or at a relief on the way, or after another player's -
+starts on foot at its stop, and the bus is handed over there; the AI's bus waits five minutes past
+its departure, then the AI drives that trip and the relief moves to the next one.
+
+- **The launcher** starts such a duty in the map's world with `--relief` (`Duty::relief`: a
+  duty whose first trip is not the tour's first, or that begins at a stop on the way; `join.rs`'s
+  `drive`).
+- **The game** (`omsi-app`'s `relief`): no bus at the start - the player on foot at the stop
+  (`duty_start::relief_stop`, the trip still to be taken over: within `RELIEF_WAIT` of its departure
+  there), the duty on its trip and stop. Every two seconds it asks the world about its bus
+  (`relief want <line>;<tour>;<dep>;<stop>`, a LAN command); while it waits it does not claim that
+  trip (`PlayerDuty::lan_claims_from`: claimed, the world would take the AI's bus off the road),
+  only the trips after it. The trips of the duty before it, gone already, it tells the world once
+  (they are the AI's). No answer within 15 s (a world without a timetable, an older one): his own
+  bus by the stop. The world sends a player on foot its frames around his walker (`lan_world`: no
+  bus of his own).
+- **The world** (`omsi_sim`'s `ScheduleSim::want_relief`, `sim/relief.rs`): while he waits the
+  departure is the AI's although his claim has it - the tour's bus takes the trip on at the
+  terminus rather than driving off, or one is put out for it (no further than his stop when it is
+  late: `relief_place_time`) - and the bus serves his stop whatever else it would do and holds
+  there with its doors open (`bus_service::ReliefHold`) until `RELIEF_WAIT` past its departure; a
+  bus that comes later holds a minute after it came (`RELIEF_ARRIVED_WAIT`), and one that never
+  comes leaves the trip to the AI ten minutes after (`RELIEF_NO_BUS`). A relief not asked for again
+  in `RELIEF_STALE` is let go. A night trip is the one nearest the clock (tonight's 24:30, not the
+  morning's 0:30). A question still on its way when the bus was handed over is answered "taken".
+- **Taken over**: walked up to the bus (16 m), his game asks for it (`relief take`); the world
+  takes the bus off its roads (`take_relief`) and answers with where it stood, its fleet number and
+  its passengers (`relief bus …`). His game puts his own bus there (the duty's bus, or the one the
+  world described: a spare bus), with as many passengers, running; its driver (an avatar of the
+  people's animation) gets up and walks out of the front door and away; then G at the front door
+  takes the wheel (before that: "Wait: the driver gets out first"). The passengers stay in while he
+  walks up to the door.
+- **Not there in time**: the AI drives that trip (`relief_kept`), his game waits for the bus at the
+  start of his next trip ("ride along": G at a door of the AI's bus takes a seat in it), and the
+  world writes it for his company (`company_server::relief_kept`, a `WorldTrip` with `kept`): his
+  company books the trip as the AI's part of his duty (`book::ai_kept`, `LeftWhy::Begun` - he did
+  not leave it).
+- **From another player** (`ReliefState::FromPlayer`): when another player's claim has the trip
+  before (a relief at the trip's first stop) or the trip itself (a relief on the way), it is his
+  bus to hand over. The world
+  tells him (`relief give`): at the stop his game says "… waits here to take your bus over: stop,
+  get up and get out"; out of the bus, standing within 60 m of the waiting player, his game gives
+  it on (`relief gave`, `gave_relief`; given again - an answer lost -, answered the same) and,
+  told so (`relief given`), lets it go and stays on foot; the waiting player's game puts the bus
+  down where it stood (no driver to get out). A player whose duty goes on after it, on another
+  tour, has no bus of his own after it (not handled yet). The giver not there within five minutes of the
+  departure, or gone from the session: the AI brings a bus to the stop.
+- **A world without the trip** (`relief unknown`): his own bus on the road by the stop.
+
+Tested: `omsi_sim`'s `ai_traffic::service_tests::a_bus_holds_at_the_stop_its_relief_waits_at`,
+`timetable_run::sim::relief::tests::a_lan_player_takes_the_ais_bus_over_at_his_stop`,
+`together::tests::a_trip_the_ai_drove_while_he_was_not_at_his_stop_is_the_ais`,
+`relief::tests::the_same_vehicle_file_however_written`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

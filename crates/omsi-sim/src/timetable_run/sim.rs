@@ -11,6 +11,8 @@ mod company;
 mod dispatch;
 mod load;
 mod place;
+// NexiconDK, Bus Company Online: relief at the stop
+mod relief;
 mod route;
 mod take_on;
 mod tours;
@@ -32,6 +34,7 @@ pub use choice::{depot_file, pool_depot};
 pub use company::{CompanyBus, TimetableCompany};
 pub use dispatch::{tour_entry, TOUR_ENTRY_LANES};
 pub use place::Placing;
+pub use relief::{Kept as ReliefKept, ReliefState, RELIEF_ARRIVED_WAIT, RELIEF_KEPT, RELIEF_NOBODY, RELIEF_NOT_HERE, RELIEF_NOT_WAITING, RELIEF_NO_BUS, RELIEF_NO_TRIP, RELIEF_STALE, RELIEF_WAIT};
 pub use web_map::{build_web_map, LiveBus, WebCall, WebMap, WebTimetable, WebTrip};
 
 /// What the timetable needs of the loaded map: its folders, the AI lists, the tiles, the
@@ -264,6 +267,18 @@ pub struct ScheduleSim {
     /// The departures whose bus runs out of service to the terminus already
     /// (`TimetableCompany::express`).
     expressed: HashSet<usize>,
+    /// (NexiconDK, Bus Company Online: relief at the stop) The departures a LAN player waits on
+    /// foot to take over from the AI's bus at a stop of their trip (`relief`): the AI drives
+    /// them up to there, and holds - and those the AI drove after all, he was not there in
+    /// time (until the day changes).
+    reliefs: HashMap<usize, relief::Relief>,
+    relief_kept: HashSet<usize>,
+    /// The reliefs the AI drove after all since they were last taken (`take_kept_reliefs`).
+    kept_log: Vec<relief::Kept>,
+    /// The departures handed over to a LAN player (his id), and those another player gave on
+    /// (giver, taker): asked again, answered the same.
+    relief_taken: HashMap<usize, u32>,
+    relief_given: HashMap<usize, (u32, u32)>,
     /// Mixed into the draw of a tour's vehicle, so that a tour gets another of its depot's
     /// buses from session to session, as in OMSI (the session's seed; a LAN game's shared
     /// one, `set_lan_seed`). Hashing the tour alone sent the same bus out on it every time

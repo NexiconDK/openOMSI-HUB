@@ -528,6 +528,9 @@ impl App {
 
     /// Esc → Back to my bus: wherever the walker has got to, back at the wheel.
     pub(crate) fn back_to_bus(&mut self) {
+        if self.relief_wait_for_driver() {
+            return;
+        }
         if self.session.on_foot.is_some() && self.player.is_some() {
             self.sit_at_the_wheel();
             self.service_msg = Some(("Back at the wheel".into(), 3.0));
@@ -602,6 +605,10 @@ impl App {
         // inside a bus: the wheel of the own bus by the driver's place, else the free seat
         // nearest by
         if let Some((bus, _)) = f.inside {
+            if bus == BusId::Player && self.relief_driver_aboard() {
+                self.relief_wait_for_driver();
+                return;
+            }
             if bus == BusId::Player {
                 let stand = self.player.as_ref().and_then(|p| self.session.humans.as_mut().and_then(|h| h.driver_stand(&p.vehicle).and_then(|l| h.vehicle_cabin_world(&p.vehicle, l))));
                 if stand.map(|s| (s - pos).truncate().length() < 2.5).unwrap_or(true) {
@@ -647,7 +654,10 @@ impl App {
         if omsi_cfg::flags::OMSI_DEBUG_FOOT.is_set() { log::info!("on foot at ({:.1}, {:.1}): G - own bus doors {:?}, a seat near: {:?}", pos.x, pos.y, h.bus_doors(BusId::Player).iter().map(|d| ((d.x * 10.0).round() / 10.0, (d.y * 10.0).round() / 10.0)).collect::<Vec<_>>(), h.seat_near(pos, DOOR_REACH, None).map(|s| (s.bus, s.seat))); }
         if let Some(d) = own_front {
             if (d - pos).truncate().length() < DOOR_REACH {
-                self.walk_to_wheel();
+                // (a bus taken over at a stop: its driver gets out first - `relief`)
+                if !self.relief_wait_for_driver() {
+                    self.walk_to_wheel();
+                }
                 return;
             }
         }
@@ -659,7 +669,9 @@ impl App {
             h.driver_stand(v).and_then(|l| h.vehicle_cabin_world(v, l))
         });
         if cab.map(|c| (c - pos).truncate().length() < 3.8).unwrap_or(false) {
-            self.walk_to_wheel();
+            if !self.relief_wait_for_driver() {
+                self.walk_to_wheel();
+            }
             return;
         }
         // Another bus is got into through one of its open doors, on foot (G at an open door

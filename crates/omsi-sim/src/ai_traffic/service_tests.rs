@@ -373,3 +373,32 @@ fn a_holder_kept_short_of_its_point_serves_from_there_after_a_long_wait() {
 }
 
 const SERVE_HERE_LONG_TEST: f32 = 2.5;
+
+/// (NexiconDK, Bus Company Online: relief at the stop) A bus a LAN player takes over at a stop of
+/// its trip serves that stop - run out of service with nobody wanting it, too - and holds there
+/// with its doors open past its departure, until the hold's time: then it drives on as the AI's.
+#[test]
+fn a_bus_holds_at_the_stop_its_relief_waits_at() {
+    let f = Fixture::new();
+    let mut t = road(&f);
+    let now = t.day_time;
+    let stops = vec![Stop { ri: 0, s: STOP_S, bay: 0.0, depart: now + 10.0, id: STOP_ID, side: 0.0 }, Stop { ri: 0, s: 1200.0, bay: 0.0, depart: now + 200.0, id: 78, side: 0.0 }];
+    let setup = BusSetup { route: vec![0], stops, number: None, hof: None, timetable: AiTimetable { line: String::new(), terminus: String::new(), stops: Vec::new() } };
+    let vehicle = VehicleInstance::new(f.ty.clone(), crate::VehicleHost::new(crate::SimClock::default()));
+    let id = t.place_car(vehicle, LaneKind::Street, 0, 220.0, f.ty.clone(), 0x101, None, Some(1), Some(8.0), Some(setup));
+    {
+        let b = t.cars.iter_mut().find(|c| c.id == id).unwrap().bus.as_mut().unwrap();
+        b.express = true;
+        b.relief = Some(super::bus_service::ReliefHold { stop: STOP_ID, depart: now + 10.0, until: now + 60.0 });
+    }
+    let mut open_at = Vec::new();
+    run(&mut t, &[id], 90.0, |t, time| {
+        if t.cars.iter().any(|c| c.id == id && c.at_station()) {
+            open_at.push(time);
+        }
+    });
+    let (first, last) = (open_at.first().copied().unwrap_or(-1.0), open_at.last().copied().unwrap_or(-1.0));
+    assert!(first >= 0.0 && first < 20.0, "it served the relief's stop (doors open from {first:.1} s)");
+    assert!(last > 50.0 && last < 65.0, "and held there with its doors open until the hold's time ({last:.1} s)");
+    assert!(car(&t, id).state.s > STOP_S + 10.0, "then it drove on");
+}

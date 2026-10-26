@@ -150,6 +150,10 @@ pub struct WorldTrip {
     pub trip: crate::TripRun,
     /// When the world took it (Unix seconds).
     pub at: u64,
+    /// (NexiconDK, relief at the stop) Not his trip but the AI's: he was not at his stop in time
+    /// to take the bus over, and the AI drove this trip of his duty (`book::ai_kept`).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub kept: bool,
 }
 
 /// The company's trips taken by a map's world (`WorldTrip`), a JSON line each.

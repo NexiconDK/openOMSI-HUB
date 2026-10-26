@@ -95,6 +95,8 @@ pub(crate) struct PeoplePart<'p> {
     pub(crate) humans: &'p mut Option<humans::Humans>,
     pub(crate) humans_populate_t: &'p mut f32,
     pub(crate) on_foot: &'p mut Option<crate::on_foot::OnFoot>,
+    pub(crate) relief: &'p mut Option<crate::relief::Relief>,
+    pub(crate) relief_give: &'p mut Option<crate::relief::Give>,
 }
 
 /// `Group::Duty`: the duty, the career, the journey.
@@ -175,7 +177,7 @@ impl App {
         let SessionState {
             placed, world_day, traffic, schedule, timetable_book, humans, duty, duty_places, duty_closed, rain,
             cabin_air, spray, lamps_on, populate_t, humans_populate_t, traffic_heavy_frame,
-            first_populate, envir, weather, clock_jump, seat_bus, on_foot, safe_pose, safe_age,
+            first_populate, envir, weather, clock_jump, seat_bus, on_foot, relief, relief_give, safe_pose, safe_age,
             pending_time, autosave_t, pumping, career, journey, wetness, cloud_drift, weather_blend,
             weather_cycle, metar_rx, metar_once, metar_next, sky, scenery, lightning,
         } = session;
@@ -191,7 +193,7 @@ impl App {
             world: WorldPart { world, scenery },
             traffic: TrafficPart { traffic, schedule, timetable_book, populate_t, traffic_heavy_frame, first_populate, pipeline },
             player: PlayerPart { player, placed, seat_bus, safe_pose, safe_age, pumping },
-            people: PeoplePart { humans, humans_populate_t, on_foot },
+            people: PeoplePart { humans, humans_populate_t, on_foot, relief, relief_give },
             duty: DutyPart { duty, duty_places, duty_closed, career, journey },
             net,
             integrations,

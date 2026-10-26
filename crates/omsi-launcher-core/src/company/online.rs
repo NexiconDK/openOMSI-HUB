@@ -885,7 +885,7 @@ mod tests {
         let data = temp("pay");
         let t = crate::TripRun { line: "Linie5".into(), tour: "3".into(), departure: 8.0 * 3600.0, ..Default::default() };
         assert_eq!(store::world_trips_from(&data, "co", 0), (Vec::new(), 0));
-        let w = store::WorldTrip { name: "Jonas".into(), trip: t.clone(), at: 5 };
+        let w = store::WorldTrip { name: "Jonas".into(), trip: t.clone(), at: 5, kept: false };
         store::append_world_trip(&data, "co", &w).unwrap();
         let (got, to) = store::world_trips_from(&data, "co", 0);
         assert_eq!((got, to > 0), (vec![w.clone()], true));

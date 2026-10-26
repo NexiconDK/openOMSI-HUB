@@ -116,7 +116,7 @@ impl ScheduleSim {
 
     /// Departure `i`'s minute of the day as the company's plan has it (a night trip of
     /// yesterday's tour past 1440).
-    fn company_minute(&self, i: usize) -> i32 {
+    pub(super) fn company_minute(&self, i: usize) -> i32 {
         let d = &self.departures[i];
         (d.time / 60.0).round() as i32 + if d.yesterday { 1440 } else { 0 }
     }

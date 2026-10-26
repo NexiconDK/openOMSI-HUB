@@ -21,6 +21,9 @@ impl ScheduleSim {
         if self.kept_off(i) {
             return Err(Placed::Drop);
         }
+        // (NexiconDK: one a LAN player waits to take over at a stop of it, late, is put out no
+        // further than his stop - `relief`)
+        let day_time = self.relief_place_time(i, day_time);
         let on_route = self.locate_departure(i, world, traffic, day_time, onto)?;
         Ok(Self::route_section(world, traffic, on_route))
     }

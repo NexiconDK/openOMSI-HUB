@@ -879,6 +879,27 @@ pub fn take_back(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, 
     Ok(back)
 }
 
+/// (NexiconDK, Bus Company Online: relief at the stop) Player `guest` was not at his stop in time
+/// to take the bus of his duty `r` over at its trip leaving at `dep` (minutes of the day): the AI
+/// drove that trip (the map's world says so: `store::WorldTrip::kept`). It is the AI's part of
+/// the duty, up to his next trip - the part it drove until he takes over goes on to there, or one
+/// begins (`LeftWhy::Begun`: he did not leave it). The trip's place in the duty.
+pub fn ai_kept(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, dep: i32, now_unix: u64, minute: i32) -> Result<usize, &'static str> {
+    let x = c.together.claim_of(r).filter(|x| x.guest == guest && x.state != ClaimState::Asked).ok_or(NOT_YOURS)?;
+    let trips = trips_now(c, p, r);
+    let i = trips.iter().position(|t| reportable(t) && (t.whole_dep() - dep).abs() <= 1).ok_or(NO_DUTY)?;
+    if x.ai_drives(i) {
+        return Ok(i);
+    }
+    let next = trips.iter().enumerate().skip(i + 1).find(|(_, t)| reportable(t)).map(|(k, _)| k);
+    let Some(claim) = c.together.claim_mut(r) else { return Err(NOT_YOURS) };
+    match claim.ai.last_mut() {
+        Some(a) if a.until == Some(i) => a.until = next,
+        _ => claim.ai.push(AiPart { from: i, until: next, why: LeftWhy::Begun, at: now_unix, minute, dropped: false }),
+    }
+    Ok(i)
+}
+
 /// The next trip of duty `r` the AI would hand back at (`take_back`), if it drives the duty now
 /// and a trip of it is still to begin on the company's clock (`now`).
 pub fn back_at(c: &Company, p: Option<&DayPlan>, r: &DutyRef, now: i64) -> Option<usize> {

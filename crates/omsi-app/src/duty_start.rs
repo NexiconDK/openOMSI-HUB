@@ -54,6 +54,24 @@ pub(crate) fn mid_start(args: &Args) -> Option<usize> {
     args.duty_legs.first().and_then(|l| omsi_launcher_lib::compose::Block::parse_between(l)).and_then(|x| x.1).filter(|s| *s > 0)
 }
 
+/// (NexiconDK, relief at the stop) Where a relief waits on foot (`--relief`): the trip of the
+/// duty whose bus he can still take over at its stop (`omsi_sim`'s `RELIEF_WAIT` after it leaves
+/// there; the first one's stop may be on the way, `from_stop`), the stop, its place and the way
+/// the trip goes from there (degrees). None: the place of the stop is not known.
+pub(crate) fn relief_stop(d: &schedule::PlayerDuty, from_stop: Option<usize>, now: f64) -> Option<(usize, usize, DVec3, f64)> {
+    let wait = omsi_sim::timetable_run::RELIEF_WAIT;
+    let k = (0..d.trips.len()).find(|&k| {
+        let s = if k == 0 { from_stop.unwrap_or(0) } else { 0 };
+        d.trips[k].stops.get(s).is_some_and(|st| st.dep + wait >= now)
+    })?;
+    let stop = if k == 0 { from_stop.unwrap_or(0) } else { 0 };
+    let stops = &d.trips[k].stops;
+    let at = stops.get(stop)?.position?;
+    let next = stops.iter().skip(stop + 1).find_map(|s| s.position);
+    let heading = next.map(|n| (n.x - at.x).atan2(n.y - at.y).to_degrees()).unwrap_or(0.0);
+    Some((k, stop, at, heading))
+}
+
 /// The duty begun where `place_on_duty` put the bus (`args.duty_trip`, `duty_first_stop`). One
 /// that begins on the way (`mid_start`) begins at its relief stop or after it, wherever the bus
 /// stands (`PlayerDuty::start_at_here`): looking where the bus is put it back at the trip's
@@ -103,6 +121,24 @@ pub(crate) fn place_on_duty(args: &mut Args) {
     let from_stop = mid_start(args);
     let map = world.navigation_map();
     duty.learn_places(&map.places);
+    // (NexiconDK, Bus Company Online: relief at the stop) a duty taken over from the AI in a LAN
+    // world: on foot at the stop it begins at, not a bus at an entry point - the AI's bus comes
+    // there (`relief`)
+    if args.relief && args.lan_join.is_some() {
+        match relief_stop(&duty, from_stop, now) {
+            Some((k, stop, at, heading)) => {
+                log::info!("duty start: relief at stop {stop} '{}' of trip {} ({} at {}), on foot at ({:.1}, {:.1})", duty.trips[k].stops[stop].name.trim(), k + 1, duty.trips[k].name, schedule::hhmm(duty.trips[k].stops[stop].dep), at.x, at.y);
+                args.duty_trip = Some(k);
+                args.duty_first_stop = stop;
+                args.relief_at = Some([at.x, at.y, at.z, heading]);
+                // (on foot at the stop, not beside a bus left out)
+                args.on_foot = false;
+                args.spawn = Some(format!("{},{},{}", at.x, at.y, heading));
+                return;
+            }
+            None => log::info!("duty start: relief: the place of its stop is not known; the bus starts at an entry point"),
+        }
+    }
     let mut net = omsi_sim::traffic::Network { lanes: map.lanes, ..Default::default() };
     net.link(1.5);
     // the entry points and where they stand (heading from the object)
