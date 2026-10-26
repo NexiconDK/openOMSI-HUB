@@ -604,24 +604,32 @@ impl MainServer {
     /// three in the night, its own (to two: as the clocks do), the companies waiting that hour
     /// out and the worlds taking the clock in again. Whether it was set. `real`: Unix seconds.
     pub fn keep_danish_time(&mut self, real: i64) -> bool {
+        self.set_danish_time(real, false).is_some()
+    }
+
+    /// The server's clock set to Danish time at `real` (Unix seconds): on at once when it is
+    /// behind, back only in the night (its own 03:00-04:00) - or at once, `now` (the console's
+    /// `clock danish`). The minutes it moved (negative: back); None: it did not.
+    pub fn set_danish_time(&mut self, real: i64, now: bool) -> Option<i64> {
         if !self.cfg.real_time {
-            return false;
+            return None;
         }
         let (date, secs) = online::danish(real);
-        let Some(want) = ServerClock::starting(&date, secs, real) else { return false };
+        let want = ServerClock::starting(&date, secs, real)?;
         let off = want.minute(real) - self.clock.minute(real);
         let (_, own) = self.clock.at_real(real as f64);
         let night = (3 * 3600..4 * 3600).contains(&(own as i64));
-        if !(off >= 1 || (off <= -30 && night)) {
-            return false;
+        let due = if now { off != 0 } else { off >= 1 || (off <= -30 && night) };
+        if !due {
+            return None;
         }
         if let Err(e) = online::set_server_clock(&self.data, &want) {
             warn!("the server's clock not set to Danish time: {e:#}");
-            return false;
+            return None;
         }
         info!("the server's clock {} to Danish time: {date} {}", if off > 0 { "on" } else { "back" }, hhmmss(secs as f64));
         self.clock = want;
-        true
+        Some(off)
     }
 
     pub fn markets(&mut self) {
@@ -991,6 +999,8 @@ role <company>; <player>; <role>
 owner <company>; <player>      make a player of the server a company's owner (every permission)
 players                       the players who logged in, with their money
 money <player>; <amount>      set a player's money (+500 or -500: add or take)
+clock [danish]                the server's clock and Danish time; danish: set to Danish time now
+                              (ahead, the companies wait the difference out and the worlds run it again)
 grant <player>; <what>        what founding a company asks, given: trips <n>, course, test <class>
                               (midi, solo, articulated, double)
 quit                          stop the worlds, save every company and end";
@@ -1105,6 +1115,24 @@ pub fn command(m: &mut MainServer, line: &str) -> Option<String> {
             }
             None => "money <player>; <amount>".to_string(),
         },
+        // (decided 26 October 2026: Danish time at once, not only in the night)
+        "clock" => {
+            let real = unix_now();
+            let (date, secs) = m.clock.at_real(real as f64);
+            let (dk_date, dk_secs) = online::danish(real);
+            let mut said = format!("server's clock: {date} {} - Danish time: {dk_date} {}", hhmmss(secs), hhmmss(dk_secs as f64));
+            if rest.eq_ignore_ascii_case("danish") {
+                said = match m.set_danish_time(real, true) {
+                    Some(off) if off < 0 => format!("server's clock set back {} min to Danish time: {dk_date} {} - the companies wait it out, the worlds run it again", -off, hhmmss(dk_secs as f64)),
+                    Some(off) => format!("server's clock set on {off} min to Danish time: {dk_date} {}", hhmmss(dk_secs as f64)),
+                    None if !m.cfg.real_time => "the server's clock does not run on the real time (real_time = 0 in company-server.cfg)".to_string(),
+                    None => format!("{said}: in step already"),
+                };
+            } else if !rest.is_empty() {
+                said = "clock [danish]".to_string();
+            }
+            said
+        }
         // (phase 6: what founding asks, given by the server's owner)
         "grant" => match rest.split_once(';') {
             Some((who, what)) => {
@@ -1395,6 +1423,13 @@ game = {}
         // (behind: on at once)
         m.clock = ServerClock::starting("2026-10-26", 3600, night).unwrap();
         assert!(m.keep_danish_time(night));
+        // (the console's `clock danish`: back at once, in the evening too)
+        m.clock = ServerClock::starting("2026-10-25", 23 * 3600 + 15 * 60, evening).unwrap();
+        assert_eq!(m.set_danish_time(evening, true), Some(-60));
+        assert_eq!(m.clock.at_real(evening as f64), ("2026-10-25".to_string(), (22 * 3600 + 15 * 60) as f64));
+        assert_eq!(m.set_danish_time(evening, true), None, "in step");
+        assert!(command(&mut m, "clock").is_some_and(|t| t.starts_with("server's clock: ")));
+        assert!(command(&mut m, "clock danish").is_some_and(|t| t.contains("in step already")));
         let _ = std::fs::remove_dir_all(&dir);
     }
 

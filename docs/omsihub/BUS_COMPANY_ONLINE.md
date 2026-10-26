@@ -714,6 +714,12 @@ either (`server_depots::day_closed`):
 
 Tested: `server_depots::tests::a_head_office_in_the_red_gets_an_emergency_loan_then_goes_bankrupt`.
 
+### The console's clock (26 October 2026)
+
+`clock` shows the server's clock and Danish time; `clock danish` sets the clock to Danish time at
+once (`MainServer::set_danish_time`), not only in the night - ahead, the companies wait the
+difference out and the worlds run it again. Tested: `main_server::tests::the_server_keeps_danish_time`.
+
 ### Step 5: the players' guide
 
 Decided 26 October 2026: both in the launcher and as a document to share.
