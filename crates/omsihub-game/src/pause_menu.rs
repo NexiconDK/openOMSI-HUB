@@ -32,8 +32,8 @@ use omsi_sim::timetable_run::PlayerDuty;
 
 /// The order of the panel's lines (by the game menu's ids): Resume, the trip, saving, the
 /// settings, multiplayer, the way out.
-const ORDER: [&str; 20] = [
-    "resume", "tobus", "duty", "driveon", "skipstop", "map", "endduty", "save", "saveslot", "load", "options", "controls", "camera", "vehicle", "world", "photo", "shot", "copycode", "admin", "quit",
+const ORDER: [&str; 21] = [
+    "resume", "tobus", "duty", "driveon", "handover", "skipstop", "map", "endduty", "save", "saveslot", "load", "options", "controls", "camera", "vehicle", "world", "photo", "shot", "copycode", "admin", "quit",
 ];
 
 /// The game menu's lines in the panel's order (a line it does not know goes before the way
@@ -47,7 +47,7 @@ pub fn arrange(lines: &mut [(&'static str, &'static str)]) {
 /// places of their own).
 pub fn section(id: &str) -> Option<&'static str> {
     Some(match id {
-        "tobus" | "duty" | "driveon" | "skipstop" | "map" | "endduty" => "This trip",
+        "tobus" | "duty" | "driveon" | "handover" | "skipstop" | "map" | "endduty" => "This trip",
         "save" | "saveslot" | "load" => "Save",
         "copycode" | "admin" => "Multiplayer",
         "resume" | "quit" => return None,
@@ -62,6 +62,7 @@ fn icon(id: &str) -> &'static str {
         "tobus" => "directions_walk",
         "duty" => "route",
         "driveon" => "alt_route",
+        "handover" => "exit_to_app",
         "skipstop" => "near_me",
         "map" => "map",
         "endduty" => "flag",

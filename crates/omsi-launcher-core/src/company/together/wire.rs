@@ -157,6 +157,10 @@ pub struct SnapDuty {
     /// begun (`book::LeftWhy::Begun`) - he takes it over at its next trip, he did not leave it.
     /// (`Company` with `take_over`: it has begun, taken over at its next trip.)
     pub begun: bool,
+    /// (NexiconDK, Bus Company Online, 28 October 2026) Its player handed his bus over to the AI on
+    /// the way (`book::LeftWhy::HandedOver`): the AI drives the rest, he did not leave it.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub handed: bool,
     /// (NexiconDK, Bus Company Online) `Company`: the company's AI driver (`who`) drives it on the
     /// server, and a player may take it over (`book::takes_over`) - from its start, or from its
     /// next trip when it has `begun`.

@@ -155,6 +155,20 @@ _version: 2
   pl: "SI (%{name} wyszedł)"
   ru: "ИИ (%{name} ушёл)"
   uk: "ШІ (%{name} пішов)"
+"You handed it to the AI: it drives the rest, you are free":
+  de: "Du hast ihn der KI übergeben: Sie fährt den Rest, du bist frei"
+  fr: "Vous l'avez remis à l'IA : elle conduit le reste, vous êtes libre"
+  nl: "Je hebt hem aan de AI overgedragen: die rijdt de rest, je bent vrij"
+  pl: "Przekazałeś ją SI: resztę prowadzi SI, jesteś wolny"
+  ru: "Вы передали её ИИ: остаток ведёт ИИ, вы свободны"
+  uk: "Ви передали її ШІ: решту веде ШІ, ви вільні"
+"AI (%{name} handed over)":
+  de: "KI (%{name} übergeben)"
+  fr: "IA (%{name} a remis)"
+  nl: "AI (%{name} overgedragen)"
+  pl: "SI (%{name} przekazał)"
+  ru: "ИИ (%{name} передал)"
+  uk: "ШІ (%{name} передав)"
 "You left it: the AI drives it":
   de: "Du hast ihn verlassen: Die KI fährt ihn"
   fr: "Vous l'avez quitté : l'IA le conduit"

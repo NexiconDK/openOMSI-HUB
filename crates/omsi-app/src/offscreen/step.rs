@@ -220,6 +220,12 @@ impl Offscreen<'_> {
                             crate::company_server::relief_kept(&args.map, &name, &k.line, &k.tour, k.departure);
                         }
                     }
+                    // (28 October 2026: the duties players handed over to the AI on the way)
+                    for h in schedule.as_mut().map(|s| s.sim.take_handed()).unwrap_or_default() {
+                        if let Some(name) = l.peers().find(|p| p.pose.id == h.peer).map(|p| p.pose.name.clone()) {
+                            crate::company_server::handed_over(&args.map, &name, &h.line, &h.tour, h.departure, h.done);
+                        }
+                    }
                     // (phase 5: the buses on its roads for the companies' control rooms)
                     crate::company_server::publish_live(&args.map, schedule.as_ref(), traffic.as_ref(), humans_off.as_ref(), l.peers().filter(|p| p.has_pose).map(|p| &p.pose));
                 }

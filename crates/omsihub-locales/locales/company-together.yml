@@ -289,6 +289,13 @@ _version: 2
   pl: "Szukam launchera szefa…"
   ru: "Ищем лаунчер босса…"
   uk: "Шукаємо лаунчер боса…"
+"The duty before is not finished with the boss's launcher yet: try again in a moment.":
+  de: "Der vorige Dienst ist beim Launcher des Chefs noch nicht abgeschlossen: versuch es gleich noch einmal."
+  fr: "Le service précédent n'est pas encore clos chez le launcher du patron : réessayez dans un instant."
+  nl: "De vorige dienst is bij de launcher van de baas nog niet afgerond: probeer het zo nog eens."
+  pl: "Poprzednia służba nie jest jeszcze zamknięta w launcherze szefa: spróbuj za chwilę."
+  ru: "Предыдущая смена ещё не закрыта в лаунчере начальника: попробуйте через минуту."
+  uk: "Попередню зміну ще не закрито в лаунчері начальника: спробуйте за хвилину."
 "A game is running: close it, then drive the duty.":
   de: "Ein Spiel läuft: schließe es, dann fahre den Dienst."
   fr: "Un jeu est en cours : fermez-le, puis conduisez le service."

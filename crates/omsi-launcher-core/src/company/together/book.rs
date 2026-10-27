@@ -225,6 +225,10 @@ pub enum LeftWhy {
     /// (NexiconDK, Bus Company Online) Given to him or taken by him after it began: the map's
     /// world drove it until then, and the AI drives it until he takes it over at its next trip.
     Begun,
+    /// (NexiconDK, Bus Company Online, 28 October 2026) He handed his bus over to the AI at a stop
+    /// on the way (his game's "Hand the bus over here", the map's world says so: `handed_over`):
+    /// the AI drives the rest, and he did not leave it - he is free for another duty.
+    HandedOver,
 }
 
 /// A part of a player's duty the AI drives: its trips from `from` (an index into the duty's
@@ -410,9 +414,9 @@ pub fn guest_name(c: &Company, no: u32) -> String {
 }
 
 /// The AI drives a duty of player `no` of the company's day now: he left it (the pages say "AI
-/// (his name left)" for him).
+/// (his name left)" for him) - not one he handed over on the way (28 October 2026).
 pub fn guest_left(c: &Company, no: u32) -> bool {
-    c.together.claims.iter().any(|x| x.guest == no && x.duty.date == c.date && x.ai_now().is_some())
+    c.together.claims.iter().any(|x| x.guest == no && x.duty.date == c.date && x.ai_now().is_some_and(|a| a.why != LeftWhy::HandedOver))
 }
 
 /// The tour and duty `r` names in `p`, with the tour.
@@ -467,10 +471,22 @@ fn span_of(p: &DayPlan, r: &DutyRef, part: Option<(usize, usize)>) -> Option<(i3
     }
 }
 
+/// The minutes of the day `p` claim `x` keeps its player busy (`span_of`): not the rest the AI
+/// drives that he left or handed over (28 October 2026: he is free for another duty then) - but
+/// all of one the AI drives until he takes it over (`LeftWhy::Begun`).
+fn busy_span(p: &DayPlan, x: &Claim) -> Option<(i32, i32)> {
+    let (from, to) = span_of(p, &x.duty, x.part)?;
+    let Some(a) = x.ai_now().filter(|a| a.why != LeftWhy::Begun) else { return Some((from, to)) };
+    let (i, k) = x.duty.find(p)?;
+    let (t, d) = (&p.tours[i], &p.tours[i].duties[k]);
+    let Some(ai) = t.tour.trips[d.start..d.end].get(a.from) else { return Some((from, to)) };
+    (ai.dep > from).then_some((from, ai.dep.min(to)))
+}
+
 /// The player's other duties (and single trips) of the day lie over `r` (its `part`).
 fn overlapping(c: &Company, p: &DayPlan, r: &DutyRef, part: Option<(usize, usize)>, guest: u32) -> bool {
     let Some((from, to)) = span_of(p, r, part) else { return false };
-    c.together.claims.iter().filter(|x| x.guest == guest && !same_duty(&x.duty, r) && x.duty.date == r.date).any(|x| span_of(p, &x.duty, x.part).is_some_and(|(a, b)| a < to && from < b))
+    c.together.claims.iter().filter(|x| x.guest == guest && !same_duty(&x.duty, r) && x.duty.date == r.date).any(|x| busy_span(p, x).is_some_and(|(a, b)| a < to && from < b))
 }
 
 /// The bus file of a tour of the plan (empty: none of the fleet).
@@ -1241,6 +1257,11 @@ pub fn take_back(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, 
     let a = x.ai_now().ok_or(NO_AI)?.clone();
     let trips = trips_now(c, p, r);
     let back = (a.from..trips.len()).find(|&i| reportable(&trips[i]) && clock::moment(&r.date, trips[i].dep as i64) >= now).ok_or(AI_DONE)?;
+    // (28 October 2026: free since he left it or handed it over - not when he took another duty
+    // for that time meanwhile)
+    if a.why != LeftWhy::Begun && p.filter(|p| p.date == r.date).is_some_and(|p| overlapping(c, p, r, Some((back, trips.len())), guest)) {
+        return Err(OVERLAP);
+    }
     // (the AI drove none of it yet: as if it never had it - nor did he leave it)
     if back == a.from {
         not_left(c, r, guest);
@@ -1295,6 +1316,57 @@ pub fn ai_kept(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, de
         _ => claim.ai.push(AiPart { from: i, until: next, why: LeftWhy::Begun, at: now_unix, minute, dropped: false }),
     }
     Ok(i)
+}
+
+/// (NexiconDK, Bus Company Online, 28 October 2026) Player `guest` handed his bus over to the AI
+/// at a stop on the way through his duty `r` (the map's world says so: `store::WorldTrip::handed`):
+/// on his trip leaving at `dep` (minutes of the day), at its terminus (`done`) or at a stop along
+/// it. The AI drives the rest of the duty from the trip after it, or that trip itself - and he did
+/// not leave it (`LeftWhy::HandedOver`: not in his figures; counted already, when his launcher said
+/// his game ended before the world did, no longer). A single trip he took: what he did not drive
+/// of it is its driver's again (nothing of it: the company's). Where the AI drives on from (an
+/// index into its trips; None: he drove all of it).
+#[allow(clippy::too_many_arguments)]
+pub fn handed_over(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, dep: i32, done: bool, now_unix: u64, minute: i32) -> Result<Option<usize>, &'static str> {
+    let trips = trips_now(c, p, r);
+    let i = trips.iter().position(|t| reportable(t) && (t.whole_dep() - dep).abs() <= 1).ok_or(NO_DUTY)?;
+    let k = c.together.claims.iter().position(|x| x.guest == guest && same_duty(&x.duty, r) && x.state != ClaimState::Asked && x.his(i)).ok_or(NOT_YOURS)?;
+    let from = if done { (i + 1..trips.len()).find(|&j| reportable(&trips[j])) } else { Some(i) };
+    // (counted as left before the world said so: not left)
+    let x = &mut c.together.claims[k];
+    let counted = std::mem::take(&mut x.left) || x.ai_now().is_some_and(|a| a.why.his());
+    if counted {
+        if let Some(g) = c.together.guest_mut(guest) {
+            g.stats.left = g.stats.left.saturating_sub(1);
+        }
+    }
+    let x = &mut c.together.claims[k];
+    if let Some((a, b)) = x.part {
+        match from.filter(|&f| f < b) {
+            Some(f) if f <= a => {
+                c.together.claims.remove(k);
+            }
+            Some(f) => {
+                x.part = Some((a, f));
+                x.state = ClaimState::Done;
+            }
+            None => x.state = ClaimState::Done,
+        }
+        return Ok(from);
+    }
+    let Some(from) = from else {
+        x.state = ClaimState::Done;
+        return Ok(None);
+    };
+    match x.ai.last_mut().filter(|a| a.until.is_none()) {
+        Some(a) => {
+            a.from = from;
+            a.why = LeftWhy::HandedOver;
+            a.dropped = false;
+        }
+        None => x.ai.push(AiPart { from, until: None, why: LeftWhy::HandedOver, at: now_unix, minute, dropped: false }),
+    }
+    Ok(Some(from))
 }
 
 /// The next trip of duty `r` the AI would hand back at (`take_back`), if it drives the duty now

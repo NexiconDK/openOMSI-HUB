@@ -817,9 +817,11 @@ its departure, then the AI drives that trip and the relief moves to the next one
   takes the bus off its roads (`take_relief`) and answers with where it stood, its fleet number and
   its passengers (`relief bus …`). His game puts his own bus there (the duty's bus, or the one the
   world described: a spare bus), with as many passengers, running; its driver (an avatar of the
-  people's animation) gets up and walks out of the front door and away; then G at the front door
-  takes the wheel (before that: "Wait: the driver gets out first"). The passengers stay in while he
-  walks up to the door.
+  people's animation) gets up and walks out of the front door and a few steps away; then G at the
+  front door takes the wheel (before that: "Wait: the driver gets out first"). The passengers stay
+  in while he walks up to the door. (28 October 2026, asked by NexiconDK) The driver then stands
+  there, turned to the bus, until it has driven off (25 m) - or for half an hour -, and goes once
+  out of sight, or once it is 250 m off (`relief::Stander`).
 - **Not there in time**: the AI drives that trip (`relief_kept`), his game waits for the bus at the
   start of his next trip ("ride along": G at a door of the AI's bus takes a seat in it), and the
   world writes it for his company (`company_server::relief_kept`, a `WorldTrip` with `kept`): his
@@ -854,12 +856,44 @@ its departure, then the AI drives that trip and the relief moves to the next one
   driven on (single trips' "Drive on"), it is no hand-back; asked again once given back, nothing to
   hand back. Not given back - his game no longer asks for `RELIEF_STALE`, or its departure time
   come - the AI's own bus comes, as before.
+- **Handing the bus over on the way** (28 October 2026, asked by NexiconDK: "pick a trip, then go
+  and take another"): standing at a stop of his trip, or at its terminus, the game menu offers "Hand
+  the bus over to the AI here" (`relief::hand_over`; on the server, a duty that goes on after the
+  trip he is on). His game asks the world (`relief stop <line>;<tour>;<dep>;<stop, -1: the
+  terminus>`, `ScheduleSim::want_stop`; on the server, a company's duty): at a stop along his trip,
+  the trip itself is the AI's with his bus, its bus put out at that stop once given back
+  (`relief_place_time`, once); at its terminus the tour's next departure - his own next trip, held
+  however long the break and put out at its first stop however late he is, or the AI's, as at the
+  end of a duty; not one another player has or waits for. Then as at the end of a duty: he gets out
+  ("The AI takes your bus over here: get up and get out"), the AI's driver walks up and gets in, his
+  game gives the bus back, and it leaves his game - and his duty ends there (free drive on foot:
+  "Handed over: the AI drives on, and you are free"). The departure given back is the AI's though
+  his claim still says so a moment (`is_player_tour`), and is not put out twice when his claims go
+  (`set_lan_tours`); the rest of his duty runs again when his claims go, though his company drops
+  what a player leaves (`handed_runs`). A player who waited further on for his bus to be handed on
+  by him gets the AI's (`relief_giver`, `gave_back`). Not answered yes, or driven off before, it is
+  called off. The world writes it
+  for his company (`company_server::handed_over`, a `WorldTrip` with `handed`): the AI drives the
+  rest of his duty from that trip - or the one after, at its terminus - and he did not leave it
+  (`book::handed_over`, `LeftWhy::HandedOver`: not in his figures; counted already, when his
+  launcher said his game ended first, no longer - his launcher tells the end of a game in a world
+  only 15 s after it went, `WORLD_DONE_AFTER`, so that the world's word comes first). A single trip
+  he took: what he did not drive of
+  it is its driver's again. The launcher shows "You handed it to the AI: it drives the rest, you
+  are free" (others: "AI (… handed over)"), with "Take the duty back from the next trip".
+- **Free for another duty**: what the AI drives of a duty he left or handed over no longer keeps
+  him from taking another for that time (`book::busy_span`, in `overlapping`) - all of one the AI
+  drives until he takes it over (`Begun`) still does; taking the first back then is refused while
+  another of his lies over it (`take_back`, `OVERLAP`). The other is driven once he left the server
+  (one game at a time).
 - **A world without the trip** (`relief unknown`): his own bus on the road by the stop.
 
 Tested: `omsi_sim`'s `ai_traffic::service_tests::a_bus_holds_at_the_stop_its_relief_waits_at`,
 `timetable_run::sim::relief::tests::a_lan_player_takes_the_ais_bus_over_at_his_stop`,
 `timetable_run::sim::relief::tests::at_the_end_of_his_duty_the_ai_takes_his_bus_over`,
+`timetable_run::sim::relief::tests::on_the_way_he_hands_his_bus_over_to_the_ai`,
 `together::tests::a_trip_the_ai_drove_while_he_was_not_at_his_stop_is_the_ais`,
+`together::tests::handed_over_on_the_way_the_ai_drives_the_rest_and_he_is_free`,
 `relief::tests::the_same_vehicle_file_however_written`.
 
 ### Single trips (27 October 2026)

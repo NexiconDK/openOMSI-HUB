@@ -158,6 +158,12 @@ pub struct WorldTrip {
     /// to take the bus over, and the AI drove this trip of his duty (`book::ai_kept`).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub kept: bool,
+    /// (NexiconDK, 28 October 2026) Not a trip he drove: he handed his bus over to the AI on the way
+    /// through his duty - `trip` the one he drove then (its line, tour and departure), `completed`
+    /// when he ended it at its terminus. The AI drives the rest of the duty, and he did not leave it
+    /// (`book::handed_over`).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub handed: bool,
 }
 
 /// The company's trips taken by a map's world (`WorldTrip`), a JSON line each.

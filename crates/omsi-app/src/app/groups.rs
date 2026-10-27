@@ -498,6 +498,9 @@ pub(crate) struct SessionState {
     /// (27 October 2026) The end of our duty, the AI taking our bus over to drive the tour on
     /// (`relief`).
     pub(crate) relief_back: Option<crate::relief::Back>,
+    /// (28 October 2026) The AI's driver who handed his bus over, standing outside it until we
+    /// have driven off (`relief`).
+    pub(crate) relief_stander: Option<crate::relief::Stander>,
     /// Where the bus last stood on the ground (and facing where): it is put back there when
     /// it falls through the world (see `admin::guard_fall`).
     pub(crate) safe_pose: Option<(glam::DVec3, f64)>,

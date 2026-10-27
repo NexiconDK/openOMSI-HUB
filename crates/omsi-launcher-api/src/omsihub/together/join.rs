@@ -42,6 +42,10 @@ use std::time::{Duration, Instant};
 
 /// How often the boss's launcher is asked (s).
 const EVERY: Duration = Duration::from_millis(2500);
+/// (NexiconDK, 28 October 2026) A duty driven in a map's world is over this long after its game
+/// went: the world tells the company first what became of it - his bus handed over to the AI on
+/// the way is no duty left (`book::handed_over`).
+const WORLD_DONE_AFTER: Duration = Duration::from_secs(15);
 /// After this many failed messages in a row the boss's launcher is looked for again.
 const LOST_AFTER: u32 = 2;
 /// How many notices are kept.
@@ -75,6 +79,8 @@ struct Drive {
     /// (NexiconDK) The map's world it is driven in (Bus Company Online): its trips go to the
     /// world, which checks them and gives them to the company - not to the company from here.
     world: Option<String>,
+    /// (28 October 2026) Since when its game has gone (`WORLD_DONE_AFTER`).
+    gone: Option<Instant>,
 }
 
 struct Joined {
@@ -309,7 +315,13 @@ fn run(stop: Arc<AtomicBool>) {
                 }
                 trips.clear();
             }
-            done = !game_runs(d.pid);
+            let gone = !game_runs(d.pid);
+            done = gone && (d.world.is_none() || d.gone.is_some_and(|t| t.elapsed() >= WORLD_DONE_AFTER));
+            if gone && d.gone.is_none() {
+                if let Some(x) = joined().as_mut().and_then(|j| j.drive.as_mut()) {
+                    x.gone = Some(Instant::now());
+                }
+            }
             if !trips.is_empty() || done {
                 req.what = "report".into();
                 req.duty = Some(d.duty.clone());
@@ -726,6 +738,22 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
     if !omsi_cfg::missing_original_essentials(std::path::Path::new(&root)).is_empty() {
         return Ok(json!({ "error": tr("A session needs the original OMSI 2.") }));
     }
+    // (another duty driven before, its game gone and its end not told yet - `WORLD_DONE_AFTER`:
+    // told now, before this one is; the same one driven again goes on)
+    if let Some(old) = joined().as_ref().and_then(|j| j.drive.clone()).filter(|o| !game_runs(o.pid) && !omsi_launcher_lib::company::together::book::same_duty(&o.duty, &r)) {
+        let told = send_now("report", |q| {
+            q.duty = Some(old.duty.clone());
+            q.done = true;
+        });
+        if !told.is_ok_and(|v| !th::passing(v.get("error").and_then(Value::as_str).unwrap_or(""))) {
+            return Ok(json!({ "error": tr("The duty before is not finished with the boss's launcher yet: try again in a moment.") }));
+        }
+        if let Some(j) = joined().as_mut() {
+            if let Some(d) = j.drive.take() {
+                remember(j, &d);
+            }
+        }
+    }
     let v = match send_now(what, |q| q.duty = Some(r.clone())) {
         Ok(v) => v,
         Err(e) => return Ok(json!({ "error": e })),
@@ -759,7 +787,7 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
     // (his plugin's earlier replies are not this duty's: read from here on)
     let replies = super::super::addon::game_plugin_dir().map(|d| std::fs::metadata(d.join(bridge::DATA_DIR).join(bridge::REPLIES_FILE)).map_or(0, |m| m.len())).unwrap_or(0);
     if let Some(j) = joined().as_mut() {
-        j.drive = Some(Drive { duty: r, number, tour: start.tour.clone(), since: unix_now().saturating_sub(60), pid: launched.pid, sent: Vec::new(), world: d.lan.as_deref().and_then(|l| l.strip_prefix("join:")).map(str::to_string) });
+        j.drive = Some(Drive { duty: r, number, tour: start.tour.clone(), since: unix_now().saturating_sub(60), pid: launched.pid, sent: Vec::new(), world: d.lan.as_deref().and_then(|l| l.strip_prefix("join:")).map(str::to_string), gone: None });
         j.replies = bridge::ReplyReader { offset: replies };
         j.wake = true;
     }
@@ -793,6 +821,10 @@ fn duty_row(d: &SnapDuty, open_claims: bool, ask: bool) -> Value {
         DutyState::Ai if d.begun && d.back => (tr("Under way: the AI drives it until you take over"), "ok", vec![json!({ "label": tr("Take over from the next trip"), "act": "take_back", "kind": "primary", "icon": "play_arrow" })]),
         DutyState::Ai if d.begun => (tr("Under way: no trip of it is left to take over"), "dim", Vec::new()),
         DutyState::Player if d.ai && d.begun => (trf("%{name} has it", &[("name", &d.who)]), "soft", Vec::new()),
+        // (28 October 2026: handed over to the AI on the way - he did not leave it, and is free)
+        DutyState::Ai if d.handed && d.back => (tr("You handed it to the AI: it drives the rest, you are free"), "ok", vec![json!({ "label": tr("Take the duty back from the next trip"), "act": "take_back", "kind": "", "icon": "play_arrow" })]),
+        DutyState::Ai if d.handed => (tr("You handed it to the AI: it drives the rest, you are free"), "ok", Vec::new()),
+        DutyState::Player if d.ai && d.handed => (super::handed_label(&d.who), "soft", Vec::new()),
         DutyState::Ai if d.back => (tr(if d.dropped { "You left it: its trips are dropped" } else { "You left it: the AI drives it" }), "warn", vec![json!({ "label": tr("Take the duty back from the next trip"), "act": "take_back", "kind": "primary", "icon": "play_arrow" })]),
         DutyState::Ai if d.dropped => (tr("You left it: the rest of it is dropped"), "warn", Vec::new()),
         DutyState::Ai => (tr("You left it: the AI drives the rest of it"), "warn", Vec::new()),

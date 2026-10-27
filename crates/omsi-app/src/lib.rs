@@ -673,6 +673,7 @@ fn assemble_app(args: Args, settings: settings::Settings) -> App {
             relief: None,
             relief_give: None,
             relief_back: None,
+            relief_stander: None,
             safe_pose: None,
             safe_age: 0.0,
             pending_time: None,

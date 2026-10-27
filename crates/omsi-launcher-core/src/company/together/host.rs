@@ -1043,6 +1043,7 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                     sd.ai = true;
                     sd.dropped = a.dropped;
                     sd.begun = a.why == LeftWhy::Begun;
+                    sd.handed = a.why == LeftWhy::HandedOver;
                     sd.ai_from = trips.get(a.from).map(|x| x.dep);
                     sd.back = mine && book::back_at(c, Some(p), &r, now).is_some();
                 }

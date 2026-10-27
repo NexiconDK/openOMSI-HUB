@@ -160,6 +160,17 @@ pub(crate) fn take_world_trips(s: &mut Session, lines: &[core::LineInfo], trips:
             }
             continue;
         }
+        // (28 October 2026: he handed his bus over to the AI on the way - the AI drives the rest of
+        // his duty, and he did not leave it)
+        if w.handed {
+            let (dep, minute) = ((t.departure / 60.0).round() as i32, c.clock.minute as i32);
+            match duties.iter().find_map(|r| book::handed_over(c, Some(&p), r, no, dep, t.completed, now, minute).ok().map(|i| (r.clone(), i))) {
+                Some((r, Some(i))) => core::log_to_file(&format!("company {}: {name} handed his bus over to the AI: it drives his duty {} {} {} on from trip {}", c.id, r.line, r.tour, r.duty + 1, i + 1)),
+                Some((r, None)) => core::log_to_file(&format!("company {}: {name} handed his bus over to the AI at the end of his duty {} {} {}", c.id, r.line, r.tour, r.duty + 1)),
+                None => core::log_to_file(&format!("company {}: {name} handed his bus over on line {} tour {} at {}: no duty of his today has that trip", c.id, t.line, t.tour, dep)),
+            }
+            continue;
+        }
         for r in &duties {
             // (his launcher said he left before the world's check of his last trip came: the
             // AI's part, or the dropped one, begins after it)
@@ -717,7 +728,7 @@ fn duty_row(c: &Company, d: &omsi_launcher_lib::company::together::wire::SnapDut
         "open": d.state == DutyState::Open || d.state == DutyState::Company,
         "facts": format!("{}  ·  {} km", trf("%{n} trips", &[("n", &d.trips.to_string())]), d.km),
         "late": c.together.claim_of(&d.duty).is_some_and(|x| x.late),
-        "ai": d.ai, "ai_who": d.ai.then(|| if d.dropped { super::dropped_label(&d.who) } else { super::ai_label(&d.who) }),
+        "ai": d.ai, "ai_who": d.ai.then(|| if d.dropped { super::dropped_label(&d.who) } else if d.handed { super::handed_label(&d.who) } else { super::ai_label(&d.who) }),
     })
 }
 

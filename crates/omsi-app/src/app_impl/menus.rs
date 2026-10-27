@@ -213,6 +213,11 @@ impl App {
                 self.close_game_menu();
                 self.drive_on();
             }
+            // (NexiconDK, Bus Company Online, 28 October 2026)
+            "handover" => {
+                self.close_game_menu();
+                self.hand_over();
+            }
             // the route ends here: free drive, as the list of lines has it
             "endduty" => {
                 crate::game_lists::end_duty(self);
@@ -422,6 +427,10 @@ impl crate::App {
         // (NexiconDK, single trips: on his duty's last trip, the tour's next one his too)
         if self.drive_on_offered() {
             v.insert(at, ("driveon", crate::relief::DRIVE_ON));
+        }
+        // (28 October 2026: his bus to the AI at a stop on the way - his duty ends, he is free)
+        if self.hand_over_offered() {
+            v.insert(at, ("handover", crate::relief::HAND_OVER));
         }
         if self.menus.navigator.is_none() {
             v.retain(|x| x.0 != "map");

@@ -290,6 +290,9 @@ impl ScheduleSim {
             relief_given: HashMap::new(),
             backs: HashMap::new(),
             backed: HashSet::new(),
+            back_at: HashMap::new(),
+            handed_log: Vec::new(),
+            handed_runs: HashSet::new(),
             online_world: false,
             vehicle_seed: omsi_script::session_seed().map(|s| omsi_script::mix_seed(s ^ 0x746f_7572_5f62_7573)).unwrap_or(0),
         };
@@ -523,6 +526,8 @@ impl ScheduleSim {
         self.relief_given.clear();
         self.backs.clear();
         self.backed.clear();
+        self.back_at.clear();
+        self.handed_runs.clear();
         self.boards_made = f64::NEG_INFINITY;
         self.assign_car_use();
         let today = (0..self.departures.len()).filter(|&i| self.runs(i)).count();

@@ -34,7 +34,7 @@ pub use choice::{depot_file, pool_depot};
 pub use company::{CompanyBus, TimetableCompany};
 pub use dispatch::{tour_entry, TOUR_ENTRY_LANES};
 pub use place::Placing;
-pub use relief::{BackState, Kept as ReliefKept, ReliefState, RELIEF_ARRIVED_WAIT, RELIEF_KEPT, RELIEF_NOBODY, RELIEF_NOT_HERE, RELIEF_NOT_WAITING, RELIEF_NO_BUS, RELIEF_NO_TRIP, RELIEF_STALE, RELIEF_WAIT};
+pub use relief::{BackState, Handed as ReliefHanded, Kept as ReliefKept, ReliefState, RELIEF_ARRIVED_WAIT, RELIEF_KEPT, RELIEF_NOBODY, RELIEF_NOT_HERE, RELIEF_NOT_WAITING, RELIEF_NO_BUS, RELIEF_NO_TRIP, RELIEF_STALE, RELIEF_WAIT};
 pub use web_map::{build_web_map, LiveBus, WebCall, WebMap, WebTimetable, WebTrip};
 
 /// What the timetable needs of the loaded map: its folders, the AI lists, the tiles, the
@@ -284,6 +284,13 @@ pub struct ScheduleSim {
     /// it took over so (asked again, answered the same).
     backs: HashMap<usize, relief::Back>,
     backed: HashSet<usize>,
+    /// (28 October 2026) Those given back at a stop along their trip: when the timetable has them
+    /// leave it (the traffic's clock) - put out there (`relief_place_time`).
+    back_at: HashMap<usize, f64>,
+    /// Duties handed over to the AI on the way, for the players' companies (`take_handed`), and
+    /// the rest of them: the AI's to drive, though a company drops what a player leaves.
+    handed_log: Vec<relief::Handed>,
+    handed_runs: HashSet<usize>,
     /// A world of Bus Company Online (`set_online_world`): its companies' tours the AI drives on
     /// with a LAN player's bus at the end of his duty (`want_back`) - not a player's own session.
     online_world: bool,

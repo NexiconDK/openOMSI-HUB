@@ -103,6 +103,12 @@ pub fn dropped_label(name: &str) -> String {
     trf("Dropped (%{name} left)", &[("name", name)])
 }
 
+/// (NexiconDK, 28 October 2026) Who drives a duty its player handed over to the AI on the way:
+/// "AI (Jan handed over)" - he did not leave it.
+pub fn handed_label(name: &str) -> String {
+    trf("AI (%{name} handed over)", &[("name", name)])
+}
+
 /// A player of "Play together" as the company's pages name him on his duties: his name, or "AI
 /// (his name left)" while the AI drives a duty he left (`book::guest_left`).
 pub fn guest_label(c: &omsi_launcher_lib::company::Company, g: u32) -> String {

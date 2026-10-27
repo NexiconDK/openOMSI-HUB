@@ -269,12 +269,20 @@ impl ScheduleSim {
         for t in &removed {
             let later: Vec<usize> = (0..self.departures.len())
                 .filter(|&i| t.has(&self.departures[i].line, &self.departures[i].tour, self.departures[i].time) && self.departures[i].time > self.last_tod && !self.is_player_tour(i))
+                // (not one whose bus is out already: given back to the AI with his - `relief`)
+                .filter(|&i| !self.backed.contains(&i) && !self.pending.contains(&i) && !self.car_departure.values().any(|&x| x == i))
                 .collect();
             if later.is_empty() {
                 continue;
             }
             if self.company.as_deref().is_some_and(|c| c.drops_left(&t.line)) {
-                log::info!("timetable: {} is no LAN player's any more: its company drops its {} later departures", t.text(), later.len());
+                // (not what a player handed over to the AI with his bus on the way: the AI drives
+                // the rest of his duty - `relief`)
+                let handed: Vec<usize> = later.iter().copied().filter(|i| self.handed_runs.contains(i)).collect();
+                for &i in &handed {
+                    self.departures[i].spawned = false;
+                }
+                log::info!("timetable: {} is no LAN player's any more: its company drops its {} later departures, the AI drives {} he handed over", t.text(), later.len() - handed.len(), handed.len());
                 continue;
             }
             for &i in &later {
@@ -302,8 +310,9 @@ impl ScheduleSim {
     /// Does a player drive departure `i` (we, or another LAN player)?
     pub(super) fn is_player_tour(&self, i: usize) -> bool {
         // (NexiconDK: one a LAN player waits to take over at a stop of it, or that the AI drove
-        // after all, he was not there in time: the AI's - `relief`)
-        if self.relief_ai(i) || self.relief_kept.contains(&i) {
+        // after all, he was not there in time - or one a player gave his bus back for, though his
+        // claim still says so a moment: the AI's - `relief`)
+        if self.relief_ai(i) || self.relief_kept.contains(&i) || self.backed.contains(&i) {
             return false;
         }
         if let Some(d) = self.departures.get(i) {

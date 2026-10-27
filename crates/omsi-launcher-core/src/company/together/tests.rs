@@ -1367,3 +1367,74 @@ fn a_single_trip_never_started_goes_back_after_it_left() {
     assert!(b.c.together.claim_of(&duty).is_none());
     assert!(b.st.notices.iter().any(|n| n.text == host::TRIP_BACK));
 }
+
+/// (NexiconDK, 28 October 2026) He hands his bus over to the AI at a stop on the way through his
+/// duty (the map's world says so): the AI drives the rest from the trip he was on - from the one
+/// after, at its terminus -, he did not leave it (counted as left first, his game having ended
+/// before the world said so: no longer), and he is free for another duty from there - one he takes
+/// then keeps him from taking the first back for its time. A single trip he took: nothing of it
+/// driven, the company's again.
+#[test]
+fn handed_over_on_the_way_the_ai_drives_the_rest_and_he_is_free() {
+    let mut b = boss();
+    b.c.online.on_server = true;
+    b.c.together.open_claims = true;
+    // (a later tour with a bus of its own: its duty from 06:45, while his runs to 08:00)
+    market::buy_new(&mut b.c, &MarketBus { file: "Vehicles/Citaro/Citaro.bus".into(), name: "Citaro".into(), ..Default::default() }, Payment::Cash, "").unwrap();
+    let mut later = b.tours[0].clone();
+    later.tour = "3".into();
+    later.trips = vec![trip("Depot-A", 405, 410, "Depot", "A", true), trip("5 A-B", 410, 440, "A", "B", false), trip("5 B-A", 450, 480, "B", "A", false), trip("A-Depot", 482, 490, "A", "Depot", true)];
+    b.tours.push(later);
+    let wd = super::super::plan::weekday_of(&b.c.date);
+    let bus = b.c.fleet[1].id;
+    super::super::plan::set_bus(&mut b.c, wd, "Linie5", "3", Some(bus));
+    let s = snap(&ask(&mut b, "jan", "hello", |_| {}));
+    let mine = s.duties.iter().find(|d| d.duty.tour == "2").unwrap().duty.clone();
+    let other = s.duties.iter().find(|d| d.duty.tour == "3").unwrap().duty.clone();
+    let jan = guest_no(&b, "jan");
+    assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(mine.clone()))["ok"], true);
+    assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(other.clone()))["error"].as_str(), Some(book::OVERLAP));
+    // driving it, he hands his bus over at a stop of its 06:40 (index 2)
+    book::set_state(&mut b.c, &mine, jan, ClaimState::Driving).unwrap();
+    let p = b.plan();
+    assert_eq!(book::handed_over(&mut b.c, Some(&p), &mine, jan, 400, false, 1, 300), Ok(Some(2)));
+    let parts = |b: &Boss| b.c.together.claim_of(&mine).unwrap().ai.iter().map(|a| (a.from, a.until, a.why)).collect::<Vec<_>>();
+    assert_eq!(parts(&b), [(2, None, book::LeftWhy::HandedOver)]);
+    assert_eq!(b.c.together.guest(jan).unwrap().stats.left, 0, "he did not leave it");
+    let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
+    let d = s.duties.iter().find(|d| d.duty.tour == "2").unwrap();
+    assert!(d.state == DutyState::Ai && d.handed && d.back && !d.dropped, "{d:?}");
+    // free from 06:40: the later duty is his to take - and then not the first back for that time
+    assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(other.clone()))["ok"], true);
+    let now = super::super::clock::now(&b.c);
+    let p = b.plan();
+    assert_eq!(book::take_back(&mut b.c, Some(&p), &mine, jan, now), Err(book::OVERLAP));
+    assert_eq!(book::handed_over(&mut b.c, Some(&p), &mine, jan, 500, false, 1, 300), Err(book::NO_DUTY));
+    assert_eq!(book::handed_over(&mut b.c, Some(&p), &mine, jan + 1, 400, false, 1, 300), Err(book::NOT_YOURS));
+    // at the terminus of its 06:40, his game ended before the world said so: counted as left, then not
+    let mut b = boss();
+    b.c.online.on_server = true;
+    b.c.together.open_claims = true;
+    ask(&mut b, "jan", "hello", |_| {});
+    let jan = guest_no(&b, "jan");
+    assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(mine.clone()))["ok"], true);
+    book::set_state(&mut b.c, &mine, jan, ClaimState::Driving).unwrap();
+    let p = b.plan();
+    assert!(book::hand_to_ai(&mut b.c, Some(&p), &mine, jan, book::LeftWhy::Quit, 1, 300).is_ok());
+    assert_eq!(b.c.together.guest(jan).unwrap().stats.left, 1);
+    assert_eq!(book::handed_over(&mut b.c, Some(&p), &mine, jan, 400, true, 1, 300), Ok(Some(3)));
+    assert_eq!(parts(&b), [(3, None, book::LeftWhy::HandedOver)]);
+    assert_eq!(b.c.together.guest(jan).unwrap().stats.left, 0);
+    // a single trip he took, handed over on its way: nothing of it his - the company's again
+    let mut b = server_ai_duty();
+    ask(&mut b, "jan", "hello", |_| {});
+    let jan = guest_no(&b, "jan");
+    let v = ask(&mut b, "jan", "take_trip", |r| {
+        r.duty = Some(mine.clone());
+        r.trip = 2;
+    });
+    assert_eq!(v["ok"], true, "{v}");
+    let p = b.plan();
+    assert_eq!(book::handed_over(&mut b.c, Some(&p), &mine, jan, 400, false, 1, 300), Ok(Some(2)));
+    assert!(b.c.together.claims.is_empty());
+}

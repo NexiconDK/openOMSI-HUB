@@ -80,6 +80,7 @@ impl App {
             self.relief_tick(dt);
             self.relief_give_tick(dt);
             self.relief_back_tick(dt);
+            self.relief_stander_tick(dt);
         }
         self.tick_voice(dt);
     }

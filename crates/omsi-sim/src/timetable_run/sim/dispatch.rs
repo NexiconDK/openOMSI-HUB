@@ -35,6 +35,8 @@ impl ScheduleSim {
         self.later_layover.clear();
         self.backs.clear();
         self.backed.clear();
+        self.back_at.clear();
+        self.handed_runs.clear();
         // (the clock set back over midnight: the day before)
         while day_time < self.day_base {
             self.day_base -= DAY;
@@ -602,5 +604,7 @@ impl ScheduleSim {
     /// Departure `i`'s bus is out.
     pub fn started(&mut self, i: usize) {
         self.startup.remove(&i);
+        // (put out where a player gave its bus back: once - `relief_place_time`)
+        self.back_at.remove(&i);
     }
 }

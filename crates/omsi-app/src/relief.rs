@@ -19,6 +19,12 @@
 //! bus of that departure is put out where it stood. A player who gave his bus on to another and
 //! whose duty goes on (a trip of another tour) waits for that trip's bus at its first stop, as a
 //! relief (`relief_next_trip`).
+//!
+//! (28 October 2026) On the way through his duty, at a stop of his trip or its terminus, the game
+//! menu's "Hand the bus over to the AI here" (`hand_over`) does the same (`relief stop`): the AI
+//! drives on with his bus - his trip from that stop, or the tour's next departure -, and his duty
+//! ends there: the world tells his company, which books the rest as the AI's (he did not leave it),
+//! and he is free for another.
 
 use crate::humans::{AvatarCmd, BusId};
 use crate::App;
@@ -103,6 +109,17 @@ pub(crate) struct Back {
     walker: Option<Driver>,
     /// Given back (`relief back`, sent again until the world answers): seconds since.
     sent: Option<f32>,
+    /// (28 October 2026) Handed over on the way ("Hand the bus over here", `relief stop`), not at
+    /// the end of his duty: his duty ends with it.
+    way: Option<OnTheWay>,
+}
+
+/// (28 October 2026) A hand-over on the way through his duty: the trip he is on (an index into the
+/// duty's trips), and the stop of it he stands at (an index among its stops; None: its terminus -
+/// the trip done).
+pub(crate) struct OnTheWay {
+    trip: usize,
+    stop: Option<usize>,
 }
 
 impl Relief {
@@ -142,6 +159,22 @@ pub(crate) struct Driver {
     floor: f64,
 }
 
+/// (28 October 2026) The AI's driver who handed his bus over, out of it: he stands where he got to,
+/// turned to the bus, until it has driven off - then he goes once out of sight
+/// (`relief_stander_tick`).
+pub(crate) struct Stander {
+    pos: DVec3,
+    /// Seconds he has stood, and until the next look whether he is seen.
+    t: f32,
+    look_t: f32,
+}
+
+/// How far the bus is from him when it has driven off (m), how far off he goes whether seen or not
+/// (m), and how long he waits for it at most (s: then he goes once out of sight).
+const STANDER_LEFT: f64 = 25.0;
+const STANDER_GONE: f64 = 250.0;
+const STANDER_MAX: f32 = 1800.0;
+
 /// The texts the game shows (English, the keys of the translations).
 const WAIT: &str = "Wait here for your bus: line %{line} at %{time}. Its driver gets out at the stop, then G at the front door takes the wheel.";
 const ARRIVED: &str = "Your bus is here: walk up to it.";
@@ -160,6 +193,14 @@ const HAND_BACK: &str = "The AI drives the tour on with your bus at %{time}: sto
 const DRIVER_IN: &str = "The driver comes to take your bus over.";
 const BACK_DONE: &str = "Handed over: the AI drives the tour on.";
 const BACK_NO: &str = "The AI could not take your bus over: it stays yours.";
+/// (28 October 2026) "Hand the bus over here", the game menu's line, and what it says.
+pub(crate) const HAND_OVER: &str = "Hand the bus over to the AI here";
+const WAY_ASKED: &str = "The AI is asked to take your bus over here.";
+const WAY_NOT_AT_STOP: &str = "Stop at a stop of your trip, or at its terminus, to hand the bus over.";
+const WAY_GET_OUT: &str = "The AI takes your bus over here: get up (Ctrl+Shift+G) and get out - its driver comes.";
+const WAY_NO: &str = "The AI cannot take your bus over here: try at another stop.";
+const WAY_DROVE_OFF: &str = "Hand-over called off: you drove off.";
+const WAY_DONE: &str = "Handed over: the AI drives on, and you are free. Leave the server (Esc) to take another trip or duty in the launcher.";
 /// His bus given on, his duty going on with another tour.
 const NEXT_BUS: &str = "Your duty goes on with line %{line} at %{time} from %{stop}: wait there for its bus.";
 /// How often his game says that the AI takes his bus over at the end of his duty (s).
@@ -209,7 +250,9 @@ impl PeerInfo {
 /// player waiting for it (`relief gave <line>;<tour>;<dep>;<x>;<y>;<z>;<heading>;<riders>;
 /// <number>`); at the end of its duty, whether the AI takes its bus over (`relief end <line>;<tour>;
 /// <last dep>`, answered `relief end <last dep>;<the AI's dep, 0: no>`) and its bus given back
-/// (`relief back <line>;<tour>;<the AI's dep>`) - departures in minutes of the day. The answers to
+/// (`relief back <line>;<tour>;<the AI's dep>`); on the way through its duty, whether the AI takes
+/// its bus over at the stop of its trip it stands at (`relief stop <line>;<tour>;<dep>;<stop, -1:
+/// the terminus>`, answered as `relief end`) - departures in minutes of the day. The answers to
 /// send, to whom (`peers`: the session's players).
 pub(crate) fn host_command(from: u32, text: &str, schedule: Option<&mut crate::schedule::Schedule>, traffic: Option<&mut crate::traffic::Traffic>, humans: Option<&crate::humans::Humans>, peers: &[PeerInfo]) -> Vec<(u32, String)> {
     let mut out = Vec::new();
@@ -266,7 +309,22 @@ pub(crate) fn host_command(from: u32, text: &str, schedule: Option<&mut crate::s
             // (given back already: nothing to hand back - a bus his game has since is his)
             omsi_sim::timetable_run::BackState::Given(_) | omsi_sim::timetable_run::BackState::No => out.push((from, format!("relief end {dep};0"))),
         },
-        "back" => match s.sim.gave_back(from, line, tour, dep, t.day_time) {
+        // (28 October 2026: on the way - "Hand the bus over here")
+        "stop" => {
+            let stop = f.get(3).and_then(|x| x.trim().parse::<i64>().ok()).filter(|s| *s >= 0).map(|s| s as usize);
+            let own = peers.iter().find(|p| p.id == from).map(|p| omsi_sim::timetable_run::lan_claims(&p.tour)).unwrap_or_default();
+            let others: Vec<(u32, Vec<omsi_sim::timetable_run::LanClaim>)> = peers.iter().filter(|p| p.id != from).map(|p| (p.id, omsi_sim::timetable_run::lan_claims(&p.tour))).collect();
+            match s.sim.want_stop(from, line, tour, dep, stop, &own, &others, &t.sim, t.day_time) {
+                omsi_sim::timetable_run::BackState::Ai(next, gone) => {
+                    if let Some(id) = gone {
+                        t.remove_car(id);
+                    }
+                    out.push((from, format!("relief end {dep};{next}")));
+                }
+                omsi_sim::timetable_run::BackState::Given(_) | omsi_sim::timetable_run::BackState::No => out.push((from, format!("relief end {dep};0"))),
+            }
+        }
+        "back" => match s.sim.gave_back(from, line, tour, dep, &t.sim, t.day_time) {
             Ok(()) => out.push((from, format!("relief backed {dep}"))),
             Err(why) => out.push((from, format!("relief no {dep};{why}"))),
         },
@@ -692,11 +750,14 @@ impl App {
         if let Some(rl) = self.session.relief.as_mut() {
             rl.phase = Phase::Driver(driver);
         }
+        // (the figure is this driver's now: one still standing from before goes with it)
+        self.session.relief_stander = None;
         self.service_msg = Some((tr(DRIVER_OUT), 6.0));
     }
 
-    /// The driver getting out: up from his place, the front door opened, out of it and away
-    /// from the bus, then gone.
+    /// The driver getting out: up from his place, the front door opened, out of it and a few
+    /// steps away from the bus - where he waits, turned to it, until we have driven off
+    /// (`relief_stander_tick`).
     fn relief_driver_step(&mut self, dt: f32) {
         let Some(w) = self.world.clone() else { return };
         let Some(Phase::Driver(d)) = self.session.relief.as_mut().map(|r| &mut r.phase) else { return };
@@ -729,6 +790,11 @@ impl App {
             }
         }
         let done = d.k >= d.path.len();
+        // (out: he stands there turned to the bus - `Stander`)
+        if done {
+            let g = d.path[1] - d.pos;
+            d.heading = g.x.atan2(g.y).to_degrees();
+        }
         let (pos, heading, kind) = (d.pos, d.heading, d.kind);
         // (his feet on the bus's floor until he is out of the door, then on the ground)
         let floor = (d.k <= 1).then_some(d.floor);
@@ -739,19 +805,45 @@ impl App {
             DVec2::ZERO
         };
         if let (Some(h), Some(r), Some(scene)) = (self.session.humans.as_mut(), self.renderer.as_ref(), self.scene.as_mut()) {
-            if done {
-                h.avatar_remove(DRIVER_KEY);
-            } else {
-                h.avatar(DRIVER_KEY, &w, AvatarCmd { pos, heading, vel, lift: 0.0, seat: None, floor, aboard: None }, kind);
-            }
+            h.avatar(DRIVER_KEY, &w, AvatarCmd { pos, heading, vel, lift: 0.0, seat: None, floor, aboard: None }, kind);
             crate::view_sync::apply_people(h, &mut self.gfx.sim_view.people, &w, r, scene);
         }
         if done {
-            log::info!("relief: the driver is out");
+            log::info!("relief: the driver is out: he waits beside the bus until we have driven off");
             if let Some(r) = self.session.relief.as_mut() {
                 r.phase = Phase::Ready;
             }
+            self.session.relief_stander = Some(Stander { pos, t: 0.0, look_t: 0.0 });
             self.service_msg = Some((tr(YOURS), 6.0));
+        }
+    }
+
+    /// (28 October 2026) Once a frame (LAN client): the driver who handed his bus over stands
+    /// beside it until we have driven off (or for half an hour); then he goes once out of sight -
+    /// or once the bus is far off.
+    pub(crate) fn relief_stander_tick(&mut self, dt: f32) {
+        let Some(s) = self.session.relief_stander.as_mut() else { return };
+        s.t += dt;
+        s.look_t -= dt;
+        let pos = s.pos;
+        let away = self.player.as_ref().map_or(f64::INFINITY, |p| (p.vehicle.position.truncate() - pos.truncate()).length());
+        if away < STANDER_LEFT && s.t < STANDER_MAX {
+            return;
+        }
+        if away < STANDER_GONE {
+            if s.look_t > 0.0 {
+                return;
+            }
+            s.look_t = 0.5;
+            if !self.session.traffic.as_ref().zip(self.world.as_deref()).is_some_and(|(t, w)| t.hidden(w, pos, 1.0)) {
+                return;
+            }
+        }
+        log::info!("relief: the driver who handed the bus over goes");
+        self.session.relief_stander = None;
+        if let (Some(w), Some(h), Some(r), Some(scene)) = (self.world.clone(), self.session.humans.as_mut(), self.renderer.as_ref(), self.scene.as_mut()) {
+            h.avatar_remove(DRIVER_KEY);
+            crate::view_sync::apply_people(h, &mut self.gfx.sim_view.people, &w, r, scene);
         }
     }
 
@@ -815,9 +907,19 @@ impl App {
             self.relief_back_sent(dt);
             return;
         }
-        // (no longer the end of our duty: driven on, the bus gone or given to a player)
+        let way = self.session.relief_back.as_ref().and_then(|b| b.way.as_ref()).map(|w| (w.trip, w.stop));
+        // (no longer the end of our duty: driven on, the bus gone or given to a player - or, on the
+        // way, no longer on that trip: on to the next at its terminus only)
         let keep = match (self.session.relief_back.as_ref(), self.session.duty.as_ref(), self.player.as_ref()) {
-            (Some(b), Some(d), Some(_)) => self.session.relief.is_none() && self.session.relief_give.is_none() && d.trips.len() == b.trips && d.trip_index + 1 >= d.trips.len(),
+            (Some(b), Some(d), Some(_)) => {
+                self.session.relief.is_none()
+                    && self.session.relief_give.is_none()
+                    && d.trips.len() == b.trips
+                    && match way {
+                        Some((trip, stop)) => d.trip_index == trip || (stop.is_none() && d.trip_index == trip + 1 && d.next_stop == 0),
+                        None => d.trip_index + 1 >= d.trips.len(),
+                    }
+            }
             _ => false,
         };
         if !keep {
@@ -827,20 +929,34 @@ impl App {
         let Some(p) = self.player.as_ref() else { return };
         let out = self.session.on_foot.as_ref().is_some_and(|f| f.seat.map(|s| s.0) != Some(BusId::Player) && f.inside.map(|i| i.0) != Some(BusId::Player));
         let standing = p.vehicle.physics.velocity_kmh().abs() < 2.0;
+        let near = self.session.relief_back.as_ref().is_some_and(|b| (p.vehicle.position.truncate() - b.at).length() < BACK_NEAR);
+        // (driven off: no hand-back there - nor asked; the world stops holding it - on the way,
+        // called off)
+        if way.is_some() && !near {
+            self.relief_back_cancel();
+            self.service_msg = Some((tr(WAY_DROVE_OFF), 5.0));
+            return;
+        }
         let Some(b) = self.session.relief_back.as_mut() else { return };
-        // (driven off: no hand-back there - nor asked; the world stops holding it)
-        let near = (p.vehicle.position.truncate() - b.at).length() < BACK_NEAR;
         b.ask_t -= dt;
         b.told_t -= dt;
         if near && b.ask_t <= 0.0 {
             if !b.heard && b.asks >= BACK_TRIES {
-                log::info!("relief: the host does not answer about the end of our duty: no hand-back");
+                log::info!("relief: the host does not answer about handing our bus over: no hand-over");
+                if way.is_some() {
+                    self.relief_back_cancel();
+                    self.service_msg = Some((tr(WAY_NO), 8.0));
+                    return;
+                }
                 b.next = Some(0);
                 b.ask_t = f32::INFINITY;
             } else {
                 b.asks += 1;
                 b.ask_t = if b.next == Some(0) { BACK_AGAIN } else { BACK_EVERY };
-                let msg = format!("relief end {};{};{}", b.line, b.tour, b.last);
+                let msg = match way {
+                    Some((_, stop)) => format!("relief stop {};{};{};{}", b.line, b.tour, b.last, stop.map_or(-1, |s| s as i64)),
+                    None => format!("relief end {};{};{}", b.line, b.tour, b.last),
+                };
                 if let Some(l) = self.net.lan.as_mut() {
                     l.command(1, &msg);
                 }
@@ -855,7 +971,8 @@ impl App {
             let Some(b) = self.session.relief_back.as_mut() else { return };
             if let Some(n) = next.filter(|_| near && !out && b.told_t <= 0.0) {
                 b.told_t = 15.0;
-                self.service_msg = Some((tr(HAND_BACK).replace("%{time}", &hhmm_min(n)), 10.0));
+                let text = if way.is_some() { tr(WAY_GET_OUT) } else { tr(HAND_BACK).replace("%{time}", &hhmm_min(n)) };
+                self.service_msg = Some((text, 10.0));
             }
             return;
         };
@@ -870,6 +987,8 @@ impl App {
             if let Some(b) = self.session.relief_back.as_mut() {
                 b.walker = Some(Driver { t: 0.0, kind, door: true, path: vec![away, door, seat], k: 1, pos: away, heading, floor: seat.z });
             }
+            // (the figure is this driver's now: one still standing from before goes with it)
+            self.session.relief_stander = None;
             self.service_msg = Some((tr(DRIVER_IN), 6.0));
         }
         if self.relief_back_walk(dt) {
@@ -893,7 +1012,58 @@ impl App {
             None => (d.line.clone(), d.tour.clone()),
         };
         let last = (d.trip().departure / 60.0).round() as i32;
-        self.session.relief_back = Some(Back { line: line.trim().to_string(), tour: tour.trim().to_string(), last, next: None, at: p.vehicle.position.truncate(), trips: d.trips.len(), ask_t: 0.0, told_t: 0.0, heard: false, asks: 0, walker: None, sent: None });
+        self.session.relief_back = Some(Back { line: line.trim().to_string(), tour: tour.trim().to_string(), last, next: None, at: p.vehicle.position.truncate(), trips: d.trips.len(), ask_t: 0.0, told_t: 0.0, heard: false, asks: 0, walker: None, sent: None, way: None });
+    }
+
+    /// (28 October 2026) The game menu offers "Hand the bus over here": on Bus Company Online's
+    /// server, with our bus and a duty that goes on after the trip we are on (its end is the AI's
+    /// hand-back by itself), no other hand-over under way.
+    pub(crate) fn hand_over_offered(&self) -> bool {
+        crate::app_impl::menus::on_server(&self.args)
+            && self.args.company.is_some()
+            && self.net.lan.as_ref().is_some_and(|l| l.role == omsi_net::Role::Client)
+            && self.player.is_some()
+            && self.session.relief.is_none()
+            && self.session.relief_give.is_none()
+            && self.session.relief_back.as_ref().is_none_or(|b| b.way.is_none() && b.next.unwrap_or(0) == 0 && b.walker.is_none())
+            && self.session.duty.as_ref().is_some_and(|d| !d.free && !(d.trip_done() && d.trip_index + 1 >= d.trips.len()))
+    }
+
+    /// (28 October 2026) "Hand the bus over here": standing at a stop of our trip (or at its
+    /// terminus), the world is asked whether the AI takes our bus over there (`relief stop`); once
+    /// we are out, its driver walks up and gets in, the bus is the world's - and our duty ends: the
+    /// rest is the AI's, and we are free.
+    pub(crate) fn hand_over(&mut self) {
+        if !self.hand_over_offered() {
+            return;
+        }
+        let (Some(d), Some(p)) = (self.session.duty.as_ref(), self.player.as_ref()) else { return };
+        let stop = if d.trip_done() {
+            None
+        } else if d.at_stop() {
+            Some(d.next_stop)
+        } else {
+            self.service_msg = Some((tr(WAY_NOT_AT_STOP), 5.0));
+            return;
+        };
+        if p.vehicle.physics.velocity_kmh().abs() >= 2.0 {
+            self.service_msg = Some((tr(WAY_NOT_AT_STOP), 5.0));
+            return;
+        }
+        let (line, tour) = match d.tours.get(d.trip_index) {
+            Some((l, t, _)) => (l.clone(), t.clone()),
+            None => (d.line.clone(), d.tour.clone()),
+        };
+        let dep = (d.trip().departure / 60.0).round() as i32;
+        log::info!("relief: handing our bus over to the AI on line {} tour {} at {}, {}", line.trim(), tour.trim(), hhmm_min(dep), stop.map_or("at its terminus".to_string(), |s| format!("at its stop {}", s + 1)));
+        let way = Some(OnTheWay { trip: d.trip_index, stop });
+        let b = Back { line: line.trim().to_string(), tour: tour.trim().to_string(), last: dep, next: None, at: p.vehicle.position.truncate(), trips: d.trips.len(), ask_t: 0.0, told_t: 0.0, heard: false, asks: 0, walker: None, sent: None, way };
+        if let Some(old) = self.session.relief_back.replace(b) {
+            if old.walker.is_some() {
+                self.relief_back_walker_gone();
+            }
+        }
+        self.service_msg = Some((tr(WAY_ASKED), 5.0));
     }
 
     /// No hand-back after all (the world no longer holds the departure once our game stops asking:
@@ -911,6 +1081,12 @@ impl App {
     fn relief_back_decline(&mut self, why: &str) {
         let Some(b) = self.session.relief_back.as_mut() else { return };
         log::info!("relief: our bus not given back for line {} tour {} at {}: {why}", b.line, b.tour, hhmm_min(b.next.unwrap_or(0)));
+        // (on the way: called off - asked for again from the menu)
+        if b.way.is_some() {
+            self.relief_back_cancel();
+            self.service_msg = Some((tr(BACK_NO), 8.0));
+            return;
+        }
         b.sent = None;
         b.next = Some(0);
         b.ask_t = BACK_AGAIN;
@@ -1012,6 +1188,11 @@ impl App {
         let dep = f.first().and_then(|x| x.trim().parse::<i32>().ok());
         let sent = b.sent.is_some();
         match verb {
+            "no" | "unknown" if sent && dep == b.next => {
+                let why = f.get(1).map(|x| x.trim().to_string()).unwrap_or_else(|| "unknown".into());
+                self.relief_back_decline(&why);
+                true
+            }
             "end" | "unknown" if dep == Some(b.last) => {
                 b.heard = true;
                 if sent {
@@ -1020,12 +1201,19 @@ impl App {
                 }
                 let next = if verb == "end" { f.get(1).and_then(|x| x.trim().parse::<i32>().ok()).unwrap_or(0) } else { 0 };
                 if b.next != Some(next) {
+                    let at = if b.way.is_some() { "we hand our bus over on" } else { "our duty ends with" };
                     match next {
-                        0 => log::info!("relief: our duty ends with line {} tour {} at {}: nothing to hand back", b.line, b.tour, hhmm_min(b.last)),
-                        n => log::info!("relief: our duty ends with line {} tour {} at {}: the AI drives the {} on with our bus", b.line, b.tour, hhmm_min(b.last), hhmm_min(n)),
+                        0 => log::info!("relief: {at} line {} tour {} at {}: nothing to hand back", b.line, b.tour, hhmm_min(b.last)),
+                        n => log::info!("relief: {at} line {} tour {} at {}: the AI drives the {} on with our bus", b.line, b.tour, hhmm_min(b.last), hhmm_min(n)),
                     }
                     b.next = Some(next);
                     b.told_t = 0.0;
+                    // (on the way: not here - called off)
+                    if next == 0 && b.way.is_some() {
+                        self.relief_back_cancel();
+                        self.service_msg = Some((tr(WAY_NO), 8.0));
+                        return true;
+                    }
                     if next == 0 && b.walker.take().is_some() {
                         self.relief_back_walker_gone();
                         self.service_msg = Some((tr(BACK_NO), 8.0));
@@ -1035,15 +1223,18 @@ impl App {
             }
             "backed" if sent && dep == b.next => {
                 log::info!("relief: the AI has our bus");
+                let way = b.way.is_some();
                 self.session.relief_back = None;
                 self.relief_back_walker_gone();
                 self.relief_drop_bus();
-                self.service_msg = Some((tr(BACK_DONE), 8.0));
-                true
-            }
-            "no" | "unknown" if sent && dep == b.next => {
-                let why = f.get(1).map(|x| x.trim().to_string()).unwrap_or_else(|| "unknown".into());
-                self.relief_back_decline(&why);
+                // (on the way: our duty ends - the AI drives the rest, our company is told by the
+                // world; free drive on foot, and free for another duty)
+                if way {
+                    crate::game_lists::end_duty(self);
+                    self.service_msg = Some((tr(WAY_DONE), 15.0));
+                } else {
+                    self.service_msg = Some((tr(BACK_DONE), 8.0));
+                }
                 true
             }
             _ => false,
