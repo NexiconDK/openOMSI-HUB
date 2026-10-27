@@ -199,7 +199,9 @@ impl Schedule {
         // time (#2235)
         // (NexiconDK: and the bus of a LAN player waiting at its stop to take it over, put out
         // late at his stop: he waits there for it - `relief`)
-        let due_at_start = (leg == 0 && frac < 0.01 && (-30.0..=60.0).contains(&(departure - day_time))) || self.sim.relief_wanted(i);
+        // (and the bus a LAN player gave back at the end of his duty, where his stood: he stands
+        // there - `relief`)
+        let due_at_start = (leg == 0 && frac < 0.01 && (-30.0..=60.0).contains(&(departure - day_time))) || self.sim.relief_wanted(i) || self.sim.back_given(i);
         if !(self.sim.queued_at_startup(i) && traffic.loading_phase()) && !due_at_start && !traffic.may_appear(world, at_pos) {
             log::debug!("trip {trip_name}: the bus would appear in view");
             return Placed::Busy;

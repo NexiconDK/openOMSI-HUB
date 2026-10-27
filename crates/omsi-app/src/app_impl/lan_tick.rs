@@ -79,6 +79,7 @@ impl App {
         if self.net.lan.as_ref().is_some_and(|l| l.role == omsi_net::Role::Client) {
             self.relief_tick(dt);
             self.relief_give_tick(dt);
+            self.relief_back_tick(dt);
         }
         self.tick_voice(dt);
     }

@@ -833,12 +833,32 @@ its departure, then the AI drives that trip and the relief moves to the next one
   it on (`relief gave`, `gave_relief`; given again - an answer lost -, answered the same) and,
   told so (`relief given`), lets it go and stays on foot; the waiting player's game puts the bus
   down where it stood (no driver to get out). A player whose duty goes on after it, on another
-  tour, has no bus of his own after it (not handled yet). The giver not there within five minutes of the
+  tour, waits for that trip's bus at its first stop, as a relief (`relief_next_trip`, 27 October
+  2026). The giver not there within five minutes of the
   departure, or gone from the session: the AI brings a bus to the stop.
+- **The end of his duty, the AI driving the tour on** (27 October 2026): his last trip done at its
+  terminus (not a duty that ends halfway along a trip), his bus standing, his game asks the world
+  (`relief end <line>;<tour>;<last dep>`, every 3 s while his bus is within 60 m of where it ended;
+  told no, every 30 s - a break too long gets shorter; a host that never answers, given up after
+  ten asks). In a world of Bus Company Online (its companies' tours: `ScheduleSim::want_back`, not a
+  player's own LAN session) the tour's next departure - when it runs, is nobody else's, its bus is
+  not under way and it leaves in 30 s to 30 minutes - is held back for his bus (`relief::Back`,
+  until its time): no bus of the AI's put out beside his, one waiting at the stop already taken
+  off. His game says so ("The AI drives the tour on with your bus at …: stop, get up and get out");
+  out of it, the AI's driver walks up along the kerb, in at the front door and to the wheel (his
+  game's figure), then his game gives the bus back (`relief back`, `gave_back`; sent again every
+  3 s until the world answers `relief backed` - given again, answered the same): it leaves his
+  game, and the AI's bus of that departure is put out at its first stop, where his stood, waiting
+  for its time. The world says no, or nothing within 15 s: the bus stays his ("The AI could not
+  take your bus over: it stays yours"). Back in the bus first, or driven off, the driver goes;
+  driven on (single trips' "Drive on"), it is no hand-back; asked again once given back, nothing to
+  hand back. Not given back - his game no longer asks for `RELIEF_STALE`, or its departure time
+  come - the AI's own bus comes, as before.
 - **A world without the trip** (`relief unknown`): his own bus on the road by the stop.
 
 Tested: `omsi_sim`'s `ai_traffic::service_tests::a_bus_holds_at_the_stop_its_relief_waits_at`,
 `timetable_run::sim::relief::tests::a_lan_player_takes_the_ais_bus_over_at_his_stop`,
+`timetable_run::sim::relief::tests::at_the_end_of_his_duty_the_ai_takes_his_bus_over`,
 `together::tests::a_trip_the_ai_drove_while_he_was_not_at_his_stop_is_the_ais`,
 `relief::tests::the_same_vehicle_file_however_written`.
 
@@ -882,8 +902,8 @@ default), and duties planned for players come first.
   world take it from the AI (its bus waiting at the stop, if it was already put out, goes), and the
   company books it as his - his part grows when the world
   reports it (`book::report`: the next trip with passengers of the duty after his). Not chosen, his
-  duty ends there and the world gives the tour back to the AI, which drives it on with a bus of
-  its own - as at the end of any duty.
+  duty ends there, and the AI takes his bus over to drive the tour on, as at the end of any duty
+  (see "The end of his duty, the AI driving the tour on" above).
 - **The books**: his trips are booked as measured with the players' (`GuestTrip::part`); the day's
   close runs the rest of the duty with its driver and leaves those trips out
   (`book::part_drove`). A single trip counts as trips in his figures, not as a duty. Not at the

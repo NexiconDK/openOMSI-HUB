@@ -89,6 +89,12 @@ impl ScheduleSim {
         self.mark_company();
     }
 
+    /// (27 October 2026) A world of Bus Company Online (the companies of a main server's folder):
+    /// at the end of a LAN player's duty the AI takes his bus over (`want_back`).
+    pub fn set_online_world(&mut self) {
+        self.online_world = true;
+    }
+
     /// The date (yyyymmdd) the departures are for.
     pub fn day(&self) -> i32 {
         self.day

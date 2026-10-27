@@ -115,3 +115,41 @@ _version: 2
   pl: "Koniec twojego kursu: SI prowadzi brygadę dalej stąd - albo poprowadź jej następny kurs sam (menu gry › Jedź dalej następnym kursem)."
   ru: "Конец твоего рейса: дальше выход ведёт ИИ - или проведи его следующий рейс сам (меню игры › Ехать дальше следующим рейсом)."
   uk: "Кінець твого рейсу: далі вихід веде ШІ - або проведи його наступний рейс сам (меню гри › Їхати далі наступним рейсом)."
+# NexiconDK, Bus Company Online (27 October 2026): at the end of a duty the AI takes the player's bus
+# over to drive the tour on (its driver walks up and gets in); a player who gave his bus on to
+# another, his duty going on with another tour, waits for that trip's bus (`relief`).
+"The AI drives the tour on with your bus at %{time}: stop, get up (Ctrl+Shift+G) and get out - its driver takes it over.":
+  de: "Die KI fährt den Umlauf um %{time} mit deinem Bus weiter: halte an, steh auf (Strg+Umschalt+G) und steig aus - ihr Fahrer übernimmt ihn."
+  fr: "L'IA poursuit le service avec ton bus à %{time} : arrête-toi, lève-toi (Ctrl+Maj+G) et descends - son conducteur le reprend."
+  nl: "De AI rijdt de omloop om %{time} verder met jouw bus: stop, sta op (Ctrl+Shift+G) en stap uit - haar chauffeur neemt hem over."
+  pl: "SI prowadzi brygadę dalej twoim autobusem o %{time}: zatrzymaj się, wstań (Ctrl+Shift+G) i wysiądź - jej kierowca go przejmie."
+  ru: "ИИ продолжит выход на твоём автобусе в %{time}: остановись, встань (Ctrl+Shift+G) и выйди - его водитель примет автобус."
+  uk: "ШІ продовжить вихід на твоєму автобусі о %{time}: зупинись, встань (Ctrl+Shift+G) і вийди - його водій прийме автобус."
+"The driver comes to take your bus over.":
+  de: "Der Fahrer kommt, um deinen Bus zu übernehmen."
+  fr: "Le conducteur arrive pour reprendre ton bus."
+  nl: "De chauffeur komt je bus overnemen."
+  pl: "Kierowca idzie przejąć twój autobus."
+  ru: "Водитель идёт принять твой автобус."
+  uk: "Водій іде прийняти твій автобус."
+"Handed over: the AI drives the tour on.":
+  de: "Übergeben: die KI fährt den Umlauf weiter."
+  fr: "Remis : l'IA poursuit le service."
+  nl: "Overgedragen: de AI rijdt de omloop verder."
+  pl: "Przekazano: SI prowadzi brygadę dalej."
+  ru: "Передано: ИИ ведёт выход дальше."
+  uk: "Передано: ШІ веде вихід далі."
+"The AI could not take your bus over: it stays yours.":
+  de: "Die KI konnte deinen Bus nicht übernehmen: er bleibt deiner."
+  fr: "L'IA n'a pas pu reprendre ton bus : il reste le tien."
+  nl: "De AI kon je bus niet overnemen: hij blijft van jou."
+  pl: "SI nie mogła przejąć twojego autobusu: zostaje twój."
+  ru: "ИИ не смог принять твой автобус: он остаётся твоим."
+  uk: "ШІ не зміг прийняти твій автобус: він лишається твоїм."
+"Your duty goes on with line %{line} at %{time} from %{stop}: wait there for its bus.":
+  de: "Dein Dienst geht weiter mit Linie %{line} um %{time} ab %{stop}: warte dort auf ihren Bus."
+  fr: "Ton service continue avec la ligne %{line} à %{time} depuis %{stop} : attends-y son bus."
+  nl: "Je dienst gaat verder met lijn %{line} om %{time} vanaf %{stop}: wacht daar op haar bus."
+  pl: "Twoja służba trwa dalej linią %{line} o %{time} z przystanku %{stop}: czekaj tam na jej autobus."
+  ru: "Твоя смена продолжается маршрутом %{line} в %{time} от остановки %{stop}: жди там его автобус."
+  uk: "Твоя зміна триває маршрутом %{line} о %{time} від зупинки %{stop}: чекай там на його автобус."

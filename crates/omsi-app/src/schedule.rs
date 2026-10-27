@@ -213,6 +213,8 @@ impl Schedule {
     pub fn set_server_companies(&mut self, world: &World, data: PathBuf) {
         let companies = crate::company_live::ServerCompanies::load(&world.map_dir, self.sim.day(), data);
         self.sim.set_company(Box::new(companies));
+        // (27 October 2026: the AI takes a player's bus over at the end of his duty - `relief`)
+        self.sim.set_online_world();
     }
 
     /// (NexiconDK, single trips) The player drives on with the tour's trip after his duty's last

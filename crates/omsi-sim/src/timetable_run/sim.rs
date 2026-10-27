@@ -34,7 +34,7 @@ pub use choice::{depot_file, pool_depot};
 pub use company::{CompanyBus, TimetableCompany};
 pub use dispatch::{tour_entry, TOUR_ENTRY_LANES};
 pub use place::Placing;
-pub use relief::{Kept as ReliefKept, ReliefState, RELIEF_ARRIVED_WAIT, RELIEF_KEPT, RELIEF_NOBODY, RELIEF_NOT_HERE, RELIEF_NOT_WAITING, RELIEF_NO_BUS, RELIEF_NO_TRIP, RELIEF_STALE, RELIEF_WAIT};
+pub use relief::{BackState, Kept as ReliefKept, ReliefState, RELIEF_ARRIVED_WAIT, RELIEF_KEPT, RELIEF_NOBODY, RELIEF_NOT_HERE, RELIEF_NOT_WAITING, RELIEF_NO_BUS, RELIEF_NO_TRIP, RELIEF_STALE, RELIEF_WAIT};
 pub use web_map::{build_web_map, LiveBus, WebCall, WebMap, WebTimetable, WebTrip};
 
 /// What the timetable needs of the loaded map: its folders, the AI lists, the tiles, the
@@ -279,6 +279,14 @@ pub struct ScheduleSim {
     /// (giver, taker): asked again, answered the same.
     relief_taken: HashMap<usize, u32>,
     relief_given: HashMap<usize, (u32, u32)>,
+    /// (27 October 2026) The departures after a LAN player's duty the AI drives on with his bus
+    /// (`relief::Back`: held back until he got out and its driver got in, `gave_back`), and those
+    /// it took over so (asked again, answered the same).
+    backs: HashMap<usize, relief::Back>,
+    backed: HashSet<usize>,
+    /// A world of Bus Company Online (`set_online_world`): its companies' tours the AI drives on
+    /// with a LAN player's bus at the end of his duty (`want_back`) - not a player's own session.
+    online_world: bool,
     /// Mixed into the draw of a tour's vehicle, so that a tour gets another of its depot's
     /// buses from session to session, as in OMSI (the session's seed; a LAN game's shared
     /// one, `set_lan_seed`). Hashing the tour alone sent the same bus out on it every time

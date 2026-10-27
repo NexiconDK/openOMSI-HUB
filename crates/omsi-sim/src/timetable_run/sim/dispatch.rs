@@ -33,6 +33,8 @@ impl ScheduleSim {
         self.retry_at.clear();
         self.startup.clear();
         self.later_layover.clear();
+        self.backs.clear();
+        self.backed.clear();
         // (the clock set back over midnight: the day before)
         while day_time < self.day_base {
             self.day_base -= DAY;

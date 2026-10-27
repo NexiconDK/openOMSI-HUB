@@ -495,6 +495,9 @@ pub(crate) struct SessionState {
     pub(crate) relief: Option<crate::relief::Relief>,
     /// Another player waits at a stop to take our bus over there (`relief`).
     pub(crate) relief_give: Option<crate::relief::Give>,
+    /// (27 October 2026) The end of our duty, the AI taking our bus over to drive the tour on
+    /// (`relief`).
+    pub(crate) relief_back: Option<crate::relief::Back>,
     /// Where the bus last stood on the ground (and facing where): it is put back there when
     /// it falls through the world (see `admin::guard_fall`).
     pub(crate) safe_pose: Option<(glam::DVec3, f64)>,

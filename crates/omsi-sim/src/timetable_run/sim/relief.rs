@@ -18,6 +18,13 @@
 //! hand over (`ReliefState::FromPlayer`): he gets out at the stop, and his game gives the bus on
 //! (`gave_relief`). Not there within `RELIEF_WAIT` of the departure (or gone from the session),
 //! the AI brings a bus instead.
+//!
+//! (27 October 2026) At the end of his duty, where the AI drives the tour on, the AI takes his bus
+//! over (`want_back`): its departure after his is held back - no bus of the AI's put out at the stop
+//! beside his - while his game says so, he gets out, the AI's driver walks up and gets in (his
+//! game's figure), and his game gives the bus back (`gave_back`): it leaves his game, and the AI's
+//! bus of that departure is put out at the stop where it stood, waiting for its time. Not given
+//! back by its departure (or his game no longer asks), the AI's own bus comes, as before.
 
 use super::*;
 use crate::ai_traffic::bus_service::ReliefHold;
@@ -74,6 +81,30 @@ pub struct Kept {
     pub line: String,
     pub tour: String,
     pub departure: f64,
+}
+
+/// (27 October 2026) A departure after a LAN player's duty that the AI takes over with his bus,
+/// held back while his game asks (`want_back`): who, when his game asked last, until when at most
+/// (the traffic's clock: a minute past its departure).
+#[derive(Clone, Debug, PartialEq)]
+pub(super) struct Back {
+    pub peer: u32,
+    pub seen: f64,
+    pub until: f64,
+}
+
+/// What becomes of a LAN player's bus at the end of his duty (`want_back`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BackState {
+    /// The AI drives the tour on with it: its departure then (minutes of the day), and the AI's
+    /// bus of it that stood at the stop already, taken off the road for it (the caller takes it
+    /// off).
+    Ai(i32, Option<u64>),
+    /// Given back already (a question still on its way when it was).
+    Given(i32),
+    /// Nothing to hand back: the tour ends, another player drives it on, or the AI's bus of it is
+    /// on its way.
+    No,
 }
 
 /// What became of a relief his game asks about.
@@ -193,6 +224,8 @@ impl ScheduleSim {
                     None => log::info!("timetable: LAN player {peer} waits at stop {stop} ({}) to take over line {line} tour {tour} at {}: its bus holds there for him until {}", r.stop_id, hhmm(r.at - self.day_base), hhmm(r.until - self.day_base)),
                 }
                 self.reliefs.insert(i, r);
+                // (a hand-back held for it is void: another player waits for its bus)
+                self.backs.remove(&i);
                 match from {
                     // (the players': not the AI's to run)
                     Some(_) => self.departures[i].spawned = true,
@@ -293,6 +326,119 @@ impl ScheduleSim {
         Ok(id)
     }
 
+    /// (27 October 2026) LAN player `peer`'s duty ends with departure `last` (minutes of the day)
+    /// of `line`/`tour`, his bus at its terminus: the AI drives the tour on with it - the next
+    /// departure of the tour is held back for it while his game asks, and the AI's bus of it that
+    /// waited at the stop already goes (its car's id: the caller takes it off) - unless the tour
+    /// ends there, another player has the next trip (or waits for it), it does not run, or its bus
+    /// is on the road already. Only in a world of Bus Company Online, whose companies' tours the
+    /// AI drives (`set_company`): in a player's own LAN session his bus stays his.
+    pub fn want_back(&mut self, peer: u32, line: &str, tour: &str, last: i32, traffic: &TrafficSim, day_time: f64) -> BackState {
+        if !self.online_world {
+            return BackState::No;
+        }
+        let Some(i) = self.relief_departure(line, tour, last, day_time) else { return BackState::No };
+        let Some(k) = self.tour_next.get(i).copied().flatten() else { return BackState::No };
+        let next = (self.departures[k].time / 60.0).round() as i32;
+        if self.backed.contains(&k) {
+            return BackState::Given(next);
+        }
+        // (one another player drives or waits for, or one its company's control room sends a
+        // spare bus to: not his bus's)
+        if !self.runs(k) || self.reliefs.contains_key(&k) || self.is_player_tour(k) || self.awaiting.contains(&k) || self.company_swap(k) {
+            if self.backs.contains_key(&k) {
+                self.release_back(k, day_time);
+            }
+            return BackState::No;
+        }
+        // (held for him already: until it leaves - he is getting out)
+        match self.backs.get_mut(&k) {
+            Some(b) if b.peer != peer => return BackState::No,
+            Some(b) => {
+                b.seen = day_time;
+                return BackState::Ai(next, None);
+            }
+            None => {}
+        }
+        // (one leaving now, or after a break its bus would not wait at the stop for: the AI's own)
+        let wait = self.dep_time(k) - day_time;
+        if !(30.0..=TOUR_LAYOVER_MAX).contains(&wait) {
+            return BackState::No;
+        }
+        // (the AI's bus of it on the road: only one that waits at its first stop for its time
+        // makes way - one under way comes as it is)
+        let car = self.tour_bus(k, traffic).map(|ci| &traffic.cars[ci]);
+        if car.is_some_and(|c| day_time >= self.dep_time(k) || !c.bus.as_ref().is_some_and(|b| b.at_stop())) {
+            return BackState::No;
+        }
+        let gone = car.map(|c| c.id);
+        if let Some(id) = gone {
+            self.car_departure.remove(&id);
+            self.running.retain(|r| r.car != id);
+        }
+        self.departures[k].spawned = true;
+        self.pending.retain(|x| *x != k);
+        self.waiting.retain(|x| *x != k);
+        self.retry_at.remove(&k);
+        self.backs.insert(k, Back { peer, seen: day_time, until: self.dep_time(k) });
+        log::info!("timetable: LAN player {peer}'s duty ends with {line} tour {tour} at {}: the AI drives the {} on with his bus", hhmm(last as f64 * 60.0), hhmm(self.departures[k].time));
+        BackState::Ai(next, gone)
+    }
+
+    /// (27 October 2026) LAN player `peer` gave his bus back for departure `next` (minutes of the
+    /// day; `want_back`): out of his game, the AI's bus of it is put out at its first stop, where his
+    /// stood - or why not. Given again (an answer lost on the way): the same.
+    pub fn gave_back(&mut self, peer: u32, line: &str, tour: &str, next: i32, day_time: f64) -> Result<(), &'static str> {
+        let k = self.relief_departure(line, tour, next, day_time).ok_or(RELIEF_NO_TRIP)?;
+        if self.backed.contains(&k) {
+            return Ok(());
+        }
+        self.backs.get(&k).filter(|b| b.peer == peer).ok_or(RELIEF_NOBODY)?;
+        self.backs.remove(&k);
+        self.backed.insert(k);
+        // (put out now, waiting at its first stop for its time - as a layover bus; not when it has
+        // a bus of its own meanwhile, or another player waits for it)
+        let has_bus = self.car_departure.values().any(|&x| x == k) || self.pending.contains(&k) || self.awaiting.contains(&k);
+        self.departures[k].spawned = true;
+        if !has_bus && !self.reliefs.contains_key(&k) {
+            self.pending.push_back(k);
+        }
+        log::info!("timetable: LAN player {peer} gave his bus back: the AI drives {line} tour {tour} at {} on", hhmm(next as f64 * 60.0));
+        Ok(())
+    }
+
+    /// The departures held back for a bus given back that is not coming: his game no longer asks,
+    /// or past its departure - the AI's own bus comes for them, as for any other trip of its
+    /// (not one his claim has now: he drove on).
+    fn backs_tick(&mut self, day_time: f64) {
+        let over: Vec<usize> = self.backs.iter().filter(|(_, b)| day_time >= b.until || day_time - b.seen > RELIEF_STALE || day_time < b.seen - 60.0).map(|(k, _)| *k).collect();
+        for k in over {
+            self.release_back(k, day_time);
+        }
+    }
+
+    /// Departure `k` no longer held back for a LAN player's bus: the AI's own bus comes for it - put
+    /// out at once when it is due (the queue takes only a departure of the last moments) - unless his
+    /// claim has it now (he drove on with it), another player waits for it, or it has a bus.
+    fn release_back(&mut self, k: usize, day_time: f64) {
+        self.backs.remove(&k);
+        if self.is_player_tour(k) || self.reliefs.contains_key(&k) || self.car_departure.values().any(|&x| x == k) || self.pending.contains(&k) {
+            return;
+        }
+        self.departures[k].spawned = false;
+        if self.departures[k].time <= day_time - self.day_base {
+            self.departures[k].spawned = true;
+            self.pending.push_back(k);
+        }
+        log::info!("timetable: {} tour {} at {}: no bus given back, the AI's own comes", self.departures[k].line, self.departures[k].tour, hhmm(self.departures[k].time));
+    }
+
+    /// (27 October 2026) A LAN player gave his bus back for departure `i` (`gave_back`): its AI bus
+    /// comes into view at its first stop, where his stood and he stands.
+    pub fn back_given(&self, i: usize) -> bool {
+        self.backed.contains(&i)
+    }
+
     /// The reliefs the AI drove after all since asked last (a world of Bus Company Online writes
     /// them for the player's company: `company_server::relief_kept`).
     pub fn take_kept_reliefs(&mut self) -> Vec<Kept> {
@@ -303,6 +449,9 @@ impl ScheduleSim {
     /// asked for again is let go (the trip the AI's, or his claim's), one past its wait is the
     /// AI's (`relief_kept`).
     pub(super) fn relief_tick(&mut self, traffic: &mut TrafficSim, day_time: f64) {
+        if !self.backs.is_empty() {
+            self.backs_tick(day_time);
+        }
         if self.reliefs.is_empty() {
             return;
         }
@@ -553,6 +702,95 @@ mod tests {
         assert!(s.relief_kept.contains(&1), "then the AI drives it");
         // (the departure by its minute, the line and tour in any case)
         assert!(s.relief_departure("LINIE5", " 3", 660, at(10.0)) == Some(3) && s.relief_departure("linie5", "3", 661, at(10.0)).is_none() && s.relief_departure("linie7", "3", 660, at(10.0)).is_none());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// A world of Bus Company Online, its companies' tours the AI's as ever.
+    struct Online;
+    impl TimetableCompany for Online {
+        fn active(&self) -> bool {
+            true
+        }
+        fn own_only(&self) -> bool {
+            false
+        }
+        fn set_day(&mut self, _: i32) {}
+        fn keeps_off(&self, _: &str, _: &str, _: bool) -> bool {
+            false
+        }
+        fn runs_tour(&self, _: &str, _: &str) -> bool {
+            true
+        }
+        fn report(&mut self, _: usize, _: &str, _: &str, _: i32, _: f64, _: usize, _: f64) {}
+        fn bus(&mut self, _: &Path, _: &str, _: &str) -> Option<CompanyBus> {
+            None
+        }
+    }
+
+    /// (27 October 2026) At the end of a LAN player's duty the AI takes his bus over to drive the
+    /// tour on: its next departure held back while his game asks - the AI's bus of it waiting at
+    /// the stop makes way -, put out once he gave it back; not given back (his game no longer asks,
+    /// or past its time), the AI's own bus comes - not for a trip he drove on with; nothing to hand
+    /// back at the tour's end, nor to another player's game.
+    #[test]
+    fn at_the_end_of_his_duty_the_ai_takes_his_bus_over() {
+        let dir = std::env::temp_dir().join(format!("omsi_relief_back_{}", std::process::id()));
+        let w = World { path: dir.clone(), ai: Default::default(), positions: Default::default() };
+        let mut s = ScheduleSim::new(&w.path, &w, &crate::SimClock::default());
+        s.data.trips.push(omsi_timetable::Trip { name: "5a".into(), line: "Linie5".into(), stations: vec![1, 2], ..Default::default() });
+        s.times = vec![vec![TripTimes { stations: vec![(0.0, 0.0), (600.0, 600.0)], stops: vec![true, true], duration: 600.0, ..Default::default() }]];
+        let d = |h: f64| Departure { time: h * 3600.0, trip: 0, profile: 0, line: "Linie5".into(), ai_group: "depot".into(), tour: "3".into(), mask: -1, spawned: false, yesterday: false };
+        s.departures = vec![d(8.0), d(9.0), d(10.0), d(11.0)];
+        s.tour_prev = vec![None, Some(0), Some(1), Some(2)];
+        s.tour_next = vec![Some(1), Some(2), Some(3), None];
+        s.company_off = vec![false; 4];
+        s.last_tod = 9.5 * 3600.0;
+        let at = |h: f64| h * 3600.0;
+        // (a player's own LAN session: his bus stays his)
+        let (mut traffic, car) = bus_at_stop(&dir, at(10.0));
+        assert_eq!(s.want_back(7, "Linie5", "3", 540, &traffic, at(9.6)), BackState::No);
+        s.set_company(Box::new(Online));
+        assert_eq!(s.want_back(7, "Linie5", "3", 540, &traffic, at(9.6)), BackState::No, "a company of his own: not the server's");
+        s.set_online_world();
+        // his duty ended with the 9:00; the 10:00's bus waits at the stop already: it makes way
+        traffic.cars[0].bus.as_mut().unwrap().phase = Phase::Boarding;
+        s.car_departure.insert(car, 2);
+        s.departures[2].spawned = true;
+        assert_eq!(s.want_back(7, "Linie5", "3", 540, &traffic, at(9.6)), BackState::Ai(600, Some(car)));
+        assert!(s.departures[2].spawned && !s.car_departure.contains_key(&car) && !s.pending.contains(&2), "held back for his bus");
+        assert_eq!(s.want_back(7, "Linie5", "3", 540, &traffic, at(9.62)), BackState::Ai(600, None), "asked again: held");
+        assert_eq!(s.want_back(8, "Linie5", "3", 540, &traffic, at(9.62)), BackState::No, "another's");
+        // given back: the 10:00 put out at once, where his bus stood
+        assert_eq!(s.gave_back(8, "Linie5", "3", 600, at(9.63)), Err(RELIEF_NOBODY));
+        assert_eq!(s.gave_back(7, "Linie5", "3", 600, at(9.63)), Ok(()));
+        assert!(s.pending.contains(&2) && s.departures[2].spawned && s.backs.is_empty());
+        assert_eq!(s.gave_back(7, "Linie5", "3", 600, at(9.64)), Ok(()), "given again (its answer lost): the same");
+        assert_eq!(s.want_back(7, "Linie5", "3", 540, &traffic, at(9.64)), BackState::Given(600));
+        // the tour's last trip: nothing to hand back
+        assert_eq!(s.want_back(7, "Linie5", "3", 660, &traffic, at(11.2)), BackState::No);
+        // the 10:00 his last: not given back, his game no longer asking - the AI's own bus comes
+        traffic.cars.clear();
+        assert_eq!(s.want_back(7, "Linie5", "3", 600, &traffic, at(10.6)), BackState::Ai(660, None));
+        assert!(s.departures[3].spawned);
+        s.relief_tick(&mut traffic, at(10.6) + RELIEF_STALE + 1.0);
+        assert!(s.backs.is_empty() && !s.departures[3].spawned);
+        // (nor by its time, though his game asks: due then, put out at once)
+        assert_eq!(s.want_back(7, "Linie5", "3", 600, &traffic, at(10.9)), BackState::Ai(660, None));
+        assert_eq!(s.want_back(7, "Linie5", "3", 600, &traffic, at(10.995)), BackState::Ai(660, None), "held for him until it leaves, though that is soon: he is getting out");
+        s.backs.get_mut(&3).unwrap().seen = at(11.0);
+        s.relief_tick(&mut traffic, at(11.0));
+        assert!(s.backs.is_empty() && s.departures[3].spawned && s.pending.contains(&3));
+        assert_eq!(s.want_back(7, "Linie5", "3", 600, &traffic, at(10.995)), BackState::No, "too late to hold");
+        assert_eq!(s.want_back(7, "Linie5", "3", 540, &traffic, at(9.2)), BackState::Given(600));
+        s.pending.clear();
+        s.departures[3].spawned = false;
+        assert_eq!(s.want_back(7, "Linie5", "3", 600, &traffic, at(10.4)), BackState::No, "a break its bus would not wait for");
+        // he drove on with it: his, not the AI's bus
+        assert_eq!(s.want_back(7, "Linie5", "3", 600, &traffic, at(10.7)), BackState::Ai(660, None));
+        s.set_lan_tours(lan_claims("linie5/3@660~660").into_iter().collect());
+        assert_eq!(s.want_back(7, "Linie5", "3", 600, &traffic, at(10.71)), BackState::No);
+        s.relief_tick(&mut traffic, at(10.71) + RELIEF_STALE + 1.0);
+        assert!(s.backs.is_empty() && s.departures[3].spawned && s.is_player_tour(3));
         let _ = std::fs::remove_dir_all(&dir);
     }
 }
