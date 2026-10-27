@@ -363,7 +363,13 @@ fn world(company: &str) -> Value {
                 None => json!({ "waiting": tr("The map's world has no way in over the internet yet: its tunnel is starting.") }),
             }
         }
-        Ok(v) => json!({ "waiting": trf("Starting the world of %{map} on the server… (about a minute)", &[("map", v.get("map").and_then(Value::as_str).unwrap_or(""))]) }),
+        // (NexiconDK, 27 October 2026: until it runs - a big map loads for minutes -, said with how
+        // long it has been loading, once a minute)
+        Ok(v) => {
+            let map = v.get("map").and_then(Value::as_str).unwrap_or("");
+            let min = v.get("since").and_then(Value::as_u64).unwrap_or(0) / 60;
+            json!({ "waiting": if min == 0 { trf("Starting the world of %{map} on the server… (a big map takes a few minutes)", &[("map", map)]) } else { trf("The world of %{map} is still loading on the server: %{n} min so far.", &[("map", map), ("n", &min.to_string())]) } })
+        }
         Err((e, a)) => json!({ "error": words_of(&e, &a) }),
     }
 }

@@ -466,6 +466,18 @@ pub fn ports_of(first: u16, k: usize) -> (u16, u16) {
     (p as u16, (p + 1) as u16)
 }
 
+/// (NexiconDK, 27 October 2026) The file a map's world writes in its folder (`worlds/<map>/`)
+/// once it runs - its map loaded, its timetable and companies taken in -, with its process id: the
+/// main server tells a player it is ready then (`world_running`). Its gateway answers at once, minutes
+/// before the map is loaded (Ahlheim: about six), and a player let in then found a world that did
+/// not answer him: no bus handed over at his stop, his game's clock set back again and again.
+pub const WORLD_RUNNING: &str = "world.running";
+
+/// Whether the world of folder `dir`, process `pid`, runs (`WORLD_RUNNING`).
+pub fn world_running(dir: &Path, pid: u32) -> bool {
+    std::fs::read_to_string(dir.join(WORLD_RUNNING)).ok().and_then(|s| s.trim().parse::<u32>().ok()) == Some(pid)
+}
+
 /// A map's world the main server started.
 pub struct World {
     /// The map (`maps/<folder>/global.cfg`).
@@ -477,7 +489,16 @@ pub struct World {
     /// (Phase 6 step 2) Since when it has had no players (Unix seconds; None: players, or not
     /// looked at yet).
     pub empty_since: Option<f64>,
+    /// Its folder (`worlds/<map>/`: its server.cfg, its output, `WORLD_RUNNING`).
+    pub dir: PathBuf,
     child: Child,
+}
+
+impl World {
+    /// It runs: its map loaded, its timetable and companies taken in (`WORLD_RUNNING`).
+    pub fn running(&self) -> bool {
+        world_running(&self.dir, self.child.id())
+    }
 }
 
 /// A company's own process (`omsi-hub-game --company-host`): its boss on the server - the
@@ -879,6 +900,8 @@ impl MainServer {
         std::fs::write(&cfg_path, world_cfg(&self.cfg, &data, &map, port, web_port)).with_context(|| format!("cannot write {}", cfg_path.display()))?;
         let game = self.cfg.game.clone().or_else(crate::game_program).context("no game program to run the world in (game in company-server.cfg)")?;
         let out = std::fs::File::create(dir.join("world.out")).ok();
+        // (not running until it says so: an earlier world's word is not this one's)
+        let _ = std::fs::remove_file(dir.join(WORLD_RUNNING));
         let mut cmd = Command::new(&game);
         cmd.arg("--server").arg(&cfg_path).arg("--root").arg(&self.cfg.root).stdin(Stdio::null());
         // (its LAN status - its session code, its tunnel - where the main server finds it:
@@ -894,7 +917,7 @@ impl MainServer {
         }
         let child = cmd.spawn().with_context(|| format!("starting {}", game.display()))?;
         info!("world of {map} started: UDP {port}, web {web_port} ({})", dir.display());
-        self.worlds.push(World { map, slot, port, web_port, started: Instant::now(), empty_since: None, child });
+        self.worlds.push(World { map, slot, port, web_port, started: Instant::now(), empty_since: None, dir, child });
         Ok(self.worlds.last().expect("pushed"))
     }
 
@@ -1421,8 +1444,20 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 
-    /// (Phase 3) What the companies booked as their players' pay is paid into their money, once,
-    /// and pay for a player the server does not know is not.
+    /// (27 October 2026) A world runs once it says so in its folder, with its own process id - not
+    /// an earlier world's word, nor before.
+    #[test]
+    fn a_world_runs_once_it_says_so_itself() {
+        let dir = std::env::temp_dir().join(format!("omsi-world-running-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        assert!(!world_running(&dir, 42), "loading its map");
+        std::fs::write(dir.join(WORLD_RUNNING), "42\n").unwrap();
+        assert!(world_running(&dir, 42));
+        assert!(!world_running(&dir, 43), "an earlier world's word");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
     /// (NexiconDK, decided 26 October 2026) A server on the real time keeps its machine's own
     /// time: a clock an hour ahead - summer time over - set back at once, one behind set on at
     /// once, in step left alone. (Danish time as the EU changes it, for the record.)
@@ -1458,6 +1493,8 @@ game = {}
         let _ = std::fs::remove_dir_all(&dir);
     }
 
+    /// (Phase 3) What the companies booked as their players' pay is paid into their money, once,
+    /// and pay for a player the server does not know is not.
     #[test]
     fn the_players_pay_is_paid_into_their_money() {
         let dir = temp("pay");

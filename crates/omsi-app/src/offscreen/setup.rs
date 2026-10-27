@@ -141,6 +141,10 @@ impl<'a> Offscreen<'a> {
         if server {
             quit::install(|_| {});
             log::info!("server: running; Ctrl+C or SIGTERM stops it");
+            // (Bus Company Online: players are let in from now on)
+            if let Some(cfg) = args.server.as_deref() {
+                crate::company_server::mark_running(cfg);
+            }
         }
         let timed: Vec<(String, f32)> = parse_triggers(args)
             .into_iter()

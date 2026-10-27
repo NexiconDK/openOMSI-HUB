@@ -241,10 +241,16 @@ bus there - everybody on the map in one world - instead of starting the game alo
 - **The world asked for** (`server_api`'s `world {company}`): of one of the company's players
   (its owner, or a player of its book not sent away; else `NOT_MEMBER`), the main server starts
   the map's world when it does not run (`MainServer::start_world`, the world's LAN status under
-  `OMSI_INSTANCE = bco-world-<slot>`: `main_server::world_status`) and says whether it answers
-  yet (its web gateway on the machine), its ports and its tunnel.
-- **The launcher waits for it** (`bco_world`, `together.js`'s `worldOf`: asked every 3 s, "Starting
-  the world of … (about a minute)" said), then joins it at the server's own address with the
+  `OMSI_INSTANCE = bco-world-<slot>`: `main_server::world_status`) and says whether it runs yet
+  - its map loaded, its timetable and companies taken in: the file it writes in its folder then,
+  `main_server::WORLD_RUNNING` with its process id (`company_server::mark_running`), and its web
+  gateway answering -, its ports and its tunnel. (27 October 2026: its gateway alone answers at
+  once, minutes before the map is loaded - Ahlheim about six -, and a player let in then found a
+  world that did not answer him: no bus handed over at his stop, his game's clock set back with
+  every reconnection.)
+- **The launcher waits for it** (`bco_world`, `together.js`'s `worldOf`: asked every 3 s for up
+  to a quarter of an hour, "Starting the world of … (a big map takes a few minutes)" said, then
+  how many minutes it has loaded, once a minute), then joins it at the server's own address with the
   world's web port (the main server reached on a network), or at the world's tunnel (reached
   through the main server's).
 - **The game joins it** (`join.rs`'s `drive` with `world`): the duty's launch with `lan =
@@ -794,8 +800,9 @@ its departure, then the AI drives that trip and the relief moves to the next one
   (`relief want <line>;<tour>;<dep>;<stop>`, a LAN command); while it waits it does not claim that
   trip (`PlayerDuty::lan_claims_from`: claimed, the world would take the AI's bus off the road),
   only the trips after it. The trips of the duty before it, gone already, it tells the world once
-  (they are the AI's). No answer within 15 s (a world without a timetable, an older one): his own
-  bus by the stop. The world sends a player on foot its frames around his walker (`lan_world`: no
+  (they are the AI's). No answer within 30 s while the world is heard from (a world without a
+  timetable, an older one - not counted while it says nothing at all, `LanSession::host_quiet`):
+  his own bus by the stop. The world sends a player on foot its frames around his walker (`lan_world`: no
   bus of his own).
 - **The world** (`omsi_sim`'s `ScheduleSim::want_relief`, `sim/relief.rs`): while he waits the
   departure is the AI's although his claim has it - the tour's bus takes the trip on at the

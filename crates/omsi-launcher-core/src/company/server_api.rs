@@ -470,7 +470,7 @@ impl Api {
     /// (Phase 3) The world of company `company`'s map for its player `id`: started when it does
     /// not run; whether it answers yet (its web gateway on this machine), its ports, its tunnel.
     fn world(&self, id: &str, company: &str) -> Value {
-        let (map, slot, port, web_port, since) = {
+        let (map, slot, port, web_port, since, running) = {
             let mut m = self.server();
             let Some(me) = m.players.get(id).cloned() else { return refusal(LOGGED_OUT) };
             let cid = company.trim();
@@ -485,7 +485,7 @@ impl Api {
             let fresh = !m.worlds.iter().any(|w| map_folder(&w.map) == map_folder(&c.map));
             match m.start_world(&c.map) {
                 Ok(w) => {
-                    let x = (w.map.clone(), w.slot, w.port, w.web_port, w.started.elapsed().as_secs());
+                    let x = (w.map.clone(), w.slot, w.port, w.web_port, w.started.elapsed().as_secs(), w.running());
                     if fresh {
                         m.say(&format!("world of {}: started for {} ({}), to drive for {}", super::main_server::map_name(&c.map), me.name, me.id, c.name));
                     }
@@ -497,8 +497,9 @@ impl Api {
                 }
             }
         };
-        // (it answers once its map is loaded and its gateway is up - not held meanwhile)
-        let ready = omsi_net::ws::query(&format!("http://127.0.0.1:{web_port}"), false).is_ok();
+        // (it answers once it runs - its map loaded, `main_server::WORLD_RUNNING` - and its
+        // gateway is up: not held meanwhile)
+        let ready = running && omsi_net::ws::query(&format!("http://127.0.0.1:{web_port}"), false).is_ok();
         let status = super::main_server::world_status(slot);
         let tunnel = status.as_ref().and_then(|s| s.get("tunnel")).and_then(Value::as_str).filter(|t| !t.is_empty()).map(str::to_string);
         json!({ "ok": true, "ready": ready, "map": super::main_server::map_name(&map), "port": port, "web_port": web_port, "tunnel": tunnel, "since": since })

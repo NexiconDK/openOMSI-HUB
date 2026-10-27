@@ -52,8 +52,11 @@ pub(crate) struct Relief {
     heard: bool,
 }
 
-/// How long the waiting player's game waits for the world's first answer (s).
-const NO_ANSWER: f32 = 15.0;
+/// How long the waiting player's game waits for the world's first answer (s), counted while the
+/// world is heard from (a world still loading its map says nothing: not counted then).
+const NO_ANSWER: f32 = 30.0;
+/// The world heard from within this long (s) counts as answering.
+const HEARD_LATELY: f32 = 3.0;
 
 /// The player who drives the bus up to another's relief (`relief give`): the trip, where the
 /// other waits, who he is, when the host last said so, and when he was last told to get out.
@@ -310,9 +313,12 @@ impl App {
         };
         match phase {
             0 => {
+                // (the world heard from: its silence about the bus counts - not while it says
+                // nothing at all, loading its map)
+                let live = self.net.lan.as_ref().is_some_and(|l| l.connected && l.host_quiet().as_secs_f32() < HEARD_LATELY);
                 let Some(r) = self.session.relief.as_mut() else { return };
                 // (the world never answers: his own bus by the stop)
-                if !r.heard {
+                if !r.heard && live {
                     r.unheard += dt;
                     if r.unheard > NO_ANSWER {
                         log::warn!("relief: the world does not answer: the bus is put at the stop");

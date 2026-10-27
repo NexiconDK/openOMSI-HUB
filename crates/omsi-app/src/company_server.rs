@@ -48,6 +48,21 @@ pub(crate) fn start(data: &Path) -> anyhow::Result<(String, String)> {
     Ok((date, hhmmss(secs)))
 }
 
+/// (NexiconDK, 27 October 2026) The world runs - its map loaded, its timetable and companies taken
+/// in: said in its folder beside its server.cfg (`cfg`), for the main server to let players in
+/// (`main_server::WORLD_RUNNING`; its gateway answered minutes before).
+pub(crate) fn mark_running(cfg: &Path) {
+    if COMPANIES.get().is_none() {
+        return;
+    }
+    let Some(dir) = cfg.parent() else { return };
+    let path = dir.join(omsi_launcher_lib::company::main_server::WORLD_RUNNING);
+    match std::fs::write(&path, std::process::id().to_string()) {
+        Ok(()) => log::info!("server: running, said to the main server ({})", path.display()),
+        Err(e) => log::warn!("server: running, but not said to the main server ({}): {e}", path.display()),
+    }
+}
+
 /// The main server's folder, when the world runs its companies.
 pub(crate) fn data_dir() -> Option<PathBuf> {
     COMPANIES.get().map(|c| c.data.clone())

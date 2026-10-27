@@ -1472,6 +1472,16 @@ fn local_addrs(port: u16) -> Vec<SocketAddr> {
 }
 
 impl LanSession {
+    /// (Omsi-Hub) How long the host has not been heard from (a client's; none for the host): a
+    /// world still loading its map, or one gone, says nothing.
+    pub fn host_quiet(&self) -> Duration {
+        if self.role == Role::Client {
+            self.host_seen.elapsed()
+        } else {
+            Duration::ZERO
+        }
+    }
+
     fn new(socket: UdpSocket, role: Role, name: &str, world: WorldInfo) -> LanSession {
         let now = Instant::now();
         LanSession {

@@ -94,14 +94,14 @@ remoteDrive.go = (duty) => driveDuty({ duty });
 let bcoCompany = null;
 let worldWaiting = false;
 
-/** The world of a server company's map: asked until it answers (the server starts it - a minute
- * or so), its address; null when it would not come. */
+/** The world of a server company's map: asked until it runs (the server starts it - a big map
+ * loads for minutes), its address; null when it would not come within a quarter of an hour. */
 async function worldOf(company) {
   if (worldWaiting) return null;
   worldWaiting = true;
   try {
     let said = '';
-    for (let k = 0; k < 120; k++) {
+    for (let k = 0; k < 300; k++) {
       let r;
       try {
         r = await cmd('bco_world', { company });

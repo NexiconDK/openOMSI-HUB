@@ -372,13 +372,20 @@ _version: 2
   pl: "Świat mapy nie jest jeszcze dostępny przez internet: jego tunel się uruchamia."
   ru: "Мир карты пока недоступен через интернет: его туннель запускается."
   uk: "Світ мапи ще недоступний через інтернет: його тунель запускається."
-"Starting the world of %{map} on the server… (about a minute)":
-  de: "Die Welt von %{map} startet auf dem Server… (etwa eine Minute)"
-  fr: "Démarrage du monde de %{map} sur le serveur… (environ une minute)"
-  nl: "De wereld van %{map} start op de server… (ongeveer een minuut)"
-  pl: "Uruchamianie świata %{map} na serwerze… (około minuty)"
-  ru: "Запуск мира %{map} на сервере… (около минуты)"
-  uk: "Запуск світу %{map} на сервері… (близько хвилини)"
+"Starting the world of %{map} on the server… (a big map takes a few minutes)":
+  de: "Die Welt von %{map} startet auf dem Server… (eine große Karte braucht ein paar Minuten)"
+  fr: "Démarrage du monde de %{map} sur le serveur… (une grande carte prend quelques minutes)"
+  nl: "De wereld van %{map} start op de server… (een grote kaart duurt een paar minuten)"
+  pl: "Uruchamianie świata %{map} na serwerze… (duża mapa zajmuje kilka minut)"
+  ru: "Запуск мира %{map} на сервере… (большая карта загружается несколько минут)"
+  uk: "Запуск світу %{map} на сервері… (велика мапа завантажується кілька хвилин)"
+"The world of %{map} is still loading on the server: %{n} min so far.":
+  de: "Die Welt von %{map} lädt noch auf dem Server: bisher %{n} Min."
+  fr: "Le monde de %{map} charge encore sur le serveur : %{n} min jusqu'ici."
+  nl: "De wereld van %{map} laadt nog op de server: tot nu toe %{n} min."
+  pl: "Świat %{map} wciąż się wczytuje na serwerze: na razie %{n} min."
+  ru: "Мир %{map} ещё загружается на сервере: уже %{n} мин."
+  uk: "Світ %{map} ще завантажується на сервері: вже %{n} хв."
 "The company's share":
   de: "Der Anteil des Betriebs"
   fr: "La part de l'entreprise"
