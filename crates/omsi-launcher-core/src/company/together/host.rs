@@ -16,7 +16,7 @@ use super::super::plan::{BusOf, DayPlan, Who};
 use super::book::{self, ClaimState, Handed, LeftWhy};
 use super::code;
 use super::roles::{Perm, Role};
-use super::wire::{Card, DriveStart, DutyState, Notice, Request, SnapAsk, SnapDuty, SnapLine, SnapMember, SnapPlayer, SnapResult, SnapYou, Snapshot};
+use super::wire::{Card, DriveStart, DutyState, Notice, Request, SnapAsk, SnapDuty, SnapLine, SnapMember, SnapPart, SnapPlayer, SnapResult, SnapTrip, SnapYou, Snapshot, TripList};
 use serde_json::{json, Value};
 
 /// A player who has not been heard from for this long is offline (s).
@@ -27,6 +27,9 @@ pub const LEFT_AFTER: u64 = 60;
 const NOTICES_KEPT: usize = 120;
 /// The duties that ended longer ago than this are left out of the friend's day (minutes).
 const ENDED_SHOWN: i32 = 60;
+/// (NexiconDK, single trips) A trip taken that has left this long ago (minutes) without its player's
+/// game - the AI's bus waits five minutes for him at the stop - goes back to the company.
+const STALE_AFTER: i64 = 6;
 
 /// Why a message is not answered (English: the keys of the translations). `READING`, `BUSY` and
 /// `NOT_OPEN_COMPANY` pass: a friend's launcher asks again (`passing`).
@@ -90,10 +93,16 @@ pub const BACK_AGAIN: &str = "%{name} is back: duty %{k} of line %{n} (tour %{to
 pub const DROPPED_REST: &str = "%{name} left duty %{k} of line %{n} (tour %{tour}): the rest of it is dropped.";
 pub const DROPPED_ALL: &str = "%{name} left duty %{k} of line %{n} (tour %{tour}) before its first trip: all of it is dropped.";
 pub const CLOSING: &str = "The host closed this session.";
+/// (NexiconDK, Bus Company Online: single trips, 27 October 2026)
+pub const TOOK_TRIP: &str = "%{name} takes the %{time} trip of line %{n} (tour %{tour}) from %{stop}.";
+pub const ASKS_TRIP: &str = "%{name} asks for the %{time} trip of line %{n} (tour %{tour}).";
+pub const DRIVES_TRIP: &str = "%{name} drives the %{time} trip of line %{n} (tour %{tour}).";
+pub const TRIP_BACK: &str = "%{name} gave the %{time} trip of line %{n} (tour %{tour}) back: the AI drives it.";
+pub const TRIP_DONE: &str = "%{name} drove the %{time} trip of line %{n}: %{trips} trips, score %{score}.";
 
 /// Every English text of this file (for the translations' check).
 pub fn texts() -> Vec<&'static str> {
-    vec![BAD_SECRET, READING, UNKNOWN, NOT_OPEN_COMPANY, BUSY, NOT_ALLOWED, BANNED, KICKED, NO_PLAYER, NO_TICKET, NOT_ABOVE, CLOSED, JOINED, LEFT, TOOK, ASKS, GAVE, REFUSED, BACK, OFF, DRIVES, FINISHED, SAYS, ROLE_SET, SENT_AWAY, REMOVED, LET_BACK, AI_REST, AI_ALL, LEFT_OPEN, TOOK_BACK, BACK_AGAIN, DROPPED_REST, DROPPED_ALL]
+    vec![BAD_SECRET, READING, UNKNOWN, NOT_OPEN_COMPANY, BUSY, NOT_ALLOWED, BANNED, KICKED, NO_PLAYER, NO_TICKET, NOT_ABOVE, CLOSED, JOINED, LEFT, TOOK, ASKS, GAVE, REFUSED, BACK, OFF, DRIVES, FINISHED, SAYS, ROLE_SET, SENT_AWAY, REMOVED, LET_BACK, AI_REST, AI_ALL, LEFT_OPEN, TOOK_BACK, BACK_AGAIN, DROPPED_REST, DROPPED_ALL, TOOK_TRIP, ASKS_TRIP, DRIVES_TRIP, TRIP_BACK, TRIP_DONE]
 }
 
 /// A player as the session knows him now.
@@ -182,6 +191,18 @@ fn claim_args(c: &Company, p: Option<&DayPlan>, r: &DutyRef) -> Vec<(String, Str
     args
 }
 
+/// (NexiconDK, single trips) The arguments of a trip a player took on its own (`book::Claim::part`):
+/// the duty's, with its first trip's time and stop. None: a whole duty.
+fn trip_args(c: &Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32) -> Option<Vec<(String, String)>> {
+    let x = c.together.claim_for(r, guest)?;
+    let (a, _) = x.part?;
+    let t = x.sheet.get(a)?;
+    let mut args = claim_args(c, p, r);
+    args.push(("time".into(), clock::hhmm(t.dep as i64)));
+    args.push(("stop".into(), t.from.trim().to_string()));
+    Some(args)
+}
+
 /// (NexiconDK) The player who founded the company on Bus Company Online's server: its owner
 /// (`online::Online::owner_id`), the boss there - None elsewhere, or before he came.
 pub fn server_owner(c: &Company) -> Option<u32> {
@@ -219,6 +240,17 @@ impl HostState {
             let extra = self.notices.len() - NOTICES_KEPT;
             self.notices.drain(..extra);
         }
+    }
+
+    /// Tell everyone something about player `name` and the trip of duty `r` he took on its own
+    /// (`trip_args`; a whole duty's words when it is no single trip).
+    fn tell_trip(&mut self, c: &Company, now: u64, text: &str, (name, guest): (&str, u32), p: Option<&DayPlan>, r: &DutyRef) {
+        let mut args = vec![("name".to_string(), name.to_string())];
+        match trip_args(c, p, r, guest) {
+            Some(a) => args.extend(a),
+            None => args.extend(duty_args(p, r)),
+        }
+        self.tell(now, text, args);
     }
 
     /// Tell everyone something about player `name` and duty `r`.
@@ -300,7 +332,7 @@ impl HostState {
         // (not heard from for a while, but his game drove on: the duty is his again)
         if !leaving {
             if let Some(r) = req.driving.as_ref().filter(|_| req.in_game) {
-                let silent = c.together.claim_of(r).filter(|x| x.guest == guest).and_then(|x| x.ai_now()).is_some_and(|a| a.why == LeftWhy::Silent);
+                let silent = c.together.claim_for(r, guest).and_then(|x| x.ai_now()).is_some_and(|a| a.why == LeftWhy::Silent);
                 if silent {
                     book::not_left(c, r, guest);
                     let mut a = vec![("name".to_string(), name)];
@@ -335,6 +367,7 @@ impl HostState {
         let result: Result<(), Value> = match req.what.as_str() {
             "hello" | "snapshot" => Ok(()),
             "take" | "release" | "start" | "take_back" | "report" | "assign" | "unassign" | "answer" if p.is_none() && !late => Err(refusal(READING)),
+            "take_trip" | "next_trip" | "trips" if p.is_none() => Err(refusal(READING)),
             "take" if !can(Perm::Drive) => Err(not_allowed(Perm::Drive)),
             "take" => match req.duty.as_ref() {
                 None => Err(refusal(book::NO_DUTY)),
@@ -344,14 +377,32 @@ impl HostState {
                     extra = json!({ "state": state });
                 }),
             },
+            // (NexiconDK, Bus Company Online: a trip on its own - the AI drives its tour on after it)
+            "trips" => {
+                extra = json!({ "trip_list": trip_list(c, p.unwrap(), clock_now, &req.filter) });
+                Ok(())
+            }
+            "take_trip" | "next_trip" if !can(Perm::Drive) => Err(not_allowed(Perm::Drive)),
+            "take_trip" => match req.duty.as_ref() {
+                None => Err(refusal(book::NO_DUTY)),
+                Some(r) => book::take_trip(c, p.unwrap(), r, req.trip, guest, clock_now, can(Perm::Approve)).map_err(refusal).map(|state| {
+                    self.tell_trip(c, now, if state == ClaimState::Asked { ASKS_TRIP } else { TOOK_TRIP }, (&name, guest), p, r);
+                    extra = json!({ "state": state, "duty": r, "trip": req.trip });
+                }),
+            },
+            "next_trip" => book::take_next_trip(c, p.unwrap(), &req.filter, guest, clock_now, can(Perm::Approve)).map_err(refusal).map(|(r, i, state)| {
+                self.tell_trip(c, now, if state == ClaimState::Asked { ASKS_TRIP } else { TOOK_TRIP }, (&name, guest), p, &r);
+                extra = json!({ "state": state, "duty": r, "trip": i });
+            }),
             "release" => match req.duty.as_ref() {
                 None => Err(refusal(book::NO_DUTY)),
                 Some(r) => {
                     let args = claim_args(c, p, r);
+                    let trip = trip_args(c, p, r, guest);
                     book::release(c, r, Some(guest)).map_err(refusal).map(|_| {
                         let mut a = vec![("name".to_string(), name.clone())];
-                        a.extend(args);
-                        self.tell(now, BACK, a);
+                        a.extend(trip.clone().unwrap_or(args));
+                        self.tell(now, if trip.is_some() { TRIP_BACK } else { BACK }, a);
                     })
                 }
             },
@@ -375,13 +426,19 @@ impl HostState {
                     extra = json!({ "taken": taken, "refused": refused });
                     // (his game ended before the duty did: the AI drives the rest - Beta 63)
                     let ai = req.done && self.left_duty(c, here, r, guest, LeftWhy::Quit);
-                    if req.done && !ai && c.together.claim_of(r).is_some_and(|x| x.ai_now().is_none()) && book::set_state(c, r, guest, ClaimState::Done).is_ok() {
-                        let res = result_of(c, p, r);
+                    // (a single trip he took: "drove the … trip", unless counted as left until the
+                    // world's check of it comes)
+                    let single = c.together.claim_for(r, guest).filter(|x| x.part.is_some()).map(|x| x.left);
+                    if req.done && !ai && single != Some(true) && c.together.claim_for(r, guest).is_some_and(|x| x.ai_now().is_none()) && book::set_state(c, r, guest, ClaimState::Done).is_ok() {
+                        let res = result_of(c, p, r, guest);
                         let mut args = vec![("name".to_string(), name.clone())];
-                        args.extend(claim_args(c, p, r));
+                        match trip_args(c, p, r, guest).filter(|_| single.is_some()) {
+                            Some(a) => args.extend(a),
+                            None => args.extend(claim_args(c, p, r)),
+                        }
                         args.push(("trips".into(), res.trips.to_string()));
                         args.push(("score".into(), res.score.to_string()));
-                        self.tell(now, FINISHED, args);
+                        self.tell(now, if single.is_some() { TRIP_DONE } else { FINISHED }, args);
                         if let Some(o) = self.online.iter_mut().find(|o| o.guest == guest) {
                             o.driving = None;
                         }
@@ -443,7 +500,7 @@ impl HostState {
             },
             // (the control room's messages to the duty his game drives: answered, and told from it)
             "msg_reply" | "msg_tell" if !can(Perm::Drive) => Err(not_allowed(Perm::Drive)),
-            "msg_reply" | "msg_tell" => match req.driving.as_ref().filter(|r| c.together.claim_of(r).is_some_and(|x| x.guest == guest)) {
+            "msg_reply" | "msg_tell" => match req.driving.as_ref().filter(|r| c.together.claim_for(r, guest).is_some()) {
                 None => Err(refusal(book::NO_DUTY)),
                 Some(r) => {
                     let (line, tour) = (r.line.clone(), r.tour.clone());
@@ -555,17 +612,19 @@ impl HostState {
         if here.lines.is_empty() {
             return;
         }
-        let missing: Vec<DutyRef> = c.together.claims.iter().filter(|x| x.start.is_none() && !x.late && x.duty.date == p.date && matches!(x.state, ClaimState::Planned | ClaimState::Driving)).map(|x| x.duty.clone()).collect();
-        for r in missing {
-            if let Ok(st) = start_of(c, here, p, &r) {
-                book::keep_start(c, &r, &st);
+        let missing: Vec<(usize, DutyRef, u32, bool)> = c.together.claims.iter().enumerate().filter(|(_, x)| x.start.is_none() && !x.late && x.duty.date == p.date && matches!(x.state, ClaimState::Planned | ClaimState::Driving)).map(|(k, x)| (k, x.duty.clone(), x.guest, x.part.is_some())).collect();
+        let now = clock::now(c);
+        for (k, r, guest, part) in missing {
+            let st = if part { book::part_from(c, Some(p), &r, guest, now).and_then(|from| start_part(c, here, p, &r, guest, from)) } else { start_of(c, here, p, &r) };
+            if let (Ok(st), Some(x)) = (st, c.together.claims.get_mut(k)) {
+                x.start = Some(st);
             }
         }
     }
 
     /// A player starts his duty `r`: its start in his own game, or why not.
     fn start(&mut self, c: &mut Company, here: &Here, r: &DutyRef, guest: u32, name: &str) -> Result<DriveStart, &'static str> {
-        let x = c.together.claim_of(r).filter(|x| x.guest == guest).ok_or(book::NOT_YOURS)?.clone();
+        let x = c.together.claim_for(r, guest).ok_or(book::NOT_YOURS)?.clone();
         match x.state {
             ClaimState::Asked => return Err(book::NOT_YOURS),
             ClaimState::Done => return Err(book::DONE),
@@ -578,20 +637,33 @@ impl HostState {
             }
             return Err(book::AI_DRIVES);
         }
-        // (today's: from the plan as it is now; a closed day's: as it was kept)
-        let st = match here.plan.filter(|p| !x.late && p.date == r.date) {
-            Some(p) => start_of(c, here, p, r)?,
-            None => x.start.clone().ok_or(book::CLOSED_DAY)?,
+        // (today's: from the plan as it is now - a single trip's from its trips, `Claim::part`; a
+        // closed day's: as it was kept)
+        // (a single trip: from its first trip he has not driven - not one that has left before he
+        // started it)
+        let st = match (here.plan.filter(|p| !x.late && p.date == r.date), x.part) {
+            (Some(p), Some(_)) => start_part(c, here, p, r, guest, book::part_from(c, Some(p), r, guest, clock::now(c))?)?,
+            (Some(p), None) => start_of(c, here, p, r)?,
+            (None, _) => x.start.clone().ok_or(book::CLOSED_DAY)?,
         };
-        book::keep_start(c, r, &st);
+        book::keep_start(c, r, guest, &st);
         book::set_state(c, r, guest, ClaimState::Driving)?;
         if let Some(o) = self.online.iter_mut().find(|o| o.guest == guest) {
             o.driving = Some(r.clone());
         }
-        let args = claim_args(c, here.plan, r);
-        let mut a = vec![("name".to_string(), name.to_string())];
-        a.extend(args);
-        self.tell(here.now, DRIVES, a);
+        match trip_args(c, here.plan, r, guest) {
+            Some(args) => {
+                let mut a = vec![("name".to_string(), name.to_string())];
+                a.extend(args);
+                self.tell(here.now, DRIVES_TRIP, a);
+            }
+            None => {
+                let args = claim_args(c, here.plan, r);
+                let mut a = vec![("name".to_string(), name.to_string())];
+                a.extend(args);
+                self.tell(here.now, DRIVES, a);
+            }
+        }
         Ok(st)
     }
 
@@ -638,13 +710,24 @@ impl HostState {
     /// Player `guest` left his duty `r` (`why`): the AI drives the rest of it, or all of it, or it
     /// goes back open (`book::hand_to_ai`), told to everyone. Whether the AI took it over now.
     pub fn left_duty(&mut self, c: &mut Company, here: &Here, r: &DutyRef, guest: u32, why: LeftWhy) -> bool {
-        if c.together.claim_of(r).is_some_and(|x| x.ai_now().is_some()) {
+        if c.together.claim_for(r, guest).is_some_and(|x| x.ai_now().is_some()) {
             return false;
         }
         let args = claim_args(c, here.plan, r);
+        let trip = trip_args(c, here.plan, r, guest);
         let minute = c.clock.minute as i32;
         let Ok(handed) = book::hand_to_ai(c, here.plan, r, guest, why, here.now, minute) else { return false };
-        let dropped = c.together.claim_of(r).and_then(|x| x.ai_now()).is_some_and(|a| a.dropped);
+        // (a single trip he took, given back before it left: its driver's again)
+        if let (Some(args), Handed::Open) = (trip, handed) {
+            let mut a = vec![("name".to_string(), c.together.name_of(guest))];
+            a.extend(args);
+            self.tell(here.now, TRIP_BACK, a);
+            if let Some(o) = self.online.iter_mut().find(|o| o.guest == guest && o.driving.as_ref().is_some_and(|d| book::same_duty(d, r))) {
+                o.driving = None;
+            }
+            return false;
+        }
+        let dropped = c.together.claim_for(r, guest).and_then(|x| x.ai_now()).is_some_and(|a| a.dropped);
         let text = match handed {
             Handed::Over => return false,
             Handed::Open => LEFT_OPEN,
@@ -676,6 +759,19 @@ impl HostState {
         for (guest, why) in away {
             for r in self.running(c, guest) {
                 self.left_duty(c, here, &r, guest, why);
+            }
+        }
+        // (NexiconDK: single trips taken whose game never came to the stop - left past the AI's
+        // wait for him there: the company's again, said)
+        let stale = book::stale_trips(c, clock::now(c), STALE_AFTER);
+        for &k in stale.iter().rev() {
+            let x = c.together.claims[k].clone();
+            let told = (x.state == ClaimState::Planned).then(|| trip_args(c, here.plan, &x.duty, x.guest)).flatten();
+            c.together.claims.remove(k);
+            if let Some(args) = told {
+                let mut a = vec![("name".to_string(), c.together.name_of(x.guest))];
+                a.extend(args);
+                self.tell(here.now, TRIP_BACK, a);
             }
         }
         c.together != before
@@ -727,6 +823,92 @@ fn start_from(c: &Company, here: &Here, p: &DayPlan, r: &DutyRef, from: usize) -
     Ok(DriveStart::of(&st))
 }
 
+/// (NexiconDK, single trips) How player `guest`'s game starts on the trips of duty `r` of the day
+/// `p` he took on their own (`book::Claim::part`), from its trip `a` (`book::part_from`), and how
+/// many of the duty's trips after them he may drive on with (`DriveStart::more`): the AI's bus is
+/// handed over at the first one's stop (relief at the stop), and the AI drives the tour on after
+/// the last.
+fn start_part(c: &Company, here: &Here, p: &DayPlan, r: &DutyRef, guest: u32, a: usize) -> Result<DriveStart, &'static str> {
+    let b = c.together.claim_for(r, guest).and_then(|x| x.part).map_or(a + 1, |(_, b)| b);
+    if here.lines.is_empty() {
+        return Err(READING);
+    }
+    let mut sheet = dl::sheet(c, p, r, clock::now(c), &[]);
+    sheet.hitches.retain(|h| !matches!(h, Hitch::NotYours(_) | Hitch::NoDriver | Hitch::Over | Hitch::NotInstalled(_) | Hitch::Driven));
+    let all = std::mem::take(&mut sheet.planned);
+    let n = all.len();
+    let (a, b) = (a.min(n), b.min(n).max(a.min(n)));
+    sheet.planned = all[a..b].to_vec();
+    let st = dl::start(&sheet, here.lines, here.lead).map_err(|h| h.words().0)?;
+    let part = dl::part_of(&sheet, here.lines);
+    // (the rest of the duty from his trip on, as the timetable has it one after another, up to a
+    // trip another player took: what is more than his trips - not a last trip it hands on halfway)
+    sheet.planned = all[a..book::free_until(c, r, guest, b, n).max(b)].to_vec();
+    let whole = dl::part_of(&sheet, here.lines);
+    let mut out = DriveStart::of(&st);
+    if let (Some(x), Some(w)) = (part, whole) {
+        if w.first == x.first && w.trips > x.trips {
+            out.more = w.trips - x.trips - usize::from(w.to_stop.is_some());
+        }
+    }
+    Ok(out)
+}
+
+/// The free trips of the day `p` a player looks for (`book::free_trips`, `f`), with the lines and
+/// stops there are free ones of - for his filter (`TripList`).
+pub fn trip_list(c: &Company, p: &DayPlan, now: i64, f: &book::TripFilter) -> TripList {
+    let open = c.online.on_server && c.together.trips_open;
+    let mut out = TripList { open, ..Default::default() };
+    if !open {
+        return out;
+    }
+    let all = book::free_trips(c, p, now, &book::TripFilter::default());
+    let colour_of = |line: &str| c.lines.iter().find(|l| l.name.eq_ignore_ascii_case(line)).map(|l| l.colour.clone()).unwrap_or_default();
+    for t in &all {
+        let tour = &p.tours[t.tour].tour;
+        if !out.lines.iter().any(|l| l.line.eq_ignore_ascii_case(&tour.line)) {
+            out.lines.push(SnapLine { line: tour.line.clone(), number: tour.number.clone(), colour: colour_of(&tour.line) });
+        }
+    }
+    // (the line chosen stays to choose, its free trips gone)
+    let chosen = f.line.trim();
+    if !chosen.is_empty() && !out.lines.iter().any(|l| l.line.eq_ignore_ascii_case(chosen)) {
+        let l = c.lines.iter().find(|l| l.name.eq_ignore_ascii_case(chosen));
+        out.lines.push(SnapLine { line: chosen.to_string(), number: l.map_or_else(|| chosen.to_string(), |l| l.number.clone()), colour: colour_of(chosen) });
+    }
+    out.lines.sort_by(|a, b| natural(&a.number).cmp(&natural(&b.number)));
+    let of_line = book::TripFilter { stop: String::new(), ..f.clone() };
+    let trips = book::free_trips(c, p, now, &of_line);
+    for t in &trips {
+        let stop = t.x.from.trim().to_string();
+        if !stop.is_empty() && !out.stops.iter().any(|s| s.eq_ignore_ascii_case(&stop)) {
+            out.stops.push(stop);
+        }
+    }
+    if !f.stop.trim().is_empty() && !out.stops.iter().any(|s| s.eq_ignore_ascii_case(f.stop.trim())) {
+        out.stops.push(f.stop.trim().to_string());
+    }
+    out.stops.sort_by_key(|s| s.to_lowercase());
+    let picked: Vec<&book::FreeTrip> = trips.iter().filter(|t| f.stop.trim().is_empty() || t.x.from.trim().eq_ignore_ascii_case(f.stop.trim())).collect();
+    out.more = picked.len().saturating_sub(TripList::LISTED);
+    for t in picked.into_iter().take(TripList::LISTED) {
+        let dt = &p.tours[t.tour];
+        let (bus, file) = match dt.bus {
+            Some(BusOf::Own(id)) => c.vehicle(id).map(|v| (format!("{} {}", v.number, v.name).trim().to_string(), v.bus.clone())).unwrap_or_default(),
+            _ => (String::new(), String::new()),
+        };
+        let number = if t.x.line.trim().is_empty() { dt.tour.number.clone() } else { t.x.line.clone() };
+        out.trips.push(SnapTrip { duty: t.duty.clone(), trip: t.trip, number, colour: colour_of(&dt.tour.line), dep: t.x.dep, arr: t.x.arr, from: t.x.from.trim().to_string(), to: t.x.end().trim().to_string(), stops: t.x.stops as u32, km: (t.x.km * 10.0).round() / 10.0, bus, file });
+    }
+    out
+}
+
+/// A line's number for sorting: its digits as a number first ("2" before "10"), then the rest.
+fn natural(n: &str) -> (u64, String) {
+    let digits: String = n.trim().chars().take_while(|c| c.is_ascii_digit()).collect();
+    (digits.parse().unwrap_or(u64::MAX), n.trim().to_lowercase())
+}
+
 /// Maps named alike (`maps/X/global.cfg`, from `maps/` on, either slash, any case).
 pub fn same_map(a: &str, b: &str) -> bool {
     let n = |s: &str| {
@@ -740,11 +922,12 @@ pub fn same_map(a: &str, b: &str) -> bool {
 }
 
 /// What a player's trips of duty `r` came to.
-pub fn result_of(c: &Company, p: Option<&DayPlan>, r: &DutyRef) -> SnapResult {
+pub fn result_of(c: &Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32) -> SnapResult {
     let mut res = SnapResult { duty: r.clone(), number: claim_args(c, p, r)[0].1.clone(), ..Default::default() };
     let mut total = 0u32;
-    let late = c.together.claim_of(r).is_some_and(|x| x.late);
-    for t in book::trips_of(c, r) {
+    let late = c.together.claim_for(r, guest).is_some_and(|x| x.late);
+    // (his: other players may have driven single trips of it - `book::Claim::part`)
+    for t in book::trips_of(c, r).filter(|t| t.guest == guest) {
         let ev = super::super::career::evaluate(&t.trip);
         // (as the close books it: `day::close_day`; a closed day's had the duty covered)
         if !late && t.duty.date == c.date {
@@ -761,9 +944,9 @@ pub fn result_of(c: &Company, p: Option<&DayPlan>, r: &DutyRef) -> SnapResult {
     if res.trips > 0 {
         res.score = total / res.trips as u32;
     }
-    res.done = c.together.claim_of(r).is_none_or(|x| x.state == ClaimState::Done);
+    res.done = c.together.claim_for(r, guest).is_none_or(|x| x.state == ClaimState::Done);
     // (the trips the AI drives since he left it)
-    if let Some(x) = c.together.claim_of(r).filter(|x| !x.ai.is_empty()) {
+    if let Some(x) = c.together.claim_for(r, guest).filter(|x| !x.ai.is_empty()) {
         let trips: Vec<super::super::network::PlannedTrip> = match p.and_then(|p| r.find(p).map(|(ti, k)| (p, ti, k))) {
             Some((p, ti, k)) => {
                 let d = &p.tours[ti].duties[k];
@@ -807,6 +990,7 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
         open_claims: c.together.open_claims,
         lines: c.lines.iter().map(|l| SnapLine { line: l.name.clone(), number: l.number.clone(), colour: l.colour.clone() }).collect(),
         reading: here.plan.is_none(),
+        trips_open: c.online.on_server && c.together.trips_open,
         ..Default::default()
     };
     let now = clock::now(c);
@@ -824,7 +1008,8 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
             };
             for (k, d) in t.duties.iter().enumerate() {
                 let Some(r) = DutyRef::of(p, ti, k) else { continue };
-                let claim = c.together.claim_of(&r);
+                // (his own first - a single trip of it, when others took other trips of it)
+                let claim = guest.and_then(|g| c.together.claim_for(&r, g)).or_else(|| c.together.claim_of(&r));
                 let mine = claim.is_some_and(|x| Some(x.guest) == guest);
                 if !mine && now >= clock::moment(&p.date, (d.to + ENDED_SHOWN) as i64) {
                     continue;
@@ -846,6 +1031,13 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                     ..Default::default()
                 };
                 let begun = now >= clock::moment(&p.date, d.from as i64);
+                // (NexiconDK: a single trip of it a player took - `book::Claim::part`)
+                if let Some((a, b)) = claim.and_then(|x| x.part) {
+                    let part = &trips[a.min(trips.len())..b.min(trips.len())];
+                    if let (Some(f), Some(l)) = (part.first(), part.last()) {
+                        sd.part = Some(SnapPart { trip: a, dep: f.dep, arr: l.arr, from: f.from.trim().to_string(), to: l.end().trim().to_string(), trips: part.iter().filter(|x| x.counts()).count() });
+                    }
+                }
                 // (the AI on a duty its player left: from where, and whether he may take it back)
                 if let Some(a) = claim.and_then(|x| x.ai_now()) {
                     sd.ai = true;
@@ -894,7 +1086,9 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
             ..Default::default()
         });
     }
-    s.duties.sort_by(|a, b| (&a.duty.date, a.from, &a.number, &a.duty.tour).cmp(&(&b.duty.date, b.from, &b.number, &b.duty.tour)));
+    // (a single trip by its own time)
+    let at = |d: &SnapDuty| d.part.as_ref().map_or(d.from, |p| p.dep);
+    s.duties.sort_by(|a, b| (&a.duty.date, at(a), &a.number, &a.duty.tour).cmp(&(&b.duty.date, at(b), &b.number, &b.duty.tour)));
     // (the boss first, then the players online, then those with a duty today)
     let label = |r: &DutyRef| (duty_args(here.plan, r)[0].1.clone(), r.tour.clone(), r.duty + 1);
     let role_of = |g: u32| c.together.guest(g).map(|x| x.role).unwrap_or_default();
@@ -925,7 +1119,7 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                 duties.push(t.duty.clone());
             }
         }
-        s.results = duties.iter().map(|r| result_of(c, here.plan, r)).collect();
+        s.results = duties.iter().map(|r| result_of(c, here.plan, r, g)).collect();
         if let Some(me) = c.together.guest(g) {
             s.you = Some(SnapYou { no: g, name: me.name.clone(), owner: owner == Some(g), role: me.role, perms: perms.clone(), stats: me.stats.clone() });
         }
@@ -960,7 +1154,7 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
             .collect();
     }
     // the control room's messages of the duty his game drives (his own claim)
-    let driving = guest.and_then(|g| st.online.iter().find(|o| o.guest == g && o.in_game)).and_then(|o| o.driving.as_ref()).filter(|r| c.together.claim_of(r).is_some_and(|x| Some(x.guest) == guest));
+    let driving = guest.and_then(|g| st.online.iter().find(|o| o.guest == g && o.in_game)).and_then(|o| o.driving.as_ref()).filter(|r| guest.is_some_and(|g| c.together.claim_for(r, g).is_some()));
     if let Some(r) = driving {
         s.messages = c.messages.of_driver(&r.line, &r.tour, None, MESSAGES_SHOWN).into_iter().cloned().collect();
     }

@@ -884,6 +884,11 @@ fn bus_card(c: &Company, plan: &Plan, d: &Day, m: &MapState, mk: &Marker, clock:
         "rf": match duty { Some(k) => json!({ "view": 0, "day": 0, "sel": { "duty": [b.line, b.tour, k] } }), None => json!({ "view": 1, "day": 0, "reveal": format!("B|{}|{}", b.line, b.tour) }) },
     })];
     links.push(json!({ "label": tr("Service control"), "icon": "support_agent", "tab": OPS_TAB }));
+    // (NexiconDK, 27 October 2026: on Bus Company Online's server, its next trip a player may
+    // drive on his own - the AI hands him the bus at its stop, `together::book::take_trip`)
+    if let Some(dep) = next_single(c, tp) {
+        links.insert(0, json!({ "label": trf("Drive its %{time} trip", &[("time", &hhmm(dep as f64 * 60.0))]), "icon": "alt_route", "trip": { "line": tp.tour.line, "tour": tp.tour.tour, "at": dep } }));
+    }
     if let Some(v) = bus {
         links.push(json!({ "label": tr("The bus's page"), "icon": "directions_bus", "bus": v.id }));
     }
@@ -896,6 +901,30 @@ fn bus_card(c: &Company, plan: &Plan, d: &Day, m: &MapState, mk: &Marker, clock:
         "delay": delay_v,
         "rows": rows, "notes": notes, "links": links,
     })
+}
+
+/// (NexiconDK, 27 October 2026) The departure (minutes of the day) of the next trip of block `tp`
+/// a player may take on its own on Bus Company Online's server: one with passengers, whole, far
+/// enough off on the company's clock (`book::NEXT_LEAD`), of a duty a driver of the company's has
+/// and no player (the company checks it again when it is taken).
+fn next_single(c: &Company, tp: &co::day::TourPlan) -> Option<i32> {
+    use co::together::book;
+    if !c.online.on_server || !c.together.trips_open || tp.by_player || tp.tour.unplanned || tp.bus.is_none() {
+        return None;
+    }
+    let from = c.clock.minute as i32 + book::NEXT_LEAD as i32;
+    let own = |x: &PlannedTrip| x.origin.trim().is_empty() || x.origin.trim() == tp.tour.tour.trim();
+    tp.duties
+        .iter()
+        .enumerate()
+        .filter(|(_, d)| d.driver.is_some_and(|id| id != PLAYER))
+        .flat_map(|(k, d)| {
+            let r = co::duty_launch::DutyRef { date: c.date.clone(), line: tp.tour.line.clone(), tour: tp.tour.tour.clone(), duty: k };
+            tp.tour.trips.get(d.start..d.end).unwrap_or_default().iter().enumerate().filter(move |(i, _)| !c.together.trip_taken(&r, *i)).map(|(_, x)| x)
+        })
+        .filter(|x| x.counts() && !x.is_second() && x.part.is_none() && own(x) && x.dep >= from)
+        .map(|x| x.dep)
+        .min()
 }
 
 fn same(a: &str, b: &str) -> bool {

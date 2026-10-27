@@ -209,6 +209,10 @@ impl App {
                 self.close_game_menu();
                 self.skip_next_stop();
             }
+            "driveon" => {
+                self.close_game_menu();
+                self.drive_on();
+            }
             // the route ends here: free drive, as the list of lines has it
             "endduty" => {
                 crate::game_lists::end_duty(self);
@@ -414,6 +418,10 @@ impl crate::App {
         }
         if !self.session.duty.as_ref().is_some_and(|d| d.stop_to_skip()) {
             v.retain(|x| x.0 != "skipstop");
+        }
+        // (NexiconDK, single trips: on his duty's last trip, the tour's next one his too)
+        if self.drive_on_offered() {
+            v.insert(at, ("driveon", crate::relief::DRIVE_ON));
         }
         if self.menus.navigator.is_none() {
             v.retain(|x| x.0 != "map");

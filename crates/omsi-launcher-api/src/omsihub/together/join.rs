@@ -29,7 +29,8 @@ use omsi_launcher_lib::company::duty_launch::DutyRef;
 use omsi_launcher_lib::company::together::client::{self, Ended, Link};
 use omsi_launcher_lib::company::together::code::{self, CompanyCode};
 use omsi_launcher_lib::company::together::host as th;
-use omsi_launcher_lib::company::together::wire::{DriveStart, DutyState, Notice, Request, SnapDuty, SnapResult, Snapshot};
+use omsi_launcher_lib::company::together::book::TripFilter;
+use omsi_launcher_lib::company::together::wire::{DriveStart, DutyState, Notice, Request, SnapDuty, SnapResult, Snapshot, TripList};
 use omsi_launcher_lib::company::together::{Perm, Role};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -450,6 +451,17 @@ pub(super) fn call(cmd: &str, args: &Value, p: &dyn Platform) -> Option<Answer> 
         "tg_check" => Ok(check(args.get("code").and_then(Value::as_str).unwrap_or(""))),
         "tg_view" => Ok(view()),
         "tg_take" | "tg_release" => Ok(duty_act(if cmd == "tg_take" { "take" } else { "release" }, args, |_| {})),
+        // (NexiconDK, Bus Company Online: a trip on its own - found by line or stop, the next
+        // free one, or a bus on the fleet map's)
+        "tg_trips" => Ok(trips_view(args)),
+        "tg_take_trip" => {
+            let trip = args.get("trip").and_then(Value::as_u64).unwrap_or(0) as usize;
+            Ok(match duty_arg(args) {
+                Some(r) => took_trip(send_now("take_trip", |q| (q.duty, q.trip) = (Some(r), trip))),
+                None => json!({}),
+            })
+        }
+        "tg_next_trip" => Ok(took_trip(send_now("next_trip", |q| q.filter = filter_arg(args)))),
         "tg_drive" => drive(args, p, "start"),
         // (Beta 63: a duty the AI drives since he left it, back from its next trip)
         "tg_take_back" => drive(args, p, "take_back"),
@@ -487,6 +499,76 @@ pub(super) fn call(cmd: &str, args: &Value, p: &dyn Platform) -> Option<Answer> 
             Ok(json!({}))
         }
         _ => return None,
+    })
+}
+
+/// What a player looks for single trips by (`tg_trips`, `tg_next_trip`: `line`, `stop`).
+fn filter_arg(args: &Value) -> TripFilter {
+    let s = |k: &str| args.get(k).and_then(Value::as_str).unwrap_or("").trim().to_string();
+    // (a bus on the fleet map: its tour and its trip's departure - `tour`, `at`)
+    TripFilter { line: s("line"), stop: s("stop"), tour: s("tour"), at: args.get("at").and_then(Value::as_i64).map(|m| m as i32), ..Default::default() }
+}
+
+/// A trip taken (`take_trip`, `next_trip`): which, and what it is now - in the page's words.
+fn took_trip(r: Result<Value, String>) -> Value {
+    match r {
+        Ok(v) if v.get("ok").and_then(Value::as_bool) == Some(true) => {
+            let asked = v.get("state").and_then(Value::as_str) == Some("asked");
+            json!({
+                "duty": v.get("duty").cloned().unwrap_or(Value::Null), "trip": v.get("trip").cloned().unwrap_or(Value::Null), "asked": asked,
+                "said": tr(if asked { "Asked for: waiting for a yes." } else { "The trip is yours: Drive starts your game at its stop, where the AI hands you the bus." }),
+            })
+        }
+        Ok(v) => json!({ "error": refusal_words(&v) }),
+        Err(e) => json!({ "error": e }),
+    }
+}
+
+/// (NexiconDK, 27 October 2026) The free trips of the boss's day to take on their own, as the
+/// player's filter finds them (`trips`: `book::free_trips`), in the page's words.
+fn trips_view(args: &Value) -> Value {
+    let f = filter_arg(args);
+    let words = json!({
+        "caps": tr("Single trips").to_uppercase(),
+        "note": tr("Drive one trip of a duty the AI drives: you take its bus over at the stop, and the AI drives the tour on after it. At its end you may drive its next trip as well (game menu › Drive on with the next trip)."),
+        "line": tr("Line"), "stop": tr("From the stop"), "all_lines": tr("All lines"), "all_stops": tr("All stops"),
+        "next": tr("Drive the next free trip"), "next_tip": tr("Takes the first free trip your choice finds and starts your game on it."),
+        "take": tr("Take"), "take_drive": tr("Take and drive"),
+        "none": tr("No free trip right now: try another line or stop, or a little later."),
+        "closed": tr("The company does not let its players take single trips."),
+    });
+    let v = match send_now("trips", |q| q.filter = f.clone()) {
+        Ok(v) => v,
+        Err(e) => return json!({ "words": words, "error": e }),
+    };
+    if v.get("ok").and_then(Value::as_bool) != Some(true) {
+        return json!({ "words": words, "error": refusal_words(&v) });
+    }
+    let list: TripList = serde_json::from_value(v.get("trip_list").cloned().unwrap_or(Value::Null)).unwrap_or_default();
+    let minute = joined().as_ref().and_then(|j| j.snap.as_ref()).map(|s| s.minute).unwrap_or(0);
+    let hhmm = |m: i32| format!("{:02}:{:02}", (m / 60).rem_euclid(24), m.rem_euclid(60));
+    let rows: Vec<Value> = list
+        .trips
+        .iter()
+        .map(|t| {
+            let mut facts = vec![trf("%{n} stops", &[("n", &t.stops.to_string())]), format!("{} km", t.km)];
+            if !t.bus.is_empty() {
+                facts.push(trf("Bus %{bus}", &[("bus", &t.bus)]));
+            }
+            let wait = (t.dep - minute).max(0);
+            json!({
+                "duty": t.duty, "trip": t.trip, "number": t.number, "colour": t.colour, "file": t.file,
+                "times": format!("{} – {}", hhmm(t.dep), hhmm(t.arr)), "route": format!("{} → {}", t.from, t.to),
+                "facts": facts.join("  ·  "), "title": duty_words(&t.number, &t.duty),
+                "in": if wait < 90 { trf("in %{m} min", &[("m", &wait.to_string())]) } else { String::new() },
+            })
+        })
+        .collect();
+    json!({
+        "words": words, "open": list.open,
+        "lines": list.lines.iter().map(|l| json!({ "value": l.line, "label": l.number, "colour": l.colour })).collect::<Vec<_>>(),
+        "stops": list.stops, "rows": rows, "line": f.line, "stop": f.stop,
+        "more": (list.more > 0).then(|| trf("and %{n} more later", &[("n", &list.more.to_string())])),
     })
 }
 
@@ -688,6 +770,10 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
 /// he may drive and ask for duties).
 fn duty_row(d: &SnapDuty, open_claims: bool, ask: bool) -> Value {
     let hhmm = |m: i32| format!("{:02}:{:02}", (m / 60).rem_euclid(24), m.rem_euclid(60));
+    // (NexiconDK: a single trip of it a player took - `book::Claim::part`)
+    if let Some(part) = d.part.as_ref() {
+        return trip_row(d, part);
+    }
     let mut facts = vec![trf("%{n} trips", &[("n", &d.trips.to_string())]), format!("{} km", d.km)];
     if !d.bus.is_empty() {
         facts.push(trf("Bus %{bus}", &[("bus", &tr(&d.bus))]));
@@ -736,6 +822,31 @@ fn duty_row(d: &SnapDuty, open_claims: bool, ask: bool) -> Value {
     })
 }
 
+/// (NexiconDK, 27 October 2026) A duty of which a player took only some trips (`part`): his own,
+/// or another player's - the rest of the duty is its driver's, the AI's in the server's world.
+fn trip_row(d: &SnapDuty, part: &omsi_launcher_lib::company::together::wire::SnapPart) -> Value {
+    let hhmm = |m: i32| format!("{:02}:{:02}", (m / 60).rem_euclid(24), m.rem_euclid(60));
+    let mut facts = vec![trf("%{n} trips", &[("n", &part.trips.to_string())])];
+    if !d.bus.is_empty() {
+        facts.push(trf("Bus %{bus}", &[("bus", &tr(&d.bus))]));
+    }
+    let drive = json!({ "label": tr("Drive"), "act": "drive", "kind": "primary", "icon": "play_arrow" });
+    let time = hhmm(part.dep);
+    let (state, tone, acts): (String, &str, Vec<Value>) = match d.state {
+        DutyState::Mine => (tr("Your trip: the AI drives the tour on after it"), "ok", vec![drive, json!({ "label": tr("Give back"), "act": "release", "kind": "" })]),
+        DutyState::Asked => (tr("Asked for: waiting for a yes"), "warn", vec![json!({ "label": tr("Withdraw"), "act": "release", "kind": "" })]),
+        DutyState::Driving => (tr("You are driving it"), "ok", vec![json!({ "label": tr("Drive again"), "act": "drive", "kind": "", "icon": "replay" })]),
+        DutyState::Done => (tr("Driven"), "dim", Vec::new()),
+        _ => (trf("%{name} drives the %{time} trip", &[("name", &d.who), ("time", &time)]), "soft", Vec::new()),
+    };
+    json!({
+        "duty": d.duty, "number": d.number, "colour": d.colour, "times": format!("{} – {}", time, hhmm(part.arr)),
+        "from": part.dep, "date": day_label(&d.duty.date),
+        "route": format!("{} → {}", part.from, part.to), "facts": facts.join("  ·  "), "title": format!("{}  ·  {}", tr("Single trip"), duty_words(&d.number, &d.duty)),
+        "state": state, "tone": tone, "acts": acts, "key": format!("{:?}", d.state).to_lowercase(), "guest": d.guest, "who": d.who, "single": true,
+    })
+}
+
 /// (NexiconDK, 26 October 2026) The AI drivers' duties of the day, none with a trip left to take
 /// over.
 pub const NO_AI_LEFT: &str = "None of the AI drivers' duties today has a trip left to take over. Take one over tomorrow from its start, or have yourself planned for a coming day in the roster.";
@@ -748,7 +859,7 @@ fn view() -> Value {
         "field": tr("Session code (HUB-…)"), "join": tr("Join"), "back": tr("Back"),
         "need": [tr("Both need the same version of Omsi-Hub."), tr("The same network, the same VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale), or the boss's tunnel."), tr("The boss's company map, and the buses of your duties, installed.")],
         "leave": tr("Leave"), "connecting": tr("Looking for the boss's launcher…"),
-        "tab_work": tr("My work"), "tab_duties": tr("Duties"), "tab_team": tr("Team"), "tab_news": tr("News"),
+        "tab_work": tr("My work"), "tab_duties": tr("Duties"), "tab_trips": tr("Single trips"), "tab_team": tr("Team"), "tab_news": tr("News"),
         "open_caps": tr("Open duties").to_uppercase(), "no_open": tr("No open duty right now: the boss can give you one."),
         "mine_caps": tr("My duties").to_uppercase(), "no_mine": tr("No duty of yours yet: ask for an open one."),
         "rest_caps": tr("The rest of the day").to_uppercase(),
@@ -801,7 +912,7 @@ fn view() -> Value {
         .duties
         .iter()
         .filter(|d| matches!(d.state, DutyState::Driving | DutyState::Mine | DutyState::Late) || (d.state == DutyState::Ai && d.back))
-        .min_by_key(|d| (d.state != DutyState::Driving, d.state != DutyState::Late, d.from))
+        .min_by_key(|d| (d.state != DutyState::Driving, d.state != DutyState::Late, d.part.as_ref().map_or(d.from, |p| p.dep)))
         .map(|d| duty_row(d, s.open_claims, ask));
     let players: Vec<Value> = s
         .players
@@ -857,6 +968,8 @@ fn view() -> Value {
                 "perms": Perm::ALL.iter().map(|p| { let mut v = perm_json(*p); v["on"] = json!(can(*p)); v }).collect::<Vec<_>>() },
         "can": { "drive": ask, "assign": can(Perm::Assign), "approve": can(Perm::Approve), "players": can(Perm::Players), "pages": pages },
         "reading": s.reading, "next": next, "open": open, "ai": ai, "ai_none": ai_none, "mine": mine, "rest": rest, "players": players, "results": results,
+        // (NexiconDK, 27 October 2026: single trips of the AI drivers' duties - `tg_trips`)
+        "trips": ask && s.trips_open,
         "asks": asks, "members": members, "giveable": giveable, "roles": if can(Perm::Players) { roles_json() } else { Value::Null },
         "history": history_rows(), "driving": driving, "notices": notices, "last_notice": j.notices.last().map(|n| n.n).unwrap_or(0),
         "online": s.players.iter().filter(|p| p.online).count(),

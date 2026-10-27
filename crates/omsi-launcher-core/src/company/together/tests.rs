@@ -1147,3 +1147,223 @@ fn a_player_planned_in_the_roster_has_the_duty_on_its_day() {
     let p = day_plan(&b.c, &later, b.tours.clone(), &[], &[], false);
     assert_eq!(p.tours[0].duties[0].who, None);
 }
+
+/// The boss's company on Bus Company Online's server, its duty the agency's AI driver's: what a
+/// player may take a single trip of.
+fn server_ai_duty() -> Boss {
+    let mut b = boss();
+    let wd = super::super::plan::weekday_of(&b.c.date);
+    super::super::plan::set_driver(&mut b.c, wd, "Linie5", "2", 0, Some(Who::Agency));
+    b.c.online.on_server = true;
+    b
+}
+
+fn trip_list(v: &Value) -> super::wire::TripList {
+    serde_json::from_value(v["trip_list"].clone()).unwrap()
+}
+
+/// (NexiconDK, 27 October 2026) A player finds a trip by its line or its stop and takes it on its
+/// own: the duty stays the AI driver's - the plan, its pay and hours -, his game starts on that
+/// trip with the trips after it to drive on with, and what he reports of it (and the one he drove
+/// on with) is his, booked as measured; the close runs the rest of the duty with its driver.
+#[test]
+fn on_the_server_a_player_takes_a_single_trip_and_the_ai_drives_the_tour_on() {
+    let mut b = server_ai_duty();
+    let s = snap(&ask(&mut b, "jan", "hello", |_| {}));
+    assert!(s.trips_open);
+    let duty = s.duties[0].duty.clone();
+    // the free trips, the soonest first: the lines and stops there are some of
+    let l = trip_list(&ask(&mut b, "jan", "trips", |_| {}));
+    assert!(l.open);
+    assert_eq!(l.trips.iter().map(|t| (t.trip, t.dep, t.from.as_str(), t.to.as_str())).collect::<Vec<_>>(), [(1, 360, "A", "B"), (2, 400, "B", "A"), (3, 440, "A", "B")]);
+    assert_eq!((l.lines.iter().map(|x| x.number.as_str()).collect::<Vec<_>>(), l.stops.clone()), (vec!["5"], vec!["A".to_string(), "B".to_string()]));
+    let l = trip_list(&ask(&mut b, "jan", "trips", |r| r.filter.stop = "b".into()));
+    assert_eq!(l.trips.iter().map(|t| t.dep).collect::<Vec<_>>(), [400]);
+    let l = trip_list(&ask(&mut b, "jan", "trips", |r| r.filter.line = "7".into()));
+    assert!(l.trips.is_empty() && l.stops.is_empty());
+    assert_eq!(l.lines.iter().map(|x| x.line.as_str()).collect::<Vec<_>>(), ["Linie5", "7"], "the line chosen stays to choose");
+    // the 06:40 from B, his
+    let v = ask(&mut b, "jan", "take_trip", |r| {
+        r.duty = Some(duty.clone());
+        r.trip = 2;
+    });
+    assert_eq!(v["state"].as_str(), Some("planned"), "{v}");
+    assert!(snap(&v).notices.iter().any(|n| n.text == host::TOOK_TRIP && n.args.contains(&("time".into(), "06:40".into()))));
+    let x = b.c.together.claim_of(&duty).cloned().unwrap();
+    assert_eq!((x.part, x.from, x.to), (Some((2, 3)), 400, 430));
+    assert_eq!(b.plan().tours[0].duties[0].who, Some(Who::Agency), "the duty stays its driver's");
+    let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
+    let part = s.duties[0].part.clone().unwrap();
+    assert_eq!((s.duties[0].state, part.dep, part.arr, part.from.as_str(), part.trips), (DutyState::Mine, 400, 430, "B", 1));
+    // nobody else takes that trip, nor the duty - its other trips, yes
+    assert_eq!(ask(&mut b, "piet", "take_trip", |r| {
+        r.duty = Some(duty.clone());
+        r.trip = 2;
+    })["error"]
+        .as_str(), Some(book::NOT_OPEN));
+    assert_eq!(ask(&mut b, "piet", "take", |r| r.duty = Some(duty.clone()))["error"].as_str(), Some(book::NOT_OPEN));
+    assert_eq!(trip_list(&ask(&mut b, "piet", "trips", |_| {})).trips.iter().map(|t| t.dep).collect::<Vec<_>>(), [360, 440]);
+    let piet = snap(&ask(&mut b, "piet", "snapshot", |_| {}));
+    assert_eq!((piet.duties[0].state, piet.duties[0].part.as_ref().map(|p| p.dep)), (DutyState::Player, Some(400)));
+    let v = ask(&mut b, "piet", "take_trip", |r| {
+        r.duty = Some(duty.clone());
+        r.trip = 1;
+    });
+    assert_eq!(v["state"].as_str(), Some("planned"), "{v}");
+    let piet = snap(&ask(&mut b, "piet", "snapshot", |_| {}));
+    assert_eq!((piet.duties[0].state, piet.duties[0].part.as_ref().map(|p| p.dep)), (DutyState::Mine, Some(360)), "his own trip of it");
+    assert_eq!(snap(&ask(&mut b, "jan", "snapshot", |_| {})).duties[0].part.as_ref().map(|p| p.dep), Some(400));
+    // his game starts on that trip, the 07:20 after it to drive on with
+    let v = ask(&mut b, "jan", "start", |r| r.duty = Some(duty.clone()));
+    let st: DriveStart = serde_json::from_value(v["start"].clone()).unwrap();
+    assert_eq!((st.first, st.legs.clone(), st.more), (2, vec!["Linie5|2|2|1".to_string()], 1), "{v}");
+    assert!(snap(&v).notices.iter().any(|n| n.text == host::DRIVES_TRIP));
+    let d = st.duty(crate::Duty::default());
+    assert_eq!(d.drive_on, Some(1));
+    // his trip and the one he drove on with: his; the 06:00 Piet's
+    let v = ask(&mut b, "jan", "report", |r| {
+        r.duty = Some(duty.clone());
+        r.trips = vec![run(400, 30, 0), run(440, 20, 0), run(360, 9, 0)];
+        r.done = true;
+    });
+    assert_eq!((v["taken"].as_u64(), v["refused"].as_u64()), (Some(2), Some(1)), "{v}");
+    assert!(snap(&v).notices.iter().any(|n| n.text == host::TRIP_DONE));
+    assert_eq!(snap(&v).results.iter().map(|r| r.trips).collect::<Vec<_>>(), [2], "his trips alone");
+    ask(&mut b, "piet", "start", |r| r.duty = Some(duty.clone()));
+    let v = ask(&mut b, "piet", "report", |r| {
+        r.duty = Some(duty.clone());
+        r.trips = vec![run(360, 9, 0)];
+        r.done = true;
+    });
+    assert_eq!(v["taken"].as_u64(), Some(1), "{v}");
+    let x = b.c.together.claim_of(&duty).cloned().unwrap();
+    assert_eq!((x.part, x.to, x.state), (Some((2, 4)), 470, ClaimState::Done));
+    let jan = guest_no(&b, "jan");
+    let g = b.c.together.guest(jan).unwrap().stats.clone();
+    assert_eq!((g.trips, g.duties, g.left, g.passengers), (2, 0, 0, 50), "a single trip is no duty");
+    assert!(!book::drove(&b.c, &b.c.date, "Linie5", "2", 0));
+    assert!(book::part_drove(&b.c, &b.c.date, "Linie5", "2", 440));
+    // the close: the three measured, the AI driver's depot runs modelled - nothing dropped
+    let (report, _) = close(&mut b);
+    assert_eq!((report.measured, report.dropped), (3, 0), "{report:?}");
+    let closed = b.c.date.clone();
+    book::after_close(&mut b.c, &closed);
+    assert!(b.c.together.claims.is_empty(), "a single trip is not kept past its day");
+}
+
+/// (NexiconDK) The next free trip at a stop, taken; a trip given back before it leaves is the
+/// company's again; one too soon, a deadhead, the company's owner switching single trips off, a
+/// company not on the server: refused.
+#[test]
+fn the_next_free_trip_is_taken_and_one_given_back_before_it_leaves_is_free_again() {
+    let mut b = server_ai_duty();
+    let duty = snap(&ask(&mut b, "jan", "hello", |_| {})).duties[0].duty.clone();
+    let jan = guest_no(&b, "jan");
+    let v = ask(&mut b, "jan", "next_trip", |r| r.filter.stop = "A".into());
+    assert_eq!((v["trip"].as_u64(), v["state"].as_str()), (Some(1), Some("planned")), "{v}");
+    assert_eq!(b.c.together.claim_of(&duty).and_then(|x| x.part), Some((1, 2)));
+    // given back before it leaves: free again, said
+    let v = ask(&mut b, "jan", "release", |r| r.duty = Some(duty.clone()));
+    assert!(snap(&v).notices.iter().any(|n| n.text == host::TRIP_BACK), "{v}");
+    assert!(b.c.together.claim_of(&duty).is_none());
+    // too soon for the 06:00 two minutes before it: the 06:40 is the next free one
+    b.c.clock.minute = 358;
+    assert_eq!(ask(&mut b, "jan", "take_trip", |r| {
+        r.duty = Some(duty.clone());
+        r.trip = 1;
+    })["error"]
+        .as_str(), Some(book::TRIP_GONE));
+    assert_eq!(ask(&mut b, "jan", "take_trip", |r| {
+        r.duty = Some(duty.clone());
+        r.trip = 0;
+    })["error"]
+        .as_str(), Some(book::NO_TRIP));
+    let v = ask(&mut b, "jan", "next_trip", |_| {});
+    assert_eq!(v["trip"].as_u64(), Some(2), "{v}");
+    // he leaves before it left: the AI driver's again, nothing counted against him
+    assert_eq!(ask(&mut b, "jan", "leave", |_| {})["ok"], true);
+    assert!(b.c.together.claim_of(&duty).is_none());
+    assert_eq!(b.c.together.guest(jan).unwrap().stats.left, 0);
+    // none left at a stop nothing leaves from
+    assert_eq!(ask(&mut b, "jan", "next_trip", |r| r.filter.stop = "Depot".into())["error"].as_str(), Some(book::NO_FREE_TRIP));
+    // a bus on the fleet map: its tour's trip at 07:20
+    let v = ask(&mut b, "jan", "next_trip", |r| {
+        r.filter.tour = "2".into();
+        r.filter.at = Some(440);
+    });
+    assert_eq!(v["trip"].as_u64(), Some(3), "{v}");
+    ask(&mut b, "jan", "release", |r| r.duty = Some(duty.clone()));
+    // the owner switches single trips off
+    b.c.together.trips_open = false;
+    assert!(!trip_list(&ask(&mut b, "jan", "trips", |_| {})).open);
+    assert!(!snap(&ask(&mut b, "jan", "snapshot", |_| {})).trips_open);
+    assert_eq!(ask(&mut b, "jan", "next_trip", |_| {})["error"].as_str(), Some(book::NO_TRIPS));
+    b.c.together.trips_open = true;
+    b.c.online.on_server = false;
+    assert_eq!(ask(&mut b, "jan", "take_trip", |r| {
+        r.duty = Some(duty.clone());
+        r.trip = 3;
+    })["error"]
+        .as_str(), Some(book::NO_TRIPS));
+    // (an older company's file: single trips on)
+    let t: book::Together = serde_json::from_str("{}").unwrap();
+    assert!(t.trips_open);
+}
+
+/// (NexiconDK) A single trip whose bus the AI kept (he was not at his stop in time): the company's
+/// again, as if he never had it; one he left after it began counts as left, and stays - the
+/// world's check of it may still come.
+#[test]
+fn a_single_trip_the_ai_drove_or_he_left_under_way() {
+    let mut b = server_ai_duty();
+    let duty = snap(&ask(&mut b, "jan", "hello", |_| {})).duties[0].duty.clone();
+    let jan = guest_no(&b, "jan");
+    ask(&mut b, "jan", "take_trip", |r| {
+        r.duty = Some(duty.clone());
+        r.trip = 2;
+    });
+    let p = b.plan();
+    assert_eq!(book::ai_kept(&mut b.c, Some(&p), &duty, jan, 400, 1, 400), Ok(2));
+    assert!(b.c.together.claim_of(&duty).is_none(), "the AI driver drove it: nothing of his");
+    // left under way: Done, counted
+    ask(&mut b, "jan", "take_trip", |r| {
+        r.duty = Some(duty.clone());
+        r.trip = 3;
+    });
+    ask(&mut b, "jan", "start", |r| r.duty = Some(duty.clone()));
+    b.c.clock.minute = 445;
+    assert_eq!(ask(&mut b, "jan", "leave", |_| {})["ok"], true);
+    let x = b.c.together.claim_of(&duty).cloned().unwrap();
+    assert_eq!((x.state, x.ai.len()), (ClaimState::Done, 0));
+    assert_eq!(b.c.together.guest(jan).unwrap().stats.left, 1);
+    // the world's check of it, later: his, and he did not leave it
+    let p = b.plan();
+    assert_eq!(book::report(&mut b.c, Some(&p), &duty, jan, &[run(440, 12, 0)], now()), Ok((1, 0)));
+    assert_eq!((b.c.together.guest(jan).unwrap().stats.left, b.c.together.claim_of(&duty).unwrap().left), (0, false));
+}
+
+/// (NexiconDK) A single trip taken whose game never came: started after it left, refused; past
+/// the AI's wait at the stop, the company's again, said.
+#[test]
+fn a_single_trip_never_started_goes_back_after_it_left() {
+    let mut b = server_ai_duty();
+    let duty = snap(&ask(&mut b, "jan", "hello", |_| {})).duties[0].duty.clone();
+    ask(&mut b, "jan", "take_trip", |r| {
+        r.duty = Some(duty.clone());
+        r.trip = 1;
+    });
+    b.c.clock.minute = 361;
+    assert_eq!(ask(&mut b, "jan", "start", |r| r.duty = Some(duty.clone()))["error"].as_str(), Some(book::TRIP_GONE));
+    let watch = |b: &mut Boss| {
+        let p = b.plan();
+        let lines = timetable();
+        let here = Here { plan: Some(&p), lines: &lines, now: now(), lead: 10 };
+        b.st.watch(&mut b.c, &here)
+    };
+    assert!(!watch(&mut b), "the AI's bus waits for him a while");
+    assert!(b.c.together.claim_of(&duty).is_some());
+    b.c.clock.minute = 367;
+    assert!(watch(&mut b));
+    assert!(b.c.together.claim_of(&duty).is_none());
+    assert!(b.st.notices.iter().any(|n| n.text == host::TRIP_BACK));
+}

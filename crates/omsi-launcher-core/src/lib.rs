@@ -104,7 +104,7 @@ pub fn chosen_game() -> Option<ChosenGame> {
 
 /// The arguments this launcher's game knows and openOMSI's own release does not, and whether
 /// each takes a value.
-pub const OWN_ARGS: &[(&str, bool)] = &[("--company", true), ("--duty-leg", true), ("--free-line", true), ("--relief", false)];
+pub const OWN_ARGS: &[(&str, bool)] = &[("--company", true), ("--duty-leg", true), ("--free-line", true), ("--relief", false), ("--drive-on", true)];
 
 /// A command line without `OWN_ARGS`, for openOMSI's own release. A free drive along a line
 /// (`--free-line`) goes with its `--line` too: the line alone would be a duty of its first tour.
@@ -3791,6 +3791,10 @@ pub struct Duty {
     /// is handed over there.
     #[serde(default)]
     pub relief: Option<bool>,
+    /// (NexiconDK, Bus Company Online: single trips) How many trips of the tour after the duty's
+    /// the player may drive on with, one at a time (the game menu's "Drive on"; `--drive-on`).
+    #[serde(default)]
+    pub drive_on: Option<u32>,
     pub profile: Option<String>,
     /// LAN play: "host", or "join:<session code | ip[:port] | port | empty = search>".
     pub lan: Option<String>,
@@ -4137,6 +4141,10 @@ fn duty_args_for_root(d: &Duty, root: &Path) -> Result<Vec<String>> {
     // (in a LAN world only: the AI's bus there is handed over)
     if d.relief.unwrap_or(false) && d.lan.as_deref().is_some_and(|l| l.trim().starts_with("join:")) {
         a.push("--relief".into());
+    }
+    // (a single trip of the company's: the trips after it the player may drive on with)
+    if let Some(n) = d.drive_on.filter(|n| *n > 0 && d.legs.iter().any(|x| !x.trim().is_empty()) && d.free_line.as_deref().is_none_or(|r| r.trim().is_empty())) {
+        a.extend(["--drive-on".into(), n.to_string()]);
     }
     let profile = d.profile.clone().filter(|p| !p.trim().is_empty()).unwrap_or_else(|| load_config().profile);
     if let Some(season) = d.season.as_deref().map(str::trim).filter(|x| !x.is_empty() && !x.eq_ignore_ascii_case("auto")) {

@@ -835,6 +835,68 @@ Tested: `omsi_sim`'s `ai_traffic::service_tests::a_bus_holds_at_the_stop_its_rel
 `together::tests::a_trip_the_ai_drove_while_he_was_not_at_his_stop_is_the_ais`,
 `relief::tests::the_same_vehicle_file_however_written`.
 
+### Single trips (27 October 2026)
+
+Asked by NexiconDK on 27 October 2026: a player may choose a trip to drive rather than a whole
+duty - by its line or the stop it leaves from, as the HUB picks a start, by a bus on the fleet map,
+or simply the next free one -, takes the bus over at its stop, and the AI drives the tour on after
+it; at its end he may drive the next trip too. Decided: all three ways to find one; at the
+terminus a choice, hand the bus back or drive on; the company's owner switches it on and off (on by
+default), and duties planned for players come first.
+
+- **The claim** (`together::book::Claim::part`): a claim of the duty with only some of its trips -
+  from one up to another (indexes into its trips). The duty stays its driver's - the company's AI
+  driver in the world -: the plan does not put the player on it (`guest_on`), the driver's pay and
+  hours do not change, and nobody takes the whole duty while a trip of it is a player's. Other
+  players may take its other trips, a claim each (`Together::trip_taken`, `claim_for`: a player's
+  own claim of a duty; `trip_claim`: the claim a reported trip is of). Only trips with passengers
+  that are whole (not cut at a relief point on the way), of the block's own timetable tour
+  (`book::single`), of a duty a driver of the company's has (`takes_over`), leaving at least
+  `TRIP_LEAD` (4) minutes from now - the next free one, his game started at once, `NEXT_LEAD` (8).
+  It lies over none of his other duties or trips (`overlapping` by the minutes it takes,
+  `span_of`). Taken at once, or asked for as a duty is (`open_claims`).
+- **Finding one** (`book::free_trips`, `TripFilter`): by line (name or number), stop, or - from the
+  fleet map - tour and departure; the soonest first. The session's requests: `trips` (answered
+  with a `wire::TripList`: the lines and stops there are free trips of, at most 60 trips and how
+  many more), `take_trip` (`duty`, `trip`) and `next_trip` (the first that fits his day,
+  `book::take_next_trip`). In the launcher: the joined company's "Single trips" tab - a line and a
+  stop to look by, "Take", "Take and drive", and "Drive the next free trip" (takes it and starts
+  the game); on the fleet map, a bus's card offers "Drive its HH:MM trip" (its block's next free
+  trip, `fleetmap::next_single`) to a player of the company joined from afar. His own trip shows
+  under "My work" with Drive and Give back; another player's as "… drives the HH:MM trip".
+- **Driving it** (`host::start_part`): his game starts on those trips alone (`--duty-leg` of the
+  trip; from the first he has not driven, `book::part_from` - not one that left before he started
+  it), with relief at the stop when it is not the tour's first, and with `--drive-on <n>`: how
+  many trips of the duty after his he may drive on with (`DriveStart::more`, from the timetable, up
+  to a trip another player took, not a trip handed on halfway).
+- **At the terminus** (`omsi-app`'s `relief::drive_on`): on his last trip the game menu offers
+  "Drive on with the next trip", and the trip's end says so. Chosen, his duty gets the tour's next
+  trip (`ScheduleSim::extend_duty`; not one that left a minute or more ago): his claims in the
+  world take it from the AI (its bus waiting at the stop, if it was already put out, goes), and the
+  company books it as his - his part grows when the world
+  reports it (`book::report`: the next trip with passengers of the duty after his). Not chosen, his
+  duty ends there and the world gives the tour back to the AI, which drives it on with a bus of
+  its own - as at the end of any duty.
+- **The books**: his trips are booked as measured with the players' (`GuestTrip::part`); the day's
+  close runs the rest of the duty with its driver and leaves those trips out
+  (`book::part_drove`). A single trip counts as trips in his figures, not as a duty. Not at the
+  stop in time, the AI driver drives it and the trip is the company's again (`book::ai_kept`).
+  Given back or left before it left: the company's again, said in the news ("… gave the HH:MM trip
+  … back: the AI drives it"); taken and never started, the same six minutes after it left
+  (`book::stale_trips` in `HostState::watch`: the AI's bus waits five for him). Left after it began:
+  counted as left (`Claim::left`) and kept, so that the world's check of it can still come - when
+  all its trips come after all (his launcher's "done" or silence came first), he did not leave it.
+  Not kept past its day (`after_close`), unless his game drives it as the day closes: then it is
+  kept as a duty of a closed day is.
+- **The owner's choice**: Settings → "Single trips" ("Players may take them" / "Whole duties
+  only", `online_trips`, `Together::trips_open`; a company saved before has it on).
+
+Tested: `together::tests::on_the_server_a_player_takes_a_single_trip_and_the_ai_drives_the_tour_on`,
+`the_next_free_trip_is_taken_and_one_given_back_before_it_leaves_is_free_again`,
+`a_single_trip_the_ai_drove_or_he_left_under_way`,
+`a_single_trip_never_started_goes_back_after_it_left`, and `omsi_sim`'s
+`timetable_run::sim::tours::tests::a_duty_driven_on_gets_the_tours_next_trip`.
+
 ## Phase 7: the group's head office (koncern-HQ)
 
 Decided 26 October 2026: a company that runs on more than one map is a **group**. Its head office

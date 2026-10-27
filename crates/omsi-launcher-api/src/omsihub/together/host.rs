@@ -749,7 +749,7 @@ fn player_row(c: &Company, st: Option<&HostState>, g: &book::Guest, p: Option<&D
                 ClaimState::Planned if x.late => tr("Day closed: drives it later"),
                 ClaimState::Planned => tr("Planned"),
             };
-            let r = th::result_of(c, p, &x.duty);
+            let r = th::result_of(c, p, &x.duty, x.guest);
             json!({
                 "duty": x.duty, "what": duty_words(&num, &x.duty), "times": times(x.from, x.to), "state": state,
                 "off": matches!(x.state, ClaimState::Planned), "asked": x.state == ClaimState::Asked,

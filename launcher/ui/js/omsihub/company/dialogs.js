@@ -212,6 +212,9 @@ function SettingsDialog({ d }) {
         <div class="co-caps">${v.online.left_caps}</div>
         <div class="pair"><${Seg} value=${v.online.left} options=${v.online.left_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_left', { left: k })} style="width:320px;height:40px" />
           <p class="co-note">${v.online.left_say}</p></div>
+        ${v.online.trips_options && html`<div class="co-caps">${v.online.trips_caps}</div>
+          <div class="pair"><${Seg} value=${v.online.trips} options=${v.online.trips_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_trips', { trips: k })} style="width:320px;height:40px" />
+            <p class="co-note">${v.online.trips_say}</p></div>`}
         ${v.online.depots && html`<div class="co-caps">${v.online.depots.caps}</div>
           ${v.online.depots.of ? html`<p class="co-note">${v.online.depots.of}</p><${SendMoney} to=${v.online.depots.hq} label=${v.online.depots.send_hq} amount=${v.online.depots.send_amount} />
             ${v.online.depots.approval && html`<div class="co-caps">${v.online.depots.approval.caps}</div><${ApprovalPart} a=${v.online.depots.approval} />`}` : html`<${DepotsPart} d=${v.online.depots} />`}

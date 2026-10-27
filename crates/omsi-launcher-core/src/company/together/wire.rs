@@ -17,6 +17,11 @@
 //! control room's messages to the duty his game drives (`msg_reply`: the message `msg`, the
 //! answer's key in `text`) and tells control from it (`msg_tell`: the quick button's key); the
 //! snapshot carries those messages (`Snapshot::messages`, docs/omsihub/MESSAGES.md).
+//!
+//! (NexiconDK, Bus Company Online: single trips, 27 October 2026) A player looks for a trip to
+//! drive on its own (`trips`, by `filter`: answered with a `TripList`), takes one (`take_trip`:
+//! `duty` and `trip`, its place in the duty's trips) or the first free one the filter finds
+//! (`next_trip`); he drives it as a duty (`start`), and the AI drives the tour on after it.
 
 use super::super::duty_launch::DutyRef;
 use super::book::GuestStats;
@@ -63,6 +68,10 @@ pub struct Request {
     /// (NexiconDK) Bus Company Online: the main server's ticket for this player and company
     /// (`online::ticket`) - a company on the server lets nobody in without it.
     pub ticket: String,
+    /// (NexiconDK, single trips) The trip of `duty` a `take_trip` takes (an index into its trips),
+    /// and what `trips` and `next_trip` look for.
+    pub trip: usize,
+    pub filter: super::book::TripFilter,
 }
 
 /// The company as the friend's page shows it.
@@ -152,6 +161,61 @@ pub struct SnapDuty {
     /// server, and a player may take it over (`book::takes_over`) - from its start, or from its
     /// next trip when it has `begun`.
     pub take_over: bool,
+    /// (NexiconDK, single trips) Its player (`guest`) has only these trips of it: the rest is its
+    /// driver's (`book::Claim::part`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub part: Option<SnapPart>,
+}
+
+/// (NexiconDK, single trips) The trips of a duty a player took on their own: from where and when
+/// the first leaves to where and when the last arrives, how many carry passengers.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct SnapPart {
+    pub trip: usize,
+    pub dep: i32,
+    pub arr: i32,
+    pub from: String,
+    pub to: String,
+    pub trips: usize,
+}
+
+/// (NexiconDK, single trips) A trip of the company's day free to take on its own
+/// (`book::free_trips`): its duty and its place in its trips, its line's number and colour, its
+/// times and stops, its bus.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct SnapTrip {
+    pub duty: DutyRef,
+    pub trip: usize,
+    pub number: String,
+    pub colour: String,
+    pub dep: i32,
+    pub arr: i32,
+    pub from: String,
+    pub to: String,
+    pub stops: u32,
+    pub km: f64,
+    pub bus: String,
+    pub file: String,
+}
+
+/// (NexiconDK, single trips) The answer to `trips`: whether the company lets its players take
+/// single trips, the lines and the stops there are free trips of (for the filter: the stops of the
+/// line chosen), the free trips the filter finds (the soonest first, at most `LISTED`), and how many
+/// more there are.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct TripList {
+    pub open: bool,
+    pub lines: Vec<SnapLine>,
+    pub stops: Vec<String>,
+    pub trips: Vec<SnapTrip>,
+    pub more: usize,
+}
+
+impl TripList {
+    pub const LISTED: usize = 60;
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
@@ -266,6 +330,8 @@ pub struct Snapshot {
     pub asks: Vec<SnapAsk>,
     /// The control room's messages of the duty the player's game drives, the newest first.
     pub messages: Vec<super::super::messages::Msg>,
+    /// (NexiconDK, Bus Company Online) Its players may take single trips (`book::free_trips`).
+    pub trips_open: bool,
 }
 
 /// How a player's game starts on his duty (`duty_launch::Start`, which the boss's launcher works
@@ -289,6 +355,14 @@ pub struct DriveStart {
     /// A relief on the way: where the duty takes the bus over, and where it hands it on.
     pub from_stop: Option<usize>,
     pub to_stop: Option<usize>,
+    /// (NexiconDK, single trips) How many trips of the tour after his he may drive on with, one
+    /// at a time, at the end of his (his game's "Drive on", `--drive-on`): the rest of the duty.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub more: usize,
+}
+
+fn is_zero(n: &usize) -> bool {
+    *n == 0
 }
 
 impl DriveStart {
@@ -316,6 +390,7 @@ impl DriveStart {
         // (alone, not in a session; the friend has no company of his own to run: his trips go
         // to the boss's by his launcher)
         d.company = None;
+        d.drive_on = (self.more > 0).then_some(self.more.min(99) as u32);
         d
     }
 
@@ -336,6 +411,7 @@ impl DriveStart {
             hof: s.hof.clone(),
             from_stop: s.from_stop,
             to_stop: s.to_stop,
+            more: 0,
         }
     }
 }

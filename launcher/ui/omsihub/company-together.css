@@ -287,3 +287,11 @@
 .bco-hq-colours input[type="color"] { width: 44px; height: 34px; padding: 0; border: 0; border-radius: 8px; background: none; cursor: pointer; }
 .bco-hq-tabs { flex: none; margin-top: 12px; }
 .bco-hq-tabs .co-seg { width: min(860px, 100%); }
+
+/* (NexiconDK, 27 October 2026) "Single trips": the line and stop to look by, the next free trip */
+.tg-trip-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 4px 0 10px; }
+.tg-trip-filter .co-select { position: relative; display: flex; align-items: center; width: 220px; min-width: 0; }
+.tg-trip-filter .co-select select { width: 100%; height: 38px; appearance: none; padding-right: 30px; }
+.tg-trip-filter .co-select .hub-icon { position: absolute; right: 8px; pointer-events: none; color: var(--hub-text-dim); }
+.tg-trip-filter .go { margin-left: auto; display: flex; }
+.tg-duty.trip .state { text-align: right; }

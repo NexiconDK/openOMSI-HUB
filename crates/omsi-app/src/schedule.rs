@@ -215,6 +215,12 @@ impl Schedule {
         self.sim.set_company(Box::new(companies));
     }
 
+    /// (NexiconDK, single trips) The player drives on with the tour's trip after his duty's last
+    /// (`ScheduleSim::extend_duty`): its departure (s of the day).
+    pub fn extend_duty(&mut self, world: &World, d: &mut PlayerDuty, now: f64) -> Result<f64, String> {
+        self.sim.extend_duty(&*world.data(), d, now)
+    }
+
     /// A duty of trips from several tours, as the launcher puts one together (`--duty-leg`,
     /// see `omsi_launcher_lib::compose`): each leg is `line|tour|first|trips`, so many trips
     /// of the tour from its trip `first` (1 = the first) on (see `ScheduleSim::player_plan`).

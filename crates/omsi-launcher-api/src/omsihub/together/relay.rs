@@ -27,7 +27,7 @@ pub const SERVER_CLOCK: &str = "On the Bus Company Online server the server's cl
 /// (NexiconDK) What the boss alone does, on his own launcher, that is the owner's from afar on
 /// Bus Company Online's server - there the server's process is the boss, and nobody plays on
 /// it: the company's owner (the player who founded it) does it from his launcher.
-pub const OWNER_ON_SERVER: [&str; 9] = ["country", "online_share", "online_left", "depot_found", "depot_money", "bus_move", "staff_lend", "delete_company", "approval_answer"];
+pub const OWNER_ON_SERVER: [&str; 10] = ["country", "online_share", "online_left", "online_trips", "depot_found", "depot_money", "bus_move", "staff_lend", "delete_company", "approval_answer"];
 /// What the server's clock decides on Bus Company Online's server (the company's real time).
 pub const SERVER_CLOCK_ACTS: [&str; 1] = ["realtime"];
 

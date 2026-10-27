@@ -13,12 +13,12 @@
 // card beside it, which follows it as it drives and as the map moves: everything about the bus
 // (`fleetmap::bus_card`). Closed with its ×, Escape or a click on the empty map.
 
-import { html, useEffect, useRef, useState, useSize, Btn, Plate, Meter, IconBtn, Icon, rgbOf, inkOn, setCo, goTab, tr } from './kit.js';
+import { html, useEffect, useRef, useState, useSize, Btn, Plate, Meter, IconBtn, Icon, rgbOf, inkOn, setCo, goTab, tr, remoteDrive } from './kit.js';
 import { useMore, actMore, TextIn, box } from './more.js';
 import { Photo } from './fleet.js';
 import { cmd } from './kit.js';
 import { dark } from '../theme.js';
-import { S } from '../../store.js';
+import { S, toast } from '../../store.js';
 import { useMemo } from '../../../vendor/preact-htm.js';
 
 /** A road at least this many points wide, its casing a hair round it (`mapview.rs`). */
@@ -607,9 +607,28 @@ function toRf(o) {
     .catch(() => goTab(5));
 }
 
-/** A way on from the card: RosterFlow, a page of the company, the bus's own. */
+/** (NexiconDK, 27 October 2026) The bus's next trip, driven by the player on its own (Bus Company
+ * Online): taken (`tg_next_trip` pinned to it), then his game started on it - the session's. */
+async function takeTrip(t) {
+  let r;
+  try {
+    r = await cmd('tg_next_trip', t);
+  } catch (e) {
+    toast(e.message, 'error');
+    return;
+  }
+  if (r?.error) {
+    toast(r.error, 'error');
+    return;
+  }
+  if (r?.said) toast(r.said, 'ok');
+  if (r && !r.asked && r.duty && remoteDrive.go) await remoteDrive.go(r.duty);
+}
+
+/** A way on from the card: RosterFlow, a page of the company, the bus's own, its next trip. */
 function go(l) {
-  if (l.rf) toRf(l.rf);
+  if (l.trip) takeTrip(l.trip);
+  else if (l.rf) toRf(l.rf);
   else if (l.bus != null) setCo({ dialog: { kind: 'vehicle', id: l.bus } });
   else if (l.tab != null) goTab(l.tab);
 }
@@ -617,7 +636,8 @@ function go(l) {
 /** The card of the bus picked (`fleetmap::bus_card`): its head, the bus, what it does and its
  * delay, its day, what happened to it, and the ways on. */
 function Card({ c, tip, onClose }) {
-  const links = (c.links || []).filter((l) => !(l.rf && S.co?.remote));
+  // (a trip to drive is a joined player's: the company's own pages from afar)
+  const links = (c.links || []).filter((l) => !(l.rf && S.co?.remote) && !(l.trip && !S.co?.remote));
   return html`<div class="fm-head">
       <${Plate} p=${c.head.plate} h=${22} />
       <span class="fm-title cut">${c.head.title}</span>

@@ -121,6 +121,8 @@ impl App {
                 ),
                 // (a free drive along a line is no duty: its end is the line's)
                 None if d.free => "End of the line: drive on freely, or choose another line in the launcher".into(),
+                // (NexiconDK, single trips: the AI drives the tour on - or he does)
+                None if self.args.drive_on > 0 => omsi_ui::tr(crate::relief::END_DRIVE_ON).into_owned(),
                 None => "End of the duty: the tour's last trip is done".into(),
             };
             say(format!("trip end {}", d.trip_index), text, NoticeKind::Success);

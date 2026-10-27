@@ -576,7 +576,7 @@ pub fn ask_swap(c: &mut Company, p: &DayPlan, from: Who, mine: &DutyRef, with: W
         },
         Who::Guest(b) => {
             // (the duty of his they would drive: the first of the day not begun)
-            s.theirs = c.together.claims.iter().filter(|x| x.guest == b && x.duty.date == p.date && x.state == ClaimState::Planned).map(|x| x.duty.clone()).next();
+            s.theirs = c.together.claims.iter().filter(|x| x.guest == b && x.duty.date == p.date && x.state == ClaimState::Planned && x.part.is_none()).map(|x| x.duty.clone()).next();
             let asker = who_name(c, Some(from));
             notify(c, Some(with), Priority::High, SWAP_ASKED, &[("name", asker), ("mine", mine_words)], Some("phone"));
         }

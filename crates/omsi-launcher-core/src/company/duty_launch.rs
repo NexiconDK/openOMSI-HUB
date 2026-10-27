@@ -344,6 +344,13 @@ pub struct Start {
     pub hof: String,
 }
 
+/// Where the sheet's trips (`Sheet::planned`) lie in its tour of the day's timetable `lines`
+/// (None: they are not there, one after another).
+pub fn part_of(s: &Sheet, lines: &[crate::LineInfo]) -> Option<TimetablePart> {
+    let line = &s.duty.line;
+    lines.iter().find(|x| x.name.eq_ignore_ascii_case(line)).and_then(|l| l.tours.iter().find(|t| t.number.trim() == s.game_tour.trim())).and_then(|t| timetable_part(&s.planned, &t.trips))
+}
+
 /// The start of a sheet's duty, with the day's timetable `lines` and the bus's `lead` before
 /// the first departure (minutes): Err the hitch that keeps it.
 pub fn start(s: &Sheet, lines: &[crate::LineInfo], lead: i64) -> Result<Start, Hitch> {
@@ -352,8 +359,7 @@ pub fn start(s: &Sheet, lines: &[crate::LineInfo], lead: i64) -> Result<Start, H
     }
     let Some(bus) = s.bus.as_ref() else { return Err(Hitch::NoBus(None)) };
     let line = s.duty.line.clone();
-    let legs = lines.iter().find(|x| x.name.eq_ignore_ascii_case(&line)).and_then(|l| l.tours.iter().find(|t| t.number.trim() == s.game_tour.trim())).and_then(|t| timetable_part(&s.planned, &t.trips));
-    let Some(part) = legs else { return Err(Hitch::Timetable) };
+    let Some(part) = part_of(s, lines) else { return Err(Hitch::Timetable) };
     let (first, dep, count) = (part.first, part.time, part.trips);
     let (date, time) = crate::lead_start(&s.duty.date, dep, lead);
     let leg = crate::compose::Block { line: line.clone(), tour: s.game_tour.clone(), first, trips: count, departure: 0.0 };

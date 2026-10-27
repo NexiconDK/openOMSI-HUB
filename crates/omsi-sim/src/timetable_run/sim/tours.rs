@@ -199,6 +199,39 @@ impl ScheduleSim {
         n
     }
 
+    /// (NexiconDK, Bus Company Online: single trips, 27 October 2026) The player drives on: his
+    /// duty `d` gets the trip of the tour after its last one (the game menu's "Drive on"), left to
+    /// him as its others are (`reserve_trips`; a LAN world takes it from its AI by his claims,
+    /// `PlayerDuty::lan_claims`) - not one that left a minute or more before `now` (s of the day):
+    /// its AI bus is on the road. That trip's departure (s of the day).
+    pub fn extend_duty(&mut self, world: &dyn TimetableWorld, d: &mut PlayerDuty, now: f64) -> Result<f64, String> {
+        let Some(last) = d.trips.len().checked_sub(1) else { return Err("the duty has no trips".into()) };
+        // (a duty of one tour knows its trips by `first_trip`: each named, as a duty of legs is)
+        if d.tours.len() != d.trips.len() {
+            d.tours = (0..d.trips.len()).map(|i| (d.line.clone(), d.tour.clone(), d.first_trip + i)).collect();
+        }
+        let (line, tour, k) = d.tours[last].clone();
+        let Some(l) = self.data.lines.iter().find(|l| l.name.eq_ignore_ascii_case(&line)) else {
+            return Err(format!("line {line} is not in the timetable of this map on this day"));
+        };
+        let Some(t) = l.tours.iter().find(|t| t.number.eq_ignore_ascii_case(&tour)) else {
+            return Err(format!("line {} has no tour {tour}", l.name));
+        };
+        let (name, number) = (l.name.clone(), t.number.clone());
+        let Some(next) = self.planned_trips(world, t).into_iter().nth(k + 1) else {
+            return Err(format!("line {name} tour {number} has no trip after its {}th", k + 1));
+        };
+        let dep = next.departure;
+        if dep + 60.0 < d.duty_time(now) {
+            return Err(format!("line {name} tour {number}: its next trip left at {}", hhmm(dep)));
+        }
+        log::info!("player duty: driven on with line {name} tour {number} trip {} at {}", k + 2, hhmm(dep));
+        d.tours.push((name, number, k + 1));
+        d.trips.push(next);
+        self.reserve_trips(d.trips.iter().zip(&d.tours).map(|(p, (l, t, _))| (l.clone(), t.clone(), p.departure)).collect());
+        Ok(dep)
+    }
+
     /// Takes the departures the player drives from the AI (their buses already on the road
     /// go at the next tick). Returns how many.
     fn leave_to_player(&mut self) -> usize {
@@ -841,6 +874,37 @@ mod tests {
         assert_eq!(duty.trips.len(), 1);
         assert_eq!(duty.first_trip, 1);
         assert_eq!(s.tour_plan(&w, "N1", "1").unwrap().trips.len(), 2);
+    }
+
+    /// (NexiconDK, Bus Company Online: single trips, 27 October 2026) A player's duty driven on
+    /// gets its tour's next trip - his, and claimed in a LAN world -, until the tour has none after
+    /// it.
+    #[test]
+    fn a_duty_driven_on_gets_the_tours_next_trip() {
+        let w = World { path: std::env::temp_dir().join(format!("omsi_drive_on_{}", std::process::id())), ai: Default::default(), positions: Default::default() };
+        let mut s = ScheduleSim::new(&w.path, &w, &crate::SimClock::default());
+        s.data.trips.push(omsi_timetable::Trip { name: "a".into(), line: "L1".into(), terminus: "B".into(), stations: vec![10, 20], ..Default::default() });
+        s.times = vec![vec![TripTimes { stations: vec![(0.0, 30.0), (600.0, 630.0)], stops: vec![true, true], duration: 630.0, ..Default::default() }]];
+        let tt = |departure| omsi_timetable::TourTrip { trip: "a".into(), departure, profile: 0 };
+        s.data.lines.push(omsi_timetable::Line { name: "L1".into(), tours: vec![omsi_timetable::Tour { number: "1".into(), ai_group: "Depot".into(), extra: String::new(), trips: vec![tt(600.0), tt(640.0), tt(680.0)] }], ..Default::default() });
+        // his single trip: the tour's second
+        let mut d = s.player_plan(&w, &[("L1".into(), "1".into(), 2, 1)]).unwrap();
+        assert_eq!(d.trips.len(), 1);
+        assert_eq!(d.lan_claims(), vec![LanClaim { line: "l1".into(), tour: "1".into(), window: Some((640, 640)) }]);
+        // driven on: the third his too
+        assert!(s.extend_duty(&w, &mut d, 682.0 * 60.0).is_err(), "it left two minutes ago");
+        assert_eq!(d.trips.len(), 1);
+        assert_eq!(s.extend_duty(&w, &mut d, 670.0 * 60.0), Ok(680.0 * 60.0));
+        assert_eq!((d.trips.len(), d.tours[1].clone()), (2, ("L1".to_string(), "1".to_string(), 2)));
+        assert_eq!(d.lan_claims()[0].window, Some((640, 680)));
+        assert_eq!(s.player_trips.len(), 2, "left to him");
+        assert!(s.extend_duty(&w, &mut d, 670.0 * 60.0).is_err(), "the tour has no trip after it");
+        assert_eq!(d.trips.len(), 2);
+        // (a duty of one tour, without legs: its trips named from its first)
+        let mut one = s.player_duty(&w, "L1", "1", 600.0 * 60.0, Some("1"), false).unwrap();
+        let (n, first) = (one.trips.len(), one.first_trip);
+        assert_eq!(s.extend_duty(&w, &mut one, 590.0 * 60.0).is_ok(), first + n < 3, "{first} {n}");
+        assert_eq!(one.tours.len(), one.trips.len());
     }
 
     /// A company that drops what a LAN player leaves of his duty (Bus Company Online).

@@ -85,3 +85,33 @@ _version: 2
   pl: "Przekazano: %{name} jedzie dalej."
   ru: "Передано: дальше едет %{name}."
   uk: "Передано: далі їде %{name}."
+# NexiconDK, Bus Company Online: single trips (27 October 2026) - at the end of a trip taken on its
+# own the player may drive the tour's next trip as well (the game menu's line, `relief::drive_on`).
+"Drive on with the next trip":
+  de: "Mit der nächsten Fahrt weiterfahren"
+  fr: "Continuer avec le trajet suivant"
+  nl: "Doorrijden met de volgende rit"
+  pl: "Jedź dalej następnym kursem"
+  ru: "Ехать дальше следующим рейсом"
+  uk: "Їхати далі наступним рейсом"
+"You drive on: the %{time} is yours too.":
+  de: "Du fährst weiter: die Fahrt um %{time} gehört auch dir."
+  fr: "Tu continues : le trajet de %{time} est aussi à toi."
+  nl: "Je rijdt door: de rit van %{time} is ook van jou."
+  pl: "Jedziesz dalej: kurs o %{time} też jest twój."
+  ru: "Ты едешь дальше: рейс в %{time} тоже твой."
+  uk: "Ти їдеш далі: рейс о %{time} теж твій."
+"The tour has no trip after this one for you, or it has left.":
+  de: "Der Umlauf hat nach dieser Fahrt keine weitere für dich, oder sie ist schon abgefahren."
+  fr: "Le service n'a pas de trajet après celui-ci pour toi, ou il est déjà parti."
+  nl: "De omloop heeft na deze rit geen rit meer voor jou, of die is al vertrokken."
+  pl: "Brygada nie ma dla ciebie kursu po tym albo już odjechał."
+  ru: "После этого рейса у выхода нет рейса для тебя, или он уже ушёл."
+  uk: "Після цього рейсу у виходу немає рейсу для тебе, або він уже пішов."
+"End of your trip: the AI drives the tour on from here - or drive its next trip yourself (game menu › Drive on with the next trip).":
+  de: "Ende deiner Fahrt: die KI fährt den Umlauf von hier aus weiter - oder fahre seine nächste Fahrt selbst (Spielmenü › Mit der nächsten Fahrt weiterfahren)."
+  fr: "Fin de ton trajet : l'IA poursuit le service à partir d'ici - ou conduis toi-même son trajet suivant (menu du jeu › Continuer avec le trajet suivant)."
+  nl: "Einde van je rit: de AI rijdt de omloop vanaf hier verder - of rijd de volgende rit zelf (spelmenu › Doorrijden met de volgende rit)."
+  pl: "Koniec twojego kursu: SI prowadzi brygadę dalej stąd - albo poprowadź jej następny kurs sam (menu gry › Jedź dalej następnym kursem)."
+  ru: "Конец твоего рейса: дальше выход ведёт ИИ - или проведи его следующий рейс сам (меню игры › Ехать дальше следующим рейсом)."
+  uk: "Кінець твого рейсу: далі вихід веде ШІ - або проведи його наступний рейс сам (меню гри › Їхати далі наступним рейсом)."

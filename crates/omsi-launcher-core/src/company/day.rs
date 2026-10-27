@@ -819,6 +819,11 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                 if ai && !super::together::book::ai_runs(c, &date, &tp.tour.line, &tp.tour.tour, k, j - d.start, tp.tour.trips[j].whole_dep()) {
                     continue;
                 }
+                // (NexiconDK: a trip of it a player took on its own and drove - booked as his,
+                // measured; its driver runs the rest of the duty: `together::book::Claim::part`)
+                if super::together::book::part_drove(c, &date, &tp.tour.line, &tp.tour.tour, tp.tour.trips[j].whole_dep()) {
+                    continue;
+                }
                 // (a trip two duties share, cut at a relief point on the way: one trip, booked
                 // with its first part, run only when the duties of both parts are)
                 let Some((trip, rest)) = whole_trip(tp, j) else { continue };

@@ -119,6 +119,13 @@ const NO_BUS: &str = "Your bus could not be put down: %{why}";
 const FROM_PLAYER: &str = "Your bus comes with %{name}: they get out at the stop and hand it over to you.";
 const GET_OUT: &str = "%{name} waits here to take your bus over: stop, get up (Ctrl+Shift+G) and get out.";
 const GIVEN: &str = "Handed over: %{name} drives on.";
+/// (NexiconDK, Bus Company Online: single trips, 27 October 2026) The game menu's line, and what
+/// it says.
+pub(crate) const DRIVE_ON: &str = "Drive on with the next trip";
+const DROVE_ON: &str = "You drive on: the %{time} is yours too.";
+const NO_MORE: &str = "The tour has no trip after this one for you, or it has left.";
+/// The end of his trip, with trips of the tour he may drive on with.
+pub(crate) const END_DRIVE_ON: &str = "End of your trip: the AI drives the tour on from here - or drive its next trip yourself (game menu › Drive on with the next trip).";
 
 fn tr(s: &str) -> String {
     omsi_ui::tr(s).into_owned()
@@ -208,6 +215,33 @@ pub(crate) fn host_command(from: u32, text: &str, schedule: Option<&mut crate::s
 }
 
 impl App {
+    /// (NexiconDK, single trips) The game menu offers "Drive on": the duty is on its last trip, and
+    /// the company let him drive on with trips of the tour after it (`--drive-on`).
+    pub(crate) fn drive_on_offered(&self) -> bool {
+        self.args.drive_on > 0 && self.session.schedule.is_some() && self.session.duty.as_ref().is_some_and(|d| !d.free && d.trip_index + 1 >= d.trips.len())
+    }
+
+    /// (NexiconDK, single trips) "Drive on": the tour's next trip is his too - the AI's bus for it
+    /// stays off the road (his claims take it in the world), and the company books it as his.
+    pub(crate) fn drive_on(&mut self) {
+        if !self.drive_on_offered() {
+            return;
+        }
+        let now = self.clock.time;
+        let (Some(world), Some(sch), Some(d)) = (self.world.as_ref(), self.session.schedule.as_mut(), self.session.duty.as_mut()) else { return };
+        match sch.extend_duty(world, d, now) {
+            Ok(dep) => {
+                self.args.drive_on -= 1;
+                self.service_msg = Some((tr(DROVE_ON).replace("%{time}", &crate::schedule::hhmm(dep)), 5.0));
+            }
+            Err(e) => {
+                log::warn!("drive on: {e}");
+                self.args.drive_on = 0;
+                self.service_msg = Some((tr(NO_MORE), 4.0));
+            }
+        }
+    }
+
     /// `--relief`, the world loaded: on foot at the stop `place_on_duty` found (`at`: x, y, z,
     /// heading), waiting for the bus of the duty's first trip.
     pub(crate) fn relief_begin(&mut self, at: [f64; 4]) {

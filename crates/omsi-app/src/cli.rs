@@ -73,6 +73,10 @@ pub(crate) struct Args {
     /// Where the relief waits (x, y, z, heading), as `duty_start::place_on_duty` found it.
     #[arg(skip)]
     pub(crate) relief_at: Option<[f64; 4]>,
+    /// (NexiconDK, Bus Company Online: single trips) How many trips of the tour after the duty's
+    /// the player may drive on with, one at a time (the game menu's "Drive on", `relief`).
+    #[arg(long, default_value_t = 0)]
+    pub(crate) drive_on: u32,
     /// Control preset: `simple` (W/S/A/D and Up/Down drive, Left/Right switch the interior
     /// camera as in OMSI; the default), `wasd`,
     /// `arrows` (leaves W, S and D to the jobs `Inputs/keyboard.cfg` gives them - wipers,

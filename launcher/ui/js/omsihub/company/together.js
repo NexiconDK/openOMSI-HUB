@@ -142,7 +142,7 @@ function DutyRow({ d, again, print }) {
     <${Chip} number=${d.number} colour=${d.colour} />
     <div class="what"><b>${d.times}</b><span class="cut">${d.route}</span><span class="dim cut">${d.facts}</span></div>
     <span class=${'state cut t-' + d.tone}>${d.state}</span>
-    <span class="acts">${print && PRINTED.includes(d.key) && html`<${Btn} icon="print_receipt" title=${print} onClick=${() => openDutyCard(d.duty, { relay: true })} />`}${d.acts.map((a) => html`<${Btn} kind=${a.kind} icon=${a.icon} label=${a.label} onClick=${() => act(a)} />`)}</span>
+    <span class="acts">${print && !d.single && PRINTED.includes(d.key) && html`<${Btn} icon="print_receipt" title=${print} onClick=${() => openDutyCard(d.duty, { relay: true })} />`}${d.acts.map((a) => html`<${Btn} kind=${a.kind} icon=${a.icon} label=${a.label} onClick=${() => act(a)} />`)}</span>
   </div>`;
 }
 
@@ -249,7 +249,7 @@ function MyCrew({ mine }) {
         ${x.asked_of_me
           ? html`<${Btn} kind="primary" label=${w.accept} onClick=${() => crew({ act: 'swap_answer', no: x.no, yes: true })} /><${Btn} label=${w.refuse} onClick=${() => crew({ act: 'swap_answer', no: x.no, yes: false })} />`
           : html`<span class=${'t-' + (x.state === 'accepted' ? 'ok' : x.state === 'refused' ? 'danger' : 'warn')}>${w[x.state]}${x.why ? ': ' + x.why : ''}</span>`}</div>`)}`}
-    ${mine.filter((d) => d.key === 'mine').map((d) => html`<div class="tg-crew-row"><span class="cut">${d.times} · ${d.route}</span>
+    ${mine.filter((d) => d.key === 'mine' && !d.single).map((d) => html`<div class="tg-crew-row"><span class="cut">${d.times} · ${d.route}</span>
       ${f.duty === d.title
         ? html`<select class="tg-crew-in" value=${f.with} onChange=${(e) => put({ with: e.currentTarget.value })}><option value="">${w.with}</option>${c.players.map((p) => html`<option value=${p.no}>${p.name}</option>`)}</select>
           <${Btn} kind="primary" label=${w.ask} disabled=${!f.with} onClick=${() => (crew({ act: 'swap', duty: d.duty, with: Number(f.with) }), put({ duty: null, with: '' }))} />`
@@ -318,6 +318,51 @@ function Duties({ v, ask }) {
       <section class="co-section"><div class="co-caps">${w.mine_caps}</div>${v.mine.length ? v.mine.map((d) => html`<${DutyRow} d=${d} again=${ask} />`) : html`<p class="dim">${w.no_mine}</p>`}</section>
     </div>
   </div>`;
+}
+
+/** (NexiconDK, 27 October 2026) "Single trips": a trip of a duty the company's AI driver has,
+ * found by its line or the stop it leaves from, or the next free one - taken, or taken and driven
+ * at once (the AI's bus handed over at its stop; the AI drives the tour on after it). */
+function Trips({ ask }) {
+  const [f, setF] = useState({ line: '', stop: '' });
+  const [t, again] = usePoll('tg_trips', 5000, f);
+  if (!t) return null;
+  const w = t.words || {};
+  const took = async (r, drive) => {
+    if (!r || r.error) return;
+    toast(r.said, 'ok');
+    if (drive && !r.asked && r.duty) await driveDuty({ duty: r.duty });
+    again();
+    ask();
+  };
+  const take = async (row, drive) => took(await run('tg_take_trip', { duty: row.duty, trip: row.trip }), drive);
+  const next = async () => took(await run('tg_next_trip', f), true);
+  const rows = t.rows || [];
+  return html`<div class="tg-cols one"><div class="co-scroll tg-main">
+    <section class="co-section"><div class="co-caps">${w.caps}</div><p class="note">${w.note}</p>
+      ${t.error
+        ? html`<p class="t-warn">${t.error}</p>`
+        : !t.open
+          ? html`<p class="dim">${w.closed}</p>`
+          : html`<div class="tg-trip-filter">
+                <span class="co-select" title=${w.line}><select class="co-field" value=${f.line} onChange=${(e) => setF({ line: e.currentTarget.value, stop: '' })}>
+                  <option value="">${w.all_lines}</option>${(t.lines || []).map((l) => html`<option value=${l.value}>${l.label}</option>`)}</select><${Icon} name="expand_more" size=${20} /></span>
+                <span class="co-select" title=${w.stop}><select class="co-field" value=${f.stop} onChange=${(e) => setF({ ...f, stop: e.currentTarget.value })}>
+                  <option value="">${w.all_stops}</option>${(t.stops || []).map((x) => html`<option value=${x}>${x}</option>`)}</select><${Icon} name="expand_more" size=${20} /></span>
+                <span class="go"><${Btn} kind="primary" icon="play_arrow" label=${w.next} title=${w.next_tip} disabled=${!rows.length} onClick=${next} /></span>
+              </div>
+              ${rows.length
+                ? rows.map(
+                    (r) => html`<div class="tg-duty trip" title=${r.title}>
+                      <${Chip} number=${r.number} colour=${r.colour} />
+                      <div class="what"><b>${r.times}</b><span class="cut">${r.route}</span><span class="dim cut">${r.facts}</span></div>
+                      <span class="state cut t-soft">${r.in}</span>
+                      <span class="acts"><${Btn} label=${w.take} onClick=${() => take(r, false)} /><${Btn} kind="primary" icon="play_arrow" label=${w.take_drive} onClick=${() => take(r, true)} /></span>
+                    </div>`,
+                  )
+                : html`<p class="dim">${w.none}</p>`}
+              ${t.more && html`<p class="dim">${t.more}</p>`}`}
+    </section></div></div>`;
 }
 
 /** A player the friend manages (his role allows it): role, permissions, sending away. */
@@ -393,10 +438,11 @@ function Joined({ v, ask }) {
   const tabs = [
     ['work', w.tab_work, 'directions_bus', v.mine.filter((d) => d.key === 'mine' || d.key === 'late').length],
     ['duties', w.tab_duties, 'route', v.can.approve ? v.asks.length : v.open.length],
+    ...(v.trips ? [['trips', w.tab_trips, 'alt_route', 0]] : []),
     ['team', w.tab_team, 'group', v.online],
     ['news', w.tab_news, 'forum', 0],
   ];
-  const body = { work: MyWork, duties: Duties, team: Team, news: News }[tab] || MyWork;
+  const body = { work: MyWork, duties: Duties, trips: Trips, team: Team, news: News }[tab] || MyWork;
   return html`<div class="tg-company">
     <div class="tg-head">
       <${Btn} icon="chevron_left" label=${w.back} style="width:120px;height:38px" onClick=${back} />

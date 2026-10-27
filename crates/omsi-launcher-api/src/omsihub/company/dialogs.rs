@@ -86,6 +86,14 @@ fn online_part(c: &co::Company) -> Value {
             { "value": "dropped", "label": tr("Its trips are dropped") },
         ],
         "left_say": tr(if c.together.left_dropped { LEFT_DROPPED } else { LEFT_AI }),
+        // (27 October 2026: single trips of the AI drivers' duties - its owner's choice)
+        "trips_caps": tr("Single trips").to_uppercase(),
+        "trips": if c.together.trips_open { "open" } else { "closed" },
+        "trips_options": [
+            { "value": "open", "label": tr("Players may take them") },
+            { "value": "closed", "label": tr("Whole duties only") },
+        ],
+        "trips_say": tr(if c.together.trips_open { TRIPS_OPEN } else { TRIPS_CLOSED }),
         // (phase 4: its depots on other maps)
         "depots": depots_part(c),
     })
@@ -218,12 +226,16 @@ const DEPOT_START: i64 = 500_000_00;
 const LEFT_AI: &str = "The AI drives the rest of his duty in the world, and the company books its trips. He is paid for what he drove; his card counts the duties he left.";
 const LEFT_DROPPED: &str = "Nobody drives the rest of his duty: its trips are dropped, the company loses their takings and pays the authority's penalties. He is paid for what he drove; his card counts the duties he left.";
 
+/// (NexiconDK, 27 October 2026) Whether its players may take single trips, as the settings say it.
+const TRIPS_OPEN: &str = "A player may take a single trip of a duty the company's AI driver has - by its line, its stop, or the next free one - and the AI drives the tour on after it. The duty stays its driver's: the plan, his pay and hours do not change. Duties planned for players come first.";
+const TRIPS_CLOSED: &str = "Players take whole duties only: a duty planned for them, an open one, or one of the AI drivers' to take over.";
+
 /// (NexiconDK) The settings' share chosen (`online_share {share}`): the company keeps it from the
 /// next day on (`online::Online::share_next`); what a player leaves of his duty (`online_left
 /// {left: "ai" | "dropped"}`: `together::Together::left_dropped`, at once) - a company on Bus
 /// Company Online's server only.
 pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, String>> {
-    if what != "online_share" && what != "online_left" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" && what != "approval_ask" && what != "approval_answer" {
+    if what != "online_share" && what != "online_left" && what != "online_trips" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" && what != "approval_ask" && what != "approval_answer" {
         return None;
     }
     let Some(c) = s.company.as_mut().filter(|c| c.online.on_server) else { return Some(Ok(json!({}))) };
@@ -321,6 +333,15 @@ pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Va
             }
             Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
         }));
+    }
+    if what == "online_trips" {
+        let open = args.get("trips").and_then(Value::as_str) != Some("closed");
+        if c.together.trips_open != open {
+            c.together.trips_open = open;
+            super::changed(s);
+            s.say(tr(if open { "From now on players may take single trips." } else { "From now on players take whole duties only." }), false);
+        }
+        return Some(Ok(json!({})));
     }
     if what == "online_left" {
         let dropped = args.get("left").and_then(Value::as_str) == Some("dropped");
