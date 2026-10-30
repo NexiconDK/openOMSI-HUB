@@ -354,6 +354,7 @@ flags! {
     OMSI_MIRROR_HUD: Num, Tuning, Use, "settings", "Mirror HUD mode (number).";
     OMSI_MOBILE: Bool, Test, Use, "off", "The phone layout on a computer (screen cut-outs).";
     OMSI_MUTE: Bool, Test, Use, "off", "Mix everything as usual but play nothing.";
+    OMSI_NAV_AWAITED_PREVIEW: Text, Test, Test, "-", "Tests: pictures of the bus a player waits for at his stop on the city map, on it and off it.";
     OMSI_NAV_DUTY_PREVIEW: Text, Test, Test, "-", "Tests: a picture of the navigator's duty sheet.";
     OMSI_NAV_MAP: Bool, Test, Use, "off", "Open the navigation map.";
     OMSI_NAV_MAP_MPP: Num, Test, Use, "2.5", "Navigation map zoom in metres per pixel.";

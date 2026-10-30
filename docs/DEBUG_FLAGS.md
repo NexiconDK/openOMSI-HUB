@@ -213,6 +213,7 @@ effect. On Android, `openOMSI/env.txt` holds `NAME=value` lines that are set bef
 | `OMSI_MENU_LOOK` | text | - | test | app | Tests: a folder for pictures of the pause menu. |
 | `OMSI_MOBILE` | bool | off | use | app | The phone layout on a computer (screen cut-outs). |
 | `OMSI_MUTE` | bool | off | use | audio | Mix everything as usual but play nothing. |
+| `OMSI_NAV_AWAITED_PREVIEW` | text | - | test | app | Tests: pictures of the bus a player waits for at his stop on the city map, on it and off it. |
 | `OMSI_NAV_DUTY_PREVIEW` | text | - | test | omsihub-game | Tests: a picture of the navigator's duty sheet. |
 | `OMSI_NAV_MAP` | bool | off | use | app | Open the navigation map. |
 | `OMSI_NAV_MAP_MPP` | num | 2.5 | use | app | Navigation map zoom in metres per pixel. |
