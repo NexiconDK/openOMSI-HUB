@@ -53,7 +53,8 @@ impl Offscreen<'_> {
             ref renderer,
             ref mut scene,
             ref mut sim_view,
-            ref humans_off,
+            ref mut humans_off,
+            ref mut srv_pax,
             ref mut real_time,
             ref mut schedule,
             ..
@@ -121,6 +122,11 @@ impl Offscreen<'_> {
         if let Some(l) = lan_off.as_mut() {
             let positions = |id: u32| remotes_off.remotes.get(&id).map(|r| (r.vehicle().position, r.vehicle().heading));
             srv_admin.prune(l);
+            // (NexiconDK: a player's bus that left people at their stop, told to his game; what
+            // the people waiting do for a bus, to every player's - `pax_signals`)
+            if let Some(h) = humans_off.as_mut() {
+                let _ = srv_pax.host_tick(dt, Some(&mut *l), h);
+            }
             for (from, text) in l.take_commands() {
                 // (NexiconDK, Bus Company Online: a player waiting at a stop for the bus he
                 // takes over - `relief`)
@@ -762,6 +768,7 @@ impl Offscreen<'_> {
             let eye_cam = eye_camera(args, traffic.as_ref(), player.as_ref(), camera);
             h.eye = Some(humans::Eye::of(&eye_cam, view_aspect).widened(triple_extent(settings, &eye_cam, size.0, size.1)));
             h.set_remote_buses(remotes_off.remotes.iter().map(|(id, r)| (*id, r.vehicle())));
+            h.set_remote_termini(remotes_off.remotes.iter().map(|(id, r)| (*id, r.last.destination.clone())));
             h.set_duty(duty.as_ref());
             h.set_player_next_stop(duty.as_ref().and_then(|d| d.trip().stops.get(d.next_stop)));
             let took = steps::tick_humans(h, &mut sim_view.people, dt, world, player.as_mut(), traffic.as_mut(), renderer, scene);

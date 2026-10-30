@@ -3,6 +3,49 @@
 use super::*;
 
 impl PeopleSim {
+    /// Whether a bus `d` from a stop (stop frame: `forward` the way its buses go) is near
+    /// enough to be hailed (openOMSI PR #3427): within 60 m, coming or at most 12 m past the
+    /// sign, beside the stop.
+    pub(crate) fn visual_hail_range(d: DVec3, forward: DVec2) -> bool {
+        d.is_finite()
+            && d.length_squared() <= 60.0 * 60.0
+            && d.truncate().dot(forward) <= 12.0
+            && (d.x * forward.y - d.y * forward.x).abs() <= 14.0
+            && d.z.abs() < 8.0
+    }
+
+    /// (openOMSI PR #3427, the fork's own version) The bus a passenger waiting at their stop
+    /// signals to: the nearest coming one that takes them (as boarding would choose it -
+    /// another LAN player's by what it shows, `takes_waiting`), with whether it moves and
+    /// where it is. Cosmetic: it reserves no
+    /// place and changes no task or bus anybody boards.
+    pub fn visual_hail_bus(&self, i: usize, buses: &[BusNow]) -> Option<(BusId, bool, DVec3)> {
+        let p = self.pax(i)?;
+        // (only those standing still at the stop: once they walk to a door, turning the
+        // whole pose would slide their feet)
+        if p.inside.is_some() || p.task != Task::WaitingForBus {
+            return None;
+        }
+        let stop = p.stop?;
+        let s = self.stops.get(&stop)?;
+        let heading = s.heading.to_radians();
+        let forward = DVec2::new(heading.sin(), heading.cos());
+        let here = self.people[i].position;
+        buses
+            .iter()
+            .filter(|b| {
+                Self::visual_hail_range(b.pos - s.pos, forward)
+                    && (b.pos - here).length_squared() <= 60.0 * 60.0
+                    && b.fwd().dot(forward) > 0.0
+                    && b.served.is_none_or(|id| id == stop)
+                    && self.takes_waiting(stop, s, b, p.dest.as_deref(), p.line)
+            })
+            .min_by(|a, b| (a.pos - here).length_squared().total_cmp(&(b.pos - here).length_squared()))
+            .map(|b| (b.id, b.speed.abs() > 0.08, b.pos))
+    }
+}
+
+impl PeopleSim {
     /// The passenger of person `i`, if it is one.
     pub fn pax(&self, i: usize) -> Option<&Pax> {
         match &self.people[i].state {
@@ -204,3 +247,7 @@ impl PeopleSim {
         Some(k)
     }
 }
+
+#[cfg(test)]
+#[path = "visual_hail_tests.rs"]
+mod visual_hail_tests;

@@ -4553,6 +4553,16 @@
       "since": "0.2.22"
     },
     {
+      "name": "passengers_left",
+      "args": [
+        "count",
+        "stop_id",
+        "full"
+      ],
+      "doc": "The player's bus left people waiting for it at a stop - it drove past, or stood there and went on without them: how many, the stop (its map object id) and whether the bus was full (every place taken).",
+      "since": "0.2.22"
+    },
+    {
       "name": "stop_arrive",
       "args": [
         "name",

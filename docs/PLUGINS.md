@@ -897,6 +897,7 @@ declared to call the function (a plain `.lua` file has them all).
 | `passengers` | `count`, `old` | The number of passengers aboard the player's bus changed. | 0.2.22 |
 | `passenger_board` | `count`, `stop_id` | People got into the player's bus: how many, and the stop they waited at (its map object id, `nil` when none). | 0.2.22 |
 | `passenger_alight` | `count` | People got out of the player's bus. | 0.2.22 |
+| `passengers_left` | `count`, `stop_id`, `full` | The player's bus left people waiting for it at a stop - it drove past, or stood there and went on without them: how many, the stop (its map object id) and whether the bus was full (every place taken). | 0.2.22 |
 | `stop_arrive` | `name`, `id`, `number`, `delay` | The bus came to the duty's next stop (within 25 m of it): its name, map object id, number in the trip (from 1) and the delay in seconds (late positive). | 0.2.22 |
 | `stop_depart` | `name`, `id`, `number`, `delay` | The bus left the stop it stood at (more than 35 m from it, or the duty moved on): the same values, the delay as it left. | 0.2.22 |
 | `trip_start` | `trip`, `name`, `terminus` | The duty moved on to another trip: its number in the duty (from 1), the timetable's name of the trip and its terminus. | 0.2.22 |

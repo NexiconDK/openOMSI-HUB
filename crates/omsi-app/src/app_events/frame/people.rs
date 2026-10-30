@@ -7,6 +7,16 @@ impl App {
     /// frame was counted as the people's).
     pub(super) fn frame_lan(&mut self, dt: f32) {
         self.tick_lan(dt);
+        // (NexiconDK: a player's bus that left people at their stop - ours to the plugins, which
+        // count them for the trip - and the host's people's gestures to the clients; a client
+        // hears of both from the host, `lan_command`)
+        if !self.net.lan.as_ref().is_some_and(|l| l.role == omsi_net::Role::Client) {
+            if let Some(h) = self.session.humans.as_mut() {
+                for (count, stop, full) in self.net.pax_signals.host_tick(dt, self.net.lan.as_mut(), h) {
+                    crate::plugins::queue_event_ex(&mut self.integrations.plugin_events_ex, "passengers_left", vec![omsi_plugin::api::Value::Int(count as i64), omsi_plugin::api::Value::Int(stop), omsi_plugin::api::Value::Bool(full)]);
+                }
+            }
+        }
     }
 
     /// The player's duty, the personnel file's step, the placing of vehicles, the host's map
@@ -189,6 +199,8 @@ pub(super) fn humans(cx: HumansCx, dt: f32) {
         }
         // (the other LAN players' buses, for their riders to sit in)
         h.set_remote_buses(cx.net.remotes.remotes.iter().map(|(id, r)| (*id, r.vehicle())));
+        // (and what they show: those waiting for it signal to it, `passed_by`)
+        h.set_remote_termini(cx.net.remotes.remotes.iter().map(|(id, r)| (*id, r.last.destination.clone())));
         // (and the vehicles the player placed and left, with their riders)
         h.set_placed_buses(cx.player.placed.iter().map(|q| (q.uid, &q.vehicle)));
         h.set_player_next_stop(

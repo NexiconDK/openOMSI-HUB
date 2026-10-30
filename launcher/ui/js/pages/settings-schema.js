@@ -330,6 +330,9 @@ const gameplay = {
         // (drawn on this computer only; the avatars are downloaded once, about 310 MB)
         { type: 'select', key: 'character_models', label: 'Character models', options: [['original', 'Original'], ['improved', 'High quality (improved)']], help: 'High quality draws the people with the Microsoft Rocketbox avatars and their living faces, on this computer only: servers and other players keep their own. They are downloaded once (about 310 MB).' },
         { type: 'toggle', key: 'exact_fare', label: 'Passengers pay the exact fare' },
+        { type: 'toggle', key: 'passenger_hailing', label: 'Passengers signal approaching buses', help: 'Optional visual hailing; only effective with supported natural animations' },
+        { type: 'toggle', key: 'passenger_wave_after', label: 'Passengers wave after a bus that leaves them', help: 'With natural animations: those your bus drives past at their stop, or leaves there, wave after it - and the company counts them as left behind' },
+        { type: 'toggle', key: 'passenger_full_bus_reaction', label: 'Passengers react to full buses', help: 'Optional visual acknowledgement when an approaching compatible bus is at passenger capacity' },
         { type: 'slider', key: 'pax_density', label: 'How many passengers', min: 0, max: 2, step: 0.1, def: 1, format: pct, store: r2 },
         { type: 'toggle', key: 'get_up', label: 'Ability to get up (Ctrl+Shift+G)' },
         { type: 'section', title: 'Traffic' },

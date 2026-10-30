@@ -60,6 +60,7 @@ pub static EVENTS: &[EventDef] = &[
     ev("passengers", &["count", "old"], NEW, "The number of passengers aboard the player's bus changed."),
     ev("passenger_board", &["count", "stop_id"], NEW, "People got into the player's bus: how many, and the stop they waited at (its map object id, `nil` when none)."),
     ev("passenger_alight", &["count"], NEW, "People got out of the player's bus."),
+    ev("passengers_left", &["count", "stop_id", "full"], NEW, "The player's bus left people waiting for it at a stop - it drove past, or stood there and went on without them: how many, the stop (its map object id) and whether the bus was full (every place taken)."),
     ev("stop_arrive", &["name", "id", "number", "delay"], NEW, "The bus came to the duty's next stop (within 25 m of it): its name, map object id, number in the trip (from 1) and the delay in seconds (late positive)."),
     ev("stop_depart", &["name", "id", "number", "delay"], NEW, "The bus left the stop it stood at (more than 35 m from it, or the duty moved on): the same values, the delay as it left."),
     ev("trip_start", &["trip", "name", "terminus"], NEW, "The duty moved on to another trip: its number in the duty (from 1), the timetable's name of the trip and its terminus."),

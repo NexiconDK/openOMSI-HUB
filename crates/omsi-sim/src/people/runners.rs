@@ -92,7 +92,7 @@ fn along(net: &Network, lane: usize, s0: f32, lane_len: f32, stop_pos: DVec3, fw
 
 /// Whether a bus listed at stop `id` takes somebody waiting there for `dest` with line record
 /// `line` (as `bus_for` would choose it, `fit`).
-fn bus_takes(id: i64, stop: &PaxStop, bn: &BusNow, dest: Option<&str>, line: Option<usize>) -> bool {
+pub(super) fn bus_takes(id: i64, stop: &PaxStop, bn: &BusNow, dest: Option<&str>, line: Option<usize>) -> bool {
     if bn.cabin.entries.is_empty() {
         return false;
     }

@@ -157,6 +157,8 @@ impl PeopleSim {
             if let Some(n) = net {
                 self.runners_tick(world, n, &buses, &bus_ix);
             }
+            // (NexiconDK: a player's bus that leaves people at their stop)
+            self.passed_tick(buses);
         }
         stage!("stops");
         // the passengers (sub_6ffc7c)

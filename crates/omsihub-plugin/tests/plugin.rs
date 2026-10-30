@@ -308,6 +308,13 @@ fn a_trip_is_recorded_stop_by_stop_and_its_card_shown() {
     game.events = vec![GameEvent { name: "jolt", args: vec![InfoValue::Num(-3.2), InfoValue::Num(0.4), InfoValue::Num(30.0), InfoValue::Num(12.0)] }];
     ps.frame(&mut game);
     game.events.clear();
+    // (NexiconDK: the bus left two at a stop, and one more it was too full for)
+    game.events = vec![
+        GameEvent { name: "passengers_left", args: vec![InfoValue::Num(2.0), InfoValue::Num(4711.0), InfoValue::Bool(false)] },
+        GameEvent { name: "passengers_left", args: vec![InfoValue::Num(1.0), InfoValue::Num(4712.0), InfoValue::Bool(true)] },
+    ];
+    ps.frame(&mut game);
+    game.events.clear();
     at(&mut game, 2, false, 210.0);
     ps.frame(&mut game);
     // the last stop, a minute late: the trip is done
@@ -324,6 +331,7 @@ fn a_trip_is_recorded_stop_by_stop_and_its_card_shown() {
     // three stops served: the second late, the worst delay there
     assert_eq!((run["planned"].as_i64(), run["stops"].as_i64(), run["early"].as_i64(), run["late"].as_i64()), (Some(3), Some(3), Some(0), Some(1)));
     assert_eq!((run["worst"].as_f64(), run["completed"].as_bool(), run["jolts"].as_i64()), (Some(210.0), Some(true), Some(1)));
+    assert_eq!((run["left_behind"].as_i64(), run["left_full"].as_i64()), (Some(2), Some(1)), "those the bus left at the stops");
     let visits = run["visits"].as_array().expect("the stops' times");
     assert_eq!(visits.len(), 3);
     assert_eq!((visits[1]["arrived"].as_f64(), visits[1]["left"].as_f64()), (Some(29_300.0), Some(29_340.0)));

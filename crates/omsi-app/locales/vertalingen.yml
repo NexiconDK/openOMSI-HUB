@@ -2944,3 +2944,17 @@ _version: 2
   ru: "Точки входа карты оранжевыми точками с названиями (щелчок ставит там метку), только точки или ничего"
   uk: "Точки входу мапи помаранчевими точками з назвами (клацання ставить там мітку), лише точки або нічого"
   pl: "Punkty wejścia mapy jako pomarańczowe punkty z nazwami (kliknięcie stawia tam pinezkę), same punkty albo żadne"
+"Passengers wave after a bus that leaves them":
+  nl: "Passagiers zwaaien een bus na die hen laat staan"
+  de: "Fahrgäste winken einem Bus nach, der sie stehen lässt"
+  fr: "Les passagers font signe au bus qui les laisse sur le quai"
+  ru: "Пассажиры машут вслед автобусу, который их не взял"
+  uk: "Пасажири махають услід автобусу, який їх не взяв"
+  pl: "Pasażerowie machają za autobusem, który ich zostawił"
+"With natural animations: those your bus drives past at their stop, or leaves there, wave after it - and the company counts them as left behind":
+  nl: "Met natuurlijke animaties: wie je bus bij de halte voorbijrijdt of daar laat staan, zwaait hem na - en het bedrijf telt ze als achtergelaten"
+  de: "Mit natürlichen Animationen: Wen dein Bus an der Haltestelle vorbeifährt oder dort stehen lässt, winkt ihm nach - und das Unternehmen zählt sie als zurückgelassen"
+  fr: "Avec les animations naturelles : ceux que votre bus dépasse à leur arrêt, ou y laisse, lui font signe - et l'entreprise les compte comme laissés sur le quai"
+  ru: "С естественной анимацией: те, мимо кого ваш автобус проехал на остановке или кого там оставил, машут ему вслед - и компания считает их оставленными"
+  uk: "З природною анімацією: ті, повз кого ваш автобус проїхав на зупинці або кого там залишив, махають йому вслід - і компанія рахує їх залишеними"
+  pl: "Z naturalnymi animacjami: ci, których twój autobus minął na przystanku lub tam zostawił, machają za nim - a firma liczy ich jako pozostawionych"

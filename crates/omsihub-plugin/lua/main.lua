@@ -375,6 +375,7 @@ omsi.on("stop_depart", function(_, _, number, d) trip.depart(number, d) end)
 omsi.on("jolt", function() trip.jolt() end)
 omsi.on("crash", function() trip.crash() end)
 omsi.on("passenger_board", function(count) trip.boarded(count) end)
+omsi.on("passengers_left", function(count, _, full) trip.left(count, full) end)
 omsi.on("light_ahead", function(aspect) watch.light_ahead(aspect) end)
 omsi.on("red_light", function(kmh) watch.red_light(kmh) end)
 

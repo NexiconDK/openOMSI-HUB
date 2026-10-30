@@ -1992,6 +1992,11 @@ pub struct TripRun {
     pub jolts: i32,
     pub crashes: i32,
     pub passengers: i32,
+    /// (NexiconDK, 30 October 2026) People the bus left waiting for it at a stop - it drove
+    /// past, or stood there and went on without them -, and of them those it had no place for
+    /// (full: excused). The game tells its plugin (`passengers_left`), whose record has them.
+    pub left_behind: i32,
+    pub left_full: i32,
     /// What the game's drive watch saw on the way (`omsi-app`'s `drive_watch`; a trip of an
     /// older game has none): red lights run and speed cameras that flashed, with what they
     /// cost in fines (cents), and the trip's comfort - hard braking, hard starts and stops
@@ -3026,6 +3031,9 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
     // an early timetable bus waits only at the stops the timetable times (off: at every
     // stop, as in OMSI; #1773)
     v["ai_wait_timed_stops_only"] = json!(false);
+    v["passenger_hailing"] = json!(false);
+    v["passenger_full_bus_reaction"] = json!(false);
+    v["passenger_wave_after"] = json!(true);
     // OMSI's own options
     for (k, d) in [("maintenance", json!(0)), ("ai_unsched_factor", json!(100)), ("standing_chance", json!(5)), ("pax_sit", json!(100)), ("pax_runners", json!(5)), ("ai_max_scheduled", json!(0)), ("ai_max_parked", json!(0)), ("ai_max_humans", json!(200)), ("use_real_time", json!(false)), ("use_real_date", json!(false)), ("use_real_year", json!(false)), ("collision_vehicles", json!(true)), ("collision_objects", json!(true)), ("collision_pedestrians", json!(true)), ("head_movement", json!(true)), ("driverview_smooth", json!(true)), ("hands_in_cab", json!(false)), ("alt_view", json!(true)), ("precision_zoom", json!(false))] {
         v[k] = d;
@@ -3228,7 +3236,7 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
             "nav_arrows" | "nav_ai" | "nav_surface" | "nav_light" | "get_up" | "ibis_auto" | "time_sync" | "metar_sync" | "ui_scale_window" | "notes" | "machine_translation" | "update_check" | "update_auto" | "update_notify" | "presence" | "reflections" | "steering_linear" | "old_steering" | "red_steer_spd" | "ff_invert" | "ff_enabled" | "brake_hold" | "auto_clutch" | "momentary_gears" | "auto_shift" | "mouse_steering" | "mouse_right_off" | "mouse_smooth" | "mouse_hold" | "mouse_pedals" | "blinker_cancel" => v[&k] = json!(b(val)),
             "info_bar" | "road_snow" | "thunderstorms" => v[&k] = json!(b(val)),
             "perf_overlay" => v[&k] = json!(perf_overlay_mode(val)),
-            "windy_trees" | "mirror_hud_every_frame" | "ai_wait_timed_stops_only" | "ambient" => v[&k] = json!(b(val)),
+            "windy_trees" | "mirror_hud_every_frame" | "ai_wait_timed_stops_only" | "passenger_hailing" | "passenger_full_bus_reaction" | "passenger_wave_after" | "ambient" => v[&k] = json!(b(val)),
             "time_speed" => v[&k] = json!(val.trim_start_matches(['x', 'X']).parse::<f64>().map(|x| x.clamp(1.0, 30.0)).map(|x| if x.fract() == 0.0 { format!("{}", x as i64) } else { x.to_string() }).unwrap_or_else(|_| "1".into())),
             "language" => v[&k] = json!(language_code(val)),
             "graphics" | "renderer" => graphics = Some(graphics_mode(val)),
@@ -3659,6 +3667,9 @@ pub fn settings_to_text(v: &Value, old: Option<&str>) -> String {
     text.push_str(&format!("ambient={}\nvol_ambient={}\n", b("ambient", true), f("vol_ambient", 0.8).clamp(0.0, 1.0)));
     text.push_str(&format!("radio_speaker={}\nradio_hiss={}\nradio_dropouts={}\n", f("radio_speaker", 0.0).clamp(0.0, 1.0), f("radio_hiss", 0.0).clamp(0.0, 1.0), f("radio_dropouts", 0.0).clamp(0.0, 1.0)));
     text.push_str(&format!("ai_wait_timed_stops_only={}\n", b("ai_wait_timed_stops_only", false)));
+    text.push_str(&format!("passenger_hailing={}\n", b("passenger_hailing", false)));
+    text.push_str(&format!("passenger_full_bus_reaction={}\n", b("passenger_full_bus_reaction", false)));
+    text.push_str(&format!("passenger_wave_after={}\n", b("passenger_wave_after", true)));
     text.push_str(&format!("triple_left_angle_deg={}\ntriple_right_angle_deg={}\ntriple_eye_height_mm={}\n", f("triple_left_angle_deg", 45.0).clamp(0.0, 90.0), f("triple_right_angle_deg", 45.0).clamp(0.0, 90.0), f("triple_eye_height_mm", 0.0).clamp(-500.0, 500.0)));
     text.push_str(&format!("companion={}\ncompanion_hide={}\ncompanion_tunnel={}\n", b("companion", false), b("companion_hide", true), b("companion_tunnel", false)));
     text.push_str(&format!("launcher_scale={}\n", launcher_scale(v.get("launcher_scale").and_then(|x| x.as_f64()))));
@@ -4954,3 +4965,6 @@ mod omsi_options_tests;
 
 #[cfg(test)]
 mod right_stick_look_tests;
+#[cfg(test)]
+#[path = "passenger_settings_tests.rs"]
+mod passenger_settings_tests;

@@ -419,6 +419,23 @@ pub struct PeopleSim {
     pub defer_populate: bool,
     /// Passengers pay the exact fare: no change is ever due.
     pub exact_fare: bool,
+    /// Compute visual-only boarding signals when requested by this client.
+    pub visual_hailing: bool,
+    /// Optional visual-only response to an approaching full bus.
+    pub visual_full_bus_reaction: bool,
+    /// (NexiconDK) Passengers a player's bus left wave after it (drawn where the setting
+    /// `passenger_wave_after` has it; the bus is noted all the same: `passed_by`).
+    pub visual_wave_after: bool,
+    /// The players' buses coming to the stops near them, those waving after one that left
+    /// them, and the times a bus left people behind not yet taken (`passed_by`).
+    pub passing: Vec<passed_by::Passing>,
+    pub waving: Vec<passed_by::WaveAfter>,
+    pub left_behind: Vec<passed_by::LeftBehind>,
+    pub passed_at: f64,
+    /// (LAN client) What the host's people do for a bus, as the host said (`set_mirror_gesture`).
+    pub mirror_gestures: HashMap<u32, passed_by::MirrorGesture>,
+    /// (LAN host) What the other players' buses show, by player (`set_remote_termini`).
+    pub remote_termini: HashMap<u32, String>,
     /// How passengers board (`boarding` in the settings): `auto` - pay and take the
     /// ticket by themselves after a moment; `pay` - wait at the desk for the driver to
     /// sell it (and show a pass after `PAY_PATIENCE`); `walk` - no cash desk at all.

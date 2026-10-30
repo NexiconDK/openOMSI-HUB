@@ -89,6 +89,17 @@ impl App {
     pub(crate) fn lan_command(&mut self, from: u32, text: &str) {
         let Some(lan) = self.net.lan.as_ref() else { return };
         let my_id = lan.my_id;
+        // (NexiconDK: what the host's people do for a bus, and our bus having left people at
+        // their stop - `pax_signals`)
+        if let Some(rest) = text.strip_prefix("pax ") {
+            if lan.role == omsi_net::Role::Client && from == 1 {
+                if let Some((count, stop, full)) = crate::pax_signals::client_word(rest, self.session.humans.as_mut()) {
+                    log::info!("LAN: the host says our bus left {count} waiting at stop {stop}{}", if full { " (full)" } else { "" });
+                    crate::plugins::queue_event_ex(&mut self.integrations.plugin_events_ex, "passengers_left", vec![omsi_plugin::api::Value::Int(count as i64), omsi_plugin::api::Value::Int(stop), omsi_plugin::api::Value::Bool(full)]);
+                }
+            }
+            return;
+        }
         // (NexiconDK, Bus Company Online: a relief at a stop - asked of the host, its answers)
         if let Some(rest) = text.strip_prefix("relief ") {
             if lan.role == omsi_net::Role::Host {

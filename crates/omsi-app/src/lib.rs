@@ -132,6 +132,7 @@ mod ground_gap;
 mod on_foot;
 // NexiconDK, Bus Company Online: relief at the stop
 mod relief;
+mod pax_signals;
 use omsi_scene::route_arrows;
 mod server;
 mod player;
@@ -868,6 +869,7 @@ fn assemble_app(args: Args, settings: settings::Settings) -> App {
             lan: None,
             remotes: Default::default(),
             lan_world: Default::default(),
+            pax_signals: Default::default(),
         },
         service_msg: clock_note.map(|m| (m, 10.0)),
         settings,

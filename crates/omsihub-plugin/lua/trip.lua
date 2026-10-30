@@ -11,12 +11,12 @@ local career = require("career")
 local M = {}
 
 -- what is counted all the time; a trip takes its stretch
-local total = { seconds = 0, metres = 0, jolts = 0, crashes = 0, boarded = 0 }
+local total = { seconds = 0, metres = 0, jolts = 0, crashes = 0, boarded = 0, left = 0, left_full = 0 }
 local odometer = nil
 local cur = nil
 
 local function now()
-  return { seconds = total.seconds, metres = total.metres, jolts = total.jolts, crashes = total.crashes, boarded = total.boarded }
+  return { seconds = total.seconds, metres = total.metres, jolts = total.jolts, crashes = total.crashes, boarded = total.boarded, left = total.left, left_full = total.left_full }
 end
 
 local function fn(t, name)
@@ -39,6 +39,12 @@ end
 function M.jolt() total.jolts = total.jolts + 1 end
 function M.crash() total.crashes = total.crashes + 1 end
 function M.boarded(n) total.boarded = total.boarded + (tonumber(n) or 0) end
+-- (NexiconDK) people the bus left waiting at a stop: driven past, or left there - a full
+-- bus apart, the company counts them as left behind
+function M.left(n, full)
+  n = math.max(tonumber(n) or 0, 0)
+  if full then total.left_full = total.left_full + n else total.left = total.left + n end
+end
 
 -- the passengers boarded on the trip under way (0 between trips), and on the whole drive
 function M.boarded_on_trip()
@@ -142,6 +148,8 @@ function M.finish(completed, delay, watch)
     seconds = math.max(n.seconds - cur.start.seconds, 0), metres = math.max(n.metres - cur.start.metres, 0),
     jolts = math.max(n.jolts - cur.start.jolts, 0), crashes = math.max(n.crashes - cur.start.crashes, 0),
     passengers = math.tointeger(math.max(n.boarded - cur.start.boarded, 0)),
+    left_behind = math.tointeger(math.max((n.left or 0) - (cur.start.left or 0), 0)),
+    left_full = math.tointeger(math.max((n.left_full or 0) - (cur.start.left_full or 0), 0)),
   }
   -- (an empty list is written as `{}` by the JSON writer, which is no list: left out then)
   if #visits > 0 then run.visits = visits end

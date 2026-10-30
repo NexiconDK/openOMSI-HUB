@@ -978,6 +978,35 @@ Tested: `together::tests::on_the_server_a_player_takes_a_single_trip_and_the_ai_
 `a_single_trip_never_started_goes_back_after_it_left`, and `omsi_sim`'s
 `timetable_run::sim::tours::tests::a_duty_driven_on_gets_the_tours_next_trip`.
 
+### People left at the stop (30 October 2026)
+
+The owner's wish the same evening: the passengers a driver leaves at their stop wave after his
+bus, and the company counts them as left behind.
+
+- **Seen by the world** (`omsi_sim::people::passed_by`): the world's people near a player wait
+  at their stops as ever; a player's bus - a LAN player's on the world: `players_bus`, matched
+  by what its display shows, `PeopleSim::takes_waiting` - noted as it comes within 60 m of a
+  stop on its way, and as it goes on more than 12 m past it, those still waiting there whom it
+  would have taken (`runners::bus_takes`) are left behind (`LeftBehind`: how many, whether it
+  stood there, whether it was full) and wave after it for a few seconds.
+- **Told to his game** (`pax_signals`): the world says it to the player whose bus it was (`pax
+  left <count> <stop> <full>`), his game to its plugin (`passengers_left`), the plugin's trip
+  record keeps them (`TripRun::left_behind`, `left_full` for a full bus) and his launcher books
+  the trip as ever (a guest's trip bounded, `book::safe_trip`).
+- **The company's day** (`day::PassedBy`): they count as left behind on the line; those a bus
+  with room left cost 0.05 reputation each, at most 0.6 a day (`reputation::Cause::PassedBy`),
+  and bring a complaint of their own (`complaints::Kind::PassedBy`, "Left at the stop"), the
+  line's worst trip of the day. A full bus is excused.
+- **Drawn alike for every player**: the world tells every player's game what its waiting people
+  do for a bus (`pax gest <person> <hail|full|wave|off> <x> <y>`): signal to it (openOMSI PR
+  #3427), glance at it full (#3428), wave after it. A game takes the bus of its own nearest that
+  place and draws it with its own settings. No new protocol version: an older game lets the words
+  go.
+
+Tests: `people::passed_by::tests`, `human::wave_after::tests`, `pax_signals::tests`,
+`day::tests::people_a_driver_left_at_the_stop_are_counted`,
+`complaints::tests::people_left_at_the_stop_complain_and_cost_reputation`.
+
 ## Phase 7: the group's head office (koncern-HQ)
 
 Decided 26 October 2026: a company that runs on more than one map is a **group**. Its head office

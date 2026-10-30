@@ -78,6 +78,81 @@ pub(crate) struct PeopleView {
     pub(crate) ticket_blocks: Option<crate::money::TicketBlocks>,
 }
 
+/// Local visual-only treatment for a compatible bus, separate from actual boarding.
+/// A full bus ends the arm request but may keep the gaze for a short time.
+/// (openOMSI PR #3427/#3428; NexiconDK: and waving after a player's bus that left them,
+/// `people::passed_by`, which takes the gaze and the arm on the bus's side over.)
+fn apply_optional_bus_visual(
+    p: &PersonFrame,
+    st: &mut PersonView,
+    ty: &HumanType,
+    bones: &mut [glam::Affine3A; omsi_sim::human::SLOTS],
+    enhanced: bool,
+    camera: DVec3,
+    dt: f32,
+) {
+    if p.hail_target.is_none() && p.wave_after.is_none() && st.hail_strength <= 0.001 && st.full_look_strength <= 0.001 && st.wave_strength <= 0.001 {
+        return;
+    }
+    let shown = enhanced && !p.puppet && p.hidden.is_none()
+        && matches!(p.place, Place::Ground)
+        && (p.position - camera).length_squared() < 300.0 * 300.0;
+    let eligible = shown && p.hail_moving && p.hail_target.is_some();
+    let (signal_requested, full_requested) = omsi_sim::human::visual_hail_action(
+        p.hail_signal_enabled, p.hail_reaction_enabled, p.hail_full);
+    // Keep this gate across temporary target loss; only actual room
+    // in the same bus permits a new full-bus acknowledgement.
+    let allowed = p.hail_bus.is_some_and(|id| st.full_gate.allow(
+        id, p.hail_full, eligible && full_requested, dt));
+    // (a wave after the bus that left them puts the signal down; it ends a little before
+    // its time, so that the arm is down when it does)
+    let waving = shown && p.wave_after.is_some_and(|(_, age)| (age as f64) < omsi_sim::people::WAVE_SECS - 0.7);
+    let signalling = eligible && signal_requested && !waving;
+    let reacting = eligible && full_requested && allowed && !waving;
+    st.hail_strength += ((signalling as u8 as f32) - st.hail_strength)
+        .clamp(-dt * 2.8, dt * 2.8);
+    st.full_look_strength += ((reacting as u8 as f32) - st.full_look_strength)
+        .clamp(-dt * 2.8, dt * 2.8);
+    if st.wave_strength <= 0.001 && waving {
+        st.wave_t = 0.0;
+        // (the arm on the bus's side: chosen once the gaze has the bus, below)
+        st.wave_side = usize::MAX;
+    }
+    st.wave_strength += ((waving as u8 as f32) - st.wave_strength).clamp(-dt * 2.4, dt * 3.5);
+    st.wave_t = p.wave_after.map_or(st.wave_t + dt, |(_, age)| age);
+    if !enhanced {
+        st.hail_strength = 0.0;
+        st.full_look_strength = 0.0;
+        st.wave_strength = 0.0;
+    }
+    let wave = st.hail_wrist.advance(signalling, dt, p.id);
+    let looking = st.hail_strength.max(st.full_look_strength).max(st.wave_strength);
+    if looking > 0.001 && enhanced && !p.puppet {
+        // (the bus waved after while there is one, else the one signalled to)
+        let bus = p.wave_after.map(|(at, _)| at).or(p.hail_target);
+        if let Some(at) = bus {
+            st.wave_at = at;
+        }
+        let target = (st.wave_strength > 0.001).then_some(st.wave_at).or(bus)
+            .and_then(|bus| omsi_sim::human::hail_look_target(p.position, p.heading, bus));
+        let torso = omsi_sim::human::slot_of(omsi_sim::human::BONE_MAIN).unwrap();
+        let waiting_forward = bones[torso].transform_vector3(Vec3::Y);
+        st.hail_look.advance(&ty.rig, bones, target, looking, dt);
+        if st.hail_strength > 0.001 {
+            omsi_sim::human::accessory_hail_arm(
+                &ty.rig, bones, 1, waiting_forward, st.hail_strength, wave);
+        }
+        if st.wave_strength > 0.001 {
+            if let Some(t) = target {
+                if st.wave_side > 1 {
+                    st.wave_side = omsi_sim::human::wave_side(bones, t);
+                }
+                omsi_sim::human::wave_after_arm(&ty.rig, bones, st.wave_side, t, st.wave_strength, st.wave_t, p.id);
+            }
+        }
+    }
+}
+
 impl PeopleView {
     pub(crate) fn new() -> PeopleView {
         PeopleView {
@@ -431,6 +506,19 @@ pub(crate) struct PersonView {
     pub(super) ankles: [Vec3; 2],
     /// The earlier IK/foot-planted animation, allocated only for the enhanced poses.
     pub(super) procedural: Option<omsi_sim::human::Pose>,
+    /// Local-only cosmetic gesture; never changes bus stops or tasks.
+    hail_strength: f32,
+    /// Full-bus acknowledgement independent of the raised-arm hailing.
+    full_look_strength: f32,
+    full_gate: omsi_sim::human::FullBusHail<BusId>,
+    hail_wrist: omsi_sim::human::HailWrist,
+    hail_look: omsi_sim::human::HailLook,
+    /// (NexiconDK) Waving after a player's bus that left them: how far up the arm is, which
+    /// arm, how long it has waved (s) and where the bus was last seen.
+    wave_strength: f32,
+    wave_side: usize,
+    wave_t: f32,
+    wave_at: DVec3,
     /// A jump of the person's place within a bus (onto the seat, as Omsi.exe puts them
     /// there) drawn as a glide instead: what is left of it in the bus's frame, the same in
     /// the world for the drawing, and the place last frame (the bus, where).
@@ -562,11 +650,12 @@ impl PeopleView {
             let ty = st.avatar.clone().unwrap_or_else(|| p.ty.clone());
             let dt = (sdt * st.since_posed.max(1) as f32).min(0.25);
             // Preserve the OMSI-original pose unless the enhanced A/B mode is requested.
-            let bones = if enhanced && !p.puppet {
+            let mut bones = if enhanced && !p.puppet {
                 animation::bones(p, &ty, st, dt, world, &buses)
             } else {
                 omsi_sim::human::slots_from_omsi(&p.anim.bones(&ty.omsi))
             };
+            apply_optional_bus_visual(p, st, &ty, &mut bones, enhanced, camera, dt);
             // an avatar's face near the eye: blinks, looks, expressions, the lips
             // (from the camera the picture is drawn from: a face is seen from there)
             let near = ty.face.is_some() && (p.position - camera).length() < avatars::FACE_DISTANCE;

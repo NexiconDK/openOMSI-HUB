@@ -58,6 +58,7 @@ fn kind_label(k: Kind) -> &'static str {
         Kind::Dirty => "Dirty bus",
         Kind::Rude => "Rude driver",
         Kind::Fare => "Fare",
+        Kind::PassedBy => "Left at the stop",
     }
 }
 

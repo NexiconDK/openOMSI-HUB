@@ -35,6 +35,8 @@ pub enum Kind {
     Dirty,
     Rude,
     Fare,
+    /// (NexiconDK, 30 October 2026) A driver left them at their stop (`day::PassedBy`).
+    PassedBy,
 }
 
 /// A reply the player may give.
@@ -222,6 +224,14 @@ pub fn day(c: &mut Company, date: &str, report: &DayReport) {
             cand.push((Kind::Crowded, n, t, None, if report.left_behind > 50 { 2 } else { 1 }, (0.02 * report.crowded as f64 + 0.002 * report.left_behind as f64).min(0.6), Late::default()));
         }
     }
+    // (NexiconDK) people a driver of ours left at their stop: the most on each line
+    let mut passed: Vec<&super::day::PassedBy> = report.passed_by.iter().filter(|p| p.count > 0).collect();
+    passed.sort_by(|a, b| a.line.cmp(&b.line).then(b.count.cmp(&a.count)));
+    passed.dedup_by(|a, b| a.line == b.line);
+    for p in passed {
+        let sev = if p.count >= 3 { 2 } else { 1 };
+        cand.push((Kind::PassedBy, p.line.clone(), p.time, None, sev, (0.3 + 0.1 * p.count as f64).min(0.9), Late::default()));
+    }
     let held: Vec<f64> = c.fleet.iter().filter(|v| v.held_on(date)).map(|v| v.clean).collect();
     let clean = if held.is_empty() { 100.0 } else { held.iter().sum::<f64>() / held.len() as f64 };
     if clean < 55.0 {
@@ -318,6 +328,8 @@ pub fn opening(kind: Kind, variant: u32) -> &'static str {
         Kind::Rude => "Your driver on line %{line} snapped at an old lady at %{time}. Unacceptable.",
         Kind::Fare if v => "Your fares on line %{line} are far above everyone else's. Why should I pay that?",
         Kind::Fare => "%{fare} for a single ticket on line %{line}? That is daylight robbery.",
+        Kind::PassedBy if v => "I waited at the stop for line %{line} at %{time}, I even waved, and the driver just drove past me!",
+        Kind::PassedBy => "The %{time} bus of line %{line} left us standing at the stop. Why did the driver not take us?",
     }
 }
 
@@ -347,6 +359,7 @@ pub fn explain(k: &Complaint) -> &'static str {
         (Kind::Dirty, _) => "We are sorry. That bus should never have gone out like that.",
         (Kind::Rude, _) => "We are sorry. That is not how our drivers should treat anyone.",
         (Kind::Fare, _) => "We understand. The fare pays for the service, but we hear you.",
+        (Kind::PassedBy, _) => "We are sorry. The driver should have stopped and taken you.",
     }
 }
 
@@ -366,6 +379,7 @@ pub fn promise(k: &Complaint) -> (&'static str, usize) {
         Kind::Dirty => ("We will have every bus cleaned each night.", 7),
         Kind::Rude => ("The driver will go on a customer-service course.", 2),
         Kind::Fare => ("We will look at the fares of line %{line} again.", 3),
+        Kind::PassedBy => ("We will remind our drivers to stop for everyone waiting.", 2),
     }
 }
 
@@ -398,7 +412,7 @@ pub fn effect(k: &Complaint, choice: Choice) -> f64 {
     let base = match choice {
         Choice::Apologise if k.used.contains(&Choice::Dismiss) => 5.0,
         Choice::Apologise => match k.kind {
-            Late | Dropped | Breakdown => 18.0,
+            Late | Dropped | Breakdown | PassedBy => 18.0,
             _ => 12.0,
         },
         Choice::Refund => match k.kind {
@@ -406,11 +420,11 @@ pub fn effect(k: &Complaint, choice: Choice) -> f64 {
             _ => 12.0,
         },
         Choice::Voucher => match k.kind {
-            Crowded | Dirty | Late => 22.0,
+            Crowded | Dirty | Late | PassedBy => 22.0,
             _ => 15.0,
         },
         Choice::Promise => match k.kind {
-            Crowded | Dirty | Rude | Late => 20.0,
+            Crowded | Dirty | Rude | Late | PassedBy => 20.0,
             Dropped | Breakdown => 12.0,
             Fare => 4.0,
         },
@@ -625,6 +639,33 @@ mod tests {
         let mut c = company(GameMode::Realistic);
         let taken = super::super::reputation::close_day(&mut c, "2024-03-04", &r, Some(50.0), &Default::default());
         assert!((taken + super::super::reputation::LATE_TRIP).abs() < 1e-9, "{taken}");
+    }
+
+    /// (NexiconDK, 30 October 2026) People a driver left at their stop: a complaint of its own,
+    /// with the line and the trip's time, and the reputation pays for each.
+    #[test]
+    fn people_left_at_the_stop_complain_and_cost_reputation() {
+        use super::super::day::PassedBy;
+        let r = DayReport { trips: 100, passed_by: vec![PassedBy { line: "5".into(), time: 8 * 60 + 10, count: 3 }, PassedBy { line: "5".into(), time: 9 * 60, count: 1 }], lines: vec![LineDay { line: "Linie5".into(), number: "5".into(), passengers: 300, ..Default::default() }], ..Default::default() };
+        let mut c = company(GameMode::Normal);
+        for k in 0..40 {
+            c.id = format!("p{k}");
+            c.complaints = Complaints::default();
+            day(&mut c, "2024-03-04", &r);
+            if c.complaints.list.iter().any(|x| x.kind == Kind::PassedBy) {
+                break;
+            }
+        }
+        let k = c.complaints.list.iter().find(|x| x.kind == Kind::PassedBy).expect("a complaint came").clone();
+        assert_eq!((k.line.as_str(), k.time, k.severity), ("5", 8 * 60 + 10, 2), "the line's worst");
+        assert_eq!(c.complaints.list.iter().filter(|x| x.kind == Kind::PassedBy).count(), 1, "one a line");
+        assert!(k.talk[0].text.contains("%{line}") && explain(&k).contains("should have stopped") && promise(&k).1 == 2);
+        assert!(effect(&k, Choice::Promise) > effect(&k, Choice::Refund));
+        let mut c = company(GameMode::Normal);
+        super::super::reputation::close_day(&mut c, "2024-03-04", &r, None, &Default::default());
+        let e = c.reputation_log.entries.iter().find(|e| e.cause == Cause::PassedBy).expect("the reputation pays");
+        assert_eq!(e.count, 4);
+        assert!(e.change < 0.0);
     }
 
     #[test]

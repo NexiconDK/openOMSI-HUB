@@ -34,6 +34,14 @@ mod contact_tests;
 
 pub mod avatar;
 mod bones;
+mod gesture;
+mod hail_look;
+mod hail_motion;
+pub use gesture::accessory_hail_arm;
+pub use hail_look::{hail_look_target, HailLook, FullBusHail, visual_hail_action};
+pub use hail_motion::HailWrist;
+mod wave_after;
+pub use wave_after::{wave_after_arm, wave_side};
 pub mod face;
 mod motion;
 mod rig;

@@ -400,3 +400,10 @@ _version: 2
   pl: "Co ją podnosi i obniża"
   ru: "Что её повышает и понижает"
   uk: "Що її підвищує та знижує"
+"%{n} passengers left at the stop by a driver":
+  de: "%{n} Fahrgäste von einem Fahrer an der Haltestelle stehen gelassen"
+  fr: "%{n} passagers laissés à l'arrêt par un conducteur"
+  nl: "%{n} passagiers door een chauffeur bij de halte laten staan"
+  pl: "%{n} pasażerów zostawionych na przystanku przez kierowcę"
+  ru: "%{n} пассажиров оставлено водителем на остановке"
+  uk: "%{n} пасажирів залишено водієм на зупинці"

@@ -52,6 +52,9 @@ pub(crate) struct NetState {
     pub(crate) remotes: lan::LanGame,
     /// The shared world: the host's traffic and people, sent (host) or mirrored (client).
     pub(crate) lan_world: crate::lan_world::LanWorld,
+    /// (NexiconDK) A player's bus that left people at their stop, and what the host's waiting
+    /// people do for a bus, between the games (`pax_signals`).
+    pub(crate) pax_signals: crate::pax_signals::PaxSignals,
 }
 
 /// What the game talks to besides itself: the OMSI and Lua plugins, Discord, Steam, the

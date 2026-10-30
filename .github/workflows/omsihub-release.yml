@@ -84,8 +84,20 @@ jobs:
       # the project adds shows in English until it is translated, so it does not hold up a
       # release)
       - name: Workspace regression tests
+        id: tests
         if: steps.v.outputs.exists != 'true' && !inputs.tested
-        run: cargo test --locked --workspace --no-fail-fast -- --skip locale_check
+        shell: bash
+        run: |
+          set -o pipefail
+          cargo test --locked --workspace --no-fail-fast -- --skip locale_check 2>&1 | tee "$RUNNER_TEMP/tests.log"
+      # (the tests that failed named as the run's annotations and in its summary: they can be
+      # read without the log - `gh api .../check-runs/<job>/annotations`)
+      - name: Name the failed tests
+        if: failure() && steps.tests.outcome == 'failure'
+        shell: bash
+        run: |
+          grep -E "^test .* FAILED$|^error(\[E[0-9]+\])?: |^error: test failed|panicked at " "$RUNNER_TEMP/tests.log" | head -40 | while IFS= read -r l; do l="${l//%/%25}"; echo "::error title=Test::${l}"; done
+          { echo '### Failed tests'; echo '```'; grep -E -A14 "^---- .* stdout ----$" "$RUNNER_TEMP/tests.log" | head -240; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       # (as scripts/build-windows.cmd does it, but the Tauri app stamped with the version's
       # first three numbers: Tauri takes a semver only, and the fork's versions have four -
       # the script would hand it all four)

@@ -55,6 +55,8 @@ pub enum Cause {
     Complaint,
     /// A bus contract's line changed a great deal (`variations`).
     Variation,
+    /// (NexiconDK) People a driver left at their stop, his bus not full (`day::PassedBy`).
+    PassedBy,
     #[serde(other)]
     Other,
 }
@@ -80,10 +82,16 @@ impl Cause {
             Cause::Streak => "%{n} days without a dropped trip",
             Cause::Complaint => "Passenger complaints answered",
             Cause::Variation => "A contracted line changed a great deal",
+            Cause::PassedBy => "%{n} passengers left at the stop by a driver",
             Cause::Other => "Other",
         }
     }
 }
+
+/// (NexiconDK, 30 October 2026) What a passenger a driver left at the stop costs, and a day's
+/// most for it.
+pub const PASSED_BY: f64 = 0.05;
+pub const PASSED_BY_MOST: f64 = 0.6;
 
 /// A day's change of one cause.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -235,6 +243,11 @@ pub fn close_day(c: &mut Company, date: &str, report: &DayReport, punctuality: O
     let crowd = (0.004 * report.crowded as f64 + 0.0008 * report.left_behind as f64).min(0.5);
     if crowd > 0.0 {
         change(c, date, Cause::Crowded, -crowd, report.crowded);
+    }
+    // (NexiconDK) people a driver left at their stop, his bus not full: 0.05 each, at most 0.6
+    let passed: u32 = report.passed_by.iter().map(|p| p.count).sum();
+    if passed > 0 {
+        change(c, date, Cause::PassedBy, -(PASSED_BY * passed as f64).min(PASSED_BY_MOST), passed);
     }
     // punctuality: +0.15 for a day on time without drops (was +0.3); -0.15 below 75 %, -0.25
     // below 60 % (was -0.3)

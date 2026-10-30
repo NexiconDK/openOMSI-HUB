@@ -75,6 +75,7 @@ pub mod pax_tick;
 pub mod pax_task;
 pub mod pax_driver;
 pub mod runners;
+pub mod passed_by;
 // What the renderer has to follow, the money on the desk and what the people need of the map.
 pub mod bodies;
 pub mod pose_facts;
@@ -91,6 +92,7 @@ use model::*;
 use pax::*;
 use pednet::*;
 use runners::*;
+use passed_by::*;
 
 // The module's API, at the paths it always had in omsi-app (some only returned, never named
 // outside).
@@ -99,6 +101,7 @@ pub use bodies::{BodyOp, BodyOps};
 pub use mirror::{placed_bus_id, remote_bus_id, remote_bus_player, LanPerson, MirrorPose};
 pub use model::{BusId, DoorWants, Eye, Footfall, PeopleSim, Person, Place, State, VoiceLine};
 pub use money::Money;
+pub use passed_by::{Gesture, LeftBehind, MirrorGesture, WAVE_SECS};
 pub use pose_facts::PoseFacts;
 pub use pax::DutyTrip;
 pub use world::World;

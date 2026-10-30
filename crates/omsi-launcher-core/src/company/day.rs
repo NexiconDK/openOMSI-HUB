@@ -398,6 +398,20 @@ fn note_drop(list: &mut Vec<Dropped>, line: &str, number: &str, tour: &str, duty
     list.push(Dropped { line: line.to_string(), number: number.to_string(), tour: tour.to_string(), duty, from: trip.dep, to: trip.arr, trips: 1, why, problem, sent, bus: None, driver: None, trip: String::new() });
 }
 
+/// The most people one trip's record can say it left at the stops (a record of a broken
+/// game says no more).
+pub const LEFT_MOST: i32 = 200;
+
+/// (NexiconDK, 30 October 2026) People a driver of the company left waiting for his bus at a
+/// stop, the bus not full: the line (its number), the trip's time (minute of the day) and how
+/// many - from his trip's record (`TripRun::left_behind`).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+pub struct PassedBy {
+    pub line: String,
+    pub time: i32,
+    pub count: u32,
+}
+
 /// What a closed day came to.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct DayReport {
@@ -426,11 +440,14 @@ pub struct DayReport {
     pub notes: Vec<Note>,
     pub staff: Vec<StaffNote>,
     /// Trips fuller than their bus's places, and the passengers they left behind
-    /// (`ownline::carried`).
+    /// (`ownline::carried`; and those the drivers' own trips left at the stop).
     #[serde(default)]
     pub crowded: u32,
     #[serde(default)]
     pub left_behind: u32,
+    /// The people the drivers' own trips left at the stop, their bus not full (`PassedBy`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub passed_by: Vec<PassedBy>,
     /// The tours in service not covered, and what they lacked: tours without a bus, duties
     /// without a driver.
     #[serde(default)]
@@ -680,6 +697,13 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
             }
         }
         let l = &mut lines[li];
+        // (NexiconDK: those the driver left at the stop - a full bus excused - `PassedBy`)
+        let (left, full) = (t.left_behind.clamp(0, LEFT_MOST) as u32, t.left_full.clamp(0, LEFT_MOST) as u32);
+        l.left_behind += left + full;
+        report.left_behind += left + full;
+        if left > 0 {
+            report.passed_by.push(PassedBy { line: l.number.clone(), time: (t.departure / 60.0).round() as i32, count: left });
+        }
         l.km += km;
         l.passengers += t.passengers.max(0) as u32;
         l.bus_hours += super::income::bus_hours(t.seconds.max(0.0) / 60.0);
@@ -1527,6 +1551,27 @@ mod tests {
         let r = close_day(&mut c, vec![tour("2", 6 * 60, 4)], &[]);
         assert_eq!((r.covered, r.dropped), (1, 0));
         assert!(c.live.is_empty());
+    }
+
+    /// (NexiconDK, 30 October 2026) Those a driver left at the stop: counted as left behind,
+    /// and those his bus had room for named for the complaints and the reputation.
+    #[test]
+    fn people_a_driver_left_at_the_stop_are_counted() {
+        let mut c = company(GameMode::Normal, 0, 0);
+        let run = TripRun { time: 1_700_000_000, map: "maps\\Grundorf\\global.cfg".into(), line: "5".into(), tour: "1".into(), departure: 8.0 * 3600.0 + 600.0, stops: 12, passengers: 30, seconds: 1800.0, metres: 9000.0, completed: true, left_behind: 3, left_full: 2, ..Default::default() };
+        let r = close_day(&mut c, vec![tour("1", 6 * 60, 4)], &[run.clone()]);
+        assert_eq!(r.passed_by, vec![PassedBy { line: "5".into(), time: 8 * 60 + 10, count: 3 }]);
+        assert!(r.left_behind >= 5);
+        assert!(r.lines.iter().any(|l| l.number == "5" && l.left_behind >= 5));
+        // (a record that says too many, or less than none)
+        let mut c = company(GameMode::Normal, 0, 0);
+        let wild = TripRun { left_behind: 90_000, left_full: -4, ..run.clone() };
+        let r = close_day(&mut c, vec![tour("1", 6 * 60, 4)], &[wild]);
+        assert_eq!(r.passed_by[0].count, LEFT_MOST as u32);
+        // (a full bus only: nobody to blame)
+        let mut c = company(GameMode::Normal, 0, 0);
+        let r = close_day(&mut c, vec![tour("1", 6 * 60, 4)], &[TripRun { left_behind: 0, ..run }]);
+        assert!(r.passed_by.is_empty());
     }
 
     #[test]

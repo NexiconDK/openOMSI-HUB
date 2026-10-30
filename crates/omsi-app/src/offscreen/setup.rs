@@ -304,6 +304,7 @@ impl<'a> Offscreen<'a> {
             wetness,
             cabin_air,
             srv_admin,
+            srv_pax: Default::default(),
             srv_clock,
             srv_metar,
             srv_metar_due,
@@ -429,6 +430,9 @@ fn new_humans(
         // the map's camera they filled the whole pool, and the players met nobody)
         h.players_only = args.server.is_some() && player.is_none();
         h.exact_fare = settings.exact_fare;
+        h.visual_hailing = settings.passenger_hailing && settings.passenger_animation == "enhanced";
+        h.visual_full_bus_reaction = settings.passenger_full_bus_reaction && settings.passenger_animation == "enhanced";
+        h.visual_wave_after = settings.passenger_wave_after && settings.passenger_animation == "enhanced";
         h.boarding = settings.boarding.clone();
         h.stand_chance = settings.standing_chance;
         h.sit_wish = settings.pax_sit;

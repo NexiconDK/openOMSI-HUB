@@ -77,6 +77,9 @@ struct Offscreen<'a> {
     cabin_air: crate::condensation::CabinAir,
     /// a dedicated server's administration and clock (see `admin`)
     srv_admin: crate::admin::ServerAdmin,
+    /// (NexiconDK) The players' buses that left people, and the people's gestures, to the
+    /// players' games (`pax_signals`).
+    srv_pax: crate::pax_signals::PaxSignals,
     srv_clock: f64,
     srv_metar: Option<String>,
     srv_metar_due: std::time::Instant,

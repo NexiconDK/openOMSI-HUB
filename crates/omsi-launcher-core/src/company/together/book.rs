@@ -923,6 +923,9 @@ fn safe_trip(c: &Company, s: &Sheet, x: &PlannedTrip, run: &TripRun, name: &str,
     r.hard_brakes = r.hard_brakes.max(0);
     r.hard_starts = r.hard_starts.max(0);
     r.rough_stops = r.rough_stops.max(0);
+    // (NexiconDK: those he left at the stop - not more than he could have had)
+    r.left_behind = within(r.left_behind, super::super::day::LEFT_MOST);
+    r.left_full = within(r.left_full, super::super::day::LEFT_MOST);
     r.offences.truncate(50);
     r.visits.truncate(200);
     r
