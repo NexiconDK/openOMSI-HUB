@@ -473,6 +473,22 @@ pub fn ports_of(first: u16, k: usize) -> (u16, u16) {
 /// not answer him: no bus handed over at his stop, his game's clock set back again and again.
 pub const WORLD_RUNNING: &str = "world.running";
 
+/// (NexiconDK, 30 October 2026) What a map's world is doing while it loads - a word in its folder
+/// (`map`, `traffic`, `timetable`, `people`) -, and how long it took to load the last time (whole
+/// seconds): the players' launchers show it on their loading screen (`server_api`'s `world`).
+pub const WORLD_LOADING: &str = "world.loading";
+pub const WORLD_LOAD_TIME: &str = "world.loadtime";
+
+/// What the world of folder `dir` is loading now (`WORLD_LOADING`; None: not said yet).
+pub fn world_loading(dir: &Path) -> Option<String> {
+    std::fs::read_to_string(dir.join(WORLD_LOADING)).ok().map(|s| s.trim().to_string()).filter(|s| !s.is_empty())
+}
+
+/// How long the world of folder `dir` took to load the last time (s, `WORLD_LOAD_TIME`).
+pub fn world_load_time(dir: &Path) -> Option<u64> {
+    std::fs::read_to_string(dir.join(WORLD_LOAD_TIME)).ok().and_then(|s| s.trim().parse::<u64>().ok()).filter(|s| *s > 0)
+}
+
 /// Whether the world of folder `dir`, process `pid`, runs (`WORLD_RUNNING`).
 pub fn world_running(dir: &Path, pid: u32) -> bool {
     std::fs::read_to_string(dir.join(WORLD_RUNNING)).ok().and_then(|s| s.trim().parse::<u32>().ok()) == Some(pid)
@@ -498,6 +514,12 @@ impl World {
     /// It runs: its map loaded, its timetable and companies taken in (`WORLD_RUNNING`).
     pub fn running(&self) -> bool {
         world_running(&self.dir, self.child.id())
+    }
+
+    /// What it is loading now, and how long it took to load the last time (`WORLD_LOADING`,
+    /// `WORLD_LOAD_TIME`).
+    pub fn loading(&self) -> (Option<String>, Option<u64>) {
+        (world_loading(&self.dir), world_load_time(&self.dir))
     }
 }
 
@@ -902,6 +924,7 @@ impl MainServer {
         let out = std::fs::File::create(dir.join("world.out")).ok();
         // (not running until it says so: an earlier world's word is not this one's)
         let _ = std::fs::remove_file(dir.join(WORLD_RUNNING));
+        let _ = std::fs::remove_file(dir.join(WORLD_LOADING));
         let mut cmd = Command::new(&game);
         cmd.arg("--server").arg(&cfg_path).arg("--root").arg(&self.cfg.root).stdin(Stdio::null());
         // (its LAN status - its session code, its tunnel - where the main server finds it:
@@ -1455,6 +1478,11 @@ mod tests {
         std::fs::write(dir.join(WORLD_RUNNING), "42\n").unwrap();
         assert!(world_running(&dir, 42));
         assert!(!world_running(&dir, 43), "an earlier world's word");
+        // (30 October 2026: what it loads meanwhile, and how long it took the last time)
+        assert_eq!((world_loading(&dir), world_load_time(&dir)), (None, None));
+        std::fs::write(dir.join(WORLD_LOADING), "timetable\n").unwrap();
+        std::fs::write(dir.join(WORLD_LOAD_TIME), "362\n").unwrap();
+        assert_eq!((world_loading(&dir), world_load_time(&dir)), (Some("timetable".to_string()), Some(362)));
         let _ = std::fs::remove_dir_all(&dir);
     }
 

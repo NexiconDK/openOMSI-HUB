@@ -189,11 +189,26 @@ pub struct NavStop {
 /// Another player of the session as the maps show them (the session's, see `lan`).
 pub use omsi_lan::game::NavPlayer;
 
+/// (NexiconDK, Bus Company Online, 30 October 2026) The bus the player waits for at his stop
+/// (`relief`): where it is, the way it faces and its label ("Your bus · 2.4 km · 3 min late") -
+/// on both maps in Omsi-Hub's orange, at the small map's edge the way to it while it is off it.
+#[derive(Debug, Clone)]
+pub struct NavBus {
+    pub position: DVec3,
+    pub heading: f64,
+    pub label: String,
+}
+
+/// The awaited bus's colour on the maps.
+pub(crate) const AWAITED: Color = Color::rgba(245, 134, 32, 1.0);
+
 /// What the navigator is told each frame.
 pub struct NavFrame<'a> {
     pub traffic: Option<&'a Traffic>,
     /// The other players of a LAN session or server, on both maps (#1011, #1080).
     pub players: Vec<NavPlayer>,
+    /// The bus the player waits for at his stop (`NavBus`).
+    pub awaited: Option<NavBus>,
     pub bus: DVec3,
     /// Compass heading (degrees, 0 = +y, clockwise).
     pub heading: f64,
@@ -491,6 +506,15 @@ fn project(vp: Mat4, viewport: [f32; 4], p: Vec3) -> Option<Vec2> {
     }
     let n = c.truncate() / c.w;
     Some(Vec2::new(viewport[0] + (n.x * 0.5 + 0.5) * viewport[2], viewport[1] + (0.5 - n.y * 0.5) * viewport[3]))
+}
+
+/// Where the ray from `o` the way `dir` (a unit vector) leaves rectangle `r`, `o` inside it (the
+/// awaited bus's pointer at the map's edge).
+pub(crate) fn edge_point(r: Rect, o: Vec2, dir: Vec2) -> Vec2 {
+    let o = Vec2::new(o.x.clamp(r.x, r.right()), o.y.clamp(r.y, r.bottom()));
+    let along = |p: f32, lo: f32, hi: f32, d: f32| if d > 1e-6 { (hi - p) / d } else if d < -1e-6 { (lo - p) / d } else { f32::INFINITY };
+    let t = along(o.x, r.x, r.right(), dir.x).min(along(o.y, r.y, r.bottom(), dir.y)).max(0.0);
+    o + dir * if t.is_finite() { t } else { 0.0 }
 }
 
 pub(crate) fn angle_diff(a: f64, b: f64) -> f64 {
@@ -1822,6 +1846,30 @@ impl Navigator {
             ui.rounded(r, 3.5 * s, PLAYER);
             ui.text_in(&mut self.atlas, &self.fonts, &name, px, Weight::Bold, r, Align::Center, LINE_TEXT);
         }
+        // (30 October 2026) the bus he waits for at his stop: where it is, or at the map's edge the
+        // way to it
+        if let Some(b) = f.awaited.as_ref() {
+            let inner = Rect::new(map.x + 16.0 * s, map.y + 30.0 * s, (map.w - 32.0 * s).max(1.0), (map.h - 46.0 * s).max(1.0));
+            let (p, a) = match project(vpm, vp, rel(b.position)).filter(|p| inner.contains(*p)) {
+                Some(p) => (Some(p), (angle_diff(self.cam_heading, b.heading) as f32).to_radians()),
+                None => {
+                    let d = b.position.truncate() - f.bus.truncate();
+                    let a = (angle_diff(self.cam_heading, d.x.atan2(d.y).to_degrees()) as f32).to_radians();
+                    (project(vpm, vp, rel(f.bus)).map(|o| edge_point(inner, o, Vec2::new(a.sin(), -a.cos()))), a)
+                }
+            };
+            if let Some(p) = p {
+                arrow(&mut ui, p, a, 8.0 * s, 1.25, Color::rgba(10, 10, 10, 0.85), AWAITED);
+                let px = 9.5 * s;
+                let label = self.fonts.fit(&b.label, px, Weight::Bold, 170.0 * s);
+                let w = self.fonts.width(&label, px, Weight::Bold) + 8.0 * s;
+                let r = Rect::new((p.x - w * 0.5).clamp(map.x + 2.0 * s, (map.right() - w - 2.0 * s).max(map.x)), p.y - 24.0 * s, w, 13.0 * s);
+                taken.push(r);
+                ui.rounded(Rect::new(r.x - 1.0 * s, r.y - 1.0 * s, r.w + 2.0 * s, r.h + 2.0 * s), 4.0 * s, Color::rgba(10, 10, 10, 0.9));
+                ui.rounded(r, 3.5 * s, AWAITED);
+                ui.text_in(&mut self.atlas, &self.fonts, &label, px, Weight::Bold, r, Align::Center, LINE_TEXT);
+            }
+        }
         for (pos, color, l, ends) in &lines {
             let Some(p) = project(vpm, vp, rel(*pos)).filter(|p| map.contains(*p)) else { continue };
             let px = 9.5 * s;
@@ -2382,7 +2430,7 @@ fn congestion_on(net: &Network, traffic: &Network, c: &HashMap<usize, f32>) -> H
 
 impl<'a> NavFrame<'a> {
     fn clone_ref(&self) -> NavFrame<'a> {
-        NavFrame { traffic: self.traffic, players: self.players.clone(), bus: self.bus, heading: self.heading, speed_kmh: self.speed_kmh, outside_temp: self.outside_temp, inside_temp: self.inside_temp, line: self.line.clone(), terminus: self.terminus.clone(), stops: self.stops.clone(), delay: self.delay, duty: self.duty, passengers: self.passengers, time: self.time, weekday: self.weekday, language: self.language, screen: self.screen, ui_scale: self.ui_scale, follow_window: self.follow_window, dt: self.dt, stop_requested: self.stop_requested, info_rect: self.info_rect, touch_gap: self.touch_gap }
+        NavFrame { traffic: self.traffic, players: self.players.clone(), awaited: self.awaited.clone(), bus: self.bus, heading: self.heading, speed_kmh: self.speed_kmh, outside_temp: self.outside_temp, inside_temp: self.inside_temp, line: self.line.clone(), terminus: self.terminus.clone(), stops: self.stops.clone(), delay: self.delay, duty: self.duty, passengers: self.passengers, time: self.time, weekday: self.weekday, language: self.language, screen: self.screen, ui_scale: self.ui_scale, follow_window: self.follow_window, dt: self.dt, stop_requested: self.stop_requested, info_rect: self.info_rect, touch_gap: self.touch_gap }
     }
 }
 

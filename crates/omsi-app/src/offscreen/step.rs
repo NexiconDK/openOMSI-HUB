@@ -71,6 +71,10 @@ impl Offscreen<'_> {
                 let off = (want - have + 43_200.0).rem_euclid(86_400.0) - 43_200.0;
                 if off.abs() > 0.5 {
                     srv_admin.shift += off;
+                    // (the timetable's clock with it - NexiconDK, 30 October 2026: it ran on from
+                    // the time the world began to load, and a big map loads for minutes - Ahlheim's
+                    // buses came six minutes late, a player at his stop waited for his)
+                    move_timetable(traffic.as_mut(), schedule.as_mut(), sim_view, world, renderer, scene, off);
                 }
             }
             // the company's plan written anew (its host's day, a planner's change): taken in
@@ -137,7 +141,9 @@ impl Offscreen<'_> {
             // an admin set the time of day: the shift that makes the clock read it
             if let Some(want) = srv_admin.set_clock.take() {
                 let now = (parse_time(&args.time) + *srv_clock + srv_admin.shift).rem_euclid(86400.0);
-                srv_admin.shift += (want - now + 43_200.0).rem_euclid(86_400.0) - 43_200.0;
+                let off = (want - now + 43_200.0).rem_euclid(86_400.0) - 43_200.0;
+                srv_admin.shift += off;
+                move_timetable(traffic.as_mut(), schedule.as_mut(), sim_view, world, renderer, scene, off);
             }
             // an admin's traffic order: the density asked for, or every AI car off the road
             match srv_admin.traffic.take() {
@@ -970,5 +976,25 @@ impl Offscreen<'_> {
             }
         }
         Ok(())
+    }
+}
+
+/// (NexiconDK, 30 October 2026) A dedicated server's clock moved by `off` seconds (its real-time
+/// sync, an admin's time): the traffic's and the timetable's clock with it, as a window's clock
+/// jump moves them (`app_impl::clock`) - and, by two minutes or more, the timetable's buses put out
+/// again for the new time (`Schedule::restart`). Without it the timetable ran on its own clock: the
+/// time the world began to load, minutes behind the clock the players were shown.
+#[allow(clippy::too_many_arguments)]
+fn move_timetable(traffic: Option<&mut crate::traffic::Traffic>, schedule: Option<&mut crate::schedule::Schedule>, sim_view: &mut crate::view_sync::SimView, world: &World, renderer: &Renderer, scene: &mut Scene, off: f64) {
+    let Some(t) = traffic else { return };
+    t.day_time += off;
+    if off.abs() < 120.0 {
+        return;
+    }
+    log::info!("server: the timetable's clock moved by {off:+.0} s, to the server's: its buses put out again for the time");
+    if let Some(s) = schedule {
+        let day_time = t.day_time;
+        s.restart(t, day_time);
+        crate::view_sync::apply_traffic(t, &mut sim_view.traffic, world, renderer, scene);
     }
 }

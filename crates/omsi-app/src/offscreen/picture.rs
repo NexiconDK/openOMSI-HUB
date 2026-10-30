@@ -348,6 +348,7 @@ impl Offscreen<'_> {
                 let frame = navigator::NavFrame {
                     traffic: traffic.as_ref(),
                     players: lan_off.as_ref().map(|l| lan::nav_players(remotes_off, l.my_id)).unwrap_or_default(),
+                    awaited: None,
                     bus: p.vehicle.position,
                     heading: p.vehicle.heading,
                     speed_kmh: p.vehicle.physics.velocity_kmh(),

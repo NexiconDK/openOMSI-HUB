@@ -1056,6 +1056,29 @@ impl Navigator {
             ui.rounded(r, 4.0 * s, PLAYER);
             ui.text_in(&mut self.atlas, &self.fonts, &name, px, Weight::Bold, r, Align::Center, LINE_TEXT);
         }
+        // (30 October 2026) the bus he waits for at his stop: where it is, or at the map's edge the
+        // way to it
+        if let Some(b) = f.awaited.as_ref() {
+            let inner = Rect::new(win.x + 24.0 * s, win.y + 64.0 * s, (win.w - 48.0 * s).max(1.0), (win.h - 88.0 * s).max(1.0));
+            let at = to_screen(b.position);
+            let p = if inner.contains(at) {
+                at
+            } else {
+                let o = inner.center();
+                let d = at - o;
+                if d.length() > 1e-3 { super::edge_point(inner, o, d / d.length()) } else { o }
+            };
+            let a = if inner.contains(at) { (b.heading as f32).to_radians() } else { (at - p).x.atan2(-(at - p).y) };
+            arrow(&mut ui, p, a, 9.5 * s, 1.3, Color::rgba(10, 10, 10, 0.9), super::AWAITED);
+            let px = 11.0 * s;
+            let label = self.fonts.fit(&b.label, px, Weight::Bold, 220.0 * s);
+            let tw = self.fonts.width(&label, px, Weight::Bold) + 9.0 * s;
+            let r = Rect::new((p.x - tw * 0.5).clamp(win.x + 4.0 * s, (win.right() - tw - 4.0 * s).max(win.x)), p.y - 29.0 * s, tw, 15.0 * s);
+            taken.push(r);
+            ui.rounded(Rect::new(r.x - 1.0 * s, r.y - 1.0 * s, r.w + 2.0 * s, r.h + 2.0 * s), 4.5 * s, Color::rgba(10, 10, 10, 0.9));
+            ui.rounded(r, 4.0 * s, super::AWAITED);
+            ui.text_in(&mut self.atlas, &self.fonts, &label, px, Weight::Bold, r, Align::Center, LINE_TEXT);
+        }
         arrow(&mut ui, to_screen(f.bus), (f.heading as f32).to_radians(), 10.0 * s, 1.3, Color::rgba(10, 10, 10, 0.9), TEXT);
         // the left column: its frame and head here, its list in a layer of its own clipped to
         // it (the list scrolls)

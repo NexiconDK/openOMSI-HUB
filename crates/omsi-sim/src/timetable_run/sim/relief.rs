@@ -136,6 +136,17 @@ pub enum BackState {
     No,
 }
 
+/// (30 October 2026) Where the bus a LAN player waits for at his stop is now (`relief_bus`): its
+/// place and heading, how late it is (s, negative early), and whether it is still on the tour's
+/// trip before his (it takes his on at the terminus).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ReliefBus {
+    pub pos: glam::DVec3,
+    pub heading: f64,
+    pub delay: f64,
+    pub before: bool,
+}
+
 /// What became of a relief his game asks about.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ReliefState {
@@ -167,6 +178,20 @@ impl ScheduleSim {
                 claim.has(&d.line, &d.tour, d.time)
             })
             .min_by(|&a, &b| (self.dep_time(a) - day_time).abs().total_cmp(&(self.dep_time(b) - day_time).abs()))
+    }
+
+    /// (30 October 2026) Where the bus of departure `dep` (minutes of the day) of `line`/`tour` is
+    /// now, that a LAN player waits for at his stop: the AI's bus on that trip, or on the tour's
+    /// trip before it - None while none is on the road (it comes for its time).
+    pub fn relief_bus(&self, line: &str, tour: &str, dep: i32, traffic: &TrafficSim, day_time: f64) -> Option<ReliefBus> {
+        let i = self.relief_departure(line, tour, dep, day_time)?;
+        let (ci, before) = match self.tour_bus(i, traffic) {
+            Some(ci) => (ci, false),
+            None => (self.tour_prev.get(i).copied().flatten().and_then(|k| self.tour_bus(k, traffic))?, true),
+        };
+        let c = &traffic.cars[ci];
+        let delay = c.bus.as_ref().map_or(0.0, |b| b.delay).clamp(-86_400.0, 86_400.0);
+        Some(ReliefBus { pos: c.vehicle.position, heading: c.vehicle.heading.rem_euclid(360.0), delay: if delay.is_finite() { delay } else { 0.0 }, before })
     }
 
     /// Whether a LAN player waits to take departure `i` over from the AI (its bus is put out no
@@ -730,6 +755,14 @@ mod tests {
         assert!(s.is_player_tour(2), "his 10:00 stays his");
         assert_eq!(s.want_relief(8, "Linie5", "3", 540, 0, &[], &traffic, at(8.8)), ReliefState::Unknown, "another player's");
         assert_eq!(s.take_relief(7, "Linie5", "3", 540, &traffic, at(8.8)), Err(RELIEF_NOT_HERE));
+        // (30 October 2026: where his bus is - none on the road yet, then on the tour's trip
+        // before his, then on his)
+        assert_eq!(s.relief_bus("Linie5", "3", 540, &traffic, at(8.8)), None);
+        s.car_departure.insert(car, 0);
+        let b = s.relief_bus("Linie5", "3", 540, &traffic, at(8.8)).unwrap();
+        assert!(b.before && b.pos == traffic.cars[0].vehicle.position, "{b:?}");
+        s.car_departure.insert(car, 1);
+        assert!(!s.relief_bus("Linie5", "3", 540, &traffic, at(8.8)).unwrap().before);
         // the bus is there, holding for him
         s.car_departure.insert(car, 1);
         traffic.cars[0].bus.as_mut().unwrap().phase = Phase::Boarding;

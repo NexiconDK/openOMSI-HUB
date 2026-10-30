@@ -204,6 +204,8 @@ impl App {
         nav_hidden: bool,
         vr_nav_display: Option<crate::vr_navigator::Display>,
     ) {
+        // (the bus he waits for at his stop, from where he stands - `relief`)
+        let awaited = self.session.on_foot.as_ref().map(|f| f.pos).or(self.player.as_ref().map(|p| p.vehicle.position)).and_then(|at| self.relief_nav_bus(at));
         let (Some(r), Some(scene)) = (self.renderer.as_ref(), self.scene.as_mut()) else { return };
         // (on foot with no bus of one's own the navigator and the city map go on as well:
         // a walker who had deleted the bus could not open the map, #2118)
@@ -276,6 +278,7 @@ impl App {
             let frame = navigator::NavFrame {
                 traffic: self.session.traffic.as_ref(),
                 players: self.net.lan.as_ref().map(|l| crate::lan::nav_players(&self.net.remotes, l.my_id)).unwrap_or_default(),
+                awaited,
                 bus: at,
                 heading,
                 speed_kmh: p.map_or(0.0, |p| p.vehicle.physics.velocity_kmh()),

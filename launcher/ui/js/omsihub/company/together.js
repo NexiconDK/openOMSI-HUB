@@ -8,9 +8,9 @@
 // launcher). The screen follows his role as the boss changes it. Every text comes from Rust,
 // translated.
 
-import { S, set, toast } from '../../store.js';
+import { S, set, toast, useStore } from '../../store.js';
 import { duty } from '../../data.js';
-import { html, useEffect, useState, tr, setCo, cmd, freshCo, goTab, Icon, Mark, Btn, remoteDrive } from './kit.js';
+import { html, useEffect, useState, tr, setCo, cmd, freshCo, goTab, Icon, Mark, Btn, Dialog, remoteDrive } from './kit.js';
 import { togetherOn, blockedLabel } from './gate.js';
 import { usePoll, run, Chip, Face, RoleBadge, Stats, RoleEditor, MultiplayerDialog } from './multiplayer.js';
 import { SessionEnded } from './session.js';
@@ -84,7 +84,12 @@ async function driveDuty(d, name = 'tg_drive') {
     world = await worldOf(bcoCompany);
     if (!world) return;
   }
-  await run(name, { duty: d.duty, base, world });
+  try {
+    await run(name, { duty: d.duty, base, world });
+  } finally {
+    // (the loading screen's "the game starts", until it has)
+    if (S.worldLoad) set({ worldLoad: null });
+  }
 }
 
 // ("Drive this duty" on the company's pages, joined from afar: the session's start - `kit.js`)
@@ -94,13 +99,24 @@ remoteDrive.go = (duty) => driveDuty({ duty });
 let bcoCompany = null;
 let worldWaiting = false;
 
+/** He stopped waiting for the world (the loading screen's button). */
+let worldCancel = false;
+
 /** The world of a server company's map: asked until it runs (the server starts it - a big map
- * loads for minutes), its address; null when it would not come within a quarter of an hour. */
+ * loads for minutes), its address; null when it would not come within a quarter of an hour, or
+ * he stopped waiting. Meanwhile the loading screen (`WorldLoading`, 30 October 2026): what the
+ * world loads, how long so far and the last time. */
 async function worldOf(company) {
   if (worldWaiting) return null;
   worldWaiting = true;
+  worldCancel = false;
+  let words = {};
+  const stopped = () => {
+    if (!worldCancel) return false;
+    if (words.cancelled) toast(words.cancelled, 'ok');
+    return true;
+  };
   try {
-    let said = '';
     for (let k = 0; k < 300; k++) {
       let r;
       try {
@@ -109,21 +125,62 @@ async function worldOf(company) {
         toast(e.message, 'error');
         return null;
       }
+      words = r?.words || words;
+      if (stopped()) return null;
       if (r?.error) {
         toast(r.error, 'error');
         return null;
       }
-      if (r?.address) return r.address;
-      if (r?.waiting && r.waiting !== said) {
-        said = r.waiting;
-        toast(said, 'ok');
+      if (r?.address) {
+        if (S.worldLoad) set({ worldLoad: { ...S.worldLoad, ready: true, words } });
+        return r.address;
       }
-      await new Promise((ok) => setTimeout(ok, 3000));
+      if (r?.waiting) set({ worldLoad: { loading: r.loading, text: r.waiting, words, at: Date.now() } });
+      // (asked again in 3 s - at once when he stops waiting)
+      for (let i = 0; i < 30 && !worldCancel; i++) await new Promise((ok) => setTimeout(ok, 100));
+      if (stopped()) return null;
     }
+    if (S.worldLoad?.text) toast(S.worldLoad.text, 'error');
     return null;
   } finally {
     worldWaiting = false;
+    worldCancel = false;
+    if (S.worldLoad && !S.worldLoad.ready) set({ worldLoad: null });
   }
+}
+
+/** (NexiconDK, 30 October 2026) The loading screen while the map's world starts on the server for
+ * a duty he drives (`worldOf`): the map, what the world loads now, how long it has loaded - against
+ * how long it took the last time, when the server knows -, and a way out; then "the game starts". */
+export function WorldLoading() {
+  const s = useStore();
+  const w = s.worldLoad;
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (!w) return undefined;
+    const t = setInterval(() => tick((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, [!!w]);
+  if (!w) return null;
+  const words = w.words || {};
+  const l = w.loading || {};
+  const fill = (text, vars) => (text || '').replace(/%\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
+  const secs = (l.since || 0) + Math.max(0, (Date.now() - w.at) / 1000);
+  const mmss = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+  const share = w.ready ? 1 : l.expected ? Math.min(0.97, secs / l.expected) : null;
+  const stop = () => {
+    worldCancel = true;
+    set({ worldLoad: null });
+  };
+  const foot = w.ready ? null : html`<span class="rest">${words.note}</span><${Btn} label=${words.cancel} onClick=${stop} />`;
+  return html`<${Dialog} icon="public" title=${words.title} w=${540} onClose=${w.ready ? null : stop} foot=${foot}>
+    <div class="wl-body">
+      <b class="map cut">${l.map ? fill(words.of, { map: l.map }) : ''}</b>
+      <div class="phase"><span class="spinner"></span><span class="cut">${w.ready ? words.ready : l.phase || words.asking}</span></div>
+      <div class=${'wl-bar' + (share == null ? ' busy' : '')}><div style=${share == null ? '' : `width:${(share * 100).toFixed(1)}%`}></div></div>
+      <div class="times"><span>${fill(words.so_far, { t: mmss(secs) })}</span><span>${l.expected ? fill(words.last, { n: Math.max(1, Math.round(l.expected / 60)) }) : ''}</span></div>
+    </div>
+  </${Dialog}>`;
 }
 
 /** The duties a player's card is printed of: his own (`company::dutycard::relayed`). */

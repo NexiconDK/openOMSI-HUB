@@ -64,6 +64,20 @@ pub(crate) struct Relief {
     /// timetable: his own bus after `NO_ANSWER`), and whether it answered.
     unheard: f32,
     heard: bool,
+    /// (30 October 2026) Where his bus is on its way, as the world last said (`relief coming`):
+    /// on the maps (`nav_bus`) - and whether he was told so.
+    bus: Option<SeenBus>,
+    told_bus: bool,
+}
+
+/// The bus a waiting player's game was told of: its place and heading, how late it is (s), and
+/// whether it is still on the tour's trip before his.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct SeenBus {
+    pos: DVec3,
+    heading: f64,
+    delay: f64,
+    before: bool,
 }
 
 /// How long the waiting player's game waits for the world's first answer (s), counted while the
@@ -203,6 +217,11 @@ const WAY_DROVE_OFF: &str = "Hand-over called off: you drove off.";
 const WAY_DONE: &str = "Handed over: the AI drives on, and you are free. Leave the server (Esc) to take another trip or duty in the launcher.";
 /// His bus given on, his duty going on with another tour.
 const NEXT_BUS: &str = "Your duty goes on with line %{line} at %{time} from %{stop}: wait there for its bus.";
+/// (30 October 2026) The bus he waits for on the maps.
+const BUS_ON_MAP: &str = "Your bus is on its way: follow it on the map (game menu › City map).";
+const YOUR_BUS: &str = "Your bus";
+const MIN_LATE: &str = "%{n} min late";
+const TRIP_BEFORE: &str = "on its trip before";
 /// How often his game says that the AI takes his bus over at the end of his duty (s).
 const BACK_EVERY: f32 = 3.0;
 /// How often it is asked again when the world said no (s): a break too long for the AI's bus to
@@ -272,7 +291,11 @@ pub(crate) fn host_command(from: u32, text: &str, schedule: Option<&mut crate::s
             out.push((
                 from,
                 match state {
-                    ReliefState::Coming => format!("relief coming {dep}"),
+                    // (30 October 2026: where its bus is now, for his maps)
+                    ReliefState::Coming => match s.sim.relief_bus(line, tour, dep, &t.sim, t.day_time) {
+                        Some(b) => format!("relief coming {dep};{:.1};{:.1};{:.1};{:.0};{:.0};{}", b.pos.x, b.pos.y, b.pos.z, b.heading, b.delay, u8::from(b.before)),
+                        None => format!("relief coming {dep}"),
+                    },
                     ReliefState::Here(id) => format!("relief here {dep};{id}"),
                     ReliefState::Kept => format!("relief kept {dep}"),
                     ReliefState::Unknown => format!("relief unknown {dep}"),
@@ -417,11 +440,30 @@ impl App {
             from: None,
             unheard: 0.0,
             heard: false,
+            bus: None,
+            told_bus: false,
         };
         let when = trip.stops.get(stop).map(|s| (s.dep / 60.0).round() as i32).unwrap_or(r.dep);
         log::info!("relief: on foot at stop {stop} '{}' for line {} tour {} at {}", r.stop_name, r.line, r.tour, hhmm_min(when));
         self.service_msg = Some((tr(WAIT).replace("%{line}", trip.line.trim()).replace("%{time}", &hhmm_min(when)), 12.0));
         self.session.relief = Some(r);
+    }
+
+    /// (30 October 2026) The bus he waits for at his stop as the maps show it, from `at` (where he
+    /// stands): "Your bus · 2.4 km · 3 min late" - None while it is not on the road, or here.
+    pub(crate) fn relief_nav_bus(&self, at: DVec3) -> Option<crate::navigator::NavBus> {
+        let r = self.session.relief.as_ref().filter(|r| matches!(r.phase, Phase::Waiting) && r.car.is_none())?;
+        let b = r.bus?;
+        let m = (b.pos.truncate() - at.truncate()).length();
+        let mut label = format!("{} · {}", tr(YOUR_BUS), if m < 1000.0 { format!("{:.0} m", (m / 10.0).round() * 10.0) } else { format!("{:.1} km", m / 1000.0) });
+        let late = (b.delay / 60.0).round() as i64;
+        if late >= 1 {
+            label = format!("{label} · {}", tr(MIN_LATE).replace("%{n}", &late.to_string()));
+        }
+        if b.before {
+            label = format!("{label} · {}", tr(TRIP_BEFORE));
+        }
+        Some(crate::navigator::NavBus { position: b.pos, heading: b.heading, label })
     }
 
     /// Whether the bus handed over still has its driver in it (G at its wheel waits).
@@ -534,8 +576,21 @@ impl App {
         }
         r.heard = true;
         match verb {
-            "coming" => r.car = None,
+            "coming" => {
+                r.car = None;
+                // (where it is now: on the maps - said once that it can be followed there)
+                let num = |k: usize| f.get(k).and_then(|x| x.trim().parse::<f64>().ok()).filter(|v| v.is_finite());
+                r.bus = match (num(1), num(2), num(3), num(4), num(5)) {
+                    (Some(x), Some(y), Some(z), Some(heading), Some(delay)) => Some(SeenBus { pos: DVec3::new(x, y, z), heading, delay, before: f.get(6).is_some_and(|b| b.trim() == "1") }),
+                    _ => None,
+                };
+                if r.bus.is_some() && !r.told_bus {
+                    r.told_bus = true;
+                    self.service_msg = Some((tr(BUS_ON_MAP), 8.0));
+                }
+            }
             "here" => {
+                r.bus = None;
                 r.car = f.get(1).and_then(|x| x.trim().parse::<u64>().ok());
                 if r.car.is_some() && !r.told_here {
                     r.told_here = true;
@@ -591,6 +646,7 @@ impl App {
         r.line = line.trim().to_string();
         r.tour = tour.trim().to_string();
         r.dep = (trip.departure / 60.0).round() as i32;
+        r.bus = None;
         r.stop = 0;
         r.trip = next;
         r.stop_name = trip.stops.first().map(|s| s.name.trim().to_string()).unwrap_or_default();
@@ -1269,7 +1325,7 @@ impl App {
         d.start_at(k, 0);
         log::info!("relief: our duty goes on with line {line} tour {tour} at {}: waiting for its bus at '{stop_name}'", hhmm_min(dep));
         self.service_msg = Some((tr(NEXT_BUS).replace("%{line}", &number).replace("%{time}", &hhmm_min(dep)).replace("%{stop}", &stop_name), 12.0));
-        self.session.relief = Some(Relief { line, tour, dep, stop: 0, trip: k, stop_name, phase: Phase::Waiting, ask_t: 0.0, take_t: 0.0, car: None, told_here: false, from: None, unheard: 0.0, heard: false });
+        self.session.relief = Some(Relief { line, tour, dep, stop: 0, trip: k, stop_name, phase: Phase::Waiting, ask_t: 0.0, take_t: 0.0, car: None, told_here: false, from: None, unheard: 0.0, heard: false, bus: None, told_bus: false });
     }
 
     /// Our bus leaves our game (given on to another player): we stay on foot where we are.

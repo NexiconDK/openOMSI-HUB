@@ -34,6 +34,13 @@ impl<'a> Offscreen<'a> {
         crate::lights::load_smoke_texture(&mut renderer, &args.root);
         crate::lights::set_corona_root(&args.root);
         let mut scene = renderer.new_scene();
+        // (Bus Company Online: what the world loads, for the players' loading screens)
+        let loading = |what: &str| {
+            if let Some(cfg) = args.server.as_deref() {
+                crate::company_server::loading(cfg, what);
+            }
+        };
+        loading("map");
         let (world, camera) = lan::answering_while(&mut lan_off, args.bus.as_deref(), || load_world(args, &renderer, &mut scene))?;
         // the map's own route arrows, with OMSI 2's route arrows
         world.show_help_arrows(&renderer, &mut scene, settings.nav_arrows);
@@ -42,9 +49,11 @@ impl<'a> Offscreen<'a> {
         // count says: without it the host's cars had nowhere to go - "passengers, but no
         // traffic" on a server)
         // (and without traffic it still runs the light programs and switches the lamps)
+        loading("traffic");
         let mut traffic = new_traffic(args, &world, &renderer, &mut scene, lan_seed)?;
         // what the renderer shows of the traffic and the people (see `view_sync`)
         let mut sim_view = crate::view_sync::SimView::default();
+        loading("timetable");
         let mut schedule = if args.schedule {
             let mut s = schedule::Schedule::new(&args.root, &world, &start_clock(args));
             // (a dedicated server's bus companies, Bus Company Online: each line of theirs for its
@@ -98,6 +107,7 @@ impl<'a> Offscreen<'a> {
             .as_deref()
             .map(|d| career::Career::load(&args.root, d))
             .unwrap_or_default();
+        loading("people");
         let humans_off = new_humans(args, &settings, &world, &renderer, &mut scene, &mut sim_view.people, schedule.as_ref(), player.as_mut(), lan_seed, center);
         let player_ref: Option<Player> = None;
         let envir = omsi_content::Envir::load(&args.root.join("envir.cfg")).ok();

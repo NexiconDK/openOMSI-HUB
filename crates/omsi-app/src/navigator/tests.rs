@@ -191,6 +191,7 @@ fn painting_frame() -> NavFrame<'static> {
     NavFrame {
         traffic: None,
         players: Vec::new(),
+        awaited: None,
         bus: DVec3::ZERO,
         heading: 0.0,
         speed_kmh: 0.0,
@@ -1463,4 +1464,72 @@ fn the_entry_points_show_as_the_setting_has_them() {
     assert_eq!(EntryPoints::from_setting("off"), EntryPoints::Hidden);
     assert_eq!(EntryPoints::from_setting("names"), EntryPoints::Named);
     assert_eq!(EntryPoints::from_setting(""), EntryPoints::Named, "as before when not set");
+}
+
+/// (30 October 2026) The awaited bus's pointer at a map's edge: where the way to it leaves the
+/// map, from inside it - and the city map paints it, and its label, inside its window, whether
+/// the bus is on the map or far off it.
+#[test]
+fn the_awaited_bus_is_on_the_city_map_or_at_its_edge() {
+    let r = Rect::new(10.0, 20.0, 100.0, 50.0);
+    assert_eq!(edge_point(r, Vec2::new(60.0, 45.0), Vec2::new(1.0, 0.0)), Vec2::new(110.0, 45.0));
+    assert_eq!(edge_point(r, Vec2::new(60.0, 45.0), Vec2::new(0.0, -1.0)), Vec2::new(60.0, 20.0));
+    let d = Vec2::new(-1.0, 1.0).normalize();
+    let e = edge_point(r, Vec2::new(60.0, 45.0), d);
+    assert!((e.y - 70.0).abs() < 1e-3 && (e.x - 35.0).abs() < 1e-3, "{e:?}");
+    assert_eq!(edge_point(r, Vec2::new(500.0, 45.0), Vec2::new(1.0, 0.0)), Vec2::new(110.0, 45.0), "from outside: from its edge");
+    let (w, h) = (1536.0f32, 886.0f32);
+    let s = (h / 760.0f32).clamp(0.95, 2.0);
+    let mut n = Navigator::new(true, 0.85, "bottom-left");
+    let _ = on_grid(&mut n, 3);
+    n.toggle_map();
+    n.city.rect = [0.0, 0.0, w, h];
+    n.city.mpp = 0.85;
+    n.city.follow = false;
+    n.city.center = DVec2::new(122.0, 290.0);
+    let companion = crate::nav_signon::tests::listening(crate::nav_signon::tests::hans());
+    for pos in [DVec3::new(300.0, 200.0, 0.0), DVec3::new(9000.0, -4000.0, 0.0), DVec3::new(-9000.0, 9000.0, 0.0)] {
+        let f = NavFrame { awaited: Some(NavBus { position: pos, heading: 90.0, label: "Your bus · 9.8 km · 3 min late".into() }), ..at((1.5, 60.0), 0.0) };
+        n.atlas.begin_frame();
+        let p = n.paint_city(&f, &companion, None, Left::Nothing, w, h, s);
+        let orange = p.ui.verts.iter().filter(|v| v.color == AWAITED.0).collect::<Vec<_>>();
+        assert!(!orange.is_empty(), "drawn for {pos:?}");
+        assert!(orange.iter().all(|v| v.pos[0] >= 0.0 && v.pos[0] <= w && v.pos[1] >= 0.0 && v.pos[1] <= h), "inside the window for {pos:?}");
+    }
+}
+
+/// Pictures of the awaited bus on the city map, on it and off it:
+/// `OMSI_NAV_AWAITED_PREVIEW=<folder> cargo test -p omsi-app --lib navigator -- --ignored`.
+#[test]
+#[ignore]
+fn preview_awaited_bus_pictures() {
+    let Ok(dir) = std::env::var("OMSI_NAV_AWAITED_PREVIEW") else { return };
+    let raster = crate::nav_duty::tests::raster;
+    let all = Rect::new(0.0, 0.0, 1e5, 1e5);
+    let (w, h) = (1536.0f32, 886.0f32);
+    let s = (h / 760.0f32).clamp(0.95, 2.0);
+    let signs = vec![(DVec3::new(10.0, 300.0, 0.0), 90.0, "Hauptstraße".to_string()), (DVec3::new(300.0, 190.0, 0.0), 0.0, "Kirchweg".to_string())];
+    let mut n = Navigator::new(true, 0.85, "bottom-left");
+    n.atlas = Atlas::new(2048);
+    let net = on_grid(&mut n, 3);
+    n.streets = Some(std::sync::Arc::new(build_streets(&net, &signs)));
+    n.toggle_map();
+    n.city.rect = [0.0, 0.0, w, h];
+    n.city.mpp = 0.85;
+    n.city.follow = false;
+    n.city.center = DVec2::new(122.0, 290.0);
+    let companion = crate::nav_signon::tests::listening(crate::nav_signon::tests::hans());
+    for (name, pos, label) in [("awaited-on-map", DVec3::new(400.0, 210.0, 0.0), "Your bus · 340 m · 3 min late"), ("awaited-off-map", DVec3::new(3000.0, -1500.0, 0.0), "Your bus · 3.1 km · on its trip before")] {
+        let f = NavFrame { awaited: Some(NavBus { position: pos, heading: 270.0, label: label.into() }), ..at((1.5, 60.0), 0.0) };
+        n.city.roads = None;
+        n.city.route.0 = (u64::MAX, 0, 0, 0);
+        n.atlas.begin_frame();
+        let p = n.paint_city(&f, &companion, None, Left::Nothing, w, h, s);
+        let mut img = image::RgbaImage::from_pixel(w as u32, h as u32, image::Rgba([70, 84, 96, 255]));
+        let (c, mpp) = (n.city.center, n.city.mpp);
+        raster(&p.bg.verts, &n.atlas, &mut img, all);
+        raster(&flatten(&p.roads.unwrap_or_default(), p.anchor, c, mpp, w, h), &n.atlas, &mut img, all);
+        raster(&p.ui.verts, &n.atlas, &mut img, all);
+        img.save(format!("{dir}/{name}.png")).unwrap();
+    }
 }

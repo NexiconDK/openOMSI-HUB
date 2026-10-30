@@ -249,10 +249,16 @@ bus there - everybody on the map in one world - instead of starting the game alo
   world that did not answer him: no bus handed over at his stop, his game's clock set back with
   every reconnection.)
 - **The launcher waits for it** (`bco_world`, `together.js`'s `worldOf`: asked every 3 s for up
-  to a quarter of an hour, "Starting the world of … (a big map takes a few minutes)" said, then
-  how many minutes it has loaded, once a minute), then joins it at the server's own address with the
-  world's web port (the main server reached on a network), or at the world's tunnel (reached
-  through the main server's).
+  to a quarter of an hour), then joins it at the server's own address with the world's web port
+  (the main server reached on a network), or at the world's tunnel (reached through the main
+  server's). (30 October 2026, asked by NexiconDK) Meanwhile a loading screen
+  (`together.js`'s `WorldLoading`, over the launcher): "Loading the world" - the world of the map,
+  what it loads now (the world says so in its folder, `main_server::WORLD_LOADING`:
+  `company_server::loading` - the map's tiles and objects, the roads and traffic, the timetable
+  and the companies' buses, the people at the stops), a bar against how long it took to load the
+  last time (`WORLD_LOAD_TIME`, written as it starts running; sliding when the server does not
+  know it yet), how long so far, and "Stop waiting" (the world goes on loading on the server); once
+  it runs, "The world is ready: the game starts…" until the game has started.
 - **The game joins it** (`join.rs`'s `drive` with `world`): the duty's launch with `lan =
   join:<world>` and the world's timetable (`server_timetable::fetch`, `--content-zip`), under the
   server's name for the player; the world takes the tour's AI bus off while he drives it (the
@@ -550,6 +556,13 @@ finished duty said "You left it: the rest of it is dropped"):
   take the clock in again (`Host::set_server_clock`) and wait the hour out; the worlds take it
   with the plans; a trip of the world's told again in that hour is booked once
   (`day::record_live`).
+- **The world's timetable keeps the server's time** (fixed 30 October 2026): a world on the real
+  time held the clock it shows its players to the server's every second (`server_step`'s shift),
+  but its traffic and timetable ran on a clock of their own, from the time it began to load its
+  map - Ahlheim's six minutes behind: every AI bus came six minutes late, and a player waiting at
+  his stop for the 19:30 got it at 19:36. They move with it now (`offscreen::step`'s
+  `move_timetable`, an admin's time too), and by two minutes or more the timetable's buses are
+  put out again for the time (`Schedule::restart`), as a window's clock jump does.
 - **A player's trip is the company's by its tour** (`LivePlan::trip_line`): the world looked for
   the company by the trip's line among the company's lines alone, and a line whose concession
   begins on a later day is not among them - the trip went to no company, and his duty stayed as
@@ -822,6 +835,13 @@ its departure, then the AI drives that trip and the relief moves to the next one
   in while he walks up to the door. (28 October 2026, asked by NexiconDK) The driver then stands
   there, turned to the bus, until it has driven off (25 m) - or for half an hour -, and goes once
   out of sight, or once it is 250 m off (`relief::Stander`).
+- **Where the bus is** (30 October 2026, asked by NexiconDK): while it is on its way the world says
+  where (`relief coming <dep>;<x>;<y>;<z>;<heading>;<delay s>;<1: on the trip before>`,
+  `ScheduleSim::relief_bus`: the AI's bus on his trip, or on the tour's trip before it), and his
+  game shows it on both maps in Omsi-Hub's orange ("Your bus · 2.4 km · 3 min late · on its trip
+  before", `relief_nav_bus`, `navigator::NavBus`) - at the small map's edge, and at the city map's,
+  the way to it while it is off them; told once: "Your bus is on its way: follow it on the map".
+  None on the road yet (it comes for its time): nothing shown.
 - **Not there in time**: the AI drives that trip (`relief_kept`), his game waits for the bus at the
   start of his next trip ("ride along": G at a door of the AI's bus takes a seat in it), and the
   world writes it for his company (`company_server::relief_kept`, a `WorldTrip` with `kept`): his

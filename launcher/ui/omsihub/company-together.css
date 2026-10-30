@@ -295,3 +295,18 @@
 .tg-trip-filter .co-select .hub-icon { position: absolute; right: 8px; pointer-events: none; color: var(--hub-text-dim); }
 .tg-trip-filter .go { margin-left: auto; display: flex; }
 .tg-duty.trip .state { text-align: right; }
+
+/* (30 October 2026) The loading screen while a map's world starts on the server (`together.js`'s
+   `WorldLoading`): the map, what it loads, a bar against the last time's load (sliding when the
+   server does not know it yet), how long so far. */
+.wl-body { display: flex; flex-direction: column; gap: 14px; padding: 4px 0 6px; }
+.co-dialog > .body:last-child > .wl-body { padding-bottom: 26px; }
+.wl-body .map { font-size: 17px; font-weight: 700; }
+.wl-body .phase { display: flex; align-items: center; gap: 10px; min-height: 22px; font-size: 14px; }
+.wl-body .spinner { border-color: var(--hub-rail); border-top-color: var(--hub-accent); }
+.wl-body .times { display: flex; justify-content: space-between; gap: 12px; font-size: var(--co-note); color: var(--hub-text-dim); font-variant-numeric: tabular-nums; }
+.wl-bar { position: relative; height: 8px; border-radius: 4px; background: var(--hub-rail); overflow: hidden; }
+.wl-bar > div { height: 100%; width: 0; border-radius: 4px; background: var(--hub-accent); transition: width 1s linear; }
+.wl-bar.busy > div { position: absolute; left: -35%; width: 35%; transition: none; animation: wl-slide 1.6s ease-in-out infinite; }
+@keyframes wl-slide { to { left: 100%; } }
+.hub-still .wl-bar.busy > div { animation: none; left: 0; width: 100%; opacity: 0.45; }

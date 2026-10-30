@@ -15,6 +15,7 @@ import { Flow, STEP_NAMES, goStep } from './flow.js';
 import { Head, Icon, tr } from './bits.js';
 import './settings-extra.js';
 import { CompanyScreen, companyPage } from './company/company.js';
+import { WorldLoading } from './company/together.js';
 import { EDITORS, EditorPage, editorOf, openLineEditor, openLivery } from './editors/index.js';
 import { StatusLine } from './editors/kit.js';
 import { Welcome, welcomeAtStart } from './welcome.js';
@@ -185,7 +186,7 @@ export function HubShell({ pages, Toasts }) {
   // the bus company: the whole window its own (its own bar)
   if (s.page === 'company') {
     // (Omsi-Hub 6/6: the company's tour over it)
-    return html`<div class="hub-stage" style=${`--hub-scale:${scale()}`}><${CompanyScreen} /><${TourOverlay} /><${OnlineLayer} />${updates}<${Toasts} /></div>`;
+    return html`<div class="hub-stage" style=${`--hub-scale:${scale()}`}><${CompanyScreen} /><${TourOverlay} /><${OnlineLayer} /><${WorldLoading} />${updates}<${Toasts} /></div>`;
   }
   // (an editor's page: ours, `editors/index.js`)
   const editor = EDITORS[s.page] ? s.page : null;
@@ -197,6 +198,7 @@ export function HubShell({ pages, Toasts }) {
     <${StatusLine} />
     <${TourOverlay} />
     <${OnlineLayer} />
+    <${WorldLoading} />
     ${updates}
     <${Toasts} />
   </div>`;

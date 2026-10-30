@@ -344,10 +344,14 @@ fn needs_json(f: &Value) -> Vec<Value> {
 /// (Phase 3) The world of company `company`'s map, to drive a duty in: asked of the main server
 /// (it starts the world when it does not run), and where this computer joins it - the server's
 /// own address with the world's web port on a network, its tunnel over the internet. `{address}`
-/// once it answers, `{waiting}` while it starts, `{error}`.
+/// once it answers, `{waiting}` while it starts (30 October 2026: with `{loading}` - the map, how
+/// long it has loaded and took the last time, what it loads now - for the launcher's loading
+/// screen, whose `{words}` every answer has), `{error}`.
 fn world(company: &str) -> Value {
+    let words = world_words();
     let base = state().linked.as_ref().map(|l| l.base.clone());
-    let Some(base) = base else { return json!({ "error": tr(NOT_LINKED) }) };
+    let Some(base) = base else { return json!({ "error": tr(NOT_LINKED), "words": words }) };
+    let loading = |v: &Value, phase: String| json!({ "map": v.get("map").and_then(Value::as_str).unwrap_or(""), "since": v.get("since").and_then(Value::as_u64).unwrap_or(0), "expected": v.get("expected").and_then(Value::as_u64), "phase": phase });
     match question("world", json!({ "company": company })) {
         Ok(v) if v.get("ready").and_then(Value::as_bool) == Some(true) => {
             let tunnel = v.get("tunnel").and_then(Value::as_str).map(str::to_string);
@@ -359,8 +363,8 @@ fn world(company: &str) -> Value {
                 _ => tunnel,
             };
             match address {
-                Some(a) => json!({ "address": a, "map": v.get("map") }),
-                None => json!({ "waiting": tr("The map's world has no way in over the internet yet: its tunnel is starting.") }),
+                Some(a) => json!({ "address": a, "map": v.get("map"), "words": words }),
+                None => json!({ "waiting": tr("The map's world has no way in over the internet yet: its tunnel is starting."), "loading": loading(&v, tr("Opening its way in over the internet")), "words": words }),
             }
         }
         // (NexiconDK, 27 October 2026: until it runs - a big map loads for minutes -, said with how
@@ -368,10 +372,32 @@ fn world(company: &str) -> Value {
         Ok(v) => {
             let map = v.get("map").and_then(Value::as_str).unwrap_or("");
             let min = v.get("since").and_then(Value::as_u64).unwrap_or(0) / 60;
-            json!({ "waiting": if min == 0 { trf("Starting the world of %{map} on the server… (a big map takes a few minutes)", &[("map", map)]) } else { trf("The world of %{map} is still loading on the server: %{n} min so far.", &[("map", map), ("n", &min.to_string())]) } })
+            let phase = match v.get("phase").and_then(Value::as_str).unwrap_or("") {
+                "map" => tr("Loading the map: its tiles and objects"),
+                "traffic" => tr("Laying out the roads and the traffic"),
+                "timetable" => tr("Setting out the timetable and the companies' buses"),
+                "people" => tr("Putting people at the stops"),
+                _ => tr("Starting the world on the server"),
+            };
+            json!({ "waiting": if min == 0 { trf("Starting the world of %{map} on the server… (a big map takes a few minutes)", &[("map", map)]) } else { trf("The world of %{map} is still loading on the server: %{n} min so far.", &[("map", map), ("n", &min.to_string())]) }, "loading": loading(&v, phase), "words": words })
         }
-        Err((e, a)) => json!({ "error": words_of(&e, &a) }),
+        Err((e, a)) => json!({ "error": words_of(&e, &a), "words": words }),
     }
+}
+
+/// (30 October 2026) The words of the launcher's loading screen while a map's world starts.
+fn world_words() -> Value {
+    json!({
+        "title": tr("Loading the world"),
+        "of": tr("The world of %{map}"),
+        "so_far": tr("%{t} so far"),
+        "last": tr("about %{n} min the last time"),
+        "note": tr("The game starts by itself as soon as the world is ready. You may leave this open."),
+        "asking": tr("Asking the server for the world…"),
+        "ready": tr("The world is ready: the game starts…"),
+        "cancel": tr("Stop waiting"),
+        "cancelled": tr("The world goes on loading on the server: press Drive again when you like."),
+    })
 }
 
 /// (NexiconDK, phase 6 step 5) The players' guide to Bus Company Online, in sections: what the

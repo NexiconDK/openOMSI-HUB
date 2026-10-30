@@ -23,6 +23,9 @@ struct Companies {
 }
 
 static COMPANIES: OnceLock<Companies> = OnceLock::new();
+/// When the world began to load (`start`): how long it took is kept for the players' loading
+/// screens (`mark_running`).
+static STARTED: OnceLock<std::time::Instant> = OnceLock::new();
 /// The plans' generation the world took in last.
 static TAKEN: AtomicU64 = AtomicU64::new(0);
 
@@ -42,6 +45,7 @@ fn hhmmss(secs: f64) -> String {
 pub(crate) fn start(data: &Path) -> anyhow::Result<(String, String)> {
     let clock = online::read_server_clock(data).ok_or_else(|| anyhow::anyhow!("no server's clock in {} - the main server keeps it (omsi-hub-cli --company-server {})", data.display(), data.display()))?;
     TAKEN.store(online::plans_gen(data), Ordering::Relaxed);
+    let _ = STARTED.set(std::time::Instant::now());
     let (date, secs) = clock.at_real(unix_now());
     let _ = COMPANIES.set(Companies { data: data.to_path_buf(), clock: Mutex::new(clock) });
     log::info!("server: the bus companies of {} on the server's clock, {date} {}", data.display(), hhmmss(secs));
@@ -56,10 +60,27 @@ pub(crate) fn mark_running(cfg: &Path) {
         return;
     }
     let Some(dir) = cfg.parent() else { return };
+    // (how long it took: the players' loading screens next time - 30 October 2026)
+    if let Some(t) = STARTED.get() {
+        let _ = std::fs::write(dir.join(omsi_launcher_lib::company::main_server::WORLD_LOAD_TIME), t.elapsed().as_secs().max(1).to_string());
+    }
+    let _ = std::fs::remove_file(dir.join(omsi_launcher_lib::company::main_server::WORLD_LOADING));
     let path = dir.join(omsi_launcher_lib::company::main_server::WORLD_RUNNING);
     match std::fs::write(&path, std::process::id().to_string()) {
         Ok(()) => log::info!("server: running, said to the main server ({})", path.display()),
         Err(e) => log::warn!("server: running, but not said to the main server ({}): {e}", path.display()),
+    }
+}
+
+/// (NexiconDK, 30 October 2026) What the world loads now (`map`, `traffic`, `timetable`,
+/// `people`), said in its folder beside its server.cfg (`cfg`) for the players' loading screens
+/// (`main_server::WORLD_LOADING`).
+pub(crate) fn loading(cfg: &Path, what: &str) {
+    if COMPANIES.get().is_none() {
+        return;
+    }
+    if let Some(dir) = cfg.parent() {
+        let _ = std::fs::write(dir.join(omsi_launcher_lib::company::main_server::WORLD_LOADING), what);
     }
 }
 
