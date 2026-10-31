@@ -162,14 +162,30 @@ impl PeopleSim {
     /// A client's bus takes these waiting people (host): those still waiting leave our
     /// world (they are the client's now); returns them. Somebody who has meanwhile walked
     /// up to another bus stays ours.
+    ///
+    /// (NexiconDK, 31 October 2026) Only those who take that bus - by what it shows, as at
+    /// boarding (`takes_waiting`): the client asks for everybody waiting at the stop its bus is
+    /// at, and those for another line went with it too. They stayed in the client's game after
+    /// its bus had gone (with a destination of its own drawing), drawn for the others only as
+    /// long as it was near, while we filled the stop up again: people vanished from the stop
+    /// and came twice. A bus we do not know yet (nor what it shows) takes all, as before.
     pub fn hand_over(&mut self, player: u32, ids: &[u32]) -> Vec<u32> {
         let mut out = Vec::new();
+        let buses = self.last_buses.clone();
+        let bus = buses.iter().find(|b| b.id == BusId::Ai(remote_bus_id(player)));
+        let shown = self.remote_termini.get(&player).is_some_and(|t| !t.trim().is_empty());
         for id in ids {
             let Some(i) = self.people.iter().position(|p| p.id == *id) else {
                 continue;
             };
             if !matches!(&self.people[i].state, State::Pax(x) if x.task == Task::WaitingForBus) || self.people[i].remote {
                 continue;
+            }
+            if let (Some(b), true, Some(x)) = (bus, shown, self.pax(i)) {
+                let takes = x.stop.and_then(|stop| self.stops.get(&stop).map(|s| (stop, s))).is_some_and(|(stop, s)| self.takes_waiting(stop, s, b, x.dest.as_deref(), x.line));
+                if !takes {
+                    continue;
+                }
             }
             // (still counted at their stop while that bus stands there, as the people
             // boarding a bus of ours are: see `handed`)
@@ -392,8 +408,22 @@ impl PeopleSim {
         pax.stop = Some(stop);
         // what a waiting person of ours has (sub_626044 and task 6): a destination drawn
         // from the stop (both sides load the same map) and a distance to ride without one;
-        // with neither they would get off again at once (#813)
-        let (dest, line) = self.draw_dest(stop);
+        // with neither they would get off again at once (#813). (NexiconDK, 31 October 2026:
+        // one our bus takes - the host hands over only those who take it, `hand_over`; drawn
+        // at random, some of them did not get on, and stayed in our game at the stop)
+        let buses = self.last_buses.clone();
+        let ours = buses.iter().find(|b| b.id == BusId::Player);
+        let mut drawn = self.draw_dest(stop);
+        if let Some(b) = ours {
+            for _ in 0..16 {
+                let s = &self.stops[&stop];
+                if self.takes_waiting(stop, s, b, drawn.0.as_deref(), drawn.1) {
+                    break;
+                }
+                drawn = self.draw_dest(stop);
+            }
+        }
+        let (dest, line) = drawn;
         pax.dest = dest;
         pax.line = line;
         pax.ride_km = self.rand_f() as f32 * 19.0 + 1.0;
@@ -417,17 +447,27 @@ impl PeopleSim {
         true
     }
 
-    /// The host's people waiting at the stop our bus is listed at (client): ask for them.
+    /// The host's people waiting at the stop our bus stands at (client): ask for them.
+    ///
+    /// (NexiconDK, 31 October 2026) Once it stands in the stop's box - not as soon as it is
+    /// listed there, 60 m before it: a bus driving past took them all with it, and they stayed
+    /// in our game at the stop (drawn for the others only while we were near, the host filling
+    /// the stop up again). Till then they are the host's, who signal or wave to it as it comes,
+    /// and wave after it if it drives on (`passed_by`, `pax left`).
     pub fn claim_waiting(&mut self) {
         if !self.mirror {
             return;
         }
         let now = self.time;
         self.claimed.retain(|_, t| now - *t < 10.0);
+        let standing = self.last_buses.iter().any(|b| b.id == BusId::Player && b.speed.abs() < 1.5);
+        if !standing {
+            return;
+        }
         let at: Vec<i64> = self
             .stops
             .iter()
-            .filter(|(_, s)| s.buses.iter().any(|b| b.0 == BusId::Player))
+            .filter(|(_, s)| s.buses.iter().any(|b| b.0 == BusId::Player && b.1))
             .map(|(id, _)| *id)
             .collect();
         if at.is_empty() {

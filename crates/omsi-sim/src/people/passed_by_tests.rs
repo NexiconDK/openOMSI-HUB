@@ -294,6 +294,67 @@ fn only_those_who_wave_wave_after_the_bus_but_all_are_left() {
     assert!(h.waving.is_empty());
 }
 
+/// (31 October 2026) The host hands a player's bus only those waiting who take it - as at
+/// boarding, by what it shows; one for another line stays the host's. A bus it does not know
+/// yet takes all, as before.
+#[test]
+fn the_host_hands_a_players_bus_only_those_who_take_it() {
+    let c = cabin("handover");
+    let mut h = sim("handover");
+    assert_eq!(h.hand_over(4, &[3]), vec![3], "not known yet: as before");
+    let mut h = sim("handover2");
+    h.last_buses = Arc::new(vec![bus(&c, BusId::Ai(remote_bus_id(4)), -10.0, 0.0, 0.0, None)]);
+    h.set_remote_termini([(4, "Rathaus".to_string())].into_iter());
+    let mut got = h.hand_over(4, &[1, 2, 3]);
+    got.sort();
+    assert_eq!(got, vec![1, 2], "not the one for Bahnhof");
+    assert!(h.people.iter().any(|p| p.id == 3 && !p.remote), "still the host's");
+}
+
+/// (31 October 2026) ... and the client gives those it was handed a destination its bus takes
+/// them to: drawn at random, some did not get on and stayed in its game at the stop.
+#[test]
+fn a_client_gives_those_handed_over_a_destination_its_bus_takes() {
+    let c = cabin("granted");
+    let ty = human("granted");
+    let mut cl = PeopleSim::new(Path::new("/nonexistent"), 200);
+    cl.mirror = true;
+    let mut s = stop();
+    s.dests = vec![("Rathaus".into(), 1.0), ("Bahnhof".into(), 1.0)];
+    cl.stops.insert(7, s);
+    cl.last_buses = Arc::new(vec![bus(&c, BusId::Player, -10.0, 0.0, 0.0, Some("Rathaus"))]);
+    for id in 100..120u32 {
+        let mut p = waiting(&ty, id, 7, 0, DVec3::new(2.3, 0.0, 0.0));
+        p.remote = true;
+        cl.people.push(p);
+        cl.mirror_wait.insert(id, (7, 0));
+        assert!(cl.grant(id));
+        let x = cl.pax(cl.people.len() - 1).unwrap();
+        assert_eq!((x.dest.as_deref(), x.line), (Some("Rathaus"), Some(0)), "person {id}");
+    }
+}
+
+/// (31 October 2026) A client asks the host for those waiting at a stop only once its bus stands
+/// in the stop's box: driving past - or still rolling in - they stay the host's.
+#[test]
+fn a_client_asks_for_those_waiting_only_once_its_bus_stands_at_the_stop() {
+    let c = cabin("claim");
+    let mut cl = PeopleSim::new(Path::new("/nonexistent"), 200);
+    cl.mirror = true;
+    cl.stops.insert(7, stop());
+    cl.mirror_wait.insert(5, (7, 0));
+    let at = |cl: &mut PeopleSim, speed: f64, in_box: bool| {
+        cl.last_buses = Arc::new(vec![bus(&c, BusId::Player, -4.0, speed, 0.0, Some("Rathaus"))]);
+        cl.stops.get_mut(&7).unwrap().buses = vec![(BusId::Player, in_box)];
+        cl.claim_waiting();
+        cl.take_claims()
+    };
+    assert!(at(&mut cl, 10.0, false).is_empty(), "coming");
+    assert!(at(&mut cl, 10.0, true).is_empty(), "driving past");
+    assert!(at(&mut cl, 0.5, false).is_empty(), "standing short of the stop");
+    assert_eq!(at(&mut cl, 0.5, true), vec![5], "standing at it");
+}
+
 #[test]
 fn only_the_players_buses_on_their_way_count() {
     let c = cabin("ai");
