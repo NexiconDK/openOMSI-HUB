@@ -52,6 +52,35 @@ pub const TRIP_LEAD: i64 = 4;
 /// from now: the game started at once, the world joined, his walk to the stop.
 pub const NEXT_LEAD: i64 = 8;
 
+/// (NexiconDK, 31 October 2026) How long a map's world took to load when it has never said
+/// (seconds): Ahlheim's six minutes.
+pub const WORLD_LOAD_GUESS: u64 = 360;
+
+/// (NexiconDK, 31 October 2026) How many more minutes the world of the company's map takes before
+/// it runs - it says what it loads in its folder while it does (`main_server::WORLD_LOADING`), and
+/// how long it took the last time (`WORLD_LOAD_TIME`) -: 0 when it runs or loads nothing (off the
+/// server too). A single trip taken leaves after that, the lead to its stop on top: the game
+/// starts only once the world runs, and a trip taken meanwhile had left ("This trip leaves too
+/// soon").
+pub fn world_wait(c: &Company) -> i64 {
+    if !c.online.on_server {
+        return 0;
+    }
+    world_wait_in(&crate::data_dir().join("worlds").join(super::super::online::map_folder(&c.map)), std::time::SystemTime::now())
+}
+
+/// `world_wait` of the world whose folder is `dir`, at `now`.
+pub fn world_wait_in(dir: &std::path::Path, now: std::time::SystemTime) -> i64 {
+    use super::super::main_server::{world_load_time, world_loading};
+    if world_loading(dir).is_none() {
+        return 0;
+    }
+    let took = world_load_time(dir).unwrap_or(WORLD_LOAD_GUESS);
+    // (it began when the main server wrote its settings)
+    let since = std::fs::metadata(dir.join("server.cfg")).and_then(|m| m.modified()).ok().and_then(|t| now.duration_since(t).ok()).map_or(0, |d| d.as_secs());
+    (took.saturating_sub(since).max(60) as i64 + 59) / 60
+}
+
 /// How many days a duty whose day closed before it was driven stays its player's.
 pub const LATE_DAYS: i64 = 3;
 
@@ -673,6 +702,8 @@ pub fn free_trips(c: &Company, p: &DayPlan, now: i64, f: &TripFilter) -> Vec<Fre
     if !p.today || p.date != c.date || !c.online.on_server || !c.together.trips_open {
         return out;
     }
+    // (the world loading meanwhile: on top - `world_wait`)
+    let lead = f.lead() + world_wait(c);
     for (ti, t) in p.tours.iter().enumerate() {
         if t.tour.unplanned || t.by_player || !matches!(t.bus, Some(BusOf::Own(_))) {
             continue;
@@ -683,7 +714,7 @@ pub fn free_trips(c: &Company, p: &DayPlan, now: i64, f: &TripFilter) -> Vec<Fre
             }
             let Some(r) = DutyRef::of(p, ti, k) else { continue };
             for (i, x) in t.tour.trips[d.start..d.end].iter().enumerate() {
-                if single(t, x) && !c.together.trip_taken(&r, i) && clock::moment(&p.date, x.dep as i64) >= now + f.lead() && f.line_is(t, x) && f.stop_is(x) {
+                if single(t, x) && !c.together.trip_taken(&r, i) && clock::moment(&p.date, x.dep as i64) >= now + lead && f.line_is(t, x) && f.stop_is(x) {
                     out.push(FreeTrip { duty: r.clone(), trip: i, tour: ti, x: x.clone() });
                 }
             }
@@ -724,7 +755,8 @@ pub fn take_trip(c: &mut Company, p: &DayPlan, r: &DutyRef, i: usize, guest: u32
     }
     let d = &t.duties[k];
     let x = t.tour.trips[d.start..d.end].get(i).filter(|x| single(t, x)).ok_or(NO_TRIP)?;
-    if clock::moment(&p.date, x.dep as i64) < now + TRIP_LEAD {
+    // (NexiconDK, 31 October 2026: and the world loading meanwhile - `world_wait`)
+    if clock::moment(&p.date, x.dep as i64) < now + TRIP_LEAD + world_wait(c) {
         return Err(TRIP_GONE);
     }
     let part = (i, i + 1);

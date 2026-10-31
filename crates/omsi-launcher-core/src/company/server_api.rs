@@ -108,6 +108,22 @@ pub struct Ask {
     pub args: Value,
 }
 
+/// (NexiconDK, 31 October 2026) A player of company `cid` (`me`) comes into it: the world of its
+/// map started now if it does not run, so that it has loaded by the time he drives - a big map
+/// loads for minutes (Ahlheim six), and a single trip taken meanwhile had left before it ran
+/// ("This trip leaves too soon"). Only for a member of the company; nothing said if it runs.
+fn warm_world(m: &mut MainServer, cid: &str, me: &Player) {
+    let Ok(c) = store::load(&m.data, cid) else { return };
+    let member = c.online.owner_id == me.id || c.together.guests.iter().any(|g| g.id == me.id && !g.banned);
+    if !member || m.worlds.iter().any(|w| map_folder(&w.map) == map_folder(&c.map)) {
+        return;
+    }
+    match m.start_world(&c.map) {
+        Ok(_) => m.say(&format!("world of {}: started as {} ({}) came into {}", super::main_server::map_name(&c.map), me.name, me.id, c.name)),
+        Err(e) => m.say_warning(&format!("the world of {} for {}: {e:#}", super::main_server::map_name(&c.map), me.name)),
+    }
+}
+
 fn refusal(text: &str) -> Value {
     json!({ "ok": false, "error": text })
 }
@@ -453,7 +469,7 @@ impl Api {
     }
 
     fn join(&self, id: &str, company: &str) -> Value {
-        let m = self.server();
+        let mut m = self.server();
         let Some(me) = m.players.get(id).cloned() else { return refusal(LOGGED_OUT) };
         let cid = company.trim();
         if cid.is_empty() || !company_ids(&m.data).iter().any(|c| c == cid) {
@@ -464,6 +480,7 @@ impl Api {
             return refusal(STARTING);
         }
         let Some(secret) = online::read_server_secret(&m.data) else { return refusal(STARTING) };
+        warm_world(&mut m, cid, &me);
         json!({ "ok": true, "code": code.trim(), "ticket": online::ticket(&secret, cid, &me.id, &me.name), "player": me.id, "name": me.name })
     }
 
@@ -660,6 +677,36 @@ mod tests {
         let m = MainServer::open(&data, cfg).unwrap();
         let k = kept(&data, 0).unwrap();
         (Api::new(Arc::new(Mutex::new(m)), k.secret_bytes(), fake_verify()), k.secret)
+    }
+
+    /// (NexiconDK, 31 October 2026) A player who comes into his company has its map's world
+    /// started then (a stand-in game program), once; one who is none of its players
+    /// does not.
+    #[cfg(unix)]
+    #[test]
+    fn a_player_coming_into_his_company_starts_its_maps_world() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = temp("warm");
+        let root = dir.join("omsi");
+        std::fs::create_dir_all(root.join("maps/Lemmental")).unwrap();
+        std::fs::write(root.join("maps/Lemmental/global.cfg"), "").unwrap();
+        let game = dir.join("fake-world.sh");
+        std::fs::write(&game, "#!/bin/sh\nread line\n").unwrap();
+        std::fs::set_permissions(&game, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let data = dir.join("bco");
+        let cfg = MainCfg::parse(&format!("root = {}\nreal_time = 0\ndate = 2024-03-04\ngame = {}\nstart_money = 20000\nfound_price = 15000\nfirst_port = 47115\n", root.display(), game.display()));
+        let mut m = MainServer::open(&data, cfg).unwrap();
+        let p = m.players.login(&Login { steam: "76561198000000042".into(), name: "Mathias".into(), ..Default::default() }, None, m.cfg.logins, m.cfg.start_money, 1_800_000_000).unwrap().player;
+        let cid = m.found_for(&p.id, "Lemtal Trafik", "Lemmental", "casual").unwrap();
+        let eve = m.players.login(&Login { steam: "76561198000000077".into(), name: "Eve".into(), ..Default::default() }, None, m.cfg.logins, m.cfg.start_money, 1_800_000_000).unwrap().player;
+        warm_world(&mut m, &cid, &eve);
+        assert!(m.worlds.is_empty(), "not for one who is none of its players");
+        warm_world(&mut m, &cid, &p);
+        assert_eq!(m.worlds.iter().map(|w| map_folder(&w.map).to_lowercase()).collect::<Vec<_>>(), ["lemmental"]);
+        warm_world(&mut m, &cid, &p);
+        assert_eq!(m.worlds.len(), 1, "once");
+        m.shutdown();
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

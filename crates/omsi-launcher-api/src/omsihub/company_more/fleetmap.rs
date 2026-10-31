@@ -912,7 +912,8 @@ fn next_single(c: &Company, tp: &co::day::TourPlan) -> Option<i32> {
     if !c.online.on_server || !c.together.trips_open || tp.by_player || tp.tour.unplanned || tp.bus.is_none() {
         return None;
     }
-    let from = c.clock.minute as i32 + book::NEXT_LEAD as i32;
+    // (31 October 2026: the world loading meanwhile on top, `book::world_wait`)
+    let from = c.clock.minute as i32 + (book::NEXT_LEAD + book::world_wait(c)) as i32;
     let own = |x: &PlannedTrip| x.origin.trim().is_empty() || x.origin.trim() == tp.tour.tour.trim();
     tp.duties
         .iter()

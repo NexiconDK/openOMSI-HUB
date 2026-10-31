@@ -1438,3 +1438,25 @@ fn handed_over_on_the_way_the_ai_drives_the_rest_and_he_is_free() {
     assert_eq!(book::handed_over(&mut b.c, Some(&p), &mine, jan, 400, false, 1, 300), Ok(Some(2)));
     assert!(b.c.together.claims.is_empty());
 }
+
+/// (NexiconDK, 31 October 2026) While the map's world loads, a single trip is taken that much
+/// further off: what it took the last time less what it has loaded already (a minute at least);
+/// nothing once it runs.
+#[test]
+fn a_trip_is_taken_after_the_world_has_loaded() {
+    use super::super::main_server::{WORLD_LOADING, WORLD_LOAD_TIME};
+    let dir = std::env::temp_dir().join(format!("omsi-world-wait-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("server.cfg"), "").unwrap();
+    let now = std::time::SystemTime::now();
+    assert_eq!(book::world_wait_in(&dir, now), 0, "not loading: it runs, or nothing was started");
+    std::fs::write(dir.join(WORLD_LOADING), "map").unwrap();
+    assert_eq!(book::world_wait_in(&dir, now), (book::WORLD_LOAD_GUESS as i64) / 60, "never said: six minutes");
+    std::fs::write(dir.join(WORLD_LOAD_TIME), "362").unwrap();
+    assert_eq!(book::world_wait_in(&dir, now + std::time::Duration::from_secs(120)), 5, "4 min 2 s left");
+    assert_eq!(book::world_wait_in(&dir, now + std::time::Duration::from_secs(1000)), 1, "late: a minute");
+    std::fs::remove_file(dir.join(WORLD_LOADING)).unwrap();
+    assert_eq!(book::world_wait_in(&dir, now), 0, "it runs");
+    let _ = std::fs::remove_dir_all(&dir);
+}
