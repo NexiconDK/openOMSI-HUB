@@ -115,6 +115,8 @@ fn bus(cabin: &Arc<Cabin>, id: BusId, y: f64, speed: f64, heading: f64, terminus
 fn sim(name: &str) -> PeopleSim {
     let ty = human(name);
     let mut h = PeopleSim::new(Path::new("/nonexistent"), 200);
+    // (everybody signals, waves, glances: what each does is the test's)
+    h.gestures = GestureShares { signal: 1.0, wave: 1.0, full: 1.0, phone: 0.0 };
     h.stops.insert(7, stop());
     let mut far = stop();
     far.pos = DVec3::new(0.0, 400.0, 0.0);
@@ -195,6 +197,103 @@ fn a_bus_that_stands_and_leaves_them_leaves_them_too_and_a_full_one_is_excused()
     assert!(h.take_left_behind().is_empty());
 }
 
+/// (31 October 2026) Most set off to where the bus will stand as soon as it is within 60 m and
+/// rolling (`Task::ToBus`): it leaves them too when it goes on (not those going to another bus),
+/// but they do not signal on the way - those who stay at their place do
+/// (`stays_till_it_stands`).
+#[test]
+fn those_stepping_up_to_the_bus_are_left_by_it_and_those_staying_signal() {
+    let c = cabin("stepping");
+    let mut h = sim("stepping");
+    for p in h.people.iter_mut() {
+        if let State::Pax(x) = &mut p.state {
+            x.task = Task::ToBus;
+            x.bus = Some(if p.id == 2 { BusId::Ai(9) } else { BusId::Player });
+        }
+    }
+    let coming = bus(&c, BusId::Player, -40.0, 10.0, 0.0, Some("Rathaus"));
+    assert!(h.visual_hail_bus(0, std::slice::from_ref(&coming)).is_none(), "on the move: no signal");
+    let mk = |y, v| bus(&c, BusId::Player, y, v, 0.0, Some("Rathaus"));
+    drive(&mut h, &mk, -80.0, 20.0, 10.0, 0.0);
+    assert_eq!(h.take_left_behind(), vec![LeftBehind { bus: BusId::Player, stop: 7, count: 1, full: false, stood: false }]);
+    assert!(h.wave_of(1).is_some() && h.wave_of(2).is_none());
+    // still at their place: they signal
+    let h = sim("staying");
+    assert!(h.visual_hail_bus(0, &[coming]).is_some_and(|(id, moving, _)| id == BusId::Player && moving));
+}
+
+/// (31 October 2026) Those who signal or wave to a coming bus stay at their place till it stands,
+/// by the shares of them (`greetings`); the others step up to it, as in Omsi - all of them with
+/// nothing shared. A group does all the same.
+#[test]
+fn some_stay_at_their_place_till_the_bus_stands() {
+    let ty = human("stay");
+    let mut h = PeopleSim::new(Path::new("/nonexistent"), 200);
+    h.people = (0..400).map(|id| waiting(&ty, id, 7, 0, DVec3::ZERO)).collect();
+    h.gestures = GestureShares::NONE;
+    assert!((0..400).all(|i| !h.stays_till_it_stands(i)), "nothing shared: as in Omsi");
+    h.gestures.signal = 0.3;
+    let n = (0..400).filter(|i| h.stays_till_it_stands(*i)).count();
+    assert!((90..=150).contains(&n), "about three in ten: {n}");
+    assert!((0..400).filter_map(|i| h.greets(i)).all(|g| g == Greet::Signal));
+    h.gestures.wave = 0.3;
+    let n = (0..400).filter(|i| h.stays_till_it_stands(*i)).count();
+    assert!((170..=240).contains(&n), "about half, signalling or waving: {n}");
+    let waving = (0..400).filter(|i| h.greets(*i) == Some(Greet::Wave)).count();
+    assert!((60..=140).contains(&waving), "{waving}");
+    h.gestures.signal = 1.0;
+    assert!((0..400).all(|i| h.stays_till_it_stands(i)), "every time");
+    h.gestures.signal = 0.3;
+    for (i, p) in h.people.iter_mut().enumerate() {
+        if let State::Pax(x) = &mut p.state {
+            x.group = Some(if i < 200 { 1 } else { 2 });
+        }
+    }
+    let (a, b) = (h.greets(0), h.greets(200));
+    assert!((0..200).all(|i| h.greets(i) == a) && (200..400).all(|i| h.greets(i) == b));
+}
+
+/// (31 October 2026) On their way to the stop, those who wave wave to the bus coming to it - and
+/// somebody late, running for it, till they are at it. A full bus: nothing.
+#[test]
+fn those_on_their_way_to_the_stop_wave_to_the_bus() {
+    let c = cabin("onway");
+    let mut h = sim("onway");
+    if let State::Pax(x) = &mut h.people[0].state {
+        x.task = Task::WalkingToBusstop;
+    }
+    h.people[0].position = DVec3::new(2.3, 30.0, 0.0);
+    let coming = [bus(&c, BusId::Player, -40.0, 10.0, 0.0, Some("Rathaus"))];
+    let mut none_full = |_: &BusNow| false;
+    assert_eq!(h.gesture_of(0, &coming, &mut none_full).map(|g| (g.0, g.1)), Some((Gesture::WaveTo, BusId::Player)));
+    assert!(h.gesture_of(0, &coming, &mut |_| true).is_none(), "full");
+    h.gestures.wave = 0.0;
+    assert!(h.gesture_of(0, &coming, &mut none_full).is_none(), "nobody waves");
+    // late, running for a player's bus standing at the stop
+    h.gestures.wave = 1.0;
+    if let State::Pax(x) = &mut h.people[0].state {
+        x.task = Task::ToBus;
+        x.bus = Some(BusId::Player);
+        x.late = Some(super::runners::Late { phase: super::runners::LatePhase::Hurry, walk: 1.2, run: 3.2, hurried: 0.0, stood: true });
+    }
+    let standing = [bus(&c, BusId::Player, -4.0, 0.0, 0.0, Some("Rathaus"))];
+    assert_eq!(h.gesture_of(0, &standing, &mut none_full).map(|g| g.0), Some(Gesture::WaveTo));
+    h.people[0].position = DVec3::new(2.3, -2.0, 0.0);
+    assert!(h.gesture_of(0, &standing, &mut none_full).is_none(), "at the bus");
+}
+
+/// (31 October 2026) Those a bus leaves behind are counted all the same; only those who wave
+/// wave after it.
+#[test]
+fn only_those_who_wave_wave_after_the_bus_but_all_are_left() {
+    let c = cabin("nowave");
+    let mut h = sim("nowave");
+    h.gestures.wave = 0.0;
+    drive(&mut h, &|y, v| bus(&c, BusId::Player, y, v, 0.0, Some("Rathaus")), -80.0, 20.0, 10.0, 0.0);
+    assert_eq!(h.take_left_behind().first().map(|l| l.count), Some(2));
+    assert!(h.waving.is_empty());
+}
+
 #[test]
 fn only_the_players_buses_on_their_way_count() {
     let c = cabin("ai");
@@ -216,10 +315,25 @@ fn only_the_players_buses_on_their_way_count() {
         y -= 2.5;
     }
     assert!(h.take_left_behind().is_empty());
-    // a LAN client tells nothing itself: the host does
+    // a LAN client: not for the host's people drawn here - the host tells of those
     let mut h = sim("client");
     h.mirror = true;
+    for p in h.people.iter_mut() {
+        p.remote = true;
+    }
     drive(&mut h, &|y, v| bus(&c, BusId::Player, y, v, 0.0, Some("Rathaus")), -80.0, 60.0, 10.0, 0.0);
+    assert!(h.take_left_behind().is_empty());
+    // (31 October 2026) but for those it took from the host as its bus came, its own now - the
+    // host knows nothing of them any more; and only for its own bus
+    let mut h = sim("client-own");
+    h.mirror = true;
+    drive(&mut h, &|y, v| bus(&c, BusId::Player, y, v, 0.0, Some("Rathaus")), -80.0, 20.0, 10.0, 0.0);
+    assert_eq!(h.take_left_behind(), vec![LeftBehind { bus: BusId::Player, stop: 7, count: 2, full: false, stood: false }]);
+    assert!(h.wave_of(1).is_some());
+    let mut h = sim("client-other");
+    h.mirror = true;
+    h.set_remote_termini([(4, "Rathaus".to_string())].into_iter());
+    drive(&mut h, &|y, v| bus(&c, BusId::Ai(remote_bus_id(4)), y, v, 0.0, None), -80.0, 60.0, 10.0, 0.0);
     assert!(h.take_left_behind().is_empty());
 }
 
@@ -241,12 +355,16 @@ fn another_lan_players_bus_counts_on_the_host_by_what_it_shows() {
 fn the_host_says_who_signals_and_who_waves_and_a_client_draws_it() {
     let c = cabin("gest");
     let mut h = sim("gest");
-    // coming, 40 m off: those for Rathaus signal to it
+    // coming, 40 m off: those for Rathaus signal to it - or wave to it
     let b = bus(&c, BusId::Player, -40.0, 10.0, 0.0, Some("Rathaus"));
     h.last_buses = Arc::new(vec![b]);
+    h.gestures.wave = 0.0;
     let mut g = h.lan_gestures();
     g.sort_by_key(|x| x.0);
     assert_eq!(g.iter().map(|x| (x.0, x.1)).collect::<Vec<_>>(), [(1, Gesture::Hail), (2, Gesture::Hail)]);
+    h.gestures = GestureShares { signal: 0.0, wave: 1.0, full: 1.0, phone: 0.0 };
+    assert!(h.lan_gestures().iter().all(|x| x.1 == Gesture::WaveTo));
+    h.gestures.signal = 1.0;
     // full: a glance
     h.seats.insert(BusId::Player, vec![true, true]);
     assert!(h.lan_gestures().iter().all(|x| x.1 == Gesture::Full));
@@ -265,12 +383,18 @@ fn the_host_says_who_signals_and_who_waves_and_a_client_draws_it() {
     let (at, _) = cl.wave_of(1).unwrap();
     assert_eq!(at, DVec3::new(-1.75, 30.0, 0.0), "where our bus is");
     cl.set_mirror_gesture(2, Some((Gesture::Hail, DVec3::new(-1.75, 31.0, 0.0))));
-    assert_eq!(cl.mirror_hail(2).map(|x| (x.0, x.3)), Some((BusId::Player, false)));
+    assert_eq!(cl.mirror_gesture_now(2).map(|x| (x.0, x.1)), Some((Gesture::Hail, Some(BusId::Player))));
+    assert_eq!(Gesture::of_word("waveto"), Some(Gesture::WaveTo));
+    cl.set_mirror_gesture(2, Some((Gesture::WaveTo, DVec3::new(-1.75, 31.0, 0.0))));
+    assert_eq!(cl.mirror_gesture_now(2).map(|x| x.0), Some(Gesture::WaveTo));
     cl.set_mirror_gesture(2, Some((Gesture::Full, DVec3::new(500.0, 500.0, 0.0))));
-    let (_, _, at, full) = cl.mirror_hail(2).unwrap();
-    assert!(full && at == DVec3::new(500.0, 500.0, 0.0), "no bus of ours there: the place itself");
+    let (g, bus, at) = cl.mirror_gesture_now(2).unwrap();
+    assert!(g == Gesture::Full && bus.is_none() && at == DVec3::new(500.0, 500.0, 0.0), "no bus of ours there: the place itself");
+    // (what this game shares nobody with is not drawn)
+    cl.gestures.full = 0.0;
+    assert!(cl.mirror_gesture_now(2).is_none());
     cl.set_mirror_gesture(2, None);
-    assert!(cl.mirror_hail(2).is_none());
+    assert!(cl.mirror_gesture_now(2).is_none());
     cl.time += WAVE_SECS + 0.1;
     assert!(cl.wave_of(1).is_none(), "a wave ends by itself");
 }
@@ -350,7 +474,8 @@ fn a_lan_players_real_bus_is_signalled_to_and_waved_after_on_the_host() {
     };
     // coming, 40 m before the stop: those for Rathaus signal to it
     let g = step(&mut h, &mut v, -40.0, 10.0);
-    let mut hail: Vec<u32> = g.iter().filter(|x| x.1 == Gesture::Hail).map(|x| x.0).collect();
+    // (signalling or waving to it, each by their lot)
+    let mut hail: Vec<u32> = g.iter().filter(|x| matches!(x.1, Gesture::Hail | Gesture::WaveTo)).map(|x| x.0).collect();
     hail.sort();
     assert_eq!(hail, vec![1, 2], "{g:?}");
     // on past the stop without stopping: they wave after it
@@ -441,7 +566,7 @@ fn a_stop_laid_the_other_way_round_is_signalled_and_waved_at_as_any() {
     }
     let b = |y: f64, v: f64| bus(&c, BusId::Player, y, v, 0.0, Some("Rathaus"));
     h.last_buses = Arc::new(vec![b(-40.0, 10.0)]);
-    let mut hail: Vec<u32> = h.lan_gestures().into_iter().filter(|g| g.1 == Gesture::Hail).map(|g| g.0).collect();
+    let mut hail: Vec<u32> = h.lan_gestures().into_iter().filter(|g| matches!(g.1, Gesture::Hail | Gesture::WaveTo)).map(|g| g.0).collect();
     hail.sort();
     assert_eq!(hail, vec![1, 2], "coming: they signal");
     drive(&mut h, &|y, v| b(y, v), -80.0, 60.0, 10.0, 0.0);

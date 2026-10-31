@@ -274,6 +274,11 @@ pub struct PersonFrame {
     pub hail_full: bool,
     pub hail_signal_enabled: bool,
     pub hail_reaction_enabled: bool,
+    /// (NexiconDK, 31 October 2026) The bus is waved to (an arm up high, swinging), not
+    /// signalled to; and whether the person holds up their phone's light with it in the dark
+    /// (`people::greetings`).
+    pub hail_wave: bool,
+    pub hail_phone: bool,
     /// (NexiconDK) Waving after a player's bus that left them: where it is, and how long they
     /// have waved (s; `people::passed_by`).
     pub wave_after: Option<(glam::DVec3, f32)>,
@@ -295,52 +300,48 @@ impl crate::people::PeopleSim {
         // Keep the snapshot allocation-free apart from its reusable people buffer.
         // People beyond the view's 300 m limit need no per-frame bus lookup.
         out.people.extend(self.people.iter().enumerate().map(|(i, p)| {
-            let hail = if (self.visual_hailing || self.visual_full_bus_reaction)
-                && self.eye.is_none_or(|eye| {
-                    (p.position - eye.pos).length_squared() <= 300.0 * 300.0
-                })
-            {
-                // (NexiconDK: one of the LAN host's people does what the host says)
-                if p.remote {
-                    self.mirror_hail(p.id).map(|(bus, moving, pos, full)| (bus, pos, moving, full))
-                } else {
-                self.visual_hail_bus(i, &self.last_buses)
-                    .and_then(|(bus_id, moving, pos)| {
-                        let bus = self.last_buses.iter().find(|b| b.id == bus_id)?;
-                        let full = if let Some((_, value)) = capacity_cache.iter().find(|(id, _)| *id == bus_id) {
-                            *value
-                        } else {
-                            // [passpos] covers seats and standing places; scripts may disable either.
-                            let capacity = bus.cabin.seats.iter().enumerate()
-                                .filter(|(j, _)| !bus.places_off.get(*j).copied().unwrap_or(false))
-                                .count();
-                            let reserved = self.seats.get(&bus_id).map_or(0, |places| {
-                                places.iter().enumerate()
-                                    .filter(|(j, taken)| **taken
-                                        && !bus.places_off.get(*j).copied().unwrap_or(false))
-                                    .count()
-                            });
-                            // Fall back to the aboard-person scan only for a bus that is
-                            // actually targeted and not proven full by its reservations.
-                            let occupied = capacity > 0 && (reserved >= capacity ||
-                                self.people.iter().filter(|person| matches!(person.place,
-                                    crate::people::Place::Bus(id, _) if id == bus_id))
-                                    .take(capacity).count() >= capacity);
-                            capacity_cache.push((bus_id, occupied));
-                            occupied
-                        };
-                        Some((bus_id, pos, moving, full))
-                    })
-                }
-            } else {
+            // (NexiconDK, 31 October 2026) what they do for a bus - `people::greetings`: ours by
+            // their lots, another game's as it says
+            let near = self.eye.is_none_or(|eye| (p.position - eye.pos).length_squared() <= 300.0 * 300.0);
+            let gesture = if !near {
                 None
+            } else if p.remote {
+                self.mirror_gesture_now(p.id).map(|(g, bus, at)| (g, bus.unwrap_or(crate::people::BusId::Ai(u64::MAX - p.id as u64)), at))
+            } else {
+                let buses: &[crate::people::cabin::BusNow] = &self.last_buses;
+                // (whether a bus is full: worked out once a snapshot)
+                let mut full = |bus: &crate::people::cabin::BusNow| {
+                    let bus_id = bus.id;
+                    if let Some((_, value)) = capacity_cache.iter().find(|(id, _)| *id == bus_id) {
+                        return *value;
+                    }
+                    // [passpos] covers seats and standing places; scripts may disable either.
+                    let capacity = bus.cabin.seats.iter().enumerate()
+                        .filter(|(j, _)| !bus.places_off.get(*j).copied().unwrap_or(false))
+                        .count();
+                    let reserved = self.seats.get(&bus_id).map_or(0, |places| {
+                        places.iter().enumerate()
+                            .filter(|(j, taken)| **taken
+                                && !bus.places_off.get(*j).copied().unwrap_or(false))
+                            .count()
+                    });
+                    // Fall back to the aboard-person scan only for a bus that is
+                    // actually targeted and not proven full by its reservations.
+                    let occupied = capacity > 0 && (reserved >= capacity ||
+                        self.people.iter().filter(|person| matches!(person.place,
+                            crate::people::Place::Bus(id, _) if id == bus_id))
+                            .take(capacity).count() >= capacity);
+                    capacity_cache.push((bus_id, occupied));
+                    occupied
+                };
+                self.gesture_of(i, buses, &mut full)
             };
+            use crate::people::Gesture;
+            // (signalled or waved to, glanced at: the bus and where it is)
+            let hail = gesture.filter(|g| g.0 != Gesture::Wave).map(|(g, bus, at)| (bus, at, true, g == Gesture::Full));
             // (NexiconDK: waving after a player's bus that left them, `passed_by`)
-            let wave = if self.visual_wave_after && self.eye.is_none_or(|eye| (p.position - eye.pos).length_squared() <= 300.0 * 300.0) {
-                self.wave_of(p.id)
-            } else {
-                None
-            };
+            let wave = if gesture.is_some_and(|g| g.0 == Gesture::Wave) { self.wave_of(p.id) } else { None };
+            let kind = gesture.map(|g| g.0);
             PersonFrame {
             id: p.id,
             ty: p.ty.clone(),
@@ -362,8 +363,10 @@ impl crate::people::PeopleSim {
             hail_moving: hail.is_some_and(|(_, _, moving, _)| moving),
             hail_bus: hail.map(|(bus, _, _, _)| bus),
             hail_full: hail.is_some_and(|(_, _, _, full)| full),
-            hail_signal_enabled: self.visual_hailing,
-            hail_reaction_enabled: self.visual_full_bus_reaction,
+            hail_signal_enabled: matches!(kind, Some(Gesture::Hail | Gesture::WaveTo)),
+            hail_reaction_enabled: kind == Some(Gesture::Full),
+            hail_wave: kind == Some(Gesture::WaveTo),
+            hail_phone: crate::people::holds_phone(p.id, self.gestures.phone),
             wave_after: wave,
             debug: debug.then(|| {
                 let pax = match &p.state {

@@ -1,14 +1,15 @@
 //! (NexiconDK, 30 October 2026) A player's bus that leaves people waiting for it at their stop:
 //! it drove past without stopping, or it stood there and left without them (full, its doors
-//! shut). Those who wanted it wave after it - an arm high, swinging, watching it go - and give
-//! up (`human::wave_after_arm`, drawn by the view where the setting `passenger_wave_after`
-//! has it); and each time is told (`LeftBehind`), for the player's trip and his company, which
-//! counts the passengers left behind (a full bus excused).
+//! shut). Those of them who wave (the setting `pax_wave`, `greetings`) wave after it - an arm
+//! high, swinging, watching it go - and give up (`human::wave_after_arm`); and each time is
+//! told (`LeftBehind`), for the player's trip and his company, which counts all the passengers
+//! left behind (a full bus excused).
 //!
 //! Only the players' buses - ours, and on the host the other LAN players' (`players_bus`):
 //! the driver chose to drive on. The timetable's AI buses stop as their timetable has them.
-//! A LAN client tells nothing itself: the host's people are drawn there, and the host says who
-//! waves (`MirrorGesture`) and whose bus left whom.
+//! A LAN client draws the host's people as the host says (`MirrorGesture`), and the host tells
+//! it whose bus left whom; (31 October 2026) of those its own bus took from the host at a stop
+//! as it came - its own then - the client tells itself.
 
 use super::*;
 
@@ -62,12 +63,14 @@ pub struct LeftBehind {
 }
 
 /// What one of the host's waiting people does for a bus, as a LAN client draws it: signals to
-/// it, glances at it (full), waves after it.
+/// it, glances at it (full), waves after it - (31 October 2026) or waves to it as it comes
+/// (`greetings`; a game without the word lets it go).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Gesture {
     Hail,
     Full,
     Wave,
+    WaveTo,
 }
 
 impl Gesture {
@@ -76,6 +79,7 @@ impl Gesture {
             Gesture::Hail => "hail",
             Gesture::Full => "full",
             Gesture::Wave => "wave",
+            Gesture::WaveTo => "waveto",
         }
     }
 
@@ -84,6 +88,7 @@ impl Gesture {
             "hail" => Some(Gesture::Hail),
             "full" => Some(Gesture::Full),
             "wave" => Some(Gesture::Wave),
+            "waveto" => Some(Gesture::WaveTo),
             _ => None,
         }
     }
@@ -143,7 +148,7 @@ impl PeopleSim {
     /// and as one goes on past a stop, those still waiting there who wanted it are left
     /// behind (`LeftBehind`) and wave after it.
     pub fn passed_tick(&mut self, buses: &[BusNow]) {
-        if self.mirror || self.avatar_only {
+        if self.avatar_only {
             return;
         }
         // (a wave ends; and where its bus is now)
@@ -160,11 +165,16 @@ impl PeopleSim {
         }
         self.passed_at = now;
         self.passing.retain(|p| now - p.seen < PASSED_FORGET && at.contains_key(&p.bus));
-        if !buses.iter().any(|b| super::runners::players_bus(b.id)) {
+        // (NexiconDK, 31 October 2026: a LAN client, our own bus only - the waiting people it
+        // takes from the host as it comes are ours then, and the host knows nothing of them;
+        // the host tells it of its own that the bus left, `pax left`)
+        let mirror = self.mirror;
+        let counted = |id: BusId| super::runners::players_bus(id) && (!mirror || id == BusId::Player);
+        if !buses.iter().any(|b| counted(b.id)) {
             return;
         }
         let mut gone: Vec<(BusId, i64, bool, bool)> = Vec::new();
-        for b in buses.iter().filter(|b| super::runners::players_bus(b.id)) {
+        for b in buses.iter().filter(|b| counted(b.id)) {
             let full = self.bus_full(b);
             for (id, s) in &self.stops {
                 let d = b.pos - s.pos;
@@ -200,21 +210,31 @@ impl PeopleSim {
         for (bus, stop, stood, full) in gone {
             let Some(b) = buses.iter().find(|b| b.id == bus) else { continue };
             let Some(s) = self.stops.get(&stop) else { continue };
-            let left: Vec<u32> = self
+            // (who was left, and whether they wave after it - those who wave, `greetings`)
+            let left: Vec<(u32, bool)> = self
                 .people
                 .iter()
                 .enumerate()
                 .filter_map(|(i, person)| {
+                    // (not another game's people drawn here: that game counts them)
+                    if person.remote {
+                        return None;
+                    }
                     let State::Pax(p) = &person.state else { return None };
-                    (p.task == Task::WaitingForBus && p.inside.is_none() && p.stop == Some(stop) && p.late.is_none() && self.takes_waiting(stop, s, b, p.dest.as_deref(), p.line)).then_some(self.people[i].id)
+                    // (NexiconDK, 31 October 2026: and those who stepped up to it - they set off
+                    // as it came within 60 m, and were still on their way to it, or at the
+                    // gather point, as it went on)
+                    (match p.task { Task::WaitingForBus => true, Task::ToBus => p.bus == Some(bus), _ => false } && p.inside.is_none() && p.stop == Some(stop) && p.late.is_none() && self.takes_waiting(stop, s, b, p.dest.as_deref(), p.line)).then(|| (self.people[i].id, self.waves(i)))
                 })
                 .collect();
             if left.is_empty() {
                 continue;
             }
-            for person in &left {
-                self.waving.retain(|w| w.person != *person);
-                self.waving.push(WaveAfter { person: *person, bus, since: now, at: b.pos });
+            for &(person, waves) in &left {
+                self.waving.retain(|w| w.person != person);
+                if waves {
+                    self.waving.push(WaveAfter { person, bus, since: now, at: b.pos });
+                }
             }
             self.left_behind.push(LeftBehind { bus, stop, count: left.len() as u32, full, stood });
         }
@@ -255,7 +275,7 @@ impl PeopleSim {
         (g.gesture == Gesture::Wave && self.time - g.since < WAVE_SECS).then(|| (self.mirror_bus_at(g), (self.time - g.since) as f32))
     }
 
-    fn mirror_bus_at(&self, g: &MirrorGesture) -> DVec3 {
+    pub(crate) fn mirror_bus_at(&self, g: &MirrorGesture) -> DVec3 {
         g.bus.and_then(|id| self.last_buses.iter().find(|b| b.id == id)).map_or(g.at, |b| b.pos)
     }
 
@@ -273,42 +293,15 @@ impl PeopleSim {
         }
     }
 
-    /// (LAN client) The bus one of the host's people signals to or glances at: its place,
-    /// whether it moves, which bus and whether it is full - as `visual_hail_bus` has it here.
-    pub fn mirror_hail(&self, id: u32) -> Option<(BusId, bool, DVec3, bool)> {
-        let g = self.mirror_gestures.get(&id)?;
-        let full = match g.gesture {
-            Gesture::Hail => false,
-            Gesture::Full => true,
-            Gesture::Wave => return None,
-        };
-        // (a bus here the host's word fits; else a stand-in for the gate, that place)
-        let bus = g.bus.unwrap_or(BusId::Ai(u64::MAX - id as u64));
-        Some((bus, true, self.mirror_bus_at(g), full))
-    }
-
-    /// (LAN host) What each of our waiting people does for a bus now, for the clients: waves
-    /// after one that left them, else signals to one coming (glances at it, full) - with where
-    /// that bus is.
+    /// (LAN host) What each of our people does for a bus now, for the clients - waves after one
+    /// that left them, signals or waves to one coming, glances at it full (`gesture_of`) - with
+    /// where that bus is.
     pub fn lan_gestures(&self) -> Vec<(u32, Gesture, DVec3)> {
         let buses: &[BusNow] = &self.last_buses;
-        let mut out = Vec::new();
-        for (i, person) in self.people.iter().enumerate() {
-            if person.remote || person.puppet.is_some() {
-                continue;
-            }
-            if let Some(w) = self.waving.iter().find(|w| w.person == person.id) {
-                out.push((person.id, Gesture::Wave, w.at));
-                continue;
-            }
-            if let Some((id, moving, at)) = self.visual_hail_bus(i, buses) {
-                if moving {
-                    let full = buses.iter().find(|b| b.id == id).is_some_and(|b| self.bus_full(b));
-                    out.push((person.id, if full { Gesture::Full } else { Gesture::Hail }, at));
-                }
-            }
-        }
-        out
+        let mut full = |b: &BusNow| self.bus_full(b);
+        (0..self.people.len())
+            .filter_map(|i| self.gesture_of(i, buses, &mut full).map(|(g, _, at)| (self.people[i].id, g, at)))
+            .collect()
     }
 }
 

@@ -17,18 +17,25 @@ impl PeopleSim {
     /// (openOMSI PR #3427, the fork's own version) The bus a passenger waiting at their stop
     /// signals to: the nearest coming one that takes them (as boarding would choose it -
     /// another LAN player's by what it shows, `takes_waiting`), with whether it moves and
-    /// where it is. Cosmetic: it reserves no
-    /// place and changes no task or bus anybody boards.
+    /// where it is. Cosmetic: it reserves no place and changes no task or bus anybody boards.
     pub fn visual_hail_bus(&self, i: usize, buses: &[BusNow]) -> Option<(BusId, bool, DVec3)> {
         let p = self.pax(i)?;
         // (only those standing still at the stop: once they walk to a door, turning the
-        // whole pose would slide their feet)
+        // whole pose would slide their feet. NexiconDK, 31 October 2026: most set off to where
+        // the bus will stand as soon as it is within 60 m and rolling - the very range of the
+        // signal - so it is those who stay at their place till it stands that signal,
+        // `stays_till_it_stands`)
         if p.inside.is_some() || p.task != Task::WaitingForBus {
             return None;
         }
-        let stop = p.stop?;
+        self.coming_bus(p.stop?, self.people[i].position, p, buses, 60.0)
+            .map(|b| (b.id, b.speed.abs() > 0.08, b.pos))
+    }
+
+    /// The nearest bus coming to stop `stop` (or standing there) that takes passenger `p`, on
+    /// their side of it, within `reach` of where they are (`here`).
+    pub(crate) fn coming_bus<'a>(&self, stop: i64, here: DVec3, p: &Pax, buses: &'a [BusNow], reach: f64) -> Option<&'a BusNow> {
         let s = self.stops.get(&stop)?;
-        let here = self.people[i].position;
         // (NexiconDK, 31 October 2026: coming to the stop by the bus's own way - the stop at most
         // 12 m behind it, near the way it goes. The stop's heading is the way the map lays the
         // road, and a stop on its other side (`side` 1) is served the other way round: by its
@@ -38,12 +45,11 @@ impl PeopleSim {
             .filter(|b| {
                 Self::visual_hail_range(b.pos - s.pos, b.fwd())
                     && super::passed_by::door_side(b, here)
-                    && (b.pos - here).length_squared() <= 60.0 * 60.0
+                    && (b.pos - here).length_squared() <= reach * reach
                     && b.served.is_none_or(|id| id == stop)
                     && self.takes_waiting(stop, s, b, p.dest.as_deref(), p.line)
             })
             .min_by(|a, b| (a.pos - here).length_squared().total_cmp(&(b.pos - here).length_squared()))
-            .map(|b| (b.id, b.speed.abs() > 0.08, b.pos))
     }
 }
 

@@ -323,6 +323,8 @@ pub(super) fn select_options(key: &str) -> Vec<(&'static str, &'static str)> {
         "standing_chance" => vec![("0", "Never"), ("5", "5%"), ("10", "10%"), ("25", "25%"), ("50", "50%"), ("100", "Always")],
         "pax_sit" => vec![("0", "Off (a free place at random)"), ("50", "Little"), ("100", "Normal"), ("150", "Much"), ("200", "Very much")],
         "pax_runners" => vec![("0", "Off"), ("5", "Now and then"), ("15", "Often"), ("30", "Very often")],
+        // (NexiconDK, 31 October 2026: `omsi_sim::people::SHARE_STEPS`)
+        "pax_signal" | "pax_wave" | "pax_full" | "pax_phone" => vec![("100", "Every time (100%)"), ("30", "Sometimes (30%)"), ("10", "Rarely (10%)"), ("0", "Never")],
         "units" => vec![("metric", "Metric (km/h, km, °C)"), ("uk", "British (mph, miles, yards, °C)"), ("us", "American (mph, miles, feet, °F)")],
         "pax_voices" => vec![("all", "Greetings and tickets"), ("tickets", "Only the ticket asked for"), ("off", "Silent")],
         "perf_overlay" => vec![("off", "Off"), ("compact", "Compact"), ("detailed", "Detailed")],
@@ -408,9 +410,7 @@ pub(super) fn sync_live(app: &mut App) {
     }
     if let Some(h) = app.session.humans.as_mut() {
         h.exact_fare = s.exact_fare;
-        h.visual_hailing = s.passenger_hailing && s.passenger_animation == "enhanced";
-        h.visual_full_bus_reaction = s.passenger_full_bus_reaction && s.passenger_animation == "enhanced";
-        h.visual_wave_after = s.passenger_wave_after && s.passenger_animation == "enhanced";
+        h.gestures = s.gesture_shares();
         h.boarding = s.boarding.clone();
         h.stand_chance = s.standing_chance;
         h.sit_wish = s.pax_sit;

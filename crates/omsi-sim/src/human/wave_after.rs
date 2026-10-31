@@ -138,6 +138,20 @@ mod tests {
         }
     }
 
+    /// (NexiconDK, 31 October 2026) The hand of a signalling arm: a little past the wrist along
+    /// the forearm, where the phone's light is held up.
+    #[test]
+    fn the_hand_point_is_just_past_the_wrist() {
+        let r = rig(1.77);
+        let mut b = standing(&r);
+        super::super::accessory_hail_arm(&r, &mut b, 1, Vec3::Y, 1.0, 0.0);
+        let wr = b[HAND[1]].transform_point3(r.wrist[1]);
+        let el = b[FORE[1]].transform_point3(r.elbow[1]);
+        let h = super::super::hand_point(&r, &b, 1);
+        assert!((h.distance(wr) - 0.08).abs() < 1e-3, "{h:?} {wr:?}");
+        assert!((h - wr).normalize().dot((wr - el).normalize()) > 0.999);
+    }
+
     #[test]
     fn it_rises_and_falls_smoothly_and_nothing_breaks_it() {
         let r = rig(1.77);

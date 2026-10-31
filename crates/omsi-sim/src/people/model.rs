@@ -423,13 +423,11 @@ pub struct PeopleSim {
     pub defer_populate: bool,
     /// Passengers pay the exact fare: no change is ever due.
     pub exact_fare: bool,
-    /// Compute visual-only boarding signals when requested by this client.
-    pub visual_hailing: bool,
-    /// Optional visual-only response to an approaching full bus.
-    pub visual_full_bus_reaction: bool,
-    /// (NexiconDK) Passengers a player's bus left wave after it (drawn where the setting
-    /// `passenger_wave_after` has it; the bus is noted all the same: `passed_by`).
-    pub visual_wave_after: bool,
+    /// (NexiconDK, 31 October 2026) What share of the people signal to a coming bus, wave to
+    /// one, glance at a full one, hold up their phone's light in the dark (the settings
+    /// `pax_signal` and the others; nobody with the original animations) - `greetings`. Those
+    /// a player's bus leaves behind are counted all the same (`passed_by`).
+    pub gestures: greetings::GestureShares,
     /// The players' buses coming to the stops near them, those waving after one that left
     /// them, and the times a bus left people behind not yet taken (`passed_by`).
     pub passing: Vec<passed_by::Passing>,

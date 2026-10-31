@@ -76,6 +76,10 @@ pub(crate) struct PeopleView {
     pub(crate) trace: Option<std::io::BufWriter<std::fs::File>>,
     /// The tear-off ticket blocks of the player's bus (`money::TicketBlocks`).
     pub(crate) ticket_blocks: Option<crate::money::TicketBlocks>,
+    /// (NexiconDK, 31 October 2026) The phones' lights held up to a bus this frame, nearest
+    /// first: where each is, the way to the bus, how far up the arm is - lit in the dark
+    /// (`omsi_scene::lights::phone_lights`).
+    pub(crate) phones: Vec<(DVec3, Vec3, f32)>,
 }
 
 /// Local visual-only treatment for a compatible bus, separate from actual boarding.
@@ -91,6 +95,10 @@ fn apply_optional_bus_visual(
     camera: DVec3,
     dt: f32,
 ) {
+    st.phone = None;
+    // (NexiconDK, 31 October 2026: on the move - waving after a bus while stepping up to where
+    // it would have stood - only their upper body turns to it, `HailLook::walking`)
+    st.hail_look.walking(p.vel.length() > 0.3, dt);
     if p.hail_target.is_none() && p.wave_after.is_none() && st.hail_strength <= 0.001 && st.full_look_strength <= 0.001 && st.wave_strength <= 0.001 {
         return;
     }
@@ -106,8 +114,12 @@ fn apply_optional_bus_visual(
         id, p.hail_full, eligible && full_requested, dt));
     // (a wave after the bus that left them puts the signal down; it ends a little before
     // its time, so that the arm is down when it does)
-    let waving = shown && p.wave_after.is_some_and(|(_, age)| (age as f64) < omsi_sim::people::WAVE_SECS - 0.7);
-    let signalling = eligible && signal_requested && !waving;
+    let waving_after = shown && p.wave_after.is_some_and(|(_, age)| (age as f64) < omsi_sim::people::WAVE_SECS - 0.7);
+    // (NexiconDK, 31 October 2026: some wave to a coming bus instead - waiting, on their way to
+    // the stop, running for it - `people::greetings`)
+    let waving_to = eligible && signal_requested && p.hail_wave && !waving_after;
+    let waving = waving_after || waving_to;
+    let signalling = eligible && signal_requested && !p.hail_wave && !waving;
     let reacting = eligible && full_requested && allowed && !waving;
     st.hail_strength += ((signalling as u8 as f32) - st.hail_strength)
         .clamp(-dt * 2.8, dt * 2.8);
@@ -141,6 +153,11 @@ fn apply_optional_bus_visual(
         if st.hail_strength > 0.001 {
             omsi_sim::human::accessory_hail_arm(
                 &ty.rig, bones, 1, waiting_forward, st.hail_strength, wave);
+            // (NexiconDK, 31 October 2026: some hold their phone's light up with it - lit in the
+            // dark, `phone_lights`)
+            if p.hail_phone && st.hail_strength > 0.3 {
+                st.phone = p.hail_target.map(|bus| (omsi_sim::human::hand_point(&ty.rig, bones, 1), bus));
+            }
         }
         if st.wave_strength > 0.001 {
             if let Some(t) = target {
@@ -148,6 +165,10 @@ fn apply_optional_bus_visual(
                     st.wave_side = omsi_sim::human::wave_side(bones, t);
                 }
                 omsi_sim::human::wave_after_arm(&ty.rig, bones, st.wave_side, t, st.wave_strength, st.wave_t, p.id);
+                // (and waving to a coming bus: the phone's light in the waving hand)
+                if waving_to && p.hail_phone && st.wave_strength > 0.3 {
+                    st.phone = p.hail_target.map(|bus| (omsi_sim::human::hand_point(&ty.rig, bones, st.wave_side), bus));
+                }
             }
         }
     }
@@ -177,6 +198,7 @@ impl PeopleView {
                 w
             }),
             ticket_blocks: None,
+            phones: Vec::new(),
         }
     }
 
@@ -519,6 +541,9 @@ pub(crate) struct PersonView {
     wave_side: usize,
     wave_t: f32,
     wave_at: DVec3,
+    /// (NexiconDK, 31 October 2026) Signalling to a bus with their phone's light up: where the
+    /// hand is (model frame) and where the bus is (`PeopleView::phones`).
+    phone: Option<(Vec3, DVec3)>,
     /// A jump of the person's place within a bus (onto the seat, as Omsi.exe puts them
     /// there) drawn as a glide instead: what is left of it in the bus's frame, the same in
     /// the world for the drawing, and the place last frame (the bus, where).
@@ -729,6 +754,8 @@ impl PeopleView {
         omsi_cfg::par::frame_each(&mut due_people, helpers, |pair| pose_one(pair));
         drop(due_people);
         let upload = std::time::Instant::now();
+        let mut phones = std::mem::take(&mut self.phones);
+        phones.clear();
         for ((p, st), &go) in frame.people.iter().zip(states.iter_mut()).zip(&due) {
             if go {
                 if st.pose_changed || !st.skinned {
@@ -758,6 +785,11 @@ impl PeopleView {
             // (riders with the tilt of their floor)
             let tilt = if matches!(p.place, Place::Bus(..)) { p.tilt } else { Mat4::IDENTITY };
             let xf = tilt * Mat4::from_rotation_z((-heading).to_radians() as f32);
+            // (the phone held up to a bus: its light where the hand is, at the bus's front)
+            if let Some((hand, bus)) = st.phone {
+                let w = at + xf.transform_vector3(hand).as_dvec3();
+                phones.push((w, (bus + DVec3::Z * 1.5 - w).as_vec3(), st.hail_strength));
+            }
             let lit_to = if matches!(p.place, Place::Bus(..)) { p.interior } else { 0.0 };
             st.lit += (lit_to - st.lit) * (sdt / 0.4).min(1.0);
             for (_, inst) in &st.meshes {
@@ -820,6 +852,9 @@ impl PeopleView {
             }
         }
         drop(buses);
+        // (nearest first: only so many are lit)
+        phones.sort_by(|a, b| (a.0 - camera).length_squared().total_cmp(&(b.0 - camera).length_squared()));
+        self.phones = phones;
         for (p, st) in frame.people.iter().zip(states) {
             self.people.insert(p.id, st);
         }

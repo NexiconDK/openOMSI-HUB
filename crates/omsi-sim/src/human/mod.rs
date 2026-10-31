@@ -37,7 +37,7 @@ mod bones;
 mod gesture;
 mod hail_look;
 mod hail_motion;
-pub use gesture::accessory_hail_arm;
+pub use gesture::{accessory_hail_arm, hand_point};
 pub use hail_look::{hail_look_target, HailLook, FullBusHail, visual_hail_action};
 pub use hail_motion::HailWrist;
 mod wave_after;

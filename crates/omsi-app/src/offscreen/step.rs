@@ -55,6 +55,7 @@ impl Offscreen<'_> {
             ref mut sim_view,
             ref mut humans_off,
             ref mut srv_pax,
+            ref mut lan_world_off,
             ref mut real_time,
             ref mut schedule,
             ..
@@ -125,9 +126,18 @@ impl Offscreen<'_> {
             // (NexiconDK: a player's bus that left people at their stop, told to his game; what
             // the people waiting do for a bus, to every player's - `pax_signals`)
             if let Some(h) = humans_off.as_mut() {
-                let _ = srv_pax.host_tick(dt, Some(&mut *l), h);
+                let relayed = lan_world_off.relayed_gestures();
+                let _ = srv_pax.host_tick(dt, Some(&mut *l), h, &relayed);
             }
             for (from, text) in l.take_commands() {
+                // (NexiconDK, 31 October 2026: what a player's own people do for a bus - those his
+                // bus took from us at a stop - put on them here and told the other players)
+                if let Some(r) = text.strip_prefix("pax gest ") {
+                    if let Some((pid, g, _)) = crate::pax_signals::gesture_word(r.split_whitespace()) {
+                        lan_world_off.client_gesture(from, pid, g);
+                    }
+                    continue;
+                }
                 // (NexiconDK, Bus Company Online: a player waiting at a stop for the bus he
                 // takes over - `relief`)
                 if text.starts_with("relief ") {

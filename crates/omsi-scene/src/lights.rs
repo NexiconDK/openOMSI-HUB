@@ -591,6 +591,34 @@ mod cookie_tests {
 }
 
 #[cfg(test)]
+mod phone_tests {
+    use super::*;
+
+    /// (NexiconDK, 31 October 2026) Somebody signalling to a bus with their phone's light up: in
+    /// the dark a small lamp at the bus and its glow, seen from in front; by day nothing, nor for
+    /// an arm not up.
+    #[test]
+    fn a_phone_held_up_to_a_bus_lights_in_the_dark_only() {
+        let phone = [(DVec3::new(1.0, 2.0, 1.8), Vec3::new(-3.0, 20.0, 0.0), 1.0)];
+        let (mut lights, mut coronas) = (Vec::new(), Vec::new());
+        push_phones(&mut lights, &mut coronas, &phone, 0.0);
+        assert!(lights.is_empty() && coronas.is_empty(), "by day");
+        push_phones(&mut lights, &mut coronas, &[(phone[0].0, phone[0].1, 0.0)], 1.0);
+        assert!(lights.is_empty() && coronas.is_empty(), "the arm down");
+        push_phones(&mut lights, &mut coronas, &phone, 1.0);
+        assert_eq!(coronas.len(), 1);
+        assert!(lights.len() >= 1 && lights.iter().all(|l| l.position == phone[0].0 && l.radius <= PHONE_RANGE + 0.01));
+        let c = coronas[0];
+        assert!(c.direction.dot(phone[0].1.normalize()) > 0.999 && c.cone_cos > 0.0, "seen from the bus: {c:?}");
+        // never more than `PHONES_MOST`
+        let many = vec![phone[0]; PHONES_MOST + 10];
+        coronas.clear();
+        push_phones(&mut lights, &mut coronas, &many, 1.0);
+        assert_eq!(coronas.len(), PHONES_MOST);
+    }
+}
+
+#[cfg(test)]
 mod spot_tests {
     #[test]
     fn a_full_beam_reaches_further_than_the_low_beam() {
@@ -891,6 +919,48 @@ pub fn flashlight_ahead(scene: &mut Scene, cam: &omsi_render::Camera) {
 
 /// A flashlight's share of a headlamp pair's strength: one small lamp, not two big ones.
 const FLASHLIGHT_SHARE: f32 = 0.45;
+
+/// (NexiconDK, 31 October 2026) The phones' lights of people signalling to a bus in the dark
+/// (`phones`: where each is held, the way to the bus, how far up the arm is): a small cold-white
+/// lamp shining at the bus, and its glow, seen from in front - from the bus coming. `night`: 0
+/// by day (none), 1 by night.
+pub fn phone_lights(scene: &mut Scene, phones: &[(DVec3, Vec3, f32)], night: f32) {
+    push_phones(&mut scene.lights, &mut scene.coronas, phones, night);
+}
+
+fn push_phones(lights: &mut Vec<PointLight>, coronas: &mut Vec<Corona>, phones: &[(DVec3, Vec3, f32)], night: f32) {
+    let night = night.clamp(0.0, 1.0);
+    if night <= 0.05 {
+        return;
+    }
+    for &(at, to, up) in phones.iter().take(PHONES_MOST) {
+        let d = to.normalize_or_zero();
+        let k = up.clamp(0.0, 1.0) * night;
+        if d == Vec3::ZERO || k <= 0.01 {
+            continue;
+        }
+        // a `[spotlight]`'s values: position, direction, colour, range, inner and outer cone
+        let vals = [0.0, 0.0, 0.0, d.x, d.y, d.z, 235.0, 240.0, 255.0, PHONE_RANGE, 30.0, 80.0];
+        push_spot(lights, at, d, Vec3::ZERO, &vals, PHONE_SHARE * k, 1.0);
+        coronas.push(Corona {
+            position: at,
+            size: 0.22,
+            color: [0.92, 0.95, 1.0],
+            brightness: 1.4 * k,
+            direction: d,
+            cone_cos: 60f32.to_radians().cos(),
+            inner_cos: 25f32.to_radians().cos(),
+            z_offset: 0.05,
+            ..Default::default()
+        });
+    }
+}
+
+/// A phone's light: its reach (m), its share of a headlamp pair's strength, and how many are lit
+/// at most (the first ones: `PeopleView::phones` is nearest the camera first).
+const PHONE_RANGE: f32 = 8.0;
+const PHONE_SHARE: f32 = 0.04;
+const PHONES_MOST: usize = 24;
 
 /// How far Omsi.exe moves every `[smoke]` and `[particle_emitter]` puff towards the eye in
 /// depth (m): 0x5a1d54 gives each particle 0.1, which 0x5a2b5c takes off the view depth it

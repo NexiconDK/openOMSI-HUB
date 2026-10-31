@@ -343,6 +343,7 @@ impl PeopleSim {
         self.claimed.remove(&id);
         self.mirror_wait.remove(&id);
         self.mirror_seat.remove(&id);
+        self.mirror_gestures.remove(&id);
     }
 
     /// A remote person this frame: they stand where the host put them.

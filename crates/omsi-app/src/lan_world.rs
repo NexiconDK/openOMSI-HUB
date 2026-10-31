@@ -18,6 +18,7 @@
 //! every pose sent (host) and drawn (client) for comparing them.
 
 use crate::humans::{Humans, MirrorPose};
+use omsi_sim::people::Gesture;
 use crate::scene::World;
 use crate::traffic::Traffic;
 use crate::view_sync::people::PeopleView;
@@ -127,6 +128,10 @@ struct Upstream {
     ids: HashMap<u32, u32>,
     offset: Option<f64>,
     play: PlayClock,
+    /// (NexiconDK, 31 October 2026) What they do for a bus, as the client says (`pax gest`, by
+    /// its ids), and what of it was put on them here (by our ids, `set_mirror_gesture`).
+    gestures: HashMap<u32, (Gesture, DVec3)>,
+    applied: HashMap<u32, (Gesture, DVec3)>,
 }
 
 /// What a client sends the host of its own people.
@@ -269,15 +274,7 @@ impl LanWorld {
             return;
         }
         v.acc = (v.acc - nw::MOVING_EVERY).clamp(0.0, nw::MOVING_EVERY);
-        // (their ids on the wire: those the host handed over keep the host's, the others
-        // are numbered from 2^23 up)
-        let wire = |id: u32| {
-            if id >= 1 << 30 {
-                ((id - (1 << 30)) & 0x7F_FFFF) | 0x80_0000
-            } else {
-                id & 0x7F_FFFF
-            }
-        };
+        let wire = wire_up;
         let mut frame = WorldFrame::default();
         let mut seen: HashSet<u32> = HashSet::new();
         for p in h.lan_people(me, PERSON_RADIUS) {
@@ -421,7 +418,9 @@ impl LanWorld {
                 .filter(|k| !up.tracks.contains_key(k))
                 .collect();
             for k in gone {
+                up.gestures.remove(&k);
                 if let Some(local) = up.ids.remove(&k) {
+                    up.applied.remove(&local);
                     h.mirror_remove(local);
                 }
             }
@@ -456,7 +455,44 @@ impl LanWorld {
                 }
             }
         }
+        // (NexiconDK, 31 October 2026) what the clients' people do for a bus, on them here
+        for up in self.ups.values_mut() {
+            let want: HashMap<u32, (Gesture, DVec3)> = up.gestures.iter().filter_map(|(pid, g)| up.ids.get(pid).map(|l| (*l, *g))).collect();
+            for (local, g) in &want {
+                if up.applied.get(local) != Some(g) {
+                    h.set_mirror_gesture(*local, Some(*g));
+                }
+            }
+            for local in up.applied.keys().filter(|l| !want.contains_key(*l)) {
+                h.set_mirror_gesture(*local, None);
+            }
+            up.applied = want;
+        }
         self.ups.retain(|peer, up| here.contains(peer) || !up.ids.is_empty());
+    }
+
+    /// (NexiconDK, 31 October 2026, host) What one of client `from`'s people (its id `pid`) does
+    /// for a bus now (`pax gest`; None: no more) - put on them here, and told the other clients
+    /// (`relayed_gestures`).
+    pub(crate) fn client_gesture(&mut self, from: u32, pid: u32, g: Option<(Gesture, DVec3)>) {
+        let up = self.ups.entry(from).or_default();
+        match g {
+            Some(g) => {
+                up.gestures.insert(pid, g);
+            }
+            None => {
+                up.gestures.remove(&pid);
+            }
+        }
+    }
+
+    /// (NexiconDK, 31 October 2026, host) What the clients' people drawn here do for a bus, for
+    /// the other clients: their id there, the gesture, where that bus is, whose they are.
+    pub(crate) fn relayed_gestures(&self) -> Vec<(u32, Gesture, DVec3, u32)> {
+        self.ups
+            .iter()
+            .flat_map(|(peer, up)| up.applied.iter().map(move |(local, (g, at))| (relayed_id(*local), *g, *at, *peer)))
+            .collect()
     }
 
     // -----------------------------------------------------------------------------------
@@ -597,7 +633,7 @@ impl LanWorld {
                         continue;
                     }
                     let mut st = last.v;
-                    st.id = RELAYED | ((local - (1 << 29)) & 0x3F_FFFF);
+                    st.id = relayed_id(*local);
                     if let PersonPlace::Foot { ref mut waiting, .. } = st.place {
                         *waiting = None;
                     }
@@ -1382,6 +1418,21 @@ fn gather_people(view: &mut View, h: &Humans, at: DVec3, g: &mut Gather) {
 /// A person of one client passed on to the others has this bit in its id there (the host's
 /// own people are numbered far below it).
 const RELAYED: u32 = 0xC0_0000;
+
+/// The id a client's person `local` (ours, from 2^29 up) has in the other clients' games.
+fn relayed_id(local: u32) -> u32 {
+    RELAYED | ((local - (1 << 29)) & 0x3F_FFFF)
+}
+
+/// A client's own person's id on the wire to the host: those the host handed over keep the
+/// host's, the others are numbered from 2^23 up.
+pub(crate) fn wire_up(id: u32) -> u32 {
+    if id >= 1 << 30 {
+        ((id - (1 << 30)) & 0x7F_FFFF) | 0x80_0000
+    } else {
+        id & 0x7F_FFFF
+    }
+}
 
 /// What decides whether a person's pose is sent again (see `quant`).
 fn person_q(p: &PersonState) -> [i64; 4] {

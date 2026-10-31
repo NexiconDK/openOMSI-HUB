@@ -297,6 +297,11 @@ impl PeopleSim {
                 if bn.speed.abs() <= 2.0 && !self.in_stop_box(stop, b) {
                     return;
                 }
+                // (NexiconDK, 31 October 2026) some stay at their place, signalling to it, till
+                // it (nearly) stands
+                if bn.speed.abs() > 1.0 && self.stays_till_it_stands(i) {
+                    return;
+                }
                 if super::debug_pax() {
                     log::info!("t={:.1} pax {} at stop {stop} for {:?}: bus {b:?} showing {:?} ({why:?})", self.time, self.people[i].label(), p.dest, bn.terminus);
                 }

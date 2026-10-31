@@ -342,3 +342,13 @@ mod brazilian_hail_tests {
         assert!(bones.iter().all(|b| b.is_finite()));
     }
 }
+
+/// (NexiconDK, 31 October 2026) Where the hand of arm `side` (0 left, 1 right) of a pose is
+/// (model frame): a little past the wrist along the forearm - where somebody signalling to a bus
+/// in the dark holds up their phone's light (omsi-app's `view_sync::people`).
+pub fn hand_point(rig: &Rig, bones: &[Affine3A; SLOTS], side: usize) -> Vec3 {
+    let side = side.min(1);
+    let el = bones[FORE[side]].transform_point3(rig.elbow[side]);
+    let wr = bones[HAND[side]].transform_point3(rig.wrist[side]);
+    wr + (wr - el).normalize_or_zero() * 0.08
+}

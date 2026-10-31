@@ -95,7 +95,13 @@ impl App {
             if lan.role == omsi_net::Role::Client && from == 1 {
                 if let Some((count, stop, full)) = crate::pax_signals::client_word(rest, self.session.humans.as_mut()) {
                     log::info!("LAN: the host says our bus left {count} waiting at stop {stop}{}", if full { " (full)" } else { "" });
-                    crate::plugins::queue_event_ex(&mut self.integrations.plugin_events_ex, "passengers_left", vec![omsi_plugin::api::Value::Int(count as i64), omsi_plugin::api::Value::Int(stop), omsi_plugin::api::Value::Bool(full)]);
+                    // (told the plugins with ours of that stop, `client_tick`)
+                    self.net.pax_signals.hold((count, stop, full));
+                }
+            } else if lan.role == omsi_net::Role::Host {
+                // (31 October 2026: what a client's people do for a bus)
+                if let Some((pid, g, _)) = rest.strip_prefix("gest ").and_then(|r| crate::pax_signals::gesture_word(r.split_whitespace())) {
+                    self.net.lan_world.client_gesture(from, pid, g);
                 }
             }
             return;

@@ -22,6 +22,10 @@ pub fn hail_look_target(person: DVec3, heading: f64, bus: DVec3) -> Option<Vec3>
 pub struct HailLook {
     yaw: f32,
     pitch: f32,
+    /// (NexiconDK, 31 October 2026) How much the person walks (0 standing, 1 on the move,
+    /// eased): on the move only the torso and the neck turn to the bus, not the feet - they
+    /// walk on the way they go (`walking`).
+    stride: f32,
 }
 impl HailLook {
     /// Smoothed model-space direction shared by the gaze and the hailing hand.
@@ -49,6 +53,12 @@ impl HailLook {
         let k = 1. - (-dt / 0.22).exp();
         self.yaw += ((yaw - self.yaw) * k).clamp(-dt * 3.5, dt * 3.5);
         self.pitch += (pitch - self.pitch) * k;
+    }
+    /// (NexiconDK, 31 October 2026) Whether the person walks this frame (stepping up to the
+    /// bus, `Task::ToBus`): the whole body's turn eases out, and back in once they stand.
+    pub fn walking(&mut self, on: bool, dt: f32) {
+        let dt = if dt.is_finite() { dt.clamp(0., 0.1) } else { 0. };
+        self.stride += ((on as u8 as f32) - self.stride).clamp(-dt * 2.5, dt * 2.5);
     }
     /// Cosmetic turn in place: feet/pelvis follow large turns, then torso and neck.
     /// Never change the simulated heading, position, route or boarding state.
@@ -87,7 +97,7 @@ impl HailLook {
         // 27 in the neck. A bus behind makes the whole person turn instead
         // of stretching the neck against a fixed collar and planted legs.
         let upper = self.yaw.clamp(-45f32.to_radians(), 45f32.to_radians());
-        let body = self.yaw - upper;
+        let body = (self.yaw - upper) * (1. - self.stride.clamp(0., 1.));
         let torso = upper * 0.4;
         let neck = upper - torso;
         let turn = about(feet, Quat::from_rotation_z(body * amount));
@@ -181,12 +191,39 @@ mod hail_neck_body_tests {
     fn rotation(b: Affine3A) -> Quat {
         b.to_scale_rotation_translation().1
     }
+    /// (NexiconDK, 31 October 2026) On the move to the bus the feet keep their way: only the
+    /// torso and the neck turn, at most 45 degrees; standing again, the whole body follows.
+    #[test]
+    fn walking_only_the_upper_body_turns() {
+        let mut look = HailLook { yaw: 150f32.to_radians(), pitch: 0., stride: 0. };
+        for _ in 0..60 {
+            look.walking(true, 1. / 60.);
+        }
+        assert!((look.stride - 1.).abs() < 0.0001);
+        let mut bones = [Affine3A::IDENTITY; SLOTS];
+        look.pose(&mut bones, WAIST, PIVOT, Vec3::ZERO, 1.);
+        for slot in [HIP, FOOT[0], FOOT[1]] {
+            assert!(yaw(rotation(bones[slot])).abs() < 0.0001, "the feet stay");
+        }
+        assert!((yaw(rotation(bones[HEAD])) - 45f32.to_radians()).abs() < 0.0001);
+        // standing again: eased back in, not at once
+        look.walking(false, 1. / 60.);
+        assert!(look.stride > 0.9);
+        for _ in 0..60 {
+            look.walking(false, 1. / 60.);
+        }
+        let mut bones = [Affine3A::IDENTITY; SLOTS];
+        look.pose(&mut bones, WAIST, PIVOT, Vec3::ZERO, 1.);
+        assert!((yaw(rotation(bones[HEAD])) - look.yaw).abs() < 0.0001);
+    }
+
     #[test]
     fn rear_targets_turn_feet_and_keep_neck_relative_to_torso() {
         for degrees in [-150f32, -90., 0., 90., 150.] {
             let look = HailLook {
                 yaw: degrees.to_radians(),
                 pitch: 0.,
+                stride: 0.,
             };
             let mut bones = [Affine3A::IDENTITY; SLOTS];
             look.pose(&mut bones, WAIST, PIVOT, Vec3::ZERO, 1.);
@@ -230,6 +267,7 @@ mod hail_neck_body_tests {
         let look = HailLook {
             yaw: 150f32.to_radians(),
             pitch: 0.12,
+            stride: 0.,
         };
         look.pose(&mut bones, WAIST, PIVOT, Vec3::ZERO, 0.);
         for slot in 0..SLOTS {
@@ -260,6 +298,7 @@ mod hail_neck_body_tests {
         let look = HailLook {
             yaw: -150f32.to_radians(),
             pitch: 0.,
+            stride: 0.,
         };
         let mut previous = [Affine3A::IDENTITY; SLOTS];
         for frame in 0..=100 {

@@ -91,6 +91,8 @@ pub(super) fn lights(mut cx: LightsCx, dt: f32, daylight: omsi_sim::Daylight, be
         if cx.view.cam.flashlight {
             lights::flashlight_ahead(scene, cam);
         }
+        // (NexiconDK: the phones' lights of those signalling to a bus, in the dark)
+        lights::phone_lights(scene, &cx.gfx.gfx.sim_view.people.phones, daylight.night);
         cx.perf.profile.add(crate::profile_keys::ProfKey::LightsCollect, __tc.elapsed().as_secs_f64());
         // the object editor's pick: a magenta glow over it
         if let Some(id) = cx.menus.menus.editor.as_ref().and_then(|e| e.selected) {

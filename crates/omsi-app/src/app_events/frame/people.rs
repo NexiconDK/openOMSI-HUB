@@ -8,14 +8,20 @@ impl App {
     pub(super) fn frame_lan(&mut self, dt: f32) {
         self.tick_lan(dt);
         // (NexiconDK: a player's bus that left people at their stop - ours to the plugins, which
-        // count them for the trip - and the host's people's gestures to the clients; a client
-        // hears of both from the host, `lan_command`)
-        if !self.net.lan.as_ref().is_some_and(|l| l.role == omsi_net::Role::Client) {
-            if let Some(h) = self.session.humans.as_mut() {
-                for (count, stop, full) in self.net.pax_signals.host_tick(dt, self.net.lan.as_mut(), h) {
-                    crate::plugins::queue_event_ex(&mut self.integrations.plugin_events_ex, "passengers_left", vec![omsi_plugin::api::Value::Int(count as i64), omsi_plugin::api::Value::Int(stop), omsi_plugin::api::Value::Bool(full)]);
-                }
+        // count them for the trip - and the people's gestures to the other players; a client
+        // hears of both from the host too, `lan_command`)
+        let Some(h) = self.session.humans.as_mut() else { return };
+        let left = match self.net.lan.as_mut() {
+            // (31 October 2026: a client looks itself at its bus leaving the people it took from
+            // the host, and tells the host what its people do for a bus)
+            Some(l) if l.role == omsi_net::Role::Client => self.net.pax_signals.client_tick(dt, l, h),
+            lan => {
+                let relayed = self.net.lan_world.relayed_gestures();
+                self.net.pax_signals.host_tick(dt, lan, h, &relayed)
             }
+        };
+        for (count, stop, full) in left {
+            crate::plugins::queue_event_ex(&mut self.integrations.plugin_events_ex, "passengers_left", vec![omsi_plugin::api::Value::Int(count as i64), omsi_plugin::api::Value::Int(stop), omsi_plugin::api::Value::Bool(full)]);
         }
     }
 

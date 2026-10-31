@@ -32,6 +32,9 @@ const offPct100 = (v) => (v <= 0 ? t('Off') : `${v.toFixed(0)}%`);
 // --- how a value is kept ----------------------------------------------------------------
 
 const r2 = (v) => Math.round(v * 100) / 100;
+// (NexiconDK, 31 October 2026) What share of the people signal, wave, glance at a full bus, hold
+// up a phone's light: every time, sometimes, rarely, never (per cent).
+const GESTURE_STEPS = [['100', 'Every time (100%)'], ['30', 'Sometimes (30%)'], ['10', 'Rarely (10%)'], ['0', 'Never']];
 const r1 = (v) => Math.round(v * 10) / 10;
 const round = (v) => Math.round(v);
 /** To the nearest `step`, without the float's tail (0.30000000000000004). */
@@ -330,9 +333,12 @@ const gameplay = {
         // (drawn on this computer only; the avatars are downloaded once, about 310 MB)
         { type: 'select', key: 'character_models', label: 'Character models', options: [['original', 'Original'], ['improved', 'High quality (improved)']], help: 'High quality draws the people with the Microsoft Rocketbox avatars and their living faces, on this computer only: servers and other players keep their own. They are downloaded once (about 310 MB).' },
         { type: 'toggle', key: 'exact_fare', label: 'Passengers pay the exact fare' },
-        { type: 'toggle', key: 'passenger_hailing', label: 'Passengers signal approaching buses', help: 'Optional visual hailing; only effective with supported natural animations' },
-        { type: 'toggle', key: 'passenger_wave_after', label: 'Passengers wave after a bus that leaves them', help: 'With natural animations: those your bus drives past at their stop, or leaves there, wave after it - and the company counts them as left behind' },
-        { type: 'toggle', key: 'passenger_full_bus_reaction', label: 'Passengers react to full buses', help: 'Optional visual acknowledgement when an approaching compatible bus is at passenger capacity' },
+        // (NexiconDK, 31 October 2026: what share of the people do what for a bus - the steps of
+        // omsi_sim::people::SHARE_STEPS, in per cent)
+        { type: 'select', key: 'pax_signal', label: 'Passengers signal to a coming bus', options: GESTURE_STEPS, help: 'With natural animations: how many of those waiting stay at their place and hold an arm out to the street as a bus that takes them comes, till it stands. The others step up to where it will stand, as in OMSI' },
+        { type: 'select', key: 'pax_wave', label: 'Passengers wave to the bus', options: GESTURE_STEPS, help: 'With natural animations: how many wave an arm up high - waiting at the stop as a bus that takes them comes, on their way to the stop or running for it, and after a bus that leaves them (they are counted as left behind all the same)' },
+        { type: 'select', key: 'pax_full', label: 'Passengers react to a full bus', options: GESTURE_STEPS, help: 'With natural animations: how many of those who would signal or wave glance at a full bus instead' },
+        { type: 'select', key: 'pax_phone', label: "Passengers' phone lights in the dark", options: GESTURE_STEPS, help: 'With natural animations: how many of those who signal or wave hold up their phone with its light on when it is dark' },
         { type: 'slider', key: 'pax_density', label: 'How many passengers', min: 0, max: 2, step: 0.1, def: 1, format: pct, store: r2 },
         { type: 'toggle', key: 'get_up', label: 'Ability to get up (Ctrl+Shift+G)' },
         { type: 'section', title: 'Traffic' },
