@@ -34,6 +34,10 @@ pub fn remote_bus_player(bus: u64) -> Option<u32> {
     (bus >> 40 == 1).then_some((bus & 0xFFFF_FFFF) as u32)
 }
 
+/// The waiting place (`LanPerson::waiting`) of somebody who has stepped up to another player's
+/// bus rolling in: at the stop, at none of its places (a client puts them nowhere else).
+pub const STEPPED_UP: usize = 255;
+
 /// One of the host's people as it tells the clients.
 pub struct LanPerson {
     pub id: u32,
@@ -143,6 +147,9 @@ impl PeopleSim {
                 };
                 let waiting = match &p.state {
                     State::Pax(x) if aboard.is_none() && x.task == Task::WaitingForBus => x.stop.zip(x.spot),
+                    // (NexiconDK, 31 October 2026) stepped up to another player's bus rolling in:
+                    // at the stop, at no waiting place - his game takes them once it stands
+                    State::Pax(x) if aboard.is_none() && x.task == Task::ToBus && x.bus.is_some_and(|b| matches!(b, BusId::Ai(k) if remote_bus_player(k).is_some())) => x.stop.map(|s| (s, STEPPED_UP)),
                     _ => None,
                 };
                 Some(LanPerson {
@@ -178,7 +185,9 @@ impl PeopleSim {
             let Some(i) = self.people.iter().position(|p| p.id == *id) else {
                 continue;
             };
-            if !matches!(&self.people[i].state, State::Pax(x) if x.task == Task::WaitingForBus) || self.people[i].remote {
+            // (waiting, or stepped up to that bus as it rolled in)
+            let ours = remote_bus_id(player);
+            if !matches!(&self.people[i].state, State::Pax(x) if x.task == Task::WaitingForBus || (x.task == Task::ToBus && x.bus == Some(BusId::Ai(ours)))) || self.people[i].remote {
                 continue;
             }
             if let (Some(b), true, Some(x)) = (bus, shown, self.pax(i)) {

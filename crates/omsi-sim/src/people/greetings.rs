@@ -117,6 +117,19 @@ impl PeopleSim {
         self.greets(i).is_some()
     }
 
+    /// (LAN host) Another player's bus rolling in to stop `stop` that person `i`, waiting there,
+    /// steps up to - as to ours, those who greet it staying at their place
+    /// (`stays_till_it_stands`). His game takes them over once it stands (`claim_waiting`).
+    pub(crate) fn remote_bus_coming(&self, i: usize, stop: i64, buses: &[BusNow]) -> Option<BusId> {
+        if self.mirror {
+            return None;
+        }
+        let p = self.pax(i)?;
+        let b = self.coming_bus(stop, self.people[i].position, p, buses, 60.0)?;
+        let remote = matches!(b.id, BusId::Ai(k) if remote_bus_player(k).is_some());
+        (remote && b.speed.abs() > 2.0 && !self.stays_till_it_stands(i)).then_some(b.id)
+    }
+
     /// What person `i` (one of ours, not another game's drawn here) does for a bus now: the
     /// gesture, the bus and where it is. `full`: whether a bus is full (asked once a bus is
     /// in question).

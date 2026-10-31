@@ -355,6 +355,39 @@ fn a_client_asks_for_those_waiting_only_once_its_bus_stands_at_the_stop() {
     assert_eq!(at(&mut cl, 0.5, true), vec![5], "standing at it");
 }
 
+/// (31 October 2026) On the host, those waiting step up to another player's bus rolling in as
+/// to its own (those who greet it stay at their place) - at no waiting place then, which the
+/// clients are told - and his game takes them over from there once it stands.
+#[test]
+fn the_host_steps_up_to_another_players_bus_and_hands_over_from_there() {
+    let c = cabin("stepup");
+    let mut h = sim("stepup");
+    h.gestures = GestureShares::NONE;
+    h.set_remote_termini([(4, "Rathaus".to_string())].into_iter());
+    let id = BusId::Ai(remote_bus_id(4));
+    let rolling = [bus(&c, id, -40.0, 10.0, 0.0, None)];
+    assert_eq!(h.remote_bus_coming(0, 7, &rolling), Some(id));
+    assert_eq!(h.remote_bus_coming(2, 7, &rolling), None, "for another line");
+    assert_eq!(h.remote_bus_coming(0, 7, &[bus(&c, id, -4.0, 0.0, 0.0, None)]), None, "standing: his game takes them");
+    h.gestures.signal = 1.0;
+    assert_eq!(h.remote_bus_coming(0, 7, &rolling), None, "signalling: at their place");
+    h.mirror = true;
+    h.gestures.signal = 0.0;
+    assert_eq!(h.remote_bus_coming(0, 7, &rolling), None, "a client's own people do not");
+    h.mirror = false;
+    // stepped up: at the stop, at no waiting place
+    if let State::Pax(x) = &mut h.people[0].state {
+        x.task = Task::ToBus;
+        x.bus = Some(id);
+    }
+    let told = h.lan_people(DVec3::ZERO, 500.0);
+    assert_eq!(told.iter().find(|p| p.id == 1).and_then(|p| p.waiting), Some((7, super::super::mirror::STEPPED_UP)));
+    h.last_buses = Arc::new(vec![bus(&c, id, -4.0, 0.0, 0.0, None)]);
+    let mut got = h.hand_over(4, &[1, 2]);
+    got.sort();
+    assert_eq!(got, vec![1, 2], "the one stepped up and the one waiting");
+}
+
 #[test]
 fn only_the_players_buses_on_their_way_count() {
     let c = cabin("ai");

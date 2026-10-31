@@ -275,6 +275,15 @@ impl PeopleSim {
             Task::WaitingForBus => {
                 let Some(stop) = p.stop else { return };
                 let Some(b) = self.bus_for(i, stop, buses, bus_ix) else {
+                    // (NexiconDK, 31 October 2026) another LAN player's bus rolling in (host):
+                    // stepped up to as ours is - his game takes them over once it stands
+                    // (`claim_waiting`); waiting at their places till then, they stood there as it
+                    // came, and walked to its door only after it had stopped
+                    if let Some(rb) = self.remote_bus_coming(i, stop, buses) {
+                        self.pax_mut(i).unwrap().bus = Some(rb);
+                        self.set_task(i, Task::ToBus, buses, bus_ix, world);
+                        return;
+                    }
                     if super::debug_pax() && (self.time * 2.0).fract() < (dt as f64 * 2.0) {
                         let s = &self.stops[&stop];
                         let listed: Vec<String> = s.buses.iter().map(|(id, inbox)| format!("{id:?} box {inbox} shows {:?}", bus_ix.get(id).and_then(|k| buses[*k].terminus.clone()))).collect();
@@ -355,6 +364,11 @@ impl PeopleSim {
                 self.pax_mut(i).unwrap().short = true;
                 // the bus is gone from the stop: back to a waiting place
                 let gone = match self.pax(i).unwrap().bus {
+                    // (another LAN player's bus, which is never listed here: once it is no longer
+                    // coming or standing at the stop)
+                    Some(b) if matches!(b, BusId::Ai(k) if remote_bus_player(k).is_some()) => {
+                        !self.stops.get(&stop).is_some_and(|s| buses.iter().any(|x| x.id == b && Self::visual_hail_range(x.pos - s.pos, x.fwd())))
+                    }
                     Some(b) => !self.listed_at(stop, b),
                     None => true,
                 };
