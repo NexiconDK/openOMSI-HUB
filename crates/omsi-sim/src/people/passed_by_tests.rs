@@ -428,3 +428,26 @@ fn people_coming_to_wait_where_a_player_sees_the_stop_walk_up_along_its_pavement
     h.lan_centers = vec![DVec3::new(0.0, 100.0 + WALK_UP_SEEN, 0.0)];
     assert!(!h.stop_seen(stop));
 }
+
+/// (31 October 2026) A stop whose heading runs against the way its buses go - one on the other
+/// side of the road the map lays (`side` 1): those waiting there signal to a bus coming as to any
+/// other, and wave after one that drives past; not to one going the other way.
+#[test]
+fn a_stop_laid_the_other_way_round_is_signalled_and_waved_at_as_any() {
+    let c = cabin("reversed");
+    let mut h = sim("reversed");
+    for s in h.stops.values_mut() {
+        s.heading = 180.0;
+    }
+    let b = |y: f64, v: f64| bus(&c, BusId::Player, y, v, 0.0, Some("Rathaus"));
+    h.last_buses = Arc::new(vec![b(-40.0, 10.0)]);
+    let mut hail: Vec<u32> = h.lan_gestures().into_iter().filter(|g| g.1 == Gesture::Hail).map(|g| g.0).collect();
+    hail.sort();
+    assert_eq!(hail, vec![1, 2], "coming: they signal");
+    drive(&mut h, &|y, v| b(y, v), -80.0, 60.0, 10.0, 0.0);
+    assert_eq!(h.take_left_behind(), vec![LeftBehind { bus: BusId::Player, stop: 7, count: 2, full: false, stood: false }]);
+    // the other way along the street (going south, past the stop): nobody
+    let mut h = sim("reversed2");
+    h.last_buses = Arc::new(vec![bus(&c, BusId::Player, 40.0, 10.0, 180.0, Some("Rathaus"))]);
+    assert!(h.lan_gestures().is_empty(), "{:?}", h.lan_gestures());
+}

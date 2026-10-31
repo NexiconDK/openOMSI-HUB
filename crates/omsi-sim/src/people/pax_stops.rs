@@ -28,15 +28,17 @@ impl PeopleSim {
         }
         let stop = p.stop?;
         let s = self.stops.get(&stop)?;
-        let heading = s.heading.to_radians();
-        let forward = DVec2::new(heading.sin(), heading.cos());
         let here = self.people[i].position;
+        // (NexiconDK, 31 October 2026: coming to the stop by the bus's own way - the stop at most
+        // 12 m behind it, near the way it goes. The stop's heading is the way the map lays the
+        // road, and a stop on its other side (`side` 1) is served the other way round: by its
+        // heading, nobody signalled to a bus there - and to those going the wrong way)
         buses
             .iter()
             .filter(|b| {
-                Self::visual_hail_range(b.pos - s.pos, forward)
+                Self::visual_hail_range(b.pos - s.pos, b.fwd())
+                    && super::passed_by::door_side(b, here)
                     && (b.pos - here).length_squared() <= 60.0 * 60.0
-                    && b.fwd().dot(forward) > 0.0
                     && b.served.is_none_or(|id| id == stop)
                     && self.takes_waiting(stop, s, b, p.dest.as_deref(), p.line)
             })

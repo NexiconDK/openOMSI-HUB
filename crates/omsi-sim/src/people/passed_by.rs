@@ -100,7 +100,29 @@ pub struct MirrorGesture {
     pub since: f64,
 }
 
-/// Where bus `d` is from a stop (`forward` the way its buses go): metres along, across.
+/// (31 October 2026) Whether place `at` - on a stop's platform - is on the side bus `b` opens
+/// its doors to: its right where the traffic keeps right, its left on a map that drives on the
+/// left (`LEFT_HAND`), a metre either way. A bus going the other way along the street has the
+/// platform on its other side.
+pub(super) fn door_side(b: &BusNow, at: DVec3) -> bool {
+    let f = b.fwd();
+    let x = (at - b.pos).truncate().dot(DVec2::new(f.y, -f.x));
+    if LEFT_HAND.load(std::sync::atomic::Ordering::Relaxed) {
+        x < 1.0
+    } else {
+        x > -1.0
+    }
+}
+
+/// Where a stop's platform is: the middle of its waiting places, else where people gather.
+pub(super) fn platform(s: &PaxStop) -> DVec3 {
+    if s.spots.is_empty() {
+        return s.gather;
+    }
+    s.spots.iter().map(|w| w.pos).sum::<DVec3>() / s.spots.len() as f64
+}
+
+/// Where bus `d` is from a stop (`forward` the way the bus goes): metres along, across.
 fn stop_frame(d: DVec3, forward: DVec2) -> (f64, f64) {
     (d.truncate().dot(forward), (d.x * forward.y - d.y * forward.x).abs())
 }
@@ -149,10 +171,10 @@ impl PeopleSim {
                 if d.length_squared() > 90.0 * 90.0 || d.z.abs() > 8.0 {
                     continue;
                 }
-                let h = s.heading.to_radians();
-                let forward = DVec2::new(h.sin(), h.cos());
-                let (along, across) = stop_frame(d, forward);
-                if across > 14.0 || b.fwd().dot(forward) <= 0.0 {
+                // (by the bus's own way: the stop's heading is the road's, and a stop on its other
+                // side is served the other way round - `visual_hail_bus`)
+                let (along, across) = stop_frame(d, b.fwd());
+                if across > 14.0 || !door_side(b, platform(s)) {
                     continue;
                 }
                 let k = self.passing.iter().position(|p| p.bus == b.id && p.stop == *id);
