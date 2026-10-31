@@ -156,7 +156,7 @@ impl PeopleSim {
         self.claim_waiting();
         self.ride_comfort(dt, bus, buses, &bus_ix, world);
         if !self.avatar_only {
-            self.stops_tick(dt, world);
+            self.stops_tick(dt, world, net);
             if let Some(n) = net {
                 self.runners_tick(world, n, &buses, &bus_ix);
             }

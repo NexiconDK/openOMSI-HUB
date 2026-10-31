@@ -3,6 +3,46 @@
 
 use super::*;
 
+/// (NexiconDK, 31 October 2026) How far along a stop's pavement somebody coming to wait where a
+/// player sees it walks up from (m, the nearest out of sight: `walk_up_from`); a LAN player this
+/// near a stop sees it (m, `stop_seen`); nobody comes into being this near one (m).
+pub const WALK_UP: [f32; 5] = [40.0, 55.0, 70.0, 85.0, 100.0];
+pub const WALK_UP_SEEN: f64 = 200.0;
+pub const WALK_UP_AWAY: f64 = 50.0;
+
+/// The point `d` m along the pavement from lane `lane` at `s0` - on (`forward`: the way the lanes
+/// run) or back - over the footpaths joined to it (the one running on most straight, none
+/// twice); None where they end sooner.
+pub fn along_pavement(net: &Network, lane: usize, s0: f32, d: f32, forward: bool) -> Option<DVec3> {
+    let mut l = lane;
+    let mut s = s0.clamp(0.0, net.lanes.get(lane)?.length());
+    let mut left = d;
+    let mut seen = vec![lane];
+    loop {
+        let len = net.lanes[l].length();
+        let room = if forward { len - s } else { s };
+        if left <= room {
+            return Some(net.lanes[l].at(if forward { s + left } else { s - left }).0);
+        }
+        left -= room;
+        let here = if forward { net.lanes[l].end_heading() } else { net.lanes[l].start_heading() };
+        let ways: Vec<usize> = if forward { net.lanes[l].next.clone() } else { net.prev.get(l).cloned().unwrap_or_default() };
+        let next = ways
+            .into_iter()
+            .filter(|&n| net.lanes[n].kind == LaneKind::Sidewalk && net.lanes[n].length() > 0.0 && !seen.contains(&n))
+            .min_by(|&a, &b| {
+                let turn = |n: usize| crate::traffic::wrap_deg(if forward { net.lanes[n].start_heading() } else { net.lanes[n].end_heading() } - here).abs();
+                turn(a).total_cmp(&turn(b))
+            })?;
+        if seen.len() > 24 {
+            return None;
+        }
+        seen.push(next);
+        l = next;
+        s = if forward { 0.0 } else { net.lanes[next].length() };
+    }
+}
+
 impl PeopleSim {
     /// Put people at the bus stops near `center`: at the start everywhere, later only at
     /// stops out of sight (the others fill with people walking up).
@@ -165,7 +205,7 @@ impl PeopleSim {
     /// it has fewer than it should - its pass_enter mean times its own random factor
     /// times the passenger density, at most one per waiting place. A stop going out of
     /// range loses the people waiting there.
-    pub fn stops_tick(&mut self, dt: f32, world: &dyn World) {
+    pub fn stops_tick(&mut self, dt: f32, world: &dyn World, net: Option<&Network>) {
         if self.mirror || self.avatar_only {
             return;
         }
@@ -259,7 +299,7 @@ impl PeopleSim {
             }
             let mut count = count;
             while count < want {
-                let came = self.spawn_waiting_some(world, id, want - count);
+                let came = self.spawn_waiting_some(world, net, id, want - count);
                 if came == 0 {
                     break;
                 }
@@ -311,32 +351,74 @@ impl PeopleSim {
 
     /// A person put at a free waiting place of stop `id` (sub_626044) with a destination
     /// drawn from the stop's (sub_61baa8); they settle there as task 6 does.
-    pub fn spawn_waiting(&mut self, world: &dyn World, id: i64) -> Option<usize> {
+    pub fn spawn_waiting(&mut self, world: &dyn World, net: Option<&Network>, id: i64) -> Option<usize> {
         if self.stops.get(&id)?.taken.iter().all(|t| *t) || !self.pool_room() {
             return None;
         }
         let k = self.take_spot(id)?;
         let (dest, line) = self.draw_dest(id);
-        self.spawn_waiting_at(world, id, k, dest, line, None, None)
+        let from = self.walk_up(world, net, id);
+        self.spawn_waiting_at(world, id, k, dest, line, None, None, from)
+    }
+
+    /// (NexiconDK, 31 October 2026) Where somebody coming to wait at stop `id` comes from: where a
+    /// player sees the stop (`stop_seen`), along its pavement out of sight, walking up
+    /// (`walk_up_from`) - they appeared at the waiting places in front of him, as a bus had just
+    /// taken the others; None: at the waiting place (nobody sees it, or no way along the
+    /// pavement is out of sight).
+    fn walk_up(&mut self, world: &dyn World, net: Option<&Network>, id: i64) -> Option<DVec3> {
+        let pos = self.stops.get(&id)?.pos;
+        if !self.stop_seen(pos) {
+            return None;
+        }
+        self.walk_up_from(world, net?, id)
+    }
+
+    /// Whether anybody sees stop place `p`: the player's eye, or a LAN player within
+    /// `WALK_UP_SEEN` (the host knows where they are, not where they look).
+    pub fn stop_seen(&self, p: DVec3) -> bool {
+        self.seen(p) || self.lan_centers.iter().any(|c| (*c - p).length() < WALK_UP_SEEN)
+    }
+
+    /// A place along stop `id`'s pavement, `WALK_UP` m from it either way, on its side of the
+    /// street, with ground, out of the player's sight and `WALK_UP_AWAY` from every LAN player.
+    pub fn walk_up_from(&mut self, world: &dyn World, net: &Network, id: i64) -> Option<DVec3> {
+        let (lane, s0) = self.stops.get(&id)?.lane?;
+        let pave = net.lanes.get(lane)?.at(s0).0;
+        let first = self.rand_f() < 0.5;
+        for d in WALK_UP {
+            for forward in [first, !first] {
+                let Some(q) = along_pavement(net, lane, s0, d, forward) else { continue };
+                if world.has_ground(q.x, q.y) && !crosses_street(net, q.truncate(), pave.truncate()) && !self.seen(q) && self.lan_centers.iter().all(|c| (*c - q).length() >= WALK_UP_AWAY) {
+                    return Some(q);
+                }
+            }
+        }
+        None
     }
 
     /// Somebody at waiting place `k` of stop `id` (taken for them already), going to `dest`
     /// (`line`: the stop's line record of it); `kind`: their figure (None: any), `group`:
     /// the group they travel with.
     #[allow(clippy::too_many_arguments)]
-    fn spawn_waiting_at(&mut self, world: &dyn World, id: i64, k: usize, dest: Option<String>, line: Option<usize>, kind: Option<usize>, group: Option<u32>) -> Option<usize> {
+    fn spawn_waiting_at(&mut self, world: &dyn World, id: i64, k: usize, dest: Option<String>, line: Option<usize>, kind: Option<usize>, group: Option<u32>, from: Option<DVec3>) -> Option<usize> {
         let sp = self.stops[&id].spots[k].clone();
         let walk = 1.1 + (self.rand_f() as f32 * 2.0 - 1.0) * 0.2;
+        // (NexiconDK: walking up from `from`, facing the stop - `walk_up`)
+        let (at, face) = match from {
+            Some(q) => (q, yaw_of((sp.pos - q).truncate()).to_degrees()),
+            None => (sp.pos, sp.face),
+        };
         let mut pax = Pax::new(walk, self.rand_f());
         pax.stop = Some(id);
         pax.spot = Some(k);
-        pax.pos = sp.pos;
-        pax.yaw = sp.face.to_radians();
+        pax.pos = at;
+        pax.yaw = face.to_radians();
         pax.dest = dest;
         pax.line = line;
         pax.st = 0;
         pax.group = group;
-        let made = if self.pool_room() { self.spawn_as(world, sp.pos, sp.face, State::Pax(Box::new(pax)), kind) } else { None };
+        let made = if self.pool_room() { self.spawn_as(world, at, face, State::Pax(Box::new(pax)), kind) } else { None };
         let Some(i) = made else {
             self.free_spot(id, k);
             return None;
@@ -356,17 +438,17 @@ impl PeopleSim {
     /// to four with one destination and one ride, at waiting places next to one another:
     /// grown-ups, or (where the map has children's figures) a grown-up with one or two
     /// children. How many came.
-    pub fn spawn_waiting_some(&mut self, world: &dyn World, id: i64, room: usize) -> usize {
+    pub fn spawn_waiting_some(&mut self, world: &dyn World, net: Option<&Network>, id: i64, room: usize) -> usize {
         use super::seating::{CHILD, GROUP_SHARE};
         if !self.seating() || room < 2 || self.rand_f() >= GROUP_SHARE {
-            return self.spawn_waiting(world, id).is_some() as usize;
+            return self.spawn_waiting(world, net, id).is_some() as usize;
         }
         self.use_map_humans(world);
         let age = |t: &Arc<HumanType>| t.def.age.map(|a| a as f32).unwrap_or(40.0);
         let kids: Vec<usize> = (0..self.types.len()).filter(|&k| age(&self.types[k]) < CHILD).collect();
         let adults: Vec<usize> = (0..self.types.len()).filter(|&k| age(&self.types[k]) >= CHILD).collect();
         if adults.is_empty() {
-            return self.spawn_waiting(world, id).is_some() as usize;
+            return self.spawn_waiting(world, net, id).is_some() as usize;
         }
         let r = self.rand_f();
         let size = (if r < 0.6 { 2 } else if r < 0.85 { 3 } else { 4 }).min(room);
@@ -397,9 +479,15 @@ impl PeopleSim {
         let (dest, line) = self.draw_dest(id);
         let g = self.next_group;
         self.next_group += 1;
+        // (together from the one place, one behind the other - `walk_up`)
+        let from = self.walk_up(world, net, id);
         let mut made: Vec<usize> = Vec::new();
-        for (k, kind) in spots.iter().zip(&kinds) {
-            if let Some(i) = self.spawn_waiting_at(world, id, *k, dest.clone(), line, Some(*kind), Some(g)) {
+        for (n, (k, kind)) in spots.iter().zip(&kinds).enumerate() {
+            let at = from.map(|q| {
+                let to = (self.stops[&id].spots[*k].pos - q).truncate().normalize_or_zero();
+                q - DVec3::new(to.x, to.y, 0.0) * (0.9 * n as f64)
+            });
+            if let Some(i) = self.spawn_waiting_at(world, id, *k, dest.clone(), line, Some(*kind), Some(g), at) {
                 made.push(i);
             }
         }

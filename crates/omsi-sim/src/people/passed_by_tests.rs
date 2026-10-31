@@ -398,3 +398,33 @@ fn the_hosts_riders_sit_on_their_seats_in_a_players_game() {
     h.mirror_set(40, &pose(Some(9)));
     assert!(h.mirror_facts(&h.people[0]).seat.is_none());
 }
+
+/// (NexiconDK, 31 October 2026) Somebody coming to wait at a stop a player sees walks up along its
+/// pavement: the points along it, over the footpaths joined to it the straight way on, either
+/// way - and which stops a player sees (a LAN player near one, the player's eye).
+#[test]
+fn people_coming_to_wait_where_a_player_sees_the_stop_walk_up_along_its_pavement() {
+    use super::super::populate::{along_pavement, WALK_UP_SEEN};
+    use crate::traffic::LaneBuilder;
+    // a pavement of three 30 m paths northwards, and one turning off east at the end of the first
+    let mut lanes: Vec<_> = (0..3).map(|k| LaneBuilder::arc(DVec3::new(5.0, 30.0 * k as f64, 0.0), 0.0, 30.0, 0.0, 0.0, LaneKind::Sidewalk, 2.0)).collect();
+    lanes.push(LaneBuilder::arc(DVec3::new(5.0, 30.0, 0.0), 30.0, 30.0, 0.0, 0.0, LaneKind::Sidewalk, 2.0));
+    let mut net = Network { lanes, ..Default::default() };
+    net.link(1.5);
+    // from the middle path, 10 m in (y 40): 40 m on - over its end, the straight way - and back
+    let on = along_pavement(&net, 1, 10.0, 40.0, true).unwrap();
+    assert!((on - DVec3::new(5.0, 80.0, 0.0)).length() < 0.5, "{on:?}");
+    let back = along_pavement(&net, 1, 10.0, 35.0, false).unwrap();
+    assert!((back - DVec3::new(5.0, 5.0, 0.0)).length() < 0.5, "{back:?}");
+    assert_eq!(along_pavement(&net, 1, 10.0, 45.0, false), None, "the pavement ends sooner");
+    assert_eq!(along_pavement(&net, 1, 10.0, 200.0, true), None);
+    // who sees a stop: a LAN player near it, not one far off
+    let mut h = PeopleSim::new(Path::new("/nonexistent"), 200);
+    h.center = DVec3::new(10_000.0, 0.0, 0.0);
+    let stop = DVec3::new(0.0, 40.0, 0.0);
+    assert!(!h.stop_seen(stop));
+    h.lan_centers = vec![DVec3::new(0.0, 100.0, 0.0)];
+    assert!(h.stop_seen(stop));
+    h.lan_centers = vec![DVec3::new(0.0, 100.0 + WALK_UP_SEEN, 0.0)];
+    assert!(!h.stop_seen(stop));
+}
