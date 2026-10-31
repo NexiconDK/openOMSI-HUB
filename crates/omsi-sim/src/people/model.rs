@@ -297,6 +297,10 @@ pub struct PeopleSim {
     pub under_bus: hashbrown::HashSet<u32>,
     /// A rider pressed the stop button for the next stop (the app fires the vehicle trigger `int_haltewunsch`).
     pub stop_request: bool,
+    /// Timetable buses whose passenger asked for the next stop (`int_haltewunsch`, taken by
+    /// the app each frame): a bus's script responds to its own request, so the scripts
+    /// that check `haltewunsch` (e.g. `NSAC_City_2Door.bus`) open the exit.
+    pub ai_stop_requests: Vec<u64>,
     /// Tickets sold at the cash desk this session and what they were worth.
     pub tickets_sold: u32,
     pub ticket_cash: f32,

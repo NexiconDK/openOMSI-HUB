@@ -270,7 +270,10 @@ fn paper_content(
     trip_index: usize,
     (arr_label, dep_label): (&str, &str),
 ) -> (String, Vec<PaperRow>) {
-    let trip = &trips[trip_index];
+    // (openOMSI d09729510: a duty finished or without trips has no trip at the index - no panic)
+    let Some(trip) = trips.get(trip_index) else {
+        return (format!("{} - {}", duty_line.trim(), duty_tour.trim()), Vec::new());
+    };
     let line = if trip.line.trim().is_empty() {
         duty_line.trim()
     } else {
@@ -463,6 +466,17 @@ mod tests {
         // Courier New bold at 16 pt (an em of 21 px): ascent 1705, descent 615 of 2048
         let k = 21.0 / 2048.0;
         assert_eq!(gdi_line_height(1705.0 * k, -615.0 * k), 23);
+    }
+
+    #[test]
+    fn completed_or_empty_duty_does_not_panic() {
+        let no_trips: &[crate::schedule::PlannedTrip] = &[];
+        let (title, rows) = paper_content("76", "1", no_trips, 0, ("Arrival ", "Depart. "));
+        assert_eq!(title, "76 - 1");
+        assert!(rows.is_empty());
+        let (title, rows) = paper_content("76", "1", no_trips, usize::MAX, ("Arrival ", "Depart. "));
+        assert_eq!(title, "76 - 1");
+        assert!(rows.is_empty());
     }
 
     #[test]

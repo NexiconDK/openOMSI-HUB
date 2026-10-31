@@ -533,8 +533,9 @@ fn mod_source(args: &LanConfig) -> crate::mods::ModSource {
 pub fn share_mods(args: &mut LanConfig, lan: &mut LanSession) {
     match lan.role {
         Role::Host => {
-            if let (Some(port), Some(key)) = (lan.local_addr().map(|a| a.port()), lan.host_key()) {
-                crate::mods::serve(port, key, &mod_source(args));
+            // (both its transports reserved before the session is told about: openOMSI 839d774a6)
+            if let (Some(listener), Some(key)) = (lan.take_mods_listener(), lan.host_key()) {
+                crate::mods::serve(listener, key, &mod_source(args));
             }
         }
         Role::Client => {
@@ -2523,15 +2524,32 @@ fn admin_request(lan: &mut LanSession, game: &mut LanGame, password: &str) {
     lan.command(1, "auth?");
 }
 
+/// Recognise private admin commands without case-sensitive password leaks.
+fn admin_chat_arg(text: &str) -> Option<&str> {
+    let text = text.trim();
+    if !text.get(..6)?.eq_ignore_ascii_case("/admin") {
+        return None;
+    }
+    let rest = text.get(6..)?;
+    if rest.chars().next().is_some_and(|c| !c.is_whitespace()) {
+        return None;
+    }
+    Some(rest.trim())
+}
+
 /// Say `text` to everybody.
 pub fn chat_send(lan: &mut LanSession, game: &mut LanGame, text: &str) {
     if text.trim().is_empty() {
         return;
     }
-    // `/admin <password>`: a server's administration (see `admin`), never said aloud
-    if let Some(pw) = text.trim().strip_prefix("/admin ") {
-        admin_request(lan, game, pw.trim());
-        game.chat.push("* asked the server for its administration".into());
+    // Keep every case variant of /admin private: it must never reach lan.say().
+    if let Some(pw) = admin_chat_arg(text) {
+        if pw.is_empty() {
+            game.chat.push("* usage: /admin <password>".into());
+        } else {
+            admin_request(lan, game, pw);
+            game.chat.push("* asked the server for its administration".into());
+        }
         return;
     }
     // `/reconnect`: join the host again after a lost connection (no restart of the game)
@@ -2618,6 +2636,18 @@ thread_local! {
 mod tests {
     include!("../../../tools/test-support/original_root.rs");
     use super::*;
+
+    /// (openOMSI d09729510) `/admin <password>` in any case is the administration's, never said.
+    #[test]
+    fn admin_password_command_is_private_for_any_case() {
+        assert_eq!(admin_chat_arg("/admin hunter2"), Some("hunter2"));
+        assert_eq!(admin_chat_arg("/Admin hunter2"), Some("hunter2"));
+        assert_eq!(admin_chat_arg(" /ADMIN    hunter2 "), Some("hunter2"));
+        assert_eq!(admin_chat_arg("/aDmIn\thunter2"), Some("hunter2"));
+        assert_eq!(admin_chat_arg("/admin"), Some(""));
+        assert_eq!(admin_chat_arg("/administrator public"), None);
+        assert_eq!(admin_chat_arg("/reconnect"), None);
+    }
 
     #[test]
     fn runtime_weather_change_detects_custom_and_clearing_to_default() {

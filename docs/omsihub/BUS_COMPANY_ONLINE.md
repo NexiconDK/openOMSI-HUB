@@ -978,6 +978,24 @@ Tested: `together::tests::on_the_server_a_player_takes_a_single_trip_and_the_ai_
 `a_single_trip_never_started_goes_back_after_it_left`, and `omsi_sim`'s
 `timetable_run::sim::tours::tests::a_duty_driven_on_gets_the_tours_next_trip`.
 
+### The world started as a player comes into his company (31 October 2026)
+
+The owner waited over six minutes for Ahlheim's world, and the single trip he had taken left
+meanwhile ("This trip leaves too soon: take a later one.").
+
+- **Started early** (`server_api::warm_world`): a player of a company who comes into it (`join`,
+  the launcher opening its pages) has the world of its map started then if it does not run (a
+  member only; the slots and the machine's limits as for Drive). With the worlds kept running
+  (`keep_worlds`), it is there when he drives.
+- **Single trips after it has loaded** (`book::world_wait`): while the world loads - it says so
+  in its folder, `WORLD_LOADING` - a single trip is taken that much further off: what it took the
+  last time (`WORLD_LOAD_TIME`, six minutes when it never said) less what it has loaded, a minute
+  at least, on top of the lead to the stop (`TRIP_LEAD`, `NEXT_LEAD`; the free trips, the next
+  free trip, the fleet map's).
+
+Tests: `server_api::tests::a_player_coming_into_his_company_starts_its_maps_world`,
+`together::tests::a_trip_is_taken_after_the_world_has_loaded`.
+
 ### People left at the stop (30 October 2026)
 
 The owner's wish the same evening: the passengers a driver leaves at their stop wave after his

@@ -274,3 +274,27 @@ fn the_host_says_who_signals_and_who_waves_and_a_client_draws_it() {
     cl.time += WAVE_SECS + 0.1;
     assert!(cl.wave_of(1).is_none(), "a wave ends by itself");
 }
+
+/// (openOMSI PR #3442 by jay23606) A passenger of a timetable bus who gets off at the next stop
+/// asks for it on their own bus: the stop request is that bus's (once, however many ask), not the
+/// player's stop button.
+#[test]
+fn a_timetable_bus_passenger_asks_for_its_own_stop() {
+    let c = cabin("ai-stop");
+    let ty = human("ai-stop");
+    let world = crate::world_data::WorldData::default();
+    let buses = vec![bus(&c, BusId::Ai(5), 0.0, 0.0, 0.0, Some("Rathaus"))];
+    let bus_ix: HashMap<BusId, usize> = [(BusId::Ai(5), 0)].into_iter().collect();
+    let mut h = PeopleSim::new(Path::new("/nonexistent"), 200);
+    h.people = vec![waiting(&ty, 1, 7, 0, DVec3::ZERO), waiting(&ty, 2, 7, 0, DVec3::ZERO)];
+    for i in 0..2 {
+        let p = h.pax_mut(i).unwrap();
+        p.task = Task::SittingInBus;
+        p.bus = Some(BusId::Ai(5));
+        p.inside = Some(BusId::Ai(5));
+        h.set_task(i, Task::InBusToExit, &buses, &bus_ix, &world);
+    }
+    assert!(!h.stop_request, "the player's stop button is not this bus's request");
+    assert_eq!(h.take_ai_stop_requests(), vec![5]);
+    assert!(h.take_ai_stop_requests().is_empty());
+}

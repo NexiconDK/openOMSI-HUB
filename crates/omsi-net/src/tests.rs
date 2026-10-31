@@ -442,7 +442,9 @@ fn join_targets() {
     assert_eq!(
         parse_join("192.168.1.20").unwrap(),
         JoinTarget::Direct {
-            addrs: vec!["192.168.1.20:27015".parse().unwrap()],
+            addrs: (DEFAULT_PORT..DEFAULT_PORT + PORT_RANGE)
+                .map(|port| SocketAddr::from(([192, 168, 1, 20], port)))
+                .collect(),
             session: None,
             protocol: None
         }
@@ -1589,3 +1591,32 @@ fn a_season_with_its_phase_crosses_the_wire() {
         assert_eq!(WorldInfo::from_fields(&parts, 0).season, season);
     }
 }
+
+/// (openOMSI c63930ec3) A join without a port tries every port of the host's range; one with a
+/// port is that port alone.
+#[test]
+fn portless_targets_cover_host_range() {
+    for target in ["192.168.1.20", "::1", "localhost"] {
+        let JoinTarget::Direct { addrs, .. } = parse_join(target).unwrap() else {
+            panic!("expected direct target");
+        };
+        assert_eq!(addrs.len(), usize::from(PORT_RANGE), "{target}");
+        let ports: Vec<_> = addrs.iter().map(SocketAddr::port).collect();
+        assert_eq!(ports, (DEFAULT_PORT..DEFAULT_PORT + PORT_RANGE).collect::<Vec<_>>());
+        assert!(describe_join(target).unwrap().contains("ports 27015-27024"));
+    }
+}
+
+#[test]
+fn explicit_targets_remain_exact() {
+    for target in ["27017", "127.0.0.1:27017", "[::1]:27017", "localhost:27017"] {
+        let JoinTarget::Direct { addrs, .. } = parse_join(target).unwrap() else {
+            panic!("expected direct target");
+        };
+        assert_eq!(addrs.len(), 1, "{target}");
+        assert_eq!(addrs[0].port(), 27017);
+    }
+}
+
+#[path = "tests/join_rejections.rs"]
+mod join_rejections;
