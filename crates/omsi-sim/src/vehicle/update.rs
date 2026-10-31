@@ -346,7 +346,7 @@ impl VehicleInstance {
             (Ev::AiBlinkerL, matches!(ai.blinker, 1 | 3) as i32 as f32),
             (Ev::AiBlinkerR, matches!(ai.blinker, 2 | 3) as i32 as f32),
             (Ev::AiBrakelight, ai.brake as i32 as f32),
-            (Ev::AiLight, ai.lights as i32 as f32),
+            (Ev::AiLight, if ai.flash { 2.0 } else { ai.lights as i32 as f32 }),
             // (the engine's field +0x638: an AI bus lights its saloon when it drives with
             // its lights on - the LiAZ's `lights_AI` switches both saloon circuits on it)
             (Ev::AiInteriorlight, ai.lights as i32 as f32),

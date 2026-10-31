@@ -3034,7 +3034,7 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
     // (NexiconDK, 31 October 2026) what share of the people signal to a coming bus, wave to it,
     // glance at a full one, hold up their phone's light in the dark, in per cent: every time
     // (100), sometimes (30), rarely (10), never (0)
-    for k in ["pax_signal", "pax_wave", "pax_full", "pax_phone"] {
+    for k in ["pax_signal", "pax_wave", "pax_full", "pax_phone", "ai_greet"] {
         v[k] = json!(30);
     }
     // OMSI's own options
@@ -3157,7 +3157,7 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
             "max_fps" => v[&k] = json!(val.parse::<f64>().map(|x| x as i64).unwrap_or(0)),
             "max_obj_dist" => v[&k] = if val.eq_ignore_ascii_case("auto") { json!("auto") } else { json!(val.parse::<f64>().map(|m| (m.round() as i64).to_string()).unwrap_or_else(|_| "auto".into())) },
             "ssao" | "shadows" | "shadow_blobs" | "navigator" | "enhanced" | "triple_screen" | "triple_span" | "triple_hud_center" | "vr" | "vr_desktop_mirror" | "fullscreen" | "vsync" | "exact_fare" | "detail_textures" | "texture_compression" | "chat" | "tooltips" | "name_tags" | "show_fps" | "clouds" | "doppler" | "driver" | "use_real_time" | "use_real_date" | "use_real_year" | "collision_vehicles" | "collision_objects" | "collision_pedestrians" | "head_movement" | "driverview_smooth" | "hands_in_cab" | "alt_view" | "precision_zoom" => v[&k] = json!(b(val)),
-            "maintenance" | "ai_unsched_factor" | "ai_max_scheduled" | "standing_chance" | "pax_sit" | "pax_runners" | "pax_signal" | "pax_wave" | "pax_full" | "pax_phone" => v[&k] = json!(val.trim_end_matches('%').parse::<f64>().map(|x| x.max(0.0) as i64).unwrap_or(0)),
+            "maintenance" | "ai_unsched_factor" | "ai_max_scheduled" | "standing_chance" | "pax_sit" | "pax_runners" | "pax_signal" | "pax_wave" | "pax_full" | "pax_phone" | "ai_greet" => v[&k] = json!(val.trim_end_matches('%').parse::<f64>().map(|x| x.max(0.0) as i64).unwrap_or(0)),
             // (-1: no parked cars at all, #864)
             "ai_max_parked" => v[&k] = json!(val.parse::<f64>().map(|x| x.max(-1.0) as i64).unwrap_or(0)),
             "ai_max_humans" => v[&k] = json!(val.parse::<f64>().map(|x| x.max(1.0) as i64).unwrap_or(200)),
@@ -3670,7 +3670,7 @@ pub fn settings_to_text(v: &Value, old: Option<&str>) -> String {
     text.push_str(&format!("ambient={}\nvol_ambient={}\n", b("ambient", true), f("vol_ambient", 0.8).clamp(0.0, 1.0)));
     text.push_str(&format!("radio_speaker={}\nradio_hiss={}\nradio_dropouts={}\n", f("radio_speaker", 0.0).clamp(0.0, 1.0), f("radio_hiss", 0.0).clamp(0.0, 1.0), f("radio_dropouts", 0.0).clamp(0.0, 1.0)));
     text.push_str(&format!("ai_wait_timed_stops_only={}\n", b("ai_wait_timed_stops_only", false)));
-    text.push_str(&format!("pax_signal={}\npax_wave={}\npax_full={}\npax_phone={}\n", n("pax_signal", 30).clamp(0, 100), n("pax_wave", 30).clamp(0, 100), n("pax_full", 30).clamp(0, 100), n("pax_phone", 30).clamp(0, 100)));
+    text.push_str(&format!("pax_signal={}\npax_wave={}\npax_full={}\npax_phone={}\nai_greet={}\n", n("pax_signal", 30).clamp(0, 100), n("pax_wave", 30).clamp(0, 100), n("pax_full", 30).clamp(0, 100), n("pax_phone", 30).clamp(0, 100), n("ai_greet", 30).clamp(0, 100)));
     text.push_str(&format!("triple_left_angle_deg={}\ntriple_right_angle_deg={}\ntriple_eye_height_mm={}\n", f("triple_left_angle_deg", 45.0).clamp(0.0, 90.0), f("triple_right_angle_deg", 45.0).clamp(0.0, 90.0), f("triple_eye_height_mm", 0.0).clamp(-500.0, 500.0)));
     text.push_str(&format!("companion={}\ncompanion_hide={}\ncompanion_tunnel={}\n", b("companion", false), b("companion_hide", true), b("companion_tunnel", false)));
     text.push_str(&format!("launcher_scale={}\n", launcher_scale(v.get("launcher_scale").and_then(|x| x.as_f64()))));

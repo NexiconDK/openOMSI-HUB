@@ -343,6 +343,8 @@ const gameplay = {
         { type: 'toggle', key: 'get_up', label: 'Ability to get up (Ctrl+Shift+G)' },
         { type: 'section', title: 'Traffic' },
         { type: 'select', key: 'ai_unsched_factor', label: 'Random traffic', options: [['25', '25%'], ['50', '50%'], ['75', '75%'], ['100', '100%'], ['150', '150%'], ['200', '200%']] },
+        // (NexiconDK, 31 October 2026)
+        { type: 'select', key: 'ai_greet', label: 'AI bus drivers greet you', options: GESTURE_STEPS, help: "How many of the timetable buses' drivers you meet flash their main beam at you - now and then a short toot" },
         { type: 'select', key: 'ai_max_scheduled', label: 'Timetable vehicles', options: [['0', 'All'], ['10', 'At most 10'], ['25', 'At most 25'], ['50', 'At most 50']] },
         { type: 'select', key: 'ai_max_parked', label: 'Parked cars', options: [['-1', 'None'], ['0', 'Every space'], ['35', 'At most 35'], ['100', 'At most 100'], ['250', 'At most 250']] },
         // (OMSI's AIMaxHumans, #2087)

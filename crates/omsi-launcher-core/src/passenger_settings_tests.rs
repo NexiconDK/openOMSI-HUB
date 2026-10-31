@@ -6,7 +6,7 @@ use super::*;
 
 #[test]
 fn the_gesture_shares_are_sometimes_by_default_and_kept() {
-    for key in ["pax_signal", "pax_wave", "pax_full", "pax_phone"] {
+    for key in ["pax_signal", "pax_wave", "pax_full", "pax_phone", "ai_greet"] {
         assert_eq!(settings_from_text(None)[key], 30, "{key}");
         assert_eq!(settings_from_text(Some("version=1\n"))[key], 30, "{key}");
         for want in [100, 10, 0, 30] {

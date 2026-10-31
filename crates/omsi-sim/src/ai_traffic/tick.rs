@@ -112,6 +112,8 @@ impl TrafficSim {
     /// player's vehicle.
     pub fn tick(&mut self, dt: f32, player: Option<PlayerBox>) {
         self.lamp_dt += dt;
+        // (NexiconDK: the AI buses' drivers greeting the player's bus - a LAN client's too)
+        self.greet_tick(dt, player);
         if self.mirror {
             self.mirror_tick(dt);
             return;
@@ -1058,6 +1060,7 @@ impl TrafficSim {
             .filter(|&j| j < self.cars.len())
             .map(|j| self.cars[j].id);
         let priority_warning = self.priority_warning(i, lead.map(|l| l.0));
+        let flash = self.flashing(self.cars[i].id);
         let car = &mut self.cars[i];
         car.lead_car = lead_id;
         if car.state.speed.abs() < 0.1 && !car.at_stop() {
@@ -1226,6 +1229,7 @@ impl TrafficSim {
             at_station_side: car.at_station_side(),
             priority_warning,
             engine_off: car.bus.as_ref().is_some_and(|b| !b.engine_running(self.day_time)),
+            flash,
         })
     }
 

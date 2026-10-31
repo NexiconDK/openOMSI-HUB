@@ -39,6 +39,7 @@ pub(super) fn options_pages(app: &App) -> Vec<Page> {
         pick("passenger_animation", "Passenger animations", "Original OMSI: the people move with their own animation files, as in OMSI 2. Natural: poses the game works out itself - the feet on the ground, the hands on the rails"),
         pick("maintenance", "Maintenance", later),
         pick("ai_unsched_factor", "Random traffic", later),
+        pick("ai_greet", "AI bus drivers greet you", "How many of the timetable buses' drivers you meet flash their main beam at you - now and then a short toot"),
         pick("ai_max_scheduled", "Timetable vehicles", later),
         pick("ai_max_parked", "Parked cars", later),
         pick("ai_max_humans", "People at once", later),

@@ -324,7 +324,7 @@ pub(super) fn select_options(key: &str) -> Vec<(&'static str, &'static str)> {
         "pax_sit" => vec![("0", "Off (a free place at random)"), ("50", "Little"), ("100", "Normal"), ("150", "Much"), ("200", "Very much")],
         "pax_runners" => vec![("0", "Off"), ("5", "Now and then"), ("15", "Often"), ("30", "Very often")],
         // (NexiconDK, 31 October 2026: `omsi_sim::people::SHARE_STEPS`)
-        "pax_signal" | "pax_wave" | "pax_full" | "pax_phone" => vec![("100", "Every time (100%)"), ("30", "Sometimes (30%)"), ("10", "Rarely (10%)"), ("0", "Never")],
+        "pax_signal" | "pax_wave" | "pax_full" | "pax_phone" | "ai_greet" => vec![("100", "Every time (100%)"), ("30", "Sometimes (30%)"), ("10", "Rarely (10%)"), ("0", "Never")],
         "units" => vec![("metric", "Metric (km/h, km, °C)"), ("uk", "British (mph, miles, yards, °C)"), ("us", "American (mph, miles, feet, °F)")],
         "pax_voices" => vec![("all", "Greetings and tickets"), ("tickets", "Only the ticket asked for"), ("off", "Silent")],
         "perf_overlay" => vec![("off", "Off"), ("compact", "Compact"), ("detailed", "Detailed")],
@@ -407,6 +407,10 @@ pub(super) fn sync_live(app: &mut App) {
     if let Some(n) = app.menus.navigator.as_mut() {
         n.arrows = s.nav_arrows;
         n.entry_points = crate::navigator::EntryPoints::from_setting(&s.nav_entries);
+    }
+    // (NexiconDK: the AI buses' drivers greeting the player's bus, `greet`)
+    if let Some(t) = app.session.traffic.as_mut() {
+        t.greet_share = s.ai_greet;
     }
     if let Some(h) = app.session.humans.as_mut() {
         h.exact_fare = s.exact_fare;

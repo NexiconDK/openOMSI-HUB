@@ -14,6 +14,7 @@ pub mod control;
 pub mod deadlock;
 pub mod fixed_step;
 pub mod horn;
+pub mod greet;
 pub mod density;
 pub mod dormant;
 pub mod emergency;
@@ -302,6 +303,14 @@ pub struct TrafficSim {
     /// vehicle. The stock cars' sounds have nothing on `ev_AI_Horn`, so the game plays
     /// OMSI's own AI horn for them.
     pub honked: Vec<(u64, bool)>,
+    /// (NexiconDK, 31 October 2026) The AI buses' drivers greeting the player's bus they meet
+    /// (`greet`): the share who do (the setting `ai_greet`), its clock, the meetings so far,
+    /// whom each greeted when, and the main beams flashing now (car, since).
+    pub greet_share: f32,
+    pub greet_clock: f32,
+    pub greet_n: u64,
+    pub greeted: HashMap<u64, f32>,
+    pub flashes: Vec<(u64, f32)>,
     /// The LAN players' vehicles as of this tick (`others` is taken for the tick's scene):
     /// the lane changes look at them (`players_on`).
     pub others_now: Vec<PlayerBox>,

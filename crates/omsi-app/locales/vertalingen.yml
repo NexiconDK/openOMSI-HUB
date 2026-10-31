@@ -3035,3 +3035,17 @@ _version: 2
   ru: "Редко (10%)"
   uk: "Рідко (10%)"
   pl: "Rzadko (10%)"
+"AI bus drivers greet you":
+  nl: "Buschauffeurs van de AI groeten je"
+  de: "KI-Busfahrer grüßen dich"
+  fr: "Les chauffeurs de bus de l'IA te saluent"
+  ru: "Водители автобусов ИИ приветствуют тебя"
+  uk: "Водії автобусів ШІ вітають тебе"
+  pl: "Kierowcy autobusów SI cię pozdrawiają"
+"How many of the timetable buses' drivers you meet flash their main beam at you - now and then a short toot":
+  nl: "Hoeveel chauffeurs van de dienstregelingbussen die je tegenkomt met hun grootlicht naar je knipperen - af en toe een kort toetertje"
+  de: "Wie viele Fahrer der Fahrplanbusse, denen du begegnest, dir mit dem Fernlicht zublinken - ab und zu ein kurzes Hupen"
+  fr: "Combien de chauffeurs des bus de ligne que tu croises te font un appel de phares - de temps en temps un petit coup de klaxon"
+  ru: "Сколько водителей рейсовых автобусов при встрече мигнут тебе дальним светом - иногда коротко посигналят"
+  uk: "Скільки водіїв рейсових автобусів при зустрічі блимнуть тобі далеким світлом - іноді коротко посигналять"
+  pl: "Ilu kierowców autobusów rozkładowych, których mijasz, mignie ci długimi światłami - czasem krótko zatrąbi"

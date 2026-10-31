@@ -71,6 +71,9 @@ pub struct AiFrame {
     pub blinker: i32,
     pub brake: bool,
     pub lights: bool,
+    /// (NexiconDK, 31 October 2026) The main beam flashed now (`AI_Light` 2): a bus's driver
+    /// greeting the player's bus he meets (`ai_traffic::greet`).
+    pub flash: bool,
     /// `AI_Scheduled_AtStation` as OMSI hands it to the script: 1 = standing at a stop, open
     /// the doors; -1 = time to go, close them (the script answers with 0 once they are
     /// shut); 0 = not at a stop (a script still closing its doors is told -1 until it

@@ -121,6 +121,8 @@ impl Traffic {
         let mut sim = TrafficSim::assemble(root, net, random, lights, controller_of_object, (parked_cars, lane_tiles), density_curve, (unsched_factor, max_scheduled), target);
         // (#1773: off, an early timetable bus waits at every stop, as in OMSI)
         sim.timed_waits_only = crate::settings::Settings::load().ai_wait_timed_stops_only;
+        // (NexiconDK: the AI buses' drivers greeting the player's bus they meet, `greet`)
+        sim.greet_share = crate::settings::Settings::load().ai_greet;
         Ok(Traffic::with_sim(sim))
     }
 

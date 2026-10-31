@@ -1172,6 +1172,8 @@ impl Mirror {
                             priority_warning: false,
                             // (the host's buses' engines are not on the wire: running)
                             engine_off: false,
+                            // (a driver greeting our bus: this game's own, `greet`)
+                            flash: t.flashing(t.cars[*i].id),
                         },
                     )
                 })
