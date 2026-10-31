@@ -195,8 +195,8 @@ const STANDER_MAX: f32 = 1800.0;
 /// The texts the game shows (English, the keys of the translations).
 const WAIT: &str = "Wait here for your bus: line %{line} at %{time}. Its driver gets out at the stop, then G at the front door takes the wheel.";
 const ARRIVED: &str = "Your bus is here: walk up to it.";
-const DRIVER_OUT: &str = "The driver gets out: then G at the front door takes the wheel.";
-const YOURS: &str = "Your bus: G at the front door takes the wheel.";
+const DRIVER_OUT: &str = "The driver switches the engine off and gets out: then G at the front door takes the wheel.";
+const YOURS: &str = "Your bus: G at the front door takes the wheel. The engine is off: start it (Shift+U).";
 const WAIT_DRIVER: &str = "Wait: the driver gets out first.";
 const KEPT: &str = "You were not there in time: the AI drives the %{time}. Your bus comes to %{stop} for the %{next}: ride along to there (G at a door of the bus).";
 const KEPT_LAST: &str = "You were not there in time: the AI drives the rest of your duty.";
@@ -805,8 +805,10 @@ impl App {
                 log::warn!("driver timetable paper: {e:#}");
             }
         }
-        // running, as the driver left it
-        let _ = p.start_up();
+        // (31 October 2026) the driver switched the engine off as he got up: the electrics on,
+        // so that the doors work and the displays show - the player starts it himself (it was
+        // started up anew here, and the bus cranked its engine as the driver got out)
+        p.power_up();
         // the driver gets out: his own figure, not the player's
         let (seat, door_g, away, kind) = driver_way(self.session.humans.as_mut(), &w, &p.vehicle, car);
         let v = &p.vehicle;

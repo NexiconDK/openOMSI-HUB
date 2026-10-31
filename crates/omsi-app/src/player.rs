@@ -791,6 +791,15 @@ impl Player {
         }
     }
 
+    /// (NexiconDK, 31 October 2026) Only the electrics switched on (and the displays), the
+    /// engine left off: a bus taken over from a driver who switched it off as he got up
+    /// (`relief`) - its doors work, and the player starts it himself (`start_up`, Shift+U).
+    pub(crate) fn power_up(&mut self) {
+        let bound = self.bound_actions();
+        self.startup = Some(omsi_sim::startup::StartUp::power_only(&self.vehicle, &bound));
+        self.startup_at = Some(std::time::Instant::now());
+    }
+
     /// The vehicle actions `Inputs/keyboard.cfg` puts on keys.
     pub(crate) fn bound_actions(&self) -> Vec<String> {
         let mut names: Vec<String> = Vec::new();

@@ -141,6 +141,47 @@ mod tests {
         std::fs::remove_dir_all(&dir).ok();
     }
 
+    /// (NexiconDK, 31 October 2026) A bus taken over from a driver who switched it off: the
+    /// electrics on, the engine left for the new driver to start.
+    #[test]
+    fn power_only_switches_the_electrics_on_and_leaves_the_engine_off() {
+        let dir = std::env::temp_dir().join(format!("omsi-startup-power-only-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("p.bus"), "[model]\nmodel.cfg\n[varnamelist]\n1\nvars.txt\n[script]\n1\nmain.osc\n").unwrap();
+        std::fs::write(dir.join("model.cfg"), "").unwrap();
+        std::fs::write(dir.join("vars.txt"), "elec_busbar_main_sw\nengine_on\n").unwrap();
+        std::fs::write(
+            dir.join("main.osc"),
+            "{init}\n0 (S.L.elec_busbar_main_sw) 0 (S.L.engine_on)\n{end}\n\
+             {trigger:kw_batterietrennschalter}\n1 (S.L.elec_busbar_main_sw)\n{end}\n\
+             {trigger:kw_m_enginestart}\n(L.L.elec_busbar_main_sw) {if} 1 (S.L.engine_on) {endif}\n{end}\n\
+             {frame}\n{end}\n",
+        )
+        .unwrap();
+        let ty = Arc::new(VehicleType::load(&dir, &dir.join("p.bus")).unwrap());
+        let mut v = VehicleInstance::new(ty, VehicleHost::new(SimClock::default()));
+        let mut start = StartUp::power_only(&v, &[]);
+        for _ in 0..300 {
+            if !start.tick(&mut v, &[], 1.0 / 30.0) {
+                break;
+            }
+            v.update(1.0 / 30.0);
+        }
+        assert!(!start.running());
+        assert!(power_on(&v), "{:?}", start.report);
+        assert!(!engine_running(&v), "{:?}", start.report);
+        // and the new driver's own start-up starts it
+        let mut start = StartUp::new(&v, &[]);
+        for _ in 0..300 {
+            if !start.tick(&mut v, &[], 1.0 / 30.0) {
+                break;
+            }
+            v.update(1.0 / 30.0);
+        }
+        assert!(engine_running(&v), "{:?}", start.report);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
     #[test]
     fn logs_in_and_selects_neutral_before_starting() {
         let dir = std::env::temp_dir().join(format!(
@@ -229,6 +270,9 @@ pub struct StartUp {
     stop_n: usize,
     /// What was done, for the log and the HUD.
     pub report: Vec<String>,
+    /// (NexiconDK, 31 October 2026) The engine is started too - else only the electrics (and
+    /// the displays) are switched on: `power_only`.
+    engine: bool,
 }
 
 /// A loose match for a deliberately named input, not a variable.  This is only the final
@@ -602,6 +646,7 @@ impl StartUp {
             blank: Vec::new(),
             stop_n: 0,
             report: Vec::new(),
+            engine: true,
         };
         // (a bus under power whose engine has died - a crash stalled it - is started again:
         // taken for a running bus, it was "shut down" by pressing its switches round and
@@ -611,6 +656,16 @@ impl StartUp {
         } else {
             s.enter(v, bound, Step::Power);
         }
+        s
+    }
+
+    /// (NexiconDK, 31 October 2026) Only the electrics switched on (and the displays), the
+    /// engine left off: a bus taken over from a driver who switched it off as he got up - its
+    /// doors work, and the new driver starts it himself.
+    pub fn power_only(v: &VehicleInstance, bound: &[String]) -> StartUp {
+        let mut s = StartUp::new(v, bound);
+        s.engine = false;
+        s.enter(v, bound, Step::Power);
         s
     }
 
@@ -717,8 +772,10 @@ impl StartUp {
             Step::Login => {
                 let needs_login = v.var("ddu_login").is_some_and(|n| n < 0.5)
                     && v.ty.program.trigger("ddu_login").is_some();
+                // (only the electrics: on to the displays)
+                let next = if self.engine { Step::Neutral } else { Step::Displays };
                 if !needs_login {
-                    self.enter(v, bound, Step::Neutral);
+                    self.enter(v, bound, next);
                 } else {
                     let timer_ready = v
                         .var("ddu_power_timer")
@@ -728,7 +785,7 @@ impl StartUp {
                         v.trigger("ddu_login");
                         v.trigger("ddu_login_off");
                         self.report.push("DDU login".to_string());
-                        self.enter(v, bound, Step::Neutral);
+                        self.enter(v, bound, next);
                     }
                 }
             }
@@ -752,8 +809,10 @@ impl StartUp {
                         self.report.push(format!("ignition ({n})"));
                         self.candidate += 1;
                         self.t = 0.0;
-                    } else {
+                    } else if self.engine {
                         self.enter(v, bound, Step::Crank);
+                    } else {
+                        self.enter(v, bound, Step::Displays);
                     }
                 }
             }
@@ -835,7 +894,8 @@ impl StartUp {
             Step::Displays => {
                 // an automatic gearbox into D, the foot on the brake as the ZF scripts want it
                 // (`(L.L.Brake) 0 >` for D: the GX7767 E500 MMC stayed in N)
-                if v.ty.program.trigger("automatic_D").is_some() && v.var("antrieb_getr_gangvorwahl").is_none_or(|g| g < 3.5) {
+                // (not with the engine left off)
+                if self.engine && v.ty.program.trigger("automatic_D").is_some() && v.var("antrieb_getr_gangvorwahl").is_none_or(|g| g < 3.5) {
                     let brake = v.var("Brake");
                     v.set_var("Brake", 1.0);
                     v.trigger("automatic_D");
