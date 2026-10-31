@@ -2,6 +2,10 @@
 
 use super::*;
 
+/// (NexiconDK, 31 October 2026) The bodies of a LAN player's vehicles nearer than this (m) to where
+/// his bus given back stood are his bus's: not in the way of the AI's that takes its place.
+const STOOD_CLEAR: f64 = 14.0;
+
 impl Schedule {
     /// Put departure `i` on the road where its bus is at `day_time`: on the part of the route
     /// the loaded tiles have, which is carried on as more tiles come.
@@ -193,6 +197,44 @@ impl Schedule {
                 stood_at_stand = Some(at_stand);
             }
         }
+        // (NexiconDK, Bus Company Online, 31 October 2026) The AI's bus of a departure a LAN player
+        // gave his bus back for (`relief back`) is put out just where his stood - on the way up to
+        // its stop, or a little past it - and drives on from there, rather than at the stop's own
+        // place, out of sight of where his was gone from: a stop it stands past it serves where it
+        // stands (`stood_on`, `back_stood`).
+        let stood = if self.sim.back_given(i) { self.sim.back_stood(i, day_time) } else { None };
+        if let Some((pos, heading)) = stood {
+            let at_stand = stops.iter().find(|st| st.0 > start_index || (st.0 == start_index && st.1 > s)).is_some_and(|st| st.0 == start_index && (st.1 - s).abs() < 2.0);
+            match stood_on(&traffic.net, &section, start_index, s, pos, heading) {
+                Some(a) => {
+                    let (from_index, from_s) = (start_index, s);
+                    if a.before.is_empty() {
+                        start_index = a.index;
+                    } else {
+                        let n = a.before.len();
+                        section = a.before.iter().copied().chain(section.iter().copied()).collect();
+                        for st in &mut stops {
+                            st.0 += n;
+                        }
+                        start_index = 0;
+                    }
+                    s = a.s;
+                    if a.back < 0.0 {
+                        let to = (s + 0.5).min(traffic.net.lanes[section[start_index]].length());
+                        for st in &mut stops {
+                            let from_here = st.0 > from_index || (st.0 == from_index && st.1 >= from_s - 1.0);
+                            let not_past = st.0 < start_index || (st.0 == start_index && st.1 <= to);
+                            if from_here && not_past {
+                                (st.0, st.1) = (start_index, to);
+                            }
+                        }
+                    }
+                    stood_at_stand = Some(at_stand);
+                    log::info!("trip {trip_name}: the AI takes the bus a LAN player gave back over where it stands, {:.0} m {} its stop", a.back.abs(), if a.back < 0.0 { "past" } else { "before" });
+                }
+                None => log::info!("trip {trip_name}: the bus a LAN player gave back stands off its way ({:.1}, {:.1}): the AI's is put out at its stop", pos.x, pos.y),
+            }
+        }
         let at_pos = traffic.net.lanes[section[start_index]].at(s).0;
         // lanes stay in the network when their tile is unloaded: nothing is put on ground
         // that is not there (the departure waits for its tile)
@@ -203,8 +245,18 @@ impl Schedule {
         // not into a vehicle that happens to be there (the player's bus at its stop, a car),
         // nor just in front of one driving up to that place: try again in a moment
         let at_heading = traffic.net.lanes[section[start_index]].at(s).1 as f64;
-        if traffic.blocked(&ty, at_pos, at_heading) || !traffic.spawn_clear(&ty, at_pos, at_heading)
-        {
+        // (the bus a player gave back, standing just there until his game has let it go, is not in
+        // the way of the AI's that takes its place: `stood` - NexiconDK)
+        let kept_clear = stood.map(|(p, _)| {
+            let all = std::mem::take(&mut traffic.keep_clear);
+            traffic.keep_clear = all.iter().copied().filter(|o| (o.center - p.truncate()).length() > STOOD_CLEAR).collect();
+            all
+        });
+        let blocked = traffic.blocked(&ty, at_pos, at_heading) || !traffic.spawn_clear(&ty, at_pos, at_heading);
+        if let Some(all) = kept_clear {
+            traffic.keep_clear = all;
+        }
+        if blocked {
             log::debug!("trip {trip_name}: a vehicle stands where the bus would appear");
             return Placed::Busy;
         }
@@ -213,6 +265,7 @@ impl Schedule {
         // had five buses queueing in the road for a quarter of an hour, and every bus
         // serving the stop and every car behind them waiting as well.)
         if departure > day_time + 30.0
+            && !self.sim.back_given(i)
             && traffic
             .cars
             .iter()

@@ -886,6 +886,19 @@ its departure, then the AI drives that trip and the relief moves to the next one
   driven on (single trips' "Drive on"), it is no hand-back; asked again once given back, nothing to
   hand back. Not given back - his game no longer asks for `RELIEF_STALE`, or its departure time
   come - the AI's own bus comes, as before.
+- **The AI's bus in his bus's place** (31 October 2026, "the bus just vanishes - it should drive
+  on"): his bus went from his game as soon as the world said `relief backed`, and the AI's came only
+  seconds later - his still stood in the world's way (`keep_clear`), so it was tried again every 3 s
+  -, at the stop's own place rather than his bus's, or not until its departure where another bus
+  stood within 50 m (the stand taken). Now the world is told where his bus stands (`PeerInfo::bus`,
+  his pose; `gave_back`'s `stood`, kept `BACK_STOOD_FOR`), and the AI's bus is put out just there
+  (`timetable_run::stood_on`: on the way up to its stop - back along its route and every way of
+  lanes into it, 250 m at most -, or up to 30 m past it, within 4 m of the lane and 45 degrees of
+  its way): his own bus's bodies are not in its way (`STOOD_CLEAR`), the stand is not taken by it,
+  a stop it stands past it serves where it stands, and it is on its layover there. His game keeps
+  his bus in its place until a bus of the world's stands within 6 m of it the same way round
+  (`relief_back_swap`, `BACK_SWAP_MAX` 10 s at most), then lets it go: the AI's drives on from
+  there at its time.
 - **Handing the bus over on the way** (28 October 2026, asked by NexiconDK: "pick a trip, then go
   and take another"): standing at a stop of his trip, or at its terminus, the game menu offers "Hand
   the bus over to the AI here" (`relief::hand_over`; on the server, a duty that goes on after the

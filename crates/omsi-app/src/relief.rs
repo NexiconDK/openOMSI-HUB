@@ -123,6 +123,9 @@ pub(crate) struct Back {
     walker: Option<Driver>,
     /// Given back (`relief back`, sent again until the world answers): seconds since.
     sent: Option<f32>,
+    /// (31 October 2026) The world has it (`relief backed`): seconds since - our bus stays in its
+    /// place until the AI's that takes it over stands there (`relief_back_swap`).
+    swap: Option<f32>,
     /// (28 October 2026) Handed over on the way ("Hand the bus over here", `relief stop`), not at
     /// the end of his duty: his duty ends with it.
     way: Option<OnTheWay>,
@@ -231,6 +234,10 @@ const BACK_AGAIN: f32 = 30.0;
 const BACK_TRIES: u32 = 10;
 /// How long his game waits for the world to take the bus given back (s): kept then.
 const BACK_GIVE_UP: f32 = 15.0;
+/// (31 October 2026) Given back, our bus stays in its place until a bus of the world's stands
+/// within this much of it (m) - the AI's that takes it over -, or this long at most (s).
+const BACK_SWAP_NEAR: f64 = 6.0;
+const BACK_SWAP_MAX: f32 = 10.0;
 /// How far his bus may be from where his duty ended (m): driven off, it is no hand-back.
 const BACK_NEAR: f64 = 60.0;
 /// (NexiconDK, Bus Company Online: single trips, 27 October 2026) The game menu's line, and what
@@ -255,12 +262,22 @@ pub(crate) struct PeerInfo {
     pub(crate) id: u32,
     pub(crate) tour: String,
     pub(crate) walker: Option<(f64, f64)>,
+    /// (31 October 2026) Where his bus stands, and its heading (degrees): one given back to the AI
+    /// is taken over just there (`ScheduleSim::back_stood`).
+    pub(crate) bus: Option<(DVec3, f64)>,
 }
 
 impl PeerInfo {
     /// The players of a LAN session.
     pub(crate) fn of(lan: &omsi_net::LanSession) -> Vec<PeerInfo> {
-        lan.peers().map(|p| PeerInfo { id: p.pose.id, tour: p.pose.tour.clone(), walker: p.pose.walker.map(|w| (w.x, w.y)) }).collect()
+        lan.peers()
+            .map(|p| PeerInfo {
+                id: p.pose.id,
+                tour: p.pose.tour.clone(),
+                walker: p.pose.walker.map(|w| (w.x, w.y)),
+                bus: (p.has_pose && p.pose.has_vehicle()).then(|| (DVec3::new(p.pose.x, p.pose.y, p.pose.z), p.pose.heading as f64)),
+            })
+            .collect()
     }
 }
 
@@ -347,7 +364,8 @@ pub(crate) fn host_command(from: u32, text: &str, schedule: Option<&mut crate::s
                 omsi_sim::timetable_run::BackState::Given(_) | omsi_sim::timetable_run::BackState::No => out.push((from, format!("relief end {dep};0"))),
             }
         }
-        "back" => match s.sim.gave_back(from, line, tour, dep, &t.sim, t.day_time) {
+        // (31 October 2026: the AI's bus put out just where his stands - `back_stood`)
+        "back" => match s.sim.gave_back(from, line, tour, dep, peers.iter().find(|p| p.id == from).and_then(|p| p.bus), &t.sim, t.day_time) {
             Ok(()) => out.push((from, format!("relief backed {dep}"))),
             Err(why) => out.push((from, format!("relief no {dep};{why}"))),
         },
@@ -959,6 +977,10 @@ impl App {
             self.relief_back_begin();
             return;
         }
+        if self.session.relief_back.as_ref().is_some_and(|b| b.swap.is_some()) {
+            self.relief_back_swap(dt);
+            return;
+        }
         if self.session.relief_back.as_ref().is_some_and(|b| b.sent.is_some()) {
             self.relief_back_sent(dt);
             return;
@@ -1068,7 +1090,7 @@ impl App {
             None => (d.line.clone(), d.tour.clone()),
         };
         let last = (d.trip().departure / 60.0).round() as i32;
-        self.session.relief_back = Some(Back { line: line.trim().to_string(), tour: tour.trim().to_string(), last, next: None, at: p.vehicle.position.truncate(), trips: d.trips.len(), ask_t: 0.0, told_t: 0.0, heard: false, asks: 0, walker: None, sent: None, way: None });
+        self.session.relief_back = Some(Back { line: line.trim().to_string(), tour: tour.trim().to_string(), last, next: None, at: p.vehicle.position.truncate(), trips: d.trips.len(), ask_t: 0.0, told_t: 0.0, heard: false, asks: 0, walker: None, sent: None, swap: None, way: None });
     }
 
     /// (28 October 2026) The game menu offers "Hand the bus over here": on Bus Company Online's
@@ -1113,7 +1135,7 @@ impl App {
         let dep = (d.trip().departure / 60.0).round() as i32;
         log::info!("relief: handing our bus over to the AI on line {} tour {} at {}, {}", line.trim(), tour.trim(), hhmm_min(dep), stop.map_or("at its terminus".to_string(), |s| format!("at its stop {}", s + 1)));
         let way = Some(OnTheWay { trip: d.trip_index, stop });
-        let b = Back { line: line.trim().to_string(), tour: tour.trim().to_string(), last: dep, next: None, at: p.vehicle.position.truncate(), trips: d.trips.len(), ask_t: 0.0, told_t: 0.0, heard: false, asks: 0, walker: None, sent: None, way };
+        let b = Back { line: line.trim().to_string(), tour: tour.trim().to_string(), last: dep, next: None, at: p.vehicle.position.truncate(), trips: d.trips.len(), ask_t: 0.0, told_t: 0.0, heard: false, asks: 0, walker: None, sent: None, swap: None, way };
         if let Some(old) = self.session.relief_back.replace(b) {
             if old.walker.is_some() {
                 self.relief_back_walker_gone();
@@ -1213,6 +1235,47 @@ impl App {
         }
     }
 
+    /// (31 October 2026) The world has our bus (`relief backed`): it stays where it stands, the AI's
+    /// driver at the wheel, until the AI's bus that takes it over stands in its place in our world (a
+    /// bus of the world's within `BACK_SWAP_NEAR`, the same way round), or for `BACK_SWAP_MAX` at
+    /// most - then it goes (`relief_back_done`), and the AI's drives on from there. It went at once
+    /// before, and the AI's came seconds later, or at the stop's own place.
+    fn relief_back_swap(&mut self, dt: f32) {
+        let Some(t) = self.session.relief_back.as_mut().and_then(|b| b.swap.as_mut()) else { return };
+        *t += dt;
+        let waited = *t;
+        let here = self.player.as_ref().map(|p| (p.vehicle.position, p.vehicle.heading));
+        let came = here.is_some_and(|(at, heading)| {
+            self.session.traffic.as_ref().is_some_and(|tr| {
+                tr.cars.iter().any(|c| c.is_bus() && !c.gone && (c.vehicle.position - at).truncate().length() < BACK_SWAP_NEAR && omsi_sim::traffic::wrap_deg((c.vehicle.heading - heading) as f32).abs() < 45.0)
+            })
+        });
+        if came || here.is_none() || waited > BACK_SWAP_MAX {
+            if !came {
+                log::info!("relief: the AI's bus did not show in our bus's place in {waited:.1} s: ours goes all the same");
+            }
+            self.relief_back_done();
+        }
+    }
+
+    /// Our bus is the world's: it goes from our world (the AI's drives on in its place), and its
+    /// driver's figure with it (the AI's bus has its own).
+    fn relief_back_done(&mut self) {
+        let Some(b) = self.session.relief_back.take() else { return };
+        log::info!("relief: the AI has our bus");
+        let way = b.way.is_some();
+        self.relief_back_walker_gone();
+        self.relief_drop_bus();
+        // (on the way: our duty ends - the AI drives the rest, our company is told by the
+        // world; free drive on foot, and free for another duty)
+        if way {
+            crate::game_lists::end_duty(self);
+            self.service_msg = Some((tr(WAY_DONE), 15.0));
+        } else {
+            self.service_msg = Some((tr(BACK_DONE), 8.0));
+        }
+    }
+
     /// Our bus given back, the world's answer awaited: sent again now and then - no answer for
     /// long, the bus stays ours.
     fn relief_back_sent(&mut self, dt: f32) {
@@ -1278,18 +1341,11 @@ impl App {
                 true
             }
             "backed" if sent && dep == b.next => {
-                log::info!("relief: the AI has our bus");
-                let way = b.way.is_some();
-                self.session.relief_back = None;
-                self.relief_back_walker_gone();
-                self.relief_drop_bus();
-                // (on the way: our duty ends - the AI drives the rest, our company is told by the
-                // world; free drive on foot, and free for another duty)
-                if way {
-                    crate::game_lists::end_duty(self);
-                    self.service_msg = Some((tr(WAY_DONE), 15.0));
-                } else {
-                    self.service_msg = Some((tr(BACK_DONE), 8.0));
+                // (31 October 2026: ours stays in its place until the AI's stands there -
+                // `relief_back_swap`)
+                if b.swap.is_none() {
+                    log::info!("relief: the AI has our bus: it goes once the AI's stands in its place");
+                    b.swap = Some(0.0);
                 }
                 true
             }

@@ -32,12 +32,12 @@ use omsi_timetable::TimetableData;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-pub use approach::{relief_approach, Approach, APPROACH_MOST};
+pub use approach::{relief_approach, stood_on, Approach, APPROACH_MOST};
 pub use choice::{depot_file, pool_depot};
 pub use company::{CompanyBus, TimetableCompany};
 pub use dispatch::{tour_entry, TOUR_ENTRY_LANES};
 pub use place::Placing;
-pub use relief::{BackState, Handed as ReliefHanded, Kept as ReliefKept, ReliefBus, ReliefState, RELIEF_ARRIVED_WAIT, RELIEF_KEPT, RELIEF_NOBODY, RELIEF_NOT_HERE, RELIEF_NOT_WAITING, RELIEF_NO_BUS, RELIEF_NO_TRIP, RELIEF_STALE, RELIEF_WAIT};
+pub use relief::{BackState, BACK_STOOD_FOR, Handed as ReliefHanded, Kept as ReliefKept, ReliefBus, ReliefState, RELIEF_ARRIVED_WAIT, RELIEF_KEPT, RELIEF_NOBODY, RELIEF_NOT_HERE, RELIEF_NOT_WAITING, RELIEF_NO_BUS, RELIEF_NO_TRIP, RELIEF_STALE, RELIEF_WAIT};
 pub use web_map::{build_web_map, LiveBus, WebCall, WebMap, WebTimetable, WebTrip};
 
 /// What the timetable needs of the loaded map: its folders, the AI lists, the tiles, the
@@ -290,6 +290,9 @@ pub struct ScheduleSim {
     /// (28 October 2026) Those given back at a stop along their trip: when the timetable has them
     /// leave it (the traffic's clock) - put out there (`relief_place_time`).
     back_at: HashMap<usize, f64>,
+    /// (31 October 2026) Where his bus stood when he gave it back (its place and heading) and when
+    /// (the traffic's clock): the AI's bus of it is put out just there (`back_stood`).
+    back_stood: HashMap<usize, (glam::DVec3, f64, f64)>,
     /// Duties handed over to the AI on the way, for the players' companies (`take_handed`), and
     /// the rest of them: the AI's to drive, though a company drops what a player leaves.
     handed_log: Vec<relief::Handed>,

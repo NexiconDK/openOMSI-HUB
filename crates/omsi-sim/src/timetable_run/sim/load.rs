@@ -291,6 +291,7 @@ impl ScheduleSim {
             backs: HashMap::new(),
             backed: HashSet::new(),
             back_at: HashMap::new(),
+            back_stood: HashMap::new(),
             handed_log: Vec::new(),
             handed_runs: HashSet::new(),
             online_world: false,
@@ -527,6 +528,7 @@ impl ScheduleSim {
         self.backs.clear();
         self.backed.clear();
         self.back_at.clear();
+        self.back_stood.clear();
         self.handed_runs.clear();
         self.boards_made = f64::NEG_INFINITY;
         self.assign_car_use();

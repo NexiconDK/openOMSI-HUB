@@ -7,6 +7,7 @@
 //! into the route's first - the street it comes up from the depot by.
 
 use crate::traffic::{wrap_deg, LaneKind, Network};
+use glam::DVec3;
 
 /// How far back along its way a relief's bus is put out at most (m): beyond `NEAR_HIDE` and out
 /// of the picture, or round a corner, within that on nearly every map.
@@ -92,11 +93,99 @@ pub fn relief_approach(net: &Network, route: &[usize], index: usize, s: f32, mut
     furthest
 }
 
+/// (31 October 2026) How far back along the way up to its stop a bus given back may stand (m), how
+/// far on past the stop, how far off the lane and how far turned from it (degrees): `stood_on`.
+const STOOD_BACK: f32 = 250.0;
+const STOOD_PAST: f32 = 30.0;
+const STOOD_OFF: f64 = 4.0;
+const STOOD_TURNED: f32 = 45.0;
+/// The most lanes `stood_on` looks at back from the route (every way into it).
+const STOOD_LANES: usize = 64;
+
+/// (31 October 2026) Where on the way up to `route[index]` at `s` - back along the route and every
+/// way of lanes leading into its first, or a little on past it - a bus standing at `at`, heading
+/// `heading` (degrees), stands: the AI's bus of the departure a LAN player gave his bus back for is
+/// put out just there (`ScheduleSim::back_stood`), where it stood and he stands, rather than at the
+/// stop's own place. The nearest place within `STOOD_OFF` of it, the way the lane runs; `back` is
+/// how far back from `s` it is (negative: past it), `hidden` is not asked (false).
+pub fn stood_on(net: &Network, route: &[usize], index: usize, s: f32, at: DVec3, heading: f64) -> Option<Approach> {
+    let first = *route.get(index)?;
+    let kind = net.lanes.get(first)?.kind;
+    if !at.is_finite() || !heading.is_finite() {
+        return None;
+    }
+    let mut best: Option<(f64, Approach)> = None;
+    // (a lane: the part of it looked at, how far back its start lies from `s`, the lanes before the
+    // route's first it leads through, its index in the route)
+    let mut look = |lane: usize, lo: f32, hi: f32, start_back: f32, before: &[usize], ri: Option<usize>| {
+        let l = &net.lanes[lane];
+        let Some((x, d)) = l.nearest_point(at) else { return };
+        if hi < lo || x < lo - 0.5 || x > hi + 0.5 || d > STOOD_OFF {
+            return;
+        }
+        let x = x.clamp(lo, hi);
+        if wrap_deg(l.at(x).1 - heading as f32).abs() > STOOD_TURNED {
+            return;
+        }
+        if best.as_ref().is_none_or(|b| d < b.0) {
+            best = Some((d, Approach { before: before.to_vec(), index: ri.unwrap_or(0), s: x, back: start_back - x, hidden: false }));
+        }
+    };
+    let len = |l: usize| net.lanes[l].length();
+    // its own lane, and on along the route a little
+    let s = s.clamp(0.0, len(first));
+    look(first, (s - STOOD_BACK).max(0.0), (s + STOOD_PAST).min(len(first)), s, &[], Some(index));
+    let mut ahead = len(first) - s;
+    for (k, &l) in route.iter().enumerate().skip(index + 1) {
+        if ahead >= STOOD_PAST {
+            break;
+        }
+        look(l, 0.0, (STOOD_PAST - ahead).min(len(l)), -ahead, &[], Some(k));
+        ahead += len(l);
+    }
+    // back along the route
+    let mut back = s;
+    for k in (0..index).rev() {
+        if back >= STOOD_BACK {
+            return best.map(|b| b.1);
+        }
+        let l = route[k];
+        back += len(l);
+        look(l, (back - STOOD_BACK).max(0.0), len(l), back, &[], Some(k));
+    }
+    // and every way into the route's first (its lanes, how far back the end of the nearest is)
+    let mut queue: std::collections::VecDeque<(Vec<usize>, f32)> = std::collections::VecDeque::new();
+    let into = |l: usize, before: &[usize]| -> Vec<usize> {
+        net.prev.get(l).into_iter().flatten().copied().filter(|&p| {
+            let q = &net.lanes[p];
+            q.kind == kind && (kind != LaneKind::Street || !q.no_cars || q.rule_bus) && q.length() > 0.0 && !route.contains(&p) && !before.contains(&p)
+        }).collect()
+    };
+    for p in into(route[0], &[]) {
+        queue.push_back((vec![p], back));
+    }
+    let mut looked = 0;
+    while let Some((before, end_back)) = queue.pop_front() {
+        looked += 1;
+        if looked > STOOD_LANES || end_back >= STOOD_BACK {
+            continue;
+        }
+        let l = before[0];
+        let start_back = end_back + len(l);
+        look(l, (start_back - STOOD_BACK).max(0.0), len(l), start_back, &before, None);
+        for p in into(l, &before) {
+            let mut way = vec![p];
+            way.extend_from_slice(&before);
+            queue.push_back((way, start_back));
+        }
+    }
+    best.map(|b| b.1)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::traffic::LaneBuilder;
-    use glam::DVec3;
 
     /// Straight lanes northwards (`lengths` long, one after the other from y 0), and lanes leading
     /// into the first from `side` (start, heading, length).
@@ -158,6 +247,39 @@ mod tests {
         // nowhere to stand on the first 150 m back (a queue, unloaded ground): further back
         let a = relief_approach(&net, &route, 0, 10.0, |l, s| (net.lanes[l].at(s).0.y < 60.0).then_some(false)).unwrap();
         assert!(!a.hidden && y(&net, &a, &route) < 60.0);
+    }
+
+    /// (31 October 2026) The bus a player gave back: where it stands, a little before its stop,
+    /// past it, back on the street before the route or a side street into it - not off the lane, nor
+    /// turned the other way, nor too far.
+    #[test]
+    fn a_bus_given_back_is_found_where_it_stands_on_the_way_up_to_its_stop() {
+        // the stop 50 m into the last of three 200 m lanes (y 450); a side street into the middle one
+        let side = 150.0 * DVec3::new(-(330f64.to_radians().sin()), -(330f64.to_radians().cos()), 0.0);
+        let net = road(&[200.0, 200.0, 200.0], &[(DVec3::new(0.0, 200.0, 0.0) + side, 330.0, 150.0)]);
+        let route = [2];
+        let at = |x: f64, y: f64, h: f64| stood_on(&net, &route, 0, 50.0, DVec3::new(x, y, 0.0), h);
+        let a = at(0.3, 420.0, 2.0).unwrap();
+        assert!(a.before.is_empty() && a.index == 0 && (a.s - 20.0).abs() < 0.5 && (a.back - 30.0).abs() < 0.5, "{a:?}");
+        let a = at(0.0, 470.0, 0.0).unwrap();
+        assert!((a.s - 70.0).abs() < 0.5 && (a.back + 20.0).abs() < 0.5, "past its stop: {a:?}");
+        let a = at(0.0, 300.0, 0.0).unwrap();
+        assert!(a.before == vec![1] && (a.s - 100.0).abs() < 0.5 && (a.back - 150.0).abs() < 0.5, "{a:?}");
+        // on the side street, near its end (the stop 10 m into the last lane: 230 m back)
+        let p = net.lanes[3].at(130.0);
+        let a = stood_on(&net, &route, 0, 10.0, p.0, p.1 as f64).unwrap();
+        assert!(a.before == vec![3, 1] && (a.s - 130.0).abs() < 0.5 && (a.back - 230.0).abs() < 0.5, "{a:?}");
+        assert_eq!(at(0.0, 520.0, 0.0), None, "too far past it");
+        assert_eq!(at(0.0, 150.0, 0.0), None, "too far back");
+        assert_eq!(at(8.0, 400.0, 0.0), None, "off the road");
+        assert_eq!(at(0.0, 420.0, 180.0), None, "the other way");
+        assert_eq!(at(f64::NAN, 420.0, 0.0), None);
+        // along the route: back along it, and on to its next lane
+        let route = [0, 1, 2];
+        let a = stood_on(&net, &route, 1, 190.0, DVec3::new(0.0, 205.0, 0.0), 0.0).unwrap();
+        assert!(a.before.is_empty() && a.index == 1 && (a.s - 5.0).abs() < 0.5 && (a.back - 185.0).abs() < 0.5, "{a:?}");
+        let a = stood_on(&net, &route, 1, 190.0, DVec3::new(0.0, 410.0, 0.0), 0.0).unwrap();
+        assert!(a.index == 2 && (a.s - 10.0).abs() < 0.5 && (a.back + 20.0).abs() < 0.5, "{a:?}");
     }
 
     #[test]
