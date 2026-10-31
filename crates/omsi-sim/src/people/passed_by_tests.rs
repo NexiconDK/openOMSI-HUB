@@ -317,3 +317,54 @@ fn the_people_in_a_bus_say_where_they_ride_to() {
     assert_eq!(h.rider_dests(BusId::Ai(9)).len(), 1);
     assert!(h.rider_dests(BusId::Ai(10)).is_empty());
 }
+
+/// (31 October 2026) Another LAN player's bus on the host as it really comes (its vehicle, as
+/// `set_remote_buses` makes it a bus the people know, what it shows from his game): those
+/// waiting for it signal to it as it comes, and wave after it as it drives past - the words the
+/// clients draw them by.
+#[test]
+fn a_lan_players_real_bus_is_signalled_to_and_waved_after_on_the_host() {
+    let dir = std::env::temp_dir().join(format!("omsi-passed-real-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("test.bus"), "[model]\nmodel.cfg\n\n[boundingbox]\n2.5\n12\n3\n0\n0\n1.5\n\n[passengercabin]\ncabin.cfg\n\n[paths]\npaths.cfg\n").unwrap();
+    std::fs::write(dir.join("model.cfg"), "").unwrap();
+    std::fs::write(dir.join("paths.cfg"), "[pathpnt]\n1.1\n4\n0.4\n\n[pathpnt]\n0\n4\n0.5\n\n[pathlink]\n0\n1\n").unwrap();
+    std::fs::write(dir.join("cabin.cfg"), "[entry]\n0\n\n[exit]\n0\n\n[passpos]\n-0.5\n0\n0.9\n0.45\n0\n\n[passpos]\n0.5\n0\n0.9\n0.45\n0\n").unwrap();
+    let ty = Arc::new(crate::VehicleType::load_ai(&dir, &dir.join("test.bus")).unwrap());
+    let mut v = crate::VehicleInstance::new(ty, crate::VehicleHost::new(crate::SimClock::default()));
+    let world = crate::world_data::WorldData::default();
+    let mut h = sim("real");
+    h.set_remote_termini([(4, "Rathaus".to_string())].into_iter());
+    let step = |h: &mut PeopleSim, v: &mut crate::VehicleInstance, y: f64, speed: f32| {
+        v.position = DVec3::new(-1.75, y, 0.0);
+        v.heading = 0.0;
+        v.physics.speed = speed;
+        h.set_remote_buses([(4u32, &*v)].into_iter());
+        let buses = h.gather_buses(&world, None, None);
+        assert_eq!(buses.len(), 1, "the player's bus is one the people know");
+        h.last_buses = Arc::new(buses);
+        h.time += 0.25;
+        let buses = h.last_buses.clone();
+        h.passed_tick(&buses);
+        h.lan_gestures()
+    };
+    // coming, 40 m before the stop: those for Rathaus signal to it
+    let g = step(&mut h, &mut v, -40.0, 10.0);
+    let mut hail: Vec<u32> = g.iter().filter(|x| x.1 == Gesture::Hail).map(|x| x.0).collect();
+    hail.sort();
+    assert_eq!(hail, vec![1, 2], "{g:?}");
+    // on past the stop without stopping: they wave after it
+    let mut y = -30.0;
+    let mut waved = Vec::new();
+    while y < 60.0 {
+        y += 2.5;
+        waved = step(&mut h, &mut v, y, 10.0);
+        if waved.iter().any(|x| x.1 == Gesture::Wave) {
+            break;
+        }
+    }
+    let mut wave: Vec<u32> = waved.iter().filter(|x| x.1 == Gesture::Wave).map(|x| x.0).collect();
+    wave.sort();
+    assert_eq!(wave, vec![1, 2], "{waved:?}");
+    std::fs::remove_dir_all(&dir).ok();
+}
