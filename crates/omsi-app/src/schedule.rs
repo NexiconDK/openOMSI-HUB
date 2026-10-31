@@ -46,6 +46,10 @@ pub struct Schedule {
     fleet_check: f64,
     /// Seconds until the next look for due departures (see `frame_traffic`).
     pub(crate) tick_t: f32,
+    /// (NexiconDK, 31 October 2026) The AI's buses put out in the place of a LAN player's he gave
+    /// back, with the people who were in his (where each rides to): seated in them by the world's
+    /// people (`offscreen::humans_step`).
+    pub(crate) seat_riders: Vec<(u64, Vec<Option<String>>)>,
 }
 
 impl std::ops::Deref for Schedule {
@@ -185,6 +189,7 @@ impl Schedule {
             fleet_check: f64::NEG_INFINITY,
             // (a second after the population's, never in the same frame)
             tick_t: 1.0,
+            seat_riders: Vec::new(),
         }
     }
 

@@ -111,6 +111,11 @@ impl Humans {
         self.sim.seed_riders(n, bus, &*world.data());
     }
 
+    /// (NexiconDK) People in their places in bus `id`, riding to `dests` (`PeopleSim::seed_riders_in`).
+    pub fn seed_riders_in(&mut self, id: BusId, dests: &[Option<String>], bus: &VehicleInstance, world: &World) -> usize {
+        self.sim.seed_riders_in(id, dests, bus, &*world.data())
+    }
+
     /// OMSI's `change_take`: the driver takes back the coins lying on the change tray.
     pub fn take_change_tray(&mut self) {
         if let Some(m) = self.sim.money.as_mut() {

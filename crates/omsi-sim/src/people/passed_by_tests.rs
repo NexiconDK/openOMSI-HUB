@@ -298,3 +298,22 @@ fn a_timetable_bus_passenger_asks_for_its_own_stop() {
     assert_eq!(h.take_ai_stop_requests(), vec![5]);
     assert!(h.take_ai_stop_requests().is_empty());
 }
+
+/// (NexiconDK, 31 October 2026) The people in a bus and where each rides to: what a LAN player's
+/// bus given back to the AI hands on to the AI's in its place (`relief back`, `seed_riders_in`).
+#[test]
+fn the_people_in_a_bus_say_where_they_ride_to() {
+    let mut h = sim("dests");
+    for (i, dest) in [(0, Some("Rathaus")), (1, None), (2, Some("Bahnhof"))] {
+        h.people[i].place = Place::Bus(BusId::Player, Vec3::ZERO);
+        let p = h.pax_mut(i).unwrap();
+        p.inside = Some(BusId::Player);
+        p.dest = dest.map(str::to_string);
+    }
+    h.people[3].place = Place::Bus(BusId::Ai(9), Vec3::ZERO);
+    let mut d = h.rider_dests(BusId::Player);
+    d.sort();
+    assert_eq!(d, vec![None, Some("Bahnhof".to_string()), Some("Rathaus".to_string())]);
+    assert_eq!(h.rider_dests(BusId::Ai(9)).len(), 1);
+    assert!(h.rider_dests(BusId::Ai(10)).is_empty());
+}

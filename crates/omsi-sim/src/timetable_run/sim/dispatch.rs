@@ -37,6 +37,7 @@ impl ScheduleSim {
         self.backed.clear();
         self.back_at.clear();
         self.back_stood.clear();
+        self.back_riders.clear();
         self.handed_runs.clear();
         // (the clock set back over midnight: the day before)
         while day_time < self.day_base {

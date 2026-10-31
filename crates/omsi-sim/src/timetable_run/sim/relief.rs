@@ -510,9 +510,10 @@ impl ScheduleSim {
     /// day; `want_back`): out of his game, the AI's bus of it is put out at its first stop, where his
     /// stood - or why not. Given again (an answer lost on the way): the same. (31 October 2026)
     /// `stood`: where his bus stands (its place and heading, as the session has it) - the AI's is put
-    /// out just there and drives on from there (`back_stood`), rather than at the stop's own place.
+    /// out just there and drives on from there (`back_stood`), rather than at the stop's own place;
+    /// `riders`: the people in it, where each rides to - they stay in it (`take_back_riders`).
     #[allow(clippy::too_many_arguments)]
-    pub fn gave_back(&mut self, peer: u32, line: &str, tour: &str, next: i32, stood: Option<(glam::DVec3, f64)>, traffic: &TrafficSim, day_time: f64) -> Result<(), &'static str> {
+    pub fn gave_back(&mut self, peer: u32, line: &str, tour: &str, next: i32, stood: Option<(glam::DVec3, f64)>, riders: Vec<Option<String>>, traffic: &TrafficSim, day_time: f64) -> Result<(), &'static str> {
         let k = self.relief_departure(line, tour, next, day_time).ok_or(RELIEF_NO_TRIP)?;
         if self.backed.contains(&k) {
             return Ok(());
@@ -522,6 +523,9 @@ impl ScheduleSim {
         self.backed.insert(k);
         if let Some((at, heading)) = stood.filter(|(at, h)| at.is_finite() && h.is_finite()) {
             self.back_stood.insert(k, (at, heading, day_time));
+        }
+        if !riders.is_empty() {
+            self.back_riders.insert(k, riders);
         }
         // (his trip itself, at a stop along it: its bus put out there; his duty handed over on the
         // way: his company told)
@@ -591,6 +595,12 @@ impl ScheduleSim {
     /// `stood_on`) - while it is put out within `BACK_STOOD_FOR` of it.
     pub fn back_stood(&self, i: usize, day_time: f64) -> Option<(glam::DVec3, f64)> {
         self.back_stood.get(&i).filter(|s| (0.0..BACK_STOOD_FOR).contains(&(day_time - s.2))).map(|s| (s.0, s.1))
+    }
+
+    /// (31 October 2026) The people who were in the bus a LAN player gave back for departure `i`
+    /// (where each rides to), once: the caller seats them in the AI's bus that took its place.
+    pub fn take_back_riders(&mut self, i: usize) -> Vec<Option<String>> {
+        self.back_riders.remove(&i).unwrap_or_default()
     }
 
     /// (28 October 2026) The duties LAN players handed over to the AI on the way since asked last
@@ -930,14 +940,17 @@ mod tests {
         assert_eq!(s.want_back(7, "Linie5", "3", 540, &traffic, at(9.62)), BackState::Ai(600, None), "asked again: held");
         assert_eq!(s.want_back(8, "Linie5", "3", 540, &traffic, at(9.62)), BackState::No, "another's");
         // given back: the 10:00 put out at once, where his bus stood
-        assert_eq!(s.gave_back(8, "Linie5", "3", 600, None, &traffic, at(9.63)), Err(RELIEF_NOBODY));
+        assert_eq!(s.gave_back(8, "Linie5", "3", 600, None, Vec::new(), &traffic, at(9.63)), Err(RELIEF_NOBODY));
         let stood = (glam::DVec3::new(0.5, 296.0, 0.0), 0.0);
-        assert_eq!(s.gave_back(7, "Linie5", "3", 600, Some(stood), &traffic, at(9.63)), Ok(()));
+        let riders = vec![Some("Markt".to_string()), None];
+        assert_eq!(s.gave_back(7, "Linie5", "3", 600, Some(stood), riders.clone(), &traffic, at(9.63)), Ok(()));
         assert!(s.pending.contains(&2) && s.departures[2].spawned && s.backs.is_empty());
-        assert_eq!(s.gave_back(7, "Linie5", "3", 600, None, &traffic, at(9.64)), Ok(()), "given again (its answer lost): the same");
+        assert_eq!(s.gave_back(7, "Linie5", "3", 600, None, Vec::new(), &traffic, at(9.64)), Ok(()), "given again (its answer lost): the same");
         // (31 October 2026: just where his bus stands - put out within two minutes of it)
         assert_eq!(s.back_stood(2, at(9.64)), Some(stood));
         assert_eq!(s.back_stood(2, at(9.63) + BACK_STOOD_FOR + 1.0), None, "later: where its timetable has it");
+        assert_eq!(s.take_back_riders(2), riders, "its people stay in it - given again, not twice");
+        assert!(s.take_back_riders(2).is_empty());
         assert_eq!(s.want_back(7, "Linie5", "3", 540, &traffic, at(9.64)), BackState::Given(600));
         // the tour's last trip: nothing to hand back
         assert_eq!(s.want_back(7, "Linie5", "3", 660, &traffic, at(11.2)), BackState::No);
@@ -1027,7 +1040,7 @@ mod tests {
         assert_eq!(s.backs[&1].rest, vec![2], "the rest of his duty");
         assert_eq!(s.want_stop(7, "Linie5", "3", 540, Some(1), &own, &[], &traffic, at(9.11)), BackState::Ai(540, None), "asked again: held");
         assert!(s.take_handed().is_empty(), "not handed over yet");
-        assert_eq!(s.gave_back(7, "Linie5", "3", 540, None, &traffic, at(9.12)), Ok(()));
+        assert_eq!(s.gave_back(7, "Linie5", "3", 540, None, Vec::new(), &traffic, at(9.12)), Ok(()));
         assert!(s.pending.contains(&1) && s.departures[1].spawned && !s.is_player_tour(1) && s.back_given(1), "the AI's, though his claim says his");
         assert_eq!(s.relief_place_time(1, at(9.12)), at(9.0) + 330.0, "put out at his stop");
         s.started(1);
@@ -1046,7 +1059,7 @@ mod tests {
         assert_eq!(s.want_relief(8, "Linie5", "3", 660, 0, &[(7, own.clone())], &traffic, at(10.1)), ReliefState::FromPlayer(7));
         assert_eq!(s.want_stop(7, "Linie5", "3", 600, None, &own, &[], &traffic, at(10.15)), BackState::No, "another player waits for the 11:00");
         assert_eq!(s.want_stop(7, "Linie5", "3", 600, Some(1), &own, &[], &traffic, at(10.1)), BackState::Ai(600, None));
-        assert_eq!(s.gave_back(7, "Linie5", "3", 600, None, &traffic, at(10.11)), Ok(()));
+        assert_eq!(s.gave_back(7, "Linie5", "3", 600, None, Vec::new(), &traffic, at(10.11)), Ok(()));
         assert!(s.reliefs[&3].from.is_none() && s.relief_giver(3, 0, &[(7, own.clone())]).is_none(), "the AI's bus comes to him");
         // at the terminus of his 10:00, his 11:00 next and late: put out at its first stop
         s.reliefs.clear();
@@ -1054,7 +1067,7 @@ mod tests {
         s.set_lan_tours(own.iter().cloned().collect());
         s.backed.remove(&2);
         assert_eq!(s.want_stop(7, "Linie5", "3", 600, None, &own, &[], &traffic, at(11.05)), BackState::Ai(660, None));
-        assert_eq!(s.gave_back(7, "Linie5", "3", 660, None, &traffic, at(11.06)), Ok(()));
+        assert_eq!(s.gave_back(7, "Linie5", "3", 660, None, Vec::new(), &traffic, at(11.06)), Ok(()));
         assert!(s.pending.contains(&3));
         assert_eq!(s.relief_place_time(3, at(11.06)), at(11.0), "at its first stop");
         assert_eq!(s.take_handed().last(), Some(&Handed { peer: 7, line: "Linie5".into(), tour: "3".into(), departure: at(10.0), done: true }));

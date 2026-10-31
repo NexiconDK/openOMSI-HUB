@@ -293,6 +293,9 @@ pub struct ScheduleSim {
     /// (31 October 2026) Where his bus stood when he gave it back (its place and heading) and when
     /// (the traffic's clock): the AI's bus of it is put out just there (`back_stood`).
     back_stood: HashMap<usize, (glam::DVec3, f64, f64)>,
+    /// And the people in it: where each rides to (a stop's name, None without one) - seated in the
+    /// AI's bus that takes its place (`take_back_riders`).
+    back_riders: HashMap<usize, Vec<Option<String>>>,
     /// Duties handed over to the AI on the way, for the players' companies (`take_handed`), and
     /// the rest of them: the AI's to drive, though a company drops what a player leaves.
     handed_log: Vec<relief::Handed>,

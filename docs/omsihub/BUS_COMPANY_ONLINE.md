@@ -899,6 +899,13 @@ its departure, then the AI drives that trip and the relief moves to the next one
   his bus in its place until a bus of the world's stands within 6 m of it the same way round
   (`relief_back_swap`, `BACK_SWAP_MAX` 10 s at most), then lets it go: the AI's drives on from
   there at its time.
+- **His passengers stay in it** (31 October 2026): his game sends where the people in his bus ride
+  to with `relief back` (`riders_field`: `<stop name>*<how many>` joined by `|`, at most
+  `RIDERS_MOST`), the world keeps them with the departure (`gave_back`'s `riders`,
+  `take_back_riders`), and the AI's bus put out in his bus's place has them seated
+  (`Schedule::seat_riders`, `offscreen::humans_step`, `PeopleSim::seed_riders_in`): each rides to
+  its destination, one without 1..20 km. (People seated so ride from the odometer as it reads -
+  from 0, those of a bus a player took over got off at once where his had driven before.)
 - **Handing the bus over on the way** (28 October 2026, asked by NexiconDK: "pick a trip, then go
   and take another"): standing at a stop of his trip, or at its terminus, the game menu offers "Hand
   the bus over to the AI here" (`relief::hand_over`; on the server, a duty that goes on after the

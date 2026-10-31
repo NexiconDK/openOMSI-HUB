@@ -736,9 +736,20 @@ impl Offscreen<'_> {
             ref mut scene,
             ref mut sim_view,
             ref mut career,
+            ref mut schedule,
             ..
         } = *self;
         let size = (w, h);
+        // (NexiconDK, 31 October 2026) The people of a bus a LAN player gave back to the AI, seated
+        // in the AI's bus that took its place (`relief back`, `Schedule::seat_riders`).
+        if let (Some(hu), Some(s), Some(t)) = (humans_off.as_mut(), schedule.as_mut(), traffic.as_ref()) {
+            for (id, riders) in std::mem::take(&mut s.seat_riders) {
+                if let Some(c) = t.cars.iter().find(|c| c.id == id) {
+                    let n = hu.seed_riders_in(crate::humans::BusId::Ai(id), &riders, &c.vehicle, world);
+                    log::info!("relief: {n} of the {} people of the bus given back seated in the AI's bus {id}", riders.len());
+                }
+            }
+        }
         if let Some(h) = humans_off.as_mut() {
             // keep density and time_of_day up to date every tick, as app_events.rs does
             // (stop_target = enter_mean * density; without this it stays at the startup

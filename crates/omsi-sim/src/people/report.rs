@@ -55,6 +55,20 @@ impl PeopleSim {
         self.people.iter().filter(|p| p.inside(bus)).count()
     }
 
+    /// (NexiconDK, 31 October 2026) Where the people in bus `bus` ride to: each one's
+    /// destination (a stop's name), None for one without - a LAN player's bus the AI takes over
+    /// keeps them (`seed_riders_in`).
+    pub fn rider_dests(&self, bus: BusId) -> Vec<Option<String>> {
+        self.people
+            .iter()
+            .filter(|p| p.inside(bus))
+            .map(|p| match &p.state {
+                State::Pax(x) => x.dest.clone(),
+                _ => None,
+            })
+            .collect()
+    }
+
     /// People walking the footpaths of the traffic network: (lane, distance along it). The
     /// traffic gives way to them at crossings and presses the pedestrian lights' buttons
     /// for them.

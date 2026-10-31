@@ -365,7 +365,8 @@ pub(crate) fn host_command(from: u32, text: &str, schedule: Option<&mut crate::s
             }
         }
         // (31 October 2026: the AI's bus put out just where his stands - `back_stood`)
-        "back" => match s.sim.gave_back(from, line, tour, dep, peers.iter().find(|p| p.id == from).and_then(|p| p.bus), &t.sim, t.day_time) {
+        // (and the people in it stay in the AI's: `riders_of`)
+        "back" => match s.sim.gave_back(from, line, tour, dep, peers.iter().find(|p| p.id == from).and_then(|p| p.bus), riders_of(f.get(3).copied().unwrap_or("")), &t.sim, t.day_time) {
             Ok(()) => out.push((from, format!("relief backed {dep}"))),
             Err(why) => out.push((from, format!("relief no {dep};{why}"))),
         },
@@ -1228,7 +1229,9 @@ impl App {
         let Some(next) = b.next.filter(|n| *n > 0) else { return };
         b.sent = Some(0.0);
         b.ask_t = BACK_EVERY;
-        let msg = format!("relief back {};{};{next}", b.line, b.tour);
+        // (31 October 2026: and where our people ride to - they stay in the AI's bus)
+        let riders = riders_field(&self.session.humans.as_ref().map(|h| h.rider_dests(BusId::Player)).unwrap_or_default());
+        let msg = format!("relief back {};{};{next};{riders}", b.line, b.tour);
         log::info!("relief: our bus given back to the AI for line {} tour {} at {}", b.line, b.tour, hhmm_min(next));
         if let Some(l) = self.net.lan.as_mut() {
             l.command(1, &msg);
@@ -1293,7 +1296,8 @@ impl App {
         b.ask_t -= dt;
         if b.ask_t <= 0.0 {
             b.ask_t = BACK_EVERY;
-            let msg = format!("relief back {};{};{}", b.line, b.tour, b.next.unwrap_or(0));
+            let riders = riders_field(&self.session.humans.as_ref().map(|h| h.rider_dests(BusId::Player)).unwrap_or_default());
+            let msg = format!("relief back {};{};{};{riders}", b.line, b.tour, b.next.unwrap_or(0));
             if let Some(l) = self.net.lan.as_mut() {
                 l.command(1, &msg);
             }
@@ -1461,9 +1465,59 @@ fn same_file(a: &str, b: &str) -> bool {
     a == b || a.ends_with(&format!("/{b}")) || b.ends_with(&format!("/{a}"))
 }
 
+/// (31 October 2026) The people in a bus given back, for `relief back`: where they ride to, as
+/// `<stop name>*<how many>` joined by `|` (an empty name: without a destination) - names with the
+/// marks in them have them as spaces.
+pub(crate) fn riders_field(dests: &[Option<String>]) -> String {
+    let mut groups: Vec<(String, usize)> = Vec::new();
+    for d in dests {
+        let name: String = d.as_deref().unwrap_or("").trim().chars().map(|c| if matches!(c, ';' | '|' | '*') { ' ' } else { c }).collect();
+        match groups.iter_mut().find(|g| g.0 == name) {
+            Some(g) => g.1 += 1,
+            None => groups.push((name, 1)),
+        }
+    }
+    groups.iter().map(|(n, k)| format!("{n}*{k}")).collect::<Vec<_>>().join("|")
+}
+
+/// The people of `relief back`'s field (`riders_field`): where each rides to, at most
+/// `RIDERS_MOST`; anything else read as nobody.
+pub(crate) fn riders_of(field: &str) -> Vec<Option<String>> {
+    let mut out = Vec::new();
+    for g in field.split('|') {
+        let Some((name, k)) = g.rsplit_once('*') else { continue };
+        let Ok(k) = k.trim().parse::<usize>() else { continue };
+        let name = name.trim();
+        for _ in 0..k.min(RIDERS_MOST - out.len().min(RIDERS_MOST)) {
+            out.push((!name.is_empty()).then(|| name.to_string()));
+        }
+    }
+    out
+}
+
+/// The most people a bus given back is taken to have in it.
+const RIDERS_MOST: usize = 250;
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// (31 October 2026) The people of a bus given back go to the world with it: where they ride
+    /// to, grouped, and nothing odd read from it.
+    #[test]
+    fn the_people_of_a_bus_given_back_go_with_it() {
+        let dests = vec![Some("Markt".to_string()), None, Some("Markt".to_string()), Some("Bahnhof; Nord|*".to_string())];
+        let f = riders_field(&dests);
+        assert_eq!(f, "Markt*2|*1|Bahnhof  Nord  *1");
+        let back = riders_of(&f);
+        assert_eq!(back.len(), 4);
+        assert_eq!(back.iter().filter(|d| d.as_deref() == Some("Markt")).count(), 2);
+        assert_eq!(back.iter().filter(|d| d.is_none()).count(), 1);
+        assert!(back.contains(&Some("Bahnhof  Nord".to_string())));
+        assert_eq!(riders_field(&[]), "");
+        assert!(riders_of("").is_empty() && riders_of("x").is_empty() && riders_of("a*b|*").is_empty());
+        assert_eq!(riders_of("a*100000").len(), RIDERS_MOST, "at most");
+    }
 
     #[test]
     fn the_same_vehicle_file_however_written() {

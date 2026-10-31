@@ -706,25 +706,40 @@ impl PeopleSim {
     /// `--riders n`: n passengers already in their places in the player's bus (a test
     /// start; OMSI's buses start empty), without a destination - they ride 1..20 km.
     pub fn seed_riders(&mut self, n: usize, bus: &VehicleInstance, world: &dyn World) {
-        let Some(cabin) = self.cabin_for(bus) else { return };
+        self.seed_riders_in(BusId::Player, &vec![None; n], bus, world);
+    }
+
+    /// (NexiconDK, 31 October 2026) Passengers in their places in bus `id` (its vehicle `bus`),
+    /// one for each of `dests`: riding to that destination (a stop's name), or 1..20 km without
+    /// one - from the odometer as it reads now (from 0 they all got off at once in a player's bus
+    /// that had driven before). A LAN player's bus the AI takes over keeps its riders in the AI's
+    /// that takes its place (`relief back`); a bus handed to a player, the AI's (`relief bus`).
+    /// How many found a place.
+    pub fn seed_riders_in(&mut self, id: BusId, dests: &[Option<String>], bus: &VehicleInstance, world: &dyn World) -> usize {
+        let Some(cabin) = self.cabin_for(bus) else { return 0 };
         let trailers = part_frames(bus, &cabin);
         let rot = bus.body_rotation();
         let off = places_off(bus, &cabin);
-        for _ in 0..n {
-            let Some(k) = self.reserve_place(BusId::Player, &cabin.seats, &off) else { break };
+        let km = self.odometer.get(&id).copied().unwrap_or(0.0);
+        let mut seated = 0;
+        for dest in dests {
+            let Some(k) = self.reserve_place(id, &cabin.seats, &off) else { break };
             let walk = 1.1 + (self.rand_f() as f32 * 2.0 - 1.0) * 0.2;
             let r = self.rand_f() as f32;
             let mut pax = Pax::new(walk, self.rand_f());
-            pax.bus = Some(BusId::Player);
-            pax.inside = Some(BusId::Player);
+            pax.bus = Some(id);
+            pax.inside = Some(id);
             pax.seat = Some(k);
             pax.ride_km = r * 19.0 + 1.0;
+            pax.km_start = km;
+            pax.dest = dest.as_ref().map(|d| d.trim().to_string()).filter(|d| !d.is_empty());
             pax.task = Task::InBusToPlace;
             let at = train_point(bus.position, &rot, &trailers, cabin.seats[k].pos);
             let Some(i) = self.spawn(world, at, bus.heading, State::Pax(Box::new(pax))) else {
-                self.free_seat(BusId::Player, k);
+                self.free_seat(id, k);
                 break;
             };
+            seated += 1;
             let s = cabin.seats[k].clone();
             let seatheight = self.people[i].ty.def.seat_height;
             if let Some(p) = self.pax_mut(i) {
@@ -739,8 +754,9 @@ impl PeopleSim {
                 }
                 p.yaw = (s.rot as f64).to_radians();
             }
-            self.people[i].place = Place::Bus(BusId::Player, s.pos);
+            self.people[i].place = Place::Bus(id, s.pos);
         }
+        seated
     }
 
     /// Give back what a person holds (a waiting place, a seat) before they change plans.

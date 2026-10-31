@@ -327,6 +327,13 @@ impl Schedule {
             return Placed::Drop;
         };
         self.sim.bus_runs(traffic.cars[ci].id, i);
+        // (the people of the bus a player gave back stay in the AI's in its place - NexiconDK)
+        if self.sim.back_given(i) {
+            let riders = self.sim.take_back_riders(i);
+            if !riders.is_empty() {
+                self.seat_riders.push((traffic.cars[ci].id, riders));
+            }
+        }
         if let Some(t) = &turned {
             traffic.set_trailers(ci, &t[1..]);
             traffic.cars[ci].consist_reversed = true;
