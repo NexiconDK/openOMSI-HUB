@@ -279,38 +279,57 @@ fn filmic_grade(c: vec3<f32>) -> vec3<f32> {
 // so the street goes soft and every light behind the glass spreads into a glowing patch:
 // that share of the picture averaged over the lobe, from the same misted glass only (the
 // frame and the dashboard beside it keep their edges).
+//
+// (NexiconDK, 31 October 2026) The lobe is 23 points of the full picture: a lamp or a headlight
+// a hundred times brighter than white came through every one of them that fell on it, and
+// stood round itself 23 times over - a box of copies round every street lamp, a white block
+// round an oncoming car's lights. What lies above white now counts at most as white in the
+// average (the street goes soft as before), the spiral is turned another way at every pixel,
+// so that no copies line up, and the bright lights' scattered light comes from the glow's
+// smooth levels instead (`MIST_GLOW`, `graded`). Returns the picture and how misted it is.
 const MIST_MASK: f32 = 0.24;
-fn misted(uv: vec2<f32>, c: vec3<f32>) -> vec3<f32> {
+// (how much of the glow - the light above white, blurred smooth - a fully misted pane adds,
+// on top of the eye's share `p.a.x`)
+const MIST_GLOW: f32 = 0.3;
+fn misted(uv: vec2<f32>, c: vec3<f32>) -> vec4<f32> {
     let dims = vec2<f32>(textureDimensions(t_src));
     let px = vec2<i32>(uv * dims);
     let mask = textureLoad(t_mask, clamp(px, vec2<i32>(0), vec2<i32>(dims) - vec2<i32>(1)), 0);
     let m = mask.r;
     if (m < 0.004 || is_screen_mask(mask)) {
-        return c;
+        return vec4<f32>(c, 0.0);
     }
     let fog = clamp(m / MIST_MASK, 0.0, 1.0);
     let radius = dims.y * 0.025;
-    var sum = c;
-    var w = 1.0;
+    // (a light above white weighs as much as white: w = 1 / max(luma, 1))
+    var w = 1.0 / max(luma(c), 1.0);
+    var sum = c * w;
+    // (interleaved gradient noise: the spiral's turn at this pixel)
+    let pf = uv * dims;
+    let turn = 6.2831853 * fract(52.9829189 * fract(dot(pf, vec2<f32>(0.06711056, 0.00583715))));
     for (var k = 1; k < 24; k = k + 1) {
-        let a = f32(k) * 2.3999632;
+        let a = f32(k) * 2.3999632 + turn;
         let r = sqrt(f32(k) / 23.0) * radius;
         let q = uv + vec2<f32>(cos(a), sin(a)) * r / dims;
         let qm = textureLoad(t_mask, clamp(vec2<i32>(q * dims), vec2<i32>(0), vec2<i32>(dims) - vec2<i32>(1)), 0);
         if (qm.r > 0.004 && !is_screen_mask(qm)) {
-            sum = sum + clean(textureSampleLevel(t_src, s_lin, q, 0.0).rgb);
-            w = w + 1.0;
+            let s = clean(textureSampleLevel(t_src, s_lin, q, 0.0).rgb);
+            let ws = 1.0 / max(luma(s), 1.0);
+            sum = sum + s * ws;
+            w = w + ws;
         }
     }
-    return mix(c, sum / w, 0.5 * fog);
+    return vec4<f32>(mix(c, sum / w, 0.5 * fog), fog);
 }
 
 // The tone-mapped picture, encoded for the display (gamma), dithered.
 fn graded(in: VsOut) -> vec3<f32> {
-    let hdr = misted(in.uv, clean(textureSampleLevel(t_src, s_lin, in.uv, 0.0).rgb));
+    let mist = misted(in.uv, clean(textureSampleLevel(t_src, s_lin, in.uv, 0.0).rgb));
+    let hdr = mist.rgb;
     let glow = clean(textureSampleLevel(t_base, s_lin, in.uv, 0.0).rgb);
-    // the eye's scattered light of what is brighter than the screen, added
-    var c = hdr + glow * p.a.x;
+    // the eye's scattered light of what is brighter than the screen, added - and a misted
+    // pane's, which spreads the bright lights behind it into a glowing patch
+    var c = hdr + glow * (p.a.x + MIST_GLOW * mist.a);
     let metered = textureLoad(t_adapt, vec2<i32>(0, 0), 0).r;
     let ev = clamp((p.b.z - metered) * p.c.x, -p.a.y, p.a.z) + p.b.w;
     c = max(c, vec3<f32>(0.0));
