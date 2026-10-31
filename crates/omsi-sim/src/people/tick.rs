@@ -392,8 +392,15 @@ impl PeopleSim {
                 }
                 _ => {
                     let v = p.vel.length() as f32;
-                    (
-                        AnimInput {
+                    // (NexiconDK, 31 October 2026: one of the LAN host's people on a seat of a
+                    // timetable bus sits, as the host has them - `mirror_facts`)
+                    let sits = match (p.remote, self.mirror_seat.get(&p.id)) {
+                        (true, Some(&(bus, k))) if matches!(p.place, Place::Bus(b, _) if b == bus) => bus_ix.get(&bus).and_then(|j| buses[*j].cabin.seats.get(k)).filter(|s| s.seated).map(|s| s.height),
+                        _ => None,
+                    };
+                    let input = match sits {
+                        Some(height) => AnimInput { kind: 2, seat_height: height, room_height: pax::OUTSIDE_ROOM, dt_ms, ..Default::default() },
+                        None => AnimInput {
                             kind: if v > 0.05 { 1 } else { 0 },
                             speed: v,
                             moved: v * dt,
@@ -401,8 +408,8 @@ impl PeopleSim {
                             dt_ms,
                             ..Default::default()
                         },
-                        None,
-                    )
+                    };
+                    (input, None)
                 }
             };
             let p = &mut self.people[i];

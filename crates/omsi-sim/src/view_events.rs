@@ -354,7 +354,9 @@ impl crate::people::PeopleSim {
             interior: p.interior,
             puppet: p.puppet.is_some(),
             hidden: self.avatar_hidden.get(&p.id).copied(),
-            facts: p.pose_facts(),
+            // (NexiconDK: one of the LAN host's people in their place in a bus, as the host has
+            // them - `mirror_facts`)
+            facts: if p.remote { self.mirror_facts(p) } else { p.pose_facts() },
             state: p.state.name(),
             hail_target: hail.map(|(_, pos, _, _)| pos),
             hail_moving: hail.is_some_and(|(_, _, moving, _)| moving),

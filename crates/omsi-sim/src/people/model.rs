@@ -491,6 +491,9 @@ pub struct PeopleSim {
     pub claimed: HashMap<u32, f64>,
     /// The host's people waiting at a stop (client): (stop, waiting place).
     pub mirror_wait: HashMap<u32, (i64, usize)>,
+    /// (NexiconDK, 31 October 2026) The host's people in their places in a timetable bus
+    /// (client): (the bus, the place in its cabin) - a seat they sit on (`mirror_facts`).
+    pub mirror_seat: HashMap<u32, (BusId, usize)>,
     /// How the player's bus is driven, for its riders' complaints.
     pub comfort: RideComfort,
     /// LAN play (host): the waiting people handed over to another player's bus, by stop and

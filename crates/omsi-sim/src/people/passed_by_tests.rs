@@ -368,3 +368,33 @@ fn a_lan_players_real_bus_is_signalled_to_and_waved_after_on_the_host() {
     assert_eq!(wave, vec![1, 2], "{waved:?}");
     std::fs::remove_dir_all(&dir).ok();
 }
+
+/// (NexiconDK, 31 October 2026) One of the LAN host's people in their place in a timetable bus,
+/// as a player's game draws them: on a seat they sit (its height), as the host has them - they
+/// stood beside every seat; walking in the bus, or out of it, as they are.
+#[test]
+fn the_hosts_riders_sit_on_their_seats_in_a_players_game() {
+    let c = cabin("mirror-seat");
+    let ty = human("mirror-seat");
+    let mut h = PeopleSim::new(Path::new("/nonexistent"), 200);
+    h.last_buses = Arc::new(vec![bus(&c, BusId::Ai(5), 0.0, 0.0, 0.0, Some("Rathaus"))]);
+    let mut p = waiting(&ty, 40, 7, 0, DVec3::ZERO);
+    p.remote = true;
+    p.state = State::Idle;
+    h.people = vec![p];
+    let pose = |seat: Option<usize>| MirrorPose { pos: DVec3::ZERO, heading: 0.0, vel: DVec2::ZERO, activity: Activity::Stand, aboard: Some((5, Vec3::new(-0.5, 0.0, 0.45), 0.0, seat)), waiting: None };
+    h.mirror_set(40, &pose(Some(0)));
+    let f = h.mirror_facts(&h.people[0]);
+    assert_eq!(f.activity, Activity::Sit);
+    assert!(f.seat.is_some() && f.seated_level.is_some_and(|l| (l - (ty.def.seat_height - 0.45) as f64).abs() < 1e-4), "{f:?}");
+    assert_eq!(h.people[0].activity, Activity::Sit, "the original animations sit too");
+    // on the way to it, and off the bus: as they are
+    h.mirror_set(40, &pose(None));
+    assert_eq!(h.mirror_facts(&h.people[0]).activity, Activity::Stand);
+    h.mirror_set(40, &pose(Some(0)));
+    h.mirror_set(40, &MirrorPose { aboard: None, ..pose(None) });
+    assert!(h.mirror_facts(&h.people[0]).seat.is_none() && h.mirror_seat.is_empty());
+    // a place its cabin here has not: as they are
+    h.mirror_set(40, &pose(Some(9)));
+    assert!(h.mirror_facts(&h.people[0]).seat.is_none());
+}

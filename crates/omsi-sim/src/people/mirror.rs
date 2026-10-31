@@ -221,6 +221,7 @@ impl PeopleSim {
         self.claims_out.clear();
         self.claimed.clear();
         self.mirror_wait.clear();
+        self.mirror_seat.clear();
     }
 
     /// The human type of a file relative to a content root (`Humans/…/x.hum`).
@@ -290,13 +291,47 @@ impl PeopleSim {
             }
         }
         match pose.aboard {
-            Some((bus, local, lheading, _)) => {
+            Some((bus, local, lheading, seat)) => {
                 p.place = Place::Bus(BusId::Ai(bus), local);
                 p.lheading = lheading;
                 p.vel = DVec2::ZERO;
+                // (NexiconDK, 31 October 2026: in their place - on a seat they sit, as the host
+                // has them; they stood beside every seat of a timetable bus, `mirror_facts`)
+                match seat {
+                    Some(k) => {
+                        let seated = self.last_buses.iter().find(|b| b.id == BusId::Ai(bus)).and_then(|b| b.cabin.seats.get(k)).is_some_and(|s| s.seated);
+                        if seated {
+                            p.activity = Activity::Sit;
+                        }
+                        self.mirror_seat.insert(id, (BusId::Ai(bus), k));
+                    }
+                    None => {
+                        self.mirror_seat.remove(&id);
+                    }
+                }
             }
-            None => p.place = Place::Ground,
+            None => {
+                p.place = Place::Ground;
+                self.mirror_seat.remove(&id);
+            }
         }
+    }
+
+    /// (NexiconDK, 31 October 2026) What the pose reads of one of the host's people (client): in
+    /// their place in a timetable bus, seated on a seat (its height, as the host's own riders
+    /// sit: `Person::pose_facts`), holding on at a standing place - else as they are.
+    pub fn mirror_facts(&self, p: &Person) -> PoseFacts {
+        let base = p.pose_facts();
+        let Some(&(bus, k)) = self.mirror_seat.get(&p.id) else { return base };
+        if !matches!(p.place, Place::Bus(b, _) if b == bus) {
+            return base;
+        }
+        let Some(seat) = self.last_buses.iter().find(|b| b.id == bus).and_then(|b| b.cabin.seats.get(k)) else { return base };
+        if !seat.seated {
+            return PoseFacts { activity: Activity::Stand, hold: super::pose_facts::grip_for_standing_rider(true, true, false, false), ..base };
+        }
+        let (at, lift) = super::pose_facts::seated_pose(p.ty.def.seat_height, seat.height, p.ty.rig.seat_front(), p.ty.rig.seat_lift);
+        PoseFacts { activity: Activity::Sit, seat: Some(at), reach: None, floor_lift: lift, hold: 0.0, seated_level: Some((p.ty.def.seat_height - seat.height) as f64) }
     }
 
     /// One of the host's people has gone (client).
@@ -307,6 +342,7 @@ impl PeopleSim {
         }
         self.claimed.remove(&id);
         self.mirror_wait.remove(&id);
+        self.mirror_seat.remove(&id);
     }
 
     /// A remote person this frame: they stand where the host put them.
