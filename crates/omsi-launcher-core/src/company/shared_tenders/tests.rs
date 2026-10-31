@@ -25,14 +25,32 @@ fn at(c: &mut Company, at: i64) {
     c.clock.minute = clock::minute_of(at) as u32;
 }
 
+/// The map's operators made dull (quality 60) in the market and its tenders: a company's valid
+/// bid at the abnormally low line wins against any of theirs (their asks are above it).
+fn dull_rivals(data: &Path, key: &str) {
+    let mut m = load(data, key).unwrap();
+    for r in m.rivals.iter_mut() {
+        r.quality = 60.0;
+    }
+    for t in m.tenders.iter_mut() {
+        if let Some(x) = t.tender.market.as_mut() {
+            for r in x.rivals.iter_mut() {
+                r.quality = 60.0;
+            }
+        }
+    }
+    save(data, &m).unwrap();
+}
+
 fn lines() -> Vec<LineInfo> {
     vec![line("Linie5", "5", 3, true), line("Linie7", "7", 2, true), line("oo_12", "12", 1, true), line("Linie9", "9", 4, true)]
 }
 
-/// Two companies of a map bid in the same tender of the map's market and see each other's bids
-/// live; the main server decides it the same for both a minute after its close - the one won,
-/// the other lost to it by name; a line one of them runs is not offered, and an application
-/// for it is refused; their own tenders of before are withdrawn, the fee paid back.
+/// Two companies of a map bid in the same tender of the map's market - sealed (31 October 2026):
+/// neither sees the other's bid, an abnormally low one is refused; the main server opens every
+/// bid a minute after its close and decides it the same for both - the one won, the other lost to
+/// it by name, every bid then shown with its points; a line one of them runs is not offered, and
+/// an application for it is refused; their own tenders of before are withdrawn, the fee paid back.
 #[test]
 fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     let data = temp("two");
@@ -50,7 +68,7 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     let cash = b.cash;
     let key = key_of(MAP);
     let (ca, cb) = (a.clone(), b.clone());
-    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE) });
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]) });
     let said = step(&data, &key, MAP, DATE, now, &mut read);
     let m = load(&data, &key).unwrap();
     // (Linie5 is A's, oo_12 a line of the player's own: Linie7 and Linie9 out to tender)
@@ -76,28 +94,35 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     save(&data, &m).unwrap();
     sync(&data, &mut a);
     assert_eq!(close_of(&a), was);
+    dull_rivals(&data, &key);
+    sync(&data, &mut a);
+    sync(&data, &mut b);
+    let m = load(&data, &key).unwrap();
     let first = m.tenders.iter().min_by_key(|t| t.tender.opens_at).unwrap().tender.clone();
-    // the auction: A bids, B sees it and bids lower
+    // (the cap: the cost price by half again, at most the server's 1 500 kr an hour)
+    let most = cn::of_hour(&first, crate::company::server_fines::Fines::cents(1500.0) as f64);
+    assert_eq!(first.reference, crate::company::sealed::cap_of(first.cost, most));
+    // sealed: A bids, B does not see it
     let mid = first.opens_at + 10;
     at(&mut a, mid);
     at(&mut b, mid);
     let ta = a.concessions.tenders.iter().find(|t| t.market.as_ref().unwrap().id == first.market.as_ref().unwrap().id).unwrap().id;
     let tb = b.concessions.tenders.iter().find(|t| t.market.as_ref().unwrap().id == first.market.as_ref().unwrap().id).unwrap().id;
     let ask_a = cn::min_bid(&a, a.concessions.tenders.iter().find(|t| t.id == ta).unwrap());
+    assert_eq!(ask_a, first.reference, "anything up to the cap");
     bid(&data, &mut a, ta, ask_a).unwrap();
     sync(&data, &mut b);
     let t = b.concessions.tenders.iter().find(|t| t.id == tb).unwrap().clone();
-    let placed = cn::bids(&b, &t, mid);
-    let theirs = placed.iter().find(|p| matches!(p.who, Who::Other(_)) && p.amount == ask_a).expect("B sees A's bid");
-    assert_eq!(cn::bidder_name(&b, &t, theirs.who), "Umove");
-    assert!(cn::min_bid(&b, &t) < ask_a, "B has to ask less to lead");
-    // (B goes low: below what any operator goes)
-    let low = (t.cost / 2 / auction::ROUND) * auction::ROUND;
+    assert!(cn::bids(&b, &t, mid).is_empty() && t.market.as_ref().unwrap().others.is_empty(), "B sees nothing of A's");
+    // (B goes too low: refused; then at the line, the least valid)
+    let line = crate::company::sealed::low_line(&t);
     at(&mut b, mid + 1);
-    bid(&data, &mut b, tb, low).unwrap();
+    assert_eq!(bid(&data, &mut b, tb, line - crate::company::auction::ROUND), Err(cn::ABNORMALLY_LOW));
+    bid(&data, &mut b, tb, line).unwrap();
+    let low = line;
     sync(&data, &mut a);
     let t = a.concessions.tenders.iter().find(|t| t.id == ta).unwrap().clone();
-    assert_eq!(cn::bids(&a, &t, mid + 1).last().map(|p| (p.who, p.amount)), Some((Who::Other(0), low)), "A sees B lead (gocollective comes first in their order)");
+    assert_eq!(cn::bids(&a, &t, mid + 1).iter().map(|p| p.amount).collect::<Vec<_>>(), vec![ask_a], "A sees its own alone");
     // (A's clock past the close: it does not decide the tender itself)
     at(&mut a, first.closes_at + 5);
     assert!(cn::close(&mut a, ta).is_none());
@@ -112,9 +137,8 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     assert!(matches!(b.concessions.tenders.iter().find(|t| t.id == tb).unwrap().outcome, Some(cn::Outcome::Won { amount, .. }) if amount == low));
     let h = cn::of_line(&b, &first.line).expect("B holds the line");
     assert_eq!(dates::between(&h.from, &h.until), cn::SERVER_DIESEL_DAYS - 1, "two weeks with diesel buses");
-    // (by the timetable hour: the cap 1 500 kr an hour, the contract paid its ask's hour)
-    let cap_hour = cn::per_hour(&first, first.reference);
-    assert!((cap_hour - crate::company::server_fines::Fines::cents(1500.0) as f64).abs() < 1.0, "{cap_hour}");
+    // (every bid opened: both companies' and the operators', best first)
+    assert!(d.standings.len() >= 2 && d.standings[0].name == "GoCollective" && d.standings.iter().any(|s| s.name == "Umove"), "{:?}", d.standings);
     let k = b.concessions.contracts.iter().find(|k| k.line == first.line).unwrap();
     assert_eq!(k.per_hour, cn::per_hour(&first, low).round() as Cents);
     sync(&data, &mut a);
@@ -122,6 +146,8 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
         Some(cn::Outcome::Lost { winner, amount, .. }) => assert_eq!((winner.as_str(), *amount), ("GoCollective", low)),
         o => panic!("{o:?}"),
     }
+    let t = a.concessions.tenders.iter().find(|t| t.id == ta).unwrap();
+    assert!(t.standings.iter().any(|s| s.name == "GoCollective") && t.market.as_ref().unwrap().others.len() == 1, "opened: B's bid shown");
     assert!(cn::of_line(&a, &first.line).is_none());
     // no buying outright on the server
     let other = a.concessions.tenders.iter().find(|t| t.open()).unwrap().id;
@@ -158,7 +184,7 @@ fn a_concession_ending_goes_out_to_every_company() {
     a.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.clone(), price: 1.0, direct: false, after: String::new() });
     let key = key_of(MAP);
     let (ca, cb) = (a.clone(), b.clone());
-    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE) });
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]) });
     // (applications: B for A's line - refused -, B for Linie9)
     assert_eq!(ask(&data, &b, &lines[0]), Ok(ASKED), "B does not know A's plan here: the market refuses it");
     assert_eq!(ask(&data, &b, &lines[3]), Ok(ASKED));
@@ -183,9 +209,11 @@ fn a_concession_ending_goes_out_to_every_company() {
     assert!(a.concessions.tenders.iter().find(|t| t.line == "Linie5").unwrap().renewal, "A's renewal");
     assert!(!b.concessions.tenders.iter().find(|t| t.line == "Linie5").unwrap().renewal);
     assert!(b.concessions.tenders.iter().find(|t| t.line == "Linie9").unwrap().applied);
+    dull_rivals(&data, &key);
+    sync(&data, &mut b);
     let tb = b.concessions.tenders.iter().find(|t| t.line == "Linie5").unwrap().clone();
     at(&mut b, tb.opens_at + 3);
-    let low = (tb.cost / 2 / auction::ROUND) * auction::ROUND;
+    let low = crate::company::sealed::low_line(&tb);
     // (with electric buses: where its level opens them)
     assert_eq!(cn::set_drive(&mut b, tb.id, Drive::Electric), Err(cn::NO_ELECTRIC));
     b.progress.xp = crate::company::levels::LEVEL_XP[2];
@@ -220,7 +248,7 @@ fn an_easy_company_applies_and_bids_itself() {
     let key = key_of(MAP);
     assert_eq!(ask(&data, &e, &lines[1]), Ok(ASKED));
     let ce = e.clone();
-    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ce.clone()], template: template(MAP, DATE) });
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ce.clone()], template: template(MAP, DATE, &[]) });
     let now = clock::moment(DATE, 8 * 60);
     step(&data, &key, MAP, DATE, now, &mut read);
     at(&mut e, now + 2);
@@ -232,4 +260,70 @@ fn an_easy_company_applies_and_bids_itself() {
     bid(&data, &mut e, t.id, ask_e).unwrap();
     assert_eq!(bids(&data, &key).iter().filter(|b| b.company == "easy").count(), 1);
     let _ = std::fs::remove_dir_all(&data);
+}
+
+/// (31 October 2026) A line one of the map's operators won is its for a term: not offered again
+/// meanwhile, an application for it refused; given up early (it bid below its own cost) it goes
+/// out to tender at once, saying so; its term ending, it goes out again as a company's does.
+#[test]
+fn an_operator_holds_a_line_it_won_and_may_give_it_up() {
+    let data = temp("operator");
+    let lines = lines();
+    let a = company("Umove", "umove");
+    let key = key_of(MAP);
+    let ca = a.clone();
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone()], template: template(MAP, DATE, &[]) });
+    let now = clock::moment(DATE, 8 * 60);
+    step(&data, &key, MAP, DATE, now, &mut read);
+    // (nobody of the server bids: the operators' sealed bids decide)
+    let m = load(&data, &key).unwrap();
+    let t = m.tenders.iter().find(|t| !crate::company::sealed::operator_bids(&t.tender).is_empty()).expect("an operator bids").tender.clone();
+    let closed = clock::date_of(t.closes_at);
+    step(&data, &key, MAP, &closed, t.closes_at + CLOSE_AFTER, &mut read);
+    let m = load(&data, &key).unwrap();
+    let d = m.tenders.iter().find(|x| x.tender.id == t.id).unwrap().decided.clone().unwrap();
+    assert!(d.winner.is_empty() && !d.name.is_empty() && d.own_cost > 0, "{d:?}");
+    let h = m.held.iter().find(|h| h.line == t.line).expect("the operator holds it").clone();
+    assert_eq!((h.from.clone(), h.name.clone()), (dates::add(&closed, 1), d.name.clone()));
+    assert_eq!(dates::between(&h.from, &h.until), cn::SERVER_DIESEL_DAYS - 1);
+    // (an application for it: refused)
+    let l = lines.iter().find(|l| l.name == t.line).unwrap();
+    assert_eq!(ask(&data, &a, l), Err(OPERATOR_HELD));
+    // given up early: out to tender at once, the operator named
+    let mut m = load(&data, &key).unwrap();
+    m.held.iter_mut().find(|x| x.line == t.line).unwrap().gives_up = dates::add(&h.from, 3);
+    save(&data, &m).unwrap();
+    let day = dates::add(&h.from, 3);
+    let said = step(&data, &key, MAP, &day, clock::moment(&day, 8 * 60), &mut read);
+    let m = load(&data, &key).unwrap();
+    assert!(said.iter().any(|s| s.contains("gives line") && s.contains("out to tender at once")), "{said:?}");
+    assert!(!m.held.iter().any(|x| x.line == t.line));
+    let again = m.tenders.iter().find(|x| x.decided.is_none() && x.tender.line == t.line).expect("out again").tender.clone();
+    assert_eq!(again.market.as_ref().unwrap().failed, h.name);
+    // its term ending: out again as a renewal, from the day after
+    let mut m = load(&data, &key).unwrap();
+    m.tenders.retain(|x| x.tender.line != t.line);
+    m.held.push(OperatorHold { gives_up: String::new(), ..h.clone() });
+    save(&data, &m).unwrap();
+    let day = dates::add(&h.until, -RENEW_OPENS);
+    step(&data, &key, MAP, &day, clock::moment(&day, 8 * 60), &mut read);
+    let m = load(&data, &key).unwrap();
+    let renewal = m.tenders.iter().find(|x| x.decided.is_none() && x.tender.line == t.line).expect("the renewal").tender.clone();
+    let x = renewal.market.as_ref().unwrap();
+    assert!(renewal.renewal && x.holder.is_empty() && x.from == dates::add(&h.until, 1), "{renewal:?}");
+    let _ = std::fs::remove_dir_all(&data);
+}
+
+/// (31 October 2026) The market's work is priced in the country most of the map's companies play
+/// in (a map whose country the game cannot tell priced a UK operator's work); none: the map's.
+#[test]
+fn the_market_prices_in_the_companies_country() {
+    let mut dk = company("Umove", "umove");
+    dk.country = "dk".into();
+    let plain = template(MAP, DATE, &[]);
+    let theirs = template(MAP, DATE, &[dk.clone(), dk]);
+    assert_eq!(theirs.country, "dk");
+    let l = &lines()[0];
+    let cost = |c: &Company| cn::make_tender(c, l, 1, 0, false, "k", &[], (0, 0)).cost;
+    assert!(cost(&theirs) > cost(&plain), "{} {}", cost(&theirs), cost(&plain));
 }

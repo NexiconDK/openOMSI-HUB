@@ -104,6 +104,11 @@ pub fn my_bid_text(c: &Company, t: &Tender) -> Option<(String, &'static str)> {
     let b = cn::my_bid(c, t, ck::now(c))?;
     let bid = trf("Your bid: %{amount} at %{when}", &[("amount", &money(t, b.amount)), ("when", &when(c, b.at))]);
     let bid = if b.count > 1 { format!("{bid} ({})", trf("%{n} bids placed", &[("n", &b.count.to_string())])) } else { bid };
+    // (NexiconDK, 31 October 2026: the map's tenders take sealed bids - nobody leads till they
+    // are opened at the close)
+    if t.market.is_some() && b.result.is_none() {
+        return Some((format!("{bid}  ·  {}", tr("sealed: opened at the close")), "ok"));
+    }
     Some(match &b.result {
         None if b.leads => (format!("{bid}  ·  {}", tr("leading")), "ok"),
         None => (format!("{bid}  ·  {}", tr("beaten: bid again before it closes")), "warn"),
@@ -117,6 +122,11 @@ pub fn state_of(c: &Company, t: &Tender) -> (String, &'static str) {
     let now = ck::now(c);
     match &t.outcome {
         None if now < t.opens_at => (trf("Opens %{when}", &[("when", &when(c, t.opens_at))]), "soft"),
+        // (NexiconDK, 31 October 2026: sealed - nothing of the others' till the close)
+        None if t.market.is_some() => {
+            let mine = if t.offers.is_empty() { tr("no bid of yours yet") } else { tr("your sealed bid is in") };
+            (format!("{}  ·  {mine}", trf("Sealed bids until %{when}", &[("when", &when(c, t.closes_at))])), if t.offers.is_empty() { "accent2" } else { "ok" })
+        }
         None => {
             let placed = cn::bids(c, t, now);
             let lead = match placed.last() {
@@ -188,6 +198,45 @@ pub fn view(s: &mut Session, args: &Value) -> Value {
         "held": held(&c),
         "auction": auction(&c, selected, args),
         "offers": offers(&c),
+        "results": results(&c),
+    })
+}
+
+/// (NexiconDK, 31 October 2026) The map's tenders as their sealed bids were opened at their
+/// close, the latest first: who won at what, and every bid with its points - the company's own,
+/// the other companies' and the operators', a rejected one marked (`sealed::score`).
+fn results(c: &Company) -> Value {
+    if !c.online.on_server {
+        return Value::Null;
+    }
+    let mut list: Vec<&Tender> = c.concessions.tenders.iter().filter(|t| t.market.is_some() && !t.open() && !t.standings.is_empty()).collect();
+    list.sort_by(|a, b| b.closes_at.cmp(&a.closes_at));
+    let rows: Vec<Value> = list
+        .iter()
+        .take(20)
+        .map(|t| {
+            let winner = t.standings.first().filter(|s| !s.rejected);
+            let bids: Vec<Value> = t
+                .standings
+                .iter()
+                .map(|s| {
+                    let who = if s.name.is_empty() { tr("You") } else { s.name.clone() };
+                    let points = if s.rejected { tr("rejected: abnormally low or above the cap") } else { trf("%{p} price + %{q} quality = %{t} points", &[("p", &format!("{:.1}", s.price)), ("q", &format!("{:.1}", s.quality)), ("t", &format!("{:.1}", s.total))]) };
+                    json!({ "who": who, "bid": money(t, s.amount), "points": points, "rejected": s.rejected, "me": s.name.is_empty(), "won": winner.is_some_and(|w| std::ptr::eq(w, s)) })
+                })
+                .collect();
+            let said = match winner {
+                Some(w) if w.name.is_empty() => trf("You won with %{amount}", &[("amount", &money(t, w.amount))]),
+                Some(w) => trf("%{who} won with %{amount}", &[("who", &w.name), ("amount", &money(t, w.amount))]),
+                None => tr("No valid bid"),
+            };
+            let failed = t.market.as_ref().map(|m| m.failed.clone()).filter(|f| !f.is_empty()).map(|f| trf("Out again: %{who} gave the line up", &[("who", &f)]));
+            json!({ "id": t.id, "number": t.number, "caption": caption_of(t), "closed": when(c, t.closes_at), "said": said, "tone": if winner.is_some_and(|w| w.name.is_empty()) { "ok" } else { "soft" }, "failed": failed, "bids": bids })
+        })
+        .collect();
+    json!({
+        "title": tr("Tender results"), "sub": tr("Every bid of the map's tenders, opened at their close"), "rows": rows,
+        "empty": tr("No tender of the map has closed yet: when one does, every bid is shown here with its points."),
     })
 }
 
@@ -408,12 +457,25 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
     let least = cn::min_bid(c, t);
     let advice = cn::advice(c, t);
     let hourly = t.market.is_some();
+    // (NexiconDK, 31 October 2026: the map's tenders take sealed bids - `sealed`)
+    let sealed = t.market.is_some();
+    let sealed_open = sealed && t.open();
+    let low = omsi_launcher_lib::company::sealed::low_line(t);
     let cap_tip = if hourly { tr("The most the authority pays a timetable hour: an ask above it does not count.") } else { tr("The most the authority pays a year: an ask above it does not count.") };
-    let figures = json!([
+    let figures = if sealed {
+        json!([
+            { "label": tr("Advice").to_uppercase(), "value": money(t, advice), "tone": "ok", "tip": tr("The work's cost price at your own costs, with a 5 % margin: drivers' paid hours, fuel, the workshop, a bus and its fixed costs, less BSOG.") },
+            { "label": tr("Lowest valid ask").to_uppercase(), "value": money(t, low), "tone": "warn", "tip": tr("85 % of the authority's cost price: a bid under it is abnormally low and is rejected when the bids are opened.") },
+            { "label": tr("The cap").to_uppercase(), "value": money(t, t.reference), "tone": "text", "tip": tr("The authority's cost price by one and a half, at most the server's cap: an ask above it does not count.") },
+            if t.open() { json!({ "label": tr("Deadline").to_uppercase(), "value": when(c, t.closes_at), "tone": "text" }) } else { json!({ "label": tr("Term").to_uppercase(), "value": tr(if t.drive == Drive::Electric { "Electric · a month" } else { "Diesel · two weeks" }), "tone": "text" }) },
+        ])
+    } else {
+        json!([
         { "label": tr("The cap").to_uppercase(), "value": money(t, t.reference), "tone": "text", "tip": cap_tip },
         { "label": tr("Advice").to_uppercase(), "value": money(t, advice), "tone": "ok", "tip": tr("The work's cost price at your own costs, with a 5 % margin: drivers' paid hours, fuel, the workshop, a bus and its fixed costs, less BSOG.") },
         if t.open() { json!({ "label": tr("Ask at most now").to_uppercase(), "value": money(t, least), "tone": "text" }) } else if hourly { json!({ "label": tr("Term").to_uppercase(), "value": tr(if t.drive == Drive::Electric { "Electric · a month" } else { "Diesel · two weeks" }), "tone": "text" }) } else { json!({ "label": tr("Term").to_uppercase(), "value": trf("%{n} years", &[("n", &t.term_years().to_string())]), "tone": "text" }) },
-    ]);
+    ])
+    };
     // (NexiconDK: no line is bought outright on Bus Company Online's server)
     let mut figures = figures;
     if !c.online.on_server {
@@ -424,7 +486,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
     let (_, ext) = bc::term(t.kind);
     let terms = t.scored().then(|| match t.market {
         // (NexiconDK: on the server its term is by the buses it is bid with)
-        Some(_) => trf("%{kind}, %{per}  ·  two weeks with diesel buses, a month with electric ones  ·  asks are a price a year", &[("kind", &tr(t.kind.label())), ("per", &per_text(t.period))]),
+        Some(_) => trf("%{kind}, %{per}  ·  two weeks with diesel buses, a month with electric ones  ·  asks are a price a timetable hour, sealed until the close", &[("kind", &tr(t.kind.label())), ("per", &per_text(t.period))]),
         None => trf("%{kind}, %{per}  ·  %{years} years and up to %{ext} more  ·  asks are a price a year", &[("kind", &tr(t.kind.label())), ("per", &per_text(t.period)), ("years", &t.term_years().to_string()), ("ext", &ext.to_string())]),
     });
     // (and the buses the company bids with: its next bid carries them)
@@ -472,6 +534,28 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
     let mine_last = placed.iter().rev().find(|p| p.who == Who::Player).map(|p| p.amount);
     let kind = points_of("").unwrap_or_else(|| trf("your quality %{q}", &[("q", &format!("{:.0}", cn::quality_in(c, t)))]));
     bidders.push(json!({ "name": tr("You"), "kind": kind, "value": mine_last.map(|a| money(t, a)).unwrap_or_else(|| tr("no bid")), "has": mine_last.is_some(), "leads": leader == Some(Who::Player) }));
+    // (NexiconDK, 31 October 2026: sealed - nothing of the others' while it runs; at the close
+    // every bid opened, best first, a rejected one marked)
+    if sealed {
+        bidders.clear();
+    }
+    let opened: Vec<Value> = if sealed && !t.open() {
+        let operator = |name: &str| t.market.as_ref().and_then(|m| m.rivals.iter().find(|r| r.name == name)).map(|r| tr(r.character.label()));
+        t.standings
+            .iter()
+            .enumerate()
+            .map(|(k, s)| {
+                let name = if s.name.is_empty() { tr("You") } else { s.name.clone() };
+                let kind = if s.name.is_empty() { tr("your company") } else { operator(&s.name).unwrap_or_else(|| tr("a company of the server")) };
+                let q = s.quality / omsi_launcher_lib::company::auction::QUALITY_POINTS;
+                let (bid, tone) = if s.rejected { (trf("%{amount}, rejected", &[("amount", &money(t, s.amount))]), "danger") } else if k == 0 { (trf("%{amount}, won", &[("amount", &money(t, s.amount))]), "ok") } else { (money(t, s.amount), "text") };
+                let points = if s.rejected { tr("rejected: abnormally low or above the cap") } else { trf("%{p} price + %{q} quality = %{t} points", &[("p", &format!("{:.1}", s.price)), ("q", &format!("{:.1}", s.quality)), ("t", &format!("{:.1}", s.total))]) };
+                json!({ "name": name, "kind": kind, "quality": q, "quality_text": if s.rejected { "–".to_string() } else { format!("{:.0}", q * 100.0) }, "bid": bid, "tone": tone, "leads": k == 0 && !s.rejected, "points": points })
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
     // (Luc 2026-10-16: the rivals as a table - their kind, quality and where their bid stands)
     let mut rivals: Vec<Value> = t
         .bidders
@@ -502,6 +586,9 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         };
         rivals.push(json!({ "name": name, "kind": tr("a company of the server"), "quality": q / 100.0, "quality_text": format!("{q:.0}"), "bid": bid, "tone": tone, "leads": leads, "points": points_of(name) }));
     }
+    if sealed {
+        rivals = opened;
+    }
     let log: Vec<Value> = placed.iter().rev().take(30).map(|p| json!({ "at": ck::hhmm(p.at), "who": if p.who == Who::Player { tr("You") } else { cn::bidder_name(c, t, p.who) }, "amount": money(t, p.amount), "me": p.who == Who::Player })).collect();
     // what to do
     let actions = if t.running(now) {
@@ -510,7 +597,12 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         // whichever is less, to the cent)
         let unit = |year: f64| if hourly { cn::per_hour(t, year.round() as Cents) / 100.0 } else { year / 100.0 };
         let year_of = |a: f64| if hourly { cn::of_hour(t, a * 100.0) } else { (a * 100.0).round() as Cents };
-        let (lo, hi) = if hourly {
+        let (lo, hi) = if sealed {
+            // (sealed: from the lowest valid ask to the cap)
+            let hi = ((unit(t.reference as f64) * 100.0).floor() / 100.0).max(0.01);
+            let lo = ((unit(low as f64) * 100.0).ceil() / 100.0).clamp(0.01, hi);
+            (lo, hi)
+        } else if hourly {
             let hi = ((unit(least as f64) * 100.0).floor() / 100.0).max(0.01);
             let lo = ((unit((t.reference.min(t.cost.max(1)) as f64) * 0.5) * 100.0).round() / 100.0).clamp(0.01, hi);
             (lo, hi)
@@ -523,7 +615,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         // (the slider's sum when it is this tender's and not above the bid that leads now;
         // else the recommended ask in Normal, the most that leads otherwise)
         let mine = args.get("amount_for").and_then(Value::as_u64) == Some(t.id as u64);
-        let start = if normal { unit(rec as f64) } else { hi };
+        let start = if normal || sealed { unit(rec as f64) } else { hi };
         let want = args.get("amount").and_then(Value::as_f64).filter(|a| mine && *a <= hi).unwrap_or(start);
         let a = want.clamp(lo, hi);
         let amount = year_of(a).min(least.max(year_of(lo)));
@@ -536,8 +628,12 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
             trf("About %{week} a week and %{term} for the contract's %{days} days: %{hours} timetable hours at %{rate}", &[("week", &eur((rate * cn::hours_year(t) / 52.0).round() as Cents)), ("term", &eur((rate * hours).round() as Cents)), ("days", &days.to_string()), ("hours", &format!("{hours:.0}")), ("rate", &money(t, amount))])
         });
         let chance = cn::chance(c, t, amount);
-        let ctone = if chance >= 0.7 { "ok" } else if chance >= 0.35 { "warn" } else { "danger" };
-        let mut said = trf("%{s} % of the cap  ·  chance to win, as it looks now: about %{p} %", &[("s", &format!("{:.0}", t.share(amount) * 100.0)), ("p", &format!("{:.0}", chance * 100.0))]);
+        let ctone = if sealed { "soft" } else if chance >= 0.7 { "ok" } else if chance >= 0.35 { "warn" } else { "danger" };
+        let mut said = if sealed {
+            trf("%{s} % of the cap  ·  sealed: nobody sees your bid, nor you theirs, till the close", &[("s", &format!("{:.0}", t.share(amount) * 100.0))])
+        } else {
+            trf("%{s} % of the cap  ·  chance to win, as it looks now: about %{p} %", &[("s", &format!("{:.0}", t.share(amount) * 100.0)), ("p", &format!("{:.0}", chance * 100.0))])
+        };
         if !t.fee_paid && cn::fee(c, t) > 0 {
             said = format!("{said}  ·  {}", trf("taking part costs %{amount}", &[("amount", &eur(cn::fee(c, t)))]));
         }
@@ -545,9 +641,9 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
             "kind": "running", "id": t.id, "lo": lo, "hi": hi, "amount": a, "label": tr(if hourly { "Your ask a timetable hour" } else { "Your ask" }),
             "per_hour": hourly, "total": total,
             "chance": said, "chance_tone": ctone,
-            "recommend": normal.then(|| trf("Recommended: %{amount} (%{s} % of the cap), about %{p} % to win", &[("amount", &money(t, rec)), ("s", &format!("{:.0}", t.share(rec) * 100.0)), ("p", &format!("{:.0}", rec_chance * 100.0))])),
+            "recommend": if sealed { Some(trf("Your cost price with a 5 % margin: %{amount}", &[("amount", &money(t, rec))])) } else { normal.then(|| trf("Recommended: %{amount} (%{s} % of the cap), about %{p} % to win", &[("amount", &money(t, rec)), ("s", &format!("{:.0}", t.share(rec) * 100.0)), ("p", &format!("{:.0}", rec_chance * 100.0))])) },
             "recommend_amount": unit(rec as f64),
-            "bid": trf("Ask %{amount}", &[("amount", &money(t, amount))]),
+            "bid": if sealed && !t.offers.is_empty() { trf("Change your bid to %{amount}", &[("amount", &money(t, amount))]) } else { trf("Ask %{amount}", &[("amount", &money(t, amount))]) },
             "buy": (!c.online.on_server).then(|| trf("Buy outright, %{amount}", &[("amount", &eur(t.buy_out()))])), "buy_tip": tr("Certain: the auction ends at once in your favour"),
             // (NexiconDK: on Bus Company Online's server its clock runs for everybody: no step)
             "plus15": (!c.online.on_server).then(|| tr("+15 min")), "to_close": (!c.online.on_server).then(|| tr("To its close")),
@@ -584,7 +680,8 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         _ => mine_last,
     };
     let score = t.scored().then(|| {
-        let me = mine_amount.and_then(|a| {
+        // (sealed: the price points are known once the bids are opened)
+        let me = mine_amount.filter(|_| !sealed_open).and_then(|a| {
             let mut with: Vec<Placed> = placed.iter().filter(|p| p.who != Who::Player).copied().collect();
             with.push(Placed { at: now.max(t.opens_at), who: Who::Player, amount: a });
             cn::standings(c, t, &with).into_iter().find(|s| s.name.is_empty())
@@ -595,18 +692,20 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
             "title": tr("How bids are scored"), "head": tr("70 % price + 30 % quality"),
             "price": price, "quality": quality, "has": me.is_some(),
             "price_label": trf("Price %{p} of 70", &[("p", &format!("{price:.1}"))]), "quality_label": trf("Quality %{q} of 30", &[("q", &format!("{quality:.1}"))]),
-            "total": me.as_ref().map(|s| trf("Your expected score: %{t} of 100", &[("t", &format!("{:.1}", s.total))])).unwrap_or_else(|| tr("Set an ask to see your expected score.")),
+            "total": me.as_ref().map(|s| trf("Your expected score: %{t} of 100", &[("t", &format!("{:.1}", s.total))])).unwrap_or_else(|| tr(if sealed_open { "Your price points are known when the bids are opened: the lowest valid ask gets all 70." } else { "Set an ask to see your expected score." })),
             "lines": [
                 tr("Price: the lowest ask gets all 70 points, every other ask lowest ÷ ask of them."),
                 trf("Quality: your track record, 100 % less 2 % a default point - yours %{pts} points, %{q} of 30.", &[("pts", &num(bc::scored_points(c), 1)), ("q", &num(q, 1))]),
-                tr("Asks above the cap do not count; on equal totals the price decides, then quality."),
+                tr(if sealed { "Sealed bids: opened together at the close. Under 85 % of the authority's cost price a bid is rejected as abnormally low; above the cap it does not count." } else { "Asks above the cap do not count; on equal totals the price decides, then quality." }),
             ],
         })
     });
     json!({
         "timeline": timeline, "score": score, "rivals": rivals,
-        "rivals_title": tr("Rivals"), "rivals_heads": [tr("Bidder"), tr("Kind"), tr("Quality"), tr("Bid")],
+        "rivals_title": tr(if sealed { "Opened bids" } else { "Rivals" }), "rivals_heads": [tr("Bidder"), tr("Kind"), tr("Quality"), tr("Bid")],
         "title": title, "id": t.id, "number": t.number, "caption": caption_of(t),
+        "sealed": sealed_open.then(|| tr("Sealed tender: nobody sees another's bid until it closes - not the other companies, not the operators. You may change your bid until the deadline: your last counts. At the close every bid is opened and shown with its points.")),
+        "running_tiles": if sealed { 3 } else { 2 },
         "state": state, "tone": tone, "mine": mine.as_ref().map(|m| &m.0), "mine_tone": mine.map(|m| m.1),
         "figures": figures, "terms": terms, "frac": frac, "times": times, "bidders": bidders, "drive": drive,
         "log_title": tr("Bids").to_uppercase(), "log": log, "no_log": tr("No bid yet."),

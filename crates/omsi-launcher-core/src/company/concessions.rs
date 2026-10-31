@@ -131,6 +131,10 @@ pub struct Standing {
     pub price: f64,
     pub quality: f64,
     pub total: f64,
+    /// (NexiconDK, 31 October 2026) Rejected when the sealed bids were opened: abnormally low,
+    /// or above the cap (`sealed::score`) - no points.
+    #[serde(default)]
+    pub rejected: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -315,6 +319,9 @@ pub struct Shared {
     pub others: Vec<OtherBids>,
     pub holder: String,
     pub from: String,
+    /// (NexiconDK, 31 October 2026) The operator that gave the line up before its term ended,
+    /// which put it out to tender again (`shared_tenders::OperatorHold`).
+    pub failed: String,
 }
 
 /// Another company's bids in a tender of the market: its id, its name, its quality in the
@@ -1014,10 +1021,9 @@ pub fn bids(c: &Company, t: &Tender, until: i64) -> Vec<Placed> {
     if t.market.is_none() {
         return auction::replay(&t.lot(), &bidders(c, t), &t.offers, quality_in(c, t), until);
     }
-    // (the map's market: every company's bids, in their one order)
-    let (all, me) = humans_of(c, t);
-    let humans: Vec<auction::Human> = all.iter().map(|h| auction::Human { quality: h.2, offers: &h.3 }).collect();
-    auction::replay_many(&t.lot(), &bidders(c, t), &humans, Some(me), until)
+    // (NexiconDK, 31 October 2026: the map's market takes sealed bids - `sealed`: the company
+    // sees its own alone; every bid is opened at the close)
+    t.offers.iter().filter(|o| o.0 <= until).map(|o| Placed { at: o.0, who: Who::Player, amount: o.1 }).collect()
 }
 
 /// The name a bid was placed under (the player's: empty).
@@ -1032,6 +1038,10 @@ pub fn bidder_name(c: &Company, t: &Tender, who: Who) -> String {
 /// The bid that leads now: the most the company may ask (its 70/30 score leading every other
 /// by a margin).
 pub fn min_bid(c: &Company, t: &Tender) -> Cents {
+    // (sealed: anything up to the cap - `sealed`)
+    if t.market.is_some() {
+        return t.reference;
+    }
     let placed = bids(c, t, clock::now(c));
     let rivals = bidders(c, t);
     let (all, me) = humans_of(c, t);
@@ -1042,6 +1052,11 @@ pub fn min_bid(c: &Company, t: &Tender) -> Cents {
 /// The ask recommended now (Normal): the most that leads and wins with `RECOMMEND_CHANCE` as
 /// it looks now, not below `RECOMMEND_FLOOR` of the reference; and its chance.
 pub fn recommended(c: &Company, t: &Tender) -> (Cents, f64) {
+    // (sealed: nobody knows the others' bids - the company's own costs and margin, within the
+    // valid asks; no chance to tell)
+    if t.market.is_some() {
+        return (advice(c, t).clamp(super::sealed::low_line(t), t.reference.max(super::sealed::low_line(t))), f64::NAN);
+    }
     let top = min_bid(c, t);
     let bottom = round(t.reference as f64 * RECOMMEND_FLOOR).min(top);
     // (the lower the ask, the better the chance: the most that is good enough)
@@ -1064,6 +1079,9 @@ pub fn recommended(c: &Company, t: &Tender) -> (Cents, f64) {
 
 /// The company's chance to win with an ask of `amount` now, as the player can reckon it.
 pub fn chance(c: &Company, t: &Tender, amount: Cents) -> f64 {
+    if t.market.is_some() {
+        return f64::NAN;
+    }
     let placed = bids(c, t, clock::now(c));
     let seen: Vec<Seen> = t
         .bidders
@@ -1094,6 +1112,9 @@ fn pay_fee(c: &mut Company, id: u32) -> Result<(), &'static str> {
     Ok(())
 }
 
+/// Why a bid of the map's market is refused below its line (`sealed::LOW_SHARE`).
+pub const ABNORMALLY_LOW: &str = "Abnormally low: under 85 % of the authority's cost price a bid is rejected at the close.";
+
 /// Ask a sum on a running tender, now: it has to lead (at most `min_bid`), and the fee is paid
 /// with the first bid. (Won, the line runs at that ask: nothing is paid for it.)
 pub fn bid(c: &mut Company, id: u32, amount: Cents) -> Result<(), &'static str> {
@@ -1112,7 +1133,13 @@ pub fn bid(c: &mut Company, id: u32, amount: Cents) -> Result<(), &'static str> 
     if !t.counts(amount) {
         return Err("Above the authority's cap: a bid above it does not count.");
     }
-    if amount > min_bid(c, &t) {
+    // (NexiconDK, 31 October 2026: the map's market takes sealed bids - any up to the cap, but
+    // not abnormally low; the last counts)
+    if t.market.is_some() {
+        if amount < super::sealed::low_line(&t) {
+            return Err(ABNORMALLY_LOW);
+        }
+    } else if amount > min_bid(c, &t) {
         return Err("Another bid scores better: ask at most the bid that leads.");
     }
     pay_fee(c, id)?;
@@ -1264,7 +1291,7 @@ pub fn take_line(c: &mut Company, l: &LineInfo) -> Result<(Event, Cents), &'stat
 pub fn standings(c: &Company, t: &Tender, placed: &[Placed]) -> Vec<Standing> {
     let (all, me) = humans_of(c, t);
     let hq: Vec<f64> = all.iter().map(|h| h.2).collect();
-    auction::points_many(placed, &bidders(c, t), &hq, Some(me)).into_iter().map(|p| Standing { name: bidder_name(c, t, p.who), amount: p.amount, price: p.price, quality: p.quality, total: p.total }).collect()
+    auction::points_many(placed, &bidders(c, t), &hq, Some(me)).into_iter().map(|p| Standing { name: bidder_name(c, t, p.who), amount: p.amount, price: p.price, quality: p.quality, total: p.total, rejected: false }).collect()
 }
 
 /// The rivals' last bids, best first.

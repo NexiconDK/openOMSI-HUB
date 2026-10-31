@@ -698,7 +698,8 @@ impl MainServer {
                     }
                 };
                 let companies: Vec<super::model::Company> = company_ids(&data).into_iter().filter_map(|id| store::load(&data, &id).ok()).filter(|c| super::shared_tenders::key_of(&c.map) == key).collect();
-                Some(super::shared_tenders::MapNow { lines, companies, template: super::shared_tenders::template(&map, &date) })
+                let template = super::shared_tenders::template(&map, &date, &companies);
+                Some(super::shared_tenders::MapNow { lines, companies, template })
             };
             for line in super::shared_tenders::step(&self.data, &key, &map, &date, now, &mut read) {
                 info!("tenders: {line}");

@@ -13,6 +13,10 @@
 //! operator (the map's own buses run the line until it goes out again), or by nobody. On the
 //! server no line is bought outright.
 //!
+//! (31 October 2026) The bids are sealed (`sealed`): each company's is its own until the close,
+//! then every bid is opened and shown with its points; an operator that wins holds the line for
+//! a term like a company (`OperatorHold`) and may give it up early, having bid below its own cost.
+//!
 //! Each company's process keeps a copy of the market's open tenders among its own (`sync`,
 //! `concessions::Tender::market`): it bids on them as ever (its pages, its clock telling the bids
 //! as they come), its bid goes into the market's bids (`post_bid`,
@@ -20,7 +24,6 @@
 //! step; and it takes what the main server decided (won: the concession with its contract; lost:
 //! who won). Its own tenders of before the market are withdrawn, their fees paid back.
 
-use super::auction::{self, Human, Who};
 use super::clock::{self, Level, Run};
 use super::concessions::{self as cn, OtherBids, Rival, Shared, Standing, Tender};
 use super::dates;
@@ -64,6 +67,25 @@ pub struct Market {
     /// The server's date the week of its tenders could not be read on (`fill_weeks`: tried
     /// again the next day).
     pub weeks_failed: String,
+    /// (31 October 2026) The lines the map's operators won, for their terms.
+    pub held: Vec<OperatorHold>,
+}
+
+/// (NexiconDK, 31 October 2026) A line one of the map's operators won: it runs it for the term a
+/// company would (two weeks: its buses are diesel ones), then it goes out to tender again - or,
+/// having bid below its own cost, it gives the line up on `gives_up` (empty: it does not) and the
+/// line goes out to tender at once.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct OperatorHold {
+    pub line: String,
+    pub number: String,
+    pub name: String,
+    pub from: String,
+    pub until: String,
+    pub amount: Cents,
+    pub own_cost: Cents,
+    pub gives_up: String,
 }
 
 /// A tender of the market: the tender (its market part: the market's id, the operators, the
@@ -89,6 +111,9 @@ pub struct Decided {
     pub standings: Vec<Standing>,
     /// The buses the winning company bid with (its contract's term: `concessions::server_term`).
     pub drive: Drive,
+    /// (31 October 2026) An operator won: its own cost of the work a year (it may give the line
+    /// up, having bid below it - `OperatorHold`).
+    pub own_cost: Cents,
 }
 
 /// A company's bid in a tender of the market (a line of the bids' file).
@@ -215,6 +240,7 @@ pub fn post_bid(data: &Path, key: &str, b: &MarketBid) -> Result<()> {
 /// Why an application is refused.
 pub const HELD: &str = "Another company of the map runs this line: it goes out to tender again towards the end of its concession.";
 pub const ASKED: &str = "The line goes out to tender in a moment: its auction is on the Concessions page.";
+pub const OPERATOR_HELD: &str = "One of the map's operators runs this line on the contract it won: it goes out to tender again when that ends.";
 
 /// Company `c` applies for line `l` of its map (the Lines page's "Apply" on the server): the main
 /// server puts it out to tender at once (`ASKED`), unless another company runs it (`HELD`) - its
@@ -229,6 +255,9 @@ pub fn ask(data: &Path, c: &Company, l: &LineInfo) -> Result<&'static str, &'sta
     let key = key_of(&c.map);
     if super::plan::live_plans(data).iter().any(|p| p.company != c.id && key_of(&p.map) == key && p.has_line(&l.name)) {
         return Err(HELD);
+    }
+    if load(data, &key).is_some_and(|m| m.held.iter().any(|h| h.line.eq_ignore_ascii_case(&l.name))) {
+        return Err(OPERATOR_HELD);
     }
     let a = MarketAsk { company: c.id.clone(), line: l.name.clone() };
     append(&asks_file(data, &key), &serde_json::to_string(&a).map_err(|_| "The application could not be written.")?).map_err(|_| "The application could not be written.")?;
@@ -246,9 +275,25 @@ pub struct MapNow {
     pub template: Company,
 }
 
-/// A company to price a map's tenders with: new, of the map, on the server's date, Normal.
-pub fn template(map: &str, date: &str) -> Company {
-    super::found(&super::Founding { name: "Market".into(), date: date.to_string(), map: map.to_string(), game_mode: GameMode::Normal, ..Default::default() }, "")
+/// A company to price a map's tenders with: new, of the map, on the server's date, Normal - in the
+/// country most of the map's `companies` play in and at their prices (31 October 2026: the map's
+/// guessed country - "International", a UK operator's costs, for a map it did not know - priced
+/// the work below what the companies could run it for; none: the map's).
+pub fn template(map: &str, date: &str, companies: &[Company]) -> Company {
+    let mut countries: Vec<(&str, usize)> = Vec::new();
+    for c in companies.iter().filter(|c| !c.country.is_empty()) {
+        match countries.iter_mut().find(|x| x.0 == c.country) {
+            Some(x) => x.1 += 1,
+            None => countries.push((&c.country, 1)),
+        }
+    }
+    countries.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(b.0)));
+    let country = countries.first().map(|x| x.0.to_string()).unwrap_or_default();
+    let mut t = super::found(&super::Founding { name: "Market".into(), date: date.to_string(), map: map.to_string(), game_mode: GameMode::Normal, country, ..Default::default() }, "");
+    if !companies.is_empty() {
+        t.price_index = (companies.iter().map(|c| c.price_index.max(0.1)).sum::<f64>() / companies.len() as f64).max(t.price_index);
+    }
+    t
 }
 
 /// The market of map `key` (`map`) a step on, at the server's `now` (minutes, `clock::moment`) on
@@ -274,11 +319,22 @@ pub fn step(data: &Path, key: &str, map: &str, date: &str, now: i64, read: &mut 
         let all = bids(data, key);
         for i in due {
             let d = decide(&m.tenders[i].tender, &all);
+            let t = &m.tenders[i].tender;
+            let hour = |a: Cents| cn::per_hour(t, a) / 100.0;
             said.push(match (&d.name, d.winner.is_empty()) {
-                (n, _) if n.is_empty() => format!("{map}: line {} - nobody bid", m.tenders[i].tender.number),
-                (n, false) => format!("{map}: line {} won by the company {n} with an ask of {:.2} a year", m.tenders[i].tender.number, d.amount as f64 / 100.0),
-                (n, true) => format!("{map}: line {} went to the operator {n} ({:.2} a year)", m.tenders[i].tender.number, d.amount as f64 / 100.0),
+                (n, _) if n.is_empty() => format!("{map}: line {} - no valid bid", t.number),
+                (n, false) => format!("{map}: line {} won by the company {n} with an ask of {:.2} a timetable hour", t.number, hour(d.amount)),
+                (n, true) => format!("{map}: line {} went to the operator {n} ({:.2} a timetable hour, its own cost {:.2})", t.number, hour(d.amount), hour(d.own_cost)),
             });
+            // (an operator's: it holds the line for its term)
+            if d.winner.is_empty() && !d.name.is_empty() {
+                let from = t.market.as_ref().map(|x| x.from.clone()).filter(|f| !f.is_empty()).unwrap_or_else(|| dates::add(&t.closes, 1));
+                let until = cn::server_term(Drive::Diesel, &from);
+                let days = dates::between(&from, &until) + 1;
+                let gives = super::sealed::gives_up(d.amount, d.own_cost, days, &[key, "gives up", &t.line, &from]).map(|k| dates::add(&from, k)).unwrap_or_default();
+                m.held.retain(|h| !h.line.eq_ignore_ascii_case(&t.line));
+                m.held.push(OperatorHold { line: t.line.clone(), number: t.number.clone(), name: d.name.clone(), from, until, amount: d.amount, own_cost: d.own_cost, gives_up: gives });
+            }
             m.tenders[i].decided = Some(d);
         }
     }
@@ -304,11 +360,11 @@ fn add(m: &mut Market, c: &Company, l: &LineInfo, opens_at: i64, closes_at: i64,
     let mut t = cn::make_tender(c, l, id, opens_at, holder.is_some(), &m.key, &pool, cn::rules(GameMode::Normal).rivals);
     t.closes_at = closes_at.max(opens_at + 60);
     t.closes = clock::date_of(t.closes_at);
-    // (the cap: the most the authority pays a timetable hour, by the hours of a year)
-    if cap_hour > 0 {
-        t.reference = cn::of_hour(&t, cap_hour as f64);
-    }
-    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default() });
+    // (the cap: the cost price by `sealed::CAP_SHARE` - 31 October 2026: the server's most a
+    // timetable hour alone left room for the operators to bid far down - at most that)
+    let most = if cap_hour > 0 { cn::of_hour(&t, cap_hour as f64) } else { 0 };
+    t.reference = super::sealed::cap_of(t.cost, most);
+    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), failed: String::new() });
     m.tenders.push(MarketTender { tender: t, applied: Vec::new(), decided: None });
     id
 }
@@ -322,6 +378,10 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
         let Some(l) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&a.line)) else { continue };
         if let Some(c) = held(&l.name) {
             said.push(format!("{}: the application of {} for line {} - {} runs it", m.map, a.company, l.name, c.name));
+            continue;
+        }
+        if let Some(h) = m.held.iter().find(|h| h.line.eq_ignore_ascii_case(&l.name)) {
+            said.push(format!("{}: the application of {} for line {} - the operator {} runs it until {}", m.map, a.company, l.name, h.name, h.until));
             continue;
         }
         if !cn::is_line(template, l) {
@@ -344,6 +404,39 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
     if m.day == date {
         return;
     }
+    // (31 October 2026) the operators' lines: one that gives its line up today (it bid below its
+    // own cost) puts it out to tender at once; a term ending goes out again as a company's does
+    for h in std::mem::take(&mut m.held) {
+        if !h.gives_up.is_empty() && dates::between(&h.gives_up, date) >= 0 {
+            match lines.iter().find(|l| l.name.eq_ignore_ascii_case(&h.line)).filter(|_| open_of(m, &h.line).is_none()) {
+                Some(l) => {
+                    let id = add(m, template, l, now, now + TENDER_DAYS * clock::DAY, None, cap_hour);
+                    if let Some(x) = m.tenders.iter_mut().find(|t| t.tender.id == id).and_then(|t| t.tender.market.as_mut()) {
+                        x.failed = h.name.clone();
+                    }
+                    said.push(format!("{}: the operator {} gives line {} up (it bid below its own cost): out to tender at once", m.map, h.name, h.line));
+                }
+                None => said.push(format!("{}: the operator {} gives line {} up", m.map, h.name, h.line)),
+            }
+            continue;
+        }
+        if dates::between(&h.until, date) > 0 {
+            continue;
+        }
+        let from = dates::add(&h.until, 1);
+        let decided = m.tenders.iter().any(|t| t.tender.renewal && t.tender.line.eq_ignore_ascii_case(&h.line) && t.tender.market.as_ref().is_some_and(|x| x.from == from));
+        if dates::between(date, &from) <= RENEW_OPENS + 1 && !decided && open_of(m, &h.line).is_none() {
+            if let Some(l) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&h.line)) {
+                let mut rng = Rng::of(&[&m.key, "renewal", &h.line], dates::parse(&from).unwrap_or(0));
+                let minute = 9 * 60 + rng.int(0, 24) * 15;
+                let opens = clock::moment(&dates::add(&from, -RENEW_OPENS), minute).max(now + 30);
+                let closes = clock::moment(&dates::add(&from, -RENEW_DECIDED), minute).max(opens + 60);
+                add(m, template, l, opens, closes, Some(("", &from)), cap_hour);
+                said.push(format!("{}: the operator {}'s contract on line {} out to tender again from {} {}", m.map, h.name, l.name, clock::date_of(opens), clock::hhmm(opens)));
+            }
+        }
+        m.held.push(h);
+    }
     // a new round: lines no company runs
     let round = dates::week_of(date) / cn::ROUND_WEEKS;
     if m.round != round {
@@ -353,6 +446,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
             .iter()
             .filter(|l| !crate::lines::is_own_file(&l.name))
             .filter(|l| held(&l.name).is_none())
+            .filter(|l| !m.held.iter().any(|h| h.line.eq_ignore_ascii_case(&l.name)))
             .filter(|l| open_of(m, &l.name).is_none())
             .filter(|l| cn::is_line(template, l))
             .collect();
@@ -418,34 +512,40 @@ fn humans_with(t: &Tender, all: &[MarketBid]) -> Vec<(String, String, f64, Vec<(
     out
 }
 
-/// A tender of the market decided by every company's bids (`all`) against its operators.
+/// A tender of the market decided by every company's bids (`all`) against its operators: sealed
+/// (`sealed`) - each company's last bid before the close and each operator's, opened together and
+/// scored; the best valid total wins.
 pub fn decide(t: &Tender, all: &[MarketBid]) -> Decided {
     let hs = humans_with(t, all);
-    let rivals = cn::market_bidders(t);
-    let humans: Vec<Human> = hs.iter().map(|h| Human { quality: h.2, offers: &h.3 }).collect();
-    let placed = auction::replay_many(&t.lot(), &rivals, &humans, None, t.closes_at);
-    let name = |who: Who| match who {
-        Who::Other(k) => hs.get(k).map(|h| h.1.clone()).unwrap_or_default(),
-        Who::Rival(i) => t.bidders.get(i).and_then(|id| t.market.as_ref()?.rivals.iter().find(|r| r.id == *id)).map(|r| r.name.clone()).unwrap_or_default(),
-        Who::Player => String::new(),
-    };
-    let hq: Vec<f64> = hs.iter().map(|h| h.2).collect();
-    let standings = auction::points_many(&placed, &rivals, &hq, None).into_iter().map(|p| Standing { name: name(p.who), amount: p.amount, price: p.price, quality: p.quality, total: p.total }).collect();
-    match placed.last() {
-        Some(p) => Decided {
-            winner: match p.who {
-                Who::Other(k) => hs.get(k).map(|h| h.0.clone()).unwrap_or_default(),
-                _ => String::new(),
-            },
-            name: name(p.who),
-            amount: p.amount,
+    let ops = super::sealed::operator_bids(t);
+    // (the companies' first, then the operators': an index into both)
+    let mut opened: Vec<super::sealed::Opened> = Vec::new();
+    let mut last: Vec<(usize, Cents, Drive)> = Vec::new();
+    for (k, h) in hs.iter().enumerate() {
+        if let Some(&(_, amount)) = h.3.iter().filter(|o| o.0 <= t.closes_at).last() {
+            opened.push(super::sealed::Opened { who: k, name: h.1.clone(), quality: h.2, amount });
+            last.push((k, amount, h.4));
+        }
+    }
+    for (k, o) in ops.iter().enumerate() {
+        opened.push(super::sealed::Opened { who: hs.len() + k, name: o.name.clone(), quality: o.quality, amount: o.amount });
+    }
+    let (winner, rows) = super::sealed::score(t, &opened);
+    let standings: Vec<Standing> = rows.into_iter().map(|r| r.1).collect();
+    match winner {
+        Some(w) if w < hs.len() => Decided {
+            winner: hs[w].0.clone(),
+            name: hs[w].1.clone(),
+            amount: last.iter().find(|l| l.0 == w).map_or(0, |l| l.1),
             standings,
-            drive: match p.who {
-                Who::Other(k) => hs.get(k).map(|h| h.4).unwrap_or_default(),
-                _ => Drive::Diesel,
-            },
+            drive: last.iter().find(|l| l.0 == w).map_or(Drive::Diesel, |l| l.2),
+            own_cost: 0,
         },
-        None => Decided::default(),
+        Some(w) => {
+            let o = &ops[w - hs.len()];
+            Decided { winner: String::new(), name: o.name.clone(), amount: o.amount, standings, drive: Drive::Diesel, own_cost: o.own_cost }
+        }
+        None => Decided { standings, ..Decided::default() },
     }
 }
 
@@ -501,8 +601,10 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
             None => continue,
         };
         let t = &mut c.concessions.tenders[k];
+        // (sealed: the other companies' bids only once opened at the close - 31 October 2026)
         if let Some(x) = t.market.as_mut() {
-            x.others = others;
+            x.others = if mt.decided.is_some() { others } else { Vec::new() };
+            x.failed = mt.tender.market.as_ref().map(|y| y.failed.clone()).unwrap_or_default();
         }
         // (its times are the market's: the server's operator may move them in the market's file;
         // and its week, once the main server read it - `fill_weeks`)

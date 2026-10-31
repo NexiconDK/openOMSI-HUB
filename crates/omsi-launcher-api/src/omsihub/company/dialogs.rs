@@ -1113,7 +1113,10 @@ fn ask(s: &mut Session) -> Value {
         Ask::Tender { id, outbid } => {
             let Some(t) = c.concessions.tenders.iter().find(|t| t.id == *id).cloned() else { return json!({ "kind": "gone" }) };
             let left = (t.closes_at - ck::now(&c)).max(0);
-            let mut text = if c.online.on_server {
+            let mut text = if t.market.is_some() {
+                // (NexiconDK, 31 October 2026: the map's tenders are sealed - nothing to lead)
+                trf("Sealed bids until %{time} (%{left} from now): every company of the map and its operators bid, nobody sees another's bid until the close, and they are scored 70 % price and 30 % quality. Ask at least %{low} and at most %{cap}.", &[("time", &format!("{}  {}", day_label(&ck::date_of(t.closes_at)), ck::hhmm(t.closes_at))), ("left", &format!("{}:{:02} h", left / 60, left % 60)), ("low", &eur(co::sealed::low_line(&t))), ("cap", &eur(t.reference))])
+            } else if c.online.on_server {
                 // (NexiconDK: no buying outright on the server - every company of the map bids)
                 trf("Bids until %{time} (%{left} from now), scored 70 % price and 30 % quality; every company of the map bids. Ask at most %{amount} to lead now.", &[("time", &ck::hhmm(t.closes_at)), ("left", &format!("{}:{:02} h", left / 60, left % 60)), ("amount", &eur(co::concessions::min_bid(&c, &t)))])
             } else {

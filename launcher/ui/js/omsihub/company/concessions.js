@@ -32,6 +32,7 @@ export function ConcessionsPage() {
         <${Auction} a=${v.auction} st=${st} />
       </div>
       ${v.offers && html`<${Offers} o=${v.offers} />`}
+      ${v.results && html`<${Results} r=${v.results} />`}
       <${Held} h=${v.held} />
     </div>
     <${VaryDialog} />
@@ -95,13 +96,14 @@ function Auction({ a, st }) {
   const running = act.kind === 'running';
   const amount = running ? (st.amount_for === act.id && st.amount != null ? Math.min(act.hi, Math.max(act.lo, st.amount)) : act.amount) : null;
   const setAmount = (x) => setUi('concessions', { amount: Math.min(act.hi, Math.max(act.lo, x)), amount_for: act.id });
-  const shown = running ? a.figures.slice(0, 2) : a.figures;
+  const shown = running ? a.figures.slice(0, a.running_tiles || 2) : a.figures;
   return html`<${Card} class="co-pg-auction">
     <div class="co-pg-line co-pg-auctionhead">
       <${Plate} p=${{ number: a.number }} h=${28} />
       <div class="grow" style="min-width:0"><b class="co-pg-auctiontitle co-pg-cut" title=${a.caption}>${a.caption}</b><span class=${'co-pg-small co-pg-cut t-' + a.tone}>${a.state}</span></div>
     </div>
     ${a.terms && html`<p class="co-pg-note">${a.terms}</p>`}
+    ${a.sealed && html`<div class="co-pg-banner2"><${Icon} name="lock" size=${18} /><span>${a.sealed}</span></div>`}
     ${a.drive && html`<div class="co-pg-line" title=${a.drive.say}><span class="co-pg-caps">${a.drive.label}</span>
       <${Seg} value=${a.drive.value} options=${a.drive.options} onChange=${(k) => actMore('tender_drive', { id: a.id, drive: k })} style="width:300px;height:34px" /></div>
       <p class="co-pg-note" style="margin:0">${a.drive.say}</p>`}
@@ -143,6 +145,26 @@ function Auction({ a, st }) {
         ? a.log.map((l) => html`<div class="co-pg-line"><span class="co-pg-muted" style="width:48px">${l.at}</span><span class=${'grow co-pg-cut' + (l.me ? ' t-accent' : '')}>${l.who}</span><b>${l.amount}</b></div>`)
         : html`<p class="co-pg-note">${a.no_log}</p>`}
     </details>
+  </${Card}>`;
+}
+
+/** (NexiconDK, 31 October 2026) The map's tenders as their sealed bids were opened at the close
+ * (`concessions::results`): who won at what, and every bid with its points, a rejected one marked. */
+function Results({ r }) {
+  return html`<${Card} title=${r.title} sub=${r.sub} icon="gavel">
+    ${r.rows.length === 0
+      ? html`<${Empty} small icon="gavel" text=${r.empty} />`
+      : html`<div class="co-pg-list">${r.rows.map(
+          (x) => html`<details class="co-pg-tender co-pg-result">
+            <summary class="co-pg-line"><${Plate} p=${{ number: x.number }} h=${22} /><b class="co-pg-itemtitle grow co-pg-cut" title=${x.caption}>${x.caption}</b>
+              <span class=${'co-pg-small t-' + x.tone} style="font-weight:700">${x.said}</span><span class="co-pg-small co-pg-muted">${x.closed}</span></summary>
+            ${x.failed && html`<p class="co-pg-note" style="margin:0">${x.failed}</p>`}
+            <table class="co-pg-table co-pg-rivals"><tbody>${x.bids.map(
+              (b) => html`<tr class=${b.won ? 'leads' : ''} title=${b.points}><td><b class=${b.me ? 't-accent' : ''}>${b.who}</b></td>
+                <td class="co-pg-muted co-pg-small">${b.points}</td><td class=${'num ' + (b.rejected ? 't-danger' : b.won ? 't-ok' : '')}>${b.bid}</td></tr>`,
+            )}</tbody></table>
+          </details>`,
+        )}</div>`}
   </${Card}>`;
 }
 
