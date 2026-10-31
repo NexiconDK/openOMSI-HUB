@@ -88,6 +88,9 @@ pub(super) fn lights(mut cx: LightsCx, dt: f32, daylight: omsi_sim::Daylight, be
         let __tc = Instant::now();
         lights::collect(w, scene, &daylight, cam.position, &vehicles, cone);
         drop(vehicles);
+        if cx.view.cam.flashlight {
+            lights::flashlight_ahead(scene, cam);
+        }
         cx.perf.profile.add(crate::profile_keys::ProfKey::LightsCollect, __tc.elapsed().as_secs_f64());
         // the object editor's pick: a magenta glow over it
         if let Some(id) = cx.menus.menus.editor.as_ref().and_then(|e| e.selected) {

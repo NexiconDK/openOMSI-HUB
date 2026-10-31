@@ -106,6 +106,13 @@ impl App {
         true
     }
 
+    /// The flashlight on or off (Alt+F): it lights what the view looks at, in every view.
+    pub(crate) fn toggle_flashlight(&mut self) {
+        self.cam.flashlight = !self.cam.flashlight;
+        let text = if self.cam.flashlight { "Flashlight on" } else { "Flashlight off" };
+        self.service_msg = Some((text.into(), 1.5));
+    }
+
     /// One of OMSI's global key actions; false when it is not one this game does.
     pub(crate) fn game_action(&mut self, name: &str) -> bool {
         #[cfg(windows)]
@@ -133,6 +140,7 @@ impl App {
             "screenshot" => self.take_screenshot(),
             // the map's object editor on or off, as Ctrl+Shift+E does
             "object_editor" => self.toggle_editor(),
+            "flashlight" => self.toggle_flashlight(),
             "photo_mode" => self.enter_photo(),
             "quicksave" => self.quick_save(),
             "view_set_ego" => {

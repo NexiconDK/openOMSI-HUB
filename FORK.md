@@ -28,6 +28,9 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 
 - **Alle kører efter serverens køreplan**: Serveren pakker den køreplan, den selv kører efter (kortets `TTData`, eller kopien i serverens indholdsmappe hvis der er en), og deler den på web-porten (`/ttdata.zip`, slås fra med `share_timetable = 0` i `server.cfg`). Når man vælger serveren under Multiplayer, henter launcheren den (gemmes til næste gang i `~/.openomsi/server-timetables`) og viser serverens linjer og ture under "Tour" og "Work shift". Spillet får samme køreplan med, når man starter. Ingen behøver at kopiere `TTData`. Vælger man "Host" eller en vens kode, bruges ens egen køreplan igen.
 
+### Lommelygte (fra openOMSI)
+- **Lommelygte på Alt+F** (openOMSI PR #3295 af usonskyyyy, hentet ind 31. oktober 2026): En lille lampe ved øjet, der lyser dér, hvor du kigger. Lyset er en varmhvid kegle, der rækker 50 m. Den virker i alle kameravinkler og i både Vanilla- og Enhanced-billedet, om natten og inde i en mørk førerplads om dagen. F alene er stadig bussens fjernlys. Den kan også lægges på `flashlight` i `[game]` i keyboard.cfg eller på en controllerknap. Forskel fra PR'en: Lyset i Vanilla-billedet sættes op med forkens egne lygter (`push_spot`) og er lige så stærkt om dagen som om natten.
+
 ### Livekort på den dedikerede server
 - Serveren viser nu selv et livekort i browseren på `http://<serverens ip>:<web_port>/kort` (fx `http://192.168.1.169:27026/kort`). Det kræver `share_positions = 1` i `server.cfg`. Forsiden af web-porten har et link til kortet.
 - Kortet tegnes ud fra kortets egne filer: veje, fortove, skinner, stoppesteder og hele køreplanen. Serveren lægger det sammen, når den starter (det tager et øjeblik), og det virker på alle kort.

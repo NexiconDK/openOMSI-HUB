@@ -199,6 +199,9 @@ impl Offscreen<'_> {
         {
             let vehicles = steps::light_vehicles(player_ref.as_ref(), traffic.as_ref(), remotes_off);
             world_lights(renderer, world, scene, weather, daylight, camera.position, &vehicles);
+            if omsi_cfg::flags::OMSI_FLASHLIGHT.is_set() {
+                lights::flashlight_ahead(scene, &camera);
+            }
             let (kind, rate) = precip_of(weather);
             let mut rn = rain::Rain::new();
             rn.set(kind, rate, world.settings.rain_quality());
