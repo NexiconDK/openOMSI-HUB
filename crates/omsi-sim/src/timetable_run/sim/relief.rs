@@ -1076,6 +1076,56 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 
+    /// (31 October 2026) The tour's bus a LAN player waits for, at the end of its trip before far
+    /// from the start of his (1.2 km on), drives there and takes it on - rather than going while he
+    /// watches it on his map and another appearing for it; a trip nobody waits for, as before (400
+    /// m at most: another bus is put out for it).
+    #[test]
+    fn the_tour_bus_drives_the_long_way_to_the_start_of_a_reliefs_trip() {
+        let dir = std::env::temp_dir().join(format!("omsi_relief_long_{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("car.bus"), "[model]\nmodel.cfg\n").unwrap();
+        std::fs::write(dir.join("model.cfg"), "").unwrap();
+        let w = World { path: dir.clone(), ai: Default::default(), positions: Default::default() };
+        let at = |h: f64| h * 3600.0;
+        let take_on = |relief: bool| -> (Placed, Vec<usize>) {
+            let mut s = ScheduleSim::new(&w.path, &w, &crate::SimClock::default());
+            s.data.trips.push(omsi_timetable::Trip { name: "5a".into(), line: "Linie5".into(), stations: vec![1, 2], ..Default::default() });
+            s.times = vec![vec![TripTimes { stations: vec![(0.0, 0.0), (600.0, 600.0)], stops: vec![true, true], duration: 600.0, ..Default::default() }]];
+            let d = |h: f64| Departure { time: h * 3600.0, trip: 0, profile: 0, line: "Linie5".into(), ai_group: "depot".into(), tour: "3".into(), mask: -1, spawned: false, yesterday: false };
+            s.departures = vec![d(8.5), d(9.0)];
+            s.tour_prev = vec![None, Some(0)];
+            s.tour_next = vec![Some(1), None];
+            s.company_off = vec![false; 2];
+            s.last_tod = at(8.8);
+            // (the end of its trip before 1.2 km before the start of the 9:00's, lane 1)
+            let ty = Arc::new(VehicleType::load_ai(&dir, &dir.join("car.bus")).unwrap());
+            let mut net = Network { lanes: vec![LaneBuilder::arc(glam::DVec3::ZERO, 0.0, 1500.0, 0.0, 0.0, LaneKind::Street, 3.0), LaneBuilder::arc(glam::DVec3::new(0.0, 1500.0, 0.0), 0.0, 300.0, 0.0, 0.0, LaneKind::Street, 3.0)], ..Default::default() };
+            net.link(1.5);
+            net.build_grid();
+            net.compute_reach();
+            let random = crate::ai_traffic::setup::RandomTypes { types: Vec::new(), groups: Vec::new(), group_curves: false, group_uvg: Vec::new(), uvg_defaults: Vec::new() };
+            let mut t = TrafficSim::assemble(&dir, net, random, Vec::new(), HashMap::new(), (Vec::new(), Vec::new()), Vec::new(), (1.0, 0), 0);
+            let setup = crate::ai_traffic::model::BusSetup { route: vec![0], stops: Vec::new(), number: None, hof: None, timetable: AiTimetable { line: String::new(), terminus: String::new(), stops: Vec::new() } };
+            let vehicle = crate::VehicleInstance::new(ty.clone(), crate::VehicleHost::new(crate::SimClock::default()));
+            let car = t.place_car(vehicle, LaneKind::Street, 0, 300.0, ty, 0x101, None, Some(5), Some(0.0), Some(setup));
+            s.car_departure.insert(car, 0);
+            if relief {
+                assert_eq!(s.want_relief(7, "Linie5", "3", 540, 0, &[], &t, at(8.8)), ReliefState::Coming);
+            }
+            let dep = at(9.0);
+            let p = Placing { trip_name: "5a".into(), stations: vec![1, 2], departure: dep, leave: vec![dep, dep + 600.0], steps: Vec::new(), station_steps: vec![None, None], station_tiles: vec![None, None], slots: Vec::new(), leg: 0, frac: 0.0, at: 0, start: 0, end: 0, section: vec![1], start_index: 0, s: 0.0, stops: vec![(0, 50.0, 0.0, dep, 1, 0.0), (0, 250.0, 0.0, dep + 600.0, 2, 0.0)], served: vec![false, false] };
+            let ci = t.cars.iter().position(|c| c.id == car).unwrap();
+            let placed = s.take_trip_on(1, ci, p, &mut t, at(8.85));
+            (placed, t.cars[ci].state.route.clone())
+        };
+        let (placed, route) = take_on(true);
+        assert!(matches!(placed, Placed::Spawned), "his: it drives there");
+        assert_eq!(route, vec![0, 1]);
+        assert!(matches!(take_on(false).0, Placed::Drop), "nobody's: as before");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
     /// (31 October 2026) The bus of a LAN player waiting at the first stop of his trip - a stand
     /// other buses stop at as well - is put out a few minutes before its departure, to drive up to
     /// the stop from back along the street (`relief_approach`) in time for it: another tour's bus

@@ -4,6 +4,15 @@
 
 use super::*;
 
+/// How far (m) the tour's bus at the end of its trip drives to the start of the next at most:
+/// round a terminal loop. Further, it goes, and a bus is put out for the next trip.
+const TOUR_ENTRY_MOST: f32 = 400.0;
+
+/// (NexiconDK, Bus Company Online, 31 October 2026) And to the start of one a LAN player waits to
+/// take over (m): it drives there from the end of its trip before, rather than going while he
+/// watches it on his map and another appearing for it - late, if it is far.
+const TOUR_ENTRY_RELIEF: f32 = 3000.0;
+
 impl ScheduleSim {
     /// The tour's bus `ci` (in `traffic`), at the end of its previous trip, takes departure `i`
     /// on, placed by `p` (`ScheduleSim::place_departure`).
@@ -15,6 +24,7 @@ impl ScheduleSim {
         // it stands: the section itself when it stands on it, else the shortest way
         // from its lane onto one of the section's first lanes (round a terminal loop)
         let (lane0, s0) = (traffic.cars[ci].state.lane, traffic.cars[ci].state.s);
+        let most = if self.relief_ai(i) { TOUR_ENTRY_RELIEF } else { TOUR_ENTRY_MOST };
         let net = &traffic.net;
         let (prefix, from) = match tour_entry(&section, lane0) {
             Some(r) => (Vec::new(), r),
@@ -23,7 +33,7 @@ impl ScheduleSim {
                 for t in 0..section.len().min(TOUR_ENTRY_LANES) {
                     if let Some(p) = net.shortest_path(lane0, section[t]) {
                         let len = p[..p.len() - 1].iter().map(|&l| net.lanes[l].length()).sum::<f32>() - s0;
-                        if len < 400.0 && best.as_ref().map(|b| len < b.0).unwrap_or(true) {
+                        if len < most && best.as_ref().map(|b| len < b.0).unwrap_or(true) {
                             best = Some((len, p, t));
                         }
                     }

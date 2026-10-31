@@ -826,6 +826,12 @@ its departure, then the AI drives that trip and the relief moves to the next one
   comes leaves the trip to the AI ten minutes after (`RELIEF_NO_BUS`). A relief not asked for again
   in `RELIEF_STALE` is let go. A night trip is the one nearest the clock (tonight's 24:30, not the
   morning's 0:30). A question still on its way when the bus was handed over is answered "taken".
+- **The tour's bus drives the whole way** (31 October 2026: "it drove off the route, vanished, and
+  came up 300 m away"): at the end of its trip before, the tour's bus takes the next trip on only
+  where it can drive to its start within 400 m (`take_trip_on`, `TOUR_ENTRY_MOST`); further, it
+  was let go (gone from his map at once) and a bus put out for his trip instead. For a trip a LAN
+  player waits to take over it drives there up to `TOUR_ENTRY_RELIEF` (3 km), late where it is
+  far. (On its trip before it runs that trip's way - not the route his map shows, his own trip's.)
 - **Driving up** (31 October 2026, `timetable_run::relief_approach`, `schedule::spawn`): a relief's
   bus that is put out where the player would see it appear - at his stop when it is late, at its
   stand when he takes it over at the trip's first stop - is put out back along its way instead and
