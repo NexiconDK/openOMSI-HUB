@@ -89,7 +89,7 @@ impl Schedule {
         t_spawn: std::time::Instant,
         t_route: std::time::Duration,
     ) -> Placed {
-        let Placing { trip_name, stations, departure, leave, steps, station_steps, station_tiles, slots, leg, frac, at, start, end, section, start_index, mut s, mut stops, served } = p;
+        let Placing { trip_name, stations, departure, leave, steps, station_steps, station_tiles, slots, leg, frac, at, start, end, mut section, start_index, mut s, mut stops, served } = p;
         let Some(Choice {
                      ty,
                      number,
@@ -159,6 +159,40 @@ impl Schedule {
                 s = (ss - 0.5).max(0.0);
             }
         }
+        // (NexiconDK, Bus Company Online, 31 October 2026) The bus of a LAN player waiting at its
+        // stop to take it over, put out where he would see it appear out of nothing - at his stop
+        // when it is late, at its stand in front of him at the trip's first stop -, is put out
+        // back along its way instead, where nobody sees it appear, and drives up to the stop: on
+        // time when there is the time, else late (`relief_approach`). Where nothing is hidden, as
+        // far back as it goes.
+        let stand_pos = traffic.net.lanes[section[start_index]].at(s).0;
+        let mut stood_at_stand = None;
+        if self.sim.relief_wanted(i) && !(self.sim.queued_at_startup(i) && traffic.loading_phase()) && !traffic.may_appear(world, stand_pos) {
+            // (whether it was to stand at its next stop: its first, on its layover)
+            let at_stand = stops.iter().find(|st| st.0 > start_index || (st.0 == start_index && st.1 > s)).is_some_and(|st| st.0 == start_index && (st.1 - s).abs() < 2.0);
+            let tr: &Traffic = traffic;
+            let approach = relief_approach(&tr.net, &section, start_index, s, |l, at| {
+                let (p, h) = tr.net.lanes[l].at(at);
+                let ground = track_is_air(&tr.sim, l) || world.has_ground(p.x, p.y);
+                // (a vehicle standing just there: it is tried again in a moment, `blocked` below)
+                (ground && tr.spawn_clear(&ty, p, h as f64)).then(|| tr.may_appear(world, p))
+            });
+            if let Some(a) = approach {
+                log::info!("trip {trip_name}: the bus a LAN player waits for is put out {:.0} m back along its way{} and comes up to his stop", a.back, if a.hidden { "" } else { " (nowhere out of sight)" });
+                if a.before.is_empty() {
+                    start_index = a.index;
+                } else {
+                    let n = a.before.len();
+                    section = a.before.iter().copied().chain(section.iter().copied()).collect();
+                    for st in &mut stops {
+                        st.0 += n;
+                    }
+                    start_index = 0;
+                }
+                s = a.s;
+                stood_at_stand = Some(at_stand);
+            }
+        }
         let at_pos = traffic.net.lanes[section[start_index]].at(s).0;
         // lanes stay in the network when their tile is unloaded: nothing is put on ground
         // that is not there (the departure waits for its tile)
@@ -182,7 +216,7 @@ impl Schedule {
             && traffic
             .cars
             .iter()
-            .any(|c| c.is_bus() && !c.gone && (c.vehicle.position - at_pos).length() < 50.0)
+            .any(|c| c.is_bus() && !c.gone && (c.vehicle.position - stand_pos).length() < 50.0)
         {
             log::debug!(
                 "trip {trip_name}: its stand is taken, the bus comes at its departure time"
@@ -259,8 +293,10 @@ impl Schedule {
         // on its layover only when it stands at its first stop now (the trip's first station
         // may lie on a part of the track that is not loaded): it waits there for its departure
         if let Some(b) = car.bus.as_mut() {
-            b.layover = departure > day_time
-                && b.stops.front().map(|st| st.ri == 0 && (st.s - s).abs() < 2.0).unwrap_or(false);
+            // (a relief's bus coming up to its stand from back along the street: on its layover
+            // there all the same)
+            let at_front = b.stops.front().map(|st| st.ri == 0 && (st.s - s).abs() < 2.0).unwrap_or(false);
+            b.layover = departure > day_time && stood_at_stand.unwrap_or(at_front);
             b.put_out = b.layover;
             b.route_open = end < slots.len();
             b.terminus = terminus.clone();

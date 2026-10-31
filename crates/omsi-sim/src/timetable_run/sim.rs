@@ -5,6 +5,8 @@
 //! road with it (their vehicles uploaded, spawned, turned round) and hands it the map
 //! through [`TimetableWorld`].
 
+// NexiconDK, Bus Company Online: a relief's bus driving up to the stop
+mod approach;
 mod boards;
 mod choice;
 mod company;
@@ -30,6 +32,7 @@ use omsi_timetable::TimetableData;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+pub use approach::{relief_approach, Approach, APPROACH_MOST};
 pub use choice::{depot_file, pool_depot};
 pub use company::{CompanyBus, TimetableCompany};
 pub use dispatch::{tour_entry, TOUR_ENTRY_LANES};
@@ -311,6 +314,12 @@ const TOUR_LAYOVER_MAX: f64 = 30.0 * 60.0;
 const LAYOVER: f64 = 900.0;
 
 const LAYOVER_SHARED: f64 = 60.0;
+
+/// (NexiconDK, 31 October 2026) How early the bus of a LAN player waiting to take it over at its
+/// first stop is put out where other buses stop as well (s): it comes up to the stop from back
+/// along the street (`relief_approach`), in time for its departure, rather than a minute before
+/// it.
+const RELIEF_LAYOVER: f64 = 300.0;
 
 /// How far ahead (s) the departure displays look.
 const BOARD_AHEAD: f64 = 2.0 * 3600.0;

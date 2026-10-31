@@ -92,7 +92,6 @@ use model::*;
 use pax::*;
 use pednet::*;
 use runners::*;
-use passed_by::*;
 
 // The module's API, at the paths it always had in omsi-app (some only returned, never named
 // outside).

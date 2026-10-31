@@ -826,6 +826,16 @@ its departure, then the AI drives that trip and the relief moves to the next one
   comes leaves the trip to the AI ten minutes after (`RELIEF_NO_BUS`). A relief not asked for again
   in `RELIEF_STALE` is let go. A night trip is the one nearest the clock (tonight's 24:30, not the
   morning's 0:30). A question still on its way when the bus was handed over is answered "taken".
+- **Driving up** (31 October 2026, `timetable_run::relief_approach`, `schedule::spawn`): a relief's
+  bus that is put out where the player would see it appear - at his stop when it is late, at its
+  stand when he takes it over at the trip's first stop - is put out back along its way instead and
+  drives up: along its route, then the lanes leading into the route's first (the straightest, of
+  its kind and open to buses, none twice, not inside a junction), in 12 m steps up to
+  `APPROACH_MOST` (700 m), at the first place nobody sees (`Traffic::may_appear`) with ground under
+  it and room; where nothing is hidden, as far back as it goes. It serves the stops it passes
+  (late) and is on its layover at the stand it comes up to. At a stand other lines share it is put
+  out `RELIEF_LAYOVER` (5 minutes) before its departure rather than `LAYOVER_SHARED` (one), to be
+  there in time - unless another bus stands there: then at its departure time, as before.
 - **Taken over**: walked up to the bus (16 m), his game asks for it (`relief take`); the world
   takes the bus off its roads (`take_relief`) and answers with where it stood, its fleet number and
   its passengers (`relief bus …`). His game puts his own bus there (the duty's bus, or the one the

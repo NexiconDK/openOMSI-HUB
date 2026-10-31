@@ -11,7 +11,10 @@
 //! `RELIEF_STALE` is let go. While he waits his game does not claim that trip (`LanClaim`: the
 //! AI's bus of the tour would go), and the departure is the AI's (`is_player_tour`) whatever his
 //! claim says: its bus takes the trip on at the terminus rather than driving off, or one is put out
-//! for it, and it is put no further than his stop when it is late.
+//! for it, and it is put no further than his stop when it is late. (31 October 2026) One put out
+//! where he would see it appear - at his stop, or its stand in front of him - is put out back along
+//! its way instead and drives up (`approach`); at a stand other lines share, a few minutes early
+//! (`RELIEF_LAYOVER`).
 //!
 //! When another LAN player drives the bus up to his stop - his claim has the trip before (a relief
 //! at the trip's first stop), or the trip itself (a relief on the way) - it is that player's to
@@ -1036,6 +1039,39 @@ mod tests {
         assert_eq!(s.take_handed().last(), Some(&Handed { peer: 7, line: "Linie5".into(), tour: "3".into(), departure: at(10.0), done: true }));
         // (at its last stop: its terminus - the tour ends there)
         assert_eq!(s.want_stop(7, "Linie5", "3", 660, Some(2), &own, &[], &traffic, at(11.2)), BackState::No);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// (31 October 2026) The bus of a LAN player waiting at the first stop of his trip - a stand
+    /// other buses stop at as well - is put out a few minutes before its departure, to drive up to
+    /// the stop from back along the street (`relief_approach`) in time for it: another tour's bus
+    /// there comes a minute before its own, as before.
+    #[test]
+    fn a_reliefs_bus_comes_to_a_shared_stand_in_time_for_its_departure() {
+        let dir = std::env::temp_dir().join(format!("omsi_relief_stand_{}", std::process::id()));
+        let w = World { path: dir.clone(), ai: Default::default(), positions: Default::default() };
+        let mut s = ScheduleSim::new(&w.path, &w, &crate::SimClock::default());
+        s.data.trips.push(omsi_timetable::Trip { name: "5a".into(), line: "Linie5".into(), stations: vec![1, 2], ..Default::default() });
+        s.times = vec![vec![TripTimes { stations: vec![(0.0, 0.0), (600.0, 600.0)], stops: vec![true, true], duration: 600.0, ..Default::default() }]];
+        let d = |tour: &str| Departure { time: 9.0 * 3600.0, trip: 0, profile: 0, line: "Linie5".into(), ai_group: "depot".into(), tour: tour.into(), mask: -1, spawned: false, yesterday: false };
+        s.departures = vec![d("3"), d("4")];
+        s.tour_prev = vec![None, None];
+        s.tour_next = vec![None, None];
+        s.company_off = vec![false; 2];
+        s.shared_stand.insert(1, true);
+        let at = |h: f64| h * 3600.0;
+        let (mut traffic, _) = bus_at_stop(&dir, at(12.0));
+        s.last_tod = at(8.8);
+        assert_eq!(s.want_relief(7, "Linie5", "3", 540, 0, &[], &traffic, at(8.8)), ReliefState::Coming);
+        assert!(!s.departures[0].spawned, "not due: put out as the AI's");
+        let mut queued = |s: &mut ScheduleSim, t: f64| {
+            let _ = s.want_relief(7, "Linie5", "3", 540, 0, &[], &traffic, t);
+            s.queue_due(&w, &mut traffic, t, 1.0);
+            (s.pending.contains(&0), s.pending.contains(&1))
+        };
+        assert_eq!(queued(&mut s, at(9.0) - 360.0), (false, false));
+        assert_eq!(queued(&mut s, at(9.0) - 240.0), (true, false), "his comes in time");
+        assert_eq!(queued(&mut s, at(9.0) - 50.0), (true, true), "the other a minute before its time");
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

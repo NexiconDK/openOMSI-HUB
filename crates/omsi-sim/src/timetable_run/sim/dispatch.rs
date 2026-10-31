@@ -304,7 +304,9 @@ impl ScheduleSim {
             let Some(first) = trip_stations(&self.data.trips[d.trip]).first().copied() else {
                 continue;
             };
-            if d.time > tod + LAYOVER_SHARED {
+            // (a LAN player waits there to take it over: a few minutes early wherever it stands -
+            // NexiconDK, `RELIEF_LAYOVER`)
+            if d.time > tod + LAYOVER_SHARED && !(self.relief_ai(i) && d.time <= tod + RELIEF_LAYOVER) {
                 let shared = match self.shared_stand.get(&first) {
                     Some(&v) => v,
                     None => {
