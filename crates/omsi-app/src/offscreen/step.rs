@@ -737,6 +737,7 @@ impl Offscreen<'_> {
             ref mut sim_view,
             ref mut career,
             ref mut schedule,
+            ref lan_off,
             ..
         } = *self;
         let size = (w, h);
@@ -762,10 +763,16 @@ impl Offscreen<'_> {
             // be thousands of metres away - fall outside the 600 m filter in
             // `populate_with` and are never seeded without this loop.
             if i.is_multiple_of(super::steps_in(2.0)) {
+                // (NexiconDK, 31 October 2026: and the players on foot without a bus of their
+                // own - where their walker is -, as the LAN step has them, `lan_world`: left out
+                // here every two seconds, the stops around one waiting for his bus lost their
+                // people and filled again at once, new people over and over)
+                let walkers = lan_off.iter().flat_map(|l| l.peers()).filter(|p| p.has_pose && !p.pose.has_vehicle()).filter_map(|p| p.pose.walker.map(|w| glam::DVec3::new(w.x, w.y, w.z)));
                 let player_centers: Vec<glam::DVec3> = remotes_off
                     .remotes
                     .values()
                     .map(|r| r.vehicle().position)
+                    .chain(walkers)
                     .chain(player.as_ref().map(|p| p.vehicle.position))
                     .collect();
                 for c in &player_centers {

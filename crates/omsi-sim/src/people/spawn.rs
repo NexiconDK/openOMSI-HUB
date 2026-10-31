@@ -339,7 +339,9 @@ impl PeopleSim {
         }
         let free = (0..self.people.len()).find(|&i| {
             let p = &self.people[i];
-            p.puppet.is_none() && !p.remote && matches!(p.state, State::Strolling(_) | State::Standing | State::Leaving { .. }) && !self.seen(p.position)
+            // (NexiconDK, 31 October 2026: nor anybody near a LAN player - the host does not know
+            // where they look: on a server people vanished in front of them, `WALK_UP_SEEN`)
+            p.puppet.is_none() && !p.remote && matches!(p.state, State::Strolling(_) | State::Standing | State::Leaving { .. }) && !self.seen(p.position) && self.lan_centers.iter().all(|c| (*c - p.position).length() >= super::populate::WALK_UP_SEEN)
         });
         match free {
             Some(i) => {

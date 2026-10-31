@@ -85,6 +85,13 @@ fn the_pool_counts_local_people_and_never_recycles_riders_or_avatars() {
     );
     assert_eq!(h.pool_used(), 1);
     assert!(h.people.iter().any(|p| p.id == 1));
+    // (NexiconDK, 31 October 2026) nobody near a LAN player is taken for it: the host does not
+    // know where they look (people vanished in front of them on a server)
+    h.people.push(person(7, false, None, true));
+    h.lan_centers = vec![DVec3::Y * 1000.0 + DVec3::X * 20.0];
+    assert!(!h.pool_room() && h.people.iter().any(|p| p.id == 7), "near a player: kept");
+    h.lan_centers = vec![DVec3::Y * 1000.0 + DVec3::X * (super::populate::WALK_UP_SEEN + 50.0)];
+    assert!(h.pool_room() && h.people.iter().all(|p| p.id != 7), "far from every player: taken");
 }
 
 /// A dedicated server's own place is the map's camera, where nobody plays: the stops and
