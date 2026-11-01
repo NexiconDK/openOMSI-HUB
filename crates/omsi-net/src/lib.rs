@@ -87,6 +87,8 @@ pub mod wire;
 pub mod world;
 pub mod vars;
 pub mod ws;
+// NexiconDK: a dedicated server's admin panel on its web port
+pub mod admin_web;
 pub mod tunnel;
 pub mod official;
 pub mod hostkey;

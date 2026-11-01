@@ -1,0 +1,188 @@
+<!doctype html>
+<!-- Omsi-Hub (NexiconDK, 1 November 2026): a dedicated server's admin panel on its web port
+     (`admin_web`). The login answers the server's challenge with the admin password, which never
+     goes over the network: PBKDF2-SHA256 and HMAC-SHA256 as the game's administration does them -
+     the browser's own crypto where it has it (https, this machine), else the same in plain
+     JavaScript (a few seconds). The panel itself is the launcher's (`/admin/panel.js`). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Server admin</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #121418; color: #eceef2; font: 14px/1.45 Inter, system-ui, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 40px; }
+  .top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .top b { font-size: 15px; letter-spacing: .02em; }
+  .top span { flex: 1; }
+  .login { max-width: 360px; margin: 12vh auto 0; background: #1d2026; border: 1px solid #30343c; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+  .login h1 { margin: 0; font-size: 20px; }
+  .login p { margin: 0; color: #9aa0aa; }
+  input { background: #262a31; color: #eceef2; border: 1px solid #30343c; border-radius: 8px; padding: 9px 11px; font: inherit; }
+  button { background: #e8a030; color: #1a1205; border: 0; border-radius: 8px; padding: 9px 14px; font: inherit; font-weight: 700; cursor: pointer; }
+  button.ghost { background: #262a31; color: #eceef2; border: 1px solid #30343c; font-weight: 600; padding: 6px 11px; }
+  .err { color: #ff7b72; min-height: 1em; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script type="module">
+const app = document.getElementById('app');
+const KEY = 'omsi-admin-token';
+const store = {
+  get() { try { return sessionStorage.getItem(KEY) || ''; } catch { return ''; } },
+  set(v) { try { v ? sessionStorage.setItem(KEY, v) : sessionStorage.removeItem(KEY); } catch {} },
+};
+let token = store.get();
+
+const enc = (s) => new TextEncoder().encode(s);
+const hex = (b) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join('');
+const unhex = (s) => new Uint8Array((s.match(/../g) || []).map((x) => parseInt(x, 16)));
+
+// --- SHA-256, HMAC and PBKDF2 in plain JavaScript (an http address on the LAN has no crypto.subtle)
+// (the constants as the standard makes them: the cube and square roots of the first primes)
+const PRIMES = [];
+for (let n = 2; PRIMES.length < 64; n++) if (PRIMES.every((p) => n % p)) PRIMES.push(n);
+const frac = (x) => ((x - Math.floor(x)) * 4294967296) | 0;
+const K = Int32Array.from(PRIMES, (p) => frac(Math.cbrt(p)));
+const IV = Int32Array.from(PRIMES.slice(0, 8), (p) => frac(Math.sqrt(p)));
+const W = new Int32Array(64);
+function compress(st, words) {
+  W.set(words);
+  for (let i = 16; i < 64; i++) {
+    const x = W[i - 15], y = W[i - 2];
+    W[i] = (W[i - 16] + (((x >>> 7) | (x << 25)) ^ ((x >>> 18) | (x << 14)) ^ (x >>> 3)) + W[i - 7] + (((y >>> 17) | (y << 15)) ^ ((y >>> 19) | (y << 13)) ^ (y >>> 10))) | 0;
+  }
+  let a = st[0], b = st[1], c = st[2], d = st[3], e = st[4], f = st[5], g = st[6], h = st[7];
+  for (let i = 0; i < 64; i++) {
+    const t1 = (h + (((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7))) + ((e & f) ^ (~e & g)) + K[i] + W[i]) | 0;
+    const t2 = ((((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10))) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+    h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+  }
+  return Int32Array.of((st[0] + a) | 0, (st[1] + b) | 0, (st[2] + c) | 0, (st[3] + d) | 0, (st[4] + e) | 0, (st[5] + f) | 0, (st[6] + g) | 0, (st[7] + h) | 0);
+}
+const words = (bytes, o = 0) => { const v = new DataView(bytes.buffer, bytes.byteOffset); const w = new Int32Array(16); for (let i = 0; i < 16; i++) w[i] = v.getInt32(o + i * 4); return w; };
+/** The digest of `msg` from state `st` after `done` bytes (a whole number of blocks). */
+function digest(st, msg, done) {
+  const n = (((msg.length + 9) + 63) >> 6) << 6;
+  const buf = new Uint8Array(n);
+  buf.set(msg);
+  buf[msg.length] = 0x80;
+  const bits = (done + msg.length) * 8;
+  const v = new DataView(buf.buffer);
+  v.setUint32(n - 4, bits >>> 0);
+  v.setUint32(n - 8, Math.floor(bits / 4294967296));
+  for (let o = 0; o < n; o += 64) st = compress(st, words(buf, o));
+  const out = new Uint8Array(32);
+  const ov = new DataView(out.buffer);
+  for (let i = 0; i < 8; i++) ov.setInt32(i * 4, st[i]);
+  return out;
+}
+function hmacKey(key) {
+  if (key.length > 64) key = digest(IV, key, 0);
+  const ip = new Uint8Array(64).fill(0x36), op = new Uint8Array(64).fill(0x5c);
+  key.forEach((b, i) => { ip[i] ^= b; op[i] ^= b; });
+  return [compress(IV, words(ip)), compress(IV, words(op))];
+}
+const hmac = ([is, os], msg) => digest(os, digest(is, msg, 64), 64);
+function pbkdf2Js(password, salt, rounds) {
+  const k = hmacKey(password);
+  const first = new Uint8Array(salt.length + 4);
+  first.set(salt);
+  first[salt.length + 3] = 1;
+  let u = hmac(k, first);
+  const t = u.slice();
+  for (let r = 1; r < rounds; r++) {
+    u = hmac(k, u);
+    for (let i = 0; i < 32; i++) t[i] ^= u[i];
+  }
+  return t;
+}
+
+/** The answer to the server's challenge (`admin_web::answer`). */
+async function answer(password, challenge, salt, rounds) {
+  const msg = enc('omsi2rw-admin' + challenge);
+  if (globalThis.crypto?.subtle) {
+    const base = await crypto.subtle.importKey('raw', enc(password), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: rounds }, base, 256);
+    const key = await crypto.subtle.importKey('raw', bits, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    return hex(await crypto.subtle.sign('HMAC', key, msg));
+  }
+  await new Promise((r) => setTimeout(r, 30));
+  return hex(hmac(hmacKey(pbkdf2Js(enc(password), salt, rounds)), msg));
+}
+
+async function ask(path, opts = {}) {
+  const r = await fetch('/admin/api/' + path, { ...opts, headers: { 'X-Admin-Token': token, ...(opts.headers || {}) }, cache: 'no-store' });
+  const text = await r.text();
+  let body = null;
+  try { body = JSON.parse(text); } catch {}
+  if (r.status === 401 && path !== 'login') {
+    token = '';
+    store.set('');
+    showLogin('The login ran out: log in again.');
+    throw new Error('logged out');
+  }
+  if (!r.ok) throw new Error(body?.error || text || r.statusText);
+  return body;
+}
+
+const api = {
+  state: () => ask('state'),
+  log: (from) => ask('log?from=' + from),
+  command: (lines) => ask('command', { method: 'POST', body: lines.join('\n') }),
+  config: () => ask('config'),
+  saveConfig: (text) => ask('config', { method: 'POST', body: text }),
+  logout: () => ask('logout', { method: 'POST' }),
+};
+
+let panel = null;
+function showLogin(why = '') {
+  panel?.destroy();
+  panel = null;
+  app.innerHTML = `<form class="login"><h1>Server admin</h1><p>Log in with the server's admin password (admin_password in server.cfg).</p>
+    <input type="password" autocomplete="current-password" placeholder="Admin password" required>
+    <button>Log in</button><div class="err"></div></form>`;
+  const form = app.querySelector('form'), input = form.querySelector('input'), err = form.querySelector('.err'), btn = form.querySelector('button');
+  err.textContent = why;
+  input.focus();
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    err.textContent = globalThis.crypto?.subtle ? 'Checking…' : 'Checking… (a few seconds on a plain http address)';
+    try {
+      const c = await ask('challenge');
+      const a = await answer(input.value, c.challenge, unhex(c.salt), c.rounds);
+      const r = await ask('login', { method: 'POST', body: c.challenge + '\n' + a });
+      token = r.token;
+      store.set(token);
+      showPanel();
+    } catch (x) {
+      err.textContent = String(x?.message || x);
+      btn.disabled = false;
+    }
+  });
+}
+
+async function showPanel() {
+  const { mountPanel } = await import('/admin/panel.js');
+  app.innerHTML = '';
+  const top = document.createElement('div');
+  top.className = 'top';
+  top.innerHTML = '<b>Server admin</b><span></span><button class="ghost">Log out</button>';
+  top.querySelector('button').addEventListener('click', async () => {
+    try { await api.logout(); } catch {}
+    token = '';
+    store.set('');
+    showLogin();
+  });
+  const root = document.createElement('div');
+  app.append(top, root);
+  panel = mountPanel(root, api, {});
+}
+
+if (token) showPanel(); else showLogin();
+</script>
+</body>
+</html>

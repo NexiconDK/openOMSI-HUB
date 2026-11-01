@@ -59,91 +59,14 @@ pub struct ServerCfg {
     /// Omsi-Hub: the server stops by itself after this many minutes without players (`idle_stop`;
     /// 0: never) - a map's world of Bus Company Online, which its main server starts again.
     pub idle_stop: u32,
+    /// (NexiconDK, 1 November 2026) The admin panel in a browser (`http://<machine>:<web_port>/admin`,
+    /// `omsi_net::admin_web`) from elsewhere than this machine too (`web_admin`; off: here only).
+    pub web_admin: bool,
+    /// The file it was read from.
+    pub path: std::path::PathBuf,
 }
 
-pub const DEFAULT_CFG: &str = "\
-# openOMSI dedicated server
-# (key = value; lines starting with # are comments)
-
-# shown in the players' server list and when they join
-name = openOMSI server
-motd = Welcome! Drive safely.
-
-# the map (relative to the OMSI 2 folder), the start date (YYYY-MM-DD, empty: today),
-# the time of day and the weather (a .owt of the OMSI 2 folder, empty: the map's default,
-# cycle: one after another through the day, as the month allows)
-map = maps/Berlin-Spandau/global.cfg
-date =
-time = 08:00
-weather =
-
-# the shared world: random traffic (cars), timetable buses, waiting passengers
-traffic = 30
-timetable = 1
-passengers = 1
-
-# UDP port of the session, TCP port of the web gateway (status, icon, WebSocket players)
-port = 27015
-web_port = 27025
-max_players = 16
-
-# start a free Cloudflare quick tunnel (needs cloudflared) and print its https address
-tunnel = 1
-
-# how many tiles round the map's first entry point are kept loaded (0: all of them)
-radius = 0
-
-# players who say \"/admin <password>\" in the chat get the Administration menu (Esc):
-# send players away, bring them, the clock, its speed, the weather. The password needs at
-# least 8 characters; empty: nobody
-admin_password =
-
-# how fast the clock runs (1 = real time, 2 = twice as fast, up to 30)
-time_speed = 1
-
-# the clock follows this machine's real date and time (1 = on; the time and date above are
-# then only for the very first moment, and time_speed and the admin's clock are ignored)
-real_time = 0
-
-# the weather follows the real METAR report of an airport (1 = on; the weather above is then
-# only for the first moment, and the admins cannot change it). The server downloads the report
-# every ten minutes and tells the players its values, so they need no METAR sync of their own.
-# metar_station is the airport's ICAO code, e.g. EDDB (empty: the one nearest the map)
-metar_sync = 0
-metar_station =
-
-# the buses players may drive, separated by ; (vehicle files such as
-# Vehicles/MAN_SD200/MAN_SD77.bus; empty: every bus installed on the server). The players'
-# vehicle menu offers only these, and a player who drives another bus is sent away
-vehicles =
-
-# tell anyone who asks the web port (GET /players) the players' names, buses, lines and
-# positions - for a live map of the server on a website; tell your players when it is on.
-# The server draws such a map itself: http://<this machine>:<web_port>/kort (Omsi-Hub)
-share_positions = 0
-
-# the timetable this server runs (its map's TTData - the content folder's copy when there is
-# one) goes to the launcher of every player who picks the server, so that everyone drives the
-# server's lines and tours (Omsi-Hub)
-share_timetable = 1
-
-# a traffic light that has held standing cars this many seconds without ever showing them
-# green is taken for out of order - the cars go by the right of way, as at a failed signal -
-# until it shows green again; logged with where it stands. 0: never (Omsi-Hub)
-unstick_lights = 180
-
-# voice chat: the players hear each other where they stand, through GreenTeaSpeak and its
-# openOMSI plugin (as SaltyChat does for FiveM). voice_server_uid is the voice server's unique
-# id (its info panel; needed: without it there is no voice chat), voice_channel the in-game
-# channel's id or name (empty: no voice chat), voice_range how far a player is heard (m).
-# voice_radio (1/0): drivers get a bindable map-wide bus radio on top of proximity voice.
-# The channel and its password are sent to every player who joins
-voice_server_uid =
-voice_channel =
-voice_channel_password =
-voice_range = 20
-voice_radio = 1
-";
+pub const DEFAULT_CFG: &str = include_str!("default_server.cfg");
 
 impl ServerCfg {
     /// `traffic_max`: the most AI vehicles the game allows (`traffic` is capped there).
@@ -197,6 +120,8 @@ impl ServerCfg {
             companies: flag("companies", false),
             company_dir: dir.join(get("company_dir", "company")),
             idle_stop: num("idle_stop", 0).clamp(0, 24 * 60) as u32,
+            web_admin: flag("web_admin", false),
+            path: path.to_path_buf(),
         })
     }
 }

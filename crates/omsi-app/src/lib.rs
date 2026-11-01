@@ -252,7 +252,15 @@ pub fn run() -> Result<()> {
         let rest: Vec<String> = std::env::args().skip(2).collect();
         return check::run(&rest);
     }
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    // (NexiconDK, 1 November 2026: every line kept for a dedicated server's admin panel too -
+    // `omsi_net::admin_web::push_log`)
+    {
+        let inner = env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).build();
+        let level = inner.filter();
+        if log::set_boxed_logger(Box::new(PanelLog(inner))).is_ok() {
+            log::set_max_level(level);
+        }
+    }
     // a panic goes into the log (which the launcher keeps per session) with where it
     // happened and a backtrace, not only to a terminal that may not be there
     let default_hook = std::panic::take_hook();
@@ -994,5 +1002,26 @@ mod locale_tests {
                 assert!(templated(&t, &once, tr).is_none_or(|twice| twice == once), "{lang}: {key}: {once}");
             }
         }
+    }
+}
+
+/// (NexiconDK, 1 November 2026) The log as env_logger writes it, each line kept for the admin
+/// panel of a dedicated server as well (`omsi_net::admin_web`: its last thousand lines).
+struct PanelLog(env_logger::Logger);
+
+impl log::Log for PanelLog {
+    fn enabled(&self, m: &log::Metadata) -> bool {
+        self.0.enabled(m)
+    }
+    fn log(&self, r: &log::Record) {
+        if !self.0.matches(r) {
+            return;
+        }
+        self.0.log(r);
+        let secs = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0) % 86400;
+        omsi_net::admin_web::push_log(format!("[{:02}:{:02}:{:02}Z {:<5} {}] {}", secs / 3600, secs / 60 % 60, secs % 60, r.level(), r.target(), r.args()));
+    }
+    fn flush(&self) {
+        self.0.flush()
     }
 }

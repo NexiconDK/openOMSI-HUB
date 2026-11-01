@@ -8,6 +8,8 @@ import { call } from '../api.js';
 import { Icon } from '../icons.js';
 import { Button, Card, Field, Input, Empty, PageHead, Spinner, Tabs, Toggle, Notice, Tag } from '../ui.js';
 import { choose, cached, serverJoined, allowedBus, reloadLines } from '../data.js';
+// Omsi-Hub (NexiconDK): a dedicated server run from the launcher
+import { MyServer } from '../omsihub/server/my-server.js';
 
 /** NexiconDK: the timetable of the server picked (`core::server_timetable`): its lines and
  * tours on the drive pages, and the game's duty one of them; none (a friend's session, a
@@ -29,8 +31,8 @@ export function MultiplayerPage() {
   const [tab, setTab] = useState('code');
   return html`
     <${PageHead} title="Multiplayer" text="Drive with friends by a code, or on servers that are always on." />
-    <${Tabs} value=${tab} options=${[['code', 'Connect by Code'], ['servers', 'Servers']]} onChange=${setTab} />
-    ${tab === 'code' ? html`<${ByCode} />` : html`<${Servers} />`}
+    <${Tabs} value=${tab} options=${[['code', 'Connect by Code'], ['servers', 'Servers'], ['mine', 'My server']]} onChange=${setTab} />
+    ${tab === 'code' ? html`<${ByCode} />` : tab === 'mine' ? html`<${MyServer} />` : html`<${Servers} />`}
   `;
 }
 

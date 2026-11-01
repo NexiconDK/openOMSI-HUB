@@ -377,6 +377,18 @@ pub fn take_bco_trips() -> Vec<(String, String)> {
     Vec::new()
 }
 
+/// (NexiconDK, 1 November 2026) A server run: what the admin panel shows of it now (a JSON
+/// object, `GET /admin/api/state`'s `admin`).
+pub fn update_server_admin(json: String) {
+    if let Ok(w) = WS_PATH.lock() {
+        if let Some(g) = w.as_ref().and_then(|w| w.gateway.as_ref()) {
+            if let Ok(mut i) = g.info.lock() {
+                i.admin.state = std::sync::Arc::new(json);
+            }
+        }
+    }
+}
+
 /// A server run: the admin commands that came to the web gateway's `POST /admin`.
 pub fn take_local_admin() -> Vec<String> {
     if let Ok(w) = WS_PATH.lock() {

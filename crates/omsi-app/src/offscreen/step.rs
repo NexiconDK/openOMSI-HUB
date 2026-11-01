@@ -151,6 +151,12 @@ impl Offscreen<'_> {
             }
             // a tool on this machine (POST /admin, checked by the gateway): an admin of its own
             for text in crate::lan::take_local_admin() {
+                // (NexiconDK, 1 November 2026: the admin panel's "Stop the server")
+                if text.trim().eq_ignore_ascii_case("stop") {
+                    log::info!("server: stopping, as the admin panel asked");
+                    crate::server::ask_stop();
+                    continue;
+                }
                 srv_admin.admins.insert(crate::admin::LOCAL_ADMIN);
                 crate::admin::server_command(l, crate::admin::LOCAL_ADMIN, &format!("admin {text}"), srv_admin, &positions);
             }
@@ -212,7 +218,7 @@ impl Offscreen<'_> {
                 }
             }
         }
-        if quit::requested().is_some() {
+        if quit::requested().is_some() || crate::server::stop_asked() {
             log::info!("server: stopping");
             return false;
         }
@@ -251,7 +257,7 @@ impl Offscreen<'_> {
                     // (phase 5: the buses on its roads for the companies' control rooms)
                     crate::company_server::publish_live(&args.map, schedule.as_ref(), traffic.as_ref(), humans_off.as_ref(), l.peers().filter(|p| p.has_pose).map(|p| &p.pose));
                 }
-                crate::server::tick_status(l, parse_time(&args.time) + *srv_clock + srv_admin.shift, srv_weather_name.as_str());
+                crate::server::tick_status(l, parse_time(&args.time) + *srv_clock + srv_admin.shift, srv_weather_name.as_str(), traffic.as_ref().map(|t| t.target).unwrap_or(0));
                 // the shared world, counted for GET /status
                 let (cars, buses, dormant, parked) = traffic.as_ref().map(|t| t.counts()).unwrap_or_default();
                 let (walking, waiting, aboard) = humans_off.as_ref().map(|h| h.counts()).unwrap_or_default();

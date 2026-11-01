@@ -27,6 +27,20 @@ Vores egen udgave af Omsi-Hub med disse ændringer.
 - **Vælg vagt inde i spillet på serveren**: En spiller, der er tilsluttet en server uden at have valgt tur i launcheren, fik "No timetable on this map". Nu kan man vælge og skifte tur inde i spillet (Timetable i menuen), ud fra serverens ur. Lægger serveren en kopi af kortets `TTData` i sin egen indholdsmappe (fx `openOMSI-HUB\maps\Ahlheim 5\TTData`), får alle, der tilslutter sig, den køreplan med, og så kører alle efter serverens køreplan.
 
 - **Alle kører efter serverens køreplan**: Serveren pakker den køreplan, den selv kører efter (kortets `TTData`, eller kopien i serverens indholdsmappe hvis der er en), og deler den på web-porten (`/ttdata.zip`, slås fra med `share_timetable = 0` i `server.cfg`). Når man vælger serveren under Multiplayer, henter launcheren den (gemmes til næste gang i `~/.openomsi/server-timetables`) og viser serverens linjer og ture under "Tour" og "Work shift". Spillet får samme køreplan med, når man starter. Ingen behøver at kopiere `TTData`. Vælger man "Host" eller en vens kode, bruges ens egen køreplan igen.
+- **Admin-panel til den dedikerede server** (1. november 2026): Multiplayer-serveren (`--server server.cfg`) kan nu styres fra en brugerflade i stedet for et kommandovindue. Det er det samme panel to steder:
+  - **I browseren** på serverens web-port: `http://<maskinen>:<web_port>/admin`, fx `http://127.0.0.1:27025/admin`. Man logger ind med `admin_password`. Adgangskoden sendes aldrig over nettet: browseren svarer på serverens udfordring med PBKDF2 og HMAC, som spillets egen administration gør. På en almindelig http-adresse på LAN tager det et par sekunder. Fem forkerte forsøg på to minutter lukker for et stykke tid. Som standard virker panelet kun på serverens egen maskine. Den nye nøgle `web_admin = 1` i `server.cfg` åbner det fra hvor som helst, web-porten kan nås: LAN, mobilen eller tunnelens https-adresse.
+  - **I launcheren** under Multiplayer → **My server**. Man vælger serverens mappe, dvs. en med `server.cfg` eller en tom til en ny server. Start og Stop kører spillet som server i baggrunden, og loggen ligger i `server.log` i mappen (den forrige som `server-prev.log`). Mens serveren kører, vises panelet. Er den stoppet, kan indstillingerne ændres. Har serveren ingen admin-adgangskode, giver launcheren den en, så den kan styre den. "Open in the browser" åbner samme panel.
+  - **Panelet viser**:
+    - Status: navn, kort, spillere, tid og dato, urets hastighed, vejr, oppetid og tunnel-adressen.
+    - Ur: ±1 time, indstil klokken og hastigheden.
+    - Vejr: næste vejr eller et bestemt.
+    - Trafik: tæthed eller ryd vejene.
+    - Besked til alle: i chatten eller på skærmen.
+    - Spillerlisten: bus, linje og fart. Man kan sende en besked til én spiller, reparere, tanke, frigøre en fastkørt bus, kicke og banne. Kick og ban spørger én gang mere.
+    - Live-loggen med filter.
+    - `server.cfg` som formular eller som tekst. Ændringer gælder fra næste start.
+    - "Stop the server", som stopper serveren pænt.
+  - Under motorhjelmen: `GET /admin/api/challenge|state|log|config`, `POST /admin/api/login|command|config|logout`. Det gamle `POST /admin` til scripts på samme maskine virker stadig. Serveren gemmer sine sidste 1000 loglinjer til panelet. Standard-`server.cfg` ligger nu i `crates/omsi-lan/src/default_server.cfg`, og launcheren skriver den samme, når man vælger en tom mappe.
 
 ### Lommelygte (fra openOMSI)
 - **Lommelygte på Alt+F** (openOMSI PR #3295 af usonskyyyy, hentet ind 31. oktober 2026): En lille lampe ved øjet, der lyser dér, hvor du kigger. Lyset er en varmhvid kegle, der rækker 50 m. Den virker i alle kameravinkler og i både Vanilla- og Enhanced-billedet, om natten og inde i en mørk førerplads om dagen. F alene er stadig bussens fjernlys. Den kan også lægges på `flashlight` i `[game]` i keyboard.cfg eller på en controllerknap. Forskel fra PR'en: Lyset i Vanilla-billedet sættes op med forkens egne lygter (`push_spot`) og er lige så stærkt om dagen som om natten.

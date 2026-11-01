@@ -17,6 +17,29 @@ pub fn post_json(url: &str, body: &str, timeout: Duration) -> Result<String, Str
     }
 }
 
+/// (NexiconDK, 1 November 2026) A request to `url` with `headers` and a text body (GET without
+/// one, else `method`): the answer's status and text within `timeout` - an answer that is not 2xx
+/// is no error here (the launcher's My server asks its server's admin panel so).
+pub fn request(method: &str, url: &str, headers: &[(&str, &str)], body: Option<&str>, timeout: Duration) -> Result<(u16, String), String> {
+    let agent = ureq::AgentBuilder::new().timeout(timeout).user_agent("openOMSI").build();
+    let mut r = agent.request(if body.is_some() { method } else { "GET" }, url);
+    for (k, v) in headers {
+        r = r.set(k, v);
+    }
+    let res = match body {
+        Some(b) => r.send_string(b),
+        None => r.call(),
+    };
+    match res {
+        Ok(a) => {
+            let status = a.status();
+            Ok((status, a.into_string().map_err(|e| e.to_string())?))
+        }
+        Err(ureq::Error::Status(code, a)) => Ok((code, a.into_string().unwrap_or_default())),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
 /// `N` bytes from the system's secure random source (a session's secret).
 pub fn random_bytes<const N: usize>() -> [u8; N] {
     use ring::rand::SecureRandom;

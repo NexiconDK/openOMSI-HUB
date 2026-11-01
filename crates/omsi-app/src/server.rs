@@ -34,8 +34,58 @@ pub(crate) fn info_of(cfg: &ServerCfg) -> omsi_net::ws::ServerInfo {
         players_public: cfg.share_positions,
         player_list: Vec::new(),
         local_admin_password: cfg.admin_password.clone(),
+        // (NexiconDK, 1 November 2026: the admin panel - `omsi_net::admin_web`)
+        admin: {
+            let mut a = omsi_net::admin_web::AdminWeb::default();
+            a.remote = cfg.web_admin;
+            a.cfg_path = Some(std::path::absolute(&cfg.path).unwrap_or_else(|_| cfg.path.clone()));
+            a.started = Some(std::time::Instant::now());
+            a
+        },
         ..Default::default()
     }
+}
+
+/// (NexiconDK, 1 November 2026) The admin panel asked the server to stop (`stop`).
+static STOP_ASKED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+pub(crate) fn ask_stop() {
+    STOP_ASKED.store(true, std::sync::atomic::Ordering::Relaxed);
+}
+
+pub(crate) fn stop_asked() -> bool {
+    STOP_ASKED.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+/// What the admin panel shows of the server now (`GET /admin/api/state`'s `admin`): the clock,
+/// its speed, the weather and the installed ones, the traffic, every player who joined.
+fn admin_state(lan: &omsi_net::LanSession, time: f64, traffic: usize) -> String {
+    static WEATHERS: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
+    let weathers = WEATHERS.get_or_init(|| {
+        let mut files: Vec<String> = omsi_cfg::read_dir_merged("Weather")
+            .into_iter()
+            .filter(|p| p.extension().is_some_and(|e| e.eq_ignore_ascii_case("owt")))
+            .filter_map(|p| p.file_name().map(|n| format!("Weather/{}", n.to_string_lossy())))
+            .collect();
+        files.sort();
+        files.dedup();
+        files
+    });
+    let t = time.rem_euclid(86400.0) as u64;
+    let peers: Vec<serde_json::Value> = lan.peers().filter(|p| p.has_info).map(|p| serde_json::json!({ "id": p.pose.id, "name": p.pose.name, "driving": p.has_pose })).collect();
+    serde_json::json!({
+        "time": format!("{:02}:{:02}:{:02}", t / 3600, t / 60 % 60, t % 60),
+        "seconds": t,
+        "speed": lan.clock_speed,
+        "real_time": crate::real_time::server_real(),
+        "metar": SERVER_METAR.get().is_some_and(|s| s.is_some()),
+        "weather_file": lan.weather().replace('\\', "/"),
+        "weathers": weathers,
+        "traffic": traffic,
+        "traffic_max": crate::game_lists::TRAFFIC_MAX,
+        "peers": peers,
+    })
+    .to_string()
 }
 
 /// Set up the arguments for a server run from `server.cfg` (the rest is the offscreen
@@ -151,7 +201,7 @@ pub(crate) static SERVER_MODE: std::sync::atomic::AtomicBool = std::sync::atomic
 
 /// Every second of a server run: what the status page says (players, time, weather) and
 /// who is where (`GET /players`, when `share_positions` is on).
-pub(crate) fn tick_status(lan: &omsi_net::LanSession, time: f64, weather: &str) {
+pub(crate) fn tick_status(lan: &omsi_net::LanSession, time: f64, weather: &str, traffic: usize) {
     let players = lan.peers().filter(|p| p.has_info).count();
     // (the admin's clock shift may take the time below 0 or past midnight: 23:08 had come
     // out as "00:-52")
@@ -159,6 +209,7 @@ pub(crate) fn tick_status(lan: &omsi_net::LanSession, time: f64, weather: &str) 
     let poses: Vec<&omsi_net::Pose> = lan.peers().filter(|p| p.has_info && p.has_pose).map(|p| &p.pose).collect();
     let list = poses.iter().filter_map(|q| player_info(q, |id| poses.iter().copied().find(|o| o.id == id))).collect();
     crate::lan::update_server_players(list);
+    omsi_lan::gateway::update_server_admin(admin_state(lan, time, traffic));
 }
 
 /// Omsi-Hub: every second of a server run, the live map's timetable buses (`GET /kort/busser`);

@@ -40,6 +40,8 @@ pub mod company_host;
 pub mod bco;
 // (NexiconDK, Bus Company Online phase 7: a group's head office)
 pub mod bco_hq;
+// NexiconDK, 1 November 2026: Multiplayer > My server - a dedicated server run from the launcher
+pub mod my_server;
 // Omsi-Hub as an add-on of the player's own openOMSI (`addon.rs`, docs/omsihub/ADDON_PLAN.md)
 pub mod addon;
 // Omsi-Hub online: the optional account and the friends (`online.rs`, docs/omsihub/ONLINE.md)
@@ -146,6 +148,7 @@ pub fn call(cmd: &str, args: &Value, p: &dyn Platform) -> Option<Answer> {
         c if c.starts_with("rf_") => return rosterflow::call(c, args, p),
         c if c.starts_with("tg_") => return together::call(c, args, p),
         c if c.starts_with("bco_hq") => return bco_hq::call(c, args),
+        c if c.starts_with("srv_") => return my_server::call(c, args),
         c if c.starts_with("bco_") => return bco::call(c, args),
         c if c.starts_with("addon_") => return addon::call(c, args),
         c if c.starts_with("ol_") => return online::call(c, args),

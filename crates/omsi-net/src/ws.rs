@@ -29,6 +29,8 @@ use tungstenite::{Message, WebSocket};
 /// What a server tells about itself (`GET /status`, and the launcher's list).
 #[derive(Debug, Clone, Default)]
 pub struct ServerInfo {
+    /// (NexiconDK, 1 November 2026) The admin panel's part (`admin_web`: `GET /admin`).
+    pub admin: crate::admin_web::AdminWeb,
     pub name: String,
     pub motd: String,
     pub map: String,
@@ -241,7 +243,7 @@ impl ServerInfo {
     }
 }
 
-fn json_str(s: &str) -> String {
+pub(crate) fn json_str(s: &str) -> String {
     let mut o = String::with_capacity(s.len() + 2);
     o.push('"');
     for c in s.chars() {
@@ -258,7 +260,7 @@ fn json_str(s: &str) -> String {
 }
 
 /// The raw value of `key` in a flat JSON object (a string with its quotes, or a number).
-fn json_value(s: &str, key: &str) -> Option<String> {
+pub(crate) fn json_value(s: &str, key: &str) -> Option<String> {
     let pat = format!("\"{key}\":");
     let start = s.find(&pat)? + pat.len();
     let rest = s[start..].trim_start();
@@ -579,8 +581,8 @@ impl WsGateway {
 }
 
 /// Wrong local admin passwords within `ADMIN_LOCK_WINDOW` that close the door for a while.
-const ADMIN_LOCK_AFTER: usize = 5;
-const ADMIN_LOCK_WINDOW: Duration = Duration::from_secs(120);
+pub(crate) const ADMIN_LOCK_AFTER: usize = 5;
+pub(crate) const ADMIN_LOCK_WINDOW: Duration = Duration::from_secs(120);
 
 /// The rest of a request's body, up to its `Content-Length` (4 KiB at most).
 fn read_body(s: &mut TcpStream, request: &mut Vec<u8>) {
@@ -601,7 +603,7 @@ fn read_body_up_to(s: &mut TcpStream, request: &mut Vec<u8>, max: usize) {
     }
 }
 
-fn header<'a>(head: &'a str, name: &str) -> Option<&'a str> {
+pub(crate) fn header<'a>(head: &'a str, name: &str) -> Option<&'a str> {
     head.lines().skip(1).find_map(|l| l.split_once(':').filter(|(k, _)| k.trim().eq_ignore_ascii_case(name)).map(|(_, v)| v.trim()))
 }
 
@@ -629,7 +631,7 @@ pub(crate) fn source_key(ip: std::net::IpAddr) -> std::net::IpAddr {
 }
 
 /// Compare two secrets in a time that does not tell how much of them matched.
-fn same_secret(a: &str, b: &str) -> bool {
+pub(crate) fn same_secret(a: &str, b: &str) -> bool {
     let (a, b) = (a.as_bytes(), b.as_bytes());
     let mut d = (a.len() ^ b.len()) as u8 | (a.len() != b.len()) as u8;
     for i in 0..a.len().max(b.len()) {
@@ -750,6 +752,14 @@ fn serve(stream: TcpStream, slot: Option<SourceSlot>, target: SocketAddr, info: 
                         ("202 Accepted", "application/json", b"{\"ok\":true}".to_vec())
                     }
                 }
+            }
+            // (NexiconDK, 1 November 2026: the admin panel and what it asks - `admin_web`)
+            r if r.starts_with("/admin/") || (r == "/admin" && !req.starts_with("POST ")) => {
+                read_body_up_to(&mut s, &mut request, crate::admin_web::BODY_MAX);
+                let text = String::from_utf8_lossy(&request).to_string();
+                let (head, body) = text.split_once("\r\n\r\n").unwrap_or((&text, ""));
+                let query = path.split_once('?').map(|x| x.1).unwrap_or("");
+                crate::admin_web::serve(r, query, head, body, peer, info)
             }
             "/admin" => {
                 read_body(&mut s, &mut request);
