@@ -224,7 +224,10 @@ impl PeopleSim {
                     // (NexiconDK, 31 October 2026: and those who stepped up to it - they set off
                     // as it came within 60 m, and were still on their way to it, or at the
                     // gather point, as it went on)
-                    (match p.task { Task::WaitingForBus => true, Task::ToBus => p.bus == Some(bus), _ => false } && p.inside.is_none() && p.stop == Some(stop) && p.late.is_none() && self.takes_waiting(stop, s, b, p.dest.as_deref(), p.line)).then(|| (self.people[i].id, self.waves(i)))
+                    // (NexiconDK, 1 November 2026: and somebody in a wheelchair at its door,
+                    // waiting for the ramp it never folded out - `ramp`)
+                    let ramp = p.ramp_wait == Some(bus) && p.inside.is_none() && p.stop == Some(stop);
+                    (ramp || (match p.task { Task::WaitingForBus => true, Task::ToBus => p.bus == Some(bus), _ => false } && p.inside.is_none() && p.stop == Some(stop) && p.late.is_none() && self.takes_waiting(stop, s, b, p.dest.as_deref(), p.line))).then(|| (self.people[i].id, self.waves(i)))
                 })
                 .collect();
             // (NexiconDK, 1 November 2026) in a wheelchair or with a pram, with their place in it
@@ -236,6 +239,11 @@ impl PeopleSim {
             }
             if left.is_empty() {
                 continue;
+            }
+            for q in self.people.iter_mut().filter(|q| left.iter().any(|l| l.0 == q.id)) {
+                if let State::Pax(x) = &mut q.state {
+                    x.ramp_wait = None;
+                }
             }
             for &(person, waves) in &left {
                 self.waving.retain(|w| w.person != person);

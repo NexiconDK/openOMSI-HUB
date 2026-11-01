@@ -305,6 +305,14 @@ pub struct PeopleSim {
     /// stop: the app fires the bus's own button for them (`int_kinderwagenwunsch`), where it
     /// has one, and the stop button.
     pub mobility_request: bool,
+    /// (NexiconDK, 1 November 2026) The player's bus's ramps for wheelchairs (`ramp`), what is
+    /// seen of each, and - this frame - somebody in a wheelchair waiting for one: getting in
+    /// (else out) at door number n (the app tells the driver).
+    pub player_ramps: Vec<super::ramp::Ramp>,
+    pub ramp_seen: Vec<super::ramp::RampSeen>,
+    pub ramp_wanted: Option<(bool, usize)>,
+    /// When the driver was last told of it (the people's clock).
+    pub ramp_told: f64,
     /// Tickets sold at the cash desk this session and what they were worth.
     pub tickets_sold: u32,
     pub ticket_cash: f32,

@@ -113,6 +113,10 @@ impl PeopleSim {
             stop_request: false,
             ai_stop_requests: Vec::new(),
             mobility_request: false,
+            player_ramps: Vec::new(),
+            ramp_seen: Vec::new(),
+            ramp_wanted: None,
+            ramp_told: f64::NEG_INFINITY,
             tickets_sold: 0,
             ticket_cash: 0.0,
             sales: Vec::new(),
@@ -409,6 +413,8 @@ impl PeopleSim {
                 self.exit_req = vec![false; c.exits.len().max(1)];
                 self.entry_busy = vec![false; c.entries.len()];
                 self.exit_busy = vec![false; c.exits.len()];
+                self.player_ramps = super::ramp::ramps_of(&vehicle.ty, &c);
+                self.ramp_seen.clear();
                 self.player_cabin = Some(c);
             }
             None => log::info!("{}: no passenger cabin", vehicle.ty.def.path.display()),

@@ -484,7 +484,11 @@ impl PeopleSim {
             return;
         };
         let door_x = p.door.and_then(|d| bn.cabin.entries.get(d)).map(|e| e.inside.x).unwrap_or(0.0);
-        let open = p.door.map(|d| bn.entry_open.get(d).copied().unwrap_or(false)).unwrap_or(false);
+        // (NexiconDK, 1 November 2026) in a wheelchair, at a door of the player's bus with a
+        // ramp: shut to them until the ramp is out (`ramp`)
+        let ramp = p.door.is_some_and(|d| self.waits_for_ramp(i, bn, d, true));
+        self.pax_mut(i).unwrap().ramp_wait = ramp.then_some(bn.id);
+        let open = p.door.map(|d| bn.entry_open.get(d).copied().unwrap_or(false)).unwrap_or(false) && !ramp;
         {
             let pp = self.pax_mut(i).unwrap();
             pp.clamp = true;
@@ -535,7 +539,9 @@ impl PeopleSim {
         if ok {
             if p.st != 3 {
                 self.choose_entry(i, buses, bus_ix);
-                let open = self.pax(i).unwrap().door.map(|d| bn.entry_open.get(d).copied().unwrap_or(false)).unwrap_or(false);
+                let door = self.pax(i).unwrap().door;
+                let ramp = door.is_some_and(|d| self.waits_for_ramp(i, bn, d, true));
+                let open = door.map(|d| bn.entry_open.get(d).copied().unwrap_or(false)).unwrap_or(false) && !ramp;
                 let pp = self.pax_mut(i).unwrap();
                 pp.short = !open;
                 pp.st = 1;
@@ -546,6 +552,7 @@ impl PeopleSim {
             if bn.id == BusId::Player {
                 self.greet_or_complain(i, bn);
             }
+            self.pax_mut(i).unwrap().ramp_wait = None;
             self.set_task(i, Task::InBusToPlace, buses, bus_ix, world);
             return;
         }
@@ -636,7 +643,10 @@ impl PeopleSim {
         if bn.speed.abs() >= 1.0 {
             self.pax_mut(i).unwrap().timer = 1.0;
         }
-        let door_open = p.door.map(|d| bn.exit_open.get(d).copied().unwrap_or(false)).unwrap_or(false);
+        // (NexiconDK, 1 November 2026: in a wheelchair, by an exit of the player's bus with a
+        // ramp - out only once it is out, `ramp`)
+        let ramp = p.door.is_some_and(|d| self.waits_for_ramp(i, bn, d, false));
+        let door_open = p.door.map(|d| bn.exit_open.get(d).copied().unwrap_or(false)).unwrap_or(false) && !ramp;
         let may_leave = door_open && (reg.next.is_some() || p.complaint == 3);
         self.pax_mut(i).unwrap().short = !may_leave;
         let out = p.st == 7 && bn.speed.abs() < 1.0 && may_leave;

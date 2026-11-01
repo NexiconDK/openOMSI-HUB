@@ -125,6 +125,12 @@ impl PeopleSim {
         }
         stage!("populate");
         let mut buses = self.gather_buses(world, bus, traffic);
+        // (NexiconDK) the player's bus's ramps, as far as they are out
+        self.ramp_wanted = None;
+        if let Some(cv) = bus.and_then(|b| b.cabin.as_ref()) {
+            let values = cv.ramps.clone();
+            self.see_ramps(&values, dt);
+        }
         for b in &buses {
             if b.entry_open.iter().chain(b.exit_open.iter()).any(|o| *o) {
                 self.last_door_open.insert(b.id, self.time);

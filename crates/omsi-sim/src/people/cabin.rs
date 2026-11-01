@@ -71,7 +71,7 @@ const AREA_APART: f32 = 1.0;
 const AREA_SECOND_BEHIND: f32 = 1.5;
 /// Entry points this near each other along the bus, on one side, are one door's (its wings,
 /// `[entry]` each).
-const DOOR_WINGS: f32 = 1.5;
+pub(crate) const DOOR_WINGS: f32 = 1.5;
 
 /// The places a cabin without one marked keeps for wheelchairs and prams, and which way they
 /// face there (degrees, 0 forwards). In each section of the bus (`joints`: the y of each one's

@@ -206,6 +206,9 @@ pub struct Pax {
     /// bus at the stop: its place for them was taken (or, for a wheelchair, no door without
     /// steps leads to it). Not left behind by its driver: counted as at a full bus.
     pub no_room: Option<BusId>,
+    /// (NexiconDK, 1 November 2026) In a wheelchair at the door of the player's bus, waiting
+    /// for its ramp (`ramp`): left behind by its driver if it goes without them.
+    pub ramp_wait: Option<BusId>,
 }
 
 impl Pax {
@@ -278,6 +281,7 @@ impl Pax {
             stands_by_choice: false,
             late: None,
             no_room: None,
+            ramp_wait: None,
         }
     }
 

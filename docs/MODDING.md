@@ -275,6 +275,16 @@ it (2.5 m from the door at most, 0.8 m from the first at least), facing as they 
 `[entry]` points of one door's wings (within 1.5 m of each other along the bus, on one side)
 are one door. The others take those places only when every other one is taken.
 
+A ramp at a door of the player's bus is waited for: somebody in a wheelchair gets in or out
+at that door only once it is out, and the driver is told which door (every 12 s while they
+wait; of one getting out only with the bus standing). Leaving the stop without it counts as
+leaving them behind. The ramp is found in the model: a mesh with an animation (`[newanim]`)
+whose file, `[mouseevent]` or variable has `pandus`, `rampe` or `ramp` in its name, at the
+`[entry]` and `[exit]` nearest the middle of the mesh (within 2 m). Its script is not read:
+it is out once its variable has gone (90 % or more of) as far from where it rested as it goes
+and stood still there for 0.4 s - whichever way it turns or slides. Timetable buses, and
+prams, never wait for one.
+
 ## Ticket validators: one by every door
 
 OMSI 2 uses one `[stamper]` of a `passengercabin.cfg`, the last one written. openOMSI keeps

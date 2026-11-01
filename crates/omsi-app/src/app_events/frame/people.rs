@@ -241,6 +241,12 @@ pub(super) fn humans(cx: HumansCx, dt: f32) {
         if let Some(m) = h.take_message() {
             *cx.ui.service_msg = Some((m, 6.0));
         }
+        // (NexiconDK, 1 November 2026) somebody in a wheelchair waiting for the bus's ramp
+        let standing = cx.player.player.as_ref().is_some_and(|p| p.vehicle.physics.speed.abs() < 1.0);
+        if let Some((entering, door)) = h.take_ramp_hint(standing) {
+            let text = if entering { "A passenger in a wheelchair waits at door %{door}: fold the ramp out (click it)" } else { "A passenger in a wheelchair wants to get off at door %{door}: fold the ramp out (click it)" };
+            *cx.ui.service_msg = Some((omsi_ui::tr(text).replace("%{door}", &door.to_string()), 6.0));
+        }
         if let Some(t) = h.take_dialog().and_then(|n| passenger_dialog(&n)) {
             *cx.ui.service_msg = Some((t, 5.0));
         }

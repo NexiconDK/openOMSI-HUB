@@ -293,3 +293,63 @@ fn a_wheelchair_rolls_still_and_a_pram_is_pushed_steadily() {
     assert!(w[29] != 0.0, "somebody on foot twists as ever: {w:?}");
 }
 
+
+/// (NexiconDK) The player's bus with a ramp at its middle door (`ramp`): somebody in a
+/// wheelchair waits at that door until the ramp is out - getting in and getting out - and the
+/// driver is told; somebody on foot, another door, a timetable bus: no waiting.
+#[test]
+fn a_wheelchair_waits_for_the_ramp() {
+    let c = cabin("ramp", 0.35, false);
+    let chair = human("ramp-chair", "wheelchair");
+    let walker = human("ramp-walker", "");
+    let mut h = PeopleSim::new(Path::new("/nonexistent"), 200);
+    h.people = vec![person(&chair, 1, Task::WalkingToBus, DVec3::ZERO), person(&walker, 2, Task::WalkingToBus, DVec3::ZERO)];
+    h.player_ramps = vec![super::ramp::Ramp { var: "pandus_2_mov".into(), entry: Some(1), exit: Some(0), door: 2 }];
+    let b = bus(&c, -2.0, 0.0);
+    h.see_ramps(&[0.0], 0.1);
+    assert!(h.waits_for_ramp(0, &b, 1, true), "in: the ramp is in");
+    assert_eq!(h.ramp_wanted, Some((true, 2)));
+    assert!(h.waits_for_ramp(0, &b, 0, false), "out alike");
+    assert!(!h.waits_for_ramp(0, &b, 0, true), "the front door has none");
+    assert!(!h.waits_for_ramp(1, &b, 1, true), "somebody on foot");
+    let mut ai = b.clone();
+    ai.id = BusId::Ai(3);
+    assert!(!h.waits_for_ramp(0, &ai, 1, true), "a timetable bus: its driver sees to it");
+    // the driver folds it out: once it stands at the end, in they roll
+    for k in 1..=10 {
+        h.see_ramps(&[18.0 * k as f32], 0.1);
+    }
+    assert!(h.waits_for_ramp(0, &b, 1, true), "still turning");
+    for _ in 0..5 {
+        h.see_ramps(&[180.0], 0.1);
+    }
+    assert!(!h.waits_for_ramp(0, &b, 1, true), "out: in they roll");
+    // told now and then while they wait, of one getting off only with the bus standing
+    h.ramp_wanted = Some((false, 2));
+    assert_eq!(h.take_ramp_hint(false), None);
+    assert_eq!(h.take_ramp_hint(true), Some((false, 2)));
+    assert_eq!(h.take_ramp_hint(true), None, "not every frame");
+}
+
+/// A driver who leaves without folding the ramp out has left the passenger in the wheelchair
+/// behind - not excused as at a full bus.
+#[test]
+fn leaving_without_the_ramp_leaves_the_wheelchair_behind() {
+    let c = cabin("ramp-left", 0.35, false);
+    let chair = human("ramp-left-chair", "wheelchair");
+    let mut h = PeopleSim::new(Path::new("/nonexistent"), 200);
+    h.stops.insert(7, stop());
+    h.people = vec![person(&chair, 1, Task::WalkingToBusstop, DVec3::new(2.3, 0.6, 0.0))];
+    h.pax_mut(0).unwrap().ramp_wait = Some(BusId::Player);
+    let mut y = -10.0;
+    while y < 20.0 {
+        let b = bus(&c, y, 10.0);
+        h.time += 0.25;
+        h.last_buses = Arc::new(vec![b.clone()]);
+        h.passed_tick(&[b]);
+        y += 2.5;
+    }
+    let left = h.take_left_behind();
+    assert_eq!(left.iter().map(|l| (l.count, l.full)).collect::<Vec<_>>(), [(1, false)], "{left:?}");
+    assert_eq!(h.pax(0).unwrap().ramp_wait, None, "counted once");
+}

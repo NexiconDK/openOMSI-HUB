@@ -45,6 +45,8 @@ pub struct CabinView {
     /// Its rear sections (`part_frames`) and the places switched off (`places_off`).
     pub trailers: Vec<PartFrame>,
     pub places_off: Vec<bool>,
+    /// (NexiconDK) Its ramps' variables (`PeopleSim::player_ramps`).
+    pub ramps: Vec<f32>,
 }
 
 impl PeopleSim {
@@ -53,7 +55,7 @@ impl PeopleSim {
     pub fn player_bus_view(&self, v: &VehicleInstance) -> PlayerBusView {
         let cabin = self.player_cabin.as_ref().map(|cabin| {
             let (entry_open, exit_open) = Self::doors_open(v, cabin.entries.len(), cabin.exits.len());
-            CabinView { entry_open, exit_open, trailers: part_frames(v, cabin), places_off: places_off(v, cabin) }
+            CabinView { entry_open, exit_open, trailers: part_frames(v, cabin), places_off: places_off(v, cabin), ramps: self.ramp_values(v) }
         });
         // the destination shown: the depot file's row the IBIS was set to (the game sets
         // IBIS_TerminusIndex and IBIS_TerminusCode for a pick from the list and a code
