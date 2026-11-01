@@ -59,7 +59,7 @@ const CSS = `
 @media (max-width:640px){.sp-form{grid-template-columns:1fr}.sp-form .sp-help{grid-column:1}.sp-table .sp-hide{display:none}}
 `;
 
-function h(tag, attrs, ...kids) {
+export function h(tag, attrs, ...kids) {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs || {})) {
     if (v == null || v === false) continue;
@@ -76,7 +76,7 @@ function h(tag, attrs, ...kids) {
   return el;
 }
 
-function addCss() {
+export function addCss() {
   if (document.getElementById('sp-css')) return;
   document.head.append(h('style', { id: 'sp-css' }, CSS));
 }
@@ -88,7 +88,7 @@ const busName = (f) => (f || '').split(/[\\/]/).pop().replace(/\.(bus|ovh)$/i, '
 const weatherName = (f) => (f || '').split(/[\\/]/).pop().replace(/\.owt$/i, '');
 
 /** A button that asks once more before it does what it says (`sure`): no browser dialog. */
-function sureButton(label, sureLabel, run, cls = 'sp-btn small danger') {
+export function sureButton(label, sureLabel, run, cls = 'sp-btn small danger') {
   const b = h('button', { class: cls, type: 'button' }, label);
   let armed = null;
   b.addEventListener('click', () => {
@@ -180,22 +180,27 @@ export function cfgSet(text, key, value) {
   return lines.join('\n');
 }
 
-function settingsView(api, tr, say) {
-  const box = h('div', { class: 'sp-card' }, h('h3', {}, tr('Server settings')), h('div', { class: 'sp-dim' }, tr('Reading server.cfg…')));
+/** The settings file a form edits (the game server's server.cfg; Bus Company Online's main server
+ * passes its company-server.cfg: `bco-panel.js`). */
+const SERVER_FORM = { fields: CFG_FIELDS, defaults: CFG_DEFAULTS, title: 'Server settings', reading: 'Reading server.cfg…', asText: 'Edit server.cfg as text' };
+
+export function settingsView(api, tr, say, form = SERVER_FORM) {
+  const { fields, defaults } = form;
+  const box = h('div', { class: 'sp-card' }, h('h3', {}, tr(form.title)), h('div', { class: 'sp-dim' }, tr(form.reading)));
   let text = '';
   let raw = false;
   const inputs = {};
   const draw = () => {
-    box.replaceChildren(h('h3', {}, tr('Server settings')));
+    box.replaceChildren(h('h3', {}, tr(form.title)));
     if (raw) {
       const area = h('textarea', { spellcheck: 'false', value: text, onInput: (e) => (text = e.target.value) });
       box.append(area);
     } else {
-      const v = { ...CFG_DEFAULTS, ...cfgValues(text) };
-      const form = h('div', { class: 'sp-form' });
-      for (const [key, label, kind, help] of CFG_FIELDS) {
+      const v = { ...defaults, ...cfgValues(text) };
+      const grid = h('div', { class: 'sp-form' });
+      for (const [key, label, kind, help] of fields) {
         if (!label) {
-          form.append(h('h3', { style: 'grid-column:1/-1;margin-top:8px' }, tr(key)));
+          grid.append(h('h3', { style: 'grid-column:1/-1;margin-top:8px' }, tr(key)));
           continue;
         }
         const value = v[key] ?? '';
@@ -203,27 +208,30 @@ function settingsView(api, tr, say) {
         if (kind === 'bool') {
           input = h('input', { type: 'checkbox', checked: ['1', 'true', 'yes', 'on'].includes(value.toLowerCase()) });
           input = h('div', { class: 'sp-check' }, input);
+        } else if (Array.isArray(kind)) {
+          // (a choice: [value, label] pairs)
+          input = h('select', {}, ...kind.map(([val, lab]) => h('option', { value: val, selected: val === value.toLowerCase().split(/\s+/).filter(Boolean).sort().join(' ') }, tr(lab))));
         } else {
           input = h('input', { type: kind === 'password' ? 'password' : kind === 'number' ? 'number' : 'text', value, autocomplete: 'off' });
         }
         inputs[key] = { kind, el: kind === 'bool' ? input.firstChild : input };
-        form.append(h('label', {}, tr(label)), input);
-        if (help) form.append(h('div', { class: 'sp-help' }, tr(help)));
+        grid.append(h('label', {}, tr(label)), input);
+        if (help) grid.append(h('div', { class: 'sp-help' }, tr(help)));
       }
-      box.append(form);
+      box.append(grid);
     }
     const note = h('div', { class: 'sp-say' }, tr('The server reads its settings when it starts: restart it for changes to take effect.'));
     box.append(
       note,
       h('div', { class: 'sp-row' },
         h('button', { class: 'sp-btn main', type: 'button', onClick: save }, tr('Save')),
-        h('button', { class: 'sp-btn', type: 'button', onClick: () => { collect(); raw = !raw; draw(); } }, tr(raw ? 'As a form' : 'Edit server.cfg as text')),
+        h('button', { class: 'sp-btn', type: 'button', onClick: () => { collect(); raw = !raw; draw(); } }, tr(raw ? 'As a form' : form.asText)),
       ),
     );
   };
   const collect = () => {
     if (raw) return;
-    const v = { ...CFG_DEFAULTS, ...cfgValues(text) };
+    const v = { ...defaults, ...cfgValues(text) };
     for (const [key, { kind, el }] of Object.entries(inputs)) {
       const now = kind === 'bool' ? (el.checked ? '1' : '0') : el.value.trim();
       const was = v[key] ?? '';
@@ -249,7 +257,7 @@ function settingsView(api, tr, say) {
     text = c?.text || '';
     draw();
   }, (e) => {
-    box.replaceChildren(h('h3', {}, tr('Server settings')), h('div', { class: 'sp-dim' }, String(e?.message || e)));
+    box.replaceChildren(h('h3', {}, tr(form.title)), h('div', { class: 'sp-dim' }, String(e?.message || e)));
   });
   return box;
 }
@@ -263,7 +271,7 @@ export function mountSettings(root, api, opts = {}) {
     said.textContent = text;
     said.style.color = bad ? 'var(--sp-danger)' : '';
   };
-  const el = h('div', { class: 'sp' }, settingsView(api, tr, say), said);
+  const el = h('div', { class: 'sp' }, settingsView(api, tr, say, opts.form), said);
   root.replaceChildren(el);
   return { destroy() { el.remove(); } };
 }

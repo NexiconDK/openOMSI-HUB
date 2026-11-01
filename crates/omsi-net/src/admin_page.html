@@ -135,6 +135,9 @@ const api = {
   config: () => ask('config'),
   saveConfig: (text) => ask('config', { method: 'POST', body: text }),
   logout: () => ask('logout', { method: 'POST' }),
+  // (Bus Company Online's main server's panel: `bco-panel.js`)
+  get: (path) => ask(path),
+  post: (path, body) => ask(path, { method: 'POST', body: body ?? '' }),
 };
 
 let panel = null;

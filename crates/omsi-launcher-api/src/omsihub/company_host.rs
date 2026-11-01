@@ -90,6 +90,20 @@ pub fn set_owner(c: &mut Company, rest: &str) -> String {
     format!("{name} is its owner now")
 }
 
+/// (NexiconDK, 1 November 2026) The server's admin gives the company money or takes it (the main
+/// server's `cash`, the admin panel): `+500`, `-500` or `500` (whole units), booked as capital.
+pub fn add_money(c: &mut Company, rest: &str) -> String {
+    let amount = rest.trim().replace([' ', ','], "");
+    let Ok(v) = amount.trim_start_matches('+').parse::<f64>() else { return "money <+500 | -500>".into() };
+    let cents = (v * 100.0).round() as i64;
+    if cents == 0 || !v.is_finite() {
+        return "money <+500 | -500>".into();
+    }
+    let text = if cents > 0 { "Capital from the server's admin" } else { "Taken by the server's admin" };
+    c.book(omsi_launcher_lib::company::model::BookingKind::Capital, cents, text, false);
+    format!("{} has {:.2} now", c.name, c.cash as f64 / 100.0)
+}
+
 /// What the pages changed handed to the host (its plan for the world written again), the host a
 /// step on, and what it did handed back to the pages; the owner seated. Whether the plan for the
 /// world was written.
@@ -247,8 +261,19 @@ pub fn run(data: &Path, id: &str) -> Result<(), String> {
                     });
                     say(id, &said);
                 }
+                "money" => {
+                    let said = company::with(|s| match s.company.as_mut() {
+                        Some(c) => {
+                            let said = add_money(c, rest);
+                            company::changed(s);
+                            said
+                        }
+                        None => "no company open".into(),
+                    });
+                    say(id, &said);
+                }
                 "" => {}
-                other => say(id, &format!("'{other}' is no command (quit, role <player>; <role>, owner <id>; <name>)")),
+                other => say(id, &format!("'{other}' is no command (quit, role <player>; <role>, owner <id>; <name>, money <+500 | -500>)")),
             }
         }
         if quit {

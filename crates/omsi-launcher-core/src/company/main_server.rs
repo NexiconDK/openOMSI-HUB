@@ -51,6 +51,8 @@ fn note(level: &str, text: String) {
     let at = crate::local_now().map(|(y, mo, d, h, mi)| format!("{y:04}-{mo:02}-{d:02} {h:02}:{mi:02} ")).unwrap_or_default();
     let line = format!("{at}{level}{text}");
     println!("{line}");
+    // (and for the admin panel's log: `server_admin`)
+    omsi_net::admin_web::push_log(line.clone());
     if let Some(f) = LOG.lock().unwrap_or_else(|e| e.into_inner()).as_mut() {
         use std::io::Write;
         let _ = writeln!(f, "{line}");
@@ -158,6 +160,20 @@ max_players = 16
 tunnel = 0
 share_positions = 1
 admin_password =
+
+# the admin panel in a browser: http://<this machine>:<api_port>/admin, logged in with
+# admin_password above (at least 8 characters). Only on this machine (0), or from other machines
+# and through the tunnel too (1)
+web_admin = 0
+";
+
+/// (1 November 2026) The admin panel's part of the settings, added to a `company-server.cfg`
+/// written before it.
+pub const ADMIN_CFG: &str = "
+# the admin panel in a browser: http://<this machine>:<api_port>/admin, logged in with
+# admin_password above (at least 8 characters). Only on this machine (0), or from other machines
+# and through the tunnel too (1)
+web_admin = 0
 ";
 
 /// The players' door's part of the settings (phase 2, step 2), added to a `company-server.cfg`
@@ -222,6 +238,8 @@ pub struct MainCfg {
     pub tunnel: bool,
     pub share_positions: bool,
     pub admin_password: String,
+    /// (1 November 2026) The admin panel from other machines too (`server_admin`).
+    pub web_admin: bool,
 }
 
 impl MainCfg {
@@ -284,6 +302,13 @@ impl MainCfg {
             }
             text.push_str(super::server_fines::FINES_CFG);
         }
+        if !text.lines().any(|l| l.trim_start().starts_with("web_admin")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(ADMIN_CFG.as_bytes());
+            }
+            text.push_str(ADMIN_CFG);
+        }
         Ok(MainCfg::parse(&text))
     }
 
@@ -328,6 +353,7 @@ impl MainCfg {
             tunnel: flag("tunnel", false),
             share_positions: flag("share_positions", true),
             admin_password: text("admin_password").unwrap_or_default(),
+            web_admin: flag("web_admin", false),
         }
     }
 
@@ -553,6 +579,8 @@ pub struct MainServer {
     pub players: Players,
     /// The server's code, its door open (`server_api::server_code`).
     pub code: Option<String>,
+    /// (1 November 2026) The door's tunnel on the internet, when it is up (for the admin panel).
+    pub tunnel_url: Option<String>,
     /// The folder taken for this main server, as long as it runs.
     _lock: std::fs::File,
 }
@@ -577,7 +605,7 @@ impl MainServer {
         // (the tickets' secret: the companies' processes check the players with it)
         online::server_secret(data)?;
         let players = Players::load(data)?;
-        let mut m = MainServer { data: data.to_path_buf(), cfg, clock, companies: Vec::new(), held: HashMap::new(), said: HashMap::new(), worlds: Vec::new(), machine: Default::default(), load: None, players, code: None, _lock: lock };
+        let mut m = MainServer { data: data.to_path_buf(), cfg, clock, companies: Vec::new(), held: HashMap::new(), said: HashMap::new(), worlds: Vec::new(), machine: Default::default(), load: None, players, code: None, tunnel_url: None, _lock: lock };
         online::bump_plans(data)?;
         // (phase 7: a head office of before - a company with depots - split into its group's
         // head office and a depot, before any company's process runs)
@@ -1080,6 +1108,7 @@ found <name>; <map>; [mode]; [owner]
 role <company>; <player>; <role>
                               give a player of a company a role (driver, planner, manager, owner)
 owner <company>; <player>      make a player of the server a company's owner (every permission)
+cash <company>; <amount>      give a company money or take it (+500, -500: booked as capital)
 players                       the players who logged in, with their money
 money <player>; <amount>      set a player's money (+500 or -500: add or take)
 clock [now]                   the server's clock and the machine's time; now: set to it now
@@ -1147,6 +1176,17 @@ pub fn command(m: &mut MainServer, line: &str) -> Option<String> {
                 None => format!("no player '{}' - players lists them (he logs in from Bus Company Online first)", who.trim()),
             },
             _ => "owner <company>; <player>".to_string(),
+        },
+        // (1 November 2026, the admin panel: a company's money, in its own process)
+        "cash" => match rest.split_once(';') {
+            Some((company, amount)) if !company.trim().is_empty() && !amount.trim().is_empty() => {
+                if m.tell_company(company.trim(), &format!("money {}", amount.trim())) {
+                    format!("told {}: money {} (its log: hosts\\{}.out)", company.trim(), amount.trim(), company.trim())
+                } else {
+                    format!("company {} does not run", company.trim())
+                }
+            }
+            _ => "cash <company>; <amount>".to_string(),
         },
         "players" => {
             if m.players.players.is_empty() {
@@ -1262,6 +1302,11 @@ pub fn command(m: &mut MainServer, line: &str) -> Option<String> {
 /// Ctrl+C or a stop from the system asked the main server to end.
 static STOP: AtomicBool = AtomicBool::new(false);
 
+/// (1 November 2026) The admin panel asked the main server to end, as `quit` does.
+pub fn request_stop() {
+    STOP.store(true, Ordering::SeqCst);
+}
+
 #[cfg(unix)]
 extern "C" fn on_signal(_: libc::c_int) {
     STOP.store(true, Ordering::SeqCst);
@@ -1298,7 +1343,8 @@ pub fn run(dir: &Path) -> Result<()> {
     // (the players' door: the server's code, its tunnel)
     let kept = super::server_api::kept(dir, api_port)?;
     let api = std::sync::Arc::new(super::server_api::Api::new(m.clone(), kept.secret_bytes(), super::server_api::omsihub_verify()));
-    let door = match super::server_api::open(api, &kept, tunnel) {
+    let (password, remote) = { let g = lock(&m); (g.cfg.admin_password.clone(), g.cfg.web_admin) };
+    let door = match super::server_api::open(api, &kept, tunnel, &password, remote) {
         Ok(d) => {
             lock(&m).code = super::server_api::server_code(&kept).map(|c| c.encode());
             Some(d)
@@ -1326,6 +1372,7 @@ pub fn run(dir: &Path) -> Result<()> {
     let (mut scan, mut reap) = (Instant::now() + Duration::from_secs(5), Instant::now());
     'run: while !STOP.load(Ordering::SeqCst) {
         while let Ok(line) = rx.try_recv() {
+            omsi_net::admin_web::push_log(format!("> {}", line.trim_end()));
             match command(&mut lock(&m), &line) {
                 Some(answer) if !answer.is_empty() => println!("{}", answer.trim_end()),
                 Some(_) => {}
@@ -1342,6 +1389,7 @@ pub fn run(dir: &Path) -> Result<()> {
             if let Some(super::together::server::TunnelState::Ready(url)) = door.as_ref().map(|d| d.tunnel()) {
                 if told_tunnel.as_ref() != Some(&url) {
                     info!("the players' door is on the internet too: {url} (the server's code finds it)");
+                    lock(&m).tunnel_url = Some(url.clone());
                     told_tunnel = Some(url);
                 }
             }

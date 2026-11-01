@@ -52,6 +52,9 @@ pub struct Player {
     pub trips: u32,
     pub course_until: String,
     pub tests: super::career::DriverCareer,
+    /// (1 November 2026) Banned by the server's admin (the admin panel), and why; empty: not.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub banned: String,
 }
 
 /// The ways to log in the server takes (`logins` in company-server.cfg).

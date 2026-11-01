@@ -79,6 +79,9 @@ pub struct Market {
     /// (1 November 2026) The map's chrono events not over yet, as the main server last read them:
     /// their own lines (never offered otherwise) and the lines they take off (the companies told).
     pub events: Vec<MarketEvent>,
+    /// (1 November 2026) The map's lines with passengers of their own as the main server last read
+    /// them (the admin panel's lines to put out to tender).
+    pub lines: Vec<String>,
 }
 
 /// (NexiconDK, 1 November 2026) A chrono event of the map as the market keeps it (`MapEvent`).
@@ -322,6 +325,8 @@ pub const OPERATOR_HELD: &str = "One of the map's operators runs this line on th
 /// (1 November 2026) A company told that an event takes a line of its off (`sync`).
 pub const EVENT_OFF_DAY: &str = "%{event} takes your line %{n} off on %{date}: it does not run that day - nothing to drive, nothing paid, no fines.";
 pub const EVENT_OFF_DAYS: &str = "%{event} takes your line %{n} off for %{days} days from %{date}: it does not run those days - nothing to drive, nothing paid, no fines.";
+/// (1 November 2026) A tender the server's admin called off (the admin panel: `server_admin`).
+pub const CALLED_OFF: &str = "The tender of line %{n} is called off by the server: its fee is paid back.";
 /// (1 November 2026)
 pub const EVENT_LINE: &str = "This line runs only on an event of the map's: it goes out to tender before the event, for its days.";
 
@@ -349,6 +354,17 @@ pub fn ask(data: &Path, c: &Company, l: &LineInfo) -> Result<&'static str, &'sta
     append(&asks_file(data, &key), &serde_json::to_string(&a).map_err(|_| "The application could not be written.")?).map_err(|_| "The application could not be written.")?;
     Ok(ASKED)
 }
+
+/// (1 November 2026) The server's admin puts line `line` of map `key` out to tender now (the
+/// admin panel): an application of the server's own, which the main server takes at its next step
+/// as a company's (`offer`: not when a company or an operator runs it, nor an event's line).
+pub fn ask_as_server(data: &Path, key: &str, line: &str) -> Result<()> {
+    let a = MarketAsk { company: SERVER_ASKS.to_string(), line: line.trim().to_string() };
+    append(&asks_file(data, key), &serde_json::to_string(&a)?)
+}
+
+/// Who asks for a line the server's admin put out (`ask_as_server`).
+pub const SERVER_ASKS: &str = "(server)";
 
 // --- the main server's side -------------------------------------------------------------------
 
@@ -466,10 +482,16 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
     let held = |line: &str| companies.iter().find(|c| c.lines.iter().any(|x| x.name.eq_ignore_ascii_case(line)));
     // (1 November 2026: the chrono events' own lines go out with their events alone)
     m.events = events.iter().map(|e| MarketEvent { name: e.name.clone(), from: e.from.clone(), until: e.until.clone(), lines: e.own.clone(), off: e.off.clone() }).collect();
+    m.lines = lines.iter().filter(|l| cn::is_line(template, l)).map(|l| l.name.clone()).collect();
     let of_event = |line: &str| events.iter().any(|e| e.own.iter().any(|o| o.eq_ignore_ascii_case(line)));
     // the applications: at once
     for a in asks {
-        let Some(l) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&a.line)) else { continue };
+        let Some(l) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&a.line)) else {
+            if a.company == SERVER_ASKS {
+                said.push(format!("{}: the server's admin asked for line {} - the map has no such line", m.map, a.line));
+            }
+            continue;
+        };
         if of_event(&l.name) {
             said.push(format!("{}: the application of {} for line {} - an event's line", m.map, a.company, l.name));
             continue;
@@ -807,6 +829,20 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
         }
     }
     c.concessions.events_told.retain(|k| k.split('|').nth(1).is_some_and(|f| dates::between(f, &today) < KEEP_DAYS));
+    // (1 November 2026) an open tender the server's admin called off - gone from the market: gone
+    // from the company's, its fee paid back
+    let gone = |t: &Tender| t.open() && t.market.as_ref().is_some_and(|x| x.key == key && !m.tenders.iter().any(|mt| mt.tender.id == x.id));
+    let off: Vec<Tender> = c.concessions.tenders.iter().filter(|t| gone(t)).cloned().collect();
+    for t in &off {
+        if t.fee_paid {
+            let fee = cn::fee(c, t);
+            if fee > 0 {
+                c.book(BookingKind::Concession, fee, format!("Tender line {} called off: its fee paid back", t.number), false);
+            }
+        }
+        clock::tell(c, &mut run, at, CALLED_OFF, vec![clock::arg("n", &t.number)], Level::Info);
+    }
+    c.concessions.tenders.retain(|t| !gone(t));
     // (the decided ones the market no longer keeps go)
     c.concessions.tenders.retain(|t| t.open() || t.market.as_ref().is_none_or(|x| x.key != key || m.tenders.iter().any(|mt| mt.tender.id == x.id)));
     (c.concessions != before || run.told > 0, won)

@@ -433,3 +433,48 @@ fn the_maps_chrono_events_and_their_own_lines() {
     assert_eq!(*asked.borrow(), ["2024-03-12"]);
     let _ = std::fs::remove_dir_all(&map);
 }
+
+/// (1 November 2026, the admin panel) The server's admin puts a line out to tender at once (an
+/// application of the server's own: a line the map does not have is said, not offered), and calls
+/// an open tender off: gone from the market, a company's copy goes at its next step, the fee it
+/// paid back and the company told.
+#[test]
+fn the_servers_admin_opens_a_tender_and_calls_one_off() {
+    let data = temp("admin");
+    let lines = lines();
+    let key = key_of(MAP);
+    let now = clock::moment(DATE, 8 * 60);
+    let mut a = company("Umove", "umove");
+    let ca = a.clone();
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone()], template: template(MAP, DATE, &[]), events: Vec::new() });
+    step(&data, &key, MAP, DATE, now, &mut read);
+    let m = load(&data, &key).unwrap();
+    // (the map's lines with passengers of their own, kept for the panel)
+    assert!(m.lines.iter().any(|l| l == "Linie5") && m.lines.iter().any(|l| l == "Linie9"), "{:?}", m.lines);
+    ask_as_server(&data, &key, "Linie5").unwrap();
+    ask_as_server(&data, &key, "Linie99").unwrap();
+    let said = step(&data, &key, MAP, DATE, now + 1, &mut read);
+    assert!(said.iter().any(|s| s.contains("Linie99") && s.contains("no such line")), "{said:?}");
+    let m = load(&data, &key).unwrap();
+    let t = m.tenders.iter().find(|t| t.tender.line == "Linie5" && t.decided.is_none());
+    assert!(t.is_some_and(|t| t.applied.contains(&SERVER_ASKS.to_string())), "{:?}", m.tenders.iter().map(|t| (&t.tender.line, &t.applied)).collect::<Vec<_>>());
+    // the company takes it among its own and bids (the fee paid)
+    at(&mut a, now + 2);
+    sync(&data, &mut a);
+    let (id, opens) = a.concessions.tenders.iter().find(|t| t.line == "Linie5").map(|t| (t.id, t.opens_at)).unwrap();
+    at(&mut a, opens.max(now) + 5);
+    let least = cn::min_bid(&a, a.concessions.tenders.iter().find(|t| t.id == id).unwrap());
+    bid(&data, &mut a, id, least).unwrap();
+    assert!(a.concessions.tenders.iter().find(|t| t.id == id).unwrap().fee_paid);
+    let cash = a.cash;
+    // called off by the admin: the market's copy goes
+    let mut m = load(&data, &key).unwrap();
+    m.tenders.retain(|t| t.tender.line != "Linie5");
+    save(&data, &m).unwrap();
+    sync(&data, &mut a);
+    assert!(!a.concessions.tenders.iter().any(|t| t.line == "Linie5"), "gone from the company's");
+    let fee = a.cash - cash;
+    assert!(fee > 0, "its fee paid back");
+    assert!(a.clock.feed.iter().any(|f| f.text == CALLED_OFF), "told");
+    let _ = std::fs::remove_dir_all(&data);
+}

@@ -71,10 +71,12 @@ pub const NOT_FOUNDED: &str = "The server could not found the company: it says w
 pub const UNREACHED: &str = "The server does not answer. Is it running? Over the internet its tunnel must be up (tunnel = 1), or its port open.";
 pub const NOT_MEMBER: &str = "You are not a player of this company: join it first.";
 pub const NO_WORLD: &str = "The server could not start the map's world: it says why in its log.";
+/// (1 November 2026) A player the server's admin banned (`server_admin`), and why.
+pub const BANNED: &str = "You are banned from this server: %{why}";
 
 /// Every text of the door's (for the translations' test).
 pub fn texts() -> Vec<&'static str> {
-    let mut v = vec![BAD_SECRET, NEWER, UNKNOWN, LOGGED_OUT, NO_COMPANY, STARTING, NO_NAME, NO_MAP, NO_MODE, NOT_ENOUGH, NOT_FOUNDED, UNREACHED, NOT_MEMBER, NO_WORLD];
+    let mut v = vec![BAD_SECRET, NEWER, UNKNOWN, LOGGED_OUT, NO_COMPANY, STARTING, NO_NAME, NO_MAP, NO_MODE, NOT_ENOUGH, NOT_FOUNDED, UNREACHED, NOT_MEMBER, NO_WORLD, BANNED];
     v.extend(super::server_players::texts());
     v.extend(super::server_found::texts());
     v
@@ -252,6 +254,22 @@ impl Api {
         self.server.lock().unwrap_or_else(|e| e.into_inner())
     }
 
+    /// (1 November 2026, the admin panel) The players with a session now: logged in from their
+    /// launchers within `SESSION_FOR`.
+    pub fn online(&self) -> Vec<String> {
+        let now = unix_now();
+        let g = self.sessions.lock().unwrap_or_else(|e| e.into_inner());
+        let mut ids: Vec<String> = g.values().filter(|(_, until)| *until > now).map(|(id, _)| id.clone()).collect();
+        ids.sort();
+        ids.dedup();
+        ids
+    }
+
+    /// (The admin panel) A banned player's sessions ended: his launcher asks no more.
+    pub fn end_sessions_of(&self, id: &str) {
+        self.sessions.lock().unwrap_or_else(|e| e.into_inner()).retain(|_, (p, _)| p != id);
+    }
+
     /// The player of a session, which lasts on (`SESSION_FOR` from now).
     fn player_of(&self, session: &str, now: i64) -> Option<String> {
         let mut g = self.sessions.lock().unwrap_or_else(|e| e.into_inner());
@@ -324,6 +342,12 @@ impl Api {
             Ok(done) => done,
             Err(e) => return refusal(e),
         };
+        if !done.player.banned.is_empty() {
+            m.say(&format!("player {} ({}) is banned: not let in", done.player.name, done.player.id));
+            let mut v = refusal(BANNED);
+            v["args"] = json!({ "why": done.player.banned });
+            return v;
+        }
         if let Err(e) = m.players.save(&m.data) {
             m.say_warning(&format!("the players not saved: {e:#}"));
         }
@@ -560,9 +584,12 @@ impl Api {
 
 /// The door of the main server opened on its `api_port` (the server's code: `server_code`), with
 /// its tunnel when `tunnel` is on. It closes when dropped.
-pub fn open(api: Arc<Api>, k: &KeptSession, tunnel: bool) -> std::io::Result<super::together::server::Server> {
+/// (1 November 2026) The admin panel on the same door (`server_admin`: `/admin`, with the admin
+/// password; from other machines only when `remote`).
+pub fn open(api: Arc<Api>, k: &KeptSession, tunnel: bool, admin_password: &str, remote: bool) -> std::io::Result<super::together::server::Server> {
     let a = api.clone();
-    let server = super::together::server::Server::start_at(k.port, false, PATH, HELLO, Arc::new(move |body: &str| a.answer(body, unix_now()).to_string()))?;
+    let panel = super::server_admin::extra(api.clone(), admin_password, remote);
+    let server = super::together::server::Server::start_with(k.port, false, PATH, HELLO, Arc::new(move |body: &str| a.answer(body, unix_now()).to_string()), Some(panel))?;
     if tunnel {
         if let Some(key) = k.host_key() {
             server.open_tunnel(Arc::new(key));

@@ -98,18 +98,24 @@ pub fn answer(key: &[u8; 32], challenge: &str) -> String {
     hex(ctx.sign().as_ref())
 }
 
+/// A header of a request's head (`name`, any case).
+pub fn header_of<'a>(head: &'a str, name: &str) -> Option<&'a str> {
+    header(head, name)
+}
+
 /// Whether the request came from this machine, not through a tunnel or a proxy here.
-pub(crate) fn from_here(head: &str, peer: Option<SocketAddr>) -> bool {
+pub fn from_here(head: &str, peer: Option<SocketAddr>) -> bool {
     peer.is_some_and(|p| p.ip().is_loopback()) && !PROXY_HEADERS.iter().any(|h| header(head, h).is_some())
 }
 
-type Answer = (&'static str, &'static str, Vec<u8>);
+/// An answer: its status, its content type, its body.
+pub type Answer = (&'static str, &'static str, Vec<u8>);
 
-fn json(status: &'static str, body: String) -> Answer {
+pub fn json(status: &'static str, body: String) -> Answer {
     (status, "application/json; charset=utf-8", body.into_bytes())
 }
 
-fn error(status: &'static str, text: &str) -> Answer {
+pub fn error(status: &'static str, text: &str) -> Answer {
     json(status, format!("{{\"error\":{}}}", json_str(text)))
 }
 
@@ -267,6 +273,120 @@ fn state(info: &Mutex<ServerInfo>) -> String {
     )
 }
 
+// --- a panel's login of its own (Bus Company Online's main server) -----------------------------
+
+/// (NexiconDK, 1 November 2026) The login of an admin panel that is not a game server's gateway's
+/// (Bus Company Online's main server on its `api_port`): the same challenge, answer, tokens and
+/// lock as the gateway's, on a password and a door of its own.
+#[derive(Debug, Default)]
+pub struct Auth {
+    pub password: String,
+    /// From elsewhere than this machine too.
+    pub remote: bool,
+    sessions: Vec<(String, Instant)>,
+    challenges: Vec<(String, [u8; 16], Instant)>,
+    failures: Vec<Instant>,
+}
+
+impl Auth {
+    pub fn new(password: &str, remote: bool) -> Auth {
+        Auth { password: password.to_string(), remote, ..Default::default() }
+    }
+
+    fn locked(&mut self) -> bool {
+        self.failures.retain(|t| t.elapsed() < crate::ws::ADMIN_LOCK_WINDOW);
+        self.failures.len() >= crate::ws::ADMIN_LOCK_AFTER
+    }
+}
+
+/// Whether a request of the panel `route` may come in at all: None, it may; else the answer that
+/// turns it away (from elsewhere, the panel not opened to it).
+pub fn door(route: &str, here: bool, auth: &Mutex<Auth>) -> Option<Answer> {
+    if here || auth.lock().unwrap_or_else(|e| e.into_inner()).remote {
+        return None;
+    }
+    let why = "The admin panel opens on the server's own machine only. web_admin = 1 in its settings opens it from elsewhere too, with the admin password.";
+    Some(match route {
+        "/admin" | "/admin/" => ("403 Forbidden", "text/html; charset=utf-8", format!("<!doctype html><meta charset=utf-8><title>Admin</title><body style=\"font-family:sans-serif;background:#16181c;color:#eee;padding:40px\"><p>{why}</p>").into_bytes()),
+        _ => error("403 Forbidden", why),
+    })
+}
+
+/// The login's own requests (`/admin/api/challenge`, `login`, `logout`) for `auth`; None: another.
+pub fn login_routes(route: &str, post: bool, head: &str, body: &str, auth: &Mutex<Auth>) -> Option<Answer> {
+    Some(match (route, post) {
+        ("/admin/api/challenge", _) => {
+            let mut a = auth.lock().unwrap_or_else(|e| e.into_inner());
+            if a.password.chars().count() < 8 {
+                return Some(error("404 Not Found", "this server has no admin password (admin_password in its settings, at least 8 characters)"));
+            }
+            if a.locked() {
+                return Some(error("429 Too Many Requests", "too many wrong passwords: try again in two minutes"));
+            }
+            let c = hex(&crate::http::random_bytes::<16>());
+            let salt = crate::http::random_bytes::<16>();
+            let now = Instant::now();
+            a.challenges.retain(|x| now.duration_since(x.2) < CHALLENGE_LIFE);
+            while a.challenges.len() >= 16 {
+                a.challenges.remove(0);
+            }
+            a.challenges.push((c.clone(), salt, now));
+            json("200 OK", format!("{{\"challenge\":{},\"salt\":{},\"rounds\":{KDF_ROUNDS}}}", json_str(&c), json_str(&hex(&salt))))
+        }
+        ("/admin/api/login", true) => {
+            let mut it = body.lines().map(str::trim);
+            let (c, ans) = (it.next().unwrap_or(""), it.next().unwrap_or(""));
+            let (password, salt) = {
+                let mut a = auth.lock().unwrap_or_else(|e| e.into_inner());
+                if a.locked() {
+                    return Some(error("429 Too Many Requests", "too many wrong passwords: try again in two minutes"));
+                }
+                let Some(k) = a.challenges.iter().position(|x| x.0 == c && x.2.elapsed() < CHALLENGE_LIFE) else { return Some(error("401 Unauthorized", "the login took too long: try again")) };
+                let (_, salt, _) = a.challenges.remove(k);
+                (a.password.clone(), salt)
+            };
+            let right = !password.is_empty() && crate::ws::same_secret(ans, &answer(&derive(&password, &salt, KDF_ROUNDS), c));
+            let mut a = auth.lock().unwrap_or_else(|e| e.into_inner());
+            if !right {
+                a.failures.push(Instant::now());
+                log::warn!("admin panel: a wrong admin password");
+                return Some(error("401 Unauthorized", "wrong admin password"));
+            }
+            let token = hex(&crate::http::random_bytes::<24>());
+            while a.sessions.len() >= 32 {
+                a.sessions.remove(0);
+            }
+            a.sessions.push((token.clone(), Instant::now()));
+            json("200 OK", format!("{{\"token\":{}}}", json_str(&token)))
+        }
+        ("/admin/api/logout", true) => {
+            if let Some(t) = header(head, "x-admin-token") {
+                auth.lock().unwrap_or_else(|e| e.into_inner()).sessions.retain(|s| s.0 != t);
+            }
+            json("200 OK", "{\"ok\":true}".into())
+        }
+        _ => return None,
+    })
+}
+
+/// Whether the request is logged in: a token the panel was given (kept on), or the admin password
+/// from this machine (the launcher's).
+pub fn logged_in(head: &str, here: bool, auth: &Mutex<Auth>) -> bool {
+    let mut a = auth.lock().unwrap_or_else(|e| e.into_inner());
+    if a.password.chars().count() < 8 {
+        return false;
+    }
+    let now = Instant::now();
+    a.sessions.retain(|s| now.duration_since(s.1) < TOKEN_IDLE);
+    if let Some(t) = header(head, "x-admin-token") {
+        if let Some(s) = a.sessions.iter_mut().find(|s| crate::ws::same_secret(&s.0, t)) {
+            s.1 = now;
+            return true;
+        }
+    }
+    here && header(head, "x-admin-password").is_some_and(|p| crate::ws::same_secret(p, &a.password))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -376,6 +496,26 @@ mod tests {
         // (the old POST /admin for a tool on this machine still takes commands)
         let (code, _) = crate::http::request("POST", &format!("{base}/admin"), &[("X-Admin-Password", "secret-pass")], Some("weather next"), t).unwrap();
         assert_eq!(code, 202);
+    }
+
+    /// A panel's own login (the main server's): the same challenge and answer, a token, the door
+    /// shut from elsewhere unless opened.
+    #[test]
+    fn a_login_of_its_own() {
+        let auth = Mutex::new(Auth::new("secret-pass", false));
+        assert!(door("/admin", true, &auth).is_none());
+        assert_eq!(door("/admin/api/state", false, &auth).unwrap().0, "403 Forbidden");
+        let c = body(&login_routes("/admin/api/challenge", false, LOCAL, "", &auth).unwrap());
+        let (ch, s) = (value(&c, "challenge"), value(&c, "salt"));
+        let salt: Vec<u8> = (0..s.len() / 2).map(|k| u8::from_str_radix(&s[2 * k..2 * k + 2], 16).unwrap()).collect();
+        let good = answer(&derive("secret-pass", &salt, KDF_ROUNDS), &ch);
+        let ok = login_routes("/admin/api/login", true, LOCAL, &format!("{ch}\n{good}"), &auth).unwrap();
+        let token = value(&body(&ok), "token");
+        assert!(logged_in(&format!("GET / HTTP/1.1\r\nX-Admin-Token: {token}"), false, &auth));
+        assert!(!logged_in("GET / HTTP/1.1\r\nX-Admin-Token: nope", false, &auth));
+        assert!(logged_in("GET / HTTP/1.1\r\nX-Admin-Password: secret-pass", true, &auth));
+        assert!(!logged_in("GET / HTTP/1.1\r\nX-Admin-Password: secret-pass", false, &auth));
+        assert!(login_routes("/admin/api/state", false, LOCAL, "", &auth).is_none());
     }
 
     /// The log's lines since a number; the config read and written whole.

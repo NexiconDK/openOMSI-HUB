@@ -28,6 +28,20 @@ const TUNNEL_PID: &str = "together-cloudflared.pid";
 /// What answers a request's body (JSON) with the answer's (JSON).
 pub type Handler = Arc<dyn Fn(&str) -> String + Send + Sync>;
 
+/// (NexiconDK, 1 November 2026) A request of another path than the messages' (Bus Company
+/// Online's admin panel, `server_admin`): its method, its path with the query, its head, its body
+/// and who sent it.
+pub struct Request<'a> {
+    pub method: &'a str,
+    pub path: &'a str,
+    pub head: &'a str,
+    pub body: &'a [u8],
+    pub peer: Option<SocketAddr>,
+}
+
+/// What answers such a request (its status, content type and body); None: not found.
+pub type Extra = Arc<dyn Fn(&Request) -> Option<(&'static str, &'static str, Vec<u8>)> + Send + Sync>;
+
 /// Where the tunnel stands.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TunnelState {
@@ -71,6 +85,11 @@ impl Server {
     /// (NexiconDK) As `start`, its messages posted to `path` and `hello` answered to a GET there
     /// (Bus Company Online's main server: `/bco`).
     pub fn start_at(port: u16, local_only: bool, path: &'static str, hello: &'static str, handler: Handler) -> std::io::Result<Server> {
+        Self::start_with(port, local_only, path, hello, handler, None)
+    }
+
+    /// (NexiconDK, 1 November 2026) As `start_at`, the requests of other paths answered by `extra`.
+    pub fn start_with(port: u16, local_only: bool, path: &'static str, hello: &'static str, handler: Handler, extra: Option<Extra>) -> std::io::Result<Server> {
         let host = if local_only { [127, 0, 0, 1] } else { [0, 0, 0, 0] };
         let tries: Vec<u16> = if port == 0 { (DEFAULT_PORT..DEFAULT_PORT + 10).chain([0]).collect() } else { vec![port] };
         let mut last = None;
@@ -102,9 +121,9 @@ impl Server {
                     continue;
                 }
                 open.fetch_add(1, Ordering::Relaxed);
-                let (h, o) = (handler.clone(), open.clone());
+                let (h, o, x) = (handler.clone(), open.clone(), extra.clone());
                 let spawned = std::thread::Builder::new().name("company client".into()).spawn(move || {
-                    serve(conn, &h, path, hello);
+                    serve(conn, &h, path, hello, x.as_ref());
                     o.fetch_sub(1, Ordering::Relaxed);
                 });
                 if spawned.is_err() {
@@ -177,25 +196,30 @@ impl Server {
 }
 
 /// One connection: a request read, answered, closed.
-fn serve(mut conn: TcpStream, handler: &Handler, at: &str, hello: &str) {
+fn serve(mut conn: TcpStream, handler: &Handler, at: &str, hello: &str, extra: Option<&Extra>) {
     let _ = conn.set_read_timeout(Some(Duration::from_secs(15)));
     let _ = conn.set_write_timeout(Some(Duration::from_secs(15)));
-    let (status, body) = match read_request(&mut conn) {
-        Ok((method, path, body)) => match (method.as_str(), path.split('?').next().unwrap_or("")) {
-            ("POST", p) if p == at => ("200 OK", handler(&String::from_utf8_lossy(&body))),
-            ("GET", p) if p == at => ("200 OK", hello.to_string()),
-            _ => ("404 Not Found", r#"{"ok":false}"#.to_string()),
+    let peer = conn.peer_addr().ok();
+    let json = "application/json; charset=utf-8";
+    let (status, ctype, body): (&str, &str, Vec<u8>) = match read_request(&mut conn) {
+        Ok((method, path, head, body)) => match (method.as_str(), path.split('?').next().unwrap_or("")) {
+            ("POST", p) if p == at => ("200 OK", json, handler(&String::from_utf8_lossy(&body)).into_bytes()),
+            ("GET", p) if p == at => ("200 OK", json, hello.as_bytes().to_vec()),
+            _ => match extra.and_then(|x| x(&Request { method: &method, path: &path, head: &head, body: &body, peer })) {
+                Some(a) => a,
+                None => ("404 Not Found", json, br#"{"ok":false}"#.to_vec()),
+            },
         },
-        Err(code) => (code, r#"{"ok":false}"#.to_string()),
+        Err(code) => (code, json, br#"{"ok":false}"#.to_vec()),
     };
-    let head = format!("HTTP/1.1 {status}\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: {}\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n", body.len());
+    let head = format!("HTTP/1.1 {status}\r\nContent-Type: {ctype}\r\nContent-Length: {}\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n", body.len());
     let _ = conn.write_all(head.as_bytes());
-    let _ = conn.write_all(body.as_bytes());
+    let _ = conn.write_all(&body);
     let _ = conn.flush();
 }
 
-/// The request's method, path and body; Err the status to answer.
-fn read_request(conn: &mut TcpStream) -> Result<(String, String, Vec<u8>), &'static str> {
+/// The request's method, path, head and body; Err the status to answer.
+fn read_request(conn: &mut TcpStream) -> Result<(String, String, String, Vec<u8>), &'static str> {
     let mut buf: Vec<u8> = Vec::with_capacity(4096);
     let mut chunk = [0u8; 4096];
     let head_end = loop {
@@ -233,5 +257,5 @@ fn read_request(conn: &mut TcpStream) -> Result<(String, String, Vec<u8>), &'sta
         body.extend_from_slice(&chunk[..n]);
     }
     body.truncate(length);
-    Ok((method, path, body))
+    Ok((method, path, head, body))
 }

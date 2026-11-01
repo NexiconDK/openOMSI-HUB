@@ -1,0 +1,568 @@
+// Omsi-Hub (NexiconDK, 1 November 2026): Bus Company Online's main server administered - one panel
+// for two places, as the game servers' (`panel.js`, whose pieces it uses): the main server's door
+// (`GET /admin` on its api_port: crates/omsi-launcher-core/src/company/server_admin.rs serves this
+// file as `/admin/bco-panel.js`) and the launcher's Multiplayer → My server.
+//
+//   api.get(path)          → `/admin/api/<path>` (overview, worlds, companies, company?id=, players,
+//                            market, log?from= | ?world= | ?company=)
+//   api.post(path, body)   → command (a console line), player, tender, stop
+//   api.config()           → { text, path }       api.saveConfig(text)
+//
+// `opts.tr` translates, `opts.onLost` is told when the server no longer answers, `opts.open`
+// opens an address (the launcher's: in the browser), `opts.host` is the machine the worlds' own
+// pages are on (the launcher's: 127.0.0.1; the browser's: the page's), `opts.stop` false hides
+// "Stop".
+
+import { h, addCss, sureButton, settingsView } from './panel.js';
+
+const BOOL = 'bool';
+/** company-server.cfg's keys as the form shows them: [key, label, kind, help]. */
+export const BCO_FIELDS = [
+  ['General'],
+  ['name', 'Name', 'text', "Shown in the players' launchers"],
+  ['root', 'OMSI folder', 'text', 'The folder with the maps; empty: the one the launcher on this machine uses'],
+  ['Clock'],
+  ['real_time', "The machine's real date and time", BOOL, 'Off: the date and time below at the very first start, then 1:1 with the real clock'],
+  ['date', 'First date', 'text', 'YYYY-MM-DD, empty: today'],
+  ['time', 'First time', 'text', 'HH:MM'],
+  ["The maps' worlds"],
+  ['game', 'Game program', 'text', 'Empty: the one beside the main server'],
+  ['first_port', 'First port', 'number', 'Each world takes two: UDP and its web port'],
+  ['max_worlds', 'Worlds at once', 'number'],
+  ['world_idle', 'Minutes without players', 'number', 'A world stops this long after its last player (when not kept running)'],
+  ['keep_worlds', 'Keep worlds running', BOOL, 'While the machine can carry them'],
+  ['max_memory', 'Most memory in use (%)', 'number'],
+  ['max_cpu', 'Most processor in use (%)', 'number'],
+  ['traffic', 'Traffic', 'number', 'Random cars in each world'],
+  ['passengers', 'Passengers', BOOL],
+  ['max_players', 'Most players a world', 'number'],
+  ['share_positions', 'Live map for everyone', BOOL],
+  ["The players' door"],
+  ['api_port', 'Door port', 'number', "The players' launchers come here - and this panel"],
+  ['first_company_port', "The companies' first port", 'number'],
+  ['tunnel', 'Cloudflare tunnel', BOOL, 'An https address for the door, the companies and the worlds: players anywhere'],
+  ['logins', 'Ways to log in', [['account steam', 'Omsi-Hub account and Steam'], ['account', 'Omsi-Hub account only'], ['steam', 'Steam only']]],
+  ['Money'],
+  ['start_money', 'A new player starts with', 'number', 'Whole units'],
+  ['found_price', 'Founding a company costs', 'number', "Of the player's own money"],
+  ['depot_price', 'A depot on another map', 'number', "Of the company's money"],
+  ['bus_move_price', 'Moving a bus to another map', 'number'],
+  ['bus_move_days', 'Days a moved bus is away', 'number'],
+  ['big_purchase', "A depot's purchase that waits for the head office", 'number'],
+  ['What founding asks'],
+  ['found_trips', 'Trips driven first', 'number', '0: none'],
+  ['found_course', 'The leadership course', BOOL],
+  ['course_price', "The course's price", 'number'],
+  ['course_days', "The course's days", 'number'],
+  ['found_test', 'A driving test passed', BOOL],
+  ["The authority's fines (kroner)"],
+  ['cap_per_hour', 'Most paid a timetable hour', 'number', 'The cap of the tenders'],
+  ['fine_dropped_minute', 'A journey not run, a minute', 'number'],
+  ['fine_wrong_bus', 'A smaller bus than the timetable asks', 'number'],
+  ['fine_diesel_on_electric', 'Diesel on an electric contract', 'number'],
+  ['fine_early', 'Leaving a stop early', 'number'],
+  ['fine_late', 'Late without telling the control room', 'number'],
+  ['fine_driving', 'A complaint about the driving', 'number'],
+  ['fine_temperature', 'A complaint about the temperature', 'number'],
+  ['fine_route', 'A complaint about the route', 'number'],
+  ['fine_ticket', 'A ticket sold wrong', 'number'],
+  ['fine_red_light', 'A red light run', 'number'],
+  ['Administration'],
+  ['admin_password', 'Admin password', 'password', 'At least 8 characters - this panel and every world\'s'],
+  ['web_admin', 'Admin panel from elsewhere', BOOL, 'Off: only on this machine. On: from anywhere the door is reached, the tunnel too, with the admin password'],
+];
+
+/** What the main server takes for a key company-server.cfg leaves out (`main_server::MainCfg::parse`). */
+export const BCO_DEFAULTS = {
+  name: 'Bus Company Online', real_time: '1', time: '06:00', first_port: '27015', max_worlds: '4', world_idle: '10', keep_worlds: '1', max_memory: '85', max_cpu: '90',
+  traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
+  start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
+  found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '1500', fine_dropped_minute: '20.83',
+  fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
+  fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',
+};
+
+export const BCO_FORM = { fields: BCO_FIELDS, defaults: BCO_DEFAULTS, title: 'Main server settings', reading: 'Reading company-server.cfg…', asText: 'Edit company-server.cfg as text' };
+
+const CSS = `
+.bco-alert{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:8px;background:var(--sp-field)}
+.bco-alert>b{display:inline-block;width:8px;height:8px;border-radius:50%;margin-top:6px;flex:none;background:var(--sp-accent)}
+.bco-alert.warn>b{background:var(--sp-danger)}
+.bco-code{font:600 15px ui-monospace,Consolas,monospace;letter-spacing:.04em;word-break:break-all}
+.bco-tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;background:var(--sp-field);color:var(--sp-dim);margin-left:6px;white-space:nowrap}
+.bco-tag.ok{background:rgba(76,183,130,.16);color:var(--sp-ok)}
+.bco-tag.warn{background:rgba(232,160,48,.16);color:var(--sp-accent)}
+.bco-tag.bad{background:rgba(229,83,75,.16);color:var(--sp-danger)}
+.bco-neg{color:var(--sp-danger)}
+.bco-pick{cursor:pointer}
+.bco-pick:hover td{background:rgba(255,255,255,.03)}
+.bco-pick.on td{background:rgba(232,160,48,.08)}
+.bco-out{background:#0d0f12;color:#cfd3da;border-radius:10px;padding:10px;font:12px/1.5 ui-monospace,Consolas,monospace;max-height:260px;overflow:auto;white-space:pre-wrap;margin:0}
+.bco-bids{margin:4px 0 0;padding-left:18px;color:var(--sp-dim);font-size:12px}
+.bco-sub{font-size:12px;color:var(--sp-dim)}
+`;
+
+const money = (n) => (n == null ? '-' : Math.round(n).toLocaleString());
+const message = (e) => String(e?.message || e);
+const ago = (secs) => {
+  if (!secs) return '-';
+  const d = new Date(secs * 1000);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+export function mountPanel(root, api, opts = {}) {
+  addCss();
+  if (!document.getElementById('bco-css')) document.head.append(h('style', { id: 'bco-css' }, CSS));
+  const tr = opts.tr || ((s) => s);
+  const trf = (s, vars) => Object.entries(vars).reduce((t, [k, v]) => t.replaceAll(`%{${k}}`, v), tr(s));
+  const host = opts.host || (typeof location !== 'undefined' && location.hostname) || '127.0.0.1';
+  const TABS = [
+    ['overview', 'Overview'], ['worlds', 'Worlds'], ['companies', 'Companies'], ['players', 'Players'],
+    ['market', 'Tenders and market'], ['settings', 'Rules and economy'], ['log', 'Log'],
+  ];
+  let tab = 'overview';
+  const data = {};
+  let lost = false;
+  let timer = null;
+  let picked = { company: null, player: null };
+  let companyInfo = null;
+  let logSrc = 'main';
+  let logFrom = 0;
+  let logLines = [];
+  let follow = true;
+  let busy = false;
+
+  const said = h('div', { class: 'sp-say' });
+  const say = (text, bad) => {
+    said.textContent = text;
+    said.style.color = bad ? 'var(--sp-danger)' : '';
+  };
+  /** A console line (`main_server::command`): its answer said, the tab asked again. */
+  const run = async (line, done) => {
+    try {
+      const r = await api.post('command', line);
+      say(done || r?.answer || tr('Done'));
+      setTimeout(refresh, 600);
+      return r?.answer;
+    } catch (e) {
+      say(message(e), true);
+      return null;
+    }
+  };
+  const post = async (path, body, done) => {
+    try {
+      const r = await api.post(path, JSON.stringify(body));
+      say(done || r?.answer || tr('Done'));
+      setTimeout(refresh, 600);
+      return true;
+    } catch (e) {
+      say(message(e), true);
+      return false;
+    }
+  };
+  const open = (url) => {
+    if (opts.open) opts.open(url);
+    else window.open(url, '_blank', 'noopener');
+  };
+
+  const el = h('div', { class: 'sp' });
+  root.replaceChildren(el);
+  const tabBar = h('div', { class: 'sp-tabs' });
+  const body = h('div', { style: 'display:flex;flex-direction:column;gap:12px' });
+  el.append(tabBar, body, said);
+  const settings = settingsView({ config: api.config, saveConfig: api.saveConfig }, tr, say, BCO_FORM);
+
+  const fact = (value, label, sub) => h('div', { class: 'sp-fact' }, h('b', {}, value), h('span', {}, label), sub ? h('div', { class: 'bco-sub' }, sub) : null);
+  const tag = (text, kind = '') => h('span', { class: 'bco-tag ' + kind }, text);
+  const card = (title, ...kids) => h('div', { class: 'sp-card' }, title ? h('h3', {}, title) : null, ...kids);
+  const empty = (text) => h('div', { class: 'sp-empty' }, text);
+  const table = (heads, rows) => h('div', { style: 'overflow-x:auto' }, h('table', { class: 'sp-table' }, h('tr', {}, ...heads.map((x) => (Array.isArray(x) ? h('th', { class: x[1] }, x[0]) : h('th', {}, x)))), ...rows));
+  const btn = (label, onClick, cls = 'sp-btn small') => h('button', { class: cls, type: 'button', onClick }, label);
+
+  function drawTabs() {
+    const o = data.overview;
+    const n = { players: o?.online || 0, worlds: o?.worlds?.running || 0, companies: o?.companies || 0 };
+    tabBar.replaceChildren(...TABS.map(([t, label]) => h('button', { class: 'sp-tab' + (t === tab ? ' on' : ''), type: 'button', onClick: () => { tab = t; draw(); refresh(); } }, tr(label), n[t] ? h('span', { class: 'sp-n' }, n[t]) : null)));
+  }
+
+  // --- 1. overview ------------------------------------------------------------------------------
+
+  function alertText(a) {
+    if (a.kind === 'red') return trf('%{name} is in the red: %{money}', { name: a.name, money: money(a.money) });
+    if (a.kind === 'loading') return trf('The world of %{name} has been loading for %{n} min', { name: a.name, n: a.minutes }) + (a.what ? ` (${a.what})` : '');
+    if (a.kind === 'closing') return trf('%{n} tenders of %{name} close today', { n: a.n, name: a.name });
+    return a.text || '';
+  }
+
+  function overview() {
+    const o = data.overview;
+    if (!o) return [card(null, empty(tr('Asking the main server…')))];
+    const head = card(null,
+      h('div', { class: 'sp-head' },
+        h('h2', {}, o.name || 'Bus Company Online'),
+        h('span', { class: 'sp-chip' + (lost ? ' off' : '') }, h('i'), tr(lost ? 'Not answering' : 'Running')),
+        o.real_time ? tag(tr('Real time'), 'ok') : null),
+      h('div', { class: 'sp-facts' },
+        fact(o.time, o.date),
+        fact(`${o.online} / ${o.players}`, tr('Players online'), tr('logged in from their launchers today')),
+        fact(o.companies, tr('Companies'), o.groups ? trf('%{n} groups', { n: o.groups }) : null),
+        fact(`${o.worlds.running} / ${o.worlds.max}`, tr('Worlds running'), o.worlds.loading ? trf('%{n} loading', { n: o.worlds.loading }) : o.worlds.keep ? tr('kept running') : null),
+        o.machine ? fact(o.machine, tr('The machine')) : null),
+    );
+    const code = card(tr("The server's code"),
+      o.code ? h('div', { class: 'sp-row' }, h('span', { class: 'bco-code sp-grow' }, o.code), btn(tr('Copy'), () => navigator.clipboard?.writeText(o.code).then(() => say(tr('Copied')), () => {}))) : h('div', { class: 'sp-dim' }, tr("The players' door is not open: see the log.")),
+      h('div', { class: 'sp-dim' }, trf('Players enter it in Bus Company Online in their launchers. The door is on port %{port}.', { port: o.api_port })),
+      o.tunnel ? h('div', {}, tr('On the internet: '), h('a', { href: o.tunnel, target: '_blank', style: 'color:var(--sp-accent)', onClick: (e) => { e.preventDefault(); open(o.tunnel); } }, o.tunnel)) : null,
+    );
+    const alerts = card(tr('Wants looking at'),
+      o.alerts?.length
+        ? o.alerts.map((a) => h('div', { class: 'bco-alert ' + (a.level || '') }, h('b'), h('div', { class: 'sp-grow' }, alertText(a)),
+          a.company ? btn(tr('Open'), () => { tab = 'companies'; picked.company = a.company; companyInfo = null; draw(); refresh(); }) : null))
+        : h('div', { class: 'sp-dim' }, tr('Nothing wants looking at.')),
+    );
+    const clock = card(tr("The server's clock"),
+      h('div', { class: 'sp-dim' }, o.real_time ? tr("It runs on this machine's real time.") : tr('It runs 1:1 with the real clock from its first date and time.')),
+      h('div', { class: 'sp-row' },
+        btn(tr('Compare with the machine'), () => run('clock')),
+        o.real_time ? sureButton(tr("Set to the machine's time now"), tr('Sure?'), () => run('clock now'), 'sp-btn small') : null),
+    );
+    const stop = opts.stop !== false
+      ? h('div', { class: 'sp-row' }, sureButton(tr('Stop the main server'), tr('Sure? The worlds stop, every company is saved'), () => post('stop', {}, tr('The main server stops: the worlds stop and every company is saved.')), 'sp-btn danger'))
+      : null;
+    return [head, h('div', { class: 'sp-grid' }, code, alerts, clock), stop];
+  }
+
+  // --- 2. the worlds ----------------------------------------------------------------------------
+
+  const worldUrl = (w, path) => `http://${host}:${w.web_port}${path}`;
+
+  function worlds() {
+    const d = data.worlds;
+    if (!d) return card(tr('Worlds'), empty(tr('Asking the main server…')));
+    if (!d.maps.length) return card(tr('Worlds'), empty(tr('No map is installed in the OMSI folder of the settings.')));
+    const rows = d.maps.map((m) => {
+      const w = m.world;
+      let state;
+      if (!w) state = tag(tr('Stopped'));
+      else if (w.running) state = h('span', {}, tag(tr('Running'), 'ok'), w.empty_minutes != null ? h('div', { class: 'bco-sub' }, trf('no players for %{n} min', { n: w.empty_minutes })) : null);
+      else state = h('span', {}, tag(tr('Loading'), 'warn'), h('div', { class: 'bco-sub' }, [w.loading, trf('%{n} min', { n: w.minutes })].filter(Boolean).join(' · ')));
+      const players = w?.status?.players || [];
+      const acts = h('div', { class: 'sp-row', style: 'justify-content:flex-end' });
+      if (!w) acts.append(btn(tr('Start'), () => run(`start ${m.folder}`), 'sp-btn small main'));
+      else {
+        acts.append(
+          btn(tr('Admin'), () => open(w.status?.tunnel && host !== '127.0.0.1' && location.protocol === 'https:' ? w.status.tunnel + '/admin' : worldUrl(w, '/admin'))),
+          btn(tr('Live map'), () => open(worldUrl(w, '/kort'))),
+          btn(tr('Log'), () => { tab = 'log'; setLog('world:' + m.folder); }),
+          sureButton(tr('Stop'), players.length ? trf('Sure? %{n} players are in it', { n: players.length }) : tr('Sure?'), () => run(`stop ${m.folder}`)),
+        );
+      }
+      return h('tr', {},
+        h('td', {}, h('b', {}, m.folder), m.companies.length ? h('div', { class: 'bco-sub' }, m.companies.join(', ')) : h('div', { class: 'bco-sub' }, tr('no company'))),
+        h('td', {}, state),
+        h('td', { class: 'sp-hide' }, w ? `UDP ${w.port} · web ${w.web_port}` : '-', w?.status?.code ? h('div', { class: 'bco-sub', title: tr("The world's code") }, w.status.code) : null),
+        h('td', {}, players.length ? players.map((p) => h('div', {}, p.name, p.line ? h('span', { class: 'bco-sub' }, ` · ${p.line}`) : null)) : h('span', { class: 'sp-dim' }, '-')),
+        h('td', { class: 'sp-acts' }, acts),
+      );
+    });
+    return card(trf('Worlds - %{n} at once at most', { n: d.max }),
+      table([tr('Map'), tr('World'), [tr('Ports'), 'sp-hide'], tr('Players'), ''], rows),
+      h('div', { class: 'sp-dim' }, tr('A world starts by itself when a player of one of its companies comes; Start brings it up before.')));
+  }
+
+  // --- 3. the companies -------------------------------------------------------------------------
+
+  function companies() {
+    const d = data.companies;
+    if (!d) return [card(tr('Companies'), empty(tr('Asking the main server…')))];
+    const list = d.companies;
+    const rows = list.map((c) => h('tr', { class: 'bco-pick' + (picked.company === c.id ? ' on' : ''), onClick: () => { picked.company = picked.company === c.id ? null : c.id; companyInfo = null; draw(); refresh(); } },
+      h('td', {}, h('b', {}, c.name), c.group ? tag(tr('Group head office')) : null, h('div', { class: 'bco-sub' }, c.id)),
+      h('td', { class: 'sp-hide' }, c.map || '-'),
+      h('td', {}, c.owner || h('span', { class: 'sp-dim' }, tr('nobody'))),
+      h('td', { class: c.cash < 0 ? 'bco-neg' : '' }, money(c.cash), c.debt ? h('div', { class: 'bco-sub' }, trf('debt %{m}', { m: money(c.debt) })) : null),
+      h('td', { class: 'sp-hide' }, `${c.lines} / ${c.buses} / ${c.staff}`),
+      h('td', {}, c.runs ? tag(tr('Running'), 'ok') : tag(tr('Stopped'), 'bad')),
+    ));
+    const out = [card(tr('Companies'),
+      list.length ? table([tr('Company'), [tr('Map'), 'sp-hide'], tr('Owner'), tr('Money'), [tr('Lines / buses / staff'), 'sp-hide'], tr('Process')], rows) : empty(tr('No company has been founded on the server yet.')),
+      list.length ? h('div', { class: 'sp-dim' }, tr('Click a company for its details.')) : null)];
+    if (picked.company) out.push(companyCard(list.find((c) => c.id === picked.company)));
+    // a company founded by the server's admin
+    const maps = (data.worlds?.maps || []).map((m) => m.folder);
+    const name = h('input', { class: 'sp-grow', placeholder: tr("The company's name") });
+    const map = h('select', {}, ...maps.map((m) => h('option', { value: m }, m)));
+    const mode = h('select', {}, ...[['normal', 'Normal'], ['casual', 'Casual'], ['realistic', 'Realistic']].map(([v, l]) => h('option', { value: v }, tr(l))));
+    const owner = h('select', {}, h('option', { value: '' }, tr('No owner yet')), ...(data.players?.players || []).map((p) => h('option', { value: p.name }, p.name)));
+    out.push(card(tr('Found a company'), h('div', { class: 'sp-row' }, name, map, mode, owner,
+      btn(tr('Found'), () => { const n = name.value.trim(); if (n && map.value) run(`found ${n}; ${map.value}; ${mode.value}; ${owner.value}`); }, 'sp-btn main'))));
+    return out;
+  }
+
+  function companyCard(c) {
+    if (!c) return null;
+    const i = companyInfo?.id === c.id ? companyInfo : null;
+    const amount = h('input', { type: 'number', min: 1, placeholder: tr('Amount'), style: 'width:120px' });
+    const give = (sign) => {
+      const n = Math.abs(Number(amount.value) || 0);
+      if (n > 0) run(`cash ${c.id}; ${sign}${n}`, trf('%{name}: %{amount} booked as capital', { name: c.name, amount: sign + money(n) }));
+    };
+    const players = data.players?.players || [];
+    const newOwner = h('select', {}, ...players.map((p) => h('option', { value: p.id, selected: p.id === c.owner_id }, p.name)));
+    const ROLES = [['driver', 'Driver'], ['planner', 'Planner'], ['manager', 'Manager'], ['co_owner', 'Co-owner']];
+    const members = (i?.members || []).map((m) => {
+      const role = h('select', {}, ...ROLES.map(([v, l]) => h('option', { value: v, selected: v === m.role }, tr(l))));
+      return h('tr', {},
+        h('td', {}, h('b', {}, m.name), m.owner ? tag(tr('Owner'), 'ok') : null, m.banned ? tag(tr('Banned'), 'bad') : null),
+        h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end' }, role, btn(tr('Set'), () => run(`role ${c.id}; ${m.name}; ${role.value}`)))));
+    });
+    return card(c.name,
+      h('div', { class: 'sp-facts' },
+        fact(money(c.cash), tr('Money')),
+        fact(i ? i.reputation : '-', tr('Reputation')),
+        fact(c.date || '-', tr("The company's day")),
+        fact(c.mode || '-', tr('Game mode')),
+        fact(c.port || '-', tr('Port')),
+      ),
+      c.code ? h('div', {}, tr('Code: '), h('span', { class: 'bco-code' }, c.code)) : null,
+      !c.runs ? h('div', { class: 'sp-dim' }, tr('Its process does not run: money, owner and roles change when it does.')) : null,
+      h('h3', {}, tr('Money')),
+      h('div', { class: 'sp-row' }, amount, btn(tr('Give'), () => give('+'), 'sp-btn small main'), sureButton(tr('Take'), tr('Sure?'), () => give('-'))),
+      h('h3', {}, tr('Owner')),
+      players.length ? h('div', { class: 'sp-row' }, newOwner, btn(tr('Make owner'), () => run(`owner ${c.id}; ${newOwner.value}`))) : h('div', { class: 'sp-dim' }, tr('No player has logged in yet.')),
+      h('h3', {}, tr('Players and roles')),
+      i ? (members.length ? table([tr('Player'), ''], members) : h('div', { class: 'sp-dim' }, tr('Nobody has joined the company yet.'))) : h('div', { class: 'sp-dim' }, tr('Asking…')),
+      i?.concessions?.length ? h('h3', {}, tr('Concessions')) : null,
+      i?.concessions?.length ? table([tr('Line'), tr('From'), tr('Until')], i.concessions.map((x) => h('tr', {}, h('td', {}, x.number || x.line), h('td', {}, x.from), h('td', {}, x.until)))) : null,
+      i?.depots?.length ? h('h3', {}, tr('Depots')) : null,
+      i?.depots?.length ? h('div', {}, i.depots.map((d) => h('div', {}, d.name, h('span', { class: 'bco-sub' }, ` · ${d.id}`)))) : null,
+      h('div', { class: 'sp-row' }, btn(tr("The process's log"), () => { tab = 'log'; setLog('company:' + c.id); })),
+    );
+  }
+
+  // --- 4. the players ---------------------------------------------------------------------------
+
+  const playerFilter = h('input', { class: 'sp-grow', placeholder: tr('Find a player…') });
+  playerFilter.addEventListener('input', () => draw());
+
+  function players() {
+    const d = data.players;
+    if (!d) return [card(tr('Players'), empty(tr('Asking the main server…')))];
+    const f = playerFilter.value.trim().toLowerCase();
+    const list = d.players.filter((p) => !f || p.name.toLowerCase().includes(f) || p.id.includes(f));
+    const rows = list.map((p) => h('tr', { class: 'bco-pick' + (picked.player === p.id ? ' on' : ''), onClick: () => { picked.player = picked.player === p.id ? null : p.id; draw(); } },
+      h('td', {}, h('b', {}, p.name), p.online ? tag(tr('Online'), 'ok') : null, p.banned ? tag(tr('Banned'), 'bad') : null, h('div', { class: 'bco-sub' }, p.id)),
+      h('td', { class: 'sp-hide' }, [p.account ? tr('Account') : null, p.steam ? 'Steam' : null].filter(Boolean).join(' + ') || '-'),
+      h('td', {}, money(p.money)),
+      h('td', { class: 'sp-hide' }, p.owns.length ? p.owns.join(', ') : '-'),
+      h('td', { class: 'sp-hide' }, ago(p.seen)),
+    ));
+    const out = [card(trf('Players - %{n}', { n: d.players.length }), h('div', { class: 'sp-row' }, playerFilter),
+      d.players.length ? table([tr('Player'), [tr('Logs in with'), 'sp-hide'], tr('Money'), [tr('Owns'), 'sp-hide'], [tr('Last seen'), 'sp-hide']], rows) : empty(tr('No player has logged in yet.')))];
+    const p = d.players.find((x) => x.id === picked.player);
+    if (p) out.push(playerCard(p));
+    return out;
+  }
+
+  function playerCard(p) {
+    const amount = h('input', { type: 'number', min: 1, placeholder: tr('Amount'), style: 'width:120px' });
+    const pay = (sign) => {
+      const n = Math.abs(Number(amount.value) || 0);
+      if (n > 0) run(`money ${p.id}; ${sign}${n}`);
+    };
+    const exact = h('input', { type: 'number', min: 0, placeholder: tr('New balance'), style: 'width:120px' });
+    const trips = h('input', { type: 'number', min: 0, value: p.trips, style: 'width:90px' });
+    const cls = h('select', {}, ...[['midi', 'Midibus'], ['solo', 'Solo bus'], ['articulated', 'Articulated bus'], ['double', 'Double-decker']].map(([v, l]) => h('option', { value: v }, tr(l))));
+    const why = h('input', { class: 'sp-grow', placeholder: tr('Why (he is told)'), maxlength: 200 });
+    return card(p.name,
+      h('div', { class: 'sp-facts' },
+        fact(money(p.money), tr('Own money')),
+        fact(p.trips, tr('Trips driven')),
+        fact(p.course ? tr('Done') : tr('No'), tr('Leadership course')),
+        fact(p.tests.length ? p.tests.join(', ') : '-', tr('Driving tests')),
+        fact(p.keys, tr('Computers with a key')),
+        fact(ago(p.since), tr('First came')),
+      ),
+      p.banned ? h('div', { class: 'bco-alert warn' }, h('b'), h('div', {}, trf('Banned: %{why}', { why: p.banned }))) : null,
+      h('h3', {}, tr('Money')),
+      h('div', { class: 'sp-row' }, amount, btn(tr('Give'), () => pay('+'), 'sp-btn small main'), btn(tr('Take'), () => pay('-')),
+        exact, btn(tr('Set'), () => { if (exact.value !== '') run(`money ${p.id}; ${Math.max(0, Number(exact.value) || 0)}`); })),
+      h('h3', {}, tr('What founding asks')),
+      h('div', { class: 'sp-row' }, h('span', { class: 'sp-dim' }, tr('Trips')), trips, btn(tr('Set'), () => run(`grant ${p.id}; trips ${Math.max(0, Number(trips.value) || 0)}`)),
+        btn(tr('Course done'), () => run(`grant ${p.id}; course`)),
+        cls, btn(tr('Test passed'), () => run(`grant ${p.id}; test ${cls.value}`))),
+      h('h3', {}, tr('Access')),
+      p.banned
+        ? h('div', { class: 'sp-row' }, btn(tr('Let him in again'), () => post('player', { id: p.id, do: 'unban' }), 'sp-btn small main'))
+        : h('div', { class: 'sp-row' }, why, sureButton(tr('Ban'), tr('Sure? He cannot log in'), () => post('player', { id: p.id, do: 'ban', reason: why.value.trim() }))),
+      h('div', { class: 'sp-row' }, sureButton(tr("Forget his computers' keys"), tr('Sure?'), () => post('player', { id: p.id, do: 'keys' }), 'sp-btn small'),
+        h('span', { class: 'sp-dim' }, tr('A computer of his gets a new key at its next login with Steam (a lost or stolen PC).'))),
+    );
+  }
+
+  // --- 5. the tenders and the market ------------------------------------------------------------
+
+  const local = (s) => (s || '').replace(' ', 'T');
+
+  function market() {
+    const d = data.market;
+    if (!d) return [card(tr('Tenders and market'), empty(tr('Asking the main server…')))];
+    if (!d.maps.length) return [card(tr('Tenders and market'), empty(tr("No map has a market yet: it starts with a map's first company.")))];
+    return d.maps.map((m) => {
+      const open = m.open.map((t) => {
+        const at = h('input', { type: 'datetime-local', value: local(t.closes), style: 'width:190px' });
+        const kind = [t.renewal && !t.event ? tag(tr('Renewal')) : null, t.event ? tag(t.event, 'warn') : null, t.applied.length ? tag(tr('Applied for')) : null];
+        return h('tr', {},
+          h('td', {}, h('b', {}, t.number || t.line), ...kind, t.caption ? h('div', { class: 'bco-sub' }, t.caption) : null, t.event && t.from ? h('div', { class: 'bco-sub' }, `${t.from} – ${t.until}`) : null),
+          h('td', { class: 'sp-hide' }, t.opens),
+          h('td', {}, t.closes),
+          h('td', {}, t.bidders ? trf('%{n} bidders', { n: t.bidders }) : h('span', { class: 'sp-dim' }, tr('no bid yet'))),
+          h('td', { class: 'sp-hide' }, money(t.cap_hour)),
+          h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end' }, at,
+            btn(tr('Move the close'), () => post('tender', { map: m.key, id: t.id, do: 'close', at: at.value.replace('T', ' ') })),
+            sureButton(tr('Call off'), tr('Sure? Fees are paid back'), () => post('tender', { map: m.key, id: t.id, do: 'cancel' })))),
+        );
+      });
+      const decided = m.decided.map((t) => h('tr', {},
+        h('td', {}, h('b', {}, t.number || t.line)),
+        h('td', { class: 'sp-hide' }, t.closed),
+        h('td', {}, t.winner ? [t.winner, tag(t.company ? tr('Company') : tr('Operator'), t.company ? 'ok' : '')] : h('span', { class: 'sp-dim' }, tr('nobody'))),
+        h('td', {}, t.winner ? money(t.hour) : '-',
+          t.bids.length ? h('ol', { class: 'bco-bids' }, t.bids.map((b) => h('li', {}, `${b.name}: ${money(b.hour)} · ${b.total} ${tr('points')}`, b.rejected ? tag(tr('rejected'), 'bad') : null))) : null),
+      ));
+      const held = m.held.map((x) => h('tr', {}, h('td', {}, h('b', {}, x.number || x.line)), h('td', {}, x.name), h('td', {}, `${x.from} – ${x.until}`), h('td', { class: 'sp-hide' }, x.gives_up ? trf('gives it up %{date}', { date: x.gives_up }) : '-')));
+      const free = (m.lines || []).filter((l) => !l.company && !l.operator && !l.open && !l.event);
+      // (the map's free lines; before the market has read them: the line's name typed)
+      const pick = free.length ? h('select', {}, ...free.map((l) => h('option', { value: l.name }, l.name))) : h('input', { placeholder: tr("The line's timetable name") });
+      const events = (m.events || []).map((e) => h('div', { class: 'bco-alert' }, h('b'), h('div', {}, h('b', {}, e.name), ` · ${e.from} – ${e.until}`,
+        e.lines?.length ? h('div', { class: 'bco-sub' }, trf('Its own lines: %{l}', { l: e.lines.join(', ') })) : null,
+        e.off?.length ? h('div', { class: 'bco-sub' }, trf('Takes off: %{l}', { l: e.off.join(', ') })) : null)));
+      return card(m.map,
+        h('h3', {}, trf('Open tenders - %{n}', { n: m.open.length })),
+        open.length ? table([tr('Line'), [tr('Opens'), 'sp-hide'], tr('Closes'), tr('Bids'), [tr('Cap / hour'), 'sp-hide'], ''], open) : h('div', { class: 'sp-dim' }, tr('No tender is open.')),
+        h('div', { class: 'sp-dim' }, tr('The bids stay sealed until the close: only how many companies bid shows here.')),
+        h('div', { class: 'sp-row' }, h('span', { class: 'sp-dim' }, tr('Put out to tender now')),
+          pick,
+          btn(tr('Open the tender'), () => { const line = (pick.value || '').trim(); if (line) post('tender', { map: m.key, do: 'open', line }, trf('Line %{l} goes out to tender in a moment', { l: line })); }, 'sp-btn small main')),
+        decided.length ? h('h3', {}, tr('Decided lately')) : null,
+        decided.length ? table([tr('Line'), [tr('Closed'), 'sp-hide'], tr('Won by'), tr('A timetable hour')], decided) : null,
+        held.length ? h('h3', {}, tr("The operators' lines")) : null,
+        held.length ? table([tr('Line'), tr('Operator'), tr('Term'), [tr('Gives up'), 'sp-hide']], held) : null,
+        events.length ? h('h3', {}, tr('Events (Chrono)')) : null,
+        ...events,
+      );
+    });
+  }
+
+  // --- 7. the log, and the console ---------------------------------------------------------------
+
+  const logBox = h('div', { class: 'sp-log' });
+  logBox.addEventListener('scroll', () => {
+    follow = logBox.scrollTop + logBox.clientHeight >= logBox.scrollHeight - 30;
+  });
+  const logFilter = h('input', { class: 'sp-grow', placeholder: tr('Show only lines with…') });
+  const logPick = h('select', { onChange: (e) => setLog(e.target.value) });
+  const fillLog = () => {
+    const f = logFilter.value.trim().toLowerCase();
+    logBox.replaceChildren(...logLines.filter((l) => !f || l.toLowerCase().includes(f)).map((l) => h('div', { class: /warning|WARN/.test(l) ? 'w' : /error|ERROR/.test(l) ? 'e' : '' }, l)));
+    if (follow) logBox.scrollTop = logBox.scrollHeight;
+  };
+  logFilter.addEventListener('input', fillLog);
+  function setLog(src) {
+    logSrc = src;
+    logFrom = 0;
+    logLines = [];
+    follow = true;
+    draw();
+    refresh();
+  }
+  const fillPick = () => {
+    const opt = (v, l) => h('option', { value: v, selected: v === logSrc }, l);
+    logPick.replaceChildren(opt('main', tr('The main server')),
+      ...(data.worlds?.maps || []).filter((m) => m.world).map((m) => opt('world:' + m.folder, trf('World: %{map}', { map: m.folder }))),
+      ...(data.companies?.companies || []).filter((c) => !c.group).map((c) => opt('company:' + c.id, trf('Company: %{name}', { name: c.name }))));
+  };
+  const consoleIn = h('input', { class: 'sp-grow', placeholder: tr('A console command: help lists them'), style: 'font-family:ui-monospace,Consolas,monospace' });
+  const consoleOut = h('pre', { class: 'bco-out' });
+  const sendLine = async () => {
+    const line = consoleIn.value.trim();
+    if (!line) return;
+    consoleIn.value = '';
+    const a = await run(line, ' ');
+    consoleOut.textContent = `> ${line}\n${a ?? ''}\n` + consoleOut.textContent;
+  };
+  consoleIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendLine(); });
+  const logCard = card(tr('Log'), h('div', { class: 'sp-row' }, logPick, logFilter), logBox);
+  const consoleCard = card(tr('Console'), h('div', { class: 'sp-row' }, consoleIn, btn(tr('Run'), sendLine, 'sp-btn main')), consoleOut);
+  function logView() {
+    fillPick();
+    fillLog();
+    return [logCard, consoleCard];
+  }
+
+  // --- drawing and asking -----------------------------------------------------------------------
+
+  function draw() {
+    drawTabs();
+    const view = {
+      overview, worlds: () => [worlds()], companies, players, market,
+      settings: () => [settings], log: logView,
+    }[tab]();
+    body.replaceChildren(...view.flat().filter(Boolean));
+  }
+
+  /** What the tab shows, asked again (the overview always: the tabs' counts). */
+  async function refresh() {
+    if (busy) return;
+    busy = true;
+    try {
+      const want = ['overview'];
+      if (tab === 'worlds' || tab === 'log' || tab === 'companies') want.push('worlds');
+      if (tab === 'companies' || tab === 'log') want.push('companies');
+      if (tab === 'players' || tab === 'companies') want.push('players');
+      if (tab === 'market') want.push('market');
+      const got = await Promise.all(want.map((w) => api.get(w)));
+      want.forEach((w, k) => (data[w] = got[k]));
+      if (tab === 'companies' && picked.company) companyInfo = await api.get('company?id=' + encodeURIComponent(picked.company)).catch(() => null);
+      if (lost) say('');
+      lost = false;
+    } catch (e) {
+      if (!lost) {
+        opts.onLost?.(e);
+        say(message(e), true);
+      }
+      lost = true;
+    }
+    if (tab === 'log') {
+      try {
+        const q = logSrc === 'main' ? 'log?from=' + logFrom : logSrc.startsWith('world:') ? 'log?world=' + encodeURIComponent(logSrc.slice(6)) : 'log?company=' + encodeURIComponent(logSrc.slice(8));
+        const l = await api.get(q);
+        if (logSrc === 'main') {
+          logLines.push(...(l?.lines || []));
+          if (logLines.length > 2000) logLines.splice(0, logLines.length - 2000);
+          if (l?.next != null) logFrom = l.next;
+        } else logLines = l?.lines || [];
+      } catch {}
+    }
+    busy = false;
+    // (a field being typed in, a choice open, the settings: not drawn anew)
+    const typing = body.contains(document.activeElement) && /INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName || '');
+    const armed = body.querySelector('.sp-btn.sure');
+    if (tab === 'log') {
+      drawTabs();
+      if (!typing) fillPick();
+      fillLog();
+    } else if (tab !== 'settings' && !typing && !armed) draw();
+    else drawTabs();
+  }
+
+  draw();
+  refresh();
+  timer = setInterval(refresh, opts.every || 3000);
+  return {
+    destroy() {
+      clearInterval(timer);
+      el.remove();
+    },
+  };
+}
