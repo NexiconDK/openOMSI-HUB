@@ -72,6 +72,18 @@ impl App {
         let season = crate::world_load::season_folder_on(&self.args, &w.global, self.clock.day_of_year, snow, on_road).1;
         let Some((was_date, was_season)) = self.session.world_day.clone() else {
             self.session.world_day = Some((date, omsi_texture::season_folder()));
+            // (NexiconDK, 1 November 2026) the world opened on another day than the clock's now
+            // - a LAN client set to the host's date while its map loaded, the host's date not
+            // known when it began: the chrono scenarios of the clock's day, the tiles they change
+            // read again. (Taken as the world's date before, its football match's car parks and
+            // barriers never came, while the match's timetable - the host's - ran.)
+            if w.map().date != date {
+                log::info!("chrono: the world opened on {} and the clock says {date}: its scenarios of {date}", w.map().date);
+                let changed = w.set_date(date);
+                if let Some(st) = self.gfx.streamer.as_mut().filter(|_| !changed.is_empty()) {
+                    st.reload(Some(&changed));
+                }
+            }
             // (NexiconDK, 1 November 2026: the chrono scenarios in force at the start, told)
             self.tell_chrono(&[], &w.chrono_dirs());
             return;

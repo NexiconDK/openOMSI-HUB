@@ -130,6 +130,10 @@ impl World {
     pub fn set_date(&self, date: i32) -> Vec<(i32, i32)> {
         let new = omsi_map::active_chrono_dirs(&self.map_dir, date);
         let old = self.chrono_dirs();
+        // (the map's date with it: `follow_date` tells by it whether the world is on the clock's)
+        if self.map().date != date {
+            self.data.update(|d| Arc::make_mut(&mut d.map).date = date);
+        }
         if new == old {
             return Vec::new();
         }

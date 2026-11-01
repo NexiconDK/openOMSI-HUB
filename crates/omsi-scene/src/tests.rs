@@ -1175,3 +1175,30 @@ fn every_object_a_scenery_step_shows_finds_its_view_behind_a_silenced_one() {
         .collect();
     assert_eq!(found, vec![(false, Some(3)), (true, Some(1)), (true, Some(2))]);
 }
+
+/// (NexiconDK, 1 November 2026) The sim date moved to a match day: the scenario of a chrono
+/// folder in a folder of its own (`Chrono/1_FCA Heimspiele/02.11.25 - 14.00 Uhr`, as Ahlheim
+/// keeps its football matches) comes into force, the tiles it changes are named to be read again
+/// - and the world's date is the new one (the game tells by it whether the world opened on
+/// the clock's day: a LAN client set to the host's date while its map loaded).
+#[test]
+fn a_match_day_brings_its_chrono_tiles_and_the_worlds_date() {
+    let dir = std::env::temp_dir().join(format!("openomsi-chrono-date-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    let game = dir.join("Chrono/1_FCA Heimspiele/02.11.25 - 14.00 Uhr");
+    std::fs::create_dir_all(&game).unwrap();
+    std::fs::write(dir.join("global.cfg"), "[map]\n0\n0\ntile_0_0.map\n").unwrap();
+    std::fs::write(game.join("Chrono.cfg"), "[name]\r\nFCA Heimspiel\r\n\r\n[startdate]\r\n20251102\r\n\r\n[enddate]\r\n20251102\r\n").unwrap();
+    std::fs::write(game.join("tile_0_0.map"), "[version]\r\n14\r\n").unwrap();
+    let world = World::open(&dir, &dir.join("global.cfg"), 20251101).unwrap();
+    assert!(world.chrono_dirs().is_empty());
+    assert_eq!(world.map().date, 20251101);
+    assert_eq!(world.set_date(20251102), vec![(0, 0)]);
+    assert_eq!(world.chrono_dirs(), vec![game.clone()]);
+    assert_eq!(world.map().date, 20251102);
+    // the next day: it ends, the tile is read again without it
+    assert_eq!(world.set_date(20251103), vec![(0, 0)]);
+    assert!(world.chrono_dirs().is_empty());
+    assert_eq!((world.set_date(20251104), world.map().date), (Vec::new(), 20251104));
+    let _ = std::fs::remove_dir_all(&dir);
+}

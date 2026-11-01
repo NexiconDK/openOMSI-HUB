@@ -202,11 +202,13 @@ impl Streamer {
                 self.world.loaded_tiles()
             }
         };
+        // (NexiconDK, 1 November 2026) a tile on its way in too: read before the change (a chrono
+        // scenario that came into force while the first area loaded - a LAN client set to the
+        // host's date), it came in without it and stayed so - the stadium of a football match
+        // without its car parks. It is read again once it is in.
         for k in &keys {
             self.failed.remove(k);
-            if !self.requested.contains(k) {
-                self.stale.insert(*k);
-            }
+            self.stale.insert(*k);
         }
         log::info!("tile streaming: {} tiles to be read again", keys.len());
     }
@@ -339,7 +341,7 @@ impl Streamer {
             let loaded = self.world.loaded_tiles();
             if !self.stale.is_empty() {
                 let now_loaded: hashbrown::HashSet<(i32, i32)> = loaded.iter().copied().collect();
-                self.stale.retain(|k| now_loaded.contains(k));
+                self.stale.retain(|k| now_loaded.contains(k) || self.requested.contains(k));
             }
             let mut far: Vec<(f64, (i32, i32))> = loaded.into_iter().filter(|k| !self.requested.contains(k)).map(|k| (Self::nearest(centers, k.0, k.1), k)).filter(|(d, k)| *d > self.unload_radius || self.stale.contains(k)).collect();
             far.sort_by(|a, b| b.0.total_cmp(&a.0));
