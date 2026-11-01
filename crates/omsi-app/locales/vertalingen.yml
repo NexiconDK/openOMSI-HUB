@@ -3084,3 +3084,25 @@ _version: 2
   ru: "Хроно-события карты, действующие в этот день (день матча, ярмарка, праздник): их название, даты и описание — при старте и когда событие начинается в полночь"
   uk: "Хроно-події мапи, що діють цього дня (день матчу, ярмарок, свято): їхня назва, дати й опис — під час старту й коли подія починається опівночі"
   pl: "Wydarzenia chrono mapy obowiązujące tego dnia (dzień meczu, targi, święto): ich nazwa, daty i opis — na starcie i gdy któreś zaczyna obowiązywać o północy"
+# (NexiconDK, 1 November 2026) Settings → Graphics: the condensation on the windows
+"Condensation on the windows":
+  nl: "Condens op de ruiten"
+  de: "Beschlag auf den Scheiben"
+  fr: "Buée sur les vitres"
+  ru: "Запотевание стёкол"
+  uk: "Запотівання вікон"
+  pl: "Parowanie szyb"
+"Faint":
+  nl: "Licht"
+  de: "Leicht"
+  fr: "Léger"
+  ru: "Слабо"
+  uk: "Слабко"
+  pl: "Lekko"
+"Your bus's windows mist up from the passengers' breath when it is cool outside: Realistic as it would be, Faint a light haze at most, Off clear glass":
+  nl: "De ruiten van je bus beslaan door de adem van de passagiers als het buiten koel is: Realistisch zoals het zou zijn, Licht hooguit een lichte waas, Uit heldere ruiten"
+  de: "Die Scheiben deines Busses beschlagen vom Atem der Fahrgäste, wenn es draußen kühl ist: Realistisch so, wie es wäre, Leicht höchstens ein leichter Schleier, Aus klare Scheiben"
+  fr: "Les vitres de ton bus s'embuent avec la respiration des passagers quand il fait frais dehors : Réaliste comme ce serait le cas, Léger tout au plus un léger voile, Désactivé des vitres claires"
+  ru: "Стёкла твоего автобуса запотевают от дыхания пассажиров, когда снаружи прохладно: Реалистично — как было бы на самом деле, Слабо — не больше лёгкой дымки, Выкл. — чистые стёкла"
+  uk: "Вікна твого автобуса запотівають від дихання пасажирів, коли надворі прохолодно: Реалістично — як було б насправді, Слабко — щонайбільше легкий серпанок, Вимк. — чисті вікна"
+  pl: "Szyby twojego autobusu parują od oddechu pasażerów, gdy na zewnątrz jest chłodno: Realistyczny — tak, jak byłoby naprawdę, Lekko — co najwyżej lekka mgiełka, Wył. — czyste szyby"

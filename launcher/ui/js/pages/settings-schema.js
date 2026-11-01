@@ -108,6 +108,7 @@ const graphics = {
         // (only the enhanced modes march volumetric clouds; the vanilla ones are a texture)
         { type: 'select', key: 'cloud_quality', label: 'Cloud quality', options: [['high', 'High'], ['low', 'Low']], when: (s) => (mode(s) === 'enhanced' || mode(s) === 'enhanced_plus') && s.clouds !== false },
         { type: 'select', key: 'rain_quality', label: 'Rain quality', options: [['high', 'High'], ['medium', 'Medium'], ['low', 'Low']] },
+        { type: 'select', key: 'condensation', label: 'Condensation on the windows', options: [['realistic', 'Realistic'], ['light', 'Faint'], ['off', 'Off']], help: "Your bus's windows mist up from the passengers' breath when it is cool outside: Realistic as it would be, Faint a light haze at most, Off clear glass" },
         { type: 'toggle', key: 'windy_trees', label: 'Windy trees' },
       ],
     },

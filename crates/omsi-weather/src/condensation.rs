@@ -204,6 +204,57 @@ impl CabinAir {
     pub fn appearance(&self) -> [f32; 4] {
         [self.film[0] / MILKY, self.film[1] / MILKY, self.film[2] / MILKY, self.defrost]
     }
+
+    /// (NexiconDK, 1 November 2026) [`appearance`](Self::appearance) as the player chose to see
+    /// it (Settings → Graphics → "Condensation on the windows"): the film itself is worked out
+    /// the same in every case.
+    pub fn appearance_as(&self, look: Look) -> [f32; 4] {
+        let a = self.appearance();
+        match look {
+            Look::Realistic => a,
+            Look::Light => [light(a[0]), light(a[1]), light(a[2]), a[3]],
+            Look::Off => [0.0; 4],
+        }
+    }
+}
+
+/// (NexiconDK, 1 November 2026) How the condensation on the player's bus's glass is shown: as
+/// the cabin's air leaves it (`realistic`, the default: a bus full of people on a cool, damp
+/// day mists up until little is seen through the side windows), a light haze at most
+/// (`light`), or not at all (`off`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Look {
+    Realistic,
+    Light,
+    Off,
+}
+
+impl Look {
+    /// The setting's value (`realistic`, `light`, `off`; anything else the default).
+    pub fn of(v: &str) -> Look {
+        match v.trim().to_ascii_lowercase().as_str() {
+            "light" => Look::Light,
+            "off" | "0" => Look::Off,
+            _ => Look::Realistic,
+        }
+    }
+
+    pub fn key(self) -> &'static str {
+        match self {
+            Look::Realistic => "realistic",
+            Look::Light => "light",
+            Look::Off => "off",
+        }
+    }
+}
+
+/// `light`: a third of the film's optical depth, and at most `LIGHT_MOST` - a fully misted pane
+/// scatters half the light (the veil over it a quarter: the street seen through it, softened).
+const LIGHT_SHARE: f32 = 0.33;
+const LIGHT_MOST: f32 = 0.7;
+
+fn light(depth: f32) -> f32 {
+    (depth * LIGHT_SHARE).min(LIGHT_MOST)
 }
 
 impl Default for CabinAir {
@@ -312,6 +363,28 @@ mod tests {
         let mut c = run(inputs(), 15.0);
         c.step(1.0, &CabinInputs { position: glam::DVec3::new(500.0, 0.0, 0.0), ..inputs() });
         assert!(c.film[1] < 0.1, "{c:?}");
+    }
+
+    /// (1 November 2026) The look the player chose: a fully misted bus as it is, a light haze
+    /// (never more than half the light scattered), or clear glass; the film is the same.
+    #[test]
+    fn the_condensation_shown_as_chosen() {
+        let c = run(inputs(), 15.0);
+        let full = c.appearance();
+        assert!(1.0 - (-full[1]).exp() > 0.9, "{full:?}");
+        assert_eq!(c.appearance_as(Look::Realistic), full);
+        let light = c.appearance_as(Look::Light);
+        assert!(light[1] <= LIGHT_MOST && 1.0 - (-light[1]).exp() <= 0.51, "{light:?}");
+        assert_eq!(light[3], full[3], "the defroster's patch as it is");
+        assert_eq!(c.appearance_as(Look::Off), [0.0; 4]);
+        // (a thin film stays thinner still)
+        let mut thin = CabinAir::new();
+        thin.film = [0.3, 0.3, 0.3];
+        assert!(thin.appearance_as(Look::Light)[1] < thin.appearance()[1] * 0.5);
+        for (v, l) in [("realistic", Look::Realistic), ("LIGHT", Look::Light), (" off ", Look::Off), ("bogus", Look::Realistic), ("", Look::Realistic)] {
+            assert_eq!(Look::of(v), l, "{v}");
+        }
+        assert_eq!(Look::of(Look::Light.key()), Look::Light);
     }
 
     #[test]

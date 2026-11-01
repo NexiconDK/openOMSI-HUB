@@ -68,6 +68,7 @@ pub(super) fn options_pages(app: &App) -> Vec<Page> {
         pick("cloud_quality", "Cloud quality", "Enhanced: the volumetric clouds marched in fewer steps - faster, a little grainier")
             .filter(|_| matches!(crate::settings::graphics_mode(&app.settings.graphics), "enhanced" | "enhanced_plus") && app.settings.clouds),
         pick("rain_quality", "Rain quality", "Lower is faster: the drops on the glass painted less often, less spray and fewer streaks; Low shows OMSI 2's own rain on the glass (from the next bus loaded)"),
+        pick("condensation", "Condensation on the windows", "Your bus's windows mist up from the passengers' breath when it is cool outside: Realistic as it would be, Faint a light haze at most, Off clear glass"),
         switch_row(app, "windy_trees", "Windy trees", "The trees' leaves bend and sway in the wind and its gusts; with no wind they stand still"),
         switch_row(app, "road_snow", "Snow builds up on the roads", "While it snows the roads turn white bit by bit, with ruts, tyre tracks and snow on the roofs; it thaws when it is warm or rains. Off: the weather's snow on the road all at once, as in OMSI 2"),
         switch_row(app, "thunderstorms", "Thunderstorms", "When the weather has thunder: lightning lights the street and the clouds, strikes to the ground and thunder that follows at the speed of sound - the same flashes for every player in multiplayer. Off: no flashing light"),

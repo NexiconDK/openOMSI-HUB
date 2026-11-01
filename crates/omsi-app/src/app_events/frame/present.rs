@@ -26,7 +26,7 @@ pub(super) fn lighting(cx: LightingCx, dt: f32, daylight: omsi_sim::Daylight) ->
         cx.world.world.as_deref(),
         inside,
         cx.player.player.as_ref().map(|p| &p.vehicle),
-        cx.weather.cabin_air.appearance(),
+        cx.weather.cabin_air.appearance_as(crate::condensation::Look::of(&cx.common.settings.condensation)),
         cx.common.settings,
         cx.clock.clock.run_time as f32,
         &*cx.weather.sky,

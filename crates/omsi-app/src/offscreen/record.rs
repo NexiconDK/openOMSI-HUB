@@ -87,7 +87,7 @@ impl Offscreen<'_> {
             Some(&self.world),
             driven,
             driven,
-            self.cabin_air.appearance(),
+            self.cabin_air.appearance_as(crate::condensation::Look::of(&self.settings.condensation)),
             &self.settings,
             self.run_clock.run_time as f32,
             &self.sky,

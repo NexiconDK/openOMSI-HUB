@@ -98,7 +98,7 @@ impl Offscreen<'_> {
             Some(world),
             driven,
             driven,
-            cabin_air.appearance(),
+            cabin_air.appearance_as(crate::condensation::Look::of(&settings.condensation)),
             settings,
             args.drive.unwrap_or(0.0) + service_seconds as f32,
             sky,
@@ -115,7 +115,7 @@ impl Offscreen<'_> {
                 cabin.step(1.0, &ci);
             }
             log::info!("condensation after {minutes} min, {people} aboard: {cabin:?} -> {:?}", cabin.appearance());
-            lighting.condensation = cabin.appearance();
+            lighting.condensation = cabin.appearance_as(crate::condensation::Look::of(&settings.condensation));
         }
         // OMSI_GLASS_WIND=<m/s>: the rain on the glass as the bus would meet it at that speed
         if let (Some(v), Some(p)) = (omsi_cfg::flags::OMSI_GLASS_WIND.parse::<f32>(), player_ref.as_ref().or(player.as_ref())) {

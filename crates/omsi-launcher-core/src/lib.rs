@@ -2753,6 +2753,16 @@ fn cloud_quality(x: &str) -> &'static str {
     if x.trim().eq_ignore_ascii_case("low") { "low" } else { "high" }
 }
 
+/// (NexiconDK, 1 November 2026) The condensation on the windows: `light` or `off`, else
+/// `realistic` (as the game's `condensation::Look`).
+fn condensation(x: &str) -> &'static str {
+    match x.trim().to_ascii_lowercase().as_str() {
+        "light" => "light",
+        "off" | "0" => "off",
+        _ => "realistic",
+    }
+}
+
 /// The rain's quality: `medium` or `low`, else `high` (as the game's `settings::rain_quality`).
 fn rain_quality(x: &str) -> &'static str {
     match x.trim().to_ascii_lowercase().as_str() {
@@ -3097,6 +3107,10 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
     v["road_snow"] = json!(true);
     // NexiconDK: thunderstorms with lightning and thunder (off for flashing light)
     v["thunderstorms"] = json!(true);
+    // NexiconDK, 1 November 2026: the condensation on the windows (`realistic`, `light`, `off`)
+    // and the card of the map's chrono events
+    v["condensation"] = json!("realistic");
+    v["chrono_info"] = json!(true);
     // head tracking: opentrack's or a Tobii eye tracker's (natively), a look at the screen's
     // edges turning further, and how strongly the turns and the head's way are taken
     v["head_tracking_source"] = json!("auto");
@@ -3237,7 +3251,8 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
             "seat_pitch_deg" => v[&k] = json!(val.parse::<f64>().ok().filter(|x| x.is_finite()).unwrap_or(0.0).clamp(-45.0, 45.0)),
             "head_tracking_yaw_sens" | "head_tracking_pitch_sens" | "head_tracking_roll_sens" | "head_tracking_x_sens" | "head_tracking_y_sens" | "head_tracking_z_sens" => v[&k] = json!(val.parse::<f64>().ok().filter(|x| x.is_finite()).map(|x| x.clamp(0.0, 100.0)).unwrap_or(100.0)),
             "nav_arrows" | "nav_ai" | "nav_surface" | "nav_light" | "get_up" | "ibis_auto" | "time_sync" | "metar_sync" | "ui_scale_window" | "notes" | "machine_translation" | "update_check" | "update_auto" | "update_notify" | "presence" | "reflections" | "steering_linear" | "old_steering" | "red_steer_spd" | "ff_invert" | "ff_enabled" | "brake_hold" | "auto_clutch" | "momentary_gears" | "auto_shift" | "mouse_steering" | "mouse_right_off" | "mouse_smooth" | "mouse_hold" | "mouse_pedals" | "blinker_cancel" => v[&k] = json!(b(val)),
-            "info_bar" | "road_snow" | "thunderstorms" => v[&k] = json!(b(val)),
+            "info_bar" | "road_snow" | "thunderstorms" | "chrono_info" => v[&k] = json!(b(val)),
+            "condensation" => v[&k] = json!(condensation(val)),
             "perf_overlay" => v[&k] = json!(perf_overlay_mode(val)),
             "windy_trees" | "mirror_hud_every_frame" | "ai_wait_timed_stops_only" | "ambient" => v[&k] = json!(b(val)),
             "time_speed" => v[&k] = json!(val.trim_start_matches(['x', 'X']).parse::<f64>().map(|x| x.clamp(1.0, 30.0)).map(|x| if x.fract() == 0.0 { format!("{}", x as i64) } else { x.to_string() }).unwrap_or_else(|_| "1".into())),
@@ -3679,6 +3694,7 @@ pub fn settings_to_text(v: &Value, old: Option<&str>) -> String {
     text.push_str(&format!("nav_scale={}\nstop_style={}\n", nav_scale(v.get("nav_scale").and_then(|x| x.as_f64())), stop_style(v.get("stop_style").and_then(|x| x.as_str()).unwrap_or("de"))));
     text.push_str(&format!("road_snow={}\n", b("road_snow", true)));
     text.push_str(&format!("thunderstorms={}\n", b("thunderstorms", true)));
+    text.push_str(&format!("condensation={}\nchrono_info={}\n", condensation(v.get("condensation").and_then(|x| x.as_str()).unwrap_or("realistic")), b("chrono_info", true)));
     text.push_str(&format!("nav_entries={}\n", nav_entries(v.get("nav_entries").and_then(|x| x.as_str()).unwrap_or("names"))));
     text.push_str(&format!("nav_map={}\ncity_map={}\n", nav_map_style(v.get("nav_map").and_then(|x| x.as_str()).unwrap_or("classic")), city_map_style(v.get("city_map").and_then(|x| x.as_str()).unwrap_or("classic"))));
     text.push_str(&format!(
@@ -4966,6 +4982,8 @@ mod omsi_options_tests;
 
 #[cfg(test)]
 mod right_stick_look_tests;
+#[cfg(test)]
+mod condensation_setting_tests;
 #[cfg(test)]
 #[path = "passenger_settings_tests.rs"]
 mod passenger_settings_tests;
