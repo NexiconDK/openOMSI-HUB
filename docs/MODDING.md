@@ -252,8 +252,17 @@ on its point:
 {mobility}
 ```
 
-A cabin without one keeps the standing place nearest its second door from the front (its
-only door, with one) for them. The others take that place only when every other one is taken.
+A cabin without one keeps places for them where a European low-floor bus has its
+multi-purpose areas: in the front section by its second door from the front (its only door,
+with one), in each section coupled behind by its first door, at the joint. There it takes the
+standing places along the wall across from the door (0.7 m or more over from the middle of
+the bus): the front one from 0.5 m behind the door's middle to 2.2 m in front of it - where
+the padded backrest is - and the next at least 1 m behind it (1.5 m behind the door's middle at
+most), both facing backwards (UNECE R107: the wheelchair's back to the backrest). Where that
+wall has no standing place, it takes the standing place nearest the door and a second beside
+it (2.5 m from the door at most, 0.8 m from the first at least), facing as they do. The
+`[entry]` points of one door's wings (within 1.5 m of each other along the bus, on one side)
+are one door. The others take those places only when every other one is taken.
 
 ## Ticket validators: one by every door
 

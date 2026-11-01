@@ -47,23 +47,90 @@ impl Door {
 }
 
 /// How high a door's threshold may lie over the street for a wheelchair to roll in (a low
-/// floor's: 32 to 37 cm), and how much the floor may rise or fall from it to the place (m).
-pub const STEP_FREE_DOOR: f32 = 0.45;
+/// floor's 32 to 37 cm over a kerb's height, as the cabins' door points lie: the Solaris
+/// Urbino's 0.41 to 0.46 m over the street), and how much the floor may rise or fall from it
+/// to the place (m). A low-entry bus's rear door up its steps (1.1 m) is none.
+pub const STEP_FREE_DOOR: f32 = 0.55;
 pub const STEP_FREE_FLOOR: f32 = 0.15;
-/// How far from its door a place chosen for wheelchairs and prams may lie (m).
+/// How far from its door a place chosen for wheelchairs and prams may lie (m), and a second
+/// one beside it (the multi-purpose area's: a wheelchair and a pram, or two prams) - at least
+/// a wheelchair's width from the first.
 const MOBILITY_NEAR: f32 = 4.0;
+const MOBILITY_SECOND: f32 = 2.5;
+const MOBILITY_APART: f32 = 0.8;
+/// The multi-purpose area across the bus from its door (a European low-floor bus's: the
+/// padded backrest at the wall at its front end, the wheelchair backwards against it - UNECE
+/// R107): standing places at least this far over to the far wall (m), from a little behind the
+/// door's middle (`AREA_BEHIND`) to this far in front of it, and the two of a wheelchair and a
+/// pram this far apart along it.
+const AREA_ACROSS: f32 = 0.7;
+const AREA_AHEAD: f32 = 2.2;
+const AREA_BEHIND: f32 = 0.5;
+const AREA_APART: f32 = 1.0;
+/// ... the second of them as far behind the door's middle at most.
+const AREA_SECOND_BEHIND: f32 = 1.5;
+/// Entry points this near each other along the bus, on one side, are one door's (its wings,
+/// `[entry]` each).
+const DOOR_WINGS: f32 = 1.5;
 
-/// The place a cabin without one marked keeps for a wheelchair or a pram: the standing place
-/// nearest its second door from the front (its only one, with one), on that door's floor and in
-/// its sections. None: no standing place near it.
-fn mobility_place(seats: &[Seat], entries: &[Door]) -> Option<usize> {
+/// The places a cabin without one marked keeps for wheelchairs and prams, and which way they
+/// face there (degrees, 0 forwards). In each section of the bus (`joints`: the y of each one's
+/// front joint, the first's infinite) by a door: the front one's second door from the front
+/// (its only one, with one), a section behind its first, at the joint - as a European low-floor
+/// bus has its multi-purpose areas. There, two standing places along the wall across from the
+/// door, a wheelchair's length apart - the front one where the padded backrest at the wall is,
+/// in front of the door's middle - facing backwards, their backs to it; where that wall has
+/// none, the standing place nearest the door on its floor and in its sections, and a second
+/// beside it, facing as they do.
+///
+/// (NexiconDK, 1 November 2026) A door of two wings is one door: the Urbino's cabins give each
+/// wing its `[entry]`, and "the second" was the front door's other wing - the place was by the
+/// driver.
+fn mobility_places(seats: &[Seat], entries: &[Door], joints: &[f32]) -> Vec<(usize, Option<f32>)> {
+    let section = |y: f32| joints.iter().rposition(|j| y < *j).unwrap_or(0);
     let mut doors: Vec<&Door> = entries.iter().collect();
     doors.sort_by(|a, b| b.inside.y.total_cmp(&a.inside.y));
-    let door = doors.get(1).or(doors.first())?;
-    let d = |s: &Seat| (s.floor.truncate() - door.wait.truncate()).length();
-    (0..seats.len())
-        .filter(|&k| !seats[k].seated && seats[k].group == door.group && (seats[k].floor.z - door.wait.z).abs() < 0.3 && d(&seats[k]) < MOBILITY_NEAR)
-        .min_by(|&a, &b| d(&seats[a]).total_cmp(&d(&seats[b])))
+    // (the doors front first, each once: the wings of one door together)
+    let mut fronts: Vec<&Door> = Vec::new();
+    for d in doors {
+        if !fronts.iter().any(|f| (f.inside.y - d.inside.y).abs() < DOOR_WINGS && f.side == d.side && f.group == d.group) {
+            fronts.push(d);
+        }
+    }
+    let mut out: Vec<(usize, Option<f32>)> = Vec::new();
+    for part in 0..joints.len().max(1) {
+        let own: Vec<&Door> = fronts.iter().copied().filter(|d| section(d.inside.y) == part).collect();
+        let door = if part == 0 { own.get(1).or(own.first()) } else { own.first() };
+        let Some(door) = door else { continue };
+        // (where people wait by it, between its wings' points, and its middle)
+        let wings: Vec<&Door> = entries.iter().filter(|d| (d.inside.y - door.inside.y).abs() < DOOR_WINGS && d.side == door.side && d.group == door.group).collect();
+        let wait = wings.iter().map(|d| d.wait).sum::<Vec3>() / wings.len().max(1) as f32;
+        let mid = wings.iter().map(|d| d.inside.y).sum::<f32>() / wings.len().max(1) as f32;
+        let chosen: Vec<usize> = out.iter().map(|o| o.0).collect();
+        let free = |k: usize| !seats[k].seated && seats[k].group == door.group && (seats[k].floor.z - wait.z).abs() < 0.3 && section(seats[k].floor.y) == part && !chosen.contains(&k);
+        // the area across from the door: its front place (by the backrest) and the next a
+        // wheelchair's length behind it
+        let across = |k: usize| free(k) && seats[k].floor.x * door.side < -AREA_ACROSS;
+        let y = |k: usize| seats[k].floor.y;
+        let front = (0..seats.len()).filter(|&k| across(k) && y(k) >= mid - AREA_BEHIND && y(k) <= mid + AREA_AHEAD).max_by(|&a, &b| y(a).total_cmp(&y(b)));
+        if let Some(first) = front {
+            out.push((first, Some(180.0)));
+            if let Some(second) = (0..seats.len()).filter(|&k| across(k) && y(k) <= y(first) - AREA_APART && y(k) >= mid - AREA_SECOND_BEHIND).max_by(|&a, &b| y(a).total_cmp(&y(b))) {
+                out.push((second, Some(180.0)));
+            }
+            continue;
+        }
+        // (no wall across: by the door)
+        let d = |s: &Seat| (s.floor.truncate() - wait.truncate()).length();
+        let mut near: Vec<usize> = (0..seats.len()).filter(|&k| free(k) && d(&seats[k]) < MOBILITY_NEAR).collect();
+        near.sort_by(|&a, &b| d(&seats[a]).total_cmp(&d(&seats[b])));
+        let Some(&first) = near.first() else { continue };
+        out.push((first, None));
+        if let Some(second) = near.iter().copied().find(|&k| k != first && d(&seats[k]) < MOBILITY_SECOND && (seats[k].floor - seats[first].floor).truncate().length() >= MOBILITY_APART) {
+            out.push((second, None));
+        }
+    }
+    out
 }
 
 impl Cabin {
@@ -510,10 +577,14 @@ impl Cabin {
             })
             .collect();
         // (NexiconDK, 1 November 2026) a cabin without a place marked for a wheelchair or a
-        // pram: the standing place nearest its second door, where they get in
+        // pram: the multi-purpose areas by its doors, where they get in
         if !seats.iter().any(|s| s.mobility) {
-            if let Some(k) = mobility_place(&seats, &entries) {
+            let joints: Vec<f32> = cabin_parts.iter().map(|p| p.joint_y).collect();
+            for (k, facing) in mobility_places(&seats, &entries, &joints) {
                 seats[k].mobility = true;
+                if let Some(rot) = facing {
+                    seats[k].rot = rot;
+                }
             }
         }
         let routes = build_routes(graph.points.len(), &links);

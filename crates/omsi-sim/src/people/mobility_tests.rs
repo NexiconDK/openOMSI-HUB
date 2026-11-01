@@ -148,6 +148,61 @@ fn a_bus_keeps_a_place_for_a_wheelchair_or_a_pram_by_its_middle_door() {
     assert_eq!(high.mobility_door(&high.entries, 2, false), Some(1), "a pram is carried up");
 }
 
+/// A bus whose doors have two wings, each its own `[entry]` (the Solaris Urbino's) - the front
+/// door's at y 5.2 and 4.6, the middle door's at 0.9 and 0.3, on the right - with standing
+/// places `(x, y)`.
+fn winged_cabin(name: &str, places: &[(f32, f32)]) -> Cabin {
+    let dir = std::env::temp_dir().join(format!("omsi-mobility-{name}-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("test.bus"), "[boundingbox]\n2.5\n12\n3\n0\n0\n1.5\n\n[passengercabin]\ncabin.cfg\n\n[paths]\npaths.cfg\n").unwrap();
+    // (inside the doors the aisle)
+    let pts = [(1.04, 5.2, 0.46), (1.04, 4.6, 0.46), (0.0, 4.9, 0.46), (1.04, 0.9, 0.46), (1.04, 0.3, 0.46), (0.0, 0.6, 0.46), (0.0, -3.0, 0.46)];
+    let mut paths = String::new();
+    for (x, y, z) in pts {
+        paths += &format!("[pathpnt]\n{x}\n{y}\n{z}\n\n");
+    }
+    for (a, b) in [(0, 2), (1, 2), (2, 5), (3, 5), (4, 5), (5, 6)] {
+        paths += &format!("[pathlink]\n{a}\n{b}\n\n");
+    }
+    std::fs::write(dir.join("paths.cfg"), paths).unwrap();
+    let mut cfg = String::from("[entry]\n0\n\n[entry]\n1\n\n[entry]\n3\n\n[entry]\n4\n\n[exit]\n3\n\n[exit]\n4\n\n");
+    for (x, y) in places {
+        cfg += &format!("[passpos]\n{x}\n{y}\n0.46\n0\n30\n\n");
+    }
+    std::fs::write(dir.join("cabin.cfg"), cfg).unwrap();
+    let def = omsi_vehicle::Vehicle::load(&dir.join("test.bus")).unwrap();
+    let c = Cabin::load_train(&[(&def, Vec3::ZERO, f32::INFINITY)]).expect("cabin");
+    std::fs::remove_dir_all(&dir).ok();
+    c
+}
+
+/// The front door's other wing is no second door: the places are by the middle door, two of
+/// them a wheelchair's width apart (a wheelchair and a pram), and a wheelchair rolls in at a
+/// low floor's door point 0.46 m over the street.
+#[test]
+fn a_door_of_two_wings_is_one_door() {
+    // (by the front door, two by the middle door, one at the back)
+    let c = winged_cabin("wings", &[(0.1, 3.9), (0.5, 0.55), (-0.4, 0.5), (0.0, -3.0)]);
+    assert_eq!(c.seats.iter().map(|s| s.mobility).collect::<Vec<_>>(), [false, true, true, false], "the two by the middle door, not the one by the driver");
+    for k in [1, 2] {
+        let door = c.mobility_door(&c.entries, k, true).expect("a wheelchair rolls in");
+        assert!(c.entries[door].inside.y < 1.0, "by the middle door: {:?}", c.entries[door].inside);
+        assert_eq!(c.seats[k].rot, 30.0, "facing as the place does");
+    }
+}
+
+/// Standing places along the wall across from the middle door - its multi-purpose area: the
+/// front one (by the backrest, in front of the door's middle) and the next a wheelchair's length
+/// behind it, facing backwards; none of those in the aisle by the door, nor one too near the
+/// first.
+#[test]
+fn the_places_are_along_the_wall_across_from_the_door() {
+    let c = winged_cabin("wall", &[(0.3, 0.6), (-0.9, 1.3), (-0.9, 0.6), (-0.9, -0.5), (0.0, -3.0), (-0.9, 3.5)]);
+    assert_eq!(c.seats.iter().map(|s| s.mobility).collect::<Vec<_>>(), [false, true, false, true, false, false]);
+    assert_eq!((c.seats[1].rot, c.seats[3].rot), (180.0, 180.0), "backs to the board");
+    assert_eq!((c.seats[0].rot, c.seats[2].rot), (30.0, 30.0));
+}
+
 /// One in a wheelchair takes the bus's place for them alone, by its middle door, with no
 /// ticket to buy; a second one finds it taken and stays (at a full bus, not left behind); the
 /// others leave it free while another place is.
@@ -237,3 +292,4 @@ fn a_wheelchair_rolls_still_and_a_pram_is_pushed_steadily() {
     assert!(b[29] == 0.0 && b[10] == 0.0 && b[0].abs() > 1.0, "the legs walk, the upper body holds still: {b:?}");
     assert!(w[29] != 0.0, "somebody on foot twists as ever: {w:?}");
 }
+

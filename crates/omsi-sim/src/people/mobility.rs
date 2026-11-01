@@ -5,7 +5,7 @@
 //!   no gestures to one (the wheelchair's figure would tip with the turn, the pram's let go of
 //!   the handle).
 //! * They board only where the bus's place for them (`cabin::Seat::mobility`: a `[passpos]`
-//!   marked `{mobility}`, else the standing place the cabin chose by its second door) is free -
+//!   marked `{mobility}`, else the standing places the cabin chose by its second door) is free -
 //!   for a wheelchair, by a door without steps to it - else they wait for the next one, which
 //!   counts as at a full bus, not as left behind. They buy no ticket (a pass), get in by the door
 //!   nearest the place, stand there facing as it says, are never moved to another place, and
