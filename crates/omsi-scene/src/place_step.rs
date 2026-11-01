@@ -1140,7 +1140,7 @@ impl World {
     /// Keep a traffic lamp (or another object a crossing's light program drives) for the
     /// traffic to switch.
     fn keep_light_object(&self, pl: &mut Placing, obj: &ObjectCx, lamp: (i64, usize, bool), made: ObjectMade) {
-        let ObjectCx { ot, pos, xf, script_strings, key: tile, .. } = *obj;
+        let ObjectCx { ot, pos, xf, script_strings, key: tile, map_id, .. } = *obj;
         let ObjectMade { lamp_instances, lamp_slots, object_variants, lamp_texts, .. } = made;
         let (parent, index, any_light) = lamp;
         let names: Mutex<Vec<LightSwitch>> = Mutex::new(Vec::new());
@@ -1175,6 +1175,7 @@ impl World {
         pl.light_objects.push(LightObject {
             parent,
             index,
+            own: map_id,
             any_light,
             instances: lamp_instances,
             slots: lamp_slots,

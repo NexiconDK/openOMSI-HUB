@@ -337,11 +337,19 @@ impl Traffic {
                 continue;
             }
             let dt = frame_dt + self.lamp_owed.remove(&key).unwrap_or(0.0);
+            // (NexiconDK, 1 November 2026) a camera the game put by the road: dark, but for its
+            // flash (`omsi_sim::roadside::phase_of`) - on the dummy phase of a lamp of no
+            // crossing (red) its lamp burnt day and night
+            let roadside = omsi_sim::roadside::phase_of(lamp.own, self.sim.day_time);
             let (state, request) = match self
                 .controller_of_object
                 .get(&lamp.parent)
                 .and_then(|&c| self.sim.lights.get(c))
             {
+                _ if roadside.is_some() => {
+                    let (phase, approach) = roadside.unwrap_or_default();
+                    (phase as i32, approach > 0.5)
+                }
                 Some(ctl) if lamp.any_light && ctl.lights.len() > 1 => {
                     // the most open of the crossing's lights (see `LightObject::any_light`)
                     let open = |s: i32| match s {

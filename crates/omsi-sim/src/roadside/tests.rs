@@ -202,6 +202,23 @@ fn the_displays_pole_is_a_tube() {
     }
 }
 
+/// One light may hold the ways in from two sides (straight on from both): each its own
+/// group, stop line and camera.
+#[test]
+fn a_light_of_two_ways_in_has_a_camera_for_each() {
+    let way = |heading_north: bool, path: u16| {
+        let pts: Vec<DVec3> = (0..=10).map(|k| DVec3::new(0.0, if heading_north { k as f64 * 3.0 } else { 30.0 - k as f64 * 3.0 }, 10.0)).collect();
+        let mut l = LaneBuilder::polyline(pts, LaneKind::Street, 3.0);
+        l.key = Some(LaneKey { tile: (3, -2), id: 9, path });
+        l.source = 2;
+        l.traffic_light = Some((0, 1));
+        l
+    };
+    let (north, south, beside) = (way(true, 0), way(false, 1), way(true, 2));
+    assert_ne!(group(&north), group(&south));
+    assert_eq!(group(&north), group(&beside), "two lanes of one way in");
+}
+
 /// A camera counts as the company's fines do: the tolerance off, whole km/h over the limit.
 #[test]
 fn a_camera_counts_as_the_fines_do() {
@@ -272,6 +289,18 @@ fn the_bus_passes_the_camera_of_its_road() {
     w.forget();
     let south: Vec<(f64, f64)> = (0..55).map(|k| (-3.5, 118.0 - k as f64 * 2.0)).collect();
     assert!(drive(&mut w, &south, 180.0).is_empty());
+    // its bus lane, closed to cars: measured by the road's camera all the same
+    let mut bus_lane = lane(id, 7.0, false, 80.0);
+    bus_lane.key = Some(LaneKey { tile: (3, -2), id, path: 2 });
+    bus_lane.no_cars = true;
+    assert!(site(&bus_lane).is_none());
+    let mut net2 = Network::default();
+    net2.extend(vec![lane(id, 0.0, false, 80.0), bus_lane], 1.5);
+    let mut w = Watch::default();
+    let in_bus_lane: Vec<(f64, f64)> = (0..55).map(|k| (7.0, k as f64 * 2.0)).collect();
+    let p: Vec<Passed> = in_bus_lane.iter().filter_map(|(x, y)| w.step(&net2, DVec3::new(*x, *y, 10.0), 0.0)).collect();
+    assert_eq!(p.len(), 1, "{p:?}");
+    assert_eq!((p[0].site.kind, p[0].lane), (Kind::Speed, 1));
     // a road in town with a display: passed where it measures
     let id = (0..100_000).find(|id| site(&lane(*id, 0.0, false, 50.0)).is_some_and(|s| s.kind == Kind::Display)).unwrap();
     let d = lane(id, 0.0, false, 50.0);

@@ -78,11 +78,23 @@ impl World {
         }
         let roads = out.lanes.lock();
         let all: Vec<&Lane> = roads.iter().chain(crossing_lanes.iter()).collect();
-        // each place by the outermost lane of its group
+        // each place by the outermost lane of its group - of every street lane of it, one closed
+        // to cars (a bus lane) or too short for the place too: by the lane a camera has, it
+        // stood in a bus lane beside it
+        let mut sites: HashMap<rs::Group, rs::Site> = HashMap::new();
+        for l in all.iter() {
+            if let (Some(site), Some(g)) = (rs::site(l), rs::group(l)) {
+                sites.entry(g).or_insert(site);
+            }
+        }
         let mut places: HashMap<rs::Group, (rs::Site, usize, f64)> = HashMap::new();
         for (i, l) in all.iter().enumerate() {
-            let (Some(site), Some(g)) = (rs::site(l), rs::group(l)) else { continue };
-            let outside = rs::outside(l, site.along, left);
+            if l.kind != LaneKind::Street || l.invisible {
+                continue;
+            }
+            let Some(g) = rs::group(l) else { continue };
+            let Some(&site) = sites.get(&g) else { continue };
+            let outside = rs::outside(l, site.along.min(l.length()), left);
             let e = places.entry(g).or_insert((site, i, outside));
             if outside > e.2 {
                 *e = (site, i, outside);
@@ -91,11 +103,11 @@ impl World {
         let mut places: Vec<(rs::Group, (rs::Site, usize, f64))> = places.into_iter().collect();
         places.sort_by_key(|(g, _)| (g.tile, g.id, g.side));
         let mut placed: Vec<StagedObject> = Vec::new();
-        for (g, (site, i, _)) in places {
+        for (_, (site, i, _)) in places {
             let Some(model) = rs::model_of(&site, &installed) else { continue };
             let (foot, heading) = rs::pose(all[i], &site, model, left);
             let ground = foot - DVec3::Z * model.height as f64;
-            if !clear_of_other_roads(&all, g, ground) {
+            if !clear_of_other_roads(&all, i, ground) {
                 continue;
             }
             let Some(ot) = self.object_type(model.file) else { continue };
@@ -139,11 +151,12 @@ fn standing(ot: Arc<ObjectType>, id: i64, pos: DVec3, rot: Mat4, extra: Vec<Stri
     }
 }
 
-/// No lane of another road (or of the other direction) passes within its half width and
-/// [`CLEAR`] of `foot` (on the level: a road on a bridge over it, or in a tunnel under it, does
-/// not count).
-fn clear_of_other_roads(lanes: &[&Lane], group: rs::Group, foot: DVec3) -> bool {
-    lanes.iter().filter(|l| l.kind == LaneKind::Street && rs::group(l) != Some(group)).all(|l| {
+/// No street lane but its own (`own`, an index into `lanes`) passes within its half width and
+/// [`CLEAR`] of `foot` - another road's, the other direction's, a bus lane or a turning lane
+/// beside it - on the level (a road on a bridge over it, or in a tunnel under it, does not
+/// count).
+fn clear_of_other_roads(lanes: &[&Lane], own: usize, foot: DVec3) -> bool {
+    lanes.iter().enumerate().filter(|(k, l)| *k != own && l.kind == LaneKind::Street).map(|(_, l)| l).all(|l| {
         let keep = l.width.max(2.5) as f64 * 0.5 + CLEAR;
         l.points.windows(2).all(|w| {
             let (a, b) = (w[0], w[1]);

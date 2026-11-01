@@ -205,10 +205,11 @@ pub fn site(l: &Lane) -> Option<Site> {
         }
         return None;
     }
-    // a crossing's lane that a light holds: the light's camera, at its stop line
+    // a crossing's lane that a light holds: the light's camera, at its stop line (one for
+    // each way into the crossing the light holds - `approach`)
     if l.kind == LaneKind::Street && l.source == 2 && !l.invisible {
-        let (_, light) = l.traffic_light?;
-        let h = hash(key.tile, key.id, light as u8, Kind::RedLight.salt());
+        let side = group(l)?.side;
+        let h = hash(key.tile, key.id, side as u8, Kind::RedLight.salt());
         if unit(h).0 < RED_LIGHT_SHARE {
             return Some(Site { kind: Kind::RedLight, along: 0.5, limit, number: h });
         }
@@ -227,8 +228,25 @@ pub struct Group {
 
 pub fn group(l: &Lane) -> Option<Group> {
     let key = l.key?;
-    let side = if l.source == 2 { l.traffic_light.map(|t| t.1 as u32)? } else { l.reversed as u32 };
+    let side = if l.source == 2 { l.traffic_light.map(|t| t.1 as u32)? * 8 + approach(l) } else { l.reversed as u32 };
     Some(Group { tile: key.tile, id: key.id, side })
+}
+
+/// The place of lane `l`'s road direction when the lane has none of its own (a lane of it
+/// closed to cars, a bus lane): another lane's of the same spline and direction.
+fn group_site(net: &crate::traffic::Network, l: &Lane) -> Option<Site> {
+    let key = l.key.filter(|_| l.source == 1)?;
+    (0..32u16).find_map(|path| {
+        let k = crate::traffic::LaneKey { path, ..key };
+        net.by_key.get(&k)?.iter().map(|&j| &net.lanes[j]).filter(|o| o.reversed == l.reversed).find_map(site)
+    })
+}
+
+/// The way a crossing's lane sets off from its stop line, in eighths of a turn: one light may
+/// hold the lanes of two ways in (straight on from both sides), each with a stop line - and a
+/// camera - of its own.
+fn approach(l: &Lane) -> u32 {
+    ((l.at(0.0).1 as f64 / 45.0).round() as i64).rem_euclid(8) as u32
 }
 
 /// How far to the outside of the road (right, or left where traffic keeps left) lane `l`
@@ -484,7 +502,8 @@ impl Watch {
         }
         let last = self.last.replace((lane, g, s));
         let (_, last_group, last_s) = last?;
-        let site = site(l)?;
+        // (a lane of the road closed to cars - a bus lane - is measured by its road's camera)
+        let site = site(l).or_else(|| group_site(net, l))?;
         let same = g.is_some() && g == last_group;
         let passed = match site.kind {
             Kind::Speed => same && last_s < site.along && site.along <= s,

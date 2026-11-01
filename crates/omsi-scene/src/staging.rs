@@ -509,6 +509,9 @@ pub const NO_CROSSING: i64 = i64::MIN;
 pub struct LightObject {
     pub parent: i64,
     pub index: usize,
+    /// (NexiconDK, 1 November 2026) The object's own map id: a camera the game put by the
+    /// road (`omsi_sim::roadside`) is shown its flash, not a crossing's light.
+    pub own: i64,
     /// The map names no light for it (no string, or an empty one): a gate that is its own
     /// crossing, such as the Spandau depot's barrier (`Omnibushof_S_1`/`_S_2`, one arm for
     /// the way in and one for the way out, both moved by one script from one

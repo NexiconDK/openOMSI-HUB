@@ -71,7 +71,7 @@ fn roadside(world: &World, fx: &Fixture) -> Vec<(rs::Kind, i64, String, DVec3, f
 /// passes; the add-ons he lacks are named. Unseen, or off: nothing stands.
 #[test]
 fn the_models_installed_stand_at_the_places_of_the_roads() {
-    let speed: Vec<i64> = (1..100_000).filter(|id| rs::site(&road(*id)).is_some_and(|s| s.kind == rs::Kind::Speed)).take(2).collect();
+    let speed: Vec<i64> = (1..100_000).filter(|id| rs::site(&road(*id)).is_some_and(|s| s.kind == rs::Kind::Speed)).take(3).collect();
     let display = (1..100_000).find(|id| rs::site(&road(*id)).is_some_and(|s| s.kind == rs::Kind::Display)).unwrap();
     let light_lane = |id: i64| {
         let mut l = road(id);
@@ -83,6 +83,7 @@ fn the_models_installed_stand_at_the_places_of_the_roads() {
     let fx = Fixture::new();
     fx.write("global.cfg", "[name]\nRoadside\n[map]\n0\n0\ntile_0_0.map\n");
     fx.write("Splines\\road.sli", "[path]\n0\n1.75\n0\n3.5\n0\n[path]\n0\n-1.75\n0\n3.5\n1\n");
+    fx.write("Splines\\bus.sli", "[path]\n0\n1.75\n0\n3.5\n0\n[path]\n0\n5.25\n0\n3.5\n0\n[path]\n0\n-1.75\n0\n3.5\n1\n");
     // two roads with a camera (the second with a bus bay of its own spline beside it), one in
     // town with a display, a crossing with a light
     let mut tile = String::from("[version]\n14\n\n");
@@ -90,6 +91,9 @@ fn the_models_installed_stand_at_the_places_of_the_roads() {
     tile += &spline(speed[1], 250.0, 100.0);
     tile += &spline(77_777_777, 255.0, 100.0);
     tile += &spline(display, 150.0, 100.0);
+    // a road with a bus lane beside its lane, closed to cars
+    tile += &spline(speed[2], 200.0, 100.0).replace("Splines\\road.sli", "Splines\\bus.sli");
+    tile += "[rule]\n1\nno_cars\n1\n0\n\n";
     tile += &format!("[object]\n0\ncrossing.sco\n{crossing}\n100\n250\n2\n0\n0\n0\n0\n\n");
     fx.write("tile_0_0.map", &tile);
     fx.write("crossing.sco", "[absheight]\n[trafficlight]\n[traffic_light]\nA\n[phase]\n0\n30\n[path]\n0\n0\n0.1\n0\n0\n10\n0\n0\n0\n3\n0\n0\n[use_traffic_light]\n0\n");
@@ -110,13 +114,16 @@ fn the_models_installed_stand_at_the_places_of_the_roads() {
     let objects = roadside(&world, &fx);
     let names: Vec<(rs::Kind, &str)> = objects.iter().map(|o| (o.0, o.2.as_str())).collect();
     assert_eq!(
-        names.iter().filter(|n| n.0 == rs::Kind::Speed).collect::<Vec<_>>(),
-        vec![&(rs::Kind::Speed, "Blitzer_Star.sco")],
-        "one camera: the other road's stands in its bay ({objects:?})"
+        names.iter().filter(|n| n.0 == rs::Kind::Speed).count(),
+        2,
+        "two cameras: the third road's stands in its bay ({objects:?})"
     );
+    // beside the bus lane, not in it (its centre 5.25 m right of the spline)
+    let bus_road = objects.iter().find(|o| o.0 == rs::Kind::Speed && o.3.x > 190.0 && o.3.x < 220.0).expect("the bus lane road's camera");
+    assert!((bus_road.3.x - (200.0 + 5.25 + 1.75 + 1.4)).abs() < 0.05, "{:?}", bus_road.3);
     // the camera: beside the right lane (its centre 1.75 m right of the spline, half its 3.5 m
     // and 1.4 m on), facing south (the Herr-Z models face their own forward: turned round)
-    let cam = objects.iter().find(|o| o.0 == rs::Kind::Speed).unwrap();
+    let cam = objects.iter().find(|o| o.0 == rs::Kind::Speed && o.3.x < 100.0).unwrap();
     let along = rs::site(&road(speed[0])).unwrap().along as f64;
     assert!((cam.3.x - (50.0 + 1.75 + 1.75 + 1.4)).abs() < 0.05 && (cam.3.y - (100.0 + along)).abs() < 0.2 && cam.3.z.abs() < 0.05, "{:?} along {along}", cam.3);
     assert!((cam.4 - 180.0).abs() < 0.5, "{}", cam.4);
