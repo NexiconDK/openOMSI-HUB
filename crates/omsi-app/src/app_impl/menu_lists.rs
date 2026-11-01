@@ -12,12 +12,24 @@ impl App {
             self.menus.forget_search();
         }
         self.menus.dropdown = None;
+        // NexiconDK: the tours near the bus, as the "Nearby" tab lists and draws them
+        if matches!(kind, crate::game_lists::ListKind::Lines | crate::game_lists::ListKind::Nearby) {
+            crate::game_lists::nearby::remember(self);
+        }
         self.menus.admin_list = Some(crate::game_lists::items(self, &kind));
+        // (a tour's page opened for one tour - from the "Nearby" tab - on that tour's line)
+        let at = match &kind {
+            crate::game_lists::ListKind::Tours(line, Some((tour, ..))) => {
+                let action = format!("tour {line}\u{1}{tour}");
+                self.menus.admin_list.as_ref().and_then(|l| l.iter().position(|x| x.1 == action))
+            }
+            _ => None,
+        };
         self.menus.list_kind = Some(kind);
         // (on its first line, not on a heading, nor on the search line above it: Enter
         // picks what it picked before the lists could be searched)
         let search = self.menus.admin_list.as_ref().and_then(|l| l.first()).is_some_and(|l| l.1 == "search");
-        self.menus.chooser = Some(if self.menus.is_heading(0) || search { self.menus.chooser_next(0, 1) } else { 0 });
+        self.menus.chooser = Some(at.unwrap_or(if self.menus.is_heading(0) || search { self.menus.chooser_next(0, 1) } else { 0 }));
     }
 
     /// Left or Right on line `k` of a list, or a click on the arrows round its value: its
@@ -256,6 +268,9 @@ impl App {
             Some(ListKind::Keyboard(_)) => ListKind::Keyboard(i.min(1)),
             Some(ListKind::ControllerDevices(_)) => ListKind::ControllerDevices(i.min(crate::game_controller_menu::COMMON_TABS.len() - 1)),
             Some(ListKind::Controller(name, _)) => ListKind::Controller(name.clone(), i.min(3)),
+            // NexiconDK: the duty menu's tabs, all the lines and the tours near the bus
+            Some(ListKind::Lines | ListKind::Nearby) if i == 0 => ListKind::Lines,
+            Some(ListKind::Lines | ListKind::Nearby) => ListKind::Nearby,
             _ => return,
         };
         self.menus.menu_top = None;
@@ -361,7 +376,7 @@ impl App {
             }
             KeyCode::Escape => {
                 if self.menus.tours_list() {
-                    self.open_list(crate::game_lists::ListKind::Lines);
+                    self.open_list(if self.menus.near_back { crate::game_lists::ListKind::Nearby } else { crate::game_lists::ListKind::Lines });
                 } else {
                     self.menus.chooser = None;
                     self.menus.admin_list = None;
@@ -372,6 +387,10 @@ impl App {
             KeyCode::ArrowDown | KeyCode::KeyS => self.menus.chooser = Some(self.menus.chooser_next(sel, 1)),
             KeyCode::ArrowLeft | KeyCode::KeyA if self.settings_list() => self.list_adjust(sel, crate::game_lists::Move::Dec),
             KeyCode::ArrowRight | KeyCode::KeyD if self.settings_list() => self.list_adjust(sel, crate::game_lists::Move::Inc),
+            // NexiconDK: the duty menu's tabs; in "Nearby" the arrows choose the distance
+            KeyCode::Tab if self.menus.duty_tabs() => self.settings_tab(usize::from(!self.menus.near_list())),
+            KeyCode::ArrowLeft | KeyCode::KeyA if self.menus.near_list() => crate::game_lists::nearby::pane_click(self, crate::game_lists::nearby::pane_radius(crate::game_lists::nearby::radius_of(self).saturating_sub(1))),
+            KeyCode::ArrowRight | KeyCode::KeyD if self.menus.near_list() => crate::game_lists::nearby::pane_click(self, crate::game_lists::nearby::pane_radius(crate::game_lists::nearby::radius_of(self) + 1)),
             KeyCode::Tab if self.settings_list() => {
                 let back = self.input.keys.contains(&KeyCode::ShiftLeft) || self.input.keys.contains(&KeyCode::ShiftRight);
                 self.settings_tab_step(!back);
@@ -468,6 +487,11 @@ impl App {
     /// the button that starts the trip; `usize::MAX - 1` / `- 2` the trip before / after;
     /// `usize::MAX - 10 - t` trip `t` of the tour's list.
     pub(crate) fn tour_pane_click(&mut self, i: usize) {
+        // NexiconDK: the "Nearby" tab's buttons and distances
+        if self.menus.near_list() {
+            crate::game_lists::nearby::pane_click(self, i);
+            return;
+        }
         let k = self.menus.chooser.unwrap_or(0);
         // (the arrows beside the time: `usize::MAX - 1` the trip before, `- 2` the next)
         if i == usize::MAX - 1 || i == usize::MAX - 2 {
@@ -623,6 +647,16 @@ impl MenuState {
     /// A line's tours are open, with the stops of the tour chosen beside them.
     fn tours_list(&self) -> bool {
         self.chooser.is_some() && matches!(self.list_kind, Some(crate::game_lists::ListKind::Tours(..)))
+    }
+
+    /// NexiconDK: the duty menu's "Nearby" tab is open.
+    pub(crate) fn near_list(&self) -> bool {
+        self.chooser.is_some() && matches!(self.list_kind, Some(crate::game_lists::ListKind::Nearby))
+    }
+
+    /// NexiconDK: the duty menu is open on one of its tabs (all the lines, or "Nearby").
+    fn duty_tabs(&self) -> bool {
+        self.chooser.is_some() && matches!(self.list_kind, Some(crate::game_lists::ListKind::Lines | crate::game_lists::ListKind::Nearby))
     }
 
     /// The search of the list shown is over (another list is shown).

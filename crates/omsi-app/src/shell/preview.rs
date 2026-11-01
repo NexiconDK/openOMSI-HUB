@@ -122,7 +122,7 @@ fn tour_page() {
         roads.push(vec![Vec2::new(x, -900.0), Vec2::new(x + 80.0, 1900.0)]);
         roads.push(vec![Vec2::new(-500.0, -900.0 + k as f32 * 100.0), Vec2::new(3500.0, -800.0 + k as f32 * 100.0)]);
     }
-    let map = RouteMap { roads, route: vec![way.clone()], stops, min: Vec2::new(0.0, -500.0), max: Vec2::new(3000.0, 1300.0) };
+    let map = RouteMap { roads, route: vec![way.clone()], stops, min: Vec2::new(0.0, -500.0), max: Vec2::new(3000.0, 1300.0), ..Default::default() };
     let ibis = IbisBox {
         rows: vec![
             ("Zeche Hindenburg - Kursker Allee".into(), "131".into(), "02".into(), true),
@@ -145,7 +145,7 @@ fn tour_page() {
         map: Some(std::sync::Arc::new(map)),
     };
     let items: Vec<(&str, &str)> = vec![("tour 131\u{1}131H09", "Tour 131H09"), ("tour 131\u{1}131H10", "Tour 131H10"), ("tour 131\u{1}131H11", "Tour 131H11"), ("tour 131\u{1}131H12", "Tour 131H12"), ("back", "Back")];
-    let list = super::pause::ListView { kind: MenuKind::Tours, head: Some(("Line and tour".into(), "Line 131".into())), tabs: None, items, sel: 3, preview: Some(&p), pane_first: None, dropdown: None, key: "tours131".into() };
+    let list = super::pause::ListView { kind: MenuKind::Tours, head: Some(("Line and tour".into(), "Line 131".into())), tabs: None, items, sel: 3, preview: Some(&p), near: None, pane_first: None, dropdown: None, key: "tours131".into() };
     let v = super::pause::PauseView { paused: true, rail: &[], rail_sel: None, rail_open: None, list: None, kbd: false, keys: false, summary: Default::default() };
     let instance = wgpu::Instance::default();
     let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).expect("adapter");
@@ -157,6 +157,81 @@ fn tour_page() {
             sh.begin(w as f32, h as f32, 1.0, 1.0);
             sh.ui.p().rounded(omsi_ui::Rect::new(0.0, 0.0, w as f32, h as f32), 0.0, omsi_ui::theme::BG);
             super::pause::timetable_lists(&mut sh, &v, &list, omsi_ui::Rect::new(24.0, 24.0, w as f32 - 48.0, h as f32 - 48.0));
+            sh.finish();
+        }
+        render(&mut sh, &mut gpu, &device, &queue, name, (w, h));
+    }
+}
+
+/// NexiconDK: the duty menu's "Nearby" tab with made-up tours near the bus, the one chosen
+/// with its way there on a map, drawn as the menu draws it.
+#[test]
+#[ignore]
+fn near_page() {
+    use crate::ui::{MenuKind, NearRow, NearView, Preview, RouteMap, TripEnds, TripRow};
+    use glam::Vec2;
+    let row = |sign: &str, stop: &str, tour: &str, to: &str, time: &str, until: &str, dist: &str, angle: f32, tight: bool| NearRow { sign: sign.into(), stop: stop.into(), detail: format!("Tour {tour}  ›  {to}"), time: time.into(), until: until.into(), dist: dist.into(), angle, tight };
+    let rows = vec![
+        row("131", "Zeche Hindenburg", "131S06", "Bostoner Weg", "21:00", "in 12 min", "600 m", -20.0, false),
+        row("156", "Hauptbahnhof", "156S02", "Am Stadtpark", "21:04", "in 16 min", "1.1 km", 60.0, false),
+        row("141", "Betriebshof", "141S03", "Betriebsfahrt", "21:20", "in 32 min", "1.4 km", -95.0, false),
+        row("163", "Bostoner Weg", "163S05", "Zeche Hindenburg", "20:52", "in 4 min", "1.9 km", 150.0, true),
+        row("131", "Bostoner Weg", "131S07", "Zeche Hindenburg", "21:08", "in 20 min", "1.9 km", 150.0, false),
+        row("N31", "Markt", "187S01", "Kirchhörde", "21:35", "in 47 min", "2.6 km", 25.0, false),
+    ];
+    let near = NearView {
+        radii: vec!["1 km".into(), "3 km".into(), "5 km".into(), "10 km".into()],
+        radius: 1,
+        title: "Tours starting near your bus".into(),
+        hint: "Where each tour's next trips start, nearest first, leaving within two hours".into(),
+        more: "3 more tours start within 5 km".into(),
+        note: "Distances in a straight line from your bus".into(),
+        empty: None,
+        rows,
+    };
+    let ends = |a: &str, d: &str, b: &str, r: &str| TripEnds { from: a.into(), dep: d.into(), to: b.into(), arr: r.into() };
+    let trips = vec![
+        TripRow { line: "131".into(), ends: ends("Zeche Hindenburg", "21:00", "Bostoner Weg", "21:34"), gap: String::new() },
+        TripRow { line: "131".into(), ends: ends("Bostoner Weg", "21:42", "Zeche Hindenburg", "22:16"), gap: String::new() },
+        TripRow { line: "131".into(), ends: ends("Zeche Hindenburg", "22:20", "Bostoner Weg", "22:54"), gap: String::new() },
+        TripRow { line: "131".into(), ends: ends("Bostoner Weg", "23:02", "Betriebshof", "23:20"), gap: String::new() },
+    ];
+    let mut roads = Vec::new();
+    for k in 0..16 {
+        let x = -300.0 + k as f32 * 90.0;
+        roads.push(vec![Vec2::new(x, -400.0), Vec2::new(x + 60.0, 900.0)]);
+        roads.push(vec![Vec2::new(-400.0, -300.0 + k as f32 * 80.0), Vec2::new(1200.0, -260.0 + k as f32 * 80.0)]);
+    }
+    let way = vec![Vec2::new(0.0, 0.0), Vec2::new(30.0, 120.0), Vec2::new(60.0, 240.0), Vec2::new(250.0, 255.0), Vec2::new(480.0, 270.0)];
+    let map = RouteMap { roads, route: vec![way], stops: vec![(Vec2::new(480.0, 270.0), "Zeche Hindenburg".into(), "21:00".into(), 0)], min: Vec2::new(0.0, 0.0), max: Vec2::new(480.0, 270.0), bus: Some((Vec2::ZERO, 15.0)), road: Some(720.0) };
+    let p = Preview {
+        title: "Tour 131S06".into(),
+        meta: "Line 131  |  Trip 1/4  |  600 m from your bus".into(),
+        ends: Some(ends("Zeche Hindenburg", "21:00", "Bostoner Weg", "21:34")),
+        trips,
+        trip: 0,
+        button: Some("Start trip".into()),
+        map: Some(std::sync::Arc::new(map)),
+        ..Default::default()
+    };
+    let actions: Vec<String> = (0..6).map(|k| format!("near 131\u{1}T{k}\u{1}0")).collect();
+    let labels: Vec<String> = (0..6).map(|k| format!("row {k}")).collect();
+    let mut items: Vec<(&str, &str)> = actions.iter().zip(labels.iter()).map(|(a, l)| (a.as_str(), l.as_str())).collect();
+    items.push(("back", "Back"));
+    let tabs = Some((vec!["All lines".to_string(), "Nearby\u{1f}6".to_string()], 1));
+    let instance = wgpu::Instance::default();
+    let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).expect("adapter");
+    let (device, queue) = pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).expect("device");
+    let mut sh = super::Shell::new();
+    let mut gpu = Gpu::new(&device, wgpu::TextureFormat::Rgba8UnormSrgb, 1, sh.ui.atlas.size);
+    let empty = NearView { empty: Some("No tour starts within 1 km of your bus in the next two hours.".into()), rows: Vec::new(), radius: 0, more: "4 more tours start within 3 km".into(), ..near.clone() };
+    for (name, w, h, view, prev) in [("near-page.png", 1500u32, 900u32, &near, Some(&p)), ("near-page-narrow.png", 900, 900, &near, Some(&p)), ("near-page-empty.png", 1500, 900, &empty, None)] {
+        let list = super::pause::ListView { kind: MenuKind::Nearby, head: Some(("Line and tour".into(), "Personnel no. 575862 · code 8648".into())), tabs: tabs.clone(), items: items.clone(), sel: 0, preview: prev, near: Some(view), pane_first: None, dropdown: None, key: "nearby".into() };
+        let v = super::pause::PauseView { paused: true, rail: &[], rail_sel: None, rail_open: None, list: None, kbd: false, keys: false, summary: Default::default() };
+        for _ in 0..2 {
+            sh.begin(w as f32, h as f32, 1.0, 1.0);
+            sh.ui.p().rounded(omsi_ui::Rect::new(0.0, 0.0, w as f32, h as f32), 0.0, omsi_ui::theme::BG);
+            super::pause::list_page(&mut sh, &v, &list, omsi_ui::Rect::new(0.0, 0.0, w as f32, h as f32));
             sh.finish();
         }
         render(&mut sh, &mut gpu, &device, &queue, name, (w, h));

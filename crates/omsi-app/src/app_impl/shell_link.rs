@@ -23,7 +23,7 @@ pub(crate) fn rail_of(kind: &ListKind, camera_tab: bool) -> Option<&'static str>
         | ListKind::ControllerCapture(_)
         | ListKind::Events => "controls",
         ListKind::World(_) => "world",
-        ListKind::Lines | ListKind::Tours(..) => "duty",
+        ListKind::Lines | ListKind::Nearby | ListKind::Tours(..) => "duty",
         ListKind::Admin => "admin",
         _ => "vehicle",
     })
@@ -72,7 +72,6 @@ impl App {
             Some(k) if self.menus.chooser.is_some() => crate::game_lists::page_titles(self, k),
             _ => None,
         };
-        let chooser_list = self.menus.admin_list.as_ref().unwrap_or(&self.menus.vehicle_list);
         let (kind, head, mut preview) = crate::game_lists::menu_extras(self.menus.list_kind.as_ref(), self.menus.admin_list.as_deref(), self.menus.chooser, crate::duty_book::timetable(self), self.clock.time);
         // Omsi-Hub: a tour's page: what to type into the IBIS for the trip chosen, and its map
         // (made once a trip, on the navigator's map of the whole map)
@@ -92,6 +91,12 @@ impl App {
                 p.map = made;
             }
         }
+        // NexiconDK: the duty menu's "Nearby" tab: its rows, and the tour chosen on a map
+        let near = matches!(self.menus.list_kind, Some(ListKind::Nearby)).then(|| crate::game_lists::nearby::view(self));
+        if near.is_some() && self.menus.chooser.is_some() {
+            preview = crate::game_lists::nearby::preview(self);
+        }
+        let chooser_list = self.menus.admin_list.as_ref().unwrap_or(&self.menus.vehicle_list);
         let camera_tab = matches!(self.menus.list_kind, Some(ListKind::Options(t)) if Some(t) == tabs.as_ref().and_then(|(titles, _)| titles.iter().position(|x| x == omsi_ui::tr("Camera").as_ref())));
         let list = self.menus.chooser.map(|sel| ListView {
             kind,
@@ -100,6 +105,7 @@ impl App {
             items: chooser_list.iter().map(|(name, action)| (action.as_str(), name.as_str())).collect(),
             sel,
             preview: preview.as_ref(),
+            near: near.as_ref(),
             pane_first: self.menus.pane_scroll.filter(|p| Some(p.0) == self.menus.chooser).map(|p| p.1),
             dropdown: self.menus.dropdown.as_ref().map(|d| ui::DropdownView { row: d.row, items: d.items.iter().map(|x| x.0.as_str()).collect(), sel: d.sel, top: d.top, current: d.current }),
             key: format!("{:?}", self.menus.list_kind).chars().filter(|c| c.is_alphanumeric()).collect(),
@@ -147,7 +153,13 @@ impl App {
                         continue;
                     }
                     if self.menus.chooser.is_some() {
+                        let again = self.menus.chooser == Some(k);
                         self.menus.chooser = Some(k);
+                        // NexiconDK: a click on a tour of the "Nearby" tab shows it beside the
+                        // list; a second click opens its page
+                        if !again && matches!(self.menus.list_kind, Some(ListKind::Nearby)) && crate::game_lists::nearby::near_at(self, k).is_some() {
+                            continue;
+                        }
                         // (a click on a tour shows its stops: the trip starts with the button)
                         if matches!(self.menus.list_kind, Some(ListKind::Tours(..))) && crate::game_lists::tour_at(self, k).is_some() {
                             if let Some(ListKind::Tours(line, _)) = self.menus.list_kind.clone() {

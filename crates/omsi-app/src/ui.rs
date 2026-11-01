@@ -249,6 +249,9 @@ pub enum MenuKind {
     Tours,
     /// Any other list (drivers, fleet numbers, destinations, liveries ...).
     List,
+    /// NexiconDK: the duty menu's "Nearby" tab - the tours whose trip starts near the bus
+    /// (`game_lists::nearby`), with the distance to choose and the tour chosen on a map.
+    Nearby,
 }
 
 /// The timetable beside a list of lines or tours: a title, a line of facts and rows of
@@ -312,6 +315,44 @@ pub struct RouteMap {
     pub stops: Vec<(glam::Vec2, String, String, usize)>,
     pub min: glam::Vec2,
     pub max: glam::Vec2,
+    /// NexiconDK: the "Nearby" tab's map (`game_lists::nearby::near_map`) - the bus (place,
+    /// heading in degrees clockwise from north), and the way from it to the trip's first stop
+    /// on the roads (`route`) with its length (m), when one was found.
+    pub bus: Option<(glam::Vec2, f32)>,
+    pub road: Option<f64>,
+}
+
+/// NexiconDK: the duty menu's "Nearby" tab as the pause menu draws it (`game_lists::nearby`):
+/// the distances to choose from and the one chosen, the texts round the list, and a row for
+/// each line of the list (`rows[k]` for line `k`; none for "Back").
+#[derive(Debug, Clone, Default)]
+pub struct NearView {
+    pub radii: Vec<String>,
+    pub radius: usize,
+    pub title: String,
+    pub hint: String,
+    /// Under the list: how many more tours start a step further out, and what the distances are.
+    pub more: String,
+    pub note: String,
+    /// Why there is nothing to list (no tour that near, no bus, no map read yet).
+    pub empty: Option<String>,
+    pub rows: Vec<NearRow>,
+}
+
+/// NexiconDK: a tour of the "Nearby" tab: its line's number, the stop its trip starts at, the
+/// tour and where the trip goes, when it leaves and in how long, how far and which way from
+/// the bus (degrees clockwise from straight ahead), and whether it leaves sooner than the bus
+/// can be there.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct NearRow {
+    pub sign: String,
+    pub stop: String,
+    pub detail: String,
+    pub time: String,
+    pub until: String,
+    pub dist: String,
+    pub angle: f32,
+    pub tight: bool,
 }
 
 

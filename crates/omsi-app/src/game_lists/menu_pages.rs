@@ -520,8 +520,19 @@ pub(crate) fn page_titles(app: &App, kind: &ListKind) -> Option<(Vec<String>, us
     if let Some(hit) = app.menus.page_titles.borrow().as_ref().filter(|(k, vr, t, _)| k == kind && *vr == vr_nav_available && t.elapsed().as_millis() < 5000).map(|(_, _, _, r)| r.clone()) {
         return Some(hit);
     }
-    let (pages, tab) = pages_of(app, kind)?;
-    let r = (pages.iter().map(|p| p.0.to_string()).collect::<Vec<_>>(), tab);
+    let r = match kind {
+        // NexiconDK: the duty menu's two tabs, the lines and the tours near the bus (how many
+        // after a \u{1f}, drawn as a count)
+        ListKind::Lines | ListKind::Nearby => {
+            let n = app.menus.near.as_deref().map(|l| l.rows.len()).unwrap_or_else(|| super::nearby::near_list(app).rows.len());
+            let near = omsi_ui::tr("Nearby").into_owned();
+            (vec![omsi_ui::tr("All lines").into_owned(), if n > 0 { format!("{near}\u{1f}{n}") } else { near }], usize::from(*kind == ListKind::Nearby))
+        }
+        _ => {
+            let (pages, tab) = pages_of(app, kind)?;
+            (pages.iter().map(|p| p.0.to_string()).collect::<Vec<_>>(), tab)
+        }
+    };
     *app.menus.page_titles.borrow_mut() = Some((kind.clone(), vr_nav_available, std::time::Instant::now(), r.clone()));
     Some(r)
 }

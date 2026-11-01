@@ -285,6 +285,42 @@ pub(super) fn start_duty(app: &mut App, line: &str, tour: &str) {
     }
 }
 
+/// Omsi-Hub: where the trip of `calls` (as `Schedule::tour_stops` lists them) starts and
+/// ends: its first stop and departure, its last and arrival.
+pub(crate) fn trip_ends_of(calls: &[(usize, usize, String, f64)]) -> Option<crate::ui::TripEnds> {
+    let hm = |s: f64| format!("{:02}:{:02}", (s / 3600.0) as i64 % 24, ((s % 3600.0) / 60.0) as i64);
+    let (a, b) = (calls.first()?, calls.last()?);
+    Some(crate::ui::TripEnds { from: a.2.trim().to_string(), dep: hm(a.3), to: b.2.trim().to_string(), arr: hm(b.3) })
+}
+
+/// Omsi-Hub: a tour's trips in the order they leave (openOMSI #2936's roadbook): each from its
+/// first stop to its last, its line (the trip's, else `fallback`), and the break after it.
+pub(crate) fn tour_trip_rows(sch: &crate::schedule::Schedule, line: &str, tour: &omsi_timetable::Tour, fallback: &str) -> Vec<crate::ui::TripRow> {
+    let mut by_trip: Vec<Vec<(usize, usize, String, f64)>> = Vec::new();
+    for c in sch.tour_stops(line, &tour.number) {
+        match by_trip.iter_mut().find(|t| t[0].0 == c.0) {
+            Some(t) => t.push(c),
+            None => by_trip.push(vec![c]),
+        }
+    }
+    by_trip.sort_by(|a, b| a[0].3.total_cmp(&b[0].3).then(a[0].0.cmp(&b[0].0)));
+    let line_of = |k: usize| {
+        let name = tour_trip_name(sch, tour, k)?;
+        let t = sch.data.trips.iter().find(|x| x.name.eq_ignore_ascii_case(&name))?;
+        Some(t.line.trim().to_string()).filter(|l| !l.is_empty())
+    };
+    by_trip
+        .iter()
+        .enumerate()
+        .filter_map(|(i, calls)| {
+            let ends = trip_ends_of(calls)?;
+            let line = line_of(calls[0].0).unwrap_or_else(|| fallback.to_string());
+            let gap = by_trip.get(i + 1).map(|next| ((next[0].3 - calls.last().map(|c| c.3).unwrap_or(0.0)) / 60.0).round()).filter(|m| *m >= 1.0).map(|m| format!("{} min {}", m as i64, omsi_ui::tr("break"))).unwrap_or_default();
+            Some(crate::ui::TripRow { line, ends, gap })
+        })
+        .collect()
+}
+
 /// Omsi-Hub: the trip chosen on a tour's page: its name, line and terminus, and its stops
 /// (name, time, station).
 pub(crate) struct ChosenTrip {
@@ -377,5 +413,5 @@ pub(crate) fn trip_map(sch: &crate::schedule::Schedule, net: &omsi_sim::traffic:
         .take(6000)
         .map(|l| l.points.iter().map(|p| Vec2::new(p.x as f32, p.y as f32)).collect())
         .collect();
-    crate::ui::RouteMap { roads, route, stops, min, max }
+    crate::ui::RouteMap { roads, route, stops, min, max, ..Default::default() }
 }

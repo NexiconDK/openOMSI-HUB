@@ -34,6 +34,8 @@ pub(crate) struct ListView<'a> {
     pub items: Vec<(&'a str, &'a str)>,
     pub sel: usize,
     pub preview: Option<&'a Preview>,
+    /// NexiconDK: the duty menu's "Nearby" tab (`MenuKind::Nearby`).
+    pub near: Option<&'a crate::ui::NearView>,
     pub pane_first: Option<usize>,
     pub dropdown: Option<DropdownView<'a>>,
     /// Names the list for its scroll position (its kind and page).
@@ -217,14 +219,23 @@ fn tabs(ui: &mut Ui, at: Vec2, titles: &[String], chosen: usize, max_w: f32) -> 
     let mut x = at.x;
     let mut out = None;
     for (i, t) in titles.iter().enumerate() {
-        let w = ui.width(&omsi_ui::tr(t), 14.0, Weight::Medium) + 4.0;
+        // (NexiconDK: a title with a count after a \u{1f} - the duty menu's "Nearby" - has it in a pill)
+        let (t, count) = t.split_once('\u{1f}').unwrap_or((t.as_str(), ""));
+        let tw = ui.width(&omsi_ui::tr(t), 14.0, Weight::Medium) + 4.0;
+        let cw = if count.is_empty() { 0.0 } else { ui.width(count, 11.0, Weight::Bold) + 22.0 };
+        let w = tw + cw;
         if x + w > at.x + max_w {
             break;
         }
         let r = Rect::new(x, at.y, w, 38.0);
         let (h, _, clicked) = ui.interact(id_of(&format!("pause-tab-{i}")), r);
         let on = i == chosen;
-        ui.text_in(t, r, 14.0, Weight::Medium, if on || h { INK } else { INK_MUTED }, Align::Center);
+        ui.text_in(t, Rect::new(r.x, r.y, tw, r.h), 14.0, Weight::Medium, if on || h { INK } else { INK_MUTED }, Align::Center);
+        if !count.is_empty() {
+            let pill = Rect::new(r.x + tw + 6.0, r.center().y - 9.0, cw - 8.0, 18.0);
+            ui.p().rounded(pill, 9.0, accent().alpha(if on { 0.24 } else { 0.14 }));
+            ui.text_in(count, pill, 11.0, Weight::Bold, accent(), Align::Center);
+        }
         if on {
             ui.p().rect(Rect::new(r.x, r.bottom() - 2.0, r.w, 2.0), accent());
         }
@@ -282,6 +293,7 @@ pub(crate) fn list_page(sh: &mut Shell, v: &PauseView, list: &ListView, page: Re
     match list.kind {
         MenuKind::Options => settings_rows(sh, v, list, body, &mut anchor),
         MenuKind::Lines | MenuKind::Tours => timetable_lists(sh, v, list, body),
+        MenuKind::Nearby => near_lists(sh, v, list, body),
         _ => plain_list(sh, v, list, body),
     }
     (sh.ui.input.pressed, sh.ui.input.released) = saved;
@@ -297,6 +309,7 @@ fn list_hint(kind: MenuKind) -> String {
         MenuKind::Options => "Every change takes effect at once.",
         MenuKind::Lines => "Choose a line of the map's timetable.",
         MenuKind::Tours => "Choose a tour and the stop to start from.",
+        MenuKind::Nearby => "",
         _ => "",
     };
     omsi_ui::tr(t).into_owned()
@@ -727,6 +740,285 @@ pub(super) fn timetable_lists(sh: &mut Shell, v: &PauseView, list: &ListView, bo
     if let Some(p) = list.preview {
         preview(sh, p, list, Rect::new(left.right() + GAP * 2.0, body.y, pane_w, body.h));
     }
+}
+
+/// NexiconDK: the duty menu's "Nearby" tab (`game_lists::nearby`): the tours that start near
+/// the bus in a panel - the distance to choose over them, a row each with its line, the stop,
+/// when it leaves and how far and which way it is - and the one chosen beside it: its way there
+/// on a map, its trip and the tour's trips, and the buttons that start it, show the stop on the
+/// city map and open the tour's page.
+fn near_lists(sh: &mut Shell, v: &PauseView, list: &ListView, body: Rect) {
+    let Some(near) = list.near else { return plain_list(sh, v, list, body) };
+    let narrow = body.w < 760.0;
+    let (left, right) = if narrow {
+        let lh = (body.h * 0.46).max(160.0);
+        (Rect::new(body.x, body.y, body.w, lh), Rect::new(body.x, body.y + lh + GAP, body.w, body.h - lh - GAP))
+    } else {
+        let pane_w = (body.w * 0.4).clamp(340.0, 480.0);
+        let lw = (body.w - pane_w - GAP * 2.0).min(760.0);
+        (Rect::new(body.x, body.y, lw, body.h), Rect::new(body.x + lw + GAP * 2.0, body.y, pane_w, body.h))
+    };
+    let mut acts = Vec::new();
+    let ui = &mut sh.ui;
+    ui.panel(left);
+    let inner = Rect::new(left.x + 18.0, left.y + 14.0, left.w - 36.0, left.h - 28.0);
+    // the title and the distances to choose from
+    let labels: Vec<&str> = near.radii.iter().map(String::as_str).collect();
+    let seg_w = (labels.len() as f32 * 64.0).min(inner.w * 0.55);
+    let seg = Rect::new(inner.right() - seg_w, inner.y, seg_w, 30.0);
+    let mut chosen = near.radius;
+    if ui.segmented("pause-near-radius", seg, &mut chosen, &labels) {
+        acts.push(Action::Pane(crate::game_lists::nearby::pane_radius(chosen)));
+    }
+    ui.text_in(&near.title, Rect::new(inner.x, inner.y, seg.x - inner.x - 12.0, 30.0), 14.0, Weight::Bold, TEXT, Align::Left);
+    ui.text_in(&near.hint, Rect::new(inner.x, inner.y + 36.0, inner.w, 16.0), 11.5, Weight::Regular, TEXT_DIM, Align::Left);
+    ui.p().rect(Rect::new(inner.x, inner.y + 60.0, inner.w, 1.0), Color::rgba(255, 255, 255, 0.06));
+    // under the list: how many more a step out, and what the distances are
+    let foot = Rect::new(inner.x, inner.bottom() - 16.0, inner.w, 16.0);
+    let note_w = ui.width(&near.note, 11.5, Weight::Regular) + 4.0;
+    ui.text_in(&near.note, Rect::new(foot.right() - note_w, foot.y, note_w, foot.h), 11.5, Weight::Regular, TEXT_FAINT, Align::Right);
+    ui.text_in(&near.more, Rect::new(foot.x, foot.y, (foot.w - note_w - 12.0).max(0.0), foot.h), 11.5, Weight::Medium, TEXT_DIM, Align::Left);
+    let rows_r = Rect::new(inner.x - 10.0, inner.y + 68.0, inner.w + 20.0, (foot.y - 8.0 - inner.y - 68.0).max(40.0));
+    if let Some(why) = near.empty.as_ref() {
+        ui.icon("near_me", Vec2::new(rows_r.center().x, rows_r.y + rows_r.h * 0.32), 30.0, TEXT_FAINT);
+        let w = (rows_r.w - 60.0).min(460.0);
+        let y = rows_r.y + rows_r.h * 0.32 + 26.0;
+        if ui.width(why, 13.0, Weight::Regular) <= w {
+            ui.text_in(why, Rect::new(rows_r.x, y, rows_r.w, 20.0), 13.0, Weight::Regular, TEXT_SOFT, Align::Center);
+        } else {
+            ui.paragraph(why, Vec2::new(rows_r.center().x - w * 0.5, y), w, 13.0, Weight::Regular, TEXT_SOFT);
+        }
+        sh.actions.extend(acts);
+        return;
+    }
+    let rh = 60.0;
+    let any_hover = ui.hover(rows_r);
+    let key = format!("pause-list-{}", list.key);
+    let mut sel_y = None;
+    ui.scroll_area(&key, rows_r, &mut |ui, view| {
+        let mut y = view.y;
+        for (k, n) in near.rows.iter().enumerate() {
+            let row = Rect::new(view.x, y, view.w - 8.0, rh - 4.0);
+            let kbd = v.kbd && !any_hover && k == list.sel;
+            if k == list.sel {
+                sel_y = Some(y - view.y);
+            }
+            if near_row(ui, k, n, row, k == list.sel, kbd) {
+                acts.push(Action::Choose(k));
+            }
+            y += rh;
+        }
+        y - view.y + 4.0
+    });
+    if let Some(y) = sel_y {
+        if sh.last_sel != Some((id_of(&key), list.sel)) {
+            sh.ui.scroll_to(&key, y, rh, rows_r.h);
+        }
+    }
+    sh.last_sel = Some((id_of(&key), list.sel));
+    sh.actions.extend(acts);
+    if let Some(p) = list.preview {
+        near_pane(sh, p, right);
+    }
+}
+
+/// A tour of the "Nearby" tab: its line's sign, the stop and the tour, when it leaves (amber
+/// when sooner than the bus can be there), how far and which way. True when clicked.
+fn near_row(ui: &mut Ui, k: usize, n: &crate::ui::NearRow, row: Rect, chosen: bool, kbd: bool) -> bool {
+    let id = id_of(&format!("pause-near-{k}-{}-{}", n.sign, n.detail));
+    let (h, _, clicked) = ui.interact(id, row);
+    let t = ui.anim(id, if h { 1.0 } else { 0.0 }, if h { 0.05 } else { 0.12 });
+    if chosen || kbd {
+        ui.p().rounded(row, 8.0, SURFACE_3);
+        ui.p().rounded(Rect::new(row.x, row.y + 8.0, 3.0, row.h - 16.0), 1.5, accent());
+    } else if t > 0.01 {
+        ui.p().rounded(row, 8.0, SURFACE_2.alpha(t));
+    }
+    let lit = chosen || h;
+    let cy = row.center().y;
+    let sw = (ui.width(&n.sign, 13.0, Weight::Bold) + 20.0).max(52.0);
+    let sign = Rect::new(row.x + 12.0, cy - 14.0, sw, 28.0);
+    ui.p().rounded(sign, 6.0, accent().mix(Color::rgba(150, 104, 30, 1.0), if lit { 0.0 } else { 0.3 }));
+    ui.text_in(&n.sign, sign, 13.0, Weight::Bold, Color::rgba(18, 14, 8, 1.0), Align::Center);
+    // at the right: the way and the distance, the time and how long till then
+    let chev = Rect::new(row.right() - 26.0, row.y, 20.0, row.h);
+    ui.icon("chevron_right", chev.center(), 16.0, TEXT_DIM);
+    let dist_w = 92.0;
+    let dist = Rect::new(chev.x - dist_w, row.y, dist_w, row.h);
+    let tw = ui.width(&n.dist, 13.0, Weight::Bold);
+    ui.text_in(&n.dist, Rect::new(dist.right() - tw - 4.0, dist.y, tw + 4.0, dist.h), 13.0, Weight::Bold, TEXT, Align::Right);
+    way_arrow(ui, Vec2::new(dist.right() - tw - 16.0, cy), n.angle, 6.5, TEXT_SOFT);
+    let time = Rect::new(dist.x - 96.0, row.y, 90.0, row.h);
+    let ink = if n.tight { WARN } else { accent() };
+    ui.text_in(&n.time, Rect::new(time.x, row.y + 10.0, time.w, 20.0), 13.5, Weight::Bold, ink, Align::Right);
+    ui.text_in(&n.until, Rect::new(time.x, row.y + 30.0, time.w, 16.0), 11.5, Weight::Regular, if n.tight { WARN } else { TEXT_DIM }, Align::Right);
+    let tx = sign.right() + 14.0;
+    let text_w = (time.x - tx - 10.0).max(40.0);
+    ui.text_in(&n.stop, Rect::new(tx, row.y + 10.0, text_w, 20.0), 13.5, Weight::Medium, if lit { TEXT } else { TEXT_SOFT }, Align::Left);
+    ui.text_in(&n.detail, Rect::new(tx, row.y + 30.0, text_w, 16.0), 11.5, Weight::Regular, TEXT_DIM, Align::Left);
+    clicked
+}
+
+/// An arrow at `c` pointing `angle` degrees clockwise from up (straight ahead), `size` from its
+/// middle to its tip.
+fn way_arrow(ui: &mut Ui, c: Vec2, angle: f32, size: f32, ink: Color) {
+    let a = angle.to_radians();
+    let dir = Vec2::new(a.sin(), -a.cos());
+    let side = Vec2::new(-dir.y, dir.x);
+    let tip = c + dir * size;
+    let notch = c - dir * size * 0.35;
+    let (l, r) = (c - dir * size + side * size * 0.85, c - dir * size - side * size * 0.85);
+    ui.p().tri(tip, r, notch, ink, ink, ink);
+    ui.p().tri(tip, notch, l, ink, ink, ink);
+}
+
+/// The tour chosen in the "Nearby" tab: its title and facts, the way to its first stop on a
+/// map, its trip's ends, the tour's trips, and the buttons.
+fn near_pane(sh: &mut Shell, p: &Preview, r: Rect) {
+    use crate::game_lists::nearby::{PANE_MAP, PANE_START, PANE_TOUR};
+    let mut acts = Vec::new();
+    let ui = &mut sh.ui;
+    ui.panel(r);
+    let inner = Rect::new(r.x + 18.0, r.y + 16.0, r.w - 36.0, r.h - 32.0);
+    ui.text_in(&p.title, Rect::new(inner.x, inner.y, inner.w, 24.0), 16.0, Weight::Bold, TEXT, Align::Left);
+    ui.text_in(&p.meta, Rect::new(inner.x, inner.y + 26.0, inner.w, 18.0), 12.0, Weight::Regular, TEXT_DIM, Align::Left);
+    let mut top = inner.y + 54.0;
+    // the buttons at the foot: the start, over it the city map and the tour's page
+    let go = Rect::new(inner.x, inner.bottom() - 44.0, inner.w, 44.0);
+    let half = (inner.w - 10.0) * 0.5;
+    let more = Rect::new(inner.x, go.y - 46.0, inner.w, 38.0);
+    if ui.button("pause-near-map", Rect::new(more.x, more.y, half, more.h), &omsi_ui::tr("Show on city map"), Some("map"), ButtonKind::Normal) {
+        acts.push(Action::Pane(PANE_MAP));
+    }
+    if ui.button("pause-near-tour", Rect::new(more.x + half + 10.0, more.y, half, more.h), &omsi_ui::tr("Open the tour"), Some("departure_board"), ButtonKind::Normal) {
+        acts.push(Action::Pane(PANE_TOUR));
+    }
+    if ui.button("pause-near-go", go, p.button.as_deref().unwrap_or("Start trip"), Some("play_arrow"), ButtonKind::Primary) {
+        acts.push(Action::Pane(PANE_START));
+    }
+    // the map
+    let room = more.y - 10.0 - top;
+    let map_h = (room * 0.5).clamp(140.0, 300.0).min(room.max(0.0));
+    let map_r = Rect::new(inner.x, top, inner.w, map_h);
+    near_map(ui, p.map.as_deref(), map_r);
+    top += map_h + 12.0;
+    if let Some(e) = p.ends.as_ref() {
+        if top + 40.0 <= more.y - 10.0 {
+            trip_ends(ui, e, Rect::new(inner.x, top, inner.w, 40.0), true);
+            top += 50.0;
+        }
+    }
+    // the tour's trips, the one that starts near the bus lit
+    if !p.trips.is_empty() && top + 50.0 <= more.y - 10.0 {
+        ui.text_in(&omsi_ui::tr("Trips of the tour"), Rect::new(inner.x, top, inner.w, 16.0), 11.5, Weight::Bold, TEXT_DIM, Align::Left);
+        top += 22.0;
+        let rows_r = Rect::new(inner.x - 6.0, top, inner.w + 12.0, more.y - 10.0 - top);
+        let lh = 30.0;
+        let key = format!("pause-near-trips-{}", p.title);
+        let mut lit_y = None;
+        ui.scroll_area(&key, rows_r, &mut |ui, view| {
+            for (i, t) in p.trips.iter().enumerate() {
+                let row = Rect::new(view.x, view.y + i as f32 * lh, view.w - 8.0, lh - 2.0);
+                let lit = i == p.trip;
+                if lit {
+                    ui.p().rounded(row, 6.0, accent().alpha(0.12));
+                    lit_y = Some(i as f32 * lh);
+                }
+                let tw = (ui.width(&t.line, 11.5, Weight::Bold) + 14.0).max(40.0);
+                let tile = Rect::new(row.x + 6.0, row.y + 4.0, tw, row.h - 8.0);
+                ui.p().rounded(tile, 5.0, accent().alpha(if lit { 0.3 } else { 0.16 }));
+                ui.text_in(&t.line, tile, 11.5, Weight::Bold, accent(), Align::Center);
+                ui.text_in(&t.ends.dep, Rect::new(row.right() - 56.0, row.y, 50.0, row.h), 12.0, Weight::Bold, accent(), Align::Right);
+                let what = format!("{}  ›  {}", t.ends.from, t.ends.to);
+                ui.text_in(&what, Rect::new(tile.right() + 10.0, row.y, row.right() - 62.0 - tile.right() - 10.0, row.h), 12.0, if lit { Weight::Medium } else { Weight::Regular }, if lit { TEXT } else { TEXT_SOFT }, Align::Left);
+            }
+            p.trips.len() as f32 * lh
+        });
+        if let Some(y) = lit_y {
+            if sh.last_trip != Some((id_of(&key), p.trip)) {
+                sh.ui.scroll_to(&key, y, lh, rows_r.h);
+            }
+            sh.last_trip = Some((id_of(&key), p.trip));
+        }
+    }
+    sh.actions.extend(acts);
+}
+
+/// The "Nearby" tab's map: the streets round the bus and the tour's first stop faint, the way
+/// there on the roads (a dashed line straight there where none was found), the stop and the
+/// bus, and how far it is.
+fn near_map(ui: &mut Ui, m: Option<&crate::ui::RouteMap>, r: Rect) {
+    ui.p().rounded(r, 10.0, FIELD);
+    let Some(m) = m.filter(|m| m.max.x >= m.min.x) else {
+        ui.text_in(&omsi_ui::tr("The map of the route comes once the navigator has read the map"), r.inset(12.0), 12.0, Weight::Regular, TEXT_DIM, Align::Center);
+        return;
+    };
+    let size = (m.max - m.min).max(Vec2::splat(150.0));
+    let room = Vec2::new(r.w - 90.0, r.h - 80.0).max(Vec2::splat(40.0));
+    let k = (room.x / size.x).min(room.y / size.y);
+    let mid = (m.min + m.max) * 0.5;
+    let c = Vec2::new(r.center().x, r.center().y - 8.0);
+    let at = |q: Vec2| Vec2::new(c.x + (q.x - mid.x) * k, c.y - (q.y - mid.y) * k);
+    ui.push_clip(r, 10.0);
+    for road in &m.roads {
+        let pts: Vec<Vec2> = road.iter().map(|q| at(*q)).collect();
+        ui.p().stroke(&pts, 1.6, Color::rgba(255, 255, 255, 0.10));
+    }
+    let stop = m.stops.first();
+    let bus = m.bus;
+    if m.route.is_empty() {
+        // (no way found on the roads: straight there, dashed)
+        if let (Some(s), Some((b, _))) = (stop, bus) {
+            let (a, z) = (at(b), at(s.0));
+            let len = (z - a).length();
+            let dir = (z - a) / len.max(1e-3);
+            let mut d = 14.0;
+            while d + 6.0 < len - 14.0 {
+                ui.p().line(a + dir * d, a + dir * (d + 6.0), 3.0, accent().alpha(0.85));
+                d += 12.0;
+            }
+        }
+    }
+    for way in &m.route {
+        let pts: Vec<Vec2> = way.iter().map(|q| at(*q)).collect();
+        ui.p().stroke(&pts, 7.0, Color::rgba(0, 0, 0, 0.35));
+        ui.p().stroke(&pts, 4.5, accent());
+    }
+    if let Some((q, name, time, _)) = stop {
+        let q = at(*q);
+        ui.p().circle(q, 12.5, PANEL);
+        ui.p().circle(q, 11.0, accent());
+        ui.text_in("H", Rect::new(q.x - 11.0, q.y - 11.0, 22.0, 22.0), 12.0, Weight::Bold, Color::rgba(18, 14, 8, 1.0), Align::Center);
+        let text = format!("{time}  {name}");
+        let w = ui.width(&text, 11.5, Weight::Medium) + 14.0;
+        let label = Rect::new((q.x - w * 0.5).clamp(r.x + 6.0, r.right() - 6.0 - w), q.y + 16.0, w, 22.0);
+        let label = if label.bottom() > r.bottom() - 34.0 { Rect::new(label.x, q.y - 16.0 - 22.0, w, 22.0) } else { label };
+        ui.p().rounded(label, 5.0, ON_MAP);
+        let tw = ui.width(time, 11.5, Weight::Bold);
+        ui.text_in(time, Rect::new(label.x + 7.0, label.y, tw + 2.0, label.h), 11.5, Weight::Bold, accent(), Align::Left);
+        ui.text_in(name, Rect::new(label.x + 7.0 + tw + 6.0, label.y, label.w - tw - 18.0, label.h), 11.5, Weight::Medium, TEXT, Align::Left);
+    }
+    if let Some((b, heading)) = bus {
+        let q = at(b);
+        ui.p().circle(q, 15.0, EARLY_SOFT.alpha(0.18));
+        way_arrow(ui, q, heading, 9.5, Color::WHITE);
+        way_arrow(ui, q, heading, 7.5, EARLY_SOFT);
+    }
+    // how far: on the roads with the time it takes, else in a straight line
+    let straight = match (stop, bus) {
+        (Some(s), Some((b, _))) => (s.0 - b).length() as f64,
+        _ => 0.0,
+    };
+    let dist = |d: f64| crate::units::Units::now().distance(d);
+    let text = match m.road {
+        Some(d) => omsi_ui::tr("%{dist} by road · about %{min} min").replace("%{dist}", &dist(d)).replace("%{min}", &crate::game_lists::nearby::drive_minutes(d).to_string()),
+        None => omsi_ui::tr("%{dist} in a straight line").replace("%{dist}", &dist(straight)),
+    };
+    let w = ui.width(&text, 12.0, Weight::Bold) + 20.0;
+    let chip = Rect::new(r.x + 10.0, r.bottom() - 34.0, w, 24.0);
+    ui.p().rounded(chip, 6.0, ON_MAP);
+    ui.text_in(&text, chip, 12.0, Weight::Bold, TEXT, Align::Center);
+    ui.pop_clip();
 }
 
 /// The timetable beside the lines or tours: its title, the facts, the time with arrows,

@@ -233,6 +233,16 @@ impl Navigator {
         }
     }
 
+    /// NexiconDK: the city map open on `at` (the "Nearby" tab's stop): it stays there rather
+    /// than following the bus, until it is moved or followed again.
+    pub fn show_place(&mut self, at: glam::DVec3) {
+        if !self.city.open {
+            self.toggle_map();
+        }
+        self.city.follow = false;
+        self.city.center = at.truncate();
+    }
+
     pub fn map_open(&self) -> bool {
         self.city.open
     }

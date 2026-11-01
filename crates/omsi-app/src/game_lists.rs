@@ -34,6 +34,9 @@ pub(crate) enum ListKind {
     /// OMSI's KY_ vehicle events that can be added to the keyboard.
     Events,
     Lines,
+    /// NexiconDK: the duty menu's "Nearby" tab - the tours whose trip starts near the bus
+    /// (`nearby`).
+    Nearby,
     /// A line's tours; the stop chosen in the timetable beside them to start from: (the
     /// tour's number, the stop as `Schedule::tour_stops` lists them), none: the default.
     Tours(String, Option<(String, usize, usize)>),
@@ -536,6 +539,7 @@ pub(crate) fn items(app: &App, kind: &ListKind) -> Vec<(String, String)> {
                 out.push((tr("No timetable on this map"), "back".into()));
             }
         }
+        ListKind::Nearby => out = nearby::items(app),
         ListKind::Tours(line, _) => {
             if let Some(l) = crate::duty_book::timetable(app).and_then(|s| s.data.lines.iter().find(|l| l.name == *line)) {
                 for t in sorted_tours(l).into_iter().filter(|t| crate::duty_book::timetable(app).is_some_and(|s| tour_listed(s, line, t, app.clock.time))) {
@@ -805,6 +809,7 @@ pub(crate) fn menu_extras(
             // (the small line above: the driver's personnel number and code, to sign on with)
             (MenuKind::Lines, Some((title("Line and tour..."), crate::companion::duty_menu_note())), preview)
         }
+        ListKind::Nearby => (MenuKind::Nearby, Some((title("Line and tour..."), crate::companion::duty_menu_note())), None),
         ListKind::Tours(line_name, pick) => {
             // (the line number of the trip of a tour shown: a tour may run trips of several lines)
             let tour_line = |ln: &str, num: &str| -> Option<String> {
@@ -829,30 +834,9 @@ pub(crate) fn menu_extras(
                 let trip_line = tour_line(ln, num).unwrap_or_else(|| line_sign(schedule, line));
                 // Omsi-Hub: the tour's trips, each from its first stop to its last, with the
                 // break between them, and the chosen one's ends (openOMSI #2936's roadbook)
-                let ends_of = |calls: &[(usize, usize, String, f64)]| -> Option<crate::ui::TripEnds> {
-                    let (a, b) = (calls.first()?, calls.last()?);
-                    Some(crate::ui::TripEnds { from: a.2.trim().to_string(), dep: hm((a.3 / 60.0) as f32), to: b.2.trim().to_string(), arr: hm((b.3 / 60.0) as f32) })
-                };
-                let mut by_trip: Vec<Vec<(usize, usize, String, f64)>> = Vec::new();
-                for c in sch.tour_stops(ln, num) {
-                    match by_trip.iter_mut().find(|t| t[0].0 == c.0) {
-                        Some(t) => t.push(c),
-                        None => by_trip.push(vec![c]),
-                    }
-                }
-                by_trip.sort_by(|a, b| a[0].3.total_cmp(&b[0].3).then(a[0].0.cmp(&b[0].0)));
-                let trips: Vec<crate::ui::TripRow> = by_trip
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(i, calls)| {
-                        let ends = ends_of(calls)?;
-                        let line = tour_trip_name(sch, tour, calls[0].0).map(|n| trip_of(&n).0).filter(|l| !l.is_empty()).unwrap_or_else(|| trip_line.clone());
-                        let gap = by_trip.get(i + 1).map(|next| ((next[0].3 - calls.last().map(|c| c.3).unwrap_or(0.0)) / 60.0).round()).filter(|m| *m >= 1.0).map(|m| format!("{} min {}", m as i64, tr("break"))).unwrap_or_default();
-                        Some(crate::ui::TripRow { line, ends, gap })
-                    })
-                    .collect();
+                let trips = tour_trip_rows(sch, ln, tour, &trip_line);
                 Some(Preview {
-                    ends: ends_of(&stops),
+                    ends: trip_ends_of(&stops),
                     trips,
                     trip,
                     title: format!("{} {}", tr("Tour"), num.trim()),
@@ -899,6 +883,7 @@ pub(crate) fn run_move(app: &mut App, kind: &ListKind, action: &str, mv: Move) -
     }
     if action == "back" {
         return match kind {
+            ListKind::Tours(..) if app.menus.near_back => Some(ListKind::Nearby),
             ListKind::Tours(..) => Some(ListKind::Lines),
             ListKind::Events => Some(ListKind::Keyboard(0)),
             ListKind::Keyboard(_) => Some(ListKind::Controls),
@@ -1037,6 +1022,7 @@ pub(crate) fn run_move(app: &mut App, kind: &ListKind, action: &str, mv: Move) -
         }
         ListKind::Lines => match verb {
             "line" => {
+                app.menus.near_back = false;
                 Some(ListKind::Tours(arg.to_string(), None))
             }
             "free" => {
@@ -1044,6 +1030,16 @@ pub(crate) fn run_move(app: &mut App, kind: &ListKind, action: &str, mv: Move) -
                 None
             }
             _ => None,
+        },
+        // NexiconDK: a tour of the "Nearby" tab: its page, at the trip that starts near the bus
+        ListKind::Nearby => match verb {
+            "near" => {
+                let mut p = arg.split('\u{1}');
+                let (Some(line), Some(tour), Some(trip)) = (p.next(), p.next(), p.next().and_then(|t| t.parse::<usize>().ok())) else { return Some(ListKind::Nearby) };
+                app.menus.near_back = true;
+                Some(ListKind::Tours(line.to_string(), Some((tour.to_string(), 0, trip))))
+            }
+            _ => Some(ListKind::Nearby),
         },
         ListKind::Tours(_, pick) => {
             if let Some((line, tour)) = arg.split_once('\u{1}') {
@@ -1180,6 +1176,7 @@ mod options;
 mod dropdowns;
 mod menu_pages;
 mod duty;
+pub(crate) mod nearby;
 pub(crate) use rows::*;
 pub(crate) use options::*;
 pub(crate) use dropdowns::*;

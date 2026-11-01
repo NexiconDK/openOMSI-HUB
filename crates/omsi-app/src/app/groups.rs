@@ -392,6 +392,12 @@ pub(crate) struct MenuState {
     /// Omsi-Hub: the map of the trip chosen on a tour's page (`game_lists::trip_map`), made
     /// once a trip: the trip's name and the map.
     pub(crate) tour_map: Option<(String, std::sync::Arc<crate::ui::RouteMap>)>,
+    /// NexiconDK: the duty menu's "Nearby" tab (`game_lists::nearby`): the tours near the bus
+    /// as it was opened, the map of the one chosen (its key and the map), and whether a tour's
+    /// page was opened from it (Back goes back there).
+    pub(crate) near: Option<std::sync::Arc<crate::game_lists::nearby::NearList>>,
+    pub(crate) near_map: Option<(String, std::sync::Arc<crate::ui::RouteMap>)>,
+    pub(crate) near_back: bool,
     /// The digits of a time being typed in the world page of the game menu (None: not typing).
     pub(crate) menu_edit: Option<String>,
     pub(crate) menu_edit_icao: bool,
