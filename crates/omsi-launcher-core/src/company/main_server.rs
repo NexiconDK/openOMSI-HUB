@@ -699,7 +699,10 @@ impl MainServer {
                 };
                 let companies: Vec<super::model::Company> = company_ids(&data).into_iter().filter_map(|id| store::load(&data, &id).ok()).filter(|c| super::shared_tenders::key_of(&c.map) == key).collect();
                 let template = super::shared_tenders::template(&map, &date, &companies);
-                Some(super::shared_tenders::MapNow { lines, companies, template })
+                // (1 November 2026: its chrono events - their own lines out to tender for their days)
+                let dir = map_dir_of(&root, &map);
+                let events = super::shared_tenders::map_events(&dir, &date, &mut |day: &str| crate::lines_in_map_dir(&dir, day).map_err(|e| warn!("{}: its timetable of {day} not read for an event's tenders: {e:#}", map_name(&map))).ok());
+                Some(super::shared_tenders::MapNow { lines, companies, template, events })
             };
             for line in super::shared_tenders::step(&self.data, &key, &map, &date, now, &mut read) {
                 info!("tenders: {line}");

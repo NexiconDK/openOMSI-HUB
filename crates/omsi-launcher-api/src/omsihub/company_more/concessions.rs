@@ -153,11 +153,20 @@ pub fn state_of(c: &Company, t: &Tender) -> (String, &'static str) {
 }
 
 fn caption_of(t: &Tender) -> String {
-    if t.caption.is_empty() {
-        t.line.clone()
-    } else {
-        t.caption.clone()
+    let caption = if t.caption.is_empty() { t.line.clone() } else { t.caption.clone() };
+    // (NexiconDK, 1 November 2026: a special service names its event)
+    match event_of(t) {
+        Some((event, _)) => format!("{caption}  ·  {}", trf("Special service: %{event}", &[("event", &event)])),
+        None => caption,
     }
+}
+
+/// (NexiconDK, 1 November 2026) A special service's event and its days in words (a tender of a
+/// chrono event's own line on the server, `shared_tenders::MapEvent`); None: an ordinary tender.
+fn event_of(t: &Tender) -> Option<(String, String)> {
+    let m = t.market.as_ref().filter(|m| !m.event.is_empty())?;
+    let days = if m.from == m.until || m.until.is_empty() { day_label(&m.from) } else { format!("{} – {}", day_label(&m.from), day_label(&m.until)) };
+    Some((m.event.clone(), days))
 }
 
 /// The tenders the company bid on, the latest first (the Contracts page's "Tender bids",
@@ -467,7 +476,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
             { "label": tr("Advice").to_uppercase(), "value": money(t, advice), "tone": "ok", "tip": tr("The work's cost price at your own costs, with a 5 % margin: drivers' paid hours, fuel, the workshop, a bus and its fixed costs, less BSOG.") },
             { "label": tr("Lowest valid ask").to_uppercase(), "value": money(t, low), "tone": "warn", "tip": tr("85 % of the authority's cost price: a bid under it is abnormally low and is rejected when the bids are opened.") },
             { "label": tr("The cap").to_uppercase(), "value": money(t, t.reference), "tone": "text", "tip": tr("The authority's cost price by one and a half, at most the server's cap: an ask above it does not count.") },
-            if t.open() { json!({ "label": tr("Deadline").to_uppercase(), "value": when(c, t.closes_at), "tone": "text" }) } else { json!({ "label": tr("Term").to_uppercase(), "value": tr(if t.drive == Drive::Electric { "Electric · a month" } else { "Diesel · two weeks" }), "tone": "text" }) },
+            if t.open() { json!({ "label": tr("Deadline").to_uppercase(), "value": when(c, t.closes_at), "tone": "text" }) } else if let Some((_, days)) = event_of(t) { json!({ "label": tr("Term").to_uppercase(), "value": days, "tone": "text" }) } else { json!({ "label": tr("Term").to_uppercase(), "value": tr(if t.drive == Drive::Electric { "Electric · a month" } else { "Diesel · two weeks" }), "tone": "text" }) },
         ])
     } else {
         json!([
@@ -486,6 +495,11 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
     let (_, ext) = bc::term(t.kind);
     let terms = t.scored().then(|| match t.market {
         // (NexiconDK: on the server its term is by the buses it is bid with)
+        // (a special service: its event's days alone)
+        Some(_) if event_of(t).is_some() => {
+            let (event, days) = event_of(t).unwrap_or_default();
+            trf("%{kind}, %{per}  ·  a special service for %{event}, its days alone: %{days}  ·  asks are a price a timetable hour, sealed until the close", &[("kind", &tr(t.kind.label())), ("per", &per_text(t.period)), ("event", &event), ("days", &days)])
+        }
         Some(_) => trf("%{kind}, %{per}  ·  two weeks with diesel buses, a month with electric ones  ·  asks are a price a timetable hour, sealed until the close", &[("kind", &tr(t.kind.label())), ("per", &per_text(t.period))]),
         None => trf("%{kind}, %{per}  ·  %{years} years and up to %{ext} more  ·  asks are a price a year", &[("kind", &tr(t.kind.label())), ("per", &per_text(t.period)), ("years", &t.term_years().to_string()), ("ext", &ext.to_string())]),
     });
@@ -493,8 +507,8 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
     let drive = (t.market.is_some() && t.open()).then(|| {
         json!({
             "label": tr("Your buses"), "value": if t.drive == Drive::Electric { "electric" } else { "diesel" },
-            "options": [["diesel", tr("Diesel · two weeks")], ["electric", tr("Electric · a month")]],
-            "say": tr("Your next bid is made with these buses: the contract runs two weeks with diesel buses and a month with electric ones, whose tours are then run with electric buses."),
+            "options": if event_of(t).is_some() { json!([["diesel", tr("Diesel buses")], ["electric", tr("Electric buses")]]) } else { json!([["diesel", tr("Diesel · two weeks")], ["electric", tr("Electric · a month")]]) },
+            "say": tr(if event_of(t).is_some() { "Your next bid is made with these buses: a special service runs its event's days whichever you choose; with electric buses its tours are run with electric ones." } else { "Your next bid is made with these buses: the contract runs two weeks with diesel buses and a month with electric ones, whose tours are then run with electric buses." }),
         })
     });
     let len = (t.closes_at - t.opens_at).max(1);

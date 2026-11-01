@@ -322,6 +322,11 @@ pub struct Shared {
     /// (NexiconDK, 31 October 2026) The operator that gave the line up before its term ended,
     /// which put it out to tender again (`shared_tenders::OperatorHold`).
     pub failed: String,
+    /// (NexiconDK, 1 November 2026) A special service: the map's chrono event whose own line it is
+    /// (a match day's shuttles, `shared_tenders::MapEvent`), and its last day - the contract runs
+    /// from `from` to it, the event's days alone. Empty: an ordinary tender.
+    pub event: String,
+    pub until: String,
 }
 
 /// Another company's bids in a tender of the market: its id, its name, its quality in the
@@ -412,6 +417,10 @@ pub struct Concessions {
     pub contracts: Vec<super::bus_contracts::Contract>,
     #[serde(default)]
     pub contract_counter: u32,
+    /// (NexiconDK, 1 November 2026) The chrono events of the map the company was told take a line
+    /// of its off (`event|first day|line`; `shared_tenders::sync`), told once.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub events_told: Vec<String>,
 }
 
 /// How a game mode runs its tenders (how the rivals bid: `econ_uk::ModeFactors::rival_bids`).
@@ -637,6 +646,14 @@ pub fn week_of(days: &[Vec<LineInfo>], line: &str) -> Week {
 /// The Lines page offers only these (it offered the others too, and Apply refused them, Luc).
 pub fn is_line(c: &Company, l: &LineInfo) -> bool {
     specials::line_kind(l, &[&c.depot]).line()
+}
+
+/// (NexiconDK, 1 November 2026) A chrono event's own timetable a company may run on its days -
+/// a special service on the server (`shared_tenders::MapEvent`): a line, or an occasional one
+/// with passengers (the match day's shuttles "Sonderverkehr", a rail replacement) that is never
+/// a concession otherwise.
+pub fn is_event_line(c: &Company, l: &LineInfo) -> bool {
+    matches!(specials::line_kind(l, &[&c.depot]), specials::Kind::Service | specials::Kind::School | specials::Kind::Occasional | specials::Kind::RailReplacement)
 }
 
 /// The held concession of a line.
@@ -899,7 +916,8 @@ fn mend_tenders(c: &mut Company, lines: &[LineInfo]) -> bool {
     let depot = c.depot.clone();
     let of = |name: &str| lines.iter().find(|l| l.name.eq_ignore_ascii_case(name));
     let before = c.concessions.tenders.len();
-    c.concessions.tenders.retain(|t| !t.open() || of(&t.line).is_none_or(|l| specials::line_kind(l, &[&depot]).line()));
+    // (a special service's line is an occasional one: its tender stays - `is_event_line`)
+    c.concessions.tenders.retain(|t| !t.open() || t.market.as_ref().is_some_and(|m| !m.event.is_empty()) || of(&t.line).is_none_or(|l| specials::line_kind(l, &[&depot]).line()));
     let mut changed = before != c.concessions.tenders.len();
     for t in c.concessions.tenders.iter_mut().filter(|t| t.open()) {
         let Some(l) = of(&t.line) else { continue };
@@ -1324,6 +1342,24 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
             k.per_hour = per_hour(t, amount).round() as Cents;
         }
     };
+    // (NexiconDK, 1 November 2026: a special service runs the event's days alone)
+    if let Some(m) = t.market.as_ref().filter(|m| !m.event.is_empty() && dates::parse(&m.from).is_some() && dates::parse(&m.until).is_some()) {
+        let (from, until) = (m.from.clone(), m.until.clone());
+        let mut k = bc::make(c, &t.line, &t.number, t.kind, t.period, amount, &work, &from, &until);
+        server(&mut k);
+        c.concessions.contracts.push(k);
+        match c.concessions.held.iter_mut().find(|h| h.line.eq_ignore_ascii_case(&t.line)) {
+            // (the line held still, for an event before: on to this one's last day)
+            Some(h) => {
+                if dates::between(&h.until, &until) > 0 {
+                    h.until = until.clone();
+                }
+                h.price = price;
+            }
+            None => c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false, after: String::new() }),
+        }
+        return Event::Won { number: t.number.clone(), until };
+    }
     if let Some(h) = c.concessions.held.iter().find(|h| h.line.eq_ignore_ascii_case(&t.line)).cloned() {
         let from = dates::add(&h.until, 1);
         let until = until_of(&from);

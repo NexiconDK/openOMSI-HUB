@@ -68,7 +68,7 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     let cash = b.cash;
     let key = key_of(MAP);
     let (ca, cb) = (a.clone(), b.clone());
-    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]) });
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]), events: Vec::new() });
     let said = step(&data, &key, MAP, DATE, now, &mut read);
     let m = load(&data, &key).unwrap();
     // (Linie5 is A's, oo_12 a line of the player's own: Linie7 and Linie9 out to tender)
@@ -184,7 +184,7 @@ fn a_concession_ending_goes_out_to_every_company() {
     a.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.clone(), price: 1.0, direct: false, after: String::new() });
     let key = key_of(MAP);
     let (ca, cb) = (a.clone(), b.clone());
-    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]) });
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]), events: Vec::new() });
     // (applications: B for A's line - refused -, B for Linie9)
     assert_eq!(ask(&data, &b, &lines[0]), Ok(ASKED), "B does not know A's plan here: the market refuses it");
     assert_eq!(ask(&data, &b, &lines[3]), Ok(ASKED));
@@ -248,7 +248,7 @@ fn an_easy_company_applies_and_bids_itself() {
     let key = key_of(MAP);
     assert_eq!(ask(&data, &e, &lines[1]), Ok(ASKED));
     let ce = e.clone();
-    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ce.clone()], template: template(MAP, DATE, &[]) });
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ce.clone()], template: template(MAP, DATE, &[]), events: Vec::new() });
     let now = clock::moment(DATE, 8 * 60);
     step(&data, &key, MAP, DATE, now, &mut read);
     at(&mut e, now + 2);
@@ -272,7 +272,7 @@ fn an_operator_holds_a_line_it_won_and_may_give_it_up() {
     let a = company("Umove", "umove");
     let key = key_of(MAP);
     let ca = a.clone();
-    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone()], template: template(MAP, DATE, &[]) });
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone()], template: template(MAP, DATE, &[]), events: Vec::new() });
     let now = clock::moment(DATE, 8 * 60);
     step(&data, &key, MAP, DATE, now, &mut read);
     // (nobody of the server bids: the operators' sealed bids decide)
@@ -326,4 +326,110 @@ fn the_market_prices_in_the_companies_country() {
     let l = &lines()[0];
     let cost = |c: &Company| cn::make_tender(c, l, 1, 0, false, "k", &[], (0, 0)).cost;
     assert!(cost(&theirs) > cost(&plain), "{} {}", cost(&theirs), cost(&plain));
+}
+
+/// (1 November 2026) A chrono event of the map that brings a line of its own - a match day's
+/// shuttles - puts it out to tender a week before, from six days before its day to three days
+/// before; never in the rounds, nor on an application. Won, the company holds it for the event's
+/// day alone, and it is not renewed after it. A company whose line the event takes off is told
+/// once, in time.
+#[test]
+fn a_chrono_events_line_goes_out_to_tender_for_its_days() {
+    let data = temp("event");
+    let shuttle = line("Sonderverkehr", "S", 2, true);
+    let mut lines = lines();
+    // (today an event day too: its line is among the map's lines of the day)
+    lines.push(shuttle.clone());
+    let (mut a, mut b) = (company("Umove", "umove"), company("GoCollective", "gocollective"));
+    network::add_line(&mut a, &lines[0], None).unwrap();
+    let key = key_of(MAP);
+    // (DATE a Monday: the match a week from Tuesday)
+    let event = MapEvent { name: "FCA Heimspiel".into(), from: "2024-03-12".into(), until: "2024-03-12".into(), own: vec!["Sonderverkehr".into()], off: vec!["Linie5".into()], lines: vec![shuttle.clone()] };
+    let (ca, cb) = (a.clone(), b.clone());
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]), events: vec![event.clone()] });
+    let said = step(&data, &key, MAP, DATE, clock::moment(DATE, 8 * 60), &mut read);
+    let m = load(&data, &key).unwrap();
+    assert!(!m.tenders.iter().any(|t| t.tender.line == "Sonderverkehr"), "not in the round, nor eight days before: {said:?}");
+    assert_eq!(m.events.len(), 1);
+    // (an application: refused)
+    assert_eq!(ask(&data, &b, &shuttle), Err(EVENT_LINE));
+    // a week before: out to tender for its day
+    let day = "2024-03-05";
+    let said = step(&data, &key, MAP, day, clock::moment(day, 8 * 60), &mut read);
+    let m = load(&data, &key).unwrap();
+    let t = m.tenders.iter().find(|t| t.tender.line == "Sonderverkehr").unwrap_or_else(|| panic!("{said:?}")).tender.clone();
+    let x = t.market.as_ref().unwrap();
+    assert_eq!((x.event.as_str(), x.from.as_str(), x.until.as_str()), ("FCA Heimspiel", "2024-03-12", "2024-03-12"));
+    assert!(!t.renewal && x.holder.is_empty());
+    assert_eq!((clock::date_of(t.opens_at), clock::date_of(t.closes_at)), ("2024-03-06".to_string(), "2024-03-09".to_string()));
+    assert!(t.week.is_some_and(|w| w.tours == 2), "{:?}", t.week);
+    // (A told its line 5 does not run that day - once)
+    at(&mut a, clock::moment(day, 9 * 60));
+    sync(&data, &mut a);
+    let told = |c: &Company| c.clock.feed.iter().filter(|f| f.text == EVENT_OFF_DAY).count();
+    assert_eq!(told(&a), 1);
+    sync(&data, &mut a);
+    assert_eq!(told(&a), 1, "told once");
+    // B bids and wins it; the line is B's for the match day alone
+    dull_rivals(&data, &key);
+    at(&mut b, t.opens_at + 10);
+    sync(&data, &mut b);
+    let tb = b.concessions.tenders.iter().find(|x| x.line == "Sonderverkehr").unwrap().clone();
+    bid(&data, &mut b, tb.id, crate::company::sealed::low_line(&tb)).unwrap();
+    let closed = clock::date_of(t.closes_at);
+    step(&data, &key, MAP, &closed, t.closes_at + CLOSE_AFTER, &mut read);
+    at(&mut b, t.closes_at + 5);
+    assert_eq!(sync(&data, &mut b), (true, true));
+    let h = cn::of_line(&b, "Sonderverkehr").expect("B holds it").clone();
+    assert_eq!((h.from.as_str(), h.until.as_str()), ("2024-03-12", "2024-03-12"));
+    assert!(b.concessions.contracts.iter().any(|k| k.line == "Sonderverkehr" && k.per_hour > 0));
+    // the days after: no renewal of it
+    let (ca, cb) = (a.clone(), b.clone());
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]), events: vec![event.clone()] });
+    for day in ["2024-03-07", "2024-03-10", "2024-03-12"] {
+        step(&data, &key, MAP, day, clock::moment(day, 8 * 60), &mut read);
+    }
+    let m = load(&data, &key).unwrap();
+    assert_eq!(m.tenders.iter().filter(|t| t.tender.line == "Sonderverkehr").count(), 1, "not out again");
+    let _ = std::fs::remove_dir_all(&data);
+}
+
+/// (1 November 2026) The map's chrono events as the main server reads them: an event's own lines
+/// are those of its TTData the map's own has not (a line of the map it replaces is the map's), an
+/// open-ended change and an event over are none, and an event's own lines are read from the
+/// timetable of its first day once it is a week off.
+#[test]
+fn the_maps_chrono_events_and_their_own_lines() {
+    let map = temp("events-map");
+    let ttl = "[newtour]\r\n1\r\nBus\r\n1023\r\n\r\n";
+    std::fs::create_dir_all(map.join("TTData")).unwrap();
+    std::fs::write(map.join("TTData/Linie5.ttl"), ttl).unwrap();
+    for (folder, cfg, lines) in [
+        ("1_FCA/12.03.24", "[name]\r\nFCA Heimspiel\r\n[startdate]\r\n20240312\r\n[enddate]\r\n20240312\r\n[deactivate_lines]\r\n1\r\nLinie7\r\n", vec!["Sonderverkehr", "Linie5"]),
+        ("1_FCA/03.02.24", "[name]\r\nFCA alt\r\n[startdate]\r\n20240203\r\n[enddate]\r\n20240203\r\n", vec!["Sonderverkehr"]),
+        ("Fahrplanwechsel", "[startdate]\r\n20240101\r\n", vec!["Linie9"]),
+    ] {
+        let d = map.join("Chrono").join(folder);
+        std::fs::create_dir_all(d.join("TTData")).unwrap();
+        std::fs::write(d.join("Chrono.cfg"), cfg).unwrap();
+        for l in lines {
+            std::fs::write(d.join("TTData").join(format!("{l}.ttl")), ttl).unwrap();
+        }
+    }
+    let asked = std::cell::RefCell::new(Vec::<String>::new());
+    let shuttle = line("Sonderverkehr", "S", 2, true);
+    let mut read = |day: &str| {
+        asked.borrow_mut().push(day.to_string());
+        Some(vec![shuttle.clone(), line("Linie5", "5", 3, true)])
+    };
+    let far = map_events(&map, "2024-03-01", &mut read);
+    assert_eq!(far.len(), 1, "the event over and the change for good are none: {far:?}");
+    let e = &far[0];
+    assert_eq!((e.name.as_str(), e.from.as_str(), e.until.as_str()), ("FCA Heimspiel", "2024-03-12", "2024-03-12"));
+    assert_eq!((e.own.clone(), e.off.clone()), (vec!["Sonderverkehr".to_string()], vec!["Linie7".to_string()]));
+    assert!(e.lines.is_empty() && asked.borrow().is_empty(), "not read eleven days before");
+    let near = map_events(&map, "2024-03-05", &mut read);
+    assert_eq!(near[0].lines.iter().map(|l| l.name.as_str()).collect::<Vec<_>>(), ["Sonderverkehr"]);
+    assert_eq!(*asked.borrow(), ["2024-03-12"]);
+    let _ = std::fs::remove_dir_all(&map);
 }

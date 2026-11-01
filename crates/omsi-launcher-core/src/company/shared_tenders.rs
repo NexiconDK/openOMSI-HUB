@@ -17,6 +17,13 @@
 //! then every bid is opened and shown with its points; an operator that wins holds the line for
 //! a term like a company (`OperatorHold`) and may give it up early, having bid below its own cost.
 //!
+//! (1 November 2026) Special services: a chrono event of the map (`Chrono/<folder>`: a match day,
+//! a fair) that brings lines of its own puts each of them out to tender for its days alone
+//! (`MapEvent`) - from six days before its first day to three days before, as a renewal - and
+//! the company that wins runs it on those days; nobody: the map's operators. Such a line is
+//! never offered otherwise, nor renewed. A company whose line an event takes off
+//! (`[deactivate_lines]`) is told in time.
+//!
 //! Each company's process keeps a copy of the market's open tenders among its own (`sync`,
 //! `concessions::Tender::market`): it bids on them as ever (its pages, its clock telling the bids
 //! as they come), its bid goes into the market's bids (`post_bid`,
@@ -69,6 +76,76 @@ pub struct Market {
     pub weeks_failed: String,
     /// (31 October 2026) The lines the map's operators won, for their terms.
     pub held: Vec<OperatorHold>,
+    /// (1 November 2026) The map's chrono events not over yet, as the main server last read them:
+    /// their own lines (never offered otherwise) and the lines they take off (the companies told).
+    pub events: Vec<MarketEvent>,
+}
+
+/// (NexiconDK, 1 November 2026) A chrono event of the map as the market keeps it (`MapEvent`).
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct MarketEvent {
+    pub name: String,
+    pub from: String,
+    pub until: String,
+    /// Its own lines (`.ttl` names), and those it takes off.
+    pub lines: Vec<String>,
+    pub off: Vec<String>,
+}
+
+/// (NexiconDK, 1 November 2026) A chrono event of the map (`Chrono/<folder>/Chrono.cfg` with a
+/// first and a last day) as the main server reads it for its market: its name, its days, the
+/// lines of its own (its `TTData`'s that the map's own has not) - with their timetable of its
+/// first day once it is near (`lines`) - and the lines it takes off (`[deactivate_lines]`).
+#[derive(Clone, Debug, Default)]
+pub struct MapEvent {
+    pub name: String,
+    pub from: String,
+    pub until: String,
+    pub own: Vec<String>,
+    pub off: Vec<String>,
+    pub lines: Vec<LineInfo>,
+}
+
+/// The chrono events of the map in `map_dir` not over on the server's `date` (an open-ended
+/// scenario - a timetable change for good - is none: its lines are the map's from its day): each
+/// one's own lines read from the timetable of its first day by `read` when that is within a week
+/// (None: not read - tried again the next day).
+pub fn map_events(map_dir: &Path, date: &str, read: &mut dyn FnMut(&str) -> Option<Vec<LineInfo>>) -> Vec<MapEvent> {
+    let ttl_names = |dir: &Path| -> Vec<String> {
+        omsi_cfg::vfs::read_dir_paths(&omsi_cfg::resolve_path(dir, "TTData"))
+            .into_iter()
+            .filter(|p| p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("ttl")))
+            .filter_map(|p| p.file_stem().map(|s| s.to_string_lossy().into_owned()))
+            .collect()
+    };
+    let map_own = ttl_names(map_dir);
+    let day = |code: i32| format!("{:04}-{:02}-{:02}", code / 10000, code / 100 % 100, code % 100);
+    let mut out = Vec::new();
+    for (folder, cfg) in omsi_map::all_chrono(map_dir) {
+        if cfg.start_date <= 0 || cfg.end_date < cfg.start_date {
+            continue;
+        }
+        let (from, until) = (day(cfg.start_date), day(cfg.end_date));
+        if dates::parse(&from).is_none() || dates::parse(&until).is_none() || dates::between(&until, date) > 0 {
+            continue;
+        }
+        let own: Vec<String> = ttl_names(&folder).into_iter().filter(|n| !map_own.iter().any(|m| m.eq_ignore_ascii_case(n))).collect();
+        let name = if cfg.name.is_empty() { folder.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default() } else { cfg.name.clone() };
+        let near = dates::between(date, &from) <= RENEW_OPENS + 1;
+        let lines = if near && !own.is_empty() {
+            read(&from).unwrap_or_default().into_iter().filter(|l| own.iter().any(|o| o.eq_ignore_ascii_case(&l.name))).collect()
+        } else {
+            Vec::new()
+        };
+        out.push(MapEvent { name, from, until, own, off: cfg.deactivate_lines.clone(), lines });
+    }
+    out
+}
+
+/// Whether `line` is one of a chrono event's own (`Market::events`): never offered but for it.
+fn event_line(events: &[MarketEvent], line: &str) -> bool {
+    events.iter().any(|e| e.lines.iter().any(|l| l.eq_ignore_ascii_case(line)))
 }
 
 /// (NexiconDK, 31 October 2026) A line one of the map's operators won: it runs it for the term a
@@ -181,7 +258,8 @@ pub fn save(data: &Path, m: &Market) -> Result<()> {
 /// next day). Whether the market changed.
 pub fn fill_weeks(data: &Path, key: &str, date: &str, read: &mut dyn FnMut(&str) -> Option<Vec<LineInfo>>) -> bool {
     let Some(mut m) = load(data, key) else { return false };
-    let missing: Vec<usize> = m.tenders.iter().enumerate().filter(|(_, t)| t.decided.is_none() && t.tender.week.is_none_or(|w| !w.by_day)).map(|(i, _)| i).collect();
+    // (a special service's week is its event's days: made with it - `offer`)
+    let missing: Vec<usize> = m.tenders.iter().enumerate().filter(|(_, t)| t.decided.is_none() && t.tender.week.is_none_or(|w| !w.by_day) && t.tender.market.as_ref().is_none_or(|x| x.event.is_empty())).map(|(i, _)| i).collect();
     if missing.is_empty() || m.weeks_failed == date {
         return false;
     }
@@ -241,6 +319,11 @@ pub fn post_bid(data: &Path, key: &str, b: &MarketBid) -> Result<()> {
 pub const HELD: &str = "Another company of the map runs this line: it goes out to tender again towards the end of its concession.";
 pub const ASKED: &str = "The line goes out to tender in a moment: its auction is on the Concessions page.";
 pub const OPERATOR_HELD: &str = "One of the map's operators runs this line on the contract it won: it goes out to tender again when that ends.";
+/// (1 November 2026) A company told that an event takes a line of its off (`sync`).
+pub const EVENT_OFF_DAY: &str = "%{event} takes your line %{n} off on %{date}: it does not run that day - nothing to drive, nothing paid, no fines.";
+pub const EVENT_OFF_DAYS: &str = "%{event} takes your line %{n} off for %{days} days from %{date}: it does not run those days - nothing to drive, nothing paid, no fines.";
+/// (1 November 2026)
+pub const EVENT_LINE: &str = "This line runs only on an event of the map's: it goes out to tender before the event, for its days.";
 
 /// Company `c` applies for line `l` of its map (the Lines page's "Apply" on the server): the main
 /// server puts it out to tender at once (`ASKED`), unless another company runs it (`HELD`) - its
@@ -249,10 +332,13 @@ pub fn ask(data: &Path, c: &Company, l: &LineInfo) -> Result<&'static str, &'sta
     if c.lines.iter().any(|x| x.name.eq_ignore_ascii_case(&l.name)) {
         return Err("The company runs this line already.");
     }
+    let key = key_of(&c.map);
+    if load(data, &key).is_some_and(|m| event_line(&m.events, &l.name)) {
+        return Err(EVENT_LINE);
+    }
     if !cn::is_line(c, l) {
         return Err("This timetable carries no passengers of its own: depot runs, empty runs or other traffic.");
     }
-    let key = key_of(&c.map);
     if super::plan::live_plans(data).iter().any(|p| p.company != c.id && key_of(&p.map) == key && p.has_line(&l.name)) {
         return Err(HELD);
     }
@@ -273,6 +359,8 @@ pub struct MapNow {
     pub lines: Vec<LineInfo>,
     pub companies: Vec<Company>,
     pub template: Company,
+    /// (1 November 2026) The map's chrono events not over (`map_events`).
+    pub events: Vec<MapEvent>,
 }
 
 /// A company to price a map's tenders with: new, of the map, on the server's date, Normal - in the
@@ -329,9 +417,12 @@ pub fn step(data: &Path, key: &str, map: &str, date: &str, now: i64, read: &mut 
             // (an operator's: it holds the line for its term)
             if d.winner.is_empty() && !d.name.is_empty() {
                 let from = t.market.as_ref().map(|x| x.from.clone()).filter(|f| !f.is_empty()).unwrap_or_else(|| dates::add(&t.closes, 1));
-                let until = cn::server_term(Drive::Diesel, &from);
+                // (a special service: the event's days alone)
+                let until = t.market.as_ref().map(|x| x.until.clone()).filter(|u| dates::parse(u).is_some()).unwrap_or_else(|| cn::server_term(Drive::Diesel, &from));
                 let days = dates::between(&from, &until) + 1;
-                let gives = super::sealed::gives_up(d.amount, d.own_cost, days, &[key, "gives up", &t.line, &from]).map(|k| dates::add(&from, k)).unwrap_or_default();
+                // (a special service is run to its end: its days are few)
+                let event = t.market.as_ref().is_some_and(|x| !x.event.is_empty());
+                let gives = if event { String::new() } else { super::sealed::gives_up(d.amount, d.own_cost, days, &[key, "gives up", &t.line, &from]).map(|k| dates::add(&from, k)).unwrap_or_default() };
                 m.held.retain(|h| !h.line.eq_ignore_ascii_case(&t.line));
                 m.held.push(OperatorHold { line: t.line.clone(), number: t.number.clone(), name: d.name.clone(), from, until, amount: d.amount, own_cost: d.own_cost, gives_up: gives });
             }
@@ -364,18 +455,25 @@ fn add(m: &mut Market, c: &Company, l: &LineInfo, opens_at: i64, closes_at: i64,
     // timetable hour alone left room for the operators to bid far down - at most that)
     let most = if cap_hour > 0 { cn::of_hour(&t, cap_hour as f64) } else { 0 };
     t.reference = super::sealed::cap_of(t.cost, most);
-    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), failed: String::new() });
+    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), ..Default::default() });
     m.tenders.push(MarketTender { tender: t, applied: Vec::new(), decided: None });
     id
 }
 
 /// What the market offers now: the applications, a new round, the renewals.
 fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: i64, said: &mut Vec<String>, cap_hour: Cents) {
-    let MapNow { lines, companies, template } = now_map;
+    let MapNow { lines, companies, template, events } = now_map;
     let held = |line: &str| companies.iter().find(|c| c.lines.iter().any(|x| x.name.eq_ignore_ascii_case(line)));
+    // (1 November 2026: the chrono events' own lines go out with their events alone)
+    m.events = events.iter().map(|e| MarketEvent { name: e.name.clone(), from: e.from.clone(), until: e.until.clone(), lines: e.own.clone(), off: e.off.clone() }).collect();
+    let of_event = |line: &str| events.iter().any(|e| e.own.iter().any(|o| o.eq_ignore_ascii_case(line)));
     // the applications: at once
     for a in asks {
         let Some(l) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&a.line)) else { continue };
+        if of_event(&l.name) {
+            said.push(format!("{}: the application of {} for line {} - an event's line", m.map, a.company, l.name));
+            continue;
+        }
         if let Some(c) = held(&l.name) {
             said.push(format!("{}: the application of {} for line {} - {} runs it", m.map, a.company, l.name, c.name));
             continue;
@@ -420,6 +518,13 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
             }
             continue;
         }
+        // (an event's line: its days over, it goes - never out again but with its next event)
+        if of_event(&h.line) {
+            if dates::between(&h.until, date) <= 0 {
+                m.held.push(h);
+            }
+            continue;
+        }
         if dates::between(&h.until, date) > 0 {
             continue;
         }
@@ -445,6 +550,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
         let mut free: Vec<&LineInfo> = lines
             .iter()
             .filter(|l| !crate::lines::is_own_file(&l.name))
+            .filter(|l| !of_event(&l.name))
             .filter(|l| held(&l.name).is_none())
             .filter(|l| !m.held.iter().any(|h| h.line.eq_ignore_ascii_case(&l.name)))
             .filter(|l| open_of(m, &l.name).is_none())
@@ -470,7 +576,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
     for c in companies {
         for h in &c.concessions.held {
             let from = dates::add(&h.until, 1);
-            if dates::between(date, &from) > RENEW_OPENS + 1 || open_of(m, &h.line).is_some() {
+            if dates::between(date, &from) > RENEW_OPENS + 1 || open_of(m, &h.line).is_some() || of_event(&h.line) {
                 continue;
             }
             // (decided already for this term)
@@ -484,6 +590,40 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
             let closes = clock::moment(&dates::add(&from, -RENEW_DECIDED), minute);
             add(m, template, l, opens, closes, Some((&c.id, &from)), cap_hour);
             said.push(format!("{}: the concession of {} on line {} out to tender again from {} {} to {}, open to every company", m.map, c.name, l.name, clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes)));
+        }
+    }
+    // (1 November 2026) the special services: an event's own lines out to tender for its days -
+    // from six days before its first to three days before, as a renewal; too late for that (the
+    // server saw it late), the map's operators run them
+    for e in events {
+        if dates::between(date, &e.from) > RENEW_OPENS + 1 || dates::between(date, &e.from) < 0 {
+            continue;
+        }
+        for l in e.lines.iter().filter(|l| cn::is_event_line(template, l)) {
+            // (offered for this event already, or held over its first day by a company or an operator)
+            if m.tenders.iter().any(|t| t.tender.line.eq_ignore_ascii_case(&l.name) && t.tender.market.as_ref().is_some_and(|x| x.from == e.from && x.event == e.name)) {
+                continue;
+            }
+            let covers = |from: &str, until: &str| dates::between(from, &e.from) >= 0 && dates::between(&e.from, until) >= 0;
+            if companies.iter().any(|c| c.concessions.held.iter().any(|h| h.line.eq_ignore_ascii_case(&l.name) && covers(&h.from, &h.until))) || m.held.iter().any(|h| h.line.eq_ignore_ascii_case(&l.name) && covers(&h.from, &h.until)) {
+                continue;
+            }
+            let mut rng = Rng::of(&[&m.key, "event", &l.name], dates::parse(&e.from).unwrap_or(0));
+            let minute = 9 * 60 + rng.int(0, 24) * 15;
+            let opens = clock::moment(&dates::add(&e.from, -RENEW_OPENS), minute).max(now + 30);
+            let closes = clock::moment(&dates::add(&e.from, -RENEW_DECIDED), minute);
+            if closes < opens + 12 * 60 {
+                said.push(format!("{}: the event '{}' too near for a tender of its line {}: the map's operators run it", m.map, e.name, l.name));
+                continue;
+            }
+            let id = add(m, template, l, opens, closes, None, cap_hour);
+            if let Some(t) = m.tenders.iter_mut().find(|t| t.tender.id == id) {
+                t.tender.week = Some(cn::week_of(std::slice::from_ref(&e.lines), &l.name));
+                if let Some(x) = t.tender.market.as_mut() {
+                    (x.from, x.until, x.event) = (e.from.clone(), e.until.clone(), e.name.clone());
+                }
+            }
+            said.push(format!("{}: the event '{}' ({} to {}): its line {} out to tender from {} {} to {}", m.map, e.name, e.from, e.until, l.name, clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes)));
         }
     }
 }
@@ -644,6 +784,29 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
             cn::Event::Ended { .. } => {}
         }
     }
+    // (1 November 2026) an event of the map that takes a line of the company's off: told once, a
+    // week before its first day at the soonest
+    let today = c.date.clone();
+    for e in &m.events {
+        if dates::between(&today, &e.from) > RENEW_OPENS + 1 || dates::between(&e.until, &today) > 0 {
+            continue;
+        }
+        for off in &e.off {
+            let Some((name, number)) = c.lines.iter().find(|x| x.name.trim().eq_ignore_ascii_case(off.trim())).map(|x| (x.name.clone(), x.number.clone())) else { continue };
+            let key = format!("{}|{}|{}", e.name, e.from, name);
+            if c.concessions.events_told.contains(&key) {
+                continue;
+            }
+            let days = dates::between(&e.from, &e.until) + 1;
+            if days > 1 {
+                clock::tell(c, &mut run, at, EVENT_OFF_DAYS, vec![clock::arg("event", &e.name), clock::arg("n", &number), clock::arg("days", days), clock::arg("date", &e.from)], Level::Warn);
+            } else {
+                clock::tell(c, &mut run, at, EVENT_OFF_DAY, vec![clock::arg("event", &e.name), clock::arg("n", &number), clock::arg("date", &e.from)], Level::Warn);
+            }
+            c.concessions.events_told.push(key);
+        }
+    }
+    c.concessions.events_told.retain(|k| k.split('|').nth(1).is_some_and(|f| dates::between(f, &today) < KEEP_DAYS));
     // (the decided ones the market no longer keeps go)
     c.concessions.tenders.retain(|t| t.open() || t.market.as_ref().is_none_or(|x| x.key != key || m.tenders.iter().any(|mt| mt.tender.id == x.id)));
     (c.concessions != before || run.told > 0, won)

@@ -1048,8 +1048,12 @@ fn apply(c: &mut Company, due: Due, quick: bool, run: &mut Run) {
             // (NexiconDK, 31 October 2026: the map's tenders - sealed, for days: their deadline's
             // day too; one an operator gave up, saying so)
             let failed = t.market.as_ref().map(|m| m.failed.clone()).unwrap_or_default();
+            // (1 November 2026: a special service, an event's own line for its days)
+            let event = t.market.as_ref().map(|m| m.event.clone()).unwrap_or_default();
             let until = if t.market.is_some() { format!("{} {}", date_of(closes), hhmm(closes)) } else { hhmm(closes) };
-            let text = if !failed.is_empty() {
+            let text = if !event.is_empty() {
+                "Special service for %{who}: line %{n} is out to tender for its days, sealed bids until %{time}"
+            } else if !failed.is_empty() {
                 "%{who} gave line %{n} up: it is out to tender again, sealed bids until %{time}"
             } else if t.market.is_some() {
                 if renewal { "The renewal of line %{n} is out to tender: sealed bids until %{time}" } else { "Line %{n} is out to tender: sealed bids until %{time}" }
@@ -1058,7 +1062,8 @@ fn apply(c: &mut Company, due: Due, quick: bool, run: &mut Run) {
             } else {
                 "Line %{n} is out to tender: bids until %{time}"
             };
-            tell(c, run, when, text, vec![arg("n", number), arg("time", until), arg("who", failed)], Level::Info);
+            let who = if event.is_empty() { failed } else { event };
+            tell(c, run, when, text, vec![arg("n", number), arg("time", until), arg("who", who)], Level::Info);
             if asks {
                 c.clock.ask = Some(Ask::Tender { id, outbid: false });
             }
