@@ -595,8 +595,10 @@ pub fn script(c: &Company, dp: &DayPlan) -> DayScript {
     // the tours
     for t in dp.tours.iter().filter(|t| !t.by_player) {
         let (number, tour) = (t.tour.number.clone(), t.tour.tour.clone());
-        if t.covered() {
-            push(t.tour.from() as i64, What::Out { number: number.clone(), tour: tour.clone(), bus: bus_label(c, t.bus), driver: who_label(c, t.duties.first().and_then(|d| d.who)) });
+        // (NexiconDK, 1 November 2026: on a server a tour of the map's world goes out with its AI
+        // driver on the duties nobody has - `DayTour::world_runs`)
+        if t.covered() || t.world_runs(c, &date) {
+            push(t.tour.from() as i64, What::Out { number: number.clone(), tour: tour.clone(), bus: bus_label(c, t.bus), driver: who_label(c, t.duties.first().and_then(|d| d.who).or_else(|| t.duties.iter().find_map(|d| d.who))) });
             push(t.tour.to() as i64, What::In { number, tour });
         } else {
             let why = t.bus_problem.or_else(|| t.duties.iter().find_map(|d| d.problem)).map(|p| p.label()).unwrap_or(if t.bus.is_none() { "No bus" } else { "No driver" });
@@ -604,7 +606,7 @@ pub fn script(c: &Company, dp: &DayPlan) -> DayScript {
         }
     }
     // the breakdowns on the way
-    let sp = spans(dp.tours.iter().filter(|t| t.covered()).filter_map(|t| match t.bus {
+    let sp = spans(dp.tours.iter().filter(|t| t.covered() || t.world_runs(c, &date)).filter_map(|t| match t.bus {
         Some(BusOf::Own(id)) => Some((id, t.tour.from(), t.tour.to())),
         _ => None,
     }));

@@ -781,6 +781,12 @@ impl HostState {
     /// every message is answered with `closed_answer` from now on. A duty a player's game drives
     /// is the AI's to finish (his results can no longer come), what was only planned for the
     /// players or asked for goes back to the company. Whether the company changed.
+    ///
+    /// (NexiconDK, 1 November 2026) A company of a server keeps what was planned for its players
+    /// and what they asked for: its process only stops (the server is stopped or started again),
+    /// the company goes on. Taken away, the duties the roster had given them that day were not
+    /// given again after the start - the day had begun - and their trips counted as not run,
+    /// "No driver: Not planned", fined as journeys not run.
     pub fn close(&mut self, c: &mut Company, here: &Here) -> bool {
         if self.closed {
             return false;
@@ -790,7 +796,9 @@ impl HostState {
         for (r, g) in &driving {
             self.left_duty(c, here, r, *g, LeftWhy::Closed);
         }
-        c.together.claims.retain(|x| matches!(x.state, ClaimState::Driving | ClaimState::Done) || x.late || !x.ai.is_empty());
+        let kept = |x: &book::Claim| matches!(x.state, ClaimState::Driving | ClaimState::Done) || x.late || !x.ai.is_empty();
+        let on_server = c.online.on_server;
+        c.together.claims.retain(|x| kept(x) || on_server);
         self.tell(here.now, CLOSING, Vec::new());
         self.closed = true;
         c.together != before

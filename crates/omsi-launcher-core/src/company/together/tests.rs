@@ -592,6 +592,33 @@ fn the_host_closing_the_session_tells_every_player_and_his_launcher_goes_back_to
     drop(server);
 }
 
+/// (NexiconDK, 1 November 2026) A company of a server whose process stops (the server stopped
+/// or started again) keeps the duties planned for its players: its day goes on after the start,
+/// and the roster does not give them again. A boss's own session ending gives them back.
+#[test]
+fn a_servers_company_keeps_its_players_duties_when_its_process_stops() {
+    for on_server in [true, false] {
+        let mut b = boss();
+        b.c.online.on_server = on_server;
+        let v = ask(&mut b, "jan", "hello", |_| {});
+        let duty = snap(&v).duties[0].duty.clone();
+        let v = ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()));
+        assert_eq!(v["ok"], true, "{v}");
+        let jan = guest_no(&b, "jan");
+        let p = b.plan();
+        let lines = timetable();
+        let here = Here { plan: Some(&p), lines: &lines, now: now(), lead: 10 };
+        let Boss { c, st, .. } = &mut b;
+        st.close(c, &here);
+        let kept = c.together.claim_of(&duty).is_some_and(|x| x.guest == jan && x.state == ClaimState::Planned);
+        assert_eq!(kept, on_server, "on a server: {on_server}");
+        // (on the server the plan still has him on it after the start: no trip of it dropped)
+        if on_server {
+            assert_eq!(b.plan().tours[0].duties[0].who, Some(Who::Guest(jan)));
+        }
+    }
+}
+
 #[test]
 fn a_host_that_stops_answering_is_lost_on_the_players_side_after_a_while() {
     let (c, tours) = setup();

@@ -106,6 +106,22 @@ impl TourPlan {
     pub fn partly(&self) -> bool {
         !self.covered() && self.bus.is_some() && self.duties.iter().any(|d| d.driver.is_some())
     }
+
+    /// (NexiconDK, 1 November 2026) Duty `d` of it, which nobody of the roster has, is the map's
+    /// world's on a server: its AI driver drives every trip of a tour it has a bus of the
+    /// company's for (`plan::DayTour::world_runs`, `plan::live_plan`). A trip of it the world did
+    /// not report - the world or the server was down, or it started after the trip had left - is
+    /// driven as the world would have driven it: by the AI, with the model's breakdowns and
+    /// delays, not dropped for want of a driver (which fined it as a journey not run).
+    pub fn world_ai(&self, c: &Company, d: &DutyPlan) -> bool {
+        c.online.on_server
+            && d.driver.is_none()
+            && !self.by_player
+            && !self.tour.unplanned
+            && self.bus.and_then(|b| c.vehicle(b)).is_some()
+            && self.duties.iter().any(|x| x.driver.is_some())
+            && !super::plan::waits(c, &c.date, &self.tour.line)
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
@@ -574,17 +590,17 @@ pub(super) fn why_not(c: &Company, tp: &TourPlan, k: usize, j: usize, broken_at:
     let (trip, rest) = whole_trip(tp, j)?;
     let has_bus = tp.bus.and_then(|b| c.vehicle(b)).is_some();
     // (Beta 63: the AI drives what a player of "Play together" left of his duty)
-    let has_driver = d.driver.is_some_and(|id| id == super::plan::AGENCY || c.employee(id).is_some()) || super::together::book::ai_on(c, &c.date, &tp.tour.line, &tp.tour.tour, k);
+    let has_driver = d.driver.is_some_and(|id| id == super::plan::AGENCY || c.employee(id).is_some()) || super::together::book::ai_on(c, &c.date, &tp.tour.line, &tp.tour.tour, k) || tp.world_ai(c, d);
     let broke = broken_at.is_some_and(|x| x.lost(trip.dep));
     let late = d.dropped_before.is_some_and(|t| trip.dep < t);
-    let rest_runs = rest.is_none_or(|(d2, at)| d2.driver.is_some() && d2.dropped_before.is_none_or(|t| at >= t));
+    let rest_runs = rest.is_none_or(|(d2, at)| (d2.driver.is_some() || tp.world_ai(c, d2)) && d2.dropped_before.is_none_or(|t| at >= t));
     if !has_bus {
         Some((DropWhy::NoBus, tp.bus_problem.or(Some(Problem::Unassigned)), None))
     } else if !has_driver {
         Some((DropWhy::NoDriver, d.problem.or(Some(Problem::Unassigned)), Some(k)))
     } else if !rest_runs {
         match rest {
-            Some((d2, _)) if d2.driver.is_none() => Some((DropWhy::NoDriver, d2.problem.or(Some(Problem::Unassigned)), None)),
+            Some((d2, _)) if d2.driver.is_none() && !tp.world_ai(c, d2) => Some((DropWhy::NoDriver, d2.problem.or(Some(Problem::Unassigned)), None)),
             _ => Some((DropWhy::Late, None, None)),
         }
     } else if broke {
@@ -824,7 +840,7 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
             if !ai && super::together::book::drove(c, &date, &tp.tour.line, &tp.tour.tour, k) {
                 continue;
             }
-            let driver = if ai { Some(super::together::book::ai_driver()) } else { d.driver.and_then(|id| if id == super::plan::AGENCY { Some(super::plan::agency_driver()) } else { c.employee(id).cloned() }) };
+            let driver = if ai || tp.world_ai(c, d) { Some(super::together::book::ai_driver()) } else { d.driver.and_then(|id| if id == super::plan::AGENCY { Some(super::plan::agency_driver()) } else { c.employee(id).cloned() }) };
             if let Some(e) = driver.as_ref().filter(|e| e.id != super::plan::AGENCY && !super::agency::is_booked(e.id)) {
                 match worked.iter_mut().find(|w| w.0 == e.id) {
                     Some(w) => {
@@ -1400,6 +1416,26 @@ mod tests {
         let plan = assign(&company(GameMode::Normal, 1, 1), long, &[], &[]);
         assert_eq!(plan.tours[0].duties.len(), 2);
         assert!(plan.tours[0].partly());
+    }
+
+    /// (NexiconDK, 1 November 2026) On a server the map's world drives what the roster left
+    /// without a driver of a tour it has a bus for: a trip of it the world did not report (it or
+    /// the server was down) is the AI's, not dropped and fined. Away from a server it is dropped;
+    /// a tour without a bus is not the world's either.
+    #[test]
+    fn on_a_server_the_worlds_ai_drives_the_duties_nobody_has() {
+        // one bus, one driver: a long tour's second duty has nobody (over ten hours)
+        let long = vec![tour("1", 5 * 60, 18), tour("2", 5 * 60 + 10, 4)];
+        let mut home = company(GameMode::Normal, 1, 1);
+        let mut server = home.clone();
+        server.online.on_server = true;
+        let r = close_day(&mut home, long.clone(), &[]);
+        let no_driver = r.drops.iter().filter(|d| d.why == DropWhy::NoDriver).map(|d| d.trips).sum::<u32>();
+        assert!(no_driver > 0, "{:?}", r.drops);
+        let r = close_day(&mut server, long, &[]);
+        assert!(r.drops.iter().all(|d| d.why == DropWhy::NoBus && d.tour == "2"), "{:?}", r.drops);
+        assert_eq!(r.dropped, 4, "the tour without a bus alone");
+        assert!(!server.ledger.iter().any(|b| b.text.contains("journeys not run") && b.text.contains("18")));
     }
 
     #[test]

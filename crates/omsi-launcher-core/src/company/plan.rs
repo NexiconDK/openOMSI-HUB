@@ -1034,6 +1034,19 @@ impl DayTour {
         self.by_player || (self.bus.is_some() && self.duties.iter().all(|d| d.who.is_some()))
     }
 
+    /// (NexiconDK, 1 November 2026) On a server the map's world runs this tour on `date`: its bus
+    /// out on every trip, a duty nobody of the roster has driven by the world's AI driver
+    /// (`live_plan`: a tour without a bus of the company's, or with nobody on any of its duties,
+    /// it drops; a tour a player drives is his).
+    pub fn world_runs(&self, c: &Company, date: &str) -> bool {
+        c.online.on_server
+            && !self.by_player
+            && !self.tour.unplanned
+            && matches!(self.bus, Some(BusOf::Own(_)))
+            && self.duties.iter().any(|d| d.who.is_some())
+            && !waits(c, date, &self.tour.line)
+    }
+
     pub fn key(&self) -> String {
         tour_key(&self.tour.line, &self.tour.tour)
     }
@@ -2203,9 +2216,7 @@ impl LivePlan {
 pub fn live_plan(c: &Company, dp: &DayPlan) -> LivePlan {
     // (the trips of duties their players left, dropped: off the road)
     let off = super::together::book::dropped_departures(c, dp);
-    // (a line won from another company of the map that runs it until its concession begins: not
-    // the company's yet - neither its tours nor the line, on the road)
-    let waits = |line: &str| super::concessions::of_line(c, line).is_some_and(|h| !h.after.is_empty() && super::dates::between(&dp.date, &h.from) > 0);
+    let waits = |line: &str| waits(c, &dp.date, line);
     let tours = dp
         .tours
         .iter()
@@ -2251,6 +2262,12 @@ pub fn live_plan(c: &Company, dp: &DayPlan) -> LivePlan {
     // too, the map's own buses off it -, but one another company runs until then, `waits`)
     let lines = c.lines.iter().filter(|l| !waits(&l.name)).map(|l| l.name.clone()).collect();
     LivePlan { company: c.id.clone(), map: c.map.clone(), date: dp.date.clone(), depot: c.depot.clone(), game_mode: c.game_mode, tours, lines, drops_left: c.together.left_dropped }
+}
+
+/// A line won from another company of the map that runs it until its concession begins: not the
+/// company's yet on `date` - neither its tours nor the line, on the road.
+pub(super) fn waits(c: &Company, date: &str, line: &str) -> bool {
+    super::concessions::of_line(c, line).is_some_and(|h| !h.after.is_empty() && super::dates::between(date, &h.from) > 0)
 }
 
 pub fn live_plan_file(data: &Path, id: &str) -> PathBuf {
