@@ -9,6 +9,8 @@
 mod approach;
 mod boards;
 mod choice;
+// NexiconDK: the chrono scenarios' lines day by day
+mod chrono;
 mod company;
 mod dispatch;
 mod load;
@@ -20,6 +22,8 @@ mod take_on;
 mod tours;
 #[cfg(test)]
 mod night_tests;
+#[cfg(test)]
+mod chrono_tests;
 // Omsi-Hub: the dedicated server's live map
 mod web_map;
 
@@ -90,6 +94,9 @@ struct Departure {
     /// less a day (24:30 = 00:30), run when yesterday's mask has the tour (`runs`). The
     /// trip's own departure (24:30) is tonight's, reached by the tour's bus before midnight.
     yesterday: bool,
+    /// (NexiconDK, 1 November 2026) The version of its line it is of (`chrono::ChronoLines`):
+    /// the map's own or a chrono scenario's, running on the days its folder is in force.
+    version: usize,
 }
 
 /// What became of a departure that was due.
@@ -214,6 +221,9 @@ pub struct ScheduleSim {
     /// The lines the date's chrono folders take off the timetable, with the folder that does
     /// it: why a duty on such a line cannot be driven.
     deactivated: Vec<(String, PathBuf)>,
+    /// (NexiconDK, 1 November 2026) The chrono scenarios' lines, which of them run decided day
+    /// by day (`set_day`).
+    chrono: chrono::ChronoLines,
     /// Stations some trip stops at on its way or ends at (not only starts from).
     served: std::collections::HashSet<i64>,
     /// Per first station: whether another trip's bus stops there or within a bus length

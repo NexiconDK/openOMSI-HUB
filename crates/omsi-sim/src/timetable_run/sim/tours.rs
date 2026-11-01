@@ -987,7 +987,7 @@ mod tests {
         let w = World { path: std::env::temp_dir().join(format!("omsi_control_room_{}", std::process::id())), ai: Default::default(), positions: Default::default() };
         let mut s = ScheduleSim::new(&w.path, &w, &crate::SimClock::default());
         s.data.trips.push(omsi_timetable::Trip { name: "5a".into(), line: "Linie5".into(), stations: vec![1, 2], ..Default::default() });
-        let d = |h: f64| Departure { time: h * 3600.0, trip: 0, profile: 0, line: "Linie5".into(), ai_group: "depot".into(), tour: "3".into(), mask: -1, spawned: false, yesterday: false };
+        let d = |h: f64| Departure { time: h * 3600.0, trip: 0, profile: 0, line: "Linie5".into(), ai_group: "depot".into(), tour: "3".into(), mask: -1, spawned: false, yesterday: false, version: 0 };
         s.departures = vec![d(8.0), d(9.0), d(10.0), d(11.0), d(12.0)];
         s.company_off = vec![false; 5];
         let room = Room::default();
@@ -1029,7 +1029,7 @@ mod tests {
         let w = World { path: std::env::temp_dir().join(format!("omsi_lan_claims_{}", std::process::id())), ai: Default::default(), positions: Default::default() };
         let mut s = ScheduleSim::new(&w.path, &w, &crate::SimClock::default());
         s.data.trips.push(omsi_timetable::Trip { name: "5a".into(), line: "Linie5".into(), stations: vec![1, 2], ..Default::default() });
-        let d = |h: f64| Departure { time: h * 3600.0, trip: 0, profile: 0, line: "Linie5".into(), ai_group: "depot".into(), tour: "3".into(), mask: -1, spawned: false, yesterday: false };
+        let d = |h: f64| Departure { time: h * 3600.0, trip: 0, profile: 0, line: "Linie5".into(), ai_group: "depot".into(), tour: "3".into(), mask: -1, spawned: false, yesterday: false, version: 0 };
         let fresh = |s: &mut ScheduleSim| {
             s.departures = vec![d(8.0), d(9.0), d(10.0), d(11.0), d(12.0)];
             s.lan_tours.clear();

@@ -458,6 +458,9 @@ pub(crate) struct SessionState {
     /// The sim date and the season's texture folder the loaded world shows (see
     /// `follow_date`).
     pub(crate) world_day: Option<(i32, Option<String>)>,
+    /// (NexiconDK, 1 November 2026) The chrono scenarios that came into force with the date
+    /// and wait to be told until the bus stands (`game_panels::chrono_info`).
+    pub(crate) chrono_due: Vec<omsi_map::ailists::ChronoCfg>,
     pub(crate) traffic: Option<traffic::Traffic>,
     /// The scripts and variables of the map's scripted scenery objects (the world's tile
     /// loader hands them over, see `World::scenery_sync`).

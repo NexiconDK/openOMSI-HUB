@@ -679,6 +679,7 @@ fn assemble_app(args: Args, settings: settings::Settings) -> App {
             safe_age: 0.0,
             pending_time: None,
             world_day: None,
+            chrono_due: Vec::new(),
             autosave_t: 0.0,
             pumping: None,
             career: Default::default(),

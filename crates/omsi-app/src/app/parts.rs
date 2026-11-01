@@ -36,6 +36,7 @@ pub(crate) struct ClockPart<'p> {
     pub(crate) clock: &'p mut omsi_sim::SimClock,
     pub(crate) paused: &'p mut bool,
     pub(crate) world_day: &'p mut Option<(i32, Option<String>)>,
+    pub(crate) chrono_due: &'p mut Vec<omsi_map::ailists::ChronoCfg>,
     pub(crate) clock_jump: &'p mut f64,
     pub(crate) pending_time: &'p mut Option<f64>,
     pub(crate) autosave_t: &'p mut f64,
@@ -177,7 +178,7 @@ impl App {
             settings, exiting, shell, photo, photo_settings, devtools, pipeline, fixed_tick,
         } = self;
         let SessionState {
-            placed, world_day, traffic, schedule, timetable_book, humans, duty, duty_places, duty_closed, rain,
+            placed, world_day, chrono_due, traffic, schedule, timetable_book, humans, duty, duty_places, duty_closed, rain,
             cabin_air, spray, lamps_on, populate_t, humans_populate_t, traffic_heavy_frame,
             first_populate, envir, weather, clock_jump, seat_bus, on_foot, relief, relief_give, relief_back, relief_stander, safe_pose, safe_age,
             pending_time, autosave_t, pumping, career, journey, wetness, cloud_drift, weather_blend,
@@ -187,7 +188,7 @@ impl App {
             common: Common { args, settings, started: *started, last: *last, exiting: *exiting },
             input,
             menus: MenusPart { menus, shell },
-            clock: ClockPart { clock, paused, world_day, clock_jump, pending_time, autosave_t, fixed_tick },
+            clock: ClockPart { clock, paused, world_day, chrono_due, clock_jump, pending_time, autosave_t, fixed_tick },
             weather: WeatherPart {
                 rain, cabin_air, spray, lamps_on, envir, weather, wetness, cloud_drift,
                 weather_blend, weather_cycle, metar_rx, metar_once, metar_next, sky, lightning,

@@ -44,6 +44,22 @@ impl App {
         shift_clock(ShiftClockCx::of(&mut self.parts()), secs);
     }
 
+    /// (NexiconDK, 1 November 2026) The chrono scenarios that came into force (in `now`, not
+    /// in `before`) and have something to tell: on a card when the bus stands
+    /// (`game_panels::chrono_info`) - not on a dedicated server, nor with Settings → Gameplay →
+    /// "Chrono events" off.
+    fn tell_chrono(&mut self, before: &[std::path::PathBuf], now: &[std::path::PathBuf]) {
+        if !self.settings.chrono_info || self.args.server.is_some() {
+            return;
+        }
+        let new: Vec<std::path::PathBuf> = now.iter().filter(|d| !before.contains(d)).cloned().collect();
+        let events = crate::game_panels::chrono_info::events_in(&new);
+        if !events.is_empty() {
+            log::info!("chrono: telling {}", events.iter().map(|e| e.name.as_str()).collect::<Vec<_>>().join(", "));
+            self.session.chrono_due.extend(events);
+        }
+    }
+
     /// The world follows the sim date as OMSI's does at the day's change:
     /// the chrono scenarios in force (the tiles they change are read again) and the
     /// season's textures - also when the weather turns to snow or thaws (every loaded tile
@@ -56,13 +72,19 @@ impl App {
         let season = crate::world_load::season_folder_on(&self.args, &w.global, self.clock.day_of_year, snow, on_road).1;
         let Some((was_date, was_season)) = self.session.world_day.clone() else {
             self.session.world_day = Some((date, omsi_texture::season_folder()));
+            // (NexiconDK, 1 November 2026: the chrono scenarios in force at the start, told)
+            self.tell_chrono(&[], &w.chrono_dirs());
             return;
         };
         if was_date == date && was_season == season {
             return;
         }
         self.session.world_day = Some((date, season.clone()));
+        let before = w.chrono_dirs();
         let changed = if was_date != date { w.set_date(date) } else { Vec::new() };
+        if was_date != date {
+            self.tell_chrono(&before, &w.chrono_dirs());
+        }
         let Some(st) = self.gfx.streamer.as_mut() else { return };
         if was_season != season {
             log::info!("season: the textures of {:?} now (were {:?})", season, was_season);

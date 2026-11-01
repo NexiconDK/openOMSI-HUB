@@ -6,9 +6,12 @@ impl ScheduleSim {
     /// `clock` gives the date: tours carry a validity mask (bits 0-6 Monday…Sunday, 7 public
     /// holiday, 8 school holidays, 9 school days) that selects which run today.
     pub fn new(root: &Path, world: &dyn TimetableWorld, clock: &crate::SimClock) -> ScheduleSim {
-        let chrono_dirs = world.chrono_dirs();
-        let deactivated = omsi_map::chrono_deactivated_lines(&chrono_dirs);
-        let data = TimetableData::load_with_chrono(world.map_dir(), &chrono_dirs, &deactivated);
+        // (NexiconDK, 1 November 2026: every chrono line the session may come to run, which of
+        // them run decided day by day - `chrono`)
+        let mut day_before = clock.clone();
+        day_before.prev_day();
+        let (data, chrono) = super::chrono::ChronoLines::load(world.map_dir(), &world.chrono_dirs(), clock.date_code(), day_before.date_code());
+        let deactivated = chrono.deactivated(clock.date_code());
         for e in &data.errors {
             log::warn!("timetable: {e}");
         }
@@ -49,7 +52,7 @@ impl ScheduleSim {
         let (day_bit, school_bit) = day_bits(&calendar, clock);
         let mut departures = Vec::new();
         let mut skipped_tours = 0;
-        for line in &data.lines {
+        for (version, line) in chrono.versions.iter().map(|v| &v.line).enumerate() {
             for tour in &line.tours {
                 let mask = tour.extra.trim().parse::<i32>().unwrap_or(1023);
                 if mask & day_bit == 0 || mask & school_bit == 0 {
@@ -74,6 +77,7 @@ impl ScheduleSim {
                             mask,
                             spawned: false,
                             yesterday: false,
+                            version,
                         };
                         // (a trip after 24:00 runs in the early hours of the next day as
                         // well: the night tour that began the evening before, #2166)
@@ -94,11 +98,12 @@ impl ScheduleSim {
         // the previous departure of each tour, looked up once: the layover check used to
         // walk all 3600 Spandau departures for each of them, every two seconds - 1.5 fps
         let mut tour_prev = vec![None; departures.len()];
-        let mut last_of: HashMap<(String, String), usize> = HashMap::new();
+        let mut last_of: HashMap<(usize, String), usize> = HashMap::new();
         for (i, d) in departures.iter().enumerate() {
             // (yesterday's night trips are a tour of their own: tonight's run on from the
             // evening's trips)
-            let key = (d.line.clone(), if d.yesterday { format!("{}\u{1}", d.tour) } else { d.tour.clone() });
+            // (a line's chrono versions are tours of their own: one runs, the other not)
+            let key = (d.version, if d.yesterday { format!("{}\u{1}", d.tour) } else { d.tour.clone() });
             tour_prev[i] = last_of.get(&key).copied();
             last_of.insert(key, i);
         }
@@ -225,7 +230,7 @@ impl ScheduleSim {
                 bytes as f64 / 1e6
             );
         }
-        let today = departures.iter().filter(|d| d.mask & day_bit != 0 && d.mask & school_bit != 0).count();
+        let today = departures.iter().filter(|d| d.mask & day_bit != 0 && d.mask & school_bit != 0 && chrono.runs(d.version, d.yesterday)).count();
         log::info!("timetable: {} lines, {} trips, {} tracks, {} departures today (weekday {weekday}, holiday {holiday}, school holidays {school_holiday}; {skipped_tours} tours not today), {} depot groups", data.lines.len(), data.trips.len(), data.tracks.len(), today, depots.len());
         let served = data
             .trips
@@ -261,6 +266,7 @@ impl ScheduleSim {
             lan_tours: HashSet::new(),
             last_tod: 0.0,
             deactivated,
+            chrono,
             served,
             shared_stand: HashMap::new(),
             startup: Default::default(),
@@ -440,7 +446,7 @@ impl ScheduleSim {
     pub(super) fn runs(&self, i: usize) -> bool {
         let d = &self.departures[i];
         let bits = if d.yesterday { self.yesterday_bits } else { self.day_bits };
-        d.mask & bits.0 != 0 && d.mask & bits.1 != 0 && !self.kept_off(i)
+        d.mask & bits.0 != 0 && d.mask & bits.1 != 0 && self.chrono.runs(d.version, d.yesterday) && !self.kept_off(i)
     }
 
     /// At midnight: tonight's night trips (24:10, ...) whose tour's bus is on them already
@@ -496,6 +502,14 @@ impl ScheduleSim {
         }
         self.day_bits = day_bits(&self.calendar, clock);
         self.yesterday_bits = self.yesterday_bits();
+        // (NexiconDK, 1 November 2026: the chrono scenarios of the new day - their lines run
+        // from it, an ended one's no longer)
+        let mut day_before = clock.clone();
+        day_before.prev_day();
+        if self.chrono.set_day(date, day_before.date_code()) {
+            self.data.lines = self.chrono.lines();
+        }
+        self.deactivated = self.chrono.deactivated(date);
         self.mark_company();
         // (only when the clock runs on over midnight: set back, every bus went already)
         if forward {
@@ -573,7 +587,7 @@ impl ScheduleSim {
 /// Per departure, its night twin (`ScheduleSim::night_twin`): the trip after 24:00 of a tour
 /// and the same trip of yesterday's tour, a day earlier.
 pub(super) fn night_twins(departures: &[Departure]) -> Vec<Option<usize>> {
-    let key = |d: &Departure, time: f64| (d.line.clone(), d.tour.clone(), d.trip, d.profile, (time * 10.0).round() as i64);
+    let key = |d: &Departure, time: f64| (d.version, d.line.clone(), d.tour.clone(), d.trip, d.profile, (time * 10.0).round() as i64);
     let tonight: HashMap<_, usize> = departures
         .iter()
         .enumerate()

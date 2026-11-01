@@ -439,7 +439,50 @@ impl TimetableData {
         d
     }
 
+    /// (NexiconDK, 1 November 2026) The timetable of a session that runs on over several days
+    /// (a dedicated server, a drive past midnight): every line of the map's `TTData` and of
+    /// the chrono folders given (`chrono`: each folder and whether it is in force now) as a
+    /// version of its own (`LineVersion`), which of them run decided day by day
+    /// (`lines_in_force`). Stops, links, trips and tracks are the map's with those of the
+    /// folders in force now, a later folder's replacing one of the same name, as
+    /// `load_with_chrono` has them; a folder not in force adds those it has new. The data's
+    /// `lines` are left empty: the day's are the versions in force.
+    pub fn load_versions(map_dir: &Path, chrono: &[(PathBuf, bool)]) -> (TimetableData, Vec<LineVersion>) {
+        let mut folders = vec![(omsi_cfg::resolve_path(map_dir, "TTData"), true)];
+        for (c, on) in chrono {
+            let dir = omsi_cfg::resolve_path(c, "TTData");
+            folders.push((if omsi_cfg::vfs::is_dir(&dir) { dir } else { PathBuf::new() }, *on));
+        }
+        let mut d = TimetableData::default();
+        for want in [true, false] {
+            for (f, _) in folders.iter().filter(|(f, on)| *on == want && !f.as_os_str().is_empty()) {
+                d.merge(f, false, want);
+            }
+        }
+        let mut versions = Vec::new();
+        for (k, (f, _)) in folders.iter().enumerate() {
+            if f.as_os_str().is_empty() {
+                continue;
+            }
+            let mut names: Vec<PathBuf> = omsi_cfg::vfs::read_dir_paths(f);
+            names.sort_by_key(|p| p.to_string_lossy().to_uppercase());
+            for p in names.into_iter().filter(|p| p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("ttl"))) {
+                match Line::load(&p) {
+                    Ok(line) => versions.push(LineVersion { folder: k, line }),
+                    Err(e) => d.errors.push(e.to_string()),
+                }
+            }
+        }
+        (d, versions)
+    }
+
     fn merge_dir(&mut self, dir: &Path, lines: bool) {
+        self.merge(dir, lines, true)
+    }
+
+    /// A folder's stops, links, trips, tracks (and lines, `lines`) taken in: one of the same
+    /// name replaced (`replace`), else kept and the folder's left out.
+    fn merge(&mut self, dir: &Path, lines: bool, replace: bool) {
         let d = self;
         if let Ok(f) = CfgFile::read(dir.join("Busstops.cfg")) {
             for b in parse_busstops(&f) {
@@ -450,6 +493,10 @@ impl TimetableData {
         }
         if let Ok(f) = CfgFile::read(dir.join("StnLinks.cfg")) {
             for l in parse_stnlinks(&f) {
+                let had = d.stn_links.iter().any(|x| x.from_id == l.from_id && x.to_id == l.to_id);
+                if had && !replace {
+                    continue;
+                }
                 d.stn_links.retain(|x| !(x.from_id == l.from_id && x.to_id == l.to_id));
                 d.stn_links.push(l);
             }
@@ -460,6 +507,8 @@ impl TimetableData {
             let ext = p.extension().and_then(|e| e.to_str()).unwrap_or("").to_ascii_lowercase();
             let stem = p.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
             let res = match ext.as_str() {
+                "ttp" if !replace && d.trips.iter().any(|x| x.name.eq_ignore_ascii_case(&stem)) => Ok(()),
+                "ttr" if !replace && d.tracks.iter().any(|x| x.path.file_stem().is_some_and(|s| s.to_string_lossy().eq_ignore_ascii_case(&stem))) => Ok(()),
                 "ttp" => Trip::load(&p).map(|t| {
                     d.trips.retain(|x| !x.name.eq_ignore_ascii_case(&t.name));
                     d.trips.push(t)
@@ -482,6 +531,84 @@ impl TimetableData {
 
     pub fn trip(&self, name: &str) -> Option<&Trip> {
         self.trips.iter().find(|t| t.name.eq_ignore_ascii_case(name))
+    }
+}
+
+/// (NexiconDK, 1 November 2026) A line as one folder of the timetable has it
+/// (`TimetableData::load_versions`): the map's own `TTData` (folder 0) or a chrono folder's
+/// (folder k: the k-th of those given).
+#[derive(Clone, Debug)]
+pub struct LineVersion {
+    pub folder: usize,
+    pub line: Line,
+}
+
+/// Which of `versions` run with the folders `on` in force (index 0 the map's own, k the k-th
+/// chrono folder; one not given is not in force), as the original takes the lines: a line
+/// from the last folder in force that has it, unless a folder in force after that one takes
+/// it off (`off`: a line `[deactivate_lines]` names and the folder that does). A scenario so
+/// replaces a line of the map, takes it off, and a later one brings it back.
+pub fn lines_in_force(versions: &[LineVersion], off: &[(String, usize)], on: &[bool]) -> Vec<bool> {
+    let on_k = |k: usize| on.get(k).copied().unwrap_or(false);
+    versions
+        .iter()
+        .map(|v| {
+            let name = v.line.name.trim();
+            on_k(v.folder)
+                && !versions.iter().any(|w| w.folder > v.folder && on_k(w.folder) && w.line.name.trim().eq_ignore_ascii_case(name))
+                && !off.iter().any(|(l, j)| *j > v.folder && on_k(*j) && l.trim().eq_ignore_ascii_case(name))
+        })
+        .collect()
+}
+
+/// The lines of `versions` that `in_force` marks, in the order `load_with_chrono` gives them
+/// (the last folder's first, each folder's by name).
+pub fn lines_of(versions: &[LineVersion], in_force: &[bool]) -> Vec<Line> {
+    let mut idx: Vec<usize> = (0..versions.len()).filter(|&i| in_force.get(i).copied().unwrap_or(false)).collect();
+    idx.sort_by_key(|&i| std::cmp::Reverse(versions[i].folder));
+    idx.into_iter().map(|i| versions[i].line.clone()).collect()
+}
+
+#[cfg(test)]
+mod version_tests {
+    use super::*;
+
+    fn write_line(dir: &Path, name: &str, trip: &str) {
+        std::fs::create_dir_all(dir).unwrap();
+        Line { name: name.into(), tours: vec![Tour { number: "1".into(), ai_group: "Busses".into(), extra: String::new(), trips: vec![TourTrip { trip: trip.into(), profile: 0, departure: 600.0 }] }], ..Default::default() }.save(&dir.join(format!("{name}.ttl"))).unwrap();
+    }
+
+    /// A match day's chrono folder brings a special line and replaces line 5 of the map; a
+    /// holiday's takes line 6 off: each version runs on the days its folder is in force, and
+    /// the lines in force are those `load_with_chrono` takes for the same folders.
+    #[test]
+    fn line_versions_run_by_the_folders_in_force() {
+        let map = std::env::temp_dir().join(format!("openomsi-versions-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&map);
+        write_line(&map.join("TTData"), "5", "5_a");
+        write_line(&map.join("TTData"), "6", "6_a");
+        let fca = map.join("Chrono/FCA");
+        write_line(&fca.join("TTData"), "Sonderverkehr", "FCF_1");
+        write_line(&fca.join("TTData"), "5", "5_fca");
+        let holiday = map.join("Chrono/Feiertag");
+        std::fs::create_dir_all(&holiday).unwrap();
+        let (_, versions) = TimetableData::load_versions(&map, &[(fca.clone(), false), (holiday.clone(), false)]);
+        assert_eq!(versions.len(), 4);
+        let off = vec![("6".to_string(), 2)];
+        let names = |on: &[bool]| {
+            let mut v: Vec<String> = lines_of(&versions, &lines_in_force(&versions, &off, on)).into_iter().map(|l| format!("{}:{}", l.name, l.tours[0].trips[0].trip)).collect();
+            v.sort();
+            v
+        };
+        assert_eq!(names(&[true, false, false]), ["5:5_a", "6:6_a"], "an ordinary day");
+        assert_eq!(names(&[true, true, false]), ["5:5_fca", "6:6_a", "Sonderverkehr:FCF_1"], "the match day");
+        assert_eq!(names(&[true, false, true]), ["5:5_a"], "the holiday");
+        // the same as the original's merge of the folders in force
+        let same = TimetableData::load_with_chrono(&map, &[fca.clone()], &[]);
+        let mut want: Vec<String> = same.lines.iter().map(|l| format!("{}:{}", l.name, l.tours[0].trips[0].trip)).collect();
+        want.sort();
+        assert_eq!(names(&[true, true, false]), want);
+        let _ = std::fs::remove_dir_all(&map);
     }
 }
 

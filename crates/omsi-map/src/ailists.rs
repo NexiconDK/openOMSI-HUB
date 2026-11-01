@@ -243,6 +243,12 @@ pub struct ChronoCfg {
     pub ticket_pack: Option<String>,
     pub money_system: Option<String>,
     pub deactivate_lines: Vec<String>,
+    /// (NexiconDK, 1 November 2026) `[name]`: what the scenario is called ("FCA Heimspiel
+    /// 02.11.2025 - 14.00 Uhr"); empty when the file has none.
+    pub name: String,
+    /// `[description]` ... `[end]`: what the game tells the driver when the scenario is in
+    /// force, its lines as written (blank lines at its start and end left out).
+    pub description: Vec<String>,
 }
 
 pub fn parse_chrono_cfg(f: &CfgFile) -> ChronoCfg {
@@ -254,6 +260,17 @@ pub fn parse_chrono_cfg(f: &CfgFile) -> ChronoCfg {
             "enddate" => c.end_date = r.i32(),
             "ticketpack" => c.ticket_pack = Some(r.str().to_string()),
             "moneysystem" => c.money_system = Some(r.str().to_string()),
+            "name" => c.name = r.str().trim().to_string(),
+            "description" => {
+                let mut lines: Vec<String> = r.until("[end]").into_iter().map(|l| l.trim_end().to_string()).collect();
+                while lines.first().is_some_and(|l| l.trim().is_empty()) {
+                    lines.remove(0);
+                }
+                while lines.last().is_some_and(|l| l.trim().is_empty()) {
+                    lines.pop();
+                }
+                c.description = lines;
+            }
             // a count, then that many line names (the original: StrToInt, then ReadLn
             // n times). The count is not a line: read as one it took line "1" or "2" off.
             "deactivate_lines" => {
@@ -294,11 +311,37 @@ fn chrono_cfgs(dir: &Path, out: &mut Vec<PathBuf>) {
 
 /// Chrono folders of a map that are active on `date` (YYYYMMDD), in the game's order.
 pub fn active_chrono_dirs(map_dir: &Path, date: i32) -> Vec<PathBuf> {
+    all_chrono(map_dir).into_iter().filter(|(_, c)| c.active_on(date)).map(|(d, _)| d).collect()
+}
+
+/// (NexiconDK, 1 November 2026) Every chrono folder of a map with its `Chrono.cfg`, in force
+/// or not, in the game's order: what a session that runs on over several days (a dedicated
+/// server, a drive past midnight) decides by each day, without reading the files again.
+pub fn all_chrono(map_dir: &Path) -> Vec<(PathBuf, ChronoCfg)> {
     let mut cfgs = Vec::new();
     chrono_cfgs(&omsi_cfg::resolve_path(map_dir, "Chrono"), &mut cfgs);
     cfgs.into_iter()
-        .filter(|p| CfgFile::read(p).map(|f| parse_chrono_cfg(&f).active_on(date)).unwrap_or(false))
-        .filter_map(|p| p.parent().map(|d| d.to_path_buf()))
+        .filter_map(|p| Some((p.parent()?.to_path_buf(), parse_chrono_cfg(&CfgFile::read(&p).ok()?))))
+        .collect()
+}
+
+/// (NexiconDK, 1 November 2026) The chrono scenarios of `dirs` (in force) that have something
+/// to tell the driver - a description: each folder with its `Chrono.cfg`, in the game's order.
+/// A scenario without a name goes by its folder's. One with a name only (a semester's, open
+/// ended, with an empty description) would come up at every start saying nothing.
+pub fn chrono_events(dirs: &[PathBuf]) -> Vec<(PathBuf, ChronoCfg)> {
+    dirs.iter()
+        .filter_map(|d| {
+            let p = Some(omsi_cfg::resolve_path(d, "Chrono.cfg")).filter(|p| omsi_cfg::vfs::is_file(p))?;
+            let mut c = parse_chrono_cfg(&CfgFile::read(&p).ok()?);
+            if c.description.iter().all(|l| l.trim().is_empty()) {
+                return None;
+            }
+            if c.name.is_empty() {
+                c.name = d.file_name().map(|n| n.to_string_lossy().replace('_', " ")).unwrap_or_default();
+            }
+            Some((d.clone(), c))
+        })
         .collect()
 }
 
@@ -449,6 +492,37 @@ mod tests {
         assert!(!before.iter().any(|(l, _)| l == "5 & 5N"), "{before:?}");
         // the count before the names is no line
         assert!(!later.iter().any(|(l, _)| l == "1" || l == "17" || l == "2"), "{later:?}");
+    }
+
+    /// A scenario's name and description (to `[end]`, blank lines round it left out), as
+    /// the maps write them; one without either has nothing to tell.
+    #[test]
+    fn a_chrono_scenario_has_a_name_and_a_description() {
+        let f = omsi_cfg::CfgFile::from_str("Chrono.cfg", "[name]\nFCA Heimspiel 02.11.2025 - 14.00 Uhr\n\n[startdate]\n20251102\n\n[enddate]\n20251102\n\n[description]\n\nFCA Heimspiel im Sportpark Seppenfeld.\nEs verkehren die Shuttlebusse ab Ahlheim Hbf.\n\n[end]\n\n\n[deactivate_lines]\n1\nLinie 5\n");
+        let c = parse_chrono_cfg(&f);
+        assert_eq!(c.name, "FCA Heimspiel 02.11.2025 - 14.00 Uhr");
+        assert_eq!(c.description, vec!["FCA Heimspiel im Sportpark Seppenfeld.", "Es verkehren die Shuttlebusse ab Ahlheim Hbf."]);
+        assert_eq!((c.start_date, c.end_date), (20251102, 20251102));
+        assert_eq!(c.deactivate_lines, vec!["Linie 5"]);
+        assert!(c.active_on(20251102) && !c.active_on(20261102), "only the year in the file");
+        // the file's last line its [end], no line break after it
+        let f = omsi_cfg::CfgFile::from_str("Chrono.cfg", "[description]\nTA94\n\nBTHE: 949001\n[end]");
+        assert_eq!(parse_chrono_cfg(&f).description, vec!["TA94", "", "BTHE: 949001"]);
+        // in a folder: all of them with their dates, those to tell of by name or folder
+        let dir = std::env::temp_dir().join(format!("omsi-chrono-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        for (folder, text) in [("1_FCA/02.11.25", "[name]\nFCA\n[startdate]\n20251102\n[enddate]\n20251102\n[description]\nShuttlebusse\n[end]\n"), ("Tarif_neu", "[startdate]\n20250301\n[ticketpack]\nx.otp\n"), ("Messe", "[startdate]\n20251119\n[enddate]\n20251123\n[description]\nMessependel\n[end]\n"), ("Semester", "[name]\nVorlesungszeit\n[startdate]\n20251013\n[description]\n\n\n[end]\n")] {
+            std::fs::create_dir_all(dir.join("Chrono").join(folder)).unwrap();
+            std::fs::write(dir.join("Chrono").join(folder).join("Chrono.cfg"), text).unwrap();
+        }
+        let all = all_chrono(&dir);
+        assert_eq!(all.len(), 4);
+        let on = active_chrono_dirs(&dir, 20251120);
+        assert_eq!(on.len(), 3, "{on:?}");
+        let told: Vec<String> = chrono_events(&on).into_iter().map(|(_, c)| c.name).collect();
+        assert_eq!(told, vec!["Messe"], "the ticket change and the semester (no description) tell nothing");
+        assert_eq!(chrono_events(&active_chrono_dirs(&dir, 20251102))[0].1.name, "FCA");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

@@ -396,6 +396,7 @@ pub(super) fn toggle_now(app: &App, id: &str) -> Option<bool> {
         "fps" => s.show_fps,
         "get_up" => s.get_up,
         "trip_summary" => s.trip_summary,
+        "chrono_info" => s.chrono_info,
         "time_sync" => s.time_sync,
         "metar_sync" => s.metar_sync,
         "snow_cover" => app.session.weather.as_ref().is_some_and(|w|w.snow),
@@ -559,6 +560,14 @@ pub(super) fn toggle_set(app: &mut App, id: &str, on: bool) -> Option<(&'static 
             Some(("get_up", bit))
         }
         "trip_summary" => { app.settings.trip_summary = on; Some(("trip_summary", bit)) }
+        "chrono_info" => {
+            app.settings.chrono_info = on;
+            if !on {
+                app.menus.game_panels.chrono = None;
+                app.session.chrono_due.clear();
+            }
+            Some(("chrono_info", bit))
+        }
         // the real-time sync: the clock takes the device's date and time at once (a host's
         // clock runs at real time while it is on, at its time speed again after)
         "time_sync" => {

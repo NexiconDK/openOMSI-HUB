@@ -430,7 +430,7 @@ mod tests {
         sim.data.trips.push(omsi_timetable::Trip { terminus: "Betriebsfahrt".into(), stations: vec![42], ..Default::default() });
         sim.departures.push(Departure {
             time: 100.0, trip: 0, profile: 0, line: "Diensttafeln".into(), ai_group: "depot".into(),
-            tour: "101 Mo-Do".into(), mask: -1, spawned: false, yesterday: false,
+            tour: "101 Mo-Do".into(), mask: -1, spawned: false, yesterday: false, version: 0,
         });
         sim.times = vec![vec![TripTimes { stations: vec![(0.0, 0.0)], stops: vec![true], ..Default::default() }]];
         sim.visits.insert(42, vec![(0, 0)]);
@@ -450,7 +450,7 @@ mod tests {
         });
         sim.departures.push(Departure {
             time: 100.0, trip: 0, profile: 0, line: "7".into(), ai_group: "depot".into(),
-            tour: "1".into(), mask: -1, spawned: false, yesterday: false,
+            tour: "1".into(), mask: -1, spawned: false, yesterday: false, version: 0,
         });
         sim.times = vec![vec![TripTimes { stations: vec![(0.0, 0.0)], stops: vec![true], ..Default::default() }]];
         sim.visits.insert(42, vec![(0, 0)]);
@@ -481,7 +481,7 @@ mod tests {
         sim.times = vec![vec![TripTimes { stations: vec![(0.0, 0.0)], stops: vec![true], duration: 600.0, ..Default::default() }]];
         let mask = sim.day_bits.0 | sim.day_bits.1;
         let d = |time: f64, yesterday: bool| Departure {
-            time, trip: 0, profile: 0, line: "N1".into(), ai_group: "depot".into(), tour: "1".into(), mask, spawned: false, yesterday,
+            time, trip: 0, profile: 0, line: "N1".into(), ai_group: "depot".into(), tour: "1".into(), mask, spawned: false, yesterday, version: 0,
         };
         sim.departures = vec![d(1800.0, true), d(82_800.0, false), d(88_200.0, false)];
         sim.night_twin = super::load::night_twins(&sim.departures);

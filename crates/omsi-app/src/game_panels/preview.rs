@@ -107,3 +107,25 @@ fn preview() {
     picture("game-panels-view.png", &[(view_editor::ViewEditor::default().panel_of(&values), None)]);
     picture("game-panels-move.png", &[(move_here::panel(glam::DVec3::new(-1948.9, -174.7, 8.8)), Some("yes"))]);
 }
+
+/// (NexiconDK, 1 November 2026) The chrono scenarios' card: a match day and a fair in force.
+#[test]
+#[ignore]
+fn chrono_preview() {
+    let fca = omsi_map::ailists::ChronoCfg {
+        name: "FCA Heimspiel 02.11.2025 - 14.00 Uhr".into(),
+        start_date: 20251102,
+        end_date: 20251102,
+        description: vec!["FCA Heimspiel im Sportpark Seppenfeld.".into(), "Es verkehren die Shuttlebusse ab Ahlheim Hbf, jeweils getrennt von Fan- und Gaestebusse.".into()],
+        ..Default::default()
+    };
+    let fair = omsi_map::ailists::ChronoCfg {
+        name: "Messependel 19.11. - 23.11.2025".into(),
+        start_date: 20251119,
+        end_date: 20251123,
+        description: ["Messependel - bitte beachten Sie die gesonderten Wagenlaufpläne!", "TA94", "", "Umlaufverteilung:", "", "BTHE: 949001, 949002, 949009, 949010, 949011, 949012", "BTHK: 949003, 949004, 949005, 949006, 949007, 949008"].map(String::from).to_vec(),
+        ..Default::default()
+    };
+    picture("game-panels-chrono.png", &[(chrono_info::ChronoPanel::new(vec![fca.clone()]).panel(), Some("close"))]);
+    picture("game-panels-chrono-two.png", &[(chrono_info::ChronoPanel::new(vec![fca, fair]).panel(), None)]);
+}

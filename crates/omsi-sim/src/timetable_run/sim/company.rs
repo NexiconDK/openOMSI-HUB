@@ -201,8 +201,8 @@ impl ScheduleSim {
         }
         self.company_off = off;
         let kept = (0..self.departures.len()).filter(|&i| self.company_off[i] && {
-            let m = self.departures[i].mask;
-            m & self.day_bits.0 != 0 && m & self.day_bits.1 != 0
+            let (m, v) = (self.departures[i].mask, self.departures[i].version);
+            m & self.day_bits.0 != 0 && m & self.day_bits.1 != 0 && self.chrono.runs(v, false)
         }).count();
         log::info!("timetable: {kept} of today's departures stay in their depots for the company");
     }

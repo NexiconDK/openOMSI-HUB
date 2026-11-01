@@ -26,6 +26,7 @@ pub(super) fn options_pages(app: &App) -> Vec<Page> {
         switch_row(app, "collision_pedestrians", "Collisions with people", "Enables/disables knocking down people"),
         switch_row(app, "timetable_win", "Timetable window (Insert)", "Displays a list of all stops (only when a tour is active)"),
         switch_row(app, "trip_summary", "Trip summary", "At the end of each trip: its stops with the times planned and driven, to copy or to save"),
+        switch_row(app, "chrono_info", "Chrono events", "The map's chrono events in force on the day (a match day, a fair, a holiday): their name, dates and what they say, at the start and when one comes into force at midnight"),
         switch_row(app, "info_bar", "Information bar (Shift+Y)", "Displays information such as the time, speed, and other details at the top of the screen"),
         switch_row(app, "exact_fare", "Passengers pay the exact fare", "No change is given at the cash desk"),
         pick("pax_signal", "Passengers signal to a coming bus", "With natural animations: how many of those waiting stay at their place and hold an arm out to the street as a bus that takes them comes, till it stands. The others step up to where it will stand, as in OMSI"),

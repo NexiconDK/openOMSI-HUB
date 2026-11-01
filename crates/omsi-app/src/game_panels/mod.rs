@@ -20,6 +20,8 @@ pub(crate) use extra_form::open as open_extra_form;
 pub(crate) use move_here::ask as ask_move;
 pub(crate) mod quick_menu;
 pub(crate) mod trip_summary;
+// NexiconDK: the map's chrono scenarios in force
+pub(crate) mod chrono_info;
 pub(crate) mod view_editor;
 #[cfg(test)]
 mod preview;
@@ -39,6 +41,9 @@ pub(crate) struct GamePanels {
     alt_alone: bool,
     pub(crate) quick: Option<quick_menu::QuickMenu>,
     pub(crate) trip: Option<trip_summary::TripPanel>,
+    /// (NexiconDK, 1 November 2026) The chrono scenarios in force (`chrono_info`); those
+    /// waiting to be told until the bus stands are the session's (`chrono_due`).
+    pub(crate) chrono: Option<chrono_info::ChronoPanel>,
     pub(crate) dest: Option<dest_form::DestForm>,
     pub(crate) extra: Option<extra_form::ExtraForm>,
     pub(crate) view: Option<view_editor::ViewEditor>,
@@ -49,7 +54,7 @@ pub(crate) struct GamePanels {
 impl GamePanels {
     /// Whether any panel is open.
     pub(crate) fn any(&self) -> bool {
-        self.quick.is_some() || self.trip.is_some() || self.dest.is_some() || self.extra.is_some() || self.view.is_some() || self.move_to.is_some()
+        self.quick.is_some() || self.trip.is_some() || self.chrono.is_some() || self.dest.is_some() || self.extra.is_some() || self.view.is_some() || self.move_to.is_some()
     }
 
     /// Whether the panels have the mouse.
@@ -146,6 +151,7 @@ impl crate::App {
             match c.panel.as_str() {
                 "quick" => quick_menu::click(self, el),
                 "trip" => trip_summary::click(self, el),
+                "chrono" => chrono_info::click(self, el),
                 "dest" => dest_form::click(self, el),
                 "extra" => extra_form::click(self, el),
                 "view" => view_editor::click(self, el),
@@ -176,9 +182,18 @@ impl crate::App {
                 j.take_summary();
             }
         }
+        // (the chrono scenarios told as soon as the bus stands, with no other card open)
+        if !self.session.chrono_due.is_empty() && speed < 1.0 && self.menus.game_panels.trip.is_none() {
+            let due = std::mem::take(&mut self.session.chrono_due);
+            match self.menus.game_panels.chrono.as_mut() {
+                Some(c) => c.add(due),
+                None => self.menus.game_panels.chrono = Some(chrono_info::ChronoPanel::new(due)),
+            }
+        }
         let panels: Vec<(&str, Option<Panel>)> = vec![
             ("view", self.menus.game_panels.view.as_ref().map(|v| v.panel(self))),
             ("trip", self.menus.game_panels.trip.as_ref().map(|t| t.panel())),
+            ("chrono", self.menus.game_panels.chrono.as_ref().map(|c| c.panel())),
             ("dest", self.menus.game_panels.dest.as_ref().map(|d| d.panel())),
             ("extra", self.menus.game_panels.extra.as_ref().map(|d| d.panel())),
             ("quick", self.menus.game_panels.quick.as_ref().map(|q| q.panel(self))),
@@ -261,7 +276,7 @@ impl crate::App {
             if gp.quick.take().is_some() {
                 return true;
             }
-            return gp.trip.is_some() || gp.dest.is_some() || gp.extra.is_some() || gp.move_to.is_some();
+            return gp.trip.is_some() || gp.chrono.is_some() || gp.dest.is_some() || gp.extra.is_some() || gp.move_to.is_some();
         };
         match (pr.kind, pr.element.as_deref()) {
             (crate::plugin_ui::HitKind::Slider, Some(el)) => {
@@ -312,7 +327,7 @@ impl crate::App {
     /// the view editor - which keeps what was set without saving it). True when one did.
     pub(crate) fn close_game_panel(&mut self) -> bool {
         let gp = &mut self.menus.game_panels;
-        if gp.quick.take().is_some() || gp.move_to.take().is_some() || gp.dest.take().is_some() || gp.extra.take().is_some() || gp.trip.take().is_some() {
+        if gp.quick.take().is_some() || gp.move_to.take().is_some() || gp.dest.take().is_some() || gp.extra.take().is_some() || gp.trip.take().is_some() || gp.chrono.take().is_some() {
             return true;
         }
         if gp.view.is_some() {
