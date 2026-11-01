@@ -230,13 +230,24 @@ own mesh, relative to the person's model folder (`Kinderwagen.o3d`), drawn with 
 the body - for a pram split off its figure. Such a person waits standing (never on a bench),
 is in no group, never runs for a bus and makes no gestures to one. They board only where the
 bus's place for them is free - for a wheelchair by a door without steps to it (a threshold
-no higher than a low floor's, 45 cm, and a flat floor on to the place) - and wait for the
+no higher than a low floor's, 55 cm as the door points lie, and a flat floor on to the place) - and wait for the
 next bus otherwise, which counts as at a full bus, not as left behind. They buy no ticket,
 get in by the door nearest the place, stand there, are never moved to another place, and get
 out by the door nearest it, pressing the bus's `int_kinderwagenwunsch` (where its script has
 it) with the stop request. Their figure keeps the original animation, held still: a
 wheelchair's figure never walks, a pram's pusher walks with the upper body steady on the
-handle (her arms have no bones of their own).
+handle (her arms have no bones of their own) and bobs a third as much with her steps.
+
+The moving parts need no bones in the model: the game finds them in the mesh. A wheel is a
+piece of it (its triangles joined) that is round seen from the side, thin across and touches
+the ground; the pieces about the same axis inside it (the other side's wheel, a hub, spokes,
+a hand rim) turn with it, by how far the person moves over the ground or the bus's floor - two
+axles at most, the largest first. A wheelchair's figure pushes its rims as it rolls: its arms
+are the figure's vertices out beyond its body from the shoulders down (the gap between arm and
+body found at each height; not the chair's material, nor its knees and feet in front), and
+swing about the shoulders, the forearms bending up at the elbows on the way back. A pram -
+its own mesh, or else every piece of its wheels' material - goes on a frame of its own: it
+glides on with the person instead of bobbing with her hips.
 
 The place is a standing `[passpos]` marked by a `{mobility}` line, after its values and
 variables; its rotation is the way the wheelchair or the pram faces, and the person stands

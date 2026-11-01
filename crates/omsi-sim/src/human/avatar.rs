@@ -249,6 +249,7 @@ impl HumanType {
             variants: Vec::new(),
             extra_dirs: vec![model_dir],
             face,
+            mobility: None,
         })
     }
 

@@ -302,6 +302,9 @@ pub struct HumanType {
     pub(super) extra_dirs: Vec<PathBuf>,
     /// An imported avatar's face: which blend shape of `meshes[0]` makes which expression.
     pub face: Option<super::face::FaceRig>,
+    /// (NexiconDK) A wheelchair's or a pram's moving parts, as found in the model
+    /// (`super::mobility`).
+    pub mobility: Option<super::mobility::MobilityRig>,
 }
 
 impl HumanType {
@@ -371,6 +374,7 @@ impl HumanType {
         }
         // (NexiconDK, 1 November 2026) a pram of its own mesh (`[openomsi_mobility]`): on the
         // body, as a mesh of the model is - after the rig is measured, which it is no part of
+        let mut pram_index = None;
         if let Some(file) = def.pram_mesh.as_deref() {
             let p = omsi_cfg::resolve_path(&model_dir, file);
             match omsi_o3d::load_mesh(&p) {
@@ -379,6 +383,7 @@ impl HumanType {
                     let data = mesh_from_o3d(&m);
                     let skin = influences(&data, &bones);
                     let alpha = vec![0; m.materials.len()];
+                    pram_index = Some(meshes.len());
                     meshes.push(HumanMesh { data, materials: m.materials.clone(), bones, skin, alpha, morphs: Vec::new() });
                 }
                 Err(e) => log::warn!("{}: its pram {}: {e}", path.display(), p.display()),
@@ -415,6 +420,12 @@ impl HumanType {
                 }
             }
         }
+        // (NexiconDK, 1 November 2026) a wheelchair's wheels and arms, a pram's frame and
+        // wheels: on bones of their own
+        let mobility = super::mobility::rig_of(&def, &mut meshes, pram_index);
+        if def.mobility.is_some() {
+            log::info!("{}: {:?}", path.display(), mobility);
+        }
         Ok(HumanType {
             omsi: crate::human_omsi::OmsiRig::new(&def),
             joints,
@@ -426,6 +437,7 @@ impl HumanType {
             variants,
             extra_dirs,
             face: None,
+            mobility,
         })
     }
 

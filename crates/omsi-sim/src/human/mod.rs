@@ -43,6 +43,7 @@ pub use hail_motion::HailWrist;
 mod wave_after;
 pub use wave_after::{wave_after_arm, wave_side};
 pub mod face;
+mod mobility;
 mod motion;
 mod rig;
 mod skin;
@@ -51,6 +52,7 @@ mod tests;
 
 pub use rig::{HumanMesh, HumanType, Influence, Joints, Rig};
 pub use skin::{curl_hands, grip_centres, hand_slot, skin, skin_from, slots_from_omsi};
+pub use mobility::{mobility_bones, ArmJoints, Axle, MobilityRig, Rolling};
 #[cfg(test)]
 use rig::split_feet;
 
@@ -70,8 +72,9 @@ pub const BONE_HAND_L: i32 = -13;
 pub const BONE_HAND_R: i32 = -14;
 
 /// Bone transform slots: the thirteen engine bones (id -2 … -14 → slot 0 … 12), the two
-/// feet split off the shins and the toes split off the feet.
-pub const SLOTS: usize = 17;
+/// feet split off the shins and the toes split off the feet; (NexiconDK) a wheelchair's and a
+/// pram's moving parts after them (`mobility`: 17 … 23).
+pub const SLOTS: usize = 24;
 const THIGH: [usize; 2] = [0, 1];
 const SHIN: [usize; 2] = [2, 3];
 const UPPER: [usize; 2] = [4, 5];

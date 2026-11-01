@@ -293,6 +293,9 @@ pub struct AnimInput {
     pub steady: bool,
 }
 
+/// How much of the walk's bob is left to somebody pushing a pram (`AnimInput::steady`).
+const STEADY_BOB: f32 = 0.35;
+
 /// A person's animation state: the walk phase and the thirty angles (degrees).
 #[derive(Debug, Clone)]
 pub struct OmsiAnim {
@@ -389,6 +392,11 @@ impl OmsiAnim {
                 a[3] = spread;
                 let l24 = ((4.0 * std::f32::consts::PI * p).cos() - 1.0) / 2.0;
                 bob = (1.0 - (std::f32::consts::PI / 180.0 * swing).cos()) * (0.8 * rig.hip.y) * l24 * (1.0 - (1.0 - RUN_BOB) * run);
+                // (NexiconDK: pushing a pram, the body bobs little - her hands stay on the
+                // handle of the pram gliding on, `human::mobility`)
+                if inp.steady {
+                    bob *= STEADY_BOB;
+                }
                 if !inp.steady {
                     a[11] -= swing * l24 * rig.waist_bend;
                     a[12] += swing * l24 * rig.waist_bend + RUN_LEAN * run;

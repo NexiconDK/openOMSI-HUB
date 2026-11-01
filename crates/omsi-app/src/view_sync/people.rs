@@ -528,6 +528,9 @@ pub(crate) struct PersonView {
     pub(super) ankles: [Vec3; 2],
     /// The earlier IK/foot-planted animation, allocated only for the enhanced poses.
     pub(super) procedural: Option<omsi_sim::human::Pose>,
+    /// (NexiconDK) A wheelchair's or a pram's wheels and push, as far as they have rolled
+    /// (`omsi_sim::human::mobility_bones`).
+    rolling: omsi_sim::human::Rolling,
     /// Local-only cosmetic gesture; never changes bus stops or tasks.
     hail_strength: f32,
     /// Full-bus acknowledgement independent of the raised-arm hailing.
@@ -683,6 +686,13 @@ impl PeopleView {
                 omsi_sim::human::slots_from_omsi(&p.anim.bones(&ty.omsi))
             };
             apply_optional_bus_visual(p, st, &ty, &mut bones, enhanced, camera, dt);
+            // (NexiconDK, 1 November 2026) a wheelchair's wheels turning and its arms pushing,
+            // a pram gliding on with its wheels turning, as fast as the person moves over the
+            // ground or the bus's floor
+            if ty.mobility.is_some() {
+                st.rolling.advance(p.vel.length() as f32, dt);
+                omsi_sim::human::mobility_bones(&ty, &mut bones, &st.rolling);
+            }
             // an avatar's face near the eye: blinks, looks, expressions, the lips
             // (from the camera the picture is drawn from: a face is seen from there)
             let near = ty.face.is_some() && (p.position - camera).length() < avatars::FACE_DISTANCE;
