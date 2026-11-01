@@ -41,6 +41,8 @@ pub(crate) fn open_world(args: &Args) -> Result<(World, Camera, DVec3)> {
     // the session's settings the world's loading reads, and whether its weather lies as snow
     // (the panes of the vehicles that go onto the GPU wear it)
     args.session_settings.apply_to(&world);
+    // (the cameras of another map's places forgotten)
+    omsi_sim::roadside::reset();
     {
         let weather = load_weather(args);
         world.settings.set_snow(weather.snow);

@@ -4,10 +4,10 @@
 --
 -- * red lights: the game's `red_light` event (the bus passed a light showing red); how long it
 --   had been red comes from `light_ahead`, a light that turned red a moment ago is no offence;
--- * speed cameras: fixed ones on a share of the lanes (more on fast roads, some where the
---   limit is low), placed by the lane's index in the map so every drive of the map finds them
---   in the same places; one flashes when the bus passes it faster than the limit and the
---   tolerance;
+-- * speed cameras: the game's own (its `speed_camera` event): they stand by the road in the
+--   same places on every drive of the map (more on fast roads, some where the limit is low),
+--   seen or unseen as the player sets it, and catch the bus faster than the limit and the
+--   tolerance; switched off in the game, there are none;
 -- * comfort: hard braking, hard starts, stops that end with a jerk, from the bus's speed.
 --
 -- An offence is said at once (a card with the fine); every event is kept with the watch's
@@ -22,7 +22,6 @@ local CREEP = 4            -- km/h: slower over the line is creeping
 local HARD_BRAKE, HARD_START, ROUGH_STOP = 2.8, 2.0, 2.0  -- m/s²
 local ROUGH_AFTER_BRAKE = 4.0  -- s: a rough stop that soon after a hard brake is that brake's
 local REARM = 1.2
-local LANE_EVERY = 0.2     -- s between two looks at the lane
 local KEPT = 4000
 
 local clock = 0
@@ -30,8 +29,6 @@ local events = {}
 local speed, accel, braking, starting = 0, 0, false, false
 local slow = {}
 local red_since = nil      -- the clock when the light ahead turned red
-local lane = nil           -- { index, limit, along, camera, flashed }
-local lane_wait = 0
 
 -- the place this language writes its texts with (`tr`), and the card for offences (`notify`)
 local tr, notify = function(t) return t end, function() end
@@ -104,44 +101,11 @@ local function comfort(dt, v)
   end
 end
 
--- where a speed camera stands on lane `index` (limit in km/h): metres into the lane, or nil
--- (FNV-1a over the index: the same lanes in every drive of the map)
-function M.camera_on(index, limit)
-  local h = 0xcbf29ce484222325
-  local bytes = { index & 0xff, (index >> 8) & 0xff, (index >> 16) & 0xff, (index >> 24) & 0xff, 0x5a }
-  for _, b in ipairs(bytes) do
-    h = (h ~ b) * 0x100000001b3
-  end
-  local u = (h >> 11) / 9007199254740992.0
-  local v = ((h * 0x9e3779b97f4a7c15) >> 11) / 9007199254740992.0
-  local share
-  if limit >= 70 then share = 0.12 elseif limit >= 60 then share = 0.08 elseif limit <= 30 then share = 0.06 else share = 0.025 end
-  if u < share then return 20 + 40 * v end
-  return nil
-end
-
-local function cameras(dt, kmh)
-  if lane then lane.along = lane.along + kmh / 3.6 * dt end
-  lane_wait = lane_wait - dt
-  if lane_wait > 0 or not (omsi.map and omsi.map.lane and omsi.position) then return end
-  lane_wait = LANE_EVERY
-  local x, y = omsi.position()
-  if not x then lane = nil return end
-  local l = omsi.map.lane(x, y)
-  if not l or l.distance > 6 or not l.speed_limit or l.speed_limit <= 0 then
-    lane = nil
-    return
-  end
-  if not lane or lane.index ~= l.index then
-    lane = { index = l.index, limit = l.speed_limit, along = 0, camera = M.camera_on(l.index, l.speed_limit), flashed = false }
-  end
-  if lane.camera and not lane.flashed and lane.along >= lane.camera then
-    lane.flashed = true
-    local over = career.over_limit(kmh, lane.limit)
-    if over then
-      offence({ kind = "speeding", speed = kmh, limit = lane.limit, red_for = 0, fine = career.speeding_fine(over, lane.limit <= 50) })
-    end
-  end
+-- the game's speed camera caught the bus at `kmh` where `limit` is allowed (km/h)
+function M.speed_camera(kmh, limit)
+  local over = career.over_limit(kmh, limit)
+  if not over then return end
+  offence({ kind = "speeding", speed = kmh, limit = limit, red_for = 0, fine = career.speeding_fine(over, limit <= 50) })
 end
 
 -- every frame of the game with the player in a bus
@@ -149,7 +113,6 @@ function M.frame(dt)
   clock = clock + dt
   local kmh = omsi.speed and omsi.speed() or 0
   comfort(dt, kmh / 3.6)
-  cameras(dt, kmh)
 end
 
 function M.light_ahead(aspect)

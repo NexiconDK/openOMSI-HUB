@@ -384,7 +384,11 @@ impl World {
             if first_load {
                 lanes.extend(placed_object_lanes(&ot, o, pos, xf, heading, controller, key));
             }
-            self.object_collision(&mut state, &st, &ot, o, (pos, xf, heading), is_surface);
+            // (a camera or a display the game put by the road is never in the way: it may
+            // stand where a bay's bus swings in - see `roadside`)
+            if omsi_sim::roadside::kind_of_id(o.id).is_none() {
+                self.object_collision(&mut state, &st, &ot, o, (pos, xf, heading), is_surface);
+            }
             if !ot.model.smokes.is_empty() || !ot.model.particle_emitters.is_empty() {
                 let set = omsi_sim::particles::ParticleSet::new(ot.model.particle_systems(), (o.id as u64) ^ 0x51ed_2701);
                 self.particle_objects.lock().entry(key).or_default().push(ParticleObject { map_id: o.id, pos, rot: xf, set });

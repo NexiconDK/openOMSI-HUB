@@ -709,11 +709,13 @@ pub(crate) struct SessionSettings {
     pub(crate) sound_scenery: f32,
     pub(crate) mirror_size: u32,
     pub(crate) rain_quality: u8,
+    /// The speed cameras by the road (`roadside::mode`): the first tiles are staged with them.
+    pub(crate) speed_cameras: u8,
 }
 
 impl Default for SessionSettings {
     fn default() -> SessionSettings {
-        SessionSettings { enhanced_plus: false, enhanced: false, classic: false, clouds: true, sound_scenery: 1.0, mirror_size: 256, rain_quality: 2 }
+        SessionSettings { enhanced_plus: false, enhanced: false, classic: false, clouds: true, sound_scenery: 1.0, mirror_size: 256, rain_quality: 2, speed_cameras: omsi_scene::roadside::OFF }
     }
 }
 
@@ -733,6 +735,7 @@ impl SessionSettings {
             sound_scenery: settings.vol_scenery,
             mirror_size: settings.mirror_size,
             rain_quality: crate::rain::quality_of(&settings.rain_quality),
+            speed_cameras: crate::roadside::mode(&settings.speed_cameras),
         }
     }
 
@@ -764,6 +767,7 @@ impl SessionSettings {
         world.settings.set_sound_scenery(self.sound_scenery);
         world.settings.set_mirror_size(self.mirror_size);
         world.settings.set_rain_quality(self.rain_quality);
+        world.settings.set_roadside(self.speed_cameras);
     }
 
     /// The scene's graphics kind (Vanilla before Enhanced, as the showroom may ask both).

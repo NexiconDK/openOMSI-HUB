@@ -4694,6 +4694,15 @@
       "since": "0.2.22"
     },
     {
+      "name": "speed_camera",
+      "args": [
+        "speed_kmh",
+        "limit_kmh"
+      ],
+      "doc": "A speed camera by the road caught the bus: faster than the limit after the tolerance (3 km/h, 3 % above 100 km/h), as fines count it. The cameras stand in the same places on every drive of the map; the player's setting may show them, hide them, or switch them off (then this never comes).",
+      "since": "0.2.22"
+    },
+    {
       "name": "speed_limit",
       "args": [
         "kmh",

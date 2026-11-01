@@ -362,6 +362,8 @@ const gameplay = {
         { type: 'toggle', key: 'collision_vehicles', label: 'Collisions with vehicles' },
         { type: 'toggle', key: 'collision_objects', label: 'Collisions with objects (walls, poles)' },
         { type: 'toggle', key: 'collision_pedestrians', label: 'Collisions with people' },
+        // (NexiconDK, 1 November 2026: omsi_sim::roadside)
+        { type: 'select', key: 'speed_cameras', label: 'Speed cameras', options: [['visible', 'Visible'], ['invisible', 'Invisible'], ['off', 'Off']], help: 'Speed cameras by the road, red-light cameras at some traffic lights and speed displays in town, with the models of the add-ons you have installed: Visible they stand there and flash, Invisible they measure unseen, Off there are none and no speeding fines' },
         { type: 'toggle', key: 'use_real_time', label: 'Start at the real time' },
         { type: 'toggle', key: 'use_real_date', label: "Start on today's date" },
         // the game's clock follows this device's (the host's in multiplayer)

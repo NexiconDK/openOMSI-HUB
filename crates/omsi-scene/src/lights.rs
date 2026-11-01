@@ -884,6 +884,16 @@ pub fn collect(
                 .collect::<Vec<_>>()
         );
     }
+    // (NexiconDK, 1 November 2026) a speed camera's flash without a lamp of its own: a red
+    // light at its lens and its glow, for a moment (`omsi_sim::roadside::trigger`)
+    for (at, strength) in omsi_sim::roadside::lights_now() {
+        if (at - camera_pos).length() > CORONA_RANGE {
+            continue;
+        }
+        let color = omsi_sim::roadside::FLASH_COLOUR;
+        scene.lights.push(PointLight { position: at, radius: 25.0, color, intensity: 6.0 * strength, ..Default::default() });
+        scene.coronas.push(Corona { position: at, size: 0.9, color, brightness: 2.5 * strength, direction: Vec3::ZERO, cone_cos: -1.0, ..Default::default() });
+    }
     // nearest lights first: the grid cells hold a limited number
     // (total_cmp: a light at a NaN position must not end the game)
     scene.lights.sort_by(|a, b| (a.position - camera_pos).length_squared().total_cmp(&(b.position - camera_pos).length_squared()));

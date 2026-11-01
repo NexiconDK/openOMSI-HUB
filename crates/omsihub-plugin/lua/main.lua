@@ -378,6 +378,7 @@ omsi.on("passenger_board", function(count) trip.boarded(count) end)
 omsi.on("passengers_left", function(count, _, full) trip.left(count, full) end)
 omsi.on("light_ahead", function(aspect) watch.light_ahead(aspect) end)
 omsi.on("red_light", function(kmh) watch.red_light(kmh) end)
+omsi.on("speed_camera", function(kmh, limit) watch.speed_camera(kmh, limit) end)
 
 -- (the object editor once, as soon as the world is there: the frames come with it)
 local editor_opened = false

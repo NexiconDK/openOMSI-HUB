@@ -20,6 +20,7 @@ pub mod particles;
 pub mod people;
 pub mod physics;
 pub mod rigid;
+pub mod roadside;
 pub mod scenery;
 pub mod scripttex;
 pub mod sim_thread;

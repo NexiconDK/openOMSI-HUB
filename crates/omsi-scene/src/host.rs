@@ -37,11 +37,15 @@ pub struct SceneSettings {
     /// The session's weather lies as snow (`[snow]` in the `.owt`): the vehicles' panes wear
     /// it as they go onto the GPU.
     snow: AtomicBool,
+    /// (NexiconDK, 1 November 2026) The speed cameras by the road (the `speed_cameras`
+    /// setting): [`crate::roadside::SEEN`] puts the models of those the player has installed
+    /// up as tiles load; a world a test or a tool opens has none.
+    roadside: AtomicU8,
 }
 
 impl Default for SceneSettings {
     fn default() -> SceneSettings {
-        SceneSettings { sound_scenery: AtomicU32::new(1.0f32.to_bits()), mirror_size: AtomicU32::new(256), rain_quality: AtomicU8::new(2), snow: AtomicBool::new(false) }
+        SceneSettings { sound_scenery: AtomicU32::new(1.0f32.to_bits()), mirror_size: AtomicU32::new(256), rain_quality: AtomicU8::new(2), snow: AtomicBool::new(false), roadside: AtomicU8::new(crate::roadside::OFF) }
     }
 }
 
@@ -76,6 +80,14 @@ impl SceneSettings {
 
     pub fn set_snow(&self, v: bool) {
         self.snow.store(v, Relaxed);
+    }
+
+    pub fn roadside(&self) -> u8 {
+        self.roadside.load(Relaxed)
+    }
+
+    pub fn set_roadside(&self, v: u8) {
+        self.roadside.store(v, Relaxed);
     }
 }
 

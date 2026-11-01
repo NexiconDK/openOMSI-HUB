@@ -35,6 +35,7 @@ pub mod lights;
 // (openOMSI PRs #2782, #2929: the map's picture for the navigator, its road markings)
 pub mod mapgen;
 pub mod road_paint;
+pub mod roadside;
 pub mod money;
 pub mod puddles;
 pub mod rain;
@@ -101,3 +102,6 @@ mod terrain_mapping_tests;
 
 #[cfg(test)]
 mod crossing_deformation_tests;
+
+#[cfg(test)]
+mod roadside_tests;

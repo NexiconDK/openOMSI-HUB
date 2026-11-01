@@ -2,6 +2,9 @@
 
 use super::*;
 
+/// (NexiconDK, 1 November 2026) What the speed cameras' setting does (`omsi_sim::roadside`).
+pub(crate) const SPEED_CAMERAS_HELP: &str = "Speed cameras by the road, red-light cameras at some traffic lights and speed displays in town, with the models of the add-ons you have installed: Visible they stand there and flash, Invisible they measure unseen, Off there are none and no speeding fines";
+
 pub(super) fn options_pages(app: &App) -> Vec<Page> {
     let s = &app.settings;
     let file = settings_file();
@@ -24,6 +27,7 @@ pub(super) fn options_pages(app: &App) -> Vec<Page> {
         switch_row(app, "coll_objects", "Collisions with objects", "Enables/disables collisions with objects such as buildings, streetlights, etc."),
         switch_row(app, "coll_vehicles", "Collisions with vehicles", "Enables/Disables Collisions with Other Vehicles"),
         switch_row(app, "collision_pedestrians", "Collisions with people", "Enables/disables knocking down people"),
+        pick("speed_cameras", "Speed cameras", SPEED_CAMERAS_HELP),
         switch_row(app, "timetable_win", "Timetable window (Insert)", "Displays a list of all stops (only when a tour is active)"),
         switch_row(app, "trip_summary", "Trip summary", "At the end of each trip: its stops with the times planned and driven, to copy or to save"),
         switch_row(app, "chrono_info", "Chrono events", "The map's chrono events in force on the day (a match day, a fair, a holiday): their name, dates and what they say, at the start and when one comes into force at midnight"),

@@ -75,6 +75,7 @@ pub static EVENTS: &[EventDef] = &[
     ev("weather", &["name"], NEW, "The weather changed: another weather file, rain or snow beginning or ending, the snow cover, the clouds."),
     ev("light_ahead", &["aspect", "distance"], NEW, "The traffic light ahead of the bus (within 80 m) changed or a new one came: its aspect (`\"red\"`, `\"red_yellow\"`, `\"green\"`, `\"green_yellow\"`, `\"yellow\"`, `\"dark\"`, `nil` when none is ahead any more) and its distance in metres."),
     ev("red_light", &["speed_kmh"], NEW, "The bus drove past a traffic light showing red (or red and yellow) at more than 5 km/h."),
+    ev("speed_camera", &["speed_kmh", "limit_kmh"], NEW, "A speed camera by the road caught the bus: faster than the limit after the tolerance (3 km/h, 3 % above 100 km/h), as fines count it. The cameras stand in the same places on every drive of the map; the player's setting may show them, hide them, or switch them off (then this never comes)."),
     ev("speed_limit", &["kmh", "old"], NEW, "The speed limit of the lane the bus drives on changed."),
     ev("ai_collision", &["id", "energy_kj"], NEW, "The player's bus hit an AI vehicle (its id, as `traffic.list` gives it) with this energy."),
     ev("pause", &[], NEW, "The game was paused (the plugins stand still until `resume`; nothing else comes in between)."),

@@ -132,6 +132,7 @@ mod ground_gap;
 mod on_foot;
 // NexiconDK, Bus Company Online: relief at the stop
 mod relief;
+mod roadside;
 mod pax_signals;
 use omsi_scene::route_arrows;
 mod server;
@@ -691,6 +692,8 @@ fn assemble_app(args: Args, settings: settings::Settings) -> App {
             autosave_t: 0.0,
             pumping: None,
             career: Default::default(),
+            roadside: Default::default(),
+            roadside_told: false,
             journey: None,
             wetness: 0.0,
             cloud_drift: [0.0; 4],

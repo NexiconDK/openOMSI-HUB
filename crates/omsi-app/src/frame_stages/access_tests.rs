@@ -32,7 +32,8 @@ fn field_group(field: &str) -> Option<Option<Group>> {
         "session.traffic" | "session.schedule" | "session.timetable_book" | "session.populate_t"
         | "session.traffic_heavy_frame" | "session.first_populate" | "pipeline" => Some(Traffic),
         "session.humans" | "session.humans_populate_t" | "session.on_foot" | "session.relief" | "session.relief_give" | "session.relief_back" | "session.relief_stander" => Some(People),
-        "session.duty" | "session.duty_places" | "session.duty_closed" | "session.career" | "session.journey" => Some(Duty),
+        "session.duty" | "session.duty_places" | "session.duty_closed" | "session.career" | "session.journey"
+        | "session.roadside" | "session.roadside_told" => Some(Duty),
         "session.world_day" | "session.chrono_due" | "session.clock_jump" | "session.pending_time" | "session.autosave_t" => Some(Clock),
         "session.rain" | "session.cabin_air" | "session.spray" | "session.lamps_on" | "session.envir" | "session.weather"
         | "session.wetness" | "session.cloud_drift" | "session.weather_blend" | "session.weather_cycle" | "session.metar_rx"

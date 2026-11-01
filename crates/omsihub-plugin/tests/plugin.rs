@@ -406,6 +406,42 @@ fn the_drive_watch_fines_a_red_light_and_counts_hard_braking_into_the_trip() {
     assert_eq!(run["offences"][0]["kind"].as_str(), Some("red_light"));
 }
 
+/// (NexiconDK, 1 November 2026) The game's speed camera catches the bus: the watch fines it as
+/// the company counts it (62 where 50 is allowed: 9 over after the tolerance, €120 in town); one
+/// within the tolerance is no offence.
+#[test]
+fn the_drive_watch_fines_what_the_games_speed_camera_caught() {
+    let plugins = plugins_dir("camera");
+    install::install(&plugins).unwrap();
+    let dir = install::plugin_dir(&plugins);
+    bridge::write_assignment(&dir, &Assignment { auto_start: false, ..assignment() }).unwrap();
+    let mut ps = Plugins::load(&[plugins.clone()], &HostConfig::default());
+    let trip = three_stops();
+    let mut game = Game { trips: vec![trip.clone()], ..Game::default() };
+    let at = |game: &mut Game, next: usize, at_stop: bool| {
+        game.duty = Some(io::Duty { line: "10".into(), tour: "2".into(), trip: 0, trips: 1, next, at_stop, current: trip.clone(), ..io::Duty::default() });
+    };
+    at(&mut game, 0, true);
+    ps.frame(&mut game);
+    at(&mut game, 1, false);
+    game.speed = 62.0;
+    ps.frame(&mut game);
+    game.events = vec![GameEvent { name: "speed_camera", args: vec![InfoValue::Num(62.0), InfoValue::Num(50.0)] }];
+    ps.frame(&mut game);
+    game.events = vec![GameEvent { name: "speed_camera", args: vec![InfoValue::Num(53.5), InfoValue::Num(50.0)] }];
+    ps.frame(&mut game);
+    game.events.clear();
+    assert!(ps.ui.borrow().toasts().iter().any(|t| t.text.contains("€120")), "the camera's notice");
+    game.speed = 0.0;
+    at(&mut game, 2, true);
+    game.events = vec![trip_done(1.0)];
+    ps.frame(&mut game);
+    let reports = ReportReader::default().read_new(&dir);
+    let run = reports.iter().find(|r| r.is_trip()).and_then(|r| r.record.clone()).expect("the trip's record");
+    assert_eq!((run["speeding"].as_i64(), run["red_lights"].as_i64(), run["fines"].as_i64()), (Some(1), Some(0), Some(12_000)));
+    assert_eq!(run["offences"][0]["kind"].as_str(), Some("speeding"));
+}
+
 fn ui(name: &'static str, args: &[&str]) -> GameEvent {
     GameEvent { name, args: args.iter().map(|a| InfoValue::Text(a.to_string())).collect() }
 }

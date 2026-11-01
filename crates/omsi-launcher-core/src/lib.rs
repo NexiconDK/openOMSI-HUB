@@ -2763,6 +2763,17 @@ fn condensation(x: &str) -> &'static str {
     }
 }
 
+/// (NexiconDK, 1 November 2026) The speed cameras by the road: `invisible` (they measure
+/// unseen) or `off` (none, no speeding fines), else `visible` (the models installed stand
+/// there). The game's settings read it the same way.
+pub fn speed_cameras(x: &str) -> &'static str {
+    match x.trim().to_ascii_lowercase().as_str() {
+        "invisible" | "unseen" => "invisible",
+        "off" | "0" => "off",
+        _ => "visible",
+    }
+}
+
 /// The rain's quality: `medium` or `low`, else `high` (as the game's `settings::rain_quality`).
 fn rain_quality(x: &str) -> &'static str {
     match x.trim().to_ascii_lowercase().as_str() {
@@ -3111,6 +3122,8 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
     // and the card of the map's chrono events
     v["condensation"] = json!("realistic");
     v["chrono_info"] = json!(true);
+    // NexiconDK, 1 November 2026: the speed cameras by the road (`visible`, `invisible`, `off`)
+    v["speed_cameras"] = json!("visible");
     // head tracking: opentrack's or a Tobii eye tracker's (natively), a look at the screen's
     // edges turning further, and how strongly the turns and the head's way are taken
     v["head_tracking_source"] = json!("auto");
@@ -3253,6 +3266,7 @@ pub fn settings_from_text(text: Option<&str>) -> Value {
             "nav_arrows" | "nav_ai" | "nav_surface" | "nav_light" | "get_up" | "ibis_auto" | "time_sync" | "metar_sync" | "ui_scale_window" | "notes" | "machine_translation" | "update_check" | "update_auto" | "update_notify" | "presence" | "reflections" | "steering_linear" | "old_steering" | "red_steer_spd" | "ff_invert" | "ff_enabled" | "brake_hold" | "auto_clutch" | "momentary_gears" | "auto_shift" | "mouse_steering" | "mouse_right_off" | "mouse_smooth" | "mouse_hold" | "mouse_pedals" | "blinker_cancel" => v[&k] = json!(b(val)),
             "info_bar" | "road_snow" | "thunderstorms" | "chrono_info" => v[&k] = json!(b(val)),
             "condensation" => v[&k] = json!(condensation(val)),
+            "speed_cameras" => v[&k] = json!(speed_cameras(val)),
             "perf_overlay" => v[&k] = json!(perf_overlay_mode(val)),
             "windy_trees" | "mirror_hud_every_frame" | "ai_wait_timed_stops_only" | "ambient" => v[&k] = json!(b(val)),
             "time_speed" => v[&k] = json!(val.trim_start_matches(['x', 'X']).parse::<f64>().map(|x| x.clamp(1.0, 30.0)).map(|x| if x.fract() == 0.0 { format!("{}", x as i64) } else { x.to_string() }).unwrap_or_else(|_| "1".into())),
@@ -3695,6 +3709,7 @@ pub fn settings_to_text(v: &Value, old: Option<&str>) -> String {
     text.push_str(&format!("road_snow={}\n", b("road_snow", true)));
     text.push_str(&format!("thunderstorms={}\n", b("thunderstorms", true)));
     text.push_str(&format!("condensation={}\nchrono_info={}\n", condensation(v.get("condensation").and_then(|x| x.as_str()).unwrap_or("realistic")), b("chrono_info", true)));
+    text.push_str(&format!("speed_cameras={}\n", speed_cameras(v.get("speed_cameras").and_then(|x| x.as_str()).unwrap_or("visible"))));
     text.push_str(&format!("nav_entries={}\n", nav_entries(v.get("nav_entries").and_then(|x| x.as_str()).unwrap_or("names"))));
     text.push_str(&format!("nav_map={}\ncity_map={}\n", nav_map_style(v.get("nav_map").and_then(|x| x.as_str()).unwrap_or("classic")), city_map_style(v.get("city_map").and_then(|x| x.as_str()).unwrap_or("classic"))));
     text.push_str(&format!(

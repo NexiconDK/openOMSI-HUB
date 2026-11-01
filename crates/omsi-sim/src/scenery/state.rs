@@ -508,13 +508,18 @@ fn gather(o: &mut SceneryObject, dist: f64, inputs: &SceneryInputs, out: &mut Sc
         (None, Some((parent, li))) => inputs.controllers.get(&parent).map(|&c| (c, li)),
         _ => None,
     };
+    // (NexiconDK, 1 November 2026) a camera or a speed display the game put by the road: its
+    // flash and its measurement (`roadside`), not a light's
+    let roadside = crate::roadside::phase_of(o.map_id, inputs.clock.map(|c| c.time).unwrap_or(inputs.time));
     let vars = SceneryVars {
         nightlight: o.use_.lit(inputs.time, inputs.day, inputs.brightness) as i32 as f32,
         in_use: in_use as i32 as f32,
-        traffic_light_phase: light
-            .map(|(c, li)| (inputs.phase_of)(c, li).0)
-            .unwrap_or(crate::traffic::UNLINKED_PHASE as f32),
-        traffic_light_approach: light.map(|(c, li)| (inputs.phase_of)(c, li).1).unwrap_or(0.0),
+        traffic_light_phase: roadside.map(|r| r.0).unwrap_or_else(|| {
+            light
+                .map(|(c, li)| (inputs.phase_of)(c, li).0)
+                .unwrap_or(crate::traffic::UNLINKED_PHASE as f32)
+        }),
+        traffic_light_approach: roadside.map(|r| r.1).unwrap_or_else(|| light.map(|(c, li)| (inputs.phase_of)(c, li).1).unwrap_or(0.0)),
         switch: None,
     };
     // a departure display: the buses due at its stop

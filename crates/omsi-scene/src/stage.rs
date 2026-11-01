@@ -611,6 +611,8 @@ impl World {
         *out.lanes.lock() = lanes;
         *out.meshes.lock() = Some(meshes);
         let rows = self.stage_objects(&mut out, &tile, origin2, index, &counts);
+        // (NexiconDK, 1 November 2026) the cameras and speed displays by its roads
+        self.stage_roadside(&mut out, index);
         let mut counts = counts.into_inner();
         counts.rows = rows;
         counts.attached = tile.attach_objects.len();

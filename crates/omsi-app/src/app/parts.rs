@@ -109,6 +109,9 @@ pub(crate) struct DutyPart<'p> {
     pub(crate) duty_closed: &'p mut (Vec<String>, String),
     pub(crate) career: &'p mut career::Career,
     pub(crate) journey: &'p mut Option<crate::journey::Journey>,
+    /// The cameras and speed displays the bus passed (`roadside`), the missing models told.
+    pub(crate) roadside: &'p mut omsi_sim::roadside::Watch,
+    pub(crate) roadside_told: &'p mut bool,
 }
 
 /// `Group::Net`.
@@ -183,6 +186,7 @@ impl App {
             first_populate, envir, weather, clock_jump, seat_bus, on_foot, relief, relief_give, relief_back, relief_stander, safe_pose, safe_age,
             pending_time, autosave_t, pumping, career, journey, wetness, cloud_drift, weather_blend,
             weather_cycle, metar_rx, metar_once, metar_next, sky, scenery, lightning,
+            roadside, roadside_told,
         } = session;
         Parts {
             common: Common { args, settings, started: *started, last: *last, exiting: *exiting },
@@ -197,7 +201,7 @@ impl App {
             traffic: TrafficPart { traffic, schedule, timetable_book, populate_t, traffic_heavy_frame, first_populate, pipeline },
             player: PlayerPart { player, placed, seat_bus, safe_pose, safe_age, pumping },
             people: PeoplePart { humans, humans_populate_t, on_foot, relief, relief_give, relief_back, relief_stander },
-            duty: DutyPart { duty, duty_places, duty_closed, career, journey },
+            duty: DutyPart { duty, duty_places, duty_closed, career, journey, roadside, roadside_told },
             net,
             integrations,
             sound,

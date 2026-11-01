@@ -42,6 +42,11 @@ impl App {
         if let Some(steam) = self.integrations.steam.as_ref() {
             steam.client.run_callbacks();
         }
+        // (NexiconDK, 1 November 2026) the cameras and the speed displays the bus passed: their
+        // flash, and the plugins' `speed_camera` this frame
+        if !self.paused {
+            self.roadside_step();
+        }
         // the plugins' frame, with the bus's scripts done
         let mut plugins = self.integrations.plugins.take().unwrap_or_else(crate::plugins::load);
         if !plugins.is_empty() {

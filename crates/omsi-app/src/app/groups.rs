@@ -523,6 +523,10 @@ pub(crate) struct SessionState {
     pub(crate) pumping: Option<Pumping>,
     /// The driver's personnel file and this session's statistics.
     pub(crate) career: career::Career,
+    /// (NexiconDK, 1 November 2026) Where the player's bus drove past the cameras and the
+    /// speed displays (`roadside`), and whether the missing models were told.
+    pub(crate) roadside: omsi_sim::roadside::Watch,
+    pub(crate) roadside_told: bool,
     /// The duty's stops with their times as driven, kept in a file (`journey`).
     pub(crate) journey: Option<crate::journey::Journey>,
     /// How wet the roads are (0..1), built up by rain and dried by the sun.
