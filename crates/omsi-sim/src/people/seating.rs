@@ -411,7 +411,9 @@ impl super::PeopleSim {
         let n = places.len();
         let mut taken = self.seats.get(&BusId::Player).cloned().unwrap_or_default();
         taken.resize(n, false);
-        let off = |k: usize| bn.places_off.get(k).copied().unwrap_or(false);
+        // (NexiconDK, 1 November 2026: nobody is sent to the wheelchair's and the pram's place,
+        // and nobody on it moves - `mobility`)
+        let off = |k: usize| bn.places_off.get(k).copied().unwrap_or(false) || places[k].mobility;
         let free: Vec<usize> = (0..n).filter(|&k| !taken[k] && !off(k)).collect();
         let km = self.odometer.get(&BusId::Player).copied().unwrap_or(0.0);
         let next = bn.next_stop.clone();
@@ -425,7 +427,7 @@ impl super::PeopleSim {
                     let off_next = x.dest.as_ref().is_some_and(|d| next.as_ref().is_some_and(|s| s.is_named(d)));
                     let left = x.km_start + x.ride_km as f64 - km;
                     let long = !off_next && (x.dest.is_some() || left >= LONG_RIDE_KM);
-                    x.seat.filter(|k| *k < n).map(|k| (i, k, p.age >= ELDERLY, long))
+                    x.seat.filter(|k| *k < n && !places[*k].mobility && p.ty.def.mobility.is_none()).map(|k| (i, k, p.age >= ELDERLY, long))
                 }
                 _ => None,
             })
@@ -499,7 +501,7 @@ mod tests {
     use super::*;
 
     fn seat(x: f32, y: f32, rot: f32) -> Seat {
-        Seat { pos: Vec3::new(x, y, 0.9), floor: Vec3::new(x, y, 0.4), rot, seated: true, height: 0.45, omsi_seat: 0, switch_var: None, taken_var: None, group: 0 }
+        Seat { pos: Vec3::new(x, y, 0.9), floor: Vec3::new(x, y, 0.4), rot, seated: true, height: 0.45, omsi_seat: 0, switch_var: None, taken_var: None, group: 0, mobility: false }
     }
 
     fn stand(x: f32, y: f32) -> Seat {

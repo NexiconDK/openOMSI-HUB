@@ -227,6 +227,8 @@ impl HumanType {
             walk_param,
             mass: if info.child { 0.04 } else { 0.07 + 0.01 * (!info.female) as u8 as f32 },
             age: info.child.then_some(10),
+            mobility: None,
+            pram_mesh: None,
         };
         let mut meshes = vec![mesh];
         let mut joints = Joints::from_links(&def.links);

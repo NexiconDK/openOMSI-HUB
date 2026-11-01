@@ -114,7 +114,10 @@ impl PeopleSim {
                 let Some(bn) = bus.and_then(|b| bus_ix.get(&b).map(|k| &buses[*k])) else { return };
                 // the stop button: the player's bus gets it here, a timetable bus its own
                 // request (the app presses `int_haltewunsch` on it)
+                let mobility = self.mobility(i);
                 match bn.id {
+                    // (in a wheelchair or with a pram: the bus's button for them, `mobility`)
+                    BusId::Player if mobility.is_some() => self.mobility_request = true,
                     BusId::Player => self.stop_request = true,
                     BusId::Ai(id) => {
                         if !self.ai_stop_requests.contains(&id) {
@@ -134,9 +137,15 @@ impl PeopleSim {
                     p.pos = q.as_dvec3();
                 }
                 let here = p.pos.as_vec3();
-                // the nearest exit (sub_62a49c / sub_62a5a8), of the sections they are in
+                // the nearest exit (sub_62a49c / sub_62a5a8), of the sections they are in - in a
+                // wheelchair or with a pram the nearest their place (without steps for a
+                // wheelchair), and that one only (`mobility`)
                 let exits = bn.cabin.in_group(exits, bn.cabin.group_at(start));
-                p.pt_target = bn.cabin.omsi_nearest(here, &exits, false, false, None, None);
+                let own = mobility.zip(seat).and_then(|(m, k)| bn.cabin.mobility_door(&bn.cabin.exits, k, m == omsi_content::human::Mobility::Wheelchair));
+                p.pt_target = match own {
+                    Some(d) => bn.cabin.exits[d].point,
+                    None => bn.cabin.omsi_nearest(here, &exits, false, false, None, None),
+                };
                 p.door = p.pt_target.and_then(|t| exits.iter().position(|e| *e == Some(t)));
                 if let Some(d) = p.door {
                     if let Some((_, x)) = self.pax_req.get_mut(&bn.id) {
@@ -163,7 +172,7 @@ impl PeopleSim {
                 // a free waiting place (sub_61fed0)
                 let spot = match (stop, self.pax(i).unwrap().spot) {
                     (_, Some(k)) => Some(k),
-                    (Some(s), None) => self.take_spot(s),
+                    (Some(s), None) => self.take_spot_for(i, s),
                     _ => None,
                 };
                 let sp = stop.zip(spot).and_then(|(s, k)| self.stops.get(&s).and_then(|s| s.spots.get(k)).cloned());
@@ -229,6 +238,19 @@ impl PeopleSim {
             Some(_) => p.pos.as_vec3(),
             None => bn.to_local(p.pos),
         };
+        // (NexiconDK, 1 November 2026) in a wheelchair or with a pram: the door nearest their
+        // place, shut or not (`mobility`)
+        if let (Some(m), Some(k)) = (self.mobility(i), p.seat) {
+            let door = bn.cabin.mobility_door(&bn.cabin.entries, k, m == omsi_content::human::Mobility::Wheelchair);
+            let pt = door.and_then(|d| bn.cabin.entries[d].point);
+            let p = self.pax_mut(i).unwrap();
+            if let Some(q) = pt.and_then(|k| bn.cabin.graph.points.get(k)) {
+                p.target = q.as_dvec3();
+                p.target_bus = true;
+            }
+            p.door = door;
+            return;
+        }
         // (the doors of the sections of the place reserved)
         let group = p.seat.and_then(|k| bn.cabin.seats.get(k)).map(|s| s.group);
         let list = bn.cabin.in_group(bn.cabin.entry_points(), group);
@@ -324,22 +346,30 @@ impl PeopleSim {
                         // place by `stand_chance`), or as people choose it (`seating`): a seat
                         // wanted by the chance to stand and the wish to sit (`wants_seat`),
                         // which seat by where it is, a group's places together
-                        let prefer_seat = if self.seating() { Some(self.wants_seat()) } else { None };
+                        // (NexiconDK, 1 November 2026) in a wheelchair or with a pram: their
+                        // place alone, no ticket to buy, in no group (`mobility`); the others
+                        // leave it free while another place is
+                        let mobility = self.mobility(i);
+                        let off = self.places_off_for(i, bn.id, &bn.cabin, &bn.places_off);
+                        let prefer_seat = if self.seating() && mobility.is_none() { Some(self.wants_seat()) } else { None };
                         // (the fork) a group: the first to get in finds places for all and buys
                         // the tickets; the others take theirs (and stamp their own)
-                        let group = p.group.filter(|_| self.seating());
+                        let group = p.group.filter(|_| self.seating() && mobility.is_none());
                         let kept = group.is_some_and(|g| self.group_places.contains_key(&(g, bn.id)));
                         let others: Vec<f32> = match group {
                             Some(g) if !kept => self.group_ages(g, i),
                             _ => Vec::new(),
                         };
-                        let place = if self.seating() {
-                            self.reserve_place_as_people_do(i, bn.id, &bn.cabin, &bn.places_off, prefer_seat)
+                        let place = if self.seating() && mobility.is_none() {
+                            self.reserve_place_as_people_do(i, bn.id, &bn.cabin, &off, prefer_seat)
                         } else {
-                            self.reserve_place(bn.id, &bn.cabin.seats, &bn.places_off)
+                            self.reserve_place(bn.id, &bn.cabin.seats, &off)
                         };
+                        if mobility.is_some() {
+                            self.pax_mut(i).unwrap().no_room = place.is_none().then_some(bn.id);
+                        }
                         if let Some(k) = place {
-                            let (mut tk, id) = self.decide_pax_ticket(i, bn);
+                            let (mut tk, id) = if mobility.is_some() { (TICKET_NONE, 0) } else { self.decide_pax_ticket(i, bn) };
                             if kept && tk == TICKET_BUY {
                                 tk = TICKET_NONE;
                             }
@@ -613,11 +643,17 @@ impl PeopleSim {
         if !out {
             if reg.next.is_none() {
                 if bn.id == BusId::Player {
-                    self.stop_request = true;
+                    if self.mobility(i).is_some() {
+                        self.mobility_request = true;
+                    } else {
+                        self.stop_request = true;
+                    }
                 }
                 return;
             }
-            if p.timer < 0.0 {
+            // (in a wheelchair or with a pram: by the door of their place, open or not yet)
+            let own_door = self.mobility(i).is_some() && p.door.is_some();
+            if p.timer < 0.0 && !own_door {
                 // the bus stands: the nearest exit that is open now (0x62d6b1 passes the
                 // exits' open states, +0x6e0: a shut door is skipped, none open gives the
                 // first). Without them the nearest door was taken again, open or shut, and
@@ -650,7 +686,11 @@ impl PeopleSim {
                 pp.door = pp.pt_target.and_then(|t| exits.iter().position(|e| *e == Some(t)));
             }
             if bn.id == BusId::Player {
-                self.stop_request = true;
+                if self.mobility(i).is_some() {
+                    self.mobility_request = true;
+                } else {
+                    self.stop_request = true;
+                }
             }
             if let Some(d) = self.pax(i).unwrap().door {
                 if let Some((_, x)) = self.pax_req.get_mut(&b) {

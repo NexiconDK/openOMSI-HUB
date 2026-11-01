@@ -675,7 +675,9 @@ impl PeopleView {
             let ty = st.avatar.clone().unwrap_or_else(|| p.ty.clone());
             let dt = (sdt * st.since_posed.max(1) as f32).min(0.25);
             // Preserve the OMSI-original pose unless the enhanced A/B mode is requested.
-            let mut bones = if enhanced && !p.puppet {
+            // (NexiconDK, 1 November 2026: a figure in a wheelchair or with a pram keeps the
+            // original's pose, held still - its own figure sits, or holds the pram)
+            let mut bones = if enhanced && !p.puppet && ty.def.mobility.is_none() {
                 animation::bones(p, &ty, st, dt, world, &buses)
             } else {
                 omsi_sim::human::slots_from_omsi(&p.anim.bones(&ty.omsi))

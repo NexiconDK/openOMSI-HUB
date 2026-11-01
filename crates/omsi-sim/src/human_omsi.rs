@@ -287,6 +287,10 @@ pub struct AnimInput {
     pub smooth: bool,
     /// Frame time (ms).
     pub dt_ms: f32,
+    /// (NexiconDK, 1 November 2026) The upper body held still while walking: no twist of the
+    /// torso, no turn of the hips, no lean with the steps - somebody pushing a pram, the hands
+    /// on its handle (`omsi_content::human::Mobility`).
+    pub steady: bool,
 }
 
 /// A person's animation state: the walk phase and the thirty angles (degrees).
@@ -385,10 +389,12 @@ impl OmsiAnim {
                 a[3] = spread;
                 let l24 = ((4.0 * std::f32::consts::PI * p).cos() - 1.0) / 2.0;
                 bob = (1.0 - (std::f32::consts::PI / 180.0 * swing).cos()) * (0.8 * rig.hip.y) * l24 * (1.0 - (1.0 - RUN_BOB) * run);
-                a[11] -= swing * l24 * rig.waist_bend;
-                a[12] += swing * l24 * rig.waist_bend + RUN_LEAN * run;
-                a[29] = (2.0 * std::f32::consts::PI * p).sin() * 5.0;
-                a[10] = (2.0 * std::f32::consts::PI * p).sin() * rig.hip_turn;
+                if !inp.steady {
+                    a[11] -= swing * l24 * rig.waist_bend;
+                    a[12] += swing * l24 * rig.waist_bend + RUN_LEAN * run;
+                    a[29] = (2.0 * std::f32::consts::PI * p).sin() * 5.0;
+                    a[10] = (2.0 * std::f32::consts::PI * p).sin() * rig.hip_turn;
+                }
             }
             2 => {
                 let thigh = rig.thigh[0].length();

@@ -837,6 +837,13 @@ impl Offscreen<'_> {
                     p.vehicle.trigger("int_haltewunsch");
                 }
             }
+            // (a rider in a wheelchair or with a pram: the bus's button for them, `mobility`)
+            if std::mem::take(&mut h.mobility_request) {
+                if let Some(p) = player.as_mut() {
+                    p.vehicle.trigger("int_kinderwagenwunsch");
+                    p.vehicle.trigger("int_haltewunsch");
+                }
+            }
         }
     }
 

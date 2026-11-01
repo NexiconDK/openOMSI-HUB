@@ -227,6 +227,13 @@ impl PeopleSim {
                     (match p.task { Task::WaitingForBus => true, Task::ToBus => p.bus == Some(bus), _ => false } && p.inside.is_none() && p.stop == Some(stop) && p.late.is_none() && self.takes_waiting(stop, s, b, p.dest.as_deref(), p.line)).then(|| (self.people[i].id, self.waves(i)))
                 })
                 .collect();
+            // (NexiconDK, 1 November 2026) in a wheelchair or with a pram, with their place in it
+            // taken: not left by its driver - as at a full bus (`mobility`)
+            let no_room: Vec<u32> = self.people.iter().filter(|q| matches!(&q.state, State::Pax(x) if x.no_room == Some(bus))).map(|q| q.id).collect();
+            let (excused, left): (Vec<(u32, bool)>, Vec<(u32, bool)>) = left.into_iter().partition(|(id, _)| no_room.contains(id));
+            if !excused.is_empty() {
+                self.left_behind.push(LeftBehind { bus, stop, count: excused.len() as u32, full: true, stood });
+            }
             if left.is_empty() {
                 continue;
             }

@@ -215,6 +215,46 @@ Both are ordinary variables of the bus's varlists. A place without the lines, or
 name the scripts do not have, is always there; a blank line or the next block ends the
 list, and OMSI 2 passes over the lines.
 
+## Wheelchairs and prams
+
+A person whose `.hum` has an `[openomsi_mobility]` block is in a wheelchair or pushes a
+pram; OMSI 2 skips the block, and there the person walks in and sits like anybody else:
+
+```
+[openomsi_mobility]
+wheelchair
+```
+
+`pram` instead of `wheelchair` is somebody with a pram; a line after it may name the pram's
+own mesh, relative to the person's model folder (`Kinderwagen.o3d`), drawn with the person on
+the body - for a pram split off its figure. Such a person waits standing (never on a bench),
+is in no group, never runs for a bus and makes no gestures to one. They board only where the
+bus's place for them is free - for a wheelchair by a door without steps to it (a threshold
+no higher than a low floor's, 45 cm, and a flat floor on to the place) - and wait for the
+next bus otherwise, which counts as at a full bus, not as left behind. They buy no ticket,
+get in by the door nearest the place, stand there, are never moved to another place, and get
+out by the door nearest it, pressing the bus's `int_kinderwagenwunsch` (where its script has
+it) with the stop request. Their figure keeps the original animation, held still: a
+wheelchair's figure never walks, a pram's pusher walks with the upper body steady on the
+handle (her arms have no bones of their own).
+
+The place is a standing `[passpos]` marked by a `{mobility}` line, after its values and
+variables; its rotation is the way the wheelchair or the pram faces, and the person stands
+on its point:
+
+```
+[passpos]
+0.55
+1.20
+0.00
+0
+180
+{mobility}
+```
+
+A cabin without one keeps the standing place nearest its second door from the front (its
+only door, with one) for them. The others take that place only when every other one is taken.
+
 ## Ticket validators: one by every door
 
 OMSI 2 uses one `[stamper]` of a `passengercabin.cfg`, the last one written. openOMSI keeps

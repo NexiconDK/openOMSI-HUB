@@ -112,6 +112,7 @@ impl PeopleSim {
             under_bus: hashbrown::HashSet::new(),
             stop_request: false,
             ai_stop_requests: Vec::new(),
+            mobility_request: false,
             tickets_sold: 0,
             ticket_cash: 0.0,
             sales: Vec::new(),
@@ -724,7 +725,14 @@ impl PeopleSim {
         let km = self.odometer.get(&id).copied().unwrap_or(0.0);
         let mut seated = 0;
         for dest in dests {
-            let Some(k) = self.reserve_place(id, &cabin.seats, &off) else { break };
+            // (NexiconDK, 1 November 2026: on foot, leaving the wheelchair's and the pram's place
+            // free while another is - `mobility`)
+            let n = cabin.seats.len();
+            let kept: Vec<bool> = (0..n).map(|k| off.get(k).copied().unwrap_or(false) || cabin.seats[k].mobility).collect();
+            let taken = self.seats.get(&id);
+            let free_else = (0..n).any(|k| !kept[k] && !taken.and_then(|t| t.get(k)).copied().unwrap_or(false));
+            let off_now = if free_else { kept } else { off.clone() };
+            let Some(k) = self.reserve_place(id, &cabin.seats, &off_now) else { break };
             let walk = 1.1 + (self.rand_f() as f32 * 2.0 - 1.0) * 0.2;
             let r = self.rand_f() as f32;
             let mut pax = Pax::new(walk, self.rand_f());
@@ -736,7 +744,7 @@ impl PeopleSim {
             pax.dest = dest.as_ref().map(|d| d.trim().to_string()).filter(|d| !d.is_empty());
             pax.task = Task::InBusToPlace;
             let at = train_point(bus.position, &rot, &trailers, cabin.seats[k].pos);
-            let Some(i) = self.spawn(world, at, bus.heading, State::Pax(Box::new(pax))) else {
+            let Some(i) = self.spawn_walker(world, at, bus.heading, State::Pax(Box::new(pax))) else {
                 self.free_seat(id, k);
                 break;
             };

@@ -386,6 +386,7 @@ impl PeopleSim {
                             look,
                             smooth: x.smooth,
                             dt_ms,
+                            steady: false,
                         },
                         pack,
                     )
@@ -412,6 +413,26 @@ impl PeopleSim {
                     (input, None)
                 }
             };
+            // (NexiconDK, 1 November 2026) in a wheelchair: never walking, its figure sits in it
+            // already (rolling, it stands as it is); with a pram: the upper body held still on
+            // the handle (`mobility`)
+            let mut input = input;
+            match self.people[i].ty.def.mobility {
+                Some(omsi_content::human::Mobility::Wheelchair) => {
+                    input.kind = 0;
+                    input.speed = 0.0;
+                    input.moved = 0.0;
+                    input.reach = None;
+                }
+                Some(omsi_content::human::Mobility::Pram) => {
+                    input.steady = true;
+                    input.reach = None;
+                    if input.kind == 2 {
+                        input.kind = 0;
+                    }
+                }
+                None => {}
+            }
             let p = &mut self.people[i];
             let ev = p.anim.advance(&p.ty.omsi, &input);
             // a foot down inside a vehicle: the link's step sound (outside there are none)

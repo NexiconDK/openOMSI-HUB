@@ -135,6 +135,11 @@ impl Pool {
     /// The avatar person `id` (of the content's type `ty`) is drawn with: one of the same
     /// kind, the same for the same person.
     pub(super) fn pick(&self, id: u32, ty: &HumanType) -> Option<Arc<HumanType>> {
+        // (NexiconDK, 1 November 2026: a figure in a wheelchair or with a pram stays itself -
+        // the avatars walk on foot)
+        if ty.def.mobility.is_some() {
+            return None;
+        }
         let (female, child) = (is_female(ty), is_child(ty));
         let list = [kind_index(female, child), kind_index(female, false), kind_index(!female, child)]
             .into_iter()

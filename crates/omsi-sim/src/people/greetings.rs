@@ -88,6 +88,10 @@ impl PeopleSim {
     /// staying at their place till it stands - or nothing: they step up to where it will
     /// stand (`stays_till_it_stands`).
     pub fn greets(&self, i: usize) -> Option<Greet> {
+        // (NexiconDK, 1 November 2026: nobody in a wheelchair or with a pram - `mobility`)
+        if self.mobility(i).is_some() {
+            return None;
+        }
         let k = self.lot_key(i);
         let s = lot(k, LOT_SIGNAL) < self.gestures.signal;
         let w = lot(k, LOT_WAVE) < self.gestures.wave;
@@ -101,12 +105,12 @@ impl PeopleSim {
 
     /// Whether person `i` waves: on their way to the stop, and after a bus that left them.
     pub fn waves(&self, i: usize) -> bool {
-        lot(self.lot_key(i), LOT_WAVE) < self.gestures.wave
+        self.mobility(i).is_none() && lot(self.lot_key(i), LOT_WAVE) < self.gestures.wave
     }
 
     /// Whether person `i` glances at a full bus.
     pub fn glances(&self, i: usize) -> bool {
-        lot(self.lot_key(i), LOT_FULL) < self.gestures.full
+        self.mobility(i).is_none() && lot(self.lot_key(i), LOT_FULL) < self.gestures.full
     }
 
     /// Whether person `i`, waiting, stays at their place while a bus that takes them rolls in
@@ -135,7 +139,7 @@ impl PeopleSim {
     /// in question).
     pub fn gesture_of(&self, i: usize, buses: &[BusNow], full: &mut dyn FnMut(&BusNow) -> bool) -> Option<(Gesture, BusId, DVec3)> {
         let person = &self.people[i];
-        if person.remote || person.puppet.is_some() {
+        if person.remote || person.puppet.is_some() || person.ty.def.mobility.is_some() {
             return None;
         }
         // waving after a bus that left them

@@ -210,7 +210,7 @@ impl PeopleSim {
                 let yaw = yaw_of((stop_pos - start).truncate());
                 pax.pos = start;
                 pax.yaw = yaw;
-                let Some(i) = self.spawn(world, start, yaw.to_degrees(), State::Pax(Box::new(pax))) else {
+                let Some(i) = self.spawn_walker(world, start, yaw.to_degrees(), State::Pax(Box::new(pax))) else {
                     self.free_spot(id, k);
                     return None;
                 };
@@ -235,7 +235,8 @@ impl PeopleSim {
     fn stroller_near(&self, net: &Network, pave: DVec3) -> Option<usize> {
         let mut best: Option<(usize, f64)> = None;
         for (j, p) in self.people.iter().enumerate() {
-            if p.puppet.is_some() || p.remote || !matches!(p.state, State::Strolling(_)) {
+            // (NexiconDK, 1 November 2026: nobody in a wheelchair or with a pram runs - `mobility`)
+            if p.puppet.is_some() || p.remote || !matches!(p.state, State::Strolling(_)) || p.ty.def.mobility.is_some() {
                 continue;
             }
             let d = (p.position - pave).truncate().length();

@@ -301,6 +301,10 @@ pub struct PeopleSim {
     /// the app each frame): a bus's script responds to its own request, so the scripts
     /// that check `haltewunsch` (e.g. `NSAC_City_2Door.bus`) open the exit.
     pub ai_stop_requests: Vec<u64>,
+    /// (NexiconDK, 1 November 2026) A rider in a wheelchair or with a pram asked for the next
+    /// stop: the app fires the bus's own button for them (`int_kinderwagenwunsch`), where it
+    /// has one, and the stop button.
+    pub mobility_request: bool,
     /// Tickets sold at the cash desk this session and what they were worth.
     pub tickets_sold: u32,
     pub ticket_cash: f32,

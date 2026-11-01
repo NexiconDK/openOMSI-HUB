@@ -423,6 +423,15 @@ impl PeopleSim {
             self.free_spot(id, k);
             return None;
         };
+        // (NexiconDK, 1 November 2026) in a wheelchair or with a pram: a place to stand, not a
+        // bench (`mobility`)
+        if !self.spot_suits(i, id, k) {
+            self.free_spot(id, k);
+            let spot = self.take_spot_for(i, id);
+            if let Some(p) = self.pax_mut(i) {
+                p.spot = spot;
+            }
+        }
         let dummy_b: Vec<BusNow> = Vec::new();
         let dummy_ix: HashMap<BusId, usize> = HashMap::new();
         self.set_task(i, Task::WalkingToBusstop, &dummy_b, &dummy_ix, world);
@@ -445,8 +454,10 @@ impl PeopleSim {
         }
         self.use_map_humans(world);
         let age = |t: &Arc<HumanType>| t.def.age.map(|a| a as f32).unwrap_or(40.0);
-        let kids: Vec<usize> = (0..self.types.len()).filter(|&k| age(&self.types[k]) < CHILD).collect();
-        let adults: Vec<usize> = (0..self.types.len()).filter(|&k| age(&self.types[k]) >= CHILD).collect();
+        // (NexiconDK, 1 November 2026: nobody in a wheelchair or with a pram - `mobility`)
+        let walks = |t: &Arc<HumanType>| t.def.mobility.is_none();
+        let kids: Vec<usize> = (0..self.types.len()).filter(|&k| age(&self.types[k]) < CHILD && walks(&self.types[k])).collect();
+        let adults: Vec<usize> = (0..self.types.len()).filter(|&k| age(&self.types[k]) >= CHILD && walks(&self.types[k])).collect();
         if adults.is_empty() {
             return self.spawn_waiting(world, net, id).is_some() as usize;
         }

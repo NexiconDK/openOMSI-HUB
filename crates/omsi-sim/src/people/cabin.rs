@@ -46,6 +46,44 @@ impl Door {
     }
 }
 
+/// How high a door's threshold may lie over the street for a wheelchair to roll in (a low
+/// floor's: 32 to 37 cm), and how much the floor may rise or fall from it to the place (m).
+pub const STEP_FREE_DOOR: f32 = 0.45;
+pub const STEP_FREE_FLOOR: f32 = 0.15;
+/// How far from its door a place chosen for wheelchairs and prams may lie (m).
+const MOBILITY_NEAR: f32 = 4.0;
+
+/// The place a cabin without one marked keeps for a wheelchair or a pram: the standing place
+/// nearest its second door from the front (its only one, with one), on that door's floor and in
+/// its sections. None: no standing place near it.
+fn mobility_place(seats: &[Seat], entries: &[Door]) -> Option<usize> {
+    let mut doors: Vec<&Door> = entries.iter().collect();
+    doors.sort_by(|a, b| b.inside.y.total_cmp(&a.inside.y));
+    let door = doors.get(1).or(doors.first())?;
+    let d = |s: &Seat| (s.floor.truncate() - door.wait.truncate()).length();
+    (0..seats.len())
+        .filter(|&k| !seats[k].seated && seats[k].group == door.group && (seats[k].floor.z - door.wait.z).abs() < 0.3 && d(&seats[k]) < MOBILITY_NEAR)
+        .min_by(|&a, &b| d(&seats[a]).total_cmp(&d(&seats[b])))
+}
+
+impl Cabin {
+    /// Whether a wheelchair rolls in at door `d` to place `k`: its threshold no higher over the
+    /// street than a low floor's, and the floor on from it to the place flat.
+    pub fn step_free(&self, d: &Door, k: usize) -> bool {
+        let Some(s) = self.seats.get(k) else { return false };
+        d.inside.z - d.outside.z <= STEP_FREE_DOOR && (d.wait.z - d.inside.z).abs() <= STEP_FREE_FLOOR && (s.floor.z - d.inside.z).abs() <= STEP_FREE_FLOOR
+    }
+
+    /// The door of `doors` (the entries or the exits) a wheelchair or a pram at place `k` uses:
+    /// the nearest to it in its sections - for a wheelchair one without steps. Its index.
+    pub fn mobility_door(&self, doors: &[Door], k: usize, wheelchair: bool) -> Option<usize> {
+        let s = self.seats.get(k)?;
+        (0..doors.len())
+            .filter(|&j| doors[j].point.is_some() && (self.groups <= 1 || doors[j].group == s.group) && (!wheelchair || self.step_free(&doors[j], k)))
+            .min_by(|&a, &b| (doors[a].wait - s.floor).length().total_cmp(&(doors[b].wait - s.floor).length()))
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Seat {
     /// The `[passpos]` point: a seated passenger's hip, a standing one's feet.
@@ -67,6 +105,9 @@ pub struct Seat {
     pub taken_var: Option<String>,
     /// The sections it lies in that people walk between (see `Cabin::groups`).
     pub group: usize,
+    /// (NexiconDK, 1 November 2026) A wheelchair's or a pram's place (`{mobility}`, or the one
+    /// the cabin chose: `Cabin::load_train`): theirs alone, standing, facing `rot`.
+    pub mobility: bool,
 }
 
 /// What passengers need to know about one vehicle type's cabin.
@@ -439,7 +480,7 @@ impl Cabin {
             };
             (stand, pi, face)
         });
-        let seats = places
+        let mut seats: Vec<Seat> = places
             .iter()
             .map(|(p, offset, omsi_seat, group)| {
                 let pos = Vec3::from(p.pos) + *offset;
@@ -464,9 +505,17 @@ impl Cabin {
                     switch_var: p.switch_var.clone(),
                     taken_var: p.taken_var.clone(),
                     group: *group,
+                    mobility: p.mobility && !seated,
                 }
             })
             .collect();
+        // (NexiconDK, 1 November 2026) a cabin without a place marked for a wheelchair or a
+        // pram: the standing place nearest its second door, where they get in
+        if !seats.iter().any(|s| s.mobility) {
+            if let Some(k) = mobility_place(&seats, &entries) {
+                seats[k].mobility = true;
+            }
+        }
         let routes = build_routes(graph.points.len(), &links);
         let point_of = |i: i32| usize::try_from(i).ok().filter(|i| *i < graph.points.len());
         let sale = data.ticket_sales.last().map(|st| (point_of(st.path_point), Vec3::from(st.pos)));

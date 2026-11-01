@@ -369,6 +369,21 @@ impl HumanType {
         for m in meshes.iter_mut() {
             split_feet(m, &rig);
         }
+        // (NexiconDK, 1 November 2026) a pram of its own mesh (`[openomsi_mobility]`): on the
+        // body, as a mesh of the model is - after the rig is measured, which it is no part of
+        if let Some(file) = def.pram_mesh.as_deref() {
+            let p = omsi_cfg::resolve_path(&model_dir, file);
+            match omsi_o3d::load_mesh(&p) {
+                Ok(m) => {
+                    let bones: Vec<(i32, Vec<(u32, f32)>)> = m.bones.iter().map(|b| (bone_id_by_name(&b.name).unwrap_or(0), b.weights.iter().map(|w| (w.vertex, w.weight)).collect())).collect();
+                    let data = mesh_from_o3d(&m);
+                    let skin = influences(&data, &bones);
+                    let alpha = vec![0; m.materials.len()];
+                    meshes.push(HumanMesh { data, materials: m.materials.clone(), bones, skin, alpha, morphs: Vec::new() });
+                }
+                Err(e) => log::warn!("{}: its pram {}: {e}", path.display(), p.display()),
+            }
+        }
         // The `[CTC]` folder is relative to the .hum file's folder (`Texture\man02` is
         // Humans/Other/texture/man02). An add-on that put that folder straight into its own
         // folder instead (GSPNS: Humans/GSPNS/man02, with the default texture in it too) is

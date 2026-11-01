@@ -259,6 +259,13 @@ pub(super) fn humans(cx: HumansCx, dt: f32) {
                 // whose switch and brake sounds some buses play
                 p.vehicle.trigger("int_haltewunsch");
             }
+            // (NexiconDK, 1 November 2026) a rider in a wheelchair or with a pram: the bus's
+            // button for them, where it has one (its lamp, a longer door time), and the stop
+            // request with it - some scripts' button lights only its own lamp
+            if std::mem::take(&mut h.mobility_request) {
+                p.vehicle.trigger("int_kinderwagenwunsch");
+                p.vehicle.trigger("int_haltewunsch");
+            }
             h.write_pax_vars(&mut p.vehicle);
             p.vehicle.host.humans_on_path_link = h.path_link_counts();
             p.vehicle.host.humans_on_seat = h.seat_counts();

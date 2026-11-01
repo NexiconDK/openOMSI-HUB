@@ -202,6 +202,10 @@ pub struct Pax {
     /// Late for a bus pulling in to the stop: walking up to it, then hurrying for it (see
     /// `runners`).
     pub late: Option<Late>,
+    /// (NexiconDK, 1 November 2026) In a wheelchair or with a pram, they could not get on the
+    /// bus at the stop: its place for them was taken (or, for a wheelchair, no door without
+    /// steps leads to it). Not left behind by its driver: counted as at a full bus.
+    pub no_room: Option<BusId>,
 }
 
 impl Pax {
@@ -273,6 +277,7 @@ impl Pax {
             group_tickets: Vec::new(),
             stands_by_choice: false,
             late: None,
+            no_room: None,
         }
     }
 

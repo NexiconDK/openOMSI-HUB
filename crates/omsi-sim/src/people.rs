@@ -77,6 +77,7 @@ pub mod pax_driver;
 pub mod runners;
 pub mod passed_by;
 pub mod greetings;
+pub mod mobility;
 // What the renderer has to follow, the money on the desk and what the people need of the map.
 pub mod bodies;
 pub mod pose_facts;

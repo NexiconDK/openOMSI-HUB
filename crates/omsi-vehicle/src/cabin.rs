@@ -24,6 +24,10 @@ pub struct PassPos {
     /// openOMSI's: a script variable the engine sets to 1 while somebody is on the place and
     /// to 0 while nobody is, named on the line after that.
     pub taken_var: Option<String>,
+    /// (NexiconDK, 1 November 2026) The place of a wheelchair or a pram: a standing place a
+    /// `{mobility}` line marks (after its values and variables, or anywhere before the next
+    /// place; Omsi.exe passes over it). `rot` is the way the wheelchair or pram faces.
+    pub mobility: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -72,13 +76,19 @@ impl PassengerCabin {
         // the seat written last (driver's or not, and which): Omsi.exe keeps both kinds in
         // one list, in the order of the file
         let mut last: Option<(bool, usize)> = None;
-        while let Some(e) = r.next_entry(&["{noticketsale}", "{withbutton}"]) {
+        while let Some(e) = r.next_entry(&["{noticketsale}", "{withbutton}", "{mobility}"]) {
             let k = match e {
                 // a line of its own anywhere between the blocks, as Omsi.exe reads them
                 // (0x5ce952 - 0x5ce9bc): it marks the entry read last. Every stock cabin has
                 // a blank line between the second entry's path point and its
                 // `{noticketsale}`, and read only straight after the path point, the flag
                 // was lost there - and so was a `{withbutton}` written the same way (#1156)
+                omsi_cfg::Entry::Token("{mobility}") => {
+                    if let Some((false, i)) = last {
+                        c.pass_positions[i].mobility = true;
+                    }
+                    continue;
+                }
                 omsi_cfg::Entry::Token(t) => {
                     if let Some(e) = c.entries.last_mut() {
                         if t == "{noticketsale}" {
@@ -132,7 +142,7 @@ impl PassengerCabin {
                     };
                     let switch_var = more();
                     let taken_var = switch_var.as_ref().and_then(|_| more());
-                    let p = PassPos { pos, height, rot, illumination, file_index, switch_var, taken_var };
+                    let p = PassPos { pos, height, rot, illumination, file_index, switch_var, taken_var, mobility: false };
                     if k == "passpos" {
                         c.pass_positions.push(p);
                         last = Some((false, c.pass_positions.len() - 1));
@@ -199,6 +209,19 @@ mod tests {
         let root = original_root();
         let c = PassengerCabin::load(&root.join("Vehicles/MAN_SD200/Model/passengercabin.cfg")).expect("SD200 passengercabin.cfg");
         assert_eq!(c.entries.iter().map(|e| (e.path_point, e.no_ticket_sale)).collect::<Vec<_>>(), [(0, false), (4, true)]);
+    }
+
+    /// (NexiconDK, 1 November 2026) `{mobility}` marks the place read last as a wheelchair's or a
+    /// pram's, after its variables or straight after its values; a seat's or an entry's flags
+    /// stay theirs.
+    #[test]
+    fn a_place_may_be_marked_for_a_wheelchair_or_a_pram() {
+        let text = "[passpos]\n0.55\n1.2\n0\n0\n180\n{mobility}\n\n[passpos]\n0.5\n2\n1\n0.5\n0\nflap_down\nflap_taken\n{mobility}\n\n\
+                    [passpos]\n0.5\n0\n1\n0\n0\n[entry]\n0\n{noticketsale}\n";
+        let c = PassengerCabin::parse(&CfgFile::from_str("passengercabin.cfg", text));
+        assert_eq!(c.pass_positions.iter().map(|p| p.mobility).collect::<Vec<_>>(), [true, true, false]);
+        assert_eq!((c.pass_positions[0].rot, c.pass_positions[1].switch_var.as_deref(), c.pass_positions[1].taken_var.as_deref()), (180.0, Some("flap_down"), Some("flap_taken")));
+        assert!(c.entries[0].no_ticket_sale);
     }
 
     /// #721: a `[passpos]` may name a variable that switches it on and off and one the

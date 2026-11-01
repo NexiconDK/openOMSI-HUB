@@ -226,6 +226,17 @@ impl PeopleSim {
 
     /// sub_61c8d8: a free waiting place of the stop, at random.
     pub fn take_spot(&mut self, stop: i64) -> Option<usize> {
+        self.take_spot_of(stop, true)
+    }
+
+    /// (NexiconDK, 1 November 2026) `take_spot` for person `i`: one in a wheelchair or with a
+    /// pram waits standing, a bench is none of theirs (`mobility`).
+    pub fn take_spot_for(&mut self, i: usize, stop: i64) -> Option<usize> {
+        self.take_spot_of(stop, self.mobility(i).is_none())
+    }
+
+    /// `take_spot`, benches among the places or not.
+    fn take_spot_of(&mut self, stop: i64, benches: bool) -> Option<usize> {
         // Stops a few metres apart (both sides of a bus station's platform, a stop and its
         // copy for another line) find the same objects' places, and each kept its own list of
         // who stands where (as Omsi.exe's 0x61c8d8 does), so two or three people stood in
@@ -244,7 +255,7 @@ impl PeopleSim {
             .taken
             .iter()
             .enumerate()
-            .filter(|(k, t)| !**t && !elsewhere.iter().any(|q| (*q - s.spots[*k].pos).truncate().length() < 0.4))
+            .filter(|(k, t)| !**t && (benches || s.spots[*k].height == 0.0) && !elsewhere.iter().any(|q| (*q - s.spots[*k].pos).truncate().length() < 0.4))
             .map(|(k, _)| k)
             .collect();
         if free.is_empty() {
