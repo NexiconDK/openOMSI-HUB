@@ -129,9 +129,10 @@ fn step(s: &mut Session, host: &mut Host, data: &Path) -> bool {
     }
     let mut planned = false;
     match host.tick(unix_now()) {
-        // (NexiconDK, phase 4 step 4: a depot gone bankrupt - its files go, its process ends)
+        // (NexiconDK, phase 4 step 4: a depot gone bankrupt - its files go, its process ends; 2
+        // November 2026: or closed by its head office)
         Ok(st) if st.bankrupt => {
-            say(&host.company.id, "bankrupt: the depot is closed, what was left of it handed to its head office");
+            say(&host.company.id, "closed (bankrupt, or by its head office): what was left of it handed to its head office");
             let id = host.company.id.clone();
             if let Err(e) = co_store::delete(data, &id) {
                 say(&id, &format!("its files not removed: {e:#}"));

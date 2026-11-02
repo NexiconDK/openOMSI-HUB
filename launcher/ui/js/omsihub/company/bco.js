@@ -301,9 +301,28 @@ function Money({ value, onChange, placeholder = '', style = 'width:140px' }) {
     value=${value ?? ''} onInput=${(e) => onChange(e.currentTarget.value)} />`;
 }
 
+/** (NexiconDK, 2 November 2026) A depot closed by the group's owner: where its own buses go - to
+ * another depot, or sold - asked before, as it cannot be undone. */
+function CloseDepot({ d, h, act, busy, onClose }) {
+  const w = h.words;
+  const others = h.depots.filter((x) => x.id !== d.id);
+  const [to, setTo] = useState(0);
+  const go = async () => {
+    await act('close_depot', { depot: d.id, buses_to: to > 0 ? others[to - 1]?.id || '' : '' });
+    onClose();
+  };
+  return html`<${Dialog} icon="warning" title=${w.close_ask.replace('%{name}', d.name)} w=${560} onClose=${onClose}
+    foot=${html`<span class="rest"></span><${Btn} label=${w.cancel} onClick=${onClose} /><${Btn} kind="danger" icon="delete" label=${w.close} disabled=${busy} onClick=${go} />`}>
+    <p class="co-para">${w.close_say}</p>
+    <label class="bco-hq-close"><span class="bco-label">${w.close_buses}</span>
+      <${Select} value=${to} options=${[w.close_sell, ...others.map((x) => w.close_to.replace('%{depot}', x.name))]} onChange=${setTo} style="width:100%" /></label>
+  </${Dialog}>`;
+}
+
 /** The overview: the depots with their money, month and rule, the requests waiting, the news. */
 function HqOverview({ h, act, busy }) {
   const w = h.words;
+  const [closing, setClosing] = useState(null);
   return html`<div class="bco-hq-cols">
     <div class="bco-hq-col">
       <${Section} title=${w.depots}>
@@ -318,10 +337,13 @@ function HqOverview({ h, act, busy }) {
               ${d.red && html`<span class="t-danger cut">${d.red}</span>`}
               ${d.pending && html`<span class="t-ok cut">${d.pending}</span>`}
             </div>
-            <div class="bco-hq-money"><b class=${'t-' + d.cash_tone}>${d.cash}</b><span class=${'t-' + d.result_tone}>${d.result}</span></div>
+            <div class="bco-hq-money"><b class=${'t-' + d.cash_tone}>${d.cash}</b><span class=${'t-' + d.result_tone}>${d.result}</span>
+              ${h.is_owner && (d.closing ? html`<span class="t-warn">${w.closing}</span>`
+                : html`<${Btn} kind="danger" small icon="delete" label=${w.close} disabled=${busy} onClick=${() => setClosing(d)} />`)}</div>
           </div>`)}
         </div>
       </${Section}>
+      ${closing && html`<${CloseDepot} d=${closing} h=${h} act=${act} busy=${busy} onClose=${() => setClosing(null)} />`}
     </div>
     <div class="bco-hq-col">
       ${h.asks.length > 0 &&

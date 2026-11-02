@@ -677,7 +677,15 @@ impl Host {
         }
         // (phase 7 step 3: the group's head office's orders - a bus moved, an employee lent, the
         // treasury's money called in - kept at once: what went out is in the other's file)
-        if super::server_hq::take_orders(&self.data, c) {
+        let (ordered, closed) = super::server_hq::take_orders_closing(&self.data, c);
+        // (NexiconDK, 2 November 2026: its head office closed it - wound up, its process ends and
+        // its files go as a bankrupt depot's)
+        if closed {
+            s.bankrupt = true;
+            self.dirty = true;
+            return Ok(s);
+        }
+        if ordered {
             self.planned = None;
             store::save(&self.data, c)?;
             self.saved_at = real;

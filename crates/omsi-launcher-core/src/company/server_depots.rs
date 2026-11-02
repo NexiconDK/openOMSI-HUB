@@ -267,6 +267,20 @@ pub struct BusMove {
     pub name: String,
     pub vehicle: super::model::Vehicle,
     pub arrives: String,
+    /// (NexiconDK, 2 November 2026) The sender's head office then: a bus of a depot closed since
+    /// it was sent is still taken in by the group (`sent_by_kin`).
+    #[serde(default)]
+    pub hq: String,
+}
+
+/// Whether a bus or an employee sent by company `from` (of head office `hq` then) comes from one
+/// of `c`'s own: `from` a relative of it, or - a depot closed since, bankrupt or by its head
+/// office, its file gone - of `c`'s group then.
+fn sent_by_kin(data: &Path, c: &Company, from: &str, hq: &str) -> bool {
+    match store::load(data, from) {
+        Ok(o) => related(c, &o.id, &o.online.hq),
+        Err(_) => !hq.is_empty() && (hq == c.online.hq || hq == c.id),
+    }
 }
 
 /// Why a bus does not move.
@@ -329,7 +343,7 @@ pub fn move_bus(data: &Path, c: &mut Company, id: u32, to: &str, price: Cents, d
         return Err(NO_CASH_MOVE);
     }
     let arrives = super::dates::add(&c.date, days.max(0));
-    let m = BusMove { from: c.id.clone(), name: c.name.clone(), vehicle: v.clone(), arrives: arrives.clone() };
+    let m = BusMove { from: c.id.clone(), name: c.name.clone(), vehicle: v.clone(), arrives: arrives.clone(), hq: c.online.hq.clone() };
     append_line(&buses_file(data, to), &serde_json::to_string(&m).map_err(|_| NOT_SENT)?).map_err(|_| NOT_SENT)?;
     let today = c.date.clone();
     super::market::book_part_month(c, &v, &today);
@@ -353,7 +367,7 @@ pub fn take_buses(data: &Path, c: &mut Company) -> usize {
             break;
         }
         c.online.buses_read = end;
-        if !store::load(data, &m.from).ok().is_some_and(|o| related(c, &o.id, &o.online.hq)) {
+        if !sent_by_kin(data, c, &m.from, &m.hq) {
             continue;
         }
         let mut v = m.vehicle;
@@ -421,6 +435,10 @@ pub struct PeopleMove {
     pub employee: super::model::Employee,
     /// Lent: his last day there. Coming back: empty.
     pub until: String,
+    /// (NexiconDK, 2 November 2026) The sender's head office then (`BusMove::hq`): one sent home
+    /// by a depot that closed is still let in.
+    #[serde(default)]
+    pub hq: String,
 }
 
 /// Why an employee is not lent.
@@ -485,7 +503,7 @@ pub fn people_step(data: &Path, c: &mut Company) -> bool {
         let Some(mut e) = c.staff.iter().find(|e| e.id == id).cloned() else { continue };
         let Some(l) = e.lend.take() else { continue };
         let until = super::dates::add(&today, l.days - 1);
-        let m = PeopleMove { from: c.id.clone(), name: c.name.clone(), employee: e, until };
+        let m = PeopleMove { from: c.id.clone(), name: c.name.clone(), employee: e, until, hq: c.online.hq.clone() };
         if serde_json::to_string(&m).ok().is_some_and(|line| append_line(&people_file(data, &l.to), &line).is_ok()) {
             c.staff.retain(|x| x.id != id);
             c.staff_rules.asks.retain(|a| a.id != id);
@@ -499,7 +517,7 @@ pub fn people_step(data: &Path, c: &mut Company) -> bool {
         let Some(mut e) = c.staff.iter().find(|e| e.id == id).cloned() else { continue };
         let Some(l) = e.lent.take() else { continue };
         e.id = l.home_id;
-        let m = PeopleMove { from: c.id.clone(), name: c.name.clone(), employee: e, until: String::new() };
+        let m = PeopleMove { from: c.id.clone(), name: c.name.clone(), employee: e, until: String::new(), hq: c.online.hq.clone() };
         if serde_json::to_string(&m).ok().is_some_and(|line| append_line(&people_file(data, &l.from), &line).is_ok()) {
             c.staff.retain(|x| x.id != id);
             c.staff_rules.asks.retain(|a| a.id != id);
@@ -511,7 +529,7 @@ pub fn people_step(data: &Path, c: &mut Company) -> bool {
         c.online.people_read = end;
         changed = true;
         let Ok(m) = serde_json::from_str::<PeopleMove>(&line) else { continue };
-        if !store::load(data, &m.from).ok().is_some_and(|o| related(c, &o.id, &o.online.hq)) {
+        if !sent_by_kin(data, c, &m.from, &m.hq) {
             continue;
         }
         let mut e = m.employee;
@@ -597,7 +615,62 @@ pub const BANKRUPT_RED: (&str, &str) = ("Depot %{name} is bankrupt: the head off
 pub const BANKRUPT_LEFT: (&str, &str) = ("Depot %{name} is closed", "Depot %{name} stayed in the red and is closed: its buses sold, its staff gone, its lines out to tender again. What was left of it, %{amount}, is the head office's.");
 
 pub fn red_texts() -> Vec<&'static str> {
-    [RED_DEPOT, RED_DEPOT_LAST, RED_HQ, RED_HQ_LAST, BANKRUPT, BANKRUPT_RED, BANKRUPT_LEFT, EMERGENCY, RED_COMPANY, RED_COMPANY_LAST, HQ_BANKRUPT].iter().flat_map(|t| [t.0, t.1]).collect()
+    [RED_DEPOT, RED_DEPOT_LAST, RED_HQ, RED_HQ_LAST, BANKRUPT, BANKRUPT_RED, BANKRUPT_LEFT, EMERGENCY, RED_COMPANY, RED_COMPANY_LAST, HQ_BANKRUPT, CLOSED_MOVED, CLOSED_SOLD, CLOSED_LOSS].iter().flat_map(|t| [t.0, t.1]).collect()
+}
+
+/// (NexiconDK, 2 November 2026) What the head office is told of a depot it closed (`close`).
+pub const CLOSED_MOVED: (&str, &str) = ("Depot %{name} is closed", "By the head office's order depot %{name} is closed: %{moved} of its buses are on their way to %{other}, the others sold or handed back, its staff gone and its lines out to tender again. What was left of it, %{amount}, is the head office's.");
+pub const CLOSED_SOLD: (&str, &str) = ("Depot %{name} is closed", "By the head office's order depot %{name} is closed: its buses sold or handed back, its staff gone, its lines out to tender again. What was left of it, %{amount}, is the head office's.");
+pub const CLOSED_LOSS: (&str, &str) = ("Depot %{name} is closed", "By the head office's order depot %{name} is closed: its buses sold or handed back, its staff gone, its lines out to tender again. The head office covered its loss of %{amount}.");
+
+/// (NexiconDK, 2 November 2026) Depot `c` closed by its head office's order (`server_hq`'s
+/// `close_depot`): the buses it owns on their way to depot `to` first, as far as its yard has
+/// room (none: `to` empty), at no price, there `days` later; then wound up as a bankrupt depot is
+/// (`wind_up`: the rest sold or handed back, its staff gone, its loans paid off, its lines out to
+/// tender again) and what is left handed to the head office - a loss covered there. The
+/// company's file is the caller's to remove. (The buses moved, what the head office was booked.)
+pub fn close(data: &Path, c: &mut Company, to: &str, days: i64) -> (usize, Cents) {
+    let mut moved = 0;
+    let other = (!to.is_empty()).then(|| store::load(data, to).ok()).flatten();
+    if let Some(mut there) = other.clone() {
+        let own: Vec<u32> = c.fleet.iter().filter(|v| matches!(v.tenure, super::model::Tenure::Owned { .. })).map(|v| v.id).collect();
+        for id in own {
+            // (its yard as it will be: the buses sent before this one counted)
+            if super::depot::room(&there).is_err() {
+                break;
+            }
+            let Some(v) = c.vehicle(id).cloned() else { continue };
+            if move_bus(data, c, id, to, 0, days).is_ok() {
+                there.fleet.push(v);
+                moved += 1;
+            }
+        }
+    }
+    wind_up(data, c);
+    let left = c.cash;
+    let (title, text) = if left < 0 {
+        CLOSED_LOSS
+    } else if moved > 0 {
+        CLOSED_MOVED
+    } else {
+        CLOSED_SOLD
+    };
+    let other_name = other.map(|o| o.name).unwrap_or_default();
+    let booking = if left >= 0 { format!("What was left of depot {}", c.name) } else { format!("Depot {} closed: its loss covered", c.name) };
+    let n = Notice {
+        title: title.into(),
+        text: text.into(),
+        args: vec![("name".into(), c.name.clone()), ("amount".into(), left.abs().to_string()), ("moved".into(), moved.to_string()), ("other".into(), other_name)],
+        bad: left < 0,
+        amount: left,
+        booking,
+        close: false,
+    };
+    let _ = tell(data, &c.online.hq.clone(), &n);
+    if left != 0 {
+        c.book(BookingKind::Capital, -left, "Handed to the head office (closed)".to_string(), false);
+    }
+    (moved, left)
 }
 
 // --- phase 6 step 3: a depot's big purchases, approved by its head office ------------------------
@@ -900,7 +973,7 @@ fn wind_up(data: &Path, c: &mut Company) {
     for mut e in std::mem::take(&mut c.staff) {
         if let Some(l) = e.lent.take() {
             e.id = l.home_id;
-            let m = PeopleMove { from: c.id.clone(), name: c.name.clone(), employee: e, until: String::new() };
+            let m = PeopleMove { from: c.id.clone(), name: c.name.clone(), employee: e, until: String::new(), hq: c.online.hq.clone() };
             if let Ok(line) = serde_json::to_string(&m) {
                 let _ = append_line(&people_file(data, &l.from), &line);
             }

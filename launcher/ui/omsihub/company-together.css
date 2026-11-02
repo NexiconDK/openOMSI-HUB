@@ -257,6 +257,8 @@
 .bco-hq-depot .who b { font-size: var(--co-head); }
 .bco-hq-money { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: var(--co-rows); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bco-hq-money b { font-size: var(--co-head); }
+.bco-hq-money .co-btn { margin-top: 4px; }
+.bco-hq-close { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
 .bco-hq-ask { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: var(--co-rows); }
 .bco-hq-ask > span { flex: 1; min-width: 0; line-height: 1.4; }
 .bco-hq-news { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow: auto; }

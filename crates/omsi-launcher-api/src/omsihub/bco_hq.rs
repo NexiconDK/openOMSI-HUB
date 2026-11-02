@@ -141,6 +141,7 @@ fn view(h: &Value, cur: Currency) -> Value {
                 "pending": (pending > 0).then(|| trf("On its way to it: %{amount}", &[("amount", &eur(pending))])),
                 "rule": if says.is_empty() { tr("No rule: money moves by hand.") } else { says.join(" · ") },
                 "sweep_over": over.map(units), "top_up_below": below.map(units),
+                "closing": d.get("closing").and_then(Value::as_bool).unwrap_or(false),
             })
         })
         .collect();
@@ -226,6 +227,7 @@ fn view(h: &Value, cur: Currency) -> Value {
                 .iter()
                 .map(|o| match s(o, "do").as_str() {
                     "move_bus" => trf("Ordered: %{what} to %{other}", &[("what", &s(o, "what")), ("other", &s(o, "to"))]),
+                    "close" => trf("Ordered: %{what} closes", &[("what", &s(o, "what"))]),
                     _ => trf("Ordered: %{what} lent to %{other} for %{n} days", &[("what", &s(o, "what")), ("other", &s(o, "to")), ("n", &n(o, "days").to_string())]),
                 })
                 .collect();
@@ -315,6 +317,10 @@ fn view(h: &Value, cur: Currency) -> Value {
             "keep": tr("Keep at most"), "top_up": tr("Top up below"), "save": tr("Save"),
             "loans": tr("Loans"), "borrow": tr("Borrow"), "repay": tr("Pay back"), "no_loans": tr("The head office has no loans."),
             "found": tr("Found a depot"), "map": tr("The map"), "start": tr("Its starting money"),
+            // (NexiconDK, 2 November 2026: a depot closed by the owner)
+            "close": tr("Close the depot"), "close_ask": tr("Close %{name}?"), "cancel": tr("Cancel"), "closing": tr("Closes at its next step"),
+            "close_say": tr("The depot closes at its next step, within a minute: the buses it owns go to the depot you choose, as far as its yard has room, or are sold; a leased or rented bus is handed back. Its staff are let go and its lines go out to tender again. What is left of its money goes to the treasury, and a loss is covered by it. This cannot be undone."),
+            "close_buses": tr("Its own buses"), "close_sell": tr("Sell them"), "close_to": tr("Move them to %{depot}"),
             "ledger": tr("The treasury's bookings"), "no_ledger": tr("No bookings yet."),
         },
     })

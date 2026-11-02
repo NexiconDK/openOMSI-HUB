@@ -90,7 +90,7 @@ pub const UNKNOWN_ACT: &str = "The server did not understand that: both need the
 pub fn texts() -> Vec<&'static str> {
     let mut v = vec![NOT_MADE, NOT_A_GROUP, NOT_ITS_DEPOT, BAD_RULE, NOT_YOURS, NO_LOAN, SMALL_LOAN, NO_SUCH_LOAN, UNKNOWN_ACT, SAME_DEPOT, NOT_SENT_ORDER];
     v.extend([ORDER_MOVED, ORDER_LENT, ORDER_HOME, ORDER_FAILED, BRAND_TAKEN, CALLED_IN].iter().flat_map(|t| [t.0, t.1]));
-    v.extend([BAD_SHORT, BAD_COLOUR, NO_SUCH_DESIGN, NO_NAME, NOT_OWNER, NO_SUCH_PLAYER, BAD_ROLE, IS_OWNER]);
+    v.extend([BAD_SHORT, BAD_COLOUR, NO_SUCH_DESIGN, NO_NAME, NOT_OWNER, NO_SUCH_PLAYER, BAD_ROLE, IS_OWNER, ONLY_OWNER_CLOSES, CLOSING_ALREADY]);
     v
 }
 
@@ -540,7 +540,9 @@ pub fn order(data: &Path, g: &mut Company, by: &str, from: &str, mut o: Order) -
     }
     let depots = server_depots::depots_of(data, &g.id);
     let home = o.what == "send_home";
-    if !depots.iter().any(|d| d.id == from) || (!home && !depots.iter().any(|d| d.id == o.to)) {
+    // (a depot closed: its buses to another depot, or none - all sold)
+    let to_none = o.what == "close" && o.to.is_empty();
+    if !depots.iter().any(|d| d.id == from) || (!home && !to_none && !depots.iter().any(|d| d.id == o.to)) {
         return Err(NOT_ITS_DEPOT);
     }
     if from == o.to {
@@ -567,6 +569,11 @@ pub fn order(data: &Path, g: &mut Company, by: &str, from: &str, mut o: Order) -
             let e = d.staff.iter().find(|e| e.id == o.employee).ok_or(server_depots::NO_SUCH_EMPLOYEE)?;
             if e.lent.is_some() {
                 return Err(server_depots::BORROWED);
+            }
+        }
+        "close" => {
+            if orders_waiting(data, &d).iter().any(|x| x.what == "close") {
+                return Err(CLOSING_ALREADY);
             }
         }
         _ => return Err(UNKNOWN_ACT),
@@ -599,10 +606,16 @@ pub fn orders_waiting(data: &Path, c: &Company) -> Vec<Order> {
 /// `lend` with the server's price and days of a move: `bus_move_price`, `bus_move_days`), each
 /// told in its inbox; what it could not do told to the head office. Whether any came.
 pub fn take_orders(data: &Path, c: &mut Company) -> bool {
+    take_orders_closing(data, c).0
+}
+
+/// `take_orders`, and whether one of them closed the depot (`close`: `server_depots::close`) -
+/// its process ends and its files go, as a bankrupt depot's.
+pub fn take_orders_closing(data: &Path, c: &mut Company) -> (bool, bool) {
     use super::inbox::{self, Kind, Message};
     let lines = server_depots::lines_after(&orders_file(data, &c.id), c.online.orders_read);
     if lines.is_empty() {
-        return false;
+        return (false, false);
     }
     let cfg = super::main_server::MainCfg::parse(&std::fs::read_to_string(data.join(super::main_server::CFG_FILE)).unwrap_or_default());
     for (line, end) in lines {
@@ -633,6 +646,11 @@ pub fn take_orders(data: &Path, c: &mut Company) -> bool {
                 let r = r.map(|_| Message::new(Kind::Finance, ORDER_HOME.0, ORDER_HOME.1).arg("amount", amount.to_string()));
                 (eur_text(o.amount), r)
             }
+            // (NexiconDK, 2 November 2026: the depot closed - what comes after it is nobody's)
+            "close" => {
+                server_depots::close(data, c, &o.to, cfg.bus_move_days);
+                return (true, true);
+            }
             _ => continue,
         };
         match done {
@@ -649,7 +667,7 @@ pub fn take_orders(data: &Path, c: &mut Company) -> bool {
             }
         }
     }
-    true
+    (true, false)
 }
 
 // --- step 4: the group's brand ---------------------------------------------------------------------
@@ -785,6 +803,9 @@ pub fn take_brand(c: &mut Company, g: &Company) -> bool {
 
 /// Why a role cannot be given.
 pub const NOT_OWNER: &str = "Only the group's owner gives the group's roles.";
+/// (NexiconDK, 2 November 2026) Why a depot is not closed.
+pub const ONLY_OWNER_CLOSES: &str = "Only the group's owner closes a depot.";
+pub const CLOSING_ALREADY: &str = "The depot is being closed already: it closes at its next step.";
 pub const NO_SUCH_PLAYER: &str = "The server has no such player.";
 pub const BAD_ROLE: &str = "That is no role of the group.";
 pub const IS_OWNER: &str = "The group's owner has every role already.";
@@ -903,6 +924,8 @@ pub fn view(data: &Path, g: &Company, me: &str, around: &Around) -> Value {
                 "cash": d.cash, "result": d.month(&month).result(), "last": d.month(&last).result(),
                 "lines": d.lines.len(), "buses": d.fleet.len(), "staff": d.staff.len(), "debt": d.debt(),
                 "runs": around.running.iter().any(|x| *x == d.id), "red_days": d.online.red_days,
+                // (NexiconDK, 2 November 2026: ordered closed, at its next step)
+                "closing": orders_waiting(data, d).iter().any(|o| o.hq == g.id && o.what == "close"),
                 "pending": server_depots::pending_to(data, &d.id, d.online.transfers_read),
                 "rule": { "sweep_over": r.and_then(|r| r.sweep_over), "top_up_below": r.and_then(|r| r.top_up_below) },
             })
@@ -933,6 +956,7 @@ pub fn view(data: &Path, g: &Company, me: &str, around: &Around) -> Value {
                 .map(|o| {
                     let what = match o.what.as_str() {
                         "move_bus" => d.vehicle(o.bus).map(|v| format!("{} {}", v.number, v.name)).unwrap_or_default(),
+                        "close" => d.name.clone(),
                         _ => d.staff.iter().find(|e| e.id == o.employee).map(|e| e.name.clone()).unwrap_or_default(),
                     };
                     json!({ "do": o.what, "what": what, "to": names.get(&o.to).cloned().unwrap_or_else(|| o.to.clone()), "days": o.days })
@@ -979,7 +1003,8 @@ pub fn may_run(g: &Company, me: &str) -> bool {
 /// sweep_over, top_up_below}`), a loan (`borrow {amount}`) or a loan paid back early (`repay
 /// {loan, amount}`), a depot's request answered (`answer {id, yes}`); (step 3) a depot's bus
 /// moved to another (`move_bus {from, bus, to}`), its employee lent to one (`lend {from,
-/// employee, to, days}`). What was done, for the log; an error: why not.
+/// employee, to, days}`); a depot closed by the owner (`close_depot {depot, buses_to}`: its own
+/// buses to depot `buses_to`, none: sold). What was done, for the log; an error: why not.
 pub fn act(data: &Path, g: &mut Company, by: (&str, &str), what: &str, args: &Value, real: i64) -> Result<String, &'static str> {
     let (by_id, by) = by;
     let s = |k: &str| args.get(k).and_then(Value::as_str).unwrap_or("").to_string();
@@ -1015,6 +1040,22 @@ pub fn act(data: &Path, g: &mut Company, by: (&str, &str), what: &str, args: &Va
             let yes = args.get("yes").and_then(Value::as_bool).unwrap_or(false);
             let a = server_depots::answer_approval(data, g, args.get("id").and_then(Value::as_u64).unwrap_or(0), yes)?;
             Ok(format!("{} {} up to {:.2}", if yes { "approved" } else { "refused" }, a.name, a.amount as f64 / 100.0))
+        }
+        // (NexiconDK, 2 November 2026: a depot closed - its owned buses to another depot or sold,
+        // the rest wound up and what is left the treasury's - by the owner alone)
+        "close_depot" => {
+            if by_id != g.online.owner_id {
+                return Err(ONLY_OWNER_CLOSES);
+            }
+            let (depot, to) = (s("depot"), s("buses_to"));
+            let o = Order { what: "close".to_string(), to: to.clone(), ..Default::default() };
+            order(data, g, by, &depot, o)?;
+            // (its rule and its manager's role go with it)
+            if let Some(gr) = g.online.group.as_mut() {
+                gr.rules.retain(|r| r.depot != depot);
+                gr.members.retain(|m| !(m.role == DEPOT_MANAGER && m.depot == depot));
+            }
+            Ok(format!("ordered {depot} closed, its buses {}", if to.is_empty() { "sold".to_string() } else { format!("to {to}") }))
         }
         "move_bus" | "lend" => {
             let (from, to) = (s("from"), s("to"));
@@ -1328,6 +1369,67 @@ mod tests {
         assert!(take_orders(&data, &mut c));
         step(&data, &mut g, "2024-03-04", 3);
         assert!(g.inbox.messages.iter().any(|m| m.title == ORDER_FAILED.0));
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+    /// (NexiconDK, 2 November 2026) The owner closes a depot: at its next step its own buses are on
+    /// their way to the depot he chose, the rest of it wound up and what is left the treasury's; its
+    /// rule and its manager's role go at once; ordered once, by the owner alone. The head office
+    /// stays, and the buses arrive though the closed depot's file is gone.
+    #[test]
+    fn the_owner_closes_a_depot_and_its_head_office_stays() {
+        use super::super::market::{self, MarketBus, Payment};
+        use super::super::model::{BusKind, BusSize, Drive};
+        let (dir, root, data) = folder("close");
+        let mut c = company(&data, "umove", "Umove", "Grundorf");
+        let id = server_depots::found(&data, &root, &mut c, "Ahlheim", 100_000_00, 250_000_00, 1_800_000_000).unwrap();
+        c.online.big_purchase = Some(Cents::MAX / 4);
+        let b = MarketBus { file: "Vehicles/MB_Citaro/Citaro.bus".into(), name: "Citaro".into(), kind: BusKind { size: BusSize::Solo, drive: Drive::Diesel }, ..Default::default() };
+        market::buy_new(&mut c, &b, Payment::Cash, "").unwrap();
+        market::buy_new(&mut c, &b, Payment::Cash, "").unwrap();
+        let own = c.fleet.iter().filter(|v| matches!(v.tenure, super::super::model::Tenure::Owned { .. })).count();
+        assert!(own >= 2);
+        store::save(&data, &c).unwrap();
+        let mut g = store::load(&data, "umove.hq").unwrap();
+        set_rule(&data, &mut g, "umove", Some(1_000_00), None).unwrap();
+        set_member(&data, &mut g, "p2", "Jens", DEPOT_MANAGER, "umove").unwrap();
+        let close = json!({ "depot": "umove", "buses_to": id });
+        assert_eq!(act(&data, &mut g, ("p2", "Jens"), "close_depot", &close, 1), Err(ONLY_OWNER_CLOSES));
+        act(&data, &mut g, ("p1", "Mathias"), "close_depot", &close, 1).unwrap();
+        assert_eq!(act(&data, &mut g, ("p1", "Mathias"), "close_depot", &close, 1), Err(CLOSING_ALREADY));
+        let gr = g.online.group.as_ref().unwrap();
+        assert!(gr.rules.is_empty() && gr.members.is_empty(), "its rule and its manager gone");
+        store::save(&data, &g).unwrap();
+        let v = view(&data, &g, "p1", &Around { running: vec![], depot_price: 0, maps: vec![], time: String::new(), bus_move: (5000_00, 2), players: Vec::new() });
+        assert!(v["depots"].as_array().unwrap().iter().any(|d| d["id"] == "umove" && d["closing"] == true));
+        // (its next step: closed - its own buses on their way, the rest of it the treasury's)
+        assert_eq!(take_orders_closing(&data, &mut c), (true, true));
+        assert!(c.fleet.is_empty() && c.staff.is_empty() && c.lines.is_empty() && c.loans.is_empty() && c.cash == 0, "wound up");
+        let left = -c.ledger.last().unwrap().amount;
+        assert!(left > 0);
+        assert_eq!(server_depots::buses_on_the_way(&data, &c).iter().filter(|x| x.3).count(), own);
+        // (what its process's host does then)
+        store::delete(&data, "umove").unwrap();
+        let before = g.cash;
+        step(&data, &mut g, "2024-03-04", 2);
+        assert_eq!(g.cash, before + left, "what was left, the treasury's");
+        assert!(g.inbox.messages.iter().any(|m| m.text == server_depots::CLOSED_MOVED.1));
+        assert_eq!(server_depots::depots_of(&data, &g.id).iter().map(|d| d.id.as_str()).collect::<Vec<_>>(), [id.as_str()]);
+        assert_eq!(group_ids(&data), ["umove.hq"], "the head office stays");
+        // (the buses come to Ahlheim though Grundorf is gone)
+        let mut a = store::load(&data, &id).unwrap();
+        let n = a.fleet.len();
+        a.date = super::super::dates::add(&a.date, 30);
+        assert_eq!(server_depots::take_buses(&data, &mut a), own);
+        assert_eq!(a.fleet.len(), n + own);
+        // (the last depot closed too, its buses sold: the head office with no depot)
+        store::save(&data, &a).unwrap();
+        act(&data, &mut g, ("p1", "Mathias"), "close_depot", &json!({ "depot": id, "buses_to": "" }), 3).unwrap();
+        assert_eq!(take_orders_closing(&data, &mut a), (true, true));
+        assert!(a.fleet.is_empty());
+        store::delete(&data, &id).unwrap();
+        step(&data, &mut g, "2024-03-04", 4);
+        assert!(server_depots::depots_of(&data, &g.id).is_empty() && group_ids(&data) == ["umove.hq"]);
+        assert!(g.inbox.messages.iter().any(|m| m.text == server_depots::CLOSED_SOLD.1));
         let _ = std::fs::remove_dir_all(&dir);
     }
     /// (Step 4) The group's brand: its name, short name and colours set at the head office, or a

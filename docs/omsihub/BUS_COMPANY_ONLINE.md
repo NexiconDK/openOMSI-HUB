@@ -1171,6 +1171,32 @@ Tested: `server_hq::tests::the_first_depot_makes_a_group_with_its_head_office`,
 `the_groups_brand_reaches_every_depot`, `the_groups_roles_reach_its_depots`; `server_depots`'
 tests with the group's head office; the launcher's page: `bco_hq::tests::the_head_offices_page_from_the_servers_view`.
 
+### Step 6: a depot closed by its owner (2 November 2026)
+
+The owner asked: "a Close depot button that first sends the depot's money and buses home and
+then closes it". A head office has no fleet, so the buses go to another depot instead. Each depot on
+the Overview has **Close the depot** (the group's owner alone: `server_hq::act` `close_depot
+{depot, buses_to}`, `ONLY_OWNER_CLOSES`). The dialog asks where the depot's own buses go: to
+another depot of the group, or sold. The order goes to the depot (`Order` `close`, once:
+`CLOSING_ALREADY`), its rule and its manager's role go at once, and the page says "Closes at its
+next step". At that step (`take_orders_closing`, `server_depots::close`):
+
+- its own buses are on their way to the chosen depot at no price, as far as that depot's yard has
+  room (`depot::room`, the buses sent before counted);
+- the rest is wound up as a bankrupt depot is (`wind_up`): the other buses sold, a leased one
+  handed back early, a rented one given back, its staff gone, its loans paid off, its lines out to
+  tender again;
+- what is left goes to the treasury with a notice (`CLOSED_MOVED`, `CLOSED_SOLD`), or the treasury
+  covers its loss (`CLOSED_LOSS`);
+- its process ends and its files go (`Stepped::bankrupt`, `company_host`).
+
+The head office stays, also with no depots left. A bus or an employee sent by a depot that has
+closed since still arrives: `BusMove::hq` and `PeopleMove::hq` name the sender's head office, and
+the group takes them in (`sent_by_kin`). Before this fix, an employee sent home by a bankrupt
+depot was turned away.
+
+Tested: `server_hq::tests::the_owner_closes_a_depot_and_its_head_office_stays`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the
