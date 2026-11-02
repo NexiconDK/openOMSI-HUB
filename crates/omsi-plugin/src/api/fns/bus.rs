@@ -131,6 +131,7 @@ pub static FNS: &[ApiFn] = &[
         Ok::<_, ApiError>(c.io().bus_shift(g))
     }),
     def!("bus.fuel", "vehicle", [], "number or nil", "The fuel in the tank, litres (the scripts' `engine_tank_content`).", NEW, None, false, |c, a| first_var(c, FUEL).map(Value::from)),
+    def!("bus.fuel_level", "vehicle", [], "number or nil", "How full the tank is, 0 (empty) to 1 (full): its fuel of what a full tank holds (`nil`: the bus does not tell).", NEW, None, false, |c, a| c.io().bus_fuel_level().map(Value::from)),
     def!("bus.dirt", "vehicle", [], "number or nil", "How dirty the bus is, 0 (clean) to 1.", NEW, None, false, |c, a| c.io().bus_dirt().map(Value::from)),
     def!("bus.damage", "vehicle", [], "table or nil", "`{crashes, last_impact_kj, repair_minutes}`: the bus's crashes, the energy of the last one and how long a repair would take (`nil`: nothing to repair).", NEW, None, false, |c, a| c.io().bus_damage().map(|(n, j, m)| rec(vec![("crashes", n.into()), ("last_impact_kj", ((j / 1000.0) as f64).into()), ("repair_minutes", m.map(|m| m as f64).into())]))),
     def!("bus.controls", "vehicle", [], "throttle, brake, clutch, steering", "What the bus drives with now: the pedals (0 to 1) and the steering (-1 left to 1 right), from the keys, the mouse or a controller.", NEW, None, true, |c, a| nums(c.io().bus_controls().map(|v| v.map(|x| x as f64)))),

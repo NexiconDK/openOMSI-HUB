@@ -675,6 +675,41 @@ fn jan_drives(b: &mut Boss, deps: &[i32]) -> DutyRef {
     duty
 }
 
+/// (NexiconDK, Bus Company Online, 2 November 2026) His game starts the company's bus as the
+/// company has it - the fleet's odometer and what its tank holds; what he drives goes to that bus,
+/// not to the first of its model, and its tank stays as his game left it until the depot fills
+/// every bus at night.
+#[test]
+fn a_players_bus_starts_as_the_company_has_it_and_his_drive_goes_to_it() {
+    let mut b = boss();
+    market::buy_new(&mut b.c, &MarketBus { file: "Vehicles/Citaro/Citaro.bus".into(), name: "Citaro".into(), ..Default::default() }, Payment::Cash, "").unwrap();
+    let (first, second) = (b.c.fleet[0].id, b.c.fleet[1].id);
+    let wd = super::super::plan::weekday_of(&b.c.date);
+    super::super::plan::set_bus(&mut b.c, wd, "Linie5", "2", Some(second));
+    b.c.fleet[1].km = 1200.0;
+    b.c.fleet[1].fuel = 0.6;
+    let km_first = b.c.fleet[0].km;
+    let duty = snap(&ask(&mut b, "jan", "hello", |_| {})).duties[0].duty.clone();
+    assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()))["ok"], true);
+    let v = ask(&mut b, "jan", "start", |r| r.duty = Some(duty.clone()));
+    let st: DriveStart = serde_json::from_value(v["start"].clone()).unwrap_or_else(|e| panic!("{e}: {v}"));
+    assert_eq!((st.vehicle, st.km, st.fuel), (second, Some(1200.0), Some(0.6)));
+    // two trips of 8 km, the tank at 45 % after them (a record that says another bus is not believed)
+    let v = ask(&mut b, "jan", "report", |r| {
+        r.duty = Some(duty.clone());
+        r.trips = vec![TripRun { fuel: Some(0.5), vehicle: first, ..run(360, 30, 0) }, TripRun { fuel: Some(0.45), ..run(400, 30, 0) }];
+    });
+    assert_eq!(v["taken"].as_u64(), Some(2), "{v}");
+    assert_eq!(b.c.vehicle(second).map(|v| v.fuel), Some(0.45), "as his game left it");
+    // (the odometer of a drive later today has what he drove, not booked yet)
+    assert_eq!(book::km_today(&b.c, second), 16.0);
+    assert_eq!(book::km_today(&b.c, first), 0.0);
+    close(&mut b);
+    assert!((b.c.vehicle(second).unwrap().km - 1216.0).abs() < 1e-6, "{}", b.c.vehicle(second).unwrap().km);
+    assert_eq!(b.c.vehicle(first).unwrap().km, km_first, "not the first bus of the model");
+    assert!(b.c.fleet.iter().all(|v| v.fuel == 1.0), "filled at night");
+}
+
 /// The boss's day closed: its report, what the modelled trips brought (fares, not measured).
 fn close(b: &mut Boss) -> (super::super::day::DayReport, i64) {
     let closed = b.c.date.clone();

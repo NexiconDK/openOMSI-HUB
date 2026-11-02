@@ -363,9 +363,22 @@ pub struct DriveStart {
     /// at a time, at the end of his (his game's "Drive on", `--drive-on`): the rest of the duty.
     #[serde(default, skip_serializing_if = "is_zero")]
     pub more: usize,
+    /// (NexiconDK, Bus Company Online, 2 November 2026) The fleet's bus (its id), its odometer
+    /// (km) and what is in its tank, 0 to 1 (`duty_launch::SheetBus`): his game in the server's
+    /// world starts the bus so (`--odometer`, `--fuel-level`). None: a boss's launcher of before.
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub vehicle: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub km: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fuel: Option<f64>,
 }
 
 fn is_zero(n: &usize) -> bool {
+    *n == 0
+}
+
+fn is_zero_u32(n: &u32) -> bool {
     *n == 0
 }
 
@@ -389,6 +402,9 @@ impl DriveStart {
             number: self.number.clone(),
             plate: self.plate.clone(),
             hof: self.hof.clone(),
+            vehicle: self.vehicle,
+            km: self.km,
+            fuel: self.fuel,
         };
         let mut d = st.duty(base, "");
         // (alone, not in a session; the friend has no company of his own to run: his trips go
@@ -416,6 +432,9 @@ impl DriveStart {
             from_stop: s.from_stop,
             to_stop: s.to_stop,
             more: 0,
+            vehicle: s.vehicle,
+            km: s.km.filter(|k| k.is_finite() && *k >= 0.0),
+            fuel: s.fuel.filter(|f| f.is_finite()).map(|f| f.clamp(0.0, 1.0)),
         }
     }
 }

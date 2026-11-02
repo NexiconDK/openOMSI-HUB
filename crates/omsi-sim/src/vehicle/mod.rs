@@ -188,6 +188,9 @@ pub struct VehicleInstance {
     driven_km: f64,
     /// The odometer's start was set from `[kmcounter_init]` (see `update_engine_vars`).
     km_started: bool,
+    /// (NexiconDK, Bus Company Online) What a full tank holds, as the pump found it when the
+    /// company's level was set (`set_fuel_level`): the level its content is of (`fuel_level`).
+    tank_full: Option<f32>,
     /// The cabin air as the engine keeps it (°C, g/m³), and the value last written, so that
     /// a bus whose own scripts heat or cool the cabin keeps what they write.
     cabin_air: Option<(f32, f32, f32)>,

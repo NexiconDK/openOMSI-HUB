@@ -287,6 +287,7 @@ impl VehicleInstance {
             seat: (0.0, 0.0, Vec3::ZERO),
             driven_km: 0.0,
             km_started: false,
+            tank_full: None,
             cabin_air: None,
             ai_visuals: true,
             ai_visuals_missed: 0.0,

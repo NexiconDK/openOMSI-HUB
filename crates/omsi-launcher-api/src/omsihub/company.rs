@@ -31,7 +31,7 @@ mod dialogs;
 mod dutycard;
 // (an own line's change taking effect on its day, Trello "Tauri 6/6")
 mod due;
-mod fleet;
+pub(crate) mod fleet;
 mod home;
 pub(crate) mod inbox;
 pub mod kit;

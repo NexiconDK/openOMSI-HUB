@@ -196,6 +196,10 @@ pub struct Claim {
     pub to: i32,
     pub sheet: Vec<PlannedTrip>,
     pub bus: String,
+    /// (NexiconDK, Bus Company Online) The fleet's bus of it then (its id; 0: none, or a claim of
+    /// before): his trips' kilometres go to it at the day's close, and his tank's level to it.
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub vehicle: u32,
     /// How his game starts on it (worked out by the boss's launcher: `host`).
     pub start: Option<DriveStart>,
     /// Its day closed before he drove it (`after_close`): the company had it covered, what he
@@ -526,10 +530,31 @@ fn bus_file(c: &Company, t: &DayTour) -> String {
     }
 }
 
+/// The fleet's bus of a tour of the plan (its id; 0: none of the fleet's).
+fn bus_id(c: &Company, t: &DayTour) -> u32 {
+    match t.bus {
+        Some(BusOf::Own(id)) if c.vehicle(id).is_some() => id,
+        _ => 0,
+    }
+}
+
+fn is_zero_u32(n: &u32) -> bool {
+    *n == 0
+}
+
+/// (NexiconDK, Bus Company Online) The kilometres the players drove the fleet's bus `id` today:
+/// the day's close books them (`day::close_day_with`), its odometer has them now.
+pub fn km_today(c: &Company, id: u32) -> f64 {
+    if id == 0 {
+        return 0.0;
+    }
+    c.together.trips.iter().filter(|g| g.duty.date == c.date && g.trip.vehicle == id).map(|g| g.trip.metres.max(0.0) / 1000.0).sum()
+}
+
 /// A claim of duty `k` of `t` (its sheet as the plan has it now).
 fn claim_of_plan(c: &Company, t: &DayTour, k: usize, r: &DutyRef, guest: u32, state: ClaimState, given: bool) -> Claim {
     let d = &t.duties[k];
-    Claim { duty: r.clone(), guest, state, given, number: t.tour.number.clone(), from: d.from, to: d.to, sheet: t.tour.trips[d.start..d.end].to_vec(), bus: bus_file(c, t), start: None, late: false, ai: Vec::new(), part: None, left: false }
+    Claim { duty: r.clone(), guest, state, given, number: t.tour.number.clone(), from: d.from, to: d.to, sheet: t.tour.trips[d.start..d.end].to_vec(), bus: bus_file(c, t), vehicle: bus_id(c, t), start: None, late: false, ai: Vec::new(), part: None, left: false }
 }
 
 /// (NexiconDK, decided 26 October 2026) The duties of the company's day `p` the roster gives a
@@ -900,6 +925,7 @@ struct Sheet<'a> {
     tour: &'a str,
     number: &'a str,
     bus: String,
+    vehicle: u32,
     planned: &'a [PlannedTrip],
 }
 
@@ -936,6 +962,8 @@ fn safe_trip(c: &Company, s: &Sheet, x: &PlannedTrip, run: &TripRun, name: &str,
     r.driver = name.to_string();
     r.map = c.map.clone();
     r.bus = s.bus.clone();
+    r.vehicle = s.vehicle;
+    r.fuel = r.fuel.filter(|f| f.is_finite()).map(|f| f.clamp(0.0, 1.0));
     r.line = if x.line.trim().is_empty() { s.number.to_string() } else { x.line.clone() };
     r.free = false;
     r.planned = within(r.planned, stops);
@@ -1018,15 +1046,15 @@ pub fn report(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, run
         return Err(NOT_TODAY);
     }
     // (today: the plan as it is now; a closed day: the duty as it was)
-    let (tour, planned, number, bus) = match p.filter(|_| today) {
+    let (tour, planned, number, bus, vehicle) = match p.filter(|_| today) {
         Some(p) => {
             let (_, k, t) = find(p, r)?;
             let d = &t.duties[k];
-            (t.tour.tour.clone(), t.tour.trips[d.start..d.end].to_vec(), t.tour.number.clone(), bus_file(c, t))
+            (t.tour.tour.clone(), t.tour.trips[d.start..d.end].to_vec(), t.tour.number.clone(), bus_file(c, t), bus_id(c, t))
         }
-        None => (r.tour.clone(), x.sheet.clone(), x.number.clone(), x.bus.clone()),
+        None => (r.tour.clone(), x.sheet.clone(), x.number.clone(), x.bus.clone(), x.vehicle),
     };
-    let sheet = Sheet { tour: &tour, number: &number, bus, planned: &planned };
+    let sheet = Sheet { tour: &tour, number: &number, bus, vehicle, planned: &planned };
     let name = c.together.name_of(guest);
     let time = now_unix.max(c.trips_seen + 1);
     let (mut taken, mut refused) = (0, 0);
@@ -1063,6 +1091,13 @@ pub fn report(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, run
             super::super::levels::book_trip(c, &safe, &number);
         }
         count_trip(c, guest, &safe, !today);
+        // (NexiconDK, Bus Company Online: his tank as his game told at the trip's end - the bus's
+        // next drive of the day starts with it; a day closed since has filled it again)
+        if let (true, Some(f)) = (today, safe.fuel) {
+            if let Some(v) = c.fleet.iter_mut().find(|v| v.id == safe.vehicle && safe.vehicle != 0) {
+                v.fuel = f;
+            }
+        }
         c.together.trips.push(GuestTrip { guest, duty: r.clone(), trip: safe, part: part.is_some() });
         taken += 1;
         // (counted as left before the world's check of his trips came: all of them came, he did
@@ -1268,7 +1303,7 @@ pub fn world_saw(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, 
         Some((_, k, t)) => (t.tour.tour.clone(), t.tour.trips[t.duties[k].start..t.duties[k].end].to_vec(), t.tour.number.clone()),
         None => (r.tour.clone(), x.sheet.clone(), x.number.clone()),
     };
-    let sheet = Sheet { tour: &tour, number: &number, bus: String::new(), planned: &planned };
+    let sheet = Sheet { tour: &tour, number: &number, bus: String::new(), vehicle: 0, planned: &planned };
     let Some(i) = trip_of(&sheet, run).and_then(|px| planned.iter().position(|y| std::ptr::eq(y, px))) else { return false };
     if x.ai_now().is_none_or(|a| a.from > i) {
         return false;

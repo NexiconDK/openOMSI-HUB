@@ -70,6 +70,9 @@ impl App {
             autostart: false,
             paint: None,
             setvar: None,
+            // (the company's odometer and tank are its bus's)
+            odometer: None,
+            fuel_level: None,
             ..self.args.clone()
         };
         match spawn_player(&one, &w, r, scene) {

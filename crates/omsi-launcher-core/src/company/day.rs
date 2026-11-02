@@ -683,7 +683,10 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         let Some(li) = line_index(c, &t.line) else { continue };
         let km = t.metres / 1000.0;
         let km = if km.is_finite() && km > 0.0 && km <= (t.seconds / 3600.0 * 100.0).max(10.0) { km } else { 0.0 };
-        let vehicle = c.fleet.iter_mut().find(|v| v.bus.eq_ignore_ascii_case(&t.bus));
+        // (NexiconDK: the fleet's bus it was driven with - by its id where the trip has it, Bus
+        // Company Online's: two buses of one model are not one; else the first of its file's)
+        let by_id = t.vehicle != 0 && c.fleet.iter().any(|v| v.id == t.vehicle);
+        let vehicle = c.fleet.iter_mut().find(|v| if by_id { v.id == t.vehicle } else { v.bus.eq_ignore_ascii_case(&t.bus) });
         let (kind, age) = match vehicle {
             Some(v) => {
                 v.km += km;
@@ -733,6 +736,11 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         }
     }
     c.trips_seen = seen;
+    // (NexiconDK, Bus Company Online: the depot fills every bus at night - its pumps and chargers,
+    // or bought outside, `depot::outside` - the day's drives left them as they were)
+    for v in &mut c.fleet {
+        v.fuel = 1.0;
+    }
 
     // 2. what the game reported live (measured)
     let mut live: Vec<(String, String)> = Vec::new();

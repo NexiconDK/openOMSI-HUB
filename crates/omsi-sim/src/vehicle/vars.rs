@@ -3,6 +3,9 @@
 
 use super::*;
 
+/// The fuel in the tank as the bus scripts keep it (litres; OMSI 2's stock engine scripts).
+const TANK_CONTENT: &str = "engine_tank_content";
+
 impl VehicleInstance {
     pub(super) fn get(&self, id: Option<omsi_script::VarId>) -> f32 {
         id.map(|i| self.state.vars[i as usize]).unwrap_or(0.0)
@@ -188,13 +191,57 @@ impl VehicleInstance {
             if !self.service("veh_tank", 1.0) {
                 return None;
             }
-            let now = self.var("engine_tank_content")?;
+            let now = self.var(TANK_CONTENT)?;
             if now <= last + 1e-3 {
                 break;
             }
             last = now;
         }
-        self.var("engine_tank_content")
+        self.var(TANK_CONTENT)
+    }
+
+    /// (NexiconDK, Bus Company Online, 2 November 2026) How full the tank (an electric bus's
+    /// battery) is, 0 to 1: the content as the scripts keep it (`engine_tank_content`) of a full
+    /// tank as the pump found it when the company's level was set (`set_fuel_level`) - else the
+    /// share the scripts work out for the gauge (`tank_percent`, 0 to 1, OMSI 2's stock engine
+    /// and the Solaris Urbino's), else of the scripts' `engine_tank_capacity`. None: the bus does
+    /// not tell.
+    pub fn fuel_level(&self) -> Option<f32> {
+        let content = self.var(TANK_CONTENT).filter(|c| c.is_finite());
+        let of = |full: f32| content.map(|c| (c / full).clamp(0.0, 1.0));
+        if let Some(full) = self.tank_full {
+            return of(full);
+        }
+        if let Some(p) = self.var("tank_percent").filter(|p| p.is_finite()) {
+            return Some(p.clamp(0.0, 1.0));
+        }
+        self.var("engine_tank_capacity").filter(|f| f.is_finite() && *f > 0.0).and_then(of)
+    }
+
+    /// (NexiconDK, Bus Company Online) Fill the tank to `level` (0 to 1) of a full one: filled up
+    /// at the pump first - the bus's own `veh_tank`, five seconds of it at a time, until it takes
+    /// no more (the diesel Urbino's 250 l at 3 l a second, the electric one's battery at 1 a
+    /// second) - to find what full holds, then left with that share of it. What a full tank
+    /// holds; None: the bus has no tank the game can fill (left as its scripts have it).
+    pub fn set_fuel_level(&mut self, level: f32) -> Option<f32> {
+        let mut full = self.var(TANK_CONTENT).filter(|c| c.is_finite())?;
+        for _ in 0..400 {
+            if !self.service("veh_tank", 5.0) {
+                return None;
+            }
+            let now = self.var(TANK_CONTENT)?;
+            if now <= full + 1e-3 {
+                break;
+            }
+            full = now;
+        }
+        if !(full.is_finite() && full > 0.0) {
+            return None;
+        }
+        self.tank_full = Some(full);
+        let level = if level.is_finite() { level.clamp(0.0, 1.0) } else { 1.0 };
+        self.set_var(TANK_CONTENT, full * level);
+        Some(full)
     }
 
     /// Run the bus through the wash until it stops getting cleaner.
@@ -223,5 +270,46 @@ impl VehicleInstance {
     /// Repair everything (the engine fires this once the driver accepts the waiting time).
     pub fn repair(&mut self) -> bool {
         self.trigger("malfunction_reset")
+    }
+}
+
+#[cfg(test)]
+mod fuel_tests {
+    use crate::timetable_run::tests::script_test_vehicle;
+
+    /// A tank as the Solaris Urbino's engine script keeps it: 250 l, a random content at its
+    /// start, the gauge's share worked out every frame, and the pump's 3 l a second.
+    const URBINO: &str = "{init}\n250 random 250 random + 250 min (S.L.engine_tank_content)\n{end}\n{frame}\n(L.L.engine_tank_content) 250 / (S.L.tank_percent)\n{end}\n{trigger:veh_tank}\n(L.L.engine_tank_content) (L.S.Timegap) 3 * + 250 min (S.L.engine_tank_content)\n{end}\n";
+
+    /// (NexiconDK, Bus Company Online) The company's level of the tank: filled up at the pump to
+    /// find what full holds, then left at that share - and read back as that share, as the
+    /// bus's gauge has it.
+    #[test]
+    fn the_tank_is_left_at_the_companys_level_of_a_full_one() {
+        let mut v = script_test_vehicle(URBINO, "engine_tank_content\ntank_percent\n", "");
+        assert_eq!(v.set_fuel_level(0.4), Some(250.0));
+        assert!((v.var("engine_tank_content").unwrap() - 100.0).abs() < 1e-3);
+        assert!((v.fuel_level().unwrap() - 0.4).abs() < 1e-6);
+        v.update_scripts_only(0.0);
+        assert!((v.var("tank_percent").unwrap() - 0.4).abs() < 1e-6, "the gauge's");
+        // (out of range: full; empty stays empty)
+        assert_eq!(v.set_fuel_level(7.0), Some(250.0));
+        assert_eq!(v.fuel_level(), Some(1.0));
+        v.set_fuel_level(0.0);
+        assert_eq!(v.fuel_level(), Some(0.0));
+    }
+
+    /// A bus the game cannot fill (no `veh_tank`) is left as its scripts have it; one whose
+    /// level was never set is read by its gauge's share.
+    #[test]
+    fn a_tank_without_a_pump_is_left_alone_and_the_gauge_is_read() {
+        let mut v = script_test_vehicle("{frame}\n(L.L.engine_tank_content) 200 / (S.L.tank_percent)\n{end}\n", "engine_tank_content\ntank_percent\n", "");
+        v.set_var("engine_tank_content", 50.0);
+        assert_eq!(v.set_fuel_level(1.0), None);
+        assert_eq!(v.var("engine_tank_content"), Some(50.0));
+        v.update_scripts_only(0.0);
+        assert_eq!(v.fuel_level(), Some(0.25));
+        let none = script_test_vehicle("{frame}\n{end}\n", "x\n", "");
+        assert_eq!(none.fuel_level(), None);
     }
 }

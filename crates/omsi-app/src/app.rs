@@ -556,6 +556,9 @@ impl App {
                         situation_next_stop: None,
                         // (the bus options are the player's bus's)
                         setvar: None,
+                        // (the company's odometer and tank are its bus's)
+                        odometer: None,
+                        fuel_level: None,
                         ..self.args.clone()
                     };
                     match spawn_player(&one, &w, &renderer, &mut scene) {

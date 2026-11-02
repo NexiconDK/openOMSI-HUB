@@ -421,6 +421,25 @@ pub(crate) fn spawn_player_prepared(
         }
         p.vehicle.update(1.0 / 30.0);
     }
+    // (NexiconDK, Bus Company Online) the company's bus as the company has it: its odometer
+    // and what is in its tank - a situation's bus is as it was saved
+    if !args.is_resuming() {
+        if let Some(km) = args.odometer.filter(|k| k.is_finite() && *k >= 0.0) {
+            p.vehicle.set_odometer_km(km);
+            log::info!("odometer: {km:.1} km, the company's");
+        }
+        if let Some(level) = args.fuel_level.filter(|f| f.is_finite()) {
+            // (after its first frames: a script may roll its own tank then - the electric
+            // Urbino's does for its first ten, once its bus options are there)
+            for _ in 0..10 {
+                p.vehicle.update(1.0 / 30.0);
+            }
+            match p.vehicle.set_fuel_level(level) {
+                Some(full) => log::info!("tank: {:.0} % of {full:.0}, the company's", level.clamp(0.0, 1.0) * 100.0),
+                None => log::info!("tank: the bus has none the game can fill - left as its scripts have it"),
+            }
+        }
+    }
     // a situation remembers how dirty the bus was; --dirt sets it for a test run
     if let Some(d) = args.dirt {
         p.vehicle.dirt = d.clamp(0.0, 1.0);

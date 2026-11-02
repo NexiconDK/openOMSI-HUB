@@ -295,6 +295,16 @@
       "permission": null
     },
     {
+      "name": "bus.fuel_level",
+      "group": "vehicle",
+      "since": "0.2.22",
+      "doc": "How full the tank is, 0 (empty) to 1 (full): its fuel of what a full tank holds (`nil`: the bus does not tell).",
+      "params": [],
+      "returns": "number or nil",
+      "multi": false,
+      "permission": null
+    },
+    {
       "name": "bus.gear",
       "group": "vehicle",
       "since": "0.2.22",

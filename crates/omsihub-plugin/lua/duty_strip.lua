@@ -154,6 +154,12 @@ local function fuel_level()
       if cap and cap > 0 then fuel.most = cap end
     end
   end
+  -- (the game's own reading, where it has one: of a full tank as the pump found it when the
+  -- company's level was set - Bus Company Online)
+  if fn(omsi.bus, "fuel_level") then
+    local x = tonumber(omsi.bus.fuel_level())
+    if x then return math.min(math.max(x, 0), 1), "fuel" end
+  end
   local litres = fn(omsi.bus, "fuel") and tonumber(omsi.bus.fuel()) or nil
   if not litres then return nil end
   -- (without the tank's size: the most seen since the drive began, the tank as it came)

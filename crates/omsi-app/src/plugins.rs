@@ -634,6 +634,9 @@ impl PluginIo for Io<'_> {
     fn bus_dirt(&self) -> Option<f32> {
         self.veh().map(|v| v.dirt)
     }
+    fn bus_fuel_level(&self) -> Option<f32> {
+        self.veh().and_then(|v| v.fuel_level())
+    }
     fn bus_damage(&mut self) -> Option<(u32, f32, Option<f32>)> {
         let v = self.veh_mut()?;
         let minutes = v.repair_minutes().filter(|m| *m > 0.0);

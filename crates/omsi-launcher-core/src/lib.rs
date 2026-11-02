@@ -104,7 +104,7 @@ pub fn chosen_game() -> Option<ChosenGame> {
 
 /// The arguments this launcher's game knows and openOMSI's own release does not, and whether
 /// each takes a value.
-pub const OWN_ARGS: &[(&str, bool)] = &[("--company", true), ("--duty-leg", true), ("--free-line", true), ("--relief", false), ("--drive-on", true)];
+pub const OWN_ARGS: &[(&str, bool)] = &[("--company", true), ("--duty-leg", true), ("--free-line", true), ("--relief", false), ("--drive-on", true), ("--odometer", true), ("--fuel-level", true)];
 
 /// A command line without `OWN_ARGS`, for openOMSI's own release. A free drive along a line
 /// (`--free-line`) goes with its `--line` too: the line alone would be a duty of its first tour.
@@ -2013,6 +2013,17 @@ pub struct TripRun {
     /// and when the bus came and left (a trip of an older game has none).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub visits: Vec<StopVisit>,
+    /// (NexiconDK, Bus Company Online, 2 November 2026) The company's bus it was driven with (its
+    /// id in the fleet; 0: not known - the day's close goes by the bus file then), and what was
+    /// left in its tank (battery) at its end, 0 to 1 of full (None: the game could not tell).
+    #[serde(skip_serializing_if = "is_zero_u32")]
+    pub vehicle: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fuel: Option<f64>,
+}
+
+fn is_zero_u32(n: &u32) -> bool {
+    *n == 0
 }
 
 /// One stop of a trip as the bus served it (`TripRun::visits`).
@@ -3838,6 +3849,13 @@ pub struct Duty {
     /// the player may drive on with, one at a time (the game menu's "Drive on"; `--drive-on`).
     #[serde(default)]
     pub drive_on: Option<u32>,
+    /// (NexiconDK, Bus Company Online, 2 November 2026) The company's bus as the company has it:
+    /// its odometer (km) and what is in its tank (battery), 0 to 1 of full - not a reading of the
+    /// game's own (`--odometer`, `--fuel-level`).
+    #[serde(default)]
+    pub odometer_km: Option<f64>,
+    #[serde(default)]
+    pub fuel_level: Option<f64>,
     pub profile: Option<String>,
     /// LAN play: "host", or "join:<session code | ip[:port] | port | empty = search>".
     pub lan: Option<String>,
@@ -3972,6 +3990,20 @@ mod chosen_game_tests {
         assert_eq!(without_own_args(&free), s(&["--map", "maps/Grundorf/global.cfg", "--schedule", "--traffic", "30"]));
         let plain = s(&["--map", "m", "--line", "5", "--tour", "1"]);
         assert_eq!(without_own_args(&plain), plain);
+    }
+
+    /// (NexiconDK, Bus Company Online) The company's bus's odometer and tank reach the game, and
+    /// openOMSI's own release gets neither.
+    #[test]
+    fn the_companys_odometer_and_tank_reach_the_game() {
+        let d = Duty { map: "maps/x/global.cfg".into(), bus: "Vehicles/x.bus".into(), time: "09:00".into(), odometer_km: Some(1234.5), fuel_level: Some(1.4), ..Default::default() };
+        let a = duty_args_for_root(&d, std::path::Path::new("test-omsi")).unwrap();
+        let after = |k: &str| a.iter().position(|x| x == k).map(|i| a[i + 1].clone());
+        assert_eq!((after("--odometer"), after("--fuel-level")), (Some("1234.500".into()), Some("1.000".into())));
+        let own = without_own_args(&a);
+        assert!(!own.iter().any(|x| x == "--odometer" || x == "--fuel-level" || x == "1234.500"), "{own:?}");
+        let none = duty_args_for_root(&Duty { odometer_km: Some(f64::NAN), fuel_level: None, ..d }, std::path::Path::new("test-omsi")).unwrap();
+        assert!(!none.iter().any(|x| x == "--odometer" || x == "--fuel-level"));
     }
 }
 
@@ -4188,6 +4220,13 @@ fn duty_args_for_root(d: &Duty, root: &Path) -> Result<Vec<String>> {
     // (a single trip of the company's: the trips after it the player may drive on with)
     if let Some(n) = d.drive_on.filter(|n| *n > 0 && d.legs.iter().any(|x| !x.trim().is_empty()) && d.free_line.as_deref().is_none_or(|r| r.trim().is_empty())) {
         a.extend(["--drive-on".into(), n.to_string()]);
+    }
+    // (NexiconDK, Bus Company Online: the company's bus's odometer and tank, not the game's own)
+    if let Some(km) = d.odometer_km.filter(|k| k.is_finite() && *k >= 0.0) {
+        a.extend(["--odometer".into(), format!("{km:.3}")]);
+    }
+    if let Some(f) = d.fuel_level.filter(|f| f.is_finite()) {
+        a.extend(["--fuel-level".into(), format!("{:.3}", f.clamp(0.0, 1.0))]);
     }
     let profile = d.profile.clone().filter(|p| !p.trim().is_empty()).unwrap_or_else(|| load_config().profile);
     if let Some(season) = d.season.as_deref().map(str::trim).filter(|x| !x.is_empty() && !x.eq_ignore_ascii_case("auto")) {

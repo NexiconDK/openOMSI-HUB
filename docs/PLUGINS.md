@@ -497,6 +497,7 @@ declared to call the function (a plain `.lua` file has them all).
 | `omsi.bus.engine_running()` | boolean or nil | Whether the engine runs. | 0.2.22 |
 | `omsi.bus.file()` | string or nil | The bus's `.bus` file, relative to the game folder. | 0.2.22 |
 | `omsi.bus.fuel()` | number or nil | The fuel in the tank, litres (the scripts' `engine_tank_content`). | 0.2.22 |
+| `omsi.bus.fuel_level()` | number or nil | How full the tank is, 0 (empty) to 1 (full): its fuel of what a full tank holds (`nil`: the bus does not tell). | 0.2.22 |
 | `omsi.bus.gear()` | integer or nil | The gear engaged (-1 reverse, 0 neutral), where the bus shows one. | 0.2.22 |
 | `omsi.bus.get_strings([names])` | table | The same for string variables. | 0.2.22 |
 | `omsi.bus.get_vars([names])` | table | Many script variables at once: a table name -> value of the names given, or of every variable of the bus without a list. | 0.2.22 |

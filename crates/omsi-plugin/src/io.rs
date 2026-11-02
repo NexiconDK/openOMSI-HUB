@@ -187,6 +187,10 @@ pub trait PluginIo {
     fn bus_dirt(&self) -> Option<f32> {
         None
     }
+    /// How full the bus's tank is, 0 to 1 (None: the bus does not tell).
+    fn bus_fuel_level(&self) -> Option<f32> {
+        None
+    }
     /// Crashes of the bus, the energy of the last (J) and the minutes a repair would take.
     fn bus_damage(&mut self) -> Option<(u32, f32, Option<f32>)> {
         None

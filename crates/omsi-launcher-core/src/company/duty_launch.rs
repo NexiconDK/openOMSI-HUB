@@ -65,6 +65,11 @@ pub struct SheetBus {
     pub plate: String,
     /// The livery it runs in: the company's house livery, else its own.
     pub paint: String,
+    /// (NexiconDK, Bus Company Online) Its odometer now - the fleet's reading with what players
+    /// drove it today, booked at the day's close (`together::book::km_today`) - and what is in its
+    /// tank, 0 to 1 (`Vehicle::fuel`).
+    pub km: f64,
+    pub fuel: f64,
 }
 
 /// What keeps the duty from being driven now. Each is put right in the planning.
@@ -231,6 +236,8 @@ pub fn sheet(c: &Company, p: &DayPlan, r: &DutyRef, now: i64, trips: &[TripRun])
                     number: v.number.clone(),
                     plate: v.plate.clone(),
                     paint: v.house_livery.clone().filter(|h| !h.trim().is_empty()).unwrap_or_else(|| v.livery.clone()),
+                    km: v.km + super::together::book::km_today(c, id),
+                    fuel: v.fuel,
                 });
                 if !v.held_on(&p.date) {
                     s.hitches.push(Hitch::Bus(Problem::Gone));
@@ -342,6 +349,11 @@ pub struct Start {
     pub number: String,
     pub plate: String,
     pub hof: String,
+    /// (NexiconDK, Bus Company Online) The fleet's bus (its id), its odometer and what is in its
+    /// tank (`SheetBus`): the game in the server's world starts it so.
+    pub vehicle: u32,
+    pub km: Option<f64>,
+    pub fuel: Option<f64>,
 }
 
 /// Where the sheet's trips (`Sheet::planned`) lie in its tour of the day's timetable `lines`
@@ -380,6 +392,9 @@ pub fn start(s: &Sheet, lines: &[crate::LineInfo], lead: i64) -> Result<Start, H
         number: bus.number.clone(),
         plate: bus.plate.clone(),
         hof: s.hof.clone(),
+        vehicle: bus.id,
+        km: Some(bus.km),
+        fuel: Some(bus.fuel),
     })
 }
 

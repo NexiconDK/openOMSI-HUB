@@ -70,7 +70,7 @@ fn our_buses(c: &Company, left: &std::collections::HashSet<String>) -> Value {
                 "advert": ad::advert_of(c, bus.id).map(|k| format!("{}  ·  {}", tr("Ad"), k.advertiser)),
                 // (a model the company does not work with any more: the bus stays - Beta 54)
                 "sub": if left.contains(&omsi_launcher_lib::company::vehicles::key_of(&bus.bus)) { format!("{}  ·  {}  ·  {}", bus.plate, tr(bus.kind.label()), tr("not in your selection")) } else { format!("{}  ·  {}", bus.plate, tr(bus.kind.label())) },
-                "facts": format!("{} km  ·  {}  ·  {}", grouped(bus.km.round()), bus.built.get(..4).unwrap_or(""), trf("%{n} years", &[("n", &format!("{:.0}", bus.age_years(&c.date).floor()))])),
+                "facts": format!("{} km  ·  {}  ·  {}", grouped(odometer(c, bus).round()), bus.built.get(..4).unwrap_or(""), trf("%{n} years", &[("n", &format!("{:.0}", bus.age_years(&c.date).floor()))])),
                 "condition": { "frac": bus.condition / 100.0, "tone": grade(bus.condition), "tip": trf("Condition: %{n} of 100", &[("n", &format!("{:.0}", bus.condition))]) },
                 "status": status, "tone": tone,
             })
@@ -123,6 +123,12 @@ fn adverts(c: &Company) -> Value {
     })
 }
 
+/// (NexiconDK, Bus Company Online) A bus's odometer as its next drive starts it: the fleet's
+/// reading with what players drove it today (the day's close books that).
+pub(crate) fn odometer(c: &Company, v: &Vehicle) -> f64 {
+    v.km + co::together::book::km_today(c, v.id)
+}
+
 /// A bus of the fleet (`Dialog::Vehicle`): its photo and livery, what it is, its status, and the
 /// way to sell it, give it back, service it or train its drivers.
 pub fn vehicle_view(s: &mut Session, args: &Value) -> Value {
@@ -133,8 +139,10 @@ pub fn vehicle_view(s: &mut Session, args: &Value) -> Value {
     let rows = vec![
         row(tr("Plate"), v.plate.clone(), false),
         super::age::vehicle_row(&c, &v),
-        row(tr("Kilometres"), format!("{} km", grouped(v.km.round())), false),
+        row(tr("Kilometres"), format!("{} km", grouped(odometer(&c, &v).round())), false),
         row(tr("Next service"), format!("{} km", grouped(v.next_service_km)), false),
+        // (NexiconDK, Bus Company Online: as the last drive left it; full again after the night)
+        row(tr(if v.kind.drive == co::model::Drive::Electric { "Battery" } else { "Diesel" }), format!("{:.0} %", (v.fuel.clamp(0.0, 1.0) * 100.0).round()), false),
         row(tr("Condition"), format!("{:.0} / 100", v.condition), false),
         row(tr("Breakdowns"), v.breakdowns.to_string(), false),
         row(tr("Drivers"), trf("%{n} of %{m} may drive it", &[("n", &q.to_string()), ("m", &m.to_string())]), false),

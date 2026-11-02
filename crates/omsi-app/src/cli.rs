@@ -77,6 +77,15 @@ pub(crate) struct Args {
     /// the player may drive on with, one at a time (the game menu's "Drive on", `relief`).
     #[arg(long, default_value_t = 0)]
     pub(crate) drive_on: u32,
+    /// (NexiconDK, Bus Company Online, 2 November 2026) The company's bus's odometer (km): the
+    /// bus starts with it, not with a reading of its own age (`[kmcounter_init]`). A situation's
+    /// reading wins.
+    #[arg(long)]
+    pub(crate) odometer: Option<f64>,
+    /// (NexiconDK, Bus Company Online) What is in the company's bus's tank (its battery), 0 to 1
+    /// of full: the bus starts with it.
+    #[arg(long)]
+    pub(crate) fuel_level: Option<f32>,
     /// Control preset: `simple` (W/S/A/D and Up/Down drive, Left/Right switch the interior
     /// camera as in OMSI; the default), `wasd`,
     /// `arrows` (leaves W, S and D to the jobs `Inputs/keyboard.cfg` gives them - wipers,

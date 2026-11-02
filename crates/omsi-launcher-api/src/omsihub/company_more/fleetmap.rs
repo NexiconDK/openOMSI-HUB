@@ -874,7 +874,7 @@ fn bus_card(c: &Company, plan: &Plan, d: &Day, m: &MapState, mk: &Marker, clock:
     if let Some(v) = bus {
         rows.push(json!({ "label": tr("Condition"), "value": format!("{:.0} %", v.condition), "tone": grade(v.condition), "meter": v.condition / 100.0 }));
         rows.push(json!({ "label": tr("Cleanliness"), "value": format!("{:.0} %", v.clean), "tone": grade(v.clean), "meter": v.clean / 100.0 }));
-        rows.push(row(&tr("Odometer"), &format!("{} km", num(v.km, 0)), "text"));
+        rows.push(row(&tr("Odometer"), &format!("{} km", num(crate::omsihub::company::fleet::odometer(c, v), 0)), "text"));
     }
     // what happened to it today
     let notes = notes_of(c, tp, mk, clock);

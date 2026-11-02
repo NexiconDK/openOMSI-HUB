@@ -477,10 +477,20 @@ pub struct Vehicle {
     /// `built` and where it came from before the player set the age himself (None: he did not).
     #[serde(default)]
     pub built_auto: Option<(String, super::registrations::AgeFrom)>,
+    /// (NexiconDK, Bus Company Online, 2 November 2026) What is in its tank (its battery, an
+    /// electric bus's), 0 to 1 of full: the depot fills every bus at night (`day::close_day_with`),
+    /// and a player's drive leaves it as his game told (`together::book::report`) - the next drive
+    /// of the day starts with it.
+    #[serde(default = "full_tank")]
+    pub fuel: f64,
 }
 
 fn seventy_five() -> f64 {
     75.0
+}
+
+fn full_tank() -> f64 {
+    1.0
 }
 
 impl Vehicle {

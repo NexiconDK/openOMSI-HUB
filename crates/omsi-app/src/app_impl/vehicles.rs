@@ -61,6 +61,12 @@ impl App {
                 (at.x, at.y, p.vehicle.heading)
             }
         };
+        // (the driven bus's file is its whole path, the one asked for may be under the root)
+        let same = |b: &str| {
+            let (a, x) = (b.replace('\\', "/").to_ascii_lowercase(), bus.replace('\\', "/").to_ascii_lowercase());
+            a == x || a.ends_with(&format!("/{}", x.trim_start_matches('/')))
+        };
+        let again = self.player.as_ref().filter(|p| swap && self.args.odometer.is_some() && same(&p.vehicle.ty.def.path.to_string_lossy())).map(|p| (p.vehicle.odometer_km(), p.vehicle.fuel_level()));
         let one = Args {
             bus: Some(bus.clone()),
             spawn: Some(format!("{x},{y},{heading}")),
@@ -76,6 +82,10 @@ impl App {
             hof: hof.or(self.args.hof.clone()),
             // (the launcher's bus options are for the bus it started with: kept for that file)
             setvar: self.args.setvar.clone().filter(|_| self.args.bus.as_deref().is_some_and(|b| b.replace('\\', "/").eq_ignore_ascii_case(&bus.replace('\\', "/")))),
+            // (NexiconDK, Bus Company Online: the company's odometer and tank are its bus's - the
+            // same bus put back in its place goes on with them as they are now)
+            odometer: again.map(|(km, _)| km),
+            fuel_level: again.and_then(|(_, f)| f),
             ..self.args.clone()
         };
         let prefetch = w.placement_prefetch(r);

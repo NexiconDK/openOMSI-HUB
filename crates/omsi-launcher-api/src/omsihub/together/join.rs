@@ -776,6 +776,10 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
         // (a duty that does not begin the tour: its bus is on the road already - on foot at the
         // stop it begins at, the AI's bus is handed over there: relief at the stop)
         d.relief = Some(start.first > 1 || start.from_stop.is_some_and(|s| s > 0));
+        // (NexiconDK, 2 November 2026: the company's bus as the company has it - its odometer,
+        // and what is in its tank - not the game's own reading of a bus of that age)
+        d.odometer_km = start.km;
+        d.fuel_level = start.fuel;
     }
     d.display_font = core::busfonts::BusFonts::load().font_for(&start.bus);
     d.set_vars = super::super::hub_more::setvars(&start.bus, &start.paint);

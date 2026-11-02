@@ -151,6 +151,12 @@ function M.finish(completed, delay, watch)
     left_behind = math.tointeger(math.max((n.left or 0) - (cur.start.left or 0), 0)),
     left_full = math.tointeger(math.max((n.left_full or 0) - (cur.start.left_full or 0), 0)),
   }
+  -- (NexiconDK, Bus Company Online: what is left in the tank, 0 to 1 - the company's bus's next
+  -- drive starts with it; nil where the game cannot tell)
+  if fn(omsi.bus, "fuel_level") then
+    local f = tonumber(omsi.bus.fuel_level())
+    if f then run.fuel = math.min(math.max(f, 0), 1) end
+  end
   -- (an empty list is written as `{}` by the JSON writer, which is no list: left out then)
   if #visits > 0 then run.visits = visits end
   if watch then
