@@ -1085,8 +1085,22 @@ fn preview(sh: &mut Shell, p: &Preview, list: &ListView, r: Rect) {
                     sh.ui.scroll_to(&key, y, lh, rows_r.h);
                 }
             }
-            if sh.ui.button("pause-go", go, button, Some("play_arrow"), ButtonKind::Primary) {
-                acts.push(Action::Pane(usize::MAX));
+            // (NexiconDK: a second button beside it - a tour of the company's as an extra bus)
+            match p.button2.as_deref() {
+                Some(b2) => {
+                    let half = (go.w - 10.0) * 0.5;
+                    if sh.ui.button("pause-go", Rect::new(go.x, go.y, half, go.h), button, Some("play_arrow"), ButtonKind::Primary) {
+                        acts.push(Action::Pane(usize::MAX));
+                    }
+                    if sh.ui.button("pause-go2", Rect::new(go.x + half + 10.0, go.y, half, go.h), b2, Some("add_road"), ButtonKind::Normal) {
+                        acts.push(Action::Pane(usize::MAX - 3));
+                    }
+                }
+                None => {
+                    if sh.ui.button("pause-go", go, button, Some("play_arrow"), ButtonKind::Primary) {
+                        acts.push(Action::Pane(usize::MAX));
+                    }
+                }
             }
         }
         _ => {

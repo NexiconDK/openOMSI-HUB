@@ -336,6 +336,30 @@ pub struct Snapshot {
     pub messages: Vec<super::super::messages::Msg>,
     /// (NexiconDK, Bus Company Online) Its players may take single trips (`book::free_trips`).
     pub trips_open: bool,
+    /// (NexiconDK, Bus Company Online: free drives) The company's buses as the player may take
+    /// one out (none: not on the server, or he may not drive), and the one he has out.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub free_buses: Vec<SnapBus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub free_drive: Option<SnapBus>,
+}
+
+/// (NexiconDK, free drives) A bus of the company as the player's page lists it to take out: its
+/// number, model, odometer, tank (0 to 1) and fuel use, and whether it is free (until a minute of
+/// the day; None the rest of it) or why not (`free_drive::FreeBus::busy`).
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct SnapBus {
+    pub id: u32,
+    pub number: String,
+    pub name: String,
+    pub file: String,
+    pub electric: bool,
+    pub km: f64,
+    pub fuel: f64,
+    pub fuel_use: String,
+    pub until: Option<i32>,
+    pub busy: Option<String>,
 }
 
 /// How a player's game starts on his duty (`duty_launch::Start`, which the boss's launcher works
@@ -372,6 +396,16 @@ pub struct DriveStart {
     pub km: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fuel: Option<f64>,
+    /// (NexiconDK, Bus Company Online: a free drive with a bus of the company, `free_drive`) No
+    /// duty: the bus from the company's garage (where its run out of the depot `garage` begins),
+    /// at the company's time; in the game's "Line and tour" only the company's lines (`lines`, the
+    /// timetable's names), each tour taken over from the AI or driven behind it as an extra bus.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub free: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub garage: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub lines: Vec<String>,
 }
 
 fn is_zero(n: &usize) -> bool {
@@ -411,6 +445,18 @@ impl DriveStart {
         // to the boss's by his launcher)
         d.company = None;
         d.drive_on = (self.more > 0).then_some(self.more.min(99) as u32);
+        // (a free drive: no line, no tour - from the garage, the company's lines to pick from)
+        if self.free {
+            d.line = None;
+            d.tour = None;
+            d.trip = None;
+            d.legs = Vec::new();
+            d.whole_tour = false;
+            d.entry = None;
+            d.drive_on = None;
+            d.garage_trip = self.garage.clone();
+            d.company_lines = self.lines.clone();
+        }
         d
     }
 
@@ -432,6 +478,9 @@ impl DriveStart {
             from_stop: s.from_stop,
             to_stop: s.to_stop,
             more: 0,
+            free: false,
+            garage: None,
+            lines: Vec::new(),
             vehicle: s.vehicle,
             km: s.km.filter(|k| k.is_finite() && *k >= 0.0),
             fuel: s.fuel.filter(|f| f.is_finite()).map(|f| f.clamp(0.0, 1.0)),

@@ -55,7 +55,7 @@ impl Game {
             view: "driver".into(),
             clock: Clock { time: 43200.0, year: 2026, month: 10, day: 8, day_of_year: 281, weekday: 3, run_time: 10.0 },
             weather: Weather { name: "Sunny".into(), visibility_m: 20000.0, temperature: 18.0, clouds: "-1".into(), ..Default::default() },
-            duty: Some(Duty { line: "136".into(), tour: "3".into(), trip: 0, trips: 4, next: 1, at_stop: false, trip_done: false, delay: 30.0, current: trip }),
+            duty: Some(Duty { line: "136".into(), tour: "3".into(), trip: 0, trips: 4, next: 1, at_stop: false, trip_done: false, delay: 30.0, current: trip, free: false }),
             cars: vec![AiCar { id: 7, kind: "car", name: "VW Golf".into(), pos: [130.0, 50.0, 2.0, 90.0], speed_kmh: 30.0, ..Default::default() }, AiCar { id: 9, kind: "timetable_bus", name: "MAN NL".into(), pos: [600.0, 50.0, 2.0, 0.0], line: Some("137".into()), ..Default::default() }],
             ..Default::default()
         };

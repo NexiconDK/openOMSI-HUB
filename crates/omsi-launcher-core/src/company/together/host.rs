@@ -16,7 +16,7 @@ use super::super::plan::{BusOf, DayPlan, Who};
 use super::book::{self, ClaimState, Handed, LeftWhy};
 use super::code;
 use super::roles::{Perm, Role};
-use super::wire::{Card, DriveStart, DutyState, Notice, Request, SnapAsk, SnapDuty, SnapLine, SnapMember, SnapPart, SnapPlayer, SnapResult, SnapTrip, SnapYou, Snapshot, TripList};
+use super::wire::{Card, DriveStart, DutyState, Notice, Request, SnapAsk, SnapBus, SnapDuty, SnapLine, SnapMember, SnapPart, SnapPlayer, SnapResult, SnapTrip, SnapYou, Snapshot, TripList};
 use serde_json::{json, Value};
 
 /// A player who has not been heard from for this long is offline (s).
@@ -367,7 +367,20 @@ impl HostState {
         let result: Result<(), Value> = match req.what.as_str() {
             "hello" | "snapshot" => Ok(()),
             "take" | "release" | "start" | "take_back" | "report" | "assign" | "unassign" | "answer" if p.is_none() && !late => Err(refusal(READING)),
-            "take_trip" | "next_trip" | "trips" if p.is_none() => Err(refusal(READING)),
+            "take_trip" | "next_trip" | "trips" | "take_bus" if p.is_none() => Err(refusal(READING)),
+            // (NexiconDK, Bus Company Online, 2 November 2026: a bus of the company taken out for a
+            // free drive - how his game starts with it - and his game over with it)
+            "take_bus" if !can(Perm::Drive) => Err(not_allowed(Perm::Drive)),
+            "take_bus" => {
+                let (vehicle, minute) = (req.target, c.clock.minute as i32);
+                super::super::free_drive::take(c, p.unwrap(), guest, vehicle, minute, now).map_err(refusal).map(|_| {
+                    extra = json!({ "start": free_start(c, p.unwrap(), vehicle) });
+                })
+            }
+            "free_done" => {
+                super::super::free_drive::end(c, guest);
+                Ok(())
+            }
             "take" if !can(Perm::Drive) => Err(not_allowed(Perm::Drive)),
             "take" => match req.duty.as_ref() {
                 None => Err(refusal(book::NO_DUTY)),
@@ -805,6 +818,58 @@ impl HostState {
     }
 }
 
+/// (NexiconDK, Bus Company Online, 2 November 2026) How a player's game starts a free drive with
+/// bus `id` of the day `p`: no duty, at the company's time, from its garage, the bus's odometer and
+/// tank as they are now, the company's lines to pick from in the game.
+fn free_start(c: &Company, p: &DayPlan, id: u32) -> DriveStart {
+    let minute = c.clock.minute as i32;
+    let days = super::super::fuel::of_day_plan(p);
+    let Some(v) = c.vehicle(id) else { return DriveStart::default() };
+    DriveStart {
+        company: c.id.clone(),
+        map: c.map.clone(),
+        date: c.date.clone(),
+        time: minute.rem_euclid(1440),
+        bus: v.bus.clone(),
+        paint: v.house_livery.clone().filter(|h| !h.trim().is_empty()).unwrap_or_else(|| v.livery.clone()),
+        number: v.number.clone(),
+        plate: v.plate.clone(),
+        hof: c.depot.clone(),
+        free: true,
+        garage: super::super::free_drive::garage_trip(p),
+        lines: c.lines.iter().map(|l| l.name.clone()).collect(),
+        vehicle: id,
+        km: Some(super::super::fuel::odometer_at(c, &days, id, minute)),
+        fuel: Some(super::super::fuel::level_at(c, &days, id, minute)),
+        ..Default::default()
+    }
+}
+
+/// (NexiconDK, free drives) The company's buses as player `guest` may take one out now, and the one
+/// he has out (`Snapshot::free_buses`, `free_drive`).
+fn free_buses(c: &Company, p: &DayPlan, guest: u32) -> (Vec<SnapBus>, Option<SnapBus>) {
+    let minute = c.clock.minute as i32;
+    let days = super::super::fuel::of_day_plan(p);
+    let snap = |b: &super::super::free_drive::FreeBus| {
+        let v = c.vehicle(b.id)?;
+        Some(SnapBus {
+            id: v.id,
+            number: v.number.clone(),
+            name: v.name.clone(),
+            file: v.bus.clone(),
+            electric: v.kind.drive == super::super::model::Drive::Electric,
+            km: super::super::fuel::odometer_at(c, &days, v.id, minute),
+            fuel: super::super::fuel::level_at(c, &days, v.id, minute),
+            fuel_use: super::super::fuel::use_text(v.kind),
+            until: b.until,
+            busy: b.busy.clone(),
+        })
+    };
+    let all = super::super::free_drive::buses(c, p, minute);
+    let out = super::super::free_drive::out_of(c, guest).and_then(|d| snap(&super::super::free_drive::FreeBus { id: d.vehicle, ..Default::default() }));
+    (all.iter().filter_map(snap).collect(), out)
+}
+
 /// (NexiconDK, Bus Company Online, 2 November 2026) The duty's bus as it is when the duty takes it
 /// over at the first of its trips `planned`: its odometer and its tank with what the company's AI
 /// drivers have driven it today until then (`fuel`) - a bus taken over in the afternoon may be well
@@ -1014,6 +1079,10 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
         trips_open: c.online.on_server && c.together.trips_open,
         ..Default::default()
     };
+    // (NexiconDK, free drives: the company's buses to take out, for one who may drive)
+    if let (Some(g), Some(p), true, true) = (guest, here.plan, c.online.on_server, can(Perm::Drive)) {
+        (s.free_buses, s.free_drive) = free_buses(c, p, g);
+    }
     let now = clock::now(c);
     let colour_of = |line: &str| c.lines.iter().find(|l| l.name.eq_ignore_ascii_case(line)).map(|l| l.colour.clone()).unwrap_or_default();
     if let Some(p) = here.plan {

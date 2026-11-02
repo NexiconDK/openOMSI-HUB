@@ -44,6 +44,7 @@ fn duty(d: &Duty) -> Value {
         ("at_stop", d.at_stop.into()),
         ("trip_done", d.trip_done.into()),
         ("delay", d.delay.into()),
+        ("free", d.free.into()),
     ])
 }
 
@@ -54,7 +55,7 @@ pub static FNS: &[ApiFn] = &[
         Ok::<_, ApiError>(Value::List(match c.io().timetable_tour(&line, &tour) { Ok(v) => vec![v], Err(e) => vec![Value::Nil, e.into()] }))
     }),
     def!("duty.active", "duty", [], "boolean", "Whether the player drives a duty (a line and tour of the timetable).", NEW, None, false, |c, a| c.io().duty().is_some()),
-    def!("duty.get", "duty", [], "table or nil", "The duty now: `line`, `tour`, `trip` (its number in the duty, from 1), `trips`, `trip_name`, `terminus`, `departure`, `arrival`, `stops`, `next_stop` and `previous_stop` (each a stop: `{number, name, id, arrival, departure, stops, x, y, z}`), `at_stop`, `trip_done`, `delay` (seconds, late positive).", NEW, None, false, |c, a| c.io().duty().map(|d| duty(&d))),
+    def!("duty.get", "duty", [], "table or nil", "The duty now: `line`, `tour`, `trip` (its number in the duty, from 1), `trips`, `trip_name`, `terminus`, `departure`, `arrival`, `stops`, `next_stop` and `previous_stop` (each a stop: `{number, name, id, arrival, departure, stops, x, y, z}`), `at_stop`, `trip_done`, `delay` (seconds, late positive), `free` (a free drive along a route: nobody keeps its time).", NEW, None, false, |c, a| c.io().duty().map(|d| duty(&d))),
     def!("duty.delay", "duty", [], "number or nil", "Seconds the bus is late (early negative), worked out between the stops as the game's timetable does.", NEW, None, false, |c, a| c.io().duty().map(|d| d.delay)),
     def!("duty.stops", "duty", [], "list of tables", "The stops of the trip now: `{number, name, id, arrival, departure, stops, passed, x, y, z}` (`stops` false: the bus passes it; `x, y, z` where the stop's place is known; `id` the map's object id).", NEW, None, false, |c, a| c.io().duty().map(|d| stops(&d.current, Some(d.next)))),
     def!("duty.next_stop", "duty", [], "table or nil", "The next stop of the trip (as `duty.stops` gives them).", NEW, None, false, |c, a| c.io().duty().and_then(|d| d.current.stops.get(d.next).map(|s| stop(s, d.next, None)))),

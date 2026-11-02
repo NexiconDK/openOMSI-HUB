@@ -20,7 +20,7 @@
 //! game's plugin as the boss's launcher writes them to its own (`messages_link`), and what he
 //! answers there or tells control goes back to the boss's (`msg_reply`, `msg_tell`).
 
-use super::super::company::words::{day_label, eur, tr, trf};
+use super::super::company::words::{day_label, eur, grouped, tr, trf};
 use super::super::company::{self, TABS};
 use super::{duty_arg, duty_words, notice_json, perm_json, perms_arg, relay, role_json, roles_json, unix_now};
 use crate::{Answer, Platform};
@@ -30,7 +30,7 @@ use omsi_launcher_lib::company::together::client::{self, Ended, Link};
 use omsi_launcher_lib::company::together::code::{self, CompanyCode};
 use omsi_launcher_lib::company::together::host as th;
 use omsi_launcher_lib::company::together::book::TripFilter;
-use omsi_launcher_lib::company::together::wire::{DriveStart, DutyState, Notice, Request, SnapDuty, SnapResult, Snapshot, TripList};
+use omsi_launcher_lib::company::together::wire::{DriveStart, DutyState, Notice, Request, SnapBus, SnapDuty, SnapResult, Snapshot, TripList};
 use omsi_launcher_lib::company::together::{Perm, Role};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -81,6 +81,12 @@ struct Drive {
     world: Option<String>,
     /// (28 October 2026) Since when its game has gone (`WORLD_DONE_AFTER`).
     gone: Option<Instant>,
+    /// (NexiconDK, 2 November 2026) A free drive with the company's bus (its id), no duty: the
+    /// plugin's reports read since it started, and the last account of the whole drive it gave
+    /// (`"drive"`) - handed to the world when the game is over (`post_free_drive`).
+    free: Option<u32>,
+    reports: bridge::ReportReader,
+    summary: Option<bridge::Report>,
 }
 
 struct Joined {
@@ -162,7 +168,7 @@ fn me() -> Me {
 }
 
 fn request(j: &Joined, what: &str) -> Request {
-    Request { v: code::VERSION, secret: j.code.secret_hex(), company: j.code.company, player: j.me.id.clone(), name: j.me.name.clone(), what: what.into(), driving: j.drive.as_ref().map(|d| d.duty.clone()), in_game: j.drive.is_some(), since: j.since, logo: !j.logo_asked, ticket: j.me.ticket.clone(), ..Default::default() }
+    Request { v: code::VERSION, secret: j.code.secret_hex(), company: j.code.company, player: j.me.id.clone(), name: j.me.name.clone(), what: what.into(), driving: j.drive.as_ref().filter(|d| d.free.is_none()).map(|d| d.duty.clone()), in_game: j.drive.is_some(), since: j.since, logo: !j.logo_asked, ticket: j.me.ticket.clone(), ..Default::default() }
 }
 
 /// An answer of the boss's launcher taken in: the day, the notices.
@@ -236,7 +242,8 @@ fn send_now(what: &str, fill: impl FnOnce(&mut Request)) -> Result<Value, String
 fn new_trips(d: &Drive, name: &str) -> Vec<core::TripRun> {
     core::trips_of(&data(), name)
         .into_iter()
-        .filter(|t| t.time >= d.since && !t.free && t.tour.trim() == d.tour.trim() && t.departure.is_finite())
+        // (a free drive: the trips of the company's tours he took over in his game)
+        .filter(|t| t.time >= d.since && !t.free && (t.tour.trim() == d.tour.trim() || (d.free.is_some() && !t.tour.trim().is_empty())) && t.departure.is_finite())
         .filter(|t| !d.sent.contains(&((t.departure / 60.0).round() as i32)))
         .collect()
 }
@@ -258,6 +265,33 @@ fn post_to_world(world: &str, name: &str, trips: &[core::TripRun]) -> Vec<i32> {
         }
     }
     taken
+}
+
+/// (NexiconDK, free drives) The whole of player `name`'s free drive with bus `vehicle` of
+/// company `company` (`summary`, the plugin's last account of it) posted to the map's world
+/// (`POST /bco/trip`), which checks it against where it saw his bus and gives it to the company.
+fn post_free_drive(world: &str, name: &str, company: &str, vehicle: u32, summary: &bridge::Report) -> bool {
+    let run = core::TripRun {
+        time: unix_now(),
+        driver: name.to_string(),
+        free: true,
+        vehicle,
+        metres: summary.metres.unwrap_or(0.0),
+        seconds: summary.seconds.unwrap_or(0.0),
+        span: summary.span.unwrap_or(0.0),
+        passengers: summary.boarded.unwrap_or(0).clamp(0, 5000) as i32,
+        fuel: summary.fuel,
+        ..Default::default()
+    };
+    let url = format!("{}/bco/trip", world.trim_end_matches('/'));
+    let body = json!({ "name": name, "company": company, "trip": run }).to_string();
+    match omsi_net::http::post_json(&url, &body, Duration::from_secs(10)) {
+        Ok(_) => true,
+        Err(e) => {
+            core::log_to_file(&format!("company session: the free drive not posted to the world ({e}): again"));
+            false
+        }
+    }
 }
 
 /// Whether the game of the duty still runs.
@@ -322,7 +356,28 @@ fn run(stop: Arc<AtomicBool>) {
                     x.gone = Some(Instant::now());
                 }
             }
-            if !trips.is_empty() || done {
+            // (NexiconDK, a free drive: the plugin's account of it kept; at its end handed to the
+            // world - again until it took it - and the bus given back)
+            if let Some(vehicle) = d.free {
+                if let (Some(dir), Some(x)) = (super::super::addon::game_plugin_dir(), joined().as_mut().and_then(|j| j.drive.as_mut())) {
+                    if let Some(r) = x.reports.read_new(&dir).into_iter().filter(|r| r.kind == "drive").last() {
+                        x.summary = Some(r);
+                    }
+                }
+                if done {
+                    let summary = joined().as_ref().and_then(|j| j.drive.as_ref()).and_then(|x| x.summary.clone());
+                    let company = joined().as_ref().and_then(|j| j.snap.as_ref()).map(|s| s.card.id.clone()).unwrap_or_default();
+                    let posted = match (summary, d.world.as_deref()) {
+                        (Some(s), Some(world)) => post_free_drive(world, &req.name, &company, vehicle, &s),
+                        _ => true,
+                    };
+                    if posted {
+                        req.what = "free_done".into();
+                    } else {
+                        done = false;
+                    }
+                }
+            } else if !trips.is_empty() || done {
                 req.what = "report".into();
                 req.duty = Some(d.duty.clone());
                 req.trips = trips;
@@ -337,6 +392,10 @@ fn run(stop: Arc<AtomicBool>) {
                 // (a report the boss's launcher could not take now is sent again; the session
                 // closed: nothing is sent any more)
                 let error = v.get("error").and_then(Value::as_str).unwrap_or("");
+                // (a free drive's end: the bus given back)
+                if req.what == "free_done" && !th::passing(error) && j.ended.is_none() {
+                    j.drive = None;
+                }
                 if req.what == "report" && !th::passing(error) && j.ended.is_none() {
                     if let Some(d) = j.drive.as_mut() {
                         d.sent.extend(req.trips.iter().map(|t| (t.departure / 60.0).round() as i32));
@@ -349,7 +408,7 @@ fn run(stop: Arc<AtomicBool>) {
                 }
                 drop(g);
                 // (the control room's messages of the duty his game drives)
-                if let Some(d) = drive.as_ref().filter(|_| !done) {
+                if let Some(d) = drive.as_ref().filter(|d| !done && d.free.is_none()) {
                     messages_link(&base, d);
                 }
             }
@@ -475,6 +534,8 @@ pub(super) fn call(cmd: &str, args: &Value, p: &dyn Platform) -> Option<Answer> 
         }
         "tg_next_trip" => Ok(took_trip(send_now("next_trip", |q| q.filter = filter_arg(args)))),
         "tg_drive" => drive(args, p, "start"),
+        // (NexiconDK, Bus Company Online: a free drive with a bus of the company)
+        "tg_take_bus" => take_bus(args, p),
         // (Beta 63: a duty the AI drives since he left it, back from its next trip)
         "tg_take_back" => drive(args, p, "take_back"),
         "tg_status" => Ok(status()),
@@ -791,8 +852,77 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
     // (his plugin's earlier replies are not this duty's: read from here on)
     let replies = super::super::addon::game_plugin_dir().map(|d| std::fs::metadata(d.join(bridge::DATA_DIR).join(bridge::REPLIES_FILE)).map_or(0, |m| m.len())).unwrap_or(0);
     if let Some(j) = joined().as_mut() {
-        j.drive = Some(Drive { duty: r, number, tour: start.tour.clone(), since: unix_now().saturating_sub(60), pid: launched.pid, sent: Vec::new(), world: d.lan.as_deref().and_then(|l| l.strip_prefix("join:")).map(str::to_string), gone: None });
+        j.drive = Some(Drive { duty: r, number, tour: start.tour.clone(), since: unix_now().saturating_sub(60), pid: launched.pid, sent: Vec::new(), world: d.lan.as_deref().and_then(|l| l.strip_prefix("join:")).map(str::to_string), gone: None, free: None, reports: Default::default(), summary: None });
         j.replies = bridge::ReplyReader { offset: replies };
+        j.wake = true;
+    }
+    Ok(json!({ "launched": serde_json::to_value(launched).unwrap_or(Value::Null) }))
+}
+
+/// (NexiconDK, Bus Company Online, 2 November 2026) A free drive with bus `vehicle` of the
+/// company: taken out of the company's garage (the boss's side says how the game starts it, or
+/// why not), the game started in the map's world `world` - no duty, at the company's time, the
+/// bus's odometer and tank as the company has them, its lines to pick from in "Line and tour".
+fn take_bus(args: &Value, p: &dyn Platform) -> Answer {
+    let vehicle = args.get("vehicle").and_then(Value::as_u64).unwrap_or(0) as u32;
+    let Some(world) = args.get("world").and_then(Value::as_str).map(str::trim).filter(|w| !w.is_empty()).map(str::to_string) else {
+        return Ok(json!({ "error": tr("A free drive is driven in the map's world of Bus Company Online.") }));
+    };
+    let (running, installed) = company::with(|s| {
+        let file = joined().as_ref().and_then(|j| j.snap.as_ref()).and_then(|x| x.free_buses.iter().find(|b| b.id == vehicle).map(|b| b.file.clone())).unwrap_or_default();
+        let same = |f: &str| f.replace('\\', "/").eq_ignore_ascii_case(&file.replace('\\', "/"));
+        let have = file.trim().is_empty() || !s.vehicles_read() || s.vehicles().iter().any(|v| same(&v.file));
+        (s.in_game(), if have { None } else { Some(file) })
+    });
+    if running || joined().as_ref().is_some_and(|j| j.drive.as_ref().is_some_and(|d| game_runs(d.pid))) {
+        return Ok(json!({ "error": tr("A game is running: close it first.") }));
+    }
+    if let Some(file) = installed {
+        return Ok(json!({ "error": trf("The bus is not installed on this computer: %{bus}.", &[("bus", &file)]) }));
+    }
+    let root = core::load_config().root;
+    if !omsi_cfg::missing_original_essentials(std::path::Path::new(&root)).is_empty() {
+        return Ok(json!({ "error": tr("A session needs the original OMSI 2.") }));
+    }
+    let v = match send_now("take_bus", |q| q.target = vehicle) {
+        Ok(v) => v,
+        Err(e) => return Ok(json!({ "error": e })),
+    };
+    let Some(start) = v.get("start").and_then(|x| serde_json::from_value::<DriveStart>(x.clone()).ok()).filter(|s| s.free) else {
+        return Ok(json!({ "error": refusal_words(&v) }));
+    };
+    let base: core::Duty = serde_json::from_value(args.get("base").cloned().unwrap_or(Value::Null)).map_err(|e| format!("base: {e}"))?;
+    let name = driver();
+    let mut d = start.duty(base);
+    if let Err(e) = core::server_timetable::fetch(&world) {
+        core::log_to_file(&format!("company session: the world's timetable not fetched ({e}): the game's own"));
+    }
+    d.lan = Some(format!("join:{world}"));
+    d.lan_name = joined().as_ref().map(|j| j.me.name.clone());
+    d.odometer_km = start.km;
+    d.fuel_level = start.fuel;
+    d.display_font = core::busfonts::BusFonts::load().font_for(&start.bus);
+    d.set_vars = super::super::hub_more::setvars(&start.bus, &start.paint);
+    core::log_to_file(&format!("company session: {} takes bus {} ({}) out for a free drive, in the world at {world}", name, start.number, start.bus));
+    let launched = core::launch(&d).map_err(|e| format!("{e:#}"))?;
+    core::log_to_file(&format!("game {}: {}", launched.pid, launched.command));
+    p.launched();
+    // (the plugin's reports from here on: its account of this drive)
+    let reports = super::super::addon::game_plugin_dir().map(|d| std::fs::metadata(d.join(bridge::DATA_DIR).join(bridge::REPORTS_FILE)).map_or(0, |m| m.len())).unwrap_or(0);
+    if let Some(j) = joined().as_mut() {
+        j.drive = Some(Drive {
+            duty: DutyRef::default(),
+            number: start.number.clone(),
+            tour: String::new(),
+            since: unix_now().saturating_sub(60),
+            pid: launched.pid,
+            sent: Vec::new(),
+            world: Some(world),
+            gone: None,
+            free: Some(vehicle),
+            reports: bridge::ReportReader { offset: reports },
+            summary: None,
+        });
         j.wake = true;
     }
     Ok(json!({ "launched": serde_json::to_value(launched).unwrap_or(Value::Null) }))
@@ -895,7 +1025,7 @@ fn view() -> Value {
         "field": tr("Session code (HUB-…)"), "join": tr("Join"), "back": tr("Back"),
         "need": [tr("Both need the same version of Omsi-Hub."), tr("The same network, the same VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale), or the boss's tunnel."), tr("The boss's company map, and the buses of your duties, installed.")],
         "leave": tr("Leave"), "connecting": tr("Looking for the boss's launcher…"),
-        "tab_work": tr("My work"), "tab_duties": tr("Duties"), "tab_trips": tr("Single trips"), "tab_team": tr("Team"), "tab_news": tr("News"),
+        "tab_work": tr("My work"), "tab_duties": tr("Duties"), "tab_trips": tr("Single trips"), "tab_free": tr("Free drive"), "tab_team": tr("Team"), "tab_news": tr("News"),
         "open_caps": tr("Open duties").to_uppercase(), "no_open": tr("No open duty right now: the boss can give you one."),
         "mine_caps": tr("My duties").to_uppercase(), "no_mine": tr("No duty of yours yet: ask for an open one."),
         "rest_caps": tr("The rest of the day").to_uppercase(),
@@ -1006,10 +1136,54 @@ fn view() -> Value {
         "reading": s.reading, "next": next, "open": open, "ai": ai, "ai_none": ai_none, "mine": mine, "rest": rest, "players": players, "results": results,
         // (NexiconDK, 27 October 2026: single trips of the AI drivers' duties - `tg_trips`)
         "trips": ask && s.trips_open,
+        // (NexiconDK, 2 November 2026: a free drive with a bus of the company - `tg_take_bus`)
+        "free": free_json(s, j),
         "asks": asks, "members": members, "giveable": giveable, "roles": if can(Perm::Players) { roles_json() } else { Value::Null },
         "history": history_rows(), "driving": driving, "notices": notices, "last_notice": j.notices.last().map(|n| n.n).unwrap_or(0),
         "online": s.players.iter().filter(|p| p.online).count(),
         "take_note": if !ask { tr("Your role does not drive: the boss can change it.") } else if s.open_claims || can(Perm::Approve) { tr("Take an open duty: it is yours at once.") } else { tr("Ask for an open duty: the boss, or a player who may, says yes or no.") },
+    })
+}
+
+/// (NexiconDK, Bus Company Online, 2 November 2026) The "Free drive" tab: the company's buses to
+/// take out (`Snapshot::free_buses`) and the one he has out. Null: none to show (not the server,
+/// or his role does not drive).
+fn free_json(s: &Snapshot, j: &Joined) -> Value {
+    if s.free_buses.is_empty() && s.free_drive.is_none() {
+        return Value::Null;
+    }
+    let hhmm = |m: i32| format!("{:02}:{:02}", (m / 60).rem_euclid(24), m.rem_euclid(60));
+    let busy = |b: &SnapBus| -> Option<String> {
+        let why = b.busy.as_deref()?;
+        Some(if let Some(line) = why.strip_prefix("line:") {
+            trf("On tour %{tour} now or soon", &[("tour", line)])
+        } else if let Some(name) = why.strip_prefix("out:") {
+            trf("Out with %{name}", &[("name", name)])
+        } else {
+            tr("In the workshop")
+        })
+    };
+    let row = |b: &SnapBus| {
+        json!({
+            "id": b.id, "number": b.number, "name": b.name, "use": b.fuel_use,
+            "km": format!("{} km", grouped(b.km.round())),
+            "fuel": b.fuel, "fuel_text": format!("{:.0} %", (b.fuel * 100.0).round()), "tone": if b.fuel < 0.2 { "danger" } else if b.fuel < 0.4 { "warn" } else { "ok" },
+            "free": match b.until { Some(m) => trf("until %{time}", &[("time", &hhmm(m))]), None => tr("all day") },
+            "busy": busy(b),
+        })
+    };
+    let driving = j.drive.as_ref().is_some_and(|d| d.free.is_some());
+    json!({
+        "buses": s.free_buses.iter().map(row).collect::<Vec<_>>(),
+        "out": s.free_drive.as_ref().map(row),
+        "driving": driving,
+        "words": {
+            "caps": tr("Free drive"),
+            "note": tr("Take a bus of the company that is not in service out of its garage into the map's world. Drive where you like, or put up a destination and people get on: their fares are the company's, the kilometres and the diesel count on the bus, and you are paid your share of the fares and half a driver's wage for the time your bus moves (three hours at most). In the game's \"Line and tour\" you pick a tour of the company's: taken over from the AI, or behind it as an extra bus."),
+            "bus": tr("Bus"), "km": tr("Kilometres"), "fuel": tr("Diesel / battery"), "free": tr("Free"),
+            "take": tr("Take it out"), "busy": tr("In service"), "out": tr("You have this bus out: it goes back to the garage when your game ends."),
+            "none": tr("No bus of the company is free now."),
+        },
     })
 }
 

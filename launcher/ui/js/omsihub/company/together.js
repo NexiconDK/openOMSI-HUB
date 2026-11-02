@@ -95,6 +95,47 @@ async function driveDuty(d, name = 'tg_drive') {
 // ("Drive this duty" on the company's pages, joined from afar: the session's start - `kit.js`)
 remoteDrive.go = (duty) => driveDuty({ duty });
 
+/** (NexiconDK, 2 November 2026) "Free drive": a bus of the company that is not in service taken
+ * out of its garage into the map's world (`tg_take_bus`) - he drives where he likes, picks a tour
+ * of the company's in the game, and the drive is booked when his game ends. */
+function FreeDrive({ v, ask }) {
+  const f = v.free;
+  if (!f) return null;
+  const w = f.words || {};
+  const take = async (b) => {
+    let base;
+    try {
+      base = await duty();
+    } catch (e) {
+      toast(e.message, 'error');
+      return;
+    }
+    const world = bcoCompany ? await worldOf(bcoCompany) : null;
+    if (!world) return;
+    try {
+      await run('tg_take_bus', { vehicle: b.id, base, world });
+    } finally {
+      if (S.worldLoad) set({ worldLoad: null });
+    }
+    ask();
+  };
+  const row = (b, out) => html`<div class="tg-duty trip">
+    <${Chip} number=${b.number} />
+    <div class="what"><b class="cut">${b.name}</b><span class="dim cut">${b.km}  ·  ${b.use}</span></div>
+    <span class=${'state cut t-' + b.tone} title=${w.fuel}>${b.fuel_text}</span>
+    <span class="state cut t-soft">${b.busy || b.free}</span>
+    <span class="acts">${out
+      ? html`<span class="dim cut">${w.out}</span>`
+      : html`<${Btn} kind=${b.busy ? '' : 'primary'} icon="play_arrow" label=${b.busy ? w.busy : w.take} disabled=${!!b.busy || f.driving} onClick=${() => take(b)} />`}</span>
+  </div>`;
+  return html`<div class="tg-cols one"><div class="co-scroll tg-main">
+    <section class="co-section"><div class="co-caps">${w.caps}</div><p class="note">${w.note}</p>
+      ${f.out && row(f.out, true)}
+      ${f.buses.length ? f.buses.map((b) => row(b, false)) : html`<p class="dim">${w.none}</p>`}
+    </section>
+  </div></div>`;
+}
+
 /** The company of a Bus Company Online server the player is in (`tg_view`'s `bco`). */
 let bcoCompany = null;
 let worldWaiting = false;
@@ -496,10 +537,11 @@ function Joined({ v, ask }) {
     ['work', w.tab_work, 'directions_bus', v.mine.filter((d) => d.key === 'mine' || d.key === 'late').length],
     ['duties', w.tab_duties, 'route', v.can.approve ? v.asks.length : v.open.length],
     ...(v.trips ? [['trips', w.tab_trips, 'alt_route', 0]] : []),
+    ...(v.free ? [['free', w.tab_free, 'garage', 0]] : []),
     ['team', w.tab_team, 'group', v.online],
     ['news', w.tab_news, 'forum', 0],
   ];
-  const body = { work: MyWork, duties: Duties, trips: Trips, team: Team, news: News }[tab] || MyWork;
+  const body = { work: MyWork, duties: Duties, trips: Trips, free: FreeDrive, team: Team, news: News }[tab] || MyWork;
   return html`<div class="tg-company">
     <div class="tg-head">
       <${Btn} icon="chevron_left" label=${w.back} style="width:120px;height:38px" onClick=${back} />

@@ -301,6 +301,14 @@ pub struct Report {
     pub minutes: Option<f64>,
     /// The company's bus it is about (`Crew::bus`).
     pub bus_id: u32,
+    /// (NexiconDK, `"drive"`: the whole drive so far, once a minute and when the game ends) The
+    /// metres driven, the seconds the bus moved and the drive's whole length, the people who got
+    /// on, and what is left in the tank (0 to 1).
+    pub metres: Option<f64>,
+    pub seconds: Option<f64>,
+    pub span: Option<f64>,
+    pub boarded: Option<i64>,
+    pub fuel: Option<f64>,
 }
 
 impl Report {

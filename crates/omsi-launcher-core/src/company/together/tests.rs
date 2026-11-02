@@ -766,6 +766,71 @@ fn the_ai_driving_a_bus_uses_its_tank_and_a_player_taking_it_over_starts_with_wh
     assert_eq!((b.c.fleet[0].fuel, b.c.fleet[0].fuel_at), (1.0, None));
 }
 
+/// (NexiconDK, Bus Company Online: free drives, 2 November 2026) A player takes a bus of the company
+/// that is not in service out: his game starts it from the garage with the company's odometer and
+/// tank and its lines to pick from; nobody else has it meanwhile. The world's account of the drive
+/// books the bus's tank, his pay (his share of the fares and the hourly part) and, at the close,
+/// the kilometres and the fares; a trip he took over on the way is his, driven with his bus.
+#[test]
+fn a_player_takes_a_free_bus_out_and_his_drive_is_booked() {
+    use super::super::free_drive;
+    let mut b = boss();
+    b.c.online.on_server = true;
+    market::buy_new(&mut b.c, &MarketBus { file: "Vehicles/Citaro/Citaro.bus".into(), name: "Citaro".into(), ..Default::default() }, Payment::Cash, "").unwrap();
+    let (tour_bus, spare) = (b.c.fleet[0].id, b.c.fleet[1].id);
+    b.c.fleet[1].km = 5000.0;
+    b.c.fleet[1].fuel = 0.8;
+    // (at 05:00: the tour's bus runs its depot run at 05:50 - within the hour; the spare is free)
+    b.c.clock.minute = 300;
+    let p = b.plan();
+    let list = free_drive::buses(&b.c, &p, 300);
+    assert_eq!(list.iter().find(|x| x.id == tour_bus).and_then(|x| x.busy.clone()), Some("line:5".into()));
+    assert_eq!(list.iter().find(|x| x.id == spare).map(|x| (x.busy.clone(), x.until)), Some((None, None)));
+    ask(&mut b, "jan", "hello", |_| {});
+    // the tour's bus is not his to take; the spare is, his game starting it as the company has it
+    let no = ask(&mut b, "jan", "take_bus", |r| r.target = tour_bus);
+    assert!(no.get("start").is_none(), "{no}");
+    let v = ask(&mut b, "jan", "take_bus", |r| r.target = spare);
+    let st: DriveStart = serde_json::from_value(v["start"].clone()).unwrap_or_else(|e| panic!("{e}: {v}"));
+    assert!(st.free);
+    assert_eq!((st.vehicle, st.km, st.fuel, st.garage.as_deref()), (spare, Some(5000.0), Some(0.8), Some("Depot-A")));
+    assert_eq!(st.lines, vec!["Linie5".to_string()]);
+    let d = st.duty(crate::Duty::default());
+    assert_eq!((d.line.as_deref(), d.tour.as_deref(), d.garage_trip.as_deref(), d.company_lines.clone()), (None, None, Some("Depot-A"), vec!["Linie5".to_string()]));
+    // (his snapshot: the bus is his; another player's list has it out)
+    let snap_v = snap(&v);
+    assert_eq!(snap_v.free_drive.as_ref().map(|x| x.id), Some(spare));
+    assert_eq!(free_drive::buses(&b.c, &p, 300).iter().find(|x| x.id == spare).and_then(|x| x.busy.clone()), Some("out:JAN".into()), "his name, as the company has it");
+    let jan = guest_no(&b, "jan");
+    // on the way he took the trip of 06:00 over from the AI (the world's trip, his bus's)
+    let (r, i) = book::claim_driven_trip(&mut b.c, &p, jan, spare, &run(360, 12, 0)).unwrap();
+    assert_eq!(i, 1, "the trip after the depot run");
+    assert_eq!(book::report(&mut b.c, Some(&p), &r, jan, &[TripRun { vehicle: tour_bus, ..run(360, 12, 0) }], now()), Ok((1, 0)));
+    assert_eq!(b.c.together.trips.last().map(|g| g.trip.vehicle), Some(spare), "driven with his bus");
+    // his game is over: the world's account of the drive (20 km, 30 boarded of whom 12 on that trip)
+    assert_eq!(ask(&mut b, "jan", "free_done", |_| {})["ok"], true);
+    assert!(free_drive::out_of(&b.c, jan).is_none());
+    let drive = TripRun { time: now(), free: true, vehicle: spare, metres: 20_000.0, seconds: 50.0 * 60.0, span: 3600.0, passengers: 30, fuel: Some(0.7), ..Default::default() };
+    let wages = |c: &Company| c.ledger.iter().filter(|x| x.kind == super::super::model::BookingKind::Wages).map(|x| x.amount).sum::<i64>();
+    let before = wages(&b.c);
+    let pay = free_drive::book_run(&mut b.c, jan, &drive, now()).expect("booked");
+    assert!(pay > 0);
+    assert_eq!(wages(&b.c) - before, -pay);
+    assert_eq!(free_drive::book_run(&mut b.c, jan, &drive, now()), None, "once");
+    let r0 = b.c.together.free_runs[0].clone();
+    assert_eq!((r0.km, r0.passengers, r0.minutes), (20.0, 18, 50.0));
+    assert_eq!(b.c.vehicle(spare).map(|v| v.fuel), Some(0.7));
+    let days = super::super::fuel::of_day_plan(&p);
+    assert!((super::super::fuel::odometer_at(&b.c, &days, spare, 300) - 5028.0).abs() < 1e-6, "his trip and the drive");
+    // the close: the kilometres on the bus, the drives gone
+    b.c.online.on_server = false;
+    let closed = b.c.date.clone();
+    close(&mut b);
+    book::after_close(&mut b.c, &closed);
+    assert!((b.c.vehicle(spare).unwrap().km - 5028.0).abs() < 1e-6, "{}", b.c.vehicle(spare).unwrap().km);
+    assert!(b.c.together.free_runs.is_empty() && b.c.together.free_drives.is_empty());
+}
+
 /// The boss's day closed: its report, what the modelled trips brought (fares, not measured).
 fn close(b: &mut Boss) -> (super::super::day::DayReport, i64) {
     let closed = b.c.date.clone();

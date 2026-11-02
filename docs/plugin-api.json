@@ -1084,7 +1084,7 @@
       "name": "duty.get",
       "group": "duty",
       "since": "0.2.22",
-      "doc": "The duty now: `line`, `tour`, `trip` (its number in the duty, from 1), `trips`, `trip_name`, `terminus`, `departure`, `arrival`, `stops`, `next_stop` and `previous_stop` (each a stop: `{number, name, id, arrival, departure, stops, x, y, z}`), `at_stop`, `trip_done`, `delay` (seconds, late positive).",
+      "doc": "The duty now: `line`, `tour`, `trip` (its number in the duty, from 1), `trips`, `trip_name`, `terminus`, `departure`, `arrival`, `stops`, `next_stop` and `previous_stop` (each a stop: `{number, name, id, arrival, departure, stops, x, y, z}`), `at_stop`, `trip_done`, `delay` (seconds, late positive), `free` (a free drive along a route: nobody keeps its time).",
       "params": [],
       "returns": "table or nil",
       "multi": false,

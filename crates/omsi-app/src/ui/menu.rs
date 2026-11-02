@@ -264,6 +264,7 @@ impl Ui {
         self.menu_pane.clear();
         self.menu_pane_start = 0;
         self.menu_pane_go = None;
+        self.menu_pane_go2 = None;
         self.menu_pane_box = None;
         self.menu_pane_scroll = None;
         self.menu_time.clear();
@@ -655,13 +656,24 @@ impl Ui {
                 self.put(r, scene, &what, rpx, mix(SOFT, WHITE, a_on), px0 + pad, ry);
                 self.menu_pane.push(rect);
             }
-            // the button that starts the trip
+            // the button that starts the trip (NexiconDK: and beside it, a tour of the company's
+            // as an extra bus)
+            let go2 = p.button2.as_ref().map(|_| [(go[0] + go[2]) * 0.5 + 5.0 * s, go[1], go[2], go[3]]);
+            let go = if go2.is_some() { [go[0], go[1], (go[0] + go[2]) * 0.5 - 5.0 * s, go[3]] } else { go };
             let a_go = self.easeq((13, "go", 0), if over(go) { 1.0 } else { 0.0 }, 1.0 / FADE_SECS);
             self.text.rounded(r, scene, go, ROW_R * s, mix(accent(), accent_hot(), a_go));
             let l = self.text.label(r, scene, button, (14.0 * s) as u32 | BOLD, on_accent());
             let (gx, gy) = (go[0] + (go[2] - go[0] - l.w as f32) * 0.5, (go[1] + go[3]) * 0.5 - l.h as f32 * 0.5);
             scene.overlays.push((l.tex, [gx, gy, gx + l.w as f32, gy + l.h as f32]));
             self.menu_pane_go = Some(go);
+            if let (Some(g2), Some(b2)) = (go2, p.button2.as_ref()) {
+                let a_go2 = self.easeq((13, "go2", 0), if over(g2) { 1.0 } else { 0.0 }, 1.0 / FADE_SECS);
+                self.text.rounded(r, scene, g2, ROW_R * s, mix(SELECTED, accent_hot(), a_go2 * 0.5));
+                let l = self.text.label(r, scene, b2, (14.0 * s) as u32 | BOLD, WHITE);
+                let (gx, gy) = (g2[0] + (g2[2] - g2[0] - l.w as f32) * 0.5, (g2[1] + g2[3]) * 0.5 - l.h as f32 * 0.5);
+                scene.overlays.push((l.tex, [gx, gy, gx + l.w as f32, gy + l.h as f32]));
+                self.menu_pane_go2 = Some(g2);
+            }
         } else {
             let fit = ((py1 - 12.0 * s - top) / lh).floor().max(1.0) as usize;
             // (a list too long for the pane ends in how many more there are)

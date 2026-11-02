@@ -211,6 +211,7 @@ impl App {
             || u.menu_side.iter().any(|r| inside(r))
             || u.menu_pane.iter().any(|r| inside(r))
             || u.menu_pane_go.as_ref().is_some_and(|r| inside(r))
+            || u.menu_pane_go2.as_ref().is_some_and(|r| inside(r))
             || u.menu_time.iter().any(|r| inside(r))
             || u.menu_ctl.iter().flatten().any(|r| inside(r))
             || u.menu_rects.iter().enumerate().any(|(i, r)| inside(r) && !self.menu_item_off(i + u.menu_start));

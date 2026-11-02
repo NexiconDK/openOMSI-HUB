@@ -528,7 +528,8 @@ pub(crate) fn items(app: &App, kind: &ListKind) -> Vec<(String, String)> {
         }
         ListKind::Lines => {
             if let Some(sch) = crate::duty_book::timetable(app) {
-                let mut lines: Vec<&omsi_timetable::Line> = sch.data.lines.iter().filter(|l| l.user_allowed && l.tours.iter().any(|t| tour_listed(sch, &l.name, t, app.clock.time))).collect();
+                // (NexiconDK, a free drive with a bus of a company: its lines alone)
+                let mut lines: Vec<&omsi_timetable::Line> = sch.data.lines.iter().filter(|l| l.user_allowed && app.args.lists_line(&l.name) && l.tours.iter().any(|t| tour_listed(sch, &l.name, t, app.clock.time))).collect();
                 // (the player's own lines - the line editor's - after the map's)
                 lines.sort_by(|a, b| is_own_file(&a.name).cmp(&is_own_file(&b.name)).then_with(|| natural(&a.name, &b.name)));
                 for l in lines {
@@ -741,6 +742,19 @@ pub(crate) fn items(app: &App, kind: &ListKind) -> Vec<(String, String)> {
     }
     out.push((tr("Back"), "back".into()));
     out
+}
+
+/// (NexiconDK, Bus Company Online, 2 November 2026) On a free drive with a bus of a company
+/// (`--company-lines`) a tour's page starts it two ways: taken over from the AI (as a single trip
+/// of the company's), or driven behind it as an extra bus (`start_extra_at`).
+pub(crate) fn company_buttons(args: &crate::cli::Args, kind: Option<&ListKind>, preview: &mut Option<crate::ui::Preview>) {
+    if !args.company_free_drive() || !matches!(kind, Some(ListKind::Tours(..))) {
+        return;
+    }
+    if let Some(p) = preview.as_mut().filter(|p| p.button.is_some()) {
+        p.button = Some(omsi_ui::tr("Take over from the AI").into_owned());
+        p.button2 = Some(omsi_ui::tr("Extra bus").into_owned());
+    }
 }
 
 /// What the open list tells the interface besides its lines: the layout it wants, its title

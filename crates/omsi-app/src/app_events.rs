@@ -777,6 +777,9 @@ impl App {
                         if u.menu_pane_go.as_ref().is_some_and(inside) {
                             return Some(usize::MAX);
                         }
+                        if u.menu_pane_go2.as_ref().is_some_and(inside) {
+                            return Some(usize::MAX - 3);
+                        }
                         if let Some(j) = u.menu_time.iter().position(inside) {
                             return Some(usize::MAX - 1 - j);
                         }

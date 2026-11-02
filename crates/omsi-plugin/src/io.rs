@@ -725,6 +725,9 @@ pub struct Duty {
     pub delay: f64,
     /// The trip now.
     pub current: Trip,
+    /// (NexiconDK) A free drive along a route - nobody keeps its time, nothing of it is booked as a
+    /// tour's (the launcher's free drive along a line, an extra bus behind a company's tour).
+    pub free: bool,
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]

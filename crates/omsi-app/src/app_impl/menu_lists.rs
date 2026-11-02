@@ -512,7 +512,13 @@ impl App {
             self.menus.list_kind = Some(crate::game_lists::ListKind::Tours(line, Some((tour, i, trip))));
             return;
         }
-        crate::game_lists::start_duty_at(self, &line, &tour, trip, at);
+        // (NexiconDK, a free drive with a bus of a company: `usize::MAX - 3` the tour's trip driven
+        // behind the AI's bus as an extra bus)
+        if i == usize::MAX - 3 && self.args.company_free_drive() {
+            crate::game_lists::start_extra_at(self, &line, &tour, trip, at);
+        } else {
+            crate::game_lists::start_duty_at(self, &line, &tour, trip, at);
+        }
         self.menus.chooser = None;
         self.menus.admin_list = None;
         self.menus.list_kind = None;

@@ -200,6 +200,10 @@ pub struct Claim {
     /// before): his trips' kilometres go to it at the day's close, and his tank's level to it.
     #[serde(default, skip_serializing_if = "is_zero_u32")]
     pub vehicle: u32,
+    /// (NexiconDK, free drives) A trip he took over on a free drive (`claim_driven_trip`): driven
+    /// with the bus he took out (the fleet's id), not the tour's.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub own_bus: Option<u32>,
     /// How his game starts on it (worked out by the boss's launcher: `host`).
     pub start: Option<DriveStart>,
     /// Its day closed before he drove it (`after_close`): the company had it covered, what he
@@ -334,11 +338,17 @@ pub struct Together {
     /// single trip of a duty the company's AI driver has (`take_trip`): on, unless its owner
     /// switches it off. (A company saved before keeps it on: the default, `Together::default`.)
     pub trips_open: bool,
+    /// (NexiconDK, Bus Company Online: free drives, 2 November 2026) The buses its players took
+    /// out (`free_drive`), and what their drives came to, for the day's close.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub free_drives: Vec<super::super::free_drive::FreeDrive>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub free_runs: Vec<super::super::free_drive::FreeRun>,
 }
 
 impl Default for Together {
     fn default() -> Self {
-        Together { open_claims: true, guests: Vec::new(), claims: Vec::new(), trips: Vec::new(), left_open: false, left_dropped: false, late_reports: Vec::new(), trips_open: true }
+        Together { open_claims: true, guests: Vec::new(), claims: Vec::new(), trips: Vec::new(), left_open: false, left_dropped: false, late_reports: Vec::new(), trips_open: true, free_drives: Vec::new(), free_runs: Vec::new() }
     }
 }
 
@@ -554,7 +564,7 @@ pub fn km_today(c: &Company, id: u32) -> f64 {
 /// A claim of duty `k` of `t` (its sheet as the plan has it now).
 fn claim_of_plan(c: &Company, t: &DayTour, k: usize, r: &DutyRef, guest: u32, state: ClaimState, given: bool) -> Claim {
     let d = &t.duties[k];
-    Claim { duty: r.clone(), guest, state, given, number: t.tour.number.clone(), from: d.from, to: d.to, sheet: t.tour.trips[d.start..d.end].to_vec(), bus: bus_file(c, t), vehicle: bus_id(c, t), start: None, late: false, ai: Vec::new(), part: None, left: false }
+    Claim { duty: r.clone(), guest, state, given, number: t.tour.number.clone(), from: d.from, to: d.to, sheet: t.tour.trips[d.start..d.end].to_vec(), bus: bus_file(c, t), vehicle: bus_id(c, t), own_bus: None, start: None, late: false, ai: Vec::new(), part: None, left: false }
 }
 
 /// (NexiconDK, decided 26 October 2026) The duties of the company's day `p` the roster gives a
@@ -1054,6 +1064,11 @@ pub fn report(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, run
         }
         None => (r.tour.clone(), x.sheet.clone(), x.number.clone(), x.bus.clone(), x.vehicle),
     };
+    // (a trip taken over on a free drive: driven with the bus he took out)
+    let (bus, vehicle) = match x.own_bus.and_then(|b| c.vehicle(b).map(|v| (v.bus.clone(), b))) {
+        Some(own) => own,
+        None => (bus, vehicle),
+    };
     let sheet = Sheet { tour: &tour, number: &number, bus, vehicle, planned: &planned };
     let name = c.together.name_of(guest);
     let time = now_unix.max(c.trips_seen + 1);
@@ -1175,6 +1190,44 @@ pub fn after_close(c: &mut Company, closed: &str) {
     let today = c.date.clone();
     c.together.claims.retain(|x| x.duty.date.as_str() > closed || (x.late && x.state != ClaimState::Done && dates::between(&x.duty.date, &today) <= LATE_DAYS));
     c.together.trips.retain(|x| x.duty.date.as_str() > closed);
+    super::super::free_drive::after_close(c, closed);
+}
+
+/// (NexiconDK, Bus Company Online: free drives, 2 November 2026) A trip of a tour of the company's
+/// player `guest` drove on his free drive with bus `own`, taking it over from the AI in his game's
+/// "Line and tour": his, as a single trip of its duty (`take_trip`'s, after it was driven) - not
+/// one another player has, nor of a tour a player drives. The duty and the trip's place in it.
+pub fn claim_driven_trip(c: &mut Company, p: &DayPlan, guest: u32, own: u32, run: &TripRun) -> Result<(DutyRef, usize), &'static str> {
+    if !p.today || !c.online.on_server {
+        return Err(NOT_TODAY);
+    }
+    let dep = (run.departure / 60.0).round() as i32;
+    let tour = run.tour.trim();
+    for (ti, t) in p.tours.iter().enumerate() {
+        if t.tour.tour.trim() != tour || t.by_player || !matches!(t.bus, Some(BusOf::Own(_))) {
+            continue;
+        }
+        let line = |n: &str| t.tour.number.eq_ignore_ascii_case(n) || t.tour.line.eq_ignore_ascii_case(n);
+        if !run.line.trim().is_empty() && !line(run.line.trim()) && !t.tour.trips.iter().any(|x| x.line.eq_ignore_ascii_case(run.line.trim())) {
+            continue;
+        }
+        for (k, d) in t.duties.iter().enumerate() {
+            let Some(i) = t.tour.trips[d.start..d.end].iter().position(|x| x.dep == dep && !x.empty) else { continue };
+            let Some(r) = DutyRef::of(p, ti, k) else { continue };
+            if let Some(x) = c.together.claim_for(&r, guest) {
+                return if x.his(i) { Ok((r, i)) } else { Err(NOT_OPEN) };
+            }
+            if c.together.trip_taken(&r, i) {
+                return Err(NOT_OPEN);
+            }
+            let x = &t.tour.trips[d.start + i];
+            let mut claim = claim_of_plan(c, t, k, &r, guest, ClaimState::Driving, false);
+            (claim.from, claim.to, claim.part, claim.own_bus) = (x.dep, x.arr, Some((i, i + 1)), Some(own));
+            c.together.claims.push(claim);
+            return Ok((r, i));
+        }
+    }
+    Err(NO_TRIP)
 }
 
 /// A player's trips of a duty, as reported.

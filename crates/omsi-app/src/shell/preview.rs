@@ -137,6 +137,7 @@ fn tour_page() {
         rows,
         chosen: Some(0),
         button: Some("Start trip".into()),
+        button2: None,
         time: Some("22:08".into()),
         ends: Some(ends("Zeche Hindenburg", "22:08", "Kursker Allee", "22:52")),
         trips,

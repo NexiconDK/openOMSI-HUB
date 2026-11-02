@@ -196,7 +196,8 @@ pub(crate) fn near_list(app: &App) -> NearList {
     let Some(sch) = crate::duty_book::timetable(app) else { return why("No timetable on this map") };
     let Some((bus, heading)) = bus_pose(app) else { return why("Put a bus on the map to see the tours that start near it") };
     let Some(places) = app.menus.navigator.as_ref().and_then(|n| n.places()).filter(|p| !p.is_empty()) else { return why("The distances come once the navigator has read the map") };
-    let all = starts(sch, app.clock.time);
+    // (a free drive with a bus of a company: its lines alone)
+    let all: Vec<Start> = starts(sch, app.clock.time).into_iter().filter(|s| app.args.lists_line(&s.line)).collect();
     let r = radii();
     let rows = nearest(&all, places, bus, heading, r[radius]);
     let more = r.get(radius + 1).map(|&next| nearest(&all, places, bus, heading, next).len().saturating_sub(rows.len())).unwrap_or(0);

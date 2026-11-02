@@ -86,6 +86,16 @@ pub(crate) struct Args {
     /// of full: the bus starts with it.
     #[arg(long)]
     pub(crate) fuel_level: Option<f32>,
+    /// (NexiconDK, Bus Company Online, 2 November 2026: a free drive with a bus of the company)
+    /// The bus starts at the company's garage: the entry point where this run out of its depot
+    /// (the timetable's trip) begins.
+    #[arg(long)]
+    pub(crate) garage_trip: Option<String>,
+    /// (NexiconDK, free drives) The company's lines (the timetable's names, `|` between them):
+    /// "Line and tour" lists only them, and a tour of theirs is taken over from the AI or driven
+    /// behind it as an extra bus.
+    #[arg(long)]
+    pub(crate) company_lines: Option<String>,
     /// Control preset: `simple` (W/S/A/D and Up/Down drive, Left/Right switch the interior
     /// camera as in OMSI; the default), `wasd`,
     /// `arrows` (leaves W, S and D to the jobs `Inputs/keyboard.cfg` gives them - wipers,
@@ -367,6 +377,21 @@ pub(crate) fn parse_triggers(args: &Args) -> Vec<(String, f32)> {
 }
 
 impl Args {
+    /// (NexiconDK, free drives) Whether "Line and tour" lists line `name`: every line, or on a free
+    /// drive with a bus of a company only the company's (`--company-lines`).
+    pub(crate) fn lists_line(&self, name: &str) -> bool {
+        match self.company_lines.as_deref().map(str::trim).filter(|l| !l.is_empty()) {
+            Some(lines) => lines.split('|').any(|l| l.trim().eq_ignore_ascii_case(name.trim())),
+            None => true,
+        }
+    }
+
+    /// (NexiconDK) A free drive with a bus of a company (`--company-lines`): its tours are taken
+    /// over from the AI or driven as an extra bus.
+    pub(crate) fn company_free_drive(&self) -> bool {
+        self.company_lines.as_deref().is_some_and(|l| !l.trim().is_empty())
+    }
+
     pub(crate) fn is_resuming(&self) -> bool {
         self.situation.is_some()
             || self.situation_odometer_km.is_some()
@@ -386,4 +411,22 @@ pub(crate) struct SituationOther {
     pub vars: Vec<(String, f32)>,
     pub strvars: Vec<(String, String)>,
     pub odometer_km: Option<f64>,
+}
+
+#[cfg(test)]
+mod free_drive_tests {
+    use super::*;
+    use clap::Parser;
+
+    /// (NexiconDK, free drives) "Line and tour" lists every line - or on a free drive with a bus of
+    /// a company only its lines (`--company-lines`, `|` between them).
+    #[test]
+    fn a_free_drive_lists_the_companys_lines_alone() {
+        let all = Args::parse_from(["game"]);
+        assert!(all.lists_line("Linie5") && !all.company_free_drive());
+        let mine = Args::parse_from(["game", "--company-lines", "Linie5| N3 ", "--garage-trip", "Depot-A"]);
+        assert!(mine.company_free_drive());
+        assert!(mine.lists_line("linie5") && mine.lists_line("N3") && !mine.lists_line("Linie14"));
+        assert_eq!(mine.garage_trip.as_deref(), Some("Depot-A"));
+    }
 }

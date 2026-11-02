@@ -259,6 +259,35 @@ pub(crate) fn start_duty_at(app: &mut App, line: &str, tour: &str, trip: usize, 
     app.service_msg = Some((omsi_ui::tr("Line %{line}, tour %{tour}").replace("%{line}", line).replace("%{tour}", tour.trim()), 4.0));
 }
 
+/// (NexiconDK, Bus Company Online, 2 November 2026: a free drive with a bus of a company) Trip
+/// `trip` of tour `tour` of `line` driven behind the AI's bus as an extra bus, from its stop
+/// `chosen`: its route followed as a free drive along it (`free_line_duty`) - the AI keeps the
+/// tour, nobody keeps the time, and the people who get on are this drive's.
+pub(crate) fn start_extra_at(app: &mut App, line: &str, tour: &str, trip: usize, chosen: usize) {
+    crate::duty_book::timetable_for_duty(app);
+    let now = app.clock.time;
+    let (Some(w), Some(sch)) = (app.world.clone(), app.session.schedule.as_mut()) else { return };
+    let stops = sch.tour_trip_stops(line, tour, trip);
+    let Some((k, j)) = stops.get(chosen).or(stops.first()).map(|x| (x.0, x.1)) else { return };
+    let name = sch.data.lines.iter().find(|l| l.name == line).and_then(|l| l.tours.iter().find(|t| t.number == tour)).and_then(|t| tour_trip_name(sch, t, k));
+    let Some(name) = name else { return };
+    let mut d = match sch.free_line_duty(&*w.data(), line, &name, now) {
+        Ok(d) => d,
+        Err(e) => {
+            app.service_msg = Some((omsi_ui::tr("No duty: %{error}").replace("%{error}", &e), 8.0));
+            return;
+        }
+    };
+    d.start_at_here(0, j.min(d.trips.first().map_or(0, |t| t.stops.len().saturating_sub(1))));
+    if let Some(p) = app.player.as_mut() {
+        d.update(&mut p.vehicle, now);
+    }
+    app.args.line = Some(line.to_string());
+    app.args.tour = None;
+    app.session.duty = Some(d);
+    app.service_msg = Some((omsi_ui::tr("Line %{line}: an extra bus behind tour %{tour}").replace("%{line}", line).replace("%{tour}", tour.trim()), 5.0));
+}
+
 pub(super) fn start_duty(app: &mut App, line: &str, tour: &str) {
     crate::duty_book::timetable_for_duty(app);
     let (Some(w), Some(sch)) = (app.world.clone(), app.session.schedule.as_mut()) else { return };

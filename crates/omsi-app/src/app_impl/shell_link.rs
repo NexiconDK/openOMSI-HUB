@@ -73,6 +73,7 @@ impl App {
             _ => None,
         };
         let (kind, head, mut preview) = crate::game_lists::menu_extras(self.menus.list_kind.as_ref(), self.menus.admin_list.as_deref(), self.menus.chooser, crate::duty_book::timetable(self), self.clock.time);
+        crate::game_lists::company_buttons(&self.args, self.menus.list_kind.as_ref(), &mut preview);
         // Omsi-Hub: a tour's page: what to type into the IBIS for the trip chosen, and its map
         // (made once a trip, on the navigator's map of the whole map)
         if let (Some(p), Some(c)) = (preview.as_mut(), crate::game_lists::chosen_trip(self)) {

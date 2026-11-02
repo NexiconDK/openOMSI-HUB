@@ -383,7 +383,23 @@ omsi.on("speed_camera", function(kmh, limit) watch.speed_camera(kmh, limit) end)
 -- (the object editor once, as soon as the world is there: the frames come with it)
 local editor_opened = false
 
+-- (NexiconDK, Bus Company Online, 2 November 2026: a free drive with a bus of a company) the
+-- whole drive so far, once a minute and when the game ends - the launcher hands the last to the
+-- world, which books it to the company (its kilometres, the bus's tank, the fares, his pay)
+local drive_told = 0
+local function tell_drive()
+  local d = trip.drive()
+  if d.span < 1 then return end
+  local fuel = fn("bus.fuel_level") and omsi.bus.fuel_level() or nil
+  report("drive", { metres = d.metres, seconds = d.moving, span = d.span, boarded = math.tointeger(d.boarded) or 0, fuel = fuel })
+end
+
 omsi.on("frame", function(dt)
+  drive_told = drive_told + (dt or 0)
+  if drive_told >= 60 then
+    drive_told = 0
+    tell_drive()
+  end
   if assignment and assignment.editor and not editor_opened then
     editor_opened = true
     if has["game.action"] then omsi.game.action("object_editor") end
@@ -482,6 +498,7 @@ omsi.on("key", function(key, down)
 end)
 
 omsi.on("stop", function()
+  tell_drive()
   if has["ui.remove"] then omsi.ui.remove(PANEL) end
   strip.stop()
   ontime.stop()

@@ -124,7 +124,7 @@ pub fn level_at(c: &Company, days: &[BusDay], id: u32, minute: i32) -> f64 {
 pub fn odometer_at(c: &Company, days: &[BusDay], id: u32, minute: i32) -> f64 {
     let Some(v) = c.vehicle(id) else { return 0.0 };
     let ai = if c.online.on_server { ai_km(c, days, id, i32::MIN, minute) } else { 0.0 };
-    v.km + super::together::book::km_today(c, id) + ai
+    v.km + super::together::book::km_today(c, id) + super::free_drive::km_today(c, id) + ai
 }
 
 #[cfg(test)]

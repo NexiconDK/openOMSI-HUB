@@ -141,14 +141,43 @@ pub(crate) fn take_world_trips(s: &mut Session, lines: &[core::LineInfo], trips:
             core::log_to_file(&format!("company {}: a trip from the world of {} (not a player of the company): not booked", c.id, w.name));
             continue;
         };
+        // (NexiconDK, 2 November 2026: the whole of a free drive with a bus of the company - its
+        // fares, the bus's tank and his pay, `free_drive::book_run`)
+        if t.free && t.tour.trim().is_empty() {
+            let class = c.vehicle(t.vehicle).map(|v| co::career::LicenceClass::of(v.kind.size));
+            match co::free_drive::book_run(c, no, t, now) {
+                Some(pay) => {
+                    core::log_to_file(&format!("company {}: {name}'s free drive with bus {}: {:.1} km, {} passengers, paid {}", c.id, t.vehicle, t.metres / 1000.0, t.passengers, pay));
+                    if pay > 0 {
+                        paid.push(co::online::Pay { player: id.clone(), name: name.clone(), cents: pay, line: "Free drive".into(), tour: String::new(), departure: 0.0, at: now, class, exam: None });
+                    }
+                }
+                None => core::log_to_file(&format!("company {}: a free drive of {name} with bus {} from the world: no drive of his with it today, or booked already", c.id, t.vehicle)),
+            }
+            continue;
+        }
         // (his duties of the trip's tour today: the one it is a trip of takes it)
-        let duties: Vec<DutyRef> = c
+        let mut duties: Vec<DutyRef> = c
             .together
             .claims
             .iter()
             .filter(|x| x.guest == no && x.duty.date == c.date && x.duty.tour.trim() == t.tour.trim() && (t.line.trim().is_empty() || x.duty.line.eq_ignore_ascii_case(t.line.trim())))
             .map(|x| x.duty.clone())
             .collect();
+        // (NexiconDK, free drives: a tour of the company's he took over from the AI in his game's
+        // "Line and tour" on a free drive - a single trip of its duty, his, driven with his bus)
+        if duties.is_empty() {
+            let own = c.together.free_drives.iter().filter(|d| d.guest == no && d.date == c.date && d.since <= t.time.max(1)).map(|d| d.vehicle).last();
+            if let Some(own) = own {
+                match book::claim_driven_trip(c, &p, no, own, t) {
+                    Ok((r, i)) => {
+                        core::log_to_file(&format!("company {}: {name} took trip {} of duty {} {} {} over on his free drive", c.id, i + 1, r.line, r.tour, r.duty + 1));
+                        duties.push(r);
+                    }
+                    Err(why) => core::log_to_file(&format!("company {}: a trip of {name}'s free drive (line {} tour {}): {why}", c.id, t.line, t.tour)),
+                }
+            }
+        }
         let mut booked = false;
         // (NexiconDK, relief at the stop: he was not at his stop in time, the AI drove this trip
         // of his duty - the AI's part of it, not his)

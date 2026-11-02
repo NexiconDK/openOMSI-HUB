@@ -11,7 +11,7 @@ local career = require("career")
 local M = {}
 
 -- what is counted all the time; a trip takes its stretch
-local total = { seconds = 0, metres = 0, jolts = 0, crashes = 0, boarded = 0, left = 0, left_full = 0 }
+local total = { seconds = 0, metres = 0, jolts = 0, crashes = 0, boarded = 0, left = 0, left_full = 0, moving = 0 }
 local odometer = nil
 local cur = nil
 
@@ -26,6 +26,9 @@ end
 -- every frame of the game with the player in a bus
 function M.frame(dt)
   total.seconds = total.seconds + dt
+  -- (NexiconDK: the time the bus moves - a free drive with a bus of a company is paid by it)
+  local kmh = omsi.speed and tonumber(omsi.speed()) or 0
+  if math.abs(kmh) > 2 then total.moving = total.moving + dt end
   local km = fn(omsi.bus, "odometer") and omsi.bus.odometer() or nil
   if km and odometer and km >= odometer and km - odometer < 1 then
     total.metres = total.metres + (km - odometer) * 1000
@@ -79,8 +82,12 @@ function M.begin(n, line_name, tour)
       by_number[s.number] = v
     end
   end
+  local dg = fn(omsi.duty, "get") and omsi.duty.get() or nil
   cur = {
     n = n, line = line, tour = tour or "", line_name = line_name or "", name = t.name or "",
+    -- (NexiconDK: a free drive along a route - an extra bus behind a company's tour - is no
+    -- trip of a tour's to book)
+    free = dg and dg.free or false,
     terminus = terminus_of(line, t.terminus), trips = #omsi.duty.trips(),
     departure = t.departure or 0, arrival = t.arrival or 0, visits = visits, by_number = by_number,
     last = last, arrived = {}, served = {}, reached = 0, furthest = 0, started = false, start = now(),
@@ -142,7 +149,7 @@ function M.finish(completed, delay, watch)
   local run = {
     line = cur.line, tour = cur.tour, terminus = cur.terminus,
     trip = math.tointeger(cur.n), trips = math.tointeger(cur.trips),
-    departure = cur.departure, arrival = cur.arrival, free = false, completed = completed and true or false,
+    departure = cur.departure, arrival = cur.arrival, free = cur.free and true or false, completed = completed and true or false,
     planned = #cur.visits, stops = #cur.served, early = counts.early, late = counts.late,
     worst = worst, average = average,
     seconds = math.max(n.seconds - cur.start.seconds, 0), metres = math.max(n.metres - cur.start.metres, 0),
@@ -178,6 +185,12 @@ end
 
 function M.forget()
   cur = nil
+end
+
+-- (NexiconDK, Bus Company Online: a free drive with a bus of a company) the whole drive so far:
+-- metres, the seconds the bus moved and its whole length, the people who got on
+function M.drive()
+  return { metres = total.metres, moving = total.moving, span = total.seconds, boarded = total.boarded }
 end
 
 return M

@@ -84,11 +84,62 @@ pub(crate) fn begin(d: &mut schedule::PlayerDuty, args: &Args) {
     }
 }
 
+/// (NexiconDK, Bus Company Online, 2 November 2026: a free drive with a bus of the company,
+/// `--garage-trip`) The bus at the company's garage: the entry point nearest to where the route of
+/// its run out of the depot begins.
+fn place_at_garage(args: &mut Args) {
+    let Some(trip) = args.garage_trip.clone().filter(|t| !t.trim().is_empty()) else { return };
+    if args.bus.is_none() || args.spawn.is_some() || args.is_resuming() {
+        return;
+    }
+    let clock = start_clock(args);
+    let map_cfg = omsi_cfg::resolve_path(&args.root, &args.map);
+    let world = match World::open(&args.root, &map_cfg, clock.date_code()) {
+        Ok(w) => w,
+        Err(e) => {
+            log::warn!("garage: {e:#}");
+            return;
+        }
+    };
+    world.index();
+    struct Keep(Preopened, Option<(PathBuf, i32, World)>);
+    impl Drop for Keep {
+        fn drop(&mut self) {
+            *self.0 .0.lock() = self.1.take();
+        }
+    }
+    let keep = Keep(args.preopened.clone(), Some((map_cfg, clock.date_code(), world)));
+    let world = &keep.1.as_ref().unwrap().2;
+    let sch = schedule::Schedule::new(&args.root, world, &clock);
+    let map = world.navigation_map();
+    let mut net = omsi_sim::traffic::Network { lanes: map.lanes, ..Default::default() };
+    net.link(1.5);
+    let route = sch.trip_route_in(&net, trip.trim());
+    let Some(&first) = route.first() else {
+        log::info!("garage: the route of '{}' is not on the map: the bus at the first entry point", trip.trim());
+        return;
+    };
+    let start = net.lanes[first].start();
+    let data = world.data.peek();
+    let best = world
+        .global
+        .entry_points
+        .iter()
+        .enumerate()
+        .filter_map(|(k, e)| data.objects.get(&e.object_id).map(|(p, _)| (k, e.name.clone(), (*p - start).truncate().length())))
+        .min_by(|a, b| a.2.total_cmp(&b.2));
+    if let Some((k, name, d)) = best {
+        log::info!("garage: the bus at entry point {k} '{}', {d:.0} m from where '{}' leaves the depot", name.trim(), trip.trim());
+        args.entry = k;
+    }
+}
+
 /// With a duty (`--schedule --line`): the trip it starts with and the stop of it (`args.
 /// duty_trip`, `args.duty_first_stop`), and with `--auto-entry` the entry point nearest to
 /// that stop by road (`args.entry`).
 pub(crate) fn place_on_duty(args: &mut Args) {
     if args.line.is_none() {
+        place_at_garage(args);
         return;
     }
     if !args.schedule || args.bus.is_none() || args.spawn.is_some() || args.is_resuming() {

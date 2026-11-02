@@ -168,6 +168,26 @@ pub(crate) fn check(track: &std::collections::VecDeque<Seen>, t: &omsi_launcher_
     Ok(())
 }
 
+/// (NexiconDK, Bus Company Online, 2 November 2026) Why a player's free drive with a bus of a
+/// company (`free`, no tour, its bus `vehicle`; `span` its whole length) is not taken: the world
+/// saw his bus drive at least half the distance it says, in that time, on any tour or none.
+pub(crate) fn check_free(track: &std::collections::VecDeque<Seen>, t: &omsi_launcher_lib::TripRun) -> Result<(), &'static str> {
+    if !t.free || !t.tour.trim().is_empty() || t.vehicle == 0 {
+        return Err("not a free drive");
+    }
+    let end = t.time as f64;
+    let from = end - t.span.max(t.seconds).max(0.0) - SKEW;
+    let seen: Vec<&Seen> = track.iter().filter(|s| s.at >= from && s.at <= end + SKEW).collect();
+    if t.metres > 300.0 && seen.len() < 3 {
+        return Err("the world did not see his bus then");
+    }
+    let driven: f64 = seen.windows(2).map(|w| ((w[1].x - w[0].x).powi(2) + (w[1].y - w[0].y).powi(2)).sqrt()).filter(|d| *d < 2000.0).sum();
+    if t.metres > 300.0 && driven < 0.5 * t.metres {
+        return Err("his bus drove far less than the drive says");
+    }
+    Ok(())
+}
+
 /// The trips the players' launchers posted to the world's gateway since: each checked against
 /// where the world saw the player's bus (`check`), taken once, and written for the company whose
 /// line it is on the map `map` (`store::append_world_trip`: its process books it).
@@ -193,6 +213,38 @@ pub(crate) fn take_trips(map: &str) {
             log::warn!("server: a trip of {name} from {source} that is not one");
             continue;
         };
+        // (NexiconDK: a free drive with a bus of a company - for the company it names, of this map)
+        if t.free && t.tour.trim().is_empty() {
+            let company = v.get("company").and_then(serde_json::Value::as_str).unwrap_or("").trim().to_string();
+            let key = (name.to_lowercase(), "free".to_string(), t.time as i64);
+            if TAKEN_TRIPS.lock().unwrap_or_else(|e| e.into_inner()).contains(&key) {
+                continue;
+            }
+            if !plans.iter().any(|p| same_map(&p.map) && p.company == company) {
+                log::warn!("server: the free drive of {name}: no company '{company}' on this map");
+                continue;
+            }
+            let verdict = {
+                let g = TRACKS.lock().unwrap_or_else(|e| e.into_inner());
+                match g.as_ref().and_then(|t| t.get(&name.to_lowercase())) {
+                    Some(track) => check_free(track, &t),
+                    None => Err("the world never saw him"),
+                }
+            };
+            if let Err(why) = verdict {
+                log::warn!("server: the free drive of {name} not taken: {why}");
+                continue;
+            }
+            let w = omsi_launcher_lib::company::store::WorldTrip { name: name.clone(), trip: t.clone(), at: unix_now() as u64, kept: false, handed: false };
+            match omsi_launcher_lib::company::store::append_world_trip(&c.data, &company, &w) {
+                Ok(()) => {
+                    TAKEN_TRIPS.lock().unwrap_or_else(|e| e.into_inner()).push(key);
+                    log::info!("server: the free drive of {name} ({:.1} km) taken for {company}", t.metres / 1000.0);
+                }
+                Err(e) => log::warn!("server: the free drive of {name} not written for {company}: {e:#}"),
+            }
+            continue;
+        }
         let key = (name.to_lowercase(), t.tour.trim().to_string(), (t.departure / 60.0).round() as i64);
         if TAKEN_TRIPS.lock().unwrap_or_else(|e| e.into_inner()).contains(&key) {
             continue;
@@ -338,6 +390,21 @@ mod tests {
         assert_eq!(changed(&data, g), None);
         assert_eq!(hhmmss(6.0 * 3600.0 + 10.0 * 60.0 + 12.7), "06:10:12");
         let _ = std::fs::remove_dir_all(&data);
+    }
+
+    /// (NexiconDK, free drives) A free drive with a bus of a company is taken when the world saw
+    /// the player's bus drive about as far as it says in its time, on any tour or none - not a
+    /// drive it never saw, nor one far longer than it saw; and only as a free drive.
+    #[test]
+    fn a_free_drive_is_taken_as_the_world_saw_it() {
+        let t = omsi_launcher_lib::TripRun { time: 10_000, free: true, vehicle: 12, metres: 6000.0, seconds: 900.0, span: 1500.0, passengers: 9, ..Default::default() };
+        let track = |speed: f64| -> std::collections::VecDeque<Seen> { (0..750).map(|k| Seen { at: 8_500.0 + k as f64 * 2.0, x: k as f64 * 2.0 * speed, y: 0.0, tour: String::new() }).collect() };
+        assert_eq!(check_free(&track(5.0), &t), Ok(()));
+        assert!(check_free(&track(1.0), &t).is_err(), "it drove far less");
+        assert!(check_free(&std::collections::VecDeque::new(), &t).is_err(), "never seen");
+        assert!(check_free(&track(5.0), &omsi_launcher_lib::TripRun { tour: "3".into(), ..t.clone() }).is_err(), "a tour's trip is no free drive");
+        assert!(check_free(&track(5.0), &omsi_launcher_lib::TripRun { vehicle: 0, ..t.clone() }).is_err(), "no bus of the company");
+        assert!(check(&track(5.0), &t).is_err(), "nor a trip of a tour");
     }
 
     /// A player's trip is taken when the world saw his bus on its tour then, driving about as

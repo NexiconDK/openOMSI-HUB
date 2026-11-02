@@ -25,6 +25,7 @@ pub(crate) fn duty(app: &App) -> Option<op::Duty> {
         trip_done: d.trip_done(),
         delay: d.delay(app.clock.time),
         current: trip(t),
+        free: d.free,
     })
 }
 

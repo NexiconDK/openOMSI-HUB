@@ -104,7 +104,7 @@ pub fn chosen_game() -> Option<ChosenGame> {
 
 /// The arguments this launcher's game knows and openOMSI's own release does not, and whether
 /// each takes a value.
-pub const OWN_ARGS: &[(&str, bool)] = &[("--company", true), ("--duty-leg", true), ("--free-line", true), ("--relief", false), ("--drive-on", true), ("--odometer", true), ("--fuel-level", true)];
+pub const OWN_ARGS: &[(&str, bool)] = &[("--company", true), ("--duty-leg", true), ("--free-line", true), ("--relief", false), ("--drive-on", true), ("--odometer", true), ("--fuel-level", true), ("--garage-trip", true), ("--company-lines", true)];
 
 /// A command line without `OWN_ARGS`, for openOMSI's own release. A free drive along a line
 /// (`--free-line`) goes with its `--line` too: the line alone would be a duty of its first tour.
@@ -2020,6 +2020,14 @@ pub struct TripRun {
     pub vehicle: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fuel: Option<f64>,
+    /// (NexiconDK, Bus Company Online: a free drive with a bus of the company, `free` with no
+    /// tour) The drive's whole length (s; `seconds` the time its bus was moving).
+    #[serde(skip_serializing_if = "is_zero_f64")]
+    pub span: f64,
+}
+
+fn is_zero_f64(n: &f64) -> bool {
+    *n == 0.0
 }
 
 fn is_zero_u32(n: &u32) -> bool {
@@ -3856,6 +3864,13 @@ pub struct Duty {
     pub odometer_km: Option<f64>,
     #[serde(default)]
     pub fuel_level: Option<f64>,
+    /// (NexiconDK, Bus Company Online: a free drive with a bus of the company) The bus from the
+    /// company's garage - the entry point where this run out of its depot begins (`--garage-trip`)
+    /// - and in the game's "Line and tour" only these lines (`--company-lines`).
+    #[serde(default)]
+    pub garage_trip: Option<String>,
+    #[serde(default)]
+    pub company_lines: Vec<String>,
     pub profile: Option<String>,
     /// LAN play: "host", or "join:<session code | ip[:port] | port | empty = search>".
     pub lan: Option<String>,
@@ -4002,8 +4017,13 @@ mod chosen_game_tests {
         assert_eq!((after("--odometer"), after("--fuel-level")), (Some("1234.500".into()), Some("1.000".into())));
         let own = without_own_args(&a);
         assert!(!own.iter().any(|x| x == "--odometer" || x == "--fuel-level" || x == "1234.500"), "{own:?}");
-        let none = duty_args_for_root(&Duty { odometer_km: Some(f64::NAN), fuel_level: None, ..d }, std::path::Path::new("test-omsi")).unwrap();
+        let none = duty_args_for_root(&Duty { odometer_km: Some(f64::NAN), fuel_level: None, ..d.clone() }, std::path::Path::new("test-omsi")).unwrap();
         assert!(!none.iter().any(|x| x == "--odometer" || x == "--fuel-level"));
+        // (a free drive with a bus of a company: from its garage, its lines to pick from)
+        let free = duty_args_for_root(&Duty { garage_trip: Some("Depot-A".into()), company_lines: vec!["Linie5".into(), "N3".into(), "a|b".into()], ..d }, std::path::Path::new("test-omsi")).unwrap();
+        let after = |k: &str| free.iter().position(|x| x == k).map(|i| free[i + 1].clone());
+        assert_eq!((after("--garage-trip"), after("--company-lines")), (Some("Depot-A".into()), Some("Linie5|N3".into())));
+        assert!(!without_own_args(&free).iter().any(|x| x.starts_with("--garage") || x.starts_with("--company-lines")));
     }
 }
 
@@ -4227,6 +4247,14 @@ fn duty_args_for_root(d: &Duty, root: &Path) -> Result<Vec<String>> {
     }
     if let Some(f) = d.fuel_level.filter(|f| f.is_finite()) {
         a.extend(["--fuel-level".into(), format!("{:.3}", f.clamp(0.0, 1.0))]);
+    }
+    // (a free drive with a bus of the company: from its garage, its lines to pick from)
+    if let Some(t) = d.garage_trip.as_deref().map(str::trim).filter(|t| !t.is_empty() && d.line.is_none()) {
+        a.extend(["--garage-trip".into(), t.to_string()]);
+    }
+    let lines: Vec<&str> = d.company_lines.iter().map(|l| l.trim()).filter(|l| !l.is_empty() && !l.contains('|')).collect();
+    if !lines.is_empty() {
+        a.extend(["--company-lines".into(), lines.join("|")]);
     }
     let profile = d.profile.clone().filter(|p| !p.trim().is_empty()).unwrap_or_else(|| load_config().profile);
     if let Some(season) = d.season.as_deref().map(str::trim).filter(|x| !x.is_empty() && !x.eq_ignore_ascii_case("auto")) {

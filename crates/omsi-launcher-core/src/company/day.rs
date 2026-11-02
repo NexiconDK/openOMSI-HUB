@@ -736,6 +736,9 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         }
     }
     c.trips_seen = seen;
+    // (NexiconDK, Bus Company Online: the players' free drives with its buses - their kilometres,
+    // fuel and fares, `free_drive`)
+    super::free_drive::close(c, &date);
     // (NexiconDK, Bus Company Online: the depot fills every bus at night - its pumps and chargers,
     // or bought outside, `depot::outside` - the day's drives left them as they were)
     for v in &mut c.fleet {
