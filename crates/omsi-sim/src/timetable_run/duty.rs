@@ -617,10 +617,10 @@ impl PlayerDuty {
     /// left and the stop ahead, as Omsi.exe weighs the two times for `GetTTDelay` (0x61f59c
     /// measures them, 0x7d5124 weighs).
     pub fn delay(&self, now: f64) -> f64 {
-        // (a free drive along a line keeps no time: its stops' times are only its pace)
-        if self.free {
-            return 0.0;
-        }
+        // (NexiconDK, 2 November 2026: a free drive along a line - the launcher's, an extra bus
+        // behind a company's tour - shows how it keeps the times of its stops, from when it set
+        // off, as a duty does; its stops are not counted, `update`. It was never late: the
+        // board, the IBIS and the strip said "on time" eight minutes after its first departure.)
         let now = self.duty_time(now);
         let trip = self.trip();
         if self.done {

@@ -568,8 +568,9 @@ impl ScheduleSim {
     /// the map names it) as a duty of that one trip, leaving at `now` - the player chose
     /// where to drive, not when - so the navigator draws its way and the IBIS can be typed
     /// for it. Nothing is booked: the AI keeps every tour (the timetable's own bus on that
-    /// route still drives), and the duty is `free`, so nobody keeps its time. `line` is the
-    /// timetable's line it was chosen under.
+    /// route still drives), and the duty is `free`: its time is shown as it is kept, from when
+    /// it sets off, but no stop of it is counted. `line` is the timetable's line it was chosen
+    /// under.
     pub fn free_line_duty(&self, world: &dyn TimetableWorld, line: &str, trip: &str, now: f64) -> Result<PlayerDuty, String> {
         let Some(ti) = self.data.trips.iter().position(|x| x.name.trim().eq_ignore_ascii_case(trip.trim())) else {
             return Err(format!("the timetable of this map has no route '{}'", trip.trim()));

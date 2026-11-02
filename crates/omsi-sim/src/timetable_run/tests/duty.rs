@@ -1118,11 +1118,11 @@ fn a_duty_begins_and_ends_at_relief_stops_on_the_way() {
     assert_eq!(e.trips[0].end, 400.0);
 }
 
-/// A free drive along a line (`--free-line`): the bus goes on from stop to stop as on a
-/// duty - the navigator and the IBIS follow it - but it is never late, and no stop it
-/// leaves is counted for the personnel file.
+/// A free drive along a line (`--free-line`, an extra bus): the bus goes on from stop to stop
+/// as on a duty - the navigator and the IBIS follow it, and show how late it runs (NexiconDK, 2
+/// November 2026: it was never late) - but no stop it leaves is counted for the personnel file.
 #[test]
-fn a_free_line_follows_its_stops_but_keeps_no_time() {
+fn a_free_line_follows_its_stops_and_shows_its_time_but_counts_none() {
     let duty = |free: bool| PlayerDuty { line: "5".into(), tour: String::new(), trips: vec![planned(0.0, &[(0.0, 0.0, 0.0), (500.0, 100.0, 100.0), (1000.0, 200.0, 200.0)])], trip_index: 0, first_trip: 0, next_stop: 0, at_stop: false, arrived_late: None, done: false, served_terminus: None, left_late: None, held_back: false, placed: true, trip_changed: false, skipped: None, run: 0, finished: None, reopened: None, picked: true, first_update: None, heading: 90.0, position: None, tours: Vec::new(), free, dup_tiles: Default::default(), unnumbered_public: Vec::new(), passed: Default::default() };
     let mut v = timetable_test_vehicle();
     let mut drive = |d: &mut PlayerDuty| {
@@ -1140,7 +1140,7 @@ fn a_free_line_follows_its_stops_but_keeps_no_time() {
     let (counted, next, delay, shown) = drive(&mut duty(true));
     assert_eq!(next, 2, "a free drive follows the stops all the same");
     assert!(counted.is_empty(), "no stop of a free drive is counted early or late");
-    assert_eq!((delay, shown), (0.0, 0.0), "a free drive is never late");
+    assert!(delay > 200.0 && shown > 200.0, "its time shown as a duty's: {delay}, {shown}");
 }
 
 /// A station's stop object at the beginning of its long bay: the bus passes it on the way to
