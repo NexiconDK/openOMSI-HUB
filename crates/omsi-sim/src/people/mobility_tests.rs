@@ -152,6 +152,11 @@ fn a_bus_keeps_a_place_for_a_wheelchair_or_a_pram_by_its_middle_door() {
 /// door's at y 5.2 and 4.6, the middle door's at 0.9 and 0.3, on the right - with standing
 /// places `(x, y)`.
 fn winged_cabin(name: &str, places: &[(f32, f32)]) -> Cabin {
+    winged(name, places, true)
+}
+
+/// `winged_cabin`, its middle door a way in too (`middle_in`) or a way out only.
+fn winged(name: &str, places: &[(f32, f32)], middle_in: bool) -> Cabin {
     let dir = std::env::temp_dir().join(format!("omsi-mobility-{name}-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("test.bus"), "[boundingbox]\n2.5\n12\n3\n0\n0\n1.5\n\n[passengercabin]\ncabin.cfg\n\n[paths]\npaths.cfg\n").unwrap();
@@ -165,7 +170,7 @@ fn winged_cabin(name: &str, places: &[(f32, f32)]) -> Cabin {
         paths += &format!("[pathlink]\n{a}\n{b}\n\n");
     }
     std::fs::write(dir.join("paths.cfg"), paths).unwrap();
-    let mut cfg = String::from("[entry]\n0\n\n[entry]\n1\n\n[entry]\n3\n\n[entry]\n4\n\n[exit]\n3\n\n[exit]\n4\n\n");
+    let mut cfg = String::from(if middle_in { "[entry]\n0\n\n[entry]\n1\n\n[entry]\n3\n\n[entry]\n4\n\n[exit]\n3\n\n[exit]\n4\n\n" } else { "[entry]\n0\n\n[entry]\n1\n\n[exit]\n3\n\n[exit]\n4\n\n" });
     for (x, y) in places {
         cfg += &format!("[passpos]\n{x}\n{y}\n0.46\n0\n30\n\n");
     }
@@ -201,6 +206,17 @@ fn the_places_are_along_the_wall_across_from_the_door() {
     assert_eq!(c.seats.iter().map(|s| s.mobility).collect::<Vec<_>>(), [false, true, false, true, false, false]);
     assert_eq!((c.seats[1].rot, c.seats[3].rot), (180.0, 180.0), "backs to the board");
     assert_eq!((c.seats[0].rot, c.seats[2].rot), (30.0, 30.0));
+}
+
+/// (NexiconDK, 2 November 2026) A middle door that is a way out only - the Citaro G's - has the
+/// area across from it all the same: not the front door's wall by the driver.
+#[test]
+fn a_way_out_only_has_its_area_too() {
+    let c = winged("out", &[(0.3, 0.6), (-0.9, 1.3), (-0.9, 0.6), (-0.9, -0.5), (0.0, -3.0), (-0.9, 3.5)], false);
+    assert_eq!(c.entries.len(), 2);
+    assert_eq!(c.seats.iter().map(|s| s.mobility).collect::<Vec<_>>(), [false, true, false, true, false, false]);
+    let out = c.mobility_door(&c.exits, 1, true).expect("out at the middle door");
+    assert!(c.exits[out].inside.y < 1.0);
 }
 
 /// One in a wheelchair takes the bus's place for them alone, by its middle door, with no
@@ -304,7 +320,7 @@ fn a_wheelchair_waits_for_the_ramp() {
     let walker = human("ramp-walker", "");
     let mut h = PeopleSim::new(Path::new("/nonexistent"), 200);
     h.people = vec![person(&chair, 1, Task::WalkingToBus, DVec3::ZERO), person(&walker, 2, Task::WalkingToBus, DVec3::ZERO)];
-    h.player_ramps = vec![super::ramp::Ramp { var: "pandus_2_mov".into(), entry: Some(1), exit: Some(0), door: 2 }];
+    h.player_ramps = vec![super::ramp::Ramp { var: "pandus_2_mov".into(), entries: vec![1], exits: vec![0], door: 2 }];
     let b = bus(&c, -2.0, 0.0);
     h.see_ramps(&[0.0], 0.1);
     assert!(h.waits_for_ramp(0, &b, 1, true), "in: the ramp is in");

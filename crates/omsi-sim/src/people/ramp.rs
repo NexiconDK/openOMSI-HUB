@@ -22,13 +22,14 @@ const TELL_EVERY: f64 = 12.0;
 const SETTLED: f32 = 0.4;
 const AT_END: f32 = 0.9;
 
-/// A ramp of the player's bus: the variable that moves it, the entry and the exit (of the
-/// cabin's) it is at, and that door's number from the front (for the driver's hint).
+/// A ramp of the player's bus: the variable that moves it, the entries and the exits (of the
+/// cabin's) of the door it is at - every wing of it -, and that door's number from the front
+/// (for the driver's hint).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ramp {
     pub var: String,
-    pub entry: Option<usize>,
-    pub exit: Option<usize>,
+    pub entries: Vec<usize>,
+    pub exits: Vec<usize>,
     pub door: usize,
 }
 
@@ -59,25 +60,29 @@ pub fn ramps_of(ty: &crate::vehicle::VehicleType, cabin: &Cabin) -> Vec<Ramp> {
         let at = Vec3::new(mid.x, mid.z, mid.y);
         let nearest = |doors: &[Door]| (0..doors.len()).filter(|&d| (doors[d].inside.truncate() - at.truncate()).length() < NEAR_DOOR).min_by(|&a, &b| (doors[a].inside - at).length().total_cmp(&(doors[b].inside - at).length()));
         let (entry, exit) = (nearest(&cabin.entries), nearest(&cabin.exits));
-        let Some(door) = entry.map(|e| door_number(&cabin.entries, e)).or_else(|| exit.map(|x| door_number(&cabin.exits, x))) else { continue };
+        let Some(door) = entry.map(|e| &cabin.entries[e]).or_else(|| exit.map(|x| &cabin.exits[x])).map(|d| door_number(cabin, d)) else { continue };
+        // (every wing of that door: the Citaro G's ramp lies by one wing of its door 2)
+        let wings = |doors: &[Door]| (0..doors.len()).filter(|&k| door_number(cabin, &doors[k]) == door).collect::<Vec<usize>>();
+        let (entries, exits) = (wings(&cabin.entries), wings(&cabin.exits));
         log::info!("{}: a ramp at door {door} ({}, moved by {})", ty.def.path.display(), m.file, anim.variable.trim());
-        out.push(Ramp { var: anim.variable.trim().to_string(), entry, exit, door });
+        out.push(Ramp { var: anim.variable.trim().to_string(), entries, exits, door });
     }
     out
 }
 
-/// The number from the front of the door of `doors[k]` (the wings of one door one door).
-fn door_number(doors: &[Door], k: usize) -> usize {
+/// The number from the front of door `d` among all of the cabin's - its ways in and its ways out,
+/// the wings of one door one door (the Citaro G's way out by its ramp is its door 2).
+fn door_number(cabin: &Cabin, d: &Door) -> usize {
+    let same = |a: &Door, b: &Door| (a.inside.y - b.inside.y).abs() < super::cabin::DOOR_WINGS && a.side == b.side && a.group == b.group;
+    let mut sorted: Vec<&Door> = cabin.entries.iter().chain(cabin.exits.iter()).collect();
+    sorted.sort_by(|a, b| b.inside.y.total_cmp(&a.inside.y).then(a.group.cmp(&b.group)));
     let mut fronts: Vec<&Door> = Vec::new();
-    let mut sorted: Vec<&Door> = doors.iter().collect();
-    sorted.sort_by(|a, b| b.inside.y.total_cmp(&a.inside.y));
-    for d in sorted {
-        if !fronts.iter().any(|f| (f.inside.y - d.inside.y).abs() < super::cabin::DOOR_WINGS && f.side == d.side && f.group == d.group) {
-            fronts.push(d);
+    for x in sorted {
+        if !fronts.iter().any(|f| same(f, x)) {
+            fronts.push(x);
         }
     }
-    let d = &doors[k];
-    fronts.iter().position(|f| (f.inside.y - d.inside.y).abs() < super::cabin::DOOR_WINGS && f.side == d.side && f.group == d.group).map_or(1, |n| n + 1)
+    fronts.iter().position(|f| same(f, d)).map_or(1, |n| n + 1)
 }
 
 /// What is seen of a ramp's variable: the furthest it has gone from where it rested, where it
@@ -145,7 +150,7 @@ impl PeopleSim {
         if bn.id != BusId::Player || self.mobility(i) != Some(omsi_content::human::Mobility::Wheelchair) {
             return false;
         }
-        let Some(k) = self.player_ramps.iter().position(|r| if entering { r.entry == Some(door) } else { r.exit == Some(door) }) else { return false };
+        let Some(k) = self.player_ramps.iter().position(|r| if entering { r.entries.contains(&door) } else { r.exits.contains(&door) }) else { return false };
         if self.ramp_seen.get(k).is_some_and(|s| s.out()) {
             return false;
         }

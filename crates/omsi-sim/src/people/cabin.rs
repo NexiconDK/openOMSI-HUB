@@ -75,7 +75,7 @@ pub(crate) const DOOR_WINGS: f32 = 1.5;
 
 /// The places a cabin without one marked keeps for wheelchairs and prams, and which way they
 /// face there (degrees, 0 forwards). In each section of the bus (`joints`: the y of each one's
-/// front joint, the first's infinite) by a door: the front one's second door from the front
+/// front joint, the first's infinite) by a door (`all`: its ways in and its ways out): the front one's second door from the front
 /// (its only one, with one), a section behind its first, at the joint - as a European low-floor
 /// bus has its multi-purpose areas. There, two standing places along the wall across from the
 /// door, a wheelchair's length apart - the front one where the padded backrest at the wall is,
@@ -86,9 +86,9 @@ pub(crate) const DOOR_WINGS: f32 = 1.5;
 /// (NexiconDK, 1 November 2026) A door of two wings is one door: the Urbino's cabins give each
 /// wing its `[entry]`, and "the second" was the front door's other wing - the place was by the
 /// driver.
-fn mobility_places(seats: &[Seat], entries: &[Door], joints: &[f32]) -> Vec<(usize, Option<f32>)> {
+fn mobility_places(seats: &[Seat], all: &[Door], joints: &[f32]) -> Vec<(usize, Option<f32>)> {
     let section = |y: f32| joints.iter().rposition(|j| y < *j).unwrap_or(0);
-    let mut doors: Vec<&Door> = entries.iter().collect();
+    let mut doors: Vec<&Door> = all.iter().collect();
     doors.sort_by(|a, b| b.inside.y.total_cmp(&a.inside.y));
     // (the doors front first, each once: the wings of one door together)
     let mut fronts: Vec<&Door> = Vec::new();
@@ -103,7 +103,7 @@ fn mobility_places(seats: &[Seat], entries: &[Door], joints: &[f32]) -> Vec<(usi
         let door = if part == 0 { own.get(1).or(own.first()) } else { own.first() };
         let Some(door) = door else { continue };
         // (where people wait by it, between its wings' points, and its middle)
-        let wings: Vec<&Door> = entries.iter().filter(|d| (d.inside.y - door.inside.y).abs() < DOOR_WINGS && d.side == door.side && d.group == door.group).collect();
+        let wings: Vec<&Door> = all.iter().filter(|d| (d.inside.y - door.inside.y).abs() < DOOR_WINGS && d.side == door.side && d.group == door.group).collect();
         let wait = wings.iter().map(|d| d.wait).sum::<Vec3>() / wings.len().max(1) as f32;
         let mid = wings.iter().map(|d| d.inside.y).sum::<f32>() / wings.len().max(1) as f32;
         let chosen: Vec<usize> = out.iter().map(|o| o.0).collect();
@@ -580,7 +580,10 @@ impl Cabin {
         // pram: the multi-purpose areas by its doors, where they get in
         if !seats.iter().any(|s| s.mobility) {
             let joints: Vec<f32> = cabin_parts.iter().map(|p| p.joint_y).collect();
-            for (k, facing) in mobility_places(&seats, &entries, &joints) {
+            // (every door, the ways in and the ways out: a bus whose middle doors are ways out
+            // only - the older Citaro G's, the MAN SD's - has its area across from them too)
+            let doors: Vec<Door> = entries.iter().chain(exits.iter()).cloned().collect();
+            for (k, facing) in mobility_places(&seats, &doors, &joints) {
                 seats[k].mobility = true;
                 if let Some(rot) = facing {
                     seats[k].rot = rot;

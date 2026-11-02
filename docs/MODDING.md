@@ -265,7 +265,8 @@ on its point:
 
 A cabin without one keeps places for them where a European low-floor bus has its
 multi-purpose areas: in the front section by its second door from the front (its only door,
-with one), in each section coupled behind by its first door, at the joint. There it takes the
+with one), in each section coupled behind by its first door, at the joint - its ways in and
+its ways out alike (a Citaro G's middle doors are ways out only). There it takes the
 standing places along the wall across from the door (0.7 m or more over from the middle of
 the bus): the front one from 0.5 m behind the door's middle to 2.2 m in front of it - where
 the padded backrest is - and the next at least 1 m behind it (1.5 m behind the door's middle at
@@ -280,7 +281,8 @@ at that door only once it is out, and the driver is told which door (every 12 s 
 wait; of one getting out only with the bus standing). Leaving the stop without it counts as
 leaving them behind. The ramp is found in the model: a mesh with an animation (`[newanim]`)
 whose file, `[mouseevent]` or variable has `pandus`, `rampe` or `ramp` in its name, at the
-`[entry]` and `[exit]` nearest the middle of the mesh (within 2 m). Its script is not read:
+door nearest the middle of the mesh (within 2 m; every `[entry]` and `[exit]` of that door's
+wings, the doors numbered from the front with the ways out among them). Its script is not read:
 it is out once its variable has gone (90 % or more of) as far from where it rested as it goes
 and stood still there for 0.4 s - whichever way it turns or slides. Timetable buses, and
 prams, never wait for one.
