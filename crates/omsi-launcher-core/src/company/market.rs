@@ -246,6 +246,7 @@ pub(crate) fn add_registered(c: &mut Company, bus: &MarketBus, reg: Registered, 
         age_from: reg.from,
         built_auto: None,
         fuel: 1.0,
+        fuel_at: None,
     });
     id
 }

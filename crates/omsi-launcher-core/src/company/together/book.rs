@@ -1092,10 +1092,13 @@ pub fn report(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, run
         }
         count_trip(c, guest, &safe, !today);
         // (NexiconDK, Bus Company Online: his tank as his game told at the trip's end - the bus's
-        // next drive of the day starts with it; a day closed since has filled it again)
-        if let (true, Some(f)) = (today, safe.fuel) {
+        // next drive of the day starts with it, less what the AI drives it after; a day closed
+        // since has filled it again)
+        if let (true, true, Some(f)) = (today, c.online.on_server, safe.fuel) {
+            let arr = px.arr;
             if let Some(v) = c.fleet.iter_mut().find(|v| v.id == safe.vehicle && safe.vehicle != 0) {
                 v.fuel = f;
+                v.fuel_at = Some(arr);
             }
         }
         c.together.trips.push(GuestTrip { guest, duty: r.clone(), trip: safe, part: part.is_some() });

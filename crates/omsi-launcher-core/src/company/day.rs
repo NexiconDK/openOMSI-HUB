@@ -740,6 +740,7 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     // or bought outside, `depot::outside` - the day's drives left them as they were)
     for v in &mut c.fleet {
         v.fuel = 1.0;
+        v.fuel_at = None;
     }
 
     // 2. what the game reported live (measured)

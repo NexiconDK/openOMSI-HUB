@@ -874,7 +874,12 @@ fn bus_card(c: &Company, plan: &Plan, d: &Day, m: &MapState, mk: &Marker, clock:
     if let Some(v) = bus {
         rows.push(json!({ "label": tr("Condition"), "value": format!("{:.0} %", v.condition), "tone": grade(v.condition), "meter": v.condition / 100.0 }));
         rows.push(json!({ "label": tr("Cleanliness"), "value": format!("{:.0} %", v.clean), "tone": grade(v.clean), "meter": v.clean / 100.0 }));
-        rows.push(row(&tr("Odometer"), &format!("{} km", num(crate::omsihub::company::fleet::odometer(c, v), 0)), "text"));
+        rows.push(row(&tr("Odometer"), &format!("{} km", num(crate::omsihub::company::fleet::odometer(c, Some(plan), v), 0)), "text"));
+        // (NexiconDK, Bus Company Online: its diesel or battery now, as the AI has driven it)
+        if c.online.on_server {
+            let f = crate::omsihub::company::fleet::fuel_now(c, Some(plan), v);
+            rows.push(json!({ "label": tr(if v.kind.drive == co::model::Drive::Electric { "Battery" } else { "Diesel" }), "value": format!("{:.0} %", (f * 100.0).round()), "tone": if f < 0.2 { "danger" } else if f < 0.4 { "warn" } else { "ok" }, "meter": f }));
+        }
     }
     // what happened to it today
     let notes = notes_of(c, tp, mk, clock);

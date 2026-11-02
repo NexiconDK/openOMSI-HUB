@@ -805,6 +805,19 @@ impl HostState {
     }
 }
 
+/// (NexiconDK, Bus Company Online, 2 November 2026) The duty's bus as it is when the duty takes it
+/// over at the first of its trips `planned`: its odometer and its tank with what the company's AI
+/// drivers have driven it today until then (`fuel`) - a bus taken over in the afternoon may be well
+/// down.
+fn bus_now(c: &Company, p: &DayPlan, mut st: dl::Start, planned: &[super::super::network::PlannedTrip]) -> dl::Start {
+    if let (Some(dep), true) = (planned.first().map(|t| t.dep), st.vehicle != 0) {
+        let days = super::super::fuel::of_day_plan(p);
+        st.km = Some(super::super::fuel::odometer_at(c, &days, st.vehicle, dep));
+        st.fuel = Some(super::super::fuel::level_at(c, &days, st.vehicle, dep));
+    }
+    st
+}
+
 /// How a player's game starts on duty `r` of the day `p` (planned for a player: not another's).
 fn start_of(c: &Company, here: &Here, p: &DayPlan, r: &DutyRef) -> Result<DriveStart, &'static str> {
     if here.lines.is_empty() {
@@ -815,7 +828,7 @@ fn start_of(c: &Company, here: &Here, p: &DayPlan, r: &DutyRef) -> Result<DriveS
     // launcher sees whether its bus is installed there)
     sheet.hitches.retain(|h| !matches!(h, Hitch::NotYours(_) | Hitch::NoDriver | Hitch::Over | Hitch::NotInstalled(_)));
     let st = dl::start(&sheet, here.lines, here.lead).map_err(|h| h.words().0)?;
-    Ok(DriveStart::of(&st))
+    Ok(DriveStart::of(&bus_now(c, p, st, &sheet.planned)))
 }
 
 /// How a player's game starts on duty `r` of the day `p` from its trip `from` (an index into its
@@ -828,7 +841,7 @@ fn start_from(c: &Company, here: &Here, p: &DayPlan, r: &DutyRef, from: usize) -
     sheet.hitches.retain(|h| !matches!(h, Hitch::NotYours(_) | Hitch::NoDriver | Hitch::Over | Hitch::NotInstalled(_) | Hitch::Driven));
     sheet.planned = sheet.planned.split_off(from.min(sheet.planned.len()));
     let st = dl::start(&sheet, here.lines, here.lead).map_err(|h| h.words().0)?;
-    Ok(DriveStart::of(&st))
+    Ok(DriveStart::of(&bus_now(c, p, st, &sheet.planned)))
 }
 
 /// (NexiconDK, single trips) How player `guest`'s game starts on the trips of duty `r` of the day
@@ -847,7 +860,7 @@ fn start_part(c: &Company, here: &Here, p: &DayPlan, r: &DutyRef, guest: u32, a:
     let n = all.len();
     let (a, b) = (a.min(n), b.min(n).max(a.min(n)));
     sheet.planned = all[a..b].to_vec();
-    let st = dl::start(&sheet, here.lines, here.lead).map_err(|h| h.words().0)?;
+    let st = bus_now(c, p, dl::start(&sheet, here.lines, here.lead).map_err(|h| h.words().0)?, &sheet.planned);
     let part = dl::part_of(&sheet, here.lines);
     // (the rest of the duty from his trip on, as the timetable has it one after another, up to a
     // trip another player took: what is more than his trips - not a last trip it hands on halfway)

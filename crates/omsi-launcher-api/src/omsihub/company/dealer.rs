@@ -633,6 +633,7 @@ pub fn sheet_view(s: &mut Session, _ui: &Value) -> Value {
                 row(tr("Model"), if listing.version.is_empty() { listing.model.clone() } else { format!("{}  ·  {}", listing.model, listing.version) }, false),
                 row(tr("Kind"), super::vehicles::kind_label(&listing.bus), false),
                 row(tr("Places"), places(&listing), false),
+                row(tr("Fuel use"), co::fuel::use_text(listing.bus.kind), false),
                 row(tr("List price"), eur(list), false),
             ];
             if grant > 0 {
@@ -678,7 +679,7 @@ pub fn sheet_view(s: &mut Session, _ui: &Value) -> Value {
             v
         }
         Sheet::Offer { offer, livery, count, pay, quick } => {
-            let mut rows = vec![row(tr("Seller"), offer.seller.clone(), false), row(tr("Kind"), super::vehicles::kind_label(&offer.listing.bus), false), row(tr("Places"), places(&offer.listing), false)];
+            let mut rows = vec![row(tr("Seller"), offer.seller.clone(), false), row(tr("Kind"), super::vehicles::kind_label(&offer.listing.bus), false), row(tr("Places"), places(&offer.listing), false), row(tr("Fuel use"), co::fuel::use_text(offer.listing.bus.kind), false)];
             if offer.is_new() {
                 rows.push(row(tr("Delivery"), tr("from stock: two days after signing"), false));
             } else {

@@ -49,6 +49,7 @@ pub mod lateness;
 // (the control room and its drivers: a light CAD/AVL, docs/omsihub/MESSAGES.md)
 pub mod messages;
 pub mod fleetmap;
+pub mod fuel;
 pub mod incidents;
 // (the lines' income and passengers on the UK model: fares by ticket, concessions, BSOG)
 pub mod income;

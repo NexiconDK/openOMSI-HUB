@@ -49,13 +49,13 @@ pub fn view(s: &mut Session, ui: &Value) -> Value {
         1 => Value::Null,
         _ => {
             let left = super::vehicles::left_out(s, &c);
-            our_buses(&c, &left)
+            our_buses(&c, s.plan.as_ref(), &left)
         }
     };
     out
 }
 
-fn our_buses(c: &Company, left: &std::collections::HashSet<String>) -> Value {
+fn our_buses(c: &Company, plan: Option<&co::day::Plan>, left: &std::collections::HashSet<String>) -> Value {
     let order = c.dealer.orders.iter().min_by_key(|o| dl::minutes_of(&o.delivery)).map(|first| {
         let n: u32 = c.dealer.orders.iter().map(|o| o.contract.count).sum();
         trf("%{n} buses on order: the next arrive on %{date}.", &[("n", &n.to_string()), ("date", &day_label(&dl::day_of(&first.delivery)))])
@@ -70,7 +70,7 @@ fn our_buses(c: &Company, left: &std::collections::HashSet<String>) -> Value {
                 "advert": ad::advert_of(c, bus.id).map(|k| format!("{}  ·  {}", tr("Ad"), k.advertiser)),
                 // (a model the company does not work with any more: the bus stays - Beta 54)
                 "sub": if left.contains(&omsi_launcher_lib::company::vehicles::key_of(&bus.bus)) { format!("{}  ·  {}  ·  {}", bus.plate, tr(bus.kind.label()), tr("not in your selection")) } else { format!("{}  ·  {}", bus.plate, tr(bus.kind.label())) },
-                "facts": format!("{} km  ·  {}  ·  {}", grouped(odometer(c, bus).round()), bus.built.get(..4).unwrap_or(""), trf("%{n} years", &[("n", &format!("{:.0}", bus.age_years(&c.date).floor()))])),
+                "facts": format!("{} km  ·  {}  ·  {}", grouped(odometer(c, plan, bus).round()), bus.built.get(..4).unwrap_or(""), trf("%{n} years", &[("n", &format!("{:.0}", bus.age_years(&c.date).floor()))])),
                 "condition": { "frac": bus.condition / 100.0, "tone": grade(bus.condition), "tip": trf("Condition: %{n} of 100", &[("n", &format!("{:.0}", bus.condition))]) },
                 "status": status, "tone": tone,
             })
@@ -123,10 +123,19 @@ fn adverts(c: &Company) -> Value {
     })
 }
 
-/// (NexiconDK, Bus Company Online) A bus's odometer as its next drive starts it: the fleet's
-/// reading with what players drove it today (the day's close books that).
-pub(crate) fn odometer(c: &Company, v: &Vehicle) -> f64 {
-    v.km + co::together::book::km_today(c, v.id)
+/// (NexiconDK, Bus Company Online) A bus's odometer now, as its next drive starts it: the fleet's
+/// reading with what players and - on the server - the AI drove it today (the day's close books
+/// that), by today's plan `plan` (None: not made yet).
+pub(crate) fn odometer(c: &Company, plan: Option<&co::day::Plan>, v: &Vehicle) -> f64 {
+    let days = plan.map(co::fuel::of_plan).unwrap_or_default();
+    co::fuel::odometer_at(c, &days, v.id, c.clock.minute as i32)
+}
+
+/// (NexiconDK, Bus Company Online) What is in a bus's tank now, 0 to 1: as a player's drive left
+/// it or the depot filled it, less what the AI has driven it since (`fuel::level_at`).
+pub(crate) fn fuel_now(c: &Company, plan: Option<&co::day::Plan>, v: &Vehicle) -> f64 {
+    let days = plan.map(co::fuel::of_plan).unwrap_or_default();
+    co::fuel::level_at(c, &days, v.id, c.clock.minute as i32)
 }
 
 /// A bus of the fleet (`Dialog::Vehicle`): its photo and livery, what it is, its status, and the
@@ -136,13 +145,20 @@ pub fn vehicle_view(s: &mut Session, args: &Value) -> Value {
     let id = args.get("id").and_then(Value::as_u64).unwrap_or(0) as u32;
     let Some(v) = c.vehicle(id).cloned() else { return json!({ "gone": true }) };
     let (q, m) = co::licences::qualified_drivers(&c, v.kind, &v.bus);
-    let rows = vec![
+    let plan = s.plan.clone();
+    let mut rows = vec![
         row(tr("Plate"), v.plate.clone(), false),
         super::age::vehicle_row(&c, &v),
-        row(tr("Kilometres"), format!("{} km", grouped(odometer(&c, &v).round())), false),
+        row(tr("Kilometres"), format!("{} km", grouped(odometer(&c, plan.as_ref(), &v).round())), false),
         row(tr("Next service"), format!("{} km", grouped(v.next_service_km)), false),
-        // (NexiconDK, Bus Company Online: as the last drive left it; full again after the night)
-        row(tr(if v.kind.drive == co::model::Drive::Electric { "Battery" } else { "Diesel" }), format!("{:.0} %", (v.fuel.clamp(0.0, 1.0) * 100.0).round()), false),
+        row(tr("Fuel use"), co::fuel::use_text(v.kind), false),
+    ];
+    // (NexiconDK, Bus Company Online: as a player's drive left it, less what the AI has driven it
+    // since; full again after the night)
+    if c.online.on_server {
+        rows.push(row(tr(if v.kind.drive == co::model::Drive::Electric { "Battery" } else { "Diesel" }), format!("{:.0} %", (fuel_now(&c, plan.as_ref(), &v) * 100.0).round()), false));
+    }
+    rows.extend([
         row(tr("Condition"), format!("{:.0} / 100", v.condition), false),
         row(tr("Breakdowns"), v.breakdowns.to_string(), false),
         row(tr("Drivers"), trf("%{n} of %{m} may drive it", &[("n", &q.to_string()), ("m", &m.to_string())]), false),
@@ -159,7 +175,7 @@ pub fn vehicle_view(s: &mut Session, args: &Value) -> Value {
             Tenure::Leased { monthly, until, .. } => row(tr("Leased"), format!("{} / {}  ·  {}", eur(*monthly), tr("month"), day_label(until)), false),
             Tenure::Rented { daily, until } => row(tr("Rented"), format!("{} / {}  ·  {}", eur(*daily), tr("day"), day_label(until)), false),
         },
-    ];
+    ]);
     let (status, tone) = status_of(&c, &v);
     let fee = co::livery::design_fee(&c);
     json!({

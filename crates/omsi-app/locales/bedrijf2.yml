@@ -1408,3 +1408,10 @@ _version: 2
   ru: "Сохранено в редакторе линий: сегодняшние выпуски идут как есть; с того дня линия работает по новому расписанию, а изменённые выпуски планируются заново."
   uk: "Збережено в редакторі ліній: сьогоднішні випуски йдуть як є; з того дня лінія працює за новим розкладом, а змінені випуски плануються наново."
   pl: "Zapisano w edytorze linii: dzisiejsze obiegi kursują bez zmian; od tego dnia linia kursuje według nowego rozkładu, a zmienione obiegi są planowane na nowo."
+"Fuel use":
+  nl: "Verbruik"
+  de: "Verbrauch"
+  fr: "Consommation"
+  ru: "Расход"
+  uk: "Витрата"
+  pl: "Zużycie"

@@ -947,6 +947,7 @@ mod tests {
             age_from: Default::default(),
             built_auto: None,
             fuel: 1.0,
+            fuel_at: None,
         }
     }
 

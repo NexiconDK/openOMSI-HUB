@@ -483,6 +483,10 @@ pub struct Vehicle {
     /// of the day starts with it.
     #[serde(default = "full_tank")]
     pub fuel: f64,
+    /// The minute of the company's day `fuel` was known at (a player's trip's arrival; None:
+    /// since the depot filled it at night): what the AI drives it after uses it (`fuel::level_at`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fuel_at: Option<i32>,
 }
 
 fn seventy_five() -> f64 {

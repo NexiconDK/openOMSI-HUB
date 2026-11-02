@@ -688,6 +688,7 @@ fn a_players_bus_starts_as_the_company_has_it_and_his_drive_goes_to_it() {
     super::super::plan::set_bus(&mut b.c, wd, "Linie5", "2", Some(second));
     b.c.fleet[1].km = 1200.0;
     b.c.fleet[1].fuel = 0.6;
+    b.c.online.on_server = true;
     let km_first = b.c.fleet[0].km;
     let duty = snap(&ask(&mut b, "jan", "hello", |_| {})).duties[0].duty.clone();
     assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()))["ok"], true);
@@ -704,10 +705,65 @@ fn a_players_bus_starts_as_the_company_has_it_and_his_drive_goes_to_it() {
     // (the odometer of a drive later today has what he drove, not booked yet)
     assert_eq!(book::km_today(&b.c, second), 16.0);
     assert_eq!(book::km_today(&b.c, first), 0.0);
+    // (the close as anywhere: the AI's modelled kilometres of the rest of the tour aside)
+    b.c.online.on_server = false;
     close(&mut b);
     assert!((b.c.vehicle(second).unwrap().km - 1216.0).abs() < 1e-6, "{}", b.c.vehicle(second).unwrap().km);
     assert_eq!(b.c.vehicle(first).unwrap().km, km_first, "not the first bus of the model");
     assert!(b.c.fleet.iter().all(|v| v.fuel == 1.0), "filled at night");
+}
+
+/// (NexiconDK, Bus Company Online, 2 November 2026) On the server what the AI drives a bus uses its
+/// tank: worked out of its trips' kilometres at its kind's fuel use, from the level last known -
+/// a player who takes it over starts with what is left, and his own drive's level holds until
+/// the AI drives it on. Elsewhere the level stays as the company knew it.
+#[test]
+fn the_ai_driving_a_bus_uses_its_tank_and_a_player_taking_it_over_starts_with_what_is_left() {
+    use super::super::fuel;
+    let mut b = boss();
+    let id = b.c.fleet[0].id;
+    let kind = b.c.fleet[0].kind;
+    let per_km = super::super::economy::consumption(kind) / 100.0 / fuel::tank(kind);
+    let p = b.plan();
+    let days = fuel::of_day_plan(&p);
+    // (not on a server: as the company knew it)
+    assert_eq!(fuel::level_at(&b.c, &days, id, 480), 1.0);
+    b.c.online.on_server = true;
+    let p = b.plan();
+    let days = fuel::of_day_plan(&p);
+    // tour 2: the depot run and the trips, 8 km each; by 400 the run and the trip of 360 - 390,
+    // nothing yet of the one leaving at 400
+    let ai = fuel::ai_km(&b.c, &days, id, i32::MIN, 400);
+    assert!((ai - 16.0).abs() < 1e-9, "{ai}");
+    assert!((fuel::level_at(&b.c, &days, id, 400) - (1.0 - 16.0 * per_km)).abs() < 1e-9);
+    // halfway through the trip of 400 - 430
+    assert!((fuel::ai_km(&b.c, &days, id, i32::MIN, 415) - 20.0).abs() < 1e-9);
+    // a long day of it: never below the reserve
+    b.c.fleet[0].fuel = 0.06;
+    assert_eq!(fuel::level_at(&b.c, &days, id, 480), fuel::RESERVE);
+    b.c.fleet[0].fuel = 1.0;
+    // Jan takes the duty: his game starts the bus with what the AI left it at the first trip
+    // (the depot run, 8 km) - and its odometer with what the AI drove it today
+    let km = b.c.fleet[0].km;
+    let duty = snap(&ask(&mut b, "jan", "hello", |_| {})).duties[0].duty.clone();
+    assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()))["ok"], true);
+    let v = ask(&mut b, "jan", "start", |r| r.duty = Some(duty.clone()));
+    let st: DriveStart = serde_json::from_value(v["start"].clone()).unwrap_or_else(|e| panic!("{e}: {v}"));
+    assert_eq!(st.fuel, Some(1.0), "nothing driven before its depot run at 350");
+    assert_eq!(st.km, Some(km));
+    // his first trip: 70 % left at its arrival (390); the AI drives nothing of his trips after it
+    let v = ask(&mut b, "jan", "report", |r| {
+        r.duty = Some(duty.clone());
+        r.trips = vec![TripRun { fuel: Some(0.7), ..run(360, 30, 0) }];
+    });
+    assert_eq!(v["taken"].as_u64(), Some(1), "{v}");
+    assert_eq!((b.c.fleet[0].fuel, b.c.fleet[0].fuel_at), (0.7, Some(390)));
+    let p = b.plan();
+    let days = fuel::of_day_plan(&p);
+    assert_eq!(fuel::level_at(&b.c, &days, id, 470), 0.7, "his trips are his game's to tell");
+    // the night fills it
+    close(&mut b);
+    assert_eq!((b.c.fleet[0].fuel, b.c.fleet[0].fuel_at), (1.0, None));
 }
 
 /// The boss's day closed: its report, what the modelled trips brought (fares, not measured).
