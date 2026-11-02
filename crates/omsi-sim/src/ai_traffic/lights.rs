@@ -3,6 +3,11 @@
 
 use super::*;
 
+/// (NexiconDK, 2 November 2026) How long a light may show yellow or red-and-yellow before its
+/// program is taken for stuck (s): those last a few seconds, not the three minutes of a light
+/// cars wait at (`unstick_lights`).
+pub const PASSING_STUCK: f32 = 20.0;
+
 impl TrafficSim {
     pub fn red_ahead(&self, i: usize) -> Option<f32> {
         let st = &self.cars[i].state;
@@ -207,7 +212,12 @@ impl TrafficSim {
                 }
                 e.1 += dt;
                 let passing = matches!(TrafficLightController::aspect(s), Aspect::Yellow | Aspect::RedYellow);
-                if e.1 >= self.unstick_lights && (passing || waiting.contains(&(ci, li))) {
+                // (NexiconDK, 2 November 2026: yellow or red-and-yellow lasts a few seconds - one
+                // that stands longer is stuck after `PASSING_STUCK`, not three minutes; a light
+                // whose program is yellow all through, a flasher, is no stuck one)
+                let flasher = c.lights[li].iter().all(|p| matches!(TrafficLightController::aspect(p.0), Aspect::Yellow | Aspect::RedYellow | Aspect::Dark));
+                let limit = if passing { self.unstick_lights.min(PASSING_STUCK) } else { self.unstick_lights };
+                if e.1 >= limit && ((passing && !flasher) || waiting.contains(&(ci, li))) {
                     stuck.push((ci, li, s, e.1));
                 }
             }
@@ -219,7 +229,8 @@ impl TrafficSim {
             }
             done.push(ci);
             let (x, y) = self.light_place((ci, li));
-            log::warn!("traffic light program {ci} at ({x:.0}, {y:.0}): light {li} showed {:?} ({s}) for {t:.0} s - the program starts again", TrafficLightController::aspect(s));
+            let what = self.lights.get(ci).map(|c| c.describe()).unwrap_or_default();
+            log::warn!("traffic light program {ci} at ({x:.0}, {y:.0}): light {li} showed {:?} ({s}) for {t:.0} s - the program starts again. {what}", TrafficLightController::aspect(s));
             if let Some(c) = self.lights.get_mut(ci) {
                 c.restart();
                 c.start(self.day_time);

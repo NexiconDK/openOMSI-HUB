@@ -494,7 +494,10 @@ impl World {
             let known = numbers.get(&o.id).copied();
             Some(known.unwrap_or_else(|| {
                 let program = ot.sco.traffic_lights.iter().map(|l| (l.phases.iter().map(|p| (p.state, p.duration)).collect(), l.approach_dist)).collect();
-                let c = TrafficLightController::from_program(program, ot.sco.traffic_lights_group, &ot.sco.traffic_light_stop, &ot.sco.traffic_light_jump);
+                let mut c = TrafficLightController::from_program(program, ot.sco.traffic_lights_group, &ot.sco.traffic_light_stop, &ot.sco.traffic_light_jump);
+                // (NexiconDK: for the log - which crossing, which light)
+                c.label = format!("{} (object {})", ot.sco.path.file_name().map(|f| f.to_string_lossy().to_string()).unwrap_or_default(), o.id);
+                c.names = ot.sco.traffic_lights.iter().map(|l| l.name.clone()).collect();
                 // (one program per owning object: the next number is the count so far; handed
                 // over under the lock, so the programs arrive in the order of their numbers)
                 let idx = numbers.len();

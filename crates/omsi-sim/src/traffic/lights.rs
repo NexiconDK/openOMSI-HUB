@@ -53,12 +53,16 @@ pub struct TrafficLightController {
     /// the clock has moved past its source time.
     rewound: Option<usize>,
     started: bool,
+    /// (NexiconDK) Where it comes from, for the log: the crossing object's file and its id, and
+    /// its lights' names.
+    pub label: String,
+    pub names: Vec<String>,
 }
 
 impl TrafficLightController {
     pub fn new(lights: Vec<Vec<(i32, f32)>>, cycle: f32) -> TrafficLightController {
         let n = lights.len();
-        TrafficLightController { lights, cycle, offset: 0.0, approach: vec![None; n], stops: Vec::new(), time: 0.0, request: vec![false; n], held: false, passed: Vec::new(), rewound: None, started: false }
+        TrafficLightController { lights, cycle, offset: 0.0, approach: vec![None; n], stops: Vec::new(), time: 0.0, request: vec![false; n], held: false, passed: Vec::new(), rewound: None, started: false, label: String::new(), names: Vec::new() }
     }
 
     /// From the `[traffic_light]` program of a crossing object: (per light: name, phases
@@ -100,6 +104,16 @@ impl TrafficLightController {
         self.held = false;
         self.passed.clear();
         self.rewound = None;
+    }
+
+    /// (NexiconDK) What the log says of the program now: where its clock stands, whether a stop
+    /// point holds it, who asks, and its stop and jump points (light, time, on a request or
+    /// without one, to where).
+    pub fn describe(&self) -> String {
+        let name = |i: usize| self.names.get(i).map(|n| n.trim().to_string()).filter(|n| !n.is_empty()).unwrap_or_else(|| i.to_string());
+        let asks: Vec<String> = (0..self.request.len()).filter(|&i| self.request[i]).map(name).collect();
+        let points: Vec<String> = self.stops.iter().map(|p| format!("{}@{}{}{}", name(p.light), p.time, if p.if_request { " if nobody asks" } else { " while asked" }, p.jump_to.map(|t| format!(" -> {t}")).unwrap_or_else(|| " stop".into()))).collect();
+        format!("{}: clock {:.1} of {:.0} s{}, asking [{}], points [{}]", if self.label.is_empty() { "?" } else { &self.label }, self.time, self.cycle_len(), if self.held { " (held)" } else { "" }, asks.join(", "), points.join("; "))
     }
 
     /// Request distance of light `i` (m).

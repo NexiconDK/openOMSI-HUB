@@ -240,16 +240,17 @@ fn a_light_that_never_turns_green_is_taken_for_out_of_order() {
 }
 
 /// Omsi-Hub: a program that stands in yellow is started again once it has shown it for
-/// `unstick_lights` seconds, cars or none.
+/// `PASSING_STUCK` seconds (NexiconDK, 2 November 2026: not the three minutes of
+/// `unstick_lights`), cars or none.
 #[test]
 fn a_program_stuck_in_yellow_starts_again() {
     let f = Fixture::new();
     let (net, _) = crossroads(Build::default());
     let mut t = traffic(&f, net);
-    t.unstick_lights = 30.0;
+    t.unstick_lights = 180.0;
     // held at a stop point at 5 s, light 0 yellow there, nobody to ask
     t.lights[0] = TrafficLightController::from_program(vec![(vec![(6, 2.0), (9, 10.0), (0, 10.0)], None), (vec![(0, 22.0)], None)], Some(22.0), &[[0.0, 5.0, 1.0]], &[]);
-    for _ in 0..(20.0 / super::fixed_step::SIM_DT) as usize {
+    for _ in 0..(15.0 / super::fixed_step::SIM_DT) as usize {
         t.tick(super::fixed_step::SIM_DT, None);
     }
     assert_eq!(t.lights[0].state(0), 9, "stands in yellow");
@@ -259,4 +260,20 @@ fn a_program_stuck_in_yellow_starts_again() {
         green |= t.lights[0].state(0) == 6;
     }
     assert!(green, "the program started again and showed green");
+}
+
+/// (NexiconDK) A light whose program is yellow all through - a flasher - is no stuck one.
+#[test]
+fn a_yellow_flasher_is_not_started_again() {
+    let f = Fixture::new();
+    let (net, _) = crossroads(Build::default());
+    let mut t = traffic(&f, net);
+    t.unstick_lights = 180.0;
+    t.lights[0] = TrafficLightController::from_program(vec![(vec![(9, 1.0), (12, 1.0)], None), (vec![(0, 2.0)], None)], Some(2.0), &[[0.0, 0.5, 1.0]], &[]);
+    let time = |t: &TrafficSim| t.lights[0].time;
+    for _ in 0..(60.0 / super::fixed_step::SIM_DT) as usize {
+        t.tick(super::fixed_step::SIM_DT, None);
+    }
+    assert_eq!(t.lights[0].state(0), 9);
+    assert!((time(&t) - 0.5).abs() < 1e-6, "still held where it stood: {}", time(&t));
 }
