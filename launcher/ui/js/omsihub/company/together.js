@@ -119,13 +119,13 @@ function FreeDrive({ v, ask }) {
     }
     ask();
   };
-  const row = (b, out) => html`<div class="tg-duty trip">
+  const row = (b, out) => html`<div class="tg-duty trip freebus">
     <${Chip} number=${b.number} />
     <div class="what"><b class="cut">${b.name}</b><span class="dim cut">${b.km}  ·  ${b.use}</span></div>
     <span class=${'state cut t-' + b.tone} title=${w.fuel}>${b.fuel_text}</span>
     <span class="state cut t-soft">${b.busy || b.free}</span>
     <span class="acts">${out
-      ? html`<span class="dim cut">${w.out}</span>`
+      ? html`<span class="dim">${w.out}</span>`
       : html`<${Btn} kind=${b.busy ? '' : 'primary'} icon="play_arrow" label=${b.busy ? w.busy : w.take} disabled=${!!b.busy || f.driving} onClick=${() => take(b)} />`}</span>
   </div>`;
   return html`<div class="tg-cols one"><div class="co-scroll tg-main">

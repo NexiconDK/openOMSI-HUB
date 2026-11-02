@@ -295,6 +295,10 @@
 .tg-trip-filter .co-select .hub-icon { position: absolute; right: 8px; pointer-events: none; color: var(--hub-text-dim); }
 .tg-trip-filter .go { margin-left: auto; display: flex; }
 .tg-duty.trip .state { text-align: right; }
+/* (NexiconDK, 2 November 2026) "Free drive": the bus, its tank, how long it is free, its button -
+   a column more than a trip's row */
+.tg-duty.freebus { grid-template-columns: 44px minmax(0, 1fr) 64px minmax(0, 190px) 190px; }
+.tg-duty.freebus .acts .dim { font-size: var(--co-note); text-align: right; line-height: 1.35; }
 
 /* (30 October 2026) The loading screen while a map's world starts on the server (`together.js`'s
    `WorldLoading`): the map, what it loads, a bar against the last time's load (sliding when the
