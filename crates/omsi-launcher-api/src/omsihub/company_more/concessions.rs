@@ -411,7 +411,22 @@ fn requirements(c: &Company, t: &Tender, week: Option<Week>) -> Value {
         row("Diesel or electric", tr("Bid with diesel buses: the contract runs two weeks. Bid with electric buses: it runs a month, and every tour is run with an electric bus.")),
     ];
     let from = t.market.as_ref().map(|m| m.from.clone()).filter(|f| !f.is_empty()).unwrap_or_else(|| dates::add(&ck::date_of(t.closes_at), 1));
-    let tender = vec![
+    // (NexiconDK, 3 November 2026: the term's last day and the next tender's days - by the buses
+    // the contract is won with; a special service's: its event's last day, out again with its next)
+    let event_until = t.market.as_ref().filter(|m| !m.event.is_empty()).map(|m| m.until.clone()).filter(|u| dates::parse(u).is_some());
+    let ends: Vec<Value> = match event_until {
+        Some(until) => vec![row("The term ends", trf("%{date}, the event's last day", &[("date", &day_label(&until))])), row("Out to tender again", tr(co_tenders::EVENT_LINE))],
+        None => [(Drive::Diesel, "Ends with diesel buses"), (Drive::Electric, "Ends with electric buses")]
+            .into_iter()
+            .map(|(d, label)| {
+                let end = cn::server_term(d, &from);
+                let next = dates::add(&end, 1);
+                let (open, close) = (dates::add(&next, -co_tenders::RENEW_OPENS), dates::add(&next, -co_tenders::RENEW_DECIDED));
+                row(label, trf("%{end} · out to tender again from %{open} to %{close}", &[("end", &day_label(&end)), ("open", &day_label(&open)), ("close", &day_label(&close))]))
+            })
+            .collect(),
+    };
+    let mut tender = vec![
         row("Bidding", trf("Three days: from %{open} to %{close}", &[("open", &when(c, t.opens_at)), ("close", &when(c, t.closes_at))])),
         row("The term", trf("From %{date}, without extension", &[("date", &day_label(&from))])),
         row("Renewal", tr("Six days before the term ends the line goes out to tender again, decided three days before it: the winner has three days to make ready.")),
@@ -419,6 +434,7 @@ fn requirements(c: &Company, t: &Tender, week: Option<Week>) -> Value {
         row("The cap", trf("%{amount}: an ask above it does not count", &[("amount", &money(t, t.reference))])),
         row("Payment", tr("Asks are a price a timetable hour. The contract pays it each day for the timetable hours run: a journey not run is not paid.")),
     ];
+    tender.splice(2..2, ends);
     let f = c.online.fines.unwrap_or_else(|| server_fines::of_folder(&super::super::data()));
     let kr = |x: f64| eur(Fines::cents(x));
     let fines = vec![
@@ -809,4 +825,46 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {
         }
         _ => return None,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// (NexiconDK, 3 November 2026) A tender of the map's market says in its contract's
+    /// requirements when the term ends and when the line is out to tender again - with diesel
+    /// buses two weeks, with electric ones a month; a special service's, its event's last day.
+    #[test]
+    fn the_requirements_say_when_the_term_ends_and_the_next_tender() {
+        let mut c = omsi_launcher_lib::company::found(&omsi_launcher_lib::company::Founding { name: "Umove".into(), date: "2024-03-04".into(), ..Default::default() }, "x");
+        c.online.fines = Some(Default::default());
+        let mut t: Tender = serde_json::from_value(json!({
+            "id": 1, "line": "5", "number": "5", "caption": "", "offered": "2024-03-04", "closes": "2024-03-07",
+            "weeks": 2, "day_tours": 4, "day_km": 300.0,
+            "market": { "key": "grundorf", "id": 1, "from": "2024-03-10" },
+        }))
+        .unwrap();
+        let rows = |t: &Tender| -> Vec<(String, String)> {
+            let r = requirements(&c, t, None);
+            serde_json::from_value(r["groups"][1]["rows"].clone()).unwrap()
+        };
+        let got = rows(&t);
+        let of = |label: &str| got.iter().find(|(k, _)| k == label).map(|x| x.1.clone()).unwrap_or_default();
+        // diesel: 10 to 23 March, the next term from the 24th - out from the 18th, decided the 21st
+        let diesel = of("Ends with diesel buses");
+        assert!(diesel.contains("23 Mar 2024") && diesel.contains("18 Mar 2024") && diesel.contains("21 Mar 2024"), "{diesel}");
+        // electric: 10 March to 9 April, the next from the 10th - out from the 4th, decided the 7th
+        let electric = of("Ends with electric buses");
+        assert!(electric.contains("9 Apr 2024") && electric.contains("4 Apr 2024") && electric.contains("7 Apr 2024"), "{electric}");
+        assert_eq!(got.iter().position(|(k, _)| k == "Ends with diesel buses"), Some(2), "after the term's first day");
+        // a special service: its event's last day
+        if let Some(m) = t.market.as_mut() {
+            m.event = "Match day".into();
+            m.until = "2024-03-12".into();
+        }
+        let got = rows(&t);
+        assert!(got.iter().any(|(k, v)| k == "The term ends" && v.contains("12 Mar 2024")));
+        assert!(got.iter().any(|(k, v)| k == "Out to tender again" && v == co_tenders::EVENT_LINE));
+        assert!(!got.iter().any(|(k, _)| k == "Ends with diesel buses"));
+    }
 }
