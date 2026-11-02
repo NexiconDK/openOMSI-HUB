@@ -138,7 +138,21 @@ pub struct SoundSet {
     /// loops its revolutions and throttle), and every read was a lookup by name. Made at
     /// the first update.
     vars: Option<(Vec<String>, Vec<Option<f32>>)>,
+    /// (NexiconDK, 2 November 2026) The `(T.F.)` files being read in the background, by
+    /// trigger: played at the first update after they are in (see `play_file_trigger`).
+    waiting_files: Vec<WaitingFile>,
 }
+
+/// A `(T.F.)` file being read: the trigger it plays on, its path, since when.
+struct WaitingFile {
+    trigger: String,
+    path: std::path::PathBuf,
+    since: std::time::Instant,
+}
+
+/// How long a `(T.F.)` file may take to be read before it is given up (s): an announcement
+/// after that is no longer the stop's.
+const FILE_WAIT_MOST: f32 = 4.0;
 
 /// The file a `(T.F.)` trigger names, as Omsi.exe opens it (0x74f2e8 through 0x7eed78): the
 /// characters a Windows file name cannot have are `%` in it, the folders' `\` and a drive's
@@ -269,6 +283,7 @@ impl SoundSet {
             muffled: false,
             parts: Vec::new(),
             vars: None,
+            waiting_files: Vec::new(),
         }
     }
 
@@ -392,6 +407,14 @@ impl SoundSet {
     /// Play the sound of a `(T.F.trigger)` event: the entry listening to `trigger` loads
     /// `file` (relative to the sound folder) into a new buffer and plays it as if its
     /// trigger had fired (0x74f2e8).
+    ///
+    /// (NexiconDK, 2 November 2026) Omsi.exe - and openOMSI before - read and decoded the
+    /// file there and then, in the frame: the announcement of each next stop is a file not
+    /// read before, and the game stood still for the time it took (a `.wav` that is an MP3,
+    /// a map's folder on a slow disk). It is read in the background now, as a vehicle's
+    /// sounds coming into earshot are (`AudioEngine::clips_ready`), and plays at the first
+    /// update after it is in - a few hundredths of a second later; one read before plays at
+    /// once. Nothing is read for a set none of whose entries listens to `trigger`.
     pub fn play_file_trigger(
         &mut self,
         engine: &AudioEngine,
@@ -400,12 +423,44 @@ impl SoundSet {
         var: &dyn Fn(&str) -> Option<f32>,
         object_to_world: &Mat4,
     ) {
-        if !engine.enabled || file.trim().is_empty() {
+        if !engine.enabled || file.trim().is_empty() || !self.listens_to(trigger) {
             return;
         }
         let path = omsi_cfg::resolve_path(&self.dir, &file_trigger_name(file));
-        let Some(clip) = engine.load_clip(&path) else {
-            warn_missing_once(trigger, &path);
+        // (a newer file for the trigger takes the place of one still being read)
+        self.waiting_files.retain(|w| !w.trigger.eq_ignore_ascii_case(trigger));
+        if engine.clips_ready(std::slice::from_ref(&path)) {
+            self.play_file_now(engine, trigger, &path, var, object_to_world);
+        } else {
+            self.waiting_files.push(WaitingFile { trigger: trigger.to_string(), path, since: std::time::Instant::now() });
+        }
+    }
+
+    /// Whether an entry of the set plays on `trigger`.
+    fn listens_to(&self, trigger: &str) -> bool {
+        self.sounds.iter().any(|s| s.def.triggers.iter().any(|d| d.trim().eq_ignore_ascii_case(trigger)))
+    }
+
+    /// The `(T.F.)` files read in the background since: played, those that are in.
+    fn play_waiting_files(&mut self, engine: &AudioEngine, var: &dyn Fn(&str) -> Option<f32>, object_to_world: &Mat4) {
+        if self.waiting_files.is_empty() {
+            return;
+        }
+        for w in std::mem::take(&mut self.waiting_files) {
+            if engine.clips_ready(std::slice::from_ref(&w.path)) {
+                self.play_file_now(engine, &w.trigger, &w.path, var, object_to_world);
+            } else if w.since.elapsed().as_secs_f32() < FILE_WAIT_MOST {
+                self.waiting_files.push(w);
+            } else {
+                log::warn!("sound {} for (T.F.{}) took too long to read: not played", w.path.display(), w.trigger);
+            }
+        }
+    }
+
+    /// Play `path` (in the clips' cache now) on the entries listening to `trigger`.
+    fn play_file_now(&mut self, engine: &AudioEngine, trigger: &str, path: &Path, var: &dyn Fn(&str) -> Option<f32>, object_to_world: &Mat4) {
+        let Some(clip) = engine.load_clip(path) else {
+            warn_missing_once(trigger, path);
             return;
         };
         let ctx = self.ctx(engine);
@@ -640,6 +695,8 @@ impl SoundSet {
                 }
             }
         }
+        // (an announcement read in the background since the last frame)
+        self.play_waiting_files(engine, var, object_to_world);
     }
 
     /// How many `[sound]`/`[loopsound]` entries the configuration has.
@@ -742,6 +799,7 @@ impl SoundSet {
     }
 
     pub fn stop_all(&mut self, engine: &AudioEngine) {
+        self.waiting_files.clear();
         for s in self.sounds.iter_mut() {
             if let Some(id) = s.voice.take() {
                 engine.stop(id);
@@ -1168,7 +1226,7 @@ mod tests {
             ..Default::default()
         };
         let sounds = (0..3).map(|_| RuntimeSound::new(entry.clone(), Some(clip.clone()))).collect();
-        let mut set = SoundSet { sounds, master: 1.0, dir: Default::default(), inside: false, amount: 0.0, ai: false, listener_vehicle: false, muffled: false, parts: Vec::new(), vars: None };
+        let mut set = SoundSet { sounds, master: 1.0, dir: Default::default(), inside: false, amount: 0.0, ai: false, listener_vehicle: false, muffled: false, parts: Vec::new(), vars: None, waiting_files: Vec::new() };
         let reads = std::cell::Cell::new(0);
         let var = |n: &str| {
             reads.set(reads.get() + 1);
@@ -1194,7 +1252,7 @@ mod tests {
         assert_eq!(eval(&ctx(2, true), hit.clone(), &now).gain, 0.0, "read at the frame's end: silent");
         let fired = |n: &str| at_fire("ev_doorhitclose_0", n).or_else(|| now(n));
         assert_eq!(eval(&ctx(2, true), hit.clone(), &fired).gain, 1.0);
-        let set = SoundSet { sounds: vec![RuntimeSound::new(hit.clone(), None)], master: 1.0, dir: Default::default(), inside: true, amount: 1.0, ai: false, listener_vehicle: true, muffled: false, parts: Vec::new(), vars: None };
+        let set = SoundSet { sounds: vec![RuntimeSound::new(hit.clone(), None)], master: 1.0, dir: Default::default(), inside: true, amount: 1.0, ai: false, listener_vehicle: true, muffled: false, parts: Vec::new(), vars: None, waiting_files: Vec::new() };
         assert_eq!(set.curve_triggers(), vec!["ev_doorhitclose_0".to_string()]);
     }
 
@@ -1218,6 +1276,66 @@ mod tests {
         assert_eq!(c.eval_holding(&mut s, &stopped, &Mat4::IDENTITY, true).gain, 1.0, "the leaf has stopped: still playing out");
         s.fired_curves = None;
         assert!((c.eval_holding(&mut s, &slow, &Mat4::IDENTITY, true).gain - 0.5).abs() < 1e-4, "fired again, slower");
+    }
+
+    /// (NexiconDK) An announcement not read before is read in the background: the frame it is
+    /// asked for in does not wait for the disk, and it plays at the first update after it is in;
+    /// asked for again, it plays at once. A set none of whose entries listens reads nothing.
+    #[test]
+    fn an_announcement_is_read_in_the_background_and_played_when_it_is_in() {
+        let _g = globals();
+        let root = std::env::temp_dir().join(format!("openomsi-announce-bg-{}", std::process::id()));
+        let sound = root.join("Vehicles").join("Bus").join("Sound");
+        std::fs::create_dir_all(&sound).unwrap();
+        // a second of 8 kHz mono silence
+        let samples = 8000u32;
+        let mut wav = Vec::new();
+        wav.extend_from_slice(b"RIFF");
+        wav.extend_from_slice(&(36 + samples * 2).to_le_bytes());
+        wav.extend_from_slice(b"WAVEfmt ");
+        wav.extend_from_slice(&16u32.to_le_bytes());
+        wav.extend_from_slice(&1u16.to_le_bytes());
+        wav.extend_from_slice(&1u16.to_le_bytes());
+        wav.extend_from_slice(&8000u32.to_le_bytes());
+        wav.extend_from_slice(&16000u32.to_le_bytes());
+        wav.extend_from_slice(&2u16.to_le_bytes());
+        wav.extend_from_slice(&16u16.to_le_bytes());
+        wav.extend_from_slice(b"data");
+        wav.extend_from_slice(&(samples * 2).to_le_bytes());
+        wav.extend(std::iter::repeat_n(0u8, samples as usize * 2));
+        std::fs::write(sound.join("Rathaus.wav"), &wav).unwrap();
+        let e = AudioEngine::silent();
+        let entry = SoundEntry { file: "0".into(), volume: 1.0, triggers: vec!["Announce".into()], ..Default::default() };
+        let mut set = SoundSet {
+            sounds: vec![RuntimeSound::new(entry, None)],
+            master: 1.0,
+            dir: sound.clone(),
+            inside: true,
+            amount: 1.0,
+            ai: false,
+            listener_vehicle: true,
+            muffled: true,
+            parts: Vec::new(),
+            vars: None,
+            waiting_files: Vec::new(),
+        };
+        let none = |_: &str| None;
+        set.play_file_trigger(&e, "Other", "Rathaus.wav", &none, &Mat4::IDENTITY);
+        assert!(set.waiting_files.is_empty(), "no entry listens: nothing read");
+        set.play_file_trigger(&e, "Announce", "Rathaus.wav", &none, &Mat4::IDENTITY);
+        assert!(set.sounds[0].voice.is_none(), "not played in the frame it is asked for");
+        assert_eq!(set.waiting_files.len(), 1);
+        let start = std::time::Instant::now();
+        while set.sounds[0].voice.is_none() && start.elapsed().as_secs() < 10 {
+            std::thread::sleep(std::time::Duration::from_millis(5));
+            set.update(&e, &none, &Mat4::IDENTITY, &[]);
+        }
+        assert!(set.sounds[0].voice.is_some(), "played once it is in");
+        assert!(set.waiting_files.is_empty());
+        set.sounds[0].voice = None;
+        set.play_file_trigger(&e, "Announce", "Rathaus.wav", &none, &Mat4::IDENTITY);
+        assert!(set.sounds[0].voice.is_some(), "read before: played at once");
+        let _ = std::fs::remove_dir_all(&root);
     }
 
     /// The stock IBIS announces Spandau's "Falkenseer Ch/Stadtrandstr" with the file
