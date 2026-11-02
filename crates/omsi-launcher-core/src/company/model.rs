@@ -487,6 +487,11 @@ pub struct Vehicle {
     /// since the depot filled it at night): what the AI drives it after uses it (`fuel::level_at`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fuel_at: Option<i32>,
+    /// (NexiconDK, Bus Company Online: faults) Its scripts' faults as a player's drive left them
+    /// (variable, value): set again in the next drive while a fault of its dashboard is open with
+    /// the workshop (`bus_faults`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub fault_state: Vec<(String, f32)>,
 }
 
 fn seventy_five() -> f64 {

@@ -140,6 +140,11 @@ pub(crate) struct Player {
     /// Which vehicle this is, for as long as the session runs (the people riding in one
     /// the player left know it by this, see `Humans::player_bus_swapped`).
     pub(crate) uid: u64,
+    /// (NexiconDK, Bus Company Online, 2 November 2026) A company's bus (`--company-bus`): its
+    /// scripts' faults that stay on while its engine runs, and the defects the driver reported
+    /// (`crew::DefectKind` keys) - the company's workshop gets them.
+    pub(crate) faults: Option<omsi_sim::vehicle::faults::FaultWatch>,
+    pub(crate) reported: Vec<String>,
     pub(crate) vehicle: omsi_sim::VehicleInstance,
     pub(crate) render: scene::VehicleRender,
     /// Renders of the coupled parts, parallel to `vehicle.trailers`.

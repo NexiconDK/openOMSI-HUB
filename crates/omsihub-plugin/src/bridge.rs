@@ -309,6 +309,11 @@ pub struct Report {
     pub span: Option<f64>,
     pub boarded: Option<i64>,
     pub fuel: Option<f64>,
+    /// (NexiconDK, a company's bus) Its faults that stayed on with the engine running, its scripts'
+    /// faults as they stand, the defects the driver reported (`bus.faults`).
+    pub faults: Vec<String>,
+    pub fault_state: Vec<(String, f32)>,
+    pub reported: Vec<String>,
 }
 
 impl Report {

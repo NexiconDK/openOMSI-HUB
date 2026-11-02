@@ -287,6 +287,20 @@ it is out once its variable has gone (90 % or more of) as far from where it rest
 and stood still there for 0.4 s - whichever way it turns or slides. Timetable buses, and
 prams, never wait for one.
 
+## A bus's faults (Bus Company Online)
+
+On Bus Company Online's server a company's bus keeps its faults from one drive to the next until
+the company's workshop puts them right. Its faults are its scripts' variables whose names have
+`fail`, `error`, `awaria`, `defekt`/`defect`, `fehler`, `stoer`, `malfunction` or `usterk` in them
+(any case): their values at the end of a drive are kept with the bus and set again when the next
+drive starts, after the scripts' first frames - the counters towards a fault too
+(`EDC_Error_dist`). Those that are a fault themselves (not a counter: not `dist`, `count`,
+`toleranz`, `anzahl`, `time`, `pixel`, `scroll`, `blink`, and not `pressure`, the air before the
+compressor fills it) and stay at a value other than 0 for two minutes with the engine running go
+to the workshop as a defect of the dashboard, by the part the name says (`door` Doors, `ecas`
+Suspension, `edc`/`engine` Engine, `elec`/`battery` Electrics, ...). Name a fault's variable so,
+and keep a warning that only goes with the start out of those words, to have it kept.
+
 ## Ticket validators: one by every door
 
 OMSI 2 uses one `[stamper]` of a `passengercabin.cfg`, the last one written. openOMSI keeps

@@ -96,6 +96,17 @@ pub(crate) struct Args {
     /// behind it as an extra bus.
     #[arg(long)]
     pub(crate) company_lines: Option<String>,
+    /// (NexiconDK, Bus Company Online: faults) The company's bus driven (its id in the fleet): its
+    /// faults that stay on are watched, the driver may report a defect from the game menu.
+    #[arg(long)]
+    pub(crate) company_bus: Option<u32>,
+    /// (NexiconDK) The bus's faults as the company keeps them until its workshop puts them right
+    /// (`name=value`, `|` between them): set again at the start.
+    #[arg(long)]
+    pub(crate) fault_state: Option<String>,
+    /// (NexiconDK) The bus's defects not repaired yet (`|` between them): told at the start.
+    #[arg(long)]
+    pub(crate) bus_defects: Option<String>,
     /// Control preset: `simple` (W/S/A/D and Up/Down drive, Left/Right switch the interior
     /// camera as in OMSI; the default), `wasd`,
     /// `arrows` (leaves W, S and D to the jobs `Inputs/keyboard.cfg` gives them - wipers,
@@ -392,6 +403,11 @@ impl Args {
         self.company_lines.as_deref().is_some_and(|l| !l.trim().is_empty())
     }
 
+    /// (NexiconDK) `--fault-state` as name and value.
+    pub(crate) fn fault_states(&self) -> Vec<(String, f32)> {
+        self.fault_state.as_deref().unwrap_or("").split('|').filter_map(|kv| kv.split_once('=')).filter_map(|(k, v)| v.trim().parse::<f32>().ok().filter(|v| v.is_finite()).map(|v| (k.trim().to_string(), v))).filter(|(k, _)| !k.is_empty()).collect()
+    }
+
     pub(crate) fn is_resuming(&self) -> bool {
         self.situation.is_some()
             || self.situation_odometer_km.is_some()
@@ -428,5 +444,13 @@ mod free_drive_tests {
         assert!(mine.company_free_drive());
         assert!(mine.lists_line("linie5") && mine.lists_line("N3") && !mine.lists_line("Linie14"));
         assert_eq!(mine.garage_trip.as_deref(), Some("Depot-A"));
+    }
+
+    /// (NexiconDK, faults) The bus's faults as the company keeps them: `name=value`, `|` between.
+    #[test]
+    fn the_buss_faults_come_as_names_and_values() {
+        let a = Args::parse_from(["game", "--fault-state", "door_failure=1| EDC_Error_dist=812.5|bad|x=NaN|=3"]);
+        assert_eq!(a.fault_states(), vec![("door_failure".to_string(), 1.0), ("EDC_Error_dist".to_string(), 812.5)]);
+        assert!(Args::parse_from(["game"]).fault_states().is_empty());
     }
 }

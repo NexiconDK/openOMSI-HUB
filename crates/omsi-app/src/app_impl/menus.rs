@@ -327,6 +327,7 @@ impl App {
             "dest" => self.open_list(crate::game_lists::ListKind::Destinations),
             "hof" => self.open_list(crate::game_lists::ListKind::Hofs),
             "tplist" => self.open_list(crate::game_lists::ListKind::Spots),
+            "defects" => self.open_list(crate::game_lists::ListKind::Defects),
             "editor" => {
                 self.close_game_menu();
                 self.toggle_editor();

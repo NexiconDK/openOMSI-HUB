@@ -281,6 +281,9 @@ fn post_free_drive(world: &str, name: &str, company: &str, vehicle: u32, summary
         span: summary.span.unwrap_or(0.0),
         passengers: summary.boarded.unwrap_or(0).clamp(0, 5000) as i32,
         fuel: summary.fuel,
+        faults: summary.faults.clone(),
+        fault_state: summary.fault_state.clone(),
+        reported: summary.reported.clone(),
         ..Default::default()
     };
     let url = format!("{}/bco/trip", world.trim_end_matches('/'));
@@ -841,6 +844,10 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
         // and what is in its tank - not the game's own reading of a bus of that age)
         d.odometer_km = start.km;
         d.fuel_level = start.fuel;
+        // (NexiconDK: the bus's faults, kept by the company until its workshop puts them right)
+        d.company_bus = Some(start.vehicle).filter(|v| *v != 0);
+        d.fault_state = start.fault_state.clone();
+        d.bus_defects = start.defects.clone();
     }
     d.display_font = core::busfonts::BusFonts::load().font_for(&start.bus);
     d.set_vars = super::super::hub_more::setvars(&start.bus, &start.paint);
@@ -901,6 +908,9 @@ fn take_bus(args: &Value, p: &dyn Platform) -> Answer {
     d.lan_name = joined().as_ref().map(|j| j.me.name.clone());
     d.odometer_km = start.km;
     d.fuel_level = start.fuel;
+    d.company_bus = Some(vehicle);
+    d.fault_state = start.fault_state.clone();
+    d.bus_defects = start.defects.clone();
     d.display_font = core::busfonts::BusFonts::load().font_for(&start.bus);
     d.set_vars = super::super::hub_more::setvars(&start.bus, &start.paint);
     core::log_to_file(&format!("company session: {} takes bus {} ({}) out for a free drive, in the world at {world}", name, start.number, start.bus));

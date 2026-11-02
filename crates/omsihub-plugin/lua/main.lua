@@ -391,7 +391,9 @@ local function tell_drive()
   local d = trip.drive()
   if d.span < 1 then return end
   local fuel = fn("bus.fuel_level") and omsi.bus.fuel_level() or nil
-  report("drive", { metres = d.metres, seconds = d.moving, span = d.span, boarded = math.tointeger(d.boarded) or 0, fuel = fuel })
+  local fl = trip.faults() or {}
+  report("drive", { metres = d.metres, seconds = d.moving, span = d.span, boarded = math.tointeger(d.boarded) or 0, fuel = fuel,
+    faults = fl.faults, fault_state = fl.fault_state, reported = fl.reported })
 end
 
 omsi.on("frame", function(dt)

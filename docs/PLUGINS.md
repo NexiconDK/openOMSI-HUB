@@ -495,6 +495,7 @@ declared to call the function (a plain `.lua` file has them all).
 | `omsi.bus.electrics()` | boolean or nil | Whether the bus's electrics are on (the main switch). | 0.2.22 |
 | `omsi.bus.engine()` | running, rpm, electrics | The engine: whether it runs, its rpm (where the bus shows one) and whether the electrics are on. | 0.2.22 |
 | `omsi.bus.engine_running()` | boolean or nil | Whether the engine runs. | 0.2.22 |
+| `omsi.bus.faults()` | table or nil | A company's bus: `{held, state, reported}` - its faults that stayed on while its engine ran (the parts of the bus), its scripts' faults as they stand (`{name = value}`) and the defects the driver reported in the game menu (`nil`: not a company's bus). | 0.2.22 |
 | `omsi.bus.file()` | string or nil | The bus's `.bus` file, relative to the game folder. | 0.2.22 |
 | `omsi.bus.fuel()` | number or nil | The fuel in the tank, litres (the scripts' `engine_tank_content`). | 0.2.22 |
 | `omsi.bus.fuel_level()` | number or nil | How full the tank is, 0 (empty) to 1 (full): its fuel of what a full tank holds (`nil`: the bus does not tell). | 0.2.22 |

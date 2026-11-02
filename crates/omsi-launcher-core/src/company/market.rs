@@ -247,6 +247,7 @@ pub(crate) fn add_registered(c: &mut Company, bus: &MarketBus, reg: Registered, 
         built_auto: None,
         fuel: 1.0,
         fuel_at: None,
+        fault_state: Vec::new(),
     });
     id
 }

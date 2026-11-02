@@ -164,6 +164,8 @@ function M.finish(completed, delay, watch)
     local f = tonumber(omsi.bus.fuel_level())
     if f then run.fuel = math.min(math.max(f, 0), 1) end
   end
+  local fl = M.faults()
+  if fl then run.faults, run.fault_state, run.reported = fl.faults, fl.fault_state, fl.reported end
   -- (an empty list is written as `{}` by the JSON writer, which is no list: left out then)
   if #visits > 0 then run.visits = visits end
   if watch then
@@ -185,6 +187,19 @@ end
 
 function M.forget()
   cur = nil
+end
+
+-- (NexiconDK, Bus Company Online: a company's bus) its faults for the company's workshop: those
+-- that stayed on with the engine running, its scripts' faults as they stand ({name, value} each),
+-- the defects the driver reported - nil each where there is nothing
+function M.faults()
+  if not fn(omsi.bus, "faults") then return nil end
+  local f = omsi.bus.faults()
+  if type(f) ~= "table" then return nil end
+  local state = {}
+  for k, v in pairs(f.state or {}) do state[#state + 1] = { k, v } end
+  local function list(t) return (type(t) == "table" and #t > 0) and t or nil end
+  return { faults = list(f.held), fault_state = list(state), reported = list(f.reported) }
 end
 
 -- (NexiconDK, Bus Company Online: a free drive with a bus of a company) the whole drive so far:

@@ -637,6 +637,13 @@ impl PluginIo for Io<'_> {
     fn bus_fuel_level(&self) -> Option<f32> {
         self.veh().and_then(|v| v.fuel_level())
     }
+    fn bus_faults(&self) -> Option<(Vec<String>, Vec<(String, f32)>, Vec<String>)> {
+        let p = self.app()?.player.as_ref()?;
+        let w = p.faults.as_ref()?;
+        let mut held: Vec<String> = w.held().iter().map(|n| omsi_sim::vehicle::faults::readable(n)).collect();
+        held.dedup();
+        Some((held, p.vehicle.fault_state(), p.reported.clone()))
+    }
     fn bus_damage(&mut self) -> Option<(u32, f32, Option<f32>)> {
         let v = self.veh_mut()?;
         let minutes = v.repair_minutes().filter(|m| *m > 0.0);

@@ -406,6 +406,12 @@ pub struct DriveStart {
     pub garage: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub lines: Vec<String>,
+    /// (NexiconDK, faults) The bus's scripts' faults as the company keeps them, and its defects not
+    /// repaired yet (`bus_faults::at_start`): set again, and told, at the start.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub fault_state: Vec<(String, f32)>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub defects: Vec<String>,
 }
 
 fn is_zero(n: &usize) -> bool {
@@ -481,6 +487,8 @@ impl DriveStart {
             free: false,
             garage: None,
             lines: Vec::new(),
+            fault_state: Vec::new(),
+            defects: Vec::new(),
             vehicle: s.vehicle,
             km: s.km.filter(|k| k.is_finite() && *k >= 0.0),
             fuel: s.fuel.filter(|f| f.is_finite()).map(|f| f.clamp(0.0, 1.0)),

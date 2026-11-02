@@ -48,6 +48,7 @@ pub mod inbox;
 pub mod lateness;
 // (the control room and its drivers: a light CAD/AVL, docs/omsihub/MESSAGES.md)
 pub mod messages;
+pub mod bus_faults;
 pub mod fleetmap;
 pub mod free_drive;
 pub mod fuel;

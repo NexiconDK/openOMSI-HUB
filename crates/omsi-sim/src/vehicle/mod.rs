@@ -16,6 +16,7 @@ use std::sync::Arc;
 
 mod damage;
 mod engine_vars;
+pub mod faults;
 mod pax_vars;
 use engine_vars::Ev;
 pub use pax_vars::PaxVars;

@@ -104,7 +104,7 @@ pub fn chosen_game() -> Option<ChosenGame> {
 
 /// The arguments this launcher's game knows and openOMSI's own release does not, and whether
 /// each takes a value.
-pub const OWN_ARGS: &[(&str, bool)] = &[("--company", true), ("--duty-leg", true), ("--free-line", true), ("--relief", false), ("--drive-on", true), ("--odometer", true), ("--fuel-level", true), ("--garage-trip", true), ("--company-lines", true)];
+pub const OWN_ARGS: &[(&str, bool)] = &[("--company", true), ("--duty-leg", true), ("--free-line", true), ("--relief", false), ("--drive-on", true), ("--odometer", true), ("--fuel-level", true), ("--garage-trip", true), ("--company-lines", true), ("--company-bus", true), ("--fault-state", true), ("--bus-defects", true)];
 
 /// A command line without `OWN_ARGS`, for openOMSI's own release. A free drive along a line
 /// (`--free-line`) goes with its `--line` too: the line alone would be a duty of its first tour.
@@ -2024,6 +2024,15 @@ pub struct TripRun {
     /// tour) The drive's whole length (s; `seconds` the time its bus was moving).
     #[serde(skip_serializing_if = "is_zero_f64")]
     pub span: f64,
+    /// (NexiconDK, Bus Company Online: a company's bus) Its faults that stayed on with the engine
+    /// running (the parts of the bus), its scripts' faults as they stand (kept with the bus until
+    /// the workshop puts them right), the defects the driver reported (`crew::DefectKind` keys).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub faults: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub fault_state: Vec<(String, f32)>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub reported: Vec<String>,
 }
 
 fn is_zero_f64(n: &f64) -> bool {
@@ -3871,6 +3880,15 @@ pub struct Duty {
     pub garage_trip: Option<String>,
     #[serde(default)]
     pub company_lines: Vec<String>,
+    /// (NexiconDK, Bus Company Online: faults) The company's bus driven (its id), its scripts'
+    /// faults as the company keeps them and its defects not repaired yet (`--company-bus`,
+    /// `--fault-state`, `--bus-defects`).
+    #[serde(default)]
+    pub company_bus: Option<u32>,
+    #[serde(default)]
+    pub fault_state: Vec<(String, f32)>,
+    #[serde(default)]
+    pub bus_defects: Vec<String>,
     pub profile: Option<String>,
     /// LAN play: "host", or "join:<session code | ip[:port] | port | empty = search>".
     pub lan: Option<String>,
@@ -4024,6 +4042,10 @@ mod chosen_game_tests {
         let after = |k: &str| free.iter().position(|x| x == k).map(|i| free[i + 1].clone());
         assert_eq!((after("--garage-trip"), after("--company-lines")), (Some("Depot-A".into()), Some("Linie5|N3".into())));
         assert!(!without_own_args(&free).iter().any(|x| x.starts_with("--garage") || x.starts_with("--company-lines")));
+        // (a company's bus: its faults and its defects)
+        let bus = duty_args_for_root(&Duty { company_bus: Some(12), fault_state: vec![("door_failure".into(), 1.0), ("a|b".into(), 2.0)], bus_defects: vec!["Doors".into(), "Dashboard: Engine".into()], ..Duty::default() }, std::path::Path::new("test-omsi")).unwrap();
+        let after = |k: &str| bus.iter().position(|x| x == k).map(|i| bus[i + 1].clone());
+        assert_eq!((after("--company-bus"), after("--fault-state"), after("--bus-defects")), (Some("12".into()), Some("door_failure=1".into()), Some("Doors|Dashboard: Engine".into())));
     }
 }
 
@@ -4255,6 +4277,18 @@ fn duty_args_for_root(d: &Duty, root: &Path) -> Result<Vec<String>> {
     let lines: Vec<&str> = d.company_lines.iter().map(|l| l.trim()).filter(|l| !l.is_empty() && !l.contains('|')).collect();
     if !lines.is_empty() {
         a.extend(["--company-lines".into(), lines.join("|")]);
+    }
+    // (a company's bus: its faults, kept by the company until its workshop puts them right)
+    if let Some(id) = d.company_bus.filter(|id| *id != 0) {
+        a.extend(["--company-bus".into(), id.to_string()]);
+    }
+    let state: Vec<String> = d.fault_state.iter().filter(|(n, v)| v.is_finite() && !n.trim().is_empty() && !n.contains(['|', '='])).map(|(n, v)| format!("{}={v}", n.trim())).collect();
+    if !state.is_empty() {
+        a.extend(["--fault-state".into(), state.join("|")]);
+    }
+    let defects: Vec<String> = d.bus_defects.iter().map(|t| t.replace('|', "/").trim().to_string()).filter(|t| !t.is_empty()).take(8).collect();
+    if !defects.is_empty() {
+        a.extend(["--bus-defects".into(), defects.join("|")]);
     }
     let profile = d.profile.clone().filter(|p| !p.trim().is_empty()).unwrap_or_else(|| load_config().profile);
     if let Some(season) = d.season.as_deref().map(str::trim).filter(|x| !x.is_empty() && !x.eq_ignore_ascii_case("auto")) {

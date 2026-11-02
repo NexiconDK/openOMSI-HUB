@@ -831,6 +831,42 @@ fn a_player_takes_a_free_bus_out_and_his_drive_is_booked() {
     assert!(b.c.together.free_runs.is_empty() && b.c.together.free_drives.is_empty());
 }
 
+/// (NexiconDK, Bus Company Online: faults, 2 November 2026) A trip of a player's tells what is
+/// wrong with the bus: a fault of its dashboard that stayed on and a defect he reported go to the
+/// workshop, and the bus's scripts' faults go with it to the next drive - told and set again -
+/// until the workshop puts it right. Not on a company that is not on the server.
+#[test]
+fn a_buss_faults_go_to_the_workshop_and_stay_with_the_bus_until_it_is_repaired() {
+    use super::super::bus_faults;
+    let mut b = boss();
+    b.c.online.on_server = true;
+    b.c.cash += 1_000_000_00;
+    let id = b.c.fleet[0].id;
+    let duty = jan_drives(&mut b, &[]);
+    let jan = guest_no(&b, "jan");
+    let p = b.plan();
+    let run = TripRun { faults: vec!["Engine".into(), "Doors".into()], fault_state: vec![("vdv_error_EDC_active".into(), 1.0), ("EDC_Error_dist".into(), 812.5)], reported: vec!["mirrors".into(), "nonsense".into()], ..run(360, 20, 0) };
+    assert_eq!(book::report(&mut b.c, Some(&p), &duty, jan, &[run], now()), Ok((1, 0)));
+    let defects = super::super::crew::defects_of(&b.c, id);
+    let texts: Vec<String> = defects.iter().map(|d| format!("{:?}: {}", d.kind, d.text)).collect();
+    assert_eq!(defects.len(), 2, "{texts:?}");
+    assert!(defects.iter().any(|d| d.fault && d.text == "Dashboard: Engine, Doors"), "{texts:?}");
+    assert!(defects.iter().any(|d| d.kind == super::super::crew::DefectKind::Mirrors && !d.fault), "{texts:?}");
+    // the next drive: the faults set again, the defects told
+    let (state, told) = bus_faults::at_start(&b.c, id);
+    assert_eq!(state, vec![("vdv_error_EDC_active".to_string(), 1.0), ("EDC_Error_dist".to_string(), 812.5)]);
+    assert_eq!(told.len(), 2, "{told:?}");
+    assert!(told.iter().any(|t| t == "Mirrors") && told.iter().any(|t| t == "Dashboard: Engine, Doors"), "{told:?}");
+    // the workshop put it right: a fresh bus again
+    b.c.site.jobs.clear();
+    assert_eq!(bus_faults::at_start(&b.c, id), (Vec::new(), Vec::new()));
+    // (not on the server: nothing taken)
+    let mut c = setup().0;
+    let before = c.crew.defects.len();
+    bus_faults::take(&mut c, id, &TripRun { faults: vec!["Engine".into()], ..Default::default() }, "jan");
+    assert_eq!(c.crew.defects.len(), before);
+}
+
 /// The boss's day closed: its report, what the modelled trips brought (fares, not measured).
 fn close(b: &mut Boss) -> (super::super::day::DayReport, i64) {
     let closed = b.c.date.clone();

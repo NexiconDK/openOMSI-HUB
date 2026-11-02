@@ -974,6 +974,9 @@ fn safe_trip(c: &Company, s: &Sheet, x: &PlannedTrip, run: &TripRun, name: &str,
     r.bus = s.bus.clone();
     r.vehicle = s.vehicle;
     r.fuel = r.fuel.filter(|f| f.is_finite()).map(|f| f.clamp(0.0, 1.0));
+    r.faults.truncate(20);
+    r.reported.truncate(10);
+    r.fault_state.truncate(200);
     r.line = if x.line.trim().is_empty() { s.number.to_string() } else { x.line.clone() };
     r.free = false;
     r.planned = within(r.planned, stops);
@@ -1115,6 +1118,10 @@ pub fn report(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32, run
                 v.fuel = f;
                 v.fuel_at = Some(arr);
             }
+        }
+        // (NexiconDK: what is wrong with the bus - its faults, his reports - to the workshop)
+        if today {
+            super::super::bus_faults::take(c, safe.vehicle, &safe, &name);
         }
         c.together.trips.push(GuestTrip { guest, duty: r.clone(), trip: safe, part: part.is_some() });
         taken += 1;

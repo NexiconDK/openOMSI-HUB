@@ -592,7 +592,12 @@ pub(crate) fn make_app(mut args: Args, server_cfg: Option<server::ServerCfg>) ->
 fn assemble_app(args: Args, settings: settings::Settings) -> App {
     let view = args.view.clone();
     let args_root_for_keys = args.root.clone();
-    let clock_note = args.clock_moved.clone();
+    // (NexiconDK, a company's bus with defects not repaired yet: told at the start)
+    let defects = args.bus_defects.as_deref().map(str::trim).filter(|d| !d.is_empty()).map(|d| omsi_ui::tr("This bus has defects the workshop has not repaired yet: %{defects}").replace("%{defects}", &d.split('|').map(str::trim).filter(|x| !x.is_empty()).collect::<Vec<_>>().join(", ")));
+    let clock_note = match (args.clock_moved.clone(), defects) {
+        (Some(a), Some(b)) => Some(format!("{a}. {b}")),
+        (a, b) => a.or(b),
+    };
     // (as the last session left it, #1164)
     let info_bar = settings.info_bar;
     let is_server = args.server.is_some();

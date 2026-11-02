@@ -439,6 +439,16 @@ pub(crate) fn spawn_player_prepared(
                 None => log::info!("tank: the bus has none the game can fill - left as its scripts have it"),
             }
         }
+        // (NexiconDK, faults: the bus's faults as the company keeps them - its workshop has not
+        // put them right yet - and its faults watched from here on)
+        let state = args.fault_states();
+        if !state.is_empty() {
+            let set = p.vehicle.set_fault_state(&state);
+            log::info!("faults: {set} of {} variables of the bus's faults set again, as the company keeps them", state.len());
+        }
+        if args.company_bus.is_some() {
+            p.faults = Some(Default::default());
+        }
     }
     // a situation remembers how dirty the bus was; --dirt sets it for a test run
     if let Some(d) = args.dirt {
@@ -684,6 +694,8 @@ fn new_player(vehicle: omsi_sim::VehicleInstance, render: scene::VehicleRender, 
         arm: Default::default(),
         blinker_key_state: 0,
         blinker_cancel: crate::settings::Settings::load().blinker_cancel,
+        faults: None,
+        reported: Vec::new(),
     }
 }
 

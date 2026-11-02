@@ -52,6 +52,8 @@ pub(crate) enum ListKind {
     /// The depot files (.hof) of the bus driven.
     Hofs,
     /// The map's entry points (the launcher's "Start at"), to put the bus at.
+    /// (NexiconDK, Bus Company Online) What is wrong with a company's bus, told to its workshop.
+    Defects,
     Spots,
     /// Placing a vehicle: its manufacturer, then its type (the manufacturer's key), its
     /// livery, then its depot file (bus file; bus file and livery).
@@ -541,6 +543,14 @@ pub(crate) fn items(app: &App, kind: &ListKind) -> Vec<(String, String)> {
             }
         }
         ListKind::Nearby => out = nearby::items(app),
+        // (NexiconDK: a company's bus - what the driver tells its workshop)
+        ListKind::Defects => {
+            let told = app.player.as_ref().map(|p| p.reported.clone()).unwrap_or_default();
+            for (key, label) in DEFECT_KINDS {
+                let mark = if told.iter().any(|t| t == key) { format!("  {}", tr("(reported)")) } else { String::new() };
+                out.push((format!("{}{mark}", tr(label)), format!("defect {key}")));
+            }
+        }
         ListKind::Tours(line, _) => {
             if let Some(l) = crate::duty_book::timetable(app).and_then(|s| s.data.lines.iter().find(|l| l.name == *line)) {
                 for t in sorted_tours(l).into_iter().filter(|t| crate::duty_book::timetable(app).is_some_and(|s| tour_listed(s, line, t, app.clock.time))) {
@@ -757,6 +767,10 @@ pub(crate) fn company_buttons(args: &crate::cli::Args, kind: Option<&ListKind>, 
     }
 }
 
+/// (NexiconDK, Bus Company Online) What a driver reports of a company's bus (`crew::DefectKind`'s
+/// keys and labels).
+pub(crate) const DEFECT_KINDS: [(&str, &str); 8] = [("doors", "Doors"), ("lights", "Lights"), ("mirrors", "Mirrors"), ("wipers", "Wipers"), ("tyres", "Tyres"), ("ac", "Air conditioning"), ("ticket_machine", "Ticket machine"), ("other", "Other")];
+
 /// What the open list tells the interface besides its lines: the layout it wants, its title
 /// and the small line above it, and - for lines and tours - the timetable of the chosen one.
 pub(crate) fn menu_extras(
@@ -874,6 +888,7 @@ pub(crate) fn menu_extras(
         ListKind::RouteNumbers => (MenuKind::List, Some((tr("Route number"), String::new())), None),
         ListKind::Hofs => (MenuKind::List, head("Depot file (HOF)..."), None),
         ListKind::Spots => (MenuKind::List, head("Teleport to a start point..."), None),
+        ListKind::Defects => (MenuKind::List, head("Report a defect..."), None),
         ListKind::PlaceMaker | ListKind::PlaceType(_) | ListKind::PlaceLivery(_) | ListKind::PlaceHof(..) => (MenuKind::List, head("Place a vehicle..."), None),
         ListKind::Admin => (MenuKind::List, Some((tr("Administration"), String::new())), None),
     }
@@ -1066,6 +1081,18 @@ pub(crate) fn run_move(app: &mut App, kind: &ListKind, action: &str, mv: Move) -
         ListKind::Drivers => {
             switch_driver(app, arg);
             Some(ListKind::Drivers)
+        }
+        ListKind::Defects => {
+            if matches!(mv, Move::Next) && verb == "defect" {
+                if let Some((key, label)) = DEFECT_KINDS.iter().find(|(k, _)| *k == arg) {
+                    if let Some(p) = app.player.as_mut().filter(|p| !p.reported.iter().any(|t| t == key)) {
+                        p.reported.push(key.to_string());
+                    }
+                    app.service_msg = Some((omsi_ui::tr("Reported to the workshop: %{defect}").replace("%{defect}", &omsi_ui::tr(label)), 5.0));
+                }
+                return None;
+            }
+            Some(ListKind::Defects)
         }
         ListKind::Hofs => {
             if let Some(p) = app.player.as_mut() {

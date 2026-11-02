@@ -75,6 +75,10 @@ pub(super) fn player_step(cx: PlayerStepCx, dt: f32) {
             !matches!(cx.view.view.as_str(), "free" | "foot"),
         );
         crate::devtools::apply_holds(cx.ui.devtools.as_deref(), &mut p.vehicle);
+        // (NexiconDK, a company's bus: its faults that stay on while its engine runs)
+        if let Some(w) = p.faults.as_mut() {
+            w.tick(&p.vehicle, omsi_sim::startup::engine_running(&p.vehicle), dt);
+        }
         crate::plugins::plugin_impacts(&p.vehicle, &mut **cx.integrations);
         steps::deliver_player_impacts(p, cx.traffic.traffic.as_mut());
         // After scripts: zero-movement `_drag` for a held switch. Running this

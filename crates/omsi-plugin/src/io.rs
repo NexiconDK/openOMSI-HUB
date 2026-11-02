@@ -191,6 +191,12 @@ pub trait PluginIo {
     fn bus_fuel_level(&self) -> Option<f32> {
         None
     }
+    /// (NexiconDK) A company's bus: its faults that stayed on while its engine ran (by the part
+    /// of the bus they are of), its scripts' faults as they stand (variable, value), and the
+    /// defects the driver reported (`crew::DefectKind` keys). None: not a company's bus.
+    fn bus_faults(&self) -> Option<(Vec<String>, Vec<(String, f32)>, Vec<String>)> {
+        None
+    }
     /// Crashes of the bus, the energy of the last (J) and the minutes a repair would take.
     fn bus_damage(&mut self) -> Option<(u32, f32, Option<f32>)> {
         None

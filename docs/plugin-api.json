@@ -275,6 +275,16 @@
       "permission": null
     },
     {
+      "name": "bus.faults",
+      "group": "vehicle",
+      "since": "0.2.22",
+      "doc": "A company's bus: `{held, state, reported}` - its faults that stayed on while its engine ran (the parts of the bus), its scripts' faults as they stand (`{name = value}`) and the defects the driver reported in the game menu (`nil`: not a company's bus).",
+      "params": [],
+      "returns": "table or nil",
+      "multi": false,
+      "permission": null
+    },
+    {
       "name": "bus.file",
       "group": "vehicle",
       "since": "0.2.22",

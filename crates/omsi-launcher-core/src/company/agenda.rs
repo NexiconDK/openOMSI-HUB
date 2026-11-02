@@ -948,6 +948,7 @@ mod tests {
             built_auto: None,
             fuel: 1.0,
             fuel_at: None,
+            fault_state: Vec::new(),
         }
     }
 

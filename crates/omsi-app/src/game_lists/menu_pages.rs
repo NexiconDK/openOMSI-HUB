@@ -356,6 +356,10 @@ pub(super) fn vehicle_pages(app: &App) -> Vec<Page> {
         service.push(button("Wash", "Wash", "Cleans the current vehicle", "wash"));
         service.push(button("Repair", "Repair", "Repairs the current vehicle", "repair"));
         service.push(button("Put back on its wheels", "Reset", "Return the vehicle to an upright position", "reset"));
+        // (NexiconDK, Bus Company Online: a company's bus - what is wrong with it, to its workshop)
+        if app.player.as_ref().is_some_and(|p| p.faults.is_some()) {
+            service.push(opens("Report a defect", "Tell the company's workshop what is wrong with this bus", "defects"));
+        }
         if !server && app.menus.navigator.is_some() {
             service.push(button("Move on the map", "Pick", "Teleports you to any location on the map", "teleport"));
             service.push(opens("Teleport to a start point", "Teleport to a starting point on the map", "tplist"));

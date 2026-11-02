@@ -190,6 +190,8 @@ pub fn book_run(c: &mut Company, guest: u32, run: &TripRun, now: u64) -> Option<
         v.fuel_at = Some(c.clock.minute as i32);
     }
     let name = c.together.name_of(guest);
+    // (what is wrong with the bus - its faults, his reports - to the workshop)
+    super::bus_faults::take(c, d.vehicle, run, &name);
     if pay > 0 {
         c.book(BookingKind::Wages, -pay, format!("{name}: free drive with bus {} (a player of the company)", c.vehicle(d.vehicle).map(|v| v.number.clone()).unwrap_or_default()), false);
     }
