@@ -3,6 +3,7 @@ _version: 2
 # player, values by age, the fleet's value by age band in the finances.
 "Age":
   de: "Alter"
+  da: "Alder"
   fr: "Âge"
   nl: "Leeftijd"
   pl: "Wiek"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Вік"
 "Lost":
   de: "Verloren"
+  da: "Tabt"
   fr: "Perdu"
   nl: "Verloren"
   pl: "Utracono"
@@ -17,6 +19,7 @@ _version: 2
   uk: "Втрачено"
 "Worth now":
   de: "Jetzt wert"
+  da: "Værd nu"
   fr: "Valeur actuelle"
   nl: "Nu waard"
   pl: "Obecna wartość"
@@ -24,6 +27,7 @@ _version: 2
   uk: "Вартість зараз"
 "Registered":
   de: "Zugelassen"
+  da: "Indregistreret"
   fr: "Immatriculé"
   nl: "Geregistreerd"
   pl: "Zarejestrowany"
@@ -31,6 +35,7 @@ _version: 2
   uk: "Зареєстровано"
 "Registered %{month} (%{mark}), %{age}":
   de: "Zugelassen %{month} (%{mark}), %{age}"
+  da: "Indregistreret %{month} (%{mark}), %{age}"
   fr: "Immatriculé %{month} (%{mark}), %{age}"
   nl: "Geregistreerd %{month} (%{mark}), %{age}"
   pl: "Zarejestrowany %{month} (%{mark}), %{age}"
@@ -38,6 +43,7 @@ _version: 2
   uk: "Зареєстровано %{month} (%{mark}), %{age}"
 "Registered %{month}, %{age}":
   de: "Zugelassen %{month}, %{age}"
+  da: "Indregistreret %{month}, %{age}"
   fr: "Immatriculé %{month}, %{age}"
   nl: "Geregistreerd %{month}, %{age}"
   pl: "Zarejestrowany %{month}, %{age}"
@@ -45,6 +51,7 @@ _version: 2
   uk: "Зареєстровано %{month}, %{age}"
 "The plate %{plate} was first registered between %{from} and %{to}.":
   de: "Das Kennzeichen %{plate} wurde zwischen %{from} und %{to} erstmals zugelassen."
+  da: "Nummerpladen %{plate} blev første gang indregistreret mellem %{from} og %{to}."
   fr: "La plaque %{plate} a été immatriculée pour la première fois entre %{from} et %{to}."
   nl: "Het kenteken %{plate} is voor het eerst geregistreerd tussen %{from} en %{to}."
   pl: "Tablica %{plate} została po raz pierwszy zarejestrowana między %{from} a %{to}."
@@ -52,6 +59,7 @@ _version: 2
   uk: "Номер %{plate} уперше зареєстровано між %{from} і %{to}."
 "You set the date of first registration yourself.":
   de: "Du hast das Datum der Erstzulassung selbst festgelegt."
+  da: "Du har selv angivet datoen for første indregistrering."
   fr: "Vous avez fixé vous-même la date de première immatriculation."
   nl: "Je hebt de datum van eerste registratie zelf ingesteld."
   pl: "Datę pierwszej rejestracji ustawiłeś sam."
@@ -59,6 +67,7 @@ _version: 2
   uk: "Ви самі задали дату першої реєстрації."
 "Registered new by the company.":
   de: "Vom Betrieb neu zugelassen."
+  da: "Indregistreret som ny af selskabet."
   fr: "Immatriculé neuf par l'entreprise."
   nl: "Nieuw geregistreerd door het bedrijf."
   pl: "Zarejestrowany jako nowy przez firmę."
@@ -66,6 +75,7 @@ _version: 2
   uk: "Зареєстровано новим компанією."
 "The age follows the model's era: its plate does not tell it. Set it yourself if you know it.":
   de: "Das Alter folgt der Bauzeit des Modells: Das Kennzeichen verrät es nicht. Lege es selbst fest, wenn du es weißt."
+  da: "Alderen følger modellens epoke: dens nummerplade afslører den ikke. Angiv den selv, hvis du kender den."
   fr: "L'âge suit l'époque du modèle : la plaque ne le dit pas. Fixez-le vous-même si vous le connaissez."
   nl: "De leeftijd volgt het tijdperk van het model: het kenteken zegt het niet. Stel hem zelf in als je hem weet."
   pl: "Wiek wynika z okresu produkcji modelu: tablica go nie podaje. Ustaw go sam, jeśli go znasz."
@@ -73,6 +83,7 @@ _version: 2
   uk: "Вік відповідає епосі моделі: номер його не вказує. Задайте його самі, якщо знаєте."
 "The model's plate list tells no age: the age is the market's. Set it yourself if you know it.":
   de: "Die Kennzeichenliste des Modells verrät kein Alter: Das Alter ist das des Marktes. Lege es selbst fest, wenn du es weißt."
+  da: "Modellens nummerpladeliste angiver ingen alder: alderen er markedets. Angiv den selv, hvis du kender den."
   fr: "La liste de plaques du modèle ne donne pas d'âge : l'âge est celui du marché. Fixez-le vous-même si vous le connaissez."
   nl: "De kentekenlijst van het model zegt geen leeftijd: de leeftijd is die van de markt. Stel hem zelf in als je hem weet."
   pl: "Lista tablic modelu nie podaje wieku: wiek pochodzi z rynku. Ustaw go sam, jeśli go znasz."
@@ -80,6 +91,7 @@ _version: 2
   uk: "Список номерів моделі не вказує вік: вік задано ринком. Задайте його самі, якщо знаєте."
 "European plates do not tell a bus's age: the age is the market's. Set it yourself if you know it.":
   de: "Europäische Kennzeichen verraten das Alter eines Busses nicht: Das Alter ist das des Marktes. Lege es selbst fest, wenn du es weißt."
+  da: "Europæiske nummerplader afslører ikke en buss alder: alderen er markedets. Angiv den selv, hvis du kender den."
   fr: "Les plaques européennes ne disent pas l'âge d'un bus : l'âge est celui du marché. Fixez-le vous-même si vous le connaissez."
   nl: "Europese kentekens zeggen niets over de leeftijd van een bus: de leeftijd is die van de markt. Stel hem zelf in als je hem weet."
   pl: "Europejskie tablice nie podają wieku autobusu: wiek pochodzi z rynku. Ustaw go sam, jeśli go znasz."
@@ -87,6 +99,7 @@ _version: 2
   uk: "Європейські номери не вказують вік автобуса: вік задано ринком. Задайте його самі, якщо знаєте."
 "set by you":
   de: "von dir festgelegt"
+  da: "angivet af dig"
   fr: "fixé par vous"
   nl: "door jou ingesteld"
   pl: "ustawione przez ciebie"
@@ -94,6 +107,7 @@ _version: 2
   uk: "задано вами"
 "New price %{new} × %{age} for %{years} × %{km} for the kilometres × %{condition} for the condition = %{market}.":
   de: "Neupreis %{new} × %{age} für %{years} × %{km} für die Kilometer × %{condition} für den Zustand = %{market}."
+  da: "Nypris %{new} × %{age} for %{years} × %{km} for kilometerne × %{condition} for standen = %{market}."
   fr: "Prix neuf %{new} × %{age} pour %{years} × %{km} pour les kilomètres × %{condition} pour l'état = %{market}."
   nl: "Nieuwprijs %{new} × %{age} voor %{years} × %{km} voor de kilometers × %{condition} voor de staat = %{market}."
   pl: "Cena nowego %{new} × %{age} za %{years} × %{km} za kilometry × %{condition} za stan = %{market}."
@@ -101,6 +115,7 @@ _version: 2
   uk: "Ціна нового %{new} × %{age} за %{years} × %{km} за пробіг × %{condition} за стан = %{market}."
 "Never more than what was paid for it less what it lost since: %{amount}.":
   de: "Nie mehr als der Kaufpreis abzüglich des Verlusts seitdem: %{amount}."
+  da: "Aldrig mere end det, der er betalt for den, fratrukket det, den har tabt siden: %{amount}."
   fr: "Jamais plus que le prix payé moins ce qu'il a perdu depuis : %{amount}."
   nl: "Nooit meer dan wat ervoor betaald is min wat hij sindsdien verloor: %{amount}."
   pl: "Nigdy więcej niż zapłacono minus to, co od tego czasu stracił: %{amount}."
@@ -108,6 +123,7 @@ _version: 2
   uk: "Ніколи не більше сплаченого за вирахуванням втраченого відтоді: %{amount}."
 "Set the age yourself":
   de: "Alter selbst festlegen"
+  da: "Angiv alderen selv"
   fr: "Fixer l'âge soi-même"
   nl: "Leeftijd zelf instellen"
   pl: "Ustaw wiek samodzielnie"
@@ -115,6 +131,7 @@ _version: 2
   uk: "Задати вік самому"
 "Year of first registration":
   de: "Jahr der Erstzulassung"
+  da: "År for første indregistrering"
   fr: "Année de première immatriculation"
   nl: "Jaar van eerste registratie"
   pl: "Rok pierwszej rejestracji"
@@ -122,6 +139,7 @@ _version: 2
   uk: "Рік першої реєстрації"
 "Over what the plate or the market says: its value and running costs follow the year you type.":
   de: "Statt dessen, was Kennzeichen oder Markt sagen: Wert und Betriebskosten folgen dem eingegebenen Jahr."
+  da: "Hvad nummerpladen eller markedet end siger: dens værdi og driftsomkostninger følger det år, du skriver."
   fr: "À la place de ce que disent la plaque ou le marché : sa valeur et ses coûts d'exploitation suivent l'année saisie."
   nl: "In plaats van wat het kenteken of de markt zegt: waarde en bedrijfskosten volgen het jaar dat je typt."
   pl: "Zamiast tego, co mówi tablica lub rynek: wartość i koszty eksploatacji wynikają z wpisanego roku."
@@ -129,6 +147,7 @@ _version: 2
   uk: "Замість того, що кажуть номер або ринок: вартість і витрати відповідають введеному року."
 "Type a year of first registration, as 2015.":
   de: "Gib ein Jahr der Erstzulassung ein, etwa 2015."
+  da: "Skriv et år for første indregistrering, f.eks. 2015."
   fr: "Saisissez une année de première immatriculation, comme 2015."
   nl: "Typ een jaar van eerste registratie, zoals 2015."
   pl: "Wpisz rok pierwszej rejestracji, np. 2015."
@@ -136,6 +155,7 @@ _version: 2
   uk: "Введіть рік першої реєстрації, наприклад 2015."
 "%{from}–%{to} years":
   de: "%{from}–%{to} Jahre"
+  da: "%{from}–%{to} år"
   fr: "%{from}–%{to} ans"
   nl: "%{from}–%{to} jaar"
   pl: "%{from}–%{to} lat"
@@ -143,6 +163,7 @@ _version: 2
   uk: "%{from}–%{to} років"
 "%{from}+ years":
   de: "%{from}+ Jahre"
+  da: "%{from}+ år"
   fr: "%{from}+ ans"
   nl: "%{from}+ jaar"
   pl: "%{from}+ lat"
@@ -150,6 +171,7 @@ _version: 2
   uk: "%{from}+ років"
 "Fleet value by age":
   de: "Flottenwert nach Alter"
+  da: "Flådeværdi efter alder"
   fr: "Valeur de la flotte par âge"
   nl: "Vlootwaarde naar leeftijd"
   pl: "Wartość floty według wieku"
@@ -157,6 +179,7 @@ _version: 2
   uk: "Вартість парку за віком"
 "By age band: what the buses cost new, are worth and lost":
   de: "Nach Altersgruppe: was die Busse neu kosteten, wert sind und verloren"
+  da: "Efter aldersgruppe: hvad busserne kostede nye, er værd og har tabt"
   fr: "Par tranche d'âge : ce que les bus ont coûté neufs, valent et ont perdu"
   nl: "Per leeftijdsgroep: wat de bussen nieuw kostten, waard zijn en verloren"
   pl: "Według grup wieku: ile autobusy kosztowały nowe, są warte i straciły"
@@ -164,6 +187,7 @@ _version: 2
   uk: "За віковими групами: скільки автобуси коштували новими, коштують і втратили"
 "A bus loses some 18 % in its first year, then 8-10 % of its new price a year, less as it ages, to a tenth of it at 15-18 years; more kilometres than usual and a worse condition take off more. It is never worth more than the company paid for it. Hover over a band for its buses.":
   de: "Ein Bus verliert im ersten Jahr rund 18 %, danach 8-10 % seines Neupreises im Jahr, mit dem Alter weniger, bis auf ein Zehntel nach 15-18 Jahren; mehr Kilometer als üblich und ein schlechterer Zustand ziehen mehr ab. Er ist nie mehr wert, als der Betrieb bezahlt hat. Fahre über eine Gruppe für ihre Busse."
+  da: "En bus mister omkring 18 % i sit første år, derefter 8-10 % af sin nypris om året, mindre med alderen, til en tiendedel ved 15-18 år; flere kilometer end normalt og dårligere stand trækker mere fra. Den er aldrig mere værd, end selskabet betalte for den. Hold musen over en gruppe for at se dens busser."
   fr: "Un bus perd environ 18 % la première année, puis 8-10 % de son prix neuf par an, moins avec l'âge, jusqu'à un dixième à 15-18 ans ; plus de kilomètres que d'habitude et un moins bon état retirent davantage. Il ne vaut jamais plus que ce que l'entreprise a payé. Survolez une tranche pour voir ses bus."
   nl: "Een bus verliest in het eerste jaar zo'n 18 %, daarna 8-10 % van zijn nieuwprijs per jaar, minder naarmate hij ouder wordt, tot een tiende na 15-18 jaar; meer kilometers dan gewoon en een slechtere staat trekken er meer af. Hij is nooit meer waard dan het bedrijf ervoor betaalde. Ga over een groep voor zijn bussen."
   pl: "Autobus traci około 18 % w pierwszym roku, potem 8-10 % ceny nowego rocznie, z wiekiem mniej, do jednej dziesiątej po 15-18 latach; więcej kilometrów niż zwykle i gorszy stan odejmują więcej. Nigdy nie jest wart więcej, niż firma za niego zapłaciła. Najedź na grupę, aby zobaczyć jej autobusy."
@@ -171,6 +195,7 @@ _version: 2
   uk: "Автобус втрачає близько 18 % у перший рік, далі 8-10 % ціни нового на рік, з віком менше, до десятої частини у 15-18 років; пробіг понад звичайний і гірший стан віднімають більше. Він ніколи не коштує більше, ніж за нього заплатила компанія. Наведіть на групу, щоб побачити її автобуси."
 "%{n} leased or rented buses are not the company's and have no value here.":
   de: "%{n} geleaste oder gemietete Busse gehören nicht dem Betrieb und haben hier keinen Wert."
+  da: "%{n} leasede eller lejede busser tilhører ikke selskabet og har ingen værdi her."
   fr: "%{n} bus en leasing ou loués n'appartiennent pas à l'entreprise et n'ont pas de valeur ici."
   nl: "%{n} geleasede of gehuurde bussen zijn niet van het bedrijf en hebben hier geen waarde."
   pl: "%{n} autobusów w leasingu lub wynajmie nie należy do firmy i nie ma tu wartości."

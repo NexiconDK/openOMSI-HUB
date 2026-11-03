@@ -2,6 +2,7 @@ _version: 2
 # The light and the dark look: the sun and moon in the bar and in the bus company's bar.
 "Switch to the dark mode":
   de: "Zum dunklen Modus wechseln"
+  da: "Skift til mørk tilstand"
   fr: "Passer au mode sombre"
   nl: "Overschakelen naar de donkere modus"
   pl: "Przełącz na tryb ciemny"
@@ -9,6 +10,7 @@ _version: 2
   uk: "Перемкнутися на темний режим"
 "Switch to the light mode":
   de: "Zum hellen Modus wechseln"
+  da: "Skift til lys tilstand"
   fr: "Passer au mode clair"
   nl: "Overschakelen naar de lichte modus"
   pl: "Przełącz na tryb jasny"

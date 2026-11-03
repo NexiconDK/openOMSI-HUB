@@ -4,6 +4,7 @@ _version: 2
 # Research: the research under way, its pause, the tiles' effects and the details
 "Articulated buses at the dealers":
   de: "Gelenkbusse bei den Händlern"
+  da: "Ledbusser hos forhandlerne"
   fr: "Bus articulés chez les concessionnaires"
   nl: "Gelede bussen bij de dealers"
   pl: "Autobusy przegubowe u dealerów"
@@ -11,6 +12,7 @@ _version: 2
   uk: "Зчленовані автобуси в дилерів"
 "Double-deckers at the dealers":
   de: "Doppeldecker bei den Händlern"
+  da: "Dobbeltdækkere hos forhandlerne"
   fr: "Bus à impériale chez les concessionnaires"
   nl: "Dubbeldekkers bij de dealers"
   pl: "Autobusy piętrowe u dealerów"
@@ -18,6 +20,7 @@ _version: 2
   uk: "Двоповерхові автобуси в дилерів"
 "−2 % fuel a stage":
   de: "−2 % Kraftstoff je Stufe"
+  da: "−2 % brændstof pr. trin"
   fr: "−2 % de carburant par étape"
   nl: "−2 % brandstof per fase"
   pl: "−2 % paliwa na etap"
@@ -25,6 +28,7 @@ _version: 2
   uk: "−2 % пального за етап"
 "−10 % dirt a stage":
   de: "−10 % Schmutz je Stufe"
+  da: "−10 % snavs pr. trin"
   fr: "−10 % de saleté par étape"
   nl: "−10 % vuil per fase"
   pl: "−10 % brudu na etap"
@@ -32,6 +36,7 @@ _version: 2
   uk: "−10 % бруду за етап"
 "−5 % wear a stage":
   de: "−5 % Verschleiß je Stufe"
+  da: "−5 % slid pr. trin"
   fr: "−5 % d'usure par étape"
   nl: "−5 % slijtage per fase"
   pl: "−5 % zużycia na etap"
@@ -39,6 +44,7 @@ _version: 2
   uk: "−5 % зносу за етап"
 "+2 % passengers":
   de: "+2 % Fahrgäste"
+  da: "+2 % passagerer"
   fr: "+2 % de voyageurs"
   nl: "+2 % reizigers"
   pl: "+2 % pasażerów"
@@ -46,6 +52,7 @@ _version: 2
   uk: "+2 % пасажирів"
 "+2 % passengers, internet contracts":
   de: "+2 % Fahrgäste, Internetverträge"
+  da: "+2 % passagerer, internetkontrakter"
   fr: "+2 % de voyageurs, contrats internet"
   nl: "+2 % reizigers, internetcontracten"
   pl: "+2 % pasażerów, umowy internetowe"
@@ -53,6 +60,7 @@ _version: 2
   uk: "+2 % пасажирів, інтернет-контракти"
 "+1.5 % passengers":
   de: "+1,5 % Fahrgäste"
+  da: "+1,5 % passagerer"
   fr: "+1,5 % de voyageurs"
   nl: "+1,5 % reizigers"
   pl: "+1,5 % pasażerów"
@@ -60,6 +68,7 @@ _version: 2
   uk: "+1,5 % пасажирів"
 "+3 % passengers":
   de: "+3 % Fahrgäste"
+  da: "+3 % passagerer"
   fr: "+3 % de voyageurs"
   nl: "+3 % reizigers"
   pl: "+3 % pasażerów"
@@ -67,6 +76,7 @@ _version: 2
   uk: "+3 % пасажирів"
 "+1.5 % passengers a stage":
   de: "+1,5 % Fahrgäste je Stufe"
+  da: "+1,5 % passagerer pr. trin"
   fr: "+1,5 % de voyageurs par étape"
   nl: "+1,5 % reizigers per fase"
   pl: "+1,5 % pasażerów na etap"
@@ -74,6 +84,7 @@ _version: 2
   uk: "+1,5 % пасажирів за етап"
 "+1 % passengers a stage":
   de: "+1 % Fahrgäste je Stufe"
+  da: "+1 % passagerer pr. trin"
   fr: "+1 % de voyageurs par étape"
   nl: "+1 % reizigers per fase"
   pl: "+1 % pasażerów na etap"
@@ -81,6 +92,7 @@ _version: 2
   uk: "+1 % пасажирів за етап"
 "+1 % passengers, −3 % late trips a stage":
   de: "+1 % Fahrgäste, −3 % verspätete Fahrten je Stufe"
+  da: "+1 % passagerer, −3 % forsinkede ture pr. trin"
   fr: "+1 % de voyageurs, −3 % de trajets en retard par étape"
   nl: "+1 % reizigers, −3 % te late ritten per fase"
   pl: "+1 % pasażerów, −3 % spóźnionych kursów na etap"
@@ -88,6 +100,7 @@ _version: 2
   uk: "+1 % пасажирів, −3 % запізнень за етап"
 "−10 % late trips a stage":
   de: "−10 % verspätete Fahrten je Stufe"
+  da: "−10 % forsinkede ture pr. trin"
   fr: "−10 % de trajets en retard par étape"
   nl: "−10 % te late ritten per fase"
   pl: "−10 % spóźnionych kursów na etap"
@@ -95,6 +108,7 @@ _version: 2
   uk: "−10 % запізнень за етап"
 "+6 bus places a stage":
   de: "+6 Busstellplätze je Stufe"
+  da: "+6 buspladser pr. trin"
   fr: "+6 places de bus par étape"
   nl: "+6 busplaatsen per fase"
   pl: "+6 miejsc dla autobusów na etap"
@@ -102,6 +116,7 @@ _version: 2
   uk: "+6 місць для автобусів за етап"
 "+10 bus places, repairs out there":
   de: "+10 Busstellplätze, Reparaturen vor Ort"
+  da: "+10 buspladser, reparationer ude"
   fr: "+10 places de bus, réparations sur place"
   nl: "+10 busplaatsen, reparaties ter plekke"
   pl: "+10 miejsc dla autobusów, naprawy na miejscu"
@@ -109,6 +124,7 @@ _version: 2
   uk: "+10 місць для автобусів, ремонт на місці"
 "The fleet stays at least 55 % clean":
   de: "Die Flotte bleibt mindestens zu 55 % sauber"
+  da: "Flåden forbliver mindst 55 % ren"
   fr: "La flotte reste propre à 55 % au moins"
   nl: "De vloot blijft minstens 55 % schoon"
   pl: "Flota pozostaje czysta w co najmniej 55 %"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Парк лишається чистим щонайменше на 55 %"
 "+50 % buses washed a night":
   de: "+50 % gewaschene Busse je Nacht"
+  da: "+50 % busser vasket pr. nat"
   fr: "+50 % de bus lavés par nuit"
   nl: "+50 % gewassen bussen per nacht"
   pl: "+50 % umytych autobusów na noc"
@@ -123,6 +140,7 @@ _version: 2
   uk: "+50 % вимитих автобусів за ніч"
 "+50 % buses refuelled a night":
   de: "+50 % betankte Busse je Nacht"
+  da: "+50 % busser tanket pr. nat"
   fr: "+50 % de bus ravitaillés par nuit"
   nl: "+50 % getankte bussen per nacht"
   pl: "+50 % zatankowanych autobusów na noc"
@@ -130,6 +148,7 @@ _version: 2
   uk: "+50 % заправлених автобусів за ніч"
 "Broken buses back a day sooner":
   de: "Defekte Busse einen Tag früher zurück"
+  da: "Ødelagte busser tilbage en dag før"
   fr: "Bus en panne de retour un jour plus tôt"
   nl: "Kapotte bussen een dag eerder terug"
   pl: "Zepsute autobusy wracają dzień wcześniej"
@@ -137,6 +156,7 @@ _version: 2
   uk: "Зламані автобуси повертаються на день раніше"
 "Ticket inspectors can be hired":
   de: "Fahrkartenkontrolleure einstellbar"
+  da: "Kontrollører kan ansættes"
   fr: "Contrôleurs embauchables"
   nl: "Kaartcontroleurs in dienst te nemen"
   pl: "Można zatrudniać kontrolerów biletów"
@@ -144,6 +164,7 @@ _version: 2
   uk: "Можна наймати контролерів"
 "+15 % passengers checked a stage":
   de: "+15 % kontrollierte Fahrgäste je Stufe"
+  da: "+15 % passagerer kontrolleret pr. trin"
   fr: "+15 % de voyageurs contrôlés par étape"
   nl: "+15 % gecontroleerde reizigers per fase"
   pl: "+15 % sprawdzonych pasażerów na etap"
@@ -151,6 +172,7 @@ _version: 2
   uk: "+15 % перевірених пасажирів за етап"
 "Happier, calmer staff":
   de: "Zufriedeneres, ruhigeres Personal"
+  da: "Gladere, roligere personale"
   fr: "Personnel plus heureux et plus calme"
   nl: "Blijer, rustiger personeel"
   pl: "Szczęśliwszy, spokojniejszy personel"
@@ -158,6 +180,7 @@ _version: 2
   uk: "Задоволеніший і спокійніший персонал"
 "−10 % spare part prices a stage":
   de: "−10 % Ersatzteilpreise je Stufe"
+  da: "−10 % reservedelspriser pr. trin"
   fr: "−10 % sur le prix des pièces par étape"
   nl: "−10 % onderdeelprijzen per fase"
   pl: "−10 % cen części na etap"
@@ -165,6 +188,7 @@ _version: 2
   uk: "−10 % цін на запчастини за етап"
 "−10 % repair time a stage":
   de: "−10 % Reparaturzeit je Stufe"
+  da: "−10 % reparationstid pr. trin"
   fr: "−10 % de temps de réparation par étape"
   nl: "−10 % reparatietijd per fase"
   pl: "−10 % czasu napraw na etap"
@@ -172,6 +196,7 @@ _version: 2
   uk: "−10 % часу ремонту за етап"
 "+1 concession a stage":
   de: "+1 Konzession je Stufe"
+  da: "+1 koncession pr. trin"
   fr: "+1 concession par étape"
   nl: "+1 concessie per fase"
   pl: "+1 koncesja na etap"
@@ -179,6 +204,7 @@ _version: 2
   uk: "+1 концесія за етап"
 "Core hours for the staff":
   de: "Kernzeiten für das Personal"
+  da: "Kernetid for personalet"
   fr: "Horaires de base du personnel"
   nl: "Kerntijden voor het personeel"
   pl: "Godziny podstawowe dla personelu"
@@ -186,6 +212,7 @@ _version: 2
   uk: "Основні години для персоналу"
 "%{n} researcher-days":
   de: "%{n} Forschertage"
+  da: "%{n} forskerdage"
   fr: "%{n} jours-chercheur"
   nl: "%{n} onderzoekersdagen"
   pl: "%{n} dni pracy badacza"
@@ -193,6 +220,7 @@ _version: 2
   uk: "%{n} людино-днів дослідників"
 "%{done} of %{n} researched":
   de: "%{done} von %{n} erforscht"
+  da: "%{done} af %{n} undersøgt"
   fr: "%{done} sur %{n} recherchés"
   nl: "%{done} van %{n} onderzocht"
   pl: "Zbadano %{done} z %{n}"
@@ -200,6 +228,7 @@ _version: 2
   uk: "Досліджено %{done} з %{n}"
 "Details":
   de: "Details"
+  da: "Detaljer"
   fr: "Détails"
   nl: "Details"
   pl: "Szczegóły"
@@ -207,6 +236,7 @@ _version: 2
   uk: "Подробиці"
 "Next stage":
   de: "Nächste Stufe"
+  da: "Næste trin"
   fr: "Étape suivante"
   nl: "Volgende fase"
   pl: "Następny etap"
@@ -214,6 +244,7 @@ _version: 2
   uk: "Наступний етап"
 "Needs first":
   de: "Braucht zuerst"
+  da: "Kræver først"
   fr: "Nécessite d'abord"
   nl: "Heeft eerst nodig"
   pl: "Najpierw wymaga"
@@ -221,6 +252,7 @@ _version: 2
   uk: "Спершу потрібно"
 "Locked":
   de: "Gesperrt"
+  da: "Låst"
   fr: "Verrouillé"
   nl: "Vergrendeld"
   pl: "Zablokowane"
@@ -228,6 +260,7 @@ _version: 2
   uk: "Закрито"
 "No researchers":
   de: "Keine Forscher"
+  da: "Ingen forskere"
   fr: "Aucun chercheur"
   nl: "Geen onderzoekers"
   pl: "Brak badaczy"
@@ -235,6 +268,7 @@ _version: 2
   uk: "Немає дослідників"
 "1 researcher":
   de: "1 Forscher"
+  da: "1 forsker"
   fr: "1 chercheur"
   nl: "1 onderzoeker"
   pl: "1 badacz"
@@ -242,6 +276,7 @@ _version: 2
   uk: "1 дослідник"
 "%{n} researchers":
   de: "%{n} Forscher"
+  da: "%{n} forskere"
   fr: "%{n} chercheurs"
   nl: "%{n} onderzoekers"
   pl: "Badaczy: %{n}"
@@ -249,6 +284,7 @@ _version: 2
   uk: "Дослідників: %{n}"
 "1 day left":
   de: "Noch 1 Tag"
+  da: "1 dag tilbage"
   fr: "Encore 1 jour"
   nl: "Nog 1 dag"
   pl: "Został 1 dzień"
@@ -256,6 +292,7 @@ _version: 2
   uk: "Лишився 1 день"
 "%{n} days left":
   de: "Noch %{n} Tage"
+  da: "%{n} dage tilbage"
   fr: "Encore %{n} jours"
   nl: "Nog %{n} dagen"
   pl: "Zostało dni: %{n}"
@@ -263,6 +300,7 @@ _version: 2
   uk: "Лишилося днів: %{n}"
 "Stands still":
   de: "Steht still"
+  da: "Står stille"
   fr: "À l'arrêt"
   nl: "Staat stil"
   pl: "Stoi w miejscu"
@@ -270,6 +308,7 @@ _version: 2
   uk: "Стоїть на місці"
 "Stage %{stage} of %{stages}":
   de: "Stufe %{stage} von %{stages}"
+  da: "Trin %{stage} af %{stages}"
   fr: "Étape %{stage} sur %{stages}"
   nl: "Fase %{stage} van %{stages}"
   pl: "Etap %{stage} z %{stages}"
@@ -277,6 +316,7 @@ _version: 2
   uk: "Етап %{stage} з %{stages}"
 "Pausing keeps the work done: nobody works on it until you resume it.":
   de: "Pausieren behält die geleistete Arbeit: Niemand arbeitet daran, bis du fortsetzt."
+  da: "Pause bevarer det udførte arbejde: ingen arbejder på det, før du genoptager det."
   fr: "La pause garde le travail fait : personne n'y travaille jusqu'à la reprise."
   nl: "Pauzeren houdt het gedane werk: niemand werkt eraan tot je verdergaat."
   pl: "Pauza zachowuje wykonaną pracę: nikt nad tym nie pracuje, dopóki nie wznowisz."
@@ -284,6 +324,7 @@ _version: 2
   uk: "Пауза зберігає виконану роботу: ніхто не працює над цим, доки ви не продовжите."
 "%{n} researcher-days of work":
   de: "%{n} Forschertage Arbeit"
+  da: "%{n} forskerdages arbejde"
   fr: "%{n} jours-chercheur de travail"
   nl: "%{n} onderzoekersdagen werk"
   pl: "%{n} dni pracy badacza"
@@ -291,6 +332,7 @@ _version: 2
   uk: "%{n} людино-днів роботи"
 "The research is paused: the work done is kept.":
   de: "Die Forschung ist pausiert: Die geleistete Arbeit bleibt erhalten."
+  da: "Forskningen er sat på pause: det udførte arbejde bevares."
   fr: "La recherche est en pause : le travail fait est conservé."
   nl: "Het onderzoek is gepauzeerd: het gedane werk blijft bewaard."
   pl: "Badania są wstrzymane: wykonana praca zostaje zachowana."
@@ -298,6 +340,7 @@ _version: 2
   uk: "Дослідження призупинено: виконану роботу збережено."
 "The research goes on.":
   de: "Die Forschung geht weiter."
+  da: "Forskningen fortsætter."
   fr: "La recherche reprend."
   nl: "Het onderzoek gaat verder."
   pl: "Badania trwają dalej."
@@ -306,6 +349,7 @@ _version: 2
 # Sandbox: the knobs' texts on the UK-data economy (no payment per kilometre any more)
 "Fares, concession reimbursement, contract payments and the BSOG fuel grant.":
   de: "Fahrgeld, Erstattungen für Ermäßigungen, Vertragszahlungen und der BSOG-Kraftstoffzuschuss."
+  da: "Billetindtægter, refusion af rabatkort, kontraktbetalinger og BSOG-brændstoftilskuddet."
   fr: "Les recettes, le remboursement des tarifs réduits, les paiements des contrats et l'aide au carburant BSOG."
   nl: "Ritprijzen, vergoeding voor kortingskaarten, contractbetalingen en de BSOG-brandstofsubsidie."
   pl: "Opłaty za przejazd, refundacja ulg, płatności z umów i dopłata paliwowa BSOG."
@@ -313,6 +357,7 @@ _version: 2
   uk: "Плата за проїзд, відшкодування за пільговиків, виплати за контрактами й паливна субсидія BSOG."
 "Deductions for dropped and late journeys under the bus contracts, and their default points.":
   de: "Abzüge für ausgefallene und verspätete Fahrten unter den Busverträgen und ihre Strafpunkte."
+  da: "Fradrag for droppede og forsinkede ture under buskontrakterne og deres misligholdelsespoint."
   fr: "Les retenues pour les trajets supprimés et en retard des contrats de bus, et leurs points de pénalité."
   nl: "Inhoudingen voor uitgevallen en te late ritten onder de buscontracten, en hun strafpunten."
   pl: "Potrącenia za odwołane i spóźnione kursy w umowach autobusowych oraz ich punkty karne."
@@ -320,6 +365,7 @@ _version: 2
   uk: "Відрахування за скасовані й запізнілі рейси за автобусними контрактами та штрафні бали."
 "Prices rise over the years, and the contracts' payments are indexed with them. Off: prices stand still.":
   de: "Die Preise steigen über die Jahre, und die Vertragszahlungen werden mit ihnen indexiert. Aus: Die Preise bleiben stehen."
+  da: "Priserne stiger over årene, og kontrakternes betalinger indekseres med dem. Fra: priserne står stille."
   fr: "Les prix montent au fil des ans, et les paiements des contrats sont indexés sur eux. Désactivé : les prix ne bougent pas."
   nl: "Prijzen stijgen door de jaren heen, en de contractbetalingen worden ermee geïndexeerd. Uit: de prijzen staan stil."
   pl: "Ceny rosną z latami, a płatności z umów są z nimi indeksowane. Wyłączone: ceny stoją w miejscu."
@@ -327,6 +373,7 @@ _version: 2
   uk: "Ціни зростають з роками, і виплати за контрактами індексуються разом з ними. Вимк.: ціни стоять на місці."
 "Spending never fails and the balance shows ∞. The books still count every amount.":
   de: "Ausgaben scheitern nie, und der Kontostand zeigt ∞. Die Bücher zählen trotzdem jeden Betrag."
+  da: "Udgifter fejler aldrig, og saldoen viser ∞. Regnskabet tæller stadig hvert beløb."
   fr: "Les dépenses n'échouent jamais et le solde affiche ∞. Les comptes notent quand même chaque montant."
   nl: "Uitgaven lukken altijd en het saldo toont ∞. De boeken tellen toch elk bedrag."
   pl: "Wydatki zawsze się udają, a saldo pokazuje ∞. Księgi i tak liczą każdą kwotę."
@@ -335,6 +382,7 @@ _version: 2
 # Service control (the Operations page): its head, KPI cards, incident table and map
 "Out of service":
   de: "Leerfahrt"
+  da: "Ude af drift"
   fr: "Hors service"
   nl: "Buiten dienst"
   pl: "Bez pasażerów"
@@ -342,6 +390,7 @@ _version: 2
   uk: "Без пасажирів"
 "Alert me when a bus is more than:":
   de: "Melden, wenn ein Bus mehr als so spät ist:"
+  da: "Advar mig, når en bus er mere end:"
   fr: "M'alerter quand un bus a plus de :"
   nl: "Waarschuw me als een bus meer dan zo laat is:"
   pl: "Powiadom, gdy autobus spóźnia się o więcej niż:"
@@ -349,6 +398,7 @@ _version: 2
   uk: "Повідомляти, коли автобус запізнюється більш ніж на:"
 "Things for service control now":
   de: "Was die Betriebsleitung jetzt zu tun hat"
+  da: "Ting til trafikstyringen nu"
   fr: "Ce que la régulation a à traiter maintenant"
   nl: "Wat de verkeersleiding nu te doen heeft"
   pl: "Sprawy dla dyspozytorni teraz"
@@ -356,6 +406,7 @@ _version: 2
   uk: "Що зараз чекає на диспетчерську"
 "Live incidents":
   de: "Aktuelle Störungen"
+  da: "Live-hændelser"
   fr: "Incidents en direct"
   nl: "Actuele storingen"
   pl: "Bieżące zakłócenia"
@@ -363,6 +414,7 @@ _version: 2
   uk: "Поточні інциденти"
 "Real-time service disruptions and delays across the network":
   de: "Störungen und Verspätungen im ganzen Netz, in Echtzeit"
+  da: "Driftsforstyrrelser og forsinkelser i realtid på tværs af nettet"
   fr: "Perturbations et retards sur tout le réseau, en temps réel"
   nl: "Storingen en vertragingen in het hele net, in realtime"
   pl: "Zakłócenia i opóźnienia w całej sieci na bieżąco"
@@ -370,6 +422,7 @@ _version: 2
   uk: "Збої та запізнення по всій мережі в реальному часі"
 "Live":
   de: "Live"
+  da: "Live"
   fr: "En direct"
   nl: "Live"
   pl: "Na żywo"
@@ -377,6 +430,7 @@ _version: 2
   uk: "Наживо"
 "Severity":
   de: "Schwere"
+  da: "Alvorlighed"
   fr: "Gravité"
   nl: "Ernst"
   pl: "Waga"
@@ -384,6 +438,7 @@ _version: 2
   uk: "Важливість"
 "Delay & location":
   de: "Verspätung & Ort"
+  da: "Forsinkelse og sted"
   fr: "Retard et lieu"
   nl: "Vertraging & plaats"
   pl: "Opóźnienie i miejsce"
@@ -391,6 +446,7 @@ _version: 2
   uk: "Запізнення й місце"
 "Cause":
   de: "Ursache"
+  da: "Årsag"
   fr: "Cause"
   nl: "Oorzaak"
   pl: "Przyczyna"
@@ -398,6 +454,7 @@ _version: 2
   uk: "Причина"
 "Actions":
   de: "Maßnahmen"
+  da: "Handlinger"
   fr: "Actions"
   nl: "Acties"
   pl: "Działania"
@@ -405,6 +462,7 @@ _version: 2
   uk: "Дії"
 "All clear":
   de: "Alles in Ordnung"
+  da: "Alt vel"
   fr: "Tout va bien"
   nl: "Alles in orde"
   pl: "Wszystko w porządku"
@@ -412,6 +470,7 @@ _version: 2
   uk: "Усе гаразд"
 "No further incidents at the moment.":
   de: "Im Moment keine weiteren Störungen."
+  da: "Ingen yderligere hændelser i øjeblikket."
   fr: "Aucun autre incident pour le moment."
   nl: "Op dit moment geen andere storingen."
   pl: "Obecnie brak innych zakłóceń."
@@ -419,6 +478,7 @@ _version: 2
   uk: "Інших інцидентів зараз немає."
 "Service operating normally":
   de: "Betrieb läuft normal"
+  da: "Driften kører normalt"
   fr: "Service normal"
   nl: "Dienst verloopt normaal"
   pl: "Kursy odbywają się normalnie"
@@ -426,6 +486,7 @@ _version: 2
   uk: "Рух у звичайному режимі"
 "Live network map":
   de: "Live-Netzkarte"
+  da: "Live-netkort"
   fr: "Carte du réseau en direct"
   nl: "Live netkaart"
   pl: "Mapa sieci na żywo"
@@ -433,6 +494,7 @@ _version: 2
   uk: "Мапа мережі наживо"
 "Buses in service, coloured by delay":
   de: "Busse im Einsatz, nach Verspätung gefärbt"
+  da: "Busser i drift, farvet efter forsinkelse"
   fr: "Bus en service, colorés selon leur retard"
   nl: "Bussen in dienst, gekleurd naar vertraging"
   pl: "Autobusy w kursie, barwione według opóźnienia"
@@ -440,6 +502,7 @@ _version: 2
   uk: "Автобуси на лінії, за кольором запізнення"
 "Slight delay":
   de: "Leichte Verspätung"
+  da: "Lille forsinkelse"
   fr: "Léger retard"
   nl: "Lichte vertraging"
   pl: "Małe opóźnienie"
@@ -447,6 +510,7 @@ _version: 2
   uk: "Невелике запізнення"
 "Not in service":
   de: "Nicht im Einsatz"
+  da: "Ikke i drift"
   fr: "Hors service"
   nl: "Niet in dienst"
   pl: "Poza kursem"
@@ -454,6 +518,7 @@ _version: 2
   uk: "Не на лінії"
 "Show the whole network":
   de: "Das ganze Netz zeigen"
+  da: "Vis hele nettet"
   fr: "Afficher tout le réseau"
   nl: "Het hele net tonen"
   pl: "Pokaż całą sieć"
@@ -461,6 +526,7 @@ _version: 2
   uk: "Показати всю мережу"
 "Advice against late running":
   de: "Tipps gegen Verspätungen"
+  da: "Råd mod forsinkelser"
   fr: "Conseils contre les retards"
   nl: "Advies tegen vertragingen"
   pl: "Porady przeciw opóźnieniom"
@@ -468,6 +534,7 @@ _version: 2
   uk: "Поради проти запізнень"
 "on the way to %{stop}":
   de: "unterwegs nach %{stop}"
+  da: "på vej til %{stop}"
   fr: "en route vers %{stop}"
   nl: "onderweg naar %{stop}"
   pl: "w drodze do %{stop}"
@@ -475,6 +542,7 @@ _version: 2
   uk: "у дорозі до %{stop}"
 "at %{stop}":
   de: "an %{stop}"
+  da: "ved %{stop}"
   fr: "à %{stop}"
   nl: "bij %{stop}"
   pl: "na %{stop}"
@@ -482,6 +550,7 @@ _version: 2
   uk: "на %{stop}"
 "Seen to":
   de: "Erledigt"
+  da: "Taget hånd om"
   fr: "Traité"
   nl: "Afgehandeld"
   pl: "Załatwione"
@@ -489,6 +558,7 @@ _version: 2
   uk: "Залагоджено"
 "Resolved":
   de: "Behoben"
+  da: "Løst"
   fr: "Résolu"
   nl: "Opgelost"
   pl: "Rozwiązane"
@@ -496,6 +566,7 @@ _version: 2
   uk: "Вирішено"
 "Driver late":
   de: "Fahrer zu spät"
+  da: "Chauffør forsinket"
   fr: "Conducteur en retard"
   nl: "Chauffeur te laat"
   pl: "Kierowca spóźniony"
@@ -503,6 +574,7 @@ _version: 2
   uk: "Водій запізнюється"
 "%{name} signs on at %{time}":
   de: "%{name} meldet sich um %{time} zum Dienst"
+  da: "%{name} møder ind kl. %{time}"
   fr: "%{name} prend son service à %{time}"
   nl: "%{name} meldt zich om %{time}"
   pl: "%{name} zgłasza się do pracy o %{time}"
@@ -510,6 +582,7 @@ _version: 2
   uk: "%{name} виходить на зміну о %{time}"
 "since %{time}":
   de: "seit %{time}"
+  da: "siden kl. %{time}"
   fr: "depuis %{time}"
   nl: "sinds %{time}"
   pl: "od %{time}"
@@ -517,6 +590,7 @@ _version: 2
   uk: "з %{time}"
 "(within %{n} min)":
   de: "(innerhalb von %{n} min)"
+  da: "(inden for %{n} min)"
   fr: "(à moins de %{n} min)"
   nl: "(binnen %{n} min)"
   pl: "(do %{n} min)"
@@ -524,6 +598,7 @@ _version: 2
   uk: "(у межах %{n} хв)"
 "of %{n} in service":
   de: "von %{n} im Einsatz"
+  da: "af %{n} i drift"
   fr: "sur %{n} en service"
   nl: "van %{n} in dienst"
   pl: "z %{n} w kursie"
@@ -531,6 +606,7 @@ _version: 2
   uk: "з %{n} на лінії"
 "of %{n} on duty":
   de: "von %{n} im Dienst"
+  da: "af %{n} på vagt"
   fr: "sur %{n} en service"
   nl: "van %{n} in dienst"
   pl: "z %{n} na służbie"
@@ -538,6 +614,7 @@ _version: 2
   uk: "з %{n} на зміні"
 "Breakdowns today":
   de: "Pannen heute"
+  da: "Sammenbrud i dag"
   fr: "Pannes aujourd'hui"
   nl: "Pechgevallen vandaag"
   pl: "Awarie dzisiaj"
@@ -545,6 +622,7 @@ _version: 2
   uk: "Поломки сьогодні"
 "none reported":
   de: "keine gemeldet"
+  da: "ingen meldt"
   fr: "aucune signalée"
   nl: "geen gemeld"
   pl: "brak zgłoszeń"
@@ -552,6 +630,7 @@ _version: 2
   uk: "не було"
 "%{n} still to decide":
   de: "%{n} noch zu entscheiden"
+  da: "%{n} mangler at blive afgjort"
   fr: "%{n} encore à décider"
   nl: "%{n} nog te beslissen"
   pl: "%{n} do decyzji"
@@ -559,6 +638,7 @@ _version: 2
   uk: "%{n} чекають рішення"
 "Last update %{time}":
   de: "Zuletzt %{time}"
+  da: "Sidst opdateret kl. %{time}"
   fr: "Dernière mise à jour %{time}"
   nl: "Laatst bijgewerkt %{time}"
   pl: "Ostatnio %{time}"
@@ -566,6 +646,7 @@ _version: 2
   uk: "Останнє оновлення %{time}"
 "Last updated %{time}":
   de: "Aktualisiert %{time}"
+  da: "Sidst opdateret kl. %{time}"
   fr: "Mis à jour à %{time}"
   nl: "Bijgewerkt om %{time}"
   pl: "Zaktualizowano %{time}"
@@ -573,6 +654,7 @@ _version: 2
   uk: "Оновлено о %{time}"
 "Booked agency driver":
   de: "Gebuchter Leihfahrer"
+  da: "Booket vikarchauffør"
   fr: "Conducteur intérimaire réservé"
   nl: "Geboekte uitzendchauffeur"
   pl: "Zarezerwowany kierowca z agencji"
@@ -580,6 +662,7 @@ _version: 2
   uk: "Замовлений водій агентства"
 "Spare line %{spare}":
   de: "Reservedienst %{spare}"
+  da: "Reservelinje %{spare}"
   fr: "Réserve %{spare}"
   nl: "Reservedienst %{spare}"
   pl: "Rezerwa %{spare}"
@@ -587,6 +670,7 @@ _version: 2
   uk: "Резерв %{spare}"
 "Drop trips":
   de: "Fahrten ausfallen lassen"
+  da: "Drop ture"
   fr: "Supprimer les courses"
   nl: "Ritten laten vervallen"
   pl: "Odwołaj kursy"
@@ -595,6 +679,7 @@ _version: 2
 # The Workshop: its KPI cards, the parts table, the order summary and the side cards
 "Mechanics at work":
   de: "Mechaniker im Dienst"
+  da: "Mekanikere på arbejde"
   fr: "Mécaniciens au travail"
   nl: "Monteurs aan het werk"
   pl: "Mechanicy w pracy"
@@ -602,6 +687,7 @@ _version: 2
   uk: "Механіки на роботі"
 "Buses in the workshop":
   de: "Busse in der Werkstatt"
+  da: "Busser på værkstedet"
   fr: "Bus à l'atelier"
   nl: "Bussen in de werkplaats"
   pl: "Autobusy w warsztacie"
@@ -609,6 +695,7 @@ _version: 2
   uk: "Автобуси в майстерні"
 "%{n} waiting for parts":
   de: "%{n} warten auf Teile"
+  da: "%{n} venter på dele"
   fr: "%{n} attendent des pièces"
   nl: "%{n} wachten op onderdelen"
   pl: "%{n} czeka na części"
@@ -616,6 +703,7 @@ _version: 2
   uk: "%{n} чекають на запчастини"
 "none waiting for parts":
   de: "keiner wartet auf Teile"
+  da: "ingen venter på dele"
   fr: "aucun n'attend de pièces"
   nl: "geen wacht op onderdelen"
   pl: "żaden nie czeka na części"
@@ -623,6 +711,7 @@ _version: 2
   uk: "ніхто не чекає на запчастини"
 "Parts on order":
   de: "Bestellte Teile"
+  da: "Dele i bestilling"
   fr: "Pièces commandées"
   nl: "Bestelde onderdelen"
   pl: "Zamówione części"
@@ -630,6 +719,7 @@ _version: 2
   uk: "Замовлені запчастини"
 "%{amount} in store":
   de: "%{amount} im Lager"
+  da: "%{amount} på lager"
   fr: "%{amount} en stock"
   nl: "%{amount} op voorraad"
   pl: "%{amount} w magazynie"
@@ -637,6 +727,7 @@ _version: 2
   uk: "%{amount} на складі"
 "min %{n}":
   de: "min. %{n}"
+  da: "min. %{n}"
   fr: "min %{n}"
   nl: "min. %{n}"
   pl: "min. %{n}"
@@ -644,6 +735,7 @@ _version: 2
   uk: "мін. %{n}"
 "%{n} on order":
   de: "%{n} bestellt"
+  da: "%{n} i bestilling"
   fr: "%{n} en commande"
   nl: "%{n} besteld"
   pl: "%{n} zamówione"
@@ -651,6 +743,7 @@ _version: 2
   uk: "%{n} замовлено"
 "Check your stock levels and order what you need":
   de: "Prüfe den Lagerbestand und bestelle, was du brauchst"
+  da: "Tjek dine lagerbeholdninger, og bestil det, du har brug for"
   fr: "Vérifiez vos stocks et commandez ce qu'il vous faut"
   nl: "Controleer je voorraad en bestel wat je nodig hebt"
   pl: "Sprawdź stany magazynowe i zamów, czego potrzebujesz"
@@ -658,6 +751,7 @@ _version: 2
   uk: "Перевірте запаси й замовте потрібне"
 "Part":
   de: "Teil"
+  da: "Del"
   fr: "Pièce"
   nl: "Onderdeel"
   pl: "Część"
@@ -665,6 +759,7 @@ _version: 2
   uk: "Деталь"
 "Stock":
   de: "Bestand"
+  da: "Lager"
   fr: "Stock"
   nl: "Voorraad"
   pl: "Stan"
@@ -672,6 +767,7 @@ _version: 2
   uk: "Запас"
 "Unit price":
   de: "Stückpreis"
+  da: "Stykpris"
   fr: "Prix unitaire"
   nl: "Stukprijs"
   pl: "Cena za sztukę"
@@ -679,6 +775,7 @@ _version: 2
   uk: "Ціна за штуку"
 "Quantity":
   de: "Menge"
+  da: "Antal"
   fr: "Quantité"
   nl: "Aantal"
   pl: "Ilość"
@@ -686,6 +783,7 @@ _version: 2
   uk: "Кількість"
 "Line total":
   de: "Summe"
+  da: "Linjetotal"
   fr: "Total de la ligne"
   nl: "Regeltotaal"
   pl: "Razem"
@@ -693,6 +791,7 @@ _version: 2
   uk: "Разом"
 "One less":
   de: "Eins weniger"
+  da: "En mindre"
   fr: "Un de moins"
   nl: "Eén minder"
   pl: "O jeden mniej"
@@ -700,6 +799,7 @@ _version: 2
   uk: "На один менше"
 "One more":
   de: "Eins mehr"
+  da: "En mere"
   fr: "Un de plus"
   nl: "Eén meer"
   pl: "O jeden więcej"
@@ -707,6 +807,7 @@ _version: 2
   uk: "На один більше"
 "Order summary":
   de: "Bestellübersicht"
+  da: "Ordreoversigt"
   fr: "Récapitulatif de la commande"
   nl: "Besteloverzicht"
   pl: "Podsumowanie zamówienia"
@@ -714,6 +815,7 @@ _version: 2
   uk: "Підсумок замовлення"
 "Choose delivery option and place your order":
   de: "Wähle die Lieferung und gib die Bestellung auf"
+  da: "Vælg leveringsmulighed, og afgiv din ordre"
   fr: "Choisissez la livraison et passez votre commande"
   nl: "Kies de levering en plaats je bestelling"
   pl: "Wybierz dostawę i złóż zamówienie"
@@ -721,6 +823,7 @@ _version: 2
   uk: "Оберіть доставку й оформіть замовлення"
 "At once":
   de: "Sofort"
+  da: "Med det samme"
   fr: "Tout de suite"
   nl: "Meteen"
   pl: "Od razu"
@@ -728,6 +831,7 @@ _version: 2
   uk: "Одразу"
 "Order total":
   de: "Gesamtbetrag"
+  da: "Ordretotal"
   fr: "Total de la commande"
   nl: "Totaal van de bestelling"
   pl: "Suma zamówienia"
@@ -735,6 +839,7 @@ _version: 2
   uk: "Сума замовлення"
 "Order":
   de: "Bestellen"
+  da: "Bestil"
   fr: "Commander"
   nl: "Bestellen"
   pl: "Zamów"
@@ -742,6 +847,7 @@ _version: 2
   uk: "Замовити"
 "waits for: %{parts}":
   de: "wartet auf: %{parts}"
+  da: "venter på: %{parts}"
   fr: "attend : %{parts}"
   nl: "wacht op: %{parts}"
   pl: "czeka na: %{parts}"
@@ -749,6 +855,7 @@ _version: 2
   uk: "чекає на: %{parts}"
 "Buses in repair":
   de: "Busse in Reparatur"
+  da: "Busser under reparation"
   fr: "Bus en réparation"
   nl: "Bussen in reparatie"
   pl: "Autobusy w naprawie"
@@ -756,6 +863,7 @@ _version: 2
   uk: "Автобуси в ремонті"
 "No buses are currently in repair.":
   de: "Zurzeit ist kein Bus in Reparatur."
+  da: "Ingen busser er under reparation i øjeblikket."
   fr: "Aucun bus n'est en réparation pour le moment."
   nl: "Er is op dit moment geen bus in reparatie."
   pl: "Obecnie żaden autobus nie jest w naprawie."
@@ -763,6 +871,7 @@ _version: 2
   uk: "Зараз жоден автобус не в ремонті."
 "Once a bus is in the workshop, it will appear here.":
   de: "Sobald ein Bus in der Werkstatt ist, erscheint er hier."
+  da: "Når en bus er på værkstedet, vises den her."
   fr: "Dès qu'un bus est à l'atelier, il apparaît ici."
   nl: "Zodra een bus in de werkplaats staat, verschijnt hij hier."
   pl: "Gdy autobus trafi do warsztatu, pojawi się tutaj."
@@ -770,6 +879,7 @@ _version: 2
   uk: "Щойно автобус потрапить до майстерні, він з'явиться тут."
 "Every part is above its minimum.":
   de: "Jedes Teil liegt über seinem Mindestbestand."
+  da: "Hver del er over sit minimum."
   fr: "Chaque pièce est au-dessus de son minimum."
   nl: "Elk onderdeel zit boven zijn minimum."
   pl: "Każda część jest powyżej minimum."
@@ -777,6 +887,7 @@ _version: 2
   uk: "Усі деталі вище мінімуму."
 "Under their minimum now: %{n} parts":
   de: "Jetzt unter dem Mindestbestand: %{n} Teile"
+  da: "Under deres minimum nu: %{n} dele"
   fr: "Sous leur minimum maintenant : %{n} pièces"
   nl: "Nu onder hun minimum: %{n} onderdelen"
   pl: "Teraz poniżej minimum: %{n} części"
@@ -784,6 +895,7 @@ _version: 2
   uk: "Зараз нижче мінімуму: %{n} деталей"
 "Staff page":
   de: "Personalseite"
+  da: "Personalesiden"
   fr: "Page du personnel"
   nl: "Personeelspagina"
   pl: "Strona personelu"
@@ -791,6 +903,7 @@ _version: 2
   uk: "Сторінка персоналу"
 "Maintain your fleet, order spare parts and keep your buses on the road.":
   de: "Halte deine Flotte in Schuss, bestelle Ersatzteile und halte deine Busse auf der Straße."
+  da: "Vedligehold din flåde, bestil reservedele, og hold dine busser på vejen."
   fr: "Entretenez votre flotte, commandez des pièces et gardez vos bus sur la route."
   nl: "Onderhoud je vloot, bestel onderdelen en houd je bussen op de weg."
   pl: "Dbaj o flotę, zamawiaj części i utrzymuj autobusy na trasie."
@@ -799,6 +912,7 @@ _version: 2
 # The Sandbox: its head, the quick presets and the groups as tabs
 "Your own mix: set each knob below.":
   de: "Deine eigene Mischung: stelle jeden Regler unten ein."
+  da: "Din egen blanding: indstil hver knap nedenfor."
   fr: "Votre propre mélange : réglez chaque curseur ci-dessous."
   nl: "Je eigen mix: stel elke schuif hieronder in."
   pl: "Własna mieszanka: ustaw każde pokrętło poniżej."
@@ -806,6 +920,7 @@ _version: 2
   uk: "Власний набір: налаштуйте кожен параметр нижче."
 "Adjust the game settings to create your own bus company experience.":
   de: "Passe die Spielregeln an und gestalte dein eigenes Busunternehmen."
+  da: "Justér spilindstillingerne for at skabe din egen buselskabsoplevelse."
   fr: "Réglez les paramètres du jeu pour créer votre propre expérience de compagnie de bus."
   nl: "Pas de spelregels aan en maak je eigen busbedrijf."
   pl: "Dostosuj zasady gry i stwórz własną firmę autobusową."
@@ -813,6 +928,7 @@ _version: 2
   uk: "Налаштуйте правила гри й створіть власну автобусну компанію."
 "Reset to career":
   de: "Auf Karriere zurücksetzen"
+  da: "Nulstil til karriere"
   fr: "Revenir à la carrière"
   nl: "Terug naar carrière"
   pl: "Przywróć karierę"
@@ -820,6 +936,7 @@ _version: 2
   uk: "Повернути як у кар'єрі"
 "Quick presets":
   de: "Schnellvorgaben"
+  da: "Hurtige forudindstillinger"
   fr: "Préréglages rapides"
   nl: "Snelle voorinstellingen"
   pl: "Szybkie ustawienia"
@@ -827,6 +944,7 @@ _version: 2
   uk: "Швидкі пресети"
 "Balance and reputation":
   de: "Kontostand und Ansehen"
+  da: "Saldo og omdømme"
   fr: "Solde et réputation"
   nl: "Saldo en reputatie"
   pl: "Saldo i reputacja"
@@ -834,6 +952,7 @@ _version: 2
   uk: "Баланс і репутація"
 "The company's balance and its reputation, set to the figure you type.":
   de: "Der Kontostand und das Ansehen des Unternehmens, auf die Zahl gesetzt, die du eingibst."
+  da: "Selskabets saldo og dets omdømme, sat til det tal, du skriver."
   fr: "Le solde et la réputation de la compagnie, fixés au chiffre que vous saisissez."
   nl: "Het saldo en de reputatie van het bedrijf, gezet op het getal dat je typt."
   pl: "Saldo i reputacja firmy, ustawione na wpisaną liczbę."
@@ -841,6 +960,7 @@ _version: 2
   uk: "Баланс і репутація компанії — на число, яке ви введете."
 "Unlimited money, going broke, loans":
   de: "Unbegrenztes Geld, Pleite, Kredite"
+  da: "Ubegrænsede penge, konkurs, lån"
   fr: "Argent illimité, faillite, prêts"
   nl: "Onbeperkt geld, failliet gaan, leningen"
   pl: "Nieograniczone pieniądze, bankructwo, kredyty"
@@ -848,6 +968,7 @@ _version: 2
   uk: "Безлімітні гроші, банкрутство, кредити"
 "Levels, research, buses, concessions":
   de: "Stufen, Forschung, Busse, Konzessionen"
+  da: "Niveauer, forskning, busser, koncessioner"
   fr: "Niveaux, recherche, bus, concessions"
   nl: "Niveaus, onderzoek, bussen, concessies"
   pl: "Poziomy, badania, autobusy, koncesje"
@@ -855,6 +976,7 @@ _version: 2
   uk: "Рівні, дослідження, автобуси, концесії"
 "Income, wages, costs, prices":
   de: "Einnahmen, Löhne, Kosten, Preise"
+  da: "Indtægt, lønninger, omkostninger, priser"
   fr: "Recettes, salaires, coûts, prix"
   nl: "Inkomsten, lonen, kosten, prijzen"
   pl: "Przychody, płace, koszty, ceny"
@@ -862,6 +984,7 @@ _version: 2
   uk: "Доходи, зарплати, витрати, ціни"
 "Breakdowns, delays, reputation, staff":
   de: "Pannen, Verspätungen, Ansehen, Personal"
+  da: "Sammenbrud, forsinkelser, omdømme, personale"
   fr: "Pannes, retards, réputation, personnel"
   nl: "Pech, vertragingen, reputatie, personeel"
   pl: "Awarie, opóźnienia, reputacja, personel"
@@ -869,6 +992,7 @@ _version: 2
   uk: "Поломки, запізнення, репутація, персонал"
 "Hiring":
   de: "Einstellung"
+  da: "Ansættelse"
   fr: "Embauche"
   nl: "Werving"
   pl: "Zatrudnianie"
@@ -876,6 +1000,7 @@ _version: 2
   uk: "Найм"
 "How the company's money behaves: whether it runs out, and what the bank asks.":
   de: "Wie sich das Geld des Unternehmens verhält: ob es ausgeht und was die Bank verlangt."
+  da: "Hvordan selskabets penge opfører sig: om de slipper op, og hvad banken kræver."
   fr: "Le comportement de l'argent de la compagnie : s'il peut manquer, et ce que demande la banque."
   nl: "Hoe het geld van het bedrijf zich gedraagt: of het op kan raken en wat de bank vraagt."
   pl: "Jak zachowują się pieniądze firmy: czy mogą się skończyć i czego chce bank."
@@ -883,6 +1008,7 @@ _version: 2
   uk: "Як поводяться гроші компанії: чи можуть вони скінчитися і що просить банк."
 "What the company may use without earning it first.":
   de: "Was das Unternehmen nutzen darf, ohne es sich erst zu verdienen."
+  da: "Hvad selskabet må bruge, uden først at have tjent det."
   fr: "Ce que la compagnie peut utiliser sans l'avoir d'abord mérité."
   nl: "Wat het bedrijf mag gebruiken zonder het eerst te verdienen."
   pl: "Z czego firma może korzystać, zanim na to zapracuje."
@@ -890,6 +1016,7 @@ _version: 2
   uk: "Чим компанія може користуватися, не заслуживши цього спершу."
 "What the company earns and what it pays, each against a career's.":
   de: "Was das Unternehmen einnimmt und was es zahlt, jeweils gegenüber einer Karriere."
+  da: "Hvad selskabet tjener, og hvad det betaler, hver mod en karrieres."
   fr: "Ce que la compagnie gagne et ce qu'elle paie, chaque fois par rapport à une carrière."
   nl: "Wat het bedrijf verdient en wat het betaalt, telkens tegenover een carrière."
   pl: "Co firma zarabia i co płaci, w porównaniu z karierą."
@@ -897,6 +1024,7 @@ _version: 2
   uk: "Що компанія заробляє і що платить, порівняно з кар'єрою."
 "What happens on the road and in the depot, and how the reputation moves.":
   de: "Was auf der Straße und im Betriebshof geschieht und wie sich das Ansehen bewegt."
+  da: "Hvad der sker på vejen og i garagen, og hvordan omdømmet bevæger sig."
   fr: "Ce qui se passe sur la route et au dépôt, et comment évolue la réputation."
   nl: "Wat er op de weg en in de stalling gebeurt, en hoe de reputatie beweegt."
   pl: "Co dzieje się na trasie i w zajezdni oraz jak zmienia się reputacja."
@@ -904,6 +1032,7 @@ _version: 2
   uk: "Що відбувається на дорозі та в депо і як змінюється репутація."
 "How easily the company finds its people.":
   de: "Wie leicht das Unternehmen sein Personal findet."
+  da: "Hvor let selskabet finder sine folk."
   fr: "La facilité avec laquelle la compagnie trouve son personnel."
   nl: "Hoe makkelijk het bedrijf zijn mensen vindt."
   pl: "Jak łatwo firma znajduje pracowników."
@@ -911,6 +1040,7 @@ _version: 2
   uk: "Наскільки легко компанія знаходить людей."
 "Relaxed":
   de: "Entspannt"
+  da: "Afslappet"
   fr: "Détendu"
   nl: "Ontspannen"
   pl: "Na luzie"
@@ -918,6 +1048,7 @@ _version: 2
   uk: "Розслаблено"
 "No going broke, free loans, more income and lower costs, fewer mishaps.":
   de: "Keine Pleite, zinslose Kredite, mehr Einnahmen und weniger Kosten, weniger Pannen."
+  da: "Ingen konkurs, gratis lån, mere indtægt og lavere omkostninger, færre uheld."
   fr: "Pas de faillite, prêts gratuits, plus de recettes et moins de coûts, moins d'incidents."
   nl: "Geen faillissement, gratis leningen, meer inkomsten en lagere kosten, minder pech."
   pl: "Bez bankructwa, darmowe kredyty, wyższe przychody i niższe koszty, mniej wpadek."
@@ -925,6 +1056,7 @@ _version: 2
   uk: "Без банкрутства, безкоштовні кредити, більше доходів і менше витрат, менше неприємностей."
 "Less income, higher costs and penalties, more breakdowns and delays.":
   de: "Weniger Einnahmen, höhere Kosten und Strafen, mehr Pannen und Verspätungen."
+  da: "Mindre indtægt, højere omkostninger og bøder, flere sammenbrud og forsinkelser."
   fr: "Moins de recettes, des coûts et pénalités plus élevés, plus de pannes et de retards."
   nl: "Minder inkomsten, hogere kosten en boetes, meer pech en vertragingen."
   pl: "Niższe przychody, wyższe koszty i kary, więcej awarii i opóźnień."
@@ -932,6 +1064,7 @@ _version: 2
   uk: "Менше доходів, вищі витрати й штрафи, більше поломок і запізнень."
 "Every setting as a career company has it.":
   de: "Jede Einstellung wie bei einem Karriere-Unternehmen."
+  da: "Hver indstilling, som et karriereselskab har den."
   fr: "Chaque réglage comme dans une compagnie en carrière."
   nl: "Elke instelling zoals een carrièrebedrijf die heeft."
   pl: "Każde ustawienie jak w firmie w trybie kariery."
@@ -940,6 +1073,7 @@ _version: 2
 # Research after Luc's reference: the head, the current research, the tiles' states, the details
 "Current research":
   de: "Laufende Forschung"
+  da: "Aktuel forskning"
   fr: "Recherche en cours"
   nl: "Huidig onderzoek"
   pl: "Bieżące badanie"
@@ -947,6 +1081,7 @@ _version: 2
   uk: "Поточне дослідження"
 "Available":
   de: "Verfügbar"
+  da: "Tilgængelig"
   fr: "Disponible"
   nl: "Beschikbaar"
   pl: "Dostępne"
@@ -954,6 +1089,7 @@ _version: 2
   uk: "Доступно"
 "Under way":
   de: "In Arbeit"
+  da: "I gang"
   fr: "En cours"
   nl: "Bezig"
   pl: "W toku"
@@ -961,6 +1097,7 @@ _version: 2
   uk: "Триває"
 "Locked: needs %{what}":
   de: "Gesperrt: braucht %{what}"
+  da: "Låst: kræver %{what}"
   fr: "Verrouillé : nécessite %{what}"
   nl: "Vergrendeld: vereist %{what}"
   pl: "Zablokowane: wymaga %{what}"
@@ -968,6 +1105,7 @@ _version: 2
   uk: "Закрито: потрібно %{what}"
 "Effect":
   de: "Wirkung"
+  da: "Virkning"
   fr: "Effet"
   nl: "Effect"
   pl: "Efekt"
@@ -975,6 +1113,7 @@ _version: 2
   uk: "Ефект"
 "Cost":
   de: "Kosten"
+  da: "Pris"
   fr: "Coût"
   nl: "Kosten"
   pl: "Koszt"
@@ -982,6 +1121,7 @@ _version: 2
   uk: "Вартість"
 "Prerequisites":
   de: "Voraussetzungen"
+  da: "Forudsætninger"
   fr: "Prérequis"
   nl: "Vereisten"
   pl: "Wymagania"
@@ -989,6 +1129,7 @@ _version: 2
   uk: "Вимоги"
 "This research has already been completed. Its benefits are now active in your operations.":
   de: "Diese Forschung ist abgeschlossen. Ihre Vorteile wirken jetzt in deinem Betrieb."
+  da: "Denne forskning er allerede gennemført. Dens fordele er nu aktive i din drift."
   fr: "Cette recherche est terminée. Ses avantages sont désormais actifs dans votre exploitation."
   nl: "Dit onderzoek is afgerond. De voordelen werken nu in je bedrijfsvoering."
   pl: "To badanie zostało ukończone. Jego korzyści działają już w twojej firmie."
@@ -996,6 +1137,7 @@ _version: 2
   uk: "Це дослідження завершено. Його переваги вже діють у вашій роботі."
 "This research is under way: its benefits come when its stage is done.":
   de: "Diese Forschung läuft: Ihre Vorteile kommen, wenn ihre Stufe fertig ist."
+  da: "Denne forskning er i gang: dens fordele kommer, når dens trin er færdigt."
   fr: "Cette recherche est en cours : ses avantages arrivent quand son étape est terminée."
   nl: "Dit onderzoek loopt: de voordelen komen als de fase klaar is."
   pl: "To badanie trwa: korzyści pojawią się po ukończeniu etapu."
@@ -1003,6 +1145,7 @@ _version: 2
   uk: "Це дослідження триває: переваги з'являться, коли етап буде завершено."
 "Everything it needs is there: start it when you like. One research runs at a time.":
   de: "Alles, was sie braucht, ist da: starte sie, wann du willst. Es läuft immer nur eine Forschung."
+  da: "Alt, den kræver, er der: start den, når du vil. Én forskning kører ad gangen."
   fr: "Tout ce qu'il lui faut est là : lancez-la quand vous voulez. Une seule recherche à la fois."
   nl: "Alles wat het nodig heeft is er: start het wanneer je wilt. Er loopt één onderzoek tegelijk."
   pl: "Wszystko, czego potrzebuje, jest gotowe: rozpocznij, kiedy chcesz. Naraz trwa jedno badanie."
@@ -1010,6 +1153,7 @@ _version: 2
   uk: "Усе потрібне є: почніть, коли захочете. Одночасно триває одне дослідження."
 "It waits for what it needs: research that first, or reach the level it asks.":
   de: "Sie wartet auf ihre Voraussetzungen: erforsche diese zuerst oder erreiche die verlangte Stufe."
+  da: "Den venter på det, den kræver: forsk først i det, eller nå det niveau, den kræver."
   fr: "Elle attend ses prérequis : recherchez-les d'abord ou atteignez le niveau demandé."
   nl: "Het wacht op wat het nodig heeft: onderzoek dat eerst of bereik het gevraagde niveau."
   pl: "Czeka na wymagania: najpierw zbadaj je lub osiągnij wymagany poziom."
@@ -1017,6 +1161,7 @@ _version: 2
   uk: "Чекає на вимоги: спершу дослідіть їх або досягніть потрібного рівня."
 "Invest in new technologies and improvements to make your operations more efficient, sustainable and profitable.":
   de: "Investiere in neue Technik und Verbesserungen, damit dein Betrieb effizienter, nachhaltiger und rentabler wird."
+  da: "Invester i nye teknologier og forbedringer for at gøre din drift mere effektiv, bæredygtig og rentabel."
   fr: "Investissez dans de nouvelles technologies et améliorations pour une exploitation plus efficace, durable et rentable."
   nl: "Investeer in nieuwe technologie en verbeteringen om je bedrijf efficiënter, duurzamer en winstgevender te maken."
   pl: "Inwestuj w nowe technologie i ulepszenia, by firma działała wydajniej, bardziej ekologicznie i z większym zyskiem."
@@ -1025,6 +1170,7 @@ _version: 2
 # Multiplayer not shared: the hero, the steps, the friends online, the roles
 "Run your company together":
   de: "Führt euer Unternehmen gemeinsam"
+  da: "Drive selskabet sammen"
   fr: "Gérez votre compagnie ensemble"
   nl: "Run je bedrijf samen"
   pl: "Prowadźcie firmę razem"
@@ -1032,6 +1178,7 @@ _version: 2
   uk: "Керуйте компанією разом"
 "Step %{n}":
   de: "Schritt %{n}"
+  da: "Trin %{n}"
   fr: "Étape %{n}"
   nl: "Stap %{n}"
   pl: "Krok %{n}"
@@ -1039,6 +1186,7 @@ _version: 2
   uk: "Крок %{n}"
 "Your friends online":
   de: "Deine Freunde online"
+  da: "Dine venner online"
   fr: "Vos amis en ligne"
   nl: "Je vrienden online"
   pl: "Twoi znajomi online"
@@ -1046,6 +1194,7 @@ _version: 2
   uk: "Ваші друзі в мережі"
 "Invite":
   de: "Einladen"
+  da: "Inviter"
   fr: "Inviter"
   nl: "Uitnodigen"
   pl: "Zaproś"
@@ -1053,6 +1202,7 @@ _version: 2
   uk: "Запросити"
 "Starts sharing if it is not on yet, then sends them the session code.":
   de: "Startet das Teilen, falls es noch nicht läuft, und schickt ihnen den Sitzungscode."
+  da: "Begynder at dele, hvis det ikke allerede er tændt, og sender dem derefter sessionskoden."
   fr: "Lance le partage s'il n'est pas encore actif, puis leur envoie le code de session."
   nl: "Start het delen als dat nog niet aan staat en stuurt hun de sessiecode."
   pl: "Włącza udostępnianie, jeśli jeszcze nie działa, i wysyła im kod sesji."
@@ -1060,6 +1210,7 @@ _version: 2
   uk: "Вмикає спільний доступ, якщо він ще не ввімкнений, і надсилає їм код сесії."
 "None of your friends is online right now.":
   de: "Gerade ist keiner deiner Freunde online."
+  da: "Ingen af dine venner er online lige nu."
   fr: "Aucun de vos amis n'est en ligne pour le moment."
   nl: "Er is nu geen van je vrienden online."
   pl: "Żaden z twoich znajomych nie jest teraz online."
@@ -1067,6 +1218,7 @@ _version: 2
   uk: "Зараз нікого з ваших друзів немає в мережі."
 "Omsi-Hub online cannot be reached now: send the session code yourself.":
   de: "Omsi-Hub online ist gerade nicht erreichbar: schick den Sitzungscode selbst."
+  da: "Omsi-Hub online kan ikke nås nu: send sessionskoden selv."
   fr: "Omsi-Hub en ligne est injoignable pour le moment : envoyez le code de session vous-même."
   nl: "Omsi-Hub online is nu niet bereikbaar: stuur de sessiecode zelf."
   pl: "Omsi-Hub online jest teraz niedostępny: wyślij kod sesji sam."
@@ -1074,6 +1226,7 @@ _version: 2
   uk: "Omsi-Hub online зараз недоступний: надішліть код сесії самі."
 "Sign in or make an account to see your friends here and invite them. Without one, send the session code yourself.":
   de: "Melde dich an oder erstelle ein Konto, um deine Freunde hier zu sehen und einzuladen. Ohne Konto schickst du den Sitzungscode selbst."
+  da: "Log ind eller opret en konto for at se dine venner her og invitere dem. Uden en sender du sessionskoden selv."
   fr: "Connectez-vous ou créez un compte pour voir vos amis ici et les inviter. Sans compte, envoyez le code de session vous-même."
   nl: "Log in of maak een account om je vrienden hier te zien en uit te nodigen. Zonder account stuur je de sessiecode zelf."
   pl: "Zaloguj się lub załóż konto, aby widzieć tu znajomych i ich zapraszać. Bez konta wyślij kod sesji sam."
@@ -1081,6 +1234,7 @@ _version: 2
   uk: "Увійдіть або створіть акаунт, щоб бачити тут друзів і запрошувати їх. Без акаунта надішліть код сесії самі."
 "Sign in":
   de: "Anmelden"
+  da: "Log ind"
   fr: "Se connecter"
   nl: "Inloggen"
   pl: "Zaloguj się"
@@ -1088,6 +1242,7 @@ _version: 2
   uk: "Увійти"
 "Roles":
   de: "Rollen"
+  da: "Roller"
   fr: "Rôles"
   nl: "Rollen"
   pl: "Role"
@@ -1095,6 +1250,7 @@ _version: 2
   uk: "Ролі"
 "You choose each player's role once they have joined, and can tick more or fewer permissions on top of it.":
   de: "Du wählst die Rolle jedes Spielers, sobald er beigetreten ist, und kannst darüber mehr oder weniger Rechte ankreuzen."
+  da: "Du vælger hver spillers rolle, når de er kommet med, og kan afkrydse flere eller færre tilladelser oveni."
   fr: "Vous choisissez le rôle de chaque joueur une fois qu'il a rejoint, et pouvez cocher plus ou moins de droits en plus."
   nl: "Je kiest de rol van elke speler zodra die is binnengekomen, en kunt daarbovenop meer of minder rechten aanvinken."
   pl: "Rolę każdego gracza wybierasz po jego dołączeniu i możesz dodać lub odjąć uprawnienia."

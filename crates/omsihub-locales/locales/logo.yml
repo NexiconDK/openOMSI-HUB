@@ -5,6 +5,7 @@ _version: 2
 "Remove the picture":
   nl: "Plaatje weghalen"
   de: "Bild entfernen"
+  da: "Fjern billedet"
   fr: "Retirer l'image"
   ru: "Убрать изображение"
   uk: "Прибрати зображення"
@@ -12,6 +13,7 @@ _version: 2
 "The company's mark":
   nl: "Het merkteken van het bedrijf"
   de: "Das Zeichen des Unternehmens"
+  da: "Selskabets mærke"
   fr: "L'emblème de l'entreprise"
   ru: "Знак компании"
   uk: "Знак компанії"

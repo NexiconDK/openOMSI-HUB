@@ -3,6 +3,7 @@ _version: 2
 # player takes, the lines taken at the asking price, and what the company does by itself.
 "Easy mode":
   de: "Leichter Modus"
+  da: "Nem tilstand"
   fr: "Mode facile"
   nl: "Makkelijke modus"
   pl: "Tryb łatwy"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Простий режим"
 "Advanced mode":
   de: "Erweiterter Modus"
+  da: "Avanceret tilstand"
   fr: "Mode avancé"
   nl: "Uitgebreide modus"
   pl: "Tryb zaawansowany"
@@ -17,6 +19,7 @@ _version: 2
   uk: "Розширений режим"
 "The company runs its routine by itself: rosters, spare parts, repairs, staff and research. You drive, buy buses, add lines and watch the money.":
   de: "Der Betrieb erledigt seine Routine selbst: Dienstpläne, Ersatzteile, Reparaturen, Personal und Forschung. Du fährst, kaufst Busse, fügst Linien hinzu und behältst das Geld im Blick."
+  da: "Selskabet kører sin rutine selv: vagtplaner, reservedele, reparationer, personale og forskning. Du kører, køber busser, tilføjer linjer og holder øje med pengene."
   fr: "L'entreprise gère sa routine elle-même : roulements, pièces détachées, réparations, personnel et recherche. Toi, tu conduis, achètes des bus, ajoutes des lignes et surveilles l'argent."
   nl: "Het bedrijf regelt zijn routine zelf: roosters, onderdelen, reparaties, personeel en onderzoek. Jij rijdt, koopt bussen, voegt lijnen toe en houdt het geld in de gaten."
   pl: "Firma sama zajmuje się rutyną: grafikami, częściami zamiennymi, naprawami, personelem i badaniami. Ty jeździsz, kupujesz autobusy, dodajesz linie i pilnujesz pieniędzy."
@@ -24,6 +27,7 @@ _version: 2
   uk: "Компанія сама веде рутину: графіки, запчастини, ремонти, персонал і дослідження. Ви водите, купуєте автобуси, додаєте лінії й стежите за грошима."
 "Every page and every function: you plan the rosters, run the workshop, bid for concessions and manage everything yourself.":
   de: "Jede Seite und jede Funktion: Du planst die Dienstpläne, führst die Werkstatt, bietest auf Konzessionen und regelst alles selbst."
+  da: "Hver side og hver funktion: du planlægger vagtplanerne, driver værkstedet, byder på koncessioner og styrer alt selv."
   fr: "Chaque page et chaque fonction : tu planifies les roulements, gères l'atelier, enchéris pour les concessions et t'occupes de tout toi-même."
   nl: "Elke pagina en elke functie: jij plant de roosters, runt de werkplaats, biedt op concessies en regelt alles zelf."
   pl: "Każda strona i każda funkcja: planujesz grafiki, prowadzisz warsztat, licytujesz koncesje i wszystkim zarządzasz sam."
@@ -31,6 +35,7 @@ _version: 2
   uk: "Усі сторінки та функції: ви плануєте графіки, керуєте майстернею, робите ставки на концесії й ведете все самі."
 "How you run the company":
   de: "Wie du den Betrieb führst"
+  da: "Hvordan du driver selskabet"
   fr: "Comment tu diriges l'entreprise"
   nl: "Hoe je het bedrijf runt"
   pl: "Jak prowadzisz firmę"
@@ -38,6 +43,7 @@ _version: 2
   uk: "Як ви керуєте компанією"
 "How much of the company you run yourself: change it in the company's settings":
   de: "Wie viel vom Betrieb du selbst führst: Ändere es in den Einstellungen des Betriebs"
+  da: "Hvor meget af selskabet du driver selv: ændr det i selskabets indstillinger"
   fr: "La part de l'entreprise que tu gères toi-même : change-la dans les réglages de l'entreprise"
   nl: "Hoeveel van het bedrijf je zelf regelt: wijzig het in de instellingen van het bedrijf"
   pl: "Ile firmy prowadzisz sam: zmień to w ustawieniach firmy"
@@ -45,6 +51,7 @@ _version: 2
   uk: "Скільки компанії ви ведете самі: змініть це в налаштуваннях компанії"
 "The company runs in the easy mode now: it sees to its routine by itself.":
   de: "Der Betrieb läuft jetzt im leichten Modus: Er erledigt seine Routine selbst."
+  da: "Selskabet kører nu i den nemme tilstand: det klarer sin rutine selv."
   fr: "L'entreprise est maintenant en mode facile : elle s'occupe elle-même de sa routine."
   nl: "Het bedrijf draait nu in de makkelijke modus: het regelt zijn routine zelf."
   pl: "Firma działa teraz w trybie łatwym: sama zajmuje się rutyną."
@@ -52,6 +59,7 @@ _version: 2
   uk: "Компанія тепер у простому режимі: рутину вона веде сама."
 "The company runs in the advanced mode now: every page and every function is open.":
   de: "Der Betrieb läuft jetzt im erweiterten Modus: Jede Seite und jede Funktion ist offen."
+  da: "Selskabet kører nu i den avancerede tilstand: hver side og hver funktion er åben."
   fr: "L'entreprise est maintenant en mode avancé : chaque page et chaque fonction est ouverte."
   nl: "Het bedrijf draait nu in de uitgebreide modus: elke pagina en elke functie is open."
   pl: "Firma działa teraz w trybie zaawansowanym: każda strona i każda funkcja jest dostępna."
@@ -59,6 +67,7 @@ _version: 2
   uk: "Компанія тепер у розширеному режимі: відкриті всі сторінки й функції."
 "The easy mode buys at the list price, in one click: the buses are yours at once.":
   de: "Der leichte Modus kauft zum Listenpreis, mit einem Klick: Die Busse gehören sofort dir."
+  da: "Den nemme tilstand køber til listepris med ét klik: busserne er dine med det samme."
   fr: "Le mode facile achète au prix catalogue, en un clic : les bus sont à toi tout de suite."
   nl: "De makkelijke modus koopt tegen de catalogusprijs, met één klik: de bussen zijn meteen van jou."
   pl: "Tryb łatwy kupuje po cenie katalogowej, jednym kliknięciem: autobusy są od razu twoje."
@@ -67,6 +76,7 @@ _version: 2
 # the easy start screen
 "What to do next":
   de: "Was als Nächstes"
+  da: "Hvad skal du gøre nu"
   fr: "Que faire ensuite"
   nl: "Wat nu te doen"
   pl: "Co dalej"
@@ -74,6 +84,7 @@ _version: 2
   uk: "Що робити далі"
 "Take on a line":
   de: "Eine Linie übernehmen"
+  da: "Tag en linje på dig"
   fr: "Prendre une ligne"
   nl: "Neem een lijn"
   pl: "Weź linię"
@@ -81,6 +92,7 @@ _version: 2
   uk: "Візьміть лінію"
 "Choose one of the map's lines, or draw a line of your own.":
   de: "Wähle eine der Linien der Karte, oder zeichne eine eigene Linie."
+  da: "Vælg en af kortets linjer, eller tegn din egen linje."
   fr: "Choisis l'une des lignes de la carte, ou trace ta propre ligne."
   nl: "Kies een van de lijnen van de kaart, of teken een eigen lijn."
   pl: "Wybierz jedną z linii mapy albo narysuj własną."
@@ -88,6 +100,7 @@ _version: 2
   uk: "Виберіть одну з ліній карти або намалюйте власну."
 "Get your buses":
   de: "Hol dir deine Busse"
+  da: "Skaf dine busser"
   fr: "Procure-toi tes bus"
   nl: "Haal je bussen"
   pl: "Zdobądź autobusy"
@@ -95,6 +108,7 @@ _version: 2
   uk: "Придбайте автобуси"
 "Buy, lease or rent buses at the dealer: one for every tour on the road at once.":
   de: "Kaufe, lease oder miete Busse beim Händler: einen für jeden Umlauf, der gleichzeitig unterwegs ist."
+  da: "Køb, lease eller lej busser hos forhandleren: en til hvert vognløb, der er på vejen på én gang."
   fr: "Achète, prends en leasing ou loue des bus chez le concessionnaire : un pour chaque service en route en même temps."
   nl: "Koop, lease of huur bussen bij de dealer: één voor elke omloop die tegelijk rijdt."
   pl: "Kup, weź w leasing lub wynajmij autobusy u dealera: po jednym na każdą brygadę jednocześnie na trasie."
@@ -102,6 +116,7 @@ _version: 2
   uk: "Купіть, візьміть у лізинг або орендуйте автобуси в дилера: по одному на кожен оборот, що в дорозі одночасно."
 "%{n} tours of today have no bus: get more buses.":
   de: "%{n} Umläufe von heute haben keinen Bus: Hol dir mehr Busse."
+  da: "%{n} vognløb i dag har ingen bus: skaf flere busser."
   fr: "%{n} services d'aujourd'hui n'ont pas de bus : procure-toi plus de bus."
   nl: "%{n} omlopen van vandaag hebben geen bus: haal meer bussen."
   pl: "Brygady bez autobusu dzisiaj: %{n}. Zdobądź więcej autobusów."
@@ -109,6 +124,7 @@ _version: 2
   uk: "Оборотів без автобуса сьогодні: %{n}. Придбайте ще автобуси."
 "Drivers for the duties":
   de: "Fahrer für die Dienste"
+  da: "Chauffører til vagterne"
   fr: "Des conducteurs pour les services"
   nl: "Chauffeurs voor de diensten"
   pl: "Kierowcy do służb"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Водії для змін"
 "Hire drivers, or let the company hire them tonight for the duties of its lines.":
   de: "Stelle Fahrer ein, oder lass den Betrieb sie heute Nacht für die Dienste seiner Linien einstellen."
+  da: "Ansæt chauffører, eller lad selskabet ansætte dem i nat til sine linjers vagter."
   fr: "Embauche des conducteurs, ou laisse l'entreprise les embaucher cette nuit pour les services de ses lignes."
   nl: "Neem chauffeurs aan, of laat het bedrijf ze vannacht aannemen voor de diensten van zijn lijnen."
   pl: "Zatrudnij kierowców albo pozwól firmie zatrudnić ich tej nocy do służb jej linii."
@@ -123,6 +140,7 @@ _version: 2
   uk: "Найміть водіїв або дозвольте компанії найняти їх цієї ночі для змін її ліній."
 "%{n} duties of today have no driver: the company hires more tonight, or hire them now.":
   de: "%{n} Dienste von heute haben keinen Fahrer: Der Betrieb stellt heute Nacht mehr ein, oder stell sie jetzt ein."
+  da: "%{n} vagter i dag har ingen chauffør: selskabet ansætter flere i nat, eller ansæt dem nu."
   fr: "%{n} services d'aujourd'hui n'ont pas de conducteur : l'entreprise en embauche d'autres cette nuit, ou embauche-les maintenant."
   nl: "%{n} diensten van vandaag hebben geen chauffeur: het bedrijf neemt er vannacht meer aan, of neem ze nu aan."
   pl: "Służby bez kierowcy dzisiaj: %{n}. Firma zatrudni więcej tej nocy albo zatrudnij ich teraz."
@@ -130,6 +148,7 @@ _version: 2
   uk: "Змін без водія сьогодні: %{n}. Компанія найме ще цієї ночі, або найміть їх зараз."
 "%{n} drivers: every duty has its driver.":
   de: "%{n} Fahrer: Jeder Dienst hat seinen Fahrer."
+  da: "%{n} chauffører: hver vagt har sin chauffør."
   fr: "%{n} conducteurs : chaque service a son conducteur."
   nl: "%{n} chauffeurs: elke dienst heeft zijn chauffeur."
   pl: "Kierowców: %{n}, każda służba ma kierowcę."
@@ -137,6 +156,7 @@ _version: 2
   uk: "Водіїв: %{n}, кожна зміна має водія."
 "Let the time run":
   de: "Lass die Zeit laufen"
+  da: "Lad tiden løbe"
   fr: "Laisse le temps passer"
   nl: "Laat de tijd lopen"
   pl: "Puść czas"
@@ -144,6 +164,7 @@ _version: 2
   uk: "Нехай іде час"
 "Start the company's clock at the top, or simulate to tomorrow: the tours run and the money comes in.":
   de: "Starte oben die Uhr des Betriebs, oder simuliere bis morgen: Die Umläufe fahren und das Geld kommt herein."
+  da: "Start selskabets ur øverst, eller simulér til i morgen: vognløbene kører, og pengene kommer ind."
   fr: "Lance l'horloge de l'entreprise en haut, ou simule jusqu'à demain : les services roulent et l'argent rentre."
   nl: "Start bovenaan de klok van het bedrijf, of simuleer tot morgen: de omlopen rijden en het geld komt binnen."
   pl: "Uruchom zegar firmy u góry albo symuluj do jutra: brygady jeżdżą, a pieniądze wpływają."
@@ -151,6 +172,7 @@ _version: 2
   uk: "Запустіть годинник компанії вгорі або симулюйте до завтра: обороти йдуть, гроші надходять."
 "The days run: every morning the company fills its roster by itself.":
   de: "Die Tage laufen: Jeden Morgen füllt der Betrieb seinen Dienstplan selbst."
+  da: "Dagene løber: hver morgen fylder selskabet selv sin vagtplan."
   fr: "Les jours passent : chaque matin, l'entreprise remplit elle-même son roulement."
   nl: "De dagen lopen: elke ochtend vult het bedrijf zelf zijn rooster."
   pl: "Dni mijają: co rano firma sama wypełnia grafik."
@@ -158,6 +180,7 @@ _version: 2
   uk: "Дні йдуть: щоранку компанія сама заповнює графік."
 "Drive a duty yourself":
   de: "Fahre selbst einen Dienst"
+  da: "Kør en vagt selv"
   fr: "Conduis toi-même un service"
   nl: "Rijd zelf een dienst"
   pl: "Poprowadź służbę samodzielnie"
@@ -165,6 +188,7 @@ _version: 2
   uk: "Проведіть зміну самі"
 "You drive 1 duty a week.":
   de: "Du fährst 1 Dienst pro Woche."
+  da: "Du kører 1 vagt om ugen."
   fr: "Tu conduis 1 service par semaine."
   nl: "Je rijdt 1 dienst per week."
   pl: "Prowadzisz 1 służbę w tygodniu."
@@ -172,6 +196,7 @@ _version: 2
   uk: "Ви ведете 1 зміну на тиждень."
 "You drive %{n} duties a week.":
   de: "Du fährst %{n} Dienste pro Woche."
+  da: "Du kører %{n} vagter om ugen."
   fr: "Tu conduis %{n} services par semaine."
   nl: "Je rijdt %{n} diensten per week."
   pl: "Twoich służb w tygodniu: %{n}."
@@ -179,6 +204,7 @@ _version: 2
   uk: "Ваших змін на тиждень: %{n}."
 "Take one of the company's duties and drive it in the game.":
   de: "Übernimm einen Dienst des Betriebs und fahre ihn im Spiel."
+  da: "Tag en af selskabets vagter, og kør den i spillet."
   fr: "Prends un service de l'entreprise et conduis-le dans le jeu."
   nl: "Neem een dienst van het bedrijf en rijd hem in het spel."
   pl: "Weź służbę firmy i poprowadź ją w grze."
@@ -186,6 +212,7 @@ _version: 2
   uk: "Візьміть зміну компанії та проведіть її в грі."
 "1 duty of yours a week":
   de: "1 Dienst von dir pro Woche"
+  da: "1 vagt af dine om ugen"
   fr: "1 service à toi par semaine"
   nl: "1 dienst van jou per week"
   pl: "1 twoja służba w tygodniu"
@@ -193,6 +220,7 @@ _version: 2
   uk: "1 ваша зміна на тиждень"
 "%{n} duties of yours a week":
   de: "%{n} Dienste von dir pro Woche"
+  da: "%{n} vagter af dine om ugen"
   fr: "%{n} services à toi par semaine"
   nl: "%{n} diensten van jou per week"
   pl: "Twoich służb w tygodniu: %{n}"
@@ -200,6 +228,7 @@ _version: 2
   uk: "Ваших змін на тиждень: %{n}"
 "Take a duty and drive it":
   de: "Übernimm einen Dienst und fahre ihn"
+  da: "Tag en vagt og kør den"
   fr: "Prends un service et conduis-le"
   nl: "Neem een dienst en rijd hem"
   pl: "Weź służbę i poprowadź ją"
@@ -207,6 +236,7 @@ _version: 2
   uk: "Візьміть зміну та проведіть її"
 "Your own duties in the game":
   de: "Deine eigenen Dienste im Spiel"
+  da: "Dine egne vagter i spillet"
   fr: "Tes propres services dans le jeu"
   nl: "Je eigen diensten in het spel"
   pl: "Twoje własne służby w grze"
@@ -214,6 +244,7 @@ _version: 2
   uk: "Ваші власні зміни в грі"
 "Your company runs. Grow it when you like: another line, more buses, a duty of your own now and then.":
   de: "Dein Betrieb läuft. Lass ihn wachsen, wann du willst: eine weitere Linie, mehr Busse, ab und zu ein eigener Dienst."
+  da: "Dit selskab kører. Lad det vokse, når du vil: en linje mere, flere busser, en vagt til dig selv af og til."
   fr: "Ton entreprise tourne. Fais-la grandir quand tu veux : une autre ligne, plus de bus, un service à toi de temps en temps."
   nl: "Je bedrijf draait. Laat het groeien wanneer je wilt: nog een lijn, meer bussen, af en toe een eigen dienst."
   pl: "Twoja firma działa. Rozwijaj ją, kiedy chcesz: kolejna linia, więcej autobusów, od czasu do czasu własna służba."
@@ -221,6 +252,7 @@ _version: 2
   uk: "Ваша компанія працює. Розвивайте її, коли захочете: ще лінія, більше автобусів, іноді власна зміна."
 "Done by the company itself":
   de: "Vom Betrieb selbst erledigt"
+  da: "Gjort af selskabet selv"
   fr: "Fait par l'entreprise elle-même"
   nl: "Door het bedrijf zelf gedaan"
   pl: "Zrobione przez firmę samodzielnie"
@@ -228,6 +260,7 @@ _version: 2
   uk: "Зроблено самою компанією"
 "Every morning and every night the company sees to its routine: the roster, spare parts, repairs, staff and research. What it did is told here.":
   de: "Jeden Morgen und jede Nacht erledigt der Betrieb seine Routine: Dienstplan, Ersatzteile, Reparaturen, Personal und Forschung. Was er getan hat, steht hier."
+  da: "Hver morgen og hver nat klarer selskabet sin rutine: vagtplanen, reservedele, reparationer, personale og forskning. Hvad det gjorde, fortælles her."
   fr: "Chaque matin et chaque nuit, l'entreprise s'occupe de sa routine : le roulement, les pièces détachées, les réparations, le personnel et la recherche. Ce qu'elle a fait est indiqué ici."
   nl: "Elke ochtend en elke nacht doet het bedrijf zijn routine: het rooster, onderdelen, reparaties, personeel en onderzoek. Wat het deed, staat hier."
   pl: "Każdego ranka i każdej nocy firma zajmuje się rutyną: grafikiem, częściami zamiennymi, naprawami, personelem i badaniami. Co zrobiła, widać tutaj."
@@ -236,6 +269,7 @@ _version: 2
 # the career's "My duties" in the easy mode
 "Duties you can take":
   de: "Dienste, die du übernehmen kannst"
+  da: "Vagter du kan tage"
   fr: "Services que tu peux prendre"
   nl: "Diensten die je kunt nemen"
   pl: "Służby do wzięcia"
@@ -243,6 +277,7 @@ _version: 2
   uk: "Зміни, які можна взяти"
 "Take one of the company's duties in the list beside: it is yours on that weekday every week, and the company's drivers take the others.":
   de: "Nimm einen der Dienste des Betriebs aus der Liste daneben: Er gehört dann jede Woche an diesem Wochentag dir, und die Fahrer des Betriebs übernehmen die anderen."
+  da: "Tag en af selskabets vagter på listen ved siden af: den er din på den ugedag hver uge, og selskabets chauffører tager de andre."
   fr: "Prends l'un des services de l'entreprise dans la liste à côté : il est à toi ce jour-là chaque semaine, et les conducteurs de l'entreprise assurent les autres."
   nl: "Neem een van de diensten van het bedrijf in de lijst ernaast: die is dan elke week op die weekdag van jou, en de chauffeurs van het bedrijf rijden de rest."
   pl: "Weź jedną ze służb firmy z listy obok: będzie twoja w ten dzień tygodnia co tydzień, a pozostałe przejmą kierowcy firmy."
@@ -250,6 +285,7 @@ _version: 2
   uk: "Візьміть одну зі змін компанії у списку поруч: вона буде вашою в цей день тижня щотижня, а решту візьмуть водії компанії."
 "Give the duty back: the company's drivers drive it again":
   de: "Dienst zurückgeben: Die Fahrer des Betriebs fahren ihn wieder"
+  da: "Giv vagten tilbage: selskabets chauffører kører den igen"
   fr: "Rendre le service : les conducteurs de l'entreprise le reprennent"
   nl: "Dienst teruggeven: de chauffeurs van het bedrijf rijden hem weer"
   pl: "Oddaj służbę: znów prowadzą ją kierowcy firmy"
@@ -257,6 +293,7 @@ _version: 2
   uk: "Повернути зміну: її знову поведуть водії компанії"
 "The company runs no line yet: take one on, and its duties are here.":
   de: "Der Betrieb fährt noch keine Linie: Übernimm eine, dann stehen ihre Dienste hier."
+  da: "Selskabet kører endnu ingen linje: tag en på dig, så er dens vagter her."
   fr: "L'entreprise n'exploite encore aucune ligne : prends-en une, et ses services apparaissent ici."
   nl: "Het bedrijf rijdt nog geen lijn: neem er een, dan staan de diensten hier."
   pl: "Firma nie obsługuje jeszcze żadnej linii: weź jakąś, a jej służby pojawią się tutaj."
@@ -264,6 +301,7 @@ _version: 2
   uk: "У компанії ще немає ліній: візьміть лінію, і її зміни з'являться тут."
 "The company's lines run no tours in the coming week.":
   de: "Die Linien des Betriebs haben in der kommenden Woche keine Umläufe."
+  da: "Selskabets linjer kører ingen vognløb i den kommende uge."
   fr: "Les lignes de l'entreprise n'ont aucune course prévue la semaine à venir."
   nl: "De lijnen van het bedrijf hebben de komende week geen omlopen."
   pl: "Linie firmy nie mają brygad w nadchodzącym tygodniu."
@@ -271,6 +309,7 @@ _version: 2
   uk: "На найближчому тижні лінії компанії не мають оборотів."
 "Every duty of the coming week is yours already.":
   de: "Jeder Dienst der kommenden Woche gehört schon dir."
+  da: "Hver vagt i den kommende uge er allerede din."
   fr: "Tous les services de la semaine à venir sont déjà à toi."
   nl: "Elke dienst van de komende week is al van jou."
   pl: "Wszystkie służby nadchodzącego tygodnia są już twoje."
@@ -278,6 +317,7 @@ _version: 2
   uk: "Усі зміни найближчого тижня вже ваші."
 "Take it":
   de: "Übernehmen"
+  da: "Tag den"
   fr: "Prendre"
   nl: "Nemen"
   pl: "Weź"
@@ -285,6 +325,7 @@ _version: 2
   uk: "Взяти"
 "Yours on this weekday every week: drive it from your duties":
   de: "Jede Woche an diesem Wochentag deiner: Fahre ihn aus deinen Diensten"
+  da: "Din på denne ugedag hver uge: kør den fra dine vagter"
   fr: "À toi ce jour-là chaque semaine : conduis-le depuis tes services"
   nl: "Elke week op deze weekdag van jou: rijd hem vanuit je diensten"
   pl: "Twoja w ten dzień tygodnia co tydzień: prowadź ją ze swoich służb"
@@ -292,6 +333,7 @@ _version: 2
   uk: "Ваша в цей день тижня щотижня: ведіть її зі своїх змін"
 "The duty is yours on that weekday every week: drive it from My duties.":
   de: "Der Dienst gehört jede Woche an diesem Wochentag dir: Fahre ihn unter Meine Dienste."
+  da: "Vagten er din på den ugedag hver uge: kør den fra Mine vagter."
   fr: "Le service est à toi ce jour-là chaque semaine : conduis-le depuis Mes services."
   nl: "De dienst is elke week op die weekdag van jou: rijd hem vanuit Mijn diensten."
   pl: "Służba jest twoja w ten dzień tygodnia co tydzień: prowadź ją z Moich służb."
@@ -300,6 +342,7 @@ _version: 2
 # the lines in the easy mode
 "%{n} tours of today lack a bus or a driver: the company hires drivers by itself, buses you get at the dealer.":
   de: "%{n} Umläufen von heute fehlt ein Bus oder ein Fahrer: Fahrer stellt der Betrieb selbst ein, Busse holst du beim Händler."
+  da: "%{n} vognløb i dag mangler en bus eller en chauffør: selskabet ansætter selv chauffører, busser skaffer du hos forhandleren."
   fr: "%{n} services d'aujourd'hui manquent d'un bus ou d'un conducteur : l'entreprise embauche elle-même les conducteurs, les bus, tu les obtiens chez le concessionnaire."
   nl: "%{n} omlopen van vandaag missen een bus of een chauffeur: het bedrijf neemt zelf chauffeurs aan, bussen haal je bij de dealer."
   pl: "Brygady bez autobusu lub kierowcy dzisiaj: %{n}. Kierowców firma zatrudni sama, autobusy zdobędziesz u dealera."
@@ -307,6 +350,7 @@ _version: 2
   uk: "Оборотів без автобуса чи водія сьогодні: %{n}. Водіїв компанія найме сама, автобуси ви берете в дилера."
 "What the line asks of the company on a day like today, against what it has. In the easy mode it runs at once: the company fills its roster every morning.":
   de: "Was die Linie an einem Tag wie heute vom Betrieb verlangt, gegenüber dem, was er hat. Im leichten Modus fährt sie sofort: Der Betrieb füllt jeden Morgen seinen Dienstplan."
+  da: "Hvad linjen kræver af selskabet på en dag som i dag, mod hvad det har. I den nemme tilstand kører den med det samme: selskabet fylder sin vagtplan hver morgen."
   fr: "Ce que la ligne demande à l'entreprise un jour comme aujourd'hui, face à ce qu'elle a. En mode facile, elle circule tout de suite : l'entreprise remplit son roulement chaque matin."
   nl: "Wat de lijn vraagt van het bedrijf op een dag als vandaag, tegenover wat het heeft. In de makkelijke modus rijdt ze meteen: het bedrijf vult elke ochtend zijn rooster."
   pl: "Czego linia wymaga od firmy w dzień taki jak dziś, wobec tego, co firma ma. W trybie łatwym kursuje od razu: firma co rano wypełnia grafik."
@@ -314,6 +358,7 @@ _version: 2
   uk: "Що лінія вимагає від компанії в такий день, як сьогодні, і що в компанії є. У простому режимі вона працює одразу: компанія щоранку заповнює графік."
 "What the line asks of the company on a day like today, against what it has. Its concession is taken at the asking price, without an auction: the line is the company's from tomorrow and runs by itself.":
   de: "Was die Linie an einem Tag wie heute vom Betrieb verlangt, gegenüber dem, was er hat. Ihre Konzession wird zum Angebotspreis übernommen, ohne Versteigerung: Die Linie gehört ab morgen dem Betrieb und fährt von selbst."
+  da: "Hvad linjen kræver af selskabet på en dag som i dag, mod hvad det har. Dens koncession tages til udbudsprisen uden auktion: linjen er selskabets fra i morgen og kører af sig selv."
   fr: "Ce que la ligne demande à l'entreprise un jour comme aujourd'hui, face à ce qu'elle a. Sa concession est prise au prix demandé, sans enchères : la ligne est à l'entreprise dès demain et circule d'elle-même."
   nl: "Wat de lijn vraagt van het bedrijf op een dag als vandaag, tegenover wat het heeft. Haar concessie wordt tegen de vraagprijs genomen, zonder veiling: de lijn is vanaf morgen van het bedrijf en rijdt vanzelf."
   pl: "Czego linia wymaga od firmy w dzień taki jak dziś, wobec tego, co firma ma. Jej koncesja jest brana po cenie ofertowej, bez aukcji: linia należy do firmy od jutra i kursuje sama."
@@ -321,6 +366,7 @@ _version: 2
   uk: "Що лінія вимагає від компанії в такий день, як сьогодні, і що в компанії є. Її концесія береться за запитуваною ціною, без аукціону: лінія належить компанії з завтрашнього дня й працює сама."
 "Short for this line: %{b} buses and %{d} drivers. Get the buses at the dealer; the company hires the drivers by itself, at night.":
   de: "Für diese Linie fehlen: %{b} Busse und %{d} Fahrer. Hol die Busse beim Händler; die Fahrer stellt der Betrieb nachts selbst ein."
+  da: "Mangel på denne linje: %{b} busser og %{d} chauffører. Skaf busserne hos forhandleren; selskabet ansætter selv chaufførerne om natten."
   fr: "Il manque pour cette ligne : %{b} bus et %{d} conducteurs. Procure-toi les bus chez le concessionnaire ; l'entreprise embauche elle-même les conducteurs, la nuit."
   nl: "Tekort voor deze lijn: %{b} bussen en %{d} chauffeurs. Haal de bussen bij de dealer; de chauffeurs neemt het bedrijf 's nachts zelf aan."
   pl: "Na tę linię brakuje: %{b} autobusów i %{d} kierowców. Autobusy zdobądź u dealera; kierowców firma zatrudni sama, w nocy."
@@ -328,6 +374,7 @@ _version: 2
   uk: "Для цієї лінії бракує: %{b} автобусів і %{d} водіїв. Автобуси візьміть у дилера; водіїв компанія найме сама, вночі."
 "Its concession at the asking price: %{amount} (the company has %{cash}).":
   de: "Ihre Konzession zum Angebotspreis: %{amount} (der Betrieb hat %{cash})."
+  da: "Dens koncession til udbudsprisen: %{amount} (selskabet har %{cash})."
   fr: "Sa concession au prix demandé : %{amount} (l'entreprise a %{cash})."
   nl: "Haar concessie tegen de vraagprijs: %{amount} (het bedrijf heeft %{cash})."
   pl: "Jej koncesja po cenie ofertowej: %{amount} (firma ma %{cash})."
@@ -335,6 +382,7 @@ _version: 2
   uk: "Її концесія за запитуваною ціною: %{amount} (у компанії %{cash})."
 "Take it on for %{amount}":
   de: "Für %{amount} übernehmen"
+  da: "Tag den på dig for %{amount}"
   fr: "La prendre pour %{amount}"
   nl: "Overnemen voor %{amount}"
   pl: "Przejmij za %{amount}"
@@ -342,6 +390,7 @@ _version: 2
   uk: "Взяти за %{amount}"
 "The concession for line %{n} is the company's: the line runs from tomorrow.":
   de: "Die Konzession für Linie %{n} gehört dem Betrieb: Die Linie fährt ab morgen."
+  da: "Koncessionen for linje %{n} er selskabets: linjen kører fra i morgen."
   fr: "La concession de la ligne %{n} est à l'entreprise : la ligne circule dès demain."
   nl: "De concessie voor lijn %{n} is van het bedrijf: de lijn rijdt vanaf morgen."
   pl: "Koncesja na linię %{n} należy do firmy: linia kursuje od jutra."
@@ -349,6 +398,7 @@ _version: 2
   uk: "Концесія на лінію %{n} належить компанії: лінія працює з завтрашнього дня."
 "Line %{n} is the company's and runs from now on: its roster fills itself.":
   de: "Linie %{n} gehört dem Betrieb und fährt ab jetzt: Ihr Dienstplan füllt sich selbst."
+  da: "Linje %{n} er selskabets og kører fra nu af: dens vagtplan fylder sig selv."
   fr: "La ligne %{n} est à l'entreprise et circule dès maintenant : son roulement se remplit tout seul."
   nl: "Lijn %{n} is van het bedrijf en rijdt vanaf nu: het rooster vult zichzelf."
   pl: "Linia %{n} należy do firmy i kursuje od teraz: jej grafik wypełnia się sam."
@@ -356,6 +406,7 @@ _version: 2
   uk: "Лінія %{n} належить компанії й працює відтепер: її графік заповнюється сам."
 "The concession for line %{n} is yours until %{date}: the line runs by itself from its first day.":
   de: "Die Konzession für Linie %{n} gehört dir bis %{date}: Die Linie fährt ab ihrem ersten Tag von selbst."
+  da: "Koncessionen for linje %{n} er din indtil %{date}: linjen kører af sig selv fra sin første dag."
   fr: "La concession de la ligne %{n} est à toi jusqu'au %{date} : la ligne circule d'elle-même dès son premier jour."
   nl: "De concessie voor lijn %{n} is van jou tot %{date}: de lijn rijdt vanaf haar eerste dag vanzelf."
   pl: "Koncesja na linię %{n} jest twoja do %{date}: linia kursuje sama od pierwszego dnia."
@@ -363,6 +414,7 @@ _version: 2
   uk: "Концесія на лінію %{n} ваша до %{date}: лінія працює сама з першого дня."
 "%{count} new goals are on offer until %{until}, each with trophies and money as its reward: the company takes them on by itself, up to three at once.":
   de: "%{count} neue Ziele sind bis %{until} im Angebot, jedes mit Trophäen und Geld als Belohnung: Der Betrieb nimmt sie selbst an, bis zu drei gleichzeitig."
+  da: "%{count} nye mål er til rådighed indtil %{until}, hvert med trofæer og penge som belønning: selskabet tager dem selv på sig, op til tre ad gangen."
   fr: "%{count} nouveaux objectifs sont proposés jusqu'au %{until}, chacun récompensé par des trophées et de l'argent : l'entreprise les accepte d'elle-même, jusqu'à trois à la fois."
   nl: "%{count} nieuwe doelen worden aangeboden tot %{until}, elk met trofeeën en geld als beloning: het bedrijf neemt ze zelf aan, tot drie tegelijk."
   pl: "Nowe cele w ofercie do %{until}: %{count}, każdy z trofeami i pieniędzmi jako nagrodą. Firma sama je przyjmuje, do trzech naraz."
@@ -371,6 +423,7 @@ _version: 2
 # what the company did by itself (`company::autopilot`)
 "Line %{n} is in service: its tours run from now on.":
   de: "Linie %{n} ist in Betrieb: Ihre Umläufe fahren ab jetzt."
+  da: "Linje %{n} er i drift: dens vognløb kører fra nu af."
   fr: "La ligne %{n} est en service : ses services circulent dès maintenant."
   nl: "Lijn %{n} is in dienst: haar omlopen rijden vanaf nu."
   pl: "Linia %{n} kursuje: jej brygady jeżdżą od teraz."
@@ -378,6 +431,7 @@ _version: 2
   uk: "Лінія %{n} у роботі: її обороти йдуть відтепер."
 "The day's roster is filled: %{d} duties and %{b} buses given.":
   de: "Der Dienstplan des Tages ist gefüllt: %{d} Dienste und %{b} Busse vergeben."
+  da: "Dagens vagtplan er fyldt: %{d} vagter og %{b} busser givet."
   fr: "Le roulement du jour est rempli : %{d} services et %{b} bus attribués."
   nl: "Het rooster van de dag is gevuld: %{d} diensten en %{b} bussen toegewezen."
   pl: "Grafik dnia wypełniony: przydzielone służby: %{d}, autobusy: %{b}."
@@ -385,6 +439,7 @@ _version: 2
   uk: "Графік дня заповнено: призначено змін: %{d}, автобусів: %{b}."
 "The concession for line %{n} is renewed at the asking price, %{amount}, until %{date}.":
   de: "Die Konzession für Linie %{n} ist zum Angebotspreis von %{amount} verlängert, bis %{date}."
+  da: "Koncessionen for linje %{n} er fornyet til udbudsprisen, %{amount}, indtil %{date}."
   fr: "La concession de la ligne %{n} est renouvelée au prix demandé, %{amount}, jusqu'au %{date}."
   nl: "De concessie voor lijn %{n} is verlengd tegen de vraagprijs, %{amount}, tot %{date}."
   pl: "Koncesja na linię %{n} przedłużona po cenie ofertowej %{amount}, do %{date}."
@@ -392,6 +447,7 @@ _version: 2
   uk: "Концесію на лінію %{n} продовжено за запитуваною ціною %{amount} до %{date}."
 "The concession for line %{n} could not be renewed: the cash does not cover the asking price of %{amount}.":
   de: "Die Konzession für Linie %{n} konnte nicht verlängert werden: Die Kasse deckt den Angebotspreis von %{amount} nicht."
+  da: "Koncessionen for linje %{n} kunne ikke fornyes: kontanterne dækker ikke udbudsprisen på %{amount}."
   fr: "La concession de la ligne %{n} n'a pas pu être renouvelée : la trésorerie ne couvre pas le prix demandé de %{amount}."
   nl: "De concessie voor lijn %{n} kon niet worden verlengd: de kas dekt de vraagprijs van %{amount} niet."
   pl: "Nie udało się przedłużyć koncesji na linię %{n}: gotówka nie pokrywa ceny ofertowej %{amount}."
@@ -399,6 +455,7 @@ _version: 2
   uk: "Концесію на лінію %{n} не вдалося продовжити: у касі бракує на запитувану ціну %{amount}."
 "Hired: %{name} (%{role}).":
   de: "Eingestellt: %{name} (%{role})."
+  da: "Ansat: %{name} (%{role})."
   fr: "Nouvelle recrue : %{name} (%{role})."
   nl: "Aangenomen: %{name} (%{role})."
   pl: "Zatrudniono: %{name} (%{role})."
@@ -406,6 +463,7 @@ _version: 2
   uk: "Новий працівник: %{name} (%{role})."
 "%{name} asked for more pay and got it.":
   de: "%{name} bat um mehr Lohn und hat ihn bekommen."
+  da: "%{name} bad om mere i løn og fik det."
   fr: "%{name} a demandé une augmentation et l'a obtenue."
   nl: "%{name} vroeg om meer loon en kreeg het."
   pl: "%{name}: prośba o podwyżkę spełniona."
@@ -413,6 +471,7 @@ _version: 2
   uk: "%{name}: прохання про підвищення зарплати задоволено."
 "%{name} learns to drive the %{bus}.":
   de: "%{name} lernt, den %{bus} zu fahren."
+  da: "%{name} lærer at køre %{bus}."
   fr: "%{name} apprend à conduire le %{bus}."
   nl: "%{name} leert de %{bus} rijden."
   pl: "%{name} uczy się prowadzić %{bus}."
@@ -420,6 +479,7 @@ _version: 2
   uk: "%{name} вчиться водити %{bus}."
 "%{name} is booked on a course: %{what}.":
   de: "%{name} ist für einen Kurs angemeldet: %{what}."
+  da: "%{name} er booket på et kursus: %{what}."
   fr: "Formation réservée pour %{name} : %{what}."
   nl: "%{name} is ingeschreven voor een cursus: %{what}."
   pl: "%{name}: zapis na kurs – %{what}."
@@ -427,6 +487,7 @@ _version: 2
   uk: "%{name}: запис на курс – %{what}."
 "Bus %{n} goes to the workshop to be repaired: %{amount}.":
   de: "Bus %{n} kommt zur Reparatur in die Werkstatt: %{amount}."
+  da: "Bus %{n} kører på værkstedet for at blive repareret: %{amount}."
   fr: "Le bus %{n} part à l'atelier pour être réparé : %{amount}."
   nl: "Bus %{n} gaat naar de werkplaats voor reparatie: %{amount}."
   pl: "Autobus %{n} jedzie do warsztatu na naprawę: %{amount}."
@@ -434,6 +495,7 @@ _version: 2
   uk: "Автобус %{n} відправлено до майстерні на ремонт: %{amount}."
 "A goal is taken on: %{trophies} trophies and %{reward} when it is reached.":
   de: "Ein Ziel angenommen: %{trophies} Trophäen und %{reward}, wenn es erreicht wird."
+  da: "Et mål er taget på sig: %{trophies} trofæer og %{reward}, når det er nået."
   fr: "Un objectif accepté : %{trophies} trophées et %{reward} s'il est atteint."
   nl: "Een doel aangenomen: %{trophies} trofeeën en %{reward} als het gehaald wordt."
   pl: "Przyjęto cel: trofea: %{trophies} i %{reward} po jego osiągnięciu."
@@ -441,6 +503,7 @@ _version: 2
   uk: "Прийнято ціль: трофеїв: %{trophies} і %{reward} у разі досягнення."
 "Research started: %{what}.":
   de: "Forschung gestartet: %{what}."
+  da: "Forskning startet: %{what}."
   fr: "Recherche lancée : %{what}."
   nl: "Onderzoek gestart: %{what}."
   pl: "Rozpoczęto badanie: %{what}."
@@ -448,6 +511,7 @@ _version: 2
   uk: "Розпочато дослідження: %{what}."
 "More parking spaces are being built: %{amount}.":
   de: "Weitere Stellplätze werden gebaut: %{amount}."
+  da: "Flere parkeringspladser bygges: %{amount}."
   fr: "Des places de stationnement supplémentaires sont en construction : %{amount}."
   nl: "Er worden meer parkeerplaatsen gebouwd: %{amount}."
   pl: "Budowane są dodatkowe miejsca postojowe: %{amount}."
@@ -455,6 +519,7 @@ _version: 2
   uk: "Будуються додаткові стоянки: %{amount}."
 "Spare parts ordered for the stores: %{amount}.":
   de: "Ersatzteile für das Lager bestellt: %{amount}."
+  da: "Reservedele bestilt til lageret: %{amount}."
   fr: "Pièces détachées commandées pour le magasin : %{amount}."
   nl: "Onderdelen besteld voor het magazijn: %{amount}."
   pl: "Zamówiono części zamienne do magazynu: %{amount}."

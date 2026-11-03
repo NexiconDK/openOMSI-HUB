@@ -6,6 +6,7 @@ _version: 2
 # register, as the privacy texts. Google stays as it is (%{name}).
 "Sign in with %{name}":
   de: "Mit %{name} anmelden"
+  da: "Log ind med %{name}"
   fr: "Se connecter avec %{name}"
   nl: "Aanmelden met %{name}"
   pl: "Zaloguj się przez %{name}"
@@ -13,6 +14,7 @@ _version: 2
   uk: "Увійти через %{name}"
 "or":
   de: "oder"
+  da: "eller"
   fr: "ou"
   nl: "of"
   pl: "lub"
@@ -20,6 +22,7 @@ _version: 2
   uk: "або"
 "Continue in your browser":
   de: "Fahren Sie in Ihrem Browser fort"
+  da: "Fortsæt i din browser"
   fr: "Poursuivez dans votre navigateur"
   nl: "Ga verder in uw browser"
   pl: "Proszę kontynuować w przeglądarce"
@@ -27,6 +30,7 @@ _version: 2
   uk: "Продовжте в браузері"
 "Please sign in with %{name} in the browser window that has opened. Omsi-Hub continues automatically afterwards.":
   de: "Bitte melden Sie sich in dem geöffneten Browserfenster mit %{name} an. Omsi-Hub setzt den Vorgang anschließend automatisch fort."
+  da: "Log ind med %{name} i det browservindue, der er åbnet. Omsi-Hub fortsætter automatisk bagefter."
   fr: "Veuillez vous connecter avec %{name} dans la fenêtre du navigateur qui s'est ouverte. Omsi-Hub poursuivra ensuite automatiquement."
   nl: "Meld u aan met %{name} in het browservenster dat is geopend. Omsi-Hub gaat daarna automatisch verder."
   pl: "Proszę zalogować się przez %{name} w otwartym oknie przeglądarki. Omsi-Hub będzie następnie kontynuować automatycznie."
@@ -34,6 +38,7 @@ _version: 2
   uk: "Будь ласка, увійдіть через %{name} у вікні браузера, що відкрилося. Після цього Omsi-Hub продовжить роботу автоматично."
 "Open the page again":
   de: "Seite erneut öffnen"
+  da: "Åbn siden igen"
   fr: "Rouvrir la page"
   nl: "Pagina opnieuw openen"
   pl: "Otwórz stronę ponownie"
@@ -41,6 +46,7 @@ _version: 2
   uk: "Відкрити сторінку знову"
 "I understand that deleting my account cannot be undone.":
   de: "Mir ist bewusst, dass das Löschen meines Kontos nicht rückgängig gemacht werden kann."
+  da: "Jeg forstår, at sletning af min konto ikke kan fortrydes."
   fr: "Je comprends que la suppression de mon compte est irréversible."
   nl: "Ik begrijp dat het verwijderen van mijn account niet ongedaan kan worden gemaakt."
   pl: "Rozumiem, że usunięcia mojego konta nie można cofnąć."
@@ -49,6 +55,7 @@ _version: 2
 # (the page in the browser)
 "You are signed in to Omsi-Hub":
   de: "Sie sind bei Omsi-Hub angemeldet"
+  da: "Du er logget ind i Omsi-Hub"
   fr: "Vous êtes connecté(e) à Omsi-Hub"
   nl: "U bent aangemeld bij Omsi-Hub"
   pl: "Zalogowano do Omsi-Hub"
@@ -56,6 +63,7 @@ _version: 2
   uk: "Ви увійшли до Omsi-Hub"
 "You may close this tab and return to Omsi-Hub.":
   de: "Sie können diesen Tab schließen und zu Omsi-Hub zurückkehren."
+  da: "Du kan lukke denne fane og vende tilbage til Omsi-Hub."
   fr: "Vous pouvez fermer cet onglet et revenir à Omsi-Hub."
   nl: "U kunt dit tabblad sluiten en terugkeren naar Omsi-Hub."
   pl: "Można zamknąć tę kartę i wrócić do Omsi-Hub."
@@ -63,6 +71,7 @@ _version: 2
   uk: "Ви можете закрити цю вкладку й повернутися до Omsi-Hub."
 "The sign-in could not be completed":
   de: "Die Anmeldung konnte nicht abgeschlossen werden"
+  da: "Indloggingen kunne ikke gennemføres"
   fr: "La connexion n'a pas pu être finalisée"
   nl: "De aanmelding kon niet worden voltooid"
   pl: "Nie udało się dokończyć logowania"
@@ -70,6 +79,7 @@ _version: 2
   uk: "Не вдалося завершити вхід"
 "Please return to Omsi-Hub and try again.":
   de: "Bitte kehren Sie zu Omsi-Hub zurück und versuchen Sie es erneut."
+  da: "Vend tilbage til Omsi-Hub, og prøv igen."
   fr: "Veuillez revenir à Omsi-Hub et réessayer."
   nl: "Keer terug naar Omsi-Hub en probeer het opnieuw."
   pl: "Proszę wrócić do Omsi-Hub i spróbować ponownie."
@@ -77,6 +87,7 @@ _version: 2
   uk: "Будь ласка, поверніться до Omsi-Hub і спробуйте ще раз."
 "The sign-in was cancelled. Please return to Omsi-Hub.":
   de: "Die Anmeldung wurde abgebrochen. Bitte kehren Sie zu Omsi-Hub zurück."
+  da: "Indloggingen blev annulleret. Vend tilbage til Omsi-Hub."
   fr: "La connexion a été annulée. Veuillez revenir à Omsi-Hub."
   nl: "De aanmelding is geannuleerd. Keer terug naar Omsi-Hub."
   pl: "Logowanie zostało anulowane. Proszę wrócić do Omsi-Hub."
@@ -85,6 +96,7 @@ _version: 2
 # (the codes of crates/omsihub-online)
 "The sign-in was cancelled.":
   de: "Die Anmeldung wurde abgebrochen."
+  da: "Indloggingen blev annulleret."
   fr: "La connexion a été annulée."
   nl: "De aanmelding is geannuleerd."
   pl: "Logowanie zostało anulowane."
@@ -92,6 +104,7 @@ _version: 2
   uk: "Вхід було скасовано."
 "The sign-in in the browser took too long. Please try again.":
   de: "Die Anmeldung im Browser hat zu lange gedauert. Bitte versuchen Sie es erneut."
+  da: "Indloggingen i browseren tog for lang tid. Prøv igen."
   fr: "La connexion dans le navigateur a pris trop de temps. Veuillez réessayer."
   nl: "De aanmelding in de browser duurde te lang. Probeer het opnieuw."
   pl: "Logowanie w przeglądarce trwało zbyt długo. Proszę spróbować ponownie."
@@ -99,6 +112,7 @@ _version: 2
   uk: "Вхід у браузері тривав надто довго. Будь ласка, спробуйте ще раз."
 "The sign-in could not be completed. Please try again.":
   de: "Die Anmeldung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut."
+  da: "Indloggingen kunne ikke gennemføres. Prøv igen."
   fr: "La connexion n'a pas pu être finalisée. Veuillez réessayer."
   nl: "De aanmelding kon niet worden voltooid. Probeer het opnieuw."
   pl: "Nie udało się dokończyć logowania. Proszę spróbować ponownie."

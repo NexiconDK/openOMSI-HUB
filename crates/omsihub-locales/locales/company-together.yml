@@ -4,6 +4,7 @@ _version: 2
 # duties, his own duties and results), the refusals of claims and reports and the notices.
 "No port for the session: %{e}":
   de: "Kein Port für die Sitzung: %{e}"
+  da: "Ingen port til sessionen: %{e}"
   fr: "Aucun port pour la session : %{e}"
   nl: "Geen poort voor de sessie: %{e}"
   pl: "Brak portu dla sesji: %{e}"
@@ -11,6 +12,7 @@ _version: 2
   uk: "Немає порту для сесії: %{e}"
 "Close what uses the port, or start the launcher again.":
   de: "Schließe, was den Port belegt, oder starte den Launcher neu."
+  da: "Luk det, der bruger porten, eller start launcheren igen."
   fr: "Fermez ce qui utilise le port, ou redémarrez le lanceur."
   nl: "Sluit wat de poort gebruikt, of start de launcher opnieuw."
   pl: "Zamknij to, co używa portu, albo uruchom launcher ponownie."
@@ -18,6 +20,7 @@ _version: 2
   uk: "Закрийте те, що займає порт, або перезапустіть лаунчер."
 "Play together: friends drive duties of your company in your world":
   de: "Zusammen spielen: Freunde fahren Dienste deines Betriebs in deiner Welt"
+  da: "Spil sammen: venner kører vagter for dit selskab i din verden"
   fr: "Jouer ensemble : des amis conduisent les services de votre entreprise dans votre monde"
   nl: "Samen spelen: vrienden rijden diensten van je bedrijf in jouw wereld"
   pl: "Wspólna gra: znajomi jeżdżą służby twojej firmy w twoim świecie"
@@ -25,6 +28,7 @@ _version: 2
   uk: "Грати разом: друзі виконують зміни вашої компанії у вашому світі"
 "Play together: %{n} online":
   de: "Zusammen spielen: %{n} online"
+  da: "Spil sammen: %{n} online"
   fr: "Jouer ensemble : %{n} en ligne"
   nl: "Samen spelen: %{n} online"
   pl: "Wspólna gra: %{n} online"
@@ -32,6 +36,7 @@ _version: 2
   uk: "Грати разом: %{n} у мережі"
 "Your world is open while it runs.":
   de: "Deine Welt ist offen, solange es läuft."
+  da: "Din verden er åben, mens den kører."
   fr: "Votre monde est ouvert tant qu'il tourne."
   nl: "Je wereld is open zolang het loopt."
   pl: "Twój świat jest otwarty, dopóki gra działa."
@@ -39,6 +44,7 @@ _version: 2
   uk: "Ваш світ відкритий, поки гра запущена."
 "Friends join it when it hosts a session; close it to open another.":
   de: "Freunde treten bei, wenn es eine Sitzung hostet; schließe es, um eine andere Welt zu öffnen."
+  da: "Venner deltager i den, når den er vært for en session; luk den for at åbne en anden."
   fr: "Vos amis le rejoignent s'il héberge une session ; fermez-le pour en ouvrir un autre."
   nl: "Vrienden doen mee als het een sessie host; sluit het om een andere te openen."
   pl: "Znajomi dołączą, gdy gra hostuje sesję; zamknij ją, aby otworzyć inną."
@@ -46,6 +52,7 @@ _version: 2
   uk: "Друзі приєднаються, якщо гра проводить сесію; закрийте її, щоб відкрити іншу."
 "The world opens with you on foot beside a bus of the fleet.":
   de: "Die Welt öffnet sich mit dir zu Fuß neben einem Bus der Flotte."
+  da: "Verden åbner med dig til fods ved siden af en bus fra flåden."
   fr: "Le monde s'ouvre avec vous à pied à côté d'un bus de la flotte."
   nl: "De wereld opent met jou te voet naast een bus van de vloot."
   pl: "Świat otwiera się z tobą pieszo obok autobusu floty."
@@ -53,6 +60,7 @@ _version: 2
   uk: "Світ відкривається, а ви стоїте пішки біля автобуса парку."
 "Buy or lease a bus first.":
   de: "Kaufe oder lease zuerst einen Bus."
+  da: "Køb eller lease først en bus."
   fr: "Achetez ou louez d'abord un bus."
   nl: "Koop of lease eerst een bus."
   pl: "Najpierw kup lub weź w leasing autobus."
@@ -60,6 +68,7 @@ _version: 2
   uk: "Спершу купіть або візьміть у лізинг автобус."
 "Opening your company's world…":
   de: "Die Welt deines Betriebs wird geöffnet…"
+  da: "Åbner dit selskabs verden…"
   fr: "Ouverture du monde de votre entreprise…"
   nl: "De wereld van je bedrijf wordt geopend…"
   pl: "Otwieranie świata twojej firmy…"
@@ -67,6 +76,7 @@ _version: 2
   uk: "Відкривається світ вашої компанії…"
 "Drives %{duty}":
   de: "Fährt %{duty}"
+  da: "Kører %{duty}"
   fr: "Conduit %{duty}"
   nl: "Rijdt %{duty}"
   pl: "Jedzie: %{duty}"
@@ -74,6 +84,7 @@ _version: 2
   uk: "Виконує: %{duty}"
 "Waits for your world to drive %{duty}":
   de: "Wartet auf deine Welt, um %{duty} zu fahren"
+  da: "Venter på din verden for at køre %{duty}"
   fr: "Attend votre monde pour conduire %{duty}"
   nl: "Wacht op je wereld om %{duty} te rijden"
   pl: "Czeka na twój świat, by jechać: %{duty}"
@@ -81,6 +92,7 @@ _version: 2
   uk: "Чекає на ваш світ, щоб виконати: %{duty}"
 "Online · %{n} duties today":
   de: "Online · heute %{n} Dienste"
+  da: "Online · %{n} vagter i dag"
   fr: "En ligne · %{n} services aujourd'hui"
   nl: "Online · vandaag %{n} diensten"
   pl: "Online · dziś %{n} służb"
@@ -88,6 +100,7 @@ _version: 2
   uk: "У мережі · сьогодні змін: %{n}"
 "Offline · %{n} duties today":
   de: "Offline · heute %{n} Dienste"
+  da: "Offline · %{n} vagter i dag"
   fr: "Hors ligne · %{n} services aujourd'hui"
   nl: "Offline · vandaag %{n} diensten"
   pl: "Offline · dziś %{n} służb"
@@ -95,6 +108,7 @@ _version: 2
   uk: "Не в мережі · сьогодні змін: %{n}"
 "Play together":
   de: "Zusammen spielen"
+  da: "Spil sammen"
   fr: "Jouer ensemble"
   nl: "Samen spelen"
   pl: "Wspólna gra"
@@ -102,6 +116,7 @@ _version: 2
   uk: "Грати разом"
 "Copied":
   de: "Kopiert"
+  da: "Kopieret"
   fr: "Copié"
   nl: "Gekopieerd"
   pl: "Skopiowano"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Скопійовано"
 "Start a session":
   de: "Sitzung starten"
+  da: "Start en session"
   fr: "Lancer une session"
   nl: "Sessie starten"
   pl: "Rozpocznij sesję"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Почати сесію"
 "Friends join your company with a session code and drive duties of its day for it, in your world. Money, planning and staff stay yours: their trips are booked as your drivers' are.":
   de: "Freunde treten deinem Betrieb mit einem Sitzungscode bei und fahren Dienste seines Tages für ihn, in deiner Welt. Geld, Planung und Personal bleiben deine Sache: ihre Fahrten werden gebucht wie die deiner Fahrer."
+  da: "Venner deltager i dit selskab med en sessionskode og kører dagens vagter for det i din verden. Penge, planlægning og personale forbliver dine: deres ture bogføres som dine chaufføres."
   fr: "Vos amis rejoignent votre entreprise avec un code de session et conduisent pour elle des services de sa journée, dans votre monde. L'argent, la planification et le personnel restent à vous : leurs trajets sont comptabilisés comme ceux de vos conducteurs."
   nl: "Vrienden doen met een sessiecode mee met je bedrijf en rijden diensten van zijn dag ervoor, in jouw wereld. Geld, planning en personeel blijven van jou: hun ritten worden geboekt zoals die van je chauffeurs."
   pl: "Znajomi dołączają do twojej firmy kodem sesji i jeżdżą dla niej służby z jej dnia, w twoim świecie. Pieniądze, planowanie i personel zostają twoje: ich kursy są księgowane jak kursy twoich kierowców."
@@ -123,6 +140,7 @@ _version: 2
   uk: "Друзі приєднуються до вашої компанії за кодом сесії й виконують для неї зміни її дня у вашому світі. Гроші, планування й персонал залишаються за вами: їхні рейси обліковуються, як рейси ваших водіїв."
 "Start a session: you get a code to send your friends.":
   de: "Starte eine Sitzung: du bekommst einen Code für deine Freunde."
+  da: "Start en session: du får en kode at sende til dine venner."
   fr: "Lancez une session : vous obtenez un code à envoyer à vos amis."
   nl: "Start een sessie: je krijgt een code om naar je vrienden te sturen."
   pl: "Rozpocznij sesję: dostaniesz kod do wysłania znajomym."
@@ -130,6 +148,7 @@ _version: 2
   uk: "Почніть сесію: ви отримаєте код, який треба надіслати друзям."
 "They choose \"Join a company\" in Omsi-Hub and paste it.":
   de: "Sie wählen in Omsi-Hub „Einem Betrieb beitreten“ und fügen ihn ein."
+  da: "De vælger \"Deltag i et selskab\" i Omsi-Hub og indsætter den."
   fr: "Ils choisissent « Rejoindre une entreprise » dans Omsi-Hub et le collent."
   nl: "Zij kiezen in Omsi-Hub \"Meedoen met een bedrijf\" en plakken hem."
   pl: "Wybierają w Omsi-Hub „Dołącz do firmy” i wklejają go."
@@ -137,6 +156,7 @@ _version: 2
   uk: "Вони обирають в Omsi-Hub «Приєднатися до компанії» і вставляють його."
 "They take open duties (or you give them one in RosterFlow's Roster), and drive them in your world: open it here, or drive a duty of your own.":
   de: "Sie übernehmen offene Dienste (oder du gibst ihnen einen im Dienstplan von RosterFlow) und fahren sie in deiner Welt: öffne sie hier oder fahre selbst einen Dienst."
+  da: "De tager ledige vagter (eller du giver dem en i RosterFlows Vagtplan) og kører dem i din verden: åbn den her, eller kør en vagt selv."
   fr: "Ils prennent des services à pourvoir (ou vous leur en donnez un dans le Roster de RosterFlow) et les conduisent dans votre monde : ouvrez-le ici, ou conduisez vous-même un service."
   nl: "Zij nemen open diensten (of jij geeft ze er een in het Rooster van RosterFlow) en rijden ze in jouw wereld: open die hier, of rijd zelf een dienst."
   pl: "Biorą otwarte służby (albo dajesz im jedną w grafiku RosterFlow) i jeżdżą je w twoim świecie: otwórz go tutaj albo sam jedź jakąś służbę."
@@ -144,6 +164,7 @@ _version: 2
   uk: "Вони беруть відкриті зміни (або ви даєте їм зміну в графіку RosterFlow) і виконують їх у вашому світі: відкрийте його тут або самі виконуйте зміну."
 "Players":
   de: "Spieler"
+  da: "Spillere"
   fr: "Joueurs"
   nl: "Spelers"
   pl: "Gracze"
@@ -151,6 +172,7 @@ _version: 2
   uk: "Гравці"
 "Nobody has joined yet.":
   de: "Noch ist niemand beigetreten."
+  da: "Ingen har deltaget endnu."
   fr: "Personne ne vous a encore rejoint."
   nl: "Er heeft nog niemand meegedaan."
   pl: "Nikt jeszcze nie dołączył."
@@ -158,6 +180,7 @@ _version: 2
   uk: "Поки ніхто не приєднався."
 "Their duties today":
   de: "Ihre Dienste heute"
+  da: "Deres vagter i dag"
   fr: "Leurs services aujourd'hui"
   nl: "Hun diensten vandaag"
   pl: "Ich służby dzisiaj"
@@ -165,6 +188,7 @@ _version: 2
   uk: "Їхні зміни сьогодні"
 "Take off":
   de: "Abziehen"
+  da: "Tag af"
   fr: "Retirer"
   nl: "Weghalen"
   pl: "Zdejmij"
@@ -172,6 +196,7 @@ _version: 2
   uk: "Зняти"
 "Say something to everyone":
   de: "Sag allen etwas"
+  da: "Sig noget til alle"
   fr: "Dites quelque chose à tout le monde"
   nl: "Zeg iets tegen iedereen"
   pl: "Napisz coś do wszystkich"
@@ -179,6 +204,7 @@ _version: 2
   uk: "Скажіть щось усім"
 "Send":
   de: "Senden"
+  da: "Send"
   fr: "Envoyer"
   nl: "Versturen"
   pl: "Wyślij"
@@ -186,6 +212,7 @@ _version: 2
   uk: "Надіслати"
 "Players may take open duties themselves":
   de: "Spieler dürfen offene Dienste selbst übernehmen"
+  da: "Spillere må selv tage ledige vagter"
   fr: "Les joueurs peuvent prendre eux-mêmes les services à pourvoir"
   nl: "Spelers mogen zelf open diensten nemen"
   pl: "Gracze mogą sami brać otwarte służby"
@@ -193,6 +220,7 @@ _version: 2
   uk: "Гравці можуть самі брати відкриті зміни"
 "Off: they ask for a duty, and you say yes or no here.":
   de: "Aus: sie fragen nach einem Dienst, und du sagst hier ja oder nein."
+  da: "Fra: de beder om en vagt, og du siger ja eller nej her."
   fr: "Désactivé : ils demandent un service, et vous dites oui ou non ici."
   nl: "Uit: ze vragen om een dienst, en jij zegt hier ja of nee."
   pl: "Wyłączone: proszą o służbę, a ty mówisz tutaj tak lub nie."
@@ -200,6 +228,7 @@ _version: 2
   uk: "Вимкнено: вони просять зміну, а ви тут відповідаєте так чи ні."
 "A session of another of your companies runs: starting one here ends it.":
   de: "Eine Sitzung eines anderen deiner Betriebe läuft: eine hier zu starten beendet sie."
+  da: "En session i et andet af dine selskaber kører: at starte en her afslutter den."
   fr: "Une session d'une autre de vos entreprises est en cours : en lancer une ici y met fin."
   nl: "Er loopt een sessie van een ander bedrijf van je: hier een starten beëindigt die."
   pl: "Trwa sesja innej twojej firmy: rozpoczęcie tutaj ją zakończy."
@@ -207,6 +236,7 @@ _version: 2
   uk: "Триває сесія іншої вашої компанії: якщо почати тут, вона завершиться."
 "Internet":
   de: "Internet"
+  da: "Internet"
   fr: "Internet"
   nl: "Internet"
   pl: "Internet"
@@ -214,6 +244,7 @@ _version: 2
   uk: "Інтернет"
 "through a Cloudflare tunnel (%{url})":
   de: "über einen Cloudflare-Tunnel (%{url})"
+  da: "gennem en Cloudflare-tunnel (%{url})"
   fr: "par un tunnel Cloudflare (%{url})"
   nl: "via een Cloudflare-tunnel (%{url})"
   pl: "przez tunel Cloudflare (%{url})"
@@ -221,6 +252,7 @@ _version: 2
   uk: "через тунель Cloudflare (%{url})"
 "the tunnel is starting…":
   de: "der Tunnel startet…"
+  da: "tunnelen starter…"
   fr: "le tunnel démarre…"
   nl: "de tunnel start…"
   pl: "tunel się uruchamia…"
@@ -228,6 +260,7 @@ _version: 2
   uk: "тунель запускається…"
 "no tunnel: friends over the internet need the same VPN":
   de: "kein Tunnel: Freunde über das Internet brauchen dasselbe VPN"
+  da: "ingen tunnel: venner over internettet skal bruge den samme VPN"
   fr: "pas de tunnel : les amis par Internet ont besoin du même VPN"
   nl: "geen tunnel: vrienden via internet hebben hetzelfde VPN nodig"
   pl: "brak tunelu: znajomi przez internet potrzebują tego samego VPN"
@@ -235,6 +268,7 @@ _version: 2
   uk: "тунелю немає: друзям через інтернет потрібен той самий VPN"
 "no tunnel (switched off): friends over the internet need the same VPN":
   de: "kein Tunnel (ausgeschaltet): Freunde über das Internet brauchen dasselbe VPN"
+  da: "ingen tunnel (slået fra): venner over internettet skal bruge den samme VPN"
   fr: "pas de tunnel (désactivé) : les amis par Internet ont besoin du même VPN"
   nl: "geen tunnel (uitgezet): vrienden via internet hebben hetzelfde VPN nodig"
   pl: "brak tunelu (wyłączony): znajomi przez internet potrzebują tego samego VPN"
@@ -242,6 +276,7 @@ _version: 2
   uk: "тунелю немає (вимкнено): друзям через інтернет потрібен той самий VPN"
 "Your world is open: friends drive their duties in it.":
   de: "Deine Welt ist offen: Freunde fahren darin ihre Dienste."
+  da: "Din verden er åben: venner kører deres vagter i den."
   fr: "Votre monde est ouvert : vos amis y conduisent leurs services."
   nl: "Je wereld is open: vrienden rijden er hun diensten in."
   pl: "Twój świat jest otwarty: znajomi jeżdżą w nim swoje służby."
@@ -249,6 +284,7 @@ _version: 2
   uk: "Ваш світ відкритий: друзі виконують у ньому свої зміни."
 "Your game runs another map: friends can only drive in the company's world.":
   de: "Dein Spiel läuft auf einer anderen Karte: Freunde können nur in der Welt des Betriebs fahren."
+  da: "Dit spil kører et andet kort: venner kan kun køre i selskabets verden."
   fr: "Votre jeu tourne sur une autre carte : vos amis ne peuvent conduire que dans le monde de l'entreprise."
   nl: "Je spel draait een andere kaart: vrienden kunnen alleen in de wereld van het bedrijf rijden."
   pl: "Twoja gra działa na innej mapie: znajomi mogą jeździć tylko w świecie firmy."
@@ -256,6 +292,7 @@ _version: 2
   uk: "Ваша гра запущена на іншій мапі: друзі можуть їздити лише у світі компанії."
 "Your world isn't open yet: friends cannot drive until it is. Drive a duty of your own, or open the world with you on foot at the depot.":
   de: "Deine Welt ist noch nicht offen: bis dahin können Freunde nicht fahren. Fahre selbst einen Dienst, oder öffne die Welt mit dir zu Fuß am Betriebshof."
+  da: "Din verden er endnu ikke åben: venner kan ikke køre, før den er det. Kør en vagt selv, eller åbn verden med dig til fods i garagen."
   fr: "Votre monde n'est pas encore ouvert : vos amis ne peuvent pas conduire avant. Conduisez vous-même un service, ou ouvrez le monde avec vous à pied au dépôt."
   nl: "Je wereld is nog niet open: tot dan kunnen vrienden niet rijden. Rijd zelf een dienst, of open de wereld met jou te voet bij de remise."
   pl: "Twój świat nie jest jeszcze otwarty: do tego czasu znajomi nie mogą jeździć. Sam jedź służbę albo otwórz świat, stojąc pieszo w zajezdni."
@@ -263,6 +300,7 @@ _version: 2
   uk: "Ваш світ ще не відкритий: доти друзі не можуть їздити. Виконуйте зміну самі або відкрийте світ, стоячи пішки в депо."
 "Open the world":
   de: "Welt öffnen"
+  da: "Åbn verden"
   fr: "Ouvrir le monde"
   nl: "Wereld openen"
   pl: "Otwórz świat"
@@ -270,6 +308,7 @@ _version: 2
   uk: "Відкрити світ"
 "Over the internet: both need the same VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale), or a friend comes in through your tunnel. Everybody needs the same version of Omsi-Hub.":
   de: "Über das Internet: beide brauchen dasselbe VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale), oder ein Freund kommt über deinen Tunnel herein. Alle brauchen dieselbe Version von Omsi-Hub."
+  da: "Over internettet: begge skal bruge den samme VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale), eller en ven kommer ind gennem din tunnel. Alle skal have den samme version af Omsi-Hub."
   fr: "Par Internet : il faut le même VPN des deux côtés (Hamachi, Radmin VPN, ZeroTier, Tailscale), ou votre ami passe par votre tunnel. Tout le monde a besoin de la même version d'Omsi-Hub."
   nl: "Via internet: beiden hebben hetzelfde VPN nodig (Hamachi, Radmin VPN, ZeroTier, Tailscale), of een vriend komt binnen via je tunnel. Iedereen heeft dezelfde versie van Omsi-Hub nodig."
   pl: "Przez internet: obaj potrzebujecie tego samego VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale) albo znajomy wchodzi przez twój tunel. Wszyscy potrzebują tej samej wersji Omsi-Hub."
@@ -277,6 +316,7 @@ _version: 2
   uk: "Через інтернет: обом потрібен той самий VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale), або друг заходить через ваш тунель. Усім потрібна однакова версія Omsi-Hub."
 "Not in a company session.":
   de: "Nicht in einer Betriebssitzung."
+  da: "Ikke i en selskabssession."
   fr: "Pas dans une session d'entreprise."
   nl: "Niet in een bedrijfssessie."
   pl: "Nie jesteś w sesji firmy."
@@ -284,6 +324,7 @@ _version: 2
   uk: "Ви не в сесії компанії."
 "Looking for the boss's launcher…":
   de: "Suche den Launcher des Chefs…"
+  da: "Leder efter chefens launcher…"
   fr: "Recherche du lanceur du patron…"
   nl: "Launcher van de baas zoeken…"
   pl: "Szukam launchera szefa…"
@@ -291,6 +332,7 @@ _version: 2
   uk: "Шукаємо лаунчер боса…"
 "The duty before is not finished with the boss's launcher yet: try again in a moment.":
   de: "Der vorige Dienst ist beim Launcher des Chefs noch nicht abgeschlossen: versuch es gleich noch einmal."
+  da: "Vagten før er endnu ikke færdig hos chefens launcher: prøv igen om et øjeblik."
   fr: "Le service précédent n'est pas encore clos chez le launcher du patron : réessayez dans un instant."
   nl: "De vorige dienst is bij de launcher van de baas nog niet afgerond: probeer het zo nog eens."
   pl: "Poprzednia służba nie jest jeszcze zamknięta w launcherze szefa: spróbuj za chwilę."
@@ -298,6 +340,7 @@ _version: 2
   uk: "Попередню зміну ще не закрито в лаунчері начальника: спробуйте за хвилину."
 "A game is running: close it, then drive the duty.":
   de: "Ein Spiel läuft: schließe es, dann fahre den Dienst."
+  da: "Et spil kører: luk det, og kør derefter vagten."
   fr: "Un jeu est en cours : fermez-le, puis conduisez le service."
   nl: "Er loopt een spel: sluit het en rijd dan de dienst."
   pl: "Gra jest uruchomiona: zamknij ją, a potem jedź służbę."
@@ -305,6 +348,7 @@ _version: 2
   uk: "Гра запущена: закрийте її, потім виконуйте зміну."
 "The duty's bus is not installed on this computer: %{bus}. Install it, or ask the boss to give the tour another bus.":
   de: "Der Bus des Dienstes ist auf diesem Computer nicht installiert: %{bus}. Installiere ihn, oder bitte den Chef, dem Umlauf einen anderen Bus zu geben."
+  da: "Vagtens bus er ikke installeret på denne computer: %{bus}. Installer den, eller bed chefen give vognløbet en anden bus."
   fr: "Le bus du service n'est pas installé sur cet ordinateur : %{bus}. Installez-le, ou demandez au patron de donner un autre bus à la tournée."
   nl: "De bus van de dienst is niet geïnstalleerd op deze computer: %{bus}. Installeer hem, of vraag de baas de omloop een andere bus te geven."
   pl: "Autobus tej służby nie jest zainstalowany na tym komputerze: %{bus}. Zainstaluj go albo poproś szefa o inny autobus dla brygady."
@@ -312,6 +356,7 @@ _version: 2
   uk: "Автобус цієї зміни не встановлено на цьому комп'ютері: %{bus}. Встановіть його або попросіть боса дати обороту інший автобус."
 "Bus %{bus}":
   de: "Bus %{bus}"
+  da: "Bus %{bus}"
   fr: "Bus %{bus}"
   nl: "Bus %{bus}"
   pl: "Autobus %{bus}"
@@ -319,6 +364,7 @@ _version: 2
   uk: "Автобус %{bus}"
 "Take this duty":
   de: "Diesen Dienst übernehmen"
+  da: "Tag denne vagt"
   fr: "Prendre ce service"
   nl: "Deze dienst nemen"
   pl: "Weź tę służbę"
@@ -326,6 +372,7 @@ _version: 2
   uk: "Взяти цю зміну"
 "Ask for this duty":
   de: "Um diesen Dienst bitten"
+  da: "Bed om denne vagt"
   fr: "Demander ce service"
   nl: "Om deze dienst vragen"
   pl: "Poproś o tę służbę"
@@ -333,6 +380,7 @@ _version: 2
   uk: "Попросити цю зміну"
 "Asked for: the boss says yes or no":
   de: "Angefragt: der Chef sagt ja oder nein"
+  da: "Anmodet om: chefen siger ja eller nej"
   fr: "Demandé : le patron dit oui ou non"
   nl: "Gevraagd: de baas zegt ja of nee"
   pl: "Poproszono: szef mówi tak lub nie"
@@ -340,6 +388,7 @@ _version: 2
   uk: "Запитано: бос відповість так чи ні"
 "You are driving it":
   de: "Du fährst ihn gerade"
+  da: "Du kører den"
   fr: "Vous le conduisez"
   nl: "Je rijdt hem nu"
   pl: "Jedziesz ją teraz"
@@ -347,6 +396,7 @@ _version: 2
   uk: "Ви виконуєте її"
 "%{name} has it":
   de: "%{name} hat ihn"
+  da: "%{name} har den"
   fr: "%{name} l'a pris"
   nl: "%{name} heeft hem"
   pl: "Ma ją %{name}"
@@ -354,6 +404,7 @@ _version: 2
   uk: "Вона в гравця %{name}"
 "Driven by %{name}":
   de: "Gefahren von %{name}"
+  da: "Køres af %{name}"
   fr: "Conduit par %{name}"
   nl: "Gereden door %{name}"
   pl: "Jeździ: %{name}"
@@ -361,6 +412,7 @@ _version: 2
   uk: "Виконує: %{name}"
 "Join a company":
   de: "Einem Betrieb beitreten"
+  da: "Deltag i et selskab"
   fr: "Rejoindre une entreprise"
   nl: "Meedoen met een bedrijf"
   pl: "Dołącz do firmy"
@@ -368,6 +420,7 @@ _version: 2
   uk: "Приєднатися до компанії"
 "A friend runs a bus company and plays as its boss. Paste the session code he sent you: you drive duties of his company's day for it, in his world.":
   de: "Ein Freund führt einen Busbetrieb und spielt als dessen Chef. Füge den Sitzungscode ein, den er dir geschickt hat: du fährst Dienste vom Tag seines Betriebs für ihn, in seiner Welt."
+  da: "En ven driver et buselskab og spiller som dets chef. Indsæt den sessionskode, han har sendt dig: du kører dagens vagter i hans selskab for det i hans verden."
   fr: "Un ami dirige une entreprise de bus et joue en tant que patron. Collez le code de session qu'il vous a envoyé : vous conduisez pour son entreprise des services de sa journée, dans son monde."
   nl: "Een vriend runt een busbedrijf en speelt als de baas. Plak de sessiecode die hij je stuurde: je rijdt diensten van de dag van zijn bedrijf ervoor, in zijn wereld."
   pl: "Znajomy prowadzi firmę autobusową i gra jako jej szef. Wklej kod sesji, który ci wysłał: jeździsz dla jego firmy służby z jej dnia, w jego świecie."
@@ -375,6 +428,7 @@ _version: 2
   uk: "Друг керує автобусною компанією й грає як її бос. Вставте код сесії, який він вам надіслав: ви виконуєте для його компанії зміни її дня в його світі."
 "Session code (HUB-…)":
   de: "Sitzungscode (HUB-…)"
+  da: "Sessionskode (HUB-…)"
   fr: "Code de session (HUB-…)"
   nl: "Sessiecode (HUB-…)"
   pl: "Kod sesji (HUB-…)"
@@ -382,6 +436,7 @@ _version: 2
   uk: "Код сесії (HUB-…)"
 "Both need the same version of Omsi-Hub.":
   de: "Beide brauchen dieselbe Version von Omsi-Hub."
+  da: "Begge skal have den samme version af Omsi-Hub."
   fr: "Il faut la même version d'Omsi-Hub des deux côtés."
   nl: "Beiden hebben dezelfde versie van Omsi-Hub nodig."
   pl: "Obaj potrzebujecie tej samej wersji Omsi-Hub."
@@ -389,6 +444,7 @@ _version: 2
   uk: "Обом потрібна однакова версія Omsi-Hub."
 "The same network, the same VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale), or the boss's tunnel.":
   de: "Dasselbe Netzwerk, dasselbe VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale) oder der Tunnel des Chefs."
+  da: "Det samme netværk, den samme VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale) eller chefens tunnel."
   fr: "Le même réseau, le même VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale), ou le tunnel du patron."
   nl: "Hetzelfde netwerk, hetzelfde VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale), of de tunnel van de baas."
   pl: "Ta sama sieć, ten sam VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale) albo tunel szefa."
@@ -396,6 +452,7 @@ _version: 2
   uk: "Та сама мережа, той самий VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale) або тунель боса."
 "The boss's company map, and the buses of his duties, installed.":
   de: "Die Karte des Betriebs und die Busse seiner Dienste installiert."
+  da: "Chefens selskabskort og busserne til hans vagter, installeret."
   fr: "La carte de l'entreprise du patron et les bus de ses services, installés."
   nl: "De kaart van het bedrijf van de baas, en de bussen van zijn diensten, geïnstalleerd."
   pl: "Zainstalowana mapa firmy szefa i autobusy jego służb."
@@ -403,6 +460,7 @@ _version: 2
   uk: "Встановлені мапа компанії боса й автобуси її змін."
 "No open duty right now: the boss can give you one.":
   de: "Gerade kein offener Dienst: der Chef kann dir einen geben."
+  da: "Ingen ledig vagt lige nu: chefen kan give dig en."
   fr: "Aucun service à pourvoir pour l'instant : le patron peut vous en donner un."
   nl: "Nu geen open dienst: de baas kan je er een geven."
   pl: "Teraz brak otwartej służby: szef może ci jakąś dać."
@@ -410,6 +468,7 @@ _version: 2
   uk: "Зараз немає відкритих змін: бос може дати вам зміну."
 "No duty of yours yet: take an open one.":
   de: "Noch kein Dienst von dir: übernimm einen offenen."
+  da: "Ingen vagt til dig endnu: tag en ledig."
   fr: "Aucun service à vous pour l'instant : prenez-en un à pourvoir."
   nl: "Nog geen dienst van jou: neem een open dienst."
   pl: "Nie masz jeszcze służby: weź otwartą."
@@ -417,6 +476,7 @@ _version: 2
   uk: "У вас поки немає зміни: візьміть відкриту."
 "The rest of the day":
   de: "Der Rest des Tages"
+  da: "Resten af dagen"
   fr: "Le reste de la journée"
   nl: "De rest van de dag"
   pl: "Reszta dnia"
@@ -424,6 +484,7 @@ _version: 2
   uk: "Решта дня"
 "My results":
   de: "Meine Ergebnisse"
+  da: "Mine resultater"
   fr: "Mes résultats"
   nl: "Mijn resultaten"
   pl: "Moje wyniki"
@@ -431,6 +492,7 @@ _version: 2
   uk: "Мої результати"
 "My history":
   de: "Mein Verlauf"
+  da: "Min historik"
   fr: "Mon historique"
   nl: "Mijn geschiedenis"
   pl: "Moja historia"
@@ -438,6 +500,7 @@ _version: 2
   uk: "Моя історія"
 "The boss":
   de: "Der Chef"
+  da: "Chefen"
   fr: "Le patron"
   nl: "De baas"
   pl: "Szef"
@@ -445,6 +508,7 @@ _version: 2
   uk: "Бос"
 "Offline":
   de: "Offline"
+  da: "Offline"
   fr: "Hors ligne"
   nl: "Offline"
   pl: "Offline"
@@ -452,6 +516,7 @@ _version: 2
   uk: "Не в мережі"
 "%{trips} trips · %{passengers} passengers · %{km} km · on time %{p} · score %{score} · +%{xp} XP":
   de: "%{trips} Fahrten · %{passengers} Fahrgäste · %{km} km · pünktlich %{p} · Wertung %{score} · +%{xp} EP"
+  da: "%{trips} ture · %{passengers} passagerer · %{km} km · til tiden %{p} · score %{score} · +%{xp} XP"
   fr: "%{trips} trajets · %{passengers} voyageurs · %{km} km · à l'heure %{p} · note %{score} · +%{xp} XP"
   nl: "%{trips} ritten · %{passengers} reizigers · %{km} km · op tijd %{p} · score %{score} · +%{xp} XP"
   pl: "%{trips} kursów · %{passengers} pasażerów · %{km} km · punktualnie %{p} · wynik %{score} · +%{xp} PD"
@@ -459,6 +524,7 @@ _version: 2
   uk: "рейсів: %{trips} · пасажирів: %{passengers} · %{km} км · вчасно %{p} · оцінка %{score} · +%{xp} досвіду"
 "Your game drives %{duty} in the boss's world: its trips go to the company as they end.":
   de: "Dein Spiel fährt %{duty} in der Welt des Chefs: die Fahrten gehen an den Betrieb, sobald sie enden."
+  da: "Dit spil kører %{duty} i chefens verden: dets ture går til selskabet, efterhånden som de slutter."
   fr: "Votre jeu conduit %{duty} dans le monde du patron : ses trajets vont à l'entreprise dès qu'ils se terminent."
   nl: "Je spel rijdt %{duty} in de wereld van de baas: de ritten gaan naar het bedrijf zodra ze klaar zijn."
   pl: "Twoja gra jedzie %{duty} w świecie szefa: kursy trafiają do firmy, gdy się kończą."
@@ -466,6 +532,7 @@ _version: 2
   uk: "Ваша гра виконує %{duty} у світі боса: рейси передаються компанії, щойно завершуються."
 "Boss: %{name}  ·  %{map}":
   de: "Chef: %{name}  ·  %{map}"
+  da: "Chef: %{name}  ·  %{map}"
   fr: "Patron : %{name}  ·  %{map}"
   nl: "Baas: %{name}  ·  %{map}"
   pl: "Szef: %{name}  ·  %{map}"
@@ -473,6 +540,7 @@ _version: 2
   uk: "Бос: %{name}  ·  %{map}"
 "The boss's world is open: you can drive your duties.":
   de: "Die Welt des Chefs ist offen: du kannst deine Dienste fahren."
+  da: "Chefens verden er åben: du kan køre dine vagter."
   fr: "Le monde du patron est ouvert : vous pouvez conduire vos services."
   nl: "De wereld van de baas is open: je kunt je diensten rijden."
   pl: "Świat szefa jest otwarty: możesz jeździć swoje służby."
@@ -480,6 +548,7 @@ _version: 2
   uk: "Світ боса відкритий: ви можете виконувати свої зміни."
 "The boss's world isn't open yet: Drive works once his game runs the company's map.":
   de: "Die Welt des Chefs ist noch nicht offen: Fahren geht, sobald sein Spiel die Karte des Betriebs geladen hat."
+  da: "Chefens verden er endnu ikke åben: Kør virker, når hans spil kører selskabets kort."
   fr: "Le monde du patron n'est pas encore ouvert : Conduire fonctionnera quand son jeu tournera sur la carte de l'entreprise."
   nl: "De wereld van de baas is nog niet open: Rijden werkt zodra zijn spel de kaart van het bedrijf draait."
   pl: "Świat szefa nie jest jeszcze otwarty: Jedź zadziała, gdy jego gra uruchomi mapę firmy."
@@ -487,6 +556,7 @@ _version: 2
   uk: "Світ боса ще не відкритий: «Їхати» запрацює, коли його гра запустить мапу компанії."
 "Take an open duty: it is yours at once.":
   de: "Übernimm einen offenen Dienst: er gehört sofort dir."
+  da: "Tag en ledig vagt: den er din med det samme."
   fr: "Prenez un service à pourvoir : il est à vous tout de suite."
   nl: "Neem een open dienst: hij is meteen van jou."
   pl: "Weź otwartą służbę: od razu jest twoja."
@@ -494,6 +564,7 @@ _version: 2
   uk: "Візьміть відкриту зміну: вона одразу ваша."
 "The boss decides: ask for an open duty, and he says yes or no.":
   de: "Der Chef entscheidet: bitte um einen offenen Dienst, und er sagt ja oder nein."
+  da: "Chefen bestemmer: bed om en ledig vagt, og han siger ja eller nej."
   fr: "Le patron décide : demandez un service à pourvoir, et il dit oui ou non."
   nl: "De baas beslist: vraag om een open dienst, en hij zegt ja of nee."
   pl: "Szef decyduje: poproś o otwartą służbę, a on powie tak lub nie."
@@ -501,6 +572,7 @@ _version: 2
   uk: "Вирішує бос: попросіть відкриту зміну, і він відповість так чи ні."
 "Drove duty %{k} of line %{n} for %{company}":
   de: "Dienst %{k} der Linie %{n} für %{company} gefahren"
+  da: "Kørte vagt %{k} på linje %{n} for %{company}"
   fr: "Service %{k} de la ligne %{n} conduit pour %{company}"
   nl: "Dienst %{k} van lijn %{n} gereden voor %{company}"
   pl: "Przejechana służba %{k} linii %{n} dla %{company}"
@@ -508,6 +580,7 @@ _version: 2
   uk: "Виконано зміну %{k} лінії %{n} для %{company}"
 "%{trips} trips · score %{score} · +%{xp} XP":
   de: "%{trips} Fahrten · Wertung %{score} · +%{xp} EP"
+  da: "%{trips} ture · score %{score} · +%{xp} XP"
   fr: "%{trips} trajets · note %{score} · +%{xp} XP"
   nl: "%{trips} ritten · score %{score} · +%{xp} XP"
   pl: "%{trips} kursów · wynik %{score} · +%{xp} PD"
@@ -515,6 +588,7 @@ _version: 2
   uk: "рейсів: %{trips} · оцінка %{score} · +%{xp} досвіду"
 "The planning no longer has this duty.":
   de: "Die Planung hat diesen Dienst nicht mehr."
+  da: "Planlægningen har ikke længere denne vagt."
   fr: "La planification n'a plus ce service."
   nl: "De planning heeft deze dienst niet meer."
   pl: "Planowanie nie ma już tej służby."
@@ -522,6 +596,7 @@ _version: 2
   uk: "У плануванні цієї зміни більше немає."
 "Only duties of the company's day can be taken.":
   de: "Nur Dienste des Betriebstages können übernommen werden."
+  da: "Kun vagter fra selskabets dag kan tages."
   fr: "Seuls les services de la journée de l'entreprise peuvent être pris."
   nl: "Alleen diensten van de dag van het bedrijf kunnen worden genomen."
   pl: "Można brać tylko służby z dnia firmy."
@@ -529,6 +604,7 @@ _version: 2
   uk: "Брати можна лише зміни поточного дня компанії."
 "Somebody drives this duty already.":
   de: "Diesen Dienst fährt schon jemand."
+  da: "Nogen kører allerede denne vagt."
   fr: "Quelqu'un conduit déjà ce service."
   nl: "Iemand rijdt deze dienst al."
   pl: "Ktoś już jeździ tę służbę."
@@ -536,6 +612,7 @@ _version: 2
   uk: "Цю зміну вже хтось виконує."
 "This duty has no bus of the fleet yet: the boss gives its tour one first.":
   de: "Dieser Dienst hat noch keinen Bus der Flotte: der Chef gibt seinem Umlauf zuerst einen."
+  da: "Denne vagt har endnu ingen bus fra flåden: chefen giver først dens vognløb en."
   fr: "Ce service n'a pas encore de bus de la flotte : le patron en donne d'abord un à sa tournée."
   nl: "Deze dienst heeft nog geen bus van de vloot: de baas geeft zijn omloop er eerst een."
   pl: "Ta służba nie ma jeszcze autobusu floty: najpierw szef musi dać go brygadzie."
@@ -543,6 +620,7 @@ _version: 2
   uk: "Ця зміна ще не має автобуса парку: спершу бос дає його обороту."
 "This duty has begun already.":
   de: "Dieser Dienst hat schon begonnen."
+  da: "Denne vagt er allerede begyndt."
   fr: "Ce service a déjà commencé."
   nl: "Deze dienst is al begonnen."
   pl: "Ta służba już się zaczęła."
@@ -550,6 +628,7 @@ _version: 2
   uk: "Ця зміна вже почалася."
 "This duty was driven already.":
   de: "Dieser Dienst wurde schon gefahren."
+  da: "Denne vagt er allerede kørt."
   fr: "Ce service a déjà été conduit."
   nl: "Deze dienst is al gereden."
   pl: "Ta służba została już przejechana."
@@ -557,6 +636,7 @@ _version: 2
   uk: "Цю зміну вже виконано."
 "This duty is not yours.":
   de: "Dieser Dienst gehört nicht dir."
+  da: "Denne vagt er ikke din."
   fr: "Ce service n'est pas le vôtre."
   nl: "Deze dienst is niet van jou."
   pl: "To nie jest twoja służba."
@@ -564,6 +644,7 @@ _version: 2
   uk: "Це не ваша зміна."
 "You have another duty at that time.":
   de: "Du hast zu dieser Zeit einen anderen Dienst."
+  da: "Du har en anden vagt på det tidspunkt."
   fr: "Vous avez un autre service à ce moment-là."
   nl: "Je hebt op dat moment een andere dienst."
   pl: "Masz w tym czasie inną służbę."
@@ -571,6 +652,7 @@ _version: 2
   uk: "У цей час у вас інша зміна."
 "You are driving this duty: it stays yours until you have finished.":
   de: "Du fährst diesen Dienst gerade: er bleibt deiner, bis du fertig bist."
+  da: "Du kører denne vagt: den forbliver din, til du er færdig."
   fr: "Vous conduisez ce service : il reste le vôtre jusqu'à ce que vous ayez fini."
   nl: "Je rijdt deze dienst nu: hij blijft van jou tot je klaar bent."
   pl: "Jedziesz tę służbę: zostaje twoja, dopóki nie skończysz."
@@ -578,6 +660,7 @@ _version: 2
   uk: "Ви виконуєте цю зміну: вона лишається вашою, доки не закінчите."
 "This duty is finished: what was driven stays.":
   de: "Dieser Dienst ist beendet: was gefahren wurde, bleibt."
+  da: "Denne vagt er færdig: det, der er kørt, bliver."
   fr: "Ce service est terminé : ce qui a été conduit reste."
   nl: "Deze dienst is klaar: wat gereden is, blijft."
   pl: "Ta służba jest zakończona: to, co przejechano, zostaje."
@@ -585,6 +668,7 @@ _version: 2
   uk: "Ця зміна завершена: виконане лишається."
 "The company has as many players as it can take.":
   de: "Der Betrieb hat so viele Spieler, wie er aufnehmen kann."
+  da: "Selskabet har så mange spillere, som det kan tage."
   fr: "L'entreprise a autant de joueurs qu'elle peut en accueillir."
   nl: "Het bedrijf heeft zoveel spelers als het kan hebben."
   pl: "Firma ma już tylu graczy, ilu może przyjąć."
@@ -592,6 +676,7 @@ _version: 2
   uk: "У компанії вже стільки гравців, скільки вона може прийняти."
 "The code is no longer valid: ask the boss for the code of his session.":
   de: "Der Code ist nicht mehr gültig: bitte den Chef um den Code seiner Sitzung."
+  da: "Koden er ikke længere gyldig: bed chefen om koden til hans session."
   fr: "Le code n'est plus valable : demandez au patron le code de sa session."
   nl: "De code is niet meer geldig: vraag de baas om de code van zijn sessie."
   pl: "Kod jest już nieważny: poproś szefa o kod jego sesji."
@@ -599,6 +684,7 @@ _version: 2
   uk: "Код більше не дійсний: попросіть у боса код його сесії."
 "The boss's world isn't open yet.":
   de: "Die Welt des Chefs ist noch nicht offen."
+  da: "Chefens verden er endnu ikke åben."
   fr: "Le monde du patron n'est pas encore ouvert."
   nl: "De wereld van de baas is nog niet open."
   pl: "Świat szefa nie jest jeszcze otwarty."
@@ -606,6 +692,7 @@ _version: 2
   uk: "Світ боса ще не відкритий."
 "The boss's game runs another map: the company's world has to be open.":
   de: "Das Spiel des Chefs läuft auf einer anderen Karte: die Welt des Betriebs muss offen sein."
+  da: "Chefens spil kører et andet kort: selskabets verden skal være åben."
   fr: "Le jeu du patron tourne sur une autre carte : le monde de l'entreprise doit être ouvert."
   nl: "Het spel van de baas draait een andere kaart: de wereld van het bedrijf moet open zijn."
   pl: "Gra szefa działa na innej mapie: świat firmy musi być otwarty."
@@ -613,6 +700,7 @@ _version: 2
   uk: "Гра боса запущена на іншій мапі: має бути відкритий світ компанії."
 "The boss's launcher is still reading the day's timetable: try again in a moment.":
   de: "Der Launcher des Chefs liest noch den Fahrplan des Tages: versuche es gleich noch einmal."
+  da: "Chefens launcher læser stadig dagens køreplan: prøv igen om et øjeblik."
   fr: "Le lanceur du patron lit encore l'horaire du jour : réessayez dans un instant."
   nl: "De launcher van de baas leest de dienstregeling van de dag nog: probeer het zo nog eens."
   pl: "Launcher szefa wciąż wczytuje rozkład dnia: spróbuj za chwilę."
@@ -620,6 +708,7 @@ _version: 2
   uk: "Лаунчер боса ще читає розклад дня: спробуйте трохи згодом."
 "The boss's launcher did not understand that: both players need the same version of Omsi-Hub.":
   de: "Der Launcher des Chefs hat das nicht verstanden: beide Spieler brauchen dieselbe Version von Omsi-Hub."
+  da: "Chefens launcher forstod ikke det: begge spillere skal have den samme version af Omsi-Hub."
   fr: "Le lanceur du patron n'a pas compris : les deux joueurs ont besoin de la même version d'Omsi-Hub."
   nl: "De launcher van de baas begreep dat niet: beide spelers hebben dezelfde versie van Omsi-Hub nodig."
   pl: "Launcher szefa tego nie zrozumiał: obaj gracze potrzebują tej samej wersji Omsi-Hub."
@@ -627,6 +716,7 @@ _version: 2
   uk: "Лаунчер боса цього не зрозумів: обом гравцям потрібна однакова версія Omsi-Hub."
 "The boss does not have the company open right now.":
   de: "Der Chef hat den Betrieb gerade nicht geöffnet."
+  da: "Chefen har ikke selskabet åbent lige nu."
   fr: "Le patron n'a pas l'entreprise ouverte en ce moment."
   nl: "De baas heeft het bedrijf nu niet open."
   pl: "Szef nie ma teraz otwartej firmy."
@@ -634,6 +724,7 @@ _version: 2
   uk: "Зараз у боса компанія не відкрита."
 "%{name} joined the company.":
   de: "%{name} ist dem Betrieb beigetreten."
+  da: "%{name} deltog i selskabet."
   fr: "%{name} a rejoint l'entreprise."
   nl: "%{name} doet mee met het bedrijf."
   pl: "%{name} dołącza do firmy."
@@ -641,6 +732,7 @@ _version: 2
   uk: "%{name} приєднується до компанії."
 "%{name} left.":
   de: "%{name} ist gegangen."
+  da: "%{name} gik."
   fr: "%{name} est parti."
   nl: "%{name} is vertrokken."
   pl: "%{name} wychodzi."
@@ -648,6 +740,7 @@ _version: 2
   uk: "%{name} виходить."
 "%{name} took duty %{k} of line %{n} (tour %{tour}).":
   de: "%{name} hat Dienst %{k} der Linie %{n} übernommen (Umlauf %{tour})."
+  da: "%{name} tog vagt %{k} på linje %{n} (vognløb %{tour})."
   fr: "%{name} a pris le service %{k} de la ligne %{n} (tournée %{tour})."
   nl: "%{name} nam dienst %{k} van lijn %{n} (omloop %{tour})."
   pl: "%{name} bierze służbę %{k} linii %{n} (brygada %{tour})."
@@ -655,6 +748,7 @@ _version: 2
   uk: "%{name} бере зміну %{k} лінії %{n} (оборот %{tour})."
 "%{name} asks for duty %{k} of line %{n} (tour %{tour}).":
   de: "%{name} bittet um Dienst %{k} der Linie %{n} (Umlauf %{tour})."
+  da: "%{name} beder om vagt %{k} på linje %{n} (vognløb %{tour})."
   fr: "%{name} demande le service %{k} de la ligne %{n} (tournée %{tour})."
   nl: "%{name} vraagt om dienst %{k} van lijn %{n} (omloop %{tour})."
   pl: "%{name} prosi o służbę %{k} linii %{n} (brygada %{tour})."
@@ -662,6 +756,7 @@ _version: 2
   uk: "%{name} просить зміну %{k} лінії %{n} (оборот %{tour})."
 "%{name} has duty %{k} of line %{n} (tour %{tour}) now.":
   de: "%{name} hat jetzt Dienst %{k} der Linie %{n} (Umlauf %{tour})."
+  da: "%{name} har nu vagt %{k} på linje %{n} (vognløb %{tour})."
   fr: "%{name} a maintenant le service %{k} de la ligne %{n} (tournée %{tour})."
   nl: "%{name} heeft nu dienst %{k} van lijn %{n} (omloop %{tour})."
   pl: "%{name} ma teraz służbę %{k} linii %{n} (brygada %{tour})."
@@ -669,6 +764,7 @@ _version: 2
   uk: "Тепер у гравця %{name} зміна %{k} лінії %{n} (оборот %{tour})."
 "No: duty %{k} of line %{n} (tour %{tour}) is not %{name}'s.":
   de: "Nein: Dienst %{k} der Linie %{n} (Umlauf %{tour}) geht nicht an %{name}."
+  da: "Nej: vagt %{k} på linje %{n} (vognløb %{tour}) er ikke %{name}s."
   fr: "Non : le service %{k} de la ligne %{n} (tournée %{tour}) ne revient pas à %{name}."
   nl: "Nee: dienst %{k} van lijn %{n} (omloop %{tour}) is niet voor %{name}."
   pl: "Nie: służba %{k} linii %{n} (brygada %{tour}) nie trafia do gracza %{name}."
@@ -676,6 +772,7 @@ _version: 2
   uk: "Ні: зміна %{k} лінії %{n} (оборот %{tour}) не дістається гравцю %{name}."
 "%{name} gave back duty %{k} of line %{n} (tour %{tour}).":
   de: "%{name} hat Dienst %{k} der Linie %{n} zurückgegeben (Umlauf %{tour})."
+  da: "%{name} gav vagt %{k} på linje %{n} (vognløb %{tour}) tilbage."
   fr: "%{name} a rendu le service %{k} de la ligne %{n} (tournée %{tour})."
   nl: "%{name} gaf dienst %{k} van lijn %{n} terug (omloop %{tour})."
   pl: "%{name} oddaje służbę %{k} linii %{n} (brygada %{tour})."
@@ -683,6 +780,7 @@ _version: 2
   uk: "%{name} повертає зміну %{k} лінії %{n} (оборот %{tour})."
 "%{name} is off duty %{k} of line %{n} (tour %{tour}).":
   de: "%{name} ist von Dienst %{k} der Linie %{n} abgezogen (Umlauf %{tour})."
+  da: "%{name} er af vagt %{k} på linje %{n} (vognløb %{tour})."
   fr: "%{name} est retiré du service %{k} de la ligne %{n} (tournée %{tour})."
   nl: "%{name} is van dienst %{k} van lijn %{n} gehaald (omloop %{tour})."
   pl: "%{name} zdjęty ze służby %{k} linii %{n} (brygada %{tour})."
@@ -690,6 +788,7 @@ _version: 2
   uk: "%{name} знятий зі зміни %{k} лінії %{n} (оборот %{tour})."
 "%{name} wants to drive duty %{k} of line %{n}: the boss's world isn't open yet.":
   de: "%{name} will Dienst %{k} der Linie %{n} fahren: die Welt des Chefs ist noch nicht offen."
+  da: "%{name} vil køre vagt %{k} på linje %{n}: chefens verden er endnu ikke åben."
   fr: "%{name} veut conduire le service %{k} de la ligne %{n} : le monde du patron n'est pas encore ouvert."
   nl: "%{name} wil dienst %{k} van lijn %{n} rijden: de wereld van de baas is nog niet open."
   pl: "%{name} chce jechać służbę %{k} linii %{n}: świat szefa nie jest jeszcze otwarty."
@@ -697,6 +796,7 @@ _version: 2
   uk: "%{name} хоче виконати зміну %{k} лінії %{n}: світ боса ще не відкритий."
 "%{name} drives duty %{k} of line %{n} (tour %{tour}).":
   de: "%{name} fährt Dienst %{k} der Linie %{n} (Umlauf %{tour})."
+  da: "%{name} kører vagt %{k} på linje %{n} (vognløb %{tour})."
   fr: "%{name} conduit le service %{k} de la ligne %{n} (tournée %{tour})."
   nl: "%{name} rijdt dienst %{k} van lijn %{n} (omloop %{tour})."
   pl: "%{name} jedzie służbę %{k} linii %{n} (brygada %{tour})."
@@ -704,6 +804,7 @@ _version: 2
   uk: "%{name} виконує зміну %{k} лінії %{n} (оборот %{tour})."
 "%{name} finished duty %{k} of line %{n}: %{trips} trips, score %{score}.":
   de: "%{name} hat Dienst %{k} der Linie %{n} beendet: %{trips} Fahrten, Wertung %{score}."
+  da: "%{name} afsluttede vagt %{k} på linje %{n}: %{trips} ture, score %{score}."
   fr: "%{name} a terminé le service %{k} de la ligne %{n} : %{trips} trajets, note %{score}."
   nl: "%{name} heeft dienst %{k} van lijn %{n} gereden: %{trips} ritten, score %{score}."
   pl: "%{name} kończy służbę %{k} linii %{n}: %{trips} kursów, wynik %{score}."
@@ -711,6 +812,7 @@ _version: 2
   uk: "%{name} завершує зміну %{k} лінії %{n}: рейсів %{trips}, оцінка %{score}."
 "%{name}: %{text}":
   de: "%{name}: %{text}"
+  da: "%{name}: %{text}"
   fr: "%{name} : %{text}"
   nl: "%{name}: %{text}"
   pl: "%{name}: %{text}"
@@ -718,6 +820,7 @@ _version: 2
   uk: "%{name}: %{text}"
 "The boss's world is open: duties can be driven.":
   de: "Die Welt des Chefs ist offen: Dienste können gefahren werden."
+  da: "Chefens verden er åben: vagter kan køres."
   fr: "Le monde du patron est ouvert : les services peuvent être conduits."
   nl: "De wereld van de baas is open: diensten kunnen worden gereden."
   pl: "Świat szefa jest otwarty: można jeździć służby."
@@ -725,6 +828,7 @@ _version: 2
   uk: "Світ боса відкритий: зміни можна виконувати."
 "This is not a company code. Ask the boss for the code of his company (HUB-…).":
   de: "Das ist kein Betriebscode. Bitte den Chef um den Code seines Betriebs (HUB-…)."
+  da: "Dette er ikke en selskabskode. Bed chefen om koden til hans selskab (HUB-…)."
   fr: "Ce n'est pas un code d'entreprise. Demandez au patron le code de son entreprise (HUB-…)."
   nl: "Dit is geen bedrijfscode. Vraag de baas om de code van zijn bedrijf (HUB-…)."
   pl: "To nie jest kod firmy. Poproś szefa o kod jego firmy (HUB-…)."
@@ -732,6 +836,7 @@ _version: 2
   uk: "Це не код компанії. Попросіть у боса код його компанії (HUB-…)."
 "This is the code of a game session. Ask the boss for the code of his company (HUB-…): it is in his \"Play together\" panel.":
   de: "Das ist der Code einer Spielsitzung. Bitte den Chef um den Code seines Betriebs (HUB-…): er steht in seinem Fenster „Zusammen spielen“."
+  da: "Dette er koden til en spilsession. Bed chefen om koden til hans selskab (HUB-…): den står i hans panel \"Spil sammen\"."
   fr: "C'est le code d'une session de jeu. Demandez au patron le code de son entreprise (HUB-…) : il se trouve dans son panneau « Jouer ensemble »."
   nl: "Dit is de code van een spelsessie. Vraag de baas om de code van zijn bedrijf (HUB-…): die staat in zijn venster \"Samen spelen\"."
   pl: "To kod sesji gry. Poproś szefa o kod jego firmy (HUB-…): jest w jego panelu „Wspólna gra”."
@@ -739,6 +844,7 @@ _version: 2
   uk: "Це код ігрової сесії. Попросіть у боса код його компанії (HUB-…): він у його панелі «Грати разом»."
 "The company code has a typo: copy the whole code again.":
   de: "Der Betriebscode hat einen Tippfehler: kopiere den ganzen Code noch einmal."
+  da: "Selskabskoden har en tastefejl: kopiér hele koden igen."
   fr: "Le code d'entreprise contient une faute de frappe : copiez de nouveau le code entier."
   nl: "De bedrijfscode bevat een tikfout: kopieer de hele code opnieuw."
   pl: "Kod firmy ma literówkę: skopiuj cały kod jeszcze raz."
@@ -746,6 +852,7 @@ _version: 2
   uk: "У коді компанії помилка: скопіюйте весь код ще раз."
 "This code was made by another version of Omsi-Hub: both players need the same version.":
   de: "Dieser Code stammt von einer anderen Version von Omsi-Hub: beide Spieler brauchen dieselbe Version."
+  da: "Denne kode er lavet af en anden version af Omsi-Hub: begge spillere skal have den samme version."
   fr: "Ce code a été créé par une autre version d'Omsi-Hub : les deux joueurs ont besoin de la même version."
   nl: "Deze code is gemaakt door een andere versie van Omsi-Hub: beide spelers hebben dezelfde versie nodig."
   pl: "Ten kod pochodzi z innej wersji Omsi-Hub: obaj gracze potrzebują tej samej wersji."
@@ -753,6 +860,7 @@ _version: 2
   uk: "Цей код створено іншою версією Omsi-Hub: обом гравцям потрібна однакова версія."
 "The boss's launcher does not answer. Is his \"Play together\" session still on? Over the internet both need the same VPN, or his tunnel must be up.":
   de: "Der Launcher des Chefs antwortet nicht. Läuft seine Sitzung „Zusammen spielen“ noch? Über das Internet brauchen beide dasselbe VPN, oder sein Tunnel muss laufen."
+  da: "Chefens launcher svarer ikke. Er hans \"Spil sammen\"-session stadig tændt? Over internettet skal begge bruge den samme VPN, eller hans tunnel skal være oppe."
   fr: "Le lanceur du patron ne répond pas. Sa session « Jouer ensemble » est-elle toujours active ? Par Internet, il faut le même VPN des deux côtés, ou son tunnel doit être actif."
   nl: "De launcher van de baas antwoordt niet. Loopt zijn sessie \"Samen spelen\" nog? Via internet hebben beiden hetzelfde VPN nodig, of moet zijn tunnel open zijn."
   pl: "Launcher szefa nie odpowiada. Czy jego sesja „Wspólna gra” nadal trwa? Przez internet obaj potrzebujecie tego samego VPN albo jego tunel musi działać."
@@ -760,6 +868,7 @@ _version: 2
   uk: "Лаунчер боса не відповідає. Його сесія «Грати разом» ще триває? Через інтернет обом потрібен той самий VPN, або має працювати його тунель."
 "A friend runs a bus company: join it with his session code and drive duties of its day for it, in his world.":
   de: "Ein Freund führt einen Busbetrieb: tritt ihm mit seinem Sitzungscode bei und fahre Dienste seines Tages für ihn, in seiner Welt."
+  da: "En ven driver et buselskab: deltag i det med hans sessionskode, og kør dagens vagter for det i hans verden."
   fr: "Un ami dirige une entreprise de bus : rejoignez-la avec son code de session et conduisez pour elle des services de sa journée, dans son monde."
   nl: "Een vriend runt een busbedrijf: doe mee met zijn sessiecode en rijd diensten van zijn dag ervoor, in zijn wereld."
   pl: "Znajomy prowadzi firmę autobusową: dołącz jego kodem sesji i jeździj dla niej służby z jej dnia, w jego świecie."
@@ -767,6 +876,7 @@ _version: 2
   uk: "Друг керує автобусною компанією: приєднайтеся за його кодом сесії й виконуйте для неї зміни її дня в його світі."
 "With a session code":
   de: "Mit einem Sitzungscode"
+  da: "Med en sessionskode"
   fr: "Avec un code de session"
   nl: "Met een sessiecode"
   pl: "Kodem sesji"
@@ -774,6 +884,7 @@ _version: 2
   uk: "За кодом сесії"
 "The boss starts \"Play together\" in his company and sends you the code.":
   de: "Der Chef startet „Zusammen spielen“ in seinem Betrieb und schickt dir den Code."
+  da: "Chefen starter \"Spil sammen\" i sit selskab og sender dig koden."
   fr: "Le patron lance « Jouer ensemble » dans son entreprise et vous envoie le code."
   nl: "De baas start \"Samen spelen\" in zijn bedrijf en stuurt je de code."
   pl: "Szef uruchamia „Wspólną grę” w swojej firmie i wysyła ci kod."
@@ -781,6 +892,7 @@ _version: 2
   uk: "Бос вмикає «Грати разом» у своїй компанії й надсилає вам код."
 "No bus to start with":
   de: "Kein Bus zum Starten"
+  da: "Ingen bus at starte med"
   fr: "Aucun bus pour commencer"
   nl: "Geen bus om mee te beginnen"
   pl: "Brak autobusu na start"
@@ -788,6 +900,7 @@ _version: 2
   uk: "Немає автобуса для початку"
 "The session could not start":
   de: "Die Sitzung konnte nicht starten"
+  da: "Sessionen kunne ikke starte"
   fr: "La session n'a pas pu démarrer"
   nl: "De sessie kon niet starten"
   pl: "Nie udało się rozpocząć sesji"
@@ -795,6 +908,7 @@ _version: 2
   uk: "Не вдалося почати сесію"
 "Playing together · drives line %{n}":
   de: "Spielt mit · fährt Linie %{n}"
+  da: "Spiller sammen · kører linje %{n}"
   fr: "Joue avec vous · conduit la ligne %{n}"
   nl: "Speelt mee · rijdt lijn %{n}"
   pl: "Gra z tobą · jedzie linię %{n}"
@@ -802,6 +916,7 @@ _version: 2
   uk: "Грає разом · веде лінію %{n}"
 "Playing together · online":
   de: "Spielt mit · online"
+  da: "Spiller sammen · online"
   fr: "Joue avec vous · en ligne"
   nl: "Speelt mee · online"
   pl: "Gra z tobą · online"
@@ -809,6 +924,7 @@ _version: 2
   uk: "Грає разом · у мережі"
 "Playing together · offline":
   de: "Spielt mit · offline"
+  da: "Spiller sammen · offline"
   fr: "Joue avec vous · hors ligne"
   nl: "Speelt mee · offline"
   pl: "Gra z tobą · offline"
@@ -816,6 +932,7 @@ _version: 2
   uk: "Грає разом · не в мережі"
 "for the company %{amount}":
   de: "für den Betrieb %{amount}"
+  da: "for selskabet %{amount}"
   fr: "pour l'entreprise %{amount}"
   nl: "voor het bedrijf %{amount}"
   pl: "dla firmy %{amount}"
@@ -823,6 +940,7 @@ _version: 2
   uk: "компанії %{amount}"
 "%{trips} trips · %{passengers} passengers · score %{score} · for the company %{amount}":
   de: "%{trips} Fahrten · %{passengers} Fahrgäste · Wertung %{score} · für den Betrieb %{amount}"
+  da: "%{trips} ture · %{passengers} passagerer · score %{score} · for selskabet %{amount}"
   fr: "%{trips} trajets · %{passengers} voyageurs · note %{score} · pour l'entreprise %{amount}"
   nl: "%{trips} ritten · %{passengers} reizigers · score %{score} · voor het bedrijf %{amount}"
   pl: "%{trips} kursów · %{passengers} pasażerów · wynik %{score} · dla firmy %{amount}"
@@ -830,6 +948,7 @@ _version: 2
   uk: "рейсів: %{trips} · пасажирів: %{passengers} · оцінка %{score} · компанії %{amount}"
 "The boss's company is busy with its day just now: try again in a moment.":
   de: "Der Betrieb des Chefs ist gerade mit seinem Tag beschäftigt: versuche es gleich noch einmal."
+  da: "Chefens selskab er optaget af sin dag lige nu: prøv igen om et øjeblik."
   fr: "L'entreprise du patron est occupée par sa journée en ce moment : réessayez dans un instant."
   nl: "Het bedrijf van de baas is nu met zijn dag bezig: probeer het zo nog eens."
   pl: "Firma szefa jest właśnie zajęta swoim dniem: spróbuj za chwilę."
@@ -838,6 +957,7 @@ _version: 2
 # (NexiconDK, 26 October 2026: no AI duty left to take over today; a player in the roster of a coming day)
 "None of the AI drivers' duties today has a trip left to take over. Take one over tomorrow from its start, or have yourself planned for a coming day in the roster.":
   de: "Keiner der heutigen Dienste der KI-Fahrer hat noch eine Fahrt zum Übernehmen. Übernimm morgen einen von Anfang an oder lass dich im Dienstplan für einen kommenden Tag einplanen."
+  da: "Ingen af AI-chaufførernes vagter i dag har en tur tilbage at overtage. Overtag en i morgen fra dens start, eller lad dig planlægge på en kommende dag i vagtplanen."
   fr: "Aucun service des chauffeurs IA d'aujourd'hui n'a encore de course à reprendre. Reprenez-en un demain dès son début, ou faites-vous planifier pour un jour à venir dans le roulement."
   nl: "Geen van de diensten van de AI-chauffeurs van vandaag heeft nog een rit om over te nemen. Neem er morgen een over vanaf het begin, of laat je in het rooster inplannen voor een komende dag."
   pl: "Żadna z dzisiejszych służb kierowców AI nie ma już kursu do przejęcia. Przejmij jutro którąś od początku albo daj się zaplanować w grafiku na nadchodzący dzień."
@@ -845,6 +965,7 @@ _version: 2
   uk: "Жодна сьогоднішня зміна водіїв ШІ не має рейсу, який ще можна взяти. Візьміть зміну завтра з початку або заплануйте себе в графіку на один із наступних днів."
 "A player of the company: the duty is his that day":
   de: "Ein Spieler der Firma: Der Dienst gehört an dem Tag ihm"
+  da: "En spiller i selskabet: vagten er hans den dag"
   fr: "Un joueur de l'entreprise : le service est à lui ce jour-là"
   nl: "Een speler van het bedrijf: de dienst is die dag van hem"
   pl: "Gracz firmy: tego dnia służba należy do niego"

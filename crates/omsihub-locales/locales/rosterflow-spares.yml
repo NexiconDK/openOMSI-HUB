@@ -4,6 +4,7 @@ _version: 2
 # live day, the dispatcher and service control use within their hours.
 "Not every duty chosen has a duty that many rows up or down.":
   de: "Nicht jeder gewählte Dienst hat so viele Zeilen darüber oder darunter einen Dienst."
+  da: "Ikke hver valgt vagt har en vagt så mange rækker op eller ned."
   fr: "Tous les services choisis n'ont pas un service autant de lignes plus haut ou plus bas."
   nl: "Niet elke gekozen dienst heeft zoveel rijen hoger of lager een dienst."
   pl: "Nie każda wybrana służba ma służbę o tyle wierszy wyżej lub niżej."
@@ -11,6 +12,7 @@ _version: 2
   uk: "Не кожна вибрана зміна має зміну на стільки рядків вище або нижче."
 "A spare duty of custom work takes no trips.":
   de: "Ein Reservedienst mit eigener Arbeit nimmt keine Fahrten auf."
+  da: "En reservevagt med specialarbejde tager ingen ture."
   fr: "Un service de réserve en travail personnalisé ne prend aucun trajet."
   nl: "Een reservedienst met eigen werk neemt geen ritten."
   pl: "Służba rezerwowa z własną pracą nie przyjmuje kursów."
@@ -18,6 +20,7 @@ _version: 2
   uk: "Резервна зміна з особливою роботою не бере рейси."
 "Duty %{d}: %{why}":
   de: "Dienst %{d}: %{why}"
+  da: "Vagt %{d}: %{why}"
   fr: "Service %{d} : %{why}"
   nl: "Dienst %{d}: %{why}"
   pl: "Służba %{d}: %{why}"
@@ -25,6 +28,7 @@ _version: 2
   uk: "Зміна %{d}: %{why}"
 "%{n} trips of %{m} duties moved to other duties":
   de: "%{n} Fahrten von %{m} Diensten in andere Dienste verschoben"
+  da: "%{n} ture fra %{m} vagter flyttet til andre vagter"
   fr: "%{n} trajets de %{m} services déplacés vers d'autres services"
   nl: "%{n} ritten van %{m} diensten naar andere diensten verplaatst"
   pl: "%{n} kursów z %{m} służb przeniesiono do innych służb"
@@ -32,6 +36,7 @@ _version: 2
   uk: "%{n} рейсів із %{m} змін перенесено в інші зміни"
 "%{n} trips of %{m} duties moved to new duties":
   de: "%{n} Fahrten von %{m} Diensten in neue Dienste verschoben"
+  da: "%{n} ture fra %{m} vagter flyttet til nye vagter"
   fr: "%{n} trajets de %{m} services déplacés vers de nouveaux services"
   nl: "%{n} ritten van %{m} diensten naar nieuwe diensten verplaatst"
   pl: "%{n} kursów z %{m} służb przeniesiono do nowych służb"
@@ -39,6 +44,7 @@ _version: 2
   uk: "%{n} рейсів із %{m} змін перенесено в нові зміни"
 "A name for this spare line":
   de: "Ein Name für diese Reservelinie"
+  da: "Et navn til denne reservelinje"
   fr: "Un nom pour cette ligne de réserve"
   nl: "Een naam voor deze reservelijn"
   pl: "Nazwa tej linii rezerwowej"
@@ -46,6 +52,7 @@ _version: 2
   uk: "Назва цієї резервної лінії"
 "Add spare line":
   de: "Reservelinie hinzufügen"
+  da: "Tilføj reservelinje"
   fr: "Ajouter une ligne de réserve"
   nl: "Reservelijn toevoegen"
   pl: "Dodaj linię rezerwową"
@@ -53,6 +60,7 @@ _version: 2
   uk: "Додати резервну лінію"
 "Another spare line for the day, at these times: change them on its card":
   de: "Eine weitere Reservelinie für den Tag zu diesen Zeiten: auf ihrer Karte ändern"
+  da: "En reservelinje mere for dagen, på disse tidspunkter: ændr dem på dens kort"
   fr: "Une autre ligne de réserve pour la journée, à ces horaires : à modifier sur sa carte"
   nl: "Nog een reservelijn voor de dag, op deze tijden: wijzig ze op haar kaart"
   pl: "Kolejna linia rezerwowa na ten dzień, w tych godzinach: zmień je na jej karcie"
@@ -60,6 +68,7 @@ _version: 2
   uk: "Ще одна резервна лінія на день, у цей самий час: змініть його на її картці"
 "Not a time":
   de: "Keine Uhrzeit"
+  da: "Ikke et klokkeslæt"
   fr: "Pas une heure"
   nl: "Geen tijd"
   pl: "To nie jest godzina"
@@ -67,6 +76,7 @@ _version: 2
   uk: "Це не час"
 "Stands by at":
   de: "Bereit in"
+  da: "Står på standby kl."
   fr: "En attente à"
   nl: "Staat klaar bij"
   pl: "Czeka w"
@@ -74,6 +84,7 @@ _version: 2
   uk: "Чергує в"
 "The end comes before the start":
   de: "Das Ende liegt vor dem Beginn"
+  da: "Slutningen kommer før starten"
   fr: "La fin est avant le début"
   nl: "Het einde ligt voor het begin"
   pl: "Koniec jest przed początkiem"
@@ -81,6 +92,7 @@ _version: 2
   uk: "Кінець раніше за початок"
 "Where the spare driver signs on and stands by: service control sends him from there":
   de: "Wo der Reservefahrer sich meldet und bereitsteht: die Leitstelle schickt ihn von dort los"
+  da: "Hvor reservechaufføren møder ind og står på standby: trafikstyringen sender ham derfra"
   fr: "Où le conducteur de réserve prend son service et attend : la régulation l'envoie de là"
   nl: "Waar de reservechauffeur zich meldt en klaarstaat: de verkeersleiding stuurt hem van daar"
   pl: "Gdzie kierowca rezerwowy się zgłasza i czeka: dyspozytornia wysyła go stamtąd"
@@ -88,6 +100,7 @@ _version: 2
   uk: "Де резервний водій відмічається і чергує: диспетчерська відправляє його звідти"
 "Drag an edge to change its start or end, or drag it whole to move it. A click opens it: the times can be typed there.":
   de: "Einen Rand ziehen ändert Beginn oder Ende, das Ganze ziehen verschiebt es. Ein Klick öffnet es: dort lassen sich die Zeiten eintippen."
+  da: "Træk i en kant for at ændre dens start eller slut, eller træk hele den for at flytte den. Et klik åbner den: tiderne kan skrives dér."
   fr: "Tirez un bord pour changer le début ou la fin, ou tirez le tout pour le déplacer. Un clic l'ouvre : les horaires s'y saisissent."
   nl: "Sleep een rand om het begin of einde te wijzigen, of sleep het geheel om het te verplaatsen. Een klik opent het: daar typ je de tijden."
   pl: "Przeciągnij krawędź, by zmienić początek lub koniec, albo całość, by ją przesunąć. Kliknięcie ją otwiera: tam można wpisać godziny."
@@ -95,6 +108,7 @@ _version: 2
   uk: "Потягніть за край, щоб змінити початок або кінець, або за все, щоб посунути. Клацання відкриває її: там можна ввести час."
 "%{kind} of duty %{d} set to %{from}–%{to}":
   de: "%{kind} von Dienst %{d} auf %{from}–%{to} gesetzt"
+  da: "%{kind} for vagt %{d} sat til %{from}–%{to}"
   fr: "%{kind} du service %{d} fixé à %{from}–%{to}"
   nl: "%{kind} van dienst %{d} op %{from}–%{to} gezet"
   pl: "%{kind} służby %{d} ustawiono na %{from}–%{to}"
@@ -102,6 +116,7 @@ _version: 2
   uk: "%{kind} зміни %{d}: тепер %{from}–%{to}"
 "Spare duty %{d} named %{name}":
   de: "Reservedienst %{d} heißt jetzt %{name}"
+  da: "Reservevagt %{d} kaldet %{name}"
   fr: "Service de réserve %{d} nommé %{name}"
   nl: "Reservedienst %{d} heet nu %{name}"
   pl: "Służba rezerwowa %{d} nazwana %{name}"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Резервну зміну %{d} названо %{name}"
 "Spare line %{d}":
   de: "Reservelinie %{d}"
+  da: "Reservelinje %{d}"
   fr: "Ligne de réserve %{d}"
   nl: "Reservelijn %{d}"
   pl: "Linia rezerwowa %{d}"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Резервна лінія %{d}"
 "The driver of spare line %{spare} covers them (there at %{time})":
   de: "Der Fahrer der Reservelinie %{spare} übernimmt sie (dort um %{time})"
+  da: "Chaufføren på reservelinje %{spare} dækker dem (der kl. %{time})"
   fr: "Le conducteur de la ligne de réserve %{spare} les assure (sur place à %{time})"
   nl: "De chauffeur van reservelijn %{spare} neemt ze over (daar om %{time})"
   pl: "Kierowca linii rezerwowej %{spare} je przejmuje (na miejscu o %{time})"
@@ -123,6 +140,7 @@ _version: 2
   uk: "Водій резервної лінії %{spare} бере їх (на місці о %{time})"
 "The driver of spare line %{spare} drives the first trips of line %{n} tour %{tour} from %{time}":
   de: "Der Fahrer der Reservelinie %{spare} fährt die ersten Fahrten von Linie %{n} Umlauf %{tour} ab %{time}"
+  da: "Chaufføren på reservelinje %{spare} kører de første ture på linje %{n} vognløb %{tour} fra %{time}"
   fr: "Le conducteur de la ligne de réserve %{spare} assure les premiers trajets de la ligne %{n} service %{tour} dès %{time}"
   nl: "De chauffeur van reservelijn %{spare} rijdt de eerste ritten van lijn %{n} omloop %{tour} vanaf %{time}"
   pl: "Kierowca linii rezerwowej %{spare} jedzie pierwsze kursy linii %{n} brygady %{tour} od %{time}"

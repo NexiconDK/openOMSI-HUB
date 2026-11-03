@@ -4,6 +4,7 @@ _version: 2
 # BSOG, the fare table and its cap.
 "Fares: children":
   de: "Fahrgelder: Kinder"
+  da: "Billetpriser: børn"
   fr: "Recettes : enfants"
   nl: "Kaartjes: kinderen"
   pl: "Bilety: dzieci"
@@ -11,6 +12,7 @@ _version: 2
   uk: "Квитки: діти"
 "Network passes":
   de: "Verbundkarten"
+  da: "Områdekort"
   fr: "Abonnements réseau"
   nl: "Netwerkabonnementen"
   pl: "Bilety sieciowe"
@@ -18,6 +20,7 @@ _version: 2
   uk: "Мережеві проїзні"
 "School passes":
   de: "Schülerkarten"
+  da: "Skolekort"
   fr: "Abonnements scolaires"
   nl: "Schoolabonnementen"
   pl: "Bilety szkolne"
@@ -25,6 +28,7 @@ _version: 2
   uk: "Шкільні проїзні"
 "Concession reimbursement":
   de: "Erstattung für Ermäßigungen"
+  da: "Rabatkortsrefusion"
   fr: "Remboursement des réductions"
   nl: "Vergoeding kortingspassen"
   pl: "Zwrot za ulgi"
@@ -32,6 +36,7 @@ _version: 2
   uk: "Відшкодування пільг"
 "Fuel grant (BSOG)":
   de: "Kraftstoffzuschuss (BSOG)"
+  da: "Brændstoftilskud (BSOG)"
   fr: "Aide carburant (BSOG)"
   nl: "Brandstofsubsidie (BSOG)"
   pl: "Dopłata paliwowa (BSOG)"
@@ -39,6 +44,7 @@ _version: 2
   uk: "Паливна субсидія (BSOG)"
 "Fares for the authority":
   de: "Fahrgelder für die Behörde"
+  da: "Billetpriser til trafikselskabet"
   fr: "Recettes pour l'autorité"
   nl: "Opbrengst voor de overheid"
   pl: "Wpływy dla organizatora"
@@ -46,6 +52,7 @@ _version: 2
   uk: "Виручка для влади"
 "Adult tickets":
   de: "Fahrscheine Erwachsene"
+  da: "Voksenbilletter"
   fr: "Tickets adultes"
   nl: "Kaartjes volwassenen"
   pl: "Bilety normalne"
@@ -53,6 +60,7 @@ _version: 2
   uk: "Дорослі квитки"
 "Children's tickets":
   de: "Fahrscheine Kinder"
+  da: "Børnebilletter"
   fr: "Tickets enfants"
   nl: "Kaartjes kinderen"
   pl: "Bilety dziecięce"
@@ -60,6 +68,7 @@ _version: 2
   uk: "Дитячі квитки"
 "Fares collected for the authority (a gross-cost contract: not the company's)":
   de: "Fahrgelder für die Behörde eingenommen (Bruttovertrag: nicht die des Unternehmens)"
+  da: "Billetindtægter opkrævet for trafikselskabet (en bruttokontrakt: ikke selskabets)"
   fr: "Recettes perçues pour l'autorité (contrat à coût brut : pas celles de l'entreprise)"
   nl: "Opbrengst geïnd voor de overheid (brutocontract: niet van het bedrijf)"
   pl: "Wpływy zebrane dla organizatora (umowa brutto: nie należą do firmy)"
@@ -67,6 +76,7 @@ _version: 2
   uk: "Виручка, зібрана для влади (брутто-контракт: не компанії)"
 "The fare association's share":
   de: "Anteil des Verkehrsverbunds"
+  da: "Takstforbundets andel"
   fr: "Part de la communauté tarifaire"
   nl: "Aandeel van het tariefverbond"
   pl: "Udział związku taryfowego"
@@ -74,6 +84,7 @@ _version: 2
   uk: "Частка тарифного союзу"
 "Fuel grant (BSOG): %{km} km in service":
   de: "Kraftstoffzuschuss (BSOG): %{km} km im Linienbetrieb"
+  da: "Brændstoftilskud (BSOG): %{km} km i drift"
   fr: "Aide carburant (BSOG) : %{km} km en service"
   nl: "Brandstofsubsidie (BSOG): %{km} km in dienst"
   pl: "Dopłata paliwowa (BSOG): %{km} km w kursie"
@@ -82,6 +93,7 @@ _version: 2
 # the kinds of line
 "Typical line":
   de: "Gewöhnliche Linie"
+  da: "Typisk linje"
   fr: "Ligne ordinaire"
   nl: "Gewone lijn"
   pl: "Zwykła linia"
@@ -89,6 +101,7 @@ _version: 2
   uk: "Звичайна лінія"
 "Urban all-day line":
   de: "Stadtlinie den ganzen Tag"
+  da: "Bylinje hele dagen"
   fr: "Ligne urbaine toute la journée"
   nl: "Stadslijn de hele dag"
   pl: "Linia miejska całodzienna"
@@ -96,6 +109,7 @@ _version: 2
   uk: "Міська лінія на весь день"
 "Trunk route":
   de: "Hauptlinie"
+  da: "Hovedlinje"
   fr: "Ligne structurante"
   nl: "Hoofdlijn"
   pl: "Linia magistralna"
@@ -103,6 +117,7 @@ _version: 2
   uk: "Магістральна лінія"
 "Rural or quiet line":
   de: "Ländliche oder ruhige Linie"
+  da: "Landlinje eller stille linje"
   fr: "Ligne rurale ou calme"
   nl: "Landelijke of rustige lijn"
   pl: "Linia wiejska lub spokojna"
@@ -110,6 +125,7 @@ _version: 2
   uk: "Сільська або тиха лінія"
 "Park & Ride":
   de: "Park & Ride"
+  da: "Park & Ride"
   fr: "Parc relais"
   nl: "P+R"
   pl: "Parkuj i jedź"
@@ -117,6 +133,7 @@ _version: 2
   uk: "Перехоплююча парковка"
 "Evening or Sunday service":
   de: "Abend- oder Sonntagsverkehr"
+  da: "Aften- eller søndagsbetjening"
   fr: "Service du soir ou du dimanche"
   nl: "Avond- of zondagdienst"
   pl: "Kursy wieczorne lub niedzielne"
@@ -124,6 +141,7 @@ _version: 2
   uk: "Вечірні або недільні рейси"
 "Works shuttle":
   de: "Werksverkehr"
+  da: "Arbejdspladsbus"
   fr: "Navette d'entreprise"
   nl: "Bedrijfspendel"
   pl: "Dowóz pracowników"
@@ -131,6 +149,7 @@ _version: 2
   uk: "Службовий розвіз"
 "School run":
   de: "Schülerverkehr"
+  da: "Skolekørsel"
   fr: "Ramassage scolaire"
   nl: "Schoolrit"
   pl: "Kurs szkolny"
@@ -138,6 +157,7 @@ _version: 2
   uk: "Шкільний рейс"
 "About ten passengers a bus-hour, a third of them on concession passes.":
   de: "Etwa zehn Fahrgäste pro Busstunde, ein Drittel davon mit Ermäßigungsausweis."
+  da: "Omkring ti passagerer pr. busttime, en tredjedel af dem med rabatkort."
   fr: "Une dizaine de voyageurs par heure-bus, dont un tiers avec une carte de réduction."
   nl: "Zo'n tien reizigers per busuur, een derde op een kortingspas."
   pl: "Około dziesięciu pasażerów na wozogodzinę, jedna trzecia na legitymacjach ulgowych."
@@ -145,6 +165,7 @@ _version: 2
   uk: "Близько десяти пасажирів на машино-годину, третина з них за пільговими проїзними."
 "Busy all day: some 28 passengers a bus-hour, many on network passes.":
   de: "Den ganzen Tag voll: etwa 28 Fahrgäste pro Busstunde, viele mit Verbundkarten."
+  da: "Travlt hele dagen: omkring 28 passagerer pr. busttime, mange med områdekort."
   fr: "Chargée toute la journée : environ 28 voyageurs par heure-bus, beaucoup avec un abonnement réseau."
   nl: "De hele dag druk: zo'n 28 reizigers per busuur, velen op een netwerkabonnement."
   pl: "Cały dzień tłoczno: około 28 pasażerów na wozogodzinę, wielu na biletach sieciowych."
@@ -152,6 +173,7 @@ _version: 2
   uk: "Завантажена весь день: близько 28 пасажирів на машино-годину, багато хто за мережевими проїзними."
 "Between towns: 13 to 16 a trip, many on concession passes.":
   de: "Zwischen Städten: 13 bis 16 pro Fahrt, viele mit Ermäßigungsausweis."
+  da: "Mellem byer: 13 til 16 pr. tur, mange med rabatkort."
   fr: "Entre les villes : 13 à 16 par course, beaucoup avec une carte de réduction."
   nl: "Tussen steden: 13 tot 16 per rit, velen op een kortingspas."
   pl: "Między miastami: 13 do 16 na kurs, wielu na legitymacjach ulgowych."
@@ -159,6 +181,7 @@ _version: 2
   uk: "Між містами: від 13 до 16 за рейс, багато хто за пільговими проїзними."
 "Few riders, most of them on concession passes.":
   de: "Wenige Fahrgäste, die meisten mit Ermäßigungsausweis."
+  da: "Få passagerer, de fleste med rabatkort."
   fr: "Peu de voyageurs, la plupart avec une carte de réduction."
   nl: "Weinig reizigers, de meesten op een kortingspas."
   pl: "Niewielu pasażerów, większość na legitymacjach ulgowych."
@@ -166,6 +189,7 @@ _version: 2
   uk: "Мало пасажирів, більшість за пільговими проїзними."
 "Short trips with few on each, at a cheap flat fare.":
   de: "Kurze Fahrten mit wenigen Fahrgästen, zu einem günstigen Einheitstarif."
+  da: "Korte ture med få på hver, til en billig fast pris."
   fr: "Des courses courtes avec peu de monde, à un tarif unique bon marché."
   nl: "Korte ritten met weinig reizigers, tegen een goedkoop vast tarief."
   pl: "Krótkie kursy z kilkoma osobami, po taniej jednolitej cenie."
@@ -173,6 +197,7 @@ _version: 2
   uk: "Короткі рейси з небагатьма пасажирами за дешевим єдиним тарифом."
 "Quiet hours: about 7 a trip, most of them paying.":
   de: "Ruhige Stunden: etwa 7 pro Fahrt, die meisten zahlen."
+  da: "Stille timer: omkring 7 pr. tur, de fleste betalende."
   fr: "Heures creuses : environ 7 par course, la plupart payants."
   nl: "Rustige uren: zo'n 7 per rit, de meesten betalend."
   pl: "Spokojne godziny: około 7 na kurs, większość płaci."
@@ -180,6 +205,7 @@ _version: 2
   uk: "Тихі години: близько 7 за рейс, більшість платять."
 "A company's staff to their shifts: some 15 a trip, paid by its contract.":
   de: "Die Belegschaft eines Unternehmens zu ihren Schichten: etwa 15 pro Fahrt, bezahlt über dessen Vertrag."
+  da: "Et selskabs ansatte til deres vagter: omkring 15 pr. tur, betalt af dets kontrakt."
   fr: "Le personnel d'une entreprise vers ses postes : environ 15 par course, payés par son contrat."
   nl: "Het personeel van een bedrijf naar hun diensten: zo'n 15 per rit, betaald via zijn contract."
   pl: "Pracownicy firmy na zmiany: około 15 na kurs, opłacani z jej umowy."
@@ -187,6 +213,7 @@ _version: 2
   uk: "Працівники підприємства на зміну: близько 15 за рейс, оплачується за його договором."
 "Pupils on school passes: 20 to 55 a trip, on school days only.":
   de: "Schüler mit Schülerkarten: 20 bis 55 pro Fahrt, nur an Schultagen."
+  da: "Elever med skolekort: 20 til 55 pr. tur, kun på skoledage."
   fr: "Des élèves avec abonnement scolaire : 20 à 55 par course, les jours d'école seulement."
   nl: "Leerlingen op een schoolabonnement: 20 tot 55 per rit, alleen op schooldagen."
   pl: "Uczniowie na biletach szkolnych: 20 do 55 na kurs, tylko w dni nauki."
@@ -195,6 +222,7 @@ _version: 2
 # the parts of the day
 "Early (before 7)":
   de: "Früh (vor 7)"
+  da: "Tidlig (før 7)"
   fr: "Tôt (avant 7 h)"
   nl: "Vroeg (voor 7)"
   pl: "Wcześnie (przed 7)"
@@ -202,6 +230,7 @@ _version: 2
   uk: "Рано (до 7)"
 "Morning peak (7-9)":
   de: "Morgenspitze (7-9)"
+  da: "Morgenspids (7-9)"
   fr: "Pointe du matin (7-9)"
   nl: "Ochtendspits (7-9)"
   pl: "Szczyt poranny (7-9)"
@@ -209,6 +238,7 @@ _version: 2
   uk: "Ранковий пік (7-9)"
 "Daytime (9-15)":
   de: "Tagsüber (9-15)"
+  da: "Dagtimer (9-15)"
   fr: "Journée (9-15)"
   nl: "Overdag (9-15)"
   pl: "Dzień (9-15)"
@@ -216,6 +246,7 @@ _version: 2
   uk: "День (9-15)"
 "Afternoon peak (15-18)":
   de: "Nachmittagsspitze (15-18)"
+  da: "Eftermiddagsspids (15-18)"
   fr: "Pointe de l'après-midi (15-18)"
   nl: "Middagspits (15-18)"
   pl: "Szczyt popołudniowy (15-18)"
@@ -223,6 +254,7 @@ _version: 2
   uk: "Пообідній пік (15-18)"
 "Evening (from 18)":
   de: "Abend (ab 18)"
+  da: "Aften (fra 18)"
   fr: "Soir (dès 18 h)"
   nl: "Avond (vanaf 18)"
   pl: "Wieczór (od 18)"
@@ -231,6 +263,7 @@ _version: 2
 # the money page, the day's report, the lines page
 "%{n} a bus-hour":
   de: "%{n} pro Busstunde"
+  da: "%{n} pr. busttime"
   fr: "%{n} par heure-bus"
   nl: "%{n} per busuur"
   pl: "%{n} na wozogodzinę"
@@ -238,6 +271,7 @@ _version: 2
   uk: "%{n} на машино-годину"
 "%{n} left at the stop":
   de: "%{n} an der Haltestelle stehen gelassen"
+  da: "%{n} efterladt ved stoppestedet"
   fr: "%{n} laissés à l'arrêt"
   nl: "%{n} blijven staan aan de halte"
   pl: "%{n} zostało na przystanku"
@@ -245,6 +279,7 @@ _version: 2
   uk: "%{n} лишилися на зупинці"
 "%{n} passengers a day":
   de: "%{n} Fahrgäste am Tag"
+  da: "%{n} passagerer om dagen"
   fr: "%{n} voyageurs par jour"
   nl: "%{n} reizigers per dag"
   pl: "%{n} pasażerów dziennie"
@@ -252,6 +287,7 @@ _version: 2
   uk: "%{n} пасажирів на день"
 "%{p} passengers, %{h} a bus-hour, %{l} left at the stop":
   de: "%{p} Fahrgäste, %{h} pro Busstunde, %{l} an der Haltestelle stehen gelassen"
+  da: "%{p} passagerer, %{h} pr. busttime, %{l} efterladt ved stoppestedet"
   fr: "%{p} voyageurs, %{h} par heure-bus, %{l} laissés à l'arrêt"
   nl: "%{p} reizigers, %{h} per busuur, %{l} bleven aan de halte staan"
   pl: "%{p} pasażerów, %{h} na wozogodzinę, %{l} zostało na przystanku"
@@ -259,6 +295,7 @@ _version: 2
   uk: "%{p} пасажирів, %{h} на машино-годину, %{l} лишилися на зупинці"
 "%{n} trips were full; %{p} passengers were left at the stop - fares lost, and they complain. Bigger buses or more trips help.":
   de: "%{n} Fahrten waren voll; %{p} Fahrgäste blieben an der Haltestelle stehen – verlorene Fahrgelder, und sie beschweren sich. Größere Busse oder mehr Fahrten helfen."
+  da: "%{n} ture var fulde; %{p} passagerer blev efterladt ved stoppestedet - tabte billetindtægter, og de klager. Større busser eller flere ture hjælper."
   fr: "%{n} courses étaient pleines ; %{p} voyageurs sont restés à l'arrêt – des recettes perdues, et ils se plaignent. Des bus plus grands ou plus de courses aident."
   nl: "%{n} ritten zaten vol; %{p} reizigers bleven aan de halte staan – gemiste opbrengst, en ze klagen. Grotere bussen of meer ritten helpen."
   pl: "%{n} kursów było pełnych; %{p} pasażerów zostało na przystanku – stracone wpływy z biletów, a oni się skarżą. Pomogą większe autobusy lub więcej kursów."
@@ -266,6 +303,7 @@ _version: 2
   uk: "%{n} рейсів були переповнені; %{p} пасажирів лишилися на зупинці – втрачена виручка, і вони скаржаться. Допоможуть більші автобуси або більше рейсів."
 "A typical adult single costs %{single}, more for longer trips; most passengers ride on passes. The authority reimburses %{share} of the fare for every ride on a concession pass and pays a grant of %{bsog} for every kilometre in service.":
   de: "Ein üblicher Einzelfahrschein für Erwachsene kostet %{single}, für längere Fahrten mehr; die meisten Fahrgäste fahren mit Zeitkarten. Die Behörde erstattet %{share} des Fahrpreises für jede Fahrt mit einem Ermäßigungsausweis und zahlt einen Zuschuss von %{bsog} für jeden Kilometer im Linienbetrieb."
+  da: "En typisk voksen enkeltbillet koster %{single}, mere for længere ture; de fleste passagerer kører med kort. Trafikselskabet refunderer %{share} af billetprisen for hver tur med rabatkort og betaler et tilskud på %{bsog} for hver kilometer i drift."
   fr: "Un ticket adulte ordinaire coûte %{single}, plus pour les trajets longs ; la plupart des voyageurs ont un abonnement. L'autorité rembourse %{share} du tarif pour chaque trajet avec une carte de réduction et verse une aide de %{bsog} par kilomètre en service."
   nl: "Een gewoon enkeltje voor volwassenen kost %{single}, meer voor langere ritten; de meeste reizigers rijden met een abonnement. De overheid vergoedt %{share} van het tarief voor elke rit op een kortingspas en betaalt een subsidie van %{bsog} voor elke kilometer in dienst."
   pl: "Zwykły bilet jednorazowy dla dorosłych kosztuje %{single}, więcej na dłuższe trasy; większość pasażerów jeździ na bilety okresowe. Organizator zwraca %{share} ceny za każdy przejazd na legitymację ulgową i płaci dopłatę %{bsog} za każdy kilometr w kursie."
@@ -273,6 +311,7 @@ _version: 2
   uk: "Звичайний разовий дорослий квиток коштує %{single}, на довші поїздки дорожче; більшість пасажирів їздять за проїзними. Влада відшкодовує %{share} тарифу за кожну поїздку за пільговим проїзним і платить субсидію %{bsog} за кожен кілометр на лінії."
 "The adult single this line asks: change it, and see what it does to passengers and takings":
   de: "Der Einzelfahrschein für Erwachsene auf dieser Linie: Ändern Sie ihn und sehen Sie, was er bei Fahrgästen und Einnahmen bewirkt"
+  da: "Den voksne enkeltbillet, denne linje forlanger: ændr den, og se, hvad det gør ved passagerer og indtægter"
   fr: "Le ticket adulte de cette ligne : changez-le et voyez ce qu'il fait aux voyageurs et aux recettes"
   nl: "Het enkeltje voor volwassenen op deze lijn: verander het en zie wat het met reizigers en opbrengst doet"
   pl: "Bilet jednorazowy normalny na tej linii: zmień go i zobacz, co zrobi z pasażerami i wpływami"
@@ -280,6 +319,7 @@ _version: 2
   uk: "Разовий дорослий квиток цієї лінії: змініть його й подивіться, як це позначиться на пасажирах і виручці"
 "Passengers and takings":
   de: "Fahrgäste und Einnahmen"
+  da: "Passagerer og indtægter"
   fr: "Voyageurs et recettes"
   nl: "Reizigers en opbrengst"
   pl: "Pasażerowie i wpływy"
@@ -287,6 +327,7 @@ _version: 2
   uk: "Пасажири й виручка"
 "Kind of line":
   de: "Art der Linie"
+  da: "Linjetype"
   fr: "Type de ligne"
   nl: "Soort lijn"
   pl: "Rodzaj linii"
@@ -294,6 +335,7 @@ _version: 2
   uk: "Тип лінії"
 "As its timetable shows: %{type}":
   de: "Wie ihr Fahrplan zeigt: %{type}"
+  da: "Som dens køreplan viser: %{type}"
   fr: "Selon son horaire : %{type}"
   nl: "Zoals de dienstregeling laat zien: %{type}"
   pl: "Według rozkładu: %{type}"
@@ -301,6 +343,7 @@ _version: 2
   uk: "За розкладом: %{type}"
 "Fare table":
   de: "Tariftabelle"
+  da: "Takstoversigt"
   fr: "Grille tarifaire"
   nl: "Tarieventabel"
   pl: "Taryfa"
@@ -308,6 +351,7 @@ _version: 2
   uk: "Таблиця тарифів"
 "Adult single":
   de: "Einzelfahrschein Erwachsene"
+  da: "Voksen enkeltbillet"
   fr: "Ticket adulte"
   nl: "Enkeltje volwassene"
   pl: "Bilet jednorazowy normalny"
@@ -315,6 +359,7 @@ _version: 2
   uk: "Разовий дорослий"
 "Return ticket":
   de: "Rückfahrkarte"
+  da: "Returbillet"
   fr: "Aller-retour"
   nl: "Retourtje"
   pl: "Bilet powrotny"
@@ -322,6 +367,7 @@ _version: 2
   uk: "Квиток туди й назад"
 "Child single":
   de: "Einzelfahrschein Kind"
+  da: "Børneenkeltbillet"
   fr: "Ticket enfant"
   nl: "Enkeltje kind"
   pl: "Bilet jednorazowy dziecięcy"
@@ -329,6 +375,7 @@ _version: 2
   uk: "Разовий дитячий"
 "Day ticket":
   de: "Tageskarte"
+  da: "Dagsbillet"
   fr: "Ticket journée"
   nl: "Dagkaart"
   pl: "Bilet dobowy"
@@ -336,6 +383,7 @@ _version: 2
   uk: "Денний квиток"
 "Week ticket":
   de: "Wochenkarte"
+  da: "Ugebillet"
   fr: "Abonnement semaine"
   nl: "Weekkaart"
   pl: "Bilet tygodniowy"
@@ -343,6 +391,7 @@ _version: 2
   uk: "Тижневий проїзний"
 "Fare cap":
   de: "Tarifdeckel"
+  da: "Prisloft"
   fr: "Plafond tarifaire"
   nl: "Tariefplafond"
   pl: "Limit ceny biletu"
@@ -350,6 +399,7 @@ _version: 2
   uk: "Граничний тариф"
 "Fare cap: at most %{adult} for an adult single, %{child} for a child's":
   de: "Tarifdeckel: höchstens %{adult} für einen Einzelfahrschein Erwachsene, %{child} für Kinder"
+  da: "Prisloft: højst %{adult} for en voksen enkeltbillet, %{child} for en barnebillet"
   fr: "Plafond tarifaire : au plus %{adult} pour un ticket adulte, %{child} pour un enfant"
   nl: "Tariefplafond: hooguit %{adult} voor een enkeltje volwassene, %{child} voor een kind"
   pl: "Limit ceny: najwyżej %{adult} za bilet normalny, %{child} za dziecięcy"
@@ -357,6 +407,7 @@ _version: 2
   uk: "Граничний тариф: не більше %{adult} за разовий дорослий, %{child} за дитячий"
 "Passengers by the time of day":
   de: "Fahrgäste nach Tageszeit"
+  da: "Passagerer efter tidspunkt på dagen"
   fr: "Voyageurs selon l'heure"
   nl: "Reizigers naar tijd van de dag"
   pl: "Pasażerowie według pory dnia"
@@ -364,6 +415,7 @@ _version: 2
   uk: "Пасажири за часом доби"
 "A day's average over its last four weeks":
   de: "Tagesdurchschnitt der letzten vier Wochen"
+  da: "En dags gennemsnit de seneste fire uger"
   fr: "Moyenne par jour sur ses quatre dernières semaines"
   nl: "Gemiddelde per dag over de laatste vier weken"
   pl: "Średnia dzienna z ostatnich czterech tygodni"
@@ -371,6 +423,7 @@ _version: 2
   uk: "Середнє за день за останні чотири тижні"
 "No passengers yet: the line has not run.":
   de: "Noch keine Fahrgäste: Die Linie ist noch nicht gefahren."
+  da: "Ingen passagerer endnu: linjen har ikke kørt."
   fr: "Pas encore de voyageurs : la ligne n'a pas encore roulé."
   nl: "Nog geen reizigers: de lijn heeft nog niet gereden."
   pl: "Jeszcze bez pasażerów: linia jeszcze nie kursowała."
@@ -378,6 +431,7 @@ _version: 2
   uk: "Пасажирів поки немає: лінія ще не працювала."
 "Its last day's takings":
   de: "Einnahmen ihres letzten Tages"
+  da: "Dens seneste dags indtægter"
   fr: "Recettes de son dernier jour"
   nl: "Opbrengst van de laatste dag"
   pl: "Wpływy z ostatniego dnia"
@@ -385,6 +439,7 @@ _version: 2
   uk: "Виручка за останній день"
 "Run under a gross-cost contract: its fares are the authority's, collected for it.":
   de: "Unter einem Bruttovertrag gefahren: Ihre Fahrgelder gehören der Behörde und werden für sie eingenommen."
+  da: "Kørt under en bruttokontrakt: dens billetindtægter er trafikselskabets, opkrævet for det."
   fr: "Exploitée sous un contrat à coût brut : ses recettes sont à l'autorité, perçues pour elle."
   nl: "Gereden onder een brutocontract: de opbrengst is van de overheid en wordt voor haar geïnd."
   pl: "Obsługiwana w umowie brutto: wpływy należą do organizatora i są dla niego zbierane."
@@ -392,6 +447,7 @@ _version: 2
   uk: "Працює за брутто-контрактом: виручка належить владі й збирається для неї."
 "standard":
   de: "Standard"
+  da: "standard"
   fr: "standard"
   nl: "standaard"
   pl: "standardowa"
@@ -399,6 +455,7 @@ _version: 2
   uk: "стандартний"
 "capped":
   de: "gedeckelt"
+  da: "begrænset"
   fr: "plafonné"
   nl: "begrensd"
   pl: "z limitem"
@@ -407,6 +464,7 @@ _version: 2
 # the fare dialog
 "Your own line: its adult single is yours to set, from %{lo} to %{hi}. Its standard fare, by the length of its trips, is %{p0}.":
   de: "Ihre eigene Linie: Den Einzelfahrschein für Erwachsene setzen Sie selbst, von %{lo} bis %{hi}. Ihr Standardtarif nach der Länge ihrer Fahrten ist %{p0}."
+  da: "Din egen linje: dens voksne enkeltbillet kan du selv fastsætte, fra %{lo} til %{hi}. Dens standardbillet, efter længden af dens ture, er %{p0}."
   fr: "Votre propre ligne : vous fixez son ticket adulte, de %{lo} à %{hi}. Son tarif standard, selon la longueur de ses courses, est de %{p0}."
   nl: "Je eigen lijn: het enkeltje voor volwassenen bepaal je zelf, van %{lo} tot %{hi}. Het standaardtarief naar de lengte van de ritten is %{p0}."
   pl: "Twoja własna linia: bilet jednorazowy normalny ustalasz sam, od %{lo} do %{hi}. Jej taryfa standardowa według długości kursów to %{p0}."
@@ -414,6 +472,7 @@ _version: 2
   uk: "Ваша власна лінія: разовий дорослий квиток встановлюєте ви, від %{lo} до %{hi}. Її стандартний тариф за довжиною рейсів — %{p0}."
 "A map line: its adult single may be set from %{lo} to %{hi}, round its standard fare of %{p0} by the length of its trips.":
   de: "Eine Linie der Karte: Ihr Einzelfahrschein für Erwachsene darf zwischen %{lo} und %{hi} liegen, rund um ihren Standardtarif von %{p0} nach der Länge ihrer Fahrten."
+  da: "En kortlinje: dens voksne enkeltbillet kan fastsættes fra %{lo} til %{hi}, omkring dens standardbillet på %{p0} efter længden af dens ture."
   fr: "Une ligne de la carte : son ticket adulte peut aller de %{lo} à %{hi}, autour de son tarif standard de %{p0} selon la longueur de ses courses."
   nl: "Een lijn van de kaart: het enkeltje voor volwassenen mag van %{lo} tot %{hi}, rond het standaardtarief van %{p0} naar de lengte van de ritten."
   pl: "Linia z mapy: bilet jednorazowy dla dorosłych można ustawić od %{lo} do %{hi}, wokół taryfy standardowej %{p0} według długości kursów."
@@ -421,6 +480,7 @@ _version: 2
   uk: "Лінія карти: разовий дорослий квиток можна встановити від %{lo} до %{hi}, довкола стандартного тарифу %{p0} за довжиною її рейсів."
 "Standard fare":
   de: "Standardtarif"
+  da: "Standardbillet"
   fr: "Tarif standard"
   nl: "Standaardtarief"
   pl: "Taryfa standardowa"
@@ -428,6 +488,7 @@ _version: 2
   uk: "Стандартний тариф"
 "The most takings":
   de: "Die meisten Einnahmen"
+  da: "De højeste indtægter"
   fr: "Le plus de recettes"
   nl: "De meeste opbrengst"
   pl: "Najwięcej wpływów"
@@ -435,6 +496,7 @@ _version: 2
   uk: "Найбільше виручки"
 "Most takings":
   de: "Meiste Einnahmen"
+  da: "Højeste indtægter"
   fr: "Recette maximale"
   nl: "Meeste opbrengst"
   pl: "Najwięcej wpływów"
@@ -442,6 +504,7 @@ _version: 2
   uk: "Максимум виручки"
 "Takings a day":
   de: "Einnahmen am Tag"
+  da: "Indtægter om dagen"
   fr: "Recettes par jour"
   nl: "Opbrengst per dag"
   pl: "Wpływy dziennie"
@@ -449,6 +512,7 @@ _version: 2
   uk: "Виручка на день"
 "At %{fare}: about %{pax} passengers a day (%{dp} against the standard fare) and %{rev} of takings a day - fares, passes and the concession reimbursement (%{dr}), once they have got used to it - a few weeks. The first days: about %{first} passengers.":
   de: "Bei %{fare}: etwa %{pax} Fahrgäste am Tag (%{dp} gegenüber dem Standardtarif) und %{rev} Einnahmen am Tag – Fahrgelder, Zeitkarten und die Erstattung für Ermäßigungen (%{dr}), sobald sie sich daran gewöhnt haben – ein paar Wochen. Die ersten Tage: etwa %{first} Fahrgäste."
+  da: "Til %{fare}: omkring %{pax} passagerer om dagen (%{dp} mod standardbilletten) og %{rev} i indtægter om dagen - billetter, kort og rabatkortsrefusion (%{dr}), når de har vænnet sig til det - nogle uger. De første dage: omkring %{first} passagerer."
   fr: "À %{fare} : environ %{pax} voyageurs par jour (%{dp} par rapport au tarif standard) et %{rev} de recettes par jour – billets, abonnements et remboursement des réductions (%{dr}), une fois qu'ils s'y sont habitués – quelques semaines. Les premiers jours : environ %{first} voyageurs."
   nl: "Bij %{fare}: zo'n %{pax} reizigers per dag (%{dp} tegenover het standaardtarief) en %{rev} aan opbrengst per dag – kaartjes, abonnementen en de vergoeding voor kortingspassen (%{dr}), zodra ze eraan gewend zijn – een paar weken. De eerste dagen: zo'n %{first} reizigers."
   pl: "Przy %{fare}: około %{pax} pasażerów dziennie (%{dp} wobec taryfy standardowej) i %{rev} wpływów dziennie – bilety, bilety okresowe i zwrot za ulgi (%{dr}), gdy się przyzwyczają – kilka tygodni. Pierwsze dni: około %{first} pasażerów."
@@ -456,6 +520,7 @@ _version: 2
   uk: "За %{fare}: близько %{pax} пасажирів на день (%{dp} щодо стандартного тарифу) і %{rev} виручки на день – квитки, проїзні й відшкодування пільг (%{dr}), коли вони звикнуть – кілька тижнів. Перші дні: близько %{first} пасажирів."
 "Far above the standard fare: every day of it costs reputation as well.":
   de: "Weit über dem Standardtarif: Jeder Tag kostet auch Ansehen."
+  da: "Langt over standardbilletten: hver dag med den koster også omdømme."
   fr: "Bien au-dessus du tarif standard : chaque jour coûte aussi de la réputation."
   nl: "Ver boven het standaardtarief: elke dag kost ook reputatie."
   pl: "Znacznie powyżej taryfy standardowej: każdy dzień kosztuje też reputację."
@@ -463,6 +528,7 @@ _version: 2
   uk: "Набагато вище стандартного тарифу: кожен день коштує ще й репутації."
 "Its passengers now: %{p} of what the standard fare would bring.":
   de: "Ihre Fahrgäste jetzt: %{p} dessen, was der Standardtarif brächte."
+  da: "Dens passagerer nu: %{p} af, hvad standardbilletten ville give."
   fr: "Ses voyageurs maintenant : %{p} de ce que le tarif standard apporterait."
   nl: "De reizigers nu: %{p} van wat het standaardtarief zou opleveren."
   pl: "Pasażerów teraz: %{p} tego, co dałaby taryfa standardowa."
@@ -470,6 +536,7 @@ _version: 2
   uk: "Пасажирів зараз: %{p} від того, що дав би стандартний тариф."
 "Tourism grant: %{km} km at %{rate} a km":
   de: "Tourismuszuschuss: %{km} km zu %{rate} je km"
+  da: "Turismetilskud: %{km} km til %{rate} pr. km"
   fr: "Aide au tourisme : %{km} km à %{rate} le km"
   nl: "Toerismesubsidie: %{km} km tegen %{rate} per km"
   pl: "Dotacja turystyczna: %{km} km po %{rate} za km"

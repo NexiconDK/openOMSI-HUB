@@ -2,6 +2,7 @@ _version: 2
 # The livery studio: prints on the windows, and making a layer ("Create layer" and its kinds).
 "On this bus a print on the windows shows only as a tint: how see-through its glass is, a livery cannot change.":
   de: "Bei diesem Bus zeigt sich ein Aufdruck auf den Fenstern nur als Tönung: Wie durchsichtig das Glas ist, kann eine Lackierung nicht ändern."
+  da: "På denne bus vises et tryk på ruderne kun som en tone: hvor gennemsigtigt dens glas er, kan en bemaling ikke ændre."
   fr: "Sur ce bus, une impression sur les vitres n'apparaît que comme une teinte : la transparence du verre, une livrée ne peut pas la changer."
   nl: "Op deze bus is een opdruk op de ramen alleen als tint te zien: hoe doorzichtig het glas is, kan een lak niet veranderen."
   pl: "W tym autobusie nadruk na szybach widać tylko jako przyciemnienie: przezroczystości szyb malowanie nie może zmienić."
@@ -9,6 +10,7 @@ _version: 2
   uk: "На цьому автобусі друк на вікнах видно лише як тонування: прозорість скла фарбування змінити не може."
 "On a window: the layer goes over the windows too (Painting, on the right).":
   de: "Auf einem Fenster: Die Ebene geht nun auch über die Fenster (Lackieren, rechts)."
+  da: "På en rude: laget går også hen over ruderne (Maling, til højre)."
   fr: "Sur une vitre : le calque passe aussi sur les vitres (Peinture, à droite)."
   nl: "Op een raam: de laag gaat nu ook over de ramen (Lakken, rechts)."
   pl: "Na szybie: warstwa obejmuje teraz także szyby (Malowanie, po prawej)."
@@ -16,6 +18,7 @@ _version: 2
   uk: "На вікні: шар тепер наноситься й поверх вікон (Нанесення, праворуч)."
 "Create layer":
   de: "Ebene erstellen"
+  da: "Opret lag"
   fr: "Créer un calque"
   nl: "Laag maken"
   pl: "Utwórz warstwę"
@@ -23,6 +26,7 @@ _version: 2
   uk: "Створити шар"
 "A new layer: choose what kind":
   de: "Eine neue Ebene: wähle, welche Art"
+  da: "Et nyt lag: vælg hvilken slags"
   fr: "Un nouveau calque : choisissez son type"
   nl: "Een nieuwe laag: kies wat voor soort"
   pl: "Nowa warstwa: wybierz jej rodzaj"
@@ -30,6 +34,7 @@ _version: 2
   uk: "Новий шар: виберіть його вид"
 "Nothing painted yet. Create a layer, or begin with the quick livery on the right.":
   de: "Noch nichts lackiert. Erstelle eine Ebene oder beginne rechts mit der Schnelllackierung."
+  da: "Intet malet endnu. Opret et lag, eller begynd med den hurtige bemaling til højre."
   fr: "Rien n'est encore peint. Créez un calque, ou commencez par la livrée rapide à droite."
   nl: "Nog niets gelakt. Maak een laag, of begin rechts met Snelle lak."
   pl: "Nic jeszcze nie pomalowano. Utwórz warstwę lub zacznij od szybkiego malowania po prawej."
@@ -37,6 +42,7 @@ _version: 2
   uk: "Поки нічого не пофарбовано. Створіть шар або почніть зі швидкої лівреї праворуч."
 "Colour area":
   de: "Farbfläche"
+  da: "Farveflade"
   fr: "Zone de couleur"
   nl: "Kleurvlak"
   pl: "Obszar koloru"
@@ -44,6 +50,7 @@ _version: 2
   uk: "Кольорова зона"
 "One colour over all the paint of the bus.":
   de: "Eine Farbe über den ganzen Lack des Busses."
+  da: "Én farve over al busens maling."
   fr: "Une couleur sur toute la peinture du bus."
   nl: "Eén kleur over al het lakwerk van de bus."
   pl: "Jeden kolor na całym lakierze autobusu."
@@ -51,6 +58,7 @@ _version: 2
   uk: "Один колір на все фарбування автобуса."
 "One colour of the bus changed: click it on the bus.":
   de: "Eine Farbe des Busses geändert: Klicke sie auf dem Bus an."
+  da: "Én farve på bussen ændret: klik på den på bussen."
   fr: "Une couleur du bus changée : cliquez-la sur le bus."
   nl: "Eén kleur van de bus veranderd: klik die aan op de bus."
   pl: "Zmiana jednego koloru autobusu: kliknij go na autobusie."
@@ -58,6 +66,7 @@ _version: 2
   uk: "Заміна одного кольору автобуса: клацніть його на автобусі."
 "A band round the bus; its kind and edges change afterwards.":
   de: "Ein Band um den Bus; Art und Kanten änderst du danach."
+  da: "Et bånd rundt om bussen; dets slags og kanter ændres bagefter."
   fr: "Une bande autour du bus ; son type et ses bords se règlent ensuite."
   nl: "Een band rond de bus; soort en randen pas je daarna aan."
   pl: "Pas dookoła autobusu; jego rodzaj i krawędzie zmienisz potem."
@@ -65,6 +74,7 @@ _version: 2
   uk: "Смуга навколо автобуса; її вид і краї змінюються потім."
 "Letters on the side you look at.":
   de: "Buchstaben auf der Seite, die du ansiehst."
+  da: "Bogstaver på den side, du ser på."
   fr: "Des lettres sur le côté que vous regardez."
   nl: "Letters op de kant waar je naar kijkt."
   pl: "Litery na stronie, na którą patrzysz."
@@ -72,6 +82,7 @@ _version: 2
   uk: "Літери на тому боці, на який ви дивитеся."
 "A logo or a photo from your computer.":
   de: "Ein Logo oder ein Foto von deinem Computer."
+  da: "Et logo eller et foto fra din computer."
   fr: "Un logo ou une photo de votre ordinateur."
   nl: "Een logo of een foto van je computer."
   pl: "Logo lub zdjęcie z twojego komputera."
@@ -79,6 +90,7 @@ _version: 2
   uk: "Логотип або фото з вашого комп'ютера."
 "A rectangle, an arrow, a star and more.":
   de: "Ein Rechteck, ein Pfeil, ein Stern und mehr."
+  da: "Et rektangel, en pil, en stjerne og mere."
   fr: "Un rectangle, une flèche, une étoile et plus."
   nl: "Een rechthoek, een pijl, een ster en meer."
   pl: "Prostokąt, strzałka, gwiazda i więcej."
@@ -86,6 +98,7 @@ _version: 2
   uk: "Прямокутник, стрілка, зірка та інше."
 "Its corners clicked on the bus.":
   de: "Seine Ecken klickst du auf dem Bus an."
+  da: "Dets hjørner klikket på bussen."
   fr: "Ses coins se cliquent sur le bus."
   nl: "De hoeken klik je aan op de bus."
   pl: "Jej rogi klikasz na autobusie."
@@ -93,6 +106,7 @@ _version: 2
   uk: "Її кути позначаються клацаннями на автобусі."
 "Painted freely on the bus with the mouse.":
   de: "Frei mit der Maus auf den Bus gemalt."
+  da: "Malet frit på bussen med musen."
   fr: "Peint librement sur le bus avec la souris."
   nl: "Vrij met de muis op de bus geschilderd."
   pl: "Swobodnie malowane myszą na autobusie."
@@ -100,6 +114,7 @@ _version: 2
   uk: "Вільне малювання мишею на автобусі."
 "Click the colour on the bus that is to change.":
   de: "Klicke auf dem Bus die Farbe an, die sich ändern soll."
+  da: "Klik på den farve på bussen, der skal ændres."
   fr: "Cliquez sur le bus la couleur à changer."
   nl: "Klik op de bus de kleur aan die moet veranderen."
   pl: "Kliknij na autobusie kolor, który ma się zmienić."
@@ -107,6 +122,7 @@ _version: 2
   uk: "Клацніть на автобусі колір, який треба змінити."
 "Click the corners of the shape on the bus; drag to bend a line. The first corner again or Enter finishes it.":
   de: "Klicke die Ecken der Form auf dem Bus an; ziehe, um eine Linie zu biegen. Die erste Ecke noch einmal oder Enter schließt sie ab."
+  da: "Klik på formens hjørner på bussen; træk for at bøje en linje. Det første hjørne igen eller Enter afslutter den."
   fr: "Cliquez les coins de la forme sur le bus ; faites glisser pour courber une ligne. Le premier coin à nouveau ou Entrée la termine."
   nl: "Klik de hoeken van de vorm aan op de bus; sleep om een lijn te buigen. De eerste hoek nog eens of Enter maakt hem af."
   pl: "Klikaj rogi kształtu na autobusie; przeciągnij, aby wygiąć linię. Ponownie pierwszy róg lub Enter go kończy."
@@ -114,6 +130,7 @@ _version: 2
   uk: "Клацайте кути фігури на автобусі; тягніть, щоб вигнути лінію. Перший кут ще раз або Enter завершує її."
 "Erase on the bus with the left button. E: back to the brush.":
   de: "Radiere auf dem Bus mit der linken Taste. E: zurück zum Pinsel."
+  da: "Slet på bussen med venstre knap. E: tilbage til penslen."
   fr: "Gommez sur le bus avec le bouton gauche. E : retour au pinceau."
   nl: "Gum op de bus met de linkerknop. E: terug naar het penseel."
   pl: "Wycieraj na autobusie lewym przyciskiem. E: z powrotem do pędzla."
@@ -121,6 +138,7 @@ _version: 2
   uk: "Стирайте на автобусі лівою кнопкою. E: назад до пензля."
 "Paint on the bus with the left button. E: the eraser, [ and ]: its size.":
   de: "Male auf dem Bus mit der linken Taste. E: der Radierer, [ und ]: die Größe."
+  da: "Mal på bussen med venstre knap. E: viskelæderet, [ og ]: dets størrelse."
   fr: "Peignez sur le bus avec le bouton gauche. E : la gomme, [ et ] : la taille."
   nl: "Schilder op de bus met de linkerknop. E: de gum, [ en ]: de grootte."
   pl: "Maluj na autobusie lewym przyciskiem. E: gumka, [ i ]: rozmiar."
@@ -128,6 +146,7 @@ _version: 2
   uk: "Малюйте на автобусі лівою кнопкою. E: гумка, [ і ]: розмір."
 "%{n} strokes of the brush, %{e} of the eraser.":
   de: "%{n} Pinselstriche, %{e} mit dem Radierer."
+  da: "%{n} penselstrøg, %{e} af viskelæderet."
   fr: "%{n} traits de pinceau, %{e} de gomme."
   nl: "%{n} penseelstreken, %{e} met de gum."
   pl: "Pociągnięć pędzlem: %{n}, gumką: %{e}."
@@ -135,6 +154,7 @@ _version: 2
   uk: "Мазків пензлем: %{n}, гумкою: %{e}."
 "Paint on this layer":
   de: "Auf dieser Ebene weitermalen"
+  da: "Mal på dette lag"
   fr: "Peindre sur ce calque"
   nl: "Verder schilderen op deze laag"
   pl: "Maluj na tej warstwie"
@@ -142,6 +162,7 @@ _version: 2
   uk: "Малювати на цьому шарі"
 "Made on the side you look at: drag it on the bus to where it goes.":
   de: "Auf der Seite erstellt, die du ansiehst: Ziehe es auf dem Bus an seinen Platz."
+  da: "Lavet på den side, du ser på: træk det på bussen derhen, hvor det skal være."
   fr: "Créé sur le côté que vous regardez : faites-le glisser sur le bus jusqu'à sa place."
   nl: "Gemaakt op de kant waar je naar kijkt: sleep hem op de bus naar zijn plek."
   pl: "Utworzono na stronie, na którą patrzysz: przeciągnij na autobusie na właściwe miejsce."

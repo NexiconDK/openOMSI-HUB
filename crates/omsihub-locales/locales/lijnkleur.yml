@@ -4,6 +4,7 @@ _version: 2
 "Any colour":
   nl: "Elke kleur"
   de: "Beliebige Farbe"
+  da: "Enhver farve"
   fr: "N'importe quelle couleur"
   ru: "Любой цвет"
   uk: "Будь-який колір"
@@ -11,6 +12,7 @@ _version: 2
 "Hide the %{n} empty texts":
   nl: "De %{n} lege teksten verbergen"
   de: "Die %{n} leeren Texte ausblenden"
+  da: "Skjul de %{n} tomme tekster"
   fr: "Masquer les %{n} textes vides"
   ru: "Скрыть %{n} пустых текстов"
   uk: "Сховати %{n} порожніх текстів"
@@ -18,6 +20,7 @@ _version: 2
 "%{n} more texts, empty for this depot file":
   nl: "Nog %{n} teksten, leeg bij dit hofbestand"
   de: "%{n} weitere Texte, leer bei dieser Hofdatei"
+  da: "%{n} flere tekster, tomme for denne depotfil"
   fr: "%{n} autres textes, vides pour ce fichier de dépôt"
   ru: "Ещё %{n} текстов, пустых в этом файле депо"
   uk: "Ще %{n} текстів, порожніх у цьому файлі депо"
@@ -25,6 +28,7 @@ _version: 2
 "The table is the line's timetable: a change to the patterns below fills that group of days anew at once; the times typed into the other groups stay.":
   nl: "De tabel is de dienstregeling van de lijn: een wijziging in de patronen hieronder vult die groep dagen meteen opnieuw; de getypte tijden in de andere groepen blijven staan."
   de: "Die Tabelle ist der Fahrplan der Linie: eine Änderung an den Mustern unten füllt diese Tagesgruppe sofort neu; die in anderen Gruppen eingetippten Zeiten bleiben."
+  da: "Tabellen er linjens køreplan: en ændring af mønstrene nedenfor udfylder den gruppe af dage påny med det samme; de tider, der er skrevet ind i de andre grupper, bliver stående."
   fr: "Le tableau est l'horaire de la ligne : une modification des modèles ci-dessous remplit aussitôt ce groupe de jours ; les heures saisies dans les autres groupes restent."
   ru: "Таблица — это расписание линии: изменение шаблонов ниже сразу заполняет эту группу дней заново; времена, введённые в другие группы, остаются."
   uk: "Таблиця — це розклад лінії: зміна шаблонів нижче одразу заповнює цю групу днів наново; час, уведений в інші групи, залишається."
@@ -32,6 +36,7 @@ _version: 2
 "All brands":
   nl: "Alle merken"
   de: "Alle Marken"
+  da: "Alle mærker"
   fr: "Toutes les marques"
   ru: "Все марки"
   uk: "Усі марки"

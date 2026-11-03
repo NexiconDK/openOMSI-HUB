@@ -3,6 +3,7 @@ _version: 2
 # the server's door and its players (company::server_api, company::server_players), the ticket.
 "Bus Company Online":
   de: "Bus Company Online"
+  da: "Bus Company Online"
   fr: "Bus Company Online"
   nl: "Bus Company Online"
   pl: "Bus Company Online"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Bus Company Online"
 "Test":
   de: "Test"
+  da: "Test"
   fr: "Test"
   nl: "Test"
   pl: "Test"
@@ -17,6 +19,7 @@ _version: 2
   uk: "Тест"
 "Steam":
   de: "Steam"
+  da: "Steam"
   fr: "Steam"
   nl: "Steam"
   pl: "Steam"
@@ -24,6 +27,7 @@ _version: 2
   uk: "Steam"
 "Steam: %{name}":
   de: "Steam: %{name}"
+  da: "Steam: %{name}"
   fr: "Steam : %{name}"
   nl: "Steam: %{name}"
   pl: "Steam: %{name}"
@@ -31,6 +35,7 @@ _version: 2
   uk: "Steam: %{name}"
 "Omsi-Hub account":
   de: "Omsi-Hub-Konto"
+  da: "Omsi-Hub-konto"
   fr: "Compte Omsi-Hub"
   nl: "Omsi-Hub-account"
   pl: "Konto Omsi-Hub"
@@ -38,6 +43,7 @@ _version: 2
   uk: "Обліковий запис Omsi-Hub"
 "Every company of a big server, on its maps, around the clock: join one, or found your own from the money you earn there.":
   de: "Alle Betriebe eines großen Servers, auf seinen Karten, rund um die Uhr: tritt einem bei oder gründe deinen eigenen mit dem Geld, das du dort verdienst."
+  da: "Alle selskaber på en stor server, på dens kort, døgnet rundt: deltag i et, eller stift dit eget for de penge, du tjener dér."
   fr: "Toutes les entreprises d'un grand serveur, sur ses cartes, 24 h/24 : rejoignez-en une, ou fondez la vôtre avec l'argent que vous y gagnez."
   nl: "Alle bedrijven van een grote server, op zijn kaarten, de klok rond: doe mee met een bedrijf, of richt je eigen op met het geld dat je daar verdient."
   pl: "Wszystkie firmy dużego serwera, na jego mapach, przez całą dobę: dołącz do jednej albo załóż własną za pieniądze, które tam zarobisz."
@@ -45,6 +51,7 @@ _version: 2
   uk: "Усі компанії великого сервера, на його мапах, цілодобово: приєднайтеся до однієї або заснуйте власну за гроші, зароблені там."
 "With the server's code":
   de: "Mit dem Code des Servers"
+  da: "Med serverens kode"
   fr: "Avec le code du serveur"
   nl: "Met de code van de server"
   pl: "Z kodem serwera"
@@ -52,6 +59,7 @@ _version: 2
   uk: "З кодом сервера"
 "Every company of a big server, on its maps, around the clock. Log in with your Omsi-Hub account or your Steam account, join a company or found your own.":
   de: "Alle Betriebe eines großen Servers, auf seinen Karten, rund um die Uhr. Melde dich mit deinem Omsi-Hub-Konto oder deinem Steam-Konto an, tritt einem Betrieb bei oder gründe deinen eigenen."
+  da: "Alle selskaber på en stor server, på dens kort, døgnet rundt. Log ind med din Omsi-Hub-konto eller din Steam-konto, deltag i et selskab eller stift dit eget."
   fr: "Toutes les entreprises d'un grand serveur, sur ses cartes, 24 h/24. Connectez-vous avec votre compte Omsi-Hub ou votre compte Steam, rejoignez une entreprise ou fondez la vôtre."
   nl: "Alle bedrijven van een grote server, op zijn kaarten, de klok rond. Log in met je Omsi-Hub-account of je Steam-account, doe mee met een bedrijf of richt je eigen op."
   pl: "Wszystkie firmy dużego serwera, na jego mapach, przez całą dobę. Zaloguj się kontem Omsi-Hub lub kontem Steam, dołącz do firmy albo załóż własną."
@@ -59,6 +67,7 @@ _version: 2
   uk: "Усі компанії великого сервера, на його мапах, цілодобово. Увійдіть з обліковим записом Omsi-Hub або Steam, приєднайтеся до компанії або заснуйте власну."
 "The server's code (HUB-…)":
   de: "Der Code des Servers (HUB-…)"
+  da: "Serverens kode (HUB-…)"
   fr: "Le code du serveur (HUB-…)"
   nl: "De code van de server (HUB-…)"
   pl: "Kod serwera (HUB-…)"
@@ -66,6 +75,7 @@ _version: 2
   uk: "Код сервера (HUB-…)"
 "Connect":
   de: "Verbinden"
+  da: "Forbind"
   fr: "Se connecter"
   nl: "Verbinden"
   pl: "Połącz"
@@ -73,6 +83,7 @@ _version: 2
   uk: "Підключитися"
 "The server's owner gives you its code: his main server shows it.":
   de: "Der Besitzer des Servers gibt dir seinen Code: sein Hauptserver zeigt ihn an."
+  da: "Serverens ejer giver dig dens kode: hans hovedserver viser den."
   fr: "Le propriétaire du serveur vous donne son code : son serveur principal l'affiche."
   nl: "De eigenaar van de server geeft je de code: zijn hoofdserver toont hem."
   pl: "Właściciel serwera poda ci jego kod: pokazuje go jego serwer główny."
@@ -80,6 +91,7 @@ _version: 2
   uk: "Власник сервера дасть вам його код: його показує головний сервер."
 "You log in with the Omsi-Hub account you are signed in with on the Hub page, or with this computer's Steam account - or with both, as one player.":
   de: "Du meldest dich mit dem Omsi-Hub-Konto an, mit dem du auf der Hub-Seite angemeldet bist, oder mit dem Steam-Konto dieses Computers - oder mit beiden, als ein Spieler."
+  da: "Du logger ind med den Omsi-Hub-konto, du er logget ind med på siden Hub, eller med denne computers Steam-konto - eller med begge som én spiller."
   fr: "Vous vous connectez avec le compte Omsi-Hub utilisé sur la page Hub, ou avec le compte Steam de cet ordinateur - ou avec les deux, comme un seul joueur."
   nl: "Je logt in met het Omsi-Hub-account waarmee je op de Hub-pagina bent aangemeld, of met het Steam-account van deze computer - of met beide, als één speler."
   pl: "Logujesz się kontem Omsi-Hub, na które jesteś zalogowany na stronie Hub, albo kontem Steam tego komputera - albo obydwoma, jako jeden gracz."
@@ -87,6 +99,7 @@ _version: 2
   uk: "Ви входите з обліковим записом Omsi-Hub, у який увійшли на сторінці Hub, або з обліковим записом Steam цього комп'ютера - або з обома, як один гравець."
 "The server's companies":
   de: "Die Betriebe des Servers"
+  da: "Serverens selskaber"
   fr: "Les entreprises du serveur"
   nl: "De bedrijven van de server"
   pl: "Firmy serwera"
@@ -94,6 +107,7 @@ _version: 2
   uk: "Компанії сервера"
 "No company on the server yet: found the first.":
   de: "Noch kein Betrieb auf dem Server: gründe den ersten."
+  da: "Intet selskab på serveren endnu: stift det første."
   fr: "Aucune entreprise sur le serveur pour l'instant : fondez la première."
   nl: "Nog geen bedrijf op de server: richt het eerste op."
   pl: "Na serwerze nie ma jeszcze firmy: załóż pierwszą."
@@ -101,6 +115,7 @@ _version: 2
   uk: "На сервері ще немає компаній: заснуйте першу."
 "Found a company":
   de: "Einen Betrieb gründen"
+  da: "Stift et selskab"
   fr: "Fonder une entreprise"
   nl: "Een bedrijf oprichten"
   pl: "Załóż firmę"
@@ -108,6 +123,7 @@ _version: 2
   uk: "Заснувати компанію"
 "Log out":
   de: "Abmelden"
+  da: "Log ud"
   fr: "Se déconnecter"
   nl: "Uitloggen"
   pl: "Wyloguj"
@@ -115,6 +131,7 @@ _version: 2
   uk: "Вийти"
 "Server time":
   de: "Serverzeit"
+  da: "Servertid"
   fr: "Heure du serveur"
   nl: "Servertijd"
   pl: "Czas serwera"
@@ -122,6 +139,7 @@ _version: 2
   uk: "Час сервера"
 "Found a company on the server":
   de: "Einen Betrieb auf dem Server gründen"
+  da: "Stift et selskab på serveren"
   fr: "Fonder une entreprise sur le serveur"
   nl: "Een bedrijf op de server oprichten"
   pl: "Załóż firmę na serwerze"
@@ -129,6 +147,7 @@ _version: 2
   uk: "Заснувати компанію на сервері"
 "The company stays on its map for good. You are its owner, with every permission.":
   de: "Der Betrieb bleibt für immer auf seiner Karte. Du bist sein Besitzer, mit allen Rechten."
+  da: "Selskabet bliver på sit kort for altid. Du er dets ejer med alle tilladelser."
   fr: "L'entreprise reste sur sa carte pour toujours. Vous en êtes le propriétaire, avec toutes les autorisations."
   nl: "Het bedrijf blijft voorgoed op zijn kaart. Jij bent de eigenaar, met alle rechten."
   pl: "Firma zostaje na swojej mapie na zawsze. Jesteś jej właścicielem, ze wszystkimi uprawnieniami."
@@ -136,6 +155,7 @@ _version: 2
   uk: "Компанія назавжди залишається на своїй мапі. Ви її власник з усіма правами."
 "Founding costs %{price} of your own money: you have %{money}.":
   de: "Die Gründung kostet %{price} deines eigenen Geldes: du hast %{money}."
+  da: "At stifte koster %{price} af dine egne penge: du har %{money}."
   fr: "La fondation coûte %{price} de votre propre argent : vous avez %{money}."
   nl: "Oprichten kost %{price} van je eigen geld: je hebt %{money}."
   pl: "Założenie kosztuje %{price} twoich własnych pieniędzy: masz %{money}."
@@ -143,6 +163,7 @@ _version: 2
   uk: "Заснування коштує %{price} ваших власних грошей: у вас %{money}."
 "Found":
   de: "Gründen"
+  da: "Stift"
   fr: "Fonder"
   nl: "Oprichten"
   pl: "Załóż"
@@ -150,6 +171,7 @@ _version: 2
   uk: "Заснувати"
 "%{name} is founded: join it to run it.":
   de: "%{name} ist gegründet: tritt bei, um ihn zu führen."
+  da: "%{name} er stiftet: deltag i det for at drive det."
   fr: "%{name} est fondée : rejoignez-la pour la diriger."
   nl: "%{name} is opgericht: doe mee om het te leiden."
   pl: "%{name} została założona: dołącz, aby nią kierować."
@@ -157,6 +179,7 @@ _version: 2
   uk: "%{name} засновано: приєднайтеся, щоб керувати нею."
 "%{lines} lines · %{buses} buses · %{staff} staff · %{players} players":
   de: "%{lines} Linien · %{buses} Busse · %{staff} Mitarbeiter · %{players} Spieler"
+  da: "%{lines} linjer · %{buses} busser · %{staff} personale · %{players} spillere"
   fr: "%{lines} lignes · %{buses} bus · %{staff} employés · %{players} joueurs"
   nl: "%{lines} lijnen · %{buses} bussen · %{staff} medewerkers · %{players} spelers"
   pl: "linie: %{lines} · autobusy: %{buses} · pracownicy: %{staff} · gracze: %{players}"
@@ -164,6 +187,7 @@ _version: 2
   uk: "ліній: %{lines} · автобусів: %{buses} · працівників: %{staff} · гравців: %{players}"
 "Starting on the server…":
   de: "Startet auf dem Server…"
+  da: "Starter på serveren…"
   fr: "Démarrage sur le serveur…"
   nl: "Start op de server…"
   pl: "Uruchamia się na serwerze…"
@@ -171,6 +195,7 @@ _version: 2
   uk: "Запускається на сервері…"
 "The server's code is no longer valid: ask the server's owner for its code.":
   de: "Der Code des Servers ist nicht mehr gültig: frag den Besitzer des Servers nach seinem Code."
+  da: "Serverens kode er ikke længere gyldig: bed serverens ejer om dens kode."
   fr: "Le code du serveur n'est plus valable : demandez son code au propriétaire du serveur."
   nl: "De code van de server is niet meer geldig: vraag de eigenaar van de server om de code."
   pl: "Kod serwera jest już nieważny: poproś właściciela serwera o jego kod."
@@ -178,6 +203,7 @@ _version: 2
   uk: "Код сервера більше не дійсний: попросіть код у власника сервера."
 "The server runs another version of Omsi-Hub: both need the same version.":
   de: "Der Server läuft mit einer anderen Version von Omsi-Hub: beide brauchen dieselbe Version."
+  da: "Serveren kører en anden version af Omsi-Hub: begge skal have den samme version."
   fr: "Le serveur utilise une autre version d'Omsi-Hub : les deux doivent avoir la même version."
   nl: "De server draait een andere versie van Omsi-Hub: beide hebben dezelfde versie nodig."
   pl: "Serwer działa na innej wersji Omsi-Hub: obie strony potrzebują tej samej wersji."
@@ -185,6 +211,7 @@ _version: 2
   uk: "На сервері інша версія Omsi-Hub: потрібна та сама версія."
 "The server did not understand that: both need the same version of Omsi-Hub.":
   de: "Der Server hat das nicht verstanden: beide brauchen dieselbe Version von Omsi-Hub."
+  da: "Serveren forstod ikke det: begge skal have den samme version af Omsi-Hub."
   fr: "Le serveur n'a pas compris : les deux doivent avoir la même version d'Omsi-Hub."
   nl: "De server begreep dat niet: beide hebben dezelfde versie van Omsi-Hub nodig."
   pl: "Serwer tego nie zrozumiał: obie strony potrzebują tej samej wersji Omsi-Hub."
@@ -192,6 +219,7 @@ _version: 2
   uk: "Сервер не зрозумів запит: потрібна та сама версія Omsi-Hub."
 "Your login on the server has run out: log in again.":
   de: "Deine Anmeldung auf dem Server ist abgelaufen: melde dich erneut an."
+  da: "Dit login på serveren er udløbet: log ind igen."
   fr: "Votre connexion au serveur a expiré : reconnectez-vous."
   nl: "Je login op de server is verlopen: log opnieuw in."
   pl: "Twoje logowanie na serwerze wygasło: zaloguj się ponownie."
@@ -199,6 +227,7 @@ _version: 2
   uk: "Термін вашого входу на сервер сплив: увійдіть знову."
 "The server has no such company.":
   de: "Der Server hat keinen solchen Betrieb."
+  da: "Serveren har intet sådant selskab."
   fr: "Le serveur n'a pas cette entreprise."
   nl: "De server heeft zo'n bedrijf niet."
   pl: "Serwer nie ma takiej firmy."
@@ -206,6 +235,7 @@ _version: 2
   uk: "На сервері немає такої компанії."
 "The company is starting on the server: try again in a moment.":
   de: "Der Betrieb startet auf dem Server: versuch es gleich noch einmal."
+  da: "Selskabet starter på serveren: prøv igen om et øjeblik."
   fr: "L'entreprise démarre sur le serveur : réessayez dans un instant."
   nl: "Het bedrijf start op de server: probeer het zo nog eens."
   pl: "Firma uruchamia się na serwerze: spróbuj ponownie za chwilę."
@@ -213,6 +243,7 @@ _version: 2
   uk: "Компанія запускається на сервері: спробуйте ще раз за мить."
 "That map is not installed on the server.":
   de: "Diese Karte ist auf dem Server nicht installiert."
+  da: "Det kort er ikke installeret på serveren."
   fr: "Cette carte n'est pas installée sur le serveur."
   nl: "Die kaart is niet op de server geïnstalleerd."
   pl: "Ta mapa nie jest zainstalowana na serwerze."
@@ -220,6 +251,7 @@ _version: 2
   uk: "Ця мапа не встановлена на сервері."
 "That is no game mode.":
   de: "Das ist kein Spielmodus."
+  da: "Det er ingen spiltilstand."
   fr: "Ce n'est pas un mode de jeu."
   nl: "Dat is geen spelmodus."
   pl: "To nie jest tryb gry."
@@ -227,6 +259,7 @@ _version: 2
   uk: "Це не режим гри."
 "Founding a company costs %{price}: you have %{money}.":
   de: "Die Gründung eines Betriebs kostet %{price}: du hast %{money}."
+  da: "At stifte et selskab koster %{price}: du har %{money}."
   fr: "Fonder une entreprise coûte %{price} : vous avez %{money}."
   nl: "Een bedrijf oprichten kost %{price}: je hebt %{money}."
   pl: "Założenie firmy kosztuje %{price}: masz %{money}."
@@ -234,6 +267,7 @@ _version: 2
   uk: "Заснування компанії коштує %{price}: у вас %{money}."
 "The server could not found the company: it says why in its log.":
   de: "Der Server konnte den Betrieb nicht gründen: sein Protokoll sagt, warum."
+  da: "Serveren kunne ikke stifte selskabet: den siger hvorfor i sin log."
   fr: "Le serveur n'a pas pu fonder l'entreprise : son journal indique pourquoi."
   nl: "De server kon het bedrijf niet oprichten: zijn logboek zegt waarom."
   pl: "Serwer nie mógł założyć firmy: jego dziennik mówi dlaczego."
@@ -241,6 +275,7 @@ _version: 2
   uk: "Сервер не зміг заснувати компанію: причина в його журналі."
 "The server does not answer. Is it running? Over the internet its tunnel must be up (tunnel = 1), or its port open.":
   de: "Der Server antwortet nicht. Läuft er? Über das Internet muss sein Tunnel aktiv sein (tunnel = 1) oder sein Port offen."
+  da: "Serveren svarer ikke. Kører den? Over internettet skal dens tunnel være oppe (tunnel = 1), eller dens port åben."
   fr: "Le serveur ne répond pas. Est-il démarré ? Par Internet, son tunnel doit être actif (tunnel = 1) ou son port ouvert."
   nl: "De server antwoordt niet. Draait hij? Via internet moet zijn tunnel actief zijn (tunnel = 1) of zijn poort open."
   pl: "Serwer nie odpowiada. Czy działa? Przez internet jego tunel musi działać (tunnel = 1) albo port musi być otwarty."
@@ -248,6 +283,7 @@ _version: 2
   uk: "Сервер не відповідає. Він запущений? Через інтернет має працювати його тунель (tunnel = 1) або бути відкритий порт."
 "Sign in with your Omsi-Hub account in the launcher, or start Steam, to log in to the server.":
   de: "Melde dich im Launcher mit deinem Omsi-Hub-Konto an oder starte Steam, um dich auf dem Server anzumelden."
+  da: "Log ind med din Omsi-Hub-konto i launcheren, eller start Steam, for at logge ind på serveren."
   fr: "Connectez-vous avec votre compte Omsi-Hub dans le lanceur, ou démarrez Steam, pour vous connecter au serveur."
   nl: "Meld je in de launcher aan met je Omsi-Hub-account, of start Steam, om op de server in te loggen."
   pl: "Zaloguj się kontem Omsi-Hub w launcherze albo uruchom Steam, aby zalogować się na serwer."
@@ -255,6 +291,7 @@ _version: 2
   uk: "Увійдіть у лаунчері з обліковим записом Omsi-Hub або запустіть Steam, щоб увійти на сервер."
 "This Steam account was used on the server from another computer. Sign in with your Omsi-Hub account here once to add this computer.":
   de: "Dieses Steam-Konto wurde auf dem Server von einem anderen Computer aus benutzt. Melde dich hier einmal mit deinem Omsi-Hub-Konto an, um diesen Computer hinzuzufügen."
+  da: "Denne Steam-konto blev brugt på serveren fra en anden computer. Log ind med din Omsi-Hub-konto her én gang for at tilføje denne computer."
   fr: "Ce compte Steam a été utilisé sur le serveur depuis un autre ordinateur. Connectez-vous une fois ici avec votre compte Omsi-Hub pour ajouter cet ordinateur."
   nl: "Dit Steam-account is op de server vanaf een andere computer gebruikt. Meld je hier één keer aan met je Omsi-Hub-account om deze computer toe te voegen."
   pl: "To konto Steam było używane na serwerze z innego komputera. Zaloguj się tu raz kontem Omsi-Hub, aby dodać ten komputer."
@@ -262,6 +299,7 @@ _version: 2
   uk: "Цей обліковий запис Steam використовувався на сервері з іншого комп'ютера. Увійдіть тут один раз з обліковим записом Omsi-Hub, щоб додати цей комп'ютер."
 "Your Steam account belongs to another player on this server: it was not added to yours.":
   de: "Dein Steam-Konto gehört auf diesem Server einem anderen Spieler: es wurde nicht zu deinem hinzugefügt."
+  da: "Din Steam-konto tilhører en anden spiller på denne server: den blev ikke føjet til din."
   fr: "Votre compte Steam appartient à un autre joueur sur ce serveur : il n'a pas été ajouté au vôtre."
   nl: "Je Steam-account hoort op deze server bij een andere speler: het is niet aan het jouwe toegevoegd."
   pl: "Twoje konto Steam należy na tym serwerze do innego gracza: nie zostało dodane do twojego."
@@ -269,6 +307,7 @@ _version: 2
   uk: "Ваш обліковий запис Steam належить на цьому сервері іншому гравцеві: його не додано до вашого."
 "Your player on this server has another Steam account: this one was not added.":
   de: "Dein Spieler auf diesem Server hat ein anderes Steam-Konto: dieses wurde nicht hinzugefügt."
+  da: "Din spiller på denne server har en anden Steam-konto: denne blev ikke føjet til."
   fr: "Votre joueur sur ce serveur a un autre compte Steam : celui-ci n'a pas été ajouté."
   nl: "Je speler op deze server heeft een ander Steam-account: dit is niet toegevoegd."
   pl: "Twój gracz na tym serwerze ma inne konto Steam: to nie zostało dodane."
@@ -276,6 +315,7 @@ _version: 2
   uk: "Ваш гравець на цьому сервері має інший обліковий запис Steam: цей не додано."
 "The server did not accept your Omsi-Hub account: sign in again in the launcher.":
   de: "Der Server hat dein Omsi-Hub-Konto nicht angenommen: melde dich im Launcher erneut an."
+  da: "Serveren accepterede ikke din Omsi-Hub-konto: log ind igen i launcheren."
   fr: "Le serveur n'a pas accepté votre compte Omsi-Hub : reconnectez-vous dans le lanceur."
   nl: "De server heeft je Omsi-Hub-account niet geaccepteerd: meld je opnieuw aan in de launcher."
   pl: "Serwer nie przyjął twojego konta Omsi-Hub: zaloguj się ponownie w launcherze."
@@ -283,6 +323,7 @@ _version: 2
   uk: "Сервер не прийняв ваш обліковий запис Omsi-Hub: увійдіть знову в лаунчері."
 "The server could not reach Omsi-Hub online to check your account: try again in a moment.":
   de: "Der Server konnte Omsi-Hub online nicht erreichen, um dein Konto zu prüfen: versuch es gleich noch einmal."
+  da: "Serveren kunne ikke nå Omsi-Hub online for at kontrollere din konto: prøv igen om et øjeblik."
   fr: "Le serveur n'a pas pu joindre Omsi-Hub en ligne pour vérifier votre compte : réessayez dans un instant."
   nl: "De server kon Omsi-Hub online niet bereiken om je account te controleren: probeer het zo nog eens."
   pl: "Serwer nie mógł połączyć się z Omsi-Hub online, aby sprawdzić twoje konto: spróbuj ponownie za chwilę."
@@ -290,6 +331,7 @@ _version: 2
   uk: "Серверу не вдалося зв'язатися з Omsi-Hub online для перевірки облікового запису: спробуйте ще раз за мить."
 "This server takes no Omsi-Hub accounts: start Steam to log in.":
   de: "Dieser Server nimmt keine Omsi-Hub-Konten an: starte Steam, um dich anzumelden."
+  da: "Denne server tager ikke imod Omsi-Hub-konti: start Steam for at logge ind."
   fr: "Ce serveur n'accepte pas les comptes Omsi-Hub : démarrez Steam pour vous connecter."
   nl: "Deze server neemt geen Omsi-Hub-accounts aan: start Steam om in te loggen."
   pl: "Ten serwer nie przyjmuje kont Omsi-Hub: uruchom Steam, aby się zalogować."
@@ -297,6 +339,7 @@ _version: 2
   uk: "Цей сервер не приймає облікові записи Omsi-Hub: запустіть Steam, щоб увійти."
 "This server takes no Steam logins: sign in with your Omsi-Hub account in the launcher.":
   de: "Dieser Server nimmt keine Steam-Anmeldungen an: melde dich im Launcher mit deinem Omsi-Hub-Konto an."
+  da: "Denne server tager ikke imod Steam-logins: log ind med din Omsi-Hub-konto i launcheren."
   fr: "Ce serveur n'accepte pas les connexions Steam : connectez-vous avec votre compte Omsi-Hub dans le lanceur."
   nl: "Deze server neemt geen Steam-logins aan: meld je in de launcher aan met je Omsi-Hub-account."
   pl: "Ten serwer nie przyjmuje logowania przez Steam: zaloguj się kontem Omsi-Hub w launcherze."
@@ -304,6 +347,7 @@ _version: 2
   uk: "Цей сервер не приймає вхід через Steam: увійдіть у лаунчері з обліковим записом Omsi-Hub."
 "This is not a Bus Company Online server's code. Ask the server's owner for its code (HUB-…): his main server shows it.":
   de: "Das ist kein Code eines Bus-Company-Online-Servers. Frag den Besitzer des Servers nach seinem Code (HUB-…): sein Hauptserver zeigt ihn an."
+  da: "Dette er ikke koden til en Bus Company Online-server. Bed serverens ejer om dens kode (HUB-…): hans hovedserver viser den."
   fr: "Ce n'est pas le code d'un serveur Bus Company Online. Demandez son code au propriétaire du serveur (HUB-…) : son serveur principal l'affiche."
   nl: "Dit is geen code van een Bus Company Online-server. Vraag de eigenaar van de server om de code (HUB-…): zijn hoofdserver toont hem."
   pl: "To nie jest kod serwera Bus Company Online. Poproś właściciela serwera o jego kod (HUB-…): pokazuje go jego serwer główny."
@@ -311,6 +355,7 @@ _version: 2
   uk: "Це не код сервера Bus Company Online. Попросіть код у власника сервера (HUB-…): його показує головний сервер."
 "Enter the server's code first.":
   de: "Gib zuerst den Code des Servers ein."
+  da: "Indtast først serverens kode."
   fr: "Saisissez d'abord le code du serveur."
   nl: "Voer eerst de code van de server in."
   pl: "Najpierw wpisz kod serwera."
@@ -318,6 +363,7 @@ _version: 2
   uk: "Спочатку введіть код сервера."
 "This is the code of a Bus Company Online server: open Bus Company Online at the start of the bus company and enter it there.":
   de: "Das ist der Code eines Bus-Company-Online-Servers: öffne Bus Company Online am Start des Busbetriebs und gib ihn dort ein."
+  da: "Dette er koden til en Bus Company Online-server: åbn Bus Company Online ved starten af buselskabet, og indtast den dér."
   fr: "C'est le code d'un serveur Bus Company Online : ouvrez Bus Company Online au démarrage de l'entreprise de bus et saisissez-le là."
   nl: "Dit is de code van een Bus Company Online-server: open Bus Company Online bij de start van het busbedrijf en voer hem daar in."
   pl: "To kod serwera Bus Company Online: otwórz Bus Company Online na starcie firmy autobusowej i wpisz go tam."
@@ -325,6 +371,7 @@ _version: 2
   uk: "Це код сервера Bus Company Online: відкрийте Bus Company Online на старті автобусної компанії та введіть його там."
 "This company is on a Bus Company Online server: join it from the server's list in your launcher (Bus Company Online).":
   de: "Dieser Betrieb ist auf einem Bus-Company-Online-Server: tritt ihm über die Liste des Servers in deinem Launcher bei (Bus Company Online)."
+  da: "Dette selskab er på en Bus Company Online-server: deltag i det fra serverens liste i din launcher (Bus Company Online)."
   fr: "Cette entreprise est sur un serveur Bus Company Online : rejoignez-la depuis la liste du serveur dans votre lanceur (Bus Company Online)."
   nl: "Dit bedrijf staat op een Bus Company Online-server: doe mee via de lijst van de server in je launcher (Bus Company Online)."
   pl: "Ta firma jest na serwerze Bus Company Online: dołącz do niej z listy serwera w swoim launcherze (Bus Company Online)."
@@ -332,6 +379,7 @@ _version: 2
   uk: "Ця компанія на сервері Bus Company Online: приєднайтеся до неї зі списку сервера у вашому лаунчері (Bus Company Online)."
 "On the Bus Company Online server the server's clock runs the company, in real time for everybody: it cannot be changed here.":
   de: "Auf dem Bus-Company-Online-Server führt die Uhr des Servers den Betrieb, in Echtzeit für alle: sie kann hier nicht geändert werden."
+  da: "På Bus Company Online-serveren driver serverens ur selskabet, i realtid for alle: det kan ikke ændres her."
   fr: "Sur le serveur Bus Company Online, l'horloge du serveur fait tourner l'entreprise, en temps réel pour tous : elle ne peut pas être modifiée ici."
   nl: "Op de Bus Company Online-server laat de klok van de server het bedrijf lopen, in realtime voor iedereen: die kan hier niet worden gewijzigd."
   pl: "Na serwerze Bus Company Online firmą kieruje zegar serwera, w czasie rzeczywistym dla wszystkich: nie można go tu zmienić."
@@ -339,6 +387,7 @@ _version: 2
   uk: "На сервері Bus Company Online компанією керує годинник сервера, у реальному часі для всіх: тут його змінити не можна."
 "Founded the company on the server: every permission, for good.":
   de: "Hat den Betrieb auf dem Server gegründet: alle Rechte, für immer."
+  da: "Selskabet er stiftet på serveren: alle tilladelser, for altid."
   fr: "A fondé l'entreprise sur le serveur : toutes les autorisations, pour toujours."
   nl: "Heeft het bedrijf op de server opgericht: alle rechten, voorgoed."
   pl: "Założył firmę na serwerze: wszystkie uprawnienia, na stałe."
@@ -346,6 +395,7 @@ _version: 2
   uk: "Заснував компанію на сервері: усі права, назавжди."
 "The server's clock":
   de: "Die Uhr des Servers"
+  da: "Serverens ur"
   fr: "L'horloge du serveur"
   nl: "De klok van de server"
   pl: "Zegar serwera"
@@ -353,6 +403,7 @@ _version: 2
   uk: "Годинник сервера"
 "You are not a player of this company: join it first.":
   de: "Du bist kein Spieler dieses Betriebs: tritt ihm zuerst bei."
+  da: "Du er ikke spiller i dette selskab: deltag først i det."
   fr: "Vous n'êtes pas joueur de cette entreprise : rejoignez-la d'abord."
   nl: "Je bent geen speler van dit bedrijf: doe eerst mee."
   pl: "Nie jesteś graczem tej firmy: najpierw do niej dołącz."
@@ -360,6 +411,7 @@ _version: 2
   uk: "Ви не гравець цієї компанії: спочатку приєднайтеся до неї."
 "The server could not start the map's world: it says why in its log.":
   de: "Der Server konnte die Welt der Karte nicht starten: sein Protokoll sagt, warum."
+  da: "Serveren kunne ikke starte kortets verden: den siger hvorfor i sin log."
   fr: "Le serveur n'a pas pu démarrer le monde de la carte : son journal indique pourquoi."
   nl: "De server kon de wereld van de kaart niet starten: zijn logboek zegt waarom."
   pl: "Serwer nie mógł uruchomić świata mapy: jego dziennik mówi dlaczego."
@@ -367,6 +419,7 @@ _version: 2
   uk: "Сервер не зміг запустити світ мапи: причина в його журналі."
 "Loading the world":
   de: "Die Welt wird geladen"
+  da: "Indlæser verdenen"
   fr: "Chargement du monde"
   nl: "De wereld wordt geladen"
   pl: "Wczytywanie świata"
@@ -374,6 +427,7 @@ _version: 2
   uk: "Завантаження світу"
 "The world of %{map}":
   de: "Die Welt von %{map}"
+  da: "Verdenen for %{map}"
   fr: "Le monde de %{map}"
   nl: "De wereld van %{map}"
   pl: "Świat %{map}"
@@ -381,6 +435,7 @@ _version: 2
   uk: "Світ %{map}"
 "%{t} so far":
   de: "bisher %{t}"
+  da: "%{t} indtil nu"
   fr: "%{t} jusqu'ici"
   nl: "tot nu toe %{t}"
   pl: "na razie %{t}"
@@ -388,6 +443,7 @@ _version: 2
   uk: "вже %{t}"
 "about %{n} min the last time":
   de: "beim letzten Mal etwa %{n} Min."
+  da: "omkring %{n} min sidste gang"
   fr: "environ %{n} min la dernière fois"
   nl: "de vorige keer ongeveer %{n} min"
   pl: "ostatnio około %{n} min"
@@ -395,6 +451,7 @@ _version: 2
   uk: "минулого разу близько %{n} хв"
 "The game starts by itself as soon as the world is ready. You may leave this open.":
   de: "Das Spiel startet von selbst, sobald die Welt bereit ist. Du kannst dies offen lassen."
+  da: "Spillet starter af sig selv, så snart verdenen er klar. Du kan lade dette stå åbent."
   fr: "Le jeu démarre tout seul dès que le monde est prêt. Vous pouvez laisser ceci ouvert."
   nl: "Het spel start vanzelf zodra de wereld klaar is. Je kunt dit open laten."
   pl: "Gra uruchomi się sama, gdy świat będzie gotowy. Możesz zostawić to otwarte."
@@ -402,6 +459,7 @@ _version: 2
   uk: "Гра запуститься сама, щойно світ буде готовий. Це вікно можна залишити відкритим."
 "Asking the server for the world…":
   de: "Der Server wird nach der Welt gefragt…"
+  da: "Spørger serveren om verdenen…"
   fr: "Demande du monde au serveur…"
   nl: "De server wordt om de wereld gevraagd…"
   pl: "Pytanie serwera o świat…"
@@ -409,6 +467,7 @@ _version: 2
   uk: "Запит світу в сервера…"
 "The world is ready: the game starts…":
   de: "Die Welt ist bereit: das Spiel startet…"
+  da: "Verdenen er klar: spillet starter…"
   fr: "Le monde est prêt : le jeu démarre…"
   nl: "De wereld is klaar: het spel start…"
   pl: "Świat jest gotowy: gra się uruchamia…"
@@ -416,6 +475,7 @@ _version: 2
   uk: "Світ готовий: гра запускається…"
 "Stop waiting":
   de: "Nicht mehr warten"
+  da: "Stop med at vente"
   fr: "Ne plus attendre"
   nl: "Niet meer wachten"
   pl: "Przestań czekać"
@@ -423,6 +483,7 @@ _version: 2
   uk: "Не чекати"
 "The world goes on loading on the server: press Drive again when you like.":
   de: "Die Welt lädt auf dem Server weiter: drücke Fahren wieder, wann du willst."
+  da: "Verdenen indlæser videre på serveren: tryk på Kør igen, når du vil."
   fr: "Le monde continue de charger sur le serveur : appuyez à nouveau sur Conduire quand vous voulez."
   nl: "De wereld laadt verder op de server: druk opnieuw op Rijden wanneer je wilt."
   pl: "Świat wczytuje się dalej na serwerze: naciśnij Jedź ponownie, kiedy chcesz."
@@ -430,6 +491,7 @@ _version: 2
   uk: "Світ далі завантажується на сервері: натисніть «Їхати» знову, коли захочете."
 "Opening its way in over the internet":
   de: "Der Zugang über das Internet wird geöffnet"
+  da: "Åbner dens vej ind over internettet"
   fr: "Ouverture de son accès par internet"
   nl: "De toegang via internet wordt geopend"
   pl: "Otwieranie dostępu przez internet"
@@ -437,6 +499,7 @@ _version: 2
   uk: "Відкривається доступ через інтернет"
 "Loading the map: its tiles and objects":
   de: "Die Karte wird geladen: ihre Kacheln und Objekte"
+  da: "Indlæser kortet: dets fliser og objekter"
   fr: "Chargement de la carte : ses tuiles et ses objets"
   nl: "De kaart wordt geladen: haar tegels en objecten"
   pl: "Wczytywanie mapy: jej kafelków i obiektów"
@@ -444,6 +507,7 @@ _version: 2
   uk: "Завантаження мапи: її тайлів і об'єктів"
 "Laying out the roads and the traffic":
   de: "Straßen und Verkehr werden angelegt"
+  da: "Lægger vejene og trafikken ud"
   fr: "Mise en place des routes et de la circulation"
   nl: "De wegen en het verkeer worden aangelegd"
   pl: "Układanie dróg i ruchu"
@@ -451,6 +515,7 @@ _version: 2
   uk: "Прокладаються дороги й рух"
 "Setting out the timetable and the companies' buses":
   de: "Fahrplan und Busse der Betriebe werden eingesetzt"
+  da: "Sætter køreplanen og selskabernes busser ud"
   fr: "Mise en place de l'horaire et des bus des entreprises"
   nl: "De dienstregeling en de bussen van de bedrijven worden ingezet"
   pl: "Rozkład jazdy i autobusy firm są ustawiane"
@@ -458,6 +523,7 @@ _version: 2
   uk: "Розставляються розклад і автобуси компаній"
 "Putting people at the stops":
   de: "Menschen kommen an die Haltestellen"
+  da: "Sætter folk ved stoppestederne"
   fr: "Des gens arrivent aux arrêts"
   nl: "Mensen komen naar de haltes"
   pl: "Ludzie pojawiają się na przystankach"
@@ -465,6 +531,7 @@ _version: 2
   uk: "Люди виходять на зупинки"
 "Starting the world on the server":
   de: "Die Welt startet auf dem Server"
+  da: "Starter verdenen på serveren"
   fr: "Le monde démarre sur le serveur"
   nl: "De wereld start op de server"
   pl: "Świat uruchamia się na serwerze"
@@ -472,6 +539,7 @@ _version: 2
   uk: "Світ запускається на сервері"
 "The map's world has no way in over the internet yet: its tunnel is starting.":
   de: "Die Welt der Karte ist über das Internet noch nicht erreichbar: ihr Tunnel startet."
+  da: "Kortets verden har endnu ingen vej ind over internettet: dens tunnel starter."
   fr: "Le monde de la carte n'est pas encore accessible par Internet : son tunnel démarre."
   nl: "De wereld van de kaart is via internet nog niet bereikbaar: haar tunnel start."
   pl: "Świat mapy nie jest jeszcze dostępny przez internet: jego tunel się uruchamia."
@@ -479,6 +547,7 @@ _version: 2
   uk: "Світ мапи ще недоступний через інтернет: його тунель запускається."
 "Starting the world of %{map} on the server… (a big map takes a few minutes)":
   de: "Die Welt von %{map} startet auf dem Server… (eine große Karte braucht ein paar Minuten)"
+  da: "Starter verdenen for %{map} på serveren… (et stort kort tager nogle minutter)"
   fr: "Démarrage du monde de %{map} sur le serveur… (une grande carte prend quelques minutes)"
   nl: "De wereld van %{map} start op de server… (een grote kaart duurt een paar minuten)"
   pl: "Uruchamianie świata %{map} na serwerze… (duża mapa zajmuje kilka minut)"
@@ -486,6 +555,7 @@ _version: 2
   uk: "Запуск світу %{map} на сервері… (велика мапа завантажується кілька хвилин)"
 "The world of %{map} is still loading on the server: %{n} min so far.":
   de: "Die Welt von %{map} lädt noch auf dem Server: bisher %{n} Min."
+  da: "Verdenen for %{map} indlæser stadig på serveren: %{n} min indtil nu."
   fr: "Le monde de %{map} charge encore sur le serveur : %{n} min jusqu'ici."
   nl: "De wereld van %{map} laadt nog op de server: tot nu toe %{n} min."
   pl: "Świat %{map} wciąż się wczytuje na serwerze: na razie %{n} min."
@@ -493,6 +563,7 @@ _version: 2
   uk: "Світ %{map} ще завантажується на сервері: вже %{n} хв."
 "The company's share":
   de: "Der Anteil des Betriebs"
+  da: "Selskabets andel"
   fr: "La part de l'entreprise"
   nl: "Het aandeel van het bedrijf"
   pl: "Udział firmy"
@@ -500,6 +571,7 @@ _version: 2
   uk: "Частка компанії"
 "The company keeps %{share} % of what a trip of its players brings in; the rest is the driver's pay, into his money on the server.":
   de: "Der Betrieb behält %{share} % dessen, was eine Fahrt seiner Spieler einbringt; der Rest ist der Lohn des Fahrers, auf sein Geld auf dem Server."
+  da: "Selskabet beholder %{share} % af det, en tur fra dets spillere indbringer; resten er chaufførens løn, ind på hans penge på serveren."
   fr: "L'entreprise garde %{share} % de ce que rapporte un trajet de ses joueurs ; le reste est la paie du conducteur, versée sur son argent sur le serveur."
   nl: "Het bedrijf houdt %{share} % van wat een rit van zijn spelers opbrengt; de rest is het loon van de chauffeur, op zijn geld op de server."
   pl: "Firma zatrzymuje %{share} % tego, co przynosi kurs jej graczy; reszta to wynagrodzenie kierowcy, na jego pieniądze na serwerze."
@@ -507,6 +579,7 @@ _version: 2
   uk: "Компанія залишає собі %{share} % від того, що приносить рейс її гравців; решта — оплата водія, на його гроші на сервері."
 "From tomorrow: %{share} %":
   de: "Ab morgen: %{share} %"
+  da: "Fra i morgen: %{share} %"
   fr: "À partir de demain : %{share} %"
   nl: "Vanaf morgen: %{share} %"
   pl: "Od jutra: %{share} %"
@@ -514,6 +587,7 @@ _version: 2
   uk: "З завтрашнього дня: %{share} %"
 "From tomorrow the company keeps %{share} % of its players' trips.":
   de: "Ab morgen behält der Betrieb %{share} % der Fahrten seiner Spieler."
+  da: "Fra i morgen beholder selskabet %{share} % af sine spilleres ture."
   fr: "À partir de demain, l'entreprise garde %{share} % des trajets de ses joueurs."
   nl: "Vanaf morgen houdt het bedrijf %{share} % van de ritten van zijn spelers."
   pl: "Od jutra firma zatrzymuje %{share} % kursów swoich graczy."
@@ -521,6 +595,7 @@ _version: 2
   uk: "З завтрашнього дня компанія залишає собі %{share} % від рейсів своїх гравців."
 "The picture":
   de: "Das Bild"
+  da: "Billedet"
   fr: "L'image"
   nl: "De afbeelding"
   pl: "Obraz"
@@ -528,6 +603,7 @@ _version: 2
   uk: "Зображення"
 "The picture could not be taken: a PNG, JPEG, GIF, BMP or WebP of at most 3 MB.":
   de: "Das Bild konnte nicht übernommen werden: ein PNG, JPEG, GIF, BMP oder WebP von höchstens 3 MB."
+  da: "Billedet kunne ikke tages: en PNG, JPEG, GIF, BMP eller WebP på højst 3 MB."
   fr: "L'image n'a pas pu être prise : un PNG, JPEG, GIF, BMP ou WebP de 3 Mo au plus."
   nl: "De afbeelding kon niet worden overgenomen: een PNG, JPEG, GIF, BMP of WebP van hoogstens 3 MB."
   pl: "Nie udało się przyjąć obrazu: PNG, JPEG, GIF, BMP lub WebP o rozmiarze najwyżej 3 MB."
@@ -535,6 +611,7 @@ _version: 2
   uk: "Не вдалося прийняти зображення: PNG, JPEG, GIF, BMP або WebP не більше 3 МБ."
 "Its player left the duty":
   de: "Sein Spieler hat den Dienst verlassen"
+  da: "Dens spiller forlod vagten"
   fr: "Son joueur a quitté le service"
   nl: "De speler heeft de dienst verlaten"
   pl: "Gracz opuścił służbę"
@@ -542,6 +619,7 @@ _version: 2
   uk: "Гравець покинув зміну"
 "%{name} left duty %{k} of line %{n} (tour %{tour}): the rest of it is dropped.":
   de: "%{name} hat Dienst %{k} der Linie %{n} (Umlauf %{tour}) verlassen: Der Rest fällt aus."
+  da: "%{name} forlod vagt %{k} på linje %{n} (vognløb %{tour}): resten af den droppes."
   fr: "%{name} a quitté le service %{k} de la ligne %{n} (tournée %{tour}) : le reste est supprimé."
   nl: "%{name} heeft dienst %{k} van lijn %{n} (omloop %{tour}) verlaten: de rest vervalt."
   pl: "%{name} opuścił(a) służbę %{k} linii %{n} (obieg %{tour}): reszta zostaje odwołana."
@@ -549,6 +627,7 @@ _version: 2
   uk: "%{name} покинув(ла) зміну %{k} лінії %{n} (оборот %{tour}): решту скасовано."
 "%{name} left duty %{k} of line %{n} (tour %{tour}) before its first trip: all of it is dropped.":
   de: "%{name} hat Dienst %{k} der Linie %{n} (Umlauf %{tour}) vor seiner ersten Fahrt verlassen: Er fällt ganz aus."
+  da: "%{name} forlod vagt %{k} på linje %{n} (vognløb %{tour}) før dens første tur: hele den droppes."
   fr: "%{name} a quitté le service %{k} de la ligne %{n} (tournée %{tour}) avant son premier trajet : il est supprimé en entier."
   nl: "%{name} heeft dienst %{k} van lijn %{n} (omloop %{tour}) vóór de eerste rit verlaten: de hele dienst vervalt."
   pl: "%{name} opuścił(a) służbę %{k} linii %{n} (obieg %{tour}) przed pierwszym kursem: cała zostaje odwołana."
@@ -556,6 +635,7 @@ _version: 2
   uk: "%{name} покинув(ла) зміну %{k} лінії %{n} (оборот %{tour}) до першого рейсу: її скасовано повністю."
 "You left it: its trips are dropped":
   de: "Du hast ihn verlassen: seine Fahrten fallen aus"
+  da: "Du forlod den: dens ture droppes"
   fr: "Vous l'avez quitté : ses trajets sont supprimés"
   nl: "Je hebt hem verlaten: de ritten vervallen"
   pl: "Opuściłeś ją: jej kursy są odwołane"
@@ -563,6 +643,7 @@ _version: 2
   uk: "Ви її покинули: її рейси скасовано"
 "You left it: the rest of it is dropped":
   de: "Du hast ihn verlassen: der Rest fällt aus"
+  da: "Du forlod den: resten af den droppes"
   fr: "Vous l'avez quitté : le reste est supprimé"
   nl: "Je hebt hem verlaten: de rest vervalt"
   pl: "Opuściłeś ją: reszta jest odwołana"
@@ -570,6 +651,7 @@ _version: 2
   uk: "Ви її покинули: решту скасовано"
 "Dropped (%{name} left)":
   de: "Fällt aus (%{name} weg)"
+  da: "Droppet (%{name} gik)"
   fr: "Supprimé (%{name} parti)"
   nl: "Vervalt (%{name} weg)"
   pl: "Odwołane (%{name} odszedł)"
@@ -577,6 +659,7 @@ _version: 2
   uk: "Скасовано (%{name} пішов)"
 "Left it: the rest is dropped":
   de: "Verlassen: der Rest fällt aus"
+  da: "Forladt: resten droppes"
   fr: "Quitté : le reste est supprimé"
   nl: "Verlaten: de rest vervalt"
   pl: "Opuszczona: reszta odwołana"
@@ -584,6 +667,7 @@ _version: 2
   uk: "Покинута: решту скасовано"
 "Duties left":
   de: "Verlassene Dienste"
+  da: "Forladte vagter"
   fr: "Services quittés"
   nl: "Verlaten diensten"
   pl: "Opuszczone służby"
@@ -591,6 +675,7 @@ _version: 2
   uk: "Покинуті зміни"
 "When a player leaves his duty halfway":
   de: "Wenn ein Spieler seinen Dienst mittendrin verlässt"
+  da: "Når en spiller forlader sin vagt halvvejs"
   fr: "Quand un joueur quitte son service en cours"
   nl: "Als een speler zijn dienst halverwege verlaat"
   pl: "Gdy gracz opuści służbę w połowie"
@@ -598,6 +683,7 @@ _version: 2
   uk: "Коли гравець кидає зміну на півдорозі"
 "The AI drives the rest":
   de: "Die KI fährt den Rest"
+  da: "AI'en kører resten"
   fr: "L'IA conduit le reste"
   nl: "De AI rijdt de rest"
   pl: "Resztę prowadzi SI"
@@ -605,6 +691,7 @@ _version: 2
   uk: "Решту веде ШІ"
 "Its trips are dropped":
   de: "Seine Fahrten fallen aus"
+  da: "Dens ture droppes"
   fr: "Ses trajets sont supprimés"
   nl: "De ritten vervallen"
   pl: "Jej kursy są odwołane"
@@ -612,6 +699,7 @@ _version: 2
   uk: "Її рейси скасовуються"
 "The AI drives the rest of his duty in the world, and the company books its trips. He is paid for what he drove; his card counts the duties he left.":
   de: "Die KI fährt den Rest seines Dienstes in der Welt, und der Betrieb bucht dessen Fahrten. Er wird für das bezahlt, was er gefahren ist; seine Karte zählt die Dienste, die er verlassen hat."
+  da: "AI'en kører resten af hans vagt i verdenen, og selskabet bogfører dens ture. Han får løn for det, han kørte; hans kort tæller de vagter, han forlod."
   fr: "L'IA conduit le reste de son service dans le monde, et l'entreprise comptabilise ses trajets. Il est payé pour ce qu'il a conduit ; sa fiche compte les services qu'il a quittés."
   nl: "De AI rijdt de rest van zijn dienst in de wereld, en het bedrijf boekt de ritten. Hij wordt betaald voor wat hij reed; zijn kaart telt de diensten die hij verliet."
   pl: "Resztę jego służby w świecie prowadzi SI, a firma księguje jej kursy. Dostaje zapłatę za to, co przejechał; jego karta liczy opuszczone służby."
@@ -619,6 +707,7 @@ _version: 2
   uk: "Решту його зміни у світі веде ШІ, і компанія обліковує її рейси. Йому платять за те, що він проїхав; його картка рахує покинуті зміни."
 "Nobody drives the rest of his duty: its trips are dropped, the company loses their takings and pays the authority's penalties. He is paid for what he drove; his card counts the duties he left.":
   de: "Niemand fährt den Rest seines Dienstes: dessen Fahrten fallen aus, der Betrieb verliert ihre Einnahmen und zahlt die Strafen des Aufgabenträgers. Er wird für das bezahlt, was er gefahren ist; seine Karte zählt die Dienste, die er verlassen hat."
+  da: "Ingen kører resten af hans vagt: dens ture droppes, selskabet mister deres indtægter og betaler trafikselskabets bøder. Han får løn for det, han kørte; hans kort tæller de vagter, han forlod."
   fr: "Personne ne conduit le reste de son service : ses trajets sont supprimés, l'entreprise perd leurs recettes et paie les pénalités de l'autorité. Il est payé pour ce qu'il a conduit ; sa fiche compte les services qu'il a quittés."
   nl: "Niemand rijdt de rest van zijn dienst: de ritten vervallen, het bedrijf verliest de opbrengst en betaalt de boetes van de opdrachtgever. Hij wordt betaald voor wat hij reed; zijn kaart telt de diensten die hij verliet."
   pl: "Nikt nie prowadzi reszty jego służby: kursy są odwołane, firma traci ich wpływy i płaci kary organizatora. Dostaje zapłatę za to, co przejechał; jego karta liczy opuszczone służby."
@@ -626,6 +715,7 @@ _version: 2
   uk: "Решту його зміни ніхто не веде: рейси скасовуються, компанія втрачає виручку і платить штрафи замовника. Йому платять за те, що він проїхав; його картка рахує покинуті зміни."
 "From now on what a player leaves of his duty is dropped.":
   de: "Ab jetzt fällt aus, was ein Spieler von seinem Dienst übrig lässt."
+  da: "Fra nu af droppes det, en spiller efterlader af sin vagt."
   fr: "Désormais, ce qu'un joueur laisse de son service est supprimé."
   nl: "Vanaf nu vervalt wat een speler van zijn dienst laat liggen."
   pl: "Od teraz to, co gracz zostawi ze swojej służby, jest odwoływane."
@@ -633,6 +723,7 @@ _version: 2
   uk: "Відтепер те, що гравець покинув зі своєї зміни, скасовується."
 "From now on the AI drives what a player leaves of his duty.":
   de: "Ab jetzt fährt die KI, was ein Spieler von seinem Dienst übrig lässt."
+  da: "Fra nu af kører AI'en det, en spiller efterlader af sin vagt."
   fr: "Désormais, l'IA conduit ce qu'un joueur laisse de son service."
   nl: "Vanaf nu rijdt de AI wat een speler van zijn dienst laat liggen."
   pl: "Od teraz SI prowadzi to, co gracz zostawi ze swojej służby."
@@ -640,6 +731,7 @@ _version: 2
   uk: "Відтепер те, що гравець покинув зі своєї зміни, веде ШІ."
 "On the Bus Company Online server every line is won in its tender: it cannot be bought outright.":
   de: "Auf dem Bus-Company-Online-Server wird jede Linie in ihrer Ausschreibung gewonnen: sie kann nicht direkt gekauft werden."
+  da: "På Bus Company Online-serveren vindes hver linje i dens udbud: den kan ikke købes direkte."
   fr: "Sur le serveur Bus Company Online, chaque ligne se gagne par son appel d'offres : elle ne peut pas être achetée directement."
   nl: "Op de Bus Company Online-server wordt elke lijn in haar aanbesteding gewonnen: ze kan niet direct worden gekocht."
   pl: "Na serwerze Bus Company Online każdą linię wygrywa się w jej przetargu: nie można jej kupić od razu."
@@ -647,6 +739,7 @@ _version: 2
   uk: "На сервері Bus Company Online кожну лінію виграють на її тендері: купити її одразу не можна."
 "Another company of the map runs this line: it goes out to tender again towards the end of its concession.":
   de: "Ein anderer Betrieb der Karte fährt diese Linie: sie wird gegen Ende seiner Konzession wieder ausgeschrieben."
+  da: "Et andet selskab på kortet kører denne linje: den sendes i udbud igen hen imod slutningen af dens koncession."
   fr: "Une autre entreprise de la carte exploite cette ligne : elle est remise en appel d'offres vers la fin de sa concession."
   nl: "Een ander bedrijf van de kaart rijdt deze lijn: ze wordt tegen het einde van zijn concessie opnieuw aanbesteed."
   pl: "Tę linię obsługuje inna firma z mapy: trafi ponownie do przetargu pod koniec jej koncesji."
@@ -654,6 +747,7 @@ _version: 2
   uk: "Цю лінію обслуговує інша компанія карти: її знову виставлять на тендер ближче до кінця її концесії."
 "The line goes out to tender in a moment: its auction is on the Concessions page.":
   de: "Die Linie wird gleich ausgeschrieben: ihre Auktion steht auf der Seite Konzessionen."
+  da: "Linjen sendes i udbud om et øjeblik: dens auktion er på siden Koncessioner."
   fr: "La ligne est mise en appel d'offres dans un instant : son enchère est sur la page Concessions."
   nl: "De lijn wordt zo aanbesteed: de veiling staat op de pagina Concessies."
   pl: "Linia za chwilę trafi do przetargu: jej aukcja jest na stronie Koncesje."
@@ -661,6 +755,7 @@ _version: 2
   uk: "Лінія ось-ось вийде на тендер: її аукціон — на сторінці «Концесії»."
 "The tender of line %{n} is withdrawn: on the server the map's tenders are shared by its companies":
   de: "Die Ausschreibung der Linie %{n} ist zurückgezogen: auf dem Server teilen sich die Betriebe einer Karte deren Ausschreibungen"
+  da: "Udbuddet på linje %{n} er trukket tilbage: på serveren deles kortets udbud mellem dets selskaber"
   fr: "L'appel d'offres de la ligne %{n} est retiré : sur le serveur, les appels d'offres d'une carte sont communs à ses entreprises"
   nl: "De aanbesteding van lijn %{n} is ingetrokken: op de server delen de bedrijven van een kaart haar aanbestedingen"
   pl: "Przetarg na linię %{n} został wycofany: na serwerze przetargi mapy są wspólne dla jej firm"
@@ -668,6 +763,7 @@ _version: 2
   uk: "Тендер на лінію %{n} відкликано: на сервері тендери карти спільні для всіх її компаній"
 "a company of the server":
   de: "ein Betrieb des Servers"
+  da: "et selskab på serveren"
   fr: "une entreprise du serveur"
   nl: "een bedrijf van de server"
   pl: "firma z serwera"
@@ -675,6 +771,7 @@ _version: 2
   uk: "компанія сервера"
 "Bids until %{time} (%{left} from now), scored 70 % price and 30 % quality; every company of the map bids. Ask at most %{amount} to lead now.":
   de: "Gebote bis %{time} (noch %{left}), bewertet zu 70 % nach Preis und 30 % nach Qualität; jeder Betrieb der Karte bietet mit. Biete höchstens %{amount}, um jetzt vorn zu liegen."
+  da: "Bud indtil %{time} (%{left} fra nu), scoret med 70 % pris og 30 % kvalitet; hvert selskab på kortet byder. Byd højst %{amount} for at føre nu."
   fr: "Offres jusqu'à %{time} (dans %{left}), notées 70 % prix et 30 % qualité ; chaque entreprise de la carte enchérit. Demandez au plus %{amount} pour mener maintenant."
   nl: "Biedingen tot %{time} (nog %{left}), beoordeeld op 70 % prijs en 30 % kwaliteit; elk bedrijf van de kaart biedt mee. Vraag hoogstens %{amount} om nu voor te liggen."
   pl: "Oferty do %{time} (jeszcze %{left}), oceniane w 70 % za cenę i w 30 % za jakość; licytuje każda firma z mapy. Zażądaj najwyżej %{amount}, aby teraz prowadzić."
@@ -682,6 +779,7 @@ _version: 2
   uk: "Ставки до %{time} (залишилося %{left}), оцінка: 70 % ціна і 30 % якість; торгується кожна компанія карти. Запросіть не більше %{amount}, щоб зараз лідирувати."
 "The application could not be written.":
   de: "Die Bewerbung konnte nicht gespeichert werden."
+  da: "Ansøgningen kunne ikke skrives."
   fr: "La candidature n'a pas pu être enregistrée."
   nl: "De aanvraag kon niet worden opgeslagen."
   pl: "Nie udało się zapisać zgłoszenia."
@@ -689,6 +787,7 @@ _version: 2
   uk: "Не вдалося записати заявку."
 "The bid could not be written to the server's tenders.":
   de: "Das Gebot konnte nicht in die Ausschreibungen des Servers geschrieben werden."
+  da: "Buddet kunne ikke skrives til serverens udbud."
   fr: "L'offre n'a pas pu être enregistrée dans les appels d'offres du serveur."
   nl: "Het bod kon niet in de aanbestedingen van de server worden opgeslagen."
   pl: "Nie udało się zapisać oferty w przetargach serwera."
@@ -696,6 +795,7 @@ _version: 2
   uk: "Не вдалося записати ставку в тендери сервера."
 "Line %{n} goes out to tender for every company of the map: bid for it on the Concessions page.":
   de: "Linie %{n} wird für alle Betriebe der Karte ausgeschrieben: biete auf der Seite Konzessionen mit."
+  da: "Linje %{n} sendes i udbud for hvert selskab på kortet: byd på den på siden Koncessioner."
   fr: "La ligne %{n} est mise en appel d'offres pour toutes les entreprises de la carte : enchérissez sur la page Concessions."
   nl: "Lijn %{n} wordt aanbesteed voor alle bedrijven van de kaart: bied mee op de pagina Concessies."
   pl: "Linia %{n} trafia do przetargu dla wszystkich firm z mapy: licytuj na stronie Koncesje."
@@ -703,6 +803,7 @@ _version: 2
   uk: "Лінія %{n} виходить на тендер для всіх компаній карти: робіть ставку на сторінці «Концесії»."
 "Depots are for the companies of a Bus Company Online server.":
   de: "Depots gibt es für die Betriebe eines Bus-Company-Online-Servers."
+  da: "Afdelinger er til selskaberne på en Bus Company Online-server."
   fr: "Les dépôts sont réservés aux entreprises d'un serveur Bus Company Online."
   nl: "Remises zijn er voor de bedrijven van een Bus Company Online-server."
   pl: "Zajezdnie są dla firm na serwerze Bus Company Online."
@@ -710,6 +811,7 @@ _version: 2
   uk: "Депо є лише в компаній сервера Bus Company Online."
 "A depot has no depots of its own: found them from the head office.":
   de: "Ein Depot hat keine eigenen Depots: gründe sie von der Zentrale aus."
+  da: "En afdeling har ingen afdelinger: stift dem fra hovedkontoret."
   fr: "Un dépôt n'a pas de dépôts à lui : fondez-les depuis le siège."
   nl: "Een remise heeft geen eigen remises: richt ze op vanuit het hoofdkantoor."
   pl: "Zajezdnia nie ma własnych zajezdni: zakładaj je z centrali."
@@ -717,6 +819,7 @@ _version: 2
   uk: "У депо не буває власних депо: відкривайте їх із головного офісу."
 "The head office runs this map: a depot goes on another.":
   de: "Die Zentrale fährt auf dieser Karte: ein Depot kommt auf eine andere."
+  da: "Hovedkontoret driver dette kort: en afdeling kommer på et andet."
   fr: "Le siège exploite cette carte : un dépôt va sur une autre."
   nl: "Het hoofdkantoor rijdt op deze kaart: een remise komt op een andere."
   pl: "Centrala działa na tej mapie: zajezdnia trafia na inną."
@@ -724,6 +827,7 @@ _version: 2
   uk: "Головний офіс працює на цій карті: депо відкривається на іншій."
 "The company has a depot on this map already.":
   de: "Der Betrieb hat auf dieser Karte schon ein Depot."
+  da: "Selskabet har allerede en afdeling på dette kort."
   fr: "L'entreprise a déjà un dépôt sur cette carte."
   nl: "Het bedrijf heeft al een remise op deze kaart."
   pl: "Firma ma już zajezdnię na tej mapie."
@@ -731,6 +835,7 @@ _version: 2
   uk: "У компанії вже є депо на цій карті."
 "The head office has not the money for it: the depot and its starting money.":
   de: "Der Zentrale fehlt das Geld dafür: das Depot und sein Startgeld."
+  da: "Hovedkontoret har ikke pengene til det: afdelingen og dens startpenge."
   fr: "Le siège n'a pas l'argent pour cela : le dépôt et son argent de départ."
   nl: "Het hoofdkantoor heeft het geld er niet voor: de remise en haar startgeld."
   pl: "Centrala nie ma na to pieniędzy: na zajezdnię i jej kapitał startowy."
@@ -738,6 +843,7 @@ _version: 2
   uk: "У головного офісу бракує грошей: на депо та його стартовий капітал."
 "The server's clock is not set: the main server keeps it.":
   de: "Die Uhr des Servers ist nicht gestellt: der Hauptserver führt sie."
+  da: "Serverens ur er ikke sat: hovedserveren holder det."
   fr: "L'horloge du serveur n'est pas réglée : le serveur principal la tient."
   nl: "De klok van de server is niet ingesteld: de hoofdserver houdt haar bij."
   pl: "Zegar serwera nie jest ustawiony: prowadzi go serwer główny."
@@ -745,6 +851,7 @@ _version: 2
   uk: "Годинник сервера не встановлено: його веде головний сервер."
 "The depot could not be founded: the server says why in its log.":
   de: "Das Depot konnte nicht gegründet werden: der Server nennt den Grund in seinem Protokoll."
+  da: "Afdelingen kunne ikke stiftes: serveren siger hvorfor i sin log."
   fr: "Le dépôt n'a pas pu être fondé : le serveur en donne la raison dans son journal."
   nl: "De remise kon niet worden opgericht: de server zegt waarom in zijn logboek."
   pl: "Nie udało się założyć zajezdni: serwer podaje powód w swoim dzienniku."
@@ -752,6 +859,7 @@ _version: 2
   uk: "Не вдалося відкрити депо: сервер пише причину у своєму журналі."
 "A depot of %{hq}: its money, buses and staff are its own.":
   de: "Ein Depot von %{hq}: sein Geld, seine Busse und sein Personal sind seine eigenen."
+  da: "En afdeling af %{hq}: dens penge, busser og personale er dens egne."
   fr: "Un dépôt de %{hq} : son argent, ses bus et son personnel sont les siens."
   nl: "Een remise van %{hq}: haar geld, bussen en personeel zijn van haarzelf."
   pl: "Zajezdnia firmy %{hq}: jej pieniądze, autobusy i personel są jej własne."
@@ -759,6 +867,7 @@ _version: 2
   uk: "Депо компанії %{hq}: його гроші, автобуси й персонал — його власні."
 "%{lines} lines · %{buses} buses · %{staff} staff":
   de: "%{lines} Linien · %{buses} Busse · %{staff} Mitarbeiter"
+  da: "%{lines} linjer · %{buses} busser · %{staff} personale"
   fr: "%{lines} lignes · %{buses} bus · %{staff} employés"
   nl: "%{lines} lijnen · %{buses} bussen · %{staff} medewerkers"
   pl: "%{lines} linii · %{buses} autobusów · %{staff} pracowników"
@@ -766,6 +875,7 @@ _version: 2
   uk: "%{lines} ліній · %{buses} автобусів · %{staff} працівників"
 "A depot runs the company on another map of the server: its own lines, buses, staff and tenders there. It costs %{price} of the company's money, besides the starting money you give it.":
   de: "Ein Depot betreibt den Betrieb auf einer anderen Karte des Servers: mit eigenen Linien, Bussen, Personal und Ausschreibungen dort. Es kostet %{price} vom Geld des Betriebs, dazu das Startgeld, das du ihm gibst."
+  da: "En afdeling driver selskabet på et andet kort på serveren: dens egne linjer, busser, personale og udbud dér. Den koster %{price} af selskabets penge, ud over de startpenge, du giver den."
   fr: "Un dépôt fait tourner l'entreprise sur une autre carte du serveur : ses propres lignes, bus, personnel et appels d'offres là-bas. Il coûte %{price} de l'argent de l'entreprise, en plus de l'argent de départ que vous lui donnez."
   nl: "Een remise laat het bedrijf rijden op een andere kaart van de server: met eigen lijnen, bussen, personeel en aanbestedingen daar. Ze kost %{price} van het geld van het bedrijf, naast het startgeld dat je haar geeft."
   pl: "Zajezdnia prowadzi firmę na innej mapie serwera: z własnymi liniami, autobusami, personelem i przetargami. Kosztuje %{price} z pieniędzy firmy, oprócz kapitału startowego, który jej dasz."
@@ -773,6 +883,7 @@ _version: 2
   uk: "Депо веде справу компанії на іншій карті сервера: зі своїми лініями, автобусами, персоналом і тендерами там. Воно коштує %{price} з грошей компанії, крім стартового капіталу, який ви йому дасте."
 "Its starting money":
   de: "Sein Startgeld"
+  da: "Dens startpenge"
   fr: "Son argent de départ"
   nl: "Haar startgeld"
   pl: "Jej kapitał startowy"
@@ -780,6 +891,7 @@ _version: 2
   uk: "Його стартовий капітал"
 "The map":
   de: "Die Karte"
+  da: "Kortet"
   fr: "La carte"
   nl: "De kaart"
   pl: "Mapa"
@@ -787,6 +899,7 @@ _version: 2
   uk: "Карта"
 "Found a depot":
   de: "Depot gründen"
+  da: "Stift en afdeling"
   fr: "Fonder un dépôt"
   nl: "Remise oprichten"
   pl: "Załóż zajezdnię"
@@ -794,6 +907,7 @@ _version: 2
   uk: "Відкрити депо"
 "The company has a depot on every other map of the server.":
   de: "Der Betrieb hat auf jeder anderen Karte des Servers ein Depot."
+  da: "Selskabet har en afdeling på hvert andet kort på serveren."
   fr: "L'entreprise a un dépôt sur chaque autre carte du serveur."
   nl: "Het bedrijf heeft een remise op elke andere kaart van de server."
   pl: "Firma ma zajezdnię na każdej innej mapie serwera."
@@ -801,6 +915,7 @@ _version: 2
   uk: "У компанії є депо на кожній іншій карті сервера."
 "The depot %{name} is founded: it opens on the server in a moment, under Bus Company Online.":
   de: "Das Depot %{name} ist gegründet: es öffnet gleich auf dem Server, unter Bus Company Online."
+  da: "Afdelingen %{name} er stiftet: den åbner på serveren om et øjeblik, under Bus Company Online."
   fr: "Le dépôt %{name} est fondé : il ouvre dans un instant sur le serveur, sous Bus Company Online."
   nl: "De remise %{name} is opgericht: ze opent zo op de server, onder Bus Company Online."
   pl: "Zajezdnia %{name} została założona: za chwilę otworzy się na serwerze, w Bus Company Online."
@@ -808,6 +923,7 @@ _version: 2
   uk: "Депо %{name} відкрито: воно ось-ось запрацює на сервері, у Bus Company Online."
 "Depot of %{hq}":
   de: "Depot von %{hq}"
+  da: "Afdeling af %{hq}"
   fr: "Dépôt de %{hq}"
   nl: "Remise van %{hq}"
   pl: "Zajezdnia firmy %{hq}"
@@ -815,6 +931,7 @@ _version: 2
   uk: "Депо компанії %{hq}"
 "Money goes only between a head office and its own depots.":
   de: "Geld geht nur zwischen einer Zentrale und ihren eigenen Depots."
+  da: "Penge går kun mellem et hovedkontor og dets egne afdelinger."
   fr: "L'argent ne circule qu'entre un siège et ses propres dépôts."
   nl: "Geld gaat alleen tussen een hoofdkantoor en zijn eigen remises."
   pl: "Pieniądze krążą tylko między centralą a jej własnymi zajezdniami."
@@ -822,6 +939,7 @@ _version: 2
   uk: "Гроші переказуються лише між головним офісом і його власними депо."
 "Send at least 100.":
   de: "Sende mindestens 100."
+  da: "Send mindst 100."
   fr: "Envoyez au moins 100."
   nl: "Stuur minstens 100."
   pl: "Wyślij co najmniej 100."
@@ -829,6 +947,7 @@ _version: 2
   uk: "Надішліть щонайменше 100."
 "The money could not be sent: the server says why in its log.":
   de: "Das Geld konnte nicht gesendet werden: der Server nennt den Grund in seinem Protokoll."
+  da: "Pengene kunne ikke sendes: serveren siger hvorfor i sin log."
   fr: "L'argent n'a pas pu être envoyé : le serveur en donne la raison dans son journal."
   nl: "Het geld kon niet worden verstuurd: de server zegt waarom in zijn logboek."
   pl: "Nie udało się wysłać pieniędzy: serwer podaje powód w swoim dzienniku."
@@ -836,6 +955,7 @@ _version: 2
   uk: "Не вдалося надіслати гроші: сервер пише причину у своєму журналі."
 "The company has not that much money.":
   de: "So viel Geld hat der Betrieb nicht."
+  da: "Selskabet har ikke så mange penge."
   fr: "L'entreprise n'a pas autant d'argent."
   nl: "Zoveel geld heeft het bedrijf niet."
   pl: "Firma nie ma tyle pieniędzy."
@@ -843,6 +963,7 @@ _version: 2
   uk: "У компанії немає стільки грошей."
 "Send money":
   de: "Geld senden"
+  da: "Send penge"
   fr: "Envoyer de l'argent"
   nl: "Geld sturen"
   pl: "Wyślij pieniądze"
@@ -850,6 +971,7 @@ _version: 2
   uk: "Надіслати гроші"
 "Send to %{hq}":
   de: "An %{hq} senden"
+  da: "Send til %{hq}"
   fr: "Envoyer à %{hq}"
   nl: "Naar %{hq} sturen"
   pl: "Wyślij do %{hq}"
@@ -857,6 +979,7 @@ _version: 2
   uk: "Надіслати до %{hq}"
 "this month %{amount}":
   de: "diesen Monat %{amount}"
+  da: "denne måned %{amount}"
   fr: "ce mois-ci %{amount}"
   nl: "deze maand %{amount}"
   pl: "w tym miesiącu %{amount}"
@@ -864,6 +987,7 @@ _version: 2
   uk: "цього місяця %{amount}"
 "%{amount} sent to %{name}.":
   de: "%{amount} an %{name} gesendet."
+  da: "%{amount} sendt til %{name}."
   fr: "%{amount} envoyé à %{name}."
   nl: "%{amount} naar %{name} gestuurd."
   pl: "Wysłano %{amount} do %{name}."
@@ -873,6 +997,7 @@ _version: 2
 # (company::server_depots, omsihub/company/dialogs.rs moves_part).
 "This bus is not in the fleet.":
   de: "Dieser Bus ist nicht in der Flotte."
+  da: "Denne bus er ikke i flåden."
   fr: "Ce bus ne fait pas partie de la flotte."
   nl: "Deze bus zit niet in de vloot."
   pl: "Tego autobusu nie ma we flocie."
@@ -880,6 +1005,7 @@ _version: 2
   uk: "Цього автобуса немає в парку."
 "Only a bus the company owns moves to another map: a leased or rented one stays with its contract.":
   de: "Nur ein Bus im Eigentum der Firma zieht auf eine andere Karte um: ein geleaster oder gemieteter bleibt bei seinem Vertrag."
+  da: "Kun en bus, selskabet ejer, flyttes til et andet kort: en leaset eller lejet bliver med sin kontrakt."
   fr: "Seul un bus appartenant à l'entreprise peut aller sur une autre carte : un bus en leasing ou loué reste avec son contrat."
   nl: "Alleen een bus die het bedrijf bezit verhuist naar een andere kaart: een geleasde of gehuurde blijft bij zijn contract."
   pl: "Na inną mapę przenosi się tylko autobus będący własnością firmy: leasingowany lub wynajęty zostaje przy swojej umowie."
@@ -887,6 +1013,7 @@ _version: 2
   uk: "На іншу карту переїжджає лише автобус, що належить компанії: лізинговий чи орендований лишається за своїм договором."
 "The company has not the money for the move.":
   de: "Die Firma hat nicht das Geld für den Umzug."
+  da: "Selskabet har ikke pengene til flytningen."
   fr: "L'entreprise n'a pas l'argent pour le transfert."
   nl: "Het bedrijf heeft het geld voor de verhuizing niet."
   pl: "Firma nie ma pieniędzy na przeniesienie."
@@ -894,6 +1021,7 @@ _version: 2
   uk: "Компанія не має грошей на переведення."
 "The other company's depot has no room for another bus.":
   de: "Das Depot der anderen Firma hat keinen Platz für einen weiteren Bus."
+  da: "Det andet selskabs afdeling har ikke plads til endnu en bus."
   fr: "Le dépôt de l'autre entreprise n'a pas de place pour un bus de plus."
   nl: "De remise van het andere bedrijf heeft geen plaats voor nog een bus."
   pl: "Zajezdnia drugiej firmy nie ma miejsca na kolejny autobus."
@@ -901,6 +1029,7 @@ _version: 2
   uk: "У депо іншої компанії немає місця для ще одного автобуса."
 "They do not work here.":
   de: "Diese Person arbeitet nicht hier."
+  da: "De arbejder ikke her."
   fr: "Cette personne ne travaille pas ici."
   nl: "Deze persoon werkt hier niet."
   pl: "Ta osoba tu nie pracuje."
@@ -908,6 +1037,7 @@ _version: 2
   uk: "Ця людина тут не працює."
 "They are leaving the company.":
   de: "Diese Person verlässt die Firma."
+  da: "De forlader selskabet."
   fr: "Cette personne quitte l'entreprise."
   nl: "Deze persoon verlaat het bedrijf."
   pl: "Ta osoba odchodzi z firmy."
@@ -915,6 +1045,7 @@ _version: 2
   uk: "Ця людина йде з компанії."
 "They are lent to the company: they go back first.":
   de: "Diese Person ist an die Firma ausgeliehen: sie geht erst zurück."
+  da: "De er udlånt til selskabet: de går først tilbage."
   fr: "Cette personne est prêtée à l'entreprise : elle doit d'abord repartir."
   nl: "Deze persoon is aan het bedrijf uitgeleend: die gaat eerst terug."
   pl: "Ta osoba jest wypożyczona firmie: najpierw wraca."
@@ -922,6 +1053,7 @@ _version: 2
   uk: "Цю людину позичено компанії: спершу вона повернеться."
 "They are to be lent already.":
   de: "Diese Person wird bereits ausgeliehen."
+  da: "De skal allerede udlånes."
   fr: "Cette personne doit déjà être prêtée."
   nl: "Deze persoon wordt al uitgeleend."
   pl: "Ta osoba jest już do wypożyczenia."
@@ -929,6 +1061,7 @@ _version: 2
   uk: "Цю людину вже позичають."
 "Lend them for 1 to 90 days.":
   de: "Für 1 bis 90 Tage ausleihen."
+  da: "Udlån dem i 1 til 90 dage."
   fr: "Prêter pour 1 à 90 jours."
   nl: "Leen uit voor 1 tot 90 dagen."
   pl: "Wypożycz na 1 do 90 dni."
@@ -936,6 +1069,7 @@ _version: 2
   uk: "Позичте на строк від 1 до 90 днів."
 "Buses and staff between the maps":
   de: "Busse und Personal zwischen den Karten"
+  da: "Busser og personale mellem kortene"
   fr: "Bus et personnel entre les cartes"
   nl: "Bussen en personeel tussen de kaarten"
   pl: "Autobusy i personel między mapami"
@@ -943,6 +1077,7 @@ _version: 2
   uk: "Автобуси й персонал між картами"
 "To":
   de: "Nach"
+  da: "Til"
   fr: "Vers"
   nl: "Naar"
   pl: "Do"
@@ -950,6 +1085,7 @@ _version: 2
   uk: "Куди"
 "The bus":
   de: "Der Bus"
+  da: "Bussen"
   fr: "Le bus"
   nl: "De bus"
   pl: "Autobus"
@@ -957,6 +1093,7 @@ _version: 2
   uk: "Автобус"
 "Move the bus":
   de: "Bus umsetzen"
+  da: "Flyt bussen"
   fr: "Transférer le bus"
   nl: "Bus verplaatsen"
   pl: "Przenieś autobus"
@@ -964,6 +1101,7 @@ _version: 2
   uk: "Перевести автобус"
 "A bus of the company's own moves to another of its maps for %{price} and is away %{n} days. A leased or rented bus stays with its contract.":
   de: "Ein eigener Bus der Firma zieht für %{price} auf eine andere ihrer Karten um und ist %{n} Tage unterwegs. Ein geleaster oder gemieteter Bus bleibt bei seinem Vertrag."
+  da: "En bus, selskabet selv ejer, flyttes til et andet af dets kort for %{price} og er væk i %{n} dage. En leaset eller lejet bus bliver med sin kontrakt."
   fr: "Un bus appartenant à l'entreprise va sur une autre de ses cartes pour %{price} et reste %{n} jours en route. Un bus en leasing ou loué reste avec son contrat."
   nl: "Een eigen bus van het bedrijf verhuist voor %{price} naar een andere kaart van het bedrijf en is %{n} dagen onderweg. Een geleasde of gehuurde bus blijft bij zijn contract."
   pl: "Własny autobus firmy przenosi się na inną jej mapę za %{price} i jest w drodze %{n} dni. Autobus leasingowany lub wynajęty zostaje przy swojej umowie."
@@ -971,6 +1109,7 @@ _version: 2
   uk: "Власний автобус компанії переїжджає на іншу її карту за %{price} і перебуває в дорозі %{n} дн. Лізинговий чи орендований автобус лишається за своїм договором."
 "The employee":
   de: "Mitarbeiter"
+  da: "Medarbejderen"
   fr: "L'employé"
   nl: "De medewerker"
   pl: "Pracownik"
@@ -978,6 +1117,7 @@ _version: 2
   uk: "Працівник"
 "Lend":
   de: "Ausleihen"
+  da: "Udlån"
   fr: "Prêter"
   nl: "Uitlenen"
   pl: "Wypożycz"
@@ -985,6 +1125,7 @@ _version: 2
   uk: "Позичити"
 "A lent employee goes the next day and works there for the days you choose, paid by the company that borrows him, then comes back.":
   de: "Ein ausgeliehener Mitarbeiter geht am nächsten Tag und arbeitet dort für die gewählten Tage, bezahlt von der Firma, die ihn ausleiht, und kommt dann zurück."
+  da: "En udlånt medarbejder tager af sted næste dag og arbejder dér i de dage, du vælger, betalt af det selskab, der låner ham, og kommer så tilbage."
   fr: "Un employé prêté part le lendemain et y travaille pendant les jours choisis, payé par l'entreprise qui l'emprunte, puis revient."
   nl: "Een uitgeleende medewerker gaat de volgende dag en werkt daar de gekozen dagen, betaald door het bedrijf dat hem leent, en komt dan terug."
   pl: "Wypożyczony pracownik jedzie następnego dnia i pracuje tam przez wybrane dni, opłacany przez firmę, która go pożycza, a potem wraca."
@@ -992,6 +1133,7 @@ _version: 2
   uk: "Позичений працівник їде наступного дня й працює там обрану кількість днів коштом компанії, яка його позичає, а потім повертається."
 "Lent and borrowed":
   de: "Ausgeliehen und geliehen"
+  da: "Udlånt og lånt"
   fr: "Prêtés et empruntés"
   nl: "Uitgeleend en geleend"
   pl: "Wypożyczeni i pożyczeni"
@@ -999,6 +1141,7 @@ _version: 2
   uk: "Позичені та взяті"
 "%{bus} to %{other}, there on %{day}":
   de: "%{bus} nach %{other}, dort am %{day}"
+  da: "%{bus} til %{other}, dér den %{day}"
   fr: "%{bus} vers %{other}, arrivée le %{day}"
   nl: "%{bus} naar %{other}, daar op %{day}"
   pl: "%{bus} do %{other}, na miejscu %{day}"
@@ -1006,6 +1149,7 @@ _version: 2
   uk: "%{bus} до %{other}, прибуде %{day}"
 "%{bus} from %{other}, here on %{day}":
   de: "%{bus} von %{other}, hier am %{day}"
+  da: "%{bus} fra %{other}, her den %{day}"
   fr: "%{bus} de %{other}, arrivée le %{day}"
   nl: "%{bus} van %{other}, hier op %{day}"
   pl: "%{bus} z %{other}, tutaj %{day}"
@@ -1013,6 +1157,7 @@ _version: 2
   uk: "%{bus} з %{other}, прибуде %{day}"
 "%{name} goes to %{other} tomorrow for %{n} days":
   de: "%{name} geht morgen für %{n} Tage zu %{other}"
+  da: "%{name} tager til %{other} i morgen i %{n} dage"
   fr: "%{name} part demain chez %{other} pour %{n} jours"
   nl: "%{name} gaat morgen voor %{n} dagen naar %{other}"
   pl: "%{name} jedzie jutro do %{other} na %{n} dni"
@@ -1020,6 +1165,7 @@ _version: 2
   uk: "%{name} завтра їде до %{other} на %{n} дн."
 "%{name} is lent by %{other} until %{day}":
   de: "%{name} ist von %{other} ausgeliehen bis %{day}"
+  da: "%{name} er udlånt af %{other} indtil %{day}"
   fr: "%{name} est prêté par %{other} jusqu'au %{day}"
   nl: "%{name} is uitgeleend door %{other} tot %{day}"
   pl: "%{name} jest wypożyczony przez %{other} do %{day}"
@@ -1027,6 +1173,7 @@ _version: 2
   uk: "%{name} позичений компанією %{other} до %{day}"
 "%{name} works at %{other} until %{day}":
   de: "%{name} arbeitet bis %{day} bei %{other}"
+  da: "%{name} arbejder hos %{other} indtil %{day}"
   fr: "%{name} travaille chez %{other} jusqu'au %{day}"
   nl: "%{name} werkt tot %{day} bij %{other}"
   pl: "%{name} pracuje w %{other} do %{day}"
@@ -1034,6 +1181,7 @@ _version: 2
   uk: "%{name} працює в %{other} до %{day}"
 "%{bus} is on its way to %{name}, there on %{day}.":
   de: "%{bus} ist unterwegs zu %{name}, dort am %{day}."
+  da: "%{bus} er på vej til %{name}, dér den %{day}."
   fr: "%{bus} est en route vers %{name}, arrivée le %{day}."
   nl: "%{bus} is onderweg naar %{name}, daar op %{day}."
   pl: "%{bus} jest w drodze do %{name}, na miejscu %{day}."
@@ -1041,6 +1189,7 @@ _version: 2
   uk: "%{bus} у дорозі до %{name}, прибуде %{day}."
 "%{name} goes to %{other} on %{day} for %{n} days.":
   de: "%{name} geht am %{day} für %{n} Tage zu %{other}."
+  da: "%{name} tager til %{other} den %{day} i %{n} dage."
   fr: "%{name} part chez %{other} le %{day} pour %{n} jours."
   nl: "%{name} gaat op %{day} voor %{n} dagen naar %{other}."
   pl: "%{name} jedzie do %{other} %{day} na %{n} dni."
@@ -1050,6 +1199,7 @@ _version: 2
 # next trip (company::together::book::joined_part, omsihub/together/join.rs).
 "Under way: the AI drives it until you take over":
   de: "Unterwegs: die KI fährt, bis du übernimmst"
+  da: "Undervejs: AI'en kører den, indtil du overtager"
   fr: "En cours : l'IA conduit jusqu'à ce que vous preniez le relais"
   nl: "Onderweg: de AI rijdt tot jij het overneemt"
   pl: "W trakcie: SI prowadzi, dopóki nie przejmiesz"
@@ -1057,6 +1207,7 @@ _version: 2
   uk: "У дорозі: ШІ веде, доки ви не зміните його"
 "Take over from the next trip":
   de: "Ab der nächsten Fahrt übernehmen"
+  da: "Overtag fra næste tur"
   fr: "Prendre le relais au prochain trajet"
   nl: "Overnemen vanaf de volgende rit"
   pl: "Przejmij od następnego kursu"
@@ -1064,6 +1215,7 @@ _version: 2
   uk: "Змінити з наступного рейсу"
 "Under way: no trip of it is left to take over":
   de: "Unterwegs: keine Fahrt mehr zum Übernehmen"
+  da: "Undervejs: ingen tur af den er tilbage at overtage"
   fr: "En cours : il ne reste aucun trajet à reprendre"
   nl: "Onderweg: geen rit meer over om over te nemen"
   pl: "W trakcie: nie został żaden kurs do przejęcia"
@@ -1072,6 +1224,7 @@ _version: 2
 # (NexiconDK) A tender's tours by the day (omsihub/company_more/concessions.rs).
 "%{wd} tours Mon–Fri · %{sat} Sat · %{sun} Sun":
   de: "%{wd} Umläufe Mo–Fr · %{sat} Sa · %{sun} So"
+  da: "%{wd} vognløb man–fre · %{sat} lør · %{sun} søn"
   fr: "%{wd} services lun–ven · %{sat} sam · %{sun} dim"
   nl: "%{wd} omlopen ma–vr · %{sat} za · %{sun} zo"
   pl: "%{wd} kursów pn–pt · %{sat} sob · %{sun} nd"
@@ -1082,6 +1235,7 @@ _version: 2
 # (omsihub/company_more/concessions.rs, company::concessions, company::takeover).
 "%{kind}, %{per}  ·  two weeks with diesel buses, a month with electric ones  ·  asks are a price a year":
   de: "%{kind}, %{per}  ·  zwei Wochen mit Dieselbussen, ein Monat mit Elektrobussen  ·  Gebote sind ein Jahrespreis"
+  da: "%{kind}, %{per}  ·  to uger med dieselbusser, en måned med elbusser  ·  der bydes en pris om året"
   fr: "%{kind}, %{per}  ·  deux semaines avec des bus diesel, un mois avec des bus électriques  ·  les offres sont un prix annuel"
   nl: "%{kind}, %{per}  ·  twee weken met dieselbussen, een maand met elektrische bussen  ·  biedingen zijn een prijs per jaar"
   pl: "%{kind}, %{per}  ·  dwa tygodnie z autobusami diesla, miesiąc z elektrycznymi  ·  oferty to cena roczna"
@@ -1089,6 +1243,7 @@ _version: 2
   uk: "%{kind}, %{per}  ·  два тижні з дизельними автобусами, місяць з електробусами  ·  ставки — ціна за рік"
 "Diesel · two weeks":
   de: "Diesel · zwei Wochen"
+  da: "Diesel · to uger"
   fr: "Diesel · deux semaines"
   nl: "Diesel · twee weken"
   pl: "Diesel · dwa tygodnie"
@@ -1096,6 +1251,7 @@ _version: 2
   uk: "Дизель · два тижні"
 "Electric · a month":
   de: "Elektro · ein Monat"
+  da: "El · en måned"
   fr: "Électrique · un mois"
   nl: "Elektrisch · een maand"
   pl: "Elektryczne · miesiąc"
@@ -1103,6 +1259,7 @@ _version: 2
   uk: "Електро · місяць"
 "Your next bid is made with these buses: the contract runs two weeks with diesel buses and a month with electric ones, whose tours are then run with electric buses.":
   de: "Dein nächstes Gebot gilt mit diesen Bussen: Der Vertrag läuft mit Dieselbussen zwei Wochen und mit Elektrobussen einen Monat, dann werden seine Umläufe mit Elektrobussen gefahren."
+  da: "Dit næste bud afgives med disse busser: kontrakten løber to uger med dieselbusser og en måned med elbusser, hvis vognløb så køres med elbusser."
   fr: "Votre prochaine offre se fait avec ces bus : le contrat dure deux semaines avec des bus diesel et un mois avec des bus électriques, ses services étant alors assurés par des bus électriques."
   nl: "Je volgende bod geldt met deze bussen: het contract loopt twee weken met dieselbussen en een maand met elektrische, waarna de omlopen met elektrische bussen worden gereden."
   pl: "Twoja następna oferta jest z tymi autobusami: umowa trwa dwa tygodnie z autobusami diesla i miesiąc z elektrycznymi, a wtedy jej kursy obsługują autobusy elektryczne."
@@ -1110,6 +1267,7 @@ _version: 2
   uk: "Ваша наступна ставка робиться з цими автобусами: контракт триває два тижні з дизельними й місяць з електробусами, і тоді його оберти обслуговують електробуси."
 "Electric buses open at a higher company level.":
   de: "Elektrobusse werden auf einer höheren Firmenstufe freigeschaltet."
+  da: "Elbusser åbner på et højere selskabsniveau."
   fr: "Les bus électriques s'ouvrent à un niveau d'entreprise plus élevé."
   nl: "Elektrische bussen komen vrij op een hoger bedrijfsniveau."
   pl: "Autobusy elektryczne odblokowują się na wyższym poziomie firmy."
@@ -1117,6 +1275,7 @@ _version: 2
   uk: "Електробуси відкриваються на вищому рівні компанії."
 "Contract requirements":
   de: "Vertragsanforderungen"
+  da: "Kontraktkrav"
   fr: "Exigences du contrat"
   nl: "Contracteisen"
   pl: "Wymagania umowy"
@@ -1124,6 +1283,7 @@ _version: 2
   uk: "Вимоги контракту"
 "Contract requirements: line %{n}":
   de: "Vertragsanforderungen: Linie %{n}"
+  da: "Kontraktkrav: linje %{n}"
   fr: "Exigences du contrat : ligne %{n}"
   nl: "Contracteisen: lijn %{n}"
   pl: "Wymagania umowy: linia %{n}"
@@ -1131,6 +1291,7 @@ _version: 2
   uk: "Вимоги контракту: лінія %{n}"
 "%{n} with an articulated bus":
   de: "%{n} mit Gelenkbus"
+  da: "%{n} med en ledbus"
   fr: "%{n} avec un bus articulé"
   nl: "%{n} met een gelede bus"
   pl: "%{n} z autobusem przegubowym"
@@ -1138,6 +1299,7 @@ _version: 2
   uk: "%{n} із зчленованим автобусом"
 "%{n} with a double-decker":
   de: "%{n} mit Doppeldecker"
+  da: "%{n} med en dobbeltdækker"
   fr: "%{n} avec un bus à impériale"
   nl: "%{n} met een dubbeldekker"
   pl: "%{n} z piętrusem"
@@ -1145,6 +1307,7 @@ _version: 2
   uk: "%{n} із двоповерховим автобусом"
 "%{n} with a standard bus":
   de: "%{n} mit Solobus"
+  da: "%{n} med en standardbus"
   fr: "%{n} avec un bus standard"
   nl: "%{n} met een standaardbus"
   pl: "%{n} z autobusem standardowym"
@@ -1152,6 +1315,7 @@ _version: 2
   uk: "%{n} зі стандартним автобусом"
 "%{n} with a midibus":
   de: "%{n} mit Midibus"
+  da: "%{n} med en midibus"
   fr: "%{n} avec un midibus"
   nl: "%{n} met een midibus"
   pl: "%{n} z midibusem"
@@ -1159,6 +1323,7 @@ _version: 2
   uk: "%{n} з мідібусом"
 "%{n} with any bus":
   de: "%{n} mit beliebigem Bus"
+  da: "%{n} med en vilkårlig bus"
   fr: "%{n} avec n'importe quel bus"
   nl: "%{n} met elke bus"
   pl: "%{n} z dowolnym autobusem"
@@ -1166,6 +1331,7 @@ _version: 2
   uk: "%{n} з будь-яким автобусом"
 "%{n} tours a day":
   de: "%{n} Umläufe am Tag"
+  da: "%{n} vognløb om dagen"
   fr: "%{n} services par jour"
   nl: "%{n} omlopen per dag"
   pl: "%{n} kursów dziennie"
@@ -1173,6 +1339,7 @@ _version: 2
   uk: "%{n} обертів на день"
 "Bus types":
   de: "Bustypen"
+  da: "Bustyper"
   fr: "Types de bus"
   nl: "Bustypen"
   pl: "Typy autobusów"
@@ -1180,6 +1347,7 @@ _version: 2
   uk: "Типи автобусів"
 "Any bus":
   de: "Beliebiger Bus"
+  da: "Enhver bus"
   fr: "N'importe quel bus"
   nl: "Elke bus"
   pl: "Dowolny autobus"
@@ -1187,6 +1355,7 @@ _version: 2
   uk: "Будь-який автобус"
 "The rule":
   de: "Die Regel"
+  da: "Reglen"
   fr: "La règle"
   nl: "De regel"
   pl: "Zasada"
@@ -1194,6 +1363,7 @@ _version: 2
   uk: "Правило"
 "Each tour is run with the bus its timetable asks for, or a bigger one.":
   de: "Jeder Umlauf wird mit dem Bus gefahren, den sein Fahrplan verlangt, oder mit einem größeren."
+  da: "Hvert vognløb køres med den bus, dets køreplan kræver, eller en større."
   fr: "Chaque service est assuré avec le bus que demande son horaire, ou un plus grand."
   nl: "Elke omloop wordt gereden met de bus die de dienstregeling vraagt, of een grotere."
   pl: "Każdy kurs jest obsługiwany autobusem, którego wymaga rozkład, albo większym."
@@ -1201,6 +1371,7 @@ _version: 2
   uk: "Кожен оберт обслуговується автобусом, якого вимагає розклад, або більшим."
 "Diesel or electric":
   de: "Diesel oder Elektro"
+  da: "Diesel eller el"
   fr: "Diesel ou électrique"
   nl: "Diesel of elektrisch"
   pl: "Diesel czy elektryczny"
@@ -1208,6 +1379,7 @@ _version: 2
   uk: "Дизель чи електро"
 "Bid with diesel buses: the contract runs two weeks. Bid with electric buses: it runs a month, and every tour is run with an electric bus.":
   de: "Gebot mit Dieselbussen: Der Vertrag läuft zwei Wochen. Gebot mit Elektrobussen: Er läuft einen Monat, und jeder Umlauf wird mit einem Elektrobus gefahren."
+  da: "Byd med dieselbusser: kontrakten løber to uger. Byd med elbusser: den løber en måned, og hvert vognløb køres med en elbus."
   fr: "Offre avec des bus diesel : le contrat dure deux semaines. Offre avec des bus électriques : il dure un mois, et chaque service est assuré par un bus électrique."
   nl: "Bod met dieselbussen: het contract loopt twee weken. Bod met elektrische bussen: het loopt een maand, en elke omloop wordt met een elektrische bus gereden."
   pl: "Oferta z autobusami diesla: umowa trwa dwa tygodnie. Oferta z elektrycznymi: trwa miesiąc, a każdy kurs obsługuje autobus elektryczny."
@@ -1215,6 +1387,7 @@ _version: 2
   uk: "Ставка з дизельними автобусами: контракт триває два тижні. Ставка з електробусами: місяць, і кожен оберт обслуговує електробус."
 "Three days: from %{open} to %{close}":
   de: "Drei Tage: vom %{open} bis %{close}"
+  da: "Tre dage: fra %{open} til %{close}"
   fr: "Trois jours : du %{open} au %{close}"
   nl: "Drie dagen: van %{open} tot %{close}"
   pl: "Trzy dni: od %{open} do %{close}"
@@ -1222,6 +1395,7 @@ _version: 2
   uk: "Три дні: з %{open} до %{close}"
 "The term":
   de: "Die Laufzeit"
+  da: "Løbetiden"
   fr: "La durée"
   nl: "De looptijd"
   pl: "Okres umowy"
@@ -1229,6 +1403,7 @@ _version: 2
   uk: "Строк"
 "From %{date}, without extension":
   de: "Ab %{date}, ohne Verlängerung"
+  da: "Fra %{date}, uden forlængelse"
   fr: "À partir du %{date}, sans prolongation"
   nl: "Vanaf %{date}, zonder verlenging"
   pl: "Od %{date}, bez przedłużenia"
@@ -1236,6 +1411,7 @@ _version: 2
   uk: "З %{date}, без продовження"
 "Renewal":
   de: "Neuausschreibung"
+  da: "Fornyelse"
   fr: "Renouvellement"
   nl: "Heraanbesteding"
   pl: "Ponowny przetarg"
@@ -1243,6 +1419,7 @@ _version: 2
   uk: "Повторний тендер"
 "Six days before the term ends the line goes out to tender again, decided three days before it: the winner has three days to make ready.":
   de: "Sechs Tage vor dem Ende der Laufzeit wird die Linie neu ausgeschrieben und drei Tage davor entschieden: Der Gewinner hat drei Tage zur Vorbereitung."
+  da: "Seks dage før løbetiden slutter, sendes linjen i udbud igen, afgjort tre dage før: vinderen har tre dage til at gøre klar."
   fr: "Six jours avant la fin du contrat, la ligne est remise en appel d'offres, décidé trois jours avant : le gagnant a trois jours pour se préparer."
   nl: "Zes dagen voor het einde van de looptijd wordt de lijn opnieuw aanbesteed, drie dagen ervoor beslist: de winnaar heeft drie dagen om zich voor te bereiden."
   pl: "Sześć dni przed końcem umowy linia trafia do ponownego przetargu, rozstrzyganego trzy dni wcześniej: zwycięzca ma trzy dni na przygotowanie."
@@ -1250,6 +1427,7 @@ _version: 2
   uk: "За шість днів до кінця строку лінію знову виставляють на тендер, що вирішується за три дні до нього: переможець має три дні на підготовку."
 "The buses":
   de: "Die Busse"
+  da: "Busserne"
   fr: "Les bus"
   nl: "De bussen"
   pl: "Autobusy"
@@ -1257,6 +1435,7 @@ _version: 2
   uk: "Автобуси"
 "The winner may take over the buses its last operator ran the line with, at their book value.":
   de: "Der Gewinner kann die Busse, mit denen der bisherige Betreiber die Linie gefahren hat, zum Buchwert übernehmen."
+  da: "Vinderen må overtage de busser, dens sidste operatør kørte linjen med, til deres bogførte værdi."
   fr: "Le gagnant peut reprendre les bus avec lesquels l'exploitant précédent assurait la ligne, à leur valeur comptable."
   nl: "De winnaar kan de bussen waarmee de vorige vervoerder de lijn reed overnemen tegen hun boekwaarde."
   pl: "Zwycięzca może przejąć autobusy, którymi poprzedni przewoźnik obsługiwał linię, po ich wartości księgowej."
@@ -1264,6 +1443,7 @@ _version: 2
   uk: "Переможець може викупити автобуси, якими лінію обслуговував попередній перевізник, за їхньою балансовою вартістю."
 "%{amount} a year: an ask above it does not count":
   de: "%{amount} im Jahr: ein höheres Gebot zählt nicht"
+  da: "%{amount} om året: et bud over det tæller ikke"
   fr: "%{amount} par an : une offre au-dessus ne compte pas"
   nl: "%{amount} per jaar: een hoger bod telt niet"
   pl: "%{amount} rocznie: wyższa oferta się nie liczy"
@@ -1271,6 +1451,7 @@ _version: 2
   uk: "%{amount} на рік: ставка вище не зараховується"
 "A journey not run":
   de: "Eine ausgefallene Fahrt"
+  da: "En tur, der ikke er kørt"
   fr: "Un trajet non effectué"
   nl: "Een uitgevallen rit"
   pl: "Niewykonany kurs"
@@ -1278,6 +1459,7 @@ _version: 2
   uk: "Невиконаний рейс"
 "%{amount} a minute of its time":
   de: "%{amount} je Minute ihrer Fahrzeit"
+  da: "%{amount} pr. minut af dens tid"
   fr: "%{amount} par minute de sa durée"
   nl: "%{amount} per minuut van de rittijd"
   pl: "%{amount} za minutę jego czasu"
@@ -1285,6 +1467,7 @@ _version: 2
   uk: "%{amount} за хвилину його часу"
 "A smaller bus than the tour's":
   de: "Ein kleinerer Bus als für den Umlauf vorgesehen"
+  da: "En mindre bus end vognløbets"
   fr: "Un bus plus petit que celui du service"
   nl: "Een kleinere bus dan de omloop vraagt"
   pl: "Mniejszy autobus niż wymaga kurs"
@@ -1292,6 +1475,7 @@ _version: 2
   uk: "Автобус менший, ніж вимагає оберт"
 "%{amount} a journey":
   de: "%{amount} je Fahrt"
+  da: "%{amount} pr. tur"
   fr: "%{amount} par trajet"
   nl: "%{amount} per rit"
   pl: "%{amount} za kurs"
@@ -1299,6 +1483,7 @@ _version: 2
   uk: "%{amount} за рейс"
 "A diesel bus on an electric tour":
   de: "Ein Dieselbus auf einem Elektro-Umlauf"
+  da: "En dieselbus på et elvognløb"
   fr: "Un bus diesel sur un service électrique"
   nl: "Een dieselbus op een elektrische omloop"
   pl: "Autobus diesla na kursie elektrycznym"
@@ -1306,6 +1491,7 @@ _version: 2
   uk: "Дизельний автобус на електричному оберті"
 "A complaint about the driving":
   de: "Eine Beschwerde über die Fahrweise"
+  da: "En klage over kørslen"
   fr: "Une plainte sur la conduite"
   nl: "Een klacht over de rijstijl"
   pl: "Skarga na styl jazdy"
@@ -1313,6 +1499,7 @@ _version: 2
   uk: "Скарга на водіння"
 "A complaint about the temperature":
   de: "Eine Beschwerde über die Temperatur"
+  da: "En klage over temperaturen"
   fr: "Une plainte sur la température"
   nl: "Een klacht over de temperatuur"
   pl: "Skarga na temperaturę"
@@ -1320,6 +1507,7 @@ _version: 2
   uk: "Скарга на температуру"
 "A complaint about the route":
   de: "Eine Beschwerde über die Linienführung"
+  da: "En klage over ruten"
   fr: "Une plainte sur l'itinéraire"
   nl: "Een klacht over de route"
   pl: "Skarga na trasę"
@@ -1327,6 +1515,7 @@ _version: 2
   uk: "Скарга на маршрут"
 "A ticket sold wrong":
   de: "Ein falsch verkauftes Ticket"
+  da: "En forkert solgt billet"
   fr: "Un billet mal vendu"
   nl: "Een verkeerd verkocht kaartje"
   pl: "Źle sprzedany bilet"
@@ -1334,6 +1523,7 @@ _version: 2
   uk: "Неправильно проданий квиток"
 "A red light run":
   de: "Eine überfahrene rote Ampel"
+  da: "Kørt over for rødt"
   fr: "Un feu rouge grillé"
   nl: "Een door rood gereden licht"
   pl: "Przejazd na czerwonym świetle"
@@ -1341,6 +1531,7 @@ _version: 2
   uk: "Проїзд на червоне світло"
 "The tender":
   de: "Die Ausschreibung"
+  da: "Udbuddet"
   fr: "L'appel d'offres"
   nl: "De aanbesteding"
   pl: "Przetarg"
@@ -1348,6 +1539,7 @@ _version: 2
   uk: "Тендер"
 "The authority's fines":
   de: "Die Strafen der Behörde"
+  da: "Trafikselskabets bøder"
   fr: "Les pénalités de l'autorité"
   nl: "De boetes van de opdrachtgever"
   pl: "Kary zamawiającego"
@@ -1355,6 +1547,7 @@ _version: 2
   uk: "Штрафи замовника"
 "Buses offered":
   de: "Angebotene Busse"
+  da: "Tilbudte busser"
   fr: "Bus proposés"
   nl: "Aangeboden bussen"
   pl: "Oferowane autobusy"
@@ -1362,6 +1555,7 @@ _version: 2
   uk: "Запропоновані автобуси"
 "%{name}'s buses of line %{n}":
   de: "Die Busse von %{name} auf Linie %{n}"
+  da: "%{name}s busser på linje %{n}"
   fr: "Les bus de %{name} sur la ligne %{n}"
   nl: "De bussen van %{name} op lijn %{n}"
   pl: "Autobusy %{name} z linii %{n}"
@@ -1369,6 +1563,7 @@ _version: 2
   uk: "Автобуси %{name} з лінії %{n}"
 "%{count} buses at their book value, %{amount} together, taken over on %{date}, the day your term begins.":
   de: "%{count} Busse zum Buchwert, zusammen %{amount}, übernommen am %{date}, dem ersten Tag deiner Laufzeit."
+  da: "%{count} busser til deres bogførte værdi, %{amount} tilsammen, overtaget den %{date}, den dag din løbetid begynder."
   fr: "%{count} bus à leur valeur comptable, %{amount} au total, repris le %{date}, premier jour de votre contrat."
   nl: "%{count} bussen tegen boekwaarde, samen %{amount}, overgenomen op %{date}, de dag dat je looptijd begint."
   pl: "%{count} autobusów po wartości księgowej, razem %{amount}, przejętych %{date}, w dniu początku twojej umowy."
@@ -1376,6 +1571,7 @@ _version: 2
   uk: "%{count} автобусів за балансовою вартістю, разом %{amount}, переходять %{date}, у перший день вашого строку."
 "Take them over":
   de: "Übernehmen"
+  da: "Overtag dem"
   fr: "Les reprendre"
   nl: "Overnemen"
   pl: "Przejmij"
@@ -1383,6 +1579,7 @@ _version: 2
   uk: "Викупити"
 "No, thank you":
   de: "Nein, danke"
+  da: "Nej tak"
   fr: "Non, merci"
   nl: "Nee, dank je"
   pl: "Nie, dziękuję"
@@ -1390,6 +1587,7 @@ _version: 2
   uk: "Ні, дякую"
 "The buses are yours on the day your term begins.":
   de: "Die Busse gehören dir ab dem ersten Tag deiner Laufzeit."
+  da: "Busserne er dine den dag, din løbetid begynder."
   fr: "Les bus sont à vous le premier jour de votre contrat."
   nl: "De bussen zijn van jou op de dag dat je looptijd begint."
   pl: "Autobusy będą twoje w dniu początku umowy."
@@ -1397,6 +1595,7 @@ _version: 2
   uk: "Автобуси стануть вашими в перший день строку."
 "The buses stay with their company.":
   de: "Die Busse bleiben bei ihrer Firma."
+  da: "Busserne bliver hos deres selskab."
   fr: "Les bus restent à leur entreprise."
   nl: "De bussen blijven bij hun bedrijf."
   pl: "Autobusy zostają w swojej firmie."
@@ -1404,6 +1603,7 @@ _version: 2
   uk: "Автобуси лишаються у своєї компанії."
 "There is no such offer of buses.":
   de: "Es gibt kein solches Busangebot."
+  da: "Der er intet sådant tilbud om busser."
   fr: "Cette offre de bus n'existe pas."
   nl: "Er is geen zo'n busaanbod."
   pl: "Nie ma takiej oferty autobusów."
@@ -1411,6 +1611,7 @@ _version: 2
   uk: "Такої пропозиції автобусів немає."
 "The company has not the money for these buses.":
   de: "Die Firma hat nicht das Geld für diese Busse."
+  da: "Selskabet har ikke pengene til disse busser."
   fr: "L'entreprise n'a pas l'argent pour ces bus."
   nl: "Het bedrijf heeft het geld voor deze bussen niet."
   pl: "Firma nie ma pieniędzy na te autobusy."
@@ -1418,6 +1619,7 @@ _version: 2
   uk: "Компанія не має грошей на ці автобуси."
 "The answer could not be written: the server says why in its log.":
   de: "Die Antwort konnte nicht gespeichert werden: Der Server nennt den Grund in seinem Protokoll."
+  da: "Svaret kunne ikke skrives: serveren siger hvorfor i sin log."
   fr: "La réponse n'a pas pu être enregistrée : le serveur en donne la raison dans son journal."
   nl: "Het antwoord kon niet worden opgeslagen: de server zegt waarom in zijn log."
   pl: "Nie udało się zapisać odpowiedzi: serwer podaje przyczynę w swoim dzienniku."
@@ -1425,6 +1627,7 @@ _version: 2
   uk: "Відповідь не вдалося записати: сервер повідомляє причину у своєму журналі."
 "Buses offered with line %{n}":
   de: "Busse mit Linie %{n} angeboten"
+  da: "Busser tilbudt med linje %{n}"
   fr: "Bus proposés avec la ligne %{n}"
   nl: "Bussen aangeboden met lijn %{n}"
   pl: "Autobusy oferowane z linią %{n}"
@@ -1432,6 +1635,7 @@ _version: 2
   uk: "Автобуси запропоновано разом із лінією %{n}"
 "%{name} ran line %{n} with %{count} buses of its own. You may take them over at their book value, %{amount} together, on %{date}, the day your term begins: the Concessions page.":
   de: "%{name} fuhr Linie %{n} mit %{count} eigenen Bussen. Du kannst sie zum Buchwert übernehmen, zusammen %{amount}, am %{date}, dem ersten Tag deiner Laufzeit: auf der Seite Konzessionen."
+  da: "%{name} kørte linje %{n} med %{count} egne busser. Du må overtage dem til deres bogførte værdi, %{amount} tilsammen, den %{date}, den dag din løbetid begynder: siden Koncessioner."
   fr: "%{name} exploitait la ligne %{n} avec %{count} bus à elle. Vous pouvez les reprendre à leur valeur comptable, %{amount} au total, le %{date}, premier jour de votre contrat : page Concessions."
   nl: "%{name} reed lijn %{n} met %{count} eigen bussen. Je kunt ze overnemen tegen boekwaarde, samen %{amount}, op %{date}, de dag dat je looptijd begint: de pagina Concessies."
   pl: "%{name} obsługiwała linię %{n} %{count} własnymi autobusami. Możesz je przejąć po wartości księgowej, razem %{amount}, %{date}, w dniu początku umowy: strona Koncesje."
@@ -1439,6 +1643,7 @@ _version: 2
   uk: "%{name} обслуговувала лінію %{n} %{count} власними автобусами. Ви можете викупити їх за балансовою вартістю, разом %{amount}, %{date}, у перший день строку: сторінка «Концесії»."
 "%{name} takes over your buses of line %{n}":
   de: "%{name} übernimmt deine Busse der Linie %{n}"
+  da: "%{name} overtager dine busser på linje %{n}"
   fr: "%{name} reprend vos bus de la ligne %{n}"
   nl: "%{name} neemt je bussen van lijn %{n} over"
   pl: "%{name} przejmuje twoje autobusy z linii %{n}"
@@ -1446,6 +1651,7 @@ _version: 2
   uk: "%{name} викуповує ваші автобуси з лінії %{n}"
 "%{name} takes over the %{count} buses of yours that ran line %{n}, at their book value, on %{date}.":
   de: "%{name} übernimmt am %{date} deine %{count} Busse, die Linie %{n} gefahren sind, zum Buchwert."
+  da: "%{name} overtager de %{count} busser fra dig, der kørte linje %{n}, til deres bogførte værdi, den %{date}."
   fr: "%{name} reprend le %{date} vos %{count} bus qui assuraient la ligne %{n}, à leur valeur comptable."
   nl: "%{name} neemt op %{date} je %{count} bussen die lijn %{n} reden over, tegen boekwaarde."
   pl: "%{name} przejmuje %{date} twoje %{count} autobusy z linii %{n}, po wartości księgowej."
@@ -1453,6 +1659,7 @@ _version: 2
   uk: "%{name} %{date} викуповує ваші %{count} автобусів, що обслуговували лінію %{n}, за балансовою вартістю."
 "%{name} does not take over your buses of line %{n}":
   de: "%{name} übernimmt deine Busse der Linie %{n} nicht"
+  da: "%{name} overtager ikke dine busser på linje %{n}"
   fr: "%{name} ne reprend pas vos bus de la ligne %{n}"
   nl: "%{name} neemt je bussen van lijn %{n} niet over"
   pl: "%{name} nie przejmuje twoich autobusów z linii %{n}"
@@ -1460,6 +1667,7 @@ _version: 2
   uk: "%{name} не викуповує ваші автобуси з лінії %{n}"
 "%{name} won line %{n} and does not take over the buses of yours that ran it: they stay yours.":
   de: "%{name} hat Linie %{n} gewonnen und übernimmt deine Busse darauf nicht: Sie bleiben deine."
+  da: "%{name} vandt linje %{n} og overtager ikke de busser fra dig, der kørte den: de forbliver dine."
   fr: "%{name} a remporté la ligne %{n} et ne reprend pas vos bus qui l'assuraient : ils restent à vous."
   nl: "%{name} won lijn %{n} en neemt je bussen die erop reden niet over: ze blijven van jou."
   pl: "%{name} wygrała linię %{n} i nie przejmuje twoich autobusów, które ją obsługiwały: zostają twoje."
@@ -1470,6 +1678,7 @@ _version: 2
 # company::server_fines).
 "%{amount} an hour":
   de: "%{amount} je Stunde"
+  da: "%{amount} i timen"
   fr: "%{amount} de l'heure"
   nl: "%{amount} per uur"
   pl: "%{amount} za godzinę"
@@ -1477,6 +1686,7 @@ _version: 2
   uk: "%{amount} на годину"
 "The most the authority pays a timetable hour: an ask above it does not count.":
   de: "Das Höchste, was die Behörde je Fahrplanstunde zahlt: ein höheres Gebot zählt nicht."
+  da: "Det meste, trafikselskabet betaler pr. køreplantime: et bud over det tæller ikke."
   fr: "Le maximum que l'autorité paie par heure d'horaire : une offre au-dessus ne compte pas."
   nl: "Het meeste dat de opdrachtgever per dienstregelingsuur betaalt: een hoger bod telt niet."
   pl: "Najwięcej, ile zamawiający płaci za godzinę rozkładową: wyższa oferta się nie liczy."
@@ -1484,6 +1694,7 @@ _version: 2
   uk: "Максимум, який замовник платить за годину за розкладом: ставка вище не зараховується."
 "Your ask a timetable hour":
   de: "Dein Gebot je Fahrplanstunde"
+  da: "Dit bud pr. køreplantime"
   fr: "Votre offre par heure d'horaire"
   nl: "Je bod per dienstregelingsuur"
   pl: "Twoja oferta za godzinę rozkładową"
@@ -1491,6 +1702,7 @@ _version: 2
   uk: "Ваша ставка за годину за розкладом"
 "About %{week} a week and %{term} for the contract's %{days} days: %{hours} timetable hours at %{rate}":
   de: "Etwa %{week} pro Woche und %{term} für die %{days} Tage des Vertrags: %{hours} Fahrplanstunden zu %{rate}"
+  da: "Omkring %{week} om ugen og %{term} for kontraktens %{days} dage: %{hours} køreplantimer til %{rate}"
   fr: "Environ %{week} par semaine et %{term} pour les %{days} jours du contrat : %{hours} heures d'horaire à %{rate}"
   nl: "Ongeveer %{week} per week en %{term} voor de %{days} dagen van het contract: %{hours} dienstregelingsuren tegen %{rate}"
   pl: "Około %{week} tygodniowo i %{term} za %{days} dni umowy: %{hours} godzin rozkładowych po %{rate}"
@@ -1498,6 +1710,7 @@ _version: 2
   uk: "Близько %{week} на тиждень і %{term} за %{days} дн. контракту: %{hours} год за розкладом по %{rate}"
 "%{amount}: an ask above it does not count":
   de: "%{amount}: ein höheres Gebot zählt nicht"
+  da: "%{amount}: et bud over det tæller ikke"
   fr: "%{amount} : une offre au-dessus ne compte pas"
   nl: "%{amount}: een hoger bod telt niet"
   pl: "%{amount}: wyższa oferta się nie liczy"
@@ -1505,6 +1718,7 @@ _version: 2
   uk: "%{amount}: ставка вище не зараховується"
 "Payment":
   de: "Bezahlung"
+  da: "Betaling"
   fr: "Paiement"
   nl: "Betaling"
   pl: "Płatność"
@@ -1512,6 +1726,7 @@ _version: 2
   uk: "Оплата"
 "Term":
   de: "Laufzeit"
+  da: "Løbetid"
   fr: "Durée"
   nl: "Looptijd"
   pl: "Okres"
@@ -1519,6 +1734,7 @@ _version: 2
   uk: "Строк"
 "Asks are a price a timetable hour. The contract pays it each day for the timetable hours run: a journey not run is not paid.":
   de: "Gebote sind ein Preis je Fahrplanstunde. Der Vertrag zahlt ihn jeden Tag für die gefahrenen Fahrplanstunden: eine ausgefallene Fahrt wird nicht bezahlt."
+  da: "Bud er en pris pr. køreplantime. Kontrakten betaler den hver dag for de kørte køreplantimer: en tur, der ikke er kørt, betales ikke."
   fr: "Les offres sont un prix par heure d'horaire. Le contrat le paie chaque jour pour les heures d'horaire effectuées : un trajet non effectué n'est pas payé."
   nl: "Biedingen zijn een prijs per dienstregelingsuur. Het contract betaalt die elke dag voor de gereden dienstregelingsuren: een uitgevallen rit wordt niet betaald."
   pl: "Oferty to cena za godzinę rozkładową. Umowa płaci ją codziennie za przejechane godziny rozkładowe: niewykonany kurs nie jest opłacany."
@@ -1526,6 +1742,7 @@ _version: 2
   uk: "Ставки — ціна за годину за розкладом. Контракт платить її щодня за виконані години: невиконаний рейс не оплачується."
 "Leaving a stop early":
   de: "Zu frühe Abfahrt"
+  da: "At forlade et stoppested for tidligt"
   fr: "Départ en avance"
   nl: "Te vroeg vertrekken"
   pl: "Zbyt wczesny odjazd"
@@ -1533,6 +1750,7 @@ _version: 2
   uk: "Ранній від'їзд"
 "%{amount} a departure more than a minute early":
   de: "%{amount} je Abfahrt mehr als eine Minute zu früh"
+  da: "%{amount} pr. afgang mere end et minut for tidligt"
   fr: "%{amount} par départ plus d'une minute en avance"
   nl: "%{amount} per vertrek meer dan een minuut te vroeg"
   pl: "%{amount} za odjazd ponad minutę za wcześnie"
@@ -1540,6 +1758,7 @@ _version: 2
   uk: "%{amount} за від'їзд раніше більш ніж на хвилину"
 "Leaving a stop late":
   de: "Zu späte Abfahrt"
+  da: "At forlade et stoppested for sent"
   fr: "Départ en retard"
   nl: "Te laat vertrekken"
   pl: "Zbyt późny odjazd"
@@ -1547,6 +1766,7 @@ _version: 2
   uk: "Пізній від'їзд"
 "%{amount} a departure more than 15 minutes late, unless the delay was reported to the control room: a player reports his on his duty, the dispatcher those of the company's drivers":
   de: "%{amount} je Abfahrt mehr als 15 Minuten zu spät, außer die Verspätung wurde der Leitstelle gemeldet: ein Spieler meldet seine bei seinem Dienst, der Disponent die der Fahrer der Firma"
+  da: "%{amount} pr. afgang mere end 15 minutter for sent, medmindre forsinkelsen blev meldt til kontrolrummet: en spiller melder sin på sin vagt, trafiklederen dem for selskabets chauffører"
   fr: "%{amount} par départ plus de 15 minutes en retard, sauf si le retard a été signalé au poste de contrôle : un joueur signale le sien depuis son service, le régulateur ceux des conducteurs de l'entreprise"
   nl: "%{amount} per vertrek meer dan 15 minuten te laat, tenzij de vertraging aan de verkeersleiding is gemeld: een speler meldt de zijne bij zijn dienst, de dispatcher die van de chauffeurs van het bedrijf"
   pl: "%{amount} za odjazd ponad 15 minut za późno, chyba że opóźnienie zgłoszono dyspozytorni: gracz zgłasza swoje na swojej służbie, dyspozytor te kierowców firmy"
@@ -1554,6 +1774,7 @@ _version: 2
   uk: "%{amount} за від'їзд пізніше більш ніж на 15 хвилин, якщо про затримку не повідомили диспетчерській: гравець повідомляє про свою на своїй зміні, диспетчер — про затримки водіїв компанії"
 "%{amount} a timetable hour run":
   de: "%{amount} je gefahrene Fahrplanstunde"
+  da: "%{amount} pr. kørt køreplantime"
   fr: "%{amount} par heure d'horaire effectuée"
   nl: "%{amount} per gereden dienstregelingsuur"
   pl: "%{amount} za przejechaną godzinę rozkładową"
@@ -1561,6 +1782,7 @@ _version: 2
   uk: "%{amount} за виконану годину за розкладом"
 "Report a delay":
   de: "Verspätung melden"
+  da: "Meld en forsinkelse"
   fr: "Signaler un retard"
   nl: "Vertraging melden"
   pl: "Zgłoś opóźnienie"
@@ -1568,6 +1790,7 @@ _version: 2
   uk: "Повідомити про затримку"
 "Tell the control room you run late: from now on your departures more than 15 minutes late are not fined.":
   de: "Melde der Leitstelle, dass du Verspätung hast: ab jetzt werden deine Abfahrten mit mehr als 15 Minuten Verspätung nicht bestraft."
+  da: "Sig til kontrolrummet, at du kører for sent: fra nu af får dine afgange mere end 15 minutter for sent ikke en bod."
   fr: "Signalez au poste de contrôle que vous êtes en retard : désormais vos départs à plus de 15 minutes de retard ne sont pas pénalisés."
   nl: "Meld de verkeersleiding dat je te laat bent: vanaf nu krijgen je vertrekken met meer dan 15 minuten vertraging geen boete."
   pl: "Powiedz dyspozytorni, że masz opóźnienie: od teraz twoje odjazdy spóźnione o ponad 15 minut nie są karane."
@@ -1575,6 +1798,7 @@ _version: 2
   uk: "Повідомте диспетчерській, що запізнюєтеся: відтепер ваші від'їзди із запізненням понад 15 хвилин не штрафуються."
 "You are not driving a duty now.":
   de: "Du fährst gerade keinen Dienst."
+  da: "Du kører ikke en vagt nu."
   fr: "Vous ne conduisez pas de service en ce moment."
   nl: "Je rijdt nu geen dienst."
   pl: "Nie prowadzisz teraz żadnej służby."
@@ -1582,6 +1806,7 @@ _version: 2
   uk: "Зараз ви не ведете зміну."
 "Your delay is reported to the control room: the authority does not fine your late departures from now on.":
   de: "Deine Verspätung ist der Leitstelle gemeldet: die Behörde bestraft deine verspäteten Abfahrten ab jetzt nicht."
+  da: "Din forsinkelse er meldt til kontrolrummet: trafikselskabet idømmer ikke bod for dine sene afgange fra nu af."
   fr: "Votre retard est signalé au poste de contrôle : l'autorité ne pénalise plus vos départs en retard."
   nl: "Je vertraging is gemeld aan de verkeersleiding: de opdrachtgever beboet je late vertrekken vanaf nu niet."
   pl: "Twoje opóźnienie zgłoszono dyspozytorni: zamawiający od teraz nie karze twoich spóźnionych odjazdów."
@@ -1590,6 +1815,7 @@ _version: 2
 # (NexiconDK) Phase 4 step 4: a depot in the red warned, then bankrupt (company::server_depots).
 "The depot is in the red: %{n} days to go":
   de: "Das Depot ist im Minus: noch %{n} Tage"
+  da: "Afdelingen er i minus: %{n} dage tilbage"
   fr: "Le dépôt est dans le rouge : encore %{n} jours"
   nl: "De remise staat rood: nog %{n} dagen"
   pl: "Zajezdnia jest na minusie: zostało %{n} dni"
@@ -1597,6 +1823,7 @@ _version: 2
   uk: "Депо в мінусі: лишилося %{n} дн."
 "The depot has %{amount} in cash. Still in the red at the close of %{n} more days, it goes bankrupt: it closes, and its head office covers its loss. Sell buses, cut costs, or ask the head office for money.":
   de: "Das Depot hat %{amount} Kasse. Ist es nach Abschluss von %{n} weiteren Tagen noch im Minus, geht es pleite: Es schließt, und die Zentrale deckt seinen Verlust. Verkaufe Busse, senke Kosten oder bitte die Zentrale um Geld."
+  da: "Afdelingen har %{amount} i kontanter. Er den stadig i minus ved afslutningen af %{n} dage mere, går den konkurs: den lukker, og hovedkontoret dækker dens tab. Sælg busser, skær i omkostningerne, eller bed hovedkontoret om penge."
   fr: "Le dépôt a %{amount} en caisse. Encore dans le rouge à la clôture de %{n} jours de plus, il fait faillite : il ferme, et son siège couvre sa perte. Vendez des bus, réduisez les coûts ou demandez de l'argent au siège."
   nl: "De remise heeft %{amount} in kas. Staat ze na de afsluiting van nog %{n} dagen nog rood, dan gaat ze failliet: ze sluit, en het hoofdkantoor dekt het verlies. Verkoop bussen, verlaag kosten of vraag het hoofdkantoor om geld."
   pl: "Zajezdnia ma %{amount} w kasie. Jeśli po zamknięciu kolejnych %{n} dni nadal będzie na minusie, zbankrutuje: zostanie zamknięta, a centrala pokryje jej stratę. Sprzedaj autobusy, obetnij koszty albo poproś centralę o pieniądze."
@@ -1604,6 +1831,7 @@ _version: 2
   uk: "Депо має %{amount} у касі. Якщо після закриття ще %{n} дн. воно лишиться в мінусі, воно збанкрутує: закриється, а головний офіс покриє його збиток. Продайте автобуси, скоротіть витрати або попросіть гроші в головного офісу."
 "The depot goes bankrupt tomorrow":
   de: "Das Depot geht morgen pleite"
+  da: "Afdelingen går konkurs i morgen"
   fr: "Le dépôt fait faillite demain"
   nl: "De remise gaat morgen failliet"
   pl: "Zajezdnia jutro zbankrutuje"
@@ -1611,6 +1839,7 @@ _version: 2
   uk: "Депо збанкрутує завтра"
 "The depot has %{amount} in cash. Still in the red at tomorrow's close, it goes bankrupt: it closes, and its head office covers its loss. Sell buses, cut costs, or ask the head office for money.":
   de: "Das Depot hat %{amount} Kasse. Ist es beim morgigen Abschluss noch im Minus, geht es pleite: Es schließt, und die Zentrale deckt seinen Verlust. Verkaufe Busse, senke Kosten oder bitte die Zentrale um Geld."
+  da: "Afdelingen har %{amount} i kontanter. Er den stadig i minus ved morgendagens afslutning, går den konkurs: den lukker, og hovedkontoret dækker dens tab. Sælg busser, skær i omkostningerne, eller bed hovedkontoret om penge."
   fr: "Le dépôt a %{amount} en caisse. Encore dans le rouge à la clôture de demain, il fait faillite : il ferme, et son siège couvre sa perte. Vendez des bus, réduisez les coûts ou demandez de l'argent au siège."
   nl: "De remise heeft %{amount} in kas. Staat ze bij de afsluiting van morgen nog rood, dan gaat ze failliet: ze sluit, en het hoofdkantoor dekt het verlies. Verkoop bussen, verlaag kosten of vraag het hoofdkantoor om geld."
   pl: "Zajezdnia ma %{amount} w kasie. Jeśli przy jutrzejszym zamknięciu nadal będzie na minusie, zbankrutuje: zostanie zamknięta, a centrala pokryje jej stratę. Sprzedaj autobusy, obetnij koszty albo poproś centralę o pieniądze."
@@ -1618,6 +1847,7 @@ _version: 2
   uk: "Депо має %{amount} у касі. Якщо під час завтрашнього закриття воно лишиться в мінусі, воно збанкрутує: закриється, а головний офіс покриє його збиток. Продайте автобуси, скоротіть витрати або попросіть гроші в головного офісу."
 "Depot %{name} is in the red: %{n} days to go":
   de: "Depot %{name} ist im Minus: noch %{n} Tage"
+  da: "Afdeling %{name} er i minus: %{n} dage tilbage"
   fr: "Le dépôt %{name} est dans le rouge : encore %{n} jours"
   nl: "Remise %{name} staat rood: nog %{n} dagen"
   pl: "Zajezdnia %{name} jest na minusie: zostało %{n} dni"
@@ -1625,6 +1855,7 @@ _version: 2
   uk: "Депо %{name} у мінусі: лишилося %{n} дн."
 "Depot %{name} has %{amount} in cash. Still in the red at the close of %{n} more days, it goes bankrupt and the head office covers its loss: send it money from the head office's page, or give it a rule that tops it up.":
   de: "Depot %{name} hat %{amount} Kasse. Ist es nach Abschluss von %{n} weiteren Tagen noch im Minus, geht es pleite und die Zentrale deckt seinen Verlust: Schicke ihm Geld von der Seite der Zentrale oder gib ihm eine Regel, die es auffüllt."
+  da: "Afdeling %{name} har %{amount} i kontanter. Er den stadig i minus ved afslutningen af %{n} dage mere, går den konkurs, og hovedkontoret dækker dens tab: send den penge fra hovedkontorets side, eller giv den en regel, der fylder den op."
   fr: "Le dépôt %{name} a %{amount} en caisse. Encore dans le rouge à la clôture de %{n} jours de plus, il fait faillite et le siège couvre sa perte : envoyez-lui de l'argent depuis la page du siège, ou donnez-lui une règle qui le renfloue."
   nl: "Remise %{name} heeft %{amount} in kas. Staat ze na de afsluiting van nog %{n} dagen nog rood, dan gaat ze failliet en dekt het hoofdkantoor het verlies: stuur haar geld via de pagina van het hoofdkantoor, of geef haar een regel die haar aanvult."
   pl: "Zajezdnia %{name} ma %{amount} w kasie. Jeśli po zamknięciu kolejnych %{n} dni nadal będzie na minusie, zbankrutuje, a centrala pokryje jej stratę: wyślij jej pieniądze ze strony centrali albo daj jej regułę, która ją uzupełnia."
@@ -1632,6 +1863,7 @@ _version: 2
   uk: "Депо %{name} має %{amount} у касі. Якщо після закриття ще %{n} дн. воно лишиться в мінусі, воно збанкрутує, і головний офіс покриє його збиток: надішліть йому гроші зі сторінки головного офісу або задайте йому правило поповнення."
 "Depot %{name} goes bankrupt tomorrow":
   de: "Depot %{name} geht morgen pleite"
+  da: "Afdeling %{name} går konkurs i morgen"
   fr: "Le dépôt %{name} fait faillite demain"
   nl: "Remise %{name} gaat morgen failliet"
   pl: "Zajezdnia %{name} jutro zbankrutuje"
@@ -1639,6 +1871,7 @@ _version: 2
   uk: "Депо %{name} збанкрутує завтра"
 "Depot %{name} has %{amount} in cash. Still in the red at tomorrow's close, it goes bankrupt and the head office covers its loss: send it money from the head office's page, or give it a rule that tops it up.":
   de: "Depot %{name} hat %{amount} Kasse. Ist es beim morgigen Abschluss noch im Minus, geht es pleite und die Zentrale deckt seinen Verlust: Schicke ihm Geld von der Seite der Zentrale oder gib ihm eine Regel, die es auffüllt."
+  da: "Afdeling %{name} har %{amount} i kontanter. Er den stadig i minus ved morgendagens afslutning, går den konkurs, og hovedkontoret dækker dens tab: send den penge fra hovedkontorets side, eller giv den en regel, der fylder den op."
   fr: "Le dépôt %{name} a %{amount} en caisse. Encore dans le rouge à la clôture de demain, il fait faillite et le siège couvre sa perte : envoyez-lui de l'argent depuis la page du siège, ou donnez-lui une règle qui le renfloue."
   nl: "Remise %{name} heeft %{amount} in kas. Staat ze bij de afsluiting van morgen nog rood, dan gaat ze failliet en dekt het hoofdkantoor het verlies: stuur haar geld via de pagina van het hoofdkantoor, of geef haar een regel die haar aanvult."
   pl: "Zajezdnia %{name} ma %{amount} w kasie. Jeśli przy jutrzejszym zamknięciu nadal będzie na minusie, zbankrutuje, a centrala pokryje jej stratę: wyślij jej pieniądze ze strony centrali albo daj jej regułę, która ją uzupełnia."
@@ -1646,6 +1879,7 @@ _version: 2
   uk: "Депо %{name} має %{amount} у касі. Якщо під час завтрашнього закриття воно лишиться в мінусі, воно збанкрутує, і головний офіс покриє його збиток: надішліть йому гроші зі сторінки головного офісу або задайте йому правило поповнення."
 "Depot %{name} is bankrupt":
   de: "Depot %{name} ist pleite"
+  da: "Afdeling %{name} er konkurs"
   fr: "Le dépôt %{name} a fait faillite"
   nl: "Remise %{name} is failliet"
   pl: "Zajezdnia %{name} zbankrutowała"
@@ -1653,6 +1887,7 @@ _version: 2
   uk: "Депо %{name} збанкрутувало"
 "Depot %{name} stayed in the red and is closed: its buses sold, its staff gone, its lines out to tender again. The head office covered its loss of %{amount}.":
   de: "Depot %{name} blieb im Minus und ist geschlossen: seine Busse verkauft, sein Personal weg, seine Linien neu ausgeschrieben. Die Zentrale hat seinen Verlust von %{amount} gedeckt."
+  da: "Afdeling %{name} forblev i minus og er lukket: dens busser solgt, dens personale væk, dens linjer i udbud igen. Hovedkontoret dækkede dens tab på %{amount}."
   fr: "Le dépôt %{name} est resté dans le rouge et est fermé : ses bus vendus, son personnel parti, ses lignes remises en appel d'offres. Le siège a couvert sa perte de %{amount}."
   nl: "Remise %{name} bleef rood staan en is gesloten: haar bussen verkocht, haar personeel weg, haar lijnen opnieuw aanbesteed. Het hoofdkantoor dekte haar verlies van %{amount}."
   pl: "Zajezdnia %{name} pozostała na minusie i została zamknięta: autobusy sprzedane, personel odszedł, linie wróciły do przetargu. Centrala pokryła jej stratę w wysokości %{amount}."
@@ -1660,6 +1895,7 @@ _version: 2
   uk: "Депо %{name} лишилося в мінусі й закрите: автобуси продано, персонал пішов, лінії знову на тендері. Головний офіс покрив його збиток у %{amount}."
 "Depot %{name} is bankrupt: the head office is in the red":
   de: "Depot %{name} ist pleite: die Zentrale ist im Minus"
+  da: "Afdeling %{name} er konkurs: hovedkontoret er i minus"
   fr: "Le dépôt %{name} a fait faillite : le siège est dans le rouge"
   nl: "Remise %{name} is failliet: het hoofdkantoor staat rood"
   pl: "Zajezdnia %{name} zbankrutowała: centrala jest na minusie"
@@ -1667,6 +1903,7 @@ _version: 2
   uk: "Депо %{name} збанкрутувало: головний офіс у мінусі"
 "Depot %{name} stayed in the red and is closed: its buses sold, its staff gone, its lines out to tender again. The head office covered its loss of %{amount} and is in the red now: sell buses, or close the company.":
   de: "Depot %{name} blieb im Minus und ist geschlossen: seine Busse verkauft, sein Personal weg, seine Linien neu ausgeschrieben. Die Zentrale hat seinen Verlust von %{amount} gedeckt und ist jetzt im Minus: Verkaufe Busse oder schließe die Firma."
+  da: "Afdeling %{name} forblev i minus og er lukket: dens busser solgt, dens personale væk, dens linjer i udbud igen. Hovedkontoret dækkede dens tab på %{amount} og er nu i minus: sælg busser, eller luk selskabet."
   fr: "Le dépôt %{name} est resté dans le rouge et est fermé : ses bus vendus, son personnel parti, ses lignes remises en appel d'offres. Le siège a couvert sa perte de %{amount} et est maintenant dans le rouge : vendez des bus, ou fermez l'entreprise."
   nl: "Remise %{name} bleef rood staan en is gesloten: haar bussen verkocht, haar personeel weg, haar lijnen opnieuw aanbesteed. Het hoofdkantoor dekte haar verlies van %{amount} en staat nu rood: verkoop bussen, of sluit het bedrijf."
   pl: "Zajezdnia %{name} pozostała na minusie i została zamknięta: autobusy sprzedane, personel odszedł, linie wróciły do przetargu. Centrala pokryła jej stratę w wysokości %{amount} i jest teraz na minusie: sprzedaj autobusy albo zamknij firmę."
@@ -1674,6 +1911,7 @@ _version: 2
   uk: "Депо %{name} лишилося в мінусі й закрите: автобуси продано, персонал пішов, лінії знову на тендері. Головний офіс покрив його збиток у %{amount} і тепер у мінусі: продайте автобуси або закрийте компанію."
 "Depot %{name} is closed":
   de: "Depot %{name} ist geschlossen"
+  da: "Afdeling %{name} er lukket"
   fr: "Le dépôt %{name} est fermé"
   nl: "Remise %{name} is gesloten"
   pl: "Zajezdnia %{name} została zamknięta"
@@ -1681,6 +1919,7 @@ _version: 2
   uk: "Депо %{name} закрите"
 "Depot %{name} stayed in the red and is closed: its buses sold, its staff gone, its lines out to tender again. What was left of it, %{amount}, is the head office's.":
   de: "Depot %{name} blieb im Minus und ist geschlossen: seine Busse verkauft, sein Personal weg, seine Linien neu ausgeschrieben. Was übrig blieb, %{amount}, gehört der Zentrale."
+  da: "Afdeling %{name} forblev i minus og er lukket: dens busser solgt, dens personale væk, dens linjer i udbud igen. Det, der var tilbage af den, %{amount}, tilhører hovedkontoret."
   fr: "Le dépôt %{name} est resté dans le rouge et est fermé : ses bus vendus, son personnel parti, ses lignes remises en appel d'offres. Ce qui en restait, %{amount}, revient au siège."
   nl: "Remise %{name} bleef rood staan en is gesloten: haar bussen verkocht, haar personeel weg, haar lijnen opnieuw aanbesteed. Wat ervan overbleef, %{amount}, is van het hoofdkantoor."
   pl: "Zajezdnia %{name} pozostała na minusie i została zamknięta: autobusy sprzedane, personel odszedł, linie wróciły do przetargu. To, co zostało, %{amount}, należy do centrali."
@@ -1688,6 +1927,7 @@ _version: 2
   uk: "Депо %{name} лишилося в мінусі й закрите: автобуси продано, персонал пішов, лінії знову на тендері. Залишок, %{amount}, належить головному офісу."
 "Drive %{n} more trips for a company on the server first (%{done} of %{need}).":
   de: "Fahre zuerst noch %{n} Fahrten für eine Firma auf dem Server (%{done} von %{need})."
+  da: "Kør først %{n} ture mere for et selskab på serveren (%{done} af %{need})."
   fr: "Effectuez d'abord encore %{n} trajets pour une entreprise du serveur (%{done} sur %{need})."
   nl: "Rijd eerst nog %{n} ritten voor een bedrijf op de server (%{done} van %{need})."
   pl: "Najpierw przejedź jeszcze %{n} kursów dla firmy na serwerze (%{done} z %{need})."
@@ -1695,6 +1935,7 @@ _version: 2
   uk: "Спершу виконайте ще %{n} рейсів для компанії на сервері (%{done} з %{need})."
 "Take the leadership course first.":
   de: "Mache zuerst den Führungskurs."
+  da: "Tag først lederskabskurset."
   fr: "Suivez d'abord la formation de direction."
   nl: "Volg eerst de leiderschapscursus."
   pl: "Najpierw ukończ kurs kierowniczy."
@@ -1702,6 +1943,7 @@ _version: 2
   uk: "Спершу пройдіть курс керівника."
 "Your leadership course ends on %{date}.":
   de: "Dein Führungskurs endet am %{date}."
+  da: "Dit lederskabskursus slutter den %{date}."
   fr: "Votre formation de direction se termine le %{date}."
   nl: "Je leiderschapscursus eindigt op %{date}."
   pl: "Twój kurs kierowniczy kończy się %{date}."
@@ -1709,6 +1951,7 @@ _version: 2
   uk: "Ваш курс керівника закінчується %{date}."
 "Pass a driving test on the server first.":
   de: "Bestehe zuerst eine Fahrprüfung auf dem Server."
+  da: "Bestå først en køreprøve på serveren."
   fr: "Réussissez d'abord un examen de conduite sur le serveur."
   nl: "Haal eerst een rijexamen op de server."
   pl: "Najpierw zdaj egzamin z jazdy na serwerze."
@@ -1716,6 +1959,7 @@ _version: 2
   uk: "Спершу складіть іспит з водіння на сервері."
 "You have taken the leadership course already.":
   de: "Du hast den Führungskurs schon gemacht."
+  da: "Du har allerede taget lederskabskurset."
   fr: "Vous avez déjà suivi la formation de direction."
   nl: "Je hebt de leiderschapscursus al gevolgd."
   pl: "Kurs kierowniczy masz już za sobą."
@@ -1723,6 +1967,7 @@ _version: 2
   uk: "Ви вже пройшли курс керівника."
 "The leadership course costs %{price}: you have %{money}.":
   de: "Der Führungskurs kostet %{price}: du hast %{money}."
+  da: "Lederskabskurset koster %{price}: du har %{money}."
   fr: "La formation de direction coûte %{price} : vous avez %{money}."
   nl: "De leiderschapscursus kost %{price}: je hebt %{money}."
   pl: "Kurs kierowniczy kosztuje %{price}: masz %{money}."
@@ -1730,6 +1975,7 @@ _version: 2
   uk: "Курс керівника коштує %{price}: у вас %{money}."
 "A driving test is booked already.":
   de: "Eine Fahrprüfung ist schon gebucht."
+  da: "En køreprøve er allerede booket."
   fr: "Un examen de conduite est déjà réservé."
   nl: "Er is al een rijexamen geboekt."
   pl: "Egzamin z jazdy jest już zarezerwowany."
@@ -1737,6 +1983,7 @@ _version: 2
   uk: "Іспит з водіння вже заброньовано."
 "You passed this test already.":
   de: "Diese Prüfung hast du schon bestanden."
+  da: "Du har allerede bestået denne prøve."
   fr: "Vous avez déjà réussi cet examen."
   nl: "Dit examen heb je al gehaald."
   pl: "Ten egzamin już zdałeś."
@@ -1744,6 +1991,7 @@ _version: 2
   uk: "Ви вже склали цей іспит."
 "There is no such class of bus.":
   de: "Diese Busklasse gibt es nicht."
+  da: "Der er ingen sådan busklasse."
   fr: "Cette classe de bus n'existe pas."
   nl: "Die busklasse bestaat niet."
   pl: "Nie ma takiej klasy autobusu."
@@ -1751,6 +1999,7 @@ _version: 2
   uk: "Такого класу автобуса немає."
 "Trips driven for a company on the server: %{done} of %{need}":
   de: "Fahrten für eine Firma auf dem Server: %{done} von %{need}"
+  da: "Ture kørt for et selskab på serveren: %{done} af %{need}"
   fr: "Trajets effectués pour une entreprise du serveur : %{done} sur %{need}"
   nl: "Ritten voor een bedrijf op de server: %{done} van %{need}"
   pl: "Kursy dla firmy na serwerze: %{done} z %{need}"
@@ -1758,6 +2007,7 @@ _version: 2
   uk: "Рейси для компанії на сервері: %{done} з %{need}"
 "Leadership course: taken":
   de: "Führungskurs: gemacht"
+  da: "Lederskabskursus: taget"
   fr: "Formation de direction : suivie"
   nl: "Leiderschapscursus: gevolgd"
   pl: "Kurs kierowniczy: ukończony"
@@ -1765,6 +2015,7 @@ _version: 2
   uk: "Курс керівника: пройдено"
 "Leadership course: until %{date}":
   de: "Führungskurs: bis %{date}"
+  da: "Lederskabskursus: indtil %{date}"
   fr: "Formation de direction : jusqu'au %{date}"
   nl: "Leiderschapscursus: tot %{date}"
   pl: "Kurs kierowniczy: do %{date}"
@@ -1772,6 +2023,7 @@ _version: 2
   uk: "Курс керівника: до %{date}"
 "Leadership course: %{price}, %{days} days":
   de: "Führungskurs: %{price}, %{days} Tage"
+  da: "Lederskabskursus: %{price}, %{days} dage"
   fr: "Formation de direction : %{price}, %{days} jours"
   nl: "Leiderschapscursus: %{price}, %{days} dagen"
   pl: "Kurs kierowniczy: %{price}, %{days} dni"
@@ -1779,6 +2031,7 @@ _version: 2
   uk: "Курс керівника: %{price}, %{days} дн."
 "Book the course":
   de: "Kurs buchen"
+  da: "Book kurset"
   fr: "Réserver la formation"
   nl: "Cursus boeken"
   pl: "Zapisz się na kurs"
@@ -1786,6 +2039,7 @@ _version: 2
   uk: "Записатися на курс"
 "Driving test: passed (%{classes})":
   de: "Fahrprüfung: bestanden (%{classes})"
+  da: "Køreprøve: bestået (%{classes})"
   fr: "Examen de conduite : réussi (%{classes})"
   nl: "Rijexamen: gehaald (%{classes})"
   pl: "Egzamin z jazdy: zdany (%{classes})"
@@ -1793,6 +2047,7 @@ _version: 2
   uk: "Іспит з водіння: складено (%{classes})"
 "Driving test booked: %{class} - your next trip with such a bus is the test":
   de: "Fahrprüfung gebucht: %{class} - deine nächste Fahrt mit so einem Bus ist die Prüfung"
+  da: "Køreprøve booket: %{class} - din næste tur med en sådan bus er prøven"
   fr: "Examen de conduite réservé : %{class} - votre prochain trajet avec un tel bus sera l'examen"
   nl: "Rijexamen geboekt: %{class} - je volgende rit met zo'n bus is het examen"
   pl: "Egzamin z jazdy zarezerwowany: %{class} - twój następny kurs takim autobusem jest egzaminem"
@@ -1800,6 +2055,7 @@ _version: 2
   uk: "Іспит з водіння заброньовано: %{class} - ваш наступний рейс таким автобусом і буде іспитом"
 "Driving test: not passed (%{score} %) - book it again":
   de: "Fahrprüfung: nicht bestanden (%{score} %) - buche sie noch einmal"
+  da: "Køreprøve: ikke bestået (%{score} %) - book den igen"
   fr: "Examen de conduite : échoué (%{score} %) - réservez-le à nouveau"
   nl: "Rijexamen: niet gehaald (%{score} %) - boek het opnieuw"
   pl: "Egzamin z jazdy: niezdany (%{score} %) - zarezerwuj go ponownie"
@@ -1807,6 +2063,7 @@ _version: 2
   uk: "Іспит з водіння: не складено (%{score} %) - забронюйте знову"
 "Driving test: not taken":
   de: "Fahrprüfung: noch nicht abgelegt"
+  da: "Køreprøve: ikke taget"
   fr: "Examen de conduite : pas encore passé"
   nl: "Rijexamen: nog niet gedaan"
   pl: "Egzamin z jazdy: jeszcze nie zdawany"
@@ -1814,6 +2071,7 @@ _version: 2
   uk: "Іспит з водіння: ще не складався"
 "Book the test":
   de: "Prüfung buchen"
+  da: "Book prøven"
   fr: "Réserver l'examen"
   nl: "Examen boeken"
   pl: "Zarezerwuj egzamin"
@@ -1821,6 +2079,7 @@ _version: 2
   uk: "Забронювати іспит"
 "Call it off":
   de: "Absagen"
+  da: "Aflys den"
   fr: "Annuler"
   nl: "Afzeggen"
   pl: "Odwołaj"
@@ -1828,6 +2087,7 @@ _version: 2
   uk: "Скасувати"
 "What founding asks":
   de: "Was die Gründung verlangt"
+  da: "Hvad det kræver at stifte"
   fr: "Ce que la création exige"
   nl: "Wat oprichten vraagt"
   pl: "Czego wymaga założenie firmy"
@@ -1835,6 +2095,7 @@ _version: 2
   uk: "Що потрібно для заснування"
 "Midibus":
   de: "Midibus"
+  da: "Midibus"
   fr: "Midibus"
   nl: "Midibus"
   pl: "Midibus"
@@ -1842,6 +2103,7 @@ _version: 2
   uk: "Мідібус"
 "Solo bus":
   de: "Solobus"
+  da: "Solobus"
   fr: "Bus standard"
   nl: "Solobus"
   pl: "Autobus solo"
@@ -1849,6 +2111,7 @@ _version: 2
   uk: "Одиночний автобус"
 "Articulated bus":
   de: "Gelenkbus"
+  da: "Ledbus"
   fr: "Bus articulé"
   nl: "Gelede bus"
   pl: "Autobus przegubowy"
@@ -1856,6 +2119,7 @@ _version: 2
   uk: "Зчленований автобус"
 "Double-decker":
   de: "Doppeldecker"
+  da: "Dobbeltdækker"
   fr: "Bus à impériale"
   nl: "Dubbeldekker"
   pl: "Autobus piętrowy"
@@ -1863,6 +2127,7 @@ _version: 2
   uk: "Двоповерховий автобус"
 "The bank gave an emergency loan":
   de: "Die Bank hat einen Notkredit gegeben"
+  da: "Banken gav et nødlån"
   fr: "La banque a accordé un prêt d'urgence"
   nl: "De bank heeft een noodlening gegeven"
   pl: "Bank udzielił pożyczki awaryjnej"
@@ -1870,6 +2135,7 @@ _version: 2
   uk: "Банк видав екстрений кредит"
 "The company closed the day %{cost} in the red: the bank lent it %{amount} at %{rate} % over %{months} months. In the red again while it runs, the company goes bankrupt.":
   de: "Die Firma hat den Tag mit %{cost} im Minus abgeschlossen: Die Bank hat ihr %{amount} zu %{rate} % über %{months} Monate geliehen. Gerät sie wieder ins Minus, solange er läuft, geht die Firma in Konkurs."
+  da: "Selskabet afsluttede dagen %{cost} i minus: banken lånte det %{amount} til %{rate} % over %{months} måneder. Er selskabet i minus igen, mens det løber, går det konkurs."
   fr: "L'entreprise a clôturé la journée avec %{cost} de déficit : la banque lui a prêté %{amount} à %{rate} % sur %{months} mois. De nouveau dans le rouge pendant ce prêt, l'entreprise fait faillite."
   nl: "Het bedrijf sloot de dag af met %{cost} in de min: de bank leende het %{amount} tegen %{rate} % over %{months} maanden. Weer in de min zolang die loopt, gaat het bedrijf failliet."
   pl: "Firma zamknęła dzień z %{cost} na minusie: bank pożyczył jej %{amount} na %{rate} % na %{months} miesięcy. Jeśli znów będzie na minusie, gdy pożyczka trwa, firma zbankrutuje."
@@ -1877,6 +2143,7 @@ _version: 2
   uk: "Компанія закрила день з мінусом %{cost}: банк позичив їй %{amount} під %{rate} % на %{months} міс. Знову в мінусі, поки триває кредит, компанія збанкрутує."
 "The company is in the red: %{n} days to go":
   de: "Die Firma ist im Minus: noch %{n} Tage"
+  da: "Selskabet er i minus: %{n} dage tilbage"
   fr: "L'entreprise est dans le rouge : encore %{n} jours"
   nl: "Het bedrijf staat in de min: nog %{n} dagen"
   pl: "Firma jest na minusie: zostało %{n} dni"
@@ -1884,6 +2151,7 @@ _version: 2
   uk: "Компанія в мінусі: залишилося %{n} дн."
 "The company has %{amount} in cash and its emergency loan running. Still in the red at the close of %{n} more days, it goes bankrupt: everything is sold and the company closes, its depots with it.":
   de: "Die Firma hat %{amount} in der Kasse und ihr Notkredit läuft. Ist sie am Ende von noch %{n} Tagen weiter im Minus, geht sie in Konkurs: Alles wird verkauft und die Firma schließt, ihre Depots mit ihr."
+  da: "Selskabet har %{amount} i kontanter og sit nødlån løbende. Er det stadig i minus ved afslutningen af %{n} dage mere, går det konkurs: alt sælges, og selskabet lukker, dets afdelinger med."
   fr: "L'entreprise a %{amount} en caisse et son prêt d'urgence en cours. Toujours dans le rouge à la clôture de %{n} jours de plus, elle fait faillite : tout est vendu et l'entreprise ferme, ses dépôts avec elle."
   nl: "Het bedrijf heeft %{amount} in kas en de noodlening loopt. Nog steeds in de min na nog %{n} dagen, dan gaat het failliet: alles wordt verkocht en het bedrijf sluit, zijn depots ook."
   pl: "Firma ma %{amount} w kasie i trwa jej pożyczka awaryjna. Jeśli po kolejnych %{n} dniach nadal będzie na minusie, zbankrutuje: wszystko zostanie sprzedane, a firma zamknięta wraz z zajezdniami."
@@ -1891,6 +2159,7 @@ _version: 2
   uk: "У компанії %{amount} у касі й діє екстрений кредит. Якщо й через %{n} дн. вона буде в мінусі, вона збанкрутує: усе буде продано, компанія закриється разом із депо."
 "The company goes bankrupt tomorrow":
   de: "Die Firma geht morgen in Konkurs"
+  da: "Selskabet går konkurs i morgen"
   fr: "L'entreprise fait faillite demain"
   nl: "Het bedrijf gaat morgen failliet"
   pl: "Firma zbankrutuje jutro"
@@ -1898,6 +2167,7 @@ _version: 2
   uk: "Компанія збанкрутує завтра"
 "The company has %{amount} in cash and its emergency loan running. Still in the red at tomorrow's close, it goes bankrupt: everything is sold and the company closes, its depots with it.":
   de: "Die Firma hat %{amount} in der Kasse und ihr Notkredit läuft. Ist sie beim morgigen Abschluss weiter im Minus, geht sie in Konkurs: Alles wird verkauft und die Firma schließt, ihre Depots mit ihr."
+  da: "Selskabet har %{amount} i kontanter og sit nødlån løbende. Er det stadig i minus ved morgendagens afslutning, går det konkurs: alt sælges, og selskabet lukker, dets afdelinger med."
   fr: "L'entreprise a %{amount} en caisse et son prêt d'urgence en cours. Toujours dans le rouge à la clôture de demain, elle fait faillite : tout est vendu et l'entreprise ferme, ses dépôts avec elle."
   nl: "Het bedrijf heeft %{amount} in kas en de noodlening loopt. Nog steeds in de min bij de afsluiting van morgen, dan gaat het failliet: alles wordt verkocht en het bedrijf sluit, zijn depots ook."
   pl: "Firma ma %{amount} w kasie i trwa jej pożyczka awaryjna. Jeśli przy jutrzejszym zamknięciu nadal będzie na minusie, zbankrutuje: wszystko zostanie sprzedane, a firma zamknięta wraz z zajezdniami."
@@ -1905,6 +2175,7 @@ _version: 2
   uk: "У компанії %{amount} у касі й діє екстрений кредит. Якщо під час завтрашнього закриття вона буде в мінусі, вона збанкрутує: усе буде продано, компанія закриється разом із депо."
 "The head office %{name} is bankrupt":
   de: "Die Zentrale %{name} ist im Konkurs"
+  da: "Hovedkontoret %{name} er konkurs"
   fr: "Le siège %{name} a fait faillite"
   nl: "Het hoofdkantoor %{name} is failliet"
   pl: "Centrala %{name} zbankrutowała"
@@ -1912,6 +2183,7 @@ _version: 2
   uk: "Головний офіс %{name} збанкрутував"
 "The head office stayed in the red with its emergency loan running and is closed: this depot closes with it.":
   de: "Die Zentrale blieb mit laufendem Notkredit im Minus und ist geschlossen: Dieses Depot schließt mit ihr."
+  da: "Hovedkontoret forblev i minus med sit nødlån løbende og er lukket: denne afdeling lukker med det."
   fr: "Le siège est resté dans le rouge avec son prêt d'urgence en cours et a fermé : ce dépôt ferme avec lui."
   nl: "Het hoofdkantoor bleef in de min terwijl de noodlening liep en is gesloten: dit depot sluit mee."
   pl: "Centrala pozostała na minusie przy trwającej pożyczce awaryjnej i została zamknięta: ta zajezdnia zamyka się razem z nią."
@@ -1919,6 +2191,7 @@ _version: 2
   uk: "Головний офіс залишився в мінусі з діючим екстреним кредитом і закритий: це депо закривається разом із ним."
 "Emergency loan":
   de: "Notkredit"
+  da: "Nødlån"
   fr: "Prêt d'urgence"
   nl: "Noodlening"
   pl: "Pożyczka awaryjna"
@@ -1926,6 +2199,7 @@ _version: 2
   uk: "Екстрений кредит"
 "A purchase this big needs the head office's approval first: ask for it in the settings, under Depots.":
   de: "Ein so großer Kauf braucht zuerst die Zustimmung der Zentrale: Bitte in den Einstellungen unter Depots darum."
+  da: "Et så stort køb kræver først hovedkontorets godkendelse: bed om den i indstillingerne under Afdelinger."
   fr: "Un achat aussi important nécessite d'abord l'accord du siège : demandez-le dans les paramètres, sous Dépôts."
   nl: "Een aankoop van deze omvang heeft eerst de goedkeuring van het hoofdkantoor nodig: vraag erom in de instellingen, onder Depots."
   pl: "Tak duży zakup wymaga najpierw zgody centrali: poproś o nią w ustawieniach, w części Zajezdnie."
@@ -1933,6 +2207,7 @@ _version: 2
   uk: "Така велика покупка спершу потребує схвалення головного офісу: попросіть його в налаштуваннях, у розділі «Депо»."
 "Only a depot asks its head office.":
   de: "Nur ein Depot fragt seine Zentrale."
+  da: "Kun en afdeling spørger sit hovedkontor."
   fr: "Seul un dépôt s'adresse à son siège."
   nl: "Alleen een depot vraagt het aan zijn hoofdkantoor."
   pl: "Tylko zajezdnia prosi swoją centralę."
@@ -1940,6 +2215,7 @@ _version: 2
   uk: "Лише депо звертається до свого головного офісу."
 "Choose an amount.":
   de: "Wähle einen Betrag."
+  da: "Vælg et beløb."
   fr: "Choisissez un montant."
   nl: "Kies een bedrag."
   pl: "Wybierz kwotę."
@@ -1947,6 +2223,7 @@ _version: 2
   uk: "Виберіть суму."
 "There is no such request.":
   de: "Diese Anfrage gibt es nicht."
+  da: "Der er ingen sådan anmodning."
   fr: "Cette demande n'existe pas."
   nl: "Dat verzoek bestaat niet."
   pl: "Nie ma takiej prośby."
@@ -1954,6 +2231,7 @@ _version: 2
   uk: "Такого запиту немає."
 "Depot %{name} asks for your approval":
   de: "Depot %{name} bittet um deine Zustimmung"
+  da: "Afdeling %{name} beder om din godkendelse"
   fr: "Le dépôt %{name} demande votre accord"
   nl: "Depot %{name} vraagt om je goedkeuring"
   pl: "Zajezdnia %{name} prosi o twoją zgodę"
@@ -1961,6 +2239,7 @@ _version: 2
   uk: "Депо %{name} просить вашого схвалення"
 "Depot %{name} asks to spend up to %{amount}: %{reason}. Approve or refuse it on the head office's page.":
   de: "Depot %{name} möchte bis zu %{amount} ausgeben: %{reason}. Stimme auf der Seite der Zentrale zu oder lehne ab."
+  da: "Afdeling %{name} beder om at bruge op til %{amount}: %{reason}. Godkend eller afvis det på hovedkontorets side."
   fr: "Le dépôt %{name} demande à dépenser jusqu'à %{amount} : %{reason}. Acceptez ou refusez sur la page du siège."
   nl: "Depot %{name} wil tot %{amount} uitgeven: %{reason}. Keur het goed of wijs het af op de pagina van het hoofdkantoor."
   pl: "Zajezdnia %{name} prosi o wydanie do %{amount}: %{reason}. Zatwierdź lub odrzuć na stronie centrali."
@@ -1968,6 +2247,7 @@ _version: 2
   uk: "Депо %{name} просить дозволу витратити до %{amount}: %{reason}. Схваліть або відхиліть на сторінці головного офісу."
 "The head office approved %{amount}":
   de: "Die Zentrale hat %{amount} genehmigt"
+  da: "Hovedkontoret godkendte %{amount}"
   fr: "Le siège a approuvé %{amount}"
   nl: "Het hoofdkantoor keurde %{amount} goed"
   pl: "Centrala zatwierdziła %{amount}"
@@ -1975,6 +2255,7 @@ _version: 2
   uk: "Головний офіс схвалив %{amount}"
 "The head office approved purchases up to %{amount}: the dealer takes them now.":
   de: "Die Zentrale hat Käufe bis zu %{amount} genehmigt: Der Händler nimmt sie jetzt an."
+  da: "Hovedkontoret godkendte køb op til %{amount}: forhandleren tager dem nu."
   fr: "Le siège a approuvé des achats jusqu'à %{amount} : le concessionnaire les accepte maintenant."
   nl: "Het hoofdkantoor keurde aankopen tot %{amount} goed: de dealer neemt ze nu aan."
   pl: "Centrala zatwierdziła zakupy do %{amount}: dealer je teraz przyjmie."
@@ -1982,6 +2263,7 @@ _version: 2
   uk: "Головний офіс схвалив покупки до %{amount}: дилер тепер їх прийме."
 "The head office refused %{amount}":
   de: "Die Zentrale hat %{amount} abgelehnt"
+  da: "Hovedkontoret afviste %{amount}"
   fr: "Le siège a refusé %{amount}"
   nl: "Het hoofdkantoor wees %{amount} af"
   pl: "Centrala odrzuciła %{amount}"
@@ -1989,6 +2271,7 @@ _version: 2
   uk: "Головний офіс відхилив %{amount}"
 "The head office refused purchases up to %{amount}.":
   de: "Die Zentrale hat Käufe bis zu %{amount} abgelehnt."
+  da: "Hovedkontoret afviste køb op til %{amount}."
   fr: "Le siège a refusé des achats jusqu'à %{amount}."
   nl: "Het hoofdkantoor wees aankopen tot %{amount} af."
   pl: "Centrala odrzuciła zakupy do %{amount}."
@@ -1996,6 +2279,7 @@ _version: 2
   uk: "Головний офіс відхилив покупки до %{amount}."
 "Asked for up to %{amount}: %{reason}":
   de: "Angefragt: bis zu %{amount}: %{reason}"
+  da: "Anmodet om op til %{amount}: %{reason}"
   fr: "Demandé jusqu'à %{amount} : %{reason}"
   nl: "Gevraagd tot %{amount}: %{reason}"
   pl: "Poproszono o do %{amount}: %{reason}"
@@ -2003,6 +2287,7 @@ _version: 2
   uk: "Запитано до %{amount}: %{reason}"
 "Big purchases":
   de: "Große Käufe"
+  da: "Store køb"
   fr: "Gros achats"
   nl: "Grote aankopen"
   pl: "Duże zakupy"
@@ -2010,6 +2295,7 @@ _version: 2
   uk: "Великі покупки"
 "A purchase over %{limit} needs the head office's approval. Approved and not spent yet: %{left}.":
   de: "Ein Kauf über %{limit} braucht die Zustimmung der Zentrale. Genehmigt und noch nicht ausgegeben: %{left}."
+  da: "Et køb over %{limit} kræver hovedkontorets godkendelse. Godkendt og endnu ikke brugt: %{left}."
   fr: "Un achat de plus de %{limit} nécessite l'accord du siège. Approuvé et pas encore dépensé : %{left}."
   nl: "Een aankoop boven %{limit} heeft de goedkeuring van het hoofdkantoor nodig. Goedgekeurd en nog niet uitgegeven: %{left}."
   pl: "Zakup powyżej %{limit} wymaga zgody centrali. Zatwierdzone i jeszcze niewydane: %{left}."
@@ -2017,6 +2303,7 @@ _version: 2
   uk: "Покупка понад %{limit} потребує схвалення головного офісу. Схвалено й ще не витрачено: %{left}."
 "What for":
   de: "Wofür"
+  da: "Hvad til"
   fr: "Pour quoi"
   nl: "Waarvoor"
   pl: "Na co"
@@ -2024,6 +2311,7 @@ _version: 2
   uk: "На що"
 "Ask the head office":
   de: "Die Zentrale fragen"
+  da: "Spørg hovedkontoret"
   fr: "Demander au siège"
   nl: "Het hoofdkantoor vragen"
   pl: "Poproś centralę"
@@ -2031,6 +2319,7 @@ _version: 2
   uk: "Запитати головний офіс"
 "%{name} asks to spend up to %{amount}: %{reason}":
   de: "%{name} möchte bis zu %{amount} ausgeben: %{reason}"
+  da: "%{name} beder om at bruge op til %{amount}: %{reason}"
   fr: "%{name} demande à dépenser jusqu'à %{amount} : %{reason}"
   nl: "%{name} wil tot %{amount} uitgeven: %{reason}"
   pl: "%{name} prosi o wydanie do %{amount}: %{reason}"
@@ -2038,6 +2327,7 @@ _version: 2
   uk: "%{name} просить витратити до %{amount}: %{reason}"
 "Waiting for your approval":
   de: "Wartet auf deine Zustimmung"
+  da: "Venter på din godkendelse"
   fr: "En attente de votre accord"
   nl: "Wacht op je goedkeuring"
   pl: "Czeka na twoją zgodę"
@@ -2045,6 +2335,7 @@ _version: 2
   uk: "Чекає на ваше схвалення"
 "Asked the head office for up to %{amount}.":
   de: "Die Zentrale um bis zu %{amount} gebeten."
+  da: "Bad hovedkontoret om op til %{amount}."
   fr: "Demande envoyée au siège pour jusqu'à %{amount}."
   nl: "Het hoofdkantoor gevraagd om tot %{amount}."
   pl: "Poproszono centralę o do %{amount}."
@@ -2052,6 +2343,7 @@ _version: 2
   uk: "Запитано в головного офісу до %{amount}."
 "%{name} may spend up to %{amount}.":
   de: "%{name} darf bis zu %{amount} ausgeben."
+  da: "%{name} må bruge op til %{amount}."
   fr: "%{name} peut dépenser jusqu'à %{amount}."
   nl: "%{name} mag tot %{amount} uitgeven."
   pl: "%{name} może wydać do %{amount}."
@@ -2059,6 +2351,7 @@ _version: 2
   uk: "%{name} може витратити до %{amount}."
 "%{name}'s request for %{amount} refused.":
   de: "Die Anfrage von %{name} über %{amount} wurde abgelehnt."
+  da: "%{name}s anmodning om %{amount} afvist."
   fr: "La demande de %{name} pour %{amount} est refusée."
   nl: "Het verzoek van %{name} om %{amount} is afgewezen."
   pl: "Prośba %{name} o %{amount} odrzucona."
@@ -2066,6 +2359,7 @@ _version: 2
   uk: "Запит %{name} на %{amount} відхилено."
 "The guide":
   de: "Der Leitfaden"
+  da: "Vejledningen"
   fr: "Le guide"
   nl: "De gids"
   pl: "Przewodnik"
@@ -2073,6 +2367,7 @@ _version: 2
   uk: "Посібник"
 "Bus Company Online: the guide":
   de: "Bus Company Online: der Leitfaden"
+  da: "Bus Company Online: vejledningen"
   fr: "Bus Company Online : le guide"
   nl: "Bus Company Online: de gids"
   pl: "Bus Company Online: przewodnik"
@@ -2080,6 +2375,7 @@ _version: 2
   uk: "Bus Company Online: посібник"
 "What it is":
   de: "Worum es geht"
+  da: "Hvad det er"
   fr: "De quoi il s'agit"
   nl: "Wat het is"
   pl: "Czym to jest"
@@ -2087,6 +2383,7 @@ _version: 2
   uk: "Що це таке"
 "Bus Company Online is one big server where the players' bus companies run around the clock, on the server's clock. Each map has a world of its own: everybody on a map drives in the same world, among every company's buses in their own colours. Where nobody drives, the AI drives the companies' tours.":
   de: "Bus Company Online ist ein großer Server, auf dem die Busfirmen der Spieler rund um die Uhr laufen, nach der Uhr des Servers. Jede Karte hat ihre eigene Welt: Alle auf einer Karte fahren in derselben Welt, zwischen den Bussen aller Firmen in ihren eigenen Farben. Wo niemand fährt, fährt die KI die Umläufe der Firmen."
+  da: "Bus Company Online er én stor server, hvor spillernes buselskaber kører døgnet rundt, på serverens ur. Hvert kort har sin egen verden: alle på et kort kører i den samme verden, blandt alle selskabers busser i deres egne farver. Hvor ingen kører, kører AI'en selskabernes vognløb."
   fr: "Bus Company Online est un grand serveur où les entreprises de bus des joueurs tournent jour et nuit, à l'heure du serveur. Chaque carte a son propre monde : tous ceux qui sont sur une carte roulent dans le même monde, parmi les bus de toutes les entreprises dans leurs propres couleurs. Là où personne ne conduit, l'IA assure les services des entreprises."
   nl: "Bus Company Online is één grote server waarop de busbedrijven van de spelers de klok rond draaien, op de klok van de server. Elke kaart heeft een eigen wereld: iedereen op een kaart rijdt in dezelfde wereld, tussen de bussen van alle bedrijven in hun eigen kleuren. Waar niemand rijdt, rijdt de AI de omlopen van de bedrijven."
   pl: "Bus Company Online to jeden duży serwer, na którym firmy autobusowe graczy działają całą dobę, według zegara serwera. Każda mapa ma własny świat: wszyscy na danej mapie jeżdżą w tym samym świecie, wśród autobusów wszystkich firm w ich barwach. Tam, gdzie nikt nie jeździ, brygady firm obsługuje AI."
@@ -2094,6 +2391,7 @@ _version: 2
   uk: "Bus Company Online — це один великий сервер, де автобусні компанії гравців працюють цілодобово, за годинником сервера. Кожна карта має власний світ: усі на карті їздять в одному світі, серед автобусів усіх компаній у їхніх кольорах. Де ніхто не їздить, виходи компаній обслуговує ШІ."
 "Getting in":
   de: "Hineinkommen"
+  da: "At komme ind"
   fr: "Entrer"
   nl: "Binnenkomen"
   pl: "Jak dołączyć"
@@ -2101,6 +2399,7 @@ _version: 2
   uk: "Як увійти"
 "Ask the server's owner for its code (HUB-…) and enter it here. You log in with your Omsi-Hub account, this computer's Steam account, or both as one player. Your money on the server is your own: you start with some and earn more by driving.":
   de: "Frage den Besitzer des Servers nach seinem Code (HUB-…) und gib ihn hier ein. Du meldest dich mit deinem Omsi-Hub-Konto, dem Steam-Konto dieses Computers oder beidem als ein Spieler an. Dein Geld auf dem Server gehört dir: Du startest mit etwas und verdienst mehr durch Fahren."
+  da: "Bed serverens ejer om dens kode (HUB-…), og indtast den her. Du logger ind med din Omsi-Hub-konto, denne computers Steam-konto eller begge som én spiller. Dine penge på serveren er dine egne: du starter med nogle og tjener mere ved at køre."
   fr: "Demandez au propriétaire du serveur son code (HUB-…) et saisissez-le ici. Vous vous connectez avec votre compte Omsi-Hub, le compte Steam de cet ordinateur, ou les deux comme un seul joueur. Votre argent sur le serveur est à vous : vous commencez avec un peu et en gagnez davantage en conduisant."
   nl: "Vraag de eigenaar van de server om de code (HUB-…) en vul die hier in. Je logt in met je Omsi-Hub-account, het Steam-account van deze computer, of allebei als één speler. Je geld op de server is van jou: je begint met wat en verdient meer door te rijden."
   pl: "Poproś właściciela serwera o jego kod (HUB-…) i wpisz go tutaj. Logujesz się kontem Omsi-Hub, kontem Steam tego komputera albo obydwoma jako jeden gracz. Twoje pieniądze na serwerze są twoje: zaczynasz z pewną kwotą i zarabiasz więcej, jeżdżąc."
@@ -2108,6 +2407,7 @@ _version: 2
   uk: "Попросіть у власника сервера його код (HUB-…) і введіть його тут. Ви входите з обліковим записом Omsi-Hub, обліковим записом Steam цього комп'ютера або обома як один гравець. Гроші на сервері — ваші власні: ви починаєте з певною сумою і заробляєте більше, водячи автобус."
 "Joining a company":
   de: "Einer Firma beitreten"
+  da: "At deltage i et selskab"
   fr: "Rejoindre une entreprise"
   nl: "Bij een bedrijf komen"
   pl: "Dołączanie do firmy"
@@ -2115,6 +2415,7 @@ _version: 2
   uk: "Вступ до компанії"
 "Join opens a company's pages with the role its owner gave you: driver, planner, manager or co-owner. A driver gets his duties in the planning; Drive starts the map's world on the server if it is not running and puts you on your duty with the company's bus.":
   de: "Beitreten öffnet die Seiten einer Firma mit der Rolle, die dir ihr Besitzer gegeben hat: Fahrer, Planer, Manager oder Mitinhaber. Ein Fahrer bekommt seine Dienste in der Planung; Fahren startet die Welt der Karte auf dem Server, falls sie nicht läuft, und setzt dich mit dem Bus der Firma in deinen Dienst."
+  da: "Deltag åbner et selskabs sider med den rolle, dets ejer gav dig: chauffør, planlægger, leder eller medejer. En chauffør får sine vagter i planlægningen; Kør starter kortets verden på serveren, hvis den ikke kører, og sætter dig på din vagt med selskabets bus."
   fr: "Rejoindre ouvre les pages d'une entreprise avec le rôle que son propriétaire vous a donné : conducteur, planificateur, gestionnaire ou copropriétaire. Un conducteur reçoit ses services dans la planification ; Conduire démarre le monde de la carte sur le serveur s'il ne tourne pas et vous place sur votre service avec le bus de l'entreprise."
   nl: "Meedoen opent de pagina's van een bedrijf met de rol die de eigenaar je gaf: chauffeur, planner, manager of mede-eigenaar. Een chauffeur krijgt zijn diensten in de planning; Rijden start de wereld van de kaart op de server als die niet draait en zet je op je dienst met de bus van het bedrijf."
   pl: "Dołącz otwiera strony firmy z rolą nadaną ci przez właściciela: kierowca, planista, menedżer lub współwłaściciel. Kierowca dostaje służby w planowaniu; Jedź uruchamia świat mapy na serwerze, jeśli nie działa, i stawia cię na twojej służbie z autobusem firmy."
@@ -2122,6 +2423,7 @@ _version: 2
   uk: "«Вступити» відкриває сторінки компанії з роллю, яку дав вам власник: водій, планувальник, менеджер або співвласник. Водій отримує зміни в плануванні; «Їхати» запускає світ карти на сервері, якщо він не працює, і ставить вас на зміну з автобусом компанії."
 "Driving and pay":
   de: "Fahren und Lohn"
+  da: "Kørsel og løn"
   fr: "Conduite et salaire"
   nl: "Rijden en loon"
   pl: "Jazda i wynagrodzenie"
@@ -2129,6 +2431,7 @@ _version: 2
   uk: "Водіння та оплата"
 "The world measures every trip you drive: it has to see your bus on that tour. The company books the trip and keeps its share (its owner sets it); the rest is your pay, into your money on the server. Running late? Report the delay on your duty: a departure more than 15 minutes late that was not reported is fined.":
   de: "Die Welt misst jede Fahrt, die du fährst: Sie muss deinen Bus auf diesem Umlauf sehen. Die Firma bucht die Fahrt und behält ihren Anteil (ihr Besitzer legt ihn fest); der Rest ist dein Lohn, auf dein Geld auf dem Server. Verspätet? Melde die Verspätung in deinem Dienst: Eine Abfahrt mehr als 15 Minuten zu spät, die nicht gemeldet wurde, kostet eine Strafe."
+  da: "Verdenen måler hver tur, du kører: den skal se din bus på det vognløb. Selskabet bogfører turen og beholder sin andel (dets ejer fastsætter den); resten er din løn, ind på dine penge på serveren. Kører du for sent? Meld forsinkelsen på din vagt: en afgang mere end 15 minutter for sent, som ikke blev meldt, straffes med en bod."
   fr: "Le monde mesure chaque trajet que vous conduisez : il doit voir votre bus sur ce service. L'entreprise enregistre le trajet et garde sa part (fixée par son propriétaire) ; le reste est votre salaire, versé sur votre argent du serveur. En retard ? Signalez le retard sur votre service : un départ de plus de 15 minutes de retard non signalé est sanctionné."
   nl: "De wereld meet elke rit die je rijdt: hij moet je bus op die omloop zien. Het bedrijf boekt de rit en houdt zijn deel (de eigenaar bepaalt het); de rest is je loon, op je geld op de server. Te laat? Meld de vertraging bij je dienst: een vertrek van meer dan 15 minuten te laat dat niet gemeld is, levert een boete op."
   pl: "Świat mierzy każdy przejechany kurs: musi widzieć twój autobus na tej brygadzie. Firma księguje kurs i zatrzymuje swój udział (ustala go właściciel); reszta to twoje wynagrodzenie, na twoje pieniądze na serwerze. Spóźniasz się? Zgłoś opóźnienie w swojej służbie: niezgłoszony odjazd spóźniony o ponad 15 minut kończy się karą."
@@ -2136,6 +2439,7 @@ _version: 2
   uk: "Світ вимірює кожен ваш рейс: він має бачити ваш автобус на цьому виході. Компанія записує рейс і залишає свою частку (її встановлює власник); решта — ваша оплата, на ваші гроші на сервері. Запізнюєтеся? Повідомте про затримку у своїй зміні: незаявлене відправлення із запізненням понад 15 хвилин штрафується."
 "Founding your own company":
   de: "Eine eigene Firma gründen"
+  da: "At stifte dit eget selskab"
   fr: "Fonder votre propre entreprise"
   nl: "Een eigen bedrijf oprichten"
   pl: "Zakładanie własnej firmy"
@@ -2143,6 +2447,7 @@ _version: 2
   uk: "Заснування власної компанії"
 "Founding a company costs %{price} of your own money.":
   de: "Eine Firma zu gründen kostet %{price} deines eigenen Geldes."
+  da: "At stifte et selskab koster %{price} af dine egne penge."
   fr: "Fonder une entreprise coûte %{price} de votre propre argent."
   nl: "Een bedrijf oprichten kost %{price} van je eigen geld."
   pl: "Założenie firmy kosztuje %{price} z twoich pieniędzy."
@@ -2150,6 +2455,7 @@ _version: 2
   uk: "Заснування компанії коштує %{price} ваших власних грошей."
 "First you drive %{n} trips for a company on the server.":
   de: "Zuerst fährst du %{n} Fahrten für eine Firma auf dem Server."
+  da: "Først kører du %{n} ture for et selskab på serveren."
   fr: "D'abord, vous effectuez %{n} trajets pour une entreprise du serveur."
   nl: "Eerst rijd je %{n} ritten voor een bedrijf op de server."
   pl: "Najpierw przejeżdżasz %{n} kursów dla firmy na serwerze."
@@ -2157,6 +2463,7 @@ _version: 2
   uk: "Спершу ви виконуєте %{n} рейсів для компанії на сервері."
 "You take the leadership course: %{price}, %{days} days on the server's clock.":
   de: "Du machst den Führungskurs: %{price}, %{days} Tage nach der Uhr des Servers."
+  da: "Du tager lederskabskurset: %{price}, %{days} dage på serverens ur."
   fr: "Vous suivez la formation de direction : %{price}, %{days} jours à l'heure du serveur."
   nl: "Je volgt de leiderschapscursus: %{price}, %{days} dagen op de klok van de server."
   pl: "Przechodzisz kurs kierowniczy: %{price}, %{days} dni według zegara serwera."
@@ -2164,6 +2471,7 @@ _version: 2
   uk: "Ви проходите курс керівника: %{price}, %{days} дн. за годинником сервера."
 "And you pass a driving test on the server: book it in the found dialog - your next trip with a bus of that class is the test, to be driven to its end, on time, smoothly and safely.":
   de: "Und du bestehst eine Fahrprüfung auf dem Server: Buche sie im Gründungsdialog - deine nächste Fahrt mit einem Bus dieser Klasse ist die Prüfung, bis zum Ende, pünktlich, ruhig und sicher zu fahren."
+  da: "Og du består en køreprøve på serveren: book den i stiftelsesdialogen - din næste tur med en bus i den klasse er prøven, der skal køres til ende, til tiden, roligt og sikkert."
   fr: "Et vous réussissez un examen de conduite sur le serveur : réservez-le dans la fenêtre de création - votre prochain trajet avec un bus de cette classe est l'examen, à conduire jusqu'au bout, à l'heure, en douceur et en sécurité."
   nl: "En je haalt een rijexamen op de server: boek het in het oprichtingsvenster - je volgende rit met een bus van die klasse is het examen, tot het einde, op tijd, rustig en veilig te rijden."
   pl: "I zdajesz egzamin z jazdy na serwerze: zarezerwuj go w oknie zakładania - twój następny kurs autobusem tej klasy jest egzaminem, do przejechania do końca, punktualnie, płynnie i bezpiecznie."
@@ -2171,6 +2479,7 @@ _version: 2
   uk: "І ви складаєте іспит з водіння на сервері: забронюйте його у вікні заснування — ваш наступний рейс автобусом цього класу і є іспитом; його треба проїхати до кінця, вчасно, плавно й безпечно."
 "Lines and tenders":
   de: "Linien und Ausschreibungen"
+  da: "Linjer og udbud"
   fr: "Lignes et appels d'offres"
   nl: "Lijnen en aanbestedingen"
   pl: "Linie i przetargi"
@@ -2178,6 +2487,7 @@ _version: 2
   uk: "Лінії та тендери"
 "On each map a line belongs to one company at most, won in a tender. A tender is open for three days. Every company of the map and its operators hand in one sealed bid - a price per timetable hour, with diesel buses (a two-week contract) or electric ones (a month) - and nobody sees another's until the close; then all are opened, and the lowest price weighed with quality wins. A bid under 85 % of the authority's cost price is rejected as abnormally low, and the cap is that cost price by one and a half. An operator that wins runs the line for its term, but may give it up early: then it is out to tender again at once. A chrono event of the map that brings lines of its own - a match day's shuttles - puts them out to tender a week before it, for its days alone. A renewal is a new tender: it opens six days before the term ends and is decided three days before.":
   de: "Auf jeder Karte gehört eine Linie höchstens einer Firma, gewonnen in einer Ausschreibung. Eine Ausschreibung ist drei Tage offen. Jede Firma der Karte und ihre Betreiber geben ein verdecktes Gebot ab - einen Preis pro Fahrplanstunde, mit Dieselbussen (ein Vertrag über zwei Wochen) oder Elektrobussen (ein Monat) - und niemand sieht das eines anderen vor dem Schluss; dann werden alle geöffnet, und der niedrigste Preis, gewichtet mit der Qualität, gewinnt. Ein Gebot unter 85 % des Kostenpreises der Behörde wird als ungewöhnlich niedrig abgelehnt, und die Obergrenze ist dieser Kostenpreis mal anderthalb. Ein Betreiber, der gewinnt, fährt die Linie seine Laufzeit lang, kann sie aber früher aufgeben: dann wird sie sofort neu ausgeschrieben. Ein Chrono-Ereignis der Karte mit eigenen Linien - die Shuttles eines Spieltags - schreibt sie eine Woche vorher aus, nur für seine Tage. Eine Verlängerung ist eine neue Ausschreibung: Sie öffnet sechs Tage vor Ende der Laufzeit und wird drei Tage vorher entschieden."
+  da: "På hvert kort tilhører en linje højst ét selskab, vundet i et udbud. Et udbud er åbent i tre dage. Hvert selskab på kortet og dets operatører afgiver ét forseglet bud - en pris pr. køreplantime, med dieselbusser (en kontrakt på to uger) eller elbusser (en måned) - og ingen ser en andens før lukningen; så åbnes alle, og den laveste pris, vejet med kvalitet, vinder. Et bud under 85 % af trafikselskabets kostpris afvises som unormalt lavt, og loftet er den kostpris gange halvanden. En operatør, der vinder, kører linjen i sin løbetid, men kan opgive den tidligt: så er den i udbud igen med det samme. En chrono-begivenhed på kortet, der bringer egne linjer - en kampdags ekstrabusser - sender dem i udbud en uge før, kun for dens dage. En fornyelse er et nyt udbud: det åbner seks dage før løbetiden slutter og afgøres tre dage før."
   fr: "Sur chaque carte, une ligne appartient au plus à une entreprise, gagnée par appel d'offres. Un appel d'offres reste ouvert trois jours. Chaque entreprise de la carte et ses exploitants remettent une offre cachetée - un prix par heure de service, avec des bus diesel (un contrat de deux semaines) ou électriques (un mois) - et personne ne voit celle d'un autre avant la clôture ; toutes sont alors ouvertes, et le prix le plus bas pondéré par la qualité l'emporte. Une offre sous 85 % du prix de revient de l'autorité est rejetée comme anormalement basse, et le plafond est ce prix de revient multiplié par 1,5. Un exploitant qui gagne exploite la ligne pendant sa période, mais peut l'abandonner plus tôt : elle est alors remise en appel d'offres aussitôt. Un événement chrono de la carte qui apporte ses propres lignes - les navettes d'un jour de match - les met en appel d'offres une semaine avant, pour ses seuls jours. Un renouvellement est un nouvel appel d'offres : il ouvre six jours avant la fin de la période et est décidé trois jours avant."
   nl: "Op elke kaart hoort een lijn bij hoogstens één bedrijf, gewonnen in een aanbesteding. Een aanbesteding staat drie dagen open. Elk bedrijf van de kaart en haar vervoerders doen één gesloten bod - een prijs per dienstregelingsuur, met dieselbussen (een contract van twee weken) of elektrische (een maand) - en niemand ziet dat van een ander voor de sluiting; dan worden ze allemaal geopend, en de laagste prijs, gewogen met kwaliteit, wint. Een bod onder 85 % van de kostprijs van de opdrachtgever wordt als abnormaal laag afgewezen, en het plafond is die kostprijs maal anderhalf. Een vervoerder die wint, rijdt de lijn zijn looptijd lang, maar kan haar eerder opgeven: dan wordt ze meteen opnieuw aanbesteed. Een chrono-evenement van de kaart met eigen lijnen - de shuttles van een wedstrijddag - besteedt ze een week ervoor aan, alleen voor de dagen ervan. Een verlenging is een nieuwe aanbesteding: die opent zes dagen voor het einde van de looptijd en wordt drie dagen ervoor beslist."
   pl: "Na każdej mapie linia należy najwyżej do jednej firmy, wygrana w przetargu. Przetarg jest otwarty przez trzy dni. Każda firma mapy i jej przewoźnicy składają jedną zamkniętą ofertę - cenę za godzinę rozkładową, z autobusami diesla (umowa na dwa tygodnie) lub elektrycznymi (miesiąc) - i nikt nie widzi cudzej przed zamknięciem; wtedy wszystkie są otwierane, a wygrywa najniższa cena ważona jakością. Oferta poniżej 85 % ceny kosztowej organizatora jest odrzucana jako rażąco niska, a limit to ta cena kosztowa razy półtora. Przewoźnik, który wygra, obsługuje linię przez swój okres, ale może z niej zrezygnować wcześniej: wtedy od razu trafia ona ponownie do przetargu. Wydarzenie chrono mapy z własnymi liniami - wahadła w dniu meczu - wystawia je do przetargu tydzień wcześniej, tylko na swoje dni. Przedłużenie to nowy przetarg: otwiera się sześć dni przed końcem okresu i jest rozstrzygany trzy dni wcześniej."
@@ -2185,6 +2495,7 @@ _version: 2
   uk: "На кожній карті лінія належить щонайбільше одній компанії й виграється в тендері. Тендер відкритий три дні. Кожна компанія карти та її перевізники подають одну закриту пропозицію — ціну за годину за розкладом, з дизельними автобусами (контракт на два тижні) або електричними (на місяць), — і ніхто не бачить чужу до закриття; потім усі розкривають, і перемагає найнижча ціна з урахуванням якості. Пропозиція нижче 85 % собівартості замовника відхиляється як аномально низька, а стеля — ця собівартість, помножена на півтора. Перевізник-переможець обслуговує лінію свій строк, але може відмовитися від неї раніше: тоді вона одразу знову йде на тендер. Хроно-подія мапи з власними лініями - шатли дня матчу - виставляє їх на торги за тиждень, лише на свої дні. Продовження — це новий тендер: він відкривається за шість днів до кінця строку й вирішується за три дні."
 "The contract's rules":
   de: "Die Regeln des Vertrags"
+  da: "Kontraktens regler"
   fr: "Les règles du contrat"
   nl: "De regels van het contract"
   pl: "Zasady umowy"
@@ -2192,6 +2503,7 @@ _version: 2
   uk: "Правила контракту"
 "Each tour is run with the bus size its timetable asks for or a bigger one, and a contract won with electric buses with electric buses. The authority fines journeys not run, a bus too small, departures more than a minute early or more than 15 minutes late without a report, and complaints. A company that wins a line from another is offered the other's buses of it at their book value.":
   de: "Jeder Umlauf wird mit der Busgröße gefahren, die sein Fahrplan verlangt, oder einer größeren, und ein mit Elektrobussen gewonnener Vertrag mit Elektrobussen. Die Behörde bestraft nicht gefahrene Fahrten, einen zu kleinen Bus, Abfahrten mehr als eine Minute zu früh oder mehr als 15 Minuten zu spät ohne Meldung sowie Beschwerden. Eine Firma, die einer anderen eine Linie abnimmt, bekommt deren Busse dieser Linie zum Buchwert angeboten."
+  da: "Hvert vognløb køres med den busstørrelse, dets køreplan kræver, eller en større, og en kontrakt vundet med elbusser med elbusser. Trafikselskabet idømmer bod for ture, der ikke er kørt, en for lille bus, afgange mere end et minut for tidligt eller mere end 15 minutter for sent uden en melding, og klager. Et selskab, der vinder en linje fra et andet, tilbydes det andets busser på den til deres bogførte værdi."
   fr: "Chaque service est assuré avec la taille de bus que demande son horaire ou une plus grande, et un contrat gagné avec des bus électriques avec des bus électriques. L'autorité sanctionne les trajets non effectués, un bus trop petit, les départs plus d'une minute en avance ou plus de 15 minutes en retard sans signalement, ainsi que les réclamations. Une entreprise qui gagne une ligne à une autre se voit proposer les bus de celle-ci sur cette ligne à leur valeur comptable."
   nl: "Elke omloop wordt gereden met de busgrootte die de dienstregeling vraagt of een grotere, en een contract gewonnen met elektrische bussen met elektrische bussen. De opdrachtgever beboet niet gereden ritten, een te kleine bus, vertrekken meer dan een minuut te vroeg of meer dan 15 minuten te laat zonder melding, en klachten. Een bedrijf dat een lijn van een ander wint, krijgt de bussen van dat bedrijf op die lijn aangeboden tegen hun boekwaarde."
   pl: "Każda brygada jest obsługiwana autobusem o wielkości, jakiej wymaga rozkład, lub większym, a umowa wygrana z autobusami elektrycznymi — elektrycznymi. Organizator karze za niewykonane kursy, za mały autobus, odjazdy ponad minutę za wcześnie lub ponad 15 minut za późno bez zgłoszenia oraz za skargi. Firma, która wygrywa linię od innej, dostaje ofertę jej autobusów z tej linii po wartości księgowej."
@@ -2199,6 +2511,7 @@ _version: 2
   uk: "Кожен вихід обслуговується автобусом того розміру, якого вимагає розклад, або більшим, а контракт, виграний з електробусами, — електробусами. Замовник штрафує за невиконані рейси, замалий автобус, відправлення раніше ніж на хвилину чи пізніше ніж на 15 хвилин без заявки та за скарги. Компанії, що виграла лінію в іншої, пропонують автобуси тієї компанії з цієї лінії за балансовою вартістю."
 "The control room":
   de: "Die Leitstelle"
+  da: "Kontrolrummet"
   fr: "La salle de contrôle"
   nl: "De verkeersleiding"
   pl: "Dyspozytornia"
@@ -2206,6 +2519,7 @@ _version: 2
   uk: "Диспетчерська"
 "While the map's world runs, the fleet map and the Operations page show every bus where it is in the world, with its real delay; otherwise where the timetable has it. Service control can run a late bus out of service to its terminus, cancel a trip, or swap in a spare bus at the terminus - and the bus in the world does it.":
   de: "Solange die Welt der Karte läuft, zeigen die Flottenkarte und die Seite Betrieb jeden Bus dort, wo er in der Welt ist, mit seiner echten Verspätung; sonst dort, wo ihn der Fahrplan hat. Die Betriebsleitung kann einen verspäteten Bus ohne Halt zur Endhaltestelle schicken, eine Fahrt streichen oder an der Endhaltestelle einen Reservebus einsetzen - und der Bus in der Welt tut es."
+  da: "Mens kortets verden kører, viser flådekortet og siden Drift hver bus, hvor den er i verdenen, med dens rigtige forsinkelse; ellers hvor køreplanen har den. Trafikstyringen kan køre en forsinket bus ude af drift til dens endestation, aflyse en tur eller sætte en reservebus ind ved endestationen - og bussen i verdenen gør det."
   fr: "Tant que le monde de la carte tourne, la carte de la flotte et la page Exploitation montrent chaque bus là où il est dans le monde, avec son vrai retard ; sinon là où l'horaire le place. La régulation peut envoyer un bus en retard hors service jusqu'au terminus, supprimer un trajet ou mettre un bus de réserve au terminus - et le bus du monde le fait."
   nl: "Zolang de wereld van de kaart draait, tonen de vlootkaart en de pagina Bedrijfsvoering elke bus waar hij in de wereld is, met zijn echte vertraging; anders waar de dienstregeling hem heeft. De verkeersleiding kan een te late bus buiten dienst naar zijn eindpunt sturen, een rit laten vervallen of bij het eindpunt een reservebus inzetten - en de bus in de wereld doet het."
   pl: "Dopóki działa świat mapy, mapa floty i strona Eksploatacja pokazują każdy autobus tam, gdzie jest w świecie, z jego prawdziwym opóźnieniem; w przeciwnym razie tam, gdzie ma go rozkład. Dyspozytor może wysłać spóźniony autobus bez zatrzymywania do pętli, odwołać kurs albo podstawić rezerwę na pętli - a autobus w świecie to wykona."
@@ -2213,6 +2527,7 @@ _version: 2
   uk: "Поки світ карти працює, карта парку й сторінка «Експлуатація» показують кожен автобус там, де він є у світі, з його справжньою затримкою; інакше — там, де його ставить розклад. Диспетчер може відправити запізнілий автобус без зупинок до кінцевої, скасувати рейс або випустити резервний автобус на кінцевій — і автобус у світі це зробить."
 "A company that does well opens a depot on another map: its own lines, buses, staff and money there. The head office's owner sends money, moves buses and lends staff between the maps, and approves a depot's big purchases.":
   de: "Eine erfolgreiche Firma eröffnet ein Depot auf einer anderen Karte: mit eigenen Linien, Bussen, Personal und Geld dort. Der Besitzer der Zentrale schickt Geld, verlegt Busse und verleiht Personal zwischen den Karten und genehmigt die großen Käufe eines Depots."
+  da: "Et selskab, der går godt, åbner en afdeling på et andet kort: egne linjer, busser, personale og penge dér. Hovedkontorets ejer sender penge, flytter busser og udlåner personale mellem kortene og godkender en afdelings store køb."
   fr: "Une entreprise qui marche bien ouvre un dépôt sur une autre carte : avec ses propres lignes, bus, personnel et argent là-bas. Le propriétaire du siège envoie de l'argent, déplace des bus et prête du personnel entre les cartes, et approuve les gros achats d'un dépôt."
   nl: "Een bedrijf dat het goed doet, opent een depot op een andere kaart: met eigen lijnen, bussen, personeel en geld daar. De eigenaar van het hoofdkantoor stuurt geld, verplaatst bussen en leent personeel uit tussen de kaarten, en keurt de grote aankopen van een depot goed."
   pl: "Firma, której dobrze idzie, otwiera zajezdnię na innej mapie: z własnymi liniami, autobusami, personelem i pieniędzmi. Właściciel centrali przesyła pieniądze, przenosi autobusy i wypożycza personel między mapami oraz zatwierdza duże zakupy zajezdni."
@@ -2220,6 +2535,7 @@ _version: 2
   uk: "Успішна компанія відкриває депо на іншій карті: із власними лініями, автобусами, персоналом і грошима там. Власник головного офісу переказує гроші, переганяє автобуси й позичає персонал між картами, а також схвалює великі покупки депо."
 "In the red":
   de: "Im Minus"
+  da: "I minus"
   fr: "Dans le rouge"
   nl: "In de min"
   pl: "Na minusie"
@@ -2227,6 +2543,7 @@ _version: 2
   uk: "У мінусі"
 "A depot that closes its days in the red is warned twice, then goes bankrupt, and its head office covers its loss. A head office in the red gets the bank's emergency loan; in the red again while that loan runs, it is warned twice and then goes bankrupt, its depots with it.":
   de: "Ein Depot, das seine Tage im Minus abschließt, wird zweimal gewarnt, geht dann in Konkurs, und seine Zentrale deckt den Verlust. Eine Zentrale im Minus bekommt den Notkredit der Bank; gerät sie wieder ins Minus, solange er läuft, wird sie zweimal gewarnt und geht dann in Konkurs, mit ihren Depots."
+  da: "En afdeling, der afslutter sine dage i minus, advares to gange og går så konkurs, og dens hovedkontor dækker dens tab. Et hovedkontor i minus får bankens nødlån; er det i minus igen, mens lånet løber, advares det to gange og går så konkurs, dets afdelinger med."
   fr: "Un dépôt qui clôture ses journées dans le rouge est averti deux fois, puis fait faillite, et son siège couvre sa perte. Un siège dans le rouge reçoit le prêt d'urgence de la banque ; de nouveau dans le rouge pendant ce prêt, il est averti deux fois puis fait faillite, avec ses dépôts."
   nl: "Een depot dat zijn dagen in de min afsluit, krijgt twee waarschuwingen, gaat dan failliet, en zijn hoofdkantoor dekt het verlies. Een hoofdkantoor in de min krijgt de noodlening van de bank; weer in de min zolang die loopt, krijgt het twee waarschuwingen en gaat dan failliet, met zijn depots."
   pl: "Zajezdnia, która zamyka dni na minusie, dostaje dwa ostrzeżenia, potem bankrutuje, a centrala pokrywa jej stratę. Centrala na minusie dostaje pożyczkę awaryjną banku; jeśli znów będzie na minusie, gdy pożyczka trwa, dostaje dwa ostrzeżenia, a potem bankrutuje wraz z zajezdniami."
@@ -2234,6 +2551,7 @@ _version: 2
   uk: "Депо, яке закриває дні в мінусі, отримує два попередження, потім банкрутує, і головний офіс покриває його збиток. Головний офіс у мінусі отримує екстрений кредит банку; знову в мінусі, поки кредит діє, він отримує два попередження й потім банкрутує разом зі своїми депо."
 "The server runs on its machine's own time, summer time too, and nobody can change it. A company's day closes at midnight; when the server was off, the time is caught up.":
   de: "Der Server läuft nach der Uhrzeit seines Rechners, auch mit Sommerzeit, und niemand kann sie ändern. Der Tag einer Firma schließt um Mitternacht; war der Server aus, wird die Zeit nachgeholt."
+  da: "Serveren kører på sin maskines egen tid, også sommertid, og ingen kan ændre den. Et selskabs dag afsluttes ved midnat; når serveren var slukket, indhentes tiden."
   fr: "Le serveur suit l'heure de sa machine, heure d'été comprise, et personne ne peut la changer. La journée d'une entreprise se clôture à minuit ; quand le serveur était arrêté, le temps est rattrapé."
   nl: "De server loopt op de tijd van zijn eigen machine, ook zomertijd, en niemand kan die veranderen. De dag van een bedrijf sluit om middernacht; stond de server uit, dan wordt de tijd ingehaald."
   pl: "Serwer działa według czasu swojej maszyny, również letniego, i nikt nie może go zmienić. Dzień firmy zamyka się o północy; gdy serwer był wyłączony, czas jest nadrabiany."
@@ -2242,6 +2560,7 @@ _version: 2
 # (NexiconDK, Bus Company Online: a duty of the company's AI driver taken over by a player)
 "Take over this duty":
   de: "Diesen Dienst übernehmen"
+  da: "Overtag denne vagt"
   fr: "Reprendre ce service"
   nl: "Deze dienst overnemen"
   pl: "Przejmij tę służbę"
@@ -2249,6 +2568,7 @@ _version: 2
   uk: "Взяти цю зміну"
 "Ask to take over this duty":
   de: "Um Übernahme dieses Dienstes bitten"
+  da: "Bed om at overtage denne vagt"
   fr: "Demander à reprendre ce service"
   nl: "Vragen om deze dienst over te nemen"
   pl: "Poproś o przejęcie tej służby"
@@ -2256,6 +2576,7 @@ _version: 2
   uk: "Попросити взяти цю зміну"
 "Ask to take over from the next trip":
   de: "Um Übernahme ab der nächsten Fahrt bitten"
+  da: "Bed om at overtage fra næste tur"
   fr: "Demander à prendre le relais au prochain trajet"
   nl: "Vragen om over te nemen vanaf de volgende rit"
   pl: "Poproś o przejęcie od następnego kursu"
@@ -2263,6 +2584,7 @@ _version: 2
   uk: "Попросити зміну з наступного рейсу"
 "Under way: the AI drives it as %{name}":
   de: "Unterwegs: die KI fährt ihn als %{name}"
+  da: "Undervejs: AI'en kører den som %{name}"
   fr: "En cours : l'IA le conduit en tant que %{name}"
   nl: "Onderweg: de AI rijdt hem als %{name}"
   pl: "W trakcie: SI prowadzi ją jako %{name}"
@@ -2270,6 +2592,7 @@ _version: 2
   uk: "У дорозі: ШІ веде її як %{name}"
 "The AI drives it as %{name}":
   de: "Die KI fährt ihn als %{name}"
+  da: "AI'en kører den som %{name}"
   fr: "L'IA le conduit en tant que %{name}"
   nl: "De AI rijdt hem als %{name}"
   pl: "SI prowadzi ją jako %{name}"
@@ -2277,6 +2600,7 @@ _version: 2
   uk: "ШІ веде її як %{name}"
 "Driven by the AI":
   de: "Von der KI gefahren"
+  da: "Kørt af AI'en"
   fr: "Conduits par l'IA"
   nl: "Gereden door de AI"
   pl: "Prowadzone przez SI"
@@ -2284,6 +2608,7 @@ _version: 2
   uk: "Веде ШІ"
 "The company's AI drivers drive these in the server's world. Take one over: it is yours from its start, or from its next trip when it is under way.":
   de: "Die KI-Fahrer der Firma fahren diese in der Welt des Servers. Übernimm einen: er gehört dir ab seinem Beginn, oder ab seiner nächsten Fahrt, wenn er schon läuft."
+  da: "Selskabets AI-chauffører kører disse i serverens verden. Overtag en: den er din fra dens start eller fra dens næste tur, når den er undervejs."
   fr: "Les conducteurs IA de l'entreprise les assurent dans le monde du serveur. Reprends-en un : il est à toi dès son début, ou dès son prochain trajet s'il est en cours."
   nl: "De AI-chauffeurs van het bedrijf rijden deze in de wereld van de server. Neem er een over: hij is van jou vanaf het begin, of vanaf de volgende rit als hij al loopt."
   pl: "Kierowcy SI firmy prowadzą je w świecie serwera. Przejmij jedną: jest twoja od początku albo od następnego kursu, jeśli już trwa."
@@ -2291,6 +2616,7 @@ _version: 2
   uk: "Водії-ШІ компанії ведуть ці зміни у світі сервера. Візьми одну: вона твоя з початку або з наступного рейсу, якщо вже триває."
 "Under Duties you take an open duty, or take one over from the company's AI drivers: from its start, or from its next trip when it is under way.":
   de: "Unter Dienste nimmst du einen offenen Dienst oder übernimmst einen von den KI-Fahrern der Firma: ab seinem Beginn, oder ab seiner nächsten Fahrt, wenn er schon läuft."
+  da: "Under Vagter tager du en ledig vagt eller overtager en fra selskabets AI-chauffører: fra dens start eller fra dens næste tur, når den er undervejs."
   fr: "Sous Services, tu prends un service libre ou tu en reprends un aux conducteurs IA de l'entreprise : dès son début, ou dès son prochain trajet s'il est en cours."
   nl: "Onder Diensten neem je een open dienst, of neem je er een over van de AI-chauffeurs van het bedrijf: vanaf het begin, of vanaf de volgende rit als hij al loopt."
   pl: "W zakładce Służby bierzesz wolną służbę albo przejmujesz ją od kierowców SI firmy: od początku albo od następnego kursu, jeśli już trwa."
@@ -2298,6 +2624,7 @@ _version: 2
   uk: "У розділі «Зміни» ти береш вільну зміну або забираєш її у водіїв-ШІ компанії: з початку або з наступного рейсу, якщо вона вже триває."
 "A duty that begins with the bus in service starts on foot at its stop: the bus comes there, its driver gets out, and G at the front door takes the wheel. Not there within five minutes of the departure, the AI drives that trip and you take over at the next.":
   de: "Ein Dienst, der mit dem Bus im Einsatz beginnt, startet zu Fuß an seiner Haltestelle: der Bus kommt dorthin, sein Fahrer steigt aus, und G an der Vordertür übernimmt das Steuer. Bist du nicht binnen fünf Minuten nach der Abfahrt da, fährt die KI diese Fahrt, und du übernimmst bei der nächsten."
+  da: "En vagt, der begynder med bussen i drift, starter til fods ved sit stoppested: bussen kommer dertil, dens chauffør stiger ud, og G ved fordøren tager rattet. Er du ikke der inden fem minutter efter afgangen, kører AI'en den tur, og du overtager ved den næste."
   fr: "Un service qui commence avec le bus déjà en ligne démarre à pied à son arrêt : le bus y arrive, son conducteur descend, et G à la porte avant prend le volant. Si tu n'es pas là dans les cinq minutes après le départ, l'IA fait ce trajet et tu reprends au suivant."
   nl: "Een dienst die begint met de bus al in dienst, start te voet bij zijn halte: de bus komt daar, de chauffeur stapt uit, en G bij de voordeur neemt het stuur over. Ben je er niet binnen vijf minuten na vertrek, dan rijdt de AI die rit en neem je de volgende over."
   pl: "Służba, która zaczyna się, gdy autobus jest już na trasie, zaczyna się pieszo na jej przystanku: autobus tam przyjeżdża, kierowca wysiada, a G przy przednich drzwiach przejmuje kierownicę. Jeśli nie zdążysz w ciągu pięciu minut od odjazdu, SI prowadzi ten kurs, a ty przejmujesz następny."
@@ -2306,6 +2633,7 @@ _version: 2
 # (the server's page: a head office's depots folded under it, the department chosen at Join)
 "Show depots":
   de: "Depots zeigen"
+  da: "Vis afdelinger"
   fr: "Voir les dépôts"
   nl: "Depots tonen"
   pl: "Pokaż zajezdnie"
@@ -2313,6 +2641,7 @@ _version: 2
   uk: "Показати депо"
 "Hide depots":
   de: "Depots ausblenden"
+  da: "Skjul afdelinger"
   fr: "Masquer les dépôts"
   nl: "Depots verbergen"
   pl: "Ukryj zajezdnie"
@@ -2320,6 +2649,7 @@ _version: 2
   uk: "Сховати депо"
 "Which department?":
   de: "Welche Abteilung?"
+  da: "Hvilken afdeling?"
   fr: "Quel service ?"
   nl: "Welke afdeling?"
   pl: "Który oddział?"
@@ -2327,6 +2657,7 @@ _version: 2
   uk: "Який підрозділ?"
 "The company works on more than one map. Choose the department you join: the head office or one of its depots.":
   de: "Die Firma arbeitet auf mehr als einer Karte. Wähle die Abteilung, der du beitrittst: die Zentrale oder eines ihrer Depots."
+  da: "Selskabet arbejder på mere end ét kort. Vælg den afdeling, du deltager i: hovedkontoret eller en af dets afdelinger."
   fr: "L'entreprise travaille sur plusieurs cartes. Choisis le service que tu rejoins : le siège ou l'un de ses dépôts."
   nl: "Het bedrijf werkt op meer dan één kaart. Kies de afdeling waar je bij komt: het hoofdkantoor of een van de depots."
   pl: "Firma działa na więcej niż jednej mapie. Wybierz oddział, do którego dołączasz: centralę lub jedną z jej zajezdni."
@@ -2334,6 +2665,7 @@ _version: 2
   uk: "Компанія працює більше ніж на одній мапі. Обери підрозділ: головний офіс або одне з його депо."
 "Head office":
   de: "Zentrale"
+  da: "Hovedkontor"
   fr: "Siège"
   nl: "Hoofdkantoor"
   pl: "Centrala"
@@ -2341,6 +2673,7 @@ _version: 2
   uk: "Головний офіс"
 "%{lines} lines · %{buses} buses · %{depots} depots":
   de: "%{lines} Linien · %{buses} Busse · %{depots} Depots"
+  da: "%{lines} linjer · %{buses} busser · %{depots} afdelinger"
   fr: "%{lines} lignes · %{buses} bus · %{depots} dépôts"
   nl: "%{lines} lijnen · %{buses} bussen · %{depots} depots"
   pl: "Linie: %{lines} · autobusy: %{buses} · zajezdnie: %{depots}"

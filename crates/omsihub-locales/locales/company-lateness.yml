@@ -4,6 +4,7 @@ _version: 2
 # the driver missing, and RosterFlow's marks of the day's service.
 "a bus no longer in the fleet":
   de: "ein Bus, der nicht mehr zur Flotte gehört"
+  da: "en bus, der ikke længere er i flåden"
   fr: "un bus qui n'est plus dans la flotte"
   nl: "een bus die niet meer in de vloot zit"
   pl: "autobus, którego nie ma już we flocie"
@@ -11,6 +12,7 @@ _version: 2
   uk: "автобус, якого більше немає в парку"
 "a former employee":
   de: "ein ehemaliger Mitarbeiter"
+  da: "en tidligere medarbejder"
   fr: "un ancien employé"
   nl: "een oud-medewerker"
   pl: "były pracownik"
@@ -18,6 +20,7 @@ _version: 2
   uk: "колишній працівник"
 "%{name} signed on %{m} min late":
   de: "%{name} trat den Dienst %{m} Min. zu spät an"
+  da: "%{name} mødte ind %{m} min for sent"
   fr: "%{name} a pris son service avec %{m} min de retard"
   nl: "%{name} meldde zich %{m} min te laat"
   pl: "%{name} rozpoczął służbę %{m} min za późno"
@@ -25,6 +28,7 @@ _version: 2
   uk: "%{name} заступив на зміну із запізненням на %{m} хв"
 "%{name} came from a duty that ended at %{end}: %{gap} min planned for the relief":
   de: "%{name} kam aus einem Dienst, der um %{end} endete: %{gap} Min. für die Ablösung geplant"
+  da: "%{name} kom fra en vagt, der sluttede kl. %{end}: %{gap} min planlagt til afløsningen"
   fr: "%{name} venait d'un service terminé à %{end} : %{gap} min prévues pour la relève"
   nl: "%{name} kwam van een dienst die om %{end} eindigde: %{gap} min gepland voor de aflossing"
   pl: "%{name} przyszedł ze służby, która skończyła się o %{end}: %{gap} min zaplanowane na zmianę"
@@ -32,6 +36,7 @@ _version: 2
   uk: "%{name} прийшов зі зміни, що закінчилася о %{end}: на перезміну заплановано %{gap} хв"
 "bus %{bus} broke down at %{at}; the bus sent came at %{spare}":
   de: "Bus %{bus} fiel um %{at} aus; der geschickte Bus kam um %{spare}"
+  da: "bus %{bus} brød sammen kl. %{at}; den sendte bus kom kl. %{spare}"
   fr: "le bus %{bus} est tombé en panne à %{at} ; le bus envoyé est arrivé à %{spare}"
   nl: "bus %{bus} viel om %{at} uit; de gestuurde bus kwam om %{spare}"
   pl: "autobus %{bus} zepsuł się o %{at}; wysłany autobus przyjechał o %{spare}"
@@ -39,6 +44,7 @@ _version: 2
   uk: "автобус %{bus} зламався о %{at}; надісланий автобус прибув о %{spare}"
 "bus %{bus} broke down at %{at}; no bus was sent":
   de: "Bus %{bus} fiel um %{at} aus; kein Bus wurde geschickt"
+  da: "bus %{bus} brød sammen kl. %{at}; ingen bus blev sendt"
   fr: "le bus %{bus} est tombé en panne à %{at} ; aucun bus n'a été envoyé"
   nl: "bus %{bus} viel om %{at} uit; er werd geen bus gestuurd"
   pl: "autobus %{bus} zepsuł się o %{at}; nie wysłano autobusu"
@@ -46,6 +52,7 @@ _version: 2
   uk: "автобус %{bus} зламався о %{at}; автобус не надіслали"
 "rush-hour traffic: %{m} min over the running time":
   de: "Berufsverkehr: %{m} Min. über der Fahrzeit"
+  da: "myldretidstrafik: %{m} min over køretiden"
   fr: "trafic de pointe : %{m} min au-delà du temps de parcours"
   nl: "spitsverkeer: %{m} min boven de rijtijd"
   pl: "ruch w godzinach szczytu: %{m} min ponad czas przejazdu"
@@ -53,6 +60,7 @@ _version: 2
   uk: "година пік: на %{m} хв довше часу в дорозі"
 "traffic: %{m} min over the running time":
   de: "Verkehr: %{m} Min. über der Fahrzeit"
+  da: "trafik: %{m} min over køretiden"
   fr: "trafic : %{m} min au-delà du temps de parcours"
   nl: "verkeer: %{m} min boven de rijtijd"
   pl: "ruch: %{m} min ponad czas przejazdu"
@@ -60,6 +68,7 @@ _version: 2
   uk: "рух: на %{m} хв довше часу в дорозі"
 "%{name} drove %{m} min slower than the timetable":
   de: "%{name} fuhr %{m} Min. langsamer als der Fahrplan"
+  da: "%{name} kørte %{m} min langsommere end køreplanen"
   fr: "%{name} a roulé %{m} min plus lentement que l'horaire"
   nl: "%{name} reed %{m} min langzamer dan de dienstregeling"
   pl: "%{name} jechał %{m} min wolniej niż rozkład"
@@ -67,6 +76,7 @@ _version: 2
   uk: "%{name} їхав на %{m} хв повільніше за розклад"
 "bus %{bus} in poor condition: %{m} min":
   de: "Bus %{bus} in schlechtem Zustand: %{m} Min."
+  da: "bus %{bus} i dårlig stand: %{m} min"
   fr: "bus %{bus} en mauvais état : %{m} min"
   nl: "bus %{bus} in slechte staat: %{m} min"
   pl: "autobus %{bus} w złym stanie: %{m} min"
@@ -74,6 +84,7 @@ _version: 2
   uk: "автобус %{bus} у поганому стані: %{m} хв"
 "an event on the line (roadworks, a diversion, the weather): %{m} min":
   de: "ein Ereignis auf der Linie (Baustelle, Umleitung, Wetter): %{m} Min."
+  da: "en begivenhed på linjen (vejarbejde, en omkørsel, vejret): %{m} min"
   fr: "un événement sur la ligne (travaux, déviation, météo) : %{m} min"
   nl: "een gebeurtenis op de lijn (werkzaamheden, omleiding, weer): %{m} min"
   pl: "zdarzenie na linii (roboty, objazd, pogoda): %{m} min"
@@ -81,6 +92,7 @@ _version: 2
   uk: "подія на лінії (ремонт, об'їзд, погода): %{m} хв"
 "delays on the way: %{m} min":
   de: "Verzögerungen unterwegs: %{m} Min."
+  da: "forsinkelser undervejs: %{m} min"
   fr: "retards en route : %{m} min"
   nl: "vertraging onderweg: %{m} min"
   pl: "opóźnienia na trasie: %{m} min"
@@ -88,6 +100,7 @@ _version: 2
   uk: "затримки в дорозі: %{m} хв"
 "No bus: %{bus} was planned, %{why}":
   de: "Kein Bus: %{bus} war geplant, %{why}"
+  da: "Ingen bus: %{bus} var planlagt, %{why}"
   fr: "Pas de bus : %{bus} était prévu, %{why}"
   nl: "Geen bus: %{bus} was gepland, %{why}"
   pl: "Brak autobusu: zaplanowano %{bus}, %{why}"
@@ -95,6 +108,7 @@ _version: 2
   uk: "Немає автобуса: був запланований %{bus}, %{why}"
 "No bus: %{why}":
   de: "Kein Bus: %{why}"
+  da: "Ingen bus: %{why}"
   fr: "Pas de bus : %{why}"
   nl: "Geen bus: %{why}"
   pl: "Brak autobusu: %{why}"
@@ -102,6 +116,7 @@ _version: 2
   uk: "Немає автобуса: %{why}"
 "No driver: %{name} was planned, %{why}":
   de: "Kein Fahrer: %{name} war geplant, %{why}"
+  da: "Ingen chauffør: %{name} var planlagt, %{why}"
   fr: "Pas de conducteur : %{name} était prévu, %{why}"
   nl: "Geen chauffeur: %{name} was gepland, %{why}"
   pl: "Brak kierowcy: zaplanowano %{name}, %{why}"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Немає водія: був запланований %{name}, %{why}"
 "No driver: %{why}":
   de: "Kein Fahrer: %{why}"
+  da: "Ingen chauffør: %{why}"
   fr: "Pas de conducteur : %{why}"
   nl: "Geen chauffeur: %{why}"
   pl: "Brak kierowcy: %{why}"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Немає водія: %{why}"
 "%{name} came late: the trips before they came were dropped":
   de: "%{name} kam zu spät: die Fahrten vor der Ankunft fielen aus"
+  da: "%{name} kom for sent: turene, før de kom, blev droppet"
   fr: "%{name} est arrivé en retard : les trajets d'avant son arrivée ont été supprimés"
   nl: "%{name} kwam te laat: de ritten van voor de aankomst vielen uit"
   pl: "%{name} przyszedł za późno: kursy sprzed przyjścia odwołano"
@@ -123,6 +140,7 @@ _version: 2
   uk: "%{name} запізнився: рейси до його приходу скасовано"
 "Duty %{n}":
   de: "Dienst %{n}"
+  da: "Vagt %{n}"
   fr: "Service %{n}"
   nl: "Dienst %{n}"
   pl: "Służba %{n}"
@@ -130,6 +148,7 @@ _version: 2
   uk: "Зміна %{n}"
 "block %{b}":
   de: "Umlauf %{b}"
+  da: "vognløb %{b}"
   fr: "bloc %{b}"
   nl: "omloop %{b}"
   pl: "blok %{b}"
@@ -137,6 +156,7 @@ _version: 2
   uk: "блок %{b}"
 "trip %{id}":
   de: "Fahrt %{id}"
+  da: "tur %{id}"
   fr: "trajet %{id}"
   nl: "rit %{id}"
   pl: "kurs %{id}"
@@ -144,6 +164,7 @@ _version: 2
   uk: "рейс %{id}"
 "%{dep} trip dropped":
   de: "Fahrt um %{dep} ausgefallen"
+  da: "Turen kl. %{dep} droppet"
   fr: "trajet de %{dep} supprimé"
   nl: "rit van %{dep} uitgevallen"
   pl: "kurs o %{dep} odwołany"
@@ -151,6 +172,7 @@ _version: 2
   uk: "рейс о %{dep} скасовано"
 "before that: %{what}":
   de: "davor: %{what}"
+  da: "før det: %{what}"
   fr: "avant cela : %{what}"
   nl: "daarvoor: %{what}"
   pl: "wcześniej: %{what}"
@@ -158,6 +180,7 @@ _version: 2
   uk: "до цього: %{what}"
 "%{dep} trip ran %{m} min late":
   de: "Fahrt um %{dep} %{m} Min. verspätet"
+  da: "Turen kl. %{dep} kørte %{m} min for sent"
   fr: "trajet de %{dep} avec %{m} min de retard"
   nl: "rit van %{dep} %{m} min te laat"
   pl: "kurs o %{dep} spóźniony o %{m} min"
@@ -165,6 +188,7 @@ _version: 2
   uk: "рейс о %{dep} запізнився на %{m} хв"
 "%{amount} deducted: %{share} of the trip's %{value}":
   de: "%{amount} abgezogen: %{share} der %{value} der Fahrt"
+  da: "%{amount} fratrukket: %{share} af turens %{value}"
   fr: "%{amount} déduits : %{share} des %{value} du trajet"
   nl: "%{amount} ingehouden: %{share} van de %{value} van de rit"
   pl: "potrącono %{amount}: %{share} z %{value} za kurs"
@@ -172,6 +196,7 @@ _version: 2
   uk: "утримано %{amount}: %{share} від %{value} за рейс"
 "No deduction in this game mode":
   de: "In diesem Spielmodus kein Abzug"
+  da: "Intet fradrag i denne spiltilstand"
   fr: "Aucune déduction dans ce mode de jeu"
   nl: "Geen inhouding in deze spelmodus"
   pl: "W tym trybie gry bez potrąceń"
@@ -179,6 +204,7 @@ _version: 2
   uk: "У цьому режимі гри без утримань"
 "Counted as a trip lost":
   de: "Wie eine ausgefallene Fahrt gezählt"
+  da: "Regnet som en tabt tur"
   fr: "Compté comme un trajet perdu"
   nl: "Geteld als een uitgevallen rit"
   pl: "Liczony jak kurs utracony"
@@ -186,6 +212,7 @@ _version: 2
   uk: "Зараховано як втрачений рейс"
 "Add %{m} min layover at %{stop} on line %{n}: %{k} trips carried a delay on from there (block %{block}, %{time}).":
   de: "%{m} Min. mehr Wendezeit in %{stop} auf Linie %{n}: %{k} Fahrten nahmen von dort eine Verspätung mit (Umlauf %{block}, %{time})."
+  da: "Tilføj %{m} min ophold ved %{stop} på linje %{n}: %{k} ture bar en forsinkelse videre derfra (vognløb %{block}, %{time})."
   fr: "Ajoutez %{m} min de battement à %{stop} sur la ligne %{n} : %{k} trajets y ont repris un retard (bloc %{block}, %{time})."
   nl: "Voeg %{m} min keertijd toe in %{stop} op lijn %{n}: %{k} ritten namen daar een vertraging mee (omloop %{block}, %{time})."
   pl: "Dodaj %{m} min postoju w %{stop} na linii %{n}: %{k} kursów przeniosło stamtąd opóźnienie (blok %{block}, %{time})."
@@ -193,6 +220,7 @@ _version: 2
   uk: "Додайте %{m} хв стоянки на %{stop} на лінії %{n}: %{k} рейсів понесли звідти запізнення (блок %{block}, %{time})."
 "Open the Timeplan":
   de: "Den Timeplan öffnen"
+  da: "Åbn Tidsplanen"
   fr: "Ouvrir le Timeplan"
   nl: "Het Timeplan openen"
   pl: "Otwórz Timeplan"
@@ -200,6 +228,7 @@ _version: 2
   uk: "Відкрити Timeplan"
 "Line %{n}: %{m} min more running time from %{from} to %{to}: %{k} trips ran late in the rush hour.":
   de: "Linie %{n}: %{m} Min. mehr Fahrzeit von %{from} bis %{to}: %{k} Fahrten waren im Berufsverkehr verspätet."
+  da: "Linje %{n}: %{m} min mere køretid fra %{from} til %{to}: %{k} ture kørte for sent i myldretiden."
   fr: "Ligne %{n} : %{m} min de temps de parcours en plus de %{from} à %{to} : %{k} trajets étaient en retard à l'heure de pointe."
   nl: "Lijn %{n}: %{m} min meer rijtijd van %{from} tot %{to}: %{k} ritten waren in de spits te laat."
   pl: "Linia %{n}: %{m} min więcej czasu przejazdu od %{from} do %{to}: %{k} kursów spóźniło się w szczycie."
@@ -207,6 +236,7 @@ _version: 2
   uk: "Лінія %{n}: на %{m} хв більше часу в дорозі з %{from} до %{to}: %{k} рейсів запізнилися в годину пік."
 "The relief at %{time} on block %{block} is too tight: %{name} came %{m} min late from the duty before. Plan more time between the two duties, or give it to another driver.":
   de: "Die Ablösung um %{time} auf Umlauf %{block} ist zu knapp: %{name} kam %{m} Min. zu spät aus dem Dienst davor. Planen Sie mehr Zeit zwischen den beiden Diensten oder geben Sie ihn einem anderen Fahrer."
+  da: "Afløsningen kl. %{time} på vognløb %{block} er for knap: %{name} kom %{m} min for sent fra vagten før. Planlæg mere tid mellem de to vagter, eller giv den til en anden chauffør."
   fr: "La relève de %{time} sur le bloc %{block} est trop serrée : %{name} est arrivé avec %{m} min de retard du service précédent. Prévoyez plus de temps entre les deux services, ou confiez-le à un autre conducteur."
   nl: "De aflossing om %{time} op omloop %{block} is te krap: %{name} kwam %{m} min te laat van de dienst ervoor. Plan meer tijd tussen de twee diensten, of geef hem aan een andere chauffeur."
   pl: "Zmiana o %{time} w bloku %{block} jest zbyt ciasna: %{name} przyszedł %{m} min za późno z poprzedniej służby. Zaplanuj więcej czasu między służbami albo daj ją innemu kierowcy."
@@ -214,6 +244,7 @@ _version: 2
   uk: "Перезміна о %{time} у блоці %{block} надто щільна: %{name} прийшов з попередньої зміни на %{m} хв пізніше. Заплануйте більше часу між змінами або віддайте її іншому водієві."
 "%{name} signed on late on %{d} of the last days: a punctuality course, a talk, or another duty that begins later.":
   de: "%{name} trat an %{d} der letzten Tage zu spät an: ein Pünktlichkeitskurs, ein Gespräch oder ein Dienst, der später beginnt."
+  da: "%{name} mødte ind for sent på %{d} af de seneste dage: et punktlighedskursus, en samtale eller en anden vagt, der begynder senere."
   fr: "%{name} a pris son service en retard %{d} des derniers jours : une formation à la ponctualité, un entretien, ou un service qui commence plus tard."
   nl: "%{name} meldde zich op %{d} van de laatste dagen te laat: een cursus stiptheid, een gesprek of een dienst die later begint."
   pl: "%{name} spóźnił się na służbę w %{d} z ostatnich dni: kurs punktualności, rozmowa albo służba, która zaczyna się później."
@@ -221,6 +252,7 @@ _version: 2
   uk: "%{name} запізнювався на зміну в %{d} з останніх днів: курс пунктуальності, розмова або зміна, що починається пізніше."
 "%{name} drove %{s} trips late today: a punctuality course, or a duty with more time.":
   de: "%{name} fuhr heute %{s} Fahrten verspätet: ein Pünktlichkeitskurs oder ein Dienst mit mehr Zeit."
+  da: "%{name} kørte %{s} ture for sent i dag: et punktlighedskursus eller en vagt med mere tid."
   fr: "%{name} a fait %{s} trajets en retard aujourd'hui : une formation à la ponctualité, ou un service avec plus de temps."
   nl: "%{name} reed vandaag %{s} ritten te laat: een cursus stiptheid, of een dienst met meer tijd."
   pl: "%{name} spóźnił dziś %{s} kursów: kurs punktualności albo służba z większym zapasem czasu."
@@ -228,6 +260,7 @@ _version: 2
   uk: "%{name} сьогодні запізнився на %{s} рейсах: курс пунктуальності або зміна із запасом часу."
 "%{name} signed on late on %{d} of the last days and drove %{s} trips late today: a punctuality course, a talk, or another duty.":
   de: "%{name} trat an %{d} der letzten Tage zu spät an und fuhr heute %{s} Fahrten verspätet: ein Pünktlichkeitskurs, ein Gespräch oder ein anderer Dienst."
+  da: "%{name} mødte ind for sent på %{d} af de seneste dage og kørte %{s} ture for sent i dag: et punktlighedskursus, en samtale eller en anden vagt."
   fr: "%{name} a pris son service en retard %{d} des derniers jours et a fait %{s} trajets en retard aujourd'hui : une formation à la ponctualité, un entretien, ou un autre service."
   nl: "%{name} meldde zich op %{d} van de laatste dagen te laat en reed vandaag %{s} ritten te laat: een cursus stiptheid, een gesprek of een andere dienst."
   pl: "%{name} spóźnił się na służbę w %{d} z ostatnich dni i spóźnił dziś %{s} kursów: kurs punktualności, rozmowa albo inna służba."
@@ -235,6 +268,7 @@ _version: 2
   uk: "%{name} запізнювався на зміну в %{d} з останніх днів і сьогодні запізнився на %{s} рейсах: курс пунктуальності, розмова або інша зміна."
 "Show the person":
   de: "Person zeigen"
+  da: "Vis personen"
   fr: "Voir la personne"
   nl: "Persoon tonen"
   pl: "Pokaż osobę"
@@ -242,6 +276,7 @@ _version: 2
   uk: "Показати працівника"
 "Swap the duty":
   de: "Dienst tauschen"
+  da: "Byt vagten"
   fr: "Échanger le service"
   nl: "Dienst ruilen"
   pl: "Zamień służbę"
@@ -249,6 +284,7 @@ _version: 2
   uk: "Поміняти зміну"
 "Bus %{bus} held %{k} trips up (condition %{c} %, %{b} breakdowns so far): give it a service.":
   de: "Bus %{bus} hat %{k} Fahrten aufgehalten (Zustand %{c} %, bisher %{b} Pannen): Geben Sie ihm eine Wartung."
+  da: "Bus %{bus} holdt %{k} ture op (stand %{c} %, %{b} sammenbrud indtil videre): giv den et service."
   fr: "Le bus %{bus} a retardé %{k} trajets (état %{c} %, %{b} pannes jusqu'ici) : faites-le entretenir."
   nl: "Bus %{bus} hield %{k} ritten op (staat %{c} %, tot nu toe %{b} pannes): geef hem een onderhoudsbeurt."
   pl: "Autobus %{bus} opóźnił %{k} kursów (stan %{c} %, dotąd %{b} awarii): oddaj go do przeglądu."
@@ -256,6 +292,7 @@ _version: 2
   uk: "Автобус %{bus} затримав %{k} рейсів (стан %{c} %, поломок поки %{b}): відправте його на обслуговування."
 "Show the bus":
   de: "Bus zeigen"
+  da: "Vis bussen"
   fr: "Voir le bus"
   nl: "Bus tonen"
   pl: "Pokaż autobus"
@@ -263,6 +300,7 @@ _version: 2
   uk: "Показати автобус"
 "Against late running":
   de: "Gegen Verspätungen"
+  da: "Mod forsinkelser"
   fr: "Contre les retards"
   nl: "Tegen vertragingen"
   pl: "Przeciw opóźnieniom"
@@ -270,6 +308,7 @@ _version: 2
   uk: "Проти запізнень"
 "%{n} of %{t} late":
   de: "%{n} von %{t} verspätet"
+  da: "%{n} af %{t} forsinkede"
   fr: "%{n} sur %{t} en retard"
   nl: "%{n} van %{t} te laat"
   pl: "%{n} z %{t} spóźnionych"
@@ -277,6 +316,7 @@ _version: 2
   uk: "%{n} з %{t} із запізненням"
 "Late running":
   de: "Verspätungen"
+  da: "Forsinkelser"
   fr: "Retards"
   nl: "Vertragingen"
   pl: "Opóźnienia"
@@ -284,6 +324,7 @@ _version: 2
   uk: "Запізнення"
 "Click a trip for why":
   de: "Klicken Sie auf eine Fahrt für den Grund"
+  da: "Klik på en tur for at se hvorfor"
   fr: "Cliquez sur un trajet pour savoir pourquoi"
   nl: "Klik op een rit voor de reden"
   pl: "Kliknij kurs, aby zobaczyć przyczynę"
@@ -291,6 +332,7 @@ _version: 2
   uk: "Натисніть на рейс, щоб дізнатися причину"
 "No trip ran late.":
   de: "Keine Fahrt war verspätet."
+  da: "Ingen tur kørte for sent."
   fr: "Aucun trajet n'a été en retard."
   nl: "Geen rit was te laat."
   pl: "Żaden kurs się nie spóźnił."
@@ -298,6 +340,7 @@ _version: 2
   uk: "Жоден рейс не запізнився."
 "On time by line":
   de: "Pünktlich nach Linie"
+  da: "Punktlighed pr. linje"
   fr: "Ponctualité par ligne"
   nl: "Op tijd per lijn"
   pl: "Punktualność według linii"
@@ -305,6 +348,7 @@ _version: 2
   uk: "Пунктуальність за лініями"
 "On time by hour":
   de: "Pünktlich nach Stunde"
+  da: "Punktlighed pr. time"
   fr: "Ponctualité par heure"
   nl: "Op tijd per uur"
   pl: "Punktualność według godzin"
@@ -312,6 +356,7 @@ _version: 2
   uk: "Пунктуальність за годинами"
 "Duties late most":
   de: "Dienste mit den meisten Verspätungen"
+  da: "Mest forsinkede vagter"
   fr: "Services les plus en retard"
   nl: "Diensten het vaakst te laat"
   pl: "Służby najczęściej spóźnione"
@@ -319,6 +364,7 @@ _version: 2
   uk: "Зміни з найбільшими запізненнями"
 "Deductions for late running":
   de: "Abzüge für Verspätungen"
+  da: "Fradrag for forsinkelser"
   fr: "Déductions pour retards"
   nl: "Inhoudingen voor vertragingen"
   pl: "Potrącenia za opóźnienia"
@@ -326,6 +372,7 @@ _version: 2
   uk: "Утримання за запізнення"
 "How was this worked out?":
   de: "Wie wurde das berechnet?"
+  da: "Hvordan blev dette regnet ud?"
   fr: "Comment est-ce calculé ?"
   nl: "Hoe is dit berekend?"
   pl: "Jak to obliczono?"
@@ -333,6 +380,7 @@ _version: 2
   uk: "Як це розраховано?"
 "Each late trip pays a share of its value under the contract (what dropping it would cost): 10 % up to 5 minutes, rising evenly to 100 % at 30 minutes; from 30 minutes the whole trip is deducted, as for a trip lost.":
   de: "Jede verspätete Fahrt zahlt einen Anteil ihres Werts im Vertrag (was ihr Ausfall kosten würde): 10 % bis 5 Minuten, gleichmäßig steigend bis 100 % bei 30 Minuten; ab 30 Minuten wird die ganze Fahrt abgezogen, wie bei einer ausgefallenen Fahrt."
+  da: "Hver forsinket tur betaler en andel af sin værdi under kontrakten (hvad det ville koste at droppe den): 10 % op til 5 minutter, stigende jævnt til 100 % ved 30 minutter; fra 30 minutter fratrækkes hele turen, som for en tabt tur."
   fr: "Chaque trajet en retard paie une part de sa valeur au contrat (ce que coûterait sa suppression) : 10 % jusqu'à 5 minutes, puis en hausse régulière jusqu'à 100 % à 30 minutes ; dès 30 minutes le trajet entier est déduit, comme un trajet perdu."
   nl: "Elke rit die te laat is betaalt een deel van zijn waarde in het contract (wat uitvallen zou kosten): 10 % tot 5 minuten, gelijkmatig oplopend tot 100 % bij 30 minuten; vanaf 30 minuten wordt de hele rit ingehouden, als bij een uitgevallen rit."
   pl: "Każdy spóźniony kurs płaci część swojej wartości z umowy (tyle, ile kosztowałoby jego odwołanie): 10 % do 5 minut, równo rosnąco do 100 % przy 30 minutach; od 30 minut potrąca się cały kurs, jak za kurs utracony."
@@ -340,6 +388,7 @@ _version: 2
   uk: "Кожен запізнілий рейс платить частку своєї вартості за контрактом (скільки коштувало б його скасування): 10 % до 5 хвилин, рівномірно зростає до 100 % при 30 хвилинах; від 30 хвилин утримується весь рейс, як за втрачений."
 "A trip leaves when its bus is back from the trip before and its driver is there: a delay carries on along the block until a layover absorbs it. On the way the hour's traffic, the driver, the bus's condition and the day's events add minutes.":
   de: "Eine Fahrt beginnt, wenn ihr Bus von der Fahrt davor zurück und ihr Fahrer da ist: eine Verspätung zieht sich durch den Umlauf, bis eine Wendezeit sie auffängt. Unterwegs kommen der Verkehr der Stunde, der Fahrer, der Zustand des Busses und die Ereignisse des Tages hinzu."
+  da: "En tur kører, når dens bus er tilbage fra turen før, og dens chauffør er der: en forsinkelse føres videre langs vognløbet, indtil et ophold opsuger den. Undervejs lægger timens trafik, chaufføren, busens stand og dagens begivenheder minutter til."
   fr: "Un trajet part quand son bus est revenu du trajet précédent et que son conducteur est là : un retard se propage le long du bloc jusqu'à ce qu'un battement l'absorbe. En route, le trafic de l'heure, le conducteur, l'état du bus et les événements du jour ajoutent des minutes."
   nl: "Een rit vertrekt als zijn bus terug is van de rit ervoor en zijn chauffeur er is: een vertraging loopt door in de omloop tot een keertijd hem opvangt. Onderweg voegen het verkeer van het uur, de chauffeur, de staat van de bus en de gebeurtenissen van de dag minuten toe."
   pl: "Kurs rusza, gdy jego autobus wrócił z poprzedniego kursu i kierowca jest na miejscu: opóźnienie przechodzi wzdłuż bloku, aż postój je wchłonie. Na trasie minuty dodają ruch danej godziny, kierowca, stan autobusu i zdarzenia dnia."
@@ -347,6 +396,7 @@ _version: 2
   uk: "Рейс вирушає, коли його автобус повернувся з попереднього рейсу і водій на місці: запізнення переходить уздовж блоку, доки його не поглине стоянка. У дорозі хвилини додають рух у цю годину, водій, стан автобуса та події дня."
 "Casual deducts nothing; school transport counts twice.":
   de: "Casual zieht nichts ab; Schülerverkehr zählt doppelt."
+  da: "Afslappet fratrækker intet; skolekørsel tæller dobbelt."
   fr: "Casual ne déduit rien ; le transport scolaire compte double."
   nl: "Casual houdt niets in; leerlingenvervoer telt dubbel."
   pl: "Casual nic nie potrąca; przewozy szkolne liczą się podwójnie."
@@ -354,6 +404,7 @@ _version: 2
   uk: "У Casual утримань немає; шкільні перевезення рахуються вдвічі."
 "No day closed yet.":
   de: "Noch kein Tag abgeschlossen."
+  da: "Ingen dag afsluttet endnu."
   fr: "Aucune journée clôturée pour l'instant."
   nl: "Nog geen dag afgesloten."
   pl: "Nie zamknięto jeszcze żadnego dnia."
@@ -361,6 +412,7 @@ _version: 2
   uk: "Жоден день ще не закрито."
 "The last %{n} days closed, from %{from}":
   de: "Die letzten %{n} abgeschlossenen Tage, ab %{from}"
+  da: "De seneste %{n} afsluttede dage, fra %{from}"
   fr: "Les %{n} dernières journées clôturées, depuis le %{from}"
   nl: "De laatste %{n} afgesloten dagen, vanaf %{from}"
   pl: "Ostatnie %{n} zamknięte dni, od %{from}"
@@ -368,6 +420,7 @@ _version: 2
   uk: "Останні %{n} закритих днів, з %{from}"
 "Each deduction":
   de: "Jeder Abzug"
+  da: "Hvert fradrag"
   fr: "Chaque déduction"
   nl: "Elke inhouding"
   pl: "Każde potrącenie"
@@ -375,6 +428,7 @@ _version: 2
   uk: "Кожне утримання"
 "Today's service":
   de: "Heutiger Betrieb"
+  da: "Dagens drift"
   fr: "Le service du jour"
   nl: "De dienst van vandaag"
   pl: "Dzisiejsza obsługa"
@@ -382,6 +436,7 @@ _version: 2
   uk: "Сьогоднішній рух"
 "Service of %{day}":
   de: "Betrieb vom %{day}"
+  da: "Drift den %{day}"
   fr: "Le service du %{day}"
   nl: "De dienst van %{day}"
   pl: "Obsługa z %{day}"
@@ -389,6 +444,7 @@ _version: 2
   uk: "Рух за %{day}"
 "%{f} trips dropped, %{l} late":
   de: "%{f} Fahrten ausgefallen, %{l} verspätet"
+  da: "%{f} ture droppet, %{l} forsinkede"
   fr: "%{f} trajets supprimés, %{l} en retard"
   nl: "%{f} ritten uitgevallen, %{l} te laat"
   pl: "%{f} kursów odwołanych, %{l} spóźnionych"
@@ -396,6 +452,7 @@ _version: 2
   uk: "%{f} рейсів скасовано, %{l} із запізненням"
 "No trip dropped or late.":
   de: "Keine Fahrt ausgefallen oder verspätet."
+  da: "Ingen tur droppet eller forsinket."
   fr: "Aucun trajet supprimé ni en retard."
   nl: "Geen rit uitgevallen of te laat."
   pl: "Żaden kurs nie został odwołany ani nie spóźnił się."
@@ -403,6 +460,7 @@ _version: 2
   uk: "Жоден рейс не скасовано і не запізнився."
 "%{n} dropped":
   de: "%{n} ausgefallen"
+  da: "%{n} droppet"
   fr: "%{n} supprimés"
   nl: "%{n} uitgevallen"
   pl: "%{n} odwołanych"
@@ -410,6 +468,7 @@ _version: 2
   uk: "%{n} скасовано"
 "Drivers signing on late":
   de: "Fahrer mit spätem Dienstantritt"
+  da: "Chauffører, der møder ind for sent"
   fr: "Conducteurs en retard à la prise de service"
   nl: "Chauffeurs die zich te laat melden"
   pl: "Kierowcy spóźnieni na służbę"
@@ -417,6 +476,7 @@ _version: 2
   uk: "Водії, що запізнилися на зміну"
 "Delays carried on (layover too short)":
   de: "Mitgenommene Verspätungen (Wendezeit zu kurz)"
+  da: "Forsinkelser ført videre (opholdet for kort)"
   fr: "Retards propagés (battement trop court)"
   nl: "Doorgegeven vertragingen (keertijd te kort)"
   pl: "Przeniesione opóźnienia (za krótki postój)"
@@ -424,6 +484,7 @@ _version: 2
   uk: "Перенесені запізнення (надто коротка стоянка)"
 "Reliefs too tight":
   de: "Zu knappe Ablösungen"
+  da: "Afløsninger for knappe"
   fr: "Relèves trop serrées"
   nl: "Te krappe aflossingen"
   pl: "Zbyt ciasne zmiany"
@@ -431,6 +492,7 @@ _version: 2
   uk: "Надто щільні перезміни"
 "Rush-hour traffic":
   de: "Berufsverkehr"
+  da: "Myldretidstrafik"
   fr: "Trafic de pointe"
   nl: "Spitsverkeer"
   pl: "Ruch w godzinach szczytu"
@@ -438,6 +500,7 @@ _version: 2
   uk: "Година пік"
 "Slow driving":
   de: "Langsames Fahren"
+  da: "Langsom kørsel"
   fr: "Conduite lente"
   nl: "Langzaam rijden"
   pl: "Wolna jazda"
@@ -445,6 +508,7 @@ _version: 2
   uk: "Повільна їзда"
 "Buses in poor condition":
   de: "Busse in schlechtem Zustand"
+  da: "Busser i dårlig stand"
   fr: "Bus en mauvais état"
   nl: "Bussen in slechte staat"
   pl: "Autobusy w złym stanie"
@@ -452,6 +516,7 @@ _version: 2
   uk: "Автобуси в поганому стані"
 "Events on the line":
   de: "Ereignisse auf der Linie"
+  da: "Begivenheder på linjen"
   fr: "Événements sur la ligne"
   nl: "Gebeurtenissen op de lijn"
   pl: "Zdarzenia na linii"
@@ -459,6 +524,7 @@ _version: 2
   uk: "Події на лінії"
 "Delays on the way":
   de: "Verzögerungen unterwegs"
+  da: "Forsinkelser undervejs"
   fr: "Retards en route"
   nl: "Vertraging onderweg"
   pl: "Opóźnienia na trasie"
@@ -466,6 +532,7 @@ _version: 2
   uk: "Затримки в дорозі"
 "the empty run of %{dep} reached %{stop} at %{at} (%{late} min late), %{layover} min layover":
   de: "die Leerfahrt um %{dep} erreichte %{stop} um %{at} (%{late} Min. verspätet), %{layover} Min. Wendezeit"
+  da: "tomkørslen kl. %{dep} nåede %{stop} kl. %{at} (%{late} min for sent), %{layover} min ophold"
   fr: "le haut-le-pied de %{dep} est arrivé à %{stop} à %{at} (%{late} min de retard), %{layover} min de battement"
   nl: "de lege rit van %{dep} bereikte %{stop} om %{at} (%{late} min te laat), %{layover} min keertijd"
   pl: "przejazd techniczny o %{dep} dotarł do %{stop} o %{at} (%{late} min spóźnienia), %{layover} min postoju"
@@ -473,6 +540,7 @@ _version: 2
   uk: "порожній рейс о %{dep} прибув на %{stop} о %{at} (запізнення %{late} хв), стоянка %{layover} хв"
 "the %{dep} trip reached %{stop} at %{at} (%{late} min late), %{layover} min layover":
   de: "die Fahrt um %{dep} erreichte %{stop} um %{at} (%{late} Min. verspätet), %{layover} Min. Wendezeit"
+  da: "turen kl. %{dep} nåede %{stop} kl. %{at} (%{late} min for sent), %{layover} min ophold"
   fr: "le trajet de %{dep} est arrivé à %{stop} à %{at} (%{late} min de retard), %{layover} min de battement"
   nl: "de rit van %{dep} bereikte %{stop} om %{at} (%{late} min te laat), %{layover} min keertijd"
   pl: "kurs o %{dep} dotarł do %{stop} o %{at} (%{late} min spóźnienia), %{layover} min postoju"
@@ -480,6 +548,7 @@ _version: 2
   uk: "рейс о %{dep} прибув на %{stop} о %{at} (запізнення %{late} хв), стоянка %{layover} хв"
 "Bus %{n} (%{plate}, %{model}) broke down on line %{line}, block %{block}, at %{time} with %{name} at the wheel: in the workshop until %{date}, repairs %{amount}.":
   de: "Bus %{n} (%{plate}, %{model}) fiel auf Linie %{line}, Umlauf %{block}, um %{time} mit %{name} am Steuer aus: in der Werkstatt bis %{date}, Reparatur %{amount}."
+  da: "Bus %{n} (%{plate}, %{model}) brød sammen på linje %{line}, vognløb %{block}, kl. %{time} med %{name} ved rattet: på værkstedet indtil %{date}, reparationer %{amount}."
   fr: "Le bus %{n} (%{plate}, %{model}) est tombé en panne sur la ligne %{line}, bloc %{block}, à %{time} avec %{name} au volant : à l'atelier jusqu'au %{date}, réparation %{amount}."
   nl: "Bus %{n} (%{plate}, %{model}) viel uit op lijn %{line}, omloop %{block}, om %{time} met %{name} aan het stuur: in de werkplaats tot %{date}, reparatie %{amount}."
   pl: "Autobus %{n} (%{plate}, %{model}) zepsuł się na linii %{line}, blok %{block}, o %{time}, prowadził %{name}: w warsztacie do %{date}, naprawa %{amount}."
@@ -487,6 +556,7 @@ _version: 2
   uk: "Автобус %{n} (%{plate}, %{model}) зламався на лінії %{line}, блок %{block}, о %{time}, за кермом %{name}: у майстерні до %{date}, ремонт %{amount}."
 "%{from} to %{to} min late: %{share} %":
   de: "%{from} bis %{to} Min. verspätet: %{share} %"
+  da: "%{from} til %{to} min for sent: %{share} %"
   fr: "%{from} à %{to} min de retard : %{share} %"
   nl: "%{from} tot %{to} min te laat: %{share} %"
   pl: "%{from} do %{to} min spóźnienia: %{share} %"
@@ -494,6 +564,7 @@ _version: 2
   uk: "Від %{from} до %{to} хв запізнення: %{share} %"
 "%{from} to %{to} min late: %{low} to %{high} %":
   de: "%{from} bis %{to} Min. verspätet: %{low} bis %{high} %"
+  da: "%{from} til %{to} min for sent: %{low} til %{high} %"
   fr: "%{from} à %{to} min de retard : %{low} à %{high} %"
   nl: "%{from} tot %{to} min te laat: %{low} tot %{high} %"
   pl: "%{from} do %{to} min spóźnienia: %{low} do %{high} %"
@@ -501,6 +572,7 @@ _version: 2
   uk: "Від %{from} до %{to} хв запізнення: від %{low} до %{high} %"
 "%{from} min or more: the whole trip":
   de: "%{from} Min. oder mehr: die ganze Fahrt"
+  da: "%{from} min eller mere: hele turen"
   fr: "%{from} min ou plus : le trajet entier"
   nl: "%{from} min of meer: de hele rit"
   pl: "%{from} min lub więcej: cały kurs"
@@ -508,6 +580,7 @@ _version: 2
   uk: "%{from} хв і більше: весь рейс"
 "No trips in this hour":
   de: "Keine Fahrten in dieser Stunde"
+  da: "Ingen ture i denne time"
   fr: "Aucun trajet à cette heure"
   nl: "Geen ritten in dit uur"
   pl: "Brak kursów w tej godzinie"
@@ -515,6 +588,7 @@ _version: 2
   uk: "У цю годину рейсів немає"
 "%{p} % late":
   de: "%{p} % verspätet"
+  da: "%{p} % forsinkede"
   fr: "%{p} % en retard"
   nl: "%{p} % te laat"
   pl: "%{p} % spóźnionych"
@@ -522,6 +596,7 @@ _version: 2
   uk: "%{p} % із запізненням"
 "%{n} of %{t} trips late, %{m} min late on average":
   de: "%{n} von %{t} Fahrten verspätet, im Schnitt %{m} Min."
+  da: "%{n} af %{t} ture forsinkede, %{m} min for sent i gennemsnit"
   fr: "%{n} trajets sur %{t} en retard, %{m} min de retard en moyenne"
   nl: "%{n} van %{t} ritten te laat, gemiddeld %{m} min"
   pl: "%{n} z %{t} kursów spóźnionych, średnio o %{m} min"
@@ -529,6 +604,7 @@ _version: 2
   uk: "%{n} з %{t} рейсів із запізненням, у середньому на %{m} хв"
 "%{n} of these trips carried a delay on from the trip before: the layover was too short to take it up.":
   de: "%{n} dieser Fahrten übernahmen eine Verspätung von der Fahrt davor: die Wendezeit war zu kurz, um sie aufzufangen."
+  da: "%{n} af disse ture bar en forsinkelse videre fra turen før: opholdet var for kort til at opsuge den."
   fr: "%{n} de ces trajets ont repris un retard du trajet précédent : le temps de battement était trop court pour l'absorber."
   nl: "%{n} van deze ritten namen een vertraging over van de rit ervoor: de keertijd was te kort om die op te vangen."
   pl: "%{n} z tych kursów przejęło opóźnienie z kursu wcześniejszego: postój na pętli był za krótki, by je odrobić."
@@ -536,6 +612,7 @@ _version: 2
   uk: "%{n} з цих рейсів успадкували запізнення попереднього рейсу: відстій на кінцевій був надто коротким, щоб його погасити."
 "A trip counts as late from %{m} whole minutes behind the timetable, at its start or its end: %{under} min 59 s behind is still on time.":
   de: "Eine Fahrt gilt ab %{m} vollen Minuten hinter dem Fahrplan als verspätet, am Anfang oder am Ende: %{under} Min. 59 s dahinter ist noch pünktlich."
+  da: "En tur tæller som forsinket fra %{m} hele minutter bagud i forhold til køreplanen, ved dens start eller slutning: %{under} min 59 s bagud er stadig til tiden."
   fr: "Un trajet compte comme en retard à partir de %{m} minutes entières sur l'horaire, au départ ou à l'arrivée : %{under} min 59 s de retard, c'est encore à l'heure."
   nl: "Een rit telt als te laat vanaf %{m} hele minuten achter de dienstregeling, bij vertrek of aankomst: %{under} min 59 s erachter is nog op tijd."
   pl: "Kurs liczy się jako spóźniony od %{m} pełnych minut za rozkładem, na początku lub na końcu: %{under} min 59 s za rozkładem to jeszcze punktualnie."
@@ -543,6 +620,7 @@ _version: 2
   uk: "Рейс вважається запізнілим за відставання від розкладу на %{m} повні хвилини, на початку або в кінці: відставання в %{under} хв 59 с ще вважається вчасно."
 "Each late trip counts once in each column: in its tier, and under the cause that brought it the most minutes. A delay carried on from the trip before counts under the cause it began with (the traffic, a driver, a bus), less what the layovers took up on the way.":
   de: "Jede verspätete Fahrt zählt in jeder Spalte einmal: in ihrer Stufe und unter der Ursache, die ihr die meisten Minuten brachte. Eine von der Fahrt davor übernommene Verspätung zählt unter der Ursache, mit der sie begann (der Verkehr, ein Fahrer, ein Bus), abzüglich dessen, was die Wendezeiten unterwegs aufgefangen haben."
+  da: "Hver forsinket tur tæller én gang i hver kolonne: i sit trin og under den årsag, der gav den flest minutter. En forsinkelse ført videre fra turen før tæller under den årsag, den begyndte med (trafikken, en chauffør, en bus), fratrukket det, opholdene opsugede undervejs."
   fr: "Chaque trajet en retard compte une fois dans chaque colonne : dans son palier, et sous la cause qui lui a valu le plus de minutes. Un retard repris du trajet précédent compte sous la cause qui l'a fait naître (la circulation, un conducteur, un bus), moins ce que les temps de battement ont absorbé en route."
   nl: "Elke te late rit telt in elke kolom één keer: in zijn trede, en onder de oorzaak die hem de meeste minuten bracht. Een vertraging overgenomen van de rit ervoor telt onder de oorzaak waarmee ze begon (het verkeer, een chauffeur, een bus), min wat de keertijden onderweg opvingen."
   pl: "Każdy spóźniony kurs liczy się raz w każdej kolumnie: w swoim progu i pod przyczyną, która przyniosła mu najwięcej minut. Opóźnienie przejęte z kursu wcześniejszego liczy się pod przyczyną, od której się zaczęło (ruch, kierowca, autobus), pomniejszone o to, co odrobiły postoje po drodze."

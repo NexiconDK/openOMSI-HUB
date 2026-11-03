@@ -4,6 +4,7 @@ _version: 2
 # "Copy to…" of the rows ticked; a duty's sign-on, sign-off and break points.
 "Colour by":
   de: "Farbe nach"
+  da: "Farve efter"
   fr: "Couleur par"
   nl: "Kleur op"
   pl: "Kolor według"
@@ -11,6 +12,7 @@ _version: 2
   uk: "Колір за"
 "Line (route)":
   de: "Linie (Route)"
+  da: "Linje (rute)"
   fr: "Ligne (itinéraire)"
   nl: "Lijn (route)"
   pl: "Linia (trasa)"
@@ -18,6 +20,7 @@ _version: 2
   uk: "Лінія (маршрут)"
 "Block (vehicle)":
   de: "Umlauf (Fahrzeug)"
+  da: "Vognløb (køretøj)"
   fr: "Bloc (véhicule)"
   nl: "Omloop (voertuig)"
   pl: "Obieg (pojazd)"
@@ -25,6 +28,7 @@ _version: 2
   uk: "Випуск (машина)"
 "Show the legend":
   de: "Die Legende zeigen"
+  da: "Vis forklaringen"
   fr: "Afficher la légende"
   nl: "De legenda tonen"
   pl: "Pokaż legendę"
@@ -32,6 +36,7 @@ _version: 2
   uk: "Показати легенду"
 "Hide the legend":
   de: "Die Legende ausblenden"
+  da: "Skjul forklaringen"
   fr: "Masquer la légende"
   nl: "De legenda verbergen"
   pl: "Ukryj legendę"
@@ -39,6 +44,7 @@ _version: 2
   uk: "Сховати легенду"
 "Sign on at":
   de: "Dienstbeginn in"
+  da: "Møder ind ved"
   fr: "Prise de service à"
   nl: "Aanmelden bij"
   pl: "Rozpoczęcie w"
@@ -46,6 +52,7 @@ _version: 2
   uk: "Явка в"
 "Sign off at":
   de: "Dienstende in"
+  da: "Fyraften ved"
   fr: "Fin de service à"
   nl: "Afmelden bij"
   pl: "Zakończenie w"
@@ -53,6 +60,7 @@ _version: 2
   uk: "Здача в"
 "Break at":
   de: "Pause in"
+  da: "Pause ved"
   fr: "Pause à"
   nl: "Pauze bij"
   pl: "Przerwa w"
@@ -60,6 +68,7 @@ _version: 2
   uk: "Перерва в"
 "Where the bus is":
   de: "Wo der Bus steht"
+  da: "Hvor bussen er"
   fr: "Là où est le bus"
   nl: "Waar de bus staat"
   pl: "Tam, gdzie stoi autobus"
@@ -67,6 +76,7 @@ _version: 2
   uk: "Там, де автобус"
 "As the company has it":
   de: "Wie im Betrieb eingestellt"
+  da: "Som selskabet har det"
   fr: "Comme l'entreprise l'a réglé"
   nl: "Zoals het bedrijf het heeft"
   pl: "Jak ustawiono w firmie"
@@ -74,6 +84,7 @@ _version: 2
   uk: "Як задано в компанії"
 "Drivers sign on at":
   de: "Fahrer beginnen den Dienst in"
+  da: "Chauffører møder ind ved"
   fr: "Les conducteurs prennent leur service à"
   nl: "Chauffeurs melden zich aan bij"
   pl: "Kierowcy rozpoczynają służbę w"
@@ -81,6 +92,7 @@ _version: 2
   uk: "Водії з'являються на зміну в"
 "Drivers sign off at":
   de: "Fahrer beenden den Dienst in"
+  da: "Chauffører har fyraften ved"
   fr: "Les conducteurs finissent leur service à"
   nl: "Chauffeurs melden zich af bij"
   pl: "Kierowcy kończą służbę w"
@@ -88,6 +100,7 @@ _version: 2
   uk: "Водії здають зміну в"
 "Where the bus is, or a relief point that allows duties to begin and end there: the driver travels to the bus and back as Duty Travel has it. A duty can choose its own in its panel.":
   de: "Wo der Bus steht, oder ein Ablösepunkt, an dem Dienste beginnen und enden dürfen: der Fahrer kommt zum Bus und zurück, wie die Wegezeiten im Dienst es vorgeben. Ein Dienst kann in seinem Fenster einen eigenen wählen."
+  da: "Hvor bussen er, eller et afløsningspunkt, der tillader, at vagter begynder og slutter dér: chaufføren rejser til bussen og tilbage, som Vagtrejse har det. En vagt kan vælge sit eget i sit panel."
   fr: "Là où est le bus, ou un point de relève où les services peuvent commencer et finir : le conducteur rejoint le bus et en revient comme le disent les trajets en service. Un service peut choisir le sien dans son panneau."
   nl: "Waar de bus staat, of een aflospunt waar diensten mogen beginnen en eindigen: de chauffeur reist naar de bus en terug zoals Reizen in dienst het zegt. Een dienst kan in zijn paneel een eigen kiezen."
   pl: "Tam, gdzie stoi autobus, albo punkt zmiany, w którym służby mogą się zaczynać i kończyć: kierowca dojeżdża do autobusu i z powrotem tak, jak podają dojazdy w służbie. Służba może wybrać własny w swoim panelu."
@@ -95,6 +108,7 @@ _version: 2
   uk: "Там, де автобус, або пункт перезміни, де зміни можуть починатися й закінчуватися: водій дістається до автобуса й назад, як задано в переїздах у зміні. Зміна може вибрати свій у своїй панелі."
 "Sign-on point of duty %{d} set":
   de: "Ort des Dienstbeginns von Dienst %{d} gesetzt"
+  da: "Mødested for vagt %{d} angivet"
   fr: "Lieu de prise de service du service %{d} défini"
   nl: "Aanmeldplek van dienst %{d} ingesteld"
   pl: "Miejsce rozpoczęcia służby %{d} ustawione"
@@ -102,6 +116,7 @@ _version: 2
   uk: "Місце явки зміни %{d} задано"
 "Sign-off point of duty %{d} set":
   de: "Ort des Dienstendes von Dienst %{d} gesetzt"
+  da: "Fyraftenssted for vagt %{d} angivet"
   fr: "Lieu de fin de service du service %{d} défini"
   nl: "Afmeldplek van dienst %{d} ingesteld"
   pl: "Miejsce zakończenia służby %{d} ustawione"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Місце здачі зміни %{d} задано"
 "Break place of duty %{d} set":
   de: "Pausenort von Dienst %{d} gesetzt"
+  da: "Pausested for vagt %{d} angivet"
   fr: "Lieu de pause du service %{d} défini"
   nl: "Pauzeplek van dienst %{d} ingesteld"
   pl: "Miejsce przerwy służby %{d} ustawione"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Місце перерви зміни %{d} задано"
 "A break at %{stop}, where no break may be taken":
   de: "Eine Pause in %{stop}, wo keine Pause erlaubt ist"
+  da: "En pause ved %{stop}, hvor ingen pause må holdes"
   fr: "Une pause à %{stop}, où aucune pause n'est permise"
   nl: "Een pauze bij %{stop}, waar geen pauze mag"
   pl: "Przerwa w %{stop}, gdzie przerwa jest niedozwolona"
@@ -123,6 +140,7 @@ _version: 2
   uk: "Перерва на %{stop}, де перерва не дозволена"
 "Copy to…":
   de: "Kopieren nach…"
+  da: "Kopiér til…"
   fr: "Copier vers…"
   nl: "Kopiëren naar…"
   pl: "Kopiuj do…"
@@ -130,6 +148,7 @@ _version: 2
   uk: "Копіювати в…"
 "Copy the rows ticked to other days: only the trips that match there go along (Ctrl+C, then Ctrl+V on another day)":
   de: "Die angehakten Zeilen auf andere Tage kopieren: nur die Fahrten, die dort passen, kommen mit (Strg+C, dann Strg+V an einem anderen Tag)"
+  da: "Kopiér de afkrydsede rækker til andre dage: kun de ture, der passer dér, følger med (Ctrl+C, derefter Ctrl+V på en anden dag)"
   fr: "Copier les lignes cochées vers d'autres jours : seules les courses qui y correspondent suivent (Ctrl+C, puis Ctrl+V un autre jour)"
   nl: "De aangevinkte rijen naar andere dagen kopiëren: alleen de ritten die daar passen gaan mee (Ctrl+C, dan Ctrl+V op een andere dag)"
   pl: "Kopiuj zaznaczone wiersze na inne dni: idą tylko kursy, które tam pasują (Ctrl+C, potem Ctrl+V w innym dniu)"
@@ -137,6 +156,7 @@ _version: 2
   uk: "Копіювати позначені рядки на інші дні: переносяться лише рейси, що там збігаються (Ctrl+C, потім Ctrl+V в інший день)"
 "Copy %{n} rows to…":
   de: "%{n} Zeilen kopieren nach…"
+  da: "Kopiér %{n} rækker til…"
   fr: "Copier %{n} lignes vers…"
   nl: "%{n} rijen kopiëren naar…"
   pl: "Kopiuj wiersze (%{n}) do…"
@@ -144,6 +164,7 @@ _version: 2
   uk: "Копіювати рядки (%{n}) в…"
 "Same day type":
   de: "Gleiche Tagesart"
+  da: "Samme dagtype"
   fr: "Même type de jour"
   nl: "Zelfde dagtype"
   pl: "Ten sam typ dnia"
@@ -151,6 +172,7 @@ _version: 2
   uk: "Той самий тип дня"
 "Only the trips that match there are copied (same line, way, departure and stops); the rest are listed. It goes into your draft: SAVE keeps it.":
   de: "Nur die Fahrten, die dort passen (gleiche Linie, Richtung, Abfahrt und Haltestellen), werden kopiert; die übrigen werden aufgelistet. Es kommt in deinen Entwurf: SPEICHERN behält es."
+  da: "Kun de ture, der passer dér, kopieres (samme linje, vej, afgang og stoppesteder); resten vises på listen. Det kommer i dit udkast: GEM beholder det."
   fr: "Seules les courses qui y correspondent (même ligne, sens, départ et arrêts) sont copiées ; les autres sont listées. Cela va dans ton brouillon : ENREGISTRER le garde."
   nl: "Alleen de ritten die daar passen (zelfde lijn, richting, vertrek en haltes) worden gekopieerd; de rest wordt opgesomd. Het komt in je concept: OPSLAAN houdt het."
   pl: "Kopiowane są tylko kursy, które tam pasują (ta sama linia, kierunek, odjazd i przystanki); reszta jest wymieniona. Trafia to do twojego szkicu: ZAPISZ to zachowuje."
@@ -158,6 +180,7 @@ _version: 2
   uk: "Копіюються лише рейси, що там збігаються (та сама лінія, напрям, відправлення й зупинки); решта перелічена. Це йде у твою чернетку: ЗБЕРЕГТИ залишає її."
 "%{n} rows copied: open another day in the switcher and press Ctrl+V to put them there.":
   de: "%{n} Zeilen kopiert: öffne einen anderen Tag in der Tagesauswahl und drücke Strg+V, um sie dort einzufügen."
+  da: "%{n} rækker kopieret: åbn en anden dag i skifteren, og tryk Ctrl+V for at sætte dem dér."
   fr: "%{n} lignes copiées : ouvre un autre jour dans le sélecteur et appuie sur Ctrl+V pour les y mettre."
   nl: "%{n} rijen gekopieerd: open een andere dag in de dagkiezer en druk op Ctrl+V om ze daar te zetten."
   pl: "Skopiowano wiersze (%{n}): otwórz inny dzień w przełączniku i naciśnij Ctrl+V, aby je tam wstawić."
@@ -165,6 +188,7 @@ _version: 2
   uk: "Рядки скопійовано (%{n}): відкрий інший день у перемикачі й натисни Ctrl+V, щоб вставити їх туди."
 "Open another day in the switcher to put the rows there.":
   de: "Öffne einen anderen Tag in der Tagesauswahl, um die Zeilen dort einzufügen."
+  da: "Åbn en anden dag i skifteren for at sætte rækkerne dér."
   fr: "Ouvre un autre jour dans le sélecteur pour y mettre les lignes."
   nl: "Open een andere dag in de dagkiezer om de rijen daar te zetten."
   pl: "Otwórz inny dzień w przełączniku, aby wstawić tam wiersze."
@@ -172,6 +196,7 @@ _version: 2
   uk: "Відкрий інший день у перемикачі, щоб вставити туди рядки."
 "Not copied: they match no trip there, or a locked vehicle or duty there has them. Each is shown on the day it was copied from.":
   de: "Nicht kopiert: sie passen dort zu keiner Fahrt, oder ein gesperrtes Fahrzeug oder ein gesperrter Dienst dort hat sie. Jede wird an dem Tag gezeigt, von dem kopiert wurde."
+  da: "Ikke kopieret: de passer til ingen tur dér, eller et låst køretøj eller en låst vagt dér har dem. Hver vises på den dag, den blev kopieret fra."
   fr: "Non copiées : elles ne correspondent à aucune course là-bas, ou un véhicule ou un service verrouillé là-bas les a. Chacune est montrée au jour d'où elle a été copiée."
   nl: "Niet gekopieerd: ze passen daar bij geen rit, of een vergrendeld voertuig of een vergrendelde dienst daar heeft ze. Elk wordt getoond op de dag waarvan gekopieerd is."
   pl: "Nie skopiowano: nie pasują tam do żadnego kursu albo ma je tam zablokowany pojazd lub służba. Każdy jest pokazany w dniu, z którego kopiowano."
@@ -179,6 +204,7 @@ _version: 2
   uk: "Не скопійовані: їм там не відповідає жоден рейс, або вони в заблокованої там машини чи зміни. Кожен показано в той день, звідки копіювали."
 "Tick the rows to copy first.":
   de: "Hake zuerst die Zeilen an, die kopiert werden sollen."
+  da: "Afkryds først de rækker, der skal kopieres."
   fr: "Coche d'abord les lignes à copier."
   nl: "Vink eerst de rijen aan die je wilt kopiëren."
   pl: "Najpierw zaznacz wiersze do skopiowania."
@@ -186,6 +212,7 @@ _version: 2
   uk: "Спочатку познач рядки для копіювання."
 "Choose the days to copy to.":
   de: "Wähle die Tage, auf die kopiert werden soll."
+  da: "Vælg de dage, der skal kopieres til."
   fr: "Choisis les jours vers lesquels copier."
   nl: "Kies de dagen om naar te kopiëren."
   pl: "Wybierz dni, na które kopiować."
@@ -193,6 +220,7 @@ _version: 2
   uk: "Вибери дні, на які копіювати."
 "%{n} rows copied to %{days}":
   de: "%{n} Zeilen kopiert nach %{days}"
+  da: "%{n} rækker kopieret til %{days}"
   fr: "%{n} lignes copiées vers %{days}"
   nl: "%{n} rijen gekopieerd naar %{days}"
   pl: "Wiersze (%{n}) skopiowane do %{days}"
@@ -200,6 +228,7 @@ _version: 2
   uk: "Рядки (%{n}) скопійовано в %{days}"
 "Nothing was copied: no trip of those days matches the rows' trips, or a locked vehicle or duty there has them.":
   de: "Nichts kopiert: keine Fahrt dieser Tage passt zu den Fahrten der Zeilen, oder ein gesperrtes Fahrzeug oder ein gesperrter Dienst dort hat sie."
+  da: "Intet blev kopieret: ingen tur de dage passer til rækkernes ture, eller et låst køretøj eller en låst vagt dér har dem."
   fr: "Rien n'a été copié : aucune course de ces jours ne correspond aux courses des lignes, ou un véhicule ou un service verrouillé là-bas les a."
   nl: "Er is niets gekopieerd: geen rit van die dagen past bij de ritten van de rijen, of een vergrendeld voertuig of een vergrendelde dienst daar heeft ze."
   pl: "Nic nie skopiowano: żaden kurs tych dni nie pasuje do kursów wierszy albo ma je tam zablokowany pojazd lub służba."
@@ -207,6 +236,7 @@ _version: 2
   uk: "Нічого не скопійовано: жоден рейс цих днів не збігається з рейсами рядків, або вони в заблокованої там машини чи зміни."
 "Copied to %{days}: in your draft - SAVE keeps it, Undo takes it back.":
   de: "Kopiert nach %{days}: in deinem Entwurf - SPEICHERN behält es, Rückgängig nimmt es zurück."
+  da: "Kopieret til %{days}: i dit udkast - GEM beholder det, Fortryd tager det tilbage."
   fr: "Copié vers %{days} : dans ton brouillon - ENREGISTRER le garde, Annuler le retire."
   nl: "Gekopieerd naar %{days}: in je concept - OPSLAAN houdt het, Ongedaan maken neemt het terug."
   pl: "Skopiowano do %{days}: w twoim szkicu - ZAPISZ to zachowuje, Cofnij to wycofuje."
@@ -214,6 +244,7 @@ _version: 2
   uk: "Скопійовано в %{days}: у твоїй чернетці - ЗБЕРЕГТИ залишає, Скасувати прибирає."
 "%{n} of their trips were not copied: they match no trip there, or a locked vehicle or duty there has them.":
   de: "%{n} ihrer Fahrten wurden nicht kopiert: sie passen dort zu keiner Fahrt, oder ein gesperrtes Fahrzeug oder ein gesperrter Dienst dort hat sie."
+  da: "%{n} af deres ture blev ikke kopieret: de passer til ingen tur dér, eller et låst køretøj eller en låst vagt dér har dem."
   fr: "%{n} de leurs courses n'ont pas été copiées : elles ne correspondent à aucune course là-bas, ou un véhicule ou un service verrouillé là-bas les a."
   nl: "%{n} van hun ritten zijn niet gekopieerd: ze passen daar bij geen rit, of een vergrendeld voertuig of een vergrendelde dienst daar heeft ze."
   pl: "Kursy nieskopiowane (%{n}): nie pasują tam do żadnego kursu albo ma je tam zablokowany pojazd lub służba."

@@ -3,6 +3,7 @@ _version: 2
 # tenders' cap, advice and track record, journeys not paid, default points and the RAG rating.
 "Bus contracts":
   de: "Busverträge"
+  da: "Buskontrakter"
   fr: "Contrats de bus"
   nl: "Buscontracten"
   pl: "Umowy przewozowe"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Контракти на перевезення"
 "Your bus contracts":
   de: "Ihre Busverträge"
+  da: "Dine buskontrakter"
   fr: "Vos contrats de bus"
   nl: "Je buscontracten"
   pl: "Twoje umowy przewozowe"
@@ -17,6 +19,7 @@ _version: 2
   uk: "Ваші контракти на перевезення"
 "Gross cost":
   de: "Bruttovertrag"
+  da: "Bruttoomkostning"
   fr: "Contrat à coût brut"
   nl: "Brutocontract"
   pl: "Umowa brutto"
@@ -24,6 +27,7 @@ _version: 2
   uk: "Брутто-контракт"
 "Net subsidy":
   de: "Nettozuschuss"
+  da: "Nettotilskud"
   fr: "Subvention nette"
   nl: "Nettosubsidie"
   pl: "Dopłata netto"
@@ -31,6 +35,7 @@ _version: 2
   uk: "Нетто-субсидія"
 "Private hire":
   de: "Anmietung"
+  da: "Privat charter"
   fr: "Location privée"
   nl: "Besloten vervoer"
   pl: "Wynajem prywatny"
@@ -38,6 +43,7 @@ _version: 2
   uk: "Замовне перевезення"
 "Contract payments":
   de: "Vertragszahlungen"
+  da: "Kontraktbetalinger"
   fr: "Paiements des contrats"
   nl: "Contractbetalingen"
   pl: "Płatności z umów"
@@ -45,6 +51,7 @@ _version: 2
   uk: "Платежі за контрактами"
 "paid by the operating day":
   de: "bezahlt je Betriebstag"
+  da: "betalt pr. driftsdag"
   fr: "payé par jour d'exploitation"
   nl: "betaald per dienstdag"
   pl: "płatne za dzień kursowania"
@@ -52,6 +59,7 @@ _version: 2
   uk: "оплата за день роботи"
 "paid by the week":
   de: "bezahlt je Woche"
+  da: "betalt pr. uge"
   fr: "payé à la semaine"
   nl: "betaald per week"
   pl: "płatne tygodniowo"
@@ -59,6 +67,7 @@ _version: 2
   uk: "оплата за тиждень"
 "paid by the month":
   de: "bezahlt je Monat"
+  da: "betalt pr. måned"
   fr: "payé au mois"
   nl: "betaald per maand"
   pl: "płatne miesięcznie"
@@ -66,6 +75,7 @@ _version: 2
   uk: "оплата за місяць"
 "%{amount} an operating day  ·  %{year} a year":
   de: "%{amount} je Betriebstag  ·  %{year} im Jahr"
+  da: "%{amount} pr. driftsdag  ·  %{year} om året"
   fr: "%{amount} par jour d'exploitation  ·  %{year} par an"
   nl: "%{amount} per dienstdag  ·  %{year} per jaar"
   pl: "%{amount} za dzień kursowania  ·  %{year} rocznie"
@@ -73,6 +83,7 @@ _version: 2
   uk: "%{amount} за день роботи  ·  %{year} на рік"
 "%{amount} a week  ·  %{year} a year":
   de: "%{amount} je Woche  ·  %{year} im Jahr"
+  da: "%{amount} om ugen  ·  %{year} om året"
   fr: "%{amount} par semaine  ·  %{year} par an"
   nl: "%{amount} per week  ·  %{year} per jaar"
   pl: "%{amount} tygodniowo  ·  %{year} rocznie"
@@ -80,6 +91,7 @@ _version: 2
   uk: "%{amount} на тиждень  ·  %{year} на рік"
 "%{amount} a month, %{n} months a year  ·  %{year} a year":
   de: "%{amount} je Monat, %{n} Monate im Jahr  ·  %{year} im Jahr"
+  da: "%{amount} om måneden, %{n} måneder om året  ·  %{year} om året"
   fr: "%{amount} par mois, %{n} mois par an  ·  %{year} par an"
   nl: "%{amount} per maand, %{n} maanden per jaar  ·  %{year} per jaar"
   pl: "%{amount} miesięcznie, %{n} miesięcy w roku  ·  %{year} rocznie"
@@ -87,6 +99,7 @@ _version: 2
   uk: "%{amount} на місяць, %{n} міс. на рік  ·  %{year} на рік"
 "%{n} set days a year":
   de: "%{n} feste Tage im Jahr"
+  da: "%{n} faste dage om året"
   fr: "%{n} jours fixés par an"
   nl: "%{n} vaste dagen per jaar"
   pl: "%{n} ustalonych dni w roku"
@@ -94,6 +107,7 @@ _version: 2
   uk: "%{n} визначених днів на рік"
 "%{n} operating days a year":
   de: "%{n} Betriebstage im Jahr"
+  da: "%{n} driftsdage om året"
   fr: "%{n} jours d'exploitation par an"
   nl: "%{n} dienstdagen per jaar"
   pl: "%{n} dni kursowania w roku"
@@ -101,6 +115,7 @@ _version: 2
   uk: "%{n} днів роботи на рік"
 "the fares go to the authority":
   de: "die Fahrgelder gehen an den Aufgabenträger"
+  da: "billetindtægterne går til trafikselskabet"
   fr: "les recettes vont à l'autorité"
   nl: "de opbrengsten gaan naar de opdrachtgever"
   pl: "wpływy z biletów trafiają do organizatora"
@@ -108,6 +123,7 @@ _version: 2
   uk: "виручка за проїзд іде замовникові"
 "the fares are yours, at most %{fare} on the line this year":
   de: "die Fahrgelder gehören Ihnen, dieses Jahr höchstens %{fare} auf der Linie"
+  da: "billetindtægterne er dine, højst %{fare} på linjen i år"
   fr: "les recettes sont à vous, au plus %{fare} sur la ligne cette année"
   nl: "de opbrengsten zijn van jou, dit jaar hoogstens %{fare} op de lijn"
   pl: "wpływy z biletów są twoje, w tym roku najwyżej %{fare} na linii"
@@ -115,6 +131,7 @@ _version: 2
   uk: "виручка ваша, цього року не дорожче %{fare} на лінії"
 "the fares are yours, rising by 15 % a year at most":
   de: "die Fahrgelder gehören Ihnen, höchstens 15 % Erhöhung im Jahr"
+  da: "billetindtægterne er dine, stigende højst 15 % om året"
   fr: "les recettes sont à vous, hausse de 15 % par an au plus"
   nl: "de opbrengsten zijn van jou, hoogstens 15 % stijging per jaar"
   pl: "wpływy z biletów są twoje, podwyżka najwyżej 15 % rocznie"
@@ -122,6 +139,7 @@ _version: 2
   uk: "виручка ваша, зростання тарифу не більше 15 % на рік"
 "no fares: the hirer pays the day":
   de: "keine Fahrgelder: der Auftraggeber bezahlt den Tag"
+  da: "ingen billetindtægter: lejeren betaler dagen"
   fr: "pas de recettes : le client paie la journée"
   nl: "geen opbrengsten: de opdrachtgever betaalt de dag"
   pl: "bez biletów: zleceniodawca płaci za dzień"
@@ -129,6 +147,7 @@ _version: 2
   uk: "без виручки: замовник платить за день"
 "%{from} to %{until}  ·  %{n} of %{max} extension years earned":
   de: "%{from} bis %{until}  ·  %{n} von %{max} Verlängerungsjahren verdient"
+  da: "%{from} til %{until}  ·  %{n} af %{max} forlængelsesår optjent"
   fr: "du %{from} au %{until}  ·  %{n} des %{max} années de prolongation obtenues"
   nl: "%{from} tot %{until}  ·  %{n} van %{max} verlengingsjaren verdiend"
   pl: "od %{from} do %{until}  ·  zdobyte lata przedłużenia: %{n} z %{max}"
@@ -136,6 +155,7 @@ _version: 2
   uk: "з %{from} до %{until}  ·  отримано років продовження: %{n} з %{max}"
 "%{net} net default points over twelve months (%{def} default, %{q} quality)":
   de: "%{net} Netto-Strafpunkte in zwölf Monaten (%{def} Strafpunkte, %{q} Qualitätspunkte)"
+  da: "%{net} nettomisligholdelsespoint over tolv måneder (%{def} misligholdelse, %{q} kvalitet)"
   fr: "%{net} points de pénalité nets sur douze mois (%{def} de pénalité, %{q} de qualité)"
   nl: "%{net} netto strafpunten in twaalf maanden (%{def} straf, %{q} kwaliteit)"
   pl: "%{net} punktów karnych netto w ciągu dwunastu miesięcy (%{def} karnych, %{q} za jakość)"
@@ -143,6 +163,7 @@ _version: 2
   uk: "%{net} чистих штрафних балів за дванадцять місяців (%{def} штрафних, %{q} за якість)"
 "Every journey paid in twelve months":
   de: "Jede Fahrt in zwölf Monaten bezahlt"
+  da: "Hver tur betalt i tolv måneder"
   fr: "Chaque course payée sur douze mois"
   nl: "Elke rit in twaalf maanden betaald"
   pl: "Każdy kurs opłacony w ciągu dwunastu miesięcy"
@@ -150,6 +171,7 @@ _version: 2
   uk: "Усі рейси за дванадцять місяців оплачено"
 "%{n} journeys not paid in twelve months: %{amount}":
   de: "%{n} Fahrten in zwölf Monaten nicht bezahlt: %{amount}"
+  da: "%{n} ture ikke betalt i tolv måneder: %{amount}"
   fr: "%{n} courses non payées sur douze mois : %{amount}"
   nl: "%{n} ritten niet betaald in twaalf maanden: %{amount}"
   pl: "%{n} kursów nieopłaconych w ciągu dwunastu miesięcy: %{amount}"
@@ -157,6 +179,7 @@ _version: 2
   uk: "%{n} рейсів не оплачено за дванадцять місяців: %{amount}"
 "Your track record: %{pts} average net default points a contract over twelve months, %{q} of 30 quality points in the next tenders.":
   de: "Ihre Bilanz: im Schnitt %{pts} Netto-Strafpunkte je Vertrag in zwölf Monaten, %{q} von 30 Qualitätspunkten in den nächsten Ausschreibungen."
+  da: "Din track record: %{pts} nettomisligholdelsespoint i gennemsnit pr. kontrakt over tolv måneder, %{q} af 30 kvalitetspoint i de næste udbud."
   fr: "Votre bilan : en moyenne %{pts} points de pénalité nets par contrat sur douze mois, %{q} des 30 points de qualité aux prochains appels d'offres."
   nl: "Je staat van dienst: gemiddeld %{pts} netto strafpunten per contract in twaalf maanden, %{q} van de 30 kwaliteitspunten in de volgende aanbestedingen."
   pl: "Twoja historia: średnio %{pts} punktów karnych netto na umowę w ciągu dwunastu miesięcy, %{q} z 30 punktów za jakość w kolejnych przetargach."
@@ -164,6 +187,7 @@ _version: 2
   uk: "Ваша репутація в замовника: у середньому %{pts} чистих штрафних балів на контракт за дванадцять місяців, %{q} з 30 балів якості в наступних тендерах."
 "No track record yet: the authority scores a newcomer as %{pts} points, %{q} of 30 quality points in the next tenders.":
   de: "Noch keine Bilanz: der Aufgabenträger bewertet Neulinge mit %{pts} Punkten, %{q} von 30 Qualitätspunkten in den nächsten Ausschreibungen."
+  da: "Ingen track record endnu: trafikselskabet scorer en nybegynder som %{pts} point, %{q} af 30 kvalitetspoint i de næste udbud."
   fr: "Pas encore de bilan : l'autorité compte un nouveau venu à %{pts} points, %{q} des 30 points de qualité aux prochains appels d'offres."
   nl: "Nog geen staat van dienst: de opdrachtgever rekent een nieuwkomer %{pts} punten, %{q} van de 30 kwaliteitspunten in de volgende aanbestedingen."
   pl: "Brak historii: organizator ocenia nowicjusza na %{pts} punktów, %{q} z 30 punktów za jakość w kolejnych przetargach."
@@ -171,6 +195,7 @@ _version: 2
   uk: "Історії поки немає: замовник оцінює новачка в %{pts} бала, %{q} з 30 балів якості в наступних тендерах."
 "This month: %{paid} paid, %{n} journeys, %{p} % on time":
   de: "Diesen Monat: %{paid} bezahlt, %{n} Fahrten, %{p} % pünktlich"
+  da: "Denne måned: %{paid} betalt, %{n} ture, %{p} % til tiden"
   fr: "Ce mois-ci : %{paid} payés, %{n} courses, %{p} % à l'heure"
   nl: "Deze maand: %{paid} betaald, %{n} ritten, %{p} % op tijd"
   pl: "W tym miesiącu: %{paid} zapłacono, %{n} kursów, %{p} % punktualnie"
@@ -178,6 +203,7 @@ _version: 2
   uk: "Цього місяця: оплачено %{paid}, %{n} рейсів, %{p} % вчасно"
 "This month: no journey yet":
   de: "Diesen Monat: noch keine Fahrt"
+  da: "Denne måned: ingen tur endnu"
   fr: "Ce mois-ci : aucune course encore"
   nl: "Deze maand: nog geen rit"
   pl: "W tym miesiącu: jeszcze bez kursu"
@@ -185,6 +211,7 @@ _version: 2
   uk: "Цього місяця: рейсів ще не було"
 "Begins on %{date}":
   de: "Beginnt am %{date}"
+  da: "Begynder den %{date}"
   fr: "Commence le %{date}"
   nl: "Begint op %{date}"
   pl: "Zaczyna się %{date}"
@@ -192,6 +219,7 @@ _version: 2
   uk: "Починається %{date}"
 "Hand back (%{amount})":
   de: "Zurückgeben (%{amount})"
+  da: "Aflevér tilbage (%{amount})"
   fr: "Rendre (%{amount})"
   nl: "Teruggeven (%{amount})"
   pl: "Zwróć (%{amount})"
@@ -199,6 +227,7 @@ _version: 2
   uk: "Повернути (%{amount})"
 "Ends the contract today: it costs a month's average payment, and a map line goes with it.":
   de: "Beendet den Vertrag heute: das kostet eine durchschnittliche Monatszahlung, und eine Linie der Karte geht mit."
+  da: "Afslutter kontrakten i dag: det koster en måneds gennemsnitlige betaling, og en kortlinje følger med."
   fr: "Met fin au contrat aujourd'hui : cela coûte un paiement mensuel moyen, et une ligne de la carte part avec."
   nl: "Beëindigt het contract vandaag: dat kost een gemiddelde maandbetaling, en een lijn van de kaart gaat mee."
   pl: "Kończy umowę dziś: kosztuje to średnią miesięczną płatność, a linia z mapy odchodzi razem z nią."
@@ -206,6 +235,7 @@ _version: 2
   uk: "Розриває контракт сьогодні: це коштує середнього місячного платежу, і лінія мапи йде разом із ним."
 "handed back":
   de: "zurückgegeben"
+  da: "afleveret tilbage"
   fr: "rendu"
   nl: "teruggegeven"
   pl: "zwrócona"
@@ -213,6 +243,7 @@ _version: 2
   uk: "повернуто"
 "ended by the authority for default":
   de: "vom Aufgabenträger wegen Mängeln beendet"
+  da: "afsluttet af trafikselskabet for misligholdelse"
   fr: "résilié par l'autorité pour manquements"
   nl: "door de opdrachtgever beëindigd wegens tekortkomingen"
   pl: "rozwiązana przez organizatora za uchybienia"
@@ -220,6 +251,7 @@ _version: 2
   uk: "розірвано замовником за порушення"
 "its term ran out":
   de: "seine Laufzeit ist abgelaufen"
+  da: "dens løbetid udløb"
   fr: "sa durée est écoulée"
   nl: "de looptijd is voorbij"
   pl: "okres umowy minął"
@@ -227,6 +259,7 @@ _version: 2
   uk: "строк дії сплив"
 "Ended on %{date}: %{why}":
   de: "Beendet am %{date}: %{why}"
+  da: "Afsluttet den %{date}: %{why}"
   fr: "Terminé le %{date} : %{why}"
   nl: "Beëindigd op %{date}: %{why}"
   pl: "Zakończona %{date}: %{why}"
@@ -234,6 +267,7 @@ _version: 2
   uk: "Завершено %{date}: %{why}"
 "Ended in the last twelve months":
   de: "In den letzten zwölf Monaten beendet"
+  da: "Afsluttet inden for de seneste tolv måneder"
   fr: "Terminés ces douze derniers mois"
   nl: "Beëindigd in de afgelopen twaalf maanden"
   pl: "Zakończone w ostatnich dwunastu miesiącach"
@@ -241,6 +275,7 @@ _version: 2
   uk: "Завершені за останні дванадцять місяців"
 "The company has no bus contract. Win a tender on the Concessions page; your own school lines run as a private hire.":
   de: "Das Unternehmen hat keinen Busvertrag. Gewinnen Sie eine Ausschreibung auf der Seite Konzessionen; Ihre eigenen Schullinien fahren als Anmietung."
+  da: "Selskabet har ingen buskontrakt. Vind et udbud på siden Koncessioner; dine egne skolelinjer kører som privat charter."
   fr: "L'entreprise n'a aucun contrat de bus. Remportez un appel d'offres sur la page Concessions ; vos propres lignes scolaires roulent en location privée."
   nl: "Het bedrijf heeft geen buscontract. Win een aanbesteding op de pagina Concessies; je eigen schoollijnen rijden als besloten vervoer."
   pl: "Firma nie ma umowy przewozowej. Wygraj przetarg na stronie Koncesje; twoje własne linie szkolne jeżdżą jako wynajem prywatny."
@@ -248,6 +283,7 @@ _version: 2
   uk: "Компанія не має контракту на перевезення. Виграйте тендер на сторінці «Концесії»; ваші шкільні лінії працюють як замовне перевезення."
 "The contract is handed back: %{amount}.":
   de: "Der Vertrag ist zurückgegeben: %{amount}."
+  da: "Kontrakten er afleveret tilbage: %{amount}."
   fr: "Le contrat est rendu : %{amount}."
   nl: "Het contract is teruggegeven: %{amount}."
   pl: "Umowa zwrócona: %{amount}."
@@ -255,6 +291,7 @@ _version: 2
   uk: "Контракт повернуто: %{amount}."
 "There is no such contract.":
   de: "Diesen Vertrag gibt es nicht."
+  da: "Der er ingen sådan kontrakt."
   fr: "Ce contrat n'existe pas."
   nl: "Dit contract bestaat niet."
   pl: "Nie ma takiej umowy."
@@ -262,6 +299,7 @@ _version: 2
   uk: "Такого контракту немає."
 "Above the authority's cap: a bid above it does not count.":
   de: "Über der Obergrenze des Aufgabenträgers: ein Angebot darüber zählt nicht."
+  da: "Over trafikselskabets loft: et bud over det tæller ikke."
   fr: "Au-dessus du plafond de l'autorité : une offre au-delà ne compte pas."
   nl: "Boven het plafond van de opdrachtgever: een bod daarboven telt niet."
   pl: "Powyżej limitu organizatora: oferta ponad nim się nie liczy."
@@ -269,6 +307,7 @@ _version: 2
   uk: "Вище межі замовника: заявка понад неї не враховується."
 "Won with an ask of %{amount} a year":
   de: "Gewonnen mit einem Angebot von %{amount} im Jahr"
+  da: "Vundet med et bud på %{amount} om året"
   fr: "Remporté avec une offre de %{amount} par an"
   nl: "Gewonnen met een vraagprijs van %{amount} per jaar"
   pl: "Wygrany z ofertą %{amount} rocznie"
@@ -276,6 +315,7 @@ _version: 2
   uk: "Виграно із заявкою %{amount} на рік"
 "Lost to %{who}, who asked %{amount} a year":
   de: "Verloren an %{who}, Angebot %{amount} im Jahr"
+  da: "Tabt til %{who}, som bød %{amount} om året"
   fr: "Perdu face à %{who}, qui demandait %{amount} par an"
   nl: "Verloren aan %{who}, die %{amount} per jaar vroeg"
   pl: "Przegrany z %{who}, który zaproponował %{amount} rocznie"
@@ -283,6 +323,7 @@ _version: 2
   uk: "Програно %{who}, заявка %{amount} на рік"
 "Scored 70 % price, 30 % quality: the lowest ask gets all 70 price points, others lowest ÷ ask of them; quality is your track record, 100 % less 2 % a default point - yours %{pts} points, %{p} of 30. Asks above the cap do not count; on equal totals the price decides, then quality.":
   de: "Bewertet zu 70 % Preis, 30 % Qualität: das niedrigste Angebot bekommt alle 70 Preispunkte, die anderen niedrigstes ÷ eigenes davon; Qualität ist Ihre Bilanz, 100 % minus 2 % je Strafpunkt - Ihre %{pts} Punkte, %{p} von 30. Angebote über der Obergrenze zählen nicht; bei gleicher Summe entscheidet der Preis, dann die Qualität."
+  da: "Scoret med 70 % pris og 30 % kvalitet: det laveste bud får alle 70 prispoint, de andre laveste ÷ deres bud; kvalitet er din track record, 100 % minus 2 % pr. misligholdelsespoint - dine %{pts} point, %{p} af 30. Bud over loftet tæller ikke; ved lige totaler afgør prisen, derefter kvaliteten."
   fr: "Noté à 70 % sur le prix, 30 % sur la qualité : l'offre la plus basse obtient les 70 points de prix, les autres la plus basse ÷ la leur ; la qualité est votre bilan, 100 % moins 2 % par point de pénalité - vous avez %{pts} points, %{p} sur 30. Les offres au-dessus du plafond ne comptent pas ; à total égal le prix décide, puis la qualité."
   nl: "Beoordeeld op 70 % prijs, 30 % kwaliteit: de laagste vraagprijs krijgt alle 70 prijspunten, de andere laagste ÷ eigen deel ervan; kwaliteit is je staat van dienst, 100 % min 2 % per strafpunt - jij hebt %{pts} punten, %{p} van 30. Vraagprijzen boven het plafond tellen niet; bij een gelijk totaal beslist de prijs, dan de kwaliteit."
   pl: "Ocena: 70 % cena, 30 % jakość: najniższa oferta dostaje wszystkie 70 punktów za cenę, pozostałe najniższa ÷ własna; jakość to twoja historia, 100 % minus 2 % za punkt karny - masz %{pts} pkt, %{p} z 30. Oferty powyżej limitu się nie liczą; przy równej sumie decyduje cena, potem jakość."
@@ -290,6 +331,7 @@ _version: 2
   uk: "Оцінка: 70 % ціна, 30 % якість: найнижча заявка отримує всі 70 цінових балів, інші — найменша ÷ своя; якість — це ваша репутація, 100 % мінус 2 % за штрафний бал - у вас %{pts} бала, %{p} з 30. Заявки понад межу не враховуються; за рівної суми вирішує ціна, далі якість."
 "%{t} tours, %{km} km a week":
   de: "%{t} Umläufe, %{km} km je Woche"
+  da: "%{t} vognløb, %{km} km om ugen"
   fr: "%{t} services, %{km} km par semaine"
   nl: "%{t} omlopen, %{km} km per week"
   pl: "%{t} obiegów, %{km} km tygodniowo"
@@ -297,6 +339,7 @@ _version: 2
   uk: "%{t} випусків, %{km} км на тиждень"
 "cap %{amount} a year":
   de: "Obergrenze %{amount} im Jahr"
+  da: "loft %{amount} om året"
   fr: "plafond %{amount} par an"
   nl: "plafond %{amount} per jaar"
   pl: "limit %{amount} rocznie"
@@ -304,6 +347,7 @@ _version: 2
   uk: "межа %{amount} на рік"
 "Commercial: no contract, the fares are the company's":
   de: "Eigenwirtschaftlich: kein Vertrag, die Fahrgelder gehören dem Unternehmen"
+  da: "Kommerciel: ingen kontrakt, billetindtægterne er selskabets"
   fr: "Commerciale : pas de contrat, les recettes sont à l'entreprise"
   nl: "Commercieel: geen contract, de opbrengsten zijn van het bedrijf"
   pl: "Komercyjna: bez umowy, wpływy z biletów należą do firmy"
@@ -311,6 +355,7 @@ _version: 2
   uk: "Комерційна: без контракту, виручка належить компанії"
 "commercial":
   de: "eigenwirtschaftlich"
+  da: "kommerciel"
   fr: "commerciale"
   nl: "commercieel"
   pl: "komercyjna"
@@ -318,6 +363,7 @@ _version: 2
   uk: "комерційна"
 "The cap":
   de: "Obergrenze"
+  da: "Loftet"
   fr: "Le plafond"
   nl: "Het plafond"
   pl: "Limit"
@@ -325,6 +371,7 @@ _version: 2
   uk: "Межа"
 "The most the authority pays a year: an ask above it does not count.":
   de: "Das Meiste, was der Aufgabenträger im Jahr zahlt: ein Angebot darüber zählt nicht."
+  da: "Det meste, trafikselskabet betaler om året: et bud over det tæller ikke."
   fr: "Le maximum que l'autorité paie par an : une offre au-dessus ne compte pas."
   nl: "Het meeste dat de opdrachtgever per jaar betaalt: een vraagprijs daarboven telt niet."
   pl: "Najwięcej, ile organizator płaci rocznie: oferta powyżej się nie liczy."
@@ -332,6 +379,7 @@ _version: 2
   uk: "Максимум, який замовник платить на рік: заявка понад нього не враховується."
 "Advice":
   de: "Empfehlung"
+  da: "Råd"
   fr: "Conseil"
   nl: "Advies"
   pl: "Porada"
@@ -339,6 +387,7 @@ _version: 2
   uk: "Порада"
 "The work's cost price at your own costs, with a 5 % margin: drivers' paid hours, fuel, the workshop, a bus and its fixed costs, less BSOG.":
   de: "Der Selbstkostenpreis der Leistung zu Ihren eigenen Kosten, mit 5 % Marge: bezahlte Fahrerstunden, Kraftstoff, Werkstatt, ein Bus und seine Fixkosten, abzüglich BSOG."
+  da: "Arbejdets kostpris til dine egne omkostninger, med 5 % avance: chaufførernes betalte timer, brændstof, værkstedet, en bus og dens faste omkostninger, fratrukket BSOG."
   fr: "Le prix de revient du service à vos propres coûts, avec 5 % de marge : heures payées des conducteurs, carburant, atelier, un bus et ses frais fixes, moins la BSOG."
   nl: "De kostprijs van het werk tegen je eigen kosten, met 5 % marge: betaalde chauffeursuren, brandstof, werkplaats, een bus en zijn vaste kosten, min BSOG."
   pl: "Koszt własny pracy według twoich kosztów, z 5 % marży: płatne godziny kierowców, paliwo, warsztat, autobus i jego koszty stałe, minus BSOG."
@@ -346,6 +395,7 @@ _version: 2
   uk: "Собівартість роботи за вашими власними витратами з націнкою 5 %: оплачувані години водіїв, пальне, майстерня, автобус і його постійні витрати, мінус BSOG."
 "%{n} years":
   de: "%{n} Jahre"
+  da: "%{n} år"
   fr: "%{n} ans"
   nl: "%{n} jaar"
   pl: "%{n} lat"
@@ -353,6 +403,7 @@ _version: 2
   uk: "%{n} років"
 "%{kind}, %{per}  ·  %{years} years and up to %{ext} more  ·  asks are a price a year":
   de: "%{kind}, %{per}  ·  %{years} Jahre und bis zu %{ext} mehr  ·  Angebote sind ein Preis im Jahr"
+  da: "%{kind}, %{per}  ·  %{years} år og op til %{ext} mere  ·  der bydes en pris om året"
   fr: "%{kind}, %{per}  ·  %{years} ans et jusqu'à %{ext} de plus  ·  les offres sont un prix annuel"
   nl: "%{kind}, %{per}  ·  %{years} jaar en tot %{ext} meer  ·  vraagprijzen zijn een prijs per jaar"
   pl: "%{kind}, %{per}  ·  %{years} lat i do %{ext} więcej  ·  oferty to cena roczna"
@@ -360,6 +411,7 @@ _version: 2
   uk: "%{kind}, %{per}  ·  %{years} років і до %{ext} ще  ·  заявки — це ціна на рік"
 "%{s} % of the cap  ·  chance to win, as it looks now: about %{p} %":
   de: "%{s} % der Obergrenze  ·  Gewinnchance, wie es jetzt aussieht: etwa %{p} %"
+  da: "%{s} % af loftet  ·  chance for at vinde, som det ser ud nu: omkring %{p} %"
   fr: "%{s} % du plafond  ·  chance de gagner, en l'état : environ %{p} %"
   nl: "%{s} % van het plafond  ·  kans om te winnen, zoals het nu staat: ongeveer %{p} %"
   pl: "%{s} % limitu  ·  szansa na wygraną, jak to teraz wygląda: około %{p} %"
@@ -367,6 +419,7 @@ _version: 2
   uk: "%{s} % межі  ·  шанс на перемогу наразі: близько %{p} %"
 "Recommended: %{amount} (%{s} % of the cap), about %{p} % to win":
   de: "Empfohlen: %{amount} (%{s} % der Obergrenze), etwa %{p} % Gewinnchance"
+  da: "Anbefalet: %{amount} (%{s} % af loftet), omkring %{p} % chance for at vinde"
   fr: "Recommandé : %{amount} (%{s} % du plafond), environ %{p} % de chances de gagner"
   nl: "Aanbevolen: %{amount} (%{s} % van het plafond), ongeveer %{p} % kans om te winnen"
   pl: "Zalecane: %{amount} (%{s} % limitu), około %{p} % szans na wygraną"
@@ -374,6 +427,7 @@ _version: 2
   uk: "Рекомендовано: %{amount} (%{s} % межі), шанс на перемогу близько %{p} %"
 "The line runs until %{date} on its contract: %{amount} a year.":
   de: "Die Linie fährt bis %{date} unter ihrem Vertrag: %{amount} im Jahr."
+  da: "Linjen kører indtil %{date} på sin kontrakt: %{amount} om året."
   fr: "La ligne roule jusqu'au %{date} sous son contrat : %{amount} par an."
   nl: "De lijn rijdt tot %{date} onder haar contract: %{amount} per jaar."
   pl: "Linia kursuje do %{date} w ramach umowy: %{amount} rocznie."
@@ -381,6 +435,7 @@ _version: 2
   uk: "Лінія працює до %{date} за своїм контрактом: %{amount} на рік."
 "The concession runs until %{date}.":
   de: "Die Konzession läuft bis %{date}."
+  da: "Koncessionen løber indtil %{date}."
   fr: "La concession court jusqu'au %{date}."
   nl: "De concessie loopt tot %{date}."
   pl: "Koncesja obowiązuje do %{date}."
@@ -388,6 +443,7 @@ _version: 2
   uk: "Концесія діє до %{date}."
 "The contract for line %{n} is green: it earned an extension year and runs until %{date}.":
   de: "Der Vertrag für Linie %{n} ist grün: er hat ein Verlängerungsjahr verdient und läuft bis %{date}."
+  da: "Kontrakten for linje %{n} er grøn: den optjente et forlængelsesår og løber indtil %{date}."
   fr: "Le contrat de la ligne %{n} est vert : il a obtenu une année de prolongation et court jusqu'au %{date}."
   nl: "Het contract voor lijn %{n} is groen: het verdiende een verlengingsjaar en loopt tot %{date}."
   pl: "Umowa na linię %{n} jest zielona: zdobyła rok przedłużenia i obowiązuje do %{date}."
@@ -395,6 +451,7 @@ _version: 2
   uk: "Контракт на лінію %{n} зелений: він отримав рік продовження і діє до %{date}."
 "The contract for line %{n} was not green when its extension was decided: it ends on %{date}, and the line is put out to tender again.":
   de: "Der Vertrag für Linie %{n} war bei der Entscheidung über seine Verlängerung nicht grün: er endet am %{date}, und die Linie wird neu ausgeschrieben."
+  da: "Kontrakten for linje %{n} var ikke grøn, da dens forlængelse blev afgjort: den slutter den %{date}, og linjen sendes i udbud igen."
   fr: "Le contrat de la ligne %{n} n'était pas vert quand sa prolongation a été décidée : il se termine le %{date}, et la ligne est remise en appel d'offres."
   nl: "Het contract voor lijn %{n} was niet groen toen over de verlenging werd besloten: het eindigt op %{date} en de lijn wordt opnieuw aanbesteed."
   pl: "Umowa na linię %{n} nie była zielona przy decyzji o przedłużeniu: kończy się %{date}, a linia trafi znów do przetargu."
@@ -402,6 +459,7 @@ _version: 2
   uk: "Контракт на лінію %{n} не був зеленим під час рішення про продовження: він закінчується %{date}, і лінію знову виставлять на тендер."
 "The authority ended the contract for line %{n}: it was red. The company pays the replacement's extra cost, %{amount}.":
   de: "Der Aufgabenträger hat den Vertrag für Linie %{n} beendet: er war rot. Das Unternehmen zahlt die Mehrkosten des Ersatzes, %{amount}."
+  da: "Trafikselskabet afsluttede kontrakten for linje %{n}: den var rød. Selskabet betaler erstatningens meromkostning, %{amount}."
   fr: "L'autorité a résilié le contrat de la ligne %{n} : il était rouge. L'entreprise paie le surcoût du remplacement, %{amount}."
   nl: "De opdrachtgever heeft het contract voor lijn %{n} beëindigd: het was rood. Het bedrijf betaalt de meerkosten van de vervanging, %{amount}."
   pl: "Organizator rozwiązał umowę na linię %{n}: była czerwona. Firma płaci dodatkowy koszt zastępstwa, %{amount}."
@@ -409,6 +467,7 @@ _version: 2
   uk: "Замовник розірвав контракт на лінію %{n}: він був червоним. Компанія сплачує додаткові витрати на заміну, %{amount}."
 "Contract extended":
   de: "Vertrag verlängert"
+  da: "Kontrakt forlænget"
   fr: "Contrat prolongé"
   nl: "Contract verlengd"
   pl: "Umowa przedłużona"
@@ -416,6 +475,7 @@ _version: 2
   uk: "Контракт продовжено"
 "No extension":
   de: "Keine Verlängerung"
+  da: "Ingen forlængelse"
   fr: "Pas de prolongation"
   nl: "Geen verlenging"
   pl: "Bez przedłużenia"
@@ -423,6 +483,7 @@ _version: 2
   uk: "Без продовження"
 "Contract ended for default":
   de: "Vertrag wegen Mängeln beendet"
+  da: "Kontrakt afsluttet for misligholdelse"
   fr: "Contrat résilié pour manquements"
   nl: "Contract beëindigd wegens tekortkomingen"
   pl: "Umowa rozwiązana za uchybienia"
@@ -430,6 +491,7 @@ _version: 2
   uk: "Контракт розірвано за порушення"
 "The contract of line %{n} was extended until %{date}":
   de: "Der Vertrag der Linie %{n} wurde bis %{date} verlängert"
+  da: "Kontrakten for linje %{n} blev forlænget indtil %{date}"
   fr: "Le contrat de la ligne %{n} a été prolongé jusqu'au %{date}"
   nl: "Het contract van lijn %{n} is verlengd tot %{date}"
   pl: "Umowa linii %{n} została przedłużona do %{date}"
@@ -437,6 +499,7 @@ _version: 2
   uk: "Контракт лінії %{n} продовжено до %{date}"
 "The contract of line %{n} is not extended: it ends on %{date}":
   de: "Der Vertrag der Linie %{n} wird nicht verlängert: er endet am %{date}"
+  da: "Kontrakten for linje %{n} forlænges ikke: den slutter den %{date}"
   fr: "Le contrat de la ligne %{n} n'est pas prolongé : il se termine le %{date}"
   nl: "Het contract van lijn %{n} wordt niet verlengd: het eindigt op %{date}"
   pl: "Umowa linii %{n} nie zostanie przedłużona: kończy się %{date}"
@@ -444,6 +507,7 @@ _version: 2
   uk: "Контракт лінії %{n} не продовжено: він закінчується %{date}"
 "The authority ended the contract of line %{n}: %{amount}":
   de: "Der Aufgabenträger hat den Vertrag der Linie %{n} beendet: %{amount}"
+  da: "Trafikselskabet afsluttede kontrakten for linje %{n}: %{amount}"
   fr: "L'autorité a résilié le contrat de la ligne %{n} : %{amount}"
   nl: "De opdrachtgever heeft het contract van lijn %{n} beëindigd: %{amount}"
   pl: "Organizator rozwiązał umowę linii %{n}: %{amount}"
@@ -451,6 +515,7 @@ _version: 2
   uk: "Замовник розірвав контракт лінії %{n}: %{amount}"
 "Its bus contract's payment":
   de: "Zahlung aus ihrem Busvertrag"
+  da: "Betalingen på dens buskontrakt"
   fr: "Paiement de son contrat de bus"
   nl: "Betaling van haar buscontract"
   pl: "Płatność z jej umowy przewozowej"
@@ -458,6 +523,7 @@ _version: 2
   uk: "Платіж за її контрактом"
 "Journeys not paid and penalties":
   de: "Nicht bezahlte Fahrten und Vertragsstrafen"
+  da: "Ikke betalte ture og bøder"
   fr: "Courses non payées et pénalités"
   nl: "Niet betaalde ritten en boetes"
   pl: "Nieopłacone kursy i kary"
@@ -465,6 +531,7 @@ _version: 2
   uk: "Неоплачені рейси та штрафи"
 "Contract penalties %{amount}: the journeys of your bus contracts not run or too far off time are not paid, and the authority charges for a concession not started.":
   de: "Vertragsstrafen %{amount}: nicht gefahrene oder zu weit vom Fahrplan abweichende Fahrten Ihrer Busverträge werden nicht bezahlt, und der Aufgabenträger berechnet eine nicht begonnene Konzession."
+  da: "Kontraktbøder %{amount}: de ture på dine buskontrakter, der ikke er kørt eller ligger for langt fra tiden, betales ikke, og trafikselskabet opkræver for en koncession, der ikke er startet."
   fr: "Pénalités contractuelles %{amount} : les courses de vos contrats de bus non effectuées ou trop décalées ne sont pas payées, et l'autorité facture une concession non démarrée."
   nl: "Contractboetes %{amount}: ritten van je buscontracten die niet reden of te ver van de dienstregeling afweken worden niet betaald, en de opdrachtgever rekent voor een niet gestarte concessie."
   pl: "Kary umowne %{amount}: kursy twoich umów przewozowych, które się nie odbyły lub zbyt odbiegały od rozkładu, nie są opłacane, a organizator nalicza opłatę za nierozpoczętą koncesję."
@@ -472,6 +539,7 @@ _version: 2
   uk: "Штрафи за контрактами %{amount}: невиконані або занадто відхилені від розкладу рейси ваших контрактів не оплачуються, а замовник стягує плату за нерозпочату концесію."
 "Bus contracts paid %{amount}, less %{deducted} for %{n} journeys not paid. Default points: %{points}.":
   de: "Busverträge zahlten %{amount}, abzüglich %{deducted} für %{n} nicht bezahlte Fahrten. Strafpunkte: %{points}."
+  da: "Buskontrakter betalt %{amount}, fratrukket %{deducted} for %{n} ikke betalte ture. Misligholdelsespoint: %{points}."
   fr: "Les contrats de bus ont payé %{amount}, moins %{deducted} pour %{n} courses non payées. Points de pénalité : %{points}."
   nl: "Buscontracten betaalden %{amount}, min %{deducted} voor %{n} niet betaalde ritten. Strafpunten: %{points}."
   pl: "Umowy przewozowe zapłaciły %{amount}, minus %{deducted} za %{n} nieopłaconych kursów. Punkty karne: %{points}."
@@ -479,6 +547,7 @@ _version: 2
   uk: "Контракти оплатили %{amount}, мінус %{deducted} за %{n} неоплачених рейсів. Штрафні бали: %{points}."
 "Fares of the gross-cost lines handed to the authority: %{amount}.":
   de: "Fahrgelder der Bruttoverträge an den Aufgabenträger abgeführt: %{amount}."
+  da: "Billetindtægter fra bruttolinjerne afleveret til trafikselskabet: %{amount}."
   fr: "Recettes des lignes à coût brut reversées à l'autorité : %{amount}."
   nl: "Opbrengsten van de brutolijnen afgedragen aan de opdrachtgever: %{amount}."
   pl: "Wpływy z biletów linii brutto przekazane organizatorowi: %{amount}."
@@ -486,6 +555,7 @@ _version: 2
   uk: "Виручку брутто-ліній передано замовникові: %{amount}."
 "%{from} to %{to} min late":
   de: "%{from} bis %{to} Min. Verspätung"
+  da: "%{from} til %{to} min forsinket"
   fr: "%{from} à %{to} min de retard"
   nl: "%{from} tot %{to} min te laat"
   pl: "%{from} do %{to} min opóźnienia"
@@ -493,6 +563,7 @@ _version: 2
   uk: "запізнення від %{from} до %{to} хв"
 "%{from} min or more: weighed as a trip lost":
   de: "%{from} Min. oder mehr: wie eine ausgefallene Fahrt gewertet"
+  da: "%{from} min eller mere: regnes som en tabt tur"
   fr: "%{from} min ou plus : compté comme une course perdue"
   nl: "%{from} min of meer: gewogen als een verloren rit"
   pl: "%{from} min lub więcej: liczony jak utracony kurs"

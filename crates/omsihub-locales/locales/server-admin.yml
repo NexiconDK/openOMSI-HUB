@@ -2,6 +2,7 @@ _version: 2
 # (NexiconDK, 1 November 2026) A dedicated server's admin panel: the server's /admin page and the launcher's Multiplayer > My server (launcher/ui/js/omsihub/server).
 "Server settings":
   de: "Servereinstellungen"
+  da: "Serverindstillinger"
   fr: "Paramètres du serveur"
   nl: "Serverinstellingen"
   pl: "Ustawienia serwera"
@@ -9,6 +10,7 @@ _version: 2
   uk: "Налаштування сервера"
 "Reading server.cfg…":
   de: "server.cfg wird gelesen…"
+  da: "Læser server.cfg…"
   fr: "Lecture de server.cfg…"
   nl: "server.cfg wordt gelezen…"
   pl: "Wczytywanie server.cfg…"
@@ -16,6 +18,7 @@ _version: 2
   uk: "Читання server.cfg…"
 "The server reads its settings when it starts: restart it for changes to take effect.":
   de: "Der Server liest seine Einstellungen beim Start: Starte ihn neu, damit Änderungen wirksam werden."
+  da: "Serveren læser sine indstillinger, når den starter: genstart den, for at ændringer træder i kraft."
   fr: "Le serveur lit ses paramètres au démarrage : redémarre-le pour appliquer les changements."
   nl: "De server leest zijn instellingen bij het starten: start hem opnieuw om wijzigingen door te voeren."
   pl: "Serwer wczytuje ustawienia przy starcie: uruchom go ponownie, aby zmiany zadziałały."
@@ -23,6 +26,7 @@ _version: 2
   uk: "Сервер читає налаштування під час запуску: перезапусти його, щоб зміни набули чинності."
 "The admin password needs at least 8 characters.":
   de: "Das Admin-Passwort braucht mindestens 8 Zeichen."
+  da: "Administratoradgangskoden skal være mindst 8 tegn."
   fr: "Le mot de passe admin doit avoir au moins 8 caractères."
   nl: "Het beheerderswachtwoord moet minstens 8 tekens hebben."
   pl: "Hasło administratora musi mieć co najmniej 8 znaków."
@@ -30,6 +34,7 @@ _version: 2
   uk: "Пароль адміністратора має містити щонайменше 8 символів."
 "Saved. The server reads it at its next start.":
   de: "Gespeichert. Der Server übernimmt es beim nächsten Start."
+  da: "Gemt. Serveren læser det ved sin næste start."
   fr: "Enregistré. Le serveur le lira à son prochain démarrage."
   nl: "Opgeslagen. De server leest het bij de volgende start."
   pl: "Zapisano. Serwer wczyta to przy następnym starcie."
@@ -37,6 +42,7 @@ _version: 2
   uk: "Збережено. Сервер прочитає це під час наступного запуску."
 "Live map":
   de: "Live-Karte"
+  da: "Live-kort"
   fr: "Carte en direct"
   nl: "Live-kaart"
   pl: "Mapa na żywo"
@@ -44,6 +50,7 @@ _version: 2
   uk: "Жива мапа"
 "Clock speed":
   de: "Uhrgeschwindigkeit"
+  da: "Urets hastighed"
   fr: "Vitesse de l'horloge"
   nl: "Kloksnelheid"
   pl: "Tempo zegara"
@@ -51,6 +58,7 @@ _version: 2
   uk: "Швидкість годинника"
 "Running for":
   de: "Läuft seit"
+  da: "Kørt i"
   fr: "En marche depuis"
   nl: "Draait al"
   pl: "Czas działania"
@@ -58,6 +66,7 @@ _version: 2
   uk: "Час роботи"
 "Players reach it at %{addr}":
   de: "Spieler erreichen ihn unter %{addr}"
+  da: "Spillere når den på %{addr}"
   fr: "Les joueurs le rejoignent à %{addr}"
   nl: "Spelers bereiken hem op %{addr}"
   pl: "Gracze łączą się pod adresem %{addr}"
@@ -65,6 +74,7 @@ _version: 2
   uk: "Гравці підключаються за адресою %{addr}"
 "An hour back":
   de: "Eine Stunde zurück"
+  da: "En time tilbage"
   fr: "Une heure en arrière"
   nl: "Een uur terug"
   pl: "Godzinę wstecz"
@@ -72,6 +82,7 @@ _version: 2
   uk: "На годину назад"
 "An hour on":
   de: "Eine Stunde vor"
+  da: "En time frem"
   fr: "Une heure en avant"
   nl: "Een uur vooruit"
   pl: "Godzinę do przodu"
@@ -79,6 +90,7 @@ _version: 2
   uk: "На годину вперед"
 "The clock set to %{time}":
   de: "Uhr auf %{time} gestellt"
+  da: "Uret sat til %{time}"
   fr: "Horloge réglée sur %{time}"
   nl: "Klok op %{time} gezet"
   pl: "Zegar ustawiony na %{time}"
@@ -86,6 +98,7 @@ _version: 2
   uk: "Годинник переведено на %{time}"
 "The clock runs %{n}× now":
   de: "Die Uhr läuft jetzt %{n}×"
+  da: "Uret kører nu %{n}×"
   fr: "L'horloge tourne maintenant à %{n}×"
   nl: "De klok loopt nu %{n}×"
   pl: "Zegar chodzi teraz %{n}×"
@@ -93,6 +106,7 @@ _version: 2
   uk: "Годинник тепер іде %{n}×"
 "The weather follows the real METAR report.":
   de: "Das Wetter folgt der echten METAR-Meldung."
+  da: "Vejret følger den rigtige METAR-rapport."
   fr: "La météo suit le vrai bulletin METAR."
   nl: "Het weer volgt het echte METAR-bericht."
   pl: "Pogoda odpowiada prawdziwemu raportowi METAR."
@@ -100,6 +114,7 @@ _version: 2
   uk: "Погода відповідає реальному зведенню METAR."
 "The next weather":
   de: "Nächstes Wetter"
+  da: "Næste vejr"
   fr: "Météo suivante"
   nl: "Volgend weer"
   pl: "Następna pogoda"
@@ -107,6 +122,7 @@ _version: 2
   uk: "Наступна погода"
 "The weather now %{w}":
   de: "Das Wetter jetzt: %{w}"
+  da: "Vejret nu %{w}"
   fr: "La météo maintenant : %{w}"
   nl: "Het weer nu: %{w}"
   pl: "Pogoda teraz: %{w}"
@@ -114,6 +130,7 @@ _version: 2
   uk: "Погода тепер: %{w}"
 "Cars":
   de: "Autos"
+  da: "Biler"
   fr: "Voitures"
   nl: "Auto's"
   pl: "Samochody"
@@ -121,6 +138,7 @@ _version: 2
   uk: "Машини"
 "Waiting":
   de: "Wartend"
+  da: "Venter"
   fr: "En attente"
   nl: "Wachtend"
   pl: "Czekający"
@@ -128,6 +146,7 @@ _version: 2
   uk: "Чекають"
 "Aboard":
   de: "An Bord"
+  da: "Ombord"
   fr: "À bord"
   nl: "Aan boord"
   pl: "W autobusach"
@@ -135,6 +154,7 @@ _version: 2
   uk: "В автобусах"
 "Density":
   de: "Dichte"
+  da: "Tæthed"
   fr: "Densité"
   nl: "Dichtheid"
   pl: "Gęstość"
@@ -142,6 +162,7 @@ _version: 2
   uk: "Щільність"
 "Traffic set":
   de: "Verkehr eingestellt"
+  da: "Trafik indstillet"
   fr: "Trafic réglé"
   nl: "Verkeer ingesteld"
   pl: "Ruch ustawiony"
@@ -149,6 +170,7 @@ _version: 2
   uk: "Рух налаштовано"
 "Clear the roads":
   de: "Straßen räumen"
+  da: "Ryd vejene"
   fr: "Vider les routes"
   nl: "Wegen leegmaken"
   pl: "Oczyść drogi"
@@ -156,6 +178,7 @@ _version: 2
   uk: "Очистити дороги"
 "Sure?":
   de: "Sicher?"
+  da: "Sikker?"
   fr: "Sûr ?"
   nl: "Zeker?"
   pl: "Na pewno?"
@@ -163,6 +186,7 @@ _version: 2
   uk: "Точно?"
 "Every AI car off the road":
   de: "Alle AI-Autos von der Straße"
+  da: "Alle AI-biler af vejen"
   fr: "Toutes les voitures AI retirées de la route"
   nl: "Alle AI-auto's van de weg"
   pl: "Wszystkie auta AI usunięte z drogi"
@@ -170,6 +194,7 @@ _version: 2
   uk: "Усі AI-машини прибрано з доріг"
 "A message to every player":
   de: "Eine Nachricht an alle Spieler"
+  da: "En besked til alle spillere"
   fr: "Un message à tous les joueurs"
   nl: "Een bericht aan alle spelers"
   pl: "Wiadomość do wszystkich graczy"
@@ -177,6 +202,7 @@ _version: 2
   uk: "Повідомлення всім гравцям"
 "In the chat":
   de: "Im Chat"
+  da: "I chatten"
   fr: "Dans le chat"
   nl: "In de chat"
   pl: "Na czacie"
@@ -184,6 +210,7 @@ _version: 2
   uk: "У чат"
 "On their screens":
   de: "Auf ihren Bildschirmen"
+  da: "På deres skærme"
   fr: "Sur leurs écrans"
   nl: "Op hun scherm"
   pl: "Na ich ekranach"
@@ -191,6 +218,7 @@ _version: 2
   uk: "На їхні екрани"
 "Stop the server":
   de: "Server stoppen"
+  da: "Stop serveren"
   fr: "Arrêter le serveur"
   nl: "Server stoppen"
   pl: "Zatrzymaj serwer"
@@ -198,6 +226,7 @@ _version: 2
   uk: "Зупинити сервер"
 "Sure? Every player is sent away":
   de: "Sicher? Alle Spieler werden rausgeworfen"
+  da: "Sikker? Alle spillere sendes væk"
   fr: "Sûr ? Tous les joueurs seront renvoyés"
   nl: "Zeker? Alle spelers worden weggestuurd"
   pl: "Na pewno? Wszyscy gracze zostaną rozłączeni"
@@ -205,6 +234,7 @@ _version: 2
   uk: "Точно? Усіх гравців буде відключено"
 "The server stops":
   de: "Der Server wird gestoppt"
+  da: "Serveren stopper"
   fr: "Le serveur s'arrête"
   nl: "De server stopt"
   pl: "Serwer się zatrzymuje"
@@ -212,6 +242,7 @@ _version: 2
   uk: "Сервер зупиняється"
 "Nobody is on the server.":
   de: "Niemand ist auf dem Server."
+  da: "Ingen er på serveren."
   fr: "Personne n'est sur le serveur."
   nl: "Er is niemand op de server."
   pl: "Nikogo nie ma na serwerze."
@@ -219,6 +250,7 @@ _version: 2
   uk: "На сервері нікого немає."
 "Loading":
   de: "Lädt"
+  da: "Indlæser"
   fr: "Chargement"
   nl: "Laden"
   pl: "Wczytywanie"
@@ -226,6 +258,7 @@ _version: 2
   uk: "Завантаження"
 "A word to him alone":
   de: "Ein Wort nur an ihn"
+  da: "Et ord til ham alene"
   fr: "Un mot rien qu'à lui"
   nl: "Een woord alleen aan hem"
   pl: "Słowo tylko do niego"
@@ -233,6 +266,7 @@ _version: 2
   uk: "Повідомлення лише йому"
 "Repaired":
   de: "Repariert"
+  da: "Repareret"
   fr: "Réparé"
   nl: "Gerepareerd"
   pl: "Naprawiono"
@@ -240,6 +274,7 @@ _version: 2
   uk: "Відремонтовано"
 "Refuelled":
   de: "Betankt"
+  da: "Tanket"
   fr: "Ravitaillé"
   nl: "Getankt"
   pl: "Zatankowano"
@@ -247,6 +282,7 @@ _version: 2
   uk: "Заправлено"
 "Set free":
   de: "Befreit"
+  da: "Sat fri"
   fr: "Débloqué"
   nl: "Losgemaakt"
   pl: "Odblokowano"
@@ -254,6 +290,7 @@ _version: 2
   uk: "Звільнено"
 "Unstick":
   de: "Befreien"
+  da: "Frigør"
   fr: "Débloquer"
   nl: "Losmaken"
   pl: "Odblokuj"
@@ -261,6 +298,7 @@ _version: 2
   uk: "Звільнити"
 "Kick":
   de: "Kicken"
+  da: "Smid ud"
   fr: "Expulser"
   nl: "Kicken"
   pl: "Wyrzuć"
@@ -268,6 +306,7 @@ _version: 2
   uk: "Вигнати"
 "%{name} sent away":
   de: "%{name} rausgeworfen"
+  da: "%{name} sendt væk"
   fr: "%{name} expulsé"
   nl: "%{name} weggestuurd"
   pl: "%{name} wyrzucony"
@@ -275,6 +314,7 @@ _version: 2
   uk: "%{name} вигнано"
 "Ban":
   de: "Bannen"
+  da: "Udeluk"
   fr: "Bannir"
   nl: "Bannen"
   pl: "Zbanuj"
@@ -282,6 +322,7 @@ _version: 2
   uk: "Забанити"
 "%{name} sent away for this session":
   de: "%{name} für diese Sitzung rausgeworfen"
+  da: "%{name} sendt væk for denne session"
   fr: "%{name} banni pour cette session"
   nl: "%{name} weggestuurd voor deze sessie"
   pl: "%{name} wyrzucony do końca sesji"
@@ -289,6 +330,7 @@ _version: 2
   uk: "%{name} вигнано до кінця сесії"
 "Every bus repaired":
   de: "Alle Busse repariert"
+  da: "Alle busser repareret"
   fr: "Tous les bus réparés"
   nl: "Alle bussen gerepareerd"
   pl: "Naprawiono wszystkie autobusy"
@@ -296,6 +338,7 @@ _version: 2
   uk: "Усі автобуси відремонтовано"
 "Repair every bus":
   de: "Alle Busse reparieren"
+  da: "Reparér alle busser"
   fr: "Réparer tous les bus"
   nl: "Alle bussen repareren"
   pl: "Napraw wszystkie autobusy"
@@ -303,6 +346,7 @@ _version: 2
   uk: "Відремонтувати всі автобуси"
 "Every bus refuelled":
   de: "Alle Busse betankt"
+  da: "Alle busser tanket"
   fr: "Tous les bus ravitaillés"
   nl: "Alle bussen getankt"
   pl: "Zatankowano wszystkie autobusy"
@@ -310,6 +354,7 @@ _version: 2
   uk: "Усі автобуси заправлено"
 "Refuel every bus":
   de: "Alle Busse betanken"
+  da: "Tank alle busser"
   fr: "Ravitailler tous les bus"
   nl: "Alle bussen tanken"
   pl: "Zatankuj wszystkie autobusy"
@@ -317,6 +362,7 @@ _version: 2
   uk: "Заправити всі автобуси"
 "Show only lines with…":
   de: "Nur Zeilen zeigen mit…"
+  da: "Vis kun linjer med…"
   fr: "N'afficher que les lignes avec…"
   nl: "Alleen regels tonen met…"
   pl: "Pokaż tylko wiersze z…"
@@ -324,6 +370,7 @@ _version: 2
   uk: "Показувати лише рядки з…"
 "Log":
   de: "Protokoll"
+  da: "Log"
   fr: "Journal"
   nl: "Logboek"
   pl: "Dziennik"
@@ -331,6 +378,7 @@ _version: 2
   uk: "Журнал"
 "The clock follows this machine's real time.":
   de: "Die Uhr folgt der echten Zeit dieses Rechners."
+  da: "Uret følger denne maskines rigtige tid."
   fr: "L'horloge suit l'heure réelle de cette machine."
   nl: "De klok volgt de echte tijd van deze computer."
   pl: "Zegar idzie zgodnie z rzeczywistym czasem tego komputera."
@@ -338,6 +386,7 @@ _version: 2
   uk: "Годинник іде за реальним часом цього комп'ютера."
 "Shown in the players' server list":
   de: "Wird in der Serverliste der Spieler angezeigt"
+  da: "Vises i spillernes serverliste"
   fr: "Affiché dans la liste des serveurs des joueurs"
   nl: "Getoond in de serverlijst van de spelers"
   pl: "Wyświetlane na liście serwerów graczy"
@@ -345,6 +394,7 @@ _version: 2
   uk: "Показується в списку серверів у гравців"
 "Message of the day":
   de: "Nachricht des Tages"
+  da: "Dagens besked"
   fr: "Message du jour"
   nl: "Bericht van de dag"
   pl: "Wiadomość dnia"
@@ -352,6 +402,7 @@ _version: 2
   uk: "Повідомлення дня"
 "Shown when a player joins":
   de: "Wird angezeigt, wenn ein Spieler beitritt"
+  da: "Vises, når en spiller deltager"
   fr: "Affiché quand un joueur se connecte"
   nl: "Getoond als een speler binnenkomt"
   pl: "Wyświetlane, gdy gracz dołącza"
@@ -359,6 +410,7 @@ _version: 2
   uk: "Показується, коли гравець заходить"
 "e.g. maps/Berlin-Spandau/global.cfg":
   de: "z. B. maps/Berlin-Spandau/global.cfg"
+  da: "f.eks. maps/Berlin-Spandau/global.cfg"
   fr: "p. ex. maps/Berlin-Spandau/global.cfg"
   nl: "bijv. maps/Berlin-Spandau/global.cfg"
   pl: "np. maps/Berlin-Spandau/global.cfg"
@@ -366,6 +418,7 @@ _version: 2
   uk: "напр. maps/Berlin-Spandau/global.cfg"
 "Most players":
   de: "Max. Spieler"
+  da: "Flest spillere"
   fr: "Joueurs max."
   nl: "Max. spelers"
   pl: "Maks. graczy"
@@ -373,6 +426,7 @@ _version: 2
   uk: "Макс. гравців"
 "YYYY-MM-DD, empty: today":
   de: "YYYY-MM-DD, leer: heute"
+  da: "ÅÅÅÅ-MM-DD, tomt: i dag"
   fr: "YYYY-MM-DD, vide : aujourd'hui"
   nl: "YYYY-MM-DD, leeg: vandaag"
   pl: "YYYY-MM-DD, puste: dzisiaj"
@@ -380,6 +434,7 @@ _version: 2
   uk: "YYYY-MM-DD, порожньо: сьогодні"
 "HH:MM":
   de: "HH:MM"
+  da: "TT:MM"
   fr: "HH:MM"
   nl: "HH:MM"
   pl: "HH:MM"
@@ -387,6 +442,7 @@ _version: 2
   uk: "HH:MM"
 "A .owt of the OMSI folder; empty: the map's; \"cycle\": through the day":
   de: "Eine .owt aus dem OMSI-Ordner; leer: die der Karte; \"cycle\": im Lauf des Tages"
+  da: "En .owt fra OMSI-mappen; tomt: kortets; \"cycle\": gennem dagen"
   fr: "Un .owt du dossier OMSI ; vide : celui de la carte ; \"cycle\" : au fil de la journée"
   nl: "Een .owt uit de OMSI-map; leeg: die van de kaart; \"cycle\": door de dag heen"
   pl: "Plik .owt z folderu OMSI; puste: z mapy; \"cycle\": w ciągu dnia"
@@ -394,6 +450,7 @@ _version: 2
   uk: "Файл .owt з теки OMSI; порожньо: з мапи; \"cycle\": упродовж дня"
 "World":
   de: "Welt"
+  da: "Verden"
   fr: "Monde"
   nl: "Wereld"
   pl: "Świat"
@@ -401,6 +458,7 @@ _version: 2
   uk: "Світ"
 "Random cars":
   de: "Zufällige Autos"
+  da: "Tilfældige biler"
   fr: "Voitures aléatoires"
   nl: "Willekeurige auto's"
   pl: "Losowe samochody"
@@ -408,6 +466,7 @@ _version: 2
   uk: "Випадкові машини"
 "Tiles kept loaded":
   de: "Geladen gehaltene Kacheln"
+  da: "Fliser holdt indlæst"
   fr: "Tuiles gardées chargées"
   nl: "Geladen gehouden tegels"
   pl: "Kafelki trzymane w pamięci"
@@ -415,6 +474,7 @@ _version: 2
   uk: "Тайлів у пам'яті"
 "0: all of them":
   de: "0: alle"
+  da: "0: alle"
   fr: "0 : toutes"
   nl: "0: allemaal"
   pl: "0: wszystkie"
@@ -422,6 +482,7 @@ _version: 2
   uk: "0: усі"
 "Clock and weather":
   de: "Uhr und Wetter"
+  da: "Ur og vejr"
   fr: "Horloge et météo"
   nl: "Klok en weer"
   pl: "Zegar i pogoda"
@@ -429,6 +490,7 @@ _version: 2
   uk: "Годинник і погода"
 "1 = real time, up to 30":
   de: "1 = Echtzeit, bis 30"
+  da: "1 = realtid, op til 30"
   fr: "1 = temps réel, jusqu'à 30"
   nl: "1 = echte tijd, tot 30"
   pl: "1 = czas rzeczywisty, do 30"
@@ -436,6 +498,7 @@ _version: 2
   uk: "1 = реальний час, до 30"
 "The machine's real date and time":
   de: "Echtes Datum und Uhrzeit des Rechners"
+  da: "Maskinens rigtige dato og tid"
   fr: "Date et heure réelles de la machine"
   nl: "Echte datum en tijd van de computer"
   pl: "Rzeczywista data i godzina komputera"
@@ -443,6 +506,7 @@ _version: 2
   uk: "Реальні дата й час комп'ютера"
 "Real weather (METAR)":
   de: "Echtes Wetter (METAR)"
+  da: "Rigtigt vejr (METAR)"
   fr: "Météo réelle (METAR)"
   nl: "Echt weer (METAR)"
   pl: "Prawdziwa pogoda (METAR)"
@@ -450,6 +514,7 @@ _version: 2
   uk: "Реальна погода (METAR)"
 "METAR airport":
   de: "METAR-Flughafen"
+  da: "METAR-lufthavn"
   fr: "Aéroport METAR"
   nl: "METAR-luchthaven"
   pl: "Lotnisko METAR"
@@ -457,6 +522,7 @@ _version: 2
   uk: "Аеропорт METAR"
 "ICAO code, e.g. EDDB; empty: the nearest":
   de: "ICAO-Code, z. B. EDDB; leer: der nächste"
+  da: "ICAO-kode, f.eks. EDDB; tomt: den nærmeste"
   fr: "Code ICAO, p. ex. EDDB ; vide : le plus proche"
   nl: "ICAO-code, bijv. EDDB; leeg: de dichtstbijzijnde"
   pl: "Kod ICAO, np. EDDB; puste: najbliższe"
@@ -464,6 +530,7 @@ _version: 2
   uk: "Код ICAO, напр. EDDB; порожньо: найближчий"
 "Network":
   de: "Netzwerk"
+  da: "Netværk"
   fr: "Réseau"
   nl: "Netwerk"
   pl: "Sieć"
@@ -471,6 +538,7 @@ _version: 2
   uk: "Мережа"
 "UDP port":
   de: "UDP-Port"
+  da: "UDP-port"
   fr: "Port UDP"
   nl: "UDP-poort"
   pl: "Port UDP"
@@ -478,6 +546,7 @@ _version: 2
   uk: "Порт UDP"
 "Web port":
   de: "Web-Port"
+  da: "Webport"
   fr: "Port web"
   nl: "Webpoort"
   pl: "Port web"
@@ -485,6 +554,7 @@ _version: 2
   uk: "Веб-порт"
 "Status, live map, this panel":
   de: "Status, Live-Karte, dieses Panel"
+  da: "Status, live-kort, dette panel"
   fr: "Statut, carte en direct, ce panneau"
   nl: "Status, live-kaart, dit paneel"
   pl: "Status, mapa na żywo, ten panel"
@@ -492,6 +562,7 @@ _version: 2
   uk: "Статус, жива мапа, ця панель"
 "Cloudflare tunnel":
   de: "Cloudflare-Tunnel"
+  da: "Cloudflare-tunnel"
   fr: "Tunnel Cloudflare"
   nl: "Cloudflare-tunnel"
   pl: "Tunel Cloudflare"
@@ -499,6 +570,7 @@ _version: 2
   uk: "Тунель Cloudflare"
 "An https address for players anywhere":
   de: "Eine https-Adresse für Spieler überall"
+  da: "En https-adresse til spillere overalt"
   fr: "Une adresse https pour les joueurs de partout"
   nl: "Een https-adres voor spelers overal"
   pl: "Adres https dla graczy z każdego miejsca"
@@ -506,6 +578,7 @@ _version: 2
   uk: "Адреса https для гравців звідусіль"
 "Live map for everyone":
   de: "Live-Karte für alle"
+  da: "Live-kort til alle"
   fr: "Carte en direct pour tous"
   nl: "Live-kaart voor iedereen"
   pl: "Mapa na żywo dla wszystkich"
@@ -513,6 +586,7 @@ _version: 2
   uk: "Жива мапа для всіх"
 "/kort and /players on the web port":
   de: "/kort und /players am Web-Port"
+  da: "/kort og /players på webporten"
   fr: "/kort et /players sur le port web"
   nl: "/kort en /players op de webpoort"
   pl: "/kort i /players na porcie web"
@@ -520,6 +594,7 @@ _version: 2
   uk: "/kort і /players на веб-порту"
 "Timetable to the players' launchers":
   de: "Fahrplan an die Launcher der Spieler"
+  da: "Køreplan til spillernes launchere"
   fr: "Horaires vers les launchers des joueurs"
   nl: "Dienstregeling naar de launchers van de spelers"
   pl: "Rozkład jazdy do launcherów graczy"
@@ -527,6 +602,7 @@ _version: 2
   uk: "Розклад у лаунчери гравців"
 "Admin panel from elsewhere":
   de: "Admin-Panel von anderswo"
+  da: "Adminpanel udefra"
   fr: "Panneau d'admin depuis ailleurs"
   nl: "Beheerpaneel van elders"
   pl: "Panel administratora z zewnątrz"
@@ -534,6 +610,7 @@ _version: 2
   uk: "Панель адміністратора ззовні"
 "Off: only on this machine. On: anywhere the web port is reached, with the admin password":
   de: "Aus: nur auf diesem Rechner. An: überall, wo der Web-Port erreichbar ist, mit dem Admin-Passwort"
+  da: "Fra: kun på denne maskine. Til: overalt, hvor webporten kan nås, med administratoradgangskoden"
   fr: "Désactivé : seulement sur cette machine. Activé : partout où le port web est accessible, avec le mot de passe admin"
   nl: "Uit: alleen op deze computer. Aan: overal waar de webpoort bereikbaar is, met het beheerderswachtwoord"
   pl: "Wył.: tylko na tym komputerze. Wł.: wszędzie, gdzie dostępny jest port web, z hasłem administratora"
@@ -541,6 +618,7 @@ _version: 2
   uk: "Вимк.: лише на цьому комп'ютері. Увімк.: скрізь, де доступний веб-порт, з паролем адміністратора"
 "Admin password":
   de: "Admin-Passwort"
+  da: "Administratoradgangskode"
   fr: "Mot de passe admin"
   nl: "Beheerderswachtwoord"
   pl: "Hasło administratora"
@@ -548,6 +626,7 @@ _version: 2
   uk: "Пароль адміністратора"
 "At least 8 characters; empty: nobody administers the server":
   de: "Mindestens 8 Zeichen; leer: niemand verwaltet den Server"
+  da: "Mindst 8 tegn; tomt: ingen administrerer serveren"
   fr: "Au moins 8 caractères ; vide : personne n'administre le serveur"
   nl: "Minstens 8 tekens; leeg: niemand beheert de server"
   pl: "Co najmniej 8 znaków; puste: nikt nie zarządza serwerem"
@@ -555,6 +634,7 @@ _version: 2
   uk: "Щонайменше 8 символів; порожньо: сервером ніхто не керує"
 "Buses allowed":
   de: "Erlaubte Busse"
+  da: "Tilladte busser"
   fr: "Bus autorisés"
   nl: "Toegestane bussen"
   pl: "Dozwolone autobusy"
@@ -562,6 +642,7 @@ _version: 2
   uk: "Дозволені автобуси"
 "Vehicle files separated by ; - empty: every bus":
   de: "Fahrzeugdateien, getrennt durch ; - leer: alle Busse"
+  da: "Køretøjsfiler adskilt af ; - tomt: alle busser"
   fr: "Fichiers de véhicules séparés par ; - vide : tous les bus"
   nl: "Voertuigbestanden gescheiden door ; - leeg: alle bussen"
   pl: "Pliki pojazdów oddzielone znakiem ; - puste: wszystkie autobusy"
@@ -569,6 +650,7 @@ _version: 2
   uk: "Файли транспорту через ; - порожньо: усі автобуси"
 "The admin panel opens on this machine only. \"Admin panel from elsewhere\" in the settings opens it from your phone or another PC too, with the admin password.":
   de: "Das Admin-Panel öffnet sich nur auf diesem Rechner. „Admin-Panel von anderswo“ in den Einstellungen öffnet es mit dem Admin-Passwort auch von deinem Handy oder einem anderen PC aus."
+  da: "Adminpanelet åbner kun på denne maskine. \"Adminpanel udefra\" i indstillingerne åbner det også fra din telefon eller en anden pc med administratoradgangskoden."
   fr: "Le panneau d'admin ne s'ouvre que sur cette machine. « Panneau d'admin depuis ailleurs » dans les paramètres l'ouvre aussi depuis ton téléphone ou un autre PC, avec le mot de passe admin."
   nl: "Het beheerpaneel opent alleen op deze computer. \"Beheerpaneel van elders\" in de instellingen opent het ook vanaf je telefoon of een andere pc, met het beheerderswachtwoord."
   pl: "Panel administratora otwiera się tylko na tym komputerze. „Panel administratora z zewnątrz” w ustawieniach otwiera go też z twojego telefonu lub innego PC, z hasłem administratora."
@@ -576,6 +658,7 @@ _version: 2
   uk: "Панель адміністратора відкривається лише на цьому комп'ютері. «Панель адміністратора ззовні» в налаштуваннях відкриває її і з твого телефона чи іншого ПК, з паролем адміністратора."
 "The server is stopped: change its settings below, then start it.":
   de: "Der Server ist gestoppt: Ändere unten seine Einstellungen und starte ihn dann."
+  da: "Serveren er stoppet: ændr dens indstillinger nedenfor, og start den derefter."
   fr: "Le serveur est arrêté : modifie ses paramètres ci-dessous, puis démarre-le."
   nl: "De server is gestopt: wijzig hieronder zijn instellingen en start hem dan."
   pl: "Serwer jest zatrzymany: zmień jego ustawienia poniżej, a potem go uruchom."
@@ -583,6 +666,7 @@ _version: 2
   uk: "Сервер зупинено: зміни його налаштування нижче, потім запусти."
 "Choose the server's folder (the one with its server.cfg, or an empty one)":
   de: "Wähle den Ordner des Servers (den mit seiner server.cfg oder einen leeren)"
+  da: "Vælg serverens mappe (den med dens server.cfg, eller en tom)"
   fr: "Choisis le dossier du serveur (celui avec son server.cfg, ou un dossier vide)"
   nl: "Kies de map van de server (die met zijn server.cfg, of een lege)"
   pl: "Wybierz folder serwera (ten z jego server.cfg albo pusty)"
@@ -590,6 +674,7 @@ _version: 2
   uk: "Вибери теку сервера (з його server.cfg або порожню)"
 "Choose the server's folder…":
   de: "Ordner des Servers wählen…"
+  da: "Vælg serverens mappe…"
   fr: "Choisir le dossier du serveur…"
   nl: "Map van de server kiezen…"
   pl: "Wybierz folder serwera…"
@@ -597,6 +682,7 @@ _version: 2
   uk: "Вибрати теку сервера…"
 "Open in the browser":
   de: "Im Browser öffnen"
+  da: "Åbn i browseren"
   fr: "Ouvrir dans le navigateur"
   nl: "Openen in de browser"
   pl: "Otwórz w przeglądarce"
@@ -604,6 +690,7 @@ _version: 2
   uk: "Відкрити в браузері"
 "Another folder…":
   de: "Anderer Ordner…"
+  da: "En anden mappe…"
   fr: "Un autre dossier…"
   nl: "Andere map…"
   pl: "Inny folder…"
@@ -611,6 +698,7 @@ _version: 2
   uk: "Інша тека…"
 "My server":
   de: "Mein Server"
+  da: "Min server"
   fr: "Mon serveur"
   nl: "Mijn server"
   pl: "Mój serwer"
@@ -618,6 +706,7 @@ _version: 2
   uk: "Мій сервер"
 "A dedicated server on this machine":
   de: "Ein dedizierter Server auf diesem Rechner"
+  da: "En dedikeret server på denne maskine"
   fr: "Un serveur dédié sur cette machine"
   nl: "Een dedicated server op deze computer"
   pl: "Serwer dedykowany na tym komputerze"
@@ -625,6 +714,7 @@ _version: 2
   uk: "Виділений сервер на цьому комп'ютері"
 "Run a server that is always on from here, without a command window: choose its folder - one with its server.cfg, or an empty one for a new server.":
   de: "Betreibe von hier aus einen Server, der immer läuft, ohne Konsolenfenster: Wähle seinen Ordner - einen mit seiner server.cfg oder einen leeren für einen neuen Server."
+  da: "Kør en server, der altid er tændt, herfra, uden et kommandovindue: vælg dens mappe - en med dens server.cfg eller en tom til en ny server."
   fr: "Fais tourner d'ici un serveur toujours allumé, sans fenêtre de commande : choisis son dossier - un avec son server.cfg, ou un vide pour un nouveau serveur."
   nl: "Draai van hieruit een server die altijd aan staat, zonder opdrachtvenster: kies zijn map - een met zijn server.cfg, of een lege voor een nieuwe server."
   pl: "Uruchom stąd serwer działający bez przerwy, bez okna konsoli: wybierz jego folder - z jego server.cfg albo pusty dla nowego serwera."
@@ -632,6 +722,7 @@ _version: 2
   uk: "Запускай звідси сервер, що працює постійно, без вікна командного рядка: вибери його теку - з його server.cfg або порожню для нового сервера."
 "The server starts. It had no admin password: the launcher gave it one (Settings).":
   de: "Der Server startet. Er hatte kein Admin-Passwort: Der Launcher hat ihm eins gegeben (Einstellungen)."
+  da: "Serveren starter. Den havde ingen administratoradgangskode: launcheren gav den en (Indstillinger)."
   fr: "Le serveur démarre. Il n'avait pas de mot de passe admin : le launcher lui en a donné un (Paramètres)."
   nl: "De server start. Hij had geen beheerderswachtwoord: de launcher heeft hem er een gegeven (Instellingen)."
   pl: "Serwer się uruchamia. Nie miał hasła administratora: launcher mu je nadał (Ustawienia)."
@@ -639,6 +730,7 @@ _version: 2
   uk: "Сервер запускається. Він не мав пароля адміністратора: лаунчер задав його (Налаштування)."
 "The server starts: its panel opens here as soon as it answers.":
   de: "Der Server startet: Sein Panel öffnet sich hier, sobald er antwortet."
+  da: "Serveren starter: dens panel åbner her, så snart den svarer."
   fr: "Le serveur démarre : son panneau s'ouvre ici dès qu'il répond."
   nl: "De server start: zijn paneel opent hier zodra hij antwoordt."
   pl: "Serwer się uruchamia: jego panel otworzy się tutaj, gdy tylko odpowie."
@@ -646,6 +738,7 @@ _version: 2
   uk: "Сервер запускається: його панель відкриється тут, щойно він відповість."
 "The server did not stop by itself: it was ended.":
   de: "Der Server hat sich nicht selbst beendet: Er wurde zwangsweise beendet."
+  da: "Serveren stoppede ikke af sig selv: den blev afsluttet."
   fr: "Le serveur ne s'est pas arrêté de lui-même : il a été arrêté de force."
   nl: "De server stopte niet vanzelf: hij is geforceerd beëindigd."
   pl: "Serwer nie zatrzymał się sam: został zamknięty siłą."
@@ -653,6 +746,7 @@ _version: 2
   uk: "Сервер не зупинився сам: його завершено примусово."
 "The server stopped.":
   de: "Der Server ist gestoppt."
+  da: "Serveren stoppede."
   fr: "Le serveur s'est arrêté."
   nl: "De server is gestopt."
   pl: "Serwer się zatrzymał."
@@ -660,6 +754,7 @@ _version: 2
   uk: "Сервер зупинився."
 "Stopped":
   de: "Gestoppt"
+  da: "Stoppet"
   fr: "Arrêté"
   nl: "Gestopt"
   pl: "Zatrzymany"
@@ -667,6 +762,7 @@ _version: 2
   uk: "Зупинено"
 "As a form":
   de: "Als Formular"
+  da: "Som formular"
   fr: "En formulaire"
   nl: "Als formulier"
   pl: "Jako formularz"
@@ -674,6 +770,7 @@ _version: 2
   uk: "У вигляді форми"
 "Edit server.cfg as text":
   de: "server.cfg als Text bearbeiten"
+  da: "Rediger server.cfg som tekst"
   fr: "Modifier server.cfg en texte"
   nl: "server.cfg als tekst bewerken"
   pl: "Edytuj server.cfg jako tekst"
@@ -681,6 +778,7 @@ _version: 2
   uk: "Редагувати server.cfg як текст"
 "Not answering":
   de: "Antwortet nicht"
+  da: "Svarer ikke"
   fr: "Ne répond pas"
   nl: "Reageert niet"
   pl: "Nie odpowiada"

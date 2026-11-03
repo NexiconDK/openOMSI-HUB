@@ -5,6 +5,7 @@ _version: 2
 "Delete the company":
   nl: "Bedrijf verwijderen"
   de: "Unternehmen löschen"
+  da: "Slet selskabet"
   fr: "Supprimer l'entreprise"
   ru: "Удалить компанию"
   uk: "Видалити компанію"
@@ -12,6 +13,7 @@ _version: 2
 "The company is deleted for good: its buses, staff, lines, money and history. Your service record as a driver stays. This cannot be undone.":
   nl: "Het bedrijf wordt definitief verwijderd: de bussen, het personeel, de lijnen, het geld en de geschiedenis. Je staat van dienst als chauffeur blijft. Dit kan niet ongedaan worden gemaakt."
   de: "Das Unternehmen wird endgültig gelöscht: Busse, Personal, Linien, Geld und Geschichte. Deine Dienstakte als Fahrer bleibt. Das lässt sich nicht rückgängig machen."
+  da: "Selskabet slettes for altid: dets busser, personale, linjer, penge og historik. Din tjenestehistorik som chauffør bevares. Det kan ikke fortrydes."
   fr: "L'entreprise est supprimée définitivement : ses bus, son personnel, ses lignes, son argent et son historique. Vos états de service de conducteur restent. C'est irréversible."
   ru: "Компания удаляется навсегда: автобусы, персонал, линии, деньги и история. Ваш послужной список водителя остаётся. Это нельзя отменить."
   uk: "Компанію буде видалено назавжди: автобуси, персонал, лінії, гроші та історію. Ваш послужний список водія залишається. Це не можна скасувати."
@@ -19,6 +21,7 @@ _version: 2
 "Delete for good":
   nl: "Definitief verwijderen"
   de: "Endgültig löschen"
+  da: "Slet for altid"
   fr: "Supprimer définitivement"
   ru: "Удалить навсегда"
   uk: "Видалити назавжди"
@@ -26,6 +29,7 @@ _version: 2
 "Wait until the company's day is simulated.":
   nl: "Wacht tot de dag van het bedrijf is doorgerekend."
   de: "Warte, bis der Tag des Unternehmens berechnet ist."
+  da: "Vent, til selskabets dag er simuleret."
   fr: "Attendez que la journée de l'entreprise soit simulée."
   ru: "Подождите, пока день компании будет рассчитан."
   uk: "Зачекайте, доки день компанії буде розраховано."
@@ -33,6 +37,7 @@ _version: 2
 "%{name} is deleted.":
   nl: "%{name} is verwijderd."
   de: "%{name} ist gelöscht."
+  da: "%{name} er slettet."
   fr: "%{name} est supprimée."
   ru: "%{name} удалена."
   uk: "%{name} видалено."

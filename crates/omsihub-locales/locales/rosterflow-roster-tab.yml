@@ -4,6 +4,7 @@ _version: 2
 # side panel to take a driver or a bus off.
 "%{amount} for this duty, every %{day}":
   de: "%{amount} für diesen Dienst, jede Woche (%{day})"
+  da: "%{amount} for denne vagt, hver %{day}"
   fr: "%{amount} pour ce service, chaque semaine (%{day})"
   nl: "%{amount} voor deze dienst, elke week (%{day})"
   pl: "%{amount} za tę służbę, co tydzień (%{day})"
@@ -11,6 +12,7 @@ _version: 2
   uk: "%{amount} за цю зміну, щотижня (%{day})"
 "Unassign %{who}":
   de: "%{who} entfernen"
+  da: "Fjern %{who} fra vagten"
   fr: "Retirer %{who}"
   nl: "%{who} weghalen"
   pl: "Zdejmij: %{who}"
@@ -18,6 +20,7 @@ _version: 2
   uk: "Зняти: %{who}"
 "Unassign bus %{bus}":
   de: "Bus %{bus} entfernen"
+  da: "Fjern bus %{bus} fra vagten"
   fr: "Retirer le bus %{bus}"
   nl: "Bus %{bus} weghalen"
   pl: "Zdejmij autobus %{bus}"
@@ -25,6 +28,7 @@ _version: 2
   uk: "Зняти автобус %{bus}"
 "Cancel the rental bus":
   de: "Mietbus abbestellen"
+  da: "Annuller lejebussen"
   fr: "Annuler le bus de location"
   nl: "Huurbus afzeggen"
   pl: "Anuluj autobus z wypożyczalni"
@@ -32,6 +36,7 @@ _version: 2
   uk: "Скасувати орендований автобус"
 "Take it off (Delete)":
   de: "Entfernen (Entf)"
+  da: "Tag den af (Delete)"
   fr: "Le retirer (Suppr)"
   nl: "Weghalen (Delete)"
   pl: "Zdejmij (Delete)"
@@ -39,6 +44,7 @@ _version: 2
   uk: "Зняти (Delete)"
 "Give to an agency driver":
   de: "An einen Leihfahrer geben"
+  da: "Giv til en vikarchauffør"
   fr: "Confier à un chauffeur intérimaire"
   nl: "Aan een uitzendkracht geven"
   pl: "Przydziel kierowcy z agencji"
@@ -46,6 +52,7 @@ _version: 2
   uk: "Віддати водію з агентства"
 "RosterFlow has changes of this day not saved: this tab and the day run the saved duties. Save them to plan with them here.":
   de: "RosterFlow hat nicht gespeicherte Änderungen an diesem Tag: dieser Reiter und der Tag selbst laufen mit den gespeicherten Diensten. Speichern Sie sie, um hier mit ihnen zu planen."
+  da: "RosterFlow har ændringer fra denne dag, som ikke er gemt: denne fane og dagen kører de gemte vagter. Gem dem for at planlægge med dem her."
   fr: "RosterFlow a des modifications de ce jour non enregistrées : cet onglet et la journée utilisent les services enregistrés. Enregistrez-les pour planifier avec elles ici."
   nl: "RosterFlow heeft niet-opgeslagen wijzigingen van deze dag: dit tabblad en de dag zelf draaien de opgeslagen diensten. Sla ze op om er hier mee te plannen."
   pl: "RosterFlow ma niezapisane zmiany tego dnia: ta karta i sam dzień korzystają z zapisanych służb. Zapisz je, aby planować z nimi tutaj."

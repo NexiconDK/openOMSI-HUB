@@ -4,6 +4,7 @@ _version: 2
 # prints, and the rules its core checks.
 "Start time":
   de: "Beginnzeit"
+  da: "Starttid"
   fr: "Heure de début"
   nl: "Begintijd"
   pl: "Godzina rozpoczęcia"
@@ -11,6 +12,7 @@ _version: 2
   uk: "Час початку"
 "End time":
   de: "Endzeit"
+  da: "Sluttid"
   fr: "Heure de fin"
   nl: "Eindtijd"
   pl: "Godzina zakończenia"
@@ -18,6 +20,7 @@ _version: 2
   uk: "Час завершення"
 "Spread":
   de: "Dienstspanne"
+  da: "Spredning"
   fr: "Amplitude"
   nl: "Spreiding"
   pl: "Rozpiętość"
@@ -25,6 +28,7 @@ _version: 2
   uk: "Тривалість"
 "Paid time":
   de: "Bezahlte Zeit"
+  da: "Betalt tid"
   fr: "Temps payé"
   nl: "Betaalde tijd"
   pl: "Czas płatny"
@@ -32,6 +36,7 @@ _version: 2
   uk: "Оплачуваний час"
 "Duty type":
   de: "Diensttyp"
+  da: "Vagttype"
   fr: "Type de service"
   nl: "Diensttype"
   pl: "Typ służby"
@@ -39,6 +44,7 @@ _version: 2
   uk: "Тип зміни"
 "Undone: %{edit}":
   de: "Rückgängig: %{edit}"
+  da: "Fortrudt: %{edit}"
   fr: "Annulé : %{edit}"
   nl: "Ongedaan: %{edit}"
   pl: "Cofnięto: %{edit}"
@@ -46,6 +52,7 @@ _version: 2
   uk: "Скасовано: %{edit}"
 "Redone: %{edit}":
   de: "Wiederholt: %{edit}"
+  da: "Gentaget: %{edit}"
   fr: "Rétabli : %{edit}"
   nl: "Opnieuw: %{edit}"
   pl: "Ponowiono: %{edit}"
@@ -53,6 +60,7 @@ _version: 2
   uk: "Повторено: %{edit}"
 "Saved: the roster, the day and the game run this planning now.":
   de: "Gespeichert: Dienstplan, Tag und Spiel fahren jetzt diese Planung."
+  da: "Gemt: vagtplanen, dagen og spillet kører nu denne planlægning."
   fr: "Enregistré : le roulement, la journée et le jeu suivent maintenant cette planification."
   nl: "Opgeslagen: het rooster, de dag en het spel rijden nu deze planning."
   pl: "Zapisano: grafik, dzień i gra działają teraz według tego planu."
@@ -60,6 +68,7 @@ _version: 2
   uk: "Збережено: графік, день і гра тепер працюють за цим планом."
 "Discarded: back to the saved planning.":
   de: "Verworfen: zurück zur gespeicherten Planung."
+  da: "Kasseret: tilbage til den gemte planlægning."
   fr: "Abandonné : retour à la planification enregistrée."
   nl: "Verworpen: terug naar de opgeslagen planning."
   pl: "Odrzucono: powrót do zapisanego planu."
@@ -67,6 +76,7 @@ _version: 2
   uk: "Скасовано: повернення до збереженого плану."
 "Preferences: the rules the duties are checked against and Optimise works to":
   de: "Einstellungen: die Regeln, nach denen die Dienste geprüft werden und Optimieren arbeitet"
+  da: "Indstillinger: de regler, vagterne kontrolleres mod, og som Optimér arbejder efter"
   fr: "Préférences : les règles auxquelles les services sont confrontés et que l'optimisation suit"
   nl: "Voorkeuren: de regels waaraan de diensten worden getoetst en waarnaar Optimaliseren werkt"
   pl: "Preferencje: zasady, według których sprawdzane są służby i działa optymalizacja"
@@ -74,6 +84,7 @@ _version: 2
   uk: "Вподобання: правила, за якими перевіряються зміни й працює оптимізація"
 "Print the bus graph or the duty graph as a PDF file":
   de: "Busgrafik oder Dienstgrafik als PDF-Datei drucken"
+  da: "Udskriv busgrafen eller vagtgrafen som en PDF-fil"
   fr: "Imprimer le graphique des bus ou des services en fichier PDF"
   nl: "Druk de busgrafiek of de dienstgrafiek af als pdf-bestand"
   pl: "Wydrukuj wykres autobusów lub służb jako plik PDF"
@@ -81,6 +92,7 @@ _version: 2
   uk: "Надрукувати графік автобусів або змін у PDF"
 "Go to a vehicle or a duty by its ID (G)":
   de: "Zu einem Fahrzeug oder Dienst per Nummer springen (G)"
+  da: "Gå til et køretøj eller en vagt efter dens ID (G)"
   fr: "Aller à un véhicule ou un service par son numéro (G)"
   nl: "Ga naar een voertuig of dienst via het nummer (G)"
   pl: "Przejdź do pojazdu lub służby po numerze (G)"
@@ -88,6 +100,7 @@ _version: 2
   uk: "Перейти до машини чи зміни за номером (G)"
 "Optimisation settings":
   de: "Optimierungseinstellungen"
+  da: "Optimeringsindstillinger"
   fr: "Réglages de l'optimisation"
   nl: "Instellingen voor optimaliseren"
   pl: "Ustawienia optymalizacji"
@@ -95,6 +108,7 @@ _version: 2
   uk: "Налаштування оптимізації"
 "Changes not saved yet: SAVE makes them the company's planning, DISCARD forgets them":
   de: "Änderungen noch nicht gespeichert: SPEICHERN macht sie zur Planung des Betriebs, VERWERFEN vergisst sie"
+  da: "Ændringer endnu ikke gemt: GEM gør dem til selskabets planlægning, KASSÉR glemmer dem"
   fr: "Modifications non enregistrées : ENREGISTRER en fait la planification de l'entreprise, ABANDONNER les oublie"
   nl: "Wijzigingen nog niet opgeslagen: OPSLAAN maakt ze de planning van het bedrijf, VERWERPEN vergeet ze"
   pl: "Zmiany nie zapisane: ZAPISZ czyni je planem firmy, ODRZUĆ je porzuca"
@@ -102,6 +116,7 @@ _version: 2
   uk: "Зміни не збережено: ЗБЕРЕГТИ робить їх планом компанії, СКАСУВАТИ забуває їх"
 "Saved: the company runs this planning":
   de: "Gespeichert: der Betrieb fährt diese Planung"
+  da: "Gemt: selskabet kører denne planlægning"
   fr: "Enregistré : l'entreprise suit cette planification"
   nl: "Opgeslagen: het bedrijf rijdt deze planning"
   pl: "Zapisano: firma działa według tego planu"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Збережено: компанія працює за цим планом"
 "Timeplan":
   de: "Fahrplan"
+  da: "Tidsplan"
   fr: "Grille horaire"
   nl: "Dienstregeling"
   pl: "Rozkład"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Розклад"
 "The day shown: the planning of a weekday holds for that weekday every week":
   de: "Der gezeigte Tag: die Planung eines Wochentags gilt jede Woche für diesen Wochentag"
+  da: "Den viste dag: planlægningen for en ugedag gælder for den ugedag hver uge"
   fr: "Le jour affiché : la planification d'un jour de semaine vaut chaque semaine pour ce jour"
   nl: "De getoonde dag: de planning van een weekdag geldt elke week voor die weekdag"
   pl: "Pokazany dzień: plan dnia tygodnia obowiązuje w ten dzień co tydzień"
@@ -123,6 +140,7 @@ _version: 2
   uk: "Показаний день: план дня тижня діє для цього дня щотижня"
 "Schedule history: every change, to go back to":
   de: "Planungsverlauf: jede Änderung, um dorthin zurückzugehen"
+  da: "Planhistorik: hver ændring, at gå tilbage til"
   fr: "Historique : chaque modification, pour y revenir"
   nl: "Planningsgeschiedenis: elke wijziging, om naar terug te gaan"
   pl: "Historia planu: każda zmiana, aby do niej wrócić"
@@ -130,6 +148,7 @@ _version: 2
   uk: "Історія плану: кожна зміна, щоб повернутися до неї"
 "Line %{n}: its running times and its timetable grid will be planned here.":
   de: "Linie %{n}: ihre Fahrzeiten und ihr Fahrplanraster werden hier geplant."
+  da: "Linje %{n}: dens køretider og dens køreplansgitter planlægges her."
   fr: "Ligne %{n} : ses temps de parcours et sa grille horaire seront planifiés ici."
   nl: "Lijn %{n}: haar rijtijden en dienstregelingsrooster worden hier gepland."
   pl: "Linia %{n}: jej czasy przejazdu i siatka rozkładu będą planowane tutaj."
@@ -137,6 +156,7 @@ _version: 2
   uk: "Маршрут %{n}: його час у дорозі та сітка розкладу плануватимуться тут."
 "The lines' running times and their timetable grid will be planned here.":
   de: "Fahrzeiten und Fahrplanraster der Linien werden hier geplant."
+  da: "Linjernes køretider og deres køreplansgitter planlægges her."
   fr: "Les temps de parcours et la grille horaire des lignes seront planifiés ici."
   nl: "De rijtijden en het dienstregelingsrooster van de lijnen worden hier gepland."
   pl: "Czasy przejazdu i siatka rozkładu linii będą planowane tutaj."
@@ -144,6 +164,7 @@ _version: 2
   uk: "Час у дорозі та сітка розкладу маршрутів плануватимуться тут."
 "Optimised proposal: the KPIs show it against your planning. Locked vehicles and duties are kept.":
   de: "Optimierter Vorschlag: die Kennzahlen zeigen ihn gegen deine Planung. Gesperrte Fahrzeuge und Dienste bleiben."
+  da: "Optimeret forslag: KPI'erne viser det mod din planlægning. Låste køretøjer og vagter bevares."
   fr: "Proposition optimisée : les indicateurs la comparent à ta planification. Les véhicules et services verrouillés sont gardés."
   nl: "Geoptimaliseerd voorstel: de kerncijfers zetten het af tegen je planning. Vergrendelde voertuigen en diensten blijven."
   pl: "Propozycja zoptymalizowana: wskaźniki porównują ją z Twoim planem. Zablokowane pojazdy i służby zostają."
@@ -151,6 +172,7 @@ _version: 2
   uk: "Оптимізована пропозиція: показники порівнюють її з вашим планом. Заблоковані машини й зміни зберігаються."
 "Optimised":
   de: "Optimiert"
+  da: "Optimeret"
   fr: "Optimisé"
   nl: "Geoptimaliseerd"
   pl: "Zoptymalizowano"
@@ -158,6 +180,7 @@ _version: 2
   uk: "Оптимізовано"
 "The optimised blocks and duties are in your draft: SAVE keeps them.":
   de: "Die optimierten Umläufe und Dienste sind in deinem Entwurf: SPEICHERN behält sie."
+  da: "De optimerede vognløb og vagter er i dit udkast: GEM beholder dem."
   fr: "Les blocs et services optimisés sont dans ton brouillon : ENREGISTRER les garde."
   nl: "De geoptimaliseerde omlopen en diensten staan in je concept: OPSLAAN houdt ze."
   pl: "Zoptymalizowane obiegi i służby są w szkicu: ZAPISZ je zachowa."
@@ -165,6 +188,7 @@ _version: 2
   uk: "Оптимізовані випуски та зміни в чернетці: ЗБЕРЕГТИ закріпить їх."
 "Blocks (PVR: %{n})":
   de: "Umläufe (Spitze: %{n})"
+  da: "Vognløb (PVR: %{n})"
   fr: "Blocs (pointe : %{n})"
   nl: "Omlopen (piek: %{n})"
   pl: "Obiegi (szczyt: %{n})"
@@ -172,6 +196,7 @@ _version: 2
   uk: "Випуски (пік: %{n})"
 "Vehicle efficiency":
   de: "Fahrzeugeffizienz"
+  da: "Køretøjseffektivitet"
   fr: "Efficacité véhicules"
   nl: "Voertuigefficiëntie"
   pl: "Efektywność pojazdów"
@@ -179,6 +204,7 @@ _version: 2
   uk: "Ефективність машин"
 "Services":
   de: "Linienfahrten"
+  da: "Ture"
   fr: "Services"
   nl: "Dienstritten"
   pl: "Kursy"
@@ -186,6 +212,7 @@ _version: 2
   uk: "Рейси"
 "Deadheads":
   de: "Leerfahrten"
+  da: "Tomkørsel"
   fr: "Haut-le-pied"
   nl: "Leegritten"
   pl: "Przejazdy techniczne"
@@ -193,6 +220,7 @@ _version: 2
   uk: "Нульові рейси"
 "Crew efficiency":
   de: "Personaleffizienz"
+  da: "Besætningseffektivitet"
   fr: "Efficacité équipages"
   nl: "Personeelsefficiëntie"
   pl: "Efektywność załóg"
@@ -200,6 +228,7 @@ _version: 2
   uk: "Ефективність екіпажів"
 "Total cost":
   de: "Gesamtkosten"
+  da: "Samlede omkostninger"
   fr: "Coût total"
   nl: "Totale kosten"
   pl: "Koszt całkowity"
@@ -207,6 +236,7 @@ _version: 2
   uk: "Загальна вартість"
 "Crew":
   de: "Personal"
+  da: "Besætning"
   fr: "Équipages"
   nl: "Personeel"
   pl: "Załogi"
@@ -214,6 +244,7 @@ _version: 2
   uk: "Екіпажі"
 "Split count":
   de: "Geteilte Dienste"
+  da: "Antal delte vagter"
   fr: "Services fractionnés"
   nl: "Gebroken diensten"
   pl: "Służby dzielone"
@@ -221,6 +252,7 @@ _version: 2
   uk: "Розривні зміни"
 "of duties":
   de: "der Dienste"
+  da: "af vagter"
   fr: "des services"
   nl: "van de diensten"
   pl: "służb"
@@ -228,6 +260,7 @@ _version: 2
   uk: "змін"
 "Changeover":
   de: "Fahrzeugwechsel"
+  da: "Skift"
   fr: "Changement de véhicule"
   nl: "Voertuigwissel"
   pl: "Zmiana pojazdu"
@@ -235,6 +268,7 @@ _version: 2
   uk: "Зміна машини"
 "During split":
   de: "Während der Teilung"
+  da: "Under delt vagt"
   fr: "Pendant la coupure"
   nl: "Tijdens onderbreking"
   pl: "W przerwie"
@@ -242,6 +276,7 @@ _version: 2
   uk: "Під час розриву"
 "Average paid time":
   de: "Durchschnittliche bezahlte Zeit"
+  da: "Gennemsnitlig betalt tid"
   fr: "Temps payé moyen"
   nl: "Gemiddelde betaalde tijd"
   pl: "Średni czas płatny"
@@ -249,6 +284,7 @@ _version: 2
   uk: "Середній оплачуваний час"
 "Paid time (hours)":
   de: "Bezahlte Zeit (Stunden)"
+  da: "Betalt tid (timer)"
   fr: "Temps payé (heures)"
   nl: "Betaalde tijd (uren)"
   pl: "Czas płatny (godziny)"
@@ -256,6 +292,7 @@ _version: 2
   uk: "Оплачуваний час (години)"
 "Spread time (hours)":
   de: "Dienstspanne (Stunden)"
+  da: "Spredningstid (timer)"
   fr: "Amplitude (heures)"
   nl: "Spreidingstijd (uren)"
   pl: "Rozpiętość (godziny)"
@@ -263,6 +300,7 @@ _version: 2
   uk: "Тривалість (години)"
 "Work time (hours)":
   de: "Arbeitszeit (Stunden)"
+  da: "Arbejdstid (timer)"
   fr: "Temps de travail (heures)"
   nl: "Werktijd (uren)"
   pl: "Czas pracy (godziny)"
@@ -270,6 +308,7 @@ _version: 2
   uk: "Робочий час (години)"
 "Driving time (hours)":
   de: "Lenkzeit (Stunden)"
+  da: "Køretid (timer)"
   fr: "Temps de conduite (heures)"
   nl: "Rijtijd (uren)"
   pl: "Czas jazdy (godziny)"
@@ -277,6 +316,7 @@ _version: 2
   uk: "Час водіння (години)"
 "Platform time (hours)":
   de: "Fahrdienstzeit (Stunden)"
+  da: "Perrontid (timer)"
   fr: "Temps de plateforme (heures)"
   nl: "Platformtijd (uren)"
   pl: "Czas na linii (godziny)"
@@ -284,6 +324,7 @@ _version: 2
   uk: "Час на лінії (години)"
 "Soft rules broken":
   de: "Weiche Regeln verletzt"
+  da: "Brudte bløde regler"
   fr: "Règles souples enfreintes"
   nl: "Zachte regels overtreden"
   pl: "Złamane miękkie zasady"
@@ -291,6 +332,7 @@ _version: 2
   uk: "Порушено м'які правила"
 "Crew algorithmic cost":
   de: "Algorithmische Personalkosten"
+  da: "Besætningens algoritmiske omkostning"
   fr: "Coût algorithmique des équipages"
   nl: "Algoritmische personeelskosten"
   pl: "Algorytmiczny koszt załóg"
@@ -298,6 +340,7 @@ _version: 2
   uk: "Алгоритмічна вартість екіпажів"
 "Duty cost":
   de: "Dienstkosten"
+  da: "Vagtomkostning"
   fr: "Coût des services"
   nl: "Dienstkosten"
   pl: "Koszt służb"
@@ -305,6 +348,7 @@ _version: 2
   uk: "Вартість змін"
 "Duty types":
   de: "Diensttypen"
+  da: "Vagttyper"
   fr: "Types de service"
   nl: "Diensttypen"
   pl: "Typy służb"
@@ -312,6 +356,7 @@ _version: 2
   uk: "Типи змін"
 "Duties paid time":
   de: "Bezahlte Zeit der Dienste"
+  da: "Vagters betalte tid"
   fr: "Temps payé des services"
   nl: "Betaalde tijd per dienst"
   pl: "Czas płatny służb"
@@ -319,6 +364,7 @@ _version: 2
   uk: "Оплачуваний час змін"
 "Fewer figures":
   de: "Weniger Kennzahlen"
+  da: "Færre tal"
   fr: "Moins d'indicateurs"
   nl: "Minder cijfers"
   pl: "Mniej wskaźników"
@@ -326,6 +372,7 @@ _version: 2
   uk: "Менше показників"
 "More figures: splits, changeovers, paid, spread, work, driving and platform time, the histograms":
   de: "Mehr Kennzahlen: Teilungen, Wechsel, bezahlte, Spannen-, Arbeits-, Lenk- und Fahrdienstzeit, die Histogramme"
+  da: "Flere tal: delte vagter, skift, betalt tid, spredning, arbejdstid, køretid og perrontid, histogrammerne"
   fr: "Plus d'indicateurs : coupures, changements, temps payé, amplitude, travail, conduite et plateforme, les histogrammes"
   nl: "Meer cijfers: onderbrekingen, wissels, betaalde, spreidings-, werk-, rij- en platformtijd, de histogrammen"
   pl: "Więcej wskaźników: przerwy, zmiany, czas płatny, rozpiętość, praca, jazda i czas na linii, histogramy"
@@ -333,6 +380,7 @@ _version: 2
   uk: "Більше показників: розриви, зміни машин, оплачуваний час, тривалість, робота, водіння, час на лінії, гістограми"
 "Make the changes the company's planning: the roster, the day and the game run it":
   de: "Die Änderungen zur Planung des Betriebs machen: Dienstplan, Tag und Spiel fahren damit"
+  da: "Gør ændringerne til selskabets planlægning: vagtplanen, dagen og spillet kører den"
   fr: "Faire des modifications la planification de l'entreprise : le roulement, la journée et le jeu la suivent"
   nl: "Maak de wijzigingen de planning van het bedrijf: het rooster, de dag en het spel rijden ermee"
   pl: "Uczyń zmiany planem firmy: grafik, dzień i gra działają według niego"
@@ -340,6 +388,7 @@ _version: 2
   uk: "Зробити зміни планом компанії: графік, день і гра працюють за ним"
 "Discard":
   de: "Verwerfen"
+  da: "Kassér"
   fr: "Abandonner"
   nl: "Verwerpen"
   pl: "Odrzuć"
@@ -347,6 +396,7 @@ _version: 2
   uk: "Скасувати"
 "Stats":
   de: "Statistik"
+  da: "Statistik"
   fr: "Stats"
   nl: "Statistieken"
   pl: "Statystyki"
@@ -354,6 +404,7 @@ _version: 2
   uk: "Статистика"
 "Issues (%{n})":
   de: "Probleme (%{n})"
+  da: "Problemer (%{n})"
   fr: "Problèmes (%{n})"
   nl: "Problemen (%{n})"
   pl: "Problemy (%{n})"
@@ -361,6 +412,7 @@ _version: 2
   uk: "Проблеми (%{n})"
 "Full screen: the KPIs folded away":
   de: "Vollbild: die Kennzahlen eingeklappt"
+  da: "Fuld skærm: KPI'erne foldet væk"
   fr: "Plein écran : les indicateurs repliés"
   nl: "Volledig scherm: de kerncijfers ingeklapt"
   pl: "Pełny ekran: wskaźniki zwinięte"
@@ -368,6 +420,7 @@ _version: 2
   uk: "Повний екран: показники згорнуто"
 "Optimize":
   de: "Optimieren"
+  da: "Optimér"
   fr: "Optimiser"
   nl: "Optimaliseren"
   pl: "Optymalizuj"
@@ -375,6 +428,7 @@ _version: 2
   uk: "Оптимізувати"
 "Optimise the day by the preferences: the vehicles' blocks and the duties, the locked ones kept. Shown as a proposal to accept or not":
   de: "Den Tag nach den Einstellungen optimieren: Umläufe und Dienste, gesperrte bleiben. Als Vorschlag gezeigt, anzunehmen oder nicht"
+  da: "Optimér dagen efter indstillingerne: køretøjernes vognløb og vagterne, de låste bevaret. Vist som et forslag, der kan accepteres eller ej"
   fr: "Optimiser la journée selon les préférences : blocs et services, les verrouillés gardés. Montré comme proposition à accepter ou non"
   nl: "Optimaliseer de dag volgens de voorkeuren: de omlopen en de diensten, de vergrendelde blijven. Getoond als voorstel om te aanvaarden of niet"
   pl: "Optymalizuj dzień według preferencji: obiegi i służby, zablokowane zostają. Pokazane jako propozycja do przyjęcia lub nie"
@@ -382,6 +436,7 @@ _version: 2
   uk: "Оптимізувати день за вподобаннями: випуски й зміни, заблоковані зберігаються. Показується як пропозиція, прийняти чи ні"
 "Stack: %{n} unassigned":
   de: "Stapel: %{n} nicht zugewiesen"
+  da: "Bunke: %{n} ikke tildelt"
   fr: "Pile : %{n} non affectées"
   nl: "Stapel: %{n} niet toegewezen"
   pl: "Stos: %{n} nieprzydzielone"
@@ -389,6 +444,7 @@ _version: 2
   uk: "Стос: %{n} не призначено"
 "Showing %{a}/%{b} duties":
   de: "%{a}/%{b} Dienste angezeigt"
+  da: "Viser %{a}/%{b} vagter"
   fr: "%{a}/%{b} services affichés"
   nl: "%{a}/%{b} diensten getoond"
   pl: "Pokazano służby: %{a}/%{b}"
@@ -396,6 +452,7 @@ _version: 2
   uk: "Показано змін: %{a}/%{b}"
 "Showing %{a}/%{b} vehicles (%{c} unscheduled)":
   de: "%{a}/%{b} Fahrzeuge angezeigt (%{c} nicht eingeplant)"
+  da: "Viser %{a}/%{b} køretøjer (%{c} ikke planlagt)"
   fr: "%{a}/%{b} véhicules affichés (%{c} non planifiés)"
   nl: "%{a}/%{b} voertuigen getoond (%{c} niet ingepland)"
   pl: "Pokazano pojazdy: %{a}/%{b} (%{c} niezaplanowane)"
@@ -403,6 +460,7 @@ _version: 2
   uk: "Показано машин: %{a}/%{b} (%{c} не заплановано)"
 "Trips with passengers assigned to a vehicle":
   de: "Fahrten mit Fahrgästen einem Fahrzeug zugewiesen"
+  da: "Ture med passagerer tildelt et køretøj"
   fr: "Courses avec voyageurs affectées à un véhicule"
   nl: "Ritten met reizigers toegewezen aan een voertuig"
   pl: "Kursy z pasażerami przydzielone do pojazdu"
@@ -410,6 +468,7 @@ _version: 2
   uk: "Рейси з пасажирами, призначені на машину"
 "Trips with passengers in a duty":
   de: "Fahrten mit Fahrgästen in einem Dienst"
+  da: "Ture med passagerer i en vagt"
   fr: "Courses avec voyageurs dans un service"
   nl: "Ritten met reizigers in een dienst"
   pl: "Kursy z pasażerami w służbie"
@@ -417,6 +476,7 @@ _version: 2
   uk: "Рейси з пасажирами у зміні"
 "Validate again":
   de: "Erneut prüfen"
+  da: "Kontrollér igen"
   fr: "Valider à nouveau"
   nl: "Opnieuw valideren"
   pl: "Sprawdź ponownie"
@@ -424,6 +484,7 @@ _version: 2
   uk: "Перевірити знову"
 "Vehicle Issues: %{n}":
   de: "Fahrzeugprobleme: %{n}"
+  da: "Køretøjsproblemer: %{n}"
   fr: "Problèmes véhicules : %{n}"
   nl: "Voertuigproblemen: %{n}"
   pl: "Problemy pojazdów: %{n}"
@@ -431,6 +492,7 @@ _version: 2
   uk: "Проблеми машин: %{n}"
 "Duty Issues: %{n}":
   de: "Dienstprobleme: %{n}"
+  da: "Vagtproblemer: %{n}"
   fr: "Problèmes services : %{n}"
   nl: "Dienstproblemen: %{n}"
   pl: "Problemy służb: %{n}"
@@ -438,6 +500,7 @@ _version: 2
   uk: "Проблеми змін: %{n}"
 "Global Issues: %{n}":
   de: "Allgemeine Probleme: %{n}"
+  da: "Globale problemer: %{n}"
   fr: "Problèmes généraux : %{n}"
   nl: "Algemene problemen: %{n}"
   pl: "Problemy ogólne: %{n}"
@@ -445,6 +508,7 @@ _version: 2
   uk: "Загальні проблеми: %{n}"
 "Validated again.":
   de: "Erneut geprüft."
+  da: "Kontrolleret igen."
   fr: "Validé à nouveau."
   nl: "Opnieuw gevalideerd."
   pl: "Sprawdzono ponownie."
@@ -452,6 +516,7 @@ _version: 2
   uk: "Перевірено знову."
 "Trips unassigned to the stack":
   de: "Fahrten auf den Stapel gelegt"
+  da: "Ture fjernet fra køretøjer til bunken"
   fr: "Courses remises sur la pile"
   nl: "Ritten naar de stapel gehaald"
   pl: "Kursy odpięte na stos"
@@ -459,6 +524,7 @@ _version: 2
   uk: "Рейси знято в стос"
 "Click to sort by it, again the other way, a third time back":
   de: "Klicken, um danach zu sortieren, nochmal umgekehrt, ein drittes Mal zurück"
+  da: "Klik for at sortere efter den, igen den anden vej, en tredje gang tilbage"
   fr: "Cliquer pour trier, encore pour l'inverse, une troisième fois pour revenir"
   nl: "Klik om erop te sorteren, nog eens andersom, een derde keer terug"
   pl: "Kliknij, aby sortować, ponownie odwrotnie, trzeci raz z powrotem"
@@ -466,6 +532,7 @@ _version: 2
   uk: "Натисніть для сортування, ще раз — у зворотному порядку, утретє — скидання"
 "Stack: unassigned trips":
   de: "Stapel: nicht zugewiesene Fahrten"
+  da: "Bunke: ikke tildelte ture"
   fr: "Pile : courses non affectées"
   nl: "Stapel: niet toegewezen ritten"
   pl: "Stos: nieprzydzielone kursy"
@@ -473,6 +540,7 @@ _version: 2
   uk: "Стос: непризначені рейси"
 "Drop here to unassign: the trips wait on the stack":
   de: "Hier ablegen zum Lösen: die Fahrten warten auf dem Stapel"
+  da: "Slip her for at fjerne: turene venter i bunken"
   fr: "Déposer ici pour désaffecter : les courses attendent sur la pile"
   nl: "Laat hier los om los te koppelen: de ritten wachten op de stapel"
   pl: "Upuść tutaj, aby odpiąć: kursy czekają na stosie"
@@ -480,6 +548,7 @@ _version: 2
   uk: "Відпустіть тут, щоб зняти: рейси чекають у стосі"
 "Locked: Optimise leaves it and no edit changes it. Click to unlock":
   de: "Gesperrt: Optimieren lässt es, keine Änderung ändert es. Klicken zum Entsperren"
+  da: "Låst: Optimér lader den være, og ingen redigering ændrer den. Klik for at låse op"
   fr: "Verrouillé : l'optimisation le laisse et aucune modification ne le change. Cliquer pour déverrouiller"
   nl: "Vergrendeld: Optimaliseren laat het en geen wijziging verandert het. Klik om te ontgrendelen"
   pl: "Zablokowane: optymalizacja go nie rusza, edycje nie zmieniają. Kliknij, aby odblokować"
@@ -487,6 +556,7 @@ _version: 2
   uk: "Заблоковано: оптимізація не чіпає, правки не змінюють. Натисніть, щоб розблокувати"
 "Lock it: Optimise leaves it as it is":
   de: "Sperren: Optimieren lässt es, wie es ist"
+  da: "Lås den: Optimér lader den være, som den er"
   fr: "Le verrouiller : l'optimisation le laisse tel quel"
   nl: "Vergrendel het: Optimaliseren laat het zoals het is"
   pl: "Zablokuj: optymalizacja zostawi jak jest"
@@ -494,6 +564,7 @@ _version: 2
   uk: "Заблокувати: оптимізація залишить як є"
 "Pinned to the top. Click to unpin":
   de: "Oben angeheftet. Klicken zum Lösen"
+  da: "Fastgjort øverst. Klik for at frigøre"
   fr: "Épinglé en haut. Cliquer pour détacher"
   nl: "Bovenaan vastgezet. Klik om los te maken"
   pl: "Przypięte na górze. Kliknij, aby odpiąć"
@@ -501,6 +572,7 @@ _version: 2
   uk: "Закріплено вгорі. Натисніть, щоб відкріпити"
 "Pin it to the top (P)":
   de: "Oben anheften (P)"
+  da: "Fastgør den øverst (P)"
   fr: "Épingler en haut (P)"
   nl: "Bovenaan vastzetten (P)"
   pl: "Przypnij na górze (P)"
@@ -508,6 +580,7 @@ _version: 2
   uk: "Закріпити вгорі (P)"
 "New duty":
   de: "Neuer Dienst"
+  da: "Ny vagt"
   fr: "Nouveau service"
   nl: "Nieuwe dienst"
   pl: "Nowa służba"
@@ -515,6 +588,7 @@ _version: 2
   uk: "Нова зміна"
 "New vehicle":
   de: "Neues Fahrzeug"
+  da: "Nyt køretøj"
   fr: "Nouveau véhicule"
   nl: "Nieuw voertuig"
   pl: "Nowy pojazd"
@@ -522,6 +596,7 @@ _version: 2
   uk: "Нова машина"
 "Click for a spare duty of custom work, or drop a piece of work here to begin a duty with it":
   de: "Klicken für einen Reservedienst mit eigener Arbeit, oder ein Dienststück hier ablegen, um damit einen Dienst zu beginnen"
+  da: "Klik for en reservevagt med specialarbejde, eller slip en arbejdsdel her for at begynde en vagt med den"
   fr: "Cliquer pour un service de réserve avec un travail libre, ou déposer ici une partie de travail pour commencer un service"
   nl: "Klik voor een reservedienst met eigen werk, of laat hier een dienststuk los om er een dienst mee te beginnen"
   pl: "Kliknij, aby dodać służbę rezerwową z własną pracą, lub upuść tu część pracy, aby od niej zacząć służbę"
@@ -530,6 +605,7 @@ _version: 2
 "Click for a spare duty of custom work, or drop trips here to begin a duty with them":
   en: "Click for a spare duty of custom work, or drop trips here to begin a duty with them"
   de: "Klicken für einen Reservedienst mit eigener Arbeit, oder Fahrten hier ablegen, um damit einen Dienst zu beginnen"
+  da: "Klik for en reservevagt med specialarbejde, eller slip ture her for at begynde en vagt med dem"
   fr: "Cliquer pour un service de réserve avec un travail libre, ou déposer ici des courses pour commencer un service avec elles"
   nl: "Klik voor een reservedienst met eigen werk, of laat hier ritten los om er een dienst mee te beginnen"
   pl: "Kliknij, aby dodać służbę rezerwową z własną pracą, lub upuść tu kursy, aby zacząć od nich służbę"
@@ -538,6 +614,7 @@ _version: 2
 "Drag or double-click to move this trip to another duty or a new one: the bus stays the same. Shift or Ctrl and a click choose more trips. Alt and a drag takes the whole piece of work on this bus.":
   en: "Drag or double-click to move this trip to another duty or a new one: the bus stays the same. Shift or Ctrl and a click choose more trips. Alt and a drag takes the whole piece of work on this bus."
   de: "Ziehen oder doppelklicken, um diese Fahrt in einen anderen oder einen neuen Dienst zu verschieben: der Bus bleibt derselbe. Umschalt oder Strg und ein Klick wählen weitere Fahrten. Alt und Ziehen nimmt das ganze Dienststück auf diesem Bus."
+  da: "Træk eller dobbeltklik for at flytte denne tur til en anden vagt eller en ny: bussen forbliver den samme. Shift eller Ctrl og et klik vælger flere ture. Alt og et træk tager hele arbejdsdelen på denne bus."
   fr: "Faites glisser ou double-cliquez pour déplacer cette course vers un autre service ou un nouveau : le bus reste le même. Maj ou Ctrl et un clic choisissent d'autres courses. Alt et un glisser prennent toute la partie de travail sur ce bus."
   nl: "Sleep of dubbelklik om deze rit naar een andere of een nieuwe dienst te verplaatsen: de bus blijft dezelfde. Shift of Ctrl en een klik kiezen meer ritten. Alt en slepen neemt het hele dienststuk op deze bus mee."
   pl: "Przeciągnij lub kliknij dwukrotnie, aby przenieść ten kurs do innej lub nowej służby: autobus zostaje ten sam. Shift lub Ctrl i kliknięcie wybierają więcej kursów. Alt i przeciągnięcie bierze całą część pracy na tym autobusie."
@@ -545,6 +622,7 @@ _version: 2
   uk: "Перетягніть або клацніть двічі, щоб перенести цей рейс до іншої або нової зміни: автобус залишається тим самим. Shift або Ctrl і клік вибирають ще рейси. Alt і перетягування беруть усю частину роботи на цьому автобусі."
 "A driver takes over here, at %{stop}. Click to join the two duties.":
   de: "Hier übernimmt ein Fahrer, an %{stop}. Klicken, um die beiden Dienste zu verbinden."
+  da: "En chauffør overtager her, ved %{stop}. Klik for at sætte de to vagter sammen."
   fr: "Un conducteur prend la relève ici, à %{stop}. Cliquer pour joindre les deux services."
   nl: "Hier neemt een chauffeur het over, bij %{stop}. Klik om de twee diensten samen te voegen."
   pl: "Tu kierowca przejmuje, na %{stop}. Kliknij, aby połączyć obie służby."
@@ -552,6 +630,7 @@ _version: 2
   uk: "Тут водій змінюється, на %{stop}. Натисніть, щоб об'єднати дві зміни."
 "Click to cut the duty here: a driver takes over at %{stop}.":
   de: "Klicken, um den Dienst hier zu teilen: ein Fahrer übernimmt an %{stop}."
+  da: "Klik for at skære vagten her: en chauffør overtager ved %{stop}."
   fr: "Cliquer pour couper le service ici : un conducteur prend la relève à %{stop}."
   nl: "Klik om de dienst hier te knippen: een chauffeur neemt het over bij %{stop}."
   pl: "Kliknij, aby przeciąć służbę tutaj: kierowca przejmie na %{stop}."
@@ -559,6 +638,7 @@ _version: 2
   uk: "Натисніть, щоб розрізати зміну тут: водій зміниться на %{stop}."
 "Spare duty added":
   de: "Reservedienst hinzugefügt"
+  da: "Reservevagt tilføjet"
   fr: "Service de réserve ajouté"
   nl: "Reservedienst toegevoegd"
   pl: "Dodano służbę rezerwową"
@@ -566,6 +646,7 @@ _version: 2
   uk: "Резервну зміну додано"
 "Trips swapped between %{a} and %{b}":
   de: "Fahrten getauscht zwischen %{a} und %{b}"
+  da: "Ture byttet mellem %{a} og %{b}"
   fr: "Courses échangées entre %{a} et %{b}"
   nl: "Ritten gewisseld tussen %{a} en %{b}"
   pl: "Zamieniono kursy między %{a} i %{b}"
@@ -573,6 +654,7 @@ _version: 2
   uk: "Рейси обміняно між %{a} і %{b}"
 "Duty cut on %{v} at %{time}":
   de: "Dienst geteilt auf %{v} um %{time}"
+  da: "Vagt skåret på %{v} kl. %{time}"
   fr: "Service coupé sur %{v} à %{time}"
   nl: "Dienst geknipt op %{v} om %{time}"
   pl: "Służba przecięta na %{v} o %{time}"
@@ -580,6 +662,7 @@ _version: 2
   uk: "Зміну розрізано на %{v} о %{time}"
 "Duties joined on %{v} at %{time}":
   de: "Dienste verbunden auf %{v} um %{time}"
+  da: "Vagter sat sammen på %{v} kl. %{time}"
   fr: "Services joints sur %{v} à %{time}"
   nl: "Diensten samengevoegd op %{v} om %{time}"
   pl: "Służby połączone na %{v} o %{time}"
@@ -587,6 +670,7 @@ _version: 2
   uk: "Зміни об'єднано на %{v} о %{time}"
 "Vehicle %{v} locked":
   de: "Fahrzeug %{v} gesperrt"
+  da: "Køretøj %{v} låst"
   fr: "Véhicule %{v} verrouillé"
   nl: "Voertuig %{v} vergrendeld"
   pl: "Pojazd %{v} zablokowany"
@@ -594,6 +678,7 @@ _version: 2
   uk: "Машину %{v} заблоковано"
 "Vehicle %{v} unlocked":
   de: "Fahrzeug %{v} entsperrt"
+  da: "Køretøj %{v} låst op"
   fr: "Véhicule %{v} déverrouillé"
   nl: "Voertuig %{v} ontgrendeld"
   pl: "Pojazd %{v} odblokowany"
@@ -601,6 +686,7 @@ _version: 2
   uk: "Машину %{v} розблоковано"
 "Duty %{d} locked":
   de: "Dienst %{d} gesperrt"
+  da: "Vagt %{d} låst"
   fr: "Service %{d} verrouillé"
   nl: "Dienst %{d} vergrendeld"
   pl: "Służba %{d} zablokowana"
@@ -608,6 +694,7 @@ _version: 2
   uk: "Зміну %{d} заблоковано"
 "Duty %{d} unlocked":
   de: "Dienst %{d} entsperrt"
+  da: "Vagt %{d} låst op"
   fr: "Service %{d} déverrouillé"
   nl: "Dienst %{d} ontgrendeld"
   pl: "Służba %{d} odblokowana"
@@ -615,6 +702,7 @@ _version: 2
   uk: "Зміну %{d} розблоковано"
 "%{n} trips moved from %{a} to %{b}":
   de: "%{n} Fahrten von %{a} nach %{b} verschoben"
+  da: "%{n} ture flyttet fra %{a} til %{b}"
   fr: "%{n} courses déplacées de %{a} à %{b}"
   nl: "%{n} ritten verplaatst van %{a} naar %{b}"
   pl: "Przeniesiono kursy (%{n}) z %{a} do %{b}"
@@ -622,6 +710,7 @@ _version: 2
   uk: "Рейсів переміщено: %{n}, з %{a} на %{b}"
 "%{n} trips moved from %{a} to a new vehicle":
   de: "%{n} Fahrten von %{a} auf ein neues Fahrzeug verschoben"
+  da: "%{n} ture flyttet fra %{a} til et nyt køretøj"
   fr: "%{n} courses déplacées de %{a} vers un nouveau véhicule"
   nl: "%{n} ritten verplaatst van %{a} naar een nieuw voertuig"
   pl: "Przeniesiono kursy (%{n}) z %{a} do nowego pojazdu"
@@ -629,6 +718,7 @@ _version: 2
   uk: "Рейсів переміщено: %{n}, з %{a} на нову машину"
 "%{n} trips of %{a} unassigned to the stack":
   de: "%{n} Fahrten von %{a} auf den Stapel gelegt"
+  da: "%{n} ture fra %{a} fjernet til bunken"
   fr: "%{n} courses de %{a} remises sur la pile"
   nl: "%{n} ritten van %{a} naar de stapel gehaald"
   pl: "Odpięto kursy (%{n}) z %{a} na stos"
@@ -636,6 +726,7 @@ _version: 2
   uk: "Рейсів знято з %{a} у стос: %{n}"
 "Trip of %{time} assigned from the stack":
   de: "Fahrt um %{time} vom Stapel zugewiesen"
+  da: "Turen kl. %{time} tildelt fra bunken"
   fr: "Course de %{time} affectée depuis la pile"
   nl: "Rit van %{time} toegewezen vanaf de stapel"
   pl: "Kurs o %{time} przydzielony ze stosu"
@@ -643,6 +734,7 @@ _version: 2
   uk: "Рейс о %{time} призначено зі стосу"
 "Piece of %{v} joined into duty %{d}":
   de: "Dienststück von %{v} in Dienst %{d} aufgenommen"
+  da: "Del af %{v} sat sammen i vagt %{d}"
   fr: "Partie de %{v} jointe au service %{d}"
   nl: "Dienststuk van %{v} toegevoegd aan dienst %{d}"
   pl: "Część pracy %{v} dołączona do służby %{d}"
@@ -650,6 +742,7 @@ _version: 2
   uk: "Частину роботи %{v} додано до зміни %{d}"
 "Piece of %{v} made a duty of its own":
   de: "Dienststück von %{v} zu einem eigenen Dienst gemacht"
+  da: "Del af %{v} gjort til en vagt for sig"
   fr: "Partie de %{v} devenue un service à part"
   nl: "Dienststuk van %{v} een eigen dienst gemaakt"
   pl: "Część pracy %{v} stała się osobną służbą"
@@ -658,6 +751,7 @@ _version: 2
 "%{n} trips moved from duty %{a} to duty %{b}":
   en: "%{n} trips moved from duty %{a} to duty %{b}"
   de: "%{n} Fahrten von Dienst %{a} in Dienst %{b} verschoben"
+  da: "%{n} ture flyttet fra vagt %{a} til vagt %{b}"
   fr: "%{n} courses déplacées du service %{a} au service %{b}"
   nl: "%{n} ritten verplaatst van dienst %{a} naar dienst %{b}"
   pl: "Przeniesiono kursy (%{n}) ze służby %{a} do służby %{b}"
@@ -666,6 +760,7 @@ _version: 2
 "%{n} trips moved from duty %{a} to a new duty":
   en: "%{n} trips moved from duty %{a} to a new duty"
   de: "%{n} Fahrten von Dienst %{a} in einen neuen Dienst verschoben"
+  da: "%{n} ture flyttet fra vagt %{a} til en ny vagt"
   fr: "%{n} courses déplacées du service %{a} vers un nouveau service"
   nl: "%{n} ritten verplaatst van dienst %{a} naar een nieuwe dienst"
   pl: "Przeniesiono kursy (%{n}) ze służby %{a} do nowej służby"
@@ -673,6 +768,7 @@ _version: 2
   uk: "Рейсів переміщено: %{n}, зі зміни %{a} до нової зміни"
 "%{n} rows selected":
   de: "%{n} Zeilen ausgewählt"
+  da: "%{n} rækker valgt"
   fr: "%{n} lignes sélectionnées"
   nl: "%{n} rijen geselecteerd"
   pl: "Zaznaczono wierszy: %{n}"
@@ -680,6 +776,7 @@ _version: 2
   uk: "Вибрано рядків: %{n}"
 "Lock the rows ticked":
   de: "Die angehakten Zeilen sperren"
+  da: "Lås de afkrydsede rækker"
   fr: "Verrouiller les lignes cochées"
   nl: "Vergrendel de aangevinkte rijen"
   pl: "Zablokuj zaznaczone wiersze"
@@ -687,6 +784,7 @@ _version: 2
   uk: "Заблокувати позначені рядки"
 "Unlock the rows ticked":
   de: "Die angehakten Zeilen entsperren"
+  da: "Lås de afkrydsede rækker op"
   fr: "Déverrouiller les lignes cochées"
   nl: "Ontgrendel de aangevinkte rijen"
   pl: "Odblokuj zaznaczone wiersze"
@@ -694,6 +792,7 @@ _version: 2
   uk: "Розблокувати позначені рядки"
 "Unassign the ticked vehicles' trips to the stack":
   de: "Die Fahrten der angehakten Fahrzeuge auf den Stapel legen"
+  da: "Fjern de afkrydsede køretøjers ture til bunken"
   fr: "Remettre sur la pile les courses des véhicules cochés"
   nl: "Haal de ritten van de aangevinkte voertuigen naar de stapel"
   pl: "Odepnij kursy zaznaczonych pojazdów na stos"
@@ -701,6 +800,7 @@ _version: 2
   uk: "Зняти рейси позначених машин у стос"
 "%{n} rows locked":
   de: "%{n} Zeilen gesperrt"
+  da: "%{n} rækker låst"
   fr: "%{n} lignes verrouillées"
   nl: "%{n} rijen vergrendeld"
   pl: "Zablokowano wierszy: %{n}"
@@ -708,6 +808,7 @@ _version: 2
   uk: "Заблоковано рядків: %{n}"
 "%{n} rows unlocked":
   de: "%{n} Zeilen entsperrt"
+  da: "%{n} rækker låst op"
   fr: "%{n} lignes déverrouillées"
   nl: "%{n} rijen ontgrendeld"
   pl: "Odblokowano wierszy: %{n}"
@@ -715,6 +816,7 @@ _version: 2
   uk: "Розблоковано рядків: %{n}"
 "%{n} vehicles unassigned to the stack":
   de: "%{n} Fahrzeuge auf den Stapel gelegt"
+  da: "%{n} køretøjer fjernet til bunken"
   fr: "%{n} véhicules remis sur la pile"
   nl: "%{n} voertuigen naar de stapel gehaald"
   pl: "Odpięto pojazdy na stos: %{n}"
@@ -722,6 +824,7 @@ _version: 2
   uk: "Машин знято у стос: %{n}"
 "Assign the trip to another vehicle":
   de: "Die Fahrt einem anderen Fahrzeug zuweisen"
+  da: "Tildel turen til et andet køretøj"
   fr: "Affecter la course à un autre véhicule"
   nl: "Wijs de rit toe aan een ander voertuig"
   pl: "Przydziel kurs do innego pojazdu"
@@ -729,6 +832,7 @@ _version: 2
   uk: "Призначити рейс на іншу машину"
 "The line's colour":
   de: "Die Farbe der Linie"
+  da: "Linjens farve"
   fr: "La couleur de la ligne"
   nl: "De kleur van de lijn"
   pl: "Kolor linii"
@@ -736,6 +840,7 @@ _version: 2
   uk: "Колір маршруту"
 "Dir":
   de: "Richtung"
+  da: "Ret."
   fr: "Sens"
   nl: "Richting"
   pl: "Kier."
@@ -743,6 +848,7 @@ _version: 2
   uk: "Напрям"
 "Trip ID":
   de: "Fahrtnummer"
+  da: "Tur-ID"
   fr: "N° de course"
   nl: "Ritnummer"
   pl: "Nr kursu"
@@ -750,6 +856,7 @@ _version: 2
   uk: "№ рейсу"
 "Service ID":
   de: "Verkehrstag"
+  da: "Drifts-ID"
   fr: "Jour de service"
   nl: "Dagsoort"
   pl: "Typ dnia"
@@ -757,6 +864,7 @@ _version: 2
   uk: "Тип дня"
 "Tour %{t}":
   de: "Umlauf %{t}"
+  da: "Vognløb %{t}"
   fr: "Service %{t}"
   nl: "Omloop %{t}"
   pl: "Obieg %{t}"
@@ -764,6 +872,7 @@ _version: 2
   uk: "Випуск %{t}"
 "Unassign: the trip waits on the stack":
   de: "Lösen: die Fahrt wartet auf dem Stapel"
+  da: "Fjern: turen venter i bunken"
   fr: "Désaffecter : la course attend sur la pile"
   nl: "Loskoppelen: de rit wacht op de stapel"
   pl: "Odepnij: kurs czeka na stosie"
@@ -771,6 +880,7 @@ _version: 2
   uk: "Зняти: рейс чекає у стосі"
 "Unlink: the trips need no longer stay together":
   de: "Entkoppeln: die Fahrten müssen nicht mehr zusammenbleiben"
+  da: "Skil ad: turene behøver ikke længere blive sammen"
   fr: "Délier : les courses ne doivent plus rester ensemble"
   nl: "Ontkoppelen: de ritten hoeven niet meer samen te blijven"
   pl: "Rozłącz: kursy nie muszą już być razem"
@@ -778,6 +888,7 @@ _version: 2
   uk: "Відв'язати: рейси більше не мусять бути разом"
 "Link it with the trips chosen (Shift and a click)":
   de: "Mit den gewählten Fahrten koppeln (Umschalt und ein Klick)"
+  da: "Kæd den sammen med de valgte ture (Shift og et klik)"
   fr: "Le lier aux courses choisies (Maj et un clic)"
   nl: "Koppel het aan de gekozen ritten (Shift en een klik)"
   pl: "Połącz z wybranymi kursami (Shift i klik)"
@@ -785,6 +896,7 @@ _version: 2
   uk: "Зв'язати з вибраними рейсами (Shift і клік)"
 "Unlock the vehicle":
   de: "Das Fahrzeug entsperren"
+  da: "Lås køretøjet op"
   fr: "Déverrouiller le véhicule"
   nl: "Ontgrendel het voertuig"
   pl: "Odblokuj pojazd"
@@ -792,6 +904,7 @@ _version: 2
   uk: "Розблокувати машину"
 "Lock the vehicle: Optimise leaves it":
   de: "Das Fahrzeug sperren: Optimieren lässt es"
+  da: "Lås køretøjet: Optimér lader det være"
   fr: "Verrouiller le véhicule : l'optimisation le laisse"
   nl: "Vergrendel het voertuig: Optimaliseren laat het"
   pl: "Zablokuj pojazd: optymalizacja go nie ruszy"
@@ -799,6 +912,7 @@ _version: 2
   uk: "Заблокувати машину: оптимізація її не чіпатиме"
 "View in crew schedule":
   de: "Im Dienstplan zeigen"
+  da: "Se i besætningsplanen"
   fr: "Voir dans le planning des équipages"
   nl: "Bekijk in dienstplanning"
   pl: "Pokaż w planie służb"
@@ -806,6 +920,7 @@ _version: 2
   uk: "Показати в плані змін"
 "Sign-on":
   de: "Dienstbeginn"
+  da: "Mødetid"
   fr: "Prise de service"
   nl: "Aanmelden"
   pl: "Rozpoczęcie"
@@ -813,6 +928,7 @@ _version: 2
   uk: "Явка"
 "Sign-off":
   de: "Dienstende"
+  da: "Fyraften"
   fr: "Fin de service"
   nl: "Afmelden"
   pl: "Zakończenie"
@@ -820,6 +936,7 @@ _version: 2
   uk: "Здача"
 "Travel":
   de: "Wegezeit"
+  da: "Rejse"
   fr: "Trajet"
   nl: "Reizen"
   pl: "Dojazd"
@@ -827,6 +944,7 @@ _version: 2
   uk: "Переїзд"
 "Type":
   de: "Art"
+  da: "Type"
   fr: "Type"
   nl: "Soort"
   pl: "Rodzaj"
@@ -834,6 +952,7 @@ _version: 2
   uk: "Тип"
 "Travel of duty %{d} by %{mode}":
   de: "Wegezeit von Dienst %{d} per %{mode}"
+  da: "Rejse for vagt %{d} med %{mode}"
   fr: "Trajet du service %{d} en %{mode}"
   nl: "Reis van dienst %{d} per %{mode}"
   pl: "Dojazd służby %{d}: %{mode}"
@@ -841,6 +960,7 @@ _version: 2
   uk: "Переїзд зміни %{d}: %{mode}"
 "Unassigned trip":
   de: "Nicht zugewiesene Fahrt"
+  da: "Ikke tildelt tur"
   fr: "Course non affectée"
   nl: "Niet toegewezen rit"
   pl: "Nieprzydzielony kurs"
@@ -848,6 +968,7 @@ _version: 2
   uk: "Непризначений рейс"
 "Click a drop zone to assign it to a vehicle":
   de: "Eine Ablagestelle klicken, um sie einem Fahrzeug zuzuweisen"
+  da: "Klik på en slippezone for at tildele den til et køretøj"
   fr: "Cliquer une zone de dépôt pour l'affecter à un véhicule"
   nl: "Klik op een neerzetplek om de rit aan een voertuig toe te wijzen"
   pl: "Kliknij strefę upuszczenia, aby przydzielić kurs do pojazdu"
@@ -855,6 +976,7 @@ _version: 2
   uk: "Натисніть зону скидання, щоб призначити рейс на машину"
 "%{n} trips chosen":
   de: "%{n} Fahrten gewählt"
+  da: "%{n} ture valgt"
   fr: "%{n} courses choisies"
   nl: "%{n} ritten gekozen"
   pl: "Wybrano kursy: %{n}"
@@ -862,6 +984,7 @@ _version: 2
   uk: "Вибрано рейсів: %{n}"
 "Link":
   de: "Koppeln"
+  da: "Kæd sammen"
   fr: "Lier"
   nl: "Koppelen"
   pl: "Połącz"
@@ -869,6 +992,7 @@ _version: 2
   uk: "Зв'язати"
 "%{n} trips linked on %{v}":
   de: "%{n} Fahrten gekoppelt auf %{v}"
+  da: "%{n} ture kædet sammen på %{v}"
   fr: "%{n} courses liées sur %{v}"
   nl: "%{n} ritten gekoppeld op %{v}"
   pl: "Połączono kursy na %{v}: %{n}"
@@ -876,6 +1000,7 @@ _version: 2
   uk: "Рейсів зв'язано на %{v}: %{n}"
 "Link on %{v} taken apart":
   de: "Kopplung auf %{v} aufgelöst"
+  da: "Kæde på %{v} skilt ad"
   fr: "Lien sur %{v} défait"
   nl: "Koppeling op %{v} losgemaakt"
   pl: "Rozłączono połączenie na %{v}"
@@ -883,6 +1008,7 @@ _version: 2
   uk: "Зв'язок на %{v} розірвано"
 "Custom work deleted from duty %{d}":
   de: "Eigene Arbeit aus Dienst %{d} gelöscht"
+  da: "Specialarbejde slettet fra vagt %{d}"
   fr: "Travail libre supprimé du service %{d}"
   nl: "Eigen werk verwijderd uit dienst %{d}"
   pl: "Usunięto własną pracę ze służby %{d}"
@@ -890,6 +1016,7 @@ _version: 2
   uk: "Особливу роботу видалено зі зміни %{d}"
 "Stack":
   de: "Stapel"
+  da: "Bunke"
   fr: "Pile"
   nl: "Stapel"
   pl: "Stos"
@@ -897,6 +1024,7 @@ _version: 2
   uk: "Стос"
 "Ranking":
   de: "Bewertung"
+  da: "Rangering"
   fr: "Classement"
   nl: "Waardering"
   pl: "Ocena"
@@ -904,6 +1032,7 @@ _version: 2
   uk: "Оцінка"
 "Cost difference":
   de: "Kostenunterschied"
+  da: "Omkostningsforskel"
   fr: "Différence de coût"
   nl: "Kostenverschil"
   pl: "Różnica kosztu"
@@ -911,6 +1040,7 @@ _version: 2
   uk: "Різниця у вартості"
 "Breaks no rule: click to drop it here":
   de: "Verletzt keine Regel: klicken, um hier abzulegen"
+  da: "Bryder ingen regel: klik for at slippe den her"
   fr: "N'enfreint aucune règle : cliquer pour déposer ici"
   nl: "Breekt geen regel: klik om het hier neer te zetten"
   pl: "Nie łamie zasad: kliknij, aby upuścić tutaj"
@@ -918,6 +1048,7 @@ _version: 2
   uk: "Не порушує правил: натисніть, щоб відпустити тут"
 "Breaks a rule: it can still be dropped here":
   de: "Verletzt eine Regel: kann trotzdem hier abgelegt werden"
+  da: "Bryder en regel: den kan stadig slippes her"
   fr: "Enfreint une règle : peut quand même être déposé ici"
   nl: "Breekt een regel: het kan hier toch neergezet worden"
   pl: "Łamie zasadę: mimo to można upuścić tutaj"
@@ -925,6 +1056,7 @@ _version: 2
   uk: "Порушує правило: все одно можна відпустити тут"
 "Edit":
   de: "Bearbeiten"
+  da: "Rediger"
   fr: "Modifier"
   nl: "Bewerken"
   pl: "Edytuj"
@@ -932,6 +1064,7 @@ _version: 2
   uk: "Змінити"
 "Move to new row":
   de: "In neue Zeile verschieben"
+  da: "Flyt til ny række"
   fr: "Déplacer vers une nouvelle ligne"
   nl: "Naar nieuwe rij verplaatsen"
   pl: "Przenieś do nowego wiersza"
@@ -939,6 +1072,7 @@ _version: 2
   uk: "Перемістити в новий рядок"
 "The piece a duty of its own":
   de: "Das Dienststück ein eigener Dienst"
+  da: "Delen en vagt for sig"
   fr: "La partie devient un service à part"
   nl: "Het dienststuk een eigen dienst"
   pl: "Część pracy osobną służbą"
@@ -947,6 +1081,7 @@ _version: 2
 "Move the chosen trips to another duty: the bus stays the same":
   en: "Move the chosen trips to another duty: the bus stays the same"
   de: "Die gewählten Fahrten in einen anderen Dienst verschieben: der Bus bleibt derselbe"
+  da: "Flyt de valgte ture til en anden vagt: bussen forbliver den samme"
   fr: "Déplacer les courses choisies vers un autre service : le bus reste le même"
   nl: "De gekozen ritten naar een andere dienst verplaatsen: de bus blijft dezelfde"
   pl: "Przenieś wybrane kursy do innej służby: autobus zostaje ten sam"
@@ -955,6 +1090,7 @@ _version: 2
 "The chosen trips a duty of their own":
   en: "The chosen trips a duty of their own"
   de: "Die gewählten Fahrten ein eigener Dienst"
+  da: "De valgte ture en vagt for sig"
   fr: "Les courses choisies deviennent un service à part"
   nl: "De gekozen ritten een eigen dienst"
   pl: "Wybrane kursy osobną służbą"
@@ -963,6 +1099,7 @@ _version: 2
 "Move piece":
   en: "Move piece"
   de: "Dienststück verschieben"
+  da: "Flyt del"
   fr: "Déplacer la partie"
   nl: "Dienststuk verplaatsen"
   pl: "Przenieś część pracy"
@@ -971,6 +1108,7 @@ _version: 2
 "Take up the whole piece of work on this bus (or Alt and a drag)":
   en: "Take up the whole piece of work on this bus (or Alt and a drag)"
   de: "Das ganze Dienststück auf diesem Bus aufnehmen (oder Alt und Ziehen)"
+  da: "Tag hele arbejdsdelen på denne bus op (eller Alt og et træk)"
   fr: "Prendre toute la partie de travail sur ce bus (ou Alt et un glisser)"
   nl: "Het hele dienststuk op deze bus oppakken (of Alt en slepen)"
   pl: "Podnieś całą część pracy na tym autobusie (albo Alt i przeciągnięcie)"
@@ -979,6 +1117,7 @@ _version: 2
 "Move piece to new row":
   en: "Move piece to new row"
   de: "Dienststück in neue Zeile verschieben"
+  da: "Flyt del til ny række"
   fr: "Déplacer la partie vers une nouvelle ligne"
   nl: "Dienststuk naar nieuwe rij verplaatsen"
   pl: "Przenieś część pracy do nowego wiersza"
@@ -986,6 +1125,7 @@ _version: 2
   uk: "Перемістити частину роботи в новий рядок"
 "Lock duty":
   de: "Dienst sperren"
+  da: "Lås vagt"
   fr: "Verrouiller le service"
   nl: "Dienst vergrendelen"
   pl: "Zablokuj służbę"
@@ -993,6 +1133,7 @@ _version: 2
   uk: "Заблокувати зміну"
 "Unlock duty":
   de: "Dienst entsperren"
+  da: "Lås vagt op"
   fr: "Déverrouiller le service"
   nl: "Dienst ontgrendelen"
   pl: "Odblokuj służbę"
@@ -1000,6 +1141,7 @@ _version: 2
   uk: "Розблокувати зміну"
 "Add custom work":
   de: "Eigene Arbeit hinzufügen"
+  da: "Tilføj specialarbejde"
   fr: "Ajouter un travail libre"
   nl: "Eigen werk toevoegen"
   pl: "Dodaj własną pracę"
@@ -1007,6 +1149,7 @@ _version: 2
   uk: "Додати особливу роботу"
 "Spare, office, union or training time in the duty":
   de: "Reserve-, Büro-, Gewerkschafts- oder Schulungszeit im Dienst"
+  da: "Reserve-, kontor-, fagforenings- eller uddannelsestid i vagten"
   fr: "Temps de réserve, de bureau, syndical ou de formation dans le service"
   nl: "Reserve-, kantoor-, vakbonds- of opleidingstijd in de dienst"
   pl: "Rezerwa, biuro, związek lub szkolenie w służbie"
@@ -1014,6 +1157,7 @@ _version: 2
   uk: "Резерв, офіс, профспілка чи навчання у зміні"
 "View in vehicle schedule":
   de: "Im Fahrzeugplan zeigen"
+  da: "Se i køretøjsplanen"
   fr: "Voir dans le planning des véhicules"
   nl: "Bekijk in voertuigplanning"
   pl: "Pokaż w planie pojazdów"
@@ -1021,6 +1165,7 @@ _version: 2
   uk: "Показати в плані машин"
 "View in timeplan":
   de: "Im Fahrplan zeigen"
+  da: "Se i tidsplanen"
   fr: "Voir dans la grille horaire"
   nl: "Bekijk in de dienstregeling"
   pl: "Pokaż w rozkładzie"
@@ -1028,6 +1173,7 @@ _version: 2
   uk: "Показати в розкладі"
 "Trips are deleted in the timetable":
   de: "Fahrten werden im Fahrplan gelöscht"
+  da: "Ture slettes i køreplanen"
   fr: "Les courses se suppriment dans la grille horaire"
   nl: "Ritten worden in de dienstregeling verwijderd"
   pl: "Kursy usuwa się w rozkładzie"
@@ -1035,6 +1181,7 @@ _version: 2
   uk: "Рейси видаляються в розкладі"
 "Unassign":
   de: "Lösen"
+  da: "Fjern fra vagt"
   fr: "Désaffecter"
   nl: "Loskoppelen"
   pl: "Odepnij"
@@ -1042,6 +1189,7 @@ _version: 2
   uk: "Зняти"
 "The trip waits on the stack":
   de: "Die Fahrt wartet auf dem Stapel"
+  da: "Turen venter i bunken"
   fr: "La course attend sur la pile"
   nl: "De rit wacht op de stapel"
   pl: "Kurs czeka na stosie"
@@ -1049,6 +1197,7 @@ _version: 2
   uk: "Рейс чекає у стосі"
 "Swap the trips chosen with what another bus runs over their time: click the bus next":
   de: "Die gewählten Fahrten mit dem tauschen, was ein anderer Bus in der Zeit fährt: danach den Bus anklicken"
+  da: "Byt de valgte ture med det, en anden bus kører i deres tidsrum: klik derefter på bussen"
   fr: "Échanger les courses choisies avec ce qu'un autre bus fait à ce moment : cliquer ensuite le bus"
   nl: "Wissel de gekozen ritten met wat een andere bus in die tijd rijdt: klik daarna op die bus"
   pl: "Zamień wybrane kursy z tym, co inny autobus jedzie w tym czasie: potem kliknij autobus"
@@ -1056,6 +1205,7 @@ _version: 2
   uk: "Обміняти вибрані рейси з тим, що робить інший автобус у цей час: потім натисніть автобус"
 "Swap from here":
   de: "Ab hier tauschen"
+  da: "Byt herfra"
   fr: "Échanger à partir d'ici"
   nl: "Wissel vanaf hier"
   pl: "Zamień od tego miejsca"
@@ -1063,6 +1213,7 @@ _version: 2
   uk: "Обміняти звідси"
 "Swap everything from this trip on with another bus's day from then on: click the bus next":
   de: "Alles ab dieser Fahrt mit dem Rest des Tages eines anderen Busses tauschen: danach den Bus anklicken"
+  da: "Byt alt fra denne tur og frem med en anden buss dag derfra: klik derefter på bussen"
   fr: "Échanger tout à partir de cette course avec la suite de la journée d'un autre bus : cliquer ensuite le bus"
   nl: "Wissel alles vanaf deze rit met de rest van de dag van een andere bus: klik daarna op die bus"
   pl: "Zamień wszystko od tego kursu z resztą dnia innego autobusu: potem kliknij autobus"
@@ -1070,6 +1221,7 @@ _version: 2
   uk: "Обміняти все від цього рейсу з рештою дня іншого автобуса: потім натисніть автобус"
 "Unlink":
   de: "Entkoppeln"
+  da: "Skil ad"
   fr: "Délier"
   nl: "Ontkoppelen"
   pl: "Rozłącz"
@@ -1077,6 +1229,7 @@ _version: 2
   uk: "Відв'язати"
 "Unlock vehicle":
   de: "Fahrzeug entsperren"
+  da: "Lås køretøj op"
   fr: "Déverrouiller le véhicule"
   nl: "Voertuig ontgrendelen"
   pl: "Odblokuj pojazd"
@@ -1084,6 +1237,7 @@ _version: 2
   uk: "Розблокувати машину"
 "Lock vehicle":
   de: "Fahrzeug sperren"
+  da: "Lås køretøj"
   fr: "Verrouiller le véhicule"
   nl: "Voertuig vergrendelen"
   pl: "Zablokuj pojazd"
@@ -1091,6 +1245,7 @@ _version: 2
   uk: "Заблокувати машину"
 "Line colour…":
   de: "Linienfarbe…"
+  da: "Linjefarve…"
   fr: "Couleur de ligne…"
   nl: "Lijnkleur…"
   pl: "Kolor linii…"
@@ -1098,6 +1253,7 @@ _version: 2
   uk: "Колір маршруту…"
 "Click the bus to swap with (Escape: no swap).":
   de: "Den Bus zum Tauschen anklicken (Escape: nicht tauschen)."
+  da: "Klik på den bus, der skal byttes med (Escape: intet bytte)."
   fr: "Cliquer le bus avec lequel échanger (Échap : pas d'échange)."
   nl: "Klik op de bus om mee te wisselen (Escape: niet wisselen)."
   pl: "Kliknij autobus do zamiany (Escape: bez zamiany)."
@@ -1105,6 +1261,7 @@ _version: 2
   uk: "Натисніть автобус для обміну (Escape: без обміну)."
 "Global Issues":
   de: "Allgemeine Probleme"
+  da: "Globale problemer"
   fr: "Problèmes généraux"
   nl: "Algemene problemen"
   pl: "Problemy ogólne"
@@ -1112,6 +1269,7 @@ _version: 2
   uk: "Загальні проблеми"
 "Duty Issues":
   de: "Dienstprobleme"
+  da: "Vagtproblemer"
   fr: "Problèmes de services"
   nl: "Dienstproblemen"
   pl: "Problemy służb"
@@ -1119,6 +1277,7 @@ _version: 2
   uk: "Проблеми змін"
 "Vehicle Issues":
   de: "Fahrzeugprobleme"
+  da: "Køretøjsproblemer"
   fr: "Problèmes de véhicules"
   nl: "Voertuigproblemen"
   pl: "Problemy pojazdów"
@@ -1126,6 +1285,7 @@ _version: 2
   uk: "Проблеми машин"
 "Vehicle":
   de: "Fahrzeug"
+  da: "Køretøj"
   fr: "Véhicule"
   nl: "Voertuig"
   pl: "Pojazd"
@@ -1133,6 +1293,7 @@ _version: 2
   uk: "Машина"
 "Open issues":
   de: "Offene Probleme"
+  da: "Åbne problemer"
   fr: "Problèmes ouverts"
   nl: "Open problemen"
   pl: "Otwarte problemy"
@@ -1140,6 +1301,7 @@ _version: 2
   uk: "Відкриті проблеми"
 "Dismissed issues":
   de: "Verworfene Probleme"
+  da: "Afviste problemer"
   fr: "Problèmes ignorés"
   nl: "Genegeerde problemen"
   pl: "Odrzucone problemy"
@@ -1147,6 +1309,7 @@ _version: 2
   uk: "Приховані проблеми"
 "Select all (%{n})":
   de: "Alle auswählen (%{n})"
+  da: "Vælg alle (%{n})"
   fr: "Tout sélectionner (%{n})"
   nl: "Alles selecteren (%{n})"
   pl: "Zaznacz wszystkie (%{n})"
@@ -1154,6 +1317,7 @@ _version: 2
   uk: "Вибрати всі (%{n})"
 "No dismissed issues.":
   de: "Keine verworfenen Probleme."
+  da: "Ingen afviste problemer."
   fr: "Aucun problème ignoré."
   nl: "Geen genegeerde problemen."
   pl: "Brak odrzuconych problemów."
@@ -1161,6 +1325,7 @@ _version: 2
   uk: "Немає прихованих проблем."
 "No issues: every rule is kept.":
   de: "Keine Probleme: jede Regel wird eingehalten."
+  da: "Ingen problemer: hver regel overholdes."
   fr: "Aucun problème : chaque règle est respectée."
   nl: "Geen problemen: elke regel wordt nageleefd."
   pl: "Brak problemów: każda zasada jest przestrzegana."
@@ -1168,6 +1333,7 @@ _version: 2
   uk: "Проблем немає: усі правила дотримано."
 "Filter issues":
   de: "Probleme filtern"
+  da: "Filtrér problemer"
   fr: "Filtrer les problèmes"
   nl: "Problemen filteren"
   pl: "Filtruj problemy"
@@ -1175,6 +1341,7 @@ _version: 2
   uk: "Відфільтрувати проблеми"
 "Restore issues":
   de: "Probleme wiederherstellen"
+  da: "Gendan problemer"
   fr: "Rétablir les problèmes"
   nl: "Problemen terugzetten"
   pl: "Przywróć problemy"
@@ -1182,6 +1349,7 @@ _version: 2
   uk: "Повернути проблеми"
 "Dismiss issues":
   de: "Probleme verwerfen"
+  da: "Afvis problemer"
   fr: "Ignorer les problèmes"
   nl: "Problemen negeren"
   pl: "Odrzuć problemy"
@@ -1189,6 +1357,7 @@ _version: 2
   uk: "Приховати проблеми"
 "%{n} issues restored":
   de: "%{n} Probleme wiederhergestellt"
+  da: "%{n} problemer gendannet"
   fr: "%{n} problèmes rétablis"
   nl: "%{n} problemen teruggezet"
   pl: "Przywrócono problemy: %{n}"
@@ -1196,6 +1365,7 @@ _version: 2
   uk: "Повернуто проблем: %{n}"
 "%{n} issues dismissed":
   de: "%{n} Probleme verworfen"
+  da: "%{n} problemer afvist"
   fr: "%{n} problèmes ignorés"
   nl: "%{n} problemen genegeerd"
   pl: "Odrzucono problemy: %{n}"
@@ -1203,6 +1373,7 @@ _version: 2
   uk: "Приховано проблем: %{n}"
 "Locked: Optimise leaves it. Click to unlock":
   de: "Gesperrt: Optimieren lässt es. Klicken zum Entsperren"
+  da: "Låst: Optimér lader den være. Klik for at låse op"
   fr: "Verrouillé : l'optimisation le laisse. Cliquer pour déverrouiller"
   nl: "Vergrendeld: Optimaliseren laat het. Klik om te ontgrendelen"
   pl: "Zablokowane: optymalizacja go nie rusza. Kliknij, aby odblokować"
@@ -1210,6 +1381,7 @@ _version: 2
   uk: "Заблоковано: оптимізація не чіпає. Натисніть, щоб розблокувати"
 "Lock the duty: Optimise leaves it":
   de: "Den Dienst sperren: Optimieren lässt ihn"
+  da: "Lås vagten: Optimér lader den være"
   fr: "Verrouiller le service : l'optimisation le laisse"
   nl: "Vergrendel de dienst: Optimaliseren laat hem"
   pl: "Zablokuj służbę: optymalizacja jej nie ruszy"
@@ -1217,6 +1389,7 @@ _version: 2
   uk: "Заблокувати зміну: оптимізація її не чіпатиме"
 "Work time":
   de: "Arbeitszeit"
+  da: "Arbejdstid"
   fr: "Temps de travail"
   nl: "Werktijd"
   pl: "Czas pracy"
@@ -1224,6 +1397,7 @@ _version: 2
   uk: "Робочий час"
 "Platform time":
   de: "Fahrdienstzeit"
+  da: "Perrontid"
   fr: "Temps de plateforme"
   nl: "Platformtijd"
   pl: "Czas na linii"
@@ -1231,6 +1405,7 @@ _version: 2
   uk: "Час на лінії"
 "Splits":
   de: "Teilungen"
+  da: "Delte vagter"
   fr: "Coupures"
   nl: "Onderbrekingen"
   pl: "Przerwy"
@@ -1238,6 +1413,7 @@ _version: 2
   uk: "Розриви"
 "Changeovers":
   de: "Fahrzeugwechsel"
+  da: "Skift"
   fr: "Changements de véhicule"
   nl: "Voertuigwissels"
   pl: "Zmiany pojazdu"
@@ -1245,6 +1421,7 @@ _version: 2
   uk: "Зміни машин"
 "Pieces of work":
   de: "Dienststücke"
+  da: "Arbejdsdele"
   fr: "Parties de travail"
   nl: "Dienststukken"
   pl: "Części pracy"
@@ -1252,6 +1429,7 @@ _version: 2
   uk: "Частини роботи"
 "Take the piece out: a duty of its own":
   de: "Das Dienststück herausnehmen: ein eigener Dienst"
+  da: "Tag delen ud: en vagt for sig"
   fr: "Retirer la partie : un service à part"
   nl: "Haal het dienststuk eruit: een eigen dienst"
   pl: "Wyjmij część pracy: osobna służba"
@@ -1259,6 +1437,7 @@ _version: 2
   uk: "Прибрати частину роботи: окрема зміна"
 "Split of %{t}":
   de: "Teilung von %{t}"
+  da: "Delt vagt på %{t}"
   fr: "Coupure de %{t}"
   nl: "Onderbreking van %{t}"
   pl: "Przerwa dzieląca %{t}"
@@ -1266,6 +1445,7 @@ _version: 2
   uk: "Розрив %{t}"
 "Break of %{t}":
   de: "Pause von %{t}"
+  da: "Pause på %{t}"
   fr: "Pause de %{t}"
   nl: "Pauze van %{t}"
   pl: "Przerwa %{t}"
@@ -1273,6 +1453,7 @@ _version: 2
   uk: "Перерва %{t}"
 "Breaks":
   de: "Pausen"
+  da: "Pauser"
   fr: "Pauses"
   nl: "Pauzes"
   pl: "Przerwy w pracy"
@@ -1280,6 +1461,7 @@ _version: 2
   uk: "Перерви"
 "Custom work":
   de: "Eigene Arbeit"
+  da: "Specialarbejde"
   fr: "Travail libre"
   nl: "Eigen werk"
   pl: "Własna praca"
@@ -1287,6 +1469,7 @@ _version: 2
   uk: "Особлива робота"
 "Issues":
   de: "Probleme"
+  da: "Problemer"
   fr: "Problèmes"
   nl: "Problemen"
   pl: "Problemy"
@@ -1294,6 +1477,7 @@ _version: 2
   uk: "Проблеми"
 "Delete duty":
   de: "Dienst löschen"
+  da: "Slet vagt"
   fr: "Supprimer le service"
   nl: "Dienst verwijderen"
   pl: "Usuń służbę"
@@ -1301,6 +1485,7 @@ _version: 2
   uk: "Видалити зміну"
 "Type of duty %{d} set":
   de: "Art von Dienst %{d} festgelegt"
+  da: "Type for vagt %{d} sat"
   fr: "Type du service %{d} défini"
   nl: "Soort van dienst %{d} ingesteld"
   pl: "Ustawiono typ służby %{d}"
@@ -1308,6 +1493,7 @@ _version: 2
   uk: "Тип зміни %{d} задано"
 "Paid time of duty %{d} set to %{t}":
   de: "Bezahlte Zeit von Dienst %{d} auf %{t} gesetzt"
+  da: "Betalt tid for vagt %{d} sat til %{t}"
   fr: "Temps payé du service %{d} fixé à %{t}"
   nl: "Betaalde tijd van dienst %{d} op %{t} gezet"
   pl: "Czas płatny służby %{d} ustawiony na %{t}"
@@ -1315,6 +1501,7 @@ _version: 2
   uk: "Оплачуваний час зміни %{d}: %{t}"
 "Paid time of duty %{d} automatic":
   de: "Bezahlte Zeit von Dienst %{d} automatisch"
+  da: "Betalt tid for vagt %{d} automatisk"
   fr: "Temps payé du service %{d} automatique"
   nl: "Betaalde tijd van dienst %{d} automatisch"
   pl: "Czas płatny służby %{d} automatyczny"
@@ -1322,6 +1509,7 @@ _version: 2
   uk: "Оплачуваний час зміни %{d} автоматично"
 "Signing of duty %{d} set":
   de: "Dienstbeginn und -ende von Dienst %{d} festgelegt"
+  da: "Mødetid for vagt %{d} sat"
   fr: "Prise et fin de service du service %{d} définies"
   nl: "Aan- en afmelden van dienst %{d} ingesteld"
   pl: "Ustawiono rozpoczęcie i zakończenie służby %{d}"
@@ -1329,6 +1517,7 @@ _version: 2
   uk: "Явку й здачу зміни %{d} задано"
 "Custom work added to duty %{d}":
   de: "Eigene Arbeit zu Dienst %{d} hinzugefügt"
+  da: "Specialarbejde tilføjet til vagt %{d}"
   fr: "Travail libre ajouté au service %{d}"
   nl: "Eigen werk toegevoegd aan dienst %{d}"
   pl: "Dodano własną pracę do służby %{d}"
@@ -1336,6 +1525,7 @@ _version: 2
   uk: "Особливу роботу додано до зміни %{d}"
 "Spare duty %{d} deleted":
   de: "Reservedienst %{d} gelöscht"
+  da: "Reservevagt %{d} slettet"
   fr: "Service de réserve %{d} supprimé"
   nl: "Reservedienst %{d} verwijderd"
   pl: "Usunięto służbę rezerwową %{d}"
@@ -1343,6 +1533,7 @@ _version: 2
   uk: "Резервну зміну %{d} видалено"
 "Schedule history":
   de: "Planungsverlauf"
+  da: "Planhistorik"
   fr: "Historique de la planification"
   nl: "Planningsgeschiedenis"
   pl: "Historia planu"
@@ -1350,6 +1541,7 @@ _version: 2
   uk: "Історія плану"
 "Go back to before this change":
   de: "Zu vor dieser Änderung zurückgehen"
+  da: "Gå tilbage til før denne ændring"
   fr: "Revenir avant cette modification"
   nl: "Ga terug naar vóór deze wijziging"
   pl: "Wróć do stanu sprzed tej zmiany"
@@ -1357,6 +1549,7 @@ _version: 2
   uk: "Повернутися до стану перед цією зміною"
 "Start and end time":
   de: "Beginn- und Endzeit"
+  da: "Start- og sluttid"
   fr: "Heure de début et de fin"
   nl: "Begin- en eindtijd"
   pl: "Godzina początku i końca"
@@ -1364,6 +1557,7 @@ _version: 2
   uk: "Час початку й кінця"
 "Start and end stops":
   de: "Start- und Endhaltestelle"
+  da: "Start- og slutstoppesteder"
   fr: "Arrêts de début et de fin"
   nl: "Begin- en eindhalte"
   pl: "Przystanek początkowy i końcowy"
@@ -1371,6 +1565,7 @@ _version: 2
   uk: "Початкова й кінцева зупинки"
 "Between trips":
   de: "Zwischen Fahrten"
+  da: "Mellem ture"
   fr: "Entre les courses"
   nl: "Tussen ritten"
   pl: "Między kursami"
@@ -1378,6 +1573,7 @@ _version: 2
   uk: "Між рейсами"
 "Break duration":
   de: "Pausendauer"
+  da: "Pausens længde"
   fr: "Durée de la pause"
   nl: "Duur van de pauze"
   pl: "Długość przerwy"
@@ -1385,6 +1581,7 @@ _version: 2
   uk: "Тривалість перерви"
 "Locked only":
   de: "Nur gesperrte"
+  da: "Kun låste"
   fr: "Verrouillés seulement"
   nl: "Alleen vergrendelde"
   pl: "Tylko zablokowane"
@@ -1392,6 +1589,7 @@ _version: 2
   uk: "Лише заблоковані"
 "Both ways":
   de: "Beide Richtungen"
+  da: "Begge veje"
   fr: "Les deux sens"
   nl: "Beide richtingen"
   pl: "Oba kierunki"
@@ -1399,6 +1597,7 @@ _version: 2
   uk: "Обидва напрямки"
 "Inbound":
   de: "Rückfahrt"
+  da: "Indadgående"
   fr: "Retour"
   nl: "Terug"
   pl: "Powrót"
@@ -1406,6 +1605,7 @@ _version: 2
   uk: "Назад"
 "Departure from":
   de: "Abfahrt ab"
+  da: "Afgang fra"
   fr: "Départ à partir de"
   nl: "Vertrek vanaf"
   pl: "Odjazd od"
@@ -1413,6 +1613,7 @@ _version: 2
   uk: "Відправлення з"
 "Bus graph (PDF)":
   de: "Busgrafik (PDF)"
+  da: "Busgraf (PDF)"
   fr: "Graphique des bus (PDF)"
   nl: "Busgrafiek (pdf)"
   pl: "Wykres autobusów (PDF)"
@@ -1420,6 +1621,7 @@ _version: 2
   uk: "Графік автобусів (PDF)"
 "Every vehicle's day on the hours, as Optibus prints it":
   de: "Der Tag jedes Fahrzeugs über die Stunden, wie Optibus ihn druckt"
+  da: "Hvert køretøjs dag på timerne, som Optibus udskriver den"
   fr: "La journée de chaque véhicule heure par heure, comme Optibus l'imprime"
   nl: "De dag van elk voertuig over de uren, zoals Optibus het afdrukt"
   pl: "Dzień każdego pojazdu w godzinach, jak drukuje Optibus"
@@ -1427,6 +1629,7 @@ _version: 2
   uk: "День кожної машини за годинами, як друкує Optibus"
 "Duty graph (PDF)":
   de: "Dienstgrafik (PDF)"
+  da: "Vagtgraf (PDF)"
   fr: "Graphique des services (PDF)"
   nl: "Dienstgrafiek (pdf)"
   pl: "Wykres służb (PDF)"
@@ -1434,6 +1637,7 @@ _version: 2
   uk: "Графік змін (PDF)"
 "Every driver's duty on the hours":
   de: "Der Dienst jedes Fahrers über die Stunden"
+  da: "Hver chaufførs vagt på timerne"
   fr: "Le service de chaque conducteur heure par heure"
   nl: "De dienst van elke chauffeur over de uren"
   pl: "Służba każdego kierowcy w godzinach"
@@ -1441,6 +1645,7 @@ _version: 2
   uk: "Зміна кожного водія за годинами"
 "Colour of line %{n}":
   de: "Farbe der Linie %{n}"
+  da: "Farve for linje %{n}"
   fr: "Couleur de la ligne %{n}"
   nl: "Kleur van lijn %{n}"
   pl: "Kolor linii %{n}"
@@ -1448,6 +1653,7 @@ _version: 2
   uk: "Колір маршруту %{n}"
 "Go to duty":
   de: "Zu Dienst springen"
+  da: "Gå til vagt"
   fr: "Aller au service"
   nl: "Ga naar dienst"
   pl: "Przejdź do służby"
@@ -1455,6 +1661,7 @@ _version: 2
   uk: "Перейти до зміни"
 "Go to vehicle":
   de: "Zu Fahrzeug springen"
+  da: "Gå til køretøj"
   fr: "Aller au véhicule"
   nl: "Ga naar voertuig"
   pl: "Przejdź do pojazdu"
@@ -1462,6 +1669,7 @@ _version: 2
   uk: "Перейти до машини"
 "No vehicle or duty with that ID.":
   de: "Kein Fahrzeug oder Dienst mit dieser Nummer."
+  da: "Intet køretøj eller ingen vagt med det ID."
   fr: "Aucun véhicule ou service avec ce numéro."
   nl: "Geen voertuig of dienst met dat nummer."
   pl: "Brak pojazdu lub służby o tym numerze."
@@ -1469,6 +1677,7 @@ _version: 2
   uk: "Немає машини чи зміни з таким номером."
 "Optimise vehicles (the blocks)":
   de: "Fahrzeuge optimieren (die Umläufe)"
+  da: "Optimér køretøjerne (vognløbene)"
   fr: "Optimiser les véhicules (les blocs)"
   nl: "Voertuigen optimaliseren (de omlopen)"
   pl: "Optymalizuj pojazdy (obiegi)"
@@ -1476,6 +1685,7 @@ _version: 2
   uk: "Оптимізувати машини (випуски)"
 "Optimise duties (cut and paired)":
   de: "Dienste optimieren (geteilt und gepaart)"
+  da: "Optimér vagterne (skåret og parret)"
   fr: "Optimiser les services (coupés et appariés)"
   nl: "Diensten optimaliseren (geknipt en gekoppeld)"
   pl: "Optymalizuj służby (cięcie i łączenie)"
@@ -1483,6 +1693,7 @@ _version: 2
   uk: "Оптимізувати зміни (розрізати й скласти)"
 "Locked vehicles and duties are kept; the preferences say what may be and what it costs.":
   de: "Gesperrte Fahrzeuge und Dienste bleiben; die Einstellungen sagen, was sein darf und was es kostet."
+  da: "Låste køretøjer og vagter bevares; indstillingerne siger, hvad der må være, og hvad det koster."
   fr: "Les véhicules et services verrouillés sont gardés ; les préférences disent ce qui est permis et ce que cela coûte."
   nl: "Vergrendelde voertuigen en diensten blijven; de voorkeuren zeggen wat mag en wat het kost."
   pl: "Zablokowane pojazdy i służby zostają; preferencje mówią, co wolno i ile to kosztuje."
@@ -1490,6 +1701,7 @@ _version: 2
   uk: "Заблоковані машини й зміни зберігаються; вподобання кажуть, що допустимо і скільки це коштує."
 "Restore defaults":
   de: "Standard wiederherstellen"
+  da: "Gendan standarder"
   fr: "Rétablir les valeurs par défaut"
   nl: "Standaard herstellen"
   pl: "Przywróć domyślne"
@@ -1497,6 +1709,7 @@ _version: 2
   uk: "Відновити за замовчуванням"
 "Depots":
   de: "Depots"
+  da: "Garager"
   fr: "Dépôts"
   nl: "Remises"
   pl: "Zajezdnie"
@@ -1504,6 +1717,7 @@ _version: 2
   uk: "Депо"
 "Misc":
   de: "Sonstiges"
+  da: "Diverse"
   fr: "Divers"
   nl: "Overig"
   pl: "Inne"
@@ -1511,6 +1725,7 @@ _version: 2
   uk: "Інше"
 "Layover":
   de: "Wendezeit"
+  da: "Ophold"
   fr: "Battement"
   nl: "Keertijd"
   pl: "Postój"
@@ -1518,6 +1733,7 @@ _version: 2
   uk: "Відстій"
 "Pre/Post-Trip":
   de: "Vor-/Nachkontrolle"
+  da: "Før-/eftertur"
   fr: "Contrôle avant/après"
   nl: "Voor-/nacontrole"
   pl: "Kontrola przed/po"
@@ -1525,6 +1741,7 @@ _version: 2
   uk: "Огляд до/після"
 "Driver Signing":
   de: "Dienstbeginn und -ende"
+  da: "Chaufførs mødetid"
   fr: "Prise et fin de service"
   nl: "Aan- en afmelden"
   pl: "Rozpoczęcie i zakończenie"
@@ -1532,6 +1749,7 @@ _version: 2
   uk: "Явка й здача"
 "Relief Timing":
   de: "Ablösezeitpunkt"
+  da: "Afløsningstid"
   fr: "Moment de la relève"
   nl: "Moment van aflossing"
   pl: "Moment zmiany kierowcy"
@@ -1539,6 +1757,7 @@ _version: 2
   uk: "Момент перезміни"
 "Duty Travel":
   de: "Wegezeiten im Dienst"
+  da: "Vagtrejse"
   fr: "Trajets en service"
   nl: "Reizen in dienst"
   pl: "Dojazdy w służbie"
@@ -1546,6 +1765,7 @@ _version: 2
   uk: "Переїзди у зміні"
 "Duty Breaks":
   de: "Dienstpausen"
+  da: "Vagtpauser"
   fr: "Pauses de service"
   nl: "Dienstpauzes"
   pl: "Przerwy w służbie"
@@ -1553,6 +1773,7 @@ _version: 2
   uk: "Перерви у зміні"
 "Continuous Break":
   de: "Ununterbrochene Arbeit"
+  da: "Uafbrudt pause"
   fr: "Travail continu"
   nl: "Onafgebroken werk"
   pl: "Praca ciągła"
@@ -1560,6 +1781,7 @@ _version: 2
   uk: "Безперервна робота"
 "Time Limitations":
   de: "Zeitgrenzen"
+  da: "Tidsbegrænsninger"
   fr: "Limites de temps"
   nl: "Tijdgrenzen"
   pl: "Limity czasu"
@@ -1567,6 +1789,7 @@ _version: 2
   uk: "Обмеження часу"
 "Piece Length":
   de: "Länge der Dienststücke"
+  da: "Dellængde"
   fr: "Longueur des parties"
   nl: "Lengte van dienststukken"
   pl: "Długość części pracy"
@@ -1574,6 +1797,7 @@ _version: 2
   uk: "Довжина частин роботи"
 "Driver Changeover Vehicle":
   de: "Fahrzeugwechsel der Fahrer"
+  da: "Køretøj ved chaufførskift"
   fr: "Changement de véhicule des conducteurs"
   nl: "Voertuigwissel van chauffeurs"
   pl: "Zmiana pojazdu przez kierowcę"
@@ -1581,6 +1805,7 @@ _version: 2
   uk: "Зміна машини водієм"
 "Split Break Definition":
   de: "Definition der Teilung"
+  da: "Definition af delt vagt"
   fr: "Définition de la coupure"
   nl: "Definitie van gebroken dienst"
   pl: "Definicja przerwy dzielącej"
@@ -1588,6 +1813,7 @@ _version: 2
   uk: "Визначення розриву"
 "Duty Types":
   de: "Diensttypen"
+  da: "Vagttyper"
   fr: "Types de service"
   nl: "Diensttypen"
   pl: "Typy służb"
@@ -1595,6 +1821,7 @@ _version: 2
   uk: "Типи змін"
 "Depot Setup":
   de: "Depoteinrichtung"
+  da: "Garageopsætning"
   fr: "Configuration du dépôt"
   nl: "Remise-instellingen"
   pl: "Ustawienia zajezdni"
@@ -1602,6 +1829,7 @@ _version: 2
   uk: "Налаштування депо"
 "Costs":
   de: "Kosten"
+  da: "Omkostninger"
   fr: "Coûts"
   nl: "Kosten"
   pl: "Koszty"
@@ -1609,6 +1837,7 @@ _version: 2
   uk: "Вартість"
 "Algorithm Parameters":
   de: "Algorithmusparameter"
+  da: "Algoritmeparametre"
   fr: "Paramètres de l'algorithme"
   nl: "Algoritmeparameters"
   pl: "Parametry algorytmu"
@@ -1616,6 +1845,7 @@ _version: 2
   uk: "Параметри алгоритму"
 "The least time a bus stands between two trips at one place.":
   de: "Die kürzeste Zeit, die ein Bus zwischen zwei Fahrten an einem Ort steht."
+  da: "Den mindste tid, en bus holder mellem to ture på ét sted."
   fr: "Le temps minimal qu'un bus reste à un endroit entre deux courses."
   nl: "De kortste tijd die een bus tussen twee ritten op één plek staat."
   pl: "Najkrótszy postój autobusu między dwoma kursami w jednym miejscu."
@@ -1623,6 +1853,7 @@ _version: 2
   uk: "Найменший час стоянки автобуса між двома рейсами в одному місці."
 "The bus's check before it leaves the depot and after it is back.":
   de: "Die Kontrolle des Busses, bevor er das Depot verlässt und wenn er zurück ist."
+  da: "Busens tjek, før den forlader garagen, og efter den er tilbage."
   fr: "Le contrôle du bus avant qu'il quitte le dépôt et à son retour."
   nl: "De controle van de bus voor hij de remise verlaat en nadat hij terug is."
   pl: "Kontrola autobusu przed wyjazdem z zajezdni i po powrocie."
@@ -1630,6 +1861,7 @@ _version: 2
   uk: "Огляд автобуса перед виїздом із депо та після повернення."
 "The paid minutes a driver signs on before work and off after it, at the duty's ends and around a split.":
   de: "Die bezahlten Minuten, mit denen sich ein Fahrer vor der Arbeit an- und danach abmeldet, an den Enden des Dienstes und um eine Teilung."
+  da: "De betalte minutter, en chauffør møder ind før arbejdet og har fyraften efter det, ved vagtens ender og omkring en delt vagt."
   fr: "Les minutes payées de prise de service avant le travail et de fin après, aux extrémités du service et autour d'une coupure."
   nl: "De betaalde minuten waarmee een chauffeur zich voor het werk aanmeldt en erna afmeldt, aan het begin en eind van de dienst en rond een onderbreking."
   pl: "Płatne minuty rozpoczęcia przed pracą i zakończenia po niej, na końcach służby i wokół przerwy."
@@ -1637,6 +1869,7 @@ _version: 2
   uk: "Оплачувані хвилини явки до роботи та здачі після неї, на початку й наприкінці зміни та довкола розриву."
 "When the driver changes within the bus's layover at a relief point (a terminus or the depot).":
   de: "Wann der Fahrer während der Wendezeit des Busses an einem Ablösepunkt wechselt (Endhaltestelle oder Depot)."
+  da: "Når chaufføren skifter inden for busens ophold ved et afløsningspunkt (en endestation eller garagen)."
   fr: "Quand le conducteur change pendant le battement du bus à un point de relève (un terminus ou le dépôt)."
   nl: "Wanneer de chauffeur wisselt tijdens de keertijd van de bus op een aflospunt (een eindpunt of de remise)."
   pl: "Kiedy kierowca się zmienia podczas postoju autobusu w punkcie zmiany (pętla lub zajezdnia)."
@@ -1644,6 +1877,7 @@ _version: 2
   uk: "Коли змінюється водій під час відстою автобуса в пункті перезміни (кінцева чи депо)."
 "How a driver gets to a relief point at another place, and how long it takes.":
   de: "Wie ein Fahrer zu einem Ablösepunkt an einem anderen Ort kommt, und wie lange das dauert."
+  da: "Hvordan en chauffør kommer til et afløsningspunkt et andet sted, og hvor lang tid det tager."
   fr: "Comment un conducteur rejoint un point de relève ailleurs, et combien de temps cela prend."
   nl: "Hoe een chauffeur bij een aflospunt elders komt, en hoe lang dat duurt."
   pl: "Jak kierowca dociera do punktu zmiany w innym miejscu i ile to trwa."
@@ -1651,6 +1885,7 @@ _version: 2
   uk: "Як водій дістається до пункту перезміни в іншому місці і скільки це триває."
 "A duty working longer than this needs a meal break of at least this long.":
   de: "Ein Dienst, der länger arbeitet, braucht eine Essenspause von mindestens dieser Länge."
+  da: "En vagt, der arbejder længere end dette, kræver en spisepause på mindst så lang tid."
   fr: "Un service plus long que ceci a besoin d'une pause repas d'au moins cette durée."
   nl: "Een dienst die langer werkt dan dit heeft een maaltijdpauze van minstens zo lang nodig."
   pl: "Służba dłuższa niż to potrzebuje przerwy na posiłek co najmniej tak długiej."
@@ -1658,6 +1893,7 @@ _version: 2
   uk: "Зміні, довшій за це, потрібна обідня перерва не коротша за це."
 "The longest a driver works without a break of at least this long.":
   de: "Das Längste, das ein Fahrer ohne Pause von mindestens dieser Länge arbeitet."
+  da: "Det længste, en chauffør arbejder uden en pause på mindst så lang tid."
   fr: "Le plus longtemps qu'un conducteur travaille sans pause d'au moins cette durée."
   nl: "Het langst dat een chauffeur werkt zonder een pauze van minstens zo lang."
   pl: "Najdłużej, ile kierowca pracuje bez przerwy co najmniej tak długiej."
@@ -1665,6 +1901,7 @@ _version: 2
   uk: "Найбільший час роботи водія без перерви не коротшої за це."
 "The spread of a duty (sign-on to sign-off) at most.":
   de: "Die Dienstspanne (Dienstbeginn bis Dienstende) höchstens."
+  da: "En vagts spredning (fra mødetid til fyraften) højst."
   fr: "L'amplitude d'un service (prise à fin de service) au plus."
   nl: "De spreiding van een dienst (aanmelden tot afmelden) ten hoogste."
   pl: "Rozpiętość służby (od rozpoczęcia do zakończenia) najwyżej."
@@ -1672,6 +1909,7 @@ _version: 2
   uk: "Тривалість зміни (від явки до здачі) не більше."
 "Pieces of work at least this long: short pieces are costly.":
   de: "Dienststücke mindestens so lang: kurze Stücke sind teuer."
+  da: "Arbejdsdele mindst så lange: korte dele er dyre."
   fr: "Des parties de travail au moins aussi longues : les courtes coûtent cher."
   nl: "Dienststukken minstens zo lang: korte stukken zijn duur."
   pl: "Części pracy co najmniej tak długie: krótkie są kosztowne."
@@ -1679,6 +1917,7 @@ _version: 2
   uk: "Частини роботи не коротші за це: короткі частини дорогі."
 "How many times a driver may change buses in a duty.":
   de: "Wie oft ein Fahrer in einem Dienst den Bus wechseln darf."
+  da: "Hvor mange gange en chauffør må skifte bus i en vagt."
   fr: "Combien de fois un conducteur peut changer de bus dans un service."
   nl: "Hoe vaak een chauffeur in een dienst van bus mag wisselen."
   pl: "Ile razy kierowca może zmienić autobus w służbie."
@@ -1686,6 +1925,7 @@ _version: 2
   uk: "Скільки разів водій може змінити автобус у зміні."
 "A break between two pieces this long or longer is a split: unpaid.":
   de: "Eine Pause zwischen zwei Stücken dieser Länge oder länger ist eine Teilung: unbezahlt."
+  da: "En pause mellem to dele af denne længde eller længere er en delt vagt: ulønnet."
   fr: "Une pause entre deux parties de cette durée ou plus est une coupure : non payée."
   nl: "Een pauze tussen twee stukken van deze lengte of langer is een onderbreking: onbetaald."
   pl: "Przerwa między dwiema częściami tej długości lub dłuższa to przerwa dzieląca: niepłatna."
@@ -1693,6 +1933,7 @@ _version: 2
   uk: "Перерва між двома частинами такої довжини чи довша — розрив: не оплачується."
 "The kinds of duty the company works. A duty no allowed type fits is Other, an issue. The first that fits is its type.":
   de: "Die Dienstarten des Betriebs. Ein Dienst, zu dem kein erlaubter Typ passt, ist Sonstiges, ein Problem. Der erste passende ist sein Typ."
+  da: "De slags vagter, selskabet arbejder med. En vagt, ingen tilladt type passer til, er Anden, et problem. Den første, der passer, er dens type."
   fr: "Les types de service de l'entreprise. Un service qu'aucun type permis ne couvre est Autre, un problème. Le premier qui convient est son type."
   nl: "De soorten dienst die het bedrijf werkt. Een dienst waarop geen toegestaan type past is Anders, een probleem. Het eerste dat past is zijn type."
   pl: "Rodzaje służb firmy. Służba, do której nie pasuje żaden dozwolony typ, to Inna, problem. Pierwszy pasujący to jej typ."
@@ -1700,6 +1941,7 @@ _version: 2
   uk: "Види змін компанії. Зміна, якій не підходить жоден дозволений тип, — Інше, це проблема. Перший відповідний — її тип."
 "How many buses the depot holds: buses out at once at most.":
   de: "Wie viele Busse das Depot fasst: höchstens so viele Busse gleichzeitig unterwegs."
+  da: "Hvor mange busser garagen rummer: busser ude på én gang højst."
   fr: "Combien de bus le dépôt contient : au plus autant de bus dehors en même temps."
   nl: "Hoeveel bussen de remise kan hebben: ten hoogste zoveel bussen tegelijk onderweg."
   pl: "Ile autobusów mieści zajezdnia: najwyżej tyle naraz w trasie."
@@ -1707,6 +1949,7 @@ _version: 2
   uk: "Скільки автобусів вміщує депо: не більше стількох на лінії одночасно."
 "What the crew and the vehicles cost: Optimise works the cost down.":
   de: "Was Personal und Fahrzeuge kosten: Optimieren senkt die Kosten."
+  da: "Hvad besætningen og køretøjerne koster: Optimér arbejder omkostningen ned."
   fr: "Ce que coûtent les équipages et les véhicules : l'optimisation réduit le coût."
   nl: "Wat personeel en voertuigen kosten: Optimaliseren drukt de kosten."
   pl: "Ile kosztują załogi i pojazdy: optymalizacja obniża koszt."
@@ -1714,6 +1957,7 @@ _version: 2
   uk: "Скільки коштують екіпажі та машини: оптимізація знижує вартість."
 "What Optimise makes: the vehicles' blocks, the duties, or both.":
   de: "Was Optimieren macht: die Umläufe, die Dienste oder beides."
+  da: "Hvad Optimér laver: køretøjernes vognløb, vagterne eller begge."
   fr: "Ce que l'optimisation produit : les blocs, les services, ou les deux."
   nl: "Wat Optimaliseren maakt: de omlopen, de diensten, of beide."
   pl: "Co tworzy optymalizacja: obiegi, służby lub oba."
@@ -1721,6 +1965,7 @@ _version: 2
   uk: "Що робить оптимізація: випуски, зміни або обидва."
 "Rule":
   de: "Regel"
+  da: "Regel"
   fr: "Règle"
   nl: "Regel"
   pl: "Zasada"
@@ -1728,6 +1973,7 @@ _version: 2
   uk: "Правило"
 "Hard rule":
   de: "Harte Regel"
+  da: "Hård regel"
   fr: "Règle stricte"
   nl: "Harde regel"
   pl: "Twarda zasada"
@@ -1735,6 +1981,7 @@ _version: 2
   uk: "Жорстке правило"
 "Soft rule":
   de: "Weiche Regel"
+  da: "Blød regel"
   fr: "Règle souple"
   nl: "Zachte regel"
   pl: "Miękka zasada"
@@ -1742,6 +1989,7 @@ _version: 2
   uk: "М'яке правило"
 "Penalty":
   de: "Strafe"
+  da: "Bod"
   fr: "Pénalité"
   nl: "Boete"
   pl: "Kara"
@@ -1749,6 +1997,7 @@ _version: 2
   uk: "Штраф"
 "Each time it is broken; Optimise weighs it against the cost.":
   de: "Jedes Mal, wenn sie verletzt wird; Optimieren wiegt sie gegen die Kosten ab."
+  da: "Hver gang den brydes; Optimér afvejer den mod omkostningen."
   fr: "À chaque infraction ; l'optimisation la pèse contre le coût."
   nl: "Elke keer dat ze wordt overtreden; Optimaliseren weegt het af tegen de kosten."
   pl: "Za każde złamanie; optymalizacja waży to wobec kosztu."
@@ -1756,6 +2005,7 @@ _version: 2
   uk: "За кожне порушення; оптимізація зважує його проти вартості."
 "Never broken by Optimise; an error when broken by hand.":
   de: "Von Optimieren nie verletzt; ein Fehler, wenn von Hand verletzt."
+  da: "Brydes aldrig af Optimér; en fejl, når den brydes i hånden."
   fr: "Jamais enfreinte par l'optimisation ; une erreur si enfreinte à la main."
   nl: "Nooit overtreden door Optimaliseren; een fout als je het met de hand doet."
   pl: "Optymalizacja nigdy jej nie łamie; złamana ręcznie to błąd."
@@ -1763,6 +2013,7 @@ _version: 2
   uk: "Оптимізація ніколи не порушує; при ручному порушенні — помилка."
 "Set":
   de: "Festlegen"
+  da: "Sæt"
   fr: "Définir"
   nl: "Instellen"
   pl: "Ustaw"
@@ -1770,6 +2021,7 @@ _version: 2
   uk: "Задати"
 "as the company pays":
   de: "wie der Betrieb zahlt"
+  da: "som selskabet betaler"
   fr: "comme l'entreprise paie"
   nl: "zoals het bedrijf betaalt"
   pl: "jak płaci firma"
@@ -1777,6 +2029,7 @@ _version: 2
   uk: "як платить компанія"
 "Preferences":
   de: "Einstellungen"
+  da: "Indstillinger"
   fr: "Préférences"
   nl: "Voorkeuren"
   pl: "Preferencje"
@@ -1784,6 +2037,7 @@ _version: 2
   uk: "Вподобання"
 "Load defaults":
   de: "Standard laden"
+  da: "Indlæs standarder"
   fr: "Charger les valeurs par défaut"
   nl: "Standaard laden"
   pl: "Wczytaj domyślne"
@@ -1791,6 +2045,7 @@ _version: 2
   uk: "Завантажити за замовчуванням"
 "Least layover":
   de: "Kürzeste Wendezeit"
+  da: "Mindste ophold"
   fr: "Battement minimal"
   nl: "Kortste keertijd"
   pl: "Najkrótszy postój"
@@ -1798,6 +2053,7 @@ _version: 2
   uk: "Найменший відстій"
 "Pre-trip check":
   de: "Kontrolle vor der Fahrt"
+  da: "Tjek før turen"
   fr: "Contrôle avant départ"
   nl: "Controle vooraf"
   pl: "Kontrola przed wyjazdem"
@@ -1805,6 +2061,7 @@ _version: 2
   uk: "Огляд перед виїздом"
 "Post-trip check":
   de: "Kontrolle nach der Fahrt"
+  da: "Tjek efter turen"
   fr: "Contrôle après retour"
   nl: "Controle achteraf"
   pl: "Kontrola po powrocie"
@@ -1812,6 +2069,7 @@ _version: 2
   uk: "Огляд після повернення"
 "Sign-on at the duty's start":
   de: "Dienstbeginn am Anfang des Dienstes"
+  da: "Mødetid ved vagtens start"
   fr: "Prise de service au début du service"
   nl: "Aanmelden bij het begin van de dienst"
   pl: "Rozpoczęcie na początku służby"
@@ -1819,6 +2077,7 @@ _version: 2
   uk: "Явка на початку зміни"
 "Sign-off at the duty's end":
   de: "Dienstende am Ende des Dienstes"
+  da: "Fyraften ved vagtens slutning"
   fr: "Fin de service à la fin du service"
   nl: "Afmelden aan het eind van de dienst"
   pl: "Zakończenie na końcu służby"
@@ -1826,6 +2085,7 @@ _version: 2
   uk: "Здача наприкінці зміни"
 "Sign-on after a split":
   de: "Dienstbeginn nach einer Teilung"
+  da: "Mødetid efter en delt vagt"
   fr: "Prise de service après une coupure"
   nl: "Aanmelden na een onderbreking"
   pl: "Rozpoczęcie po przerwie dzielącej"
@@ -1833,6 +2093,7 @@ _version: 2
   uk: "Явка після розриву"
 "Sign-off before a split":
   de: "Dienstende vor einer Teilung"
+  da: "Fyraften før en delt vagt"
   fr: "Fin de service avant une coupure"
   nl: "Afmelden voor een onderbreking"
   pl: "Zakończenie przed przerwą dzielącą"
@@ -1840,6 +2101,7 @@ _version: 2
   uk: "Здача перед розривом"
 "Minutes before the departure":
   de: "Minuten vor der Abfahrt"
+  da: "Minutter før afgangen"
   fr: "Minutes avant le départ"
   nl: "Minuten voor het vertrek"
   pl: "Minut przed odjazdem"
@@ -1847,6 +2109,7 @@ _version: 2
   uk: "Хвилин до відправлення"
 "Relief points are the line's termini and the depot.":
   de: "Ablösepunkte sind die Endhaltestellen der Linie und das Depot."
+  da: "Afløsningspunkter er linjens endestationer og garagen."
   fr: "Les points de relève sont les terminus de la ligne et le dépôt."
   nl: "Aflospunten zijn de eindpunten van de lijn en de remise."
   pl: "Punkty zmiany to pętle linii i zajezdnia."
@@ -1854,6 +2117,7 @@ _version: 2
   uk: "Пункти перезміни — кінцеві маршруту та депо."
 "Way by default":
   de: "Standardweg"
+  da: "Standardvej"
   fr: "Moyen par défaut"
   nl: "Standaardmanier"
   pl: "Sposób domyślny"
@@ -1861,6 +2125,7 @@ _version: 2
   uk: "Спосіб за замовчуванням"
 "Walk (W)":
   de: "Zu Fuß (W)"
+  da: "Gå (W)"
   fr: "À pied (W)"
   nl: "Lopen (W)"
   pl: "Pieszo (W)"
@@ -1868,6 +2133,7 @@ _version: 2
   uk: "Пішки (W)"
 "Public transport (P)":
   de: "Öffentlicher Verkehr (P)"
+  da: "Offentlig transport (P)"
   fr: "Transport public (P)"
   nl: "Openbaar vervoer (P)"
   pl: "Komunikacja publiczna (P)"
@@ -1875,6 +2141,7 @@ _version: 2
   uk: "Громадський транспорт (P)"
 "Staff car (R)":
   de: "Dienstwagen (R)"
+  da: "Firmabil (R)"
   fr: "Voiture de service (R)"
   nl: "Dienstauto (R)"
   pl: "Samochód służbowy (R)"
@@ -1882,6 +2149,7 @@ _version: 2
   uk: "Службова машина (R)"
 "A duty working longer than":
   de: "Ein Dienst, der länger arbeitet als"
+  da: "En vagt, der arbejder længere end"
   fr: "Un service travaillant plus de"
   nl: "Een dienst die langer werkt dan"
   pl: "Służba dłuższa niż"
@@ -1889,6 +2157,7 @@ _version: 2
   uk: "Зміні довшій ніж"
 "needs a meal break of":
   de: "braucht eine Essenspause von"
+  da: "kræver en spisepause på"
   fr: "a besoin d'une pause repas de"
   nl: "heeft een maaltijdpauze nodig van"
   pl: "potrzebuje przerwy na posiłek"
@@ -1896,6 +2165,7 @@ _version: 2
   uk: "потрібна обідня перерва"
 "Longest work without a break":
   de: "Längste Arbeit ohne Pause"
+  da: "Længste arbejde uden pause"
   fr: "Travail le plus long sans pause"
   nl: "Langste werk zonder pauze"
   pl: "Najdłuższa praca bez przerwy"
@@ -1903,6 +2173,7 @@ _version: 2
   uk: "Найдовша робота без перерви"
 "A break is at least":
   de: "Eine Pause dauert mindestens"
+  da: "En pause er mindst"
   fr: "Une pause dure au moins"
   nl: "Een pauze duurt minstens"
   pl: "Przerwa trwa co najmniej"
@@ -1910,6 +2181,7 @@ _version: 2
   uk: "Перерва не коротша"
 "A layover with the bus counts as a break":
   de: "Eine Wendezeit am Bus zählt als Pause"
+  da: "Et ophold med bussen tæller som en pause"
   fr: "Un battement avec le bus compte comme pause"
   nl: "Een keertijd bij de bus telt als pauze"
   pl: "Postój przy autobusie liczy się jako przerwa"
@@ -1917,6 +2189,7 @@ _version: 2
   uk: "Відстій з автобусом вважається перервою"
 "Spread at most":
   de: "Dienstspanne höchstens"
+  da: "Spredning højst"
   fr: "Amplitude au plus"
   nl: "Spreiding ten hoogste"
   pl: "Rozpiętość najwyżej"
@@ -1924,6 +2197,7 @@ _version: 2
   uk: "Тривалість не більше"
 "Pieces at least":
   de: "Dienststücke mindestens"
+  da: "Dele mindst"
   fr: "Parties au moins"
   nl: "Dienststukken minstens"
   pl: "Części co najmniej"
@@ -1931,6 +2205,7 @@ _version: 2
   uk: "Частини не коротші"
 "Changes of bus at most":
   de: "Buswechsel höchstens"
+  da: "Busskift højst"
   fr: "Changements de bus au plus"
   nl: "Buswissels ten hoogste"
   pl: "Zmian autobusu najwyżej"
@@ -1938,6 +2213,7 @@ _version: 2
   uk: "Змін автобуса не більше"
 "A split is a break of at least":
   de: "Eine Teilung ist eine Pause von mindestens"
+  da: "En delt vagt er en pause på mindst"
   fr: "Une coupure est une pause d'au moins"
   nl: "Een onderbreking is een pauze van minstens"
   pl: "Przerwa dzieląca trwa co najmniej"
@@ -1945,6 +2221,7 @@ _version: 2
   uk: "Розрив — перерва не коротша"
 "Buses out at once at most":
   de: "Busse gleichzeitig unterwegs höchstens"
+  da: "Busser ude på én gang højst"
   fr: "Bus dehors en même temps au plus"
   nl: "Bussen tegelijk onderweg ten hoogste"
   pl: "Autobusów naraz w trasie najwyżej"
@@ -1952,6 +2229,7 @@ _version: 2
   uk: "Автобусів на лінії одночасно не більше"
 "A driver's hour":
   de: "Stunde eines Fahrers"
+  da: "En chaufførs time"
   fr: "Heure d'un conducteur"
   nl: "Uur van een chauffeur"
   pl: "Godzina kierowcy"
@@ -1959,6 +2237,7 @@ _version: 2
   uk: "Година водія"
 "Each duty besides its hours":
   de: "Jeder Dienst neben seinen Stunden"
+  da: "Hver vagt ud over dens timer"
   fr: "Chaque service en plus de ses heures"
   nl: "Elke dienst naast zijn uren"
   pl: "Każda służba poza godzinami"
@@ -1966,6 +2245,7 @@ _version: 2
   uk: "Кожна зміна понад години"
 "Each bus out a day":
   de: "Jeder Bus, der einen Tag fährt"
+  da: "Hver bus ude om dagen"
   fr: "Chaque bus sorti un jour"
   nl: "Elke bus die een dag rijdt"
   pl: "Każdy autobus w trasie dziennie"
@@ -1973,6 +2253,7 @@ _version: 2
   uk: "Кожен автобус на лінії за день"
 "Each kilometre":
   de: "Jeder Kilometer"
+  da: "Hver kilometer"
   fr: "Chaque kilomètre"
   nl: "Elke kilometer"
   pl: "Każdy kilometr"
@@ -1980,6 +2261,7 @@ _version: 2
   uk: "Кожен кілометр"
 "Save changes":
   de: "Änderungen speichern"
+  da: "Gem ændringer"
   fr: "Enregistrer les modifications"
   nl: "Wijzigingen opslaan"
   pl: "Zapisz zmiany"
@@ -1987,6 +2269,7 @@ _version: 2
   uk: "Зберегти зміни"
 "Save & close":
   de: "Speichern und schließen"
+  da: "Gem og luk"
   fr: "Enregistrer et fermer"
   nl: "Opslaan en sluiten"
   pl: "Zapisz i zamknij"
@@ -1994,6 +2277,7 @@ _version: 2
   uk: "Зберегти й закрити"
 "Preferences saved: the issues and Optimise follow them.":
   de: "Einstellungen gespeichert: die Probleme und Optimieren folgen ihnen."
+  da: "Indstillinger gemt: problemerne og Optimér følger dem."
   fr: "Préférences enregistrées : les problèmes et l'optimisation les suivent."
   nl: "Voorkeuren opgeslagen: de problemen en Optimaliseren volgen ze."
   pl: "Zapisano preferencje: problemy i optymalizacja się do nich stosują."
@@ -2001,6 +2285,7 @@ _version: 2
   uk: "Вподобання збережено: проблеми й оптимізація слідують їм."
 "Allowed":
   de: "Erlaubt"
+  da: "Tilladt"
   fr: "Permis"
   nl: "Toegestaan"
   pl: "Dozwolone"
@@ -2008,6 +2293,7 @@ _version: 2
   uk: "Дозволено"
 "Earlier in the order: the first type a duty fits is its type":
   de: "Früher in der Reihenfolge: der erste passende Typ ist der Typ des Dienstes"
+  da: "Tidligere i rækkefølgen: den første type, en vagt passer til, er dens type"
   fr: "Plus tôt dans l'ordre : le premier type qui convient est le type du service"
   nl: "Eerder in de volgorde: het eerste type waarop een dienst past is zijn type"
   pl: "Wcześniej w kolejności: pierwszy pasujący typ to typ służby"
@@ -2015,6 +2301,7 @@ _version: 2
   uk: "Вище в порядку: перший відповідний тип — тип зміни"
 "End by":
   de: "Ende spätestens"
+  da: "Slutter senest"
   fr: "Fin au plus tard"
   nl: "Einde uiterlijk"
   pl: "Koniec najpóźniej"
@@ -2022,6 +2309,7 @@ _version: 2
   uk: "Кінець не пізніше"
 "Length at most":
   de: "Länge höchstens"
+  da: "Længde højst"
   fr: "Durée au plus"
   nl: "Lengte ten hoogste"
   pl: "Długość najwyżej"
@@ -2029,6 +2317,7 @@ _version: 2
   uk: "Довжина не більше"
 "Add preference":
   de: "Einstellung hinzufügen"
+  da: "Tilføj indstilling"
   fr: "Ajouter une préférence"
   nl: "Voorkeur toevoegen"
   pl: "Dodaj preferencję"
@@ -2036,6 +2325,7 @@ _version: 2
   uk: "Додати вподобання"
 "New type":
   de: "Neuer Typ"
+  da: "Ny type"
   fr: "Nouveau type"
   nl: "Nieuw type"
   pl: "Nowy typ"
@@ -2043,6 +2333,7 @@ _version: 2
   uk: "Новий тип"
 "Bus Graph":
   de: "Busgrafik"
+  da: "Busgraf"
   fr: "Graphique des bus"
   nl: "Busgrafiek"
   pl: "Wykres autobusów"
@@ -2050,6 +2341,7 @@ _version: 2
   uk: "Графік автобусів"
 "Duty Graph":
   de: "Dienstgrafik"
+  da: "Vagtgraf"
   fr: "Graphique des services"
   nl: "Dienstgrafiek"
   pl: "Wykres służb"
@@ -2057,6 +2349,7 @@ _version: 2
   uk: "Графік змін"
 "Depot: %{d}":
   de: "Depot: %{d}"
+  da: "Garage: %{d}"
   fr: "Dépôt : %{d}"
   nl: "Remise: %{d}"
   pl: "Zajezdnia: %{d}"
@@ -2064,6 +2357,7 @@ _version: 2
   uk: "Депо: %{d}"
 "Service: %{s}":
   de: "Verkehrstag: %{s}"
+  da: "Drift: %{s}"
   fr: "Service : %{s}"
   nl: "Dagsoort: %{s}"
   pl: "Dzień: %{s}"
@@ -2071,6 +2365,7 @@ _version: 2
   uk: "День: %{s}"
 "Date: %{d}":
   de: "Datum: %{d}"
+  da: "Dato: %{d}"
   fr: "Date : %{d}"
   nl: "Datum: %{d}"
   pl: "Data: %{d}"
@@ -2078,6 +2373,7 @@ _version: 2
   uk: "Дата: %{d}"
 "Printed":
   de: "Gedruckt"
+  da: "Udskrevet"
   fr: "Imprimé"
   nl: "Afgedrukt"
   pl: "Wydrukowano"
@@ -2085,6 +2381,7 @@ _version: 2
   uk: "Надруковано"
 "Save the graph as a PDF file":
   de: "Grafik als PDF-Datei speichern"
+  da: "Gem grafen som en PDF-fil"
   fr: "Enregistrer le graphique en fichier PDF"
   nl: "Sla de grafiek op als pdf-bestand"
   pl: "Zapisz wykres jako plik PDF"
@@ -2092,6 +2389,7 @@ _version: 2
   uk: "Зберегти графік у PDF"
 "Saved: %{file}":
   de: "Gespeichert: %{file}"
+  da: "Gemt: %{file}"
   fr: "Enregistré : %{file}"
   nl: "Opgeslagen: %{file}"
   pl: "Zapisano: %{file}"
@@ -2099,6 +2397,7 @@ _version: 2
   uk: "Збережено: %{file}"
 "Could not save the file":
   de: "Datei konnte nicht gespeichert werden"
+  da: "Filen kunne ikke gemmes"
   fr: "Impossible d'enregistrer le fichier"
   nl: "Kon het bestand niet opslaan"
   pl: "Nie udało się zapisać pliku"
@@ -2106,6 +2405,7 @@ _version: 2
   uk: "Не вдалося зберегти файл"
 "Printing is for the computer.":
   de: "Drucken geht am Computer."
+  da: "Udskrivning er til computeren."
   fr: "L'impression se fait sur l'ordinateur."
   nl: "Afdrukken kan op de computer."
   pl: "Drukowanie jest na komputerze."
@@ -2113,6 +2413,7 @@ _version: 2
   uk: "Друк доступний на комп'ютері."
 "RosterFlow":
   de: "RosterFlow"
+  da: "RosterFlow"
   fr: "RosterFlow"
   nl: "RosterFlow"
   pl: "RosterFlow"
@@ -2120,6 +2421,7 @@ _version: 2
   uk: "RosterFlow"
 "Bus Scheduling & Crew Rostering":
   de: "Busplanung und Dienstplanung"
+  da: "Busplanlægning og vagtplanlægning"
   fr: "Planification des bus et des équipages"
   nl: "Busplanning en dienstroosters"
   pl: "Planowanie autobusów i służb"
@@ -2127,6 +2429,7 @@ _version: 2
   uk: "Планування автобусів і змін"
 "On arrival and on departure (unattended)":
   de: "Bei Ankunft und bei Abfahrt (unbesetzt)"
+  da: "Ved ankomst og ved afgang (ubemandet)"
   fr: "À l'arrivée et au départ (sans surveillance)"
   nl: "Bij aankomst en bij vertrek (onbemand)"
   pl: "Przy przyjeździe i przy odjeździe (bez nadzoru)"
@@ -2134,6 +2437,7 @@ _version: 2
   uk: "Після прибуття і під час відправлення (без нагляду)"
 "On arrival":
   de: "Bei Ankunft"
+  da: "Ved ankomst"
   fr: "À l'arrivée"
   nl: "Bij aankomst"
   pl: "Przy przyjeździe"
@@ -2141,6 +2445,7 @@ _version: 2
   uk: "Після прибуття"
 "On departure":
   de: "Bei Abfahrt"
+  da: "Ved afgang"
   fr: "Au départ"
   nl: "Bij vertrek"
   pl: "Przy odjeździe"
@@ -2148,6 +2453,7 @@ _version: 2
   uk: "Під час відправлення"
 "Mid-layover":
   de: "Mitte der Wendezeit"
+  da: "Midt i opholdet"
   fr: "Au milieu du battement"
   nl: "Halverwege de keertijd"
   pl: "W połowie postoju"
@@ -2155,6 +2461,7 @@ _version: 2
   uk: "Посередині відстою"
 "Before departure":
   de: "Vor der Abfahrt"
+  da: "Før afgang"
   fr: "Avant le départ"
   nl: "Voor vertrek"
   pl: "Przed odjazdem"
@@ -2162,6 +2469,7 @@ _version: 2
   uk: "Перед відправленням"
 "Walk":
   de: "Zu Fuß"
+  da: "Gå"
   fr: "À pied"
   nl: "Lopen"
   pl: "Pieszo"
@@ -2169,6 +2477,7 @@ _version: 2
   uk: "Пішки"
 "Public transport":
   de: "Öffentlicher Verkehr"
+  da: "Offentlig transport"
   fr: "Transport public"
   nl: "Openbaar vervoer"
   pl: "Komunikacja publiczna"
@@ -2176,6 +2485,7 @@ _version: 2
   uk: "Громадський транспорт"
 "Staff car":
   de: "Dienstwagen"
+  da: "Firmabil"
   fr: "Voiture de service"
   nl: "Dienstauto"
   pl: "Samochód służbowy"
@@ -2183,6 +2493,7 @@ _version: 2
   uk: "Службова машина"
 "No":
   de: "Nein"
+  da: "Nej"
   fr: "Non"
   nl: "Nee"
   pl: "Nie"
@@ -2190,6 +2501,7 @@ _version: 2
   uk: "Ні"
 "Yes":
   de: "Ja"
+  da: "Ja"
   fr: "Oui"
   nl: "Ja"
   pl: "Tak"
@@ -2197,6 +2509,7 @@ _version: 2
   uk: "Так"
 "Either":
   de: "Beides"
+  da: "Begge"
   fr: "Les deux"
   nl: "Beide"
   pl: "Dowolnie"
@@ -2204,6 +2517,7 @@ _version: 2
   uk: "Будь-який"
 "Other":
   de: "Sonstiges"
+  da: "Anden"
   fr: "Autre"
   nl: "Anders"
   pl: "Inna"
@@ -2211,6 +2525,7 @@ _version: 2
   uk: "Інше"
 "Spare":
   de: "Reserve"
+  da: "Reserve"
   fr: "Réserve"
   nl: "Reserve"
   pl: "Rezerwa"
@@ -2218,6 +2533,7 @@ _version: 2
   uk: "Резерв"
 "Office":
   de: "Büro"
+  da: "Kontor"
   fr: "Bureau"
   nl: "Kantoor"
   pl: "Biuro"
@@ -2225,6 +2541,7 @@ _version: 2
   uk: "Офіс"
 "Union":
   de: "Gewerkschaft"
+  da: "Fagforening"
   fr: "Syndicat"
   nl: "Vakbond"
   pl: "Związek"
@@ -2232,6 +2549,7 @@ _version: 2
   uk: "Профспілка"
 "Only trips of one bus can be linked.":
   de: "Nur Fahrten eines Busses können gekoppelt werden."
+  da: "Kun ture på én bus kan kædes sammen."
   fr: "Seules les courses d'un même bus peuvent être liées."
   nl: "Alleen ritten van één bus kunnen gekoppeld worden."
   pl: "Połączyć można tylko kursy jednego autobusu."
@@ -2239,6 +2557,7 @@ _version: 2
   uk: "Зв'язати можна лише рейси одного автобуса."
 "Pick two trips or more to link.":
   de: "Zwei oder mehr Fahrten zum Koppeln wählen."
+  da: "Vælg to ture eller flere at kæde sammen."
   fr: "Choisir deux courses ou plus à lier."
   nl: "Kies twee ritten of meer om te koppelen."
   pl: "Wybierz dwa kursy lub więcej do połączenia."
@@ -2246,6 +2565,7 @@ _version: 2
   uk: "Виберіть два рейси або більше для зв'язку."
 "Duty type unsatisfied: the duty is %{type}":
   de: "Diensttyp nicht erfüllt: der Dienst ist %{type}"
+  da: "Vagttype ikke opfyldt: vagten er %{type}"
   fr: "Type de service non satisfait : le service est %{type}"
   nl: "Diensttype niet voldaan: de dienst is %{type}"
   pl: "Typ służby niespełniony: służba to %{type}"
@@ -2253,6 +2573,7 @@ _version: 2
   uk: "Тип зміни не відповідає: зміна — %{type}"
 "No meal break: a duty working over %{after} needs a break of %{min}":
   de: "Keine Essenspause: ein Dienst über %{after} braucht eine Pause von %{min}"
+  da: "Ingen spisepause: en vagt, der arbejder over %{after}, kræver en pause på %{min}"
   fr: "Pas de pause repas : un service de plus de %{after} a besoin d'une pause de %{min}"
   nl: "Geen maaltijdpauze: een dienst van meer dan %{after} heeft een pauze van %{min} nodig"
   pl: "Brak przerwy na posiłek: służba ponad %{after} potrzebuje przerwy %{min}"
@@ -2260,6 +2581,7 @@ _version: 2
   uk: "Немає обідньої перерви: зміні понад %{after} потрібна перерва %{min}"
 "%{time} without a break: at most %{max} before a break of %{min}":
   de: "%{time} ohne Pause: höchstens %{max} vor einer Pause von %{min}"
+  da: "%{time} uden pause: højst %{max} før en pause på %{min}"
   fr: "%{time} sans pause : au plus %{max} avant une pause de %{min}"
   nl: "%{time} zonder pauze: ten hoogste %{max} voor een pauze van %{min}"
   pl: "%{time} bez przerwy: najwyżej %{max} przed przerwą %{min}"
@@ -2267,6 +2589,7 @@ _version: 2
   uk: "%{time} без перерви: не більше %{max} до перерви %{min}"
 "Spread of %{time}, over the limit of %{max}":
   de: "Dienstspanne von %{time}, über der Grenze von %{max}"
+  da: "Spredning på %{time}, over grænsen på %{max}"
   fr: "Amplitude de %{time}, au-delà de la limite de %{max}"
   nl: "Spreiding van %{time}, boven de grens van %{max}"
   pl: "Rozpiętość %{time}, ponad limit %{max}"
@@ -2274,6 +2597,7 @@ _version: 2
   uk: "Тривалість %{time}, понад межу %{max}"
 "A piece of %{time}, shorter than %{min}":
   de: "Ein Dienststück von %{time}, kürzer als %{min}"
+  da: "En del på %{time}, kortere end %{min}"
   fr: "Une partie de %{time}, plus courte que %{min}"
   nl: "Een dienststuk van %{time}, korter dan %{min}"
   pl: "Część pracy %{time}, krótsza niż %{min}"
@@ -2281,6 +2605,7 @@ _version: 2
   uk: "Частина роботи %{time}, коротша за %{min}"
 "%{n} changes of bus, more than %{max}":
   de: "%{n} Buswechsel, mehr als %{max}"
+  da: "%{n} busskift, flere end %{max}"
   fr: "%{n} changements de bus, plus que %{max}"
   nl: "%{n} buswissels, meer dan %{max}"
   pl: "Zmian autobusu: %{n}, więcej niż %{max}"
@@ -2288,6 +2613,7 @@ _version: 2
   uk: "Змін автобуса: %{n}, більше ніж %{max}"
 "No time to get to the relief point at %{stop}: %{need} needed, %{have} there":
   de: "Keine Zeit zum Ablösepunkt %{stop}: %{need} nötig, %{have} vorhanden"
+  da: "Ingen tid til at nå afløsningspunktet ved %{stop}: %{need} nødvendig, %{have} til rådighed"
   fr: "Pas le temps de rejoindre le point de relève %{stop} : %{need} nécessaires, %{have} disponibles"
   nl: "Geen tijd om bij het aflospunt %{stop} te komen: %{need} nodig, %{have} beschikbaar"
   pl: "Brak czasu na dotarcie do punktu zmiany %{stop}: potrzeba %{need}, jest %{have}"
@@ -2295,6 +2621,7 @@ _version: 2
   uk: "Немає часу дістатися до пункту перезміни %{stop}: треба %{need}, є %{have}"
 "Working time: %{rule}":
   de: "Arbeitszeit: %{rule}"
+  da: "Arbejdstid: %{rule}"
   fr: "Temps de travail : %{rule}"
   nl: "Arbeidstijd: %{rule}"
   pl: "Czas pracy: %{rule}"
@@ -2302,6 +2629,7 @@ _version: 2
   uk: "Робочий час: %{rule}"
 "Working time: %{rule}, %{time}":
   de: "Arbeitszeit: %{rule}, %{time}"
+  da: "Arbejdstid: %{rule}, %{time}"
   fr: "Temps de travail : %{rule}, %{time}"
   nl: "Arbeidstijd: %{rule}, %{time}"
   pl: "Czas pracy: %{rule}, %{time}"
@@ -2309,6 +2637,7 @@ _version: 2
   uk: "Робочий час: %{rule}, %{time}"
 "Layover of %{time} at %{stop}, shorter than %{min}":
   de: "Wendezeit von %{time} an %{stop}, kürzer als %{min}"
+  da: "Ophold på %{time} ved %{stop}, kortere end %{min}"
   fr: "Battement de %{time} à %{stop}, plus court que %{min}"
   nl: "Keertijd van %{time} bij %{stop}, korter dan %{min}"
   pl: "Postój %{time} na %{stop}, krótszy niż %{min}"
@@ -2316,6 +2645,7 @@ _version: 2
   uk: "Відстій %{time} на %{stop}, коротший за %{min}"
 "Deadhead from %{from} to %{to}: no trip of the line runs there, its time is estimated":
   de: "Leerfahrt von %{from} nach %{to}: keine Fahrt der Linie fährt dort, die Zeit ist geschätzt"
+  da: "Tomkørsel fra %{from} til %{to}: ingen tur på linjen kører dér, dens tid er anslået"
   fr: "Haut-le-pied de %{from} à %{to} : aucune course de la ligne n'y passe, le temps est estimé"
   nl: "Leegrit van %{from} naar %{to}: geen rit van de lijn rijdt daar, de tijd is geschat"
   pl: "Przejazd techniczny z %{from} do %{to}: żaden kurs linii tam nie jedzie, czas oszacowano"
@@ -2323,6 +2653,7 @@ _version: 2
   uk: "Нульовий рейс з %{from} до %{to}: рейсів маршруту там немає, час оцінено"
 "%{n} trips are not assigned to a vehicle":
   de: "%{n} Fahrten sind keinem Fahrzeug zugewiesen"
+  da: "%{n} ture er ikke tildelt et køretøj"
   fr: "%{n} courses ne sont affectées à aucun véhicule"
   nl: "%{n} ritten zijn niet aan een voertuig toegewezen"
   pl: "Kursów bez pojazdu: %{n}"
@@ -2330,6 +2661,7 @@ _version: 2
   uk: "Рейсів без машини: %{n}"
 "%{n} buses at the peak, the company has %{m}":
   de: "%{n} Busse in der Spitze, der Betrieb hat %{m}"
+  da: "%{n} busser i spidsbelastning, selskabet har %{m}"
   fr: "%{n} bus à la pointe, l'entreprise en a %{m}"
   nl: "%{n} bussen in de spits, het bedrijf heeft er %{m}"
   pl: "Autobusów w szczycie: %{n}, firma ma %{m}"
@@ -2337,6 +2669,7 @@ _version: 2
   uk: "Автобусів у пік: %{n}, у компанії %{m}"
 "%{n} buses out at once, more than the depot holds (%{max})":
   de: "%{n} Busse gleichzeitig unterwegs, mehr als das Depot fasst (%{max})"
+  da: "%{n} busser ude på én gang, flere end garagen rummer (%{max})"
   fr: "%{n} bus dehors en même temps, plus que le dépôt n'en contient (%{max})"
   nl: "%{n} bussen tegelijk onderweg, meer dan de remise kan hebben (%{max})"
   pl: "Autobusów naraz w trasie: %{n}, więcej niż mieści zajezdnia (%{max})"
@@ -2344,6 +2677,7 @@ _version: 2
   uk: "Автобусів на лінії одночасно: %{n}, більше місткості депо (%{max})"
 "%{n} duties, %{m} drivers on the staff":
   de: "%{n} Dienste, %{m} Fahrer im Personal"
+  da: "%{n} vagter, %{m} chauffører i personalet"
   fr: "%{n} services, %{m} conducteurs au personnel"
   nl: "%{n} diensten, %{m} chauffeurs in dienst"
   pl: "Służb: %{n}, kierowców w kadrze: %{m}"
@@ -2351,6 +2685,7 @@ _version: 2
   uk: "Змін: %{n}, водіїв у штаті: %{m}"
 "This vehicle is locked: unlock it first.":
   de: "Dieses Fahrzeug ist gesperrt: zuerst entsperren."
+  da: "Dette køretøj er låst: lås det først op."
   fr: "Ce véhicule est verrouillé : déverrouille-le d'abord."
   nl: "Dit voertuig is vergrendeld: ontgrendel het eerst."
   pl: "Ten pojazd jest zablokowany: najpierw go odblokuj."
@@ -2358,6 +2693,7 @@ _version: 2
   uk: "Цю машину заблоковано: спершу розблокуйте."
 "Trips could not be swapped: they do not fit on the other bus.":
   de: "Fahrten konnten nicht getauscht werden: sie passen nicht auf den anderen Bus."
+  da: "Turene kunne ikke byttes: de passer ikke på den anden bus."
   fr: "Les courses n'ont pas pu être échangées : elles ne tiennent pas sur l'autre bus."
   nl: "Ritten konden niet gewisseld worden: ze passen niet op de andere bus."
   pl: "Nie udało się zamienić kursów: nie mieszczą się na drugim autobusie."
@@ -2365,6 +2701,7 @@ _version: 2
   uk: "Рейси не вдалося обміняти: вони не вміщаються на інший автобус."
 "This duty is locked: unlock it first.":
   de: "Dieser Dienst ist gesperrt: zuerst entsperren."
+  da: "Denne vagt er låst: lås den først op."
   fr: "Ce service est verrouillé : déverrouille-le d'abord."
   nl: "Deze dienst is vergrendeld: ontgrendel hem eerst."
   pl: "Ta służba jest zablokowana: najpierw ją odblokuj."
@@ -2373,6 +2710,7 @@ _version: 2
 "Only trips of one duty can be moved together.":
   en: "Only trips of one duty can be moved together."
   de: "Nur Fahrten eines einzigen Dienstes lassen sich zusammen verschieben."
+  da: "Kun ture på én vagt kan flyttes sammen."
   fr: "Seules les courses d'un même service peuvent être déplacées ensemble."
   nl: "Alleen ritten van één dienst kunnen samen worden verplaatst."
   pl: "Razem można przenosić tylko kursy jednej służby."
@@ -2381,6 +2719,7 @@ _version: 2
 "These are all the trips of this duty: it is a duty of its own already.":
   en: "These are all the trips of this duty: it is a duty of its own already."
   de: "Das sind alle Fahrten dieses Dienstes: er ist schon ein eigener Dienst."
+  da: "Det er alle denne vagts ture: det er allerede en vagt for sig."
   fr: "Ce sont toutes les courses de ce service : c'est déjà un service à part."
   nl: "Dit zijn alle ritten van deze dienst: het is al een eigen dienst."
   pl: "To wszystkie kursy tej służby: jest już osobną służbą."
@@ -2389,6 +2728,7 @@ _version: 2
 "The driver cannot be there in time: the work before it ends at another stop, too shortly before.":
   en: "The driver cannot be there in time: the work before it ends at another stop, too shortly before."
   de: "Der Fahrer kann nicht rechtzeitig dort sein: die Arbeit davor endet an einer anderen Haltestelle, zu kurz vorher."
+  da: "Chaufføren kan ikke være der i tide: arbejdet før slutter et andet sted, for kort tid før."
   fr: "Le conducteur ne peut pas y être à temps : le travail d'avant se termine à un autre arrêt, trop peu de temps avant."
   nl: "De chauffeur kan er niet op tijd zijn: het werk ervoor eindigt bij een andere halte, te kort ervoor."
   pl: "Kierowca nie zdąży tam dotrzeć: wcześniejsza praca kończy się na innym przystanku, zbyt krótko przedtem."
@@ -2396,6 +2736,7 @@ _version: 2
   uk: "Водій не встигне туди: попередня робота закінчується на іншій зупинці надто незадовго до цього."
 "paid":
   de: "bezahlt"
+  da: "betalt"
   fr: "payé"
   nl: "betaald"
   pl: "płatne"
@@ -2403,6 +2744,7 @@ _version: 2
   uk: "оплачено"
 "span":
   de: "Spanne"
+  da: "spredning"
   fr: "durée"
   nl: "duur"
   pl: "rozpiętość"
@@ -2410,6 +2752,7 @@ _version: 2
   uk: "тривалість"
 "Any colour: the picker":
   de: "Jede Farbe: die Farbauswahl"
+  da: "Enhver farve: vælgeren"
   fr: "N'importe quelle couleur : le sélecteur"
   nl: "Elke kleur: de kleurkiezer"
   pl: "Dowolny kolor: próbnik"
@@ -2417,6 +2760,7 @@ _version: 2
   uk: "Будь-який колір: палітра"
 "Mark trips off their timetable tour":
   de: "Fahrten außerhalb ihres Umlaufs markieren"
+  da: "Markér ture uden for deres køreplansvognløb"
   fr: "Marquer les courses hors de leur service"
   nl: "Markeer ritten buiten hun omloop"
   pl: "Oznacz kursy poza ich obiegiem"
@@ -2424,6 +2768,7 @@ _version: 2
   uk: "Позначити рейси поза своїм випуском"
 "Early shift":
   de: "Frühdienst"
+  da: "Tidlig vagt"
   fr: "Service du matin"
   nl: "Vroege dienst"
   pl: "Służba poranna"
@@ -2431,6 +2776,7 @@ _version: 2
   uk: "Рання зміна"
 "Middle shift":
   de: "Mitteldienst"
+  da: "Middagsvagt"
   fr: "Service de journée"
   nl: "Middagdienst"
   pl: "Służba dzienna"
@@ -2438,6 +2784,7 @@ _version: 2
   uk: "Денна зміна"
 "Late shift":
   de: "Spätdienst"
+  da: "Sen vagt"
   fr: "Service du soir"
   nl: "Late dienst"
   pl: "Służba popołudniowa"
@@ -2445,6 +2792,7 @@ _version: 2
   uk: "Вечірня зміна"
 "Split shift":
   de: "Geteilter Dienst"
+  da: "Delt vagt"
   fr: "Service fractionné"
   nl: "Gebroken dienst"
   pl: "Służba dzielona"
@@ -2452,6 +2800,7 @@ _version: 2
   uk: "Розривна зміна"
 "Night shift":
   de: "Nachtdienst"
+  da: "Nattevagt"
   fr: "Service de nuit"
   nl: "Nachtdienst"
   pl: "Służba nocna"
@@ -2459,6 +2808,7 @@ _version: 2
   uk: "Нічна зміна"
 "Apply filter":
   de: "Filter anwenden"
+  da: "Anvend filter"
   fr: "Appliquer le filtre"
   nl: "Filter toepassen"
   pl: "Zastosuj filtr"
@@ -2466,6 +2816,7 @@ _version: 2
   uk: "Застосувати фільтр"
 "Duty type unsatisfied":
   de: "Diensttyp nicht erfüllt"
+  da: "Vagttype ikke opfyldt"
   fr: "Type de service non satisfait"
   nl: "Diensttype niet voldaan"
   pl: "Typ służby niespełniony"
@@ -2473,6 +2824,7 @@ _version: 2
   uk: "Тип зміни не відповідає"
 "Driving without a break":
   de: "Fahren ohne Pause"
+  da: "Kørsel uden pause"
   fr: "Conduite sans pause"
   nl: "Rijden zonder pauze"
   pl: "Jazda bez przerwy"
@@ -2480,6 +2832,7 @@ _version: 2
   uk: "Водіння без перерви"
 "Spread over the limit":
   de: "Dienstspanne über der Grenze"
+  da: "Spredning over grænsen"
   fr: "Amplitude au-delà de la limite"
   nl: "Spreiding boven de grens"
   pl: "Rozpiętość ponad limit"
@@ -2487,6 +2840,7 @@ _version: 2
   uk: "Тривалість понад межу"
 "Pieces too short":
   de: "Dienststücke zu kurz"
+  da: "For korte dele"
   fr: "Parties trop courtes"
   nl: "Dienststukken te kort"
   pl: "Za krótkie części"
@@ -2494,6 +2848,7 @@ _version: 2
   uk: "Надто короткі частини"
 "Too many changes of bus":
   de: "Zu viele Buswechsel"
+  da: "For mange busskift"
   fr: "Trop de changements de bus"
   nl: "Te veel buswissels"
   pl: "Za dużo zmian autobusu"
@@ -2501,6 +2856,7 @@ _version: 2
   uk: "Забагато змін автобуса"
 "No time to get to the relief point":
   de: "Keine Zeit zum Ablösepunkt"
+  da: "Ingen tid til at nå afløsningspunktet"
   fr: "Pas le temps de rejoindre le point de relève"
   nl: "Geen tijd om bij het aflospunt te komen"
   pl: "Brak czasu na dotarcie do punktu zmiany"
@@ -2508,6 +2864,7 @@ _version: 2
   uk: "Немає часу дістатися до пункту перезміни"
 "Working time":
   de: "Arbeitszeit"
+  da: "Arbejdstid"
   fr: "Temps de travail"
   nl: "Arbeidstijd"
   pl: "Czas pracy"
@@ -2515,6 +2872,7 @@ _version: 2
   uk: "Робочий час"
 "Layovers too short":
   de: "Wendezeiten zu kurz"
+  da: "For korte ophold"
   fr: "Battements trop courts"
   nl: "Keertijden te kort"
   pl: "Za krótkie postoje"
@@ -2522,6 +2880,7 @@ _version: 2
   uk: "Надто короткі відстої"
 "Deadheads estimated":
   de: "Geschätzte Leerfahrten"
+  da: "Tomkørsel anslået"
   fr: "Haut-le-pied estimés"
   nl: "Geschatte leegritten"
   pl: "Szacowane przejazdy techniczne"
@@ -2529,6 +2888,7 @@ _version: 2
   uk: "Оцінені нульові рейси"
 "Trips not assigned":
   de: "Fahrten nicht zugewiesen"
+  da: "Ture ikke tildelt"
   fr: "Courses non affectées"
   nl: "Ritten niet toegewezen"
   pl: "Nieprzydzielone kursy"
@@ -2536,6 +2896,7 @@ _version: 2
   uk: "Непризначені рейси"
 "More buses than the company has":
   de: "Mehr Busse, als der Betrieb hat"
+  da: "Flere busser, end selskabet har"
   fr: "Plus de bus que l'entreprise n'en a"
   nl: "Meer bussen dan het bedrijf heeft"
   pl: "Więcej autobusów, niż ma firma"
@@ -2543,6 +2904,7 @@ _version: 2
   uk: "Більше автобусів, ніж у компанії"
 "More buses than the depot holds":
   de: "Mehr Busse, als das Depot fasst"
+  da: "Flere busser, end garagen rummer"
   fr: "Plus de bus que le dépôt n'en contient"
   nl: "Meer bussen dan de remise kan hebben"
   pl: "Więcej autobusów, niż mieści zajezdnia"
@@ -2550,6 +2912,7 @@ _version: 2
   uk: "Більше автобусів, ніж вміщує депо"
 "More duties than drivers":
   de: "Mehr Dienste als Fahrer"
+  da: "Flere vagter end chauffører"
   fr: "Plus de services que de conducteurs"
   nl: "Meer diensten dan chauffeurs"
   pl: "Więcej służb niż kierowców"
@@ -2557,6 +2920,7 @@ _version: 2
   uk: "Більше змін, ніж водіїв"
 "No meal break":
   de: "Keine Essenspause"
+  da: "Ingen spisepause"
   fr: "Pas de pause repas"
   nl: "Geen maaltijdpauze"
   pl: "Brak przerwy na posiłek"
@@ -2566,6 +2930,7 @@ _version: 2
   en: "Back to the company's start screen (Esc)"
   nl: "Terug naar het startscherm van het bedrijf (Esc)"
   de: "Zurück zum Startbildschirm des Unternehmens (Esc)"
+  da: "Tilbage til selskabets startskærm (Esc)"
   fr: "Retour à l'écran d'accueil de l'entreprise (Échap)"
   ru: "Назад на главный экран компании (Esc)"
   uk: "Назад на головний екран компанії (Esc)"

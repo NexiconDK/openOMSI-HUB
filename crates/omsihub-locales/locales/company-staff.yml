@@ -4,6 +4,7 @@ _version: 2
 "My employees":
   nl: "Mijn medewerkers"
   de: "Meine Mitarbeiter"
+  da: "Mine medarbejdere"
   fr: "Mes employés"
   ru: "Мои сотрудники"
   uk: "Мої працівники"
@@ -11,6 +12,7 @@ _version: 2
 "Hire employees":
   nl: "Personeel aannemen"
   de: "Mitarbeiter einstellen"
+  da: "Ansæt medarbejdere"
   fr: "Embaucher"
   ru: "Нанять сотрудников"
   uk: "Найняти працівників"
@@ -18,6 +20,7 @@ _version: 2
 "Work schedule":
   nl: "Werkrooster"
   de: "Arbeitszeiten"
+  da: "Arbejdsplan"
   fr: "Horaires de travail"
   ru: "График работы"
   uk: "Графік роботи"
@@ -25,6 +28,7 @@ _version: 2
 "Mechanics":
   nl: "Monteurs"
   de: "Mechaniker"
+  da: "Mekanikere"
   fr: "Mécaniciens"
   ru: "Механики"
   uk: "Механіки"
@@ -32,6 +36,7 @@ _version: 2
 "Researchers":
   nl: "Onderzoekers"
   de: "Forscher"
+  da: "Forskere"
   fr: "Chercheurs"
   ru: "Исследователи"
   uk: "Дослідники"
@@ -39,6 +44,7 @@ _version: 2
 "Cleaners":
   nl: "Schoonmakers"
   de: "Reinigungskräfte"
+  da: "Rengøringsmedarbejdere"
   fr: "Agents d'entretien"
   ru: "Уборщики"
   uk: "Прибиральники"
@@ -46,6 +52,7 @@ _version: 2
 "Service employees":
   nl: "Servicemedewerkers"
   de: "Servicemitarbeiter"
+  da: "Servicemedarbejdere"
   fr: "Employés du service client"
   ru: "Сотрудники сервиса"
   uk: "Працівники сервісу"
@@ -53,6 +60,7 @@ _version: 2
 "Ticket inspectors":
   nl: "Kaartjescontroleurs"
   de: "Fahrkartenkontrolleure"
+  da: "Kontrollører"
   fr: "Contrôleurs"
   ru: "Контролёры"
   uk: "Контролери"
@@ -60,6 +68,7 @@ _version: 2
 "Driving a bus":
   nl: "Rijdt een bus"
   de: "Fährt einen Bus"
+  da: "Kører en bus"
   fr: "Conduit un bus"
   ru: "Ведёт автобус"
   uk: "Веде автобус"
@@ -67,6 +76,7 @@ _version: 2
 "Repairing and servicing buses":
   nl: "Repareert en onderhoudt bussen"
   de: "Repariert und wartet Busse"
+  da: "Reparerer og servicerer busser"
   fr: "Répare et entretient les bus"
   ru: "Ремонтирует и обслуживает автобусы"
   uk: "Ремонтує й обслуговує автобуси"
@@ -74,6 +84,7 @@ _version: 2
 "Researching":
   nl: "Doet onderzoek"
   de: "Forscht"
+  da: "Forsker"
   fr: "Fait de la recherche"
   ru: "Занимается исследованиями"
   uk: "Займається дослідженнями"
@@ -81,6 +92,7 @@ _version: 2
 "Cleaning buses":
   nl: "Maakt bussen schoon"
   de: "Reinigt Busse"
+  da: "Rengør busser"
   fr: "Nettoie les bus"
   ru: "Убирает автобусы"
   uk: "Прибирає автобуси"
@@ -88,6 +100,7 @@ _version: 2
 "Working in the service centre":
   nl: "Werkt in het servicecentrum"
   de: "Arbeitet im Servicecenter"
+  da: "Arbejder i servicecentret"
   fr: "Travaille au centre de service"
   ru: "Работает в сервисном центре"
   uk: "Працює в сервісному центрі"
@@ -95,6 +108,7 @@ _version: 2
 "Checking tickets":
   nl: "Controleert kaartjes"
   de: "Kontrolliert Fahrkarten"
+  da: "Kontrollerer billetter"
   fr: "Contrôle les billets"
   ru: "Проверяет билеты"
   uk: "Перевіряє квитки"
@@ -102,6 +116,7 @@ _version: 2
 "Trainee":
   nl: "Stagiair"
   de: "Azubi"
+  da: "Elev"
   fr: "Stagiaire"
   ru: "Стажёр"
   uk: "Стажер"
@@ -109,6 +124,7 @@ _version: 2
 "Novice":
   nl: "Beginner"
   de: "Anfänger"
+  da: "Begynder"
   fr: "Débutant"
   ru: "Новичок"
   uk: "Новачок"
@@ -116,6 +132,7 @@ _version: 2
 "Experienced":
   nl: "Ervaren"
   de: "Erfahren"
+  da: "Erfaren"
   fr: "Expérimenté"
   ru: "Опытный"
   uk: "Досвідчений"
@@ -123,6 +140,7 @@ _version: 2
 "Expert":
   nl: "Expert"
   de: "Experte"
+  da: "Ekspert"
   fr: "Expert"
   ru: "Эксперт"
   uk: "Експерт"
@@ -130,6 +148,7 @@ _version: 2
 "Role":
   nl: "Functie"
   de: "Funktion"
+  da: "Rolle"
   fr: "Fonction"
   ru: "Должность"
   uk: "Посада"
@@ -137,6 +156,7 @@ _version: 2
 "Stress":
   nl: "Stress"
   de: "Stress"
+  da: "Stress"
   fr: "Stress"
   ru: "Стресс"
   uk: "Стрес"
@@ -144,6 +164,7 @@ _version: 2
 "Friendliness":
   nl: "Vriendelijkheid"
   de: "Freundlichkeit"
+  da: "Venlighed"
   fr: "Amabilité"
   ru: "Дружелюбие"
   uk: "Привітність"
@@ -151,6 +172,7 @@ _version: 2
 "%{amount} / hour":
   nl: "%{amount} / uur"
   de: "%{amount} / Std."
+  da: "%{amount} / time"
   fr: "%{amount} / heure"
   ru: "%{amount} / час"
   uk: "%{amount} / год"
@@ -158,6 +180,7 @@ _version: 2
 "On a course":
   nl: "Op cursus"
   de: "Auf Lehrgang"
+  da: "På kursus"
   fr: "En formation"
   ru: "На курсах"
   uk: "На курсах"
@@ -165,6 +188,7 @@ _version: 2
 "Resting":
   nl: "Rust"
   de: "Hat frei"
+  da: "Hviler"
   fr: "Au repos"
   ru: "Отдыхает"
   uk: "Відпочиває"
@@ -172,6 +196,7 @@ _version: 2
 "On a break":
   nl: "Pauze"
   de: "Pause"
+  da: "På pause"
   fr: "En pause"
   ru: "На перерыве"
   uk: "На перерві"
@@ -179,6 +204,7 @@ _version: 2
 "Day off":
   nl: "Vrije dag"
   de: "Freier Tag"
+  da: "Fridag"
   fr: "Jour de repos"
   ru: "Выходной"
   uk: "Вихідний"
@@ -186,6 +212,7 @@ _version: 2
 "Starts at %{time}":
   nl: "Begint om %{time}"
   de: "Beginnt um %{time}"
+  da: "Starter kl. %{time}"
   fr: "Commence à %{time}"
   ru: "Начинает в %{time}"
   uk: "Починає о %{time}"
@@ -193,6 +220,7 @@ _version: 2
 "Sort by":
   nl: "Sorteren op"
   de: "Sortieren nach"
+  da: "Sortér efter"
   fr: "Trier par"
   ru: "Сортировка"
   uk: "Сортування"
@@ -200,6 +228,7 @@ _version: 2
 "Descending":
   nl: "Aflopend"
   de: "Absteigend"
+  da: "Faldende"
   fr: "Décroissant"
   ru: "По убыванию"
   uk: "За спаданням"
@@ -207,6 +236,7 @@ _version: 2
 "Ascending":
   nl: "Oplopend"
   de: "Aufsteigend"
+  da: "Stigende"
   fr: "Croissant"
   ru: "По возрастанию"
   uk: "За зростанням"
@@ -214,6 +244,7 @@ _version: 2
 "Resigned":
   nl: "Ontslag genomen"
   de: "Gekündigt"
+  da: "Sagt op"
   fr: "Démissionnaire"
   ru: "Увольняется сам"
   uk: "Звільняється сам"
@@ -221,6 +252,7 @@ _version: 2
 "Leaving":
   nl: "Vertrekt"
   de: "Geht"
+  da: "Er på vej væk"
   fr: "Sur le départ"
   ru: "Уходит"
   uk: "Іде"
@@ -228,6 +260,7 @@ _version: 2
 "Asks for a raise":
   nl: "Vraagt opslag"
   de: "Will mehr Lohn"
+  da: "Beder om lønforhøjelse"
   fr: "Demande une augmentation"
   ru: "Просит прибавку"
   uk: "Просить підвищення"
@@ -235,6 +268,7 @@ _version: 2
 "All employees":
   nl: "Alle medewerkers"
   de: "Alle Mitarbeiter"
+  da: "Alle medarbejdere"
   fr: "Tous les employés"
   ru: "Все сотрудники"
   uk: "Усі працівники"
@@ -242,6 +276,7 @@ _version: 2
 "Their needs":
   nl: "Behoeften"
   de: "Bedürfnisse"
+  da: "Deres behov"
   fr: "Besoins"
   ru: "Потребности"
   uk: "Потреби"
@@ -249,6 +284,7 @@ _version: 2
 "Pay":
   nl: "Loon"
   de: "Lohn"
+  da: "Løn"
   fr: "Salaire"
   ru: "Оплата"
   uk: "Оплата"
@@ -256,6 +292,7 @@ _version: 2
 "Work":
   nl: "Werk"
   de: "Arbeit"
+  da: "Arbejde"
   fr: "Travail"
   ru: "Работа"
   uk: "Робота"
@@ -263,6 +300,7 @@ _version: 2
 "By the hour":
   nl: "Per uur"
   de: "Pro Stunde"
+  da: "Pr. time"
   fr: "Par heure"
   ru: "В час"
   uk: "На годину"
@@ -270,6 +308,7 @@ _version: 2
 "The market pays":
   nl: "De markt betaalt"
   de: "Der Markt zahlt"
+  da: "Markedet betaler"
   fr: "Le marché paie"
   ru: "Рынок платит"
   uk: "Ринок платить"
@@ -277,6 +316,7 @@ _version: 2
 "Grant the raise":
   nl: "Opslag geven"
   de: "Lohnerhöhung gewähren"
+  da: "Bevilg forhøjelsen"
   fr: "Accorder l'augmentation"
   ru: "Дать прибавку"
   uk: "Дати підвищення"
@@ -284,6 +324,7 @@ _version: 2
 "Refuse":
   nl: "Weigeren"
   de: "Ablehnen"
+  da: "Afslå"
   fr: "Refuser"
   ru: "Отказать"
   uk: "Відмовити"
@@ -291,6 +332,7 @@ _version: 2
 "Days worked":
   nl: "Dagen gewerkt"
   de: "Gearbeitete Tage"
+  da: "Arbejdsdage"
   fr: "Jours travaillés"
   ru: "Отработано дней"
   uk: "Відпрацьовано днів"
@@ -298,6 +340,7 @@ _version: 2
 "Holiday days left":
   nl: "Vakantiedagen over"
   de: "Resturlaub"
+  da: "Feriedage tilbage"
   fr: "Jours de congé restants"
   ru: "Осталось дней отпуска"
   uk: "Залишилось днів відпустки"
@@ -305,6 +348,7 @@ _version: 2
 "Not at work":
   nl: "Niet aan het werk"
   de: "Nicht im Dienst"
+  da: "Ikke på arbejde"
   fr: "Pas au travail"
   ru: "Не на работе"
   uk: "Не на роботі"
@@ -312,6 +356,7 @@ _version: 2
 "Service skill":
   nl: "Klantvaardigheid"
   de: "Kundenkompetenz"
+  da: "Servicefærdighed"
   fr: "Sens du service"
   ru: "Навык обслуживания"
   uk: "Навичка обслуговування"
@@ -319,6 +364,7 @@ _version: 2
 "To the research":
   nl: "Naar het onderzoek"
   de: "Zur Forschung"
+  da: "Til forskningen"
   fr: "Vers la recherche"
   ru: "К исследованиям"
   uk: "До досліджень"
@@ -326,6 +372,7 @@ _version: 2
 "as the market pays":
   nl: "zoals de markt betaalt"
   de: "wie der Markt zahlt"
+  da: "som markedet betaler"
   fr: "comme le marché"
   ru: "как на рынке"
   uk: "як на ринку"
@@ -333,6 +380,7 @@ _version: 2
 "%{n} % over the market":
   nl: "%{n} % boven de markt"
   de: "%{n} % über dem Markt"
+  da: "%{n} % over markedet"
   fr: "%{n} % au-dessus du marché"
   ru: "на %{n} % выше рынка"
   uk: "на %{n} % вище ринку"
@@ -340,6 +388,7 @@ _version: 2
 "%{n} % under the market":
   nl: "%{n} % onder de markt"
   de: "%{n} % unter dem Markt"
+  da: "%{n} % under markedet"
   fr: "%{n} % en dessous du marché"
   ru: "на %{n} % ниже рынка"
   uk: "на %{n} % нижче ринку"
@@ -347,6 +396,7 @@ _version: 2
 "Core hours":
   nl: "Kerntijden"
   de: "Kernzeiten"
+  da: "Kernetid"
   fr: "Heures de base"
   ru: "Основные часы"
   uk: "Основні години"
@@ -354,6 +404,7 @@ _version: 2
 "At work":
   nl: "Aan het werk"
   de: "Im Dienst"
+  da: "På arbejde"
   fr: "Au travail"
   ru: "На работе"
   uk: "На роботі"
@@ -361,6 +412,7 @@ _version: 2
 "Hours paid":
   nl: "Betaalde uren"
   de: "Bezahlte Stunden"
+  da: "Betalte timer"
   fr: "Heures payées"
   ru: "Оплачено часов"
   uk: "Оплачено годин"
@@ -368,6 +420,7 @@ _version: 2
 "Of them at night":
   nl: "Waarvan 's nachts"
   de: "Davon nachts"
+  da: "Heraf om natten"
   fr: "Dont la nuit"
   ru: "Из них ночью"
   uk: "З них уночі"
@@ -375,6 +428,7 @@ _version: 2
 "Wages today":
   nl: "Lonen vandaag"
   de: "Löhne heute"
+  da: "Lønninger i dag"
   fr: "Salaires du jour"
   ru: "Зарплата за сегодня"
   uk: "Зарплата за сьогодні"
@@ -382,6 +436,7 @@ _version: 2
 "Hours of each":
   nl: "Uren per persoon"
   de: "Stunden der Einzelnen"
+  da: "Timer for hver"
   fr: "Heures de chacun"
   ru: "Часы каждого"
   uk: "Години кожного"
@@ -389,6 +444,7 @@ _version: 2
 "%{n} now":
   nl: "nu %{n}"
   de: "jetzt %{n}"
+  da: "%{n} nu"
   fr: "%{n} actuellement"
   ru: "сейчас %{n}"
   uk: "зараз %{n}"
@@ -396,6 +452,7 @@ _version: 2
 "Outside the core hours covered":
   nl: "Buiten de kerntijden gedekt"
   de: "Außerhalb der Kernzeiten abgedeckt"
+  da: "Uden for kernetiden dækket"
   fr: "Hors heures de base couvert"
   ru: "Покрытие вне основных часов"
   uk: "Покриття поза основними годинами"
@@ -403,6 +460,7 @@ _version: 2
 "In-house maintenance and repairs":
   nl: "Onderhoud en reparaties in eigen huis"
   de: "Wartung und Reparaturen im eigenen Haus"
+  da: "Intern vedligeholdelse og reparationer"
   fr: "Entretien et réparations en interne"
   ru: "Обслуживание и ремонт своими силами"
   uk: "Обслуговування й ремонт власними силами"
@@ -410,6 +468,7 @@ _version: 2
 "Buses cleaned last night":
   nl: "Bussen schoongemaakt afgelopen nacht"
   de: "Busse gereinigt letzte Nacht"
+  da: "Busser rengjort i nat"
   fr: "Bus nettoyés la nuit dernière"
   ru: "Автобусов убрано прошлой ночью"
   uk: "Автобусів прибрано минулої ночі"
@@ -417,6 +476,7 @@ _version: 2
 "Complaints answered yesterday":
   nl: "Klachten beantwoord gisteren"
   de: "Beschwerden beantwortet gestern"
+  da: "Klager besvaret i går"
   fr: "Réclamations traitées hier"
   ru: "Жалоб обработано вчера"
   uk: "Скарг опрацьовано вчора"
@@ -424,6 +484,7 @@ _version: 2
 "Lines checked today":
   nl: "Lijnen gecontroleerd vandaag"
   de: "Linien kontrolliert heute"
+  da: "Linjer kontrolleret i dag"
   fr: "Lignes contrôlées aujourd'hui"
   ru: "Линии с проверкой сегодня"
   uk: "Лінії з перевіркою сьогодні"
@@ -431,6 +492,7 @@ _version: 2
 "They have not asked for a raise.":
   nl: "Er is niet om opslag gevraagd."
   de: "Um eine Lohnerhöhung wurde nicht gebeten."
+  da: "De har ikke bedt om en lønforhøjelse."
   fr: "Aucune augmentation n'a été demandée."
   ru: "Прибавку не просили."
   uk: "Підвищення не просили."
@@ -438,6 +500,7 @@ _version: 2
 "Ticket inspectors can be hired once the company has researched ticket inspection.":
   nl: "Kaartjescontroleurs kunnen worden aangenomen zodra het bedrijf kaartcontrole heeft onderzocht."
   de: "Fahrkartenkontrolleure können eingestellt werden, sobald das Unternehmen die Fahrkartenkontrolle erforscht hat."
+  da: "Kontrollører kan ansættes, når selskabet har forsket i billetkontrol."
   fr: "Les contrôleurs peuvent être embauchés une fois que l'entreprise a recherché le contrôle des billets."
   ru: "Контролёров можно нанять, когда компания исследует проверку билетов."
   uk: "Контролерів можна найняти, коли компанія дослідить перевірку квитків."
@@ -445,6 +508,7 @@ _version: 2
 "Bus drivers work their duties: plan them on the Planning page.":
   nl: "Buschauffeurs rijden hun diensten: plan ze op de pagina Planning."
   de: "Busfahrer fahren ihre Dienste: plane sie auf der Seite Planung."
+  da: "Buschauffører kører deres vagter: planlæg dem på siden Planlægning."
   fr: "Les conducteurs font leurs services : planifiez-les sur la page Planification."
   ru: "Водители работают по своим сменам: планируйте их на странице «Планирование»."
   uk: "Водії працюють за своїми змінами: плануйте їх на сторінці «Планування»."
@@ -452,6 +516,7 @@ _version: 2
 "The working hours can be set once the company has researched the shift schedule.":
   nl: "De werktijden kun je instellen zodra het bedrijf het dienstrooster heeft onderzocht."
   de: "Die Arbeitszeiten lassen sich einstellen, sobald das Unternehmen den Schichtplan erforscht hat."
+  da: "Arbejdstiderne kan fastsættes, når selskabet har forsket i vagtskemaet."
   fr: "Les horaires de travail se règlent une fois que l'entreprise a recherché le planning des équipes."
   ru: "Рабочее время можно задать, когда компания исследует график смен."
   uk: "Робочий час можна задати, коли компанія дослідить графік змін."
@@ -459,6 +524,7 @@ _version: 2
 "Experience %{n} of 100: Trainee, Novice, Experienced, Expert":
   nl: "Ervaring %{n} van 100: stagiair, beginner, ervaren, expert"
   de: "Erfahrung %{n} von 100: Azubi, Anfänger, erfahren, Experte"
+  da: "Erfaring %{n} af 100: Elev, Begynder, Erfaren, Ekspert"
   fr: "Expérience %{n} sur 100 : stagiaire, débutant, expérimenté, expert"
   ru: "Опыт %{n} из 100: стажёр, новичок, опытный, эксперт"
   uk: "Досвід %{n} із 100: стажер, новачок, досвідчений, експерт"
@@ -466,6 +532,7 @@ _version: 2
 "Nobody works here yet. Every duty of a tour needs a driver; mechanics, cleaners, service employees and ticket inspectors help the company in their own ways. Hire some among the week's applicants.":
   nl: "Er werkt hier nog niemand. Elke dienst van een omloop heeft een chauffeur nodig; monteurs, schoonmakers, servicemedewerkers en kaartjescontroleurs helpen het bedrijf elk op hun eigen manier. Neem er een paar aan uit de sollicitanten van deze week."
   de: "Hier arbeitet noch niemand. Jeder Dienst eines Umlaufs braucht einen Fahrer; Mechaniker, Reinigungskräfte, Servicemitarbeiter und Fahrkartenkontrolleure helfen dem Unternehmen auf ihre Weise. Stelle einige der Bewerber dieser Woche ein."
+  da: "Ingen arbejder her endnu. Hver vagt på et vognløb kræver en chauffør; mekanikere, rengøringsmedarbejdere, servicemedarbejdere og kontrollører hjælper selskabet hver på sin måde. Ansæt nogle blandt ugens ansøgere."
   fr: "Personne ne travaille encore ici. Chaque service d'un roulement a besoin d'un conducteur ; mécaniciens, agents d'entretien, employés du service client et contrôleurs aident l'entreprise chacun à leur manière. Embauchez parmi les candidats de la semaine."
   ru: "Здесь пока никто не работает. Каждой смене оборота нужен водитель; механики, уборщики, сотрудники сервиса и контролёры помогают компании каждый по-своему. Наймите кого-нибудь из кандидатов этой недели."
   uk: "Тут ще ніхто не працює. Кожній зміні обороту потрібен водій; механіки, прибиральники, працівники сервісу й контролери допомагають компанії кожен по-своєму. Найміть когось із кандидатів цього тижня."
@@ -473,6 +540,7 @@ _version: 2
 "Resigned: leaves after %{date}":
   nl: "Ontslag genomen: vertrekt na %{date}"
   de: "Gekündigt: geht nach dem %{date}"
+  da: "Sagt op: forlader efter %{date}"
   fr: "Démission : part après le %{date}"
   ru: "Увольняется сам: уходит после %{date}"
   uk: "Звільняється сам: іде після %{date}"
@@ -480,6 +548,7 @@ _version: 2
 "Experience grows with every day worked.":
   nl: "Ervaring groeit met elke gewerkte dag."
   de: "Die Erfahrung wächst mit jedem Arbeitstag."
+  da: "Erfaring vokser for hver arbejdsdag."
   fr: "L'expérience grandit avec chaque jour travaillé."
   ru: "Опыт растёт с каждым отработанным днём."
   uk: "Досвід зростає з кожним відпрацьованим днем."
@@ -487,6 +556,7 @@ _version: 2
 "Their pay against the market, their stress and their holidays. Under 25 they may leave.":
   nl: "Hun loon tegenover de markt, hun stress en hun vakanties. Onder 25 kunnen ze vertrekken."
   de: "Ihr Lohn im Vergleich zum Markt, ihr Stress und ihr Urlaub. Unter 25 kündigen sie womöglich."
+  da: "Deres løn mod markedet, deres stress og deres ferie. Under 25 kan de forlade selskabet."
   fr: "Leur salaire face au marché, leur stress et leurs congés. Sous 25, ils peuvent partir."
   ru: "Зарплата по сравнению с рынком, стресс и отпуск. Ниже 25 сотрудник может уйти."
   uk: "Зарплата порівняно з ринком, стрес і відпустка. Нижче 25 працівник може піти."
@@ -494,6 +564,7 @@ _version: 2
 "Overtime, nights, short rests and too few colleagues raise it; days off bring it down.":
   nl: "Overuren, nachten, korte rust en te weinig collega's verhogen hem; vrije dagen verlagen hem."
   de: "Überstunden, Nächte, kurze Ruhezeiten und zu wenige Kollegen erhöhen ihn; freie Tage senken ihn."
+  da: "Overtid, nætter, korte hvil og for få kolleger hæver den; fridage sænker den."
   fr: "Heures supplémentaires, nuits, repos courts et trop peu de collègues l'augmentent ; les jours de repos le font baisser."
   ru: "Сверхурочные, ночи, короткий отдых и нехватка коллег повышают его; выходные снижают."
   uk: "Понаднормові, ночі, короткий відпочинок і брак колег підвищують його; вихідні знижують."
@@ -501,6 +572,7 @@ _version: 2
 "Grows with experience and the customer service course, falls with stress. The passengers feel it.":
   nl: "Groeit met ervaring en de cursus klantvriendelijkheid, daalt door stress. De reizigers merken het."
   de: "Wächst mit der Erfahrung und dem Kurs Kundenservice, sinkt mit Stress. Die Fahrgäste spüren es."
+  da: "Vokser med erfaring og kundeservicekurset, falder med stress. Passagererne mærker det."
   fr: "Augmente avec l'expérience et la formation service client, baisse avec le stress. Les passagers le sentent."
   ru: "Растёт с опытом и курсом работы с клиентами, падает от стресса. Пассажиры это чувствуют."
   uk: "Зростає з досвідом і курсом роботи з клієнтами, падає від стресу. Пасажири це відчувають."
@@ -508,6 +580,7 @@ _version: 2
 "Paid by the hour: the night 50 % more, at least four hours a day worked.":
   nl: "Per uur betaald: 's nachts 50 % meer, minstens vier uur per gewerkte dag."
   de: "Stundenlohn: nachts 50 % mehr, mindestens vier Stunden pro Arbeitstag."
+  da: "Betalt pr. time: natten 50 % mere, mindst fire timer om dagen arbejdet."
   fr: "Payé à l'heure : la nuit 50 % de plus, au moins quatre heures par jour travaillé."
   ru: "Почасовая оплата: ночью на 50 % больше, не менее четырёх часов за рабочий день."
   uk: "Погодинна оплата: уночі на 50 % більше, щонайменше чотири години за робочий день."
@@ -515,6 +588,7 @@ _version: 2
 "Asks for %{n} % more, until %{date}":
   nl: "Vraagt %{n} % meer, tot %{date}"
   de: "Will %{n} % mehr, bis %{date}"
+  da: "Beder om %{n} % mere, indtil %{date}"
   fr: "Demande %{n} % de plus, jusqu'au %{date}"
   ru: "Просит на %{n} % больше, до %{date}"
   uk: "Просить на %{n} % більше, до %{date}"
@@ -522,6 +596,7 @@ _version: 2
 "Licences and bus types: the Licences & training tab.":
   nl: "Rijbewijzen en bustypes: het tabblad Rijbewijzen & opleiding."
   de: "Führerscheine und Bustypen: der Reiter Führerscheine & Schulung."
+  da: "Kørekort og bustyper: fanen Kørekort og uddannelse."
   fr: "Permis et types de bus : l'onglet Permis & formation."
   ru: "Права и типы автобусов: вкладка «Права и обучение»."
   uk: "Посвідчення й типи автобусів: вкладка «Посвідчення й навчання»."
@@ -529,6 +604,7 @@ _version: 2
 "New applicants come on %{date}. Every role has its own market: wages around what the market pays for their experience.":
   nl: "Nieuwe sollicitanten komen op %{date}. Elke functie heeft haar eigen markt: lonen rond wat de markt voor hun ervaring betaalt."
   de: "Neue Bewerber kommen am %{date}. Jede Funktion hat ihren eigenen Markt: Löhne um das, was der Markt für ihre Erfahrung zahlt."
+  da: "Nye ansøgere kommer den %{date}. Hver rolle har sit eget marked: lønninger omkring det, markedet betaler for deres erfaring."
   fr: "De nouveaux candidats arrivent le %{date}. Chaque fonction a son propre marché : des salaires proches de ce que le marché paie pour leur expérience."
   ru: "Новые кандидаты придут %{date}. У каждой должности свой рынок: зарплаты около рыночных для их опыта."
   uk: "Нові кандидати прийдуть %{date}. Кожна посада має свій ринок: зарплати близько ринкових для їхнього досвіду."
@@ -536,6 +612,7 @@ _version: 2
 "Nobody else applies for this work this week.":
   nl: "Niemand anders solliciteert deze week op dit werk."
   de: "Diese Woche bewirbt sich sonst niemand für diese Arbeit."
+  da: "Ingen andre søger dette arbejde denne uge."
   fr: "Personne d'autre ne postule pour ce travail cette semaine."
   ru: "На эту работу на этой неделе больше никто не претендует."
   uk: "На цю роботу цього тижня більше ніхто не претендує."
@@ -543,6 +620,7 @@ _version: 2
 "During the core hours all of them who work that day are there.":
   nl: "Tijdens de kerntijden zijn allen die die dag werken aanwezig."
   de: "Während der Kernzeiten sind alle da, die an dem Tag arbeiten."
+  da: "I kernetiden er alle, der arbejder den dag, der."
   fr: "Pendant les heures de base, tous ceux qui travaillent ce jour-là sont présents."
   ru: "В основные часы на месте все, кто работает в этот день."
   uk: "В основні години на місці всі, хто працює того дня."
@@ -550,6 +628,7 @@ _version: 2
 "Present outside the core hours":
   nl: "Aanwezig buiten de kerntijden"
   de: "Anwesend außerhalb der Kernzeiten"
+  da: "Til stede uden for kernetiden"
   fr: "Présents en dehors des heures de base"
   ru: "На месте вне основных часов"
   uk: "На місці поза основними годинами"
@@ -557,6 +636,7 @@ _version: 2
 "The least stressed stay on after the core hours, in turns: nobody works more than 12 hours a day.":
   nl: "De minst gestresten blijven na de kerntijden, om beurten: niemand werkt meer dan 12 uur per dag."
   de: "Die am wenigsten Gestressten bleiben nach den Kernzeiten, abwechselnd: niemand arbeitet mehr als 12 Stunden am Tag."
+  da: "De mindst stressede bliver efter kernetiden på skift: ingen arbejder mere end 12 timer om dagen."
   fr: "Les moins stressés restent après les heures de base, à tour de rôle : personne ne travaille plus de 12 heures par jour."
   ru: "После основных часов по очереди остаются те, у кого меньше всего стресса: никто не работает больше 12 часов в день."
   uk: "Після основних годин по черзі лишаються ті, у кого найменше стресу: ніхто не працює понад 12 годин на день."
@@ -564,6 +644,7 @@ _version: 2
 "Between 20:00 and 06:00 they are paid 50 % more (night supplement).":
   nl: "Tussen 20:00 en 06:00 krijgen ze 50 % meer betaald (nachttoeslag)."
   de: "Zwischen 20:00 und 06:00 bekommen sie 50 % mehr (Nachtzuschlag)."
+  da: "Mellem 20:00 og 06:00 får de 50 % mere (nattillæg)."
   fr: "Entre 20:00 et 06:00, ils sont payés 50 % de plus (majoration de nuit)."
   ru: "С 20:00 до 06:00 им платят на 50 % больше (ночная надбавка)."
   uk: "З 20:00 до 06:00 їм платять на 50 % більше (нічна надбавка)."
@@ -571,6 +652,7 @@ _version: 2
 "Everyone is paid for at least 4 hours on a day they work: core hours shorter than that are not worth it.":
   nl: "Iedereen krijgt op een werkdag minstens 4 uur betaald: kortere kerntijden lonen niet."
   de: "Jeder bekommt an einem Arbeitstag mindestens 4 Stunden bezahlt: kürzere Kernzeiten lohnen sich nicht."
+  da: "Alle får betaling for mindst 4 timer på en dag, de arbejder: en kortere kernetid er ikke umagen værd."
   fr: "Chacun est payé au moins 4 heures par jour travaillé : des heures de base plus courtes ne valent pas la peine."
   ru: "За рабочий день каждому платят минимум 4 часа: более короткие основные часы не окупаются."
   uk: "За робочий день кожному платять щонайменше 4 години: коротші основні години не окупаються."
@@ -578,6 +660,7 @@ _version: 2
 "Each works five days a week; their days off follow one another round the week.":
   nl: "Ieder werkt vijf dagen per week; de vrije dagen schuiven door de week."
   de: "Jeder arbeitet fünf Tage pro Woche; die freien Tage wechseln über die Woche."
+  da: "Hver arbejder fem dage om ugen; deres fridage følger efter hinanden rundt om ugen."
   fr: "Chacun travaille cinq jours par semaine ; les jours de repos tournent sur la semaine."
   ru: "Каждый работает пять дней в неделю; выходные чередуются по неделе."
   uk: "Кожен працює п'ять днів на тиждень; вихідні чергуються протягом тижня."
@@ -585,6 +668,7 @@ _version: 2
 "Hire automatically to keep a minimum of each role":
   nl: "Automatisch aannemen om een minimum per functie te houden"
   de: "Automatisch einstellen, um ein Minimum je Funktion zu halten"
+  da: "Ansæt automatisk for at holde et minimum af hver rolle"
   fr: "Embaucher automatiquement pour garder un minimum par fonction"
   ru: "Нанимать автоматически, чтобы держать минимум по каждой должности"
   uk: "Наймати автоматично, щоб тримати мінімум на кожній посаді"
@@ -592,6 +676,7 @@ _version: 2
 "At night the best applicant of the week is hired for a role that has fewer than its minimum - one a night for each role, while the cash allows.":
   nl: "'s Nachts wordt voor een functie onder haar minimum de beste sollicitant van de week aangenomen - één per nacht per functie, zolang de kas het toelaat."
   de: "Nachts wird für eine Funktion unter ihrem Minimum der beste Bewerber der Woche eingestellt - einer pro Nacht und Funktion, solange die Kasse reicht."
+  da: "Om natten ansættes ugens bedste ansøger til en rolle, der har færre end sit minimum - en pr. nat for hver rolle, så længe kontanterne rækker."
   fr: "La nuit, le meilleur candidat de la semaine est embauché pour une fonction sous son minimum - un par nuit et par fonction, tant que la trésorerie le permet."
   ru: "Ночью для должности ниже минимума нанимается лучший кандидат недели - один за ночь на каждую должность, пока хватает денег."
   uk: "Уночі для посади, нижчої за мінімум, наймається найкращий кандидат тижня - один за ніч на кожну посаду, поки вистачає грошей."
@@ -599,6 +684,7 @@ _version: 2
 "Wages rise with the prices at every month's end":
   nl: "Lonen stijgen aan het eind van elke maand mee met de prijzen"
   de: "Löhne steigen am Ende jedes Monats mit den Preisen"
+  da: "Lønningerne stiger med priserne ved hver måneds slutning"
   fr: "Les salaires suivent les prix à chaque fin de mois"
   ru: "Зарплаты растут вместе с ценами в конце каждого месяца"
   uk: "Зарплати зростають разом із цінами наприкінці кожного місяця"
@@ -606,6 +692,7 @@ _version: 2
 "Satisfaction follows a wage against what the market pays, and the market rises with the prices: without this, everyone earns a little less each month.":
   nl: "Tevredenheid volgt het loon tegenover wat de markt betaalt, en de markt stijgt met de prijzen: zonder dit verdient iedereen elke maand iets minder."
   de: "Die Zufriedenheit folgt dem Lohn im Vergleich zum Markt, und der Markt steigt mit den Preisen: ohne dies verdient jeder jeden Monat etwas weniger."
+  da: "Tilfredshed følger en løn mod, hvad markedet betaler, og markedet stiger med priserne: uden dette tjener alle lidt mindre hver måned."
   fr: "La satisfaction suit le salaire face au marché, et le marché monte avec les prix : sans cela, chacun gagne un peu moins chaque mois."
   ru: "Удовлетворённость зависит от зарплаты относительно рынка, а рынок растёт вместе с ценами: без этого каждый месяц все зарабатывают чуть меньше."
   uk: "Задоволення залежить від зарплати щодо ринку, а ринок зростає разом із цінами: без цього щомісяця всі заробляють трохи менше."
@@ -613,6 +700,7 @@ _version: 2
 "Grant requests for a raise of up to 5 % without asking":
   nl: "Verzoeken om opslag tot 5 % zonder vragen toekennen"
   de: "Wünsche nach Lohnerhöhung bis 5 % ohne Rückfrage gewähren"
+  da: "Bevilg anmodninger om forhøjelse på op til 5 % uden at spørge"
   fr: "Accorder sans demander les augmentations jusqu'à 5 %"
   ru: "Без вопросов давать прибавку до 5 %"
   uk: "Без запитань давати підвищення до 5 %"
@@ -620,6 +708,7 @@ _version: 2
 "Someone who earns less than the market and is not satisfied asks for a raise now and then. Larger requests wait for your answer on their card; no answer within a week is a no.":
   nl: "Wie minder verdient dan de markt en niet tevreden is, vraagt af en toe om opslag. Grotere verzoeken wachten op jouw antwoord op hun kaart; geen antwoord binnen een week is een nee."
   de: "Wer weniger als der Markt verdient und nicht zufrieden ist, bittet ab und zu um mehr Lohn. Größere Wünsche warten auf ihrer Karte auf deine Antwort; keine Antwort binnen einer Woche ist ein Nein."
+  da: "Den, der tjener mindre end markedet og ikke er tilfreds, beder en gang imellem om en forhøjelse. Større anmodninger venter på dit svar på deres kort; intet svar inden for en uge er et nej."
   fr: "Qui gagne moins que le marché et n'est pas satisfait demande de temps en temps une augmentation. Les demandes plus fortes attendent votre réponse sur leur fiche ; sans réponse sous une semaine, c'est non."
   ru: "Тот, кто получает меньше рынка и недоволен, время от времени просит прибавку. Крупные просьбы ждут вашего ответа на карточке; нет ответа за неделю - значит, нет."
   uk: "Хто заробляє менше за ринок і незадоволений, час від часу просить підвищення. Більші прохання чекають вашої відповіді на картці; немає відповіді за тиждень - отже, ні."
@@ -628,6 +717,7 @@ _version: 2
 "%{name} is worn out":
   nl: "%{name} is uitgeput"
   de: "%{name} ist erschöpft"
+  da: "%{name} er udmattet"
   fr: "%{name} est à bout"
   ru: "%{name}: сильное выгорание"
   uk: "%{name}: сильне вигорання"
@@ -635,6 +725,7 @@ _version: 2
 "%{name} is badly stressed. Overtime, nights, short rests and too few colleagues wear people out: they fall ill more often and are less friendly. Days off and more colleagues help.":
   nl: "%{name} heeft veel stress. Overuren, nachten, korte rust en te weinig collega's putten mensen uit: ze worden vaker ziek en zijn minder vriendelijk. Vrije dagen en meer collega's helpen."
   de: "%{name} ist stark gestresst. Überstunden, Nächte, kurze Ruhezeiten und zu wenige Kollegen zehren an den Leuten: Sie werden öfter krank und sind weniger freundlich. Freie Tage und mehr Kollegen helfen."
+  da: "%{name} er stærkt stresset. Overtid, nætter, korte hvil og for få kolleger sliter folk ned: de bliver oftere syge og er mindre venlige. Fridage og flere kolleger hjælper."
   fr: "%{name} est très stressé(e). Heures supplémentaires, nuits, repos courts et trop peu de collègues épuisent les gens : ils tombent plus souvent malades et sont moins aimables. Des jours de repos et plus de collègues aident."
   ru: "У сотрудника %{name} сильный стресс. Сверхурочные, ночи, короткий отдых и нехватка коллег изматывают людей: они чаще болеют и менее приветливы. Помогут выходные и больше коллег."
   uk: "У працівника %{name} сильний стрес. Понаднормові, ночі, короткий відпочинок і брак колег виснажують людей: вони частіше хворіють і менш привітні. Допоможуть вихідні та більше колег."
@@ -642,6 +733,7 @@ _version: 2
 "No answer for %{name}":
   nl: "Geen antwoord voor %{name}"
   de: "Keine Antwort für %{name}"
+  da: "Intet svar til %{name}"
   fr: "Pas de réponse pour %{name}"
   ru: "Нет ответа для %{name}"
   uk: "Немає відповіді для %{name}"
@@ -649,6 +741,7 @@ _version: 2
 "%{name} asked for a raise and heard nothing back: they take it as a no, and are less satisfied.":
   nl: "%{name} vroeg om opslag en hoorde niets terug: dat geldt als een nee, en de tevredenheid daalt."
   de: "%{name} hat um mehr Lohn gebeten und nichts gehört: Das gilt als Nein, und die Zufriedenheit sinkt."
+  da: "%{name} bad om en forhøjelse og hørte intet: de opfatter det som et nej og er mindre tilfredse."
   fr: "%{name} a demandé une augmentation sans réponse : c'est un non, et sa satisfaction baisse."
   ru: "%{name} просил(а) прибавку и не получил(а) ответа: это считается отказом, удовлетворённость падает."
   uk: "%{name} просив(-ла) підвищення й не отримав(-ла) відповіді: це вважається відмовою, задоволення падає."
@@ -656,6 +749,7 @@ _version: 2
 "%{name} got a raise":
   nl: "%{name} kreeg opslag"
   de: "%{name} hat mehr Lohn bekommen"
+  da: "%{name} fik en forhøjelse"
   fr: "%{name} a été augmenté(e)"
   ru: "%{name}: прибавка получена"
   uk: "%{name}: підвищення отримано"
@@ -663,6 +757,7 @@ _version: 2
 "%{name} asked for %{n} % more pay, and got it: raises of up to 5 % are granted without asking (the Staff page's settings).":
   nl: "%{name} vroeg %{n} % meer loon en kreeg het: opslag tot 5 % wordt zonder vragen toegekend (instellingen van de pagina Personeel)."
   de: "%{name} wollte %{n} % mehr Lohn und hat ihn bekommen: Erhöhungen bis 5 % werden ohne Rückfrage gewährt (Einstellungen der Seite Personal)."
+  da: "%{name} bad om %{n} % mere i løn og fik det: forhøjelser på op til 5 % bevilges uden at spørge (personalesidens indstillinger)."
   fr: "%{name} a demandé %{n} % de plus et l'a obtenu : les augmentations jusqu'à 5 % sont accordées sans demander (réglages de la page Personnel)."
   ru: "%{name} попросил(а) на %{n} % больше и получил(а): прибавки до 5 % даются без вопросов (настройки страницы «Персонал»)."
   uk: "%{name} попросив(-ла) на %{n} % більше й отримав(-ла): підвищення до 5 % даються без запитань (налаштування сторінки «Персонал»)."
@@ -670,6 +765,7 @@ _version: 2
 "%{name} asks for a raise":
   nl: "%{name} vraagt opslag"
   de: "%{name} bittet um mehr Lohn"
+  da: "%{name} beder om en forhøjelse"
   fr: "%{name} demande une augmentation"
   ru: "%{name} просит прибавку"
   uk: "%{name} просить підвищення"
@@ -677,6 +773,7 @@ _version: 2
 "%{name} asks for %{n} % more pay: they earn less than the market pays for their experience. Answer on the Staff page within a week; no answer is a no.":
   nl: "%{name} vraagt %{n} % meer loon: dat is minder dan de markt voor die ervaring betaalt. Antwoord binnen een week op de pagina Personeel; geen antwoord is een nee."
   de: "%{name} bittet um %{n} % mehr Lohn: weniger, als der Markt für diese Erfahrung zahlt. Antworte innerhalb einer Woche auf der Seite Personal; keine Antwort ist ein Nein."
+  da: "%{name} beder om %{n} % mere i løn: de tjener mindre, end markedet betaler for deres erfaring. Svar på personalesiden inden for en uge; intet svar er et nej."
   fr: "%{name} demande %{n} % de plus : son salaire est inférieur à ce que le marché paie pour son expérience. Répondez sous une semaine sur la page Personnel ; sans réponse, c'est non."
   ru: "%{name} просит на %{n} % больше: это меньше, чем рынок платит за такой опыт. Ответьте на странице «Персонал» в течение недели; нет ответа - значит, нет."
   uk: "%{name} просить на %{n} % більше: це менше, ніж ринок платить за такий досвід. Дайте відповідь на сторінці «Персонал» протягом тижня; немає відповіді - отже, ні."
@@ -684,6 +781,7 @@ _version: 2
 "%{name} was hired":
   nl: "%{name} is aangenomen"
   de: "%{name} wurde eingestellt"
+  da: "%{name} blev ansat"
   fr: "%{name} a été embauché(e)"
   ru: "%{name} принят(а) на работу"
   uk: "%{name} прийнято на роботу"
@@ -691,6 +789,7 @@ _version: 2
 "%{name} starts tomorrow: the automatic hiring keeps the minimum you set for their role (the Staff page's settings).":
   nl: "%{name} begint morgen: het automatisch aannemen houdt het minimum dat je voor de functie instelde (instellingen van de pagina Personeel)."
   de: "%{name} fängt morgen an: Das automatische Einstellen hält das Minimum, das du für die Funktion festgelegt hast (Einstellungen der Seite Personal)."
+  da: "%{name} starter i morgen: den automatiske ansættelse holder det minimum, du har fastsat for deres rolle (personalesidens indstillinger)."
   fr: "%{name} commence demain : l'embauche automatique maintient le minimum fixé pour sa fonction (réglages de la page Personnel)."
   ru: "%{name} начинает завтра: автоматический наём держит минимум, заданный для должности (настройки страницы «Персонал»)."
   uk: "%{name} починає завтра: автоматичний найм тримає мінімум, заданий для посади (налаштування сторінки «Персонал»)."
@@ -698,6 +797,7 @@ _version: 2
 "The workshop is short of mechanics":
   nl: "De werkplaats heeft te weinig monteurs"
   de: "Der Werkstatt fehlen Mechaniker"
+  da: "Værkstedet mangler mekanikere"
   fr: "L'atelier manque de mécaniciens"
   ru: "В мастерской не хватает механиков"
   uk: "У майстерні бракує механіків"
@@ -705,6 +805,7 @@ _version: 2
 "Your mechanics cannot keep up with the fleet: more of the maintenance and repairs go to an outside garage, and they are under stress. Hire mechanics, or let them work longer hours.":
   nl: "Je monteurs kunnen de vloot niet bijhouden: meer onderhoud en reparaties gaan naar een externe garage, en ze staan onder stress. Neem monteurs aan of laat ze langer werken."
   de: "Deine Mechaniker kommen mit der Flotte nicht nach: Mehr Wartung und Reparaturen gehen an eine fremde Werkstatt, und sie stehen unter Stress. Stelle Mechaniker ein oder lass sie länger arbeiten."
+  da: "Dine mekanikere kan ikke følge med flåden: mere af vedligeholdelsen og reparationerne går til et eksternt værksted, og de er stressede. Ansæt mekanikere, eller lad dem arbejde flere timer."
   fr: "Vos mécaniciens ne suivent pas la flotte : davantage d'entretien et de réparations partent dans un garage extérieur, et ils sont stressés. Embauchez des mécaniciens ou allongez leurs horaires."
   ru: "Ваши механики не успевают за парком: больше обслуживания и ремонта уходит в стороннюю мастерскую, а они в стрессе. Наймите механиков или продлите их рабочие часы."
   uk: "Ваші механіки не встигають за парком: більше обслуговування й ремонту йде до сторонньої майстерні, а вони в стресі. Найміть механіків або подовжте їхні робочі години."
@@ -712,6 +813,7 @@ _version: 2
 "The buses are not cleaned enough":
   nl: "De bussen worden niet genoeg schoongemaakt"
   de: "Die Busse werden nicht genug gereinigt"
+  da: "Busserne rengøres ikke nok"
   fr: "Les bus ne sont pas assez nettoyés"
   ru: "Автобусы недостаточно чистые"
   uk: "Автобуси недостатньо чисті"
@@ -719,6 +821,7 @@ _version: 2
 "Your cleaners cannot keep up with the fleet: the passengers notice dirty buses. Hire cleaners, or let them work at night, when the buses are in.":
   nl: "Je schoonmakers kunnen de vloot niet bijhouden: reizigers merken vieze bussen op. Neem schoonmakers aan of laat ze 's nachts werken, als de bussen binnen staan."
   de: "Deine Reinigungskräfte kommen mit der Flotte nicht nach: Die Fahrgäste bemerken schmutzige Busse. Stelle Reinigungskräfte ein oder lass sie nachts arbeiten, wenn die Busse im Depot stehen."
+  da: "Dine rengøringsmedarbejdere kan ikke følge med flåden: passagererne lægger mærke til beskidte busser. Ansæt rengøringsmedarbejdere, eller lad dem arbejde om natten, når busserne er inde."
   fr: "Vos agents d'entretien ne suivent pas la flotte : les passagers remarquent les bus sales. Embauchez-en ou faites-les travailler la nuit, quand les bus sont rentrés."
   ru: "Уборщики не успевают за парком: пассажиры замечают грязные автобусы. Наймите уборщиков или дайте им работать ночью, когда автобусы в депо."
   uk: "Прибиральники не встигають за парком: пасажири помічають брудні автобуси. Найміть прибиральників або дайте їм працювати вночі, коли автобуси в депо."
@@ -726,6 +829,7 @@ _version: 2
 "The service centre is overrun":
   nl: "Het servicecentrum loopt over"
   de: "Das Servicecenter ist überlastet"
+  da: "Servicecentret er overvældet"
   fr: "Le centre de service est débordé"
   ru: "Сервисный центр перегружен"
   uk: "Сервісний центр перевантажений"
@@ -733,6 +837,7 @@ _version: 2
 "Too few service employees for your passengers: complaints go unanswered and they are under stress. Hire service employees.":
   nl: "Te weinig servicemedewerkers voor je reizigers: klachten blijven liggen en zij staan onder stress. Neem servicemedewerkers aan."
   de: "Zu wenige Servicemitarbeiter für deine Fahrgäste: Beschwerden bleiben liegen, und sie stehen unter Stress. Stelle Servicemitarbeiter ein."
+  da: "For få servicemedarbejdere til dine passagerer: klager forbliver ubesvarede, og de er stressede. Ansæt servicemedarbejdere."
   fr: "Trop peu d'employés du service client pour vos passagers : les réclamations restent sans réponse et ils sont stressés. Embauchez-en."
   ru: "Слишком мало сотрудников сервиса для ваших пассажиров: жалобы остаются без ответа, а они в стрессе. Наймите сотрудников сервиса."
   uk: "Замало працівників сервісу для ваших пасажирів: скарги лишаються без відповіді, а вони в стресі. Найміть працівників сервісу."
@@ -740,6 +845,7 @@ _version: 2
 "%{name} thinks of leaving":
   nl: "%{name} denkt aan vertrekken"
   de: "%{name} denkt ans Kündigen"
+  da: "%{name} overvejer at holde op"
   fr: "%{name} pense à partir"
   ru: "%{name} думает об уходе"
   uk: "%{name} думає про звільнення"
@@ -747,6 +853,7 @@ _version: 2
 "%{name} is unhappy here: their pay, their hours or their stress. Under 25 they may hand in their notice. A raise, fewer hours or a few days off may keep them.":
   nl: "%{name} is hier ontevreden: het loon, de uren of de stress. Onder 25 kan het ontslag volgen. Opslag, minder uren of een paar vrije dagen kunnen helpen."
   de: "%{name} ist hier unzufrieden: mit dem Lohn, den Stunden oder dem Stress. Unter 25 kann die Kündigung kommen. Mehr Lohn, weniger Stunden oder ein paar freie Tage können helfen."
+  da: "%{name} er ikke glad her: deres løn, deres timer eller deres stress. Under 25 kan de sige op. En forhøjelse, færre timer eller nogle fridage kan holde på dem."
   fr: "%{name} n'est pas heureux(se) ici : salaire, horaires ou stress. Sous 25, une démission peut suivre. Une augmentation, moins d'heures ou quelques jours de repos peuvent aider."
   ru: "%{name} недоволен(-льна): зарплата, часы или стресс. Ниже 25 возможно увольнение. Удержать могут прибавка, меньше часов или несколько выходных."
   uk: "%{name} незадоволений(-на): зарплата, години чи стрес. Нижче 25 можливе звільнення. Утримати можуть підвищення, менше годин або кілька вихідних."
@@ -754,6 +861,7 @@ _version: 2
 "%{name} is ill for a long time":
   nl: "%{name} is langdurig ziek"
   de: "%{name} ist länger krank"
+  da: "%{name} er syg i lang tid"
   fr: "%{name} est malade pour longtemps"
   ru: "%{name} надолго заболел(а)"
   uk: "%{name} надовго захворів(-ла)"
@@ -761,6 +869,7 @@ _version: 2
 "%{name} is ill for %{n} days. Their work waits or falls to the others.":
   nl: "%{name} is %{n} dagen ziek. Het werk blijft liggen of valt op de anderen."
   de: "%{name} ist %{n} Tage krank. Die Arbeit bleibt liegen oder fällt den anderen zu."
+  da: "%{name} er syg i %{n} dage. Deres arbejde venter eller falder på de andre."
   fr: "%{name} est malade pour %{n} jours. Son travail attend ou retombe sur les autres."
   ru: "%{name} болеет %{n} дн. Работа ждёт или ложится на других."
   uk: "%{name} хворіє %{n} дн. Робота чекає або лягає на інших."
@@ -768,6 +877,7 @@ _version: 2
 "%{name} has resigned":
   nl: "%{name} heeft ontslag genomen"
   de: "%{name} hat gekündigt"
+  da: "%{name} har sagt op"
   fr: "%{name} a démissionné"
   ru: "%{name} увольняется"
   uk: "%{name} звільняється"
@@ -775,6 +885,7 @@ _version: 2
 "%{name} has handed in their notice and leaves in two weeks. A resignation cannot be taken back; the week's applicants are on the Staff page.":
   nl: "%{name} heeft ontslag genomen en vertrekt over twee weken. Een ontslag kan niet worden teruggedraaid; de sollicitanten van deze week staan op de pagina Personeel."
   de: "%{name} hat gekündigt und geht in zwei Wochen. Eine Kündigung lässt sich nicht zurücknehmen; die Bewerber der Woche stehen auf der Seite Personal."
+  da: "%{name} har indgivet sin opsigelse og forlader selskabet om to uger. En opsigelse kan ikke tages tilbage; ugens ansøgere er på personalesiden."
   fr: "%{name} a donné sa démission et part dans deux semaines. Une démission ne se reprend pas ; les candidats de la semaine sont sur la page Personnel."
   ru: "%{name} подал(а) заявление и уходит через две недели. Увольнение по собственному желанию не отменить; кандидаты недели - на странице «Персонал»."
   uk: "%{name} подав(-ла) заяву й іде через два тижні. Звільнення за власним бажанням не скасувати; кандидати тижня - на сторінці «Персонал»."
@@ -784,6 +895,7 @@ _version: 2
 "Job adverts":
   nl: "Personeelsadvertenties"
   de: "Stellenanzeigen"
+  da: "Jobopslag"
   fr: "Offres d'emploi"
   ru: "Объявления о вакансиях"
   uk: "Оголошення про вакансії"
@@ -791,6 +903,7 @@ _version: 2
 "Advertise for new applicants":
   nl: "Adverteren voor nieuwe sollicitanten"
   de: "Neue Bewerber per Anzeige suchen"
+  da: "Slå nye stillinger op"
   fr: "Publier une offre pour de nouveaux candidats"
   ru: "Дать объявление о новых кандидатах"
   uk: "Дати оголошення про нових кандидатів"
@@ -798,6 +911,7 @@ _version: 2
 "A job advert costs %{amount}: the applicants who are left make way for new ones at once.":
   nl: "Een advertentie kost %{amount}: de sollicitanten die over zijn maken meteen plaats voor nieuwe."
   de: "Eine Stellenanzeige kostet %{amount}: Die übrigen Bewerber machen sofort Platz für neue."
+  da: "Et jobopslag koster %{amount}: de ansøgere, der er tilbage, viger straks pladsen for nye."
   fr: "Une offre d'emploi coûte %{amount} : les candidats restants laissent aussitôt la place à de nouveaux."
   ru: "Объявление стоит %{amount}: оставшиеся кандидаты сразу уступают место новым."
   uk: "Оголошення коштує %{amount}: решта кандидатів одразу поступаються місцем новим."
@@ -805,6 +919,7 @@ _version: 2
 "A job advert is free: the applicants who are left make way for new ones at once.":
   nl: "Een advertentie is gratis: de sollicitanten die over zijn maken meteen plaats voor nieuwe."
   de: "Eine Stellenanzeige ist kostenlos: Die übrigen Bewerber machen sofort Platz für neue."
+  da: "Et jobopslag er gratis: de ansøgere, der er tilbage, viger straks pladsen for nye."
   fr: "Une offre d'emploi est gratuite : les candidats restants laissent aussitôt la place à de nouveaux."
   ru: "Объявление бесплатно: оставшиеся кандидаты сразу уступают место новым."
   uk: "Оголошення безкоштовне: решта кандидатів одразу поступаються місцем новим."
@@ -812,6 +927,7 @@ _version: 2
 "Job adverts this week: %{n}":
   nl: "Advertenties deze week: %{n}"
   de: "Stellenanzeigen diese Woche: %{n}"
+  da: "Jobopslag denne uge: %{n}"
   fr: "Offres d'emploi cette semaine : %{n}"
   ru: "Объявлений на этой неделе: %{n}"
   uk: "Оголошень цього тижня: %{n}"
@@ -819,6 +935,7 @@ _version: 2
 "Nobody is left to hire for this work this week. A job advert brings new applicants at once.":
   nl: "Er is deze week niemand meer om voor dit werk aan te nemen. Een advertentie brengt meteen nieuwe sollicitanten."
   de: "Für diese Arbeit ist diese Woche niemand mehr einzustellen. Eine Stellenanzeige bringt sofort neue Bewerber."
+  da: "Ingen er tilbage at ansætte til dette arbejde denne uge. Et jobopslag giver nye ansøgere med det samme."
   fr: "Plus personne à embaucher pour ce travail cette semaine. Une offre d'emploi amène aussitôt de nouveaux candidats."
   ru: "На эту работу на этой неделе больше некого нанять. Объявление сразу приведёт новых кандидатов."
   uk: "На цю роботу цього тижня більше нікого найняти. Оголошення одразу приведе нових кандидатів."
@@ -826,6 +943,7 @@ _version: 2
 "%{n} new applicants answered the job advert.":
   nl: "%{n} nieuwe sollicitanten reageerden op de advertentie."
   de: "%{n} neue Bewerber haben auf die Anzeige geantwortet."
+  da: "%{n} nye ansøgere svarede på jobopslaget."
   fr: "%{n} nouveaux candidats ont répondu à l'offre."
   ru: "На объявление откликнулись новые кандидаты: %{n}."
   uk: "На оголошення відгукнулися нові кандидати: %{n}."
@@ -833,6 +951,7 @@ _version: 2
 "Not enough cash for a job advert.":
   nl: "Niet genoeg geld voor een advertentie."
   de: "Nicht genug Geld für eine Stellenanzeige."
+  da: "Ikke kontanter nok til et jobopslag."
   fr: "Pas assez d'argent pour une offre d'emploi."
   ru: "Недостаточно денег для объявления."
   uk: "Недостатньо грошей для оголошення."
@@ -840,6 +959,7 @@ _version: 2
 "New applicants: %{role}":
   nl: "Nieuwe sollicitanten: %{role}"
   de: "Neue Bewerber: %{role}"
+  da: "Nye ansøgere: %{role}"
   fr: "Nouveaux candidats : %{role}"
   ru: "Новые кандидаты: %{role}"
   uk: "Нові кандидати: %{role}"
@@ -847,6 +967,7 @@ _version: 2
 "%{n} people answered your job advert. They are on the Staff page this week.":
   nl: "%{n} mensen reageerden op je advertentie. Ze staan deze week op de pagina Personeel."
   de: "%{n} Personen haben auf deine Stellenanzeige geantwortet. Sie stehen diese Woche auf der Seite Personal."
+  da: "%{n} personer svarede på dit jobopslag. De er på personalesiden denne uge."
   fr: "%{n} personnes ont répondu à votre offre. Elles sont sur la page Personnel cette semaine."
   ru: "На ваше объявление откликнулись: %{n}. Они на странице «Персонал» на этой неделе."
   uk: "На ваше оголошення відгукнулися: %{n}. Вони на сторінці «Персонал» цього тижня."

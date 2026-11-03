@@ -4,6 +4,7 @@ _version: 2
 # as in app.yml.
 "Buses and their running":
   de: "Busse und ihr Betrieb"
+  da: "Busser og deres drift"
   fr: "Les bus et leur exploitation"
   nl: "Bussen en hun inzet"
   pl: "Autobusy i ich eksploatacja"
@@ -11,6 +12,7 @@ _version: 2
   uk: "Автобуси та їх експлуатація"
 "Bus upgrades":
   de: "Busausstattung"
+  da: "Busopgraderinger"
   fr: "Équipements des bus"
   nl: "Busuitrusting"
   pl: "Wyposażenie autobusów"
@@ -18,6 +20,7 @@ _version: 2
   uk: "Оснащення автобусів"
 "Passenger satisfaction":
   de: "Zufriedenheit der Fahrgäste"
+  da: "Passagertilfredshed"
   fr: "Satisfaction des voyageurs"
   nl: "Tevredenheid van de reizigers"
   pl: "Zadowolenie pasażerów"
@@ -25,6 +28,7 @@ _version: 2
   uk: "Задоволеність пасажирів"
 "Company premises":
   de: "Betriebsgelände"
+  da: "Selskabets lokaler"
   fr: "Terrains de l'entreprise"
   nl: "Bedrijfsterrein"
   pl: "Teren firmy"
@@ -32,6 +36,7 @@ _version: 2
   uk: "Територія підприємства"
 "Staff and their work":
   de: "Personal und seine Arbeit"
+  da: "Personale og deres arbejde"
   fr: "Le personnel et son travail"
   nl: "Personeel en hun werk"
   pl: "Personel i jego praca"
@@ -39,6 +44,7 @@ _version: 2
   uk: "Персонал і його робота"
 "Workshop and spare parts":
   de: "Werkstatt und Ersatzteile"
+  da: "Værksted og reservedele"
   fr: "Atelier et pièces détachées"
   nl: "Werkplaats en reserveonderdelen"
   pl: "Warsztat i części zamienne"
@@ -46,6 +52,7 @@ _version: 2
   uk: "Майстерня та запчастини"
 "Expand the area of operation":
   de: "Bediengebiet erweitern"
+  da: "Udvid driftsområdet"
   fr: "Étendre la zone desservie"
   nl: "Het werkgebied uitbreiden"
   pl: "Rozszerzenie obszaru działania"
@@ -53,6 +60,7 @@ _version: 2
   uk: "Розширення зони обслуговування"
 "Additional tools":
   de: "Zusätzliche Werkzeuge"
+  da: "Yderligere værktøjer"
   fr: "Outils supplémentaires"
   nl: "Extra hulpmiddelen"
   pl: "Dodatkowe narzędzia"
@@ -60,6 +68,7 @@ _version: 2
   uk: "Додаткові інструменти"
 "Your dealers sell you articulated buses: 18 metres, half as many places again as a solo bus.":
   de: "Ihre Händler verkaufen Ihnen Gelenkbusse: 18 Meter, anderthalbmal so viele Plätze wie ein Solobus."
+  da: "Dine forhandlere sælger dig ledbusser: 18 meter, halvanden gang så mange pladser som en solobus."
   fr: "Vos concessionnaires vous vendent des bus articulés : 18 mètres, moitié plus de places qu'un bus standard."
   nl: "Je dealers verkopen je gelede bussen: 18 meter, de helft meer plaatsen dan een solobus."
   pl: "Dealerzy sprzedają Ci autobusy przegubowe: 18 metrów, o połowę więcej miejsc niż autobus solo."
@@ -67,6 +76,7 @@ _version: 2
   uk: "Дилери продають вам зчленовані автобуси: 18 метрів, у півтора раза більше місць, ніж в одиночного автобуса."
 "Your dealers sell you double-deckers: many seats on the footprint of a solo bus.":
   de: "Ihre Händler verkaufen Ihnen Doppeldecker: viele Sitzplätze auf der Fläche eines Solobusses."
+  da: "Dine forhandlere sælger dig dobbeltdækkere: mange siddepladser på en solobus' grundflade."
   fr: "Vos concessionnaires vous vendent des bus à impériale : beaucoup de places assises sur l'emprise d'un bus standard."
   nl: "Je dealers verkopen je dubbeldekkers: veel zitplaatsen op de oppervlakte van een solobus."
   pl: "Dealerzy sprzedają Ci autobusy piętrowe: wiele miejsc siedzących na powierzchni autobusu solo."
@@ -74,6 +84,7 @@ _version: 2
   uk: "Дилери продають вам двоповерхові автобуси: багато сидячих місць на площі одиночного автобуса."
 "Reduce fuel consumption":
   de: "Kraftstoffverbrauch senken"
+  da: "Reducér brændstofforbruget"
   fr: "Réduire la consommation"
   nl: "Brandstofverbruik verlagen"
   pl: "Mniejsze zużycie paliwa"
@@ -81,6 +92,7 @@ _version: 2
   uk: "Зниження витрати палива"
 "Each stage: the buses use 2 % less diesel and power.":
   de: "Je Stufe: Die Busse verbrauchen 2 % weniger Diesel und Strom."
+  da: "Hvert trin: busserne bruger 2 % mindre diesel og strøm."
   fr: "Chaque étape : les bus consomment 2 % de gazole et d'électricité en moins."
   nl: "Per fase: de bussen gebruiken 2 % minder diesel en stroom."
   pl: "Każdy etap: autobusy zużywają o 2 % mniej oleju napędowego i prądu."
@@ -88,6 +100,7 @@ _version: 2
   uk: "Кожен етап: автобуси витрачають на 2 % менше дизеля та електроенергії."
 "Reduce dirt on the buses":
   de: "Weniger Schmutz an den Bussen"
+  da: "Reducér snavs på busserne"
   fr: "Moins de saleté sur les bus"
   nl: "Minder vuil op de bussen"
   pl: "Mniej brudu na autobusach"
@@ -95,6 +108,7 @@ _version: 2
   uk: "Менше бруду на автобусах"
 "Each stage: the buses get 10 % less dirty a day.":
   de: "Je Stufe: Die Busse verschmutzen pro Tag 10 % weniger."
+  da: "Hvert trin: busserne bliver 10 % mindre beskidte om dagen."
   fr: "Chaque étape : les bus se salissent 10 % de moins par jour."
   nl: "Per fase: de bussen worden per dag 10 % minder vuil."
   pl: "Każdy etap: autobusy brudzą się dziennie o 10 % mniej."
@@ -102,6 +116,7 @@ _version: 2
   uk: "Кожен етап: автобуси забруднюються за день на 10 % менше."
 "Reduce wear and tear":
   de: "Verschleiß senken"
+  da: "Reducér slid"
   fr: "Réduire l'usure"
   nl: "Slijtage verminderen"
   pl: "Mniejsze zużycie"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Зниження зносу"
 "Each stage: 5 % less wear and maintenance a kilometre.":
   de: "Je Stufe: 5 % weniger Verschleiß und Wartung pro Kilometer."
+  da: "Hvert trin: 5 % mindre slid og vedligeholdelse pr. kilometer."
   fr: "Chaque étape : 5 % d'usure et d'entretien en moins par kilomètre."
   nl: "Per fase: 5 % minder slijtage en onderhoud per kilometer."
   pl: "Każdy etap: o 5 % mniej zużycia i konserwacji na kilometr."
@@ -116,6 +132,7 @@ _version: 2
   uk: "Кожен етап: на 5 % менше зносу та обслуговування на кілометр."
 "Air conditioning":
   de: "Klimaanlage"
+  da: "Aircondition"
   fr: "Climatisation"
   nl: "Airconditioning"
   pl: "Klimatyzacja"
@@ -123,6 +140,7 @@ _version: 2
   uk: "Кондиціонер"
 "Cool buses in summer: 2 % more passengers, and a little goodwill every day.":
   de: "Kühle Busse im Sommer: 2 % mehr Fahrgäste und jeden Tag etwas Wohlwollen."
+  da: "Kolde busser om sommeren: 2 % flere passagerer og lidt goodwill hver dag."
   fr: "Des bus frais en été : 2 % de voyageurs en plus, et un peu de bienveillance chaque jour."
   nl: "Koele bussen in de zomer: 2 % meer reizigers, en elke dag wat goodwill."
   pl: "Chłodne autobusy latem: o 2 % więcej pasażerów i codziennie trochę życzliwości."
@@ -130,6 +148,7 @@ _version: 2
   uk: "Прохолодні автобуси влітку: на 2 % більше пасажирів і трохи прихильності щодня."
 "Passenger information system":
   de: "Fahrgastinformationssystem"
+  da: "Passagerinformationssystem"
   fr: "Système d'information voyageurs"
   nl: "Reizigersinformatiesysteem"
   pl: "System informacji pasażerskiej"
@@ -137,6 +156,7 @@ _version: 2
   uk: "Система інформування пасажирів"
 "Screens with the next stops and the connections: 2 % more passengers.":
   de: "Bildschirme mit den nächsten Haltestellen und den Anschlüssen: 2 % mehr Fahrgäste."
+  da: "Skærme med de næste stoppesteder og forbindelserne: 2 % flere passagerer."
   fr: "Des écrans avec les prochains arrêts et les correspondances : 2 % de voyageurs en plus."
   nl: "Schermen met de volgende haltes en de aansluitingen: 2 % meer reizigers."
   pl: "Ekrany z kolejnymi przystankami i przesiadkami: o 2 % więcej pasażerów."
@@ -144,6 +164,7 @@ _version: 2
   uk: "Екрани з наступними зупинками та пересадками: на 2 % більше пасажирів."
 "WLAN":
   de: "WLAN"
+  da: "WLAN"
   fr: "Wi-Fi"
   nl: "Wifi"
   pl: "Wi-Fi"
@@ -151,6 +172,7 @@ _version: 2
   uk: "Wi-Fi"
 "Internet on board: 2 % more passengers, and the internet contracts open on the Contracts page.":
   de: "Internet an Bord: 2 % mehr Fahrgäste, und die Internetverträge öffnen sich auf der Seite Verträge."
+  da: "Internet om bord: 2 % flere passagerer, og internetkontrakterne åbner på siden Kontrakter."
   fr: "Internet à bord : 2 % de voyageurs en plus, et les contrats internet s'ouvrent sur la page Contrats."
   nl: "Internet aan boord: 2 % meer reizigers, en de internetcontracten gaan open op de pagina Contracten."
   pl: "Internet na pokładzie: o 2 % więcej pasażerów, a na stronie Umowy otwierają się umowy internetowe."
@@ -158,6 +180,7 @@ _version: 2
   uk: "Інтернет на борту: на 2 % більше пасажирів, і на сторінці «Контракти» відкриваються інтернет-контракти."
 "USB charging ports":
   de: "USB-Ladebuchsen"
+  da: "USB-opladningsporte"
   fr: "Prises de recharge USB"
   nl: "USB-laadpunten"
   pl: "Gniazda ładowania USB"
@@ -165,6 +188,7 @@ _version: 2
   uk: "USB-зарядки"
 "The passengers charge their phones: 1.5 % more passengers.":
   de: "Die Fahrgäste laden ihre Handys: 1,5 % mehr Fahrgäste."
+  da: "Passagererne oplader deres telefoner: 1,5 % flere passagerer."
   fr: "Les voyageurs rechargent leur téléphone : 1,5 % de voyageurs en plus."
   nl: "De reizigers laden hun telefoon op: 1,5 % meer reizigers."
   pl: "Pasażerowie ładują telefony: o 1,5 % więcej pasażerów."
@@ -172,6 +196,7 @@ _version: 2
   uk: "Пасажири заряджають телефони: на 1,5 % більше пасажирів."
 "Premium seats":
   de: "Komfortsitze"
+  da: "Premium-sæder"
   fr: "Sièges premium"
   nl: "Comfortstoelen"
   pl: "Fotele premium"
@@ -179,6 +204,7 @@ _version: 2
   uk: "Комфортні сидіння"
 "Comfortable seats: 3 % more passengers.":
   de: "Bequeme Sitze: 3 % mehr Fahrgäste."
+  da: "Behagelige sæder: 3 % flere passagerer."
   fr: "Des sièges confortables : 3 % de voyageurs en plus."
   nl: "Comfortabele stoelen: 3 % meer reizigers."
   pl: "Wygodne fotele: o 3 % więcej pasażerów."
@@ -186,6 +212,7 @@ _version: 2
   uk: "Зручні сидіння: на 3 % більше пасажирів."
 "Bus stop upgrades":
   de: "Bessere Haltestellen"
+  da: "Opgradering af stoppesteder"
   fr: "Arrêts améliorés"
   nl: "Betere bushaltes"
   pl: "Lepsze przystanki"
@@ -193,6 +220,7 @@ _version: 2
   uk: "Покращення зупинок"
 "Each stage: shelters, benches and timetables at the stops: 1.5 % more passengers, and a little goodwill every day.":
   de: "Je Stufe: Wartehäuschen, Bänke und Fahrpläne an den Haltestellen: 1,5 % mehr Fahrgäste und jeden Tag etwas Wohlwollen."
+  da: "Hvert trin: læskure, bænke og køreplaner ved stoppestederne: 1,5 % flere passagerer og lidt goodwill hver dag."
   fr: "Chaque étape : abris, bancs et horaires aux arrêts : 1,5 % de voyageurs en plus, et un peu de bienveillance chaque jour."
   nl: "Per fase: abri's, bankjes en dienstregelingen bij de haltes: 1,5 % meer reizigers, en elke dag wat goodwill."
   pl: "Każdy etap: wiaty, ławki i rozkłady na przystankach: o 1,5 % więcej pasażerów i codziennie trochę życzliwości."
@@ -200,6 +228,7 @@ _version: 2
   uk: "Кожен етап: навіси, лавки й розклади на зупинках: на 1,5 % більше пасажирів і трохи прихильності щодня."
 "Mobile app":
   de: "Handy-App"
+  da: "Mobilapp"
   fr: "Application mobile"
   nl: "Mobiele app"
   pl: "Aplikacja mobilna"
@@ -207,6 +236,7 @@ _version: 2
   uk: "Мобільний застосунок"
 "Each stage: tickets and live departures on the phone: 1 % more passengers.":
   de: "Je Stufe: Fahrkarten und aktuelle Abfahrten auf dem Handy: 1 % mehr Fahrgäste."
+  da: "Hvert trin: billetter og live-afgange på telefonen: 1 % flere passagerer."
   fr: "Chaque étape : billets et départs en temps réel sur le téléphone : 1 % de voyageurs en plus."
   nl: "Per fase: kaartjes en actuele vertrektijden op de telefoon: 1 % meer reizigers."
   pl: "Każdy etap: bilety i odjazdy na żywo w telefonie: o 1 % więcej pasażerów."
@@ -214,6 +244,7 @@ _version: 2
   uk: "Кожен етап: квитки та відправлення в реальному часі на телефоні: на 1 % більше пасажирів."
 "Ticket vending machines":
   de: "Fahrkartenautomaten"
+  da: "Billetautomater"
   fr: "Distributeurs de billets"
   nl: "Kaartautomaten"
   pl: "Biletomaty"
@@ -221,6 +252,7 @@ _version: 2
   uk: "Квиткові автомати"
 "Each stage: tickets bought before boarding: 1 % more passengers, and 3 % fewer late trips.":
   de: "Je Stufe: Fahrkarten vor dem Einsteigen gekauft: 1 % mehr Fahrgäste und 3 % weniger verspätete Fahrten."
+  da: "Hvert trin: billetter købt før påstigning: 1 % flere passagerer og 3 % færre forsinkede ture."
   fr: "Chaque étape : billets achetés avant de monter : 1 % de voyageurs en plus, et 3 % de trajets en retard en moins."
   nl: "Per fase: kaartjes vóór het instappen gekocht: 1 % meer reizigers, en 3 % minder te late ritten."
   pl: "Każdy etap: bilety kupione przed wejściem: o 1 % więcej pasażerów i o 3 % mniej spóźnionych kursów."
@@ -228,6 +260,7 @@ _version: 2
   uk: "Кожен етап: квитки купують до посадки: на 1 % більше пасажирів і на 3 % менше запізнень."
 "Bus priority on the routes":
   de: "Busbevorrechtigung auf den Strecken"
+  da: "Busprioritering på rutterne"
   fr: "Priorité aux bus sur les itinéraires"
   nl: "Voorrang voor de bus op de routes"
   pl: "Priorytet dla autobusów na trasach"
@@ -235,6 +268,7 @@ _version: 2
   uk: "Пріоритет автобусів на маршрутах"
 "Each stage: bus lanes and traffic lights that wait for the bus: 10 % fewer late trips.":
   de: "Je Stufe: Busspuren und Ampeln, die auf den Bus warten: 10 % weniger verspätete Fahrten."
+  da: "Hvert trin: busbaner og trafiklys, der venter på bussen: 10 % færre forsinkede ture."
   fr: "Chaque étape : couloirs de bus et feux qui attendent le bus : 10 % de trajets en retard en moins."
   nl: "Per fase: busbanen en verkeerslichten die op de bus wachten: 10 % minder te late ritten."
   pl: "Każdy etap: buspasy i światła czekające na autobus: o 10 % mniej spóźnionych kursów."
@@ -242,6 +276,7 @@ _version: 2
   uk: "Кожен етап: виділені смуги та світлофори, що чекають на автобус: на 10 % менше запізнень."
 "Expand the company premises":
   de: "Betriebsgelände erweitern"
+  da: "Udvid selskabets lokaler"
   fr: "Agrandir les terrains de l'entreprise"
   nl: "Het bedrijfsterrein uitbreiden"
   pl: "Rozbudowa terenu firmy"
@@ -249,6 +284,7 @@ _version: 2
   uk: "Розширення території підприємства"
 "Each stage: six more places for buses at the depot.":
   de: "Je Stufe: sechs Busplätze mehr auf dem Betriebshof."
+  da: "Hvert trin: seks pladser mere til busser i garagen."
   fr: "Chaque étape : six places de plus pour les bus au dépôt."
   nl: "Per fase: zes plaatsen meer voor bussen in de remise."
   pl: "Każdy etap: sześć miejsc więcej dla autobusów w zajezdni."
@@ -256,6 +292,7 @@ _version: 2
   uk: "Кожен етап: на шість місць для автобусів більше в депо."
 "External depots":
   de: "Außenstellen"
+  da: "Eksterne garager"
   fr: "Dépôts extérieurs"
   nl: "Externe remises"
   pl: "Zajezdnie zewnętrzne"
@@ -263,6 +300,7 @@ _version: 2
   uk: "Зовнішні депо"
 "Small yards out on the network: ten more places for buses, and repairs out there.":
   de: "Kleine Abstellanlagen im Netz: zehn Busplätze mehr und Reparaturen vor Ort."
+  da: "Små pladser ude på nettet: ti pladser mere til busser og reparationer derude."
   fr: "De petits dépôts sur le réseau : dix places de plus pour les bus, et des réparations sur place."
   nl: "Kleine terreinen op het netwerk: tien plaatsen meer voor bussen, en reparaties daar."
   pl: "Małe place postojowe na sieci: dziesięć miejsc więcej dla autobusów i naprawy na miejscu."
@@ -270,6 +308,7 @@ _version: 2
   uk: "Невеликі майданчики на мережі: на десять місць для автобусів більше та ремонт на місці."
 "Automatic cleaning of the buses":
   de: "Automatische Reinigung der Busse"
+  da: "Automatisk rengøring af busserne"
   fr: "Nettoyage automatique des bus"
   nl: "Automatische reiniging van de bussen"
   pl: "Automatyczne sprzątanie autobusów"
@@ -277,6 +316,7 @@ _version: 2
   uk: "Автоматичне прибирання автобусів"
 "The cleaners' rounds plan themselves: the fleet never gets dirtier than 55 % clean.":
   de: "Die Runden der Reinigungskräfte planen sich selbst: Die Flotte wird nie schmutziger als 55 % sauber."
+  da: "Rengøringsmedarbejdernes runder planlægger sig selv: flåden bliver aldrig mere beskidt end 55 % ren."
   fr: "Les tournées des agents d'entretien se planifient seules : la flotte n'est jamais moins propre qu'à 55 %."
   nl: "De rondes van de schoonmakers plannen zichzelf: het wagenpark wordt nooit vuiler dan 55 % schoon."
   pl: "Obchody sprzątaczy planują się same: flota nigdy nie jest brudniejsza niż 55 % czystości."
@@ -284,6 +324,7 @@ _version: 2
   uk: "Обходи прибиральників плануються самі: парк ніколи не буває бруднішим, ніж на 55 % чистоти."
 "Automatic washing of the buses":
   de: "Automatische Wäsche der Busse"
+  da: "Automatisk vask af busserne"
   fr: "Lavage automatique des bus"
   nl: "Automatisch wassen van de bussen"
   pl: "Automatyczne mycie autobusów"
@@ -291,6 +332,7 @@ _version: 2
   uk: "Автоматичне миття автобусів"
 "The washing bay runs by itself: it washes half as many buses again a night.":
   de: "Die Waschanlage läuft von selbst: Sie wäscht pro Nacht anderthalbmal so viele Busse."
+  da: "Vaskehallen kører af sig selv: den vasker halvanden gang så mange busser om natten."
   fr: "La station de lavage tourne seule : elle lave moitié plus de bus par nuit."
   nl: "De wasstraat draait vanzelf: hij wast per nacht de helft meer bussen."
   pl: "Myjnia działa sama: myje w nocy o połowę więcej autobusów."
@@ -298,6 +340,7 @@ _version: 2
   uk: "Мийка працює сама: за ніч вона миє в півтора раза більше автобусів."
 "Automatic refuelling of the buses":
   de: "Automatische Betankung der Busse"
+  da: "Automatisk tankning af busserne"
   fr: "Ravitaillement automatique des bus"
   nl: "Automatisch tanken van de bussen"
   pl: "Automatyczne tankowanie autobusów"
@@ -305,6 +348,7 @@ _version: 2
   uk: "Автоматична заправка автобусів"
 "The pumps and the chargers run to a schedule: they serve half as many buses again a night.":
   de: "Die Zapfsäulen und Ladepunkte laufen nach Plan: Sie versorgen pro Nacht anderthalbmal so viele Busse."
+  da: "Pumperne og opladerne kører efter en plan: de betjener halvanden gang så mange busser om natten."
   fr: "Les pompes et les bornes suivent un planning : elles servent moitié plus de bus par nuit."
   nl: "De pompen en laadpalen werken volgens schema: ze bedienen per nacht de helft meer bussen."
   pl: "Dystrybutory i ładowarki działają według planu: obsługują w nocy o połowę więcej autobusów."
@@ -312,6 +356,7 @@ _version: 2
   uk: "Колонки та зарядні станції працюють за графіком: за ніч вони обслуговують у півтора раза більше автобусів."
 "Automatic repair at the external depots":
   de: "Automatische Reparatur in den Außenstellen"
+  da: "Automatisk reparation på de eksterne garager"
   fr: "Réparation automatique dans les dépôts extérieurs"
   nl: "Automatische reparatie in de externe remises"
   pl: "Automatyczna naprawa w zajezdniach zewnętrznych"
@@ -319,6 +364,7 @@ _version: 2
   uk: "Автоматичний ремонт у зовнішніх депо"
 "A bus that breaks down is repaired at the nearest external depot: back a day sooner.":
   de: "Ein liegengebliebener Bus wird in der nächsten Außenstelle repariert: einen Tag früher zurück."
+  da: "En bus, der bryder sammen, repareres på den nærmeste eksterne garage: tilbage en dag før."
   fr: "Un bus en panne est réparé au dépôt extérieur le plus proche : de retour un jour plus tôt."
   nl: "Een bus met pech wordt in de dichtstbijzijnde externe remise gerepareerd: een dag eerder terug."
   pl: "Zepsuty autobus jest naprawiany w najbliższej zajezdni zewnętrznej: wraca dzień wcześniej."
@@ -326,6 +372,7 @@ _version: 2
   uk: "Зламаний автобус ремонтують у найближчому зовнішньому депо: він повертається на день раніше."
 "Ticket inspectors":
   de: "Fahrkartenkontrolleure"
+  da: "Kontrollører"
   fr: "Contrôleurs"
   nl: "Controleurs"
   pl: "Kontrolerzy biletów"
@@ -333,6 +380,7 @@ _version: 2
   uk: "Контролери"
 "Ticket inspectors may be hired on the Staff page: fewer passengers ride without a ticket.":
   de: "Auf der Seite Personal können Fahrkartenkontrolleure eingestellt werden: Weniger Fahrgäste fahren schwarz."
+  da: "Kontrollører kan ansættes på personalesiden: færre passagerer kører uden billet."
   fr: "Des contrôleurs peuvent être embauchés sur la page Personnel : moins de voyageurs sans billet."
   nl: "Op de pagina Personeel kun je controleurs aannemen: minder reizigers rijden zonder kaartje."
   pl: "Na stronie Personel można zatrudniać kontrolerów: mniej pasażerów jeździ bez biletu."
@@ -340,6 +388,7 @@ _version: 2
   uk: "На сторінці «Персонал» можна наймати контролерів: менше пасажирів їздить без квитка."
 "Working method of the ticket inspectors":
   de: "Arbeitsweise der Kontrolleure"
+  da: "Kontrollørernes arbejdsmetode"
   fr: "Méthode de travail des contrôleurs"
   nl: "Werkwijze van de controleurs"
   pl: "Metoda pracy kontrolerów"
@@ -347,6 +396,7 @@ _version: 2
   uk: "Методика роботи контролерів"
 "Each stage: the ticket inspectors check 15 % more passengers.":
   de: "Je Stufe: Die Kontrolleure prüfen 15 % mehr Fahrgäste."
+  da: "Hvert trin: kontrollørerne kontrollerer 15 % flere passagerer."
   fr: "Chaque étape : les contrôleurs vérifient 15 % de voyageurs en plus."
   nl: "Per fase: de controleurs controleren 15 % meer reizigers."
   pl: "Każdy etap: kontrolerzy sprawdzają o 15 % więcej pasażerów."
@@ -354,6 +404,7 @@ _version: 2
   uk: "Кожен етап: контролери перевіряють на 15 % більше пасажирів."
 "Better food for the employees":
   de: "Besseres Essen für die Belegschaft"
+  da: "Bedre mad til medarbejderne"
   fr: "Une meilleure cantine pour le personnel"
   nl: "Beter eten voor het personeel"
   pl: "Lepsze jedzenie dla pracowników"
@@ -361,6 +412,7 @@ _version: 2
   uk: "Краще харчування для працівників"
 "Each stage: the canteen cooks better: every day the staff are a little happier and less stressed.":
   de: "Je Stufe: Die Kantine kocht besser: Die Belegschaft ist jeden Tag etwas zufriedener und weniger gestresst."
+  da: "Hvert trin: kantinen laver bedre mad: hver dag er personalet lidt gladere og mindre stresset."
   fr: "Chaque étape : la cantine cuisine mieux : chaque jour, le personnel est un peu plus content et moins stressé."
   nl: "Per fase: de kantine kookt beter: het personeel is elke dag wat tevredener en minder gestrest."
   pl: "Każdy etap: stołówka gotuje lepiej: personel jest codziennie trochę zadowolony i mniej zestresowany."
@@ -368,6 +420,7 @@ _version: 2
   uk: "Кожен етап: їдальня готує краще: щодня персонал трохи задоволеніший і менше в стресі."
 "Cheaper spare parts":
   de: "Günstigere Ersatzteile"
+  da: "Billigere reservedele"
   fr: "Pièces détachées moins chères"
   nl: "Goedkopere reserveonderdelen"
   pl: "Tańsze części zamienne"
@@ -375,6 +428,7 @@ _version: 2
   uk: "Дешевші запчастини"
 "Each stage: the spare parts cost 10 % less in the workshop's stores.":
   de: "Je Stufe: Die Ersatzteile kosten im Werkstattlager 10 % weniger."
+  da: "Hvert trin: reservedelene koster 10 % mindre i værkstedets lager."
   fr: "Chaque étape : les pièces détachées coûtent 10 % de moins au magasin de l'atelier."
   nl: "Per fase: de reserveonderdelen kosten 10 % minder in het magazijn van de werkplaats."
   pl: "Każdy etap: części zamienne w magazynie warsztatu kosztują o 10 % mniej."
@@ -382,6 +436,7 @@ _version: 2
   uk: "Кожен етап: запчастини на складі майстерні коштують на 10 % менше."
 "Faster repairs":
   de: "Schnellere Reparaturen"
+  da: "Hurtigere reparationer"
   fr: "Réparations plus rapides"
   nl: "Snellere reparaties"
   pl: "Szybsze naprawy"
@@ -389,6 +444,7 @@ _version: 2
   uk: "Швидший ремонт"
 "Each stage: the repairs take 10 % less time.":
   de: "Je Stufe: Die Reparaturen dauern 10 % kürzer."
+  da: "Hvert trin: reparationerne tager 10 % kortere tid."
   fr: "Chaque étape : les réparations prennent 10 % de temps en moins."
   nl: "Per fase: de reparaties duren 10 % korter."
   pl: "Każdy etap: naprawy trwają o 10 % krócej."
@@ -396,6 +452,7 @@ _version: 2
   uk: "Кожен етап: ремонт триває на 10 % менше часу."
 "More concessions":
   de: "Mehr Konzessionen"
+  da: "Flere koncessioner"
   fr: "Plus de concessions"
   nl: "Meer concessies"
   pl: "Więcej koncesji"
@@ -403,6 +460,7 @@ _version: 2
   uk: "Більше концесій"
 "Each stage: the authority lets the company hold one concession more.":
   de: "Je Stufe: Der Aufgabenträger erlaubt der Firma eine Konzession mehr."
+  da: "Hvert trin: trafikselskabet lader selskabet have en koncession mere."
   fr: "Chaque étape : l'autorité laisse l'entreprise détenir une concession de plus."
   nl: "Per fase: de opdrachtgever laat het bedrijf één concessie meer houden."
   pl: "Każdy etap: organizator pozwala firmie mieć o jedną koncesję więcej."
@@ -410,6 +468,7 @@ _version: 2
   uk: "Кожен етап: замовник дозволяє компанії тримати на одну концесію більше."
 "Park and ride":
   de: "Park and Ride"
+  da: "Park and ride"
   fr: "Parc relais"
   nl: "Park and ride"
   pl: "Parkuj i jedź"
@@ -417,6 +476,7 @@ _version: 2
   uk: "Перехоплювальні парковки"
 "Car parks at the termini: 2 % more passengers.":
   de: "Parkplätze an den Endhaltestellen: 2 % mehr Fahrgäste."
+  da: "Parkeringspladser ved endestationerne: 2 % flere passagerer."
   fr: "Des parkings aux terminus : 2 % de voyageurs en plus."
   nl: "Parkeerplaatsen bij de eindhaltes: 2 % meer reizigers."
   pl: "Parkingi na pętlach: o 2 % więcej pasażerów."
@@ -424,6 +484,7 @@ _version: 2
   uk: "Парковки на кінцевих зупинках: на 2 % більше пасажирів."
 "Shift schedule":
   de: "Schichtplan"
+  da: "Vagtskema"
   fr: "Planning des équipes"
   nl: "Dienstrooster"
   pl: "Grafik zmian"
@@ -431,6 +492,7 @@ _version: 2
   uk: "Графік змін"
 "The shift schedule of the staff besides the drivers: their core hours, and who works outside them.":
   de: "Der Schichtplan des Personals neben den Fahrern: ihre Kernzeiten und wer außerhalb davon arbeitet."
+  da: "Vagtskemaet for personalet ud over chaufførerne: deres kernetid og hvem, der arbejder uden for den."
   fr: "Le planning des équipes du personnel hors conducteurs : leurs heures principales, et qui travaille en dehors."
   nl: "Het dienstrooster van het personeel naast de chauffeurs: hun kerntijden, en wie daarbuiten werkt."
   pl: "Grafik zmian personelu poza kierowcami: ich godziny podstawowe i kto pracuje poza nimi."
@@ -438,6 +500,7 @@ _version: 2
   uk: "Графік змін персоналу, крім водіїв: їхні основні години та хто працює поза ними."
 "There is no such research.":
   de: "Diese Forschung gibt es nicht."
+  da: "Der er ingen sådan forskning."
   fr: "Cette recherche n'existe pas."
   nl: "Dat onderzoek bestaat niet."
   pl: "Nie ma takiego badania."
@@ -445,6 +508,7 @@ _version: 2
   uk: "Такого дослідження немає."
 "This research is done.":
   de: "Diese Forschung ist abgeschlossen."
+  da: "Denne forskning er færdig."
   fr: "Cette recherche est terminée."
   nl: "Dit onderzoek is klaar."
   pl: "To badanie jest zakończone."
@@ -452,6 +516,7 @@ _version: 2
   uk: "Це дослідження завершено."
 "Another research is running: wait for it, or stop it.":
   de: "Eine andere Forschung läuft: Warten Sie sie ab oder brechen Sie sie ab."
+  da: "En anden forskning kører: vent på den, eller stop den."
   fr: "Une autre recherche est en cours : attendez-la, ou arrêtez-la."
   nl: "Er loopt al een ander onderzoek: wacht erop, of stop het."
   pl: "Trwa inne badanie: poczekaj na nie albo je zatrzymaj."
@@ -459,6 +524,7 @@ _version: 2
   uk: "Триває інше дослідження: дочекайтеся його або зупиніть."
 "This research needs another one first.":
   de: "Diese Forschung braucht zuerst eine andere."
+  da: "Denne forskning kræver først en anden."
   fr: "Cette recherche en demande d'abord une autre."
   nl: "Dit onderzoek heeft eerst een ander nodig."
   pl: "To badanie wymaga najpierw innego."
@@ -466,6 +532,7 @@ _version: 2
   uk: "Для цього дослідження спершу потрібне інше."
 "This research opens at a higher company level.":
   de: "Diese Forschung öffnet sich auf einer höheren Firmenstufe."
+  da: "Denne forskning åbner på et højere selskabsniveau."
   fr: "Cette recherche s'ouvre à un niveau d'entreprise plus élevé."
   nl: "Dit onderzoek gaat open op een hoger bedrijfsniveau."
   pl: "To badanie otworzy się na wyższym poziomie firmy."
@@ -473,6 +540,7 @@ _version: 2
   uk: "Це дослідження відкриється на вищому рівні компанії."
 "Not enough trophies: the company earns them with goals and contracts.":
   de: "Nicht genug Trophäen: Die Firma verdient sie mit Zielen und Verträgen."
+  da: "Ikke trofæer nok: selskabet optjener dem med mål og kontrakter."
   fr: "Pas assez de trophées : l'entreprise les gagne avec les objectifs et les contrats."
   nl: "Niet genoeg trofeeën: het bedrijf verdient ze met doelen en contracten."
   pl: "Za mało trofeów: firma zdobywa je za cele i umowy."
@@ -480,6 +548,7 @@ _version: 2
   uk: "Недостатньо трофеїв: компанія отримує їх за цілі та контракти."
 "No research is running.":
   de: "Es läuft keine Forschung."
+  da: "Ingen forskning kører."
   fr: "Aucune recherche n'est en cours."
   nl: "Er loopt geen onderzoek."
   pl: "Żadne badanie nie trwa."
@@ -487,6 +556,7 @@ _version: 2
   uk: "Жодне дослідження не триває."
 "Articulated buses need research first: start it on the Research page.":
   de: "Gelenkbusse brauchen zuerst Forschung: Starten Sie sie auf der Seite Forschung."
+  da: "Ledbusser kræver forskning først: start den på siden Forskning."
   fr: "Les bus articulés demandent d'abord une recherche : lancez-la sur la page Recherche."
   nl: "Gelede bussen vragen eerst onderzoek: start het op de pagina Onderzoek."
   pl: "Autobusy przegubowe wymagają najpierw badania: rozpocznij je na stronie Badania."
@@ -494,6 +564,7 @@ _version: 2
   uk: "Для зчленованих автобусів спершу потрібне дослідження: почніть його на сторінці «Дослідження»."
 "Double-deckers need research first: start it on the Research page.":
   de: "Doppeldecker brauchen zuerst Forschung: Starten Sie sie auf der Seite Forschung."
+  da: "Dobbeltdækkere kræver forskning først: start den på siden Forskning."
   fr: "Les bus à impériale demandent d'abord une recherche : lancez-la sur la page Recherche."
   nl: "Dubbeldekkers vragen eerst onderzoek: start het op de pagina Onderzoek."
   pl: "Autobusy piętrowe wymagają najpierw badania: rozpocznij je na stronie Badania."
@@ -501,6 +572,7 @@ _version: 2
   uk: "Для двоповерхових автобусів спершу потрібне дослідження: почніть його на сторінці «Дослідження»."
 "The research stands still":
   de: "Die Forschung steht still"
+  da: "Forskningen står stille"
   fr: "La recherche est à l'arrêt"
   nl: "Het onderzoek staat stil"
   pl: "Badanie stoi w miejscu"
@@ -508,6 +580,7 @@ _version: 2
   uk: "Дослідження стоїть на місці"
 "Nobody works on the research: hire researchers on the Staff page.":
   de: "Niemand arbeitet an der Forschung: Stellen Sie auf der Seite Personal Forscher ein."
+  da: "Ingen arbejder på forskningen: ansæt forskere på personalesiden."
   fr: "Personne ne travaille sur la recherche : embauchez des chercheurs sur la page Personnel."
   nl: "Niemand werkt aan het onderzoek: neem onderzoekers aan op de pagina Personeel."
   pl: "Nikt nie pracuje nad badaniem: zatrudnij badaczy na stronie Personel."
@@ -515,6 +588,7 @@ _version: 2
   uk: "Над дослідженням ніхто не працює: найміть дослідників на сторінці «Персонал»."
 "The research is done: it works from today.":
   de: "Die Forschung ist abgeschlossen: Sie wirkt ab heute."
+  da: "Forskningen er færdig: den virker fra i dag."
   fr: "La recherche est terminée : elle agit dès aujourd'hui."
   nl: "Het onderzoek is klaar: het werkt vanaf vandaag."
   pl: "Badanie zakończone: działa od dziś."
@@ -522,6 +596,7 @@ _version: 2
   uk: "Дослідження завершено: воно діє з сьогоднішнього дня."
 "Stage %{stage} of %{stages} is done: it works from today.":
   de: "Stufe %{stage} von %{stages} ist abgeschlossen: Sie wirkt ab heute."
+  da: "Trin %{stage} af %{stages} er færdigt: det virker fra i dag."
   fr: "L'étape %{stage} sur %{stages} est terminée : elle agit dès aujourd'hui."
   nl: "Fase %{stage} van %{stages} is klaar: hij werkt vanaf vandaag."
   pl: "Etap %{stage} z %{stages} zakończony: działa od dziś."
@@ -529,6 +604,7 @@ _version: 2
   uk: "Етап %{stage} з %{stages} завершено: він діє з сьогоднішнього дня."
 "Engine":
   de: "Motor"
+  da: "Motor"
   fr: "Moteur"
   nl: "Motor"
   pl: "Silnik"
@@ -536,6 +612,7 @@ _version: 2
   uk: "Двигун"
 "Headlight":
   de: "Scheinwerfer"
+  da: "Forlygte"
   fr: "Phare"
   nl: "Koplamp"
   pl: "Reflektor"
@@ -543,6 +620,7 @@ _version: 2
   uk: "Фара"
 "Indicator":
   de: "Blinker"
+  da: "Blinklys"
   fr: "Clignotant"
   nl: "Knipperlicht"
   pl: "Kierunkowskaz"
@@ -550,6 +628,7 @@ _version: 2
   uk: "Покажчик повороту"
 "Wiper":
   de: "Scheibenwischer"
+  da: "Visker"
   fr: "Essuie-glace"
   nl: "Ruitenwisser"
   pl: "Wycieraczka"
@@ -557,6 +636,7 @@ _version: 2
   uk: "Склоочисник"
 "Air conditioner":
   de: "Klimagerät"
+  da: "Klimaanlæg"
   fr: "Climatiseur"
   nl: "Airco"
   pl: "Klimatyzator"
@@ -564,6 +644,7 @@ _version: 2
   uk: "Кондиціонер"
 "Router":
   de: "Router"
+  da: "Router"
   fr: "Routeur"
   nl: "Router"
   pl: "Router"
@@ -571,6 +652,7 @@ _version: 2
   uk: "Роутер"
 "Brake pads":
   de: "Bremsbeläge"
+  da: "Bremseklodser"
   fr: "Plaquettes de frein"
   nl: "Remblokken"
   pl: "Klocki hamulcowe"
@@ -578,6 +660,7 @@ _version: 2
   uk: "Гальмівні колодки"
 "Tyre set":
   de: "Reifensatz"
+  da: "Dæksæt"
   fr: "Jeu de pneus"
   nl: "Bandenset"
   pl: "Komplet opon"
@@ -585,6 +668,7 @@ _version: 2
   uk: "Комплект шин"
 "Oil canister":
   de: "Ölkanister"
+  da: "Oliedunk"
   fr: "Bidon d'huile"
   nl: "Oliekan"
   pl: "Kanister oleju"
@@ -592,6 +676,7 @@ _version: 2
   uk: "Каністра оливи"
 "V-belt":
   de: "Keilriemen"
+  da: "Kilerem"
   fr: "Courroie trapézoïdale"
   nl: "V-snaar"
   pl: "Pasek klinowy"
@@ -599,6 +684,7 @@ _version: 2
   uk: "Клиновий пас"
 "Bus %{bus} waits in the workshop for an engine: there is none in the stores.":
   de: "Bus %{bus} wartet in der Werkstatt auf einen Motor: Im Lager ist keiner."
+  da: "Bus %{bus} venter på værkstedet på en motor: der er ingen på lageret."
   fr: "Le bus %{bus} attend un moteur à l'atelier : il n'y en a aucun en magasin."
   nl: "Bus %{bus} wacht in de werkplaats op een motor: er is er geen in het magazijn."
   pl: "Autobus %{bus} czeka w warsztacie na silnik: w magazynie nie ma żadnego."
@@ -606,6 +692,7 @@ _version: 2
   uk: "Автобус %{bus} чекає в майстерні на двигун: на складі його немає."
 "Bus %{bus} waits in the workshop for a headlight: there is none in the stores.":
   de: "Bus %{bus} wartet in der Werkstatt auf einen Scheinwerfer: Im Lager ist keiner."
+  da: "Bus %{bus} venter på værkstedet på en forlygte: der er ingen på lageret."
   fr: "Le bus %{bus} attend un phare à l'atelier : il n'y en a aucun en magasin."
   nl: "Bus %{bus} wacht in de werkplaats op een koplamp: er is er geen in het magazijn."
   pl: "Autobus %{bus} czeka w warsztacie na reflektor: w magazynie nie ma żadnego."
@@ -613,6 +700,7 @@ _version: 2
   uk: "Автобус %{bus} чекає в майстерні на фару: на складі її немає."
 "Bus %{bus} waits in the workshop for an indicator: there is none in the stores.":
   de: "Bus %{bus} wartet in der Werkstatt auf einen Blinker: Im Lager ist keiner."
+  da: "Bus %{bus} venter på værkstedet på et blinklys: der er ingen på lageret."
   fr: "Le bus %{bus} attend un clignotant à l'atelier : il n'y en a aucun en magasin."
   nl: "Bus %{bus} wacht in de werkplaats op een knipperlicht: er is er geen in het magazijn."
   pl: "Autobus %{bus} czeka w warsztacie na kierunkowskaz: w magazynie nie ma żadnego."
@@ -620,6 +708,7 @@ _version: 2
   uk: "Автобус %{bus} чекає в майстерні на покажчик повороту: на складі його немає."
 "Bus %{bus} waits in the workshop for a wiper: there is none in the stores.":
   de: "Bus %{bus} wartet in der Werkstatt auf einen Scheibenwischer: Im Lager ist keiner."
+  da: "Bus %{bus} venter på værkstedet på en visker: der er ingen på lageret."
   fr: "Le bus %{bus} attend un essuie-glace à l'atelier : il n'y en a aucun en magasin."
   nl: "Bus %{bus} wacht in de werkplaats op een ruitenwisser: er is er geen in het magazijn."
   pl: "Autobus %{bus} czeka w warsztacie na wycieraczkę: w magazynie nie ma żadnej."
@@ -627,6 +716,7 @@ _version: 2
   uk: "Автобус %{bus} чекає в майстерні на склоочисник: на складі його немає."
 "Bus %{bus} waits in the workshop for an air conditioner: there is none in the stores.":
   de: "Bus %{bus} wartet in der Werkstatt auf ein Klimagerät: Im Lager ist keins."
+  da: "Bus %{bus} venter på værkstedet på et klimaanlæg: der er ingen på lageret."
   fr: "Le bus %{bus} attend un climatiseur à l'atelier : il n'y en a aucun en magasin."
   nl: "Bus %{bus} wacht in de werkplaats op een airco: er is er geen in het magazijn."
   pl: "Autobus %{bus} czeka w warsztacie na klimatyzator: w magazynie nie ma żadnego."
@@ -634,6 +724,7 @@ _version: 2
   uk: "Автобус %{bus} чекає в майстерні на кондиціонер: на складі його немає."
 "Bus %{bus} waits in the workshop for a router: there is none in the stores.":
   de: "Bus %{bus} wartet in der Werkstatt auf einen Router: Im Lager ist keiner."
+  da: "Bus %{bus} venter på værkstedet på en router: der er ingen på lageret."
   fr: "Le bus %{bus} attend un routeur à l'atelier : il n'y en a aucun en magasin."
   nl: "Bus %{bus} wacht in de werkplaats op een router: er is er geen in het magazijn."
   pl: "Autobus %{bus} czeka w warsztacie na router: w magazynie nie ma żadnego."
@@ -641,6 +732,7 @@ _version: 2
   uk: "Автобус %{bus} чекає в майстерні на роутер: на складі його немає."
 "Bus %{bus} waits in the workshop for brake pads: there are none in the stores.":
   de: "Bus %{bus} wartet in der Werkstatt auf Bremsbeläge: Im Lager sind keine."
+  da: "Bus %{bus} venter på værkstedet på bremseklodser: der er ingen på lageret."
   fr: "Le bus %{bus} attend des plaquettes de frein à l'atelier : il n'y en a aucune en magasin."
   nl: "Bus %{bus} wacht in de werkplaats op remblokken: er zijn er geen in het magazijn."
   pl: "Autobus %{bus} czeka w warsztacie na klocki hamulcowe: w magazynie nie ma żadnych."
@@ -648,6 +740,7 @@ _version: 2
   uk: "Автобус %{bus} чекає в майстерні на гальмівні колодки: на складі їх немає."
 "Bus %{bus} waits in the workshop for a tyre set: there is none in the stores.":
   de: "Bus %{bus} wartet in der Werkstatt auf einen Reifensatz: Im Lager ist keiner."
+  da: "Bus %{bus} venter på værkstedet på et dæksæt: der er ingen på lageret."
   fr: "Le bus %{bus} attend un jeu de pneus à l'atelier : il n'y en a aucun en magasin."
   nl: "Bus %{bus} wacht in de werkplaats op een bandenset: er is er geen in het magazijn."
   pl: "Autobus %{bus} czeka w warsztacie na komplet opon: w magazynie nie ma żadnego."
@@ -655,6 +748,7 @@ _version: 2
   uk: "Автобус %{bus} чекає в майстерні на комплект шин: на складі його немає."
 "Bus %{bus} waits in the workshop for an oil canister: there is none in the stores.":
   de: "Bus %{bus} wartet in der Werkstatt auf einen Ölkanister: Im Lager ist keiner."
+  da: "Bus %{bus} venter på værkstedet på en oliedunk: der er ingen på lageret."
   fr: "Le bus %{bus} attend un bidon d'huile à l'atelier : il n'y en a aucun en magasin."
   nl: "Bus %{bus} wacht in de werkplaats op een oliekan: er is er geen in het magazijn."
   pl: "Autobus %{bus} czeka w warsztacie na kanister oleju: w magazynie nie ma żadnego."
@@ -662,6 +756,7 @@ _version: 2
   uk: "Автобус %{bus} чекає в майстерні на каністру оливи: на складі її немає."
 "Bus %{bus} waits in the workshop for a V-belt: there is none in the stores.":
   de: "Bus %{bus} wartet in der Werkstatt auf einen Keilriemen: Im Lager ist keiner."
+  da: "Bus %{bus} venter på værkstedet på en kilerem: der er ingen på lageret."
   fr: "Le bus %{bus} attend une courroie trapézoïdale à l'atelier : il n'y en a aucune en magasin."
   nl: "Bus %{bus} wacht in de werkplaats op een V-snaar: er is er geen in het magazijn."
   pl: "Autobus %{bus} czeka w warsztacie na pasek klinowy: w magazynie nie ma żadnego."
@@ -669,6 +764,7 @@ _version: 2
   uk: "Автобус %{bus} чекає в майстерні на клиновий пас: на складі його немає."
 "Choose the parts to order first.":
   de: "Wählen Sie zuerst die Teile, die Sie bestellen möchten."
+  da: "Vælg først de dele, der skal bestilles."
   fr: "Choisissez d'abord les pièces à commander."
   nl: "Kies eerst de onderdelen die je wilt bestellen."
   pl: "Najpierw wybierz części do zamówienia."
@@ -676,6 +772,7 @@ _version: 2
   uk: "Спершу виберіть запчастини для замовлення."
 "Spare parts delivered":
   de: "Ersatzteile geliefert"
+  da: "Reservedele leveret"
   fr: "Pièces détachées livrées"
   nl: "Reserveonderdelen geleverd"
   pl: "Części zamienne dostarczone"
@@ -683,6 +780,7 @@ _version: 2
   uk: "Запчастини доставлено"
 "%{n} spare parts came into the workshop's stores.":
   de: "%{n} Ersatzteile kamen ins Werkstattlager."
+  da: "%{n} reservedele kom ind i værkstedets lager."
   fr: "%{n} pièces détachées sont arrivées au magasin de l'atelier."
   nl: "%{n} reserveonderdelen kwamen binnen in het magazijn van de werkplaats."
   pl: "Do magazynu warsztatu dotarło części zamiennych: %{n}."
@@ -690,6 +788,7 @@ _version: 2
   uk: "На склад майстерні надійшло запчастин: %{n}."
 "A bus waits for a spare part":
   de: "Ein Bus wartet auf ein Ersatzteil"
+  da: "En bus venter på en reservedel"
   fr: "Un bus attend une pièce détachée"
   nl: "Een bus wacht op een reserveonderdeel"
   pl: "Autobus czeka na część zamienną"
@@ -697,6 +796,7 @@ _version: 2
   uk: "Автобус чекає на запчастину"
 "The spare part came":
   de: "Das Ersatzteil ist da"
+  da: "Reservedelen kom"
   fr: "La pièce détachée est arrivée"
   nl: "Het reserveonderdeel is er"
   pl: "Część zamienna dotarła"
@@ -704,6 +804,7 @@ _version: 2
   uk: "Запчастина надійшла"
 "The spare part for bus %{bus} came: the workshop is on it.":
   de: "Das Ersatzteil für Bus %{bus} ist da: Die Werkstatt ist dran."
+  da: "Reservedelen til bus %{bus} kom: værkstedet er i gang."
   fr: "La pièce détachée du bus %{bus} est arrivée : l'atelier s'y met."
   nl: "Het reserveonderdeel voor bus %{bus} is er: de werkplaats gaat aan de slag."
   pl: "Część zamienna do autobusu %{bus} dotarła: warsztat się tym zajmuje."
@@ -711,6 +812,7 @@ _version: 2
   uk: "Запчастина для автобуса %{bus} надійшла: майстерня взялася до роботи."
 "Spare parts delivered: %{n}":
   de: "Ersatzteile geliefert: %{n}"
+  da: "Reservedele leveret: %{n}"
   fr: "Pièces détachées livrées : %{n}"
   nl: "Reserveonderdelen geleverd: %{n}"
   pl: "Dostarczono części zamiennych: %{n}"
@@ -718,6 +820,7 @@ _version: 2
   uk: "Доставлено запчастин: %{n}"
 "%{name}, stage %{n}":
   de: "%{name}, Stufe %{n}"
+  da: "%{name}, trin %{n}"
   fr: "%{name}, étape %{n}"
   nl: "%{name}, fase %{n}"
   pl: "%{name}, etap %{n}"
@@ -725,6 +828,7 @@ _version: 2
   uk: "%{name}, етап %{n}"
 "Trophies: earned with goals and contracts, spent on research":
   de: "Trophäen: verdient mit Zielen und Verträgen, ausgegeben für Forschung"
+  da: "Trofæer: optjent med mål og kontrakter, brugt på forskning"
   fr: "Trophées : gagnés avec les objectifs et les contrats, dépensés en recherche"
   nl: "Trofeeën: verdiend met doelen en contracten, uitgegeven aan onderzoek"
   pl: "Trofea: zdobywane za cele i umowy, wydawane na badania"
@@ -732,6 +836,7 @@ _version: 2
   uk: "Трофеї: отримуються за цілі та контракти, витрачаються на дослідження"
 "Rating: how the authority and the passengers see the company":
   de: "Bewertung: wie der Aufgabenträger und die Fahrgäste die Firma sehen"
+  da: "Vurdering: hvordan trafikselskabet og passagererne ser selskabet"
   fr: "Note : comment l'autorité et les voyageurs voient l'entreprise"
   nl: "Waardering: hoe de opdrachtgever en de reizigers het bedrijf zien"
   pl: "Ocena: jak organizator i pasażerowie widzą firmę"
@@ -739,6 +844,7 @@ _version: 2
   uk: "Рейтинг: як замовник і пасажири оцінюють компанію"
 "No researchers at work: a research stands still until you hire researchers on the Staff page.":
   de: "Keine Forscher bei der Arbeit: Eine Forschung steht still, bis Sie auf der Seite Personal Forscher einstellen."
+  da: "Ingen forskere på arbejde: en forskning står stille, til du ansætter forskere på personalesiden."
   fr: "Aucun chercheur au travail : une recherche reste à l'arrêt tant que vous n'embauchez pas de chercheurs sur la page Personnel."
   nl: "Geen onderzoekers aan het werk: een onderzoek staat stil tot je onderzoekers aanneemt op de pagina Personeel."
   pl: "Brak badaczy w pracy: badanie stoi, dopóki nie zatrudnisz badaczy na stronie Personel."
@@ -746,6 +852,7 @@ _version: 2
   uk: "Дослідників на роботі немає: дослідження стоїть, доки ви не наймете дослідників на сторінці «Персонал»."
 "Researchers at work: %{n}, %{work} researcher-days of work a day.":
   de: "Forscher bei der Arbeit: %{n}, %{work} Forschertage Arbeit pro Tag."
+  da: "Forskere på arbejde: %{n}, %{work} forskerdages arbejde om dagen."
   fr: "Chercheurs au travail : %{n}, %{work} jours-chercheur de travail par jour."
   nl: "Onderzoekers aan het werk: %{n}, %{work} onderzoeksdagen werk per dag."
   pl: "Badaczy w pracy: %{n}, %{work} dni pracy badawczej dziennie."
@@ -753,6 +860,7 @@ _version: 2
   uk: "Дослідників на роботі: %{n}, %{work} людино-днів роботи на день."
 "No research is running: choose one below and start it.":
   de: "Es läuft keine Forschung: Wählen Sie unten eine aus und starten Sie sie."
+  da: "Ingen forskning kører: vælg en nedenfor, og start den."
   fr: "Aucune recherche en cours : choisissez-en une ci-dessous et lancez-la."
   nl: "Er loopt geen onderzoek: kies er hieronder een en start het."
   pl: "Żadne badanie nie trwa: wybierz jedno poniżej i je rozpocznij."
@@ -760,6 +868,7 @@ _version: 2
   uk: "Жодне дослідження не триває: виберіть одне нижче й почніть його."
 "Researching: %{name}, stage %{stage} of %{stages}":
   de: "Forschung: %{name}, Stufe %{stage} von %{stages}"
+  da: "Forsker: %{name}, trin %{stage} af %{stages}"
   fr: "Recherche : %{name}, étape %{stage} sur %{stages}"
   nl: "Onderzoek: %{name}, fase %{stage} van %{stages}"
   pl: "Badanie: %{name}, etap %{stage} z %{stages}"
@@ -767,6 +876,7 @@ _version: 2
   uk: "Дослідження: %{name}, етап %{stage} з %{stages}"
 "Researching: %{name}":
   de: "Forschung: %{name}"
+  da: "Forsker: %{name}"
   fr: "Recherche : %{name}"
   nl: "Onderzoek: %{name}"
   pl: "Badanie: %{name}"
@@ -774,6 +884,7 @@ _version: 2
   uk: "Дослідження: %{name}"
 "%{share} % done, about %{n} days to go at today's pace":
   de: "%{share} % erledigt, noch etwa %{n} Tage beim heutigen Tempo"
+  da: "%{share} % færdig, omkring %{n} dage tilbage i dagens tempo"
   fr: "%{share} % fait, encore environ %{n} jours au rythme d'aujourd'hui"
   nl: "%{share} % klaar, nog ongeveer %{n} dagen in het tempo van vandaag"
   pl: "Zrobiono %{share} %, zostało około %{n} dni przy dzisiejszym tempie"
@@ -781,6 +892,7 @@ _version: 2
   uk: "Виконано %{share} %, залишилося близько %{n} дн. за сьогоднішнього темпу"
 "%{share} % done: nobody works on it":
   de: "%{share} % erledigt: Niemand arbeitet daran"
+  da: "%{share} % færdig: ingen arbejder på den"
   fr: "%{share} % fait : personne n'y travaille"
   nl: "%{share} % klaar: niemand werkt eraan"
   pl: "Zrobiono %{share} %: nikt nad tym nie pracuje"
@@ -788,6 +900,7 @@ _version: 2
   uk: "Виконано %{share} %: над ним ніхто не працює"
 "Click again to stop":
   de: "Zum Abbrechen erneut klicken"
+  da: "Klik igen for at stoppe"
   fr: "Cliquez à nouveau pour arrêter"
   nl: "Klik nogmaals om te stoppen"
   pl: "Kliknij ponownie, aby zatrzymać"
@@ -795,6 +908,7 @@ _version: 2
   uk: "Натисніть ще раз, щоб зупинити"
 "Stop the research":
   de: "Forschung abbrechen"
+  da: "Stop forskningen"
   fr: "Arrêter la recherche"
   nl: "Het onderzoek stoppen"
   pl: "Zatrzymaj badanie"
@@ -802,6 +916,7 @@ _version: 2
   uk: "Зупинити дослідження"
 "The research was stopped: the trophies and half the money came back.":
   de: "Die Forschung wurde abgebrochen: Die Trophäen und die Hälfte des Geldes kamen zurück."
+  da: "Forskningen blev stoppet: trofæerne og halvdelen af pengene kom tilbage."
   fr: "La recherche a été arrêtée : les trophées et la moitié de l'argent sont revenus."
   nl: "Het onderzoek is gestopt: de trofeeën en de helft van het geld kwamen terug."
   pl: "Badanie zatrzymano: trofea i połowa pieniędzy wróciły."
@@ -809,6 +924,7 @@ _version: 2
   uk: "Дослідження зупинено: трофеї та половина грошей повернулися."
 "Stopping gives back the trophies and half the money; the work done is lost.":
   de: "Ein Abbruch gibt die Trophäen und die Hälfte des Geldes zurück; die geleistete Arbeit geht verloren."
+  da: "Stop giver trofæerne og halvdelen af pengene tilbage; det udførte arbejde går tabt."
   fr: "Arrêter rend les trophées et la moitié de l'argent ; le travail fait est perdu."
   nl: "Stoppen geeft de trofeeën en de helft van het geld terug; het gedane werk gaat verloren."
   pl: "Zatrzymanie zwraca trofea i połowę pieniędzy; wykonana praca przepada."
@@ -816,6 +932,7 @@ _version: 2
   uk: "Зупинка повертає трофеї та половину грошей; виконана робота втрачається."
 "What it does":
   de: "Was es bewirkt"
+  da: "Hvad den gør"
   fr: "Ce que ça fait"
   nl: "Wat het doet"
   pl: "Co to daje"
@@ -823,6 +940,7 @@ _version: 2
   uk: "Що це дає"
 "Researched":
   de: "Erforscht"
+  da: "Undersøgt"
   fr: "Recherché"
   nl: "Onderzocht"
   pl: "Zbadane"
@@ -830,6 +948,7 @@ _version: 2
   uk: "Досліджено"
 "Researching: %{share} %":
   de: "Forschung: %{share} %"
+  da: "Forsker: %{share} %"
   fr: "Recherche : %{share} %"
   nl: "Onderzoek: %{share} %"
   pl: "Badanie: %{share} %"
@@ -837,6 +956,7 @@ _version: 2
   uk: "Дослідження: %{share} %"
 "about %{n} days to go":
   de: "noch etwa %{n} Tage"
+  da: "omkring %{n} dage tilbage"
   fr: "encore environ %{n} jours"
   nl: "nog ongeveer %{n} dagen"
   pl: "zostało około %{n} dni"
@@ -844,6 +964,7 @@ _version: 2
   uk: "залишилося близько %{n} дн."
 "nobody works on it":
   de: "niemand arbeitet daran"
+  da: "ingen arbejder på den"
   fr: "personne n'y travaille"
   nl: "niemand werkt eraan"
   pl: "nikt nad tym nie pracuje"
@@ -851,6 +972,7 @@ _version: 2
   uk: "ніхто над ним не працює"
 "%{n} (%{short} missing)":
   de: "%{n} (%{short} fehlen)"
+  da: "%{n} (%{short} mangler)"
   fr: "%{n} (%{short} manquants)"
   nl: "%{n} (%{short} te weinig)"
   pl: "%{n} (brakuje %{short})"
@@ -858,6 +980,7 @@ _version: 2
   uk: "%{n} (бракує %{short})"
 "Start research":
   de: "Forschung starten"
+  da: "Start forskning"
   fr: "Lancer la recherche"
   nl: "Onderzoek starten"
   pl: "Rozpocznij badanie"
@@ -865,6 +988,7 @@ _version: 2
   uk: "Почати дослідження"
 "Needs: %{what}":
   de: "Braucht: %{what}"
+  da: "Kræver: %{what}"
   fr: "Nécessite : %{what}"
   nl: "Nodig: %{what}"
   pl: "Wymaga: %{what}"
@@ -872,6 +996,7 @@ _version: 2
   uk: "Потрібно: %{what}"
 "Researched: it works for the company.":
   de: "Erforscht: Es wirkt für die Firma."
+  da: "Undersøgt: den virker for selskabet."
   fr: "Recherché : cela profite à l'entreprise."
   nl: "Onderzocht: het werkt voor het bedrijf."
   pl: "Zbadane: działa na rzecz firmy."
@@ -879,6 +1004,7 @@ _version: 2
   uk: "Досліджено: це працює на компанію."
 "Stage %{stage} of %{stages} costs %{money} and %{trophies} trophies, and %{work} researcher-days of work.":
   de: "Stufe %{stage} von %{stages} kostet %{money} und %{trophies} Trophäen sowie %{work} Forschertage Arbeit."
+  da: "Trin %{stage} af %{stages} koster %{money} og %{trophies} trofæer og %{work} forskerdages arbejde."
   fr: "L'étape %{stage} sur %{stages} coûte %{money} et %{trophies} trophées, et %{work} jours-chercheur de travail."
   nl: "Fase %{stage} van %{stages} kost %{money} en %{trophies} trofeeën, en %{work} onderzoeksdagen werk."
   pl: "Etap %{stage} z %{stages} kosztuje %{money} i %{trophies} trofeów oraz %{work} dni pracy badawczej."
@@ -886,6 +1012,7 @@ _version: 2
   uk: "Етап %{stage} з %{stages} коштує %{money} і %{trophies} трофеїв, а також %{work} людино-днів роботи."
 "It needs first: %{what}.":
   de: "Zuerst nötig: %{what}."
+  da: "Den kræver først: %{what}."
   fr: "Il faut d'abord : %{what}."
   nl: "Eerst nodig: %{what}."
   pl: "Najpierw potrzebne: %{what}."
@@ -893,6 +1020,7 @@ _version: 2
   uk: "Спершу потрібно: %{what}."
 "A research is running":
   de: "Eine Forschung läuft"
+  da: "En forskning kører"
   fr: "Une recherche est en cours"
   nl: "Er loopt een onderzoek"
   pl: "Badanie już trwa"
@@ -900,6 +1028,7 @@ _version: 2
   uk: "Дослідження вже триває"
 "Your researchers work on one research at a time: wait until it is done, or stop it at the top of the page.":
   de: "Ihre Forscher arbeiten an einer Forschung zur Zeit: Warten Sie, bis sie fertig ist, oder brechen Sie sie oben auf der Seite ab."
+  da: "Dine forskere arbejder på én forskning ad gangen: vent, til den er færdig, eller stop den øverst på siden."
   fr: "Vos chercheurs travaillent sur une recherche à la fois : attendez qu'elle soit terminée, ou arrêtez-la en haut de la page."
   nl: "Je onderzoekers werken aan één onderzoek tegelijk: wacht tot het klaar is, of stop het bovenaan de pagina."
   pl: "Twoi badacze pracują nad jednym badaniem naraz: poczekaj, aż się skończy, albo zatrzymaj je u góry strony."
@@ -907,6 +1036,7 @@ _version: 2
   uk: "Ваші дослідники працюють над одним дослідженням за раз: дочекайтеся його завершення або зупиніть його вгорі сторінки."
 "The company has %{have} trophies; this research needs %{need}: %{short} more.":
   de: "Die Firma hat %{have} Trophäen; diese Forschung braucht %{need}: %{short} mehr."
+  da: "Selskabet har %{have} trofæer; denne forskning kræver %{need}: %{short} mere."
   fr: "L'entreprise a %{have} trophées ; cette recherche en demande %{need} : %{short} de plus."
   nl: "Het bedrijf heeft %{have} trofeeën; dit onderzoek vraagt er %{need}: %{short} meer."
   pl: "Firma ma %{have} trofeów; to badanie wymaga %{need}: o %{short} więcej."
@@ -914,6 +1044,7 @@ _version: 2
   uk: "Компанія має %{have} трофеїв; для цього дослідження потрібно %{need}: на %{short} більше."
 "Not enough trophies":
   de: "Nicht genug Trophäen"
+  da: "Ikke trofæer nok"
   fr: "Pas assez de trophées"
   nl: "Niet genoeg trofeeën"
   pl: "Za mało trofeów"
@@ -921,6 +1052,7 @@ _version: 2
   uk: "Недостатньо трофеїв"
 "Trophies are earned with goals and contracts: see the Contracts page and the inbox.":
   de: "Trophäen verdient man mit Zielen und Verträgen: siehe die Seite Verträge und den Posteingang."
+  da: "Trofæer optjenes med mål og kontrakter: se siden Kontrakter og indbakken."
   fr: "Les trophées se gagnent avec les objectifs et les contrats : voyez la page Contrats et la boîte de réception."
   nl: "Trofeeën verdien je met doelen en contracten: zie de pagina Contracten en de inbox."
   pl: "Trofea zdobywa się za cele i umowy: zobacz stronę Umowy i skrzynkę odbiorczą."
@@ -928,6 +1060,7 @@ _version: 2
   uk: "Трофеї заробляються цілями та контрактами: див. сторінку «Контракти» та вхідні."
 "The research has begun: %{name}, stage %{stage}.":
   de: "Die Forschung hat begonnen: %{name}, Stufe %{stage}."
+  da: "Forskningen er begyndt: %{name}, trin %{stage}."
   fr: "La recherche a commencé : %{name}, étape %{stage}."
   nl: "Het onderzoek is begonnen: %{name}, fase %{stage}."
   pl: "Badanie rozpoczęte: %{name}, etap %{stage}."
@@ -935,6 +1068,7 @@ _version: 2
   uk: "Дослідження почалося: %{name}, етап %{stage}."
 "The research has begun: %{name}.":
   de: "Die Forschung hat begonnen: %{name}."
+  da: "Forskningen er begyndt: %{name}."
   fr: "La recherche a commencé : %{name}."
   nl: "Het onderzoek is begonnen: %{name}."
   pl: "Badanie rozpoczęte: %{name}."
@@ -942,6 +1076,7 @@ _version: 2
   uk: "Дослідження почалося: %{name}."
 "Research needed":
   de: "Forschung nötig"
+  da: "Forskning påkrævet"
   fr: "Recherche requise"
   nl: "Onderzoek nodig"
   pl: "Wymaga badania"
@@ -949,6 +1084,7 @@ _version: 2
   uk: "Потрібне дослідження"
 "Mechanics":
   de: "Mechaniker"
+  da: "Mekanikere"
   fr: "Mécaniciens"
   nl: "Monteurs"
   pl: "Mechanicy"
@@ -956,6 +1092,7 @@ _version: 2
   uk: "Механіки"
 "at work today":
   de: "heute bei der Arbeit"
+  da: "på arbejde i dag"
   fr: "au travail aujourd'hui"
   nl: "vandaag aan het werk"
   pl: "w pracy dzisiaj"
@@ -963,6 +1100,7 @@ _version: 2
   uk: "на роботі сьогодні"
 "Waiting for parts":
   de: "Warten auf Teile"
+  da: "Venter på dele"
   fr: "En attente de pièces"
   nl: "Wachtend op onderdelen"
   pl: "Czekają na części"
@@ -970,6 +1108,7 @@ _version: 2
   uk: "Чекають на запчастини"
 "buses in the workshop":
   de: "Busse in der Werkstatt"
+  da: "busser på værkstedet"
   fr: "bus à l'atelier"
   nl: "bussen in de werkplaats"
   pl: "autobusów w warsztacie"
@@ -977,6 +1116,7 @@ _version: 2
   uk: "автобусів у майстерні"
 "parts on their way":
   de: "Teile unterwegs"
+  da: "dele på vej"
   fr: "pièces en route"
   nl: "onderdelen onderweg"
   pl: "części w drodze"
@@ -984,6 +1124,7 @@ _version: 2
   uk: "запчастин у дорозі"
 "In store":
   de: "Im Lager"
+  da: "På lager"
   fr: "En magasin"
   nl: "In het magazijn"
   pl: "W magazynie"
@@ -991,6 +1132,7 @@ _version: 2
   uk: "На складі"
 "worth of spare parts":
   de: "an Ersatzteilen"
+  da: "værd i reservedele"
   fr: "de pièces détachées"
   nl: "aan reserveonderdelen"
   pl: "w częściach zamiennych"
@@ -998,6 +1140,7 @@ _version: 2
   uk: "у запчастинах"
 "today at 16:00":
   de: "heute um 16:00"
+  da: "i dag kl. 16:00"
   fr: "aujourd'hui à 16:00"
   nl: "vandaag om 16:00"
   pl: "dziś o 16:00"
@@ -1005,6 +1148,7 @@ _version: 2
   uk: "сьогодні о 16:00"
 "tomorrow at 16:00":
   de: "morgen um 16:00"
+  da: "i morgen kl. 16:00"
   fr: "demain à 16:00"
   nl: "morgen om 16:00"
   pl: "jutro o 16:00"
@@ -1012,6 +1156,7 @@ _version: 2
   uk: "завтра о 16:00"
 "Delivery at 16:00: free":
   de: "Lieferung um 16:00: kostenlos"
+  da: "Levering kl. 16:00: gratis"
   fr: "Livraison à 16:00 : gratuite"
   nl: "Levering om 16:00: gratis"
   pl: "Dostawa o 16:00: bezpłatna"
@@ -1019,6 +1164,7 @@ _version: 2
   uk: "Доставка о 16:00: безкоштовно"
 "At once: %{amount}":
   de: "Sofort: %{amount}"
+  da: "Med det samme: %{amount}"
   fr: "Immédiatement : %{amount}"
   nl: "Direct: %{amount}"
   pl: "Od razu: %{amount}"
@@ -1026,6 +1172,7 @@ _version: 2
   uk: "Одразу: %{amount}"
 "In the stores as soon as it is bought.":
   de: "Im Lager, sobald es gekauft ist."
+  da: "På lageret, så snart det er købt."
   fr: "En magasin dès l'achat."
   nl: "In het magazijn zodra het gekocht is."
   pl: "W magazynie zaraz po zakupie."
@@ -1033,6 +1180,7 @@ _version: 2
   uk: "На складі одразу після покупки."
 "Ordered now, it comes %{when}.":
   de: "Jetzt bestellt, kommt es %{when}."
+  da: "Bestilt nu kommer det %{when}."
   fr: "Commandé maintenant, cela arrive %{when}."
   nl: "Nu besteld, komt het %{when}."
   pl: "Zamówione teraz dotrze %{when}."
@@ -1040,6 +1188,7 @@ _version: 2
   uk: "Якщо замовити зараз, доставка %{when}."
 "Sum: %{amount}":
   de: "Summe: %{amount}"
+  da: "Sum: %{amount}"
   fr: "Total : %{amount}"
   nl: "Totaal: %{amount}"
   pl: "Suma: %{amount}"
@@ -1047,6 +1196,7 @@ _version: 2
   uk: "Разом: %{amount}"
 "Choose nothing":
   de: "Nichts auswählen"
+  da: "Vælg intet"
   fr: "Ne rien choisir"
   nl: "Niets kiezen"
   pl: "Nic nie wybieraj"
@@ -1054,6 +1204,7 @@ _version: 2
   uk: "Нічого не вибирати"
 "No bus waits for a part.":
   de: "Kein Bus wartet auf ein Teil."
+  da: "Ingen bus venter på en del."
   fr: "Aucun bus n'attend de pièce."
   nl: "Geen bus wacht op een onderdeel."
   pl: "Żaden autobus nie czeka na część."
@@ -1061,6 +1212,7 @@ _version: 2
   uk: "Жоден автобус не чекає на запчастину."
 "waiting since %{date}":
   de: "wartet seit %{date}"
+  da: "venter siden %{date}"
   fr: "en attente depuis le %{date}"
   nl: "wacht sinds %{date}"
   pl: "czeka od %{date}"
@@ -1068,6 +1220,7 @@ _version: 2
   uk: "чекає з %{date}"
 "Nothing is on order.":
   de: "Nichts ist bestellt."
+  da: "Intet er i bestilling."
   fr: "Rien n'est en commande."
   nl: "Er is niets besteld."
   pl: "Nic nie jest zamówione."
@@ -1075,6 +1228,7 @@ _version: 2
   uk: "Нічого не замовлено."
 "%{n} parts, %{when}":
   de: "%{n} Teile, %{when}"
+  da: "%{n} dele, %{when}"
   fr: "%{n} pièces, %{when}"
   nl: "%{n} onderdelen, %{when}"
   pl: "Części: %{n}, %{when}"
@@ -1082,6 +1236,7 @@ _version: 2
   uk: "Запчастин: %{n}, %{when}"
 "ordered by the stores":
   de: "vom Lager bestellt"
+  da: "bestilt af lageret"
   fr: "commandé par le magasin"
   nl: "besteld door het magazijn"
   pl: "zamówione przez magazyn"
@@ -1089,6 +1244,7 @@ _version: 2
   uk: "замовлено складом"
 "What falls under half of what the stores keep - and what a waiting bus needs - is ordered for the free delivery of the next day.":
   de: "Was unter die Hälfte des Lagerbestands fällt - und was ein wartender Bus braucht -, wird für die kostenlose Lieferung am nächsten Tag bestellt."
+  da: "Det, der falder under halvdelen af, hvad lageret holder - og det, en ventende bus har brug for - bestilles til den gratis levering næste dag."
   fr: "Ce qui tombe sous la moitié du stock prévu - et ce dont un bus en attente a besoin - est commandé pour la livraison gratuite du lendemain."
   nl: "Wat onder de helft zakt van wat het magazijn aanhoudt - en wat een wachtende bus nodig heeft - wordt besteld voor de gratis levering van de volgende dag."
   pl: "To, co spada poniżej połowy zapasu magazynu, i to, czego potrzebuje czekający autobus, jest zamawiane z bezpłatną dostawą na następny dzień."
@@ -1096,6 +1252,7 @@ _version: 2
   uk: "Те, що опускається нижче половини норми складу, і те, що потрібно автобусу в очікуванні, замовляється з безкоштовною доставкою наступного дня."
 "Ordering by itself":
   de: "Automatisch bestellen"
+  da: "Bestilling af sig selv"
   fr: "Commande automatique"
   nl: "Vanzelf bestellen"
   pl: "Zamawianie automatyczne"
@@ -1103,6 +1260,7 @@ _version: 2
   uk: "Автоматичне замовлення"
 "The stores order what runs short":
   de: "Das Lager bestellt, was knapp wird"
+  da: "Lageret bestiller det, der løber tør"
   fr: "Le magasin commande ce qui manque"
   nl: "Het magazijn bestelt wat opraakt"
   pl: "Magazyn zamawia to, czego brakuje"
@@ -1110,6 +1268,7 @@ _version: 2
   uk: "Склад замовляє те, чого бракує"
 "No mechanics at work: an outside garage repairs the buses that break down, in its own time. Hire mechanics on the Staff page.":
   de: "Keine Mechaniker bei der Arbeit: Eine fremde Werkstatt repariert die liegengebliebenen Busse in ihrem eigenen Tempo. Stellen Sie auf der Seite Personal Mechaniker ein."
+  da: "Ingen mekanikere på arbejde: et eksternt værksted reparerer de busser, der bryder sammen, i sin egen tid. Ansæt mekanikere på personalesiden."
   fr: "Aucun mécanicien au travail : un garage extérieur répare les bus en panne, à son rythme. Embauchez des mécaniciens sur la page Personnel."
   nl: "Geen monteurs aan het werk: een externe garage repareert de bussen met pech, in zijn eigen tempo. Neem monteurs aan op de pagina Personeel."
   pl: "Brak mechaników w pracy: zepsute autobusy naprawia zewnętrzny warsztat we własnym tempie. Zatrudnij mechaników na stronie Personel."
@@ -1117,6 +1276,7 @@ _version: 2
   uk: "Механіків на роботі немає: зламані автобуси ремонтує сторонній сервіс у своєму темпі. Найміть механіків на сторінці «Персонал»."
 "At work today: %{n}, %{hours} hours of repairs a day.":
   de: "Heute bei der Arbeit: %{n}, %{hours} Stunden Reparaturen pro Tag."
+  da: "På arbejde i dag: %{n}, %{hours} timers reparationer om dagen."
   fr: "Au travail aujourd'hui : %{n}, %{hours} heures de réparations par jour."
   nl: "Vandaag aan het werk: %{n}, %{hours} uur reparaties per dag."
   pl: "Dziś w pracy: %{n}, %{hours} godz. napraw dziennie."
@@ -1124,6 +1284,7 @@ _version: 2
   uk: "Сьогодні на роботі: %{n}, %{hours} год ремонту на день."
 "The research makes the repairs %{n} % quicker.":
   de: "Die Forschung macht die Reparaturen %{n} % schneller."
+  da: "Forskningen gør reparationerne %{n} % hurtigere."
   fr: "La recherche rend les réparations %{n} % plus rapides."
   nl: "Door het onderzoek gaan de reparaties %{n} % sneller."
   pl: "Dzięki badaniom naprawy są o %{n} % szybsze."
@@ -1131,6 +1292,7 @@ _version: 2
   uk: "Завдяки дослідженням ремонт іде на %{n} % швидше."
 "Bought: %{n} spare parts for %{amount}, in the stores now.":
   de: "Gekauft: %{n} Ersatzteile für %{amount}, jetzt im Lager."
+  da: "Købt: %{n} reservedele for %{amount}, nu på lageret."
   fr: "Acheté : %{n} pièces détachées pour %{amount}, en magasin maintenant."
   nl: "Gekocht: %{n} reserveonderdelen voor %{amount}, nu in het magazijn."
   pl: "Kupiono części zamiennych: %{n} za %{amount}, już w magazynie."
@@ -1138,6 +1300,7 @@ _version: 2
   uk: "Куплено запчастин: %{n} на %{amount}, уже на складі."
 "Ordered: %{n} spare parts for %{amount}; they come %{when}.":
   de: "Bestellt: %{n} Ersatzteile für %{amount}; sie kommen %{when}."
+  da: "Bestilt: %{n} reservedele for %{amount}; de kommer %{when}."
   fr: "Commandé : %{n} pièces détachées pour %{amount} ; elles arrivent %{when}."
   nl: "Besteld: %{n} reserveonderdelen voor %{amount}; ze komen %{when}."
   pl: "Zamówiono części zamiennych: %{n} za %{amount}; dotrą %{when}."

@@ -6,6 +6,7 @@ _version: 2
 "Your standing with the %{maker} dealer: %{standing}":
   nl: "Je naam bij de %{maker}-dealer: %{standing}"
   de: "Dein Ansehen beim %{maker}-Händler: %{standing}"
+  da: "Din status hos %{maker}-forhandleren: %{standing}"
   fr: "Votre statut chez le concessionnaire %{maker} : %{standing}"
   ru: "Ваш статус у дилера %{maker}: %{standing}"
   uk: "Ваш статус у дилера %{maker}: %{standing}"
@@ -13,6 +14,7 @@ _version: 2
 "one bus bought of him":
   nl: "één bus bij hem gekocht"
   de: "ein Bus bei ihm gekauft"
+  da: "en bus købt hos ham"
   fr: "un bus acheté chez lui"
   ru: "куплен один автобус"
   uk: "куплено один автобус"
@@ -20,6 +22,7 @@ _version: 2
 "%{count} buses bought of him":
   nl: "%{count} bussen bij hem gekocht"
   de: "%{count} Busse bei ihm gekauft"
+  da: "%{count} busser købt hos ham"
   fr: "%{count} bus achetés chez lui"
   ru: "куплено автобусов: %{count}"
   uk: "куплено автобусів: %{count}"
@@ -27,6 +30,7 @@ _version: 2
 "%{n} % more room for a discount":
   nl: "%{n} % meer ruimte voor korting"
   de: "%{n} % mehr Spielraum für Rabatt"
+  da: "%{n} % mere plads til rabat"
   fr: "%{n} % de marge de remise en plus"
   ru: "на %{n} % больше места для скидки"
   uk: "на %{n} % більше простору для знижки"
@@ -34,6 +38,7 @@ _version: 2
 "one new bus more to %{next}":
   nl: "nog één nieuwe bus tot %{next}"
   de: "noch ein neuer Bus bis %{next}"
+  da: "en ny bus mere til %{next}"
   fr: "encore un bus neuf jusqu'à %{next}"
   ru: "ещё один новый автобус до статуса «%{next}»"
   uk: "ще один новий автобус до статусу «%{next}»"
@@ -41,6 +46,7 @@ _version: 2
 "%{count} new buses more to %{next}":
   nl: "nog %{count} nieuwe bussen tot %{next}"
   de: "noch %{count} neue Busse bis %{next}"
+  da: "%{count} nye busser mere til %{next}"
   fr: "encore %{count} bus neufs jusqu'à %{next}"
   ru: "ещё новых автобусов до статуса «%{next}»: %{count}"
   uk: "ще нових автобусів до статусу «%{next}»: %{count}"
@@ -48,6 +54,7 @@ _version: 2
 "New customer":
   nl: "Nieuwe klant"
   de: "Neukunde"
+  da: "Ny kunde"
   fr: "Nouveau client"
   ru: "Новый клиент"
   uk: "Новий клієнт"
@@ -55,6 +62,7 @@ _version: 2
 "Known customer":
   nl: "Bekende klant"
   de: "Bekannter Kunde"
+  da: "Kendt kunde"
   fr: "Client connu"
   ru: "Знакомый клиент"
   uk: "Знайомий клієнт"
@@ -62,6 +70,7 @@ _version: 2
 "Regular customer":
   nl: "Vaste klant"
   de: "Stammkunde"
+  da: "Fast kunde"
   fr: "Client régulier"
   ru: "Постоянный клиент"
   uk: "Постійний клієнт"
@@ -69,6 +78,7 @@ _version: 2
 "Preferred partner":
   nl: "Voorkeurspartner"
   de: "Vorzugspartner"
+  da: "Foretrukken partner"
   fr: "Partenaire privilégié"
   ru: "Привилегированный партнёр"
   uk: "Привілейований партнер"
@@ -76,6 +86,7 @@ _version: 2
 "One bus: little room for a discount":
   nl: "Eén bus: weinig ruimte voor korting"
   de: "Ein Bus: wenig Spielraum für Rabatt"
+  da: "En bus: lidt plads til rabat"
   fr: "Un seul bus : peu de marge de remise"
   ru: "Один автобус: скидка невелика"
   uk: "Один автобус: знижка невелика"
@@ -83,6 +94,7 @@ _version: 2
 "A small order":
   nl: "Een kleine bestelling"
   de: "Eine kleine Bestellung"
+  da: "En lille ordre"
   fr: "Une petite commande"
   ru: "Небольшой заказ"
   uk: "Невелике замовлення"
@@ -90,6 +102,7 @@ _version: 2
 "A bulk order: a bulk discount":
   nl: "Een bulkbestelling: bulkkorting"
   de: "Eine Großbestellung: Mengenrabatt"
+  da: "En storordre: mængderabat"
   fr: "Une commande en gros : remise de quantité"
   ru: "Оптовый заказ: скидка за количество"
   uk: "Оптове замовлення: знижка за кількість"
@@ -97,6 +110,7 @@ _version: 2
 "A fleet order: a fleet discount":
   nl: "Een vlootbestelling: vlootkorting"
   de: "Eine Flottenbestellung: Flottenrabatt"
+  da: "En flådeordre: flådrabat"
   fr: "Une commande de flotte : remise de flotte"
   ru: "Заказ для парка: скидка для парка"
   uk: "Замовлення для парку: знижка для парку"
@@ -104,6 +118,7 @@ _version: 2
 "more off from %{n} buses":
   nl: "meer korting vanaf %{n} bussen"
   de: "mehr Rabatt ab %{n} Bussen"
+  da: "mere rabat fra %{n} busser"
   fr: "plus de remise à partir de %{n} bus"
   ru: "больше скидка от %{n} автобусов"
   uk: "більша знижка від %{n} автобусів"
@@ -111,6 +126,7 @@ _version: 2
 "The dealer's discount (%{n} %)":
   nl: "Korting van de dealer (%{n} %)"
   de: "Rabatt des Händlers (%{n} %)"
+  da: "Forhandlerens rabat (%{n} %)"
   fr: "Remise du concessionnaire (%{n} %)"
   ru: "Скидка дилера (%{n} %)"
   uk: "Знижка дилера (%{n} %)"

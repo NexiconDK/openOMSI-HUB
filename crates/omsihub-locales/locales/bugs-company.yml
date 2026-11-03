@@ -2,6 +2,7 @@ _version: 2
 # The bus company's fixes from the testers' feedback (Trello): the agency's limit where it is chosen.
 "Agency driver (today %{n} of %{max} - grows with your staff)":
   de: "Leiharbeitsfahrer (heute %{n} von %{max} – wächst mit Ihrem Personal)"
+  da: "Vikarchauffør (i dag %{n} af %{max} - vokser med dit personale)"
   fr: "Chauffeur intérimaire (aujourd'hui %{n} sur %{max} – augmente avec votre personnel)"
   nl: "Uitzendchauffeur (vandaag %{n} van %{max} – groeit mee met je personeel)"
   pl: "Kierowca z agencji (dziś %{n} z %{max} – rośnie wraz z personelem)"
@@ -9,6 +10,7 @@ _version: 2
   uk: "Водій з агенції (сьогодні %{n} з %{max} — зростає разом із персоналом)"
 "No agency driver left today: %{n} of %{max}. The agency sends two, and one more for every three drivers you employ.":
   de: "Heute kein Leiharbeitsfahrer mehr: %{n} von %{max}. Die Agentur schickt zwei und einen mehr für je drei Fahrer, die Sie beschäftigen."
+  da: "Ingen vikarchauffør tilbage i dag: %{n} af %{max}. Vikarbureauet sender to, og en mere for hver tre chauffører, du har ansat."
   fr: "Plus de chauffeur intérimaire aujourd'hui : %{n} sur %{max}. L'agence en envoie deux, et un de plus pour chaque tranche de trois chauffeurs que vous employez."
   nl: "Vandaag geen uitzendchauffeur meer: %{n} van %{max}. Het uitzendbureau stuurt er twee, en één meer voor elke drie chauffeurs die je in dienst hebt."
   pl: "Dziś nie ma już kierowcy z agencji: %{n} z %{max}. Agencja przysyła dwóch i jednego więcej na każdych trzech zatrudnionych kierowców."
@@ -17,6 +19,7 @@ _version: 2
 # Why a driver cannot take a duty, exactly (the planning's lists).
 "Not a driver":
   de: "Kein Fahrer"
+  da: "Ikke en chauffør"
   fr: "Pas chauffeur"
   nl: "Geen chauffeur"
   pl: "Nie jest kierowcą"
@@ -24,6 +27,7 @@ _version: 2
   uk: "Не водій"
 "Worked %{n} days this week already":
   de: "Hat diese Woche schon %{n} Tage gearbeitet"
+  da: "Har allerede arbejdet %{n} dage i denne uge"
   fr: "A déjà travaillé %{n} jours cette semaine"
   nl: "Heeft deze week al %{n} dagen gewerkt"
   pl: "Przepracował już %{n} dni w tym tygodniu"
@@ -31,6 +35,7 @@ _version: 2
   uk: "Уже відпрацював %{n} днів цього тижня"
 "Drives line %{n} tour %{tour} then (%{from}–%{to})":
   de: "Fährt dann Linie %{n} Umlauf %{tour} (%{from}–%{to})"
+  da: "Kører da linje %{n} vognløb %{tour} (%{from}–%{to})"
   fr: "Conduit alors la ligne %{n}, service %{tour} (%{from}–%{to})"
   nl: "Rijdt dan lijn %{n} omloop %{tour} (%{from}–%{to})"
   pl: "Jedzie wtedy linią %{n}, kurs %{tour} (%{from}–%{to})"
@@ -38,6 +43,7 @@ _version: 2
   uk: "У цей час на лінії %{n}, оберт %{tour} (%{from}–%{to})"
 "Only %{n} min between duties: %{min} min rest needed":
   de: "Nur %{n} Min. zwischen den Diensten: %{min} Min. Pause nötig"
+  da: "Kun %{n} min mellem vagter: %{min} min hvile kræves"
   fr: "Seulement %{n} min entre les services : %{min} min de repos nécessaires"
   nl: "Maar %{n} min tussen de diensten: %{min} min rust nodig"
   pl: "Tylko %{n} min między służbami: potrzeba %{min} min odpoczynku"
@@ -45,6 +51,7 @@ _version: 2
   uk: "Лише %{n} хв між змінами: потрібно %{min} хв відпочинку"
 "Night's rest after yesterday: free from %{time}":
   de: "Nachtruhe nach gestern: frei ab %{time}"
+  da: "Nattehvile efter i går: fri fra %{time}"
   fr: "Repos de nuit après hier : libre à partir de %{time}"
   nl: "Nachtrust na gisteren: vrij vanaf %{time}"
   pl: "Odpoczynek nocny po wczoraj: wolny od %{time}"
@@ -52,6 +59,7 @@ _version: 2
   uk: "Нічний відпочинок після вчорашнього: вільний з %{time}"
 "Working day would be %{t}: %{max} at most":
   de: "Arbeitstag wäre %{t}: höchstens %{max}"
+  da: "Arbejdsdagen ville blive %{t}: højst %{max}"
   fr: "La journée de travail ferait %{t} : %{max} au plus"
   nl: "Werkdag zou %{t} worden: hoogstens %{max}"
   pl: "Dzień pracy trwałby %{t}: najwyżej %{max}"
@@ -59,6 +67,7 @@ _version: 2
   uk: "Робочий день тривав би %{t}: не більше %{max}"
 "Can take it: free all day":
   de: "Kann ihn übernehmen: den ganzen Tag frei"
+  da: "Kan tage den: fri hele dagen"
   fr: "Peut le prendre : libre toute la journée"
   nl: "Kan hem nemen: de hele dag vrij"
   pl: "Może ją przejąć: wolny cały dzień"
@@ -66,6 +75,7 @@ _version: 2
   uk: "Може взяти: вільний увесь день"
 "Can take it":
   de: "Kann ihn übernehmen"
+  da: "Kan tage den"
   fr: "Peut le prendre"
   nl: "Kan hem nemen"
   pl: "Może ją przejąć"
@@ -73,6 +83,7 @@ _version: 2
   uk: "Може взяти"
 "Free from %{time} (night's rest)":
   de: "Frei ab %{time} (Nachtruhe)"
+  da: "Fri fra %{time} (nattehvile)"
   fr: "Libre à partir de %{time} (repos de nuit)"
   nl: "Vrij vanaf %{time} (nachtrust)"
   pl: "Wolny od %{time} (odpoczynek nocny)"
@@ -80,6 +91,7 @@ _version: 2
   uk: "Вільний з %{time} (нічний відпочинок)"
 "Free all day":
   de: "Den ganzen Tag frei"
+  da: "Fri hele dagen"
   fr: "Libre toute la journée"
   nl: "De hele dag vrij"
   pl: "Wolny cały dzień"
@@ -88,6 +100,7 @@ _version: 2
 # Covering a duty that fell out: each colleague, an agency driver, yourself, dropping it.
 "Cover it today":
   de: "Heute abdecken"
+  da: "Dæk den i dag"
   fr: "Le couvrir aujourd'hui"
   nl: "Vandaag opvangen"
   pl: "Obsadź dziś"
@@ -95,6 +108,7 @@ _version: 2
   uk: "Закрити сьогодні"
 "Standby: free all day":
   de: "Bereitschaft: den ganzen Tag frei"
+  da: "Standby: fri hele dagen"
   fr: "En réserve : libre toute la journée"
   nl: "Reserve: de hele dag vrij"
   pl: "Rezerwa: wolny cały dzień"
@@ -102,6 +116,7 @@ _version: 2
   uk: "Резерв: вільний увесь день"
 "Penalty %{amount}":
   de: "Vertragsstrafe %{amount}"
+  da: "Bod %{amount}"
   fr: "Pénalité %{amount}"
   nl: "Boete %{amount}"
   pl: "Kara %{amount}"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Штраф %{amount}"
 "No penalty":
   de: "Keine Vertragsstrafe"
+  da: "Ingen bod"
   fr: "Sans pénalité"
   nl: "Geen boete"
   pl: "Bez kary"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Без штрафу"
 "As the central has it: %{what}":
   de: "Wie die Leitstelle es regelt: %{what}"
+  da: "Som trafikcentralen har det: %{what}"
   fr: "Comme le prévoit la centrale : %{what}"
   nl: "Zoals de centrale het regelt: %{what}"
   pl: "Tak jak ustaliła centrala: %{what}"
@@ -123,6 +140,7 @@ _version: 2
   uk: "Як вирішив диспетчерський центр: %{what}"
 "%{n} things fell out this morning: drivers ill or late, buses that did not start. Choose how to cover each, or leave it to the central.":
   de: "Heute Morgen ist %{n}-mal etwas ausgefallen: kranke oder verspätete Fahrer, Busse, die nicht angesprungen sind. Wählen Sie, wie Sie es jeweils abdecken, oder überlassen Sie es der Leitstelle."
+  da: "%{n} ting faldt ud i morges: chauffører syge eller forsinkede, busser der ikke startede. Vælg, hvordan hver skal dækkes, eller overlad det til trafikcentralen."
   fr: "%{n} choses ont manqué ce matin : chauffeurs malades ou en retard, bus qui n'ont pas démarré. Choisissez comment couvrir chacune, ou laissez faire la centrale."
   nl: "Vanmorgen vielen %{n} dingen uit: zieke of te late chauffeurs, bussen die niet startten. Kies hoe je elk opvangt, of laat het aan de centrale."
   pl: "Dziś rano wypadło %{n} rzeczy: chorzy lub spóźnieni kierowcy, autobusy, które nie zapaliły. Wybierz, jak obsadzić każdą, albo zostaw to centrali."
@@ -131,6 +149,7 @@ _version: 2
 # A bus that broke down or did not start: a spare bus of the fleet, a rental bus, dropping its trips.
 "Spare bus %{bus}":
   de: "Ersatzbus %{bus}"
+  da: "Reservebus %{bus}"
   fr: "Bus de réserve %{bus}"
   nl: "Reservebus %{bus}"
   pl: "Autobus rezerwowy %{bus}"
@@ -138,6 +157,7 @@ _version: 2
   uk: "Резервний автобус %{bus}"
 "Free then":
   de: "Dann frei"
+  da: "Ledig da"
   fr: "Libre à ce moment"
   nl: "Dan vrij"
   pl: "Wtedy wolny"
@@ -145,6 +165,7 @@ _version: 2
   uk: "У цей час вільний"
 "No rental bus: no place in the depot or not the cash (%{amount})":
   de: "Kein Mietbus: kein Platz im Depot oder nicht genug Geld (%{amount})"
+  da: "Ingen lejebus: ingen plads i garagen eller ikke pengene (%{amount})"
   fr: "Pas de bus de location : pas de place au dépôt ou pas assez d'argent (%{amount})"
   nl: "Geen huurbus: geen plek in de remise of niet genoeg geld (%{amount})"
   pl: "Brak autobusu z wynajmu: brak miejsca w zajezdni lub pieniędzy (%{amount})"
@@ -152,6 +173,7 @@ _version: 2
   uk: "Немає орендного автобуса: немає місця в депо або грошей (%{amount})"
 "It was on line %{n}; it goes to the workshop. No spare bus of the fleet is free until the end of its day. A rental bus can take over its trips from %{time} for %{amount}; else its trips are dropped for the rest of the day, with the contract's penalty.":
   de: "Er war auf Linie %{n}; er kommt in die Werkstatt. Kein Ersatzbus der Flotte ist bis zum Ende seines Tages frei. Ein Mietbus kann seine Fahrten ab %{time} für %{amount} übernehmen; sonst fallen seine Fahrten für den Rest des Tages aus, mit der Vertragsstrafe."
+  da: "Den var på linje %{n}; den kører på værkstedet. Ingen reservebus i flåden er ledig før dagens slutning. En lejebus kan overtage dens ture fra %{time} for %{amount}; ellers droppes dens ture for resten af dagen med kontraktens bod."
   fr: "Il était sur la ligne %{n} ; il part à l'atelier. Aucun bus de réserve de la flotte n'est libre jusqu'à la fin de sa journée. Un bus de location peut reprendre ses courses à partir de %{time} pour %{amount} ; sinon ses courses sont supprimées pour le reste de la journée, avec la pénalité du contrat."
   nl: "Hij reed op lijn %{n}; hij gaat naar de werkplaats. Geen reservebus van de vloot is vrij tot het eind van zijn dag. Een huurbus kan zijn ritten vanaf %{time} overnemen voor %{amount}; anders vallen zijn ritten de rest van de dag uit, met de boete van het contract."
   pl: "Był na linii %{n}; jedzie do warsztatu. Żaden autobus rezerwowy floty nie jest wolny do końca jego dnia. Autobus z wynajmu może przejąć jego kursy od %{time} za %{amount}; inaczej jego kursy przepadają do końca dnia, z karą z umowy."
@@ -159,6 +181,7 @@ _version: 2
   uk: "Він був на лінії %{n}; він їде до майстерні. Жоден резервний автобус парку не вільний до кінця його дня. Орендний автобус може взяти його рейси з %{time} за %{amount}; інакше його рейси скасовуються до кінця дня, зі штрафом за договором."
 "It was on line %{n}; it goes to the workshop. A spare bus of the fleet can take over its trips from %{spare}; a rental bus from %{time} for %{amount}; else its trips are dropped for the rest of the day, with the contract's penalty.":
   de: "Er war auf Linie %{n}; er kommt in die Werkstatt. Ein Ersatzbus der Flotte kann seine Fahrten ab %{spare} übernehmen, ein Mietbus ab %{time} für %{amount}; sonst fallen seine Fahrten für den Rest des Tages aus, mit der Vertragsstrafe."
+  da: "Den var på linje %{n}; den kører på værkstedet. En reservebus fra flåden kan overtage dens ture fra %{spare}; en lejebus fra %{time} for %{amount}; ellers droppes dens ture for resten af dagen med kontraktens bod."
   fr: "Il était sur la ligne %{n} ; il part à l'atelier. Un bus de réserve de la flotte peut reprendre ses courses à partir de %{spare}, un bus de location à partir de %{time} pour %{amount} ; sinon ses courses sont supprimées pour le reste de la journée, avec la pénalité du contrat."
   nl: "Hij reed op lijn %{n}; hij gaat naar de werkplaats. Een reservebus van de vloot kan zijn ritten vanaf %{spare} overnemen, een huurbus vanaf %{time} voor %{amount}; anders vallen zijn ritten de rest van de dag uit, met de boete van het contract."
   pl: "Był na linii %{n}; jedzie do warsztatu. Autobus rezerwowy floty może przejąć jego kursy od %{spare}, autobus z wynajmu od %{time} za %{amount}; inaczej jego kursy przepadają do końca dnia, z karą z umowy."
@@ -166,6 +189,7 @@ _version: 2
   uk: "Він був на лінії %{n}; він їде до майстерні. Резервний автобус парку може взяти його рейси з %{spare}, орендний — з %{time} за %{amount}; інакше його рейси скасовуються до кінця дня, зі штрафом за договором."
 "Spare buses free now":
   de: "Jetzt freie Ersatzbusse"
+  da: "Reservebusser ledige nu"
   fr: "Bus de réserve libres maintenant"
   nl: "Nu vrije reservebussen"
   pl: "Wolne teraz autobusy rezerwowe"
@@ -173,6 +197,7 @@ _version: 2
   uk: "Вільні зараз резервні автобуси"
 "Send spare bus %{bus} (from %{time}, no extra cost)":
   de: "Ersatzbus %{bus} schicken (ab %{time}, ohne Mehrkosten)"
+  da: "Send reservebus %{bus} (fra %{time}, ingen ekstra omkostning)"
   fr: "Envoyer le bus de réserve %{bus} (dès %{time}, sans surcoût)"
   nl: "Reservebus %{bus} sturen (vanaf %{time}, geen extra kosten)"
   pl: "Wyślij autobus rezerwowy %{bus} (od %{time}, bez dodatkowych kosztów)"
@@ -180,6 +205,7 @@ _version: 2
   uk: "Надіслати резервний автобус %{bus} (з %{time}, без додаткових витрат)"
 "Spare bus %{spare} takes over the trips of bus %{bus} on line %{n} from %{time}":
   de: "Ersatzbus %{spare} übernimmt ab %{time} die Fahrten von Bus %{bus} auf Linie %{n}"
+  da: "Reservebus %{spare} overtager bus %{bus}s ture på linje %{n} fra %{time}"
   fr: "Le bus de réserve %{spare} reprend les courses du bus %{bus} sur la ligne %{n} à partir de %{time}"
   nl: "Reservebus %{spare} neemt vanaf %{time} de ritten van bus %{bus} op lijn %{n} over"
   pl: "Autobus rezerwowy %{spare} przejmuje od %{time} kursy autobusu %{bus} na linii %{n}"
@@ -188,6 +214,7 @@ _version: 2
 # The company's own bid on a tender, on the Concessions and Contracts pages.
 "Your bid: %{amount} at %{when}":
   de: "Ihr Gebot: %{amount} um %{when}"
+  da: "Dit bud: %{amount} kl. %{when}"
   fr: "Votre offre : %{amount} à %{when}"
   nl: "Jouw bod: %{amount} om %{when}"
   pl: "Twoja oferta: %{amount} o %{when}"
@@ -195,6 +222,7 @@ _version: 2
   uk: "Ваша ставка: %{amount} о %{when}"
 "%{n} bids placed":
   de: "%{n} Gebote abgegeben"
+  da: "%{n} bud afgivet"
   fr: "%{n} offres déposées"
   nl: "%{n} biedingen gedaan"
   pl: "złożono ofert: %{n}"
@@ -202,6 +230,7 @@ _version: 2
   uk: "зроблено ставок: %{n}"
 "leading":
   de: "vorn"
+  da: "fører"
   fr: "en tête"
   nl: "aan kop"
   pl: "prowadzi"
@@ -209,6 +238,7 @@ _version: 2
   uk: "лідирує"
 "beaten: bid again before it closes":
   de: "überboten: vor dem Schluss erneut bieten"
+  da: "slået: byd igen, før det lukker"
   fr: "dépassée : surenchérissez avant la clôture"
   nl: "overboden: bied opnieuw voor het sluit"
   pl: "przebita: zalicytuj ponownie przed zamknięciem"
@@ -216,6 +246,7 @@ _version: 2
   uk: "перебита: зробіть ставку до закриття"
 "you won":
   de: "gewonnen"
+  da: "du vandt"
   fr: "vous avez gagné"
   nl: "gewonnen"
   pl: "wygrałeś"
@@ -223,6 +254,7 @@ _version: 2
   uk: "ви виграли"
 "won by %{who} with %{amount}":
   de: "gewonnen von %{who} mit %{amount}"
+  da: "vundet af %{who} med %{amount}"
   fr: "remporté par %{who} avec %{amount}"
   nl: "gewonnen door %{who} met %{amount}"
   pl: "wygrał %{who} z kwotą %{amount}"
@@ -230,6 +262,7 @@ _version: 2
   uk: "виграв %{who} зі ставкою %{amount}"
 "You have not bid":
   de: "Sie haben nicht geboten"
+  da: "Du har ikke budt"
   fr: "Vous n'avez pas fait d'offre"
   nl: "Je hebt niet geboden"
   pl: "Nie złożyłeś oferty"
@@ -237,6 +270,7 @@ _version: 2
   uk: "Ви не робили ставку"
 "Your tender bids":
   de: "Ihre Ausschreibungsgebote"
+  da: "Dine udbudsbud"
   fr: "Vos offres aux appels d'offres"
   nl: "Jouw biedingen op aanbestedingen"
   pl: "Twoje oferty w przetargach"
@@ -244,6 +278,7 @@ _version: 2
   uk: "Ваші ставки на тендерах"
 "Tender bids":
   de: "Ausschreibungsgebote"
+  da: "Udbudsbud"
   fr: "Offres aux appels d'offres"
   nl: "Biedingen"
   pl: "Oferty przetargowe"
@@ -251,6 +286,7 @@ _version: 2
   uk: "Ставки на тендерах"
 "The company has bid on no tender yet. The Concessions page lists the lines out to tender: bid there, and your bids show here with their deadline and result.":
   de: "Das Unternehmen hat noch auf keine Ausschreibung geboten. Die Seite Konzessionen zeigt die ausgeschriebenen Linien: Bieten Sie dort, und Ihre Gebote erscheinen hier mit Frist und Ergebnis."
+  da: "Selskabet har endnu ikke budt på noget udbud. Siden Koncessioner viser de linjer, der er i udbud: byd dér, og dine bud vises her med deres frist og resultat."
   fr: "L'entreprise n'a encore fait d'offre sur aucun appel d'offres. La page Concessions liste les lignes mises en concurrence : faites-y une offre, et vos offres s'affichent ici avec leur échéance et leur résultat."
   nl: "Het bedrijf heeft nog op geen aanbesteding geboden. De pagina Concessies toont de aanbestede lijnen: bied daar, en je biedingen staan hier met hun termijn en uitslag."
   pl: "Firma nie złożyła jeszcze oferty w żadnym przetargu. Strona Koncesje pokazuje linie w przetargu: licytuj tam, a twoje oferty pojawią się tutaj z terminem i wynikiem."
@@ -259,6 +295,7 @@ _version: 2
 # RosterFlow's issues from the day's roster: what fell out or nobody is planned for.
 "Line %{n} tour %{tour}: %{rule}":
   de: "Linie %{n} Umlauf %{tour}: %{rule}"
+  da: "Linje %{n} vognløb %{tour}: %{rule}"
   fr: "Ligne %{n} service %{tour} : %{rule}"
   nl: "Lijn %{n} omloop %{tour}: %{rule}"
   pl: "Linia %{n} kurs %{tour}: %{rule}"
@@ -266,6 +303,7 @@ _version: 2
   uk: "Лінія %{n} оберт %{tour}: %{rule}"
 "Line %{n} tour %{tour}: %{rule} - covered for the day":
   de: "Linie %{n} Umlauf %{tour}: %{rule} – für heute abgedeckt"
+  da: "Linje %{n} vognløb %{tour}: %{rule} - dækket for dagen"
   fr: "Ligne %{n} service %{tour} : %{rule} – couvert pour la journée"
   nl: "Lijn %{n} omloop %{tour}: %{rule} – voor vandaag opgevangen"
   pl: "Linia %{n} kurs %{tour}: %{rule} – obsadzone na dziś"
@@ -273,6 +311,7 @@ _version: 2
   uk: "Лінія %{n} оберт %{tour}: %{rule} — закрито на сьогодні"
 "%{n} tours in service have no bus or driver in the roster: they do not run":
   de: "%{n} Umläufe im Betrieb haben keinen Bus oder Fahrer im Dienstplan: sie fahren nicht"
+  da: "%{n} vognløb i drift har ingen bus eller chauffør i vagtplanen: de kører ikke"
   fr: "%{n} services en exploitation n'ont ni bus ni chauffeur au roulement : ils ne roulent pas"
   nl: "%{n} omlopen in dienst hebben geen bus of chauffeur in het rooster: ze rijden niet"
   pl: "%{n} kursów w ruchu nie ma autobusu ani kierowcy w grafiku: nie jadą"
@@ -280,6 +319,7 @@ _version: 2
   uk: "У %{n} обертів у роботі немає автобуса чи водія в графіку: вони не виходять"
 "The day's roster":
   de: "Dienstplan des Tages"
+  da: "Dagens vagtplan"
   fr: "Le roulement du jour"
   nl: "Het rooster van de dag"
   pl: "Grafik dnia"
@@ -287,6 +327,7 @@ _version: 2
   uk: "Графік дня"
 "%{n} late starts: their first trips dropped.":
   de: "%{n} verspätete Dienstbeginne: ihre ersten Fahrten fallen aus."
+  da: "%{n} sene starter: deres første ture droppet."
   fr: "%{n} prises de service en retard : leurs premières courses sont supprimées."
   nl: "%{n} te late diensten: hun eerste ritten vallen uit."
   pl: "%{n} spóźnionych rozpoczęć: ich pierwsze kursy przepadają."
@@ -294,6 +335,7 @@ _version: 2
   uk: "%{n} запізнень на початок зміни: перші рейси скасовано."
 "%{n} covered for today only (see Open duties).":
   de: "%{n} nur für heute abgedeckt (siehe Offene Dienste)."
+  da: "%{n} dækket kun for i dag (se Åbne vagter)."
   fr: "%{n} couverts pour aujourd'hui seulement (voir Services ouverts)."
   nl: "%{n} alleen voor vandaag opgevangen (zie Open diensten)."
   pl: "%{n} obsadzonych tylko na dziś (zob. Otwarte służby)."
@@ -302,6 +344,7 @@ _version: 2
 # The company duty launcher's blocked start.
 "Not possible yet: %{reason}":
   de: "Noch nicht möglich: %{reason}"
+  da: "Endnu ikke muligt: %{reason}"
   fr: "Pas encore possible : %{reason}"
   nl: "Nog niet mogelijk: %{reason}"
   pl: "Jeszcze niemożliwe: %{reason}"

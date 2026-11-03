@@ -3,6 +3,7 @@ _version: 2
 # lines, the drivers paid by the hour of duty, the month's fixed costs per bus.
 "Fuel and energy":
   de: "Kraftstoff und Energie"
+  da: "Brændstof og energi"
   fr: "Carburant et énergie"
   nl: "Brandstof en energie"
   pl: "Paliwo i energia"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Пальне й енергія"
 "Insurance and tax":
   de: "Versicherung und Steuer"
+  da: "Forsikring og afgifter"
   fr: "Assurance et taxes"
   nl: "Verzekering en belasting"
   pl: "Ubezpieczenie i podatki"
@@ -17,6 +19,7 @@ _version: 2
   uk: "Страхування й податки"
 "Wages (paid hours)":
   de: "Löhne (bezahlte Stunden)"
+  da: "Lønninger (betalte timer)"
   fr: "Salaires (heures payées)"
   nl: "Lonen (betaalde uren)"
   pl: "Płace (płatne godziny)"
@@ -24,6 +27,7 @@ _version: 2
   uk: "Зарплата (оплачені години)"
 "Depreciation":
   de: "Abschreibung"
+  da: "Afskrivning"
   fr: "Amortissement"
   nl: "Afschrijving"
   pl: "Amortyzacja"
@@ -31,6 +35,7 @@ _version: 2
   uk: "Амортизація"
 "Overheads":
   de: "Gemeinkosten"
+  da: "Faste omkostninger"
   fr: "Frais généraux"
   nl: "Overheadkosten"
   pl: "Koszty ogólne"
@@ -38,6 +43,7 @@ _version: 2
   uk: "Накладні витрати"
 "%{month} is closed: leases, depreciation, insurance and tax, overheads and loan rates are booked. The month's result: %{amount}.":
   de: "%{month} ist abgeschlossen: Leasing, Abschreibung, Versicherung und Steuer, Gemeinkosten und Kreditraten sind gebucht. Das Ergebnis des Monats: %{amount}."
+  da: "%{month} er afsluttet: leasing, afskrivning, forsikring og afgifter, faste omkostninger og lånerenter er bogført. Månedens resultat: %{amount}."
   fr: "%{month} est clôturé : leasings, amortissements, assurance et taxes, frais généraux et échéances de prêt sont comptabilisés. Le résultat du mois : %{amount}."
   nl: "%{month} is afgesloten: lease, afschrijving, verzekering en belasting, overheadkosten en aflossingen zijn geboekt. Het resultaat van de maand: %{amount}."
   pl: "%{month} zamknięty: leasing, amortyzacja, ubezpieczenie i podatki, koszty ogólne i raty kredytów są zaksięgowane. Wynik miesiąca: %{amount}."
@@ -45,6 +51,7 @@ _version: 2
   uk: "%{month} закрито: лізинг, амортизацію, страхування й податки, накладні витрати та платежі за кредитами проведено. Результат місяця: %{amount}."
 "Drivers' wages %{amount}: %{hours} hours of duty paid (%{over} overtime) and %{guaranteed} hours of the week's guarantee.":
   de: "Fahrerlöhne %{amount}: %{hours} bezahlte Dienststunden (%{over} Überstunden) und %{guaranteed} Stunden aus der Wochengarantie."
+  da: "Chaufførernes løn %{amount}: %{hours} timers vagt betalt (%{over} overtid) og %{guaranteed} timer af ugens garanti."
   fr: "Salaires des conducteurs %{amount} : %{hours} heures de service payées (%{over} heures supplémentaires) et %{guaranteed} heures de la garantie hebdomadaire."
   nl: "Chauffeurslonen %{amount}: %{hours} betaalde diensturen (%{over} overuren) en %{guaranteed} uur uit de weekgarantie."
   pl: "Płace kierowców %{amount}: %{hours} płatnych godzin służby (%{over} nadgodzin) i %{guaranteed} godzin z gwarancji tygodniowej."
@@ -52,6 +59,7 @@ _version: 2
   uk: "Зарплата водіїв %{amount}: оплачено %{hours} годин змін (%{over} понаднормово) і %{guaranteed} годин за тижневою гарантією."
 "This week":
   de: "Diese Woche"
+  da: "Denne uge"
   fr: "Cette semaine"
   nl: "Deze week"
   pl: "W tym tygodniu"
@@ -59,6 +67,7 @@ _version: 2
   uk: "Цього тижня"
 "%{paid} of %{contract} hours paid":
   de: "%{paid} von %{contract} Stunden bezahlt"
+  da: "%{paid} af %{contract} timer betalt"
   fr: "%{paid} heures payées sur %{contract}"
   nl: "%{paid} van %{contract} uur betaald"
   pl: "%{paid} z %{contract} godzin opłaconych"

@@ -4,6 +4,7 @@ _version: 2
 # the currency chosen at the founding or in the settings.
 "Currency":
   de: "Währung"
+  da: "Valuta"
   fr: "Devise"
   nl: "Valuta"
   pl: "Waluta"
@@ -11,6 +12,7 @@ _version: 2
   uk: "Валюта"
 "Euro":
   de: "Euro"
+  da: "Euro"
   fr: "Euro"
   nl: "Euro"
   pl: "Euro"
@@ -18,6 +20,7 @@ _version: 2
   uk: "Євро"
 "British pound":
   de: "Britisches Pfund"
+  da: "Britisk pund"
   fr: "Livre sterling"
   nl: "Brits pond"
   pl: "Funt brytyjski"
@@ -25,6 +28,7 @@ _version: 2
   uk: "Британський фунт"
 "US dollar":
   de: "US-Dollar"
+  da: "US-dollar"
   fr: "Dollar américain"
   nl: "Amerikaanse dollar"
   pl: "Dolar amerykański"
@@ -32,6 +36,7 @@ _version: 2
   uk: "Долар США"
 "Swiss franc":
   de: "Schweizer Franken"
+  da: "Schweizerfranc"
   fr: "Franc suisse"
   nl: "Zwitserse frank"
   pl: "Frank szwajcarski"
@@ -39,6 +44,7 @@ _version: 2
   uk: "Швейцарський франк"
 "Polish złoty":
   de: "Polnischer Złoty"
+  da: "Polsk złoty"
   fr: "Złoty polonais"
   nl: "Poolse złoty"
   pl: "Złoty polski"
@@ -46,6 +52,7 @@ _version: 2
   uk: "Польський злотий"
 "Czech koruna":
   de: "Tschechische Krone"
+  da: "Tjekkisk koruna"
   fr: "Couronne tchèque"
   nl: "Tsjechische kroon"
   pl: "Korona czeska"
@@ -53,6 +60,7 @@ _version: 2
   uk: "Чеська крона"
 "Hungarian forint":
   de: "Ungarischer Forint"
+  da: "Ungarsk forint"
   fr: "Forint hongrois"
   nl: "Hongaarse forint"
   pl: "Forint węgierski"
@@ -60,6 +68,7 @@ _version: 2
   uk: "Угорський форинт"
 "Swedish krona":
   de: "Schwedische Krone"
+  da: "Svensk krone"
   fr: "Couronne suédoise"
   nl: "Zweedse kroon"
   pl: "Korona szwedzka"
@@ -67,6 +76,7 @@ _version: 2
   uk: "Шведська крона"
 "Norwegian krone":
   de: "Norwegische Krone"
+  da: "Norsk krone"
   fr: "Couronne norvégienne"
   nl: "Noorse kroon"
   pl: "Korona norweska"
@@ -74,6 +84,7 @@ _version: 2
   uk: "Норвезька крона"
 "Danish krone":
   de: "Dänische Krone"
+  da: "Dansk krone"
   fr: "Couronne danoise"
   nl: "Deense kroon"
   pl: "Korona duńska"
@@ -81,6 +92,7 @@ _version: 2
   uk: "Данська крона"
 "Romanian leu":
   de: "Rumänischer Leu"
+  da: "Rumænsk leu"
   fr: "Leu roumain"
   nl: "Roemeense leu"
   pl: "Lej rumuński"
@@ -88,6 +100,7 @@ _version: 2
   uk: "Румунський лей"
 "Turkish lira":
   de: "Türkische Lira"
+  da: "Tyrkisk lira"
   fr: "Livre turque"
   nl: "Turkse lira"
   pl: "Lira turecka"
@@ -95,6 +108,7 @@ _version: 2
   uk: "Турецька ліра"
 "Ukrainian hryvnia":
   de: "Ukrainische Hrywnja"
+  da: "Ukrainsk hryvnia"
   fr: "Hryvnia ukrainienne"
   nl: "Oekraïense hryvnja"
   pl: "Hrywna ukraińska"
@@ -102,6 +116,7 @@ _version: 2
   uk: "Українська гривня"
 "Canadian dollar":
   de: "Kanadischer Dollar"
+  da: "Canadisk dollar"
   fr: "Dollar canadien"
   nl: "Canadese dollar"
   pl: "Dolar kanadyjski"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Канадський долар"
 "Australian dollar":
   de: "Australischer Dollar"
+  da: "Australsk dollar"
   fr: "Dollar australien"
   nl: "Australische dollar"
   pl: "Dolar australijski"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Австралійський долар"
 "Money is shown and typed in this currency. Changing it changes no balance: the amounts keep their value.":
   de: "Geld wird in dieser Währung angezeigt und eingegeben. Ein Wechsel ändert kein Guthaben: Die Beträge behalten ihren Wert."
+  da: "Penge vises og indtastes i denne valuta. Ændringen ændrer ingen saldo: beløbene bevarer deres værdi."
   fr: "L'argent est affiché et saisi dans cette devise. En changer ne modifie aucun solde : les montants gardent leur valeur."
   nl: "Geld wordt in deze valuta getoond en ingetypt. Wisselen verandert geen saldo: de bedragen houden hun waarde."
   pl: "Pieniądze są pokazywane i wpisywane w tej walucie. Zmiana nie zmienia żadnego salda: kwoty zachowują swoją wartość."
@@ -123,6 +140,7 @@ _version: 2
   uk: "Гроші показуються та вводяться в цій валюті. Зміна валюти не змінює баланс: суми зберігають свою вартість."
 "The company's money is shown in %{currency} now: %{amount} in the bank.":
   de: "Das Geld des Unternehmens wird jetzt in %{currency} angezeigt: %{amount} auf dem Konto."
+  da: "Selskabets penge vises nu i %{currency}: %{amount} i banken."
   fr: "L'argent de l'entreprise est maintenant affiché en %{currency} : %{amount} en banque."
   nl: "Het geld van het bedrijf wordt nu in %{currency} getoond: %{amount} op de bank."
   pl: "Pieniądze firmy są teraz pokazywane w walucie %{currency}: %{amount} w banku."
@@ -130,6 +148,7 @@ _version: 2
   uk: "Гроші компанії тепер показуються у валюті %{currency}: %{amount} на рахунку."
 "For example %{amount} - or ask for a discount first.":
   de: "Zum Beispiel %{amount} - oder fragen Sie zuerst nach einem Rabatt."
+  da: "For eksempel %{amount} - eller bed først om en rabat."
   fr: "Par exemple %{amount} - ou demandez d'abord une remise."
   nl: "Bijvoorbeeld %{amount} - of vraag eerst om korting."
   pl: "Na przykład %{amount} - albo najpierw poproś o rabat."
@@ -137,6 +156,7 @@ _version: 2
   uk: "Наприклад, %{amount} - або спершу попросіть знижку."
 "Ask at least %{amount}.":
   de: "Bieten Sie mindestens %{amount}."
+  da: "Bed om mindst %{amount}."
   fr: "Demandez au moins %{amount}."
   nl: "Vraag minstens %{amount}."
   pl: "Zaproponuj co najmniej %{amount}."

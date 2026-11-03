@@ -4,6 +4,7 @@ _version: 2
 # and its running times copied to other days.
 "Discarded: back to the saved planning - the locked vehicles and duties stay as they are.":
   de: "Verworfen: zurück zur gespeicherten Planung - die gesperrten Fahrzeuge und Dienste bleiben, wie sie sind."
+  da: "Kasseret: tilbage til den gemte planlægning - de låste køretøjer og vagter bliver, som de er."
   fr: "Abandonné : retour à la planification enregistrée - les véhicules et services verrouillés restent tels quels."
   nl: "Verworpen: terug naar de opgeslagen planning - de vergrendelde voertuigen en diensten blijven zoals ze zijn."
   pl: "Odrzucono: powrót do zapisanego planu - zablokowane pojazdy i służby pozostają bez zmian."
@@ -11,6 +12,7 @@ _version: 2
   uk: "Скасовано: повернення до збереженого плану - заблоковані машини та зміни залишаються як є."
 "Link the trips chosen: they stay together on one bus, and Optimise keeps them so":
   de: "Die gewählten Fahrten verknüpfen: Sie bleiben zusammen auf einem Bus, und Optimieren behält das bei"
+  da: "Kæd de valgte ture sammen: de bliver sammen på én bus, og Optimér bevarer dem sådan"
   fr: "Lier les courses choisies : elles restent ensemble sur un même bus, et l'optimisation les garde ainsi"
   nl: "De gekozen ritten koppelen: ze blijven samen op één bus, en Optimaliseren houdt ze zo"
   pl: "Połącz wybrane kursy: zostają razem na jednym autobusie, a optymalizacja tak je zachowuje"
@@ -18,6 +20,7 @@ _version: 2
   uk: "Зв'язати вибрані рейси: вони залишаються разом на одному автобусі, і оптимізація це зберігає"
 "Unassign all trips":
   de: "Alle Fahrten zurücknehmen"
+  da: "Fjern alle ture fra vagterne"
   fr: "Désaffecter toutes les courses"
   nl: "Alle ritten ontkoppelen"
   pl: "Odepnij wszystkie kursy"
@@ -25,6 +28,7 @@ _version: 2
   uk: "Зняти всі рейси"
 "Unassign every trip of %{n} duties to the stack?":
   de: "Jede Fahrt von %{n} Diensten auf den Stapel zurücknehmen?"
+  da: "Fjern alle ture fra %{n} vagter til bunken?"
   fr: "Remettre chaque course de %{n} services sur la pile ?"
   nl: "Elke rit van %{n} diensten terug naar de stapel?"
   pl: "Odpiąć wszystkie kursy %{n} służb na stos?"
@@ -32,6 +36,7 @@ _version: 2
   uk: "Зняти всі рейси %{n} змін у стос?"
 "Every trip of the duties ticked back to the stack, to plan them anew (asked first; Undo puts them back)":
   de: "Jede Fahrt der angehakten Dienste zurück auf den Stapel, um sie neu zu planen (erst gefragt; Rückgängig stellt sie wieder her)"
+  da: "Alle ture på de afkrydsede vagter tilbage til bunken, så de kan planlægges påny (spørger først; Fortryd sætter dem tilbage)"
   fr: "Chaque course des services cochés remise sur la pile, pour les planifier à nouveau (demandé d'abord ; Annuler les remet)"
   nl: "Elke rit van de aangevinkte diensten terug naar de stapel, om ze opnieuw te plannen (eerst gevraagd; Ongedaan maken zet ze terug)"
   pl: "Każdy kurs zaznaczonych służb z powrotem na stos, aby zaplanować je od nowa (najpierw pytanie; Cofnij je przywraca)"
@@ -39,6 +44,7 @@ _version: 2
   uk: "Усі рейси позначених змін назад у стос, щоб спланувати їх заново (спершу запитає; Скасування повертає їх)"
 "The duties ticked run no trips.":
   de: "Die angehakten Dienste fahren keine Fahrten."
+  da: "De afkrydsede vagter kører ingen ture."
   fr: "Les services cochés n'assurent aucune course."
   nl: "De aangevinkte diensten rijden geen ritten."
   pl: "Zaznaczone służby nie obsługują żadnych kursów."
@@ -46,6 +52,7 @@ _version: 2
   uk: "Позначені зміни не виконують рейсів."
 "Trips of %{n} duties unassigned to the stack":
   de: "Fahrten von %{n} Diensten auf den Stapel zurückgenommen"
+  da: "Ture fra %{n} vagter fjernet til bunken"
   fr: "Courses de %{n} services remises sur la pile"
   nl: "Ritten van %{n} diensten terug naar de stapel"
   pl: "Kursy %{n} służb odpięte na stos"
@@ -53,6 +60,7 @@ _version: 2
   uk: "Рейси %{n} змін знято у стос"
 "Trips of %{n} duties unassigned to the stack: Undo (Ctrl+Z) puts them back.":
   de: "Fahrten von %{n} Diensten auf den Stapel zurückgenommen: Rückgängig (Strg+Z) stellt sie wieder her."
+  da: "Ture fra %{n} vagter fjernet til bunken: Fortryd (Ctrl+Z) sætter dem tilbage."
   fr: "Courses de %{n} services remises sur la pile : Annuler (Ctrl+Z) les remet."
   nl: "Ritten van %{n} diensten terug naar de stapel: Ongedaan maken (Ctrl+Z) zet ze terug."
   pl: "Kursy %{n} służb odpięte na stos: Cofnij (Ctrl+Z) je przywraca."
@@ -60,6 +68,7 @@ _version: 2
   uk: "Рейси %{n} змін знято у стос: Скасування (Ctrl+Z) повертає їх."
 "Trips of %{n} duties unassigned to the stack; %{k} trips stay, their vehicle or duty is locked. Undo (Ctrl+Z) puts them back.":
   de: "Fahrten von %{n} Diensten auf den Stapel zurückgenommen; %{k} Fahrten bleiben, ihr Fahrzeug oder Dienst ist gesperrt. Rückgängig (Strg+Z) stellt sie wieder her."
+  da: "Ture fra %{n} vagter fjernet til bunken; %{k} ture bliver, da deres køretøj eller vagt er låst. Fortryd (Ctrl+Z) sætter dem tilbage."
   fr: "Courses de %{n} services remises sur la pile ; %{k} courses restent, leur véhicule ou service est verrouillé. Annuler (Ctrl+Z) les remet."
   nl: "Ritten van %{n} diensten terug naar de stapel; %{k} ritten blijven, hun voertuig of dienst is vergrendeld. Ongedaan maken (Ctrl+Z) zet ze terug."
   pl: "Kursy %{n} służb odpięte na stos; zostaje kursów: %{k}, ich pojazd lub służba są zablokowane. Cofnij (Ctrl+Z) je przywraca."
@@ -67,6 +76,7 @@ _version: 2
   uk: "Рейси %{n} змін знято у стос; залишаються рейсів: %{k}, їхня машина або зміна заблокована. Скасування (Ctrl+Z) повертає їх."
 "None of the duties ticked could be unassigned: their vehicles or duties are locked.":
   de: "Keiner der angehakten Dienste konnte zurückgenommen werden: Ihre Fahrzeuge oder Dienste sind gesperrt."
+  da: "Ingen af de afkrydsede vagter kunne fjernes: deres køretøjer eller vagter er låst."
   fr: "Aucun des services cochés n'a pu être désaffecté : leurs véhicules ou services sont verrouillés."
   nl: "Geen van de aangevinkte diensten kon worden ontkoppeld: hun voertuigen of diensten zijn vergrendeld."
   pl: "Żadnej z zaznaczonych służb nie udało się odpiąć: ich pojazdy lub służby są zablokowane."
@@ -74,6 +84,7 @@ _version: 2
   uk: "Жодну з позначених змін не вдалося зняти: їхні машини або зміни заблоковані."
 "Switch on the vehicles, the duties or both: Optimise has nothing to make.":
   de: "Schalte die Fahrzeuge, die Dienste oder beides ein: Optimieren hat sonst nichts zu tun."
+  da: "Slå køretøjerne, vagterne eller begge til: Optimér har intet at lave."
   fr: "Activez les véhicules, les services ou les deux : l'optimisation n'a rien à faire."
   nl: "Zet de voertuigen, de diensten of beide aan: Optimaliseren heeft niets te doen."
   pl: "Włącz pojazdy, służby albo oba: optymalizacja nie ma nic do zrobienia."
@@ -81,6 +92,7 @@ _version: 2
   uk: "Увімкніть машини, зміни або обидва: оптимізації нічого робити."
 "Choose every trip of the day (Ctrl+A)":
   de: "Jede Fahrt des Tages wählen (Strg+A)"
+  da: "Vælg alle dagens ture (Ctrl+A)"
   fr: "Choisir chaque course du jour (Ctrl+A)"
   nl: "Elke rit van de dag kiezen (Ctrl+A)"
   pl: "Wybierz każdy kurs dnia (Ctrl+A)"
@@ -88,6 +100,7 @@ _version: 2
   uk: "Вибрати всі рейси дня (Ctrl+A)"
 "Copy timings to…":
   de: "Fahrzeiten kopieren nach…"
+  da: "Kopiér tider til…"
   fr: "Copier les temps vers…"
   nl: "Rijtijden kopiëren naar…"
   pl: "Kopiuj czasy przejazdu do…"
@@ -95,6 +108,7 @@ _version: 2
   uk: "Копіювати час ходу в…"
 "Copy timings to… other day groups: the running times of this one, for both directions or the one shown":
   de: "Fahrzeiten kopieren nach… andere Tagesgruppen: die Fahrzeiten dieser, für beide Richtungen oder die gezeigte"
+  da: "Kopiér tider til… andre dagsgrupper: kørselstiderne fra denne, for begge retninger eller den viste"
   fr: "Copier les temps vers… d'autres groupes de jours : les temps de parcours de celui-ci, pour les deux sens ou celui affiché"
   nl: "Rijtijden kopiëren naar… andere dagsoorten: de rijtijden van deze, voor beide richtingen of de getoonde"
   pl: "Kopiuj czasy przejazdu do… innych grup dni: czasy tej grupy, dla obu kierunków albo pokazanego"
@@ -102,6 +116,7 @@ _version: 2
   uk: "Копіювати час ходу в… інші групи днів: час ходу цієї групи, для обох напрямків або показаного"
 "The running times of %{day}, to:":
   de: "Die Fahrzeiten von %{day}, nach:"
+  da: "Kørselstiderne for %{day} til:"
   fr: "Les temps de parcours de %{day}, vers :"
   nl: "De rijtijden van %{day}, naar:"
   pl: "Czasy przejazdu z %{day}, do:"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Час ходу для %{day}, у:"
 "Both directions":
   de: "Beide Richtungen"
+  da: "Begge retninger"
   fr: "Les deux sens"
   nl: "Beide richtingen"
   pl: "Oba kierunki"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Обидва напрямки"
 "Only the direction shown":
   de: "Nur die gezeigte Richtung"
+  da: "Kun den viste retning"
   fr: "Seulement le sens affiché"
   nl: "Alleen de getoonde richting"
   pl: "Tylko pokazany kierunek"
@@ -123,6 +140,7 @@ _version: 2
   uk: "Лише показаний напрямок"
 "There are no running times to copy.":
   de: "Es gibt keine Fahrzeiten zum Kopieren."
+  da: "Der er ingen kørselstider at kopiere."
   fr: "Il n'y a pas de temps de parcours à copier."
   nl: "Er zijn geen rijtijden om te kopiëren."
   pl: "Brak czasów przejazdu do skopiowania."
@@ -130,6 +148,7 @@ _version: 2
   uk: "Немає часу ходу для копіювання."
 "The running times of %{from}, both directions, copied to %{days}: their trips follow them. Save keeps them, Undo takes them back.":
   de: "Die Fahrzeiten von %{from}, beide Richtungen, nach %{days} kopiert: Ihre Fahrten folgen ihnen. Speichern behält sie, Rückgängig nimmt sie zurück."
+  da: "Kørselstiderne for %{from}, begge retninger, kopieret til %{days}: deres ture følger dem. Gem beholder dem, Fortryd tager dem tilbage."
   fr: "Les temps de parcours de %{from}, les deux sens, copiés vers %{days} : leurs courses les suivent. Enregistrer les garde, Annuler les retire."
   nl: "De rijtijden van %{from}, beide richtingen, gekopieerd naar %{days}: hun ritten volgen ze. Opslaan houdt ze, Ongedaan maken neemt ze terug."
   pl: "Czasy przejazdu z %{from}, oba kierunki, skopiowane do %{days}: ich kursy za nimi podążają. Zapisz je zachowuje, Cofnij je wycofuje."
@@ -137,6 +156,7 @@ _version: 2
   uk: "Час ходу для %{from}, обидва напрямки, скопійовано в %{days}: їхні рейси слідують за ним. Зберегти залишає його, Скасування повертає."
 "The running times of %{from}, this direction, copied to %{days}: their trips follow them. Save keeps them, Undo takes them back.":
   de: "Die Fahrzeiten von %{from}, diese Richtung, nach %{days} kopiert: Ihre Fahrten folgen ihnen. Speichern behält sie, Rückgängig nimmt sie zurück."
+  da: "Kørselstiderne for %{from}, denne retning, kopieret til %{days}: deres ture følger dem. Gem beholder dem, Fortryd tager dem tilbage."
   fr: "Les temps de parcours de %{from}, ce sens, copiés vers %{days} : leurs courses les suivent. Enregistrer les garde, Annuler les retire."
   nl: "De rijtijden van %{from}, deze richting, gekopieerd naar %{days}: hun ritten volgen ze. Opslaan houdt ze, Ongedaan maken neemt ze terug."
   pl: "Czasy przejazdu z %{from}, ten kierunek, skopiowane do %{days}: ich kursy za nimi podążają. Zapisz je zachowuje, Cofnij je wycofuje."

@@ -3,6 +3,7 @@ _version: 2
 # timetables: the English text is the key, as in app.yml.
 "Trip takes":
   de: "Fahrt dauert"
+  da: "Turen tager"
   fr: "Le trajet dure"
   nl: "Rit duurt"
   pl: "Kurs trwa"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Рейс триває"
 "Leaves as the outbound does":
   de: "Fährt wie die Hinfahrt ab"
+  da: "Kører som udturen"
   fr: "Part comme l'aller"
   nl: "Vertrekt zoals de heenrit"
   pl: "Odjeżdża jak kurs tam"
@@ -17,6 +19,7 @@ _version: 2
   uk: "Відправляється як прямий рейс"
 "The return leaves at the outbound's times. Switch this off to give it departures of its own.":
   de: "Die Rückfahrt fährt zu den Zeiten der Hinfahrt ab. Schalte dies aus, um ihr eigene Abfahrten zu geben."
+  da: "Returturen kører på udturens tidspunkter. Slå dette fra for at give den egne afgange."
   fr: "Le retour part aux horaires de l'aller. Désactive ceci pour lui donner ses propres départs."
   nl: "De terugrit vertrekt op de tijden van de heenrit. Zet dit uit om hem eigen vertrektijden te geven."
   pl: "Kurs powrotny odjeżdża o godzinach kursu tam. Wyłącz to, aby nadać mu własne odjazdy."
@@ -24,6 +27,7 @@ _version: 2
   uk: "Зворотний рейс відправляється за часом прямого. Вимкніть це, щоб задати йому власні відправлення."
 "The return has departures of its own: choose Return above to change them.":
   de: "Die Rückfahrt hat eigene Abfahrten: wähle oben Zurück, um sie zu ändern."
+  da: "Returturen har egne afgange: vælg Retur ovenfor for at ændre dem."
   fr: "Le retour a ses propres départs : choisis Retour ci-dessus pour les modifier."
   nl: "De terugrit heeft eigen vertrektijden: kies hierboven Terug om ze te wijzigen."
   pl: "Kurs powrotny ma własne odjazdy: wybierz powyżej Powrót, aby je zmienić."
@@ -31,6 +35,7 @@ _version: 2
   uk: "Зворотний рейс має власні відправлення: виберіть вище «Назад», щоб їх змінити."
 "Close the loop: back to the first stop":
   de: "Schleife schließen: zurück zur ersten Haltestelle"
+  da: "Luk sløjfen: tilbage til det første stoppested"
   fr: "Fermer la boucle : retour au premier arrêt"
   nl: "Lus sluiten: terug naar de eerste halte"
   pl: "Zamknij pętlę: powrót do pierwszego przystanku"
@@ -38,6 +43,7 @@ _version: 2
   uk: "Замкнути кільце: назад до першої зупинки"
 "Open the loop":
   de: "Schleife öffnen"
+  da: "Åbn sløjfen"
   fr: "Ouvrir la boucle"
   nl: "Lus openen"
   pl: "Otwórz pętlę"
@@ -45,6 +51,7 @@ _version: 2
   uk: "Розімкнути кільце"
 "Loop: %{name}":
   de: "Schleife: %{name}"
+  da: "Sløjfe: %{name}"
   fr: "Boucle : %{name}"
   nl: "Lus: %{name}"
   pl: "Pętla: %{name}"
@@ -52,6 +59,7 @@ _version: 2
   uk: "Кільце: %{name}"
 "The loop is open: the line ends at its last stop again":
   de: "Die Schleife ist offen: die Linie endet wieder an ihrer letzten Haltestelle"
+  da: "Sløjfen er åben: linjen ender igen ved sit sidste stoppested"
   fr: "La boucle est ouverte : la ligne se termine de nouveau à son dernier arrêt"
   nl: "De lus is open: de lijn eindigt weer bij haar laatste halte"
   pl: "Pętla jest otwarta: linia znów kończy się na ostatnim przystanku"
@@ -59,6 +67,7 @@ _version: 2
   uk: "Кільце розімкнуто: лінія знову закінчується на останній зупинці"
 "The loop is closed: the bus drives back to its first stop and starts again there":
   de: "Die Schleife ist geschlossen: der Bus fährt zurück zur ersten Haltestelle und beginnt dort von Neuem"
+  da: "Sløjfen er lukket: bussen kører tilbage til sit første stoppested og starter dér igen"
   fr: "La boucle est fermée : le bus revient à son premier arrêt et y repart"
   nl: "De lus is gesloten: de bus rijdt terug naar de eerste halte en begint daar opnieuw"
   pl: "Pętla jest zamknięta: autobus wraca do pierwszego przystanku i tam zaczyna od nowa"

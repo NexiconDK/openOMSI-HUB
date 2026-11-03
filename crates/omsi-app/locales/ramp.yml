@@ -3,6 +3,7 @@ _version: 2
 # the driver is told somebody in a wheelchair waits for it.
 "A passenger in a wheelchair waits at door %{door}: fold the ramp out (click it)":
   de: "Ein Fahrgast im Rollstuhl wartet an Tür %{door}: Rampe ausklappen (anklicken)"
+  da: "En passager i kørestol venter ved dør %{door}: fold rampen ud (klik på den)"
   fr: "Un passager en fauteuil roulant attend à la porte %{door} : déplie la rampe (clique dessus)"
   nl: "Een passagier in een rolstoel wacht bij deur %{door}: klap de oprijplaat uit (klik erop)"
   pl: "Pasażer na wózku czeka przy drzwiach %{door}: rozłóż pochylnię (kliknij ją)"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Пасажир на візку чекає біля дверей %{door}: розклади пандус (клацни на нього)"
 "A passenger in a wheelchair wants to get off at door %{door}: fold the ramp out (click it)":
   de: "Ein Fahrgast im Rollstuhl will an Tür %{door} aussteigen: Rampe ausklappen (anklicken)"
+  da: "En passager i kørestol vil af ved dør %{door}: fold rampen ud (klik på den)"
   fr: "Un passager en fauteuil roulant veut descendre à la porte %{door} : déplie la rampe (clique dessus)"
   nl: "Een passagier in een rolstoel wil uitstappen bij deur %{door}: klap de oprijplaat uit (klik erop)"
   pl: "Pasażer na wózku chce wysiąść drzwiami %{door}: rozłóż pochylnię (kliknij ją)"
