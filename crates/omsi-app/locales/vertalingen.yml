@@ -7,6 +7,7 @@ _version: 2
 "No saved profiles":
   nl: "Geen opgeslagen profielen"
   de: "Keine gespeicherten Profile"
+  da: "Ingen gemte profiler"
   fr: "Aucun profil enregistré"
   ru: "Нет сохранённых профилей"
   uk: "Немає збережених профілів"
@@ -14,6 +15,7 @@ _version: 2
 "Route %{line}":
   nl: "Lijnnummer %{line}"
   de: "Liniennummer %{line}"
+  da: "Rute %{line}"
   fr: "Numéro de ligne %{line}"
   ru: "Номер маршрута %{line}"
   uk: "Номер маршруту %{line}"
@@ -21,6 +23,7 @@ _version: 2
 "tours":
   nl: "omlopen"
   de: "Umläufe"
+  da: "ture"
   fr: "services"
   ru: "выходов"
   uk: "оборотів"
@@ -28,6 +31,7 @@ _version: 2
 "Enter sets it, Esc cancels":
   nl: "Enter stelt in, Esc annuleert"
   de: "Enter übernimmt, Esc bricht ab"
+  da: "Enter bekræfter, Esc annullerer"
   fr: "Entrée valide, Échap annule"
   ru: "Enter — применить, Esc — отмена"
   uk: "Enter — застосувати, Esc — скасувати"
@@ -35,6 +39,7 @@ _version: 2
 "Type a route number":
   nl: "Typ een lijnnummer"
   de: "Liniennummer eingeben"
+  da: "Skriv et rutenummer"
   fr: "Saisir un numéro de ligne"
   ru: "Ввести номер маршрута"
   uk: "Ввести номер маршруту"
@@ -42,6 +47,7 @@ _version: 2
 "Vehicle options...":
   nl: "Voertuigopties..."
   de: "Fahrzeugoptionen..."
+  da: "Køretøjsindstillinger..."
   fr: "Options du véhicule..."
   ru: "Параметры транспорта..."
   uk: "Параметри транспорту..."
@@ -49,6 +55,7 @@ _version: 2
 "World options...":
   nl: "Wereldopties..."
   de: "Weltoptionen..."
+  da: "Verdensindstillinger..."
   fr: "Options du monde..."
   ru: "Параметры мира..."
   uk: "Параметри світу..."
@@ -56,6 +63,7 @@ _version: 2
 "Depot file: %{hof}":
   nl: "Remisebestand: %{hof}"
   de: "Betriebshofdatei: %{hof}"
+  da: "Depotfil: %{hof}"
   fr: "Fichier de dépôt : %{hof}"
   ru: "Файл депо: %{hof}"
   uk: "Файл депо: %{hof}"
@@ -63,6 +71,7 @@ _version: 2
 "Destination: %{name}":
   nl: "Bestemming: %{name}"
   de: "Ziel: %{name}"
+  da: "Destination: %{name}"
   fr: "Destination : %{name}"
   ru: "Назначение: %{name}"
   uk: "Призначення: %{name}"
@@ -70,6 +79,7 @@ _version: 2
 "Fleet number %{n}":
   nl: "Wagennummer %{n}"
   de: "Wagennummer %{n}"
+  da: "Vognnummer %{n}"
   fr: "Numéro de parc %{n}"
   ru: "Бортовой номер %{n}"
   uk: "Бортовий номер %{n}"
@@ -77,6 +87,7 @@ _version: 2
 "Graphics profile \"%{name}\" loaded: graphics settings apply when the game starts the next time":
   nl: "Beeldprofiel \"%{name}\" geladen: de beeldinstellingen gelden bij de volgende start van het spel"
   de: "Grafikprofil \"%{name}\" geladen: die Grafikeinstellungen gelten beim nächsten Spielstart"
+  da: "Grafikprofilen \"%{name}\" er indlæst: grafikindstillingerne træder i kraft, næste gang spillet starter"
   fr: "Profil graphique « %{name} » chargé : les réglages graphiques s'appliquent au prochain lancement du jeu"
   ru: "Графический профиль «%{name}» загружен: настройки графики вступят в силу при следующем запуске игры"
   uk: "Графічний профіль «%{name}» завантажено: налаштування графіки діятимуть з наступного запуску гри"
@@ -84,6 +95,7 @@ _version: 2
 "Graphics profile \"%{name}\" not found":
   nl: "Beeldprofiel \"%{name}\" niet gevonden"
   de: "Grafikprofil \"%{name}\" nicht gefunden"
+  da: "Grafikprofilen \"%{name}\" blev ikke fundet"
   fr: "Profil graphique « %{name} » introuvable"
   ru: "Графический профиль «%{name}» не найден"
   uk: "Графічний профіль «%{name}» не знайдено"
@@ -91,6 +103,7 @@ _version: 2
 "How passengers get their tickets":
   nl: "Hoe passagiers aan hun kaartje komen"
   de: "Wie Fahrgäste an ihre Fahrkarte kommen"
+  da: "Hvordan passagererne får deres billetter"
   fr: "Comment les passagers obtiennent leur billet"
   ru: "Как пассажиры получают билеты"
   uk: "Як пасажири отримують квитки"
@@ -98,6 +111,7 @@ _version: 2
 "Sets most of the graphics options at once":
   nl: "Stelt de meeste beeldopties in één keer in"
   de: "Stellt die meisten Grafikoptionen auf einmal ein"
+  da: "Indstiller de fleste grafikvalg på én gang"
   fr: "Règle la plupart des options graphiques d'un coup"
   ru: "Задаёт большинство параметров графики сразу"
   uk: "Задає більшість параметрів графіки одразу"
@@ -105,6 +119,7 @@ _version: 2
 "Window size":
   nl: "Venstergrootte"
   de: "Fenstergröße"
+  da: "Vinduesstørrelse"
   fr: "Taille de la fenêtre"
   ru: "Размер окна"
   uk: "Розмір вікна"
@@ -112,6 +127,7 @@ _version: 2
 "Triple screen":
   nl: "Drie schermen"
   de: "Drei Bildschirme"
+  da: "Tre skærme"
   fr: "Triple écran"
   ru: "Три экрана"
   uk: "Три екрани"
@@ -119,6 +135,7 @@ _version: 2
 "Three physical screen projections; OpenXR takes priority":
   nl: "Drie fysieke schermprojecties; OpenXR gaat voor"
   de: "Drei physische Bildschirmprojektionen; OpenXR hat Vorrang"
+  da: "Tre fysiske skærmprojektioner; OpenXR har forrang"
   fr: "Trois projections d'écrans physiques ; OpenXR est prioritaire"
   ru: "Три проекции физических экранов; OpenXR в приоритете"
   uk: "Три проєкції фізичних екранів; OpenXR має пріоритет"
@@ -126,6 +143,7 @@ _version: 2
 "HUD on centre screen":
   nl: "HUD op het middelste scherm"
   de: "HUD auf dem mittleren Bildschirm"
+  da: "HUD på midterskærmen"
   fr: "HUD sur l'écran central"
   ru: "HUD на центральном экране"
   uk: "HUD на центральному екрані"
@@ -133,6 +151,7 @@ _version: 2
 "Keep the navigator, menus and information on the centre screen":
   nl: "Houd de navigator, menu's en informatie op het middelste scherm"
   de: "Navigator, Menüs und Infos auf dem mittleren Bildschirm halten"
+  da: "Hold navigatoren, menuerne og informationerne på midterskærmen"
   fr: "Garder le navigateur, les menus et les informations sur l'écran central"
   ru: "Держать навигатор, меню и сведения на центральном экране"
   uk: "Тримати навігатор, меню й відомості на центральному екрані"
@@ -140,6 +159,7 @@ _version: 2
 "Span three monitors at startup":
   nl: "Bij de start over drie monitoren"
   de: "Beim Start über drei Monitore"
+  da: "Spred over tre monitorer ved start"
   fr: "S'étendre sur trois moniteurs au démarrage"
   ru: "Растянуть на три монитора при запуске"
   uk: "Розтягнути на три монітори під час запуску"
@@ -147,6 +167,7 @@ _version: 2
 "Borderless across three equal monitors in one horizontal row; restart required":
   nl: "Randloos over drie gelijke monitoren naast elkaar; herstart nodig"
   de: "Randlos über drei gleiche Monitore nebeneinander; Neustart nötig"
+  da: "Uden ramme over tre lige store monitorer i én vandret række; kræver genstart"
   fr: "Sans bordure sur trois moniteurs identiques côte à côte ; redémarrage nécessaire"
   ru: "Без рамки на три одинаковых монитора в ряд; нужен перезапуск"
   uk: "Без рамки на три однакові монітори в ряд; потрібен перезапуск"
@@ -154,6 +175,7 @@ _version: 2
 "Visible panel width":
   nl: "Zichtbare paneelbreedte"
   de: "Sichtbare Panelbreite"
+  da: "Synlig panelbredde"
   fr: "Largeur visible de l'écran"
   ru: "Видимая ширина панели"
   uk: "Видима ширина панелі"
@@ -161,6 +183,7 @@ _version: 2
 "Width of one screen without its frame":
   nl: "Breedte van één scherm zonder rand"
   de: "Breite eines Bildschirms ohne Rahmen"
+  da: "Bredden af én skærm uden ramme"
   fr: "Largeur d'un écran sans son cadre"
   ru: "Ширина одного экрана без рамки"
   uk: "Ширина одного екрана без рамки"
@@ -168,6 +191,7 @@ _version: 2
 "Eye distance":
   nl: "Oogafstand"
   de: "Augenabstand"
+  da: "Øjenafstand"
   fr: "Distance de l'œil"
   ru: "Расстояние до глаз"
   uk: "Відстань до очей"
@@ -175,6 +199,7 @@ _version: 2
 "Eye to the centre screen":
   nl: "Oog tot het middelste scherm"
   de: "Auge bis zum mittleren Bildschirm"
+  da: "Øje til midterskærmen"
   fr: "De l'œil à l'écran central"
   ru: "От глаз до центрального экрана"
   uk: "Від очей до центрального екрана"
@@ -182,6 +207,7 @@ _version: 2
 "Frame width at each join":
   nl: "Randbreedte bij elke naad"
   de: "Rahmenbreite an jeder Fuge"
+  da: "Rammebredde ved hver samling"
   fr: "Largeur du cadre à chaque jonction"
   ru: "Ширина рамки на каждом стыке"
   uk: "Ширина рамки на кожному стику"
@@ -189,6 +215,7 @@ _version: 2
 "Combined width of both adjacent frames":
   nl: "Samen de breedte van beide aangrenzende randen"
   de: "Gemeinsame Breite beider angrenzender Rahmen"
+  da: "Samlet bredde af begge tilstødende rammer"
   fr: "Largeur cumulée des deux cadres voisins"
   ru: "Общая ширина двух соседних рамок"
   uk: "Загальна ширина двох сусідніх рамок"
@@ -196,6 +223,7 @@ _version: 2
 "Left screen angle":
   nl: "Hoek linkerscherm"
   de: "Winkel des linken Bildschirms"
+  da: "Venstre skærmvinkel"
   fr: "Angle de l'écran gauche"
   ru: "Угол левого экрана"
   uk: "Кут лівого екрана"
@@ -203,6 +231,7 @@ _version: 2
 "Inward angle from a flat row":
   nl: "Hoek naar binnen ten opzichte van een vlakke rij"
   de: "Winkel nach innen gegenüber einer flachen Reihe"
+  da: "Indadgående vinkel fra en flad række"
   fr: "Angle vers l'intérieur par rapport à une rangée plate"
   ru: "Угол внутрь относительно ровного ряда"
   uk: "Кут усередину відносно рівного ряду"
@@ -210,6 +239,7 @@ _version: 2
 "Right screen angle":
   nl: "Hoek rechterscherm"
   de: "Winkel des rechten Bildschirms"
+  da: "Højre skærmvinkel"
   fr: "Angle de l'écran droit"
   ru: "Угол правого экрана"
   uk: "Кут правого екрана"
@@ -217,6 +247,7 @@ _version: 2
 "Eye above screen centre":
   nl: "Oog boven het schermmidden"
   de: "Auge über der Bildschirmmitte"
+  da: "Øjet over skærmens midte"
   fr: "Œil au-dessus du centre de l'écran"
   ru: "Глаза выше центра экрана"
   uk: "Очі вище центру екрана"
@@ -224,6 +255,7 @@ _version: 2
 "Vertical eye offset":
   nl: "Verticale verschuiving van het oog"
   de: "Senkrechter Versatz des Auges"
+  da: "Lodret øjeforskydning"
   fr: "Décalage vertical de l'œil"
   ru: "Вертикальное смещение глаз"
   uk: "Вертикальне зміщення очей"
@@ -231,6 +263,7 @@ _version: 2
 "Frames a second at most":
   nl: "Maximaal aantal beelden per seconde"
   de: "Höchstens so viele Bilder pro Sekunde"
+  da: "Højst billeder i sekundet"
   fr: "Images par seconde au maximum"
   ru: "Не больше кадров в секунду"
   uk: "Не більше кадрів на секунду"
@@ -238,6 +271,7 @@ _version: 2
 "Load graphics profile":
   nl: "Beeldprofiel laden"
   de: "Grafikprofil laden"
+  da: "Indlæs grafikprofil"
   fr: "Charger un profil graphique"
   ru: "Загрузить графический профиль"
   uk: "Завантажити графічний профіль"
@@ -245,6 +279,7 @@ _version: 2
 "Applies a graphics profile saved in the launcher":
   nl: "Past een in de launcher opgeslagen beeldprofiel toe"
   de: "Wendet ein im Launcher gespeichertes Grafikprofil an"
+  da: "Anvender en grafikprofil, der er gemt i launcheren"
   fr: "Applique un profil graphique enregistré dans le lanceur"
   ru: "Применяет графический профиль, сохранённый в лаунчере"
   uk: "Застосовує графічний профіль, збережений у лаунчері"
@@ -252,6 +287,7 @@ _version: 2
 "What passengers say":
   nl: "Wat passagiers zeggen"
   de: "Was Fahrgäste sagen"
+  da: "Hvad passagererne siger"
   fr: "Ce que disent les passagers"
   ru: "Что говорят пассажиры"
   uk: "Що кажуть пасажири"
@@ -259,6 +295,7 @@ _version: 2
 "Head tracking with opentrack (UDP port %{port})":
   nl: "Head tracking met opentrack (UDP-poort %{port})"
   de: "Head-Tracking mit opentrack (UDP-Port %{port})"
+  da: "Hovedtracking med opentrack (UDP-port %{port})"
   fr: "Suivi de la tête avec opentrack (port UDP %{port})"
   ru: "Трекинг головы через opentrack (UDP-порт %{port})"
   uk: "Відстеження голови через opentrack (UDP-порт %{port})"
@@ -266,6 +303,7 @@ _version: 2
 "Mouse look sensitivity":
   nl: "Gevoeligheid van rondkijken met de muis"
   de: "Empfindlichkeit des Umsehens mit der Maus"
+  da: "Følsomhed for musestyret udsyn"
   fr: "Sensibilité du regard à la souris"
   ru: "Чувствительность обзора мышью"
   uk: "Чутливість огляду мишею"
@@ -273,6 +311,7 @@ _version: 2
 "How fast the view turns when looking round with the mouse (100% is OMSI's)":
   nl: "Hoe snel het beeld draait als je met de muis rondkijkt (100% is die van OMSI)"
   de: "Wie schnell die Sicht beim Umsehen mit der Maus dreht (100 % ist wie in OMSI)"
+  da: "Hvor hurtigt udsynet drejer, når du ser dig omkring med musen (100 % er OMSI's)"
   fr: "La vitesse de rotation de la vue en regardant autour à la souris (100 % = OMSI)"
   ru: "Как быстро поворачивается вид при обзоре мышью (100% — как в OMSI)"
   uk: "Як швидко повертається вигляд під час огляду мишею (100% — як в OMSI)"
@@ -280,6 +319,7 @@ _version: 2
 "Vertical field of view; in triple screen Default uses physical measurements, an override moves the virtual eye":
   nl: "Verticaal gezichtsveld; bij drie schermen gebruikt Standaard de echte maten, een eigen waarde verschuift het virtuele oog"
   de: "Senkrechtes Sichtfeld; bei drei Bildschirmen nutzt Standard die echten Maße, ein eigener Wert verschiebt das virtuelle Auge"
+  da: "Lodret synsfelt; ved tre skærme bruger Standard fysiske mål, en tilsidesættelse flytter det virtuelle øje"
   fr: "Champ de vision vertical ; en triple écran, Par défaut utilise les mesures physiques, une valeur forcée déplace l'œil virtuel"
   ru: "Вертикальный угол обзора; на трёх экранах «По умолчанию» берёт реальные размеры, своё значение сдвигает виртуальный глаз"
   uk: "Вертикальне поле зору; на трьох екранах «Типово» бере реальні розміри, власне значення зсуває віртуальне око"
@@ -287,6 +327,7 @@ _version: 2
 "Which keys drive the vehicle":
   nl: "Met welke toetsen je het voertuig bestuurt"
   de: "Mit welchen Tasten du das Fahrzeug fährst"
+  da: "Hvilke taster der styrer køretøjet"
   fr: "Quelles touches conduisent le véhicule"
   ru: "Какими клавишами управлять транспортом"
   uk: "Якими клавішами керувати транспортом"
@@ -294,6 +335,7 @@ _version: 2
 "A right click ends the mouse steering":
   nl: "Rechtsklik beëindigt het sturen met de muis"
   de: "Rechtsklick beendet die Maussteuerung"
+  da: "Et højreklik afslutter musestyringen"
   fr: "Un clic droit arrête la conduite à la souris"
   ru: "Правый щелчок отключает руление мышью"
   uk: "Правий клік вимикає кермування мишею"
@@ -301,6 +343,7 @@ _version: 2
 "As in OMSI; off: the right button only looks round":
   nl: "Zoals in OMSI; uit: de rechterknop kijkt alleen rond"
   de: "Wie in OMSI; aus: die rechte Taste schaut nur umher"
+  da: "Som i OMSI; fra: den højre knap ser kun rundt"
   fr: "Comme dans OMSI ; désactivé : le bouton droit sert seulement à regarder autour"
   ru: "Как в OMSI; выкл.: правая кнопка только для обзора"
   uk: "Як в OMSI; вимк.: права кнопка лише для огляду"
@@ -308,6 +351,7 @@ _version: 2
 "Indicators cancel themselves":
   nl: "Richtingaanwijzers gaan vanzelf uit"
   de: "Blinker stellen sich selbst zurück"
+  da: "Blinklys slukker af sig selv"
   fr: "Les clignotants s'arrêtent d'eux-mêmes"
   ru: "Поворотники выключаются сами"
   uk: "Поворотники вимикаються самі"
@@ -315,6 +359,7 @@ _version: 2
 "The bus's script turns the indicator off after a turn; off: it stays on until you turn it off":
   nl: "Het script van de bus zet de richtingaanwijzer na een bocht uit; uit: hij blijft aan tot je hem uitzet"
   de: "Das Skript des Busses schaltet den Blinker nach dem Abbiegen aus; aus: er bleibt an, bis du ihn ausschaltest"
+  da: "Busens script slukker blinklyset efter et sving; fra: det forbliver tændt, til du slukker det"
   fr: "Le script du bus coupe le clignotant après un virage ; désactivé : il reste allumé jusqu'à ce que vous l'éteigniez"
   ru: "Скрипт автобуса выключает поворотник после поворота; выкл.: он горит, пока вы его не выключите"
   uk: "Скрипт автобуса вимикає поворотник після повороту; вимк.: він горить, доки ви його не вимкнете"
@@ -322,6 +367,7 @@ _version: 2
 "Automated manual gearbox":
   nl: "Geautomatiseerde handbak"
   de: "Automatisiertes Schaltgetriebe"
+  da: "Automatiseret manuel gearkasse"
   fr: "Boîte manuelle automatisée"
   ru: "Автоматизированная механическая коробка"
   uk: "Автоматизована механічна коробка"
@@ -329,6 +375,7 @@ _version: 2
 "Shift a manual gearbox's gears for you by the engine speed":
   nl: "Schakelt de versnellingen van een handbak voor je op het toerental"
   de: "Schaltet die Gänge eines Schaltgetriebes für dich nach der Drehzahl"
+  da: "Skifter en manuel gearkasses gear for dig efter motorens omdrejninger"
   fr: "Passe les rapports d'une boîte manuelle pour vous selon le régime moteur"
   ru: "Переключает передачи механической коробки за вас по оборотам двигателя"
   uk: "Перемикає передачі механічної коробки за вас за обертами двигуна"
@@ -336,6 +383,7 @@ _version: 2
 "The language of the game's interface":
   nl: "De taal van de interface van het spel"
   de: "Die Sprache der Spieloberfläche"
+  da: "Sproget i spillets grænseflade"
   fr: "La langue de l'interface du jeu"
   ru: "Язык интерфейса игры"
   uk: "Мова інтерфейсу гри"
@@ -343,6 +391,7 @@ _version: 2
 "Everything but the language, the key bindings and the game folder goes back to how it came":
   nl: "Alles behalve de taal, de toetsen en de spelmap gaat terug naar hoe het geleverd werd"
   de: "Alles außer Sprache, Tastenbelegung und Spielordner wird wieder wie ausgeliefert"
+  da: "Alt undtagen sproget, tastebindingerne og spilmappen sættes tilbage, som det var ved leveringen"
   fr: "Tout sauf la langue, les touches et le dossier du jeu revient à l'état d'origine"
   ru: "Всё, кроме языка, клавиш и папки игры, вернётся к исходному"
   uk: "Усе, крім мови, клавіш і теки гри, повернеться до початкового"
@@ -350,6 +399,7 @@ _version: 2
 "Destination display":
   nl: "Bestemmingsdisplay"
   de: "Zielanzeige"
+  da: "Destinationsskilt"
   fr: "Girouette"
   ru: "Указатель маршрута"
   uk: "Покажчик маршруту"
@@ -357,6 +407,7 @@ _version: 2
 "Change the current destination":
   nl: "Wijzig de huidige bestemming"
   de: "Das aktuelle Ziel ändern"
+  da: "Skift den aktuelle destination"
   fr: "Changer la destination actuelle"
   ru: "Сменить текущий пункт назначения"
   uk: "Змінити поточний пункт призначення"
@@ -364,6 +415,7 @@ _version: 2
 "Depot file (HOF)":
   nl: "Remisebestand (HOF)"
   de: "Betriebshofdatei (HOF)"
+  da: "Depotfil (HOF)"
   fr: "Fichier de dépôt (HOF)"
   ru: "Файл депо (HOF)"
   uk: "Файл депо (HOF)"
@@ -371,6 +423,7 @@ _version: 2
 "Change the current depot file (used for the timetable)":
   nl: "Wijzig het huidige remisebestand (voor de dienstregeling)"
   de: "Die aktuelle Betriebshofdatei ändern (für den Fahrplan)"
+  da: "Skift den aktuelle depotfil (bruges til køreplanen)"
   fr: "Changer le fichier de dépôt actuel (utilisé pour l'horaire)"
   ru: "Сменить текущий файл депо (для расписания)"
   uk: "Змінити поточний файл депо (для розкладу)"
@@ -378,6 +431,7 @@ _version: 2
 "Change the vehicle's current fleet number":
   nl: "Wijzig het huidige wagennummer van het voertuig"
   de: "Die aktuelle Wagennummer des Fahrzeugs ändern"
+  da: "Skift køretøjets aktuelle vognnummer"
   fr: "Changer le numéro de parc actuel du véhicule"
   ru: "Сменить текущий бортовой номер транспорта"
   uk: "Змінити поточний бортовий номер транспорту"
@@ -385,6 +439,7 @@ _version: 2
 "Change the current driver profile":
   nl: "Wijzig het huidige bestuurdersprofiel"
   de: "Das aktuelle Fahrerprofil ändern"
+  da: "Skift den aktuelle chaufførprofil"
   fr: "Changer le profil de conducteur actuel"
   ru: "Сменить текущий профиль водителя"
   uk: "Змінити поточний профіль водія"
@@ -392,6 +447,7 @@ _version: 2
 "Place a vehicle":
   nl: "Voertuig plaatsen"
   de: "Fahrzeug einsetzen"
+  da: "Placér et køretøj"
   fr: "Placer un véhicule"
   ru: "Поставить транспорт"
   uk: "Поставити транспорт"
@@ -399,6 +455,7 @@ _version: 2
 "Place a vehicle of your choice":
   nl: "Plaats een voertuig naar keuze"
   de: "Setze ein Fahrzeug deiner Wahl ein"
+  da: "Placér et køretøj efter eget valg"
   fr: "Placer le véhicule de votre choix"
   ru: "Поставить транспорт на выбор"
   uk: "Поставити транспорт на вибір"
@@ -406,6 +463,7 @@ _version: 2
 "Swap for another vehicle":
   nl: "Ruilen voor een ander voertuig"
   de: "Gegen ein anderes Fahrzeug tauschen"
+  da: "Byt til et andet køretøj"
   fr: "Échanger contre un autre véhicule"
   ru: "Заменить другим транспортом"
   uk: "Замінити іншим транспортом"
@@ -413,6 +471,7 @@ _version: 2
 "Swap":
   nl: "Ruilen"
   de: "Tauschen"
+  da: "Byt"
   fr: "Échanger"
   ru: "Заменить"
   uk: "Замінити"
@@ -420,6 +479,7 @@ _version: 2
 "Put another vehicle in this one's place and drive it":
   nl: "Zet een ander voertuig op de plaats van dit voertuig en rij ermee"
   de: "Ein anderes Fahrzeug an die Stelle dieses setzen und es fahren"
+  da: "Sæt et andet køretøj i dette køretøjs sted, og kør det"
   fr: "Mettre un autre véhicule à la place de celui-ci et le conduire"
   ru: "Поставить на место этого другой транспорт и вести его"
   uk: "Поставити на місце цього інший транспорт і вести його"
@@ -427,6 +487,7 @@ _version: 2
 "Reload this vehicle":
   nl: "Dit voertuig opnieuw laden"
   de: "Dieses Fahrzeug neu laden"
+  da: "Genindlæs dette køretøj"
   fr: "Recharger ce véhicule"
   ru: "Перезагрузить этот транспорт"
   uk: "Перезавантажити цей транспорт"
@@ -434,6 +495,7 @@ _version: 2
 "Reload":
   nl: "Opnieuw laden"
   de: "Neu laden"
+  da: "Genindlæs"
   fr: "Recharger"
   ru: "Перезагрузить"
   uk: "Перезавантажити"
@@ -441,6 +503,7 @@ _version: 2
 "Read the vehicle's files again (.bus, model and sound configuration, scripts) and drive it from here":
   nl: "Lees de bestanden van het voertuig opnieuw (.bus, model- en geluidsconfiguratie, scripts) en rij vanaf hier verder"
   de: "Die Dateien des Fahrzeugs neu lesen (.bus, Modell- und Soundkonfiguration, Skripte) und von hier aus weiterfahren"
+  da: "Læs køretøjets filer igen (.bus, model- og lydkonfiguration, scripts), og kør det herfra"
   fr: "Relire les fichiers du véhicule (.bus, configuration du modèle et du son, scripts) et le conduire d'ici"
   ru: "Заново прочитать файлы транспорта (.bus, конфигурация модели и звука, скрипты) и ехать отсюда"
   uk: "Заново прочитати файли транспорту (.bus, конфігурація моделі й звуку, скрипти) і їхати звідси"
@@ -448,6 +511,7 @@ _version: 2
 "The airport used for real weather.":
   nl: "Het vliegveld voor het echte weer."
   de: "Der Flughafen für das echte Wetter."
+  da: "Lufthavnen, der bruges til rigtigt vejr."
   fr: "L'aéroport utilisé pour la météo réelle."
   ru: "Аэропорт, по которому берётся реальная погода."
   uk: "Аеропорт, за яким береться реальна погода."
@@ -455,6 +519,7 @@ _version: 2
 "typing":
   nl: "aan het typen"
   de: "Eingabe"
+  da: "skriver"
   fr: "saisie"
   ru: "ввод"
   uk: "введення"
@@ -462,6 +527,7 @@ _version: 2
 "Enter any 4-letter ICAO station.":
   nl: "Typ een ICAO-station van 4 letters."
   de: "Gib eine beliebige ICAO-Station mit 4 Buchstaben ein."
+  da: "Indtast en vilkårlig ICAO-station på 4 bogstaver."
   fr: "Saisissez une station OACI de 4 lettres."
   ru: "Введите любую станцию ICAO из 4 букв."
   uk: "Введіть будь-яку станцію ICAO з 4 літер."
@@ -469,6 +535,7 @@ _version: 2
 "METAR report":
   nl: "METAR-bericht"
   de: "METAR-Bericht"
+  da: "METAR-rapport"
   fr: "Bulletin METAR"
   ru: "Сводка METAR"
   uk: "Зведення METAR"
@@ -476,6 +543,7 @@ _version: 2
 "Refresh now":
   nl: "Nu verversen"
   de: "Jetzt aktualisieren"
+  da: "Opdatér nu"
   fr: "Actualiser"
   ru: "Обновить сейчас"
   uk: "Оновити зараз"
@@ -483,6 +551,7 @@ _version: 2
 "Fetch the selected station again without waiting for the next automatic update.":
   nl: "Haal het gekozen station opnieuw op zonder op de volgende automatische update te wachten."
   de: "Die gewählte Station erneut abrufen, ohne auf die nächste automatische Aktualisierung zu warten."
+  da: "Hent den valgte station igen uden at vente på den næste automatiske opdatering."
   fr: "Récupérer à nouveau la station choisie sans attendre la prochaine mise à jour automatique."
   ru: "Заново получить выбранную станцию, не дожидаясь следующего автообновления."
   uk: "Заново отримати вибрану станцію, не чекаючи наступного автооновлення."
@@ -490,6 +559,7 @@ _version: 2
 "Load once":
   nl: "Eén keer laden"
   de: "Einmal laden"
+  da: "Indlæs én gang"
   fr: "Charger une fois"
   ru: "Загрузить один раз"
   uk: "Завантажити один раз"
@@ -497,6 +567,7 @@ _version: 2
 "Load the selected station once without enabling continuous METAR sync.":
   nl: "Laad het gekozen station één keer zonder het METAR-volgen aan te zetten."
   de: "Die gewählte Station einmal laden, ohne den laufenden METAR-Abgleich einzuschalten."
+  da: "Indlæs den valgte station én gang uden at slå løbende METAR-synkronisering til."
   fr: "Charger une fois la station choisie sans activer la synchronisation METAR continue."
   ru: "Загрузить выбранную станцию один раз, не включая постоянную синхронизацию METAR."
   uk: "Завантажити вибрану станцію один раз, не вмикаючи постійну синхронізацію METAR."
@@ -504,6 +575,7 @@ _version: 2
 "Edit current":
   nl: "Huidige bewerken"
   de: "Aktuelles bearbeiten"
+  da: "Redigér aktuelt"
   fr: "Modifier l'actuelle"
   ru: "Изменить текущую"
   uk: "Змінити поточну"
@@ -511,6 +583,7 @@ _version: 2
 "Freeze the weather currently in force and edit it as a custom weather.":
   nl: "Zet het huidige weer vast en bewerk het als eigen weer."
   de: "Das aktuelle Wetter einfrieren und als eigenes Wetter bearbeiten."
+  da: "Frys det vejr, der gælder nu, og redigér det som et brugerdefineret vejr."
   fr: "Figer la météo actuelle et la modifier comme une météo personnalisée."
   ru: "Зафиксировать текущую погоду и изменить её как свою."
   uk: "Зафіксувати поточну погоду й змінити її як свою."
@@ -518,6 +591,7 @@ _version: 2
 "Brightness of the custom weather lighting.":
   nl: "Helderheid van de verlichting van het eigen weer."
   de: "Helligkeit der Beleuchtung des eigenen Wetters."
+  da: "Belysningens lysstyrke i det brugerdefinerede vejr."
   fr: "Luminosité de l'éclairage de la météo personnalisée."
   ru: "Яркость освещения своей погоды."
   uk: "Яскравість освітлення своєї погоди."
@@ -525,6 +599,7 @@ _version: 2
 "Snow lying on the world and ground.":
   nl: "Sneeuw op de wereld en de grond."
   de: "Schnee auf der Welt und dem Boden."
+  da: "Sne, der ligger på verdenen og jorden."
   fr: "Neige sur le monde et le sol."
   ru: "Снег, лежащий на мире и земле."
   uk: "Сніг, що лежить на світі й землі."
@@ -532,6 +607,7 @@ _version: 2
 "Treat the road surface as snow-covered.":
   nl: "Behandel het wegdek als besneeuwd."
   de: "Die Fahrbahn als verschneit behandeln."
+  da: "Behandl vejbanen som snedækket."
   fr: "Traiter la chaussée comme enneigée."
   ru: "Считать дорожное покрытие заснеженным."
   uk: "Вважати дорожнє покриття засніженим."
@@ -539,6 +615,7 @@ _version: 2
 "Relative humidity of the air.":
   nl: "Relatieve luchtvochtigheid."
   de: "Relative Luftfeuchtigkeit."
+  da: "Luftens relative fugtighed."
   fr: "Humidité relative de l'air."
   ru: "Относительная влажность воздуха."
   uk: "Відносна вологість повітря."
@@ -546,6 +623,7 @@ _version: 2
 "%{n} vehicles":
   nl: "%{n} voertuigen"
   de: "%{n} Fahrzeuge"
+  da: "%{n} køretøjer"
   fr: "%{n} véhicules"
   ru: "Транспорта: %{n}"
   uk: "Транспорту: %{n}"
@@ -553,6 +631,7 @@ _version: 2
 "No duty: %{error}":
   nl: "Geen dienst: %{error}"
   de: "Kein Dienst: %{error}"
+  da: "Ingen vagt: %{error}"
   fr: "Pas de service : %{error}"
   ru: "Нет смены: %{error}"
   uk: "Немає наряду: %{error}"
@@ -560,6 +639,7 @@ _version: 2
 "Line %{line}, tour %{tour}":
   nl: "Lijn %{line}, omloop %{tour}"
   de: "Linie %{line}, Umlauf %{tour}"
+  da: "Linje %{line}, tur %{tour}"
   fr: "Ligne %{line}, service %{tour}"
   ru: "Линия %{line}, выход %{tour}"
   uk: "Лінія %{line}, оборот %{tour}"
@@ -567,6 +647,7 @@ _version: 2
 "Few clouds":
   nl: "Licht bewolkt"
   de: "Leicht bewölkt"
+  da: "Få skyer"
   fr: "Peu nuageux"
   ru: "Малооблачно"
   uk: "Малохмарно"
@@ -574,6 +655,7 @@ _version: 2
 "Scattered":
   nl: "Half bewolkt"
   de: "Aufgelockert"
+  da: "Spredte skyer"
   fr: "Nuages épars"
   ru: "Переменная облачность"
   uk: "Мінлива хмарність"
@@ -581,6 +663,7 @@ _version: 2
 "Broken":
   nl: "Zwaar bewolkt"
   de: "Stark bewölkt"
+  da: "Opbrudt skydække"
   fr: "Très nuageux"
   ru: "Облачно с прояснениями"
   uk: "Хмарно з проясненнями"
@@ -588,6 +671,7 @@ _version: 2
 "Overcast":
   nl: "Betrokken"
   de: "Bedeckt"
+  da: "Overskyet"
   fr: "Couvert"
   ru: "Пасмурно"
   uk: "Похмуро"
@@ -595,6 +679,7 @@ _version: 2
 "Top left":
   nl: "Linksboven"
   de: "Oben links"
+  da: "Øverst til venstre"
   fr: "En haut à gauche"
   ru: "Слева вверху"
   uk: "Ліворуч угорі"
@@ -602,6 +687,7 @@ _version: 2
 "Top right":
   nl: "Rechtsboven"
   de: "Oben rechts"
+  da: "Øverst til højre"
   fr: "En haut à droite"
   ru: "Справа вверху"
   uk: "Праворуч угорі"
@@ -609,6 +695,7 @@ _version: 2
 "Bottom left":
   nl: "Linksonder"
   de: "Unten links"
+  da: "Nederst til venstre"
   fr: "En bas à gauche"
   ru: "Слева внизу"
   uk: "Ліворуч унизу"
@@ -616,6 +703,7 @@ _version: 2
 "Bottom right":
   nl: "Rechtsonder"
   de: "Unten rechts"
+  da: "Nederst til højre"
   fr: "En bas à droite"
   ru: "Справа внизу"
   uk: "Праворуч унизу"
@@ -623,6 +711,7 @@ _version: 2
 "Takes effect when the game starts the next time":
   nl: "Geldt bij de volgende start van het spel"
   de: "Gilt beim nächsten Spielstart"
+  da: "Træder i kraft, næste gang spillet starter"
   fr: "Prend effet au prochain lancement du jeu"
   ru: "Вступит в силу при следующем запуске игры"
   uk: "Діятиме з наступного запуску гри"
@@ -630,6 +719,7 @@ _version: 2
 "Display and memory":
   nl: "Scherm en geheugen"
   de: "Anzeige und Speicher"
+  da: "Skærm og hukommelse"
   fr: "Affichage et mémoire"
   ru: "Экран и память"
   uk: "Екран і пам'ять"
@@ -637,6 +727,7 @@ _version: 2
 "Display and driver":
   nl: "Display en bestuurder"
   de: "Anzeige und Fahrer"
+  da: "Skærm og driver"
   fr: "Affichage et conducteur"
   ru: "Указатель и водитель"
   uk: "Покажчик і водій"
@@ -644,6 +735,7 @@ _version: 2
 "Noon":
   nl: "Middag"
   de: "Mittag"
+  da: "Middag"
   fr: "Midi"
   ru: "Полдень"
   uk: "Полудень"
@@ -651,6 +743,7 @@ _version: 2
 "Temperature and wind":
   nl: "Temperatuur en wind"
   de: "Temperatur und Wind"
+  da: "Temperatur og vind"
   fr: "Température et vent"
   ru: "Температура и ветер"
   uk: "Температура й вітер"
@@ -658,6 +751,7 @@ _version: 2
 "Traffic and people":
   nl: "Verkeer en mensen"
   de: "Verkehr und Menschen"
+  da: "Trafik og mennesker"
   fr: "Circulation et personnes"
   ru: "Транспорт и люди"
   uk: "Рух і люди"
@@ -665,6 +759,7 @@ _version: 2
 "Tools":
   nl: "Gereedschap"
   de: "Werkzeuge"
+  da: "Værktøjer"
   fr: "Outils"
   ru: "Инструменты"
   uk: "Інструменти"
@@ -672,6 +767,7 @@ _version: 2
 "Options":
   nl: "Opties"
   de: "Optionen"
+  da: "Indstillinger"
   fr: "Options"
   ru: "Параметры"
   uk: "Параметри"
@@ -679,6 +775,7 @@ _version: 2
 "CLUTCH":
   nl: "KOPPELING"
   de: "KUPPLUNG"
+  da: "KOBLING"
   fr: "EMBRAYAGE"
   ru: "СЦЕПЛЕНИЕ"
   uk: "ЗЧЕПЛЕННЯ"
@@ -686,6 +783,7 @@ _version: 2
 "GAS":
   nl: "GAS"
   de: "GAS"
+  da: "GAS"
   fr: "GAZ"
   ru: "ГАЗ"
   uk: "ГАЗ"
@@ -693,6 +791,7 @@ _version: 2
 "TILT":
   nl: "KANTELEN"
   de: "NEIGEN"
+  da: "HÆLD"
   fr: "INCLINER"
   ru: "НАКЛОН"
   uk: "НАХИЛ"
@@ -700,6 +799,7 @@ _version: 2
 "dew %{t} °C":
   nl: "dauwpunt %{t} °C"
   de: "Taupunkt %{t} °C"
+  da: "dug %{t} °C"
   fr: "point de rosée %{t} °C"
   ru: "точка росы %{t} °C"
   uk: "точка роси %{t} °C"
@@ -707,6 +807,7 @@ _version: 2
 "Free driving: the bus starts where you chose, with the traffic and the timetable's buses around it, but no line of your own. Pick the place below or click an entry point on the map.":
   nl: "Vrij rijden: de bus begint waar je kiest, met het verkeer en de bussen van de dienstregeling om je heen, maar zonder eigen lijn. Kies de plek hieronder of klik op een inzetpunt op de kaart."
   de: "Freie Fahrt: Der Bus startet, wo du willst, mit dem Verkehr und den Bussen des Fahrplans um dich herum, aber ohne eigene Linie. Wähle den Ort unten oder klicke auf einen Einsetzpunkt auf der Karte."
+  da: "Fri kørsel: bussen starter, hvor du valgte, med trafikken og køreplanens busser omkring dig, men uden en linje af din egen. Vælg stedet nedenfor, eller klik på et indgangspunkt på kortet."
   fr: "Conduite libre : le bus part de l'endroit choisi, entouré de la circulation et des bus de l'horaire, mais sans ligne à vous. Choisissez le lieu ci-dessous ou cliquez sur un point d'entrée de la carte."
   ru: "Свободная езда: автобус начинает там, где вы выбрали, вокруг — транспорт и автобусы по расписанию, но своего маршрута нет. Выберите место ниже или нажмите на точку появления на карте."
   uk: "Вільна поїздка: автобус починає там, де ви вибрали, довкола — рух і автобуси за розкладом, але без власної лінії. Виберіть місце нижче або клацніть точку появи на мапі."
@@ -714,6 +815,7 @@ _version: 2
 "runs %{date}":
   nl: "rijdt %{date}"
   de: "fährt am %{date}"
+  da: "kører %{date}"
   fr: "circule le %{date}"
   ru: "ходит %{date}"
   uk: "курсує %{date}"
@@ -721,6 +823,7 @@ _version: 2
 "never within a year":
   nl: "nooit binnen een jaar"
   de: "nie innerhalb eines Jahres"
+  da: "aldrig inden for et år"
   fr: "jamais dans l'année"
   ru: "ни разу в течение года"
   uk: "жодного разу протягом року"
@@ -728,6 +831,7 @@ _version: 2
 "entry %{n}":
   nl: "inzetpunt %{n}"
   de: "Einsetzpunkt %{n}"
+  da: "indgang %{n}"
   fr: "point d'entrée %{n}"
   ru: "точка %{n}"
   uk: "точка %{n}"
@@ -735,6 +839,7 @@ _version: 2
 "Put the roadbook away (the button on the map brings it back)":
   nl: "Routeboek wegleggen (de knop op de kaart haalt het terug)"
   de: "Fahrplan weglegen (der Knopf auf der Karte holt ihn zurück)"
+  da: "Læg køreplansbogen væk (knappen på kortet henter den tilbage)"
   fr: "Ranger la feuille de route (le bouton sur la carte la ramène)"
   ru: "Убрать путевой лист (кнопка на карте вернёт его)"
   uk: "Прибрати маршрутну книгу (кнопка на мапі поверне її)"
@@ -742,6 +847,7 @@ _version: 2
 "The trips of the chosen tour, where they call, and what to type into the IBIS":
   nl: "De ritten van de gekozen omloop, waar ze stoppen en wat je in de IBIS intypt"
   de: "Die Fahrten des gewählten Umlaufs, wo sie halten und was du ins IBIS eintippst"
+  da: "Den valgte turs rejser, hvor de standser, og hvad du skal skrive ind i IBIS"
   fr: "Les courses du service choisi, leurs arrêts et ce qu'il faut saisir dans l'IBIS"
   ru: "Рейсы выбранного выхода, где они останавливаются и что вводить в IBIS"
   uk: "Рейси вибраного обороту, де вони зупиняються і що вводити в IBIS"
@@ -749,6 +855,7 @@ _version: 2
 "Continue where you left off on this map":
   nl: "Ga verder waar je op deze kaart gebleven was"
   de: "Dort weitermachen, wo du auf dieser Karte aufgehört hast"
+  da: "Fortsæt, hvor du slap, på dette kort"
   fr: "Reprendre là où vous vous étiez arrêté sur cette carte"
   ru: "Продолжить с того места, где вы остановились на этой карте"
   uk: "Продовжити з того місця, де ви зупинилися на цій мапі"
@@ -756,6 +863,7 @@ _version: 2
 "%{n} games running - see Sessions":
   nl: "%{n} spellen actief - zie Sessies"
   de: "%{n} Spiele laufen - siehe Sitzungen"
+  da: "%{n} spil kører - se Sessioner"
   fr: "%{n} jeux en cours - voir Sessions"
   ru: "Запущено игр: %{n} — см. «Сессии»"
   uk: "Запущено ігор: %{n} — див. «Сесії»"
@@ -763,6 +871,7 @@ _version: 2
 "one game running - see Sessions":
   nl: "één spel actief - zie Sessies"
   de: "ein Spiel läuft - siehe Sitzungen"
+  da: "ét spil kører - se Sessioner"
   fr: "un jeu en cours - voir Sessions"
   ru: "запущена одна игра — см. «Сессии»"
   uk: "запущено одну гру — див. «Сесії»"
@@ -770,6 +879,7 @@ _version: 2
 "at %{station}":
   nl: "bij %{station}"
   de: "bei %{station}"
+  da: "ved %{station}"
   fr: "à %{station}"
   ru: "в %{station}"
   uk: "у %{station}"
@@ -777,6 +887,7 @@ _version: 2
 "weather cycle":
   nl: "wisselend weer"
   de: "Wetterwechsel"
+  da: "vejrcyklus"
   fr: "météo changeante"
   ru: "смена погоды"
   uk: "зміна погоди"
@@ -784,6 +895,7 @@ _version: 2
 "Line %{line} · tour %{tour} · %{map}":
   nl: "Lijn %{line} · omloop %{tour} · %{map}"
   de: "Linie %{line} · Umlauf %{tour} · %{map}"
+  da: "Linje %{line} · tur %{tour} · %{map}"
   fr: "Ligne %{line} · service %{tour} · %{map}"
   ru: "Линия %{line} · выход %{tour} · %{map}"
   uk: "Лінія %{line} · оборот %{tour} · %{map}"
@@ -791,6 +903,7 @@ _version: 2
 "Line %{line} · choose a tour · %{map}":
   nl: "Lijn %{line} · kies een omloop · %{map}"
   de: "Linie %{line} · Umlauf wählen · %{map}"
+  da: "Linje %{line} · vælg en tur · %{map}"
   fr: "Ligne %{line} · choisissez un service · %{map}"
   ru: "Линия %{line} · выберите выход · %{map}"
   uk: "Лінія %{line} · виберіть оборот · %{map}"
@@ -798,6 +911,7 @@ _version: 2
 "starting point: automatic":
   nl: "startpunt: automatisch"
   de: "Startpunkt: automatisch"
+  da: "startpunkt: automatisk"
   fr: "point de départ : automatique"
   ru: "точка старта: автоматически"
   uk: "точка старту: автоматично"
@@ -805,6 +919,7 @@ _version: 2
 "starting at %{place}":
   nl: "start bij %{place}"
   de: "Start bei %{place}"
+  da: "starter ved %{place}"
   fr: "départ à %{place}"
   ru: "старт: %{place}"
   uk: "старт: %{place}"
@@ -812,6 +927,7 @@ _version: 2
 "Automatic (%{hof})":
   nl: "Automatisch (%{hof})"
   de: "Automatisch (%{hof})"
+  da: "Automatisk (%{hof})"
   fr: "Automatique (%{hof})"
   ru: "Автоматически (%{hof})"
   uk: "Автоматично (%{hof})"
@@ -819,6 +935,7 @@ _version: 2
 "METAR of %{station} (fetched at the start)":
   nl: "METAR van %{station} (opgehaald bij de start)"
   de: "METAR von %{station} (beim Start abgerufen)"
+  da: "METAR fra %{station} (hentet ved starten)"
   fr: "METAR de %{station} (récupéré au départ)"
   ru: "METAR %{station} (загружается при старте)"
   uk: "METAR %{station} (завантажується під час старту)"
@@ -826,6 +943,7 @@ _version: 2
 "No duty chosen: free driving on %{map}. Pick a line and a tour under Route to see the roadbook here.":
   nl: "Geen dienst gekozen: vrij rijden op %{map}. Kies een lijn en een omloop onder Route om hier het routeboek te zien."
   de: "Kein Dienst gewählt: freie Fahrt auf %{map}. Wähle unter Route eine Linie und einen Umlauf, um hier den Fahrplan zu sehen."
+  da: "Ingen vagt valgt: fri kørsel på %{map}. Vælg en linje og en tur under Rute for at se køreplansbogen her."
   fr: "Aucun service choisi : conduite libre sur %{map}. Choisissez une ligne et un service sous Itinéraire pour voir la feuille de route ici."
   ru: "Смена не выбрана: свободная езда по карте %{map}. Выберите линию и выход в разделе «Маршрут», чтобы увидеть здесь путевой лист."
   uk: "Наряд не вибрано: вільна поїздка мапою %{map}. Виберіть лінію й оборот у розділі «Маршрут», щоб побачити тут маршрутну книгу."
@@ -833,6 +951,7 @@ _version: 2
 "dep %{time}":
   nl: "vertr. %{time}"
   de: "ab %{time}"
+  da: "afg. %{time}"
   fr: "dép. %{time}"
   ru: "отпр. %{time}"
   uk: "відпр. %{time}"
@@ -840,6 +959,7 @@ _version: 2
 "Depot file %{hof} has no entries for this line. Type line %{line} and the terminus code by hand, or press Shift+U.":
   nl: "Remisebestand %{hof} heeft geen gegevens voor deze lijn. Typ lijn %{line} en de code van de eindhalte zelf in, of druk op Shift+U."
   de: "Die Betriebshofdatei %{hof} hat keine Einträge für diese Linie. Tippe Linie %{line} und den Zielcode von Hand ein oder drücke Umschalt+U."
+  da: "Depotfilen %{hof} har ingen poster til denne linje. Skriv linje %{line} og endestationskoden manuelt, eller tryk på Shift+U."
   fr: "Le fichier de dépôt %{hof} n'a pas d'entrées pour cette ligne. Saisissez la ligne %{line} et le code du terminus à la main, ou appuyez sur Maj+U."
   ru: "В файле депо %{hof} нет записей для этой линии. Введите линию %{line} и код конечной вручную или нажмите Shift+U."
   uk: "У файлі депо %{hof} немає записів для цієї лінії. Введіть лінію %{line} і код кінцевої вручну або натисніть Shift+U."
@@ -847,6 +967,7 @@ _version: 2
 "Depot file %{hof} · Shift+U in the game types it for you":
   nl: "Remisebestand %{hof} · Shift+U in het spel typt het voor je in"
   de: "Betriebshofdatei %{hof} · Umschalt+U im Spiel tippt es für dich ein"
+  da: "Depotfil %{hof} · Shift+U i spillet skriver den ind for dig"
   fr: "Fichier de dépôt %{hof} · Maj+U dans le jeu le saisit pour vous"
   ru: "Файл депо %{hof} · Shift+U в игре введёт это за вас"
   uk: "Файл депо %{hof} · Shift+U у грі введе це за вас"
@@ -854,6 +975,7 @@ _version: 2
 "rain %{p}%":
   nl: "regen %{p}%"
   de: "Regen %{p} %"
+  da: "regn %{p} %"
   fr: "pluie %{p} %"
   ru: "дождь %{p}%"
   uk: "дощ %{p}%"
@@ -861,6 +983,7 @@ _version: 2
 "snow %{p}%":
   nl: "sneeuw %{p}%"
   de: "Schnee %{p} %"
+  da: "sne %{p} %"
   fr: "neige %{p} %"
   ru: "снег %{p}%"
   uk: "сніг %{p}%"
@@ -868,6 +991,7 @@ _version: 2
 "dry":
   nl: "droog"
   de: "trocken"
+  da: "tørt"
   fr: "sec"
   ru: "сухо"
   uk: "сухо"
@@ -875,6 +999,7 @@ _version: 2
 "clear visibility":
   nl: "helder zicht"
   de: "klare Sicht"
+  da: "klar sigt"
   fr: "visibilité dégagée"
   ru: "ясная видимость"
   uk: "ясна видимість"
@@ -882,6 +1007,7 @@ _version: 2
 "%{p}% RH":
   nl: "%{p}% RV"
   de: "%{p} % rF"
+  da: "%{p} % RF"
   fr: "%{p} % HR"
   ru: "%{p}% отн. вл."
   uk: "%{p}% відн. вол."
@@ -889,6 +1015,7 @@ _version: 2
 "Card %{n}":
   nl: "Kaart %{n}"
   de: "Karte %{n}"
+  da: "Kort %{n}"
   fr: "Carte %{n}"
   ru: "Карта памяти %{n}"
   uk: "Картка пам'яті %{n}"
@@ -896,6 +1023,7 @@ _version: 2
 "The launcher could not open again: %{error}":
   nl: "De launcher kon niet opnieuw openen: %{error}"
   de: "Der Launcher konnte sich nicht neu öffnen: %{error}"
+  da: "Launcheren kunne ikke åbne igen: %{error}"
   fr: "Le lanceur n'a pas pu se rouvrir : %{error}"
   ru: "Лаунчер не смог открыться снова: %{error}"
   uk: "Лаунчер не зміг відкритися знову: %{error}"
@@ -903,6 +1031,7 @@ _version: 2
 "The settings were not saved: %{error}":
   nl: "De instellingen zijn niet opgeslagen: %{error}"
   de: "Die Einstellungen wurden nicht gespeichert: %{error}"
+  da: "Indstillingerne blev ikke gemt: %{error}"
   fr: "Les réglages n'ont pas été enregistrés : %{error}"
   ru: "Настройки не сохранены: %{error}"
   uk: "Налаштування не збережено: %{error}"
@@ -910,6 +1039,7 @@ _version: 2
 "The launcher rests while you drive, so that the game has the graphics card to itself. It is back as soon as the game ends.":
   nl: "De launcher rust terwijl je rijdt, zodat het spel de videokaart voor zich alleen heeft. Hij is terug zodra het spel stopt."
   de: "Der Launcher ruht, während du fährst, damit das Spiel die Grafikkarte für sich hat. Er ist zurück, sobald das Spiel endet."
+  da: "Launcheren hviler, mens du kører, så spillet har grafikkortet for sig selv. Den er tilbage, så snart spillet slutter."
   fr: "Le lanceur se met en pause pendant que vous conduisez, pour laisser la carte graphique au jeu. Il revient dès que le jeu se termine."
   ru: "Лаунчер отдыхает, пока вы едете, чтобы видеокарта досталась игре. Он вернётся, как только игра закончится."
   uk: "Лаунчер відпочиває, поки ви їдете, щоб відеокарта дісталася грі. Він повернеться, щойно гра завершиться."
@@ -917,6 +1047,7 @@ _version: 2
 "Can't reach the server: %{error}":
   nl: "Server niet bereikbaar: %{error}"
   de: "Server nicht erreichbar: %{error}"
+  da: "Kan ikke nå serveren: %{error}"
   fr: "Serveur injoignable : %{error}"
   ru: "Сервер недоступен: %{error}"
   uk: "Сервер недоступний: %{error}"
@@ -924,6 +1055,7 @@ _version: 2
 "Loaded \"%{name}\".":
   nl: "\"%{name}\" geladen."
   de: "\"%{name}\" geladen."
+  da: "\"%{name}\" er indlæst."
   fr: "« %{name} » chargé."
   ru: "«%{name}» загружен."
   uk: "«%{name}» завантажено."
@@ -931,6 +1063,7 @@ _version: 2
 "\"%{name}\" is gone.":
   nl: "\"%{name}\" is er niet meer."
   de: "\"%{name}\" gibt es nicht mehr."
+  da: "\"%{name}\" findes ikke mere."
   fr: "« %{name} » n'existe plus."
   ru: "«%{name}» больше нет."
   uk: "«%{name}» більше немає."
@@ -938,6 +1071,7 @@ _version: 2
 "Deleted \"%{name}\".":
   nl: "\"%{name}\" verwijderd."
   de: "\"%{name}\" gelöscht."
+  da: "\"%{name}\" er slettet."
   fr: "« %{name} » supprimé."
   ru: "«%{name}» удалён."
   uk: "«%{name}» видалено."
@@ -945,6 +1079,7 @@ _version: 2
 "Saved \"%{name}\".":
   nl: "\"%{name}\" opgeslagen."
   de: "\"%{name}\" gespeichert."
+  da: "\"%{name}\" er gemt."
   fr: "« %{name} » enregistré."
   ru: "«%{name}» сохранён."
   uk: "«%{name}» збережено."
@@ -952,6 +1087,7 @@ _version: 2
 "Automatic (%{size} here)":
   nl: "Automatisch (%{size} hier)"
   de: "Automatisch (%{size} hier)"
+  da: "Automatisk (%{size} her)"
   fr: "Automatique (%{size} ici)"
   ru: "Автоматически (здесь %{size})"
   uk: "Автоматично (тут %{size})"
@@ -959,6 +1095,7 @@ _version: 2
 "Profiles":
   nl: "Profielen"
   de: "Profile"
+  da: "Profiler"
   fr: "Profils"
   ru: "Профили"
   uk: "Профілі"
@@ -966,6 +1103,7 @@ _version: 2
 "A right click ends the mouse steering (as in OMSI)":
   nl: "Rechtsklik beëindigt het sturen met de muis (zoals in OMSI)"
   de: "Rechtsklick beendet die Maussteuerung (wie in OMSI)"
+  da: "Et højreklik afslutter musestyringen (som i OMSI)"
   fr: "Un clic droit arrête la conduite à la souris (comme dans OMSI)"
   ru: "Правый щелчок отключает руление мышью (как в OMSI)"
   uk: "Правий клік вимикає кермування мишею (як в OMSI)"
@@ -973,6 +1111,7 @@ _version: 2
 "Indicators cancel themselves (as the bus's script does)":
   nl: "Richtingaanwijzers gaan vanzelf uit (zoals het script van de bus doet)"
   de: "Blinker stellen sich selbst zurück (wie das Skript des Busses)"
+  da: "Blinklys slukker af sig selv (som busens script gør)"
   fr: "Les clignotants s'arrêtent d'eux-mêmes (comme le fait le script du bus)"
   ru: "Поворотники выключаются сами (как в скрипте автобуса)"
   uk: "Поворотники вимикаються самі (як у скрипті автобуса)"
@@ -980,6 +1119,7 @@ _version: 2
 "Softer x%{k}":
   nl: "Zachter x%{k}"
   de: "Weicher x%{k}"
+  da: "Blødere x%{k}"
   fr: "Plus doux x%{k}"
   ru: "Мягче x%{k}"
   uk: "М'якше x%{k}"
@@ -987,6 +1127,7 @@ _version: 2
 "Stronger x%{k}":
   nl: "Sterker x%{k}"
   de: "Stärker x%{k}"
+  da: "Kraftigere x%{k}"
   fr: "Plus fort x%{k}"
   ru: "Сильнее x%{k}"
   uk: "Сильніше x%{k}"
@@ -994,6 +1135,7 @@ _version: 2
 "Three screen projections":
   nl: "Drie schermprojecties"
   de: "Drei Bildschirmprojektionen"
+  da: "Tre skærmprojektioner"
   fr: "Trois projections d'écran"
   ru: "Три проекции экрана"
   uk: "Три проєкції екрана"
@@ -1001,6 +1143,7 @@ _version: 2
 "Three equal screens in a horizontal row. OpenXR takes priority.":
   nl: "Drie gelijke schermen naast elkaar. OpenXR gaat voor."
   de: "Drei gleiche Bildschirme nebeneinander. OpenXR hat Vorrang."
+  da: "Tre lige store skærme i en vandret række. OpenXR har forrang."
   fr: "Trois écrans identiques côte à côte. OpenXR est prioritaire."
   ru: "Три одинаковых экрана в ряд. OpenXR в приоритете."
   uk: "Три однакові екрани в ряд. OpenXR має пріоритет."
@@ -1008,6 +1151,7 @@ _version: 2
 "Visible width of one panel":
   nl: "Zichtbare breedte van één paneel"
   de: "Sichtbare Breite eines Panels"
+  da: "Synlig bredde af ét panel"
   fr: "Largeur visible d'un écran"
   ru: "Видимая ширина одной панели"
   uk: "Видима ширина однієї панелі"
@@ -1015,6 +1159,7 @@ _version: 2
 "Eye to centre screen":
   nl: "Oog tot middelste scherm"
   de: "Auge bis mittlerer Bildschirm"
+  da: "Øje til midterskærm"
   fr: "De l'œil à l'écran central"
   ru: "От глаз до центрального экрана"
   uk: "Від очей до центрального екрана"
@@ -1022,6 +1167,7 @@ _version: 2
 "Both frames at each join":
   nl: "Beide randen bij elke naad"
   de: "Beide Rahmen an jeder Fuge"
+  da: "Begge rammer ved hver samling"
   fr: "Les deux cadres à chaque jonction"
   ru: "Обе рамки на каждом стыке"
   uk: "Обидві рамки на кожному стику"
@@ -1029,6 +1175,7 @@ _version: 2
 "Left screen inward angle":
   nl: "Hoek linkerscherm naar binnen"
   de: "Winkel des linken Bildschirms nach innen"
+  da: "Venstre skærms indadgående vinkel"
   fr: "Angle vers l'intérieur de l'écran gauche"
   ru: "Угол левого экрана внутрь"
   uk: "Кут лівого екрана всередину"
@@ -1036,6 +1183,7 @@ _version: 2
 "Right screen inward angle":
   nl: "Hoek rechterscherm naar binnen"
   de: "Winkel des rechten Bildschirms nach innen"
+  da: "Højre skærms indadgående vinkel"
   fr: "Angle vers l'intérieur de l'écran droit"
   ru: "Угол правого экрана внутрь"
   uk: "Кут правого екрана всередину"
@@ -1043,6 +1191,7 @@ _version: 2
 "The launcher rests while a game runs (gives the graphics card to the game)":
   nl: "De launcher rust terwijl een spel draait (laat de videokaart aan het spel)"
   de: "Der Launcher ruht, während ein Spiel läuft (überlässt dem Spiel die Grafikkarte)"
+  da: "Launcheren hviler, mens et spil kører (giver grafikkortet til spillet)"
   fr: "Le lanceur se met en pause pendant une partie (laisse la carte graphique au jeu)"
   ru: "Лаунчер отдыхает, пока идёт игра (отдаёт видеокарту игре)"
   uk: "Лаунчер відпочиває, поки йде гра (віддає відеокарту грі)"
@@ -1050,6 +1199,7 @@ _version: 2
 "Shows the launcher or your map, bus, line and multiplayer status in Discord.":
   nl: "Toont de launcher of je kaart, bus, lijn en multiplayerstatus in Discord."
   de: "Zeigt in Discord den Launcher oder deine Karte, deinen Bus, deine Linie und deinen Mehrspielerstatus."
+  da: "Viser launcheren eller dit kort, din bus, din linje og din multiplayer-status i Discord."
   fr: "Affiche dans Discord le lanceur ou votre carte, bus, ligne et état multijoueur."
   ru: "Показывает в Discord лаунчер или вашу карту, автобус, линию и статус мультиплеера."
   uk: "Показує в Discord лаунчер або вашу мапу, автобус, лінію й статус мультиплеєра."
@@ -1057,6 +1207,7 @@ _version: 2
 "%{version} is the latest version":
   nl: "%{version} is de nieuwste versie"
   de: "%{version} ist die neueste Version"
+  da: "%{version} er den nyeste version"
   fr: "%{version} est la dernière version"
   ru: "%{version} — последняя версия"
   uk: "%{version} — остання версія"
@@ -1064,6 +1215,7 @@ _version: 2
 "%{version} is available":
   nl: "%{version} is beschikbaar"
   de: "%{version} ist verfügbar"
+  da: "%{version} er tilgængelig"
   fr: "%{version} est disponible"
   ru: "Доступна версия %{version}"
   uk: "Доступна версія %{version}"
@@ -1071,6 +1223,7 @@ _version: 2
 "This is openOMSI %{version}":
   nl: "Dit is openOMSI %{version}"
   de: "Dies ist openOMSI %{version}"
+  da: "Dette er openOMSI %{version}"
   fr: "Ceci est openOMSI %{version}"
   ru: "Это openOMSI %{version}"
   uk: "Це openOMSI %{version}"
@@ -1078,6 +1231,7 @@ _version: 2
 "Gear %{gear} (H-pattern)":
   nl: "Versnelling %{gear} (H-schakeling)"
   de: "Gang %{gear} (H-Schaltung)"
+  da: "Gear %{gear} (H-skift)"
   fr: "Rapport %{gear} (grille en H)"
   ru: "Передача %{gear} (H-схема)"
   uk: "Передача %{gear} (H-схема)"
@@ -1085,6 +1239,7 @@ _version: 2
 "%{key} has no DirectInput scan code the game understands.":
   nl: "%{key} heeft geen DirectInput-scancode die het spel begrijpt."
   de: "%{key} hat keinen DirectInput-Scancode, den das Spiel versteht."
+  da: "%{key} har ingen DirectInput-scankode, som spillet forstår."
   fr: "%{key} n'a pas de code DirectInput que le jeu comprend."
   ru: "У %{key} нет скан-кода DirectInput, понятного игре."
   uk: "У %{key} немає скан-коду DirectInput, зрозумілого грі."
@@ -1092,6 +1247,7 @@ _version: 2
 "Driving keys: %{name} (Settings). Those keys drive the bus and win over the list below. Change any key here and your own layout (Custom controls) is used from then on.":
   nl: "Rijtoetsen: %{name} (Instellingen). Die toetsen besturen de bus en gaan voor de lijst hieronder. Wijzig hier een toets en vanaf dan wordt je eigen indeling (Eigen besturing) gebruikt."
   de: "Fahrtasten: %{name} (Einstellungen). Diese Tasten fahren den Bus und haben Vorrang vor der Liste unten. Änderst du hier eine Taste, gilt ab dann deine eigene Belegung (Eigene Steuerung)."
+  da: "Køretaster: %{name} (Indstillinger). Disse taster styrer bussen og vinder over listen nedenfor. Skifter du en tast her, bruges dit eget layout (Brugerdefinerede styringer) fra da af."
   fr: "Touches de conduite : %{name} (Réglages). Ces touches conduisent le bus et l'emportent sur la liste ci-dessous. Changez une touche ici et votre propre disposition (Commandes personnalisées) est utilisée dès lors."
   ru: "Клавиши вождения: %{name} (Настройки). Эти клавиши ведут автобус и важнее списка ниже. Измените здесь любую клавишу — и дальше будет использоваться ваша раскладка («Своё управление»)."
   uk: "Клавіші водіння: %{name} (Налаштування). Ці клавіші ведуть автобус і важливіші за список нижче. Змініть тут будь-яку клавішу — і далі використовуватиметься ваша розкладка («Власне керування»)."
@@ -1099,6 +1255,7 @@ _version: 2
 "Add \"%{action}\" and give it a key":
   nl: "\"%{action}\" toevoegen en een toets geven"
   de: "\"%{action}\" hinzufügen und eine Taste geben"
+  da: "Tilføj \"%{action}\" og giv den en tast"
   fr: "Ajouter « %{action} » et lui donner une touche"
   ru: "Добавить «%{action}» и назначить клавишу"
   uk: "Додати «%{action}» і призначити клавішу"
@@ -1106,6 +1263,7 @@ _version: 2
 "off":
   nl: "uit"
   de: "aus"
+  da: "fra"
   fr: "désactivé"
   ru: "выкл."
   uk: "вимк."
@@ -1113,6 +1271,7 @@ _version: 2
 "Set up %{device}":
   nl: "%{device} instellen"
   de: "%{device} einrichten"
+  da: "Indstil %{device}"
   fr: "Configurer %{device}"
   ru: "Настроить %{device}"
   uk: "Налаштувати %{device}"
@@ -1120,6 +1279,7 @@ _version: 2
 "Game controllers saved to %{path}":
   nl: "Gamecontrollers opgeslagen in %{path}"
   de: "Gamecontroller gespeichert in %{path}"
+  da: "Spilcontrollere gemt i %{path}"
   fr: "Manettes enregistrées dans %{path}"
   ru: "Игровые контроллеры сохранены в %{path}"
   uk: "Ігрові контролери збережено в %{path}"
@@ -1127,6 +1287,7 @@ _version: 2
 "Not saved: %{error}":
   nl: "Niet opgeslagen: %{error}"
   de: "Nicht gespeichert: %{error}"
+  da: "Ikke gemt: %{error}"
   fr: "Non enregistré : %{error}"
   ru: "Не сохранено: %{error}"
   uk: "Не збережено: %{error}"
@@ -1134,6 +1295,7 @@ _version: 2
 "Latching":
   nl: "Vergrendelend"
   de: "Rastend"
+  da: "Fastholdt"
   fr: "À verrouillage"
   ru: "С фиксацией"
   uk: "З фіксацією"
@@ -1141,6 +1303,7 @@ _version: 2
 "%{device}: %{button} - %{action} (lit in the list: choose another there)":
   nl: "%{device}: %{button} - %{action} (gemarkeerd in de lijst: kies daar een andere)"
   de: "%{device}: %{button} - %{action} (in der Liste markiert: dort eine andere wählen)"
+  da: "%{device}: %{button} - %{action} (tændt på listen: vælg en anden dér)"
   fr: "%{device} : %{button} - %{action} (en surbrillance dans la liste : choisissez-en une autre)"
   ru: "%{device}: %{button} — %{action} (выделено в списке: выберите там другое)"
   uk: "%{device}: %{button} — %{action} (виділено у списку: виберіть там інше)"
@@ -1148,6 +1311,7 @@ _version: 2
 "%{device}: %{button} - nothing yet (lit in the list: choose what it does)":
   nl: "%{device}: %{button} - nog niets (gemarkeerd in de lijst: kies wat hij doet)"
   de: "%{device}: %{button} - noch nichts (in der Liste markiert: wähle, was sie tut)"
+  da: "%{device}: %{button} - endnu intet (tændt på listen: vælg, hvad den gør)"
   fr: "%{device} : %{button} - rien pour l'instant (en surbrillance dans la liste : choisissez son action)"
   ru: "%{device}: %{button} — пока ничего (выделено в списке: выберите действие)"
   uk: "%{device}: %{button} — поки нічого (виділено у списку: виберіть дію)"
@@ -1155,6 +1319,7 @@ _version: 2
 "Hat %{n} up":
   nl: "Hoedje %{n} omhoog"
   de: "Coolie-Hat %{n} hoch"
+  da: "Hat %{n} op"
   fr: "Chapeau %{n} haut"
   ru: "Крестовина %{n} вверх"
   uk: "Хрестовина %{n} вгору"
@@ -1162,6 +1327,7 @@ _version: 2
 "Hat %{n} right":
   nl: "Hoedje %{n} rechts"
   de: "Coolie-Hat %{n} rechts"
+  da: "Hat %{n} til højre"
   fr: "Chapeau %{n} droite"
   ru: "Крестовина %{n} вправо"
   uk: "Хрестовина %{n} вправо"
@@ -1169,6 +1335,7 @@ _version: 2
 "Hat %{n} down":
   nl: "Hoedje %{n} omlaag"
   de: "Coolie-Hat %{n} runter"
+  da: "Hat %{n} ned"
   fr: "Chapeau %{n} bas"
   ru: "Крестовина %{n} вниз"
   uk: "Хрестовина %{n} вниз"
@@ -1176,6 +1343,7 @@ _version: 2
 "Hat %{n} left":
   nl: "Hoedje %{n} links"
   de: "Coolie-Hat %{n} links"
+  da: "Hat %{n} til venstre"
   fr: "Chapeau %{n} gauche"
   ru: "Крестовина %{n} влево"
   uk: "Хрестовина %{n} вліво"
@@ -1183,6 +1351,7 @@ _version: 2
 "Button %{n}":
   nl: "Knop %{n}"
   de: "Taste %{n}"
+  da: "Knap %{n}"
   fr: "Bouton %{n}"
   ru: "Кнопка %{n}"
   uk: "Кнопка %{n}"
@@ -1190,6 +1359,7 @@ _version: 2
 "Step %{n} of %{total}: %{title}":
   nl: "Stap %{n} van %{total}: %{title}"
   de: "Schritt %{n} von %{total}: %{title}"
+  da: "Trin %{n} af %{total}: %{title}"
   fr: "Étape %{n} sur %{total} : %{title}"
   ru: "Шаг %{n} из %{total}: %{title}"
   uk: "Крок %{n} з %{total}: %{title}"
@@ -1197,6 +1367,7 @@ _version: 2
 "line %{line} / %{tour}":
   nl: "lijn %{line} / %{tour}"
   de: "Linie %{line} / %{tour}"
+  da: "linje %{line} / %{tour}"
   fr: "ligne %{line} / %{tour}"
   ru: "линия %{line} / %{tour}"
   uk: "лінія %{line} / %{tour}"
@@ -1204,6 +1375,7 @@ _version: 2
 "running for %{time}":
   nl: "draait al %{time}"
   de: "läuft seit %{time}"
+  da: "har kørt i %{time}"
   fr: "en cours depuis %{time}"
   ru: "работает %{time}"
   uk: "працює %{time}"
@@ -1211,6 +1383,7 @@ _version: 2
 "ended":
   nl: "gestopt"
   de: "beendet"
+  da: "afsluttet"
   fr: "terminé"
   ru: "завершена"
   uk: "завершена"
@@ -1218,6 +1391,7 @@ _version: 2
 "ended (killed - it did not end by itself, the run is not saved)":
   nl: "gestopt (afgebroken - het stopte niet vanzelf, de rit is niet opgeslagen)"
   de: "beendet (abgebrochen - es endete nicht von selbst, die Fahrt ist nicht gespeichert)"
+  da: "afsluttet (dræbt - det sluttede ikke af sig selv, kørslen gemmes ikke)"
   fr: "terminé (forcé - il ne s'est pas arrêté de lui-même, la partie n'est pas enregistrée)"
   ru: "завершена (принудительно — сама не закрылась, поездка не сохранена)"
   uk: "завершена (примусово — сама не закрилася, поїздку не збережено)"
@@ -1225,6 +1399,7 @@ _version: 2
 "ended (exit code %{code})":
   nl: "gestopt (afsluitcode %{code})"
   de: "beendet (Exit-Code %{code})"
+  da: "afsluttet (afslutningskode %{code})"
   fr: "terminé (code de sortie %{code})"
   ru: "завершена (код выхода %{code})"
   uk: "завершена (код виходу %{code})"
@@ -1232,6 +1407,7 @@ _version: 2
 "driver %{name}":
   nl: "bestuurder %{name}"
   de: "Fahrer %{name}"
+  da: "chauffør %{name}"
   fr: "conducteur %{name}"
   ru: "водитель %{name}"
   uk: "водій %{name}"
@@ -1239,6 +1415,7 @@ _version: 2
 "not connected: %{reason}":
   nl: "niet verbonden: %{reason}"
   de: "nicht verbunden: %{reason}"
+  da: "ikke forbundet: %{reason}"
   fr: "non connecté : %{reason}"
   ru: "не подключено: %{reason}"
   uk: "не підключено: %{reason}"
@@ -1246,6 +1423,7 @@ _version: 2
 "connected to %{host}":
   nl: "verbonden met %{host}"
   de: "verbunden mit %{host}"
+  da: "forbundet til %{host}"
   fr: "connecté à %{host}"
   ru: "подключено к %{host}"
   uk: "підключено до %{host}"
@@ -1253,6 +1431,7 @@ _version: 2
 "Multiplayer: %{state}":
   nl: "Multiplayer: %{state}"
   de: "Mehrspieler: %{state}"
+  da: "Multiplayer: %{state}"
   fr: "Multijoueur : %{state}"
   ru: "Мультиплеер: %{state}"
   uk: "Мультиплеєр: %{state}"
@@ -1260,6 +1439,7 @@ _version: 2
 "fits (%{free} free)":
   nl: "past (%{free} vrij)"
   de: "passt (%{free} frei)"
+  da: "passer (%{free} ledig)"
   fr: "tient (%{free} libres)"
   ru: "помещается (свободно %{free})"
   uk: "вміщається (вільно %{free})"
@@ -1267,6 +1447,7 @@ _version: 2
 "does not fit: needs %{needed}, %{free} free":
   nl: "past niet: heeft %{needed} nodig, %{free} vrij"
   de: "passt nicht: braucht %{needed}, %{free} frei"
+  da: "passer ikke: kræver %{needed}, %{free} ledig"
   fr: "ne tient pas : il faut %{needed}, %{free} libres"
   ru: "не помещается: нужно %{needed}, свободно %{free}"
   uk: "не вміщається: потрібно %{needed}, вільно %{free}"
@@ -1274,6 +1455,7 @@ _version: 2
 "%{size} archive, %{files} files, %{unpacked} unpacked":
   nl: "archief van %{size}, %{files} bestanden, %{unpacked} uitgepakt"
   de: "Archiv mit %{size}, %{files} Dateien, %{unpacked} entpackt"
+  da: "%{size} arkiv, %{files} filer, %{unpacked} udpakket"
   fr: "archive de %{size}, %{files} fichiers, %{unpacked} décompressés"
   ru: "архив %{size}, файлов: %{files}, распаковано %{unpacked}"
   uk: "архів %{size}, файлів: %{files}, розпаковано %{unpacked}"
@@ -1281,6 +1463,7 @@ _version: 2
 "In it now: %{items}":
   nl: "Er staat nu in: %{items}"
   de: "Jetzt darin: %{items}"
+  da: "Deri nu: %{items}"
   fr: "Contenu actuel : %{items}"
   ru: "Сейчас там: %{items}"
   uk: "Зараз там: %{items}"
@@ -1288,6 +1471,7 @@ _version: 2
 "%{done} / %{total} files":
   nl: "%{done} / %{total} bestanden"
   de: "%{done} / %{total} Dateien"
+  da: "%{done} / %{total} filer"
   fr: "%{done} / %{total} fichiers"
   ru: "файлов: %{done} / %{total}"
   uk: "файлів: %{done} / %{total}"
@@ -1295,6 +1479,7 @@ _version: 2
 "%{size} free on this disk":
   nl: "%{size} vrij op deze schijf"
   de: "%{size} frei auf diesem Laufwerk"
+  da: "%{size} ledig på denne disk"
   fr: "%{size} libres sur ce disque"
   ru: "свободно на этом диске: %{size}"
   uk: "вільно на цьому диску: %{size}"
@@ -1302,6 +1487,7 @@ _version: 2
 "one entry":
   nl: "één item"
   de: "ein Eintrag"
+  da: "én post"
   fr: "une entrée"
   ru: "одна запись"
   uk: "один запис"
@@ -1309,6 +1495,7 @@ _version: 2
 "%{n} entries":
   nl: "%{n} items"
   de: "%{n} Einträge"
+  da: "%{n} poster"
   fr: "%{n} entrées"
   ru: "записей: %{n}"
   uk: "записів: %{n}"
@@ -1316,6 +1503,7 @@ _version: 2
 "Copy the whole OMSI 2 folder (with maps and Vehicles in it) onto the phone - by cable, from a PC or a USB stick - for example as openOMSI/OMSI 2 in the internal storage, then choose it here with Browse. Mods go into openOMSI/Mods or are installed from the Mods page.":
   nl: "Kopieer de hele OMSI 2-map (met maps en Vehicles erin) naar de telefoon - via een kabel, vanaf een pc of een usb-stick - bijvoorbeeld als openOMSI/OMSI 2 in de interne opslag, en kies hem hier met Bladeren. Mods gaan in openOMSI/Mods of worden via de Mods-pagina geïnstalleerd."
   de: "Kopiere den ganzen OMSI-2-Ordner (mit maps und Vehicles darin) aufs Handy - per Kabel, vom PC oder von einem USB-Stick -, zum Beispiel als openOMSI/OMSI 2 in den internen Speicher, und wähle ihn hier mit Durchsuchen. Mods kommen nach openOMSI/Mods oder werden über die Seite Mods installiert."
+  da: "Kopiér hele OMSI 2-mappen (med maps og Vehicles i) over på telefonen - med kabel, fra en pc eller en USB-nøgle - for eksempel som openOMSI/OMSI 2 i det interne lager, og vælg den så her med Gennemse. Mods lægges i openOMSI/Mods eller installeres fra siden Mods."
   fr: "Copiez tout le dossier OMSI 2 (avec maps et Vehicles dedans) sur le téléphone - par câble, depuis un PC ou une clé USB - par exemple dans openOMSI/OMSI 2 de la mémoire interne, puis choisissez-le ici avec Parcourir. Les mods vont dans openOMSI/Mods ou s'installent depuis la page Mods."
   ru: "Скопируйте всю папку OMSI 2 (с maps и Vehicles) на телефон — по кабелю, с ПК или с флешки — например в openOMSI/OMSI 2 во внутренней памяти, затем выберите её здесь кнопкой «Обзор». Моды кладутся в openOMSI/Mods или устанавливаются со страницы «Моды»."
   uk: "Скопіюйте всю теку OMSI 2 (з maps і Vehicles) на телефон — кабелем, із ПК або з флешки — наприклад в openOMSI/OMSI 2 у внутрішній пам'яті, потім виберіть її тут кнопкою «Огляд». Моди кладуться в openOMSI/Mods або встановлюються зі сторінки «Моди»."
@@ -1323,6 +1511,7 @@ _version: 2
 "Line %{line} · tour %{tour}":
   nl: "Lijn %{line} · omloop %{tour}"
   de: "Linie %{line} · Umlauf %{tour}"
+  da: "Linje %{line} · tur %{tour}"
   fr: "Ligne %{line} · service %{tour}"
   ru: "Линия %{line} · выход %{tour}"
   uk: "Лінія %{line} · оборот %{tour}"
@@ -1330,6 +1519,7 @@ _version: 2
 "Line %{line} · choose a tour":
   nl: "Lijn %{line} · kies een omloop"
   de: "Linie %{line} · Umlauf wählen"
+  da: "Linje %{line} · vælg en tur"
   fr: "Ligne %{line} · choisissez un service"
   ru: "Линия %{line} · выберите выход"
   uk: "Лінія %{line} · виберіть оборот"
@@ -1337,6 +1527,7 @@ _version: 2
 "live %{station}":
   nl: "live %{station}"
   de: "live %{station}"
+  da: "live %{station}"
   fr: "en direct %{station}"
   ru: "в реальном времени %{station}"
   uk: "наживо %{station}"
@@ -1344,6 +1535,7 @@ _version: 2
 "custom":
   nl: "eigen"
   de: "eigenes"
+  da: "brugerdefineret"
   fr: "personnalisée"
   ru: "своя"
   uk: "своя"
@@ -1351,6 +1543,7 @@ _version: 2
 "map weather":
   nl: "weer van de kaart"
   de: "Wetter der Karte"
+  da: "kortets vejr"
   fr: "météo de la carte"
   ru: "погода карты"
   uk: "погода мапи"
@@ -1358,6 +1551,7 @@ _version: 2
 "%{n} cars":
   nl: "%{n} auto's"
   de: "%{n} Autos"
+  da: "%{n} biler"
   fr: "%{n} voitures"
   ru: "машин: %{n}"
   uk: "машин: %{n}"
@@ -1365,6 +1559,7 @@ _version: 2
 "parts missing":
   nl: "onderdelen ontbreken"
   de: "Teile fehlen"
+  da: "dele mangler"
   fr: "pièces manquantes"
   ru: "не хватает деталей"
   uk: "бракує деталей"
@@ -1372,6 +1567,7 @@ _version: 2
 "Choose a bus first.":
   nl: "Kies eerst een bus."
   de: "Wähle zuerst einen Bus."
+  da: "Vælg først en bus."
   fr: "Choisissez d'abord un bus."
   ru: "Сначала выберите автобус."
   uk: "Спочатку виберіть автобус."
@@ -1379,6 +1575,7 @@ _version: 2
 "%{n} / %{max} players":
   nl: "%{n} / %{max} spelers"
   de: "%{n} / %{max} Spieler"
+  da: "%{n} / %{max} spillere"
   fr: "%{n} / %{max} joueurs"
   ru: "игроков: %{n} / %{max}"
   uk: "гравців: %{n} / %{max}"
@@ -1386,6 +1583,7 @@ _version: 2
 "Can't reach it: %{error}":
   nl: "Niet bereikbaar: %{error}"
   de: "Nicht erreichbar: %{error}"
+  da: "Kan ikke nås: %{error}"
   fr: "Injoignable : %{error}"
   ru: "Недоступен: %{error}"
   uk: "Недоступний: %{error}"
@@ -1393,6 +1591,7 @@ _version: 2
 "Remove server":
   nl: "Server verwijderen"
   de: "Server entfernen"
+  da: "Fjern server"
   fr: "Retirer le serveur"
   ru: "Удалить сервер"
   uk: "Видалити сервер"
@@ -1400,6 +1599,7 @@ _version: 2
 "Line %{line}":
   nl: "Lijn %{line}"
   de: "Linie %{line}"
+  da: "Linje %{line}"
   fr: "Ligne %{line}"
   ru: "Линия %{line}"
   uk: "Лінія %{line}"
@@ -1407,6 +1607,7 @@ _version: 2
 "Choose another weather":
   nl: "Ander weer kiezen"
   de: "Anderes Wetter wählen"
+  da: "Vælg et andet vejr"
   fr: "Choisir une autre météo"
   ru: "Выбрать другую погоду"
   uk: "Вибрати іншу погоду"
@@ -1414,6 +1615,7 @@ _version: 2
 "Current weather (METAR)":
   nl: "Huidig weer (METAR)"
   de: "Aktuelles Wetter (METAR)"
+  da: "Aktuelt vejr (METAR)"
   fr: "Météo actuelle (METAR)"
   ru: "Текущая погода (METAR)"
   uk: "Поточна погода (METAR)"
@@ -1421,6 +1623,7 @@ _version: 2
 "The METAR is fetched when the game starts.":
   nl: "De METAR wordt opgehaald als het spel start."
   de: "Das METAR wird beim Spielstart abgerufen."
+  da: "METAR hentes, når spillet starter."
   fr: "Le METAR est récupéré au lancement du jeu."
   ru: "METAR загружается при запуске игры."
   uk: "METAR завантажується під час запуску гри."
@@ -1428,6 +1631,7 @@ _version: 2
 "Real weather from %{station} (ICAO can be changed)":
   nl: "Echt weer van %{station} (ICAO is te wijzigen)"
   de: "Echtes Wetter von %{station} (ICAO änderbar)"
+  da: "Rigtigt vejr fra %{station} (ICAO kan ændres)"
   fr: "Météo réelle de %{station} (OACI modifiable)"
   ru: "Реальная погода из %{station} (ICAO можно изменить)"
   uk: "Реальна погода з %{station} (ICAO можна змінити)"
@@ -1435,6 +1639,7 @@ _version: 2
 "%{n} / %{max} players online":
   nl: "%{n} / %{max} spelers online"
   de: "%{n} / %{max} Spieler online"
+  da: "%{n} / %{max} spillere online"
   fr: "%{n} / %{max} joueurs en ligne"
   ru: "игроков в сети: %{n} / %{max}"
   uk: "гравців у мережі: %{n} / %{max}"
@@ -1442,6 +1647,7 @@ _version: 2
 "The server plays %{map}, which is not installed here: it is fetched from the server on joining.":
   nl: "De server speelt op %{map}, die hier niet geïnstalleerd is: die wordt bij het deelnemen van de server opgehaald."
   de: "Der Server spielt auf %{map}, die hier nicht installiert ist: sie wird beim Beitreten vom Server geholt."
+  da: "Serveren spiller %{map}, som ikke er installeret her: det hentes fra serveren, når du tilmelder dig."
   fr: "Le serveur joue sur %{map}, qui n'est pas installée ici : elle est récupérée du serveur en le rejoignant."
   ru: "Сервер играет на карте %{map}, которой здесь нет: она будет загружена с сервера при подключении."
   uk: "Сервер грає на мапі %{map}, якої тут немає: її буде завантажено із сервера під час приєднання."
@@ -1449,6 +1655,7 @@ _version: 2
 "the server %{name}":
   nl: "de server %{name}"
   de: "der Server %{name}"
+  da: "serveren %{name}"
   fr: "le serveur %{name}"
   ru: "сервер %{name}"
   uk: "сервер %{name}"
@@ -1456,6 +1663,7 @@ _version: 2
 "Joined %{name} - choose your bus and duty, then Start the duty":
   nl: "Deelgenomen aan %{name} - kies je bus en dienst, dan Dienst starten"
   de: "%{name} beigetreten - wähle Bus und Dienst, dann Dienst beginnen"
+  da: "Tilsluttet %{name} - vælg din bus og vagt, og start så vagten"
   fr: "%{name} rejoint - choisissez votre bus et votre service, puis Commencer le service"
   ru: "Вы на сервере %{name} — выберите автобус и смену, затем «Начать смену»"
   uk: "Ви на сервері %{name} — виберіть автобус і наряд, потім «Почати наряд»"
@@ -1463,6 +1671,7 @@ _version: 2
 "Could not save settings: %{error}":
   nl: "Instellingen konden niet worden opgeslagen: %{error}"
   de: "Einstellungen konnten nicht gespeichert werden: %{error}"
+  da: "Kunne ikke gemme indstillinger: %{error}"
   fr: "Impossible d'enregistrer les réglages : %{error}"
   ru: "Не удалось сохранить настройки: %{error}"
   uk: "Не вдалося зберегти налаштування: %{error}"
@@ -1470,6 +1679,7 @@ _version: 2
 "Reading the content stopped on an error: %{error}":
   nl: "Het inlezen van de inhoud stopte met een fout: %{error}"
   de: "Das Lesen der Inhalte brach mit einem Fehler ab: %{error}"
+  da: "Indlæsningen af indholdet stoppede på en fejl: %{error}"
   fr: "La lecture du contenu s'est arrêtée sur une erreur : %{error}"
   ru: "Чтение контента прервалось с ошибкой: %{error}"
   uk: "Читання вмісту перервалося з помилкою: %{error}"
@@ -1477,6 +1687,7 @@ _version: 2
 "an unknown error":
   nl: "een onbekende fout"
   de: "ein unbekannter Fehler"
+  da: "en ukendt fejl"
   fr: "une erreur inconnue"
   ru: "неизвестная ошибка"
   uk: "невідома помилка"
@@ -1484,6 +1695,7 @@ _version: 2
 "The host drives on %{map}: that map is chosen":
   nl: "De host rijdt op %{map}: die kaart is gekozen"
   de: "Der Host fährt auf %{map}: diese Karte ist gewählt"
+  da: "Værten kører på %{map}: det kort er valgt"
   fr: "L'hôte roule sur %{map} : cette carte est choisie"
   ru: "Хост ездит по карте %{map}: она выбрана"
   uk: "Хост їздить мапою %{map}: її вибрано"
@@ -1491,6 +1703,7 @@ _version: 2
 "%{maps} maps - reading the buses…":
   nl: "%{maps} kaarten - bussen worden ingelezen…"
   de: "%{maps} Karten - Busse werden gelesen…"
+  da: "%{maps} kort - læser busserne…"
   fr: "%{maps} cartes - lecture des bus…"
   ru: "карт: %{maps} — читаются автобусы…"
   uk: "мап: %{maps} — читаються автобуси…"
@@ -1498,6 +1711,7 @@ _version: 2
 "%{maps} maps, %{buses} buses - reading the vehicle folders: %{done} of %{total}":
   nl: "%{maps} kaarten, %{buses} bussen - voertuigmappen worden ingelezen: %{done} van %{total}"
   de: "%{maps} Karten, %{buses} Busse - Fahrzeugordner werden gelesen: %{done} von %{total}"
+  da: "%{maps} kort, %{buses} busser - læser køretøjsmapperne: %{done} af %{total}"
   fr: "%{maps} cartes, %{buses} bus - lecture des dossiers de véhicules : %{done} sur %{total}"
   ru: "карт: %{maps}, автобусов: %{buses} — читаются папки транспорта: %{done} из %{total}"
   uk: "мап: %{maps}, автобусів: %{buses} — читаються теки транспорту: %{done} з %{total}"
@@ -1505,6 +1719,7 @@ _version: 2
 "%{maps} maps, %{buses} buses, %{weathers} weathers":
   nl: "%{maps} kaarten, %{buses} bussen, %{weathers} weertypes"
   de: "%{maps} Karten, %{buses} Busse, %{weathers} Wetter"
+  da: "%{maps} kort, %{buses} busser, %{weathers} vejrtyper"
   fr: "%{maps} cartes, %{buses} bus, %{weathers} météos"
   ru: "карт: %{maps}, автобусов: %{buses}, погод: %{weathers}"
   uk: "мап: %{maps}, автобусів: %{buses}, погод: %{weathers}"
@@ -1512,6 +1727,7 @@ _version: 2
 "Set the OMSI 2 folder under Setup.":
   nl: "Stel de OMSI 2-map in onder Installatie."
   de: "Lege den OMSI-2-Ordner unter Einrichtung fest."
+  da: "Angiv OMSI 2-mappen under Opsætning."
   fr: "Indiquez le dossier OMSI 2 sous Installation."
   ru: "Укажите папку OMSI 2 в разделе «Установка»."
   uk: "Укажіть теку OMSI 2 у розділі «Установка»."
@@ -1519,6 +1735,7 @@ _version: 2
 "line %{line} does not run on %{date}":
   nl: "lijn %{line} rijdt niet op %{date}"
   de: "Linie %{line} fährt nicht am %{date}"
+  da: "linje %{line} kører ikke den %{date}"
   fr: "la ligne %{line} ne circule pas le %{date}"
   ru: "линия %{line} не ходит %{date}"
   uk: "лінія %{line} не курсує %{date}"
@@ -1526,6 +1743,7 @@ _version: 2
 "tour %{tour} of line %{line} does not run that day (%{days})":
   nl: "omloop %{tour} van lijn %{line} rijdt die dag niet (%{days})"
   de: "Umlauf %{tour} der Linie %{line} fährt an diesem Tag nicht (%{days})"
+  da: "tur %{tour} på linje %{line} kører ikke den dag (%{days})"
   fr: "le service %{tour} de la ligne %{line} ne circule pas ce jour-là (%{days})"
   ru: "выход %{tour} линии %{line} в этот день не ходит (%{days})"
   uk: "оборот %{tour} лінії %{line} цього дня не курсує (%{days})"
@@ -1533,6 +1751,7 @@ _version: 2
 "%{n} lines on %{date}":
   nl: "%{n} lijnen op %{date}"
   de: "%{n} Linien am %{date}"
+  da: "%{n} linjer den %{date}"
   fr: "%{n} lignes le %{date}"
   ru: "линий %{date}: %{n}"
   uk: "ліній %{date}: %{n}"
@@ -1540,6 +1759,7 @@ _version: 2
 "Installing from the Mods folder: %{mods}":
   nl: "Installeren uit de map Mods: %{mods}"
   de: "Installation aus dem Ordner Mods: %{mods}"
+  da: "Installerer fra Mods-mappen: %{mods}"
   fr: "Installation depuis le dossier Mods : %{mods}"
   ru: "Установка из папки Mods: %{mods}"
   uk: "Встановлення з теки Mods: %{mods}"
@@ -1547,6 +1767,7 @@ _version: 2
 "Game started (process %{pid}), log %{log}":
   nl: "Spel gestart (proces %{pid}), log %{log}"
   de: "Spiel gestartet (Prozess %{pid}), Log %{log}"
+  da: "Spillet er startet (proces %{pid}), log %{log}"
   fr: "Jeu lancé (processus %{pid}), journal %{log}"
   ru: "Игра запущена (процесс %{pid}), журнал %{log}"
   uk: "Гру запущено (процес %{pid}), журнал %{log}"
@@ -1554,6 +1775,7 @@ _version: 2
 "%{n} other game(s) keep running":
   nl: "%{n} ander(e) spel(len) blijft/blijven draaien"
   de: "%{n} weitere(s) Spiel(e) läuft/laufen weiter"
+  da: "%{n} andre spil kører fortsat"
   fr: "%{n} autre(s) jeu(x) continue(nt)"
   ru: "другие игры продолжают работать: %{n}"
   uk: "інші ігри працюють далі: %{n}"
@@ -1561,6 +1783,7 @@ _version: 2
 "Game %{pid} ended by itself.":
   nl: "Spel %{pid} is vanzelf gestopt."
   de: "Spiel %{pid} hat sich selbst beendet."
+  da: "Spil %{pid} sluttede af sig selv."
   fr: "Le jeu %{pid} s'est terminé de lui-même."
   ru: "Игра %{pid} завершилась сама."
   uk: "Гра %{pid} завершилася сама."
@@ -1568,6 +1791,7 @@ _version: 2
 "Game %{pid} did not end by itself and was killed - this run is not saved.":
   nl: "Spel %{pid} stopte niet vanzelf en is afgebroken - deze rit is niet opgeslagen."
   de: "Spiel %{pid} endete nicht von selbst und wurde abgebrochen - diese Fahrt ist nicht gespeichert."
+  da: "Spil %{pid} sluttede ikke af sig selv og blev dræbt - denne kørsel gemmes ikke."
   fr: "Le jeu %{pid} ne s'est pas terminé de lui-même et a été forcé - cette partie n'est pas enregistrée."
   ru: "Игра %{pid} не завершилась сама и была закрыта принудительно — поездка не сохранена."
   uk: "Гра %{pid} не завершилася сама й була закрита примусово — поїздку не збережено."
@@ -1575,6 +1799,7 @@ _version: 2
 "%{folder} does not exist: choose the folder of the original OMSI 2 (with Omsi.exe, maps and Vehicles in it) under Setup.":
   nl: "%{folder} bestaat niet: kies onder Installatie de map van het originele OMSI 2 (met Omsi.exe, maps en Vehicles erin)."
   de: "%{folder} existiert nicht: wähle unter Einrichtung den Ordner des originalen OMSI 2 (mit Omsi.exe, maps und Vehicles darin)."
+  da: "%{folder} findes ikke: vælg mappen med det originale OMSI 2 (med Omsi.exe, maps og Vehicles i) under Opsætning."
   fr: "%{folder} n'existe pas : choisissez sous Installation le dossier de l'OMSI 2 d'origine (avec Omsi.exe, maps et Vehicles dedans)."
   ru: "%{folder} не существует: выберите в разделе «Установка» папку оригинальной OMSI 2 (с Omsi.exe, maps и Vehicles)."
   uk: "%{folder} не існує: виберіть у розділі «Установка» теку оригінальної OMSI 2 (з Omsi.exe, maps і Vehicles)."
@@ -1582,6 +1807,7 @@ _version: 2
 "%{folder} is openOMSI's own folder, not OMSI 2's: choose the folder of the original game (with Omsi.exe in it) under Setup.":
   nl: "%{folder} is de eigen map van openOMSI, niet die van OMSI 2: kies onder Installatie de map van het originele spel (met Omsi.exe erin)."
   de: "%{folder} ist der eigene Ordner von openOMSI, nicht der von OMSI 2: wähle unter Einrichtung den Ordner des Originalspiels (mit Omsi.exe darin)."
+  da: "%{folder} er openOMSI's egen mappe, ikke OMSI 2's: vælg mappen med det originale spil (med Omsi.exe i) under Opsætning."
   fr: "%{folder} est le dossier d'openOMSI, pas celui d'OMSI 2 : choisissez sous Installation le dossier du jeu d'origine (avec Omsi.exe dedans)."
   ru: "%{folder} — папка самого openOMSI, а не OMSI 2: выберите в разделе «Установка» папку оригинальной игры (с Omsi.exe)."
   uk: "%{folder} — тека самого openOMSI, а не OMSI 2: виберіть у розділі «Установка» теку оригінальної гри (з Omsi.exe)."
@@ -1589,6 +1815,7 @@ _version: 2
 "%{folder} is not a complete OMSI 2 - it lacks %{missing}. openOMSI plays on the original's stock content: choose the folder of a complete installation under Setup.":
   nl: "%{folder} is geen volledige OMSI 2 - %{missing} ontbreekt. openOMSI speelt met de standaardinhoud van het origineel: kies onder Installatie de map van een volledige installatie."
   de: "%{folder} ist kein vollständiges OMSI 2 - es fehlt %{missing}. openOMSI spielt mit den Originalinhalten: wähle unter Einrichtung den Ordner einer vollständigen Installation."
+  da: "%{folder} er ikke et komplet OMSI 2 - der mangler %{missing}. openOMSI spiller på originalens standardindhold: vælg mappen med en komplet installation under Opsætning."
   fr: "%{folder} n'est pas un OMSI 2 complet - il manque %{missing}. openOMSI joue avec le contenu d'origine : choisissez sous Installation le dossier d'une installation complète."
   ru: "%{folder} — неполная OMSI 2: не хватает %{missing}. openOMSI работает со стандартным контентом оригинала: выберите в разделе «Установка» папку полной установки."
   uk: "%{folder} — неповна OMSI 2: бракує %{missing}. openOMSI працює зі стандартним вмістом оригіналу: виберіть у розділі «Установка» теку повної інсталяції."
@@ -1596,6 +1823,7 @@ _version: 2
 "your %{n} own line(s) written again":
   nl: "je %{n} eigen lijn(en) opnieuw geschreven"
   de: "deine %{n} eigene(n) Linie(n) neu geschrieben"
+  da: "dine %{n} egne linjer skrevet igen"
   fr: "vos %{n} ligne(s) personnelle(s) réécrite(s)"
   ru: "ваши линии переписаны заново: %{n}"
   uk: "ваші лінії перезаписано: %{n}"
@@ -1603,6 +1831,7 @@ _version: 2
 "your own lines could not be written again: %{error}":
   nl: "je eigen lijnen konden niet opnieuw worden geschreven: %{error}"
   de: "deine eigenen Linien konnten nicht neu geschrieben werden: %{error}"
+  da: "dine egne linjer kunne ikke skrives igen: %{error}"
   fr: "vos lignes personnelles n'ont pas pu être réécrites : %{error}"
   ru: "не удалось заново записать ваши линии: %{error}"
   uk: "не вдалося перезаписати ваші лінії: %{error}"
@@ -1610,6 +1839,7 @@ _version: 2
 "%{n} line(s) saved":
   nl: "%{n} lijn(en) opgeslagen"
   de: "%{n} Linie(n) gespeichert"
+  da: "%{n} linjer gemt"
   fr: "%{n} ligne(s) enregistrée(s)"
   ru: "сохранено линий: %{n}"
   uk: "збережено ліній: %{n}"
@@ -1617,6 +1847,7 @@ _version: 2
 "Line %{line} is there already":
   nl: "Lijn %{line} bestaat al"
   de: "Linie %{line} gibt es schon"
+  da: "Linje %{line} findes allerede"
   fr: "La ligne %{line} existe déjà"
   ru: "Линия %{line} уже есть"
   uk: "Лінія %{line} вже є"
@@ -1624,6 +1855,7 @@ _version: 2
 "Line %{line} added: give it tours, then save":
   nl: "Lijn %{line} toegevoegd: geef haar omlopen en sla dan op"
   de: "Linie %{line} hinzugefügt: gib ihr Umläufe und speichere dann"
+  da: "Linje %{line} tilføjet: giv den ture, og gem så"
   fr: "Ligne %{line} ajoutée : donnez-lui des services, puis enregistrez"
   ru: "Линия %{line} добавлена: добавьте выходы и сохраните"
   uk: "Лінію %{line} додано: додайте обороти й збережіть"
@@ -1631,6 +1863,7 @@ _version: 2
 "%{n} tour(s) made, every %{every} min up to %{time}":
   nl: "%{n} omloop/omlopen gemaakt, elke %{every} min tot %{time}"
   de: "%{n} Umlauf/Umläufe erstellt, alle %{every} min bis %{time}"
+  da: "%{n} ture lavet, hver %{every} min til kl. %{time}"
   fr: "%{n} service(s) créé(s), toutes les %{every} min jusqu'à %{time}"
   ru: "создано выходов: %{n}, каждые %{every} мин до %{time}"
   uk: "створено оборотів: %{n}, кожні %{every} хв до %{time}"
@@ -1638,6 +1871,7 @@ _version: 2
 "Save all (%{n} lines)":
   nl: "Alles opslaan (%{n} lijnen)"
   de: "Alle speichern (%{n} Linien)"
+  da: "Gem alle (%{n} linjer)"
   fr: "Tout enregistrer (%{n} lignes)"
   ru: "Сохранить все (линий: %{n})"
   uk: "Зберегти всі (ліній: %{n})"
@@ -1645,6 +1879,7 @@ _version: 2
 "Press \"Reset timetable\" again to put the map's own timetable back (the changes made here are lost)":
   nl: "Druk nogmaals op \"Dienstregeling resetten\" om de eigen dienstregeling van de kaart terug te zetten (de wijzigingen hier gaan verloren)"
   de: "Drücke noch einmal \"Fahrplan zurücksetzen\", um den Fahrplan der Karte wiederherzustellen (die hier gemachten Änderungen gehen verloren)"
+  da: "Tryk på \"Nulstil køreplan\" igen for at få kortets egen køreplan tilbage (ændringerne herfra går tabt)"
   fr: "Appuyez à nouveau sur « Réinitialiser l'horaire » pour rétablir l'horaire de la carte (les modifications faites ici sont perdues)"
   ru: "Нажмите «Сбросить расписание» ещё раз, чтобы вернуть расписание карты (сделанные здесь изменения пропадут)"
   uk: "Натисніть «Скинути розклад» ще раз, щоб повернути розклад мапи (зроблені тут зміни буде втрачено)"
@@ -1652,6 +1887,7 @@ _version: 2
 "Type the new line's name (it becomes the file name, so no / \\ : * ? \" < > |)":
   nl: "Typ de naam van de nieuwe lijn (die wordt de bestandsnaam, dus geen / \\ : * ? \" < > |)"
   de: "Gib den Namen der neuen Linie ein (er wird zum Dateinamen, also kein / \\ : * ? \" < > |)"
+  da: "Skriv den nye linjes navn (det bliver filnavnet, så ingen / \\ : * ? \" < > |)"
   fr: "Saisissez le nom de la nouvelle ligne (il devient le nom du fichier, donc pas de / \\ : * ? \" < > |)"
   ru: "Введите название новой линии (оно станет именем файла, поэтому без / \\ : * ? \" < > |)"
   uk: "Введіть назву нової лінії (вона стане ім'ям файлу, тому без / \\ : * ? \" < > |)"
@@ -1659,6 +1895,7 @@ _version: 2
 "openOMSI %{version} is installed; start it again yourself (%{error}).":
   nl: "openOMSI %{version} is geïnstalleerd; start het zelf opnieuw (%{error})."
   de: "openOMSI %{version} ist installiert; starte es selbst neu (%{error})."
+  da: "openOMSI %{version} er installeret; start det igen selv (%{error})."
   fr: "openOMSI %{version} est installé ; relancez-le vous-même (%{error})."
   ru: "openOMSI %{version} установлен; запустите его заново сами (%{error})."
   uk: "openOMSI %{version} встановлено; запустіть його знову самі (%{error})."
@@ -1666,6 +1903,7 @@ _version: 2
 "openOMSI %{version} is available":
   nl: "openOMSI %{version} is beschikbaar"
   de: "openOMSI %{version} ist verfügbar"
+  da: "openOMSI %{version} er tilgængelig"
   fr: "openOMSI %{version} est disponible"
   ru: "Доступен openOMSI %{version}"
   uk: "Доступний openOMSI %{version}"
@@ -1673,6 +1911,7 @@ _version: 2
 "You have %{current}. Update now? The launcher downloads the new version (%{size}) from GitHub and Android installs it; openOMSI then starts again - your mods and settings stay as they are.":
   nl: "Je hebt %{current}. Nu bijwerken? De launcher downloadt de nieuwe versie (%{size}) van GitHub en Android installeert hem; daarna start openOMSI opnieuw - je mods en instellingen blijven zoals ze zijn."
   de: "Du hast %{current}. Jetzt aktualisieren? Der Launcher lädt die neue Version (%{size}) von GitHub, Android installiert sie; danach startet openOMSI neu - deine Mods und Einstellungen bleiben, wie sie sind."
+  da: "Du har %{current}. Opdatér nu? Launcheren henter den nye version (%{size}) fra GitHub, og Android installerer den; openOMSI starter derefter igen - dine mods og indstillinger forbliver, som de er."
   fr: "Vous avez %{current}. Mettre à jour maintenant ? Le lanceur télécharge la nouvelle version (%{size}) depuis GitHub et Android l'installe ; openOMSI redémarre ensuite - vos mods et réglages restent tels quels."
   ru: "У вас %{current}. Обновить сейчас? Лаунчер скачает новую версию (%{size}) с GitHub, Android установит её, и openOMSI запустится снова — моды и настройки останутся прежними."
   uk: "У вас %{current}. Оновити зараз? Лаунчер завантажить нову версію (%{size}) з GitHub, Android її встановить, і openOMSI запуститься знову — моди й налаштування залишаться як є."
@@ -1680,6 +1919,7 @@ _version: 2
 "You have %{current}. Update now? The launcher downloads the new version (%{size}) from GitHub, puts it in place of this one and starts again - your mods and settings stay as they are.":
   nl: "Je hebt %{current}. Nu bijwerken? De launcher downloadt de nieuwe versie (%{size}) van GitHub, zet die in de plaats van deze en start opnieuw - je mods en instellingen blijven zoals ze zijn."
   de: "Du hast %{current}. Jetzt aktualisieren? Der Launcher lädt die neue Version (%{size}) von GitHub, setzt sie an die Stelle dieser und startet neu - deine Mods und Einstellungen bleiben, wie sie sind."
+  da: "Du har %{current}. Opdatér nu? Launcheren henter den nye version (%{size}) fra GitHub, lægger den på denne versions plads og starter igen - dine mods og indstillinger forbliver, som de er."
   fr: "Vous avez %{current}. Mettre à jour maintenant ? Le lanceur télécharge la nouvelle version (%{size}) depuis GitHub, la met à la place de celle-ci et redémarre - vos mods et réglages restent tels quels."
   ru: "У вас %{current}. Обновить сейчас? Лаунчер скачает новую версию (%{size}) с GitHub, поставит её вместо этой и перезапустится — моды и настройки останутся прежними."
   uk: "У вас %{current}. Оновити зараз? Лаунчер завантажить нову версію (%{size}) з GitHub, поставить її замість цієї й перезапуститься — моди й налаштування залишаться як є."
@@ -1687,6 +1927,7 @@ _version: 2
 "Downloading openOMSI %{version}":
   nl: "openOMSI %{version} downloaden"
   de: "openOMSI %{version} wird heruntergeladen"
+  da: "Henter openOMSI %{version}"
   fr: "Téléchargement d'openOMSI %{version}"
   ru: "Загрузка openOMSI %{version}"
   uk: "Завантаження openOMSI %{version}"
@@ -1694,6 +1935,7 @@ _version: 2
 "%{done} of %{total} from %{source}":
   nl: "%{done} van %{total} van %{source}"
   de: "%{done} von %{total} von %{source}"
+  da: "%{done} af %{total} fra %{source}"
   fr: "%{done} sur %{total} depuis %{source}"
   ru: "%{done} из %{total} с %{source}"
   uk: "%{done} з %{total} з %{source}"
@@ -1701,6 +1943,7 @@ _version: 2
 "Installing openOMSI %{version}":
   nl: "openOMSI %{version} installeren"
   de: "openOMSI %{version} wird installiert"
+  da: "Installerer openOMSI %{version}"
   fr: "Installation d'openOMSI %{version}"
   ru: "Установка openOMSI %{version}"
   uk: "Встановлення openOMSI %{version}"
@@ -1708,6 +1951,7 @@ _version: 2
 "Updated to openOMSI %{version}":
   nl: "Bijgewerkt naar openOMSI %{version}"
   de: "Aktualisiert auf openOMSI %{version}"
+  da: "Opdateret til openOMSI %{version}"
   fr: "Mis à jour vers openOMSI %{version}"
   ru: "Обновлено до openOMSI %{version}"
   uk: "Оновлено до openOMSI %{version}"
@@ -1715,6 +1959,7 @@ _version: 2
 "The Vulkan graphics driver stopped while compiling shaders. Starting the game again will switch to OpenGL (or change it in Settings → Graphics API).":
   nl: "Het Vulkan-stuurprogramma van de videokaart stopte tijdens het compileren van shaders. Bij de volgende start schakelt het spel over op OpenGL (of wijzig het onder Instellingen → Grafische API)."
   de: "Der Vulkan-Grafiktreiber ist beim Kompilieren der Shader stehen geblieben. Beim nächsten Start wechselt das Spiel zu OpenGL (oder ändere es unter Einstellungen → Grafik-API)."
+  da: "Vulkan-grafikdriveren stoppede under kompilering af shadere. Hvis du starter spillet igen, skifter det til OpenGL (eller ændr det under Indstillinger → Grafik-API)."
   fr: "Le pilote graphique Vulkan s'est arrêté pendant la compilation des shaders. Au prochain lancement, le jeu passera à OpenGL (ou changez-le dans Réglages → API graphique)."
   ru: "Графический драйвер Vulkan остановился при компиляции шейдеров. При следующем запуске игра перейдёт на OpenGL (или измените это в Настройки → Графический API)."
   uk: "Графічний драйвер Vulkan зупинився під час компіляції шейдерів. Під час наступного запуску гра перейде на OpenGL (або змініть це в Налаштування → Графічний API)."
@@ -1722,6 +1967,7 @@ _version: 2
 "The system closed the game while it was running, typically because the device ran out of memory (RAM). Lowering texture resolution or reducing AI traffic in Settings helps prevent memory exhaustion.":
   nl: "Het systeem heeft het spel tijdens het spelen gesloten, meestal omdat het apparaat geen geheugen (RAM) meer had. Een lagere textuurresolutie of minder AI-verkeer in Instellingen helpt om dat te voorkomen."
   de: "Das System hat das Spiel während des Laufens beendet, meist weil dem Gerät der Arbeitsspeicher (RAM) ausging. Eine niedrigere Texturauflösung oder weniger KI-Verkehr in den Einstellungen hilft, das zu vermeiden."
+  da: "Systemet lukkede spillet, mens det kørte, typisk fordi enheden løb tør for hukommelse (RAM). Lavere teksturopløsning eller mindre AI-trafik i Indstillinger hjælper mod hukommelsesmangel."
   fr: "Le système a fermé le jeu en cours, généralement parce que l'appareil manquait de mémoire (RAM). Baisser la résolution des textures ou réduire la circulation IA dans les Réglages aide à l'éviter."
   ru: "Система закрыла игру во время работы — обычно потому, что устройству не хватило памяти (ОЗУ). Снизьте разрешение текстур или уменьшите ИИ-трафик в настройках, чтобы этого избежать."
   uk: "Система закрила гру під час роботи — зазвичай тому, що пристрою забракло пам'яті (ОЗП). Знизьте роздільність текстур або зменште ШІ-трафік у налаштуваннях, щоб цього уникнути."
@@ -1729,6 +1975,7 @@ _version: 2
 "The game was closed by the system":
   nl: "Het spel is door het systeem gesloten"
   de: "Das Spiel wurde vom System beendet"
+  da: "Spillet blev lukket af systemet"
   fr: "Le jeu a été fermé par le système"
   ru: "Игра закрыта системой"
   uk: "Гру закрила система"
@@ -1736,6 +1983,7 @@ _version: 2
 "daily":
   nl: "dagelijks"
   de: "täglich"
+  da: "dagligt"
   fr: "tous les jours"
   ru: "ежедневно"
   uk: "щодня"
@@ -1743,6 +1991,7 @@ _version: 2
 "Mon-Fri":
   nl: "ma-vr"
   de: "Mo-Fr"
+  da: "man-fre"
   fr: "lun-ven"
   ru: "пн-пт"
   uk: "пн-пт"
@@ -1750,6 +1999,7 @@ _version: 2
 "Mon-Sat":
   nl: "ma-za"
   de: "Mo-Sa"
+  da: "man-lør"
   fr: "lun-sam"
   ru: "пн-сб"
   uk: "пн-сб"
@@ -1757,6 +2007,7 @@ _version: 2
 "Sat-Sun":
   nl: "za-zo"
   de: "Sa-So"
+  da: "lør-søn"
   fr: "sam-dim"
   ru: "сб-вс"
   uk: "сб-нд"
@@ -1764,6 +2015,7 @@ _version: 2
 "holidays":
   nl: "feestdagen"
   de: "Feiertage"
+  da: "helligdage"
   fr: "jours fériés"
   ru: "праздники"
   uk: "свята"
@@ -1771,6 +2023,7 @@ _version: 2
 "school holidays":
   nl: "schoolvakanties"
   de: "Schulferien"
+  da: "skoleferie"
   fr: "vacances scolaires"
   ru: "школьные каникулы"
   uk: "шкільні канікули"
@@ -1778,6 +2031,7 @@ _version: 2
 "school days":
   nl: "schooldagen"
   de: "Schultage"
+  da: "skoledage"
   fr: "jours d'école"
   ru: "учебные дни"
   uk: "навчальні дні"
@@ -1785,6 +2039,7 @@ _version: 2
 "queued":
   nl: "in de wachtrij"
   de: "wartet"
+  da: "i kø"
   fr: "en attente"
   ru: "в очереди"
   uk: "у черзі"
@@ -1792,6 +2047,7 @@ _version: 2
 "planning":
   nl: "plannen"
   de: "plant"
+  da: "planlægger"
   fr: "préparation"
   ru: "подготовка"
   uk: "підготовка"
@@ -1799,6 +2055,7 @@ _version: 2
 "unpacking":
   nl: "uitpakken"
   de: "entpackt"
+  da: "pakker ud"
   fr: "décompression"
   ru: "распаковка"
   uk: "розпакування"
@@ -1806,6 +2063,7 @@ _version: 2
 "checking":
   nl: "controleren"
   de: "prüft"
+  da: "kontrollerer"
   fr: "vérification"
   ru: "проверка"
   uk: "перевірка"
@@ -1813,6 +2071,7 @@ _version: 2
 "moving":
   nl: "verplaatsen"
   de: "verschiebt"
+  da: "flytter"
   fr: "déplacement"
   ru: "перемещение"
   uk: "переміщення"
@@ -1820,6 +2079,7 @@ _version: 2
 "copying":
   nl: "kopiëren"
   de: "kopiert"
+  da: "kopierer"
   fr: "copie"
   ru: "копирование"
   uk: "копіювання"
@@ -1827,6 +2087,7 @@ _version: 2
 "done":
   nl: "klaar"
   de: "fertig"
+  da: "færdig"
   fr: "terminé"
   ru: "готово"
   uk: "готово"
@@ -1834,6 +2095,7 @@ _version: 2
 "cancelled":
   nl: "geannuleerd"
   de: "abgebrochen"
+  da: "annulleret"
   fr: "annulé"
   ru: "отменено"
   uk: "скасовано"
@@ -1841,6 +2103,7 @@ _version: 2
 "failed":
   nl: "mislukt"
   de: "fehlgeschlagen"
+  da: "mislykkedes"
   fr: "échoué"
   ru: "ошибка"
   uk: "помилка"
@@ -1848,6 +2111,7 @@ _version: 2
 "What each axis and button of a wheel, pedals or joystick does - OMSI 2's gamectrler.cfg, kept in the content folder.":
   nl: "Wat elke as en knop van een stuur, pedalen of joystick doet - gamectrler.cfg van OMSI 2, bewaard in de inhoudsmap."
   de: "Was jede Achse und Taste eines Lenkrads, der Pedale oder eines Joysticks tut - die gamectrler.cfg von OMSI 2, im Inhaltsordner abgelegt."
+  da: "Hvad hver akse og knap på et rat, pedaler eller en joystick gør - OMSI 2's gamectrler.cfg, gemt i indholdsmappen."
   fr: "Ce que fait chaque axe et bouton d'un volant, de pédales ou d'un joystick - le gamectrler.cfg d'OMSI 2, gardé dans le dossier de contenu."
   ru: "Что делает каждая ось и кнопка руля, педалей или джойстика — gamectrler.cfg из OMSI 2, хранится в папке контента."
   uk: "Що робить кожна вісь і кнопка керма, педалей чи джойстика — gamectrler.cfg з OMSI 2, зберігається в теці вмісту."
@@ -1855,6 +2119,7 @@ _version: 2
 "Gear up (manual gearbox)":
   nl: "Opschakelen (handbak)"
   de: "Hochschalten (Schaltgetriebe)"
+  da: "Gear op (manuel gearkasse)"
   fr: "Rapport supérieur (boîte manuelle)"
   ru: "Передача вверх (механика)"
   uk: "Передача вгору (механіка)"
@@ -1862,6 +2127,7 @@ _version: 2
 "Gear down (manual gearbox)":
   nl: "Terugschakelen (handbak)"
   de: "Herunterschalten (Schaltgetriebe)"
+  da: "Gear ned (manuel gearkasse)"
   fr: "Rapport inférieur (boîte manuelle)"
   ru: "Передача вниз (механика)"
   uk: "Передача вниз (механіка)"
@@ -1869,6 +2135,7 @@ _version: 2
 "Door 1 (front), any bus":
   nl: "Deur 1 (voor), elke bus"
   de: "Tür 1 (vorn), jeder Bus"
+  da: "Dør 1 (forrest), enhver bus"
   fr: "Porte 1 (avant), tout bus"
   ru: "Дверь 1 (передняя), любой автобус"
   uk: "Двері 1 (передні), будь-який автобус"
@@ -1876,6 +2143,7 @@ _version: 2
 "Door 2, any bus":
   nl: "Deur 2, elke bus"
   de: "Tür 2, jeder Bus"
+  da: "Dør 2, enhver bus"
   fr: "Porte 2, tout bus"
   ru: "Дверь 2, любой автобус"
   uk: "Двері 2, будь-який автобус"
@@ -1883,6 +2151,7 @@ _version: 2
 "Door 3, any bus":
   nl: "Deur 3, elke bus"
   de: "Tür 3, jeder Bus"
+  da: "Dør 3, enhver bus"
   fr: "Porte 3, tout bus"
   ru: "Дверь 3, любой автобус"
   uk: "Двері 3, будь-який автобус"
@@ -1890,6 +2159,7 @@ _version: 2
 "Door 4, any bus":
   nl: "Deur 4, elke bus"
   de: "Tür 4, jeder Bus"
+  da: "Dør 4, enhver bus"
   fr: "Porte 4, tout bus"
   ru: "Дверь 4, любой автобус"
   uk: "Двері 4, будь-який автобус"
@@ -1897,6 +2167,7 @@ _version: 2
 "All doors, any bus":
   nl: "Alle deuren, elke bus"
   de: "Alle Türen, jeder Bus"
+  da: "Alle døre, enhver bus"
   fr: "Toutes les portes, tout bus"
   ru: "Все двери, любой автобус"
   uk: "Усі двері, будь-який автобус"
@@ -1904,6 +2175,7 @@ _version: 2
 "Cabin and outside, one key":
   nl: "Cabine en buiten, één toets"
   de: "Kabine und außen, eine Taste"
+  da: "Førerrum og ydersiden, én tast"
   fr: "Cabine et extérieur, une touche"
   ru: "Кабина и снаружи, одна клавиша"
   uk: "Кабіна й зовні, одна клавіша"
@@ -1911,6 +2183,7 @@ _version: 2
 "Multiplayer: write in the chat":
   nl: "Multiplayer: in de chat schrijven"
   de: "Mehrspieler: im Chat schreiben"
+  da: "Multiplayer: skriv i chatten"
   fr: "Multijoueur : écrire dans le chat"
   ru: "Мультиплеер: написать в чат"
   uk: "Мультиплеєр: написати в чат"
@@ -1918,6 +2191,7 @@ _version: 2
 "Multiplayer: show / hide the chat":
   nl: "Multiplayer: chat tonen / verbergen"
   de: "Mehrspieler: Chat ein-/ausblenden"
+  da: "Multiplayer: vis / skjul chatten"
   fr: "Multijoueur : afficher / masquer le chat"
   ru: "Мультиплеер: показать / скрыть чат"
   uk: "Мультиплеєр: показати / приховати чат"
@@ -1925,6 +2199,7 @@ _version: 2
 "<none>":
   nl: "<geen>"
   de: "<keine>"
+  da: "<ingen>"
   fr: "<aucune>"
   ru: "<нет>"
   uk: "<немає>"
@@ -1932,6 +2207,7 @@ _version: 2
 "The map's weather":
   nl: "Het weer van de kaart"
   de: "Das Wetter der Karte"
+  da: "Kortets vejr"
   fr: "La météo de la carte"
   ru: "Погода карты"
   uk: "Погода мапи"
@@ -1939,6 +2215,7 @@ _version: 2
 "As the map sets it":
   nl: "Zoals de kaart het instelt"
   de: "Wie die Karte es festlegt"
+  da: "Som kortet angiver det"
   fr: "Telle que la carte la définit"
   ru: "Как задано картой"
   uk: "Як задано мапою"
@@ -1946,6 +2223,7 @@ _version: 2
 "Visibility, wind, temperature, rain, snow and road state":
   nl: "Zicht, wind, temperatuur, regen, sneeuw en wegdek"
   de: "Sicht, Wind, Temperatur, Regen, Schnee und Straßenzustand"
+  da: "Sigtbarhed, vind, temperatur, regn, sne og vejtilstand"
   fr: "Visibilité, vent, température, pluie, neige et état de la route"
   ru: "Видимость, ветер, температура, дождь, снег и состояние дороги"
   uk: "Видимість, вітер, температура, дощ, сніг і стан дороги"
@@ -1953,6 +2231,7 @@ _version: 2
 "Looking for the server…":
   nl: "Server zoeken…"
   de: "Server wird gesucht…"
+  da: "Leder efter serveren…"
   fr: "Recherche du serveur…"
   ru: "Поиск сервера…"
   uk: "Пошук сервера…"
@@ -1960,6 +2239,7 @@ _version: 2
 "Choose a map":
   nl: "Kies een kaart"
   de: "Wähle eine Karte"
+  da: "Vælg et kort"
   fr: "Choisissez une carte"
   ru: "Выберите карту"
   uk: "Виберіть мапу"
@@ -1967,6 +2247,7 @@ _version: 2
 "Play":
   nl: "Spelen"
   de: "Spielen"
+  da: "Spil"
   fr: "Jouer"
   ru: "Играть"
   uk: "Грати"
@@ -1974,6 +2255,7 @@ _version: 2
 "Online":
   nl: "Online"
   de: "Online"
+  da: "Online"
   fr: "En ligne"
   ru: "Онлайн"
   uk: "Онлайн"
@@ -1981,6 +2263,7 @@ _version: 2
 "Choose the map":
   nl: "Kies de kaart"
   de: "Karte wählen"
+  da: "Vælg kortet"
   fr: "Choisir la carte"
   ru: "Выбор карты"
   uk: "Вибір мапи"
@@ -1988,6 +2271,7 @@ _version: 2
 "Choose the bus":
   nl: "Kies de bus"
   de: "Bus wählen"
+  da: "Vælg bussen"
   fr: "Choisir le bus"
   ru: "Выбор автобуса"
   uk: "Вибір автобуса"
@@ -1995,6 +2279,7 @@ _version: 2
 "Choose the livery":
   nl: "Kies de kleurstelling"
   de: "Lackierung wählen"
+  da: "Vælg bemalingen"
   fr: "Choisir la livrée"
   ru: "Выбор окраски"
   uk: "Вибір фарбування"
@@ -2002,6 +2287,7 @@ _version: 2
 "Line or free drive":
   nl: "Lijn of vrij rijden"
   de: "Linie oder freie Fahrt"
+  da: "Linje eller fri kørsel"
   fr: "Ligne ou conduite libre"
   ru: "Линия или свободная езда"
   uk: "Лінія або вільна поїздка"
@@ -2009,6 +2295,7 @@ _version: 2
 "Choose the tour":
   nl: "Kies de omloop"
   de: "Umlauf wählen"
+  da: "Vælg turen"
   fr: "Choisir le service"
   ru: "Выбор выхода"
   uk: "Вибір обороту"
@@ -2016,6 +2303,7 @@ _version: 2
 "Time and weather":
   nl: "Tijd en weer"
   de: "Zeit und Wetter"
+  da: "Tid og vejr"
   fr: "Heure et météo"
   ru: "Время и погода"
   uk: "Час і погода"
@@ -2023,6 +2311,7 @@ _version: 2
 "PARTS":
   nl: "ONDERDELEN"
   de: "TEILE"
+  da: "DELE"
   fr: "PIÈCES"
   ru: "ДЕТАЛИ"
   uk: "ДЕТАЛІ"
@@ -2030,6 +2319,7 @@ _version: 2
 "Your driver, level and records":
   nl: "Je bestuurder, niveau en records"
   de: "Dein Fahrer, Level und Rekorde"
+  da: "Din chauffør, niveau og rekorder"
   fr: "Votre conducteur, niveau et records"
   ru: "Ваш водитель, уровень и рекорды"
   uk: "Ваш водій, рівень і рекорди"
@@ -2037,6 +2327,7 @@ _version: 2
 "Graphics, sound, gameplay":
   nl: "Beeld, geluid, spel"
   de: "Grafik, Ton, Spielablauf"
+  da: "Grafik, lyd, gameplay"
   fr: "Graphismes, son, jouabilité"
   ru: "Графика, звук, игровой процесс"
   uk: "Графіка, звук, ігровий процес"
@@ -2044,6 +2335,7 @@ _version: 2
 "Touch, wheels and gamepads":
   nl: "Aanraken, sturen en gamepads"
   de: "Touch, Lenkräder und Gamepads"
+  da: "Berøring, rat og gamepads"
   fr: "Tactile, volants et manettes"
   ru: "Сенсор, рули и геймпады"
   uk: "Сенсор, керма й геймпади"
@@ -2051,6 +2343,7 @@ _version: 2
 "Games running and their logs":
   nl: "Draaiende spellen en hun logs"
   de: "Laufende Spiele und ihre Logs"
+  da: "Kørende spil og deres logge"
   fr: "Parties en cours et leurs journaux"
   ru: "Запущенные игры и их журналы"
   uk: "Запущені ігри та їхні журнали"
@@ -2058,6 +2351,7 @@ _version: 2
 "Learn to drive the buses":
   nl: "Leer de bussen besturen"
   de: "Lerne, die Busse zu fahren"
+  da: "Lær at køre busserne"
   fr: "Apprendre à conduire les bus"
   ru: "Научитесь водить автобусы"
   uk: "Навчіться водити автобуси"
@@ -2065,6 +2359,7 @@ _version: 2
 "The map's lines and trips":
   nl: "De lijnen en ritten van de kaart"
   de: "Die Linien und Fahrten der Karte"
+  da: "Kortets linjer og ture"
   fr: "Les lignes et courses de la carte"
   ru: "Линии и рейсы карты"
   uk: "Лінії та рейси мапи"
@@ -2072,6 +2367,7 @@ _version: 2
 "The OMSI 2 folder and content":
   nl: "De OMSI 2-map en inhoud"
   de: "Der OMSI-2-Ordner und die Inhalte"
+  da: "OMSI 2-mappen og indholdet"
   fr: "Le dossier OMSI 2 et le contenu"
   ru: "Папка OMSI 2 и контент"
   uk: "Тека OMSI 2 і вміст"
@@ -2079,6 +2375,7 @@ _version: 2
 "Asking…":
   nl: "Bezig met vragen…"
   de: "Wird abgefragt…"
+  da: "Spørger…"
   fr: "Interrogation…"
   ru: "Запрос…"
   uk: "Запит…"
@@ -2086,6 +2383,7 @@ _version: 2
 "No timetable: drive where you like, the buses and traffic about you":
   nl: "Geen dienstregeling: rij waar je wilt, met de bussen en het verkeer om je heen"
   de: "Kein Fahrplan: fahre, wohin du willst, mit den Bussen und dem Verkehr um dich herum"
+  da: "Ingen køreplan: kør, hvor du vil, med busser og trafik omkring dig"
   fr: "Pas d'horaire : roulez où vous voulez, entouré des bus et de la circulation"
   ru: "Без расписания: езжайте куда угодно среди автобусов и транспорта"
   uk: "Без розкладу: їдьте куди завгодно серед автобусів і руху"
@@ -2093,6 +2391,7 @@ _version: 2
 "OTHER DAY":
   nl: "ANDERE DAG"
   de: "ANDERER TAG"
+  da: "ANDEN DAG"
   fr: "AUTRE JOUR"
   ru: "ДРУГОЙ ДЕНЬ"
   uk: "ІНШИЙ ДЕНЬ"
@@ -2100,6 +2399,7 @@ _version: 2
 "The tour starts at %{time}: the clock was moved from %{from} to %{to}":
   nl: "De omloop begint om %{time}: de klok is verzet van %{from} naar %{to}"
   de: "Der Umlauf beginnt um %{time}: die Uhr wurde von %{from} auf %{to} gestellt"
+  da: "Turen starter kl. %{time}: uret blev flyttet fra %{from} til %{to}"
   fr: "Le service commence à %{time} : l'horloge a été avancée de %{from} à %{to}"
   ru: "Выход начинается в %{time}: часы переведены с %{from} на %{to}"
   uk: "Оборот починається о %{time}: годинник переведено з %{from} на %{to}"
@@ -2107,6 +2407,7 @@ _version: 2
 "Every mirror is back as the bus has it":
   nl: "Elke spiegel staat weer zoals de bus hem heeft"
   de: "Jeder Spiegel ist wieder so, wie der Bus ihn hat"
+  da: "Alle spejle er tilbage, som bussen har dem"
   fr: "Chaque rétroviseur est revenu comme le bus l'a"
   ru: "Все зеркала снова такие, как у автобуса"
   uk: "Усі дзеркала знову такі, як в автобуса"
@@ -2114,6 +2415,7 @@ _version: 2
 "R: put the cursor on a mirror panel (Shift+R: every mirror)":
   nl: "R: zet de cursor op een spiegelpaneel (Shift+R: elke spiegel)"
   de: "R: Mauszeiger auf ein Spiegelfeld setzen (Umschalt+R: jeder Spiegel)"
+  da: "R: sæt markøren på et spejlpanel (Shift+R: alle spejle)"
   fr: "R : placez le curseur sur un panneau de rétroviseur (Maj+R : tous les rétroviseurs)"
   ru: "R: наведите курсор на панель зеркала (Shift+R: все зеркала)"
   uk: "R: наведіть курсор на панель дзеркала (Shift+R: усі дзеркала)"
@@ -2121,6 +2423,7 @@ _version: 2
 "A rail vehicle cannot be moved off its track":
   nl: "Een railvoertuig kan niet van zijn spoor worden gehaald"
   de: "Ein Schienenfahrzeug lässt sich nicht von seinem Gleis versetzen"
+  da: "Et skinnekøretøj kan ikke flyttes væk fra sit spor"
   fr: "Un véhicule ferroviaire ne peut pas quitter sa voie"
   ru: "Рельсовый транспорт нельзя сдвинуть с пути"
   uk: "Рейковий транспорт не можна зсунути з колії"
@@ -2128,6 +2431,7 @@ _version: 2
 "Ctrl+click on the ground to move the bus there":
   nl: "Ctrl+klik op de grond om de bus daarheen te zetten"
   de: "Strg+Klick auf den Boden versetzt den Bus dorthin"
+  da: "Ctrl+klik på jorden for at flytte bussen dertil"
   fr: "Ctrl+clic sur le sol pour y déplacer le bus"
   ru: "Ctrl+щелчок по земле перемещает туда автобус"
   uk: "Ctrl+клік по землі переміщує туди автобус"
@@ -2135,6 +2439,7 @@ _version: 2
 "ICAO must be exactly 4 letters":
   nl: "ICAO moet precies 4 letters zijn"
   de: "ICAO muss genau 4 Buchstaben haben"
+  da: "ICAO skal være præcis 4 bogstaver"
   fr: "Le code OACI doit faire exactement 4 lettres"
   ru: "Код ICAO должен состоять ровно из 4 букв"
   uk: "Код ICAO має складатися рівно з 4 літер"
@@ -2142,6 +2447,7 @@ _version: 2
 "Weather: Custom weather":
   nl: "Weer: eigen weer"
   de: "Wetter: Eigenes Wetter"
+  da: "Vejr: Brugerdefineret vejr"
   fr: "Météo : météo personnalisée"
   ru: "Погода: своя погода"
   uk: "Погода: своя погода"
@@ -2149,6 +2455,7 @@ _version: 2
 "There is no vehicle to reload: you are on foot":
   nl: "Er is geen voertuig om opnieuw te laden: je bent te voet"
   de: "Kein Fahrzeug zum Neuladen: du bist zu Fuß"
+  da: "Der er intet køretøj at genindlæse: du er til fods"
   fr: "Aucun véhicule à recharger : vous êtes à pied"
   ru: "Нечего перезагружать: вы пешком"
   uk: "Нічого перезавантажувати: ви пішки"
@@ -2156,6 +2463,7 @@ _version: 2
 "Turn METAR sync off before editing its current weather":
   nl: "Zet het METAR-volgen uit voordat je het huidige weer bewerkt"
   de: "Schalte den METAR-Abgleich aus, bevor du das aktuelle Wetter bearbeitest"
+  da: "Slå METAR-synkronisering fra, før du redigerer dens aktuelle vejr"
   fr: "Désactivez la synchronisation METAR avant de modifier la météo actuelle"
   ru: "Выключите синхронизацию METAR, прежде чем менять текущую погоду"
   uk: "Вимкніть синхронізацію METAR, перш ніж змінювати поточну погоду"
@@ -2163,6 +2471,7 @@ _version: 2
 "Weather: no METAR report could be loaded":
   nl: "Weer: er kon geen METAR-bericht worden geladen"
   de: "Wetter: es konnte kein METAR-Bericht geladen werden"
+  da: "Vejr: ingen METAR-rapport kunne indlæses"
   fr: "Météo : aucun bulletin METAR n'a pu être chargé"
   ru: "Погода: не удалось загрузить сводку METAR"
   uk: "Погода: не вдалося завантажити зведення METAR"
@@ -2170,6 +2479,7 @@ _version: 2
 "Weather: METAR request failed":
   nl: "Weer: METAR-aanvraag mislukt"
   de: "Wetter: METAR-Abfrage fehlgeschlagen"
+  da: "Vejr: METAR-forespørgslen mislykkedes"
   fr: "Météo : la requête METAR a échoué"
   ru: "Погода: запрос METAR не удался"
   uk: "Погода: запит METAR не вдався"
@@ -2177,6 +2487,7 @@ _version: 2
 "No server code: not in a LAN session or on a server":
   nl: "Geen servercode: niet in een LAN-sessie of op een server"
   de: "Kein Servercode: nicht in einer LAN-Sitzung oder auf einem Server"
+  da: "Ingen serverkode: ikke i en LAN-session eller på en server"
   fr: "Pas de code serveur : pas dans une session LAN ni sur un serveur"
   ru: "Нет кода сервера: вы не в сессии LAN и не на сервере"
   uk: "Немає коду сервера: ви не в сесії LAN і не на сервері"
@@ -2184,6 +2495,7 @@ _version: 2
 "Save to a new slot":
   nl: "In een nieuw slot opslaan"
   de: "In einem neuen Platz speichern"
+  da: "Gem i en ny plads"
   fr: "Enregistrer dans un nouvel emplacement"
   ru: "Сохранить в новый слот"
   uk: "Зберегти в новий слот"
@@ -2191,6 +2503,7 @@ _version: 2
 "End of the duty: the tour's last trip is done":
   nl: "Einde van de dienst: de laatste rit van de omloop is gereden"
   de: "Dienstende: die letzte Fahrt des Umlaufs ist gefahren"
+  da: "Vagtens slutning: turens sidste rejse er kørt"
   fr: "Fin du service : la dernière course est terminée"
   ru: "Конец смены: последний рейс выхода выполнен"
   uk: "Кінець наряду: останній рейс обороту виконано"
@@ -2198,6 +2511,7 @@ _version: 2
 "Host's mods: looking what is needed…":
   nl: "Mods van de host: bekijken wat nodig is…"
   de: "Mods des Hosts: es wird geprüft, was nötig ist…"
+  da: "Værtens mods: undersøger, hvad der skal bruges…"
   fr: "Mods de l'hôte : recherche de ce qu'il faut…"
   ru: "Моды хоста: выясняем, что нужно…"
   uk: "Моди хоста: з'ясовуємо, що потрібно…"
@@ -2205,6 +2519,7 @@ _version: 2
 "Host's mods could not be downloaded; playing with what is installed here":
   nl: "De mods van de host konden niet worden gedownload; er wordt gespeeld met wat hier geïnstalleerd is"
   de: "Die Mods des Hosts ließen sich nicht herunterladen; gespielt wird mit dem, was hier installiert ist"
+  da: "Værtens mods kunne ikke hentes; du spiller med det, der er installeret her"
   fr: "Les mods de l'hôte n'ont pas pu être téléchargés ; on joue avec ce qui est installé ici"
   ru: "Не удалось скачать моды хоста; игра идёт с тем, что установлено здесь"
   uk: "Не вдалося завантажити моди хоста; гра йде з тим, що встановлено тут"
@@ -2212,6 +2527,7 @@ _version: 2
 "Host's mods: everything the host uses is installed here":
   nl: "Mods van de host: alles wat de host gebruikt is hier geïnstalleerd"
   de: "Mods des Hosts: alles, was der Host nutzt, ist hier installiert"
+  da: "Værtens mods: alt, hvad værten bruger, er installeret her"
   fr: "Mods de l'hôte : tout ce qu'utilise l'hôte est installé ici"
   ru: "Моды хоста: всё, что использует хост, здесь установлено"
   uk: "Моди хоста: усе, що використовує хост, тут встановлено"
@@ -2219,6 +2535,7 @@ _version: 2
 "Online: connecting ...":
   nl: "Online: verbinden ..."
   de: "Online: verbinde ..."
+  da: "Online: forbinder ..."
   fr: "En ligne : connexion ..."
   ru: "Онлайн: подключение ..."
   uk: "Онлайн: підключення ..."
@@ -2226,6 +2543,7 @@ _version: 2
 "Voice: start GreenTeaSpeak with the openOMSI plugin to talk":
   nl: "Spraak: start GreenTeaSpeak met de openOMSI-plugin om te praten"
   de: "Sprache: starte GreenTeaSpeak mit dem openOMSI-Plugin, um zu sprechen"
+  da: "Tale: start GreenTeaSpeak med openOMSI-pluginet for at tale"
   fr: "Voix : lancez GreenTeaSpeak avec le plugin openOMSI pour parler"
   ru: "Голос: запустите GreenTeaSpeak с плагином openOMSI, чтобы говорить"
   uk: "Голос: запустіть GreenTeaSpeak із плагіном openOMSI, щоб говорити"
@@ -2233,6 +2551,7 @@ _version: 2
 "Voice: joining the voice channel ...":
   nl: "Spraak: deelnemen aan het spraakkanaal ..."
   de: "Sprache: trete dem Sprachkanal bei ..."
+  da: "Tale: tilmelder talekanalen ..."
   fr: "Voix : connexion au canal vocal ..."
   ru: "Голос: подключение к голосовому каналу ..."
   uk: "Голос: підключення до голосового каналу ..."
@@ -2240,6 +2559,7 @@ _version: 2
 "Voice: your microphone is muted":
   nl: "Spraak: je microfoon staat uit"
   de: "Sprache: dein Mikrofon ist stumm"
+  da: "Tale: din mikrofon er slået fra"
   fr: "Voix : votre micro est coupé"
   ru: "Голос: ваш микрофон выключен"
   uk: "Голос: ваш мікрофон вимкнено"
@@ -2247,6 +2567,7 @@ _version: 2
 "Mirror editor: drag/wheel = move/size, arrows = aim, Alt+arrows and PgUp/PgDn = shift the mirror, -/+ = field of view, R = reset (Shift+R: all), Insert/Delete/C = add/remove/other, Ctrl+Shift+M = done":
   nl: "Spiegeleditor: slepen/wiel = verplaatsen/grootte, pijlen = richten, Alt+pijlen en PgUp/PgDn = spiegel verschuiven, -/+ = gezichtsveld, R = herstellen (Shift+R: alle), Insert/Delete/C = toevoegen/verwijderen/andere, Ctrl+Shift+M = klaar"
   de: "Spiegeleditor: Ziehen/Rad = verschieben/Größe, Pfeile = ausrichten, Alt+Pfeile und Bild↑/Bild↓ = Spiegel verschieben, -/+ = Sichtfeld, R = zurücksetzen (Umschalt+R: alle), Einfg/Entf/C = hinzufügen/entfernen/anderer, Strg+Umschalt+M = fertig"
+  da: "Spejleditor: træk/hjul = flyt/størrelse, piletaster = sigt, Alt+piletaster og PgUp/PgDn = forskyd spejlet, -/+ = synsfelt, R = nulstil (Shift+R: alle), Insert/Delete/C = tilføj/fjern/andet, Ctrl+Shift+M = færdig"
   fr: "Éditeur de rétroviseurs : glisser/molette = déplacer/taille, flèches = orienter, Alt+flèches et PgUp/PgDn = décaler le rétroviseur, -/+ = champ de vision, R = réinitialiser (Maj+R : tous), Inser/Suppr/C = ajouter/retirer/autre, Ctrl+Maj+M = terminé"
   ru: "Редактор зеркал: перетаскивание/колесо = сдвиг/размер, стрелки = наклон, Alt+стрелки и PgUp/PgDn = сместить зеркало, -/+ = угол обзора, R = сброс (Shift+R: все), Insert/Delete/C = добавить/убрать/другое, Ctrl+Shift+M = готово"
   uk: "Редактор дзеркал: перетягування/коліщатко = зсув/розмір, стрілки = нахил, Alt+стрілки та PgUp/PgDn = змістити дзеркало, -/+ = поле зору, R = скинути (Shift+R: усі), Insert/Delete/C = додати/прибрати/інше, Ctrl+Shift+M = готово"
@@ -2254,6 +2575,7 @@ _version: 2
 "Mirror panels on (Ctrl+M: off, Ctrl+Shift+M: edit)":
   nl: "Spiegelpanelen aan (Ctrl+M: uit, Ctrl+Shift+M: bewerken)"
   de: "Spiegelfelder an (Strg+M: aus, Strg+Umschalt+M: bearbeiten)"
+  da: "Spejlpaneler til (Ctrl+M: fra, Ctrl+Shift+M: redigér)"
   fr: "Panneaux de rétroviseurs activés (Ctrl+M : désactiver, Ctrl+Maj+M : modifier)"
   ru: "Панели зеркал включены (Ctrl+M: выкл., Ctrl+Shift+M: правка)"
   uk: "Панелі дзеркал увімкнено (Ctrl+M: вимк., Ctrl+Shift+M: редагування)"
@@ -2261,6 +2583,7 @@ _version: 2
 "Mirror panels off (Ctrl+M)":
   nl: "Spiegelpanelen uit (Ctrl+M)"
   de: "Spiegelfelder aus (Strg+M)"
+  da: "Spejlpaneler fra (Ctrl+M)"
   fr: "Panneaux de rétroviseurs désactivés (Ctrl+M)"
   ru: "Панели зеркал выключены (Ctrl+M)"
   uk: "Панелі дзеркал вимкнено (Ctrl+M)"
@@ -2268,6 +2591,7 @@ _version: 2
 "Mirror editor off":
   nl: "Spiegeleditor uit"
   de: "Spiegeleditor aus"
+  da: "Spejleditor fra"
   fr: "Éditeur de rétroviseurs fermé"
   ru: "Редактор зеркал выключен"
   uk: "Редактор дзеркал вимкнено"
@@ -2275,6 +2599,7 @@ _version: 2
 "This bus has no mirrors to show":
   nl: "Deze bus heeft geen spiegels om te tonen"
   de: "Dieser Bus hat keine Spiegel zum Anzeigen"
+  da: "Denne bus har ingen spejle at vise"
   fr: "Ce bus n'a pas de rétroviseurs à afficher"
   ru: "У этого автобуса нет зеркал для показа"
   uk: "У цього автобуса немає дзеркал для показу"
@@ -2282,6 +2607,7 @@ _version: 2
 "Placing: point at the ground (wheel / Q / E turn, R turns round, Esc takes it away)":
   nl: "Plaatsen: wijs naar de grond (wiel / Q / E draait, R keert om, Esc haalt weg)"
   de: "Einsetzen: auf den Boden zeigen (Rad / Q / E dreht, R wendet, Esc nimmt weg)"
+  da: "Placering: peg på jorden (hjul / Q / E drejer, R vender om, Esc fjerner det)"
   fr: "Placement : visez le sol (molette / Q / E tourne, R fait demi-tour, Échap retire)"
   ru: "Размещение: наведите на землю (колесо / Q / E — поворот, R — разворот, Esc — убрать)"
   uk: "Розміщення: наведіть на землю (коліщатко / Q / E — поворот, R — розворот, Esc — прибрати)"
@@ -2289,6 +2615,7 @@ _version: 2
 "Placing: it would stand in another vehicle here":
   nl: "Plaatsen: hier zou het in een ander voertuig staan"
   de: "Einsetzen: hier stünde es in einem anderen Fahrzeug"
+  da: "Placering: det ville komme til at stå i et andet køretøj her"
   fr: "Placement : ici, il serait dans un autre véhicule"
   ru: "Размещение: здесь он встанет в другой транспорт"
   uk: "Розміщення: тут він стане в інший транспорт"
@@ -2296,6 +2623,7 @@ _version: 2
 "Placing: click to set it down (wheel / Q / E turn, R turns round, Esc takes it away)":
   nl: "Plaatsen: klik om neer te zetten (wiel / Q / E draait, R keert om, Esc haalt weg)"
   de: "Einsetzen: Klick setzt ab (Rad / Q / E dreht, R wendet, Esc nimmt weg)"
+  da: "Placering: klik for at sætte det ned (hjul / Q / E drejer, R vender om, Esc fjerner det)"
   fr: "Placement : cliquez pour poser (molette / Q / E tourne, R fait demi-tour, Échap retire)"
   ru: "Размещение: щёлкните, чтобы поставить (колесо / Q / E — поворот, R — разворот, Esc — убрать)"
   uk: "Розміщення: клацніть, щоб поставити (коліщатко / Q / E — поворот, R — розворот, Esc — прибрати)"
@@ -2303,6 +2631,7 @@ _version: 2
 "A head at rest":
   nl: "Een hoofd in rust"
   de: "Ein Kopf in Ruhe"
+  da: "Et hoved i hvile"
   fr: "Une tête au repos"
   ru: "Голова в покое"
   uk: "Голова в спокої"
@@ -2310,6 +2639,7 @@ _version: 2
 "A radio's station button n plays the n-th station, a cassette player the first; Shift+R steps through them. An address is an MP3, AAC or Ogg stream or an .m3u/.pls playlist.":
   nl: "Zenderknop n van een radio speelt de n-de zender, een cassettespeler de eerste; Shift+R loopt ze langs. Een adres is een MP3-, AAC- of Ogg-stream of een .m3u/.pls-afspeellijst."
   de: "Stationstaste n eines Radios spielt den n-ten Sender, ein Kassettenspieler den ersten; Shift+R schaltet durch. Eine Adresse ist ein MP3-, AAC- oder Ogg-Stream oder eine .m3u/.pls-Playlist."
+  da: "En radios stationsknap n afspiller den n-te station, en kassettebåndoptager den første; Shift+R stepper igennem dem. En adresse er en MP3-, AAC- eller Ogg-stream eller en .m3u/.pls-afspilningsliste."
   fr: "La touche de station n d'une radio joue la n-ième station, un lecteur de cassettes la première ; Maj+R les fait défiler. Une adresse est un flux MP3, AAC ou Ogg ou une liste de lecture .m3u/.pls."
   ru: "Кнопка станции n у радио включает n-ю станцию, кассетный плеер — первую; Shift+R перебирает их. Адрес — поток MP3, AAC или Ogg либо плейлист .m3u/.pls."
   uk: "Кнопка станції n у радіо вмикає n-ту станцію, касетний плеєр — першу; Shift+R перебирає їх. Адреса — потік MP3, AAC або Ogg чи плейлист .m3u/.pls."
@@ -2317,6 +2647,7 @@ _version: 2
 "Add a station":
   nl: "Zender toevoegen"
   de: "Sender hinzufügen"
+  da: "Tilføj en station"
   fr: "Ajouter une station"
   ru: "Добавить станцию"
   uk: "Додати станцію"
@@ -2324,6 +2655,7 @@ _version: 2
 "Chat size":
   nl: "Grootte van de chat"
   de: "Chatgröße"
+  da: "Chatstørrelse"
   fr: "Taille du chat"
   ru: "Размер чата"
   uk: "Розмір чату"
@@ -2331,6 +2663,7 @@ _version: 2
 "Clear AI traffic":
   nl: "AI-verkeer weghalen"
   de: "KI-Verkehr entfernen"
+  da: "Ryd AI-trafik"
   fr: "Supprimer le trafic IA"
   ru: "Убрать трафик ИИ"
   uk: "Прибрати трафік ШІ"
@@ -2338,6 +2671,7 @@ _version: 2
 "Count me in the website's \"playing now\" (anonymous)":
   nl: "Tel mij mee in \"nu aan het spelen\" op de website (anoniem)"
   de: "Mich bei \"spielt gerade\" auf der Website mitzählen (anonym)"
+  da: "Tæl mig med i hjemmesidens \"spiller nu\" (anonymt)"
   fr: "Me compter dans « joue en ce moment » du site (anonyme)"
   ru: "Учитывать меня в «играют сейчас» на сайте (анонимно)"
   uk: "Враховувати мене в «грають зараз» на сайті (анонімно)"
@@ -2345,6 +2679,7 @@ _version: 2
 "Head pitch":
   nl: "Hoofdhelling"
   de: "Kopfneigung"
+  da: "Hovedets hældning"
   fr: "Inclinaison de la tête"
   ru: "Наклон головы"
   uk: "Нахил голови"
@@ -2352,6 +2687,7 @@ _version: 2
 "Head sway at a standstill":
   nl: "Hoofdbeweging bij stilstand"
   de: "Kopfbewegung im Stand"
+  da: "Hovedets svaj i stilstand"
   fr: "Mouvement de la tête à l'arrêt"
   ru: "Покачивание головы на стоянке"
   uk: "Похитування голови на стоянці"
@@ -2359,6 +2695,7 @@ _version: 2
 "How fast that sway moves (100% is the pace it is designed at)":
   nl: "Hoe snel die beweging gaat (100% is het bedoelde tempo)"
   de: "Wie schnell diese Bewegung ist (100% ist das vorgesehene Tempo)"
+  da: "Hvor hurtigt det svaj bevæger sig (100 % er det tempo, det er designet til)"
   fr: "La vitesse de ce mouvement (100 % est le rythme prévu)"
   ru: "Насколько быстро это покачивание (100% — задуманный темп)"
   uk: "Наскільки швидке це похитування (100% — задуманий темп)"
@@ -2366,6 +2703,7 @@ _version: 2
 "How long the view takes to come round to where the mouse or the stick turned it (off: at once, as OMSI)":
   nl: "Hoe lang het beeld erover doet om te draaien naar waar de muis of de stick het heen draaide (uit: meteen, zoals OMSI)"
   de: "Wie lange die Sicht braucht, um dorthin zu schwenken, wohin Maus oder Stick sie gedreht haben (aus: sofort, wie OMSI)"
+  da: "Hvor lang tid udsynet tager om at komme om til det sted, musen eller stikken drejede det (fra: med det samme, som i OMSI)"
   fr: "Le temps que met la vue à pivoter là où la souris ou le stick l'a tournée (désactivé : immédiatement, comme OMSI)"
   ru: "Сколько времени вид поворачивается туда, куда его повернули мышь или стик (выкл.: сразу, как в OMSI)"
   uk: "Скільки часу вигляд повертається туди, куди його повернули миша або стік (вимк.: одразу, як в OMSI)"
@@ -2373,6 +2711,7 @@ _version: 2
 "How much the view sways on its own when nothing is done to it - a head at rest is never quite still, most of it seen while the bus waits at a stop":
   nl: "Hoeveel het beeld uit zichzelf beweegt als je niets doet - een hoofd in rust is nooit helemaal stil, vooral te zien als de bus bij een halte wacht"
   de: "Wie stark sich die Sicht von selbst bewegt, wenn nichts getan wird - ein ruhender Kopf ist nie ganz still, vor allem zu sehen, wenn der Bus an einer Haltestelle wartet"
+  da: "Hvor meget udsynet svajer af sig selv, når intet gøres ved det - et hoved i hvile er aldrig helt stille, mest set, mens bussen venter ved et stoppested"
   fr: "À quel point la vue bouge d'elle-même quand on ne fait rien - une tête au repos n'est jamais tout à fait immobile, surtout visible quand le bus attend à un arrêt"
   ru: "Насколько вид сам покачивается, когда ничего не делаешь - голова в покое никогда не бывает совсем неподвижной, особенно заметно, когда автобус ждёт на остановке"
   uk: "Наскільки вигляд сам похитується, коли нічого не робиш - голова в спокої ніколи не буває зовсім нерухомою, особливо помітно, коли автобус чекає на зупинці"
@@ -2380,6 +2719,7 @@ _version: 2
 "Join via":
   nl: "Verbinden via"
   de: "Beitreten über"
+  da: "Tilmeld via"
   fr: "Rejoindre via"
   ru: "Подключиться через"
   uk: "Під'єднатися через"
@@ -2387,6 +2727,7 @@ _version: 2
 "Precision mouse zoom (FOV curve instead of the linear way)":
   nl: "Precieze muiszoom (FOV-curve in plaats van lineair)"
   de: "Präziser Maus-Zoom (FOV-Kurve statt linear)"
+  da: "Præcist musezoom (FOV-kurve i stedet for den lineære måde)"
   fr: "Zoom souris précis (courbe de FOV au lieu du mode linéaire)"
   ru: "Точный зум мышью (кривая FOV вместо линейного)"
   uk: "Точний зум мишею (крива FOV замість лінійного)"
@@ -2394,6 +2735,7 @@ _version: 2
 "Precision mouse zoom":
   nl: "Precieze muiszoom"
   de: "Präziser Maus-Zoom"
+  da: "Præcist musezoom"
   fr: "Zoom souris précis"
   ru: "Точный зум мышью"
   uk: "Точний зум мишею"
@@ -2401,6 +2743,7 @@ _version: 2
 "Remove the current AI cars from the road; random traffic will return automatically.":
   nl: "Haal de huidige AI-auto's van de weg; willekeurig verkeer komt vanzelf terug."
   de: "Entfernt die aktuellen KI-Autos von der Straße; zufälliger Verkehr kehrt von selbst zurück."
+  da: "Fjern de nuværende AI-biler fra vejen; tilfældig trafik vender automatisk tilbage."
   fr: "Retire les voitures IA actuelles de la route ; le trafic aléatoire reviendra automatiquement."
   ru: "Убрать текущие машины ИИ с дороги; случайный трафик вернётся сам."
   uk: "Прибрати поточні авто ШІ з дороги; випадковий трафік повернеться сам."
@@ -2408,6 +2751,7 @@ _version: 2
 "Remove this station":
   nl: "Deze zender weghalen"
   de: "Diesen Sender entfernen"
+  da: "Fjern denne station"
   fr: "Supprimer cette station"
   ru: "Удалить эту станцию"
   uk: "Видалити цю станцію"
@@ -2415,6 +2759,7 @@ _version: 2
 "Right stick turns the view":
   nl: "Rechterstick draait het beeld"
   de: "Rechter Stick dreht die Sicht"
+  da: "Højre stik drejer udsynet"
   fr: "Le stick droit tourne la vue"
   ru: "Правый стик поворачивает вид"
   uk: "Правий стік повертає вигляд"
@@ -2422,6 +2767,7 @@ _version: 2
 "Seat position":
   nl: "Zitpositie"
   de: "Sitzposition"
+  da: "Sædeposition"
   fr: "Position du siège"
   ru: "Положение сиденья"
   uk: "Положення сидіння"
@@ -2429,6 +2775,7 @@ _version: 2
 "Set the driver's neutral head tilt up or down, independent of the display setup":
   nl: "Stel de neutrale hoofdhelling van de chauffeur omhoog of omlaag in, los van de schermopstelling"
   de: "Die neutrale Kopfneigung des Fahrers nach oben oder unten einstellen, unabhängig von der Bildschirmeinrichtung"
+  da: "Indstil chaufførens neutrale hovedhældning op eller ned, uafhængigt af skærmopsætningen"
   fr: "Régler l'inclinaison neutre de la tête du conducteur vers le haut ou le bas, indépendamment des écrans"
   ru: "Задать нейтральный наклон головы водителя вверх или вниз, независимо от настройки экранов"
   uk: "Задати нейтральний нахил голови водія вгору або вниз, незалежно від налаштування екранів"
@@ -2436,6 +2783,7 @@ _version: 2
 "Smooth mouse steering (off: the wheel follows the cursor at once, as in OMSI)":
   nl: "Vloeiend sturen met de muis (uit: het stuur volgt de cursor meteen, zoals in OMSI)"
   de: "Sanftes Lenken mit der Maus (aus: das Lenkrad folgt dem Cursor sofort, wie in OMSI)"
+  da: "Blød musestyring (fra: rattet følger markøren med det samme, som i OMSI)"
   fr: "Direction souris adoucie (désactivé : le volant suit le curseur immédiatement, comme dans OMSI)"
   ru: "Плавное руление мышью (выкл.: руль сразу следует за курсором, как в OMSI)"
   uk: "Плавне кермування мишею (вимк.: кермо одразу йде за курсором, як в OMSI)"
@@ -2443,6 +2791,7 @@ _version: 2
 "Smooth mouse steering":
   nl: "Vloeiend sturen met de muis"
   de: "Sanftes Lenken mit der Maus"
+  da: "Blød musestyring"
   fr: "Direction souris adoucie"
   ru: "Плавное руление мышью"
   uk: "Плавне кермування мишею"
@@ -2450,6 +2799,7 @@ _version: 2
 "Smooth the mouse look":
   nl: "Rondkijken met de muis vloeiend maken"
   de: "Mausblick glätten"
+  da: "Udjævn musens udsyn"
   fr: "Adoucir le regard à la souris"
   ru: "Сглаживать обзор мышью"
   uk: "Згладжувати огляд мишею"
@@ -2457,6 +2807,7 @@ _version: 2
 "Sway pace":
   nl: "Tempo van de beweging"
   de: "Tempo der Bewegung"
+  da: "Svajtempo"
   fr: "Rythme du mouvement"
   ru: "Темп покачивания"
   uk: "Темп похитування"
@@ -2464,6 +2815,7 @@ _version: 2
 "Tell me about a new version during a session":
   nl: "Meld een nieuwe versie tijdens het spelen"
   de: "Während einer Sitzung über eine neue Version informieren"
+  da: "Fortæl mig om en ny version under en session"
   fr: "M'avertir d'une nouvelle version pendant une session"
   ru: "Сообщать о новой версии во время сеанса"
   uk: "Повідомляти про нову версію під час сеансу"
@@ -2471,6 +2823,7 @@ _version: 2
 "The chat's texts on top of the interface size (also Ctrl + the mouse wheel over the chat)":
   nl: "De teksten van de chat bovenop de grootte van de interface (ook Ctrl + muiswiel boven de chat)"
   de: "Die Chattexte zusätzlich zur Oberflächengröße (auch Strg + Mausrad über dem Chat)"
+  da: "Chattens tekster oven i grænsefladens størrelse (også Ctrl + musehjulet over chatten)"
   fr: "Les textes du chat en plus de la taille de l'interface (aussi Ctrl + molette au-dessus du chat)"
   ru: "Тексты чата поверх размера интерфейса (также Ctrl + колесо мыши над чатом)"
   uk: "Тексти чату понад розмір інтерфейсу (також Ctrl + коліщатко миші над чатом)"
@@ -2478,6 +2831,7 @@ _version: 2
 "The mouse zoom follows the FOV curve instead of OMSI's linear way":
   nl: "De muiszoom volgt de FOV-curve in plaats van de lineaire manier van OMSI"
   de: "Der Maus-Zoom folgt der FOV-Kurve statt OMSIs linearer Art"
+  da: "Musezoomet følger FOV-kurven i stedet for OMSI's lineære måde"
   fr: "Le zoom souris suit la courbe de FOV au lieu du mode linéaire d'OMSI"
   ru: "Зум мышью идёт по кривой FOV вместо линейного способа OMSI"
   uk: "Зум мишею йде кривою FOV замість лінійного способу OMSI"
@@ -2485,6 +2839,7 @@ _version: 2
 "The wheel eases after the cursor; off: it follows at once, as in OMSI":
   nl: "Het stuur volgt de cursor vloeiend; uit: het volgt meteen, zoals in OMSI"
   de: "Das Lenkrad folgt dem Cursor sanft; aus: es folgt sofort, wie in OMSI"
+  da: "Rattet glider efter markøren; fra: det følger med det samme, som i OMSI"
   fr: "Le volant suit le curseur en douceur ; désactivé : il suit immédiatement, comme dans OMSI"
   ru: "Руль плавно следует за курсором; выкл.: сразу, как в OMSI"
   uk: "Кермо плавно йде за курсором; вимк.: одразу, як в OMSI"
@@ -2492,6 +2847,7 @@ _version: 2
 "UDP needs the game's address (host or host:port), not a web link":
   nl: "UDP heeft het adres van het spel nodig (host of host:poort), geen weblink"
   de: "UDP braucht die Adresse des Spiels (Host oder Host:Port), keinen Weblink"
+  da: "UDP kræver spillets adresse (vært eller vært:port), ikke et weblink"
   fr: "UDP a besoin de l'adresse du jeu (hôte ou hôte:port), pas d'un lien web"
   ru: "Для UDP нужен адрес игры (хост или хост:порт), а не веб-ссылка"
   uk: "Для UDP потрібна адреса гри (хост або хост:порт), а не вебпосилання"
@@ -2499,6 +2855,7 @@ _version: 2
 "UDP":
   nl: "UDP"
   de: "UDP"
+  da: "UDP"
   fr: "UDP"
   ru: "UDP"
   uk: "UDP"
@@ -2506,6 +2863,7 @@ _version: 2
 "Vibration fade-out":
   nl: "Uitsterven van de trilling"
   de: "Ausklingen der Vibration"
+  da: "Udtoning af vibration"
   fr: "Atténuation de la vibration"
   ru: "Затухание вибрации"
   uk: "Згасання вібрації"
@@ -2513,6 +2871,7 @@ _version: 2
 "WebSocket":
   nl: "WebSocket"
   de: "WebSocket"
+  da: "WebSocket"
   fr: "WebSocket"
   ru: "WebSocket"
   uk: "WebSocket"
@@ -2520,6 +2879,7 @@ _version: 2
 "https://…":
   nl: "https://…"
   de: "https://…"
+  da: "https://…"
   fr: "https://…"
   ru: "https://…"
   uk: "https://…"
@@ -2527,6 +2887,7 @@ _version: 2
 "Add a vehicle event…":
   nl: "Een voertuiggebeurtenis toevoegen…"
   de: "Ein Fahrzeugereignis hinzufügen…"
+  da: "Tilføj en køretøjshændelse…"
   fr: "Ajouter un événement du véhicule…"
   ru: "Добавить событие транспорта…"
   uk: "Додати подію транспорту…"
@@ -2534,6 +2895,7 @@ _version: 2
 "Add event":
   nl: "Gebeurtenis toevoegen"
   de: "Ereignis hinzufügen"
+  da: "Tilføj hændelse"
   fr: "Ajouter l'événement"
   ru: "Добавить событие"
   uk: "Додати подію"
@@ -2541,6 +2903,7 @@ _version: 2
 "Assign a physical button":
   nl: "Een fysieke knop toewijzen"
   de: "Eine physische Taste zuweisen"
+  da: "Tildel en fysisk knap"
   fr: "Attribuer un bouton physique"
   ru: "Назначить физическую кнопку"
   uk: "Призначити фізичну кнопку"
@@ -2548,6 +2911,7 @@ _version: 2
 "Change driving, vehicle, game and camera key bindings":
   nl: "Toetsen voor rijden, voertuig, spel en camera aanpassen"
   de: "Tastenbelegung für Fahren, Fahrzeug, Spiel und Kamera ändern"
+  da: "Skift tastebindinger for kørsel, køretøj, spil og kamera"
   fr: "Modifier les touches de conduite, du véhicule, du jeu et de la caméra"
   ru: "Изменить клавиши вождения, транспорта, игры и камеры"
   uk: "Змінити клавіші керування, транспорту, гри та камери"
@@ -2555,6 +2919,7 @@ _version: 2
 "Choose a control supplied by the bus or its mods":
   nl: "Kies een bediening die de bus of zijn mods leveren"
   de: "Ein Bedienelement wählen, das der Bus oder seine Mods mitbringen"
+  da: "Vælg en styring, som bussen eller dens mods leverer"
   fr: "Choisir une commande fournie par le bus ou ses mods"
   ru: "Выберите элемент управления, который дают автобус или его моды"
   uk: "Виберіть елемент керування, який дають автобус або його моди"
@@ -2562,6 +2927,7 @@ _version: 2
 "Configure wheels, pedals, gamepads and force feedback":
   nl: "Stuurwielen, pedalen, gamepads en force feedback instellen"
   de: "Lenkräder, Pedale, Gamepads und Force Feedback einrichten"
+  da: "Indstil rat, pedaler, gamepads og force feedback"
   fr: "Configurer volants, pédaliers, manettes et retour de force"
   ru: "Настроить рули, педали, геймпады и обратную связь"
   uk: "Налаштувати кермо, педалі, геймпади та зворотний зв'язок"
@@ -2569,6 +2935,7 @@ _version: 2
 "Controls...":
   nl: "Besturing..."
   de: "Steuerung..."
+  da: "Styringer..."
   fr: "Commandes..."
   ru: "Управление..."
   uk: "Керування..."
@@ -2576,6 +2943,7 @@ _version: 2
 "Enter to change; Delete clears; Esc cancels":
   nl: "Enter om te wijzigen; Delete wist; Esc annuleert"
   de: "Enter zum Ändern; Entf löscht; Esc bricht ab"
+  da: "Enter for at ændre; Delete rydder; Esc annullerer"
   fr: "Entrée pour modifier ; Suppr efface ; Échap annule"
   ru: "Enter — изменить; Delete — очистить; Esc — отмена"
   uk: "Enter — змінити; Delete — очистити; Esc — скасувати"
@@ -2583,6 +2951,7 @@ _version: 2
 "Event added. Press the key you want to use (Escape cancels).":
   nl: "Gebeurtenis toegevoegd. Druk op de toets die je wilt gebruiken (Escape annuleert)."
   de: "Ereignis hinzugefügt. Drücke die gewünschte Taste (Escape bricht ab)."
+  da: "Hændelse tilføjet. Tryk på den tast, du vil bruge (Escape annullerer)."
   fr: "Événement ajouté. Appuyez sur la touche à utiliser (Échap annule)."
   ru: "Событие добавлено. Нажмите нужную клавишу (Escape — отмена)."
   uk: "Подію додано. Натисніть потрібну клавішу (Escape — скасувати)."
@@ -2590,6 +2959,7 @@ _version: 2
 "Stick steering smoothing":
   nl: "Vloeiend sturen met de stick"
   de: "Glättung der Stick-Lenkung"
+  da: "Udjævning af stiksstyring"
   fr: "Lissage de la direction au stick"
   ru: "Сглаживание руления стиком"
   uk: "Згладжування кермування стіком"
@@ -2597,6 +2967,7 @@ _version: 2
 "The trees' leaves bend and sway in the wind and its gusts; with no wind they stand still":
   nl: "De bladeren van de bomen buigen en wiegen mee met de wind en de windstoten; zonder wind staan ze stil"
   de: "Das Laub der Bäume biegt und wiegt sich im Wind und in Böen; ohne Wind steht es still"
+  da: "Træernes blade bøjer og svajer i vinden og dens vindstød; uden vind står de stille"
   fr: "Les feuilles des arbres plient et se balancent au vent et aux rafales ; sans vent, elles restent immobiles"
   ru: "Листва деревьев гнётся и качается на ветру и при порывах; без ветра она неподвижна"
   uk: "Листя дерев гнеться й гойдається на вітрі та від поривів; без вітру воно нерухоме"
@@ -2604,6 +2975,7 @@ _version: 2
 "Windy trees":
   nl: "Bomen in de wind"
   de: "Bäume im Wind"
+  da: "Blæsende træer"
   fr: "Arbres au vent"
   ru: "Деревья на ветру"
   uk: "Дерева на вітрі"
@@ -2611,6 +2983,7 @@ _version: 2
 "Stick steers like a wheel (a wheel seen as a gamepad)":
   nl: "Stick stuurt als een stuurwiel (een stuurwiel dat als gamepad wordt gezien)"
   de: "Stick lenkt wie ein Lenkrad (ein Lenkrad, das als Gamepad erkannt wird)"
+  da: "Stikken styrer som et rat (et rat set som en gamepad)"
   fr: "Le stick dirige comme un volant (un volant vu comme une manette)"
   ru: "Стик рулит как руль (руль, распознанный как геймпад)"
   uk: "Стік кермує як кермо (кермо, розпізнане як геймпад)"
@@ -2618,6 +2991,7 @@ _version: 2
 "Arrow keys switch the cameras with a wheel too (no glance)":
   nl: "Pijltjestoetsen wisselen ook met een stuurwiel van camera (niet rondkijken)"
   de: "Pfeiltasten wechseln auch mit Lenkrad die Kamera (kein Umsehen)"
+  da: "Piletasterne skifter også kamera med et rat (intet blik)"
   fr: "Les flèches changent aussi de caméra avec un volant (pas de coup d'œil)"
   ru: "Стрелки переключают камеры и с рулём (без взгляда в сторону)"
   uk: "Стрілки перемикають камери й із кермом (без погляду вбік)"
@@ -2625,6 +2999,7 @@ _version: 2
 "Esc resumes  ·  P pauses":
   nl: "Esc gaat verder  ·  P pauzeert"
   de: "Esc setzt fort  ·  P pausiert"
+  da: "Esc genoptager  ·  P pauser"
   fr: "Échap reprend  ·  P met en pause"
   ru: "Esc — продолжить  ·  P — пауза"
   uk: "Esc — продовжити  ·  P — пауза"
@@ -2632,6 +3007,7 @@ _version: 2
 "Mirror panels every frame":
   nl: "Spiegelpanelen elk beeld"
   de: "Spiegelpanels in jedem Bild"
+  da: "Spejlpaneler hvert billede"
   fr: "Panneaux de rétroviseur à chaque image"
   ru: "Панели зеркал каждый кадр"
   uk: "Панелі дзеркал кожен кадр"
@@ -2639,6 +3015,7 @@ _version: 2
 "Nothing found":
   nl: "Niets gevonden"
   de: "Nichts gefunden"
+  da: "Intet fundet"
   fr: "Aucun résultat"
   ru: "Ничего не найдено"
   uk: "Нічого не знайдено"
@@ -2646,6 +3023,7 @@ _version: 2
 "Arrives":
   nl: "Aankomst"
   de: "Ankunft"
+  da: "Ankommer"
   fr: "Arrivée"
   ru: "Прибытие"
   uk: "Прибуття"
@@ -2653,6 +3031,7 @@ _version: 2
 "The new launcher needs Microsoft WebView2":
   nl: "De nieuwe launcher heeft Microsoft WebView2 nodig"
   de: "Der neue Launcher braucht Microsoft WebView2"
+  da: "Den nye launcher kræver Microsoft WebView2"
   fr: "Le nouveau lanceur a besoin de Microsoft WebView2"
   ru: "Новому лаунчеру нужен Microsoft WebView2"
   uk: "Новому лаунчеру потрібен Microsoft WebView2"
@@ -2660,6 +3039,7 @@ _version: 2
 "The new launcher draws its window with Microsoft WebView2, which this Windows does not have. Install it now (a small installer from Microsoft, about a minute), or go on with this launcher.":
   nl: "De nieuwe launcher tekent zijn venster met Microsoft WebView2, dat deze Windows niet heeft. Installeer het nu (een klein installatieprogramma van Microsoft, ongeveer een minuut), of ga verder met deze launcher."
   de: "Der neue Launcher zeichnet sein Fenster mit Microsoft WebView2, das diesem Windows fehlt. Jetzt installieren (ein kleines Installationsprogramm von Microsoft, etwa eine Minute) oder mit diesem Launcher weitermachen."
+  da: "Den nye launcher tegner sit vindue med Microsoft WebView2, som denne Windows ikke har. Installér det nu (et lille installationsprogram fra Microsoft, cirka et minut), eller fortsæt med denne launcher."
   fr: "Le nouveau lanceur dessine sa fenêtre avec Microsoft WebView2, que ce Windows n'a pas. Installez-le maintenant (un petit programme d'installation de Microsoft, environ une minute), ou continuez avec ce lanceur."
   ru: "Новый лаунчер рисует окно с помощью Microsoft WebView2, а в этой Windows его нет. Установите его сейчас (небольшой установщик Microsoft, около минуты) или продолжайте в этом лаунчере."
   uk: "Новий лаунчер малює вікно за допомогою Microsoft WebView2, а в цій Windows його немає. Встановіть його зараз (невеликий інсталятор Microsoft, близько хвилини) або продовжуйте в цьому лаунчері."
@@ -2667,6 +3047,7 @@ _version: 2
 "Microsoft's installer is running: follow its window. The new launcher opens when it has finished.":
   nl: "Het installatieprogramma van Microsoft loopt: volg het venster ervan. De nieuwe launcher opent zodra het klaar is."
   de: "Das Installationsprogramm von Microsoft läuft: folgen Sie seinem Fenster. Der neue Launcher öffnet sich danach."
+  da: "Microsofts installationsprogram kører: følg dets vindue. Den nye launcher åbner, når det er færdigt."
   fr: "Le programme d'installation de Microsoft est en cours : suivez sa fenêtre. Le nouveau lanceur s'ouvre une fois qu'il a terminé."
   ru: "Идёт установка от Microsoft: следуйте её окну. Когда она закончится, откроется новый лаунчер."
   uk: "Триває встановлення від Microsoft: дотримуйтеся його вікна. Коли воно завершиться, відкриється новий лаунчер."
@@ -2674,6 +3055,7 @@ _version: 2
 "WebView2 could not be installed. Try again, or install it from Microsoft's website.":
   nl: "WebView2 kon niet worden geïnstalleerd. Probeer het opnieuw, of installeer het vanaf de website van Microsoft."
   de: "WebView2 konnte nicht installiert werden. Erneut versuchen oder von der Website von Microsoft installieren."
+  da: "WebView2 kunne ikke installeres. Prøv igen, eller installér det fra Microsofts hjemmeside."
   fr: "WebView2 n'a pas pu être installé. Réessayez, ou installez-le depuis le site de Microsoft."
   ru: "Не удалось установить WebView2. Попробуйте ещё раз или установите его с сайта Microsoft."
   uk: "Не вдалося встановити WebView2. Спробуйте ще раз або встановіть його з сайту Microsoft."
@@ -2681,6 +3063,7 @@ _version: 2
 "break":
   nl: "pauze"
   de: "Pause"
+  da: "pause"
   fr: "pause"
   ru: "перерыв"
   uk: "перерва"
@@ -2688,6 +3071,7 @@ _version: 2
 "line":
   nl: "lijn"
   de: "Linie"
+  da: "linje"
   fr: "ligne"
   ru: "линия"
   uk: "лінія"
@@ -2695,6 +3079,7 @@ _version: 2
 "route":
   nl: "route"
   de: "Route"
+  da: "rute"
   fr: "itinéraire"
   ru: "маршрут"
   uk: "маршрут"
@@ -2702,6 +3087,7 @@ _version: 2
 "destination":
   nl: "bestemming"
   de: "Ziel"
+  da: "destination"
   fr: "destination"
   ru: "направление"
   uk: "напрямок"
@@ -2709,6 +3095,7 @@ _version: 2
 "Click a trip to start the tour there":
   nl: "Klik op een rit om de omloop daar te beginnen"
   de: "Klicke auf eine Fahrt, um den Umlauf dort zu beginnen"
+  da: "Klik på en rejse for at starte turen dér"
   fr: "Cliquez sur un trajet pour commencer le service là"
   ru: "Нажмите на рейс, чтобы начать выход с него"
   uk: "Натисніть на рейс, щоб почати оборот з нього"
@@ -2716,6 +3103,7 @@ _version: 2
 "No route of the depot file for this trip":
   nl: "Geen route in het depotbestand voor deze rit"
   de: "Keine Route der Hof-Datei für diese Fahrt"
+  da: "Ingen rute i depotfilen til denne rejse"
   fr: "Aucun itinéraire du fichier de dépôt pour ce trajet"
   ru: "В файле депо нет маршрута для этого рейса"
   uk: "У файлі депо немає маршруту для цього рейсу"
@@ -2723,6 +3111,7 @@ _version: 2
 "The map of the route comes once the navigator has read the map":
   nl: "De kaart van de route verschijnt zodra de navigator de kaart heeft gelezen"
   de: "Die Karte der Route erscheint, sobald der Navigator die Karte gelesen hat"
+  da: "Kortet over ruten kommer, når navigatoren har læst kortet"
   fr: "La carte de l'itinéraire apparaît dès que le navigateur a lu la carte"
   ru: "Карта маршрута появится, когда навигатор прочитает карту"
   uk: "Карта маршруту з'явиться, коли навігатор прочитає карту"
@@ -2730,6 +3119,7 @@ _version: 2
 "planned %{time}":
   nl: "gepland %{time}"
   de: "geplant %{time}"
+  da: "planlagt %{time}"
   fr: "prévu %{time}"
   ru: "по плану %{time}"
   uk: "за планом %{time}"
@@ -2737,6 +3127,7 @@ _version: 2
 "expected %{time}":
   nl: "verwacht %{time}"
   de: "erwartet %{time}"
+  da: "forventet %{time}"
   fr: "estimé %{time}"
   ru: "ожидается %{time}"
   uk: "очікується %{time}"
@@ -2744,6 +3135,7 @@ _version: 2
 "sched. %{time}":
   nl: "gepl. %{time}"
   de: "Plan %{time}"
+  da: "plan. %{time}"
   fr: "prévu %{time}"
   ru: "план %{time}"
   uk: "план %{time}"
@@ -2751,6 +3143,7 @@ _version: 2
 "exp. %{time}":
   nl: "verw. %{time}"
   de: "erw. %{time}"
+  da: "forv. %{time}"
   fr: "est. %{time}"
   ru: "ожид. %{time}"
   uk: "очік. %{time}"
@@ -2758,6 +3151,7 @@ _version: 2
 "Snow builds up on the roads":
   nl: "Sneeuw hoopt zich op op de wegen"
   de: "Schnee sammelt sich auf den Straßen"
+  da: "Sne ophobes på vejene"
   fr: "La neige s'accumule sur les routes"
   ru: "Снег накапливается на дорогах"
   uk: "Сніг накопичується на дорогах"
@@ -2765,6 +3159,7 @@ _version: 2
 "While it snows the roads turn white bit by bit, with ruts, tyre tracks and snow on the roofs; it thaws when it is warm or rains. Off: the weather's snow on the road all at once, as in OMSI 2":
   nl: "Terwijl het sneeuwt worden de wegen beetje bij beetje wit, met sporen, bandensporen en sneeuw op de daken; het dooit als het warm is of regent. Uit: de sneeuw van het weer in één keer op de weg, zoals in OMSI 2"
   de: "Während es schneit, werden die Straßen nach und nach weiß, mit Spurrillen, Reifenspuren und Schnee auf den Dächern; es taut, wenn es warm ist oder regnet. Aus: der Schnee des Wetters auf einmal auf der Straße, wie in OMSI 2"
+  da: "Mens det sner, bliver vejene hvide lidt efter lidt, med hjulspor, dækspor og sne på tagene; det tør, når det er varmt eller regner. Fra: vejrets sne på vejen på én gang, som i OMSI 2"
   fr: "Quand il neige, les routes blanchissent peu à peu, avec des ornières, des traces de pneus et de la neige sur les toits ; elle fond quand il fait doux ou qu'il pleut. Désactivé : la neige de la météo d'un coup sur la route, comme dans OMSI 2"
   ru: "Пока идёт снег, дороги понемногу белеют, с колеями, следами шин и снегом на крышах; он тает в тепло или в дождь. Выкл.: снег погоды сразу на дороге, как в OMSI 2"
   uk: "Поки йде сніг, дороги потроху біліють, з коліями, слідами шин і снігом на дахах; він тане в тепло або в дощ. Вимк.: сніг погоди одразу на дорозі, як в OMSI 2"
@@ -2772,6 +3167,7 @@ _version: 2
 "Thunderstorms":
   nl: "Onweer"
   de: "Gewitter"
+  da: "Tordenvejr"
   fr: "Orages"
   ru: "Грозы"
   uk: "Грози"
@@ -2779,6 +3175,7 @@ _version: 2
 "When the weather has thunder: lightning lights the street and the clouds, strikes to the ground and thunder that follows at the speed of sound - the same flashes for every player in multiplayer. Off: no flashing light":
   nl: "Als het weer onweer heeft: bliksem verlicht de straat en de wolken, inslagen in de grond en donder die volgt met de snelheid van het geluid - dezelfde flitsen voor elke speler in multiplayer. Uit: geen flitsend licht"
   de: "Wenn das Wetter Gewitter hat: Blitze erhellen die Straße und die Wolken, Einschläge in den Boden und Donner, der mit Schallgeschwindigkeit folgt - dieselben Blitze für jeden Spieler im Mehrspielermodus. Aus: kein blitzendes Licht"
+  da: "Når vejret har torden: lyn oplyser gaden og skyerne, slår ned i jorden, og tordenen følger med lydens hastighed - de samme lyn for alle spillere i multiplayer. Fra: intet blinkende lys"
   fr: "Quand la météo a de l'orage : les éclairs illuminent la rue et les nuages, des coups de foudre au sol et le tonnerre qui suit à la vitesse du son - les mêmes éclairs pour chaque joueur en multijoueur. Désactivé : pas de lumière clignotante"
   ru: "Когда в погоде гроза: молнии освещают улицу и облака, удары в землю и гром, идущий со скоростью звука, - одни и те же вспышки для каждого игрока в мультиплеере. Выкл.: без вспышек света"
   uk: "Коли в погоді гроза: блискавки освітлюють вулицю й хмари, удари в землю й грім, що йде зі швидкістю звуку, - ті самі спалахи для кожного гравця в мультиплеєрі. Вимк.: без спалахів світла"
@@ -2786,6 +3183,7 @@ _version: 2
 "Thunder":
   nl: "Onweer"
   de: "Gewitter"
+  da: "Torden"
   fr: "Orage"
   ru: "Гроза"
   uk: "Гроза"
@@ -2793,6 +3191,7 @@ _version: 2
 "Thunderstorm":
   nl: "Onweersbui"
   de: "Gewitter"
+  da: "Tordenvejr"
   fr: "Orage"
   ru: "Гроза"
   uk: "Гроза"
@@ -2800,6 +3199,7 @@ _version: 2
 "Dry thunderstorm":
   nl: "Droog onweer"
   de: "Trockengewitter"
+  da: "Tørt tordenvejr"
   fr: "Orage sec"
   ru: "Сухая гроза"
   uk: "Суха гроза"
@@ -2807,6 +3207,7 @@ _version: 2
 "Heavy thunderstorm":
   nl: "Zware onweersbui"
   de: "Schweres Gewitter"
+  da: "Kraftigt tordenvejr"
   fr: "Violent orage"
   ru: "Сильная гроза"
   uk: "Сильна гроза"
@@ -2814,6 +3215,7 @@ _version: 2
 "In the vicinity":
   nl: "In de buurt"
   de: "In der Umgebung"
+  da: "I nærheden"
   fr: "À proximité"
   ru: "Поблизости"
   uk: "Поблизу"
@@ -2821,6 +3223,7 @@ _version: 2
 "Lightning and thunder over a heavy shower":
   nl: "Bliksem en donder boven een zware bui"
   de: "Blitz und Donner über einem heftigen Schauer"
+  da: "Lyn og torden over en kraftig byge"
   fr: "Éclairs et tonnerre sur une forte averse"
   ru: "Молнии и гром над сильным ливнем"
   uk: "Блискавки й грім над сильною зливою"
@@ -2828,6 +3231,7 @@ _version: 2
 "Lightning and thunder without rain":
   nl: "Bliksem en donder zonder regen"
   de: "Blitz und Donner ohne Regen"
+  da: "Lyn og torden uden regn"
   fr: "Éclairs et tonnerre sans pluie"
   ru: "Молнии и гром без дождя"
   uk: "Блискавки й грім без дощу"
@@ -2835,6 +3239,7 @@ _version: 2
 "Lightning and thunder: none, a storm passing in the distance, a thunderstorm or a heavy one - with rain or without.":
   nl: "Bliksem en donder: geen, een onweer dat in de verte voorbijtrekt, een onweersbui of een zware - met of zonder regen."
   de: "Blitz und Donner: keine, ein Gewitter, das in der Ferne vorüberzieht, ein Gewitter oder ein schweres - mit oder ohne Regen."
+  da: "Lyn og torden: ingen, en storm, der passerer i det fjerne, et tordenvejr eller et kraftigt - med regn eller uden."
   fr: "Éclairs et tonnerre : aucun, un orage qui passe au loin, un orage ou un violent orage - avec ou sans pluie."
   ru: "Молнии и гром: нет, гроза проходит вдали, гроза или сильная гроза - с дождём или без."
   uk: "Блискавки й грім: немає, гроза проходить вдалині, гроза або сильна гроза - з дощем чи без."
@@ -2842,6 +3247,7 @@ _version: 2
 "Passengers' wish to sit":
   nl: "Zitwens van de passagiers"
   de: "Sitzwunsch der Fahrgäste"
+  da: "Passagerernes ønske om at sidde"
   fr: "Envie des passagers de s'asseoir"
   ru: "Желание пассажиров сесть"
   uk: "Бажання пасажирів сісти"
@@ -2849,6 +3255,7 @@ _version: 2
 "Off (a free place at random)":
   nl: "Uit (een willekeurige vrije plaats)"
   de: "Aus (ein freier Platz nach Zufall)"
+  da: "Fra (en tilfældig ledig plads)"
   fr: "Désactivé (une place libre au hasard)"
   ru: "Выкл. (свободное место наугад)"
   uk: "Вимк. (вільне місце навмання)"
@@ -2856,6 +3263,7 @@ _version: 2
 "Little":
   nl: "Weinig"
   de: "Wenig"
+  da: "Lidt"
   fr: "Peu"
   ru: "Мало"
   uk: "Мало"
@@ -2863,6 +3271,7 @@ _version: 2
 "Much":
   nl: "Veel"
   de: "Viel"
+  da: "Meget"
   fr: "Beaucoup"
   ru: "Много"
   uk: "Багато"
@@ -2870,6 +3279,7 @@ _version: 2
 "Very much":
   nl: "Heel veel"
   de: "Sehr viel"
+  da: "Rigtig meget"
   fr: "Énormément"
   ru: "Очень много"
   uk: "Дуже багато"
@@ -2877,6 +3287,7 @@ _version: 2
 "How passengers choose their place: window seats, the seat across the aisle from the driver for the elderly, groups who sit together, and a seat that comes free for somebody standing. Off: a free place at random, as before":
   nl: "Hoe passagiers hun plaats kiezen: plaatsen bij het raam, de stoel aan de overkant van het gangpad naast de chauffeur voor ouderen, groepen die samen zitten, en een stoel die vrijkomt voor wie staat. Uit: een willekeurige vrije plaats, zoals voorheen"
   de: "Wie Fahrgäste ihren Platz wählen: Fensterplätze, der Platz auf der anderen Seite des Gangs neben dem Fahrer für Ältere, Gruppen, die zusammen sitzen, und ein frei werdender Sitz für jemanden, der steht. Aus: ein freier Platz nach Zufall, wie bisher"
+  da: "Hvordan passagererne vælger deres plads: vinduespladser, sædet over for chaufføren til ældre, grupper, der sidder sammen, og en plads, der bliver ledig til en, der står. Fra: en tilfældig ledig plads, som før"
   fr: "Comment les passagers choisissent leur place : les places côté fenêtre, le siège de l'autre côté de l'allée à côté du conducteur pour les personnes âgées, les groupes assis ensemble, et un siège qui se libère pour qui est debout. Désactivé : une place libre au hasard, comme avant"
   ru: "Как пассажиры выбирают место: у окна, место через проход рядом с водителем для пожилых, группы садятся вместе, а освободившееся место занимает тот, кто стоит. Выкл.: свободное место наугад, как раньше"
   uk: "Як пасажири обирають місце: біля вікна, місце через прохід поруч із водієм для літніх, групи сідають разом, а звільнене місце займає той, хто стоїть. Вимк.: вільне місце навмання, як раніше"
@@ -2884,6 +3295,7 @@ _version: 2
 "Passengers running for the bus":
   nl: "Passagiers die naar de bus rennen"
   de: "Fahrgäste, die zum Bus rennen"
+  da: "Passagerer, der løber efter bussen"
   fr: "Passagers qui courent après le bus"
   ru: "Пассажиры, бегущие к автобусу"
   uk: "Пасажири, що біжать до автобуса"
@@ -2891,6 +3303,7 @@ _version: 2
 "Now and then":
   nl: "Af en toe"
   de: "Ab und zu"
+  da: "Nu og da"
   fr: "De temps en temps"
   ru: "Иногда"
   uk: "Іноді"
@@ -2898,6 +3311,7 @@ _version: 2
 "Often":
   nl: "Vaak"
   de: "Oft"
+  da: "Ofte"
   fr: "Souvent"
   ru: "Часто"
   uk: "Часто"
@@ -2905,6 +3319,7 @@ _version: 2
 "Very often":
   nl: "Heel vaak"
   de: "Sehr oft"
+  da: "Meget ofte"
   fr: "Très souvent"
   ru: "Очень часто"
   uk: "Дуже часто"
@@ -2912,6 +3327,7 @@ _version: 2
 "Now and then, with a player's bus standing at a stop near you, somebody late runs for it":
   nl: "Af en toe, als de bus van een speler bij een halte in je buurt staat, rent iemand die laat is ernaartoe"
   de: "Ab und zu, wenn der Bus eines Spielers an einer Haltestelle in deiner Nähe steht, rennt jemand, der spät dran ist, zu ihm"
+  da: "Nu og da løber en forsinket efter en spillers bus, der holder ved et stoppested nær dig"
   fr: "De temps en temps, quand le bus d'un joueur est à un arrêt près de vous, quelqu'un en retard court pour l'attraper"
   ru: "Иногда, когда автобус игрока стоит на остановке рядом с вами, к нему бежит опоздавший"
   uk: "Іноді, коли автобус гравця стоїть на зупинці поруч із вами, до нього біжить той, хто запізнюється"
@@ -2919,6 +3335,7 @@ _version: 2
 "Entry points on the city map":
   nl: "Instappunten op de stadskaart"
   de: "Einsetzpunkte auf dem Stadtplan"
+  da: "Indgangspunkter på bykortet"
   fr: "Points d'entrée sur le plan de la ville"
   ru: "Точки входа на карте города"
   uk: "Точки входу на мапі міста"
@@ -2926,6 +3343,7 @@ _version: 2
 "Dots and names":
   nl: "Stippen en namen"
   de: "Punkte und Namen"
+  da: "Prikker og navne"
   fr: "Points et noms"
   ru: "Точки и названия"
   uk: "Точки й назви"
@@ -2933,6 +3351,7 @@ _version: 2
 "Dots only":
   nl: "Alleen stippen"
   de: "Nur Punkte"
+  da: "Kun prikker"
   fr: "Points seulement"
   ru: "Только точки"
   uk: "Лише точки"
@@ -2940,6 +3359,7 @@ _version: 2
 "The map's entry points as orange dots with their names (a click sets a pin there), only the dots, or none":
   nl: "De instappunten van de kaart als oranje stippen met hun naam (een klik zet er een speld), alleen de stippen, of geen"
   de: "Die Einsetzpunkte der Karte als orange Punkte mit ihrem Namen (ein Klick setzt dort eine Markierung), nur die Punkte oder keine"
+  da: "Kortets indgangspunkter som orange prikker med deres navne (et klik sætter en nål dér), kun prikkerne eller ingen"
   fr: "Les points d'entrée de la carte en points orange avec leur nom (un clic y pose une épingle), seulement les points, ou aucun"
   ru: "Точки входа карты оранжевыми точками с названиями (щелчок ставит там метку), только точки или ничего"
   uk: "Точки входу мапи помаранчевими точками з назвами (клацання ставить там мітку), лише точки або нічого"
@@ -2947,6 +3367,7 @@ _version: 2
 "Passengers wave after a bus that leaves them":
   nl: "Passagiers zwaaien een bus na die hen laat staan"
   de: "Fahrgäste winken einem Bus nach, der sie stehen lässt"
+  da: "Passagerer vinker efter en bus, der forlader dem"
   fr: "Les passagers font signe au bus qui les laisse sur le quai"
   ru: "Пассажиры машут вслед автобусу, который их не взял"
   uk: "Пасажири махають услід автобусу, який їх не взяв"
@@ -2954,6 +3375,7 @@ _version: 2
 "With natural animations: those your bus drives past at their stop, or leaves there, wave after it - and the company counts them as left behind":
   nl: "Met natuurlijke animaties: wie je bus bij de halte voorbijrijdt of daar laat staan, zwaait hem na - en het bedrijf telt ze als achtergelaten"
   de: "Mit natürlichen Animationen: Wen dein Bus an der Haltestelle vorbeifährt oder dort stehen lässt, winkt ihm nach - und das Unternehmen zählt sie als zurückgelassen"
+  da: "Med naturlige animationer: de, som din bus kører forbi ved deres stoppested eller forlader dér, vinker efter den - og selskabet tæller dem som efterladt"
   fr: "Avec les animations naturelles : ceux que votre bus dépasse à leur arrêt, ou y laisse, lui font signe - et l'entreprise les compte comme laissés sur le quai"
   ru: "С естественной анимацией: те, мимо кого ваш автобус проехал на остановке или кого там оставил, машут ему вслед - и компания считает их оставленными"
   uk: "З природною анімацією: ті, повз кого ваш автобус проїхав на зупинці або кого там залишив, махають йому вслід - і компанія рахує їх залишеними"
@@ -2961,6 +3383,7 @@ _version: 2
 "Passengers signal to a coming bus":
   nl: "Passagiers geven een teken aan een naderende bus"
   de: "Fahrgäste geben einem kommenden Bus ein Zeichen"
+  da: "Passagerer giver tegn til en bus, der kommer"
   fr: "Les passagers font signe au bus qui arrive"
   ru: "Пассажиры подают знак подъезжающему автобусу"
   uk: "Пасажири подають знак автобусу, що під'їжджає"
@@ -2968,6 +3391,7 @@ _version: 2
 "Passengers wave to the bus":
   nl: "Passagiers zwaaien naar de bus"
   de: "Fahrgäste winken dem Bus"
+  da: "Passagerer vinker til bussen"
   fr: "Les passagers saluent le bus de la main"
   ru: "Пассажиры машут автобусу"
   uk: "Пасажири махають автобусу"
@@ -2975,6 +3399,7 @@ _version: 2
 "Passengers react to a full bus":
   nl: "Passagiers reageren op een volle bus"
   de: "Fahrgäste reagieren auf einen vollen Bus"
+  da: "Passagerer reagerer på en fuld bus"
   fr: "Les passagers réagissent à un bus plein"
   ru: "Пассажиры реагируют на полный автобус"
   uk: "Пасажири реагують на повний автобус"
@@ -2982,6 +3407,7 @@ _version: 2
 "Passengers' phone lights in the dark":
   nl: "Telefoonlampjes van passagiers in het donker"
   de: "Handylichter der Fahrgäste im Dunkeln"
+  da: "Passagerernes telefonlys i mørke"
   fr: "Lampes de téléphone des passagers dans le noir"
   ru: "Фонарики телефонов пассажиров в темноте"
   uk: "Ліхтарики телефонів пасажирів у темряві"
@@ -2989,6 +3415,7 @@ _version: 2
 "With natural animations: how many of those waiting stay at their place and hold an arm out to the street as a bus that takes them comes, till it stands. The others step up to where it will stand, as in OMSI":
   nl: "Met natuurlijke animaties: hoeveel wachtenden op hun plek blijven en een arm naar de straat uitsteken als er een bus komt die hen meeneemt, tot hij stilstaat. De anderen lopen naar waar hij zal stoppen, zoals in OMSI"
   de: "Mit natürlichen Animationen: Wie viele der Wartenden an ihrem Platz bleiben und einen Arm zur Straße ausstrecken, wenn ein Bus kommt, der sie mitnimmt, bis er steht. Die anderen gehen dorthin, wo er halten wird, wie in OMSI"
+  da: "Med naturlige animationer: hvor mange af dem, der venter, bliver stående på deres plads og rækker en arm ud mod gaden, når en bus, der tager dem, kommer, til den standser. De andre træder frem til det sted, hvor den kommer til at stå, som i OMSI"
   fr: "Avec les animations naturelles : combien de ceux qui attendent restent à leur place et tendent un bras vers la rue quand arrive un bus qui les prend, jusqu'à ce qu'il s'arrête. Les autres s'avancent là où il s'arrêtera, comme dans OMSI"
   ru: "С естественной анимацией: сколько ожидающих остаются на месте и вытягивают руку к дороге, когда подъезжает их автобус, пока он не остановится. Остальные подходят туда, где он остановится, как в OMSI"
   uk: "З природною анімацією: скільки тих, хто чекає, залишаються на місці й простягають руку до дороги, коли під'їжджає їхній автобус, доки він не зупиниться. Інші підходять туди, де він зупиниться, як в OMSI"
@@ -2996,6 +3423,7 @@ _version: 2
 "With natural animations: how many wave an arm up high - waiting at the stop as a bus that takes them comes, on their way to the stop or running for it, and after a bus that leaves them (they are counted as left behind all the same)":
   nl: "Met natuurlijke animaties: hoeveel er met een arm hoog zwaaien - wachtend bij de halte als er een bus komt die hen meeneemt, op weg naar de halte of rennend ernaartoe, en een bus na die hen laat staan (ze tellen hoe dan ook als achtergelaten)"
   de: "Mit natürlichen Animationen: Wie viele mit erhobenem Arm winken - wartend an der Haltestelle, wenn ein Bus kommt, der sie mitnimmt, auf dem Weg zur Haltestelle oder im Laufschritt, und einem Bus nach, der sie stehen lässt (als zurückgelassen gezählt werden sie so oder so)"
+  da: "Med naturlige animationer: hvor mange der vinker med en arm højt - mens de venter ved stoppestedet, når en bus, der tager dem, kommer, på vej til stoppestedet eller løbende efter den, og efter en bus, der forlader dem (de tælles alligevel som efterladt)"
   fr: "Avec les animations naturelles : combien font signe le bras levé - en attendant à l'arrêt quand arrive un bus qui les prend, en allant vers l'arrêt ou en courant, et après un bus qui les laisse (ils sont comptés comme laissés sur le quai dans tous les cas)"
   ru: "С естественной анимацией: сколько пассажиров машут поднятой рукой - ожидая на остановке подъезжающий автобус, по пути к остановке или на бегу, и вслед автобусу, который их не взял (оставленными их считают в любом случае)"
   uk: "З природною анімацією: скільки пасажирів махають піднятою рукою - чекаючи на зупинці автобус, що під'їжджає, дорогою до зупинки чи на бігу, і вслід автобусу, який їх не взяв (залишеними їх рахують у будь-якому разі)"
@@ -3003,6 +3431,7 @@ _version: 2
 "With natural animations: how many of those who would signal or wave glance at a full bus instead":
   nl: "Met natuurlijke animaties: hoeveel van wie een teken zou geven of zwaaien in plaats daarvan een blik werpt op een volle bus"
   de: "Mit natürlichen Animationen: Wie viele von denen, die ein Zeichen geben oder winken würden, stattdessen einem vollen Bus nachschauen"
+  da: "Med naturlige animationer: hvor mange af dem, der ville give tegn eller vinke, i stedet kigger på en fuld bus"
   fr: "Avec les animations naturelles : combien de ceux qui feraient signe jettent plutôt un regard au bus plein"
   ru: "С естественной анимацией: сколько из тех, кто подал бы знак или помахал, вместо этого лишь смотрят на полный автобус"
   uk: "З природною анімацією: скільки з тих, хто подав би знак чи помахав, натомість лише дивляться на повний автобус"
@@ -3010,6 +3439,7 @@ _version: 2
 "With natural animations: how many of those who signal or wave hold up their phone with its light on when it is dark":
   nl: "Met natuurlijke animaties: hoeveel van wie een teken geeft of zwaait in het donker hun telefoon met het lampje aan omhooghoudt"
   de: "Mit natürlichen Animationen: Wie viele von denen, die ein Zeichen geben oder winken, im Dunkeln ihr Handy mit eingeschaltetem Licht hochhalten"
+  da: "Med naturlige animationer: hvor mange af dem, der giver tegn eller vinker, holder deres telefon op med lyset tændt, når det er mørkt"
   fr: "Avec les animations naturelles : combien de ceux qui font signe lèvent leur téléphone, lampe allumée, quand il fait nuit"
   ru: "С естественной анимацией: сколько из тех, кто подаёт знак или машет, в темноте поднимают телефон с включённым фонариком"
   uk: "З природною анімацією: скільки з тих, хто подає знак чи махає, у темряві піднімають телефон з увімкненим ліхтариком"
@@ -3017,6 +3447,7 @@ _version: 2
 "Every time (100%)":
   nl: "Altijd (100%)"
   de: "Jedes Mal (100%)"
+  da: "Hver gang (100 %)"
   fr: "À chaque fois (100%)"
   ru: "Каждый раз (100%)"
   uk: "Щоразу (100%)"
@@ -3024,6 +3455,7 @@ _version: 2
 "Sometimes (30%)":
   nl: "Soms (30%)"
   de: "Manchmal (30%)"
+  da: "Nogle gange (30 %)"
   fr: "Parfois (30%)"
   ru: "Иногда (30%)"
   uk: "Іноді (30%)"
@@ -3031,6 +3463,7 @@ _version: 2
 "Rarely (10%)":
   nl: "Zelden (10%)"
   de: "Selten (10%)"
+  da: "Sjældent (10 %)"
   fr: "Rarement (10%)"
   ru: "Редко (10%)"
   uk: "Рідко (10%)"
@@ -3038,6 +3471,7 @@ _version: 2
 "AI bus drivers greet you":
   nl: "Buschauffeurs van de AI groeten je"
   de: "KI-Busfahrer grüßen dich"
+  da: "AI-buschauffører hilser på dig"
   fr: "Les chauffeurs de bus de l'IA te saluent"
   ru: "Водители автобусов ИИ приветствуют тебя"
   uk: "Водії автобусів ШІ вітають тебе"
@@ -3045,6 +3479,7 @@ _version: 2
 "How many of the timetable buses' drivers you meet flash their main beam at you - now and then a short toot":
   nl: "Hoeveel chauffeurs van de dienstregelingbussen die je tegenkomt met hun grootlicht naar je knipperen - af en toe een kort toetertje"
   de: "Wie viele Fahrer der Fahrplanbusse, denen du begegnest, dir mit dem Fernlicht zublinken - ab und zu ein kurzes Hupen"
+  da: "Hvor mange af køreplansbussernes chauffører, du møder, blinker med fjernlyset til dig - nu og da et kort dyt"
   fr: "Combien de chauffeurs des bus de ligne que tu croises te font un appel de phares - de temps en temps un petit coup de klaxon"
   ru: "Сколько водителей рейсовых автобусов при встрече мигнут тебе дальним светом - иногда коротко посигналят"
   uk: "Скільки водіїв рейсових автобусів при зустрічі блимнуть тобі далеким світлом - іноді коротко посигналять"
@@ -3052,6 +3487,7 @@ _version: 2
 "Chrono events":
   nl: "Chrono-gebeurtenissen"
   de: "Chrono-Ereignisse"
+  da: "Kronobegivenheder"
   fr: "Événements chrono"
   ru: "Хроно-события"
   uk: "Хроно-події"
@@ -3059,6 +3495,7 @@ _version: 2
 "from %{date}":
   nl: "vanaf %{date}"
   de: "ab %{date}"
+  da: "fra %{date}"
   fr: "à partir du %{date}"
   ru: "с %{date}"
   uk: "з %{date}"
@@ -3066,6 +3503,7 @@ _version: 2
 "until %{date}":
   nl: "tot %{date}"
   de: "bis %{date}"
+  da: "til %{date}"
   fr: "jusqu'au %{date}"
   ru: "до %{date}"
   uk: "до %{date}"
@@ -3073,6 +3511,7 @@ _version: 2
 "Settings → Gameplay → Chrono events turns it off.":
   nl: "Instellingen → Spel → Chrono-gebeurtenissen zet dit uit."
   de: "Einstellungen → Spiel → Chrono-Ereignisse schaltet das ab."
+  da: "Indstillinger → Gameplay → Kronobegivenheder slår det fra."
   fr: "Paramètres → Jeu → Événements chrono le désactive."
   ru: "Отключается в Настройки → Игра → Хроно-события."
   uk: "Вимикається в Налаштування → Гра → Хроно-події."
@@ -3080,6 +3519,7 @@ _version: 2
 "The map's chrono events in force on the day (a match day, a fair, a holiday): their name, dates and what they say, at the start and when one comes into force at midnight":
   nl: "De chrono-gebeurtenissen van de kaart die die dag gelden (een wedstrijddag, een beurs, een feestdag): hun naam, data en wat ze zeggen, bij de start en wanneer er een om middernacht ingaat"
   de: "Die Chrono-Ereignisse der Karte, die an dem Tag gelten (ein Spieltag, eine Messe, ein Feiertag): ihr Name, ihre Daten und was sie sagen, beim Start und wenn eines um Mitternacht beginnt"
+  da: "Kortets kronobegivenheder, der gælder på dagen (en kampdag, et marked, en helligdag): deres navn, datoer og hvad de siger, ved starten og når en træder i kraft ved midnat"
   fr: "Les événements chrono de la carte en vigueur ce jour-là (un jour de match, un salon, un jour férié) : leur nom, leurs dates et ce qu'ils disent, au départ et quand l'un entre en vigueur à minuit"
   ru: "Хроно-события карты, действующие в этот день (день матча, ярмарка, праздник): их название, даты и описание — при старте и когда событие начинается в полночь"
   uk: "Хроно-події мапи, що діють цього дня (день матчу, ярмарок, свято): їхня назва, дати й опис — під час старту й коли подія починається опівночі"
@@ -3088,6 +3528,7 @@ _version: 2
 "Condensation on the windows":
   nl: "Condens op de ruiten"
   de: "Beschlag auf den Scheiben"
+  da: "Kondens på vinduerne"
   fr: "Buée sur les vitres"
   ru: "Запотевание стёкол"
   uk: "Запотівання вікон"
@@ -3095,6 +3536,7 @@ _version: 2
 "Faint":
   nl: "Licht"
   de: "Leicht"
+  da: "Svag"
   fr: "Léger"
   ru: "Слабо"
   uk: "Слабко"
@@ -3102,6 +3544,7 @@ _version: 2
 "Your bus's windows mist up from the passengers' breath when it is cool outside: Realistic as it would be, Faint a light haze at most, Off clear glass":
   nl: "De ruiten van je bus beslaan door de adem van de passagiers als het buiten koel is: Realistisch zoals het zou zijn, Licht hooguit een lichte waas, Uit heldere ruiten"
   de: "Die Scheiben deines Busses beschlagen vom Atem der Fahrgäste, wenn es draußen kühl ist: Realistisch so, wie es wäre, Leicht höchstens ein leichter Schleier, Aus klare Scheiben"
+  da: "Din buss vinduer dugger af passagerernes ånde, når det er køligt udenfor: Realistisk, som det ville være, Svag højst en let dis, Fra klart glas"
   fr: "Les vitres de ton bus s'embuent avec la respiration des passagers quand il fait frais dehors : Réaliste comme ce serait le cas, Léger tout au plus un léger voile, Désactivé des vitres claires"
   ru: "Стёкла твоего автобуса запотевают от дыхания пассажиров, когда снаружи прохладно: Реалистично — как было бы на самом деле, Слабо — не больше лёгкой дымки, Выкл. — чистые стёкла"
   uk: "Вікна твого автобуса запотівають від дихання пасажирів, коли надворі прохолодно: Реалістично — як було б насправді, Слабко — щонайбільше легкий серпанок, Вимк. — чисті вікна"
@@ -3110,6 +3553,7 @@ _version: 2
 "Speed cameras":
   nl: "Flitspalen"
   de: "Blitzer"
+  da: "Fartkameraer"
   fr: "Radars"
   ru: "Камеры скорости"
   uk: "Камери швидкості"
@@ -3117,6 +3561,7 @@ _version: 2
 "Visible":
   nl: "Zichtbaar"
   de: "Sichtbar"
+  da: "Synlige"
   fr: "Visibles"
   ru: "Видимые"
   uk: "Видимі"
@@ -3124,6 +3569,7 @@ _version: 2
 "Invisible":
   nl: "Onzichtbaar"
   de: "Unsichtbar"
+  da: "Usynlige"
   fr: "Invisibles"
   ru: "Невидимые"
   uk: "Невидимі"
@@ -3131,6 +3577,7 @@ _version: 2
 "Speed cameras by the road, red-light cameras at some traffic lights and speed displays in town, with the models of the add-ons you have installed: Visible they stand there and flash, Invisible they measure unseen, Off there are none and no speeding fines":
   nl: "Flitspalen langs de weg, roodlichtcamera's bij sommige verkeerslichten en snelheidsdisplays in de bebouwde kom, met de modellen van de add-ons die je hebt geïnstalleerd: Zichtbaar staan ze er en flitsen ze, Onzichtbaar meten ze ongezien, Uit zijn er geen en ook geen boetes voor te hard rijden"
   de: "Blitzer am Straßenrand, Rotlichtblitzer an manchen Ampeln und Geschwindigkeitsanzeigen innerorts, mit den Modellen der Add-ons, die du installiert hast: Sichtbar stehen sie dort und blitzen, Unsichtbar messen sie ungesehen, Aus gibt es keine und keine Bußgelder für zu schnelles Fahren"
+  da: "Fartkameraer ved vejen, rødlyskameraer ved nogle lyskryds og fartdisplays i byen, med modellerne fra de tilføjelser, du har installeret: Synlige står de der og blitzer, Usynlige måler de uset, Fra er der ingen og ingen fartbøder"
   fr: "Des radars au bord de la route, des radars de feu rouge à certains feux et des afficheurs de vitesse en ville, avec les modèles des add-ons que tu as installés : Visibles ils sont là et flashent, Invisibles ils mesurent sans être vus, Désactivé il n'y en a pas et pas d'amendes pour excès de vitesse"
   ru: "Камеры скорости у дороги, камеры на некоторых светофорах и табло скорости в городе — с моделями установленных у тебя дополнений: Видимые — они стоят у дороги и вспыхивают, Невидимые — измеряют незаметно, Выкл. — их нет и нет штрафов за превышение скорости"
   uk: "Камери швидкості біля дороги, камери на деяких світлофорах і табло швидкості в місті — з моделями встановлених у тебе доповнень: Видимі — вони стоять біля дороги й спалахують, Невидимі — вимірюють непомітно, Вимк. — їх немає й немає штрафів за перевищення швидкості"
@@ -3138,6 +3585,7 @@ _version: 2
 "Some speed cameras are not shown - these add-ons are not installed in your OMSI folder: %{addons}":
   nl: "Sommige flitspalen worden niet getoond - deze add-ons zijn niet in je OMSI-map geïnstalleerd: %{addons}"
   de: "Einige Blitzer werden nicht angezeigt - diese Add-ons sind nicht in deinem OMSI-Ordner installiert: %{addons}"
+  da: "Nogle fartkameraer vises ikke - disse tilføjelser er ikke installeret i din OMSI-mappe: %{addons}"
   fr: "Certains radars ne sont pas affichés - ces add-ons ne sont pas installés dans ton dossier OMSI : %{addons}"
   ru: "Некоторые камеры скорости не показаны — эти дополнения не установлены в твоей папке OMSI: %{addons}"
   uk: "Деякі камери швидкості не показано — ці доповнення не встановлено у твоїй теці OMSI: %{addons}"
