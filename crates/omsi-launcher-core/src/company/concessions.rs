@@ -131,10 +131,21 @@ pub struct Week {
     /// Saturday and on Sunday.
     #[serde(default, skip_serializing_if = "no_pax")]
     pub pax: [f64; 3],
+    /// (NexiconDK, 3 November 2026) Its departures a week the game expects full in the bus its
+    /// tour asks for (`doubling::is_full` at the default share), and their timetabled minutes: the
+    /// doubling the authority would order (`doubling`).
+    #[serde(default, skip_serializing_if = "is_nought")]
+    pub full: f64,
+    #[serde(default, skip_serializing_if = "is_nought")]
+    pub full_minutes: f64,
 }
 
 fn no_pax(p: &[f64; 3]) -> bool {
     p.iter().all(|x| *x == 0.0)
+}
+
+fn is_nought(x: &f64) -> bool {
+    *x == 0.0
 }
 
 impl Week {
@@ -153,6 +164,8 @@ impl Week {
         for k in 0..3 {
             self.pax[k] += o.pax[k];
         }
+        self.full += o.full;
+        self.full_minutes += o.full_minutes;
     }
 }
 
@@ -899,6 +912,21 @@ pub fn week_of(days: &[Vec<LineInfo>], line: &str) -> Week {
         let day = super::income::DayOf { kind, school: kind == 0 };
         let pax: f64 = runs.iter().flat_map(|t| t.trips.iter()).filter(|x| x.stops.len() >= 3).map(|x| super::income::trip_demand(lt, day, (x.departure / 60.0) as i32, ((x.arrival - x.departure) / 60.0).max(0.0))).sum();
         w.pax[kind] += if kind == 0 && w.by_day { pax / 5.0 } else { pax };
+        // (3 November 2026: the departures it expects full in the bus each tour asks for - a solo
+        // bus where it says none - and their minutes; a day read alone stands for the five weekdays)
+        let rules = super::doubling::Rules::default();
+        let times = if w.by_day { 1.0 } else { 5.0 };
+        for t in &runs {
+            let size = super::network::wants_size(&t.ai_group).unwrap_or(BusSize::Solo);
+            for x in t.trips.iter().filter(|x| x.stops.len() >= 3) {
+                let (dep, minutes) = ((x.departure / 60.0) as i32, ((x.arrival - x.departure) / 60.0).max(0.0));
+                let load = super::ownline::load(super::income::trip_demand(lt, day, dep, minutes), (dep.rem_euclid(1440) / 60) as usize);
+                if super::doubling::is_full(load, size, &rules) {
+                    w.full += times;
+                    w.full_minutes += minutes * times;
+                }
+            }
+        }
     }
     w
 }
@@ -1136,6 +1164,10 @@ pub struct Figures {
     pub pax: [f64; 3],
     /// The package's lines (number, caption); empty for a line of its own.
     pub lines: Vec<(String, String)>,
+    /// (3 November 2026) Its departures a week expected full, and the doubling's timetable hours
+    /// a week they would bring (`Week::full`; not in the score).
+    pub full_week: f64,
+    pub doubling_hours: f64,
 }
 
 pub fn figures(t: &Tender) -> Figures {
@@ -1158,6 +1190,8 @@ pub fn figures(t: &Tender) -> Figures {
         drivers: (hours_week * econ_uk::PAID_PER_TIMETABLED_HOUR / DRIVER_WEEK_HOURS).ceil() as u32,
         pax: week.pax,
         lines,
+        full_week: week.full,
+        doubling_hours: week.full_minutes / 60.0,
     }
 }
 

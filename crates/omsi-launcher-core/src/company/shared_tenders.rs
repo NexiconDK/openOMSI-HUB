@@ -471,7 +471,7 @@ pub fn fill_weeks(data: &Path, key: &str, date: &str, read: &mut dyn FnMut(&str)
 }
 
 /// A JSON line added to a file of the market (made when missing).
-fn append(path: &Path, line: &str) -> Result<()> {
+pub(crate) fn append(path: &Path, line: &str) -> Result<()> {
     use std::io::Write;
     if let Some(d) = path.parent() {
         std::fs::create_dir_all(d).with_context(|| format!("cannot make {}", d.display()))?;
@@ -482,7 +482,7 @@ fn append(path: &Path, line: &str) -> Result<()> {
 }
 
 /// The whole lines of a file of the market from byte `from` on, and where they end.
-fn lines_from<T: serde::de::DeserializeOwned>(path: &Path, from: u64) -> (Vec<T>, u64) {
+pub(crate) fn lines_from<T: serde::de::DeserializeOwned>(path: &Path, from: u64) -> (Vec<T>, u64) {
     let Ok(bytes) = std::fs::read(path) else { return (Vec::new(), from) };
     // (a file made anew, shorter: from its start)
     let start = if (from as usize) > bytes.len() { 0 } else { from as usize };

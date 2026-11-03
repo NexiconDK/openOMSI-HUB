@@ -1407,6 +1407,43 @@ Tested: `server_buses::tests`, `viborg::tests::a_companys_parts`,
 `bus_contracts::tests::the_authority_fines_a_bus_of_the_wrong_fuel_or_floor`,
 `market::tests` (the gas bus guess), the tender page's requirements test.
 
+### Doubling: extra buses behind full departures (3 November 2026)
+
+Decided: as Midttrafik's contracts let the authority order extra journeys - doubling among them -,
+paid at the contract's price with a contract bus standing free and by an agreement of its own
+with another (its bus contract, 20.2), the authority on the server orders an extra bus behind a
+departure that is full (`doubling`).
+
+- **Full.** The day's close counts each departure of a server contract's line: full when its load
+  reaches the admin's share of all the bus's places, seats and standing (`doubling_full`, 100 %:
+  people left at the stop; `doubling::is_full`, `ownline::carried`), a player's trip when he left
+  people behind because his bus was full. The full departures are kept four weeks
+  (`Online::doubling`).
+- **The order.** A departure full on 3 of its last 5 like days (weekdays, Saturdays, Sundays) is
+  ordered: an extra bus right behind it on its like days of a week from the day after tomorrow,
+  told in the inbox. The company answers on the Concessions page until 18:00 the day before it
+  begins ("Run it", "Decline"); left unanswered, its dispatcher says yes when the company has money
+  in the bank, no otherwise. One order at a time on a departure. The admin may order one himself
+  on a contract's line in the admin panel (tour, departure, days - a concert, say): to be run,
+  the company cannot decline it.
+- **The extra tour.** On each of its days an order said yes to is a tour of its own on the line -
+  the departure's trip copied, named `<tour>+D<minute>` (`doubling::add_tours`, in
+  `network::tours_of_day`) - planned, claimed and driven as any other; on a Normal or Realistic
+  server its planners put it in their roster (what nobody fills does not run). It is none of the
+  contract's journeys: no timetable hour of the contract, no fine when not run. The departure and
+  its double share its passengers (`doubling::share`: half each).
+- **Pay.** A run is paid for its timetabled minutes: at the contract's price a timetable hour when
+  its bus runs the line's own tours that day (a contract bus standing free then), at the admin's
+  fixed price with another (`doubling_price`, 650 kr.; a player's own run: the fixed price). Each
+  run is a quality point on its contract (`QUALITY_PER_RUN`: it offsets a default point).
+- **Declined.** No fine; each full departure of a day the order covers, said no to or not run, is
+  a complaint against the contract's quality bonus (`BONUS_PER_COMPLAINT`).
+- **The tender page** shows the departures expected full a week (each trip's expected passengers
+  against the places of the bus its tour asks for - a solo bus where it says none), the doubling
+  hours they would bring and the fixed price - not in the score (`Week::full`, `full_minutes`).
+
+Tested: `doubling::tests`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

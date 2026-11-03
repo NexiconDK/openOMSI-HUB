@@ -163,7 +163,7 @@ pub struct PointsDay {
 }
 
 /// The quality points' reasons (key, words).
-pub const QUALITY_REASONS: [(&str, &str); 3] = [("inspection", "a clean inspection"), ("complaints", "a month without complaints"), ("on_time", "98 % on time")];
+pub const QUALITY_REASONS: [(&str, &str); 4] = [("inspection", "a clean inspection"), ("complaints", "a month without complaints"), ("on_time", "98 % on time"), ("doubling", "a doubling run")];
 
 /// A contract's month so far.
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
@@ -950,9 +950,44 @@ pub struct Journeys {
     /// early and late (unreported), by line (`server_fines::departures`).
     planned: Vec<(String, i32)>,
     stops: Vec<(String, u32, u32)>,
+    /// (NexiconDK, 3 November 2026) The departures of the day that were full, and the extra
+    /// tours of doubling orders run or not (`doubling`): none of the contract's journeys.
+    full: Vec<super::doubling::Full>,
+    doubled: Vec<Doubled>,
+}
+
+/// (NexiconDK, 3 November 2026) An extra tour of a doubling order of the day (`doubling`): its
+/// line and tour name, whether it ran, its timetabled minutes, and whether its bus ran the line's
+/// own tours that day (a contract bus standing free then: paid at the contract's price).
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Doubled {
+    pub line: String,
+    pub tour: String,
+    pub run: bool,
+    pub minutes: i32,
+    pub contract_bus: bool,
 }
 
 impl Journeys {
+    /// (3 November 2026) A departure of `line`'s tour `tour` (minutes `dep` to `arr`) full in its
+    /// bus of `size`, `left` left at the stop.
+    pub fn full(&mut self, line: &str, tour: &str, dep: i32, arr: i32, size: BusSize, left: u32) {
+        self.full.push(super::doubling::Full { date: String::new(), line: line.to_string(), tour: tour.to_string(), dep: dep.rem_euclid(1440), arr, size, left });
+    }
+
+    /// (3 November 2026) An extra tour of a doubling order, run or not.
+    pub fn doubled(&mut self, d: Doubled) {
+        self.doubled.push(d);
+    }
+
+    pub fn fulls(&self) -> &[super::doubling::Full] {
+        &self.full
+    }
+
+    pub fn doubled_runs(&self) -> &[Doubled] {
+        &self.doubled
+    }
+
     /// A journey not run (dropped, or on no bus), of `length` timetabled minutes.
     pub fn missed(&mut self, line: &str, tour: &str, length: i32) {
         self.list.push(Journey { line: line.to_string(), tour: tour.to_string(), minutes: 0, run: false, part: false, bus: None, driver: None, wants: None, length });

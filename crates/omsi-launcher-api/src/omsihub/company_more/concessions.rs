@@ -218,6 +218,7 @@ pub fn view(s: &mut Session, args: &Value) -> Value {
         "held": held(&c),
         "auction": auction(&c, selected, args),
         "offers": offers(&c),
+        "doubling": doubling_orders(&c),
         "results": results(&c),
     })
 }
@@ -291,6 +292,48 @@ fn offers(c: &Company) -> Value {
         return Value::Null;
     }
     json!({ "title": tr("Buses offered"), "rows": rows, "yes": tr("Take them over"), "no": tr("No, thank you") })
+}
+
+/// (NexiconDK, 3 November 2026) The authority's doubling orders (`doubling`): those to answer -
+/// until 18:00 the day before they begin - and those said yes to still to run, with what they
+/// ran and were paid.
+fn doubling_orders(c: &Company) -> Value {
+    use omsi_launcher_lib::company::doubling::{Answer, DayKind};
+    let now = ck::now(c);
+    let today = c.date.clone();
+    let hm = |m: i32| format!("{:02}:{:02}", m.rem_euclid(1440) / 60, m.rem_euclid(1440) % 60);
+    let rows: Vec<Value> = c
+        .online
+        .doubling
+        .orders
+        .iter()
+        .filter(|o| omsi_launcher_lib::company::dates::between(&today, &o.until) >= 0 && o.answer != Answer::No)
+        .map(|o| {
+            let days = match o.day {
+                Some(DayKind::Weekday) => tr("weekdays"),
+                Some(DayKind::Saturday) => tr("Saturdays"),
+                Some(DayKind::Sunday) => tr("Sundays"),
+                None => tr("every day"),
+            };
+            let ask = o.answer == Answer::Asked && now < o.answer_by() && o.by != "admin";
+            let state = match o.answer {
+                Answer::Asked => trf("Answer by 18:00 on %{d}", &[("d", &day_label(&omsi_launcher_lib::company::dates::add(&o.from, -1)))]),
+                _ if o.by == "admin" => tr("Ordered by the authority: to be run"),
+                _ if o.by == "dispatcher" => tr("Your dispatcher said yes"),
+                _ => tr("You said yes"),
+            };
+            json!({
+                "id": o.id, "number": o.number,
+                "title": trf("An extra bus behind the %{time} of tour %{tour}", &[("time", &hm(o.dep)), ("tour", &o.tour)]),
+                "say": trf("Its %{days} from %{from} to %{until}: %{runs} runs so far, %{paid} paid; %{left} full departures without it.", &[("days", &days), ("from", &day_label(&o.from)), ("until", &day_label(&o.until)), ("runs", &o.runs.to_string()), ("paid", &eur(o.paid)), ("left", &o.declined.to_string())]),
+                "state": state, "ask": ask,
+            })
+        })
+        .collect();
+    if rows.is_empty() {
+        return Value::Null;
+    }
+    json!({ "title": tr("Doubling: extra buses"), "rows": rows, "yes": tr("Run it"), "no": tr("Decline") })
 }
 
 /// The tenders: announced and running first, then the results (`concessions::tenders`).
@@ -527,7 +570,7 @@ fn requirements(c: &Company, t: &Tender, week: Option<Week>) -> Value {
 /// (`concessions::figures`): its timetable hours a week and in all, its duties a day, its buses
 /// and reserve, the drivers it needs, its passengers a day - a package's the lines' together, and
 /// its lines. As tiles: label, value, the line under it.
-fn work_tiles(t: &Tender) -> Vec<Value> {
+fn work_tiles(c: &Company, t: &Tender) -> Vec<Value> {
     let f = cn::figures(t);
     let g = |x: f64| grouped(x.round());
     let tile = |label: &str, value: String, sub: String| json!({ "label": tr(label).to_uppercase(), "value": value, "sub": sub });
@@ -545,6 +588,13 @@ fn work_tiles(t: &Tender) -> Vec<Value> {
     }
     if !f.lines.is_empty() {
         tiles.push(tile("Lines", f.lines.len().to_string(), f.lines.iter().map(|l| l.0.clone()).collect::<Vec<_>>().join(", ")));
+    }
+    // (3 November 2026: the departures expected full, the doubling they would bring and its price
+    // with a bus of no contract - not in the score: `doubling`)
+    if f.full_week > 0.0 {
+        let rules = c.online.doubling_rules.unwrap_or_default();
+        let price = eur((rules.price_hour as f64 * c.price_index).round() as i64);
+        tiles.push(tile("Doubling (extra buses)", trf("≈ %{n} full a week · ≈ %{h} hours", &[("n", &g(f.full_week)), ("h", &format!("{:.1}", f.doubling_hours))]), trf("%{p} an hour with a bus of no contract · not in the score", &[("p", &price)])));
     }
     tiles
 }
@@ -885,7 +935,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
     });
     json!({
         "timeline": timeline, "score": score, "rivals": rivals,
-        "work": t.market.is_some().then(|| work_tiles(t)),
+        "work": t.market.is_some().then(|| work_tiles(c, t)),
         "rivals_title": tr(if sealed { "Opened bids" } else { "Rivals" }), "rivals_heads": [tr("Bidder"), tr("Kind"), tr("Quality"), tr("Bid")],
         "title": title, "id": t.id, "number": t.number, "caption": caption_of(t),
         "sealed": sealed_open.then(|| tr("Sealed tender: nobody sees another's bid until it closes - not the other companies, not the operators. You may change your bid until the deadline: your last counts. At the close every bid is opened and shown with its points.")),
@@ -969,6 +1019,17 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {
             match apply(s, |c| if c.online.on_server { co_tenders::bid_parts(&data, c, id, amount, bus_day) } else { cn::bid(c, id, amount) }) {
                 Ok(_) => {
                     s.say(tr("Your bid is in. The rivals answer as the clock goes on."), false);
+                    Ok(json!({}))
+                }
+                Err(p) => Ok(json!({ "popup": p })),
+            }
+        }
+        // (NexiconDK, 3 November 2026: an extra bus the authority ordered - run it or not)
+        "doubling_yes" | "doubling_no" => {
+            let order = args.get("order").and_then(Value::as_u64).unwrap_or(0) as u32;
+            match apply(s, |c| omsi_launcher_lib::company::doubling::answer(c, order, what == "doubling_yes")) {
+                Ok(_) => {
+                    s.say(tr(if what == "doubling_yes" { "The extra bus is on your duty board on its days." } else { "No extra bus: its full departures count as complaints against the quality bonus." }), false);
                     Ok(json!({}))
                 }
                 Err(p) => Ok(json!({ "popup": p })),

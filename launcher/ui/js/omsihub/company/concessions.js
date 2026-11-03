@@ -32,6 +32,7 @@ export function ConcessionsPage() {
         <${Auction} a=${v.auction} st=${st} />
       </div>
       ${v.offers && html`<${Offers} o=${v.offers} />`}
+      ${v.doubling && html`<${Doublings} o=${v.doubling} />`}
       ${v.results && html`<${Results} r=${v.results} />`}
       <${Held} h=${v.held} />
     </div>
@@ -51,6 +52,22 @@ function Offers({ o }) {
         <div class="co-pg-chips">${r.buses.map(([b, v]) => html`<${Chip} text=${b + ' · ' + v} tone="dim" icon="directions_bus" />`)}</div>
         <div class="co-pg-line"><${Btn} kind="primary" icon="check_circle" label=${o.yes} onClick=${() => actMore('takeover_yes', { offer: r.id })} />
           <${Btn} icon="close" label=${o.no} onClick=${() => actMore('takeover_no', { offer: r.id })} /></div>
+      </div>`,
+    )}</div>
+  </${Card}>`;
+}
+
+/** (NexiconDK, 3 November 2026) The authority's doubling orders (`concessions::doubling_orders`):
+ * an extra bus behind a full departure, run or declined until 18:00 the day before. */
+function Doublings({ o }) {
+  return html`<${Card} title=${o.title} icon="directions_bus">
+    <div class="co-pg-list">${o.rows.map(
+      (r) => html`<div class="co-pg-tender" style="cursor:default">
+        <div class="co-pg-line"><${Plate} p=${{ number: r.number }} h=${24} /><b class="co-pg-itemtitle grow co-pg-cut">${r.title}</b></div>
+        <p class="co-pg-note" style="margin:0">${r.say}</p>
+        <div class="co-pg-chips"><${Chip} text=${r.state} tone=${r.ask ? 'accent' : 'dim'} icon="schedule" /></div>
+        ${r.ask && html`<div class="co-pg-line"><${Btn} kind="primary" icon="check_circle" label=${o.yes} onClick=${() => actMore('doubling_yes', { order: r.id })} />
+          <${Btn} icon="close" label=${o.no} onClick=${() => actMore('doubling_no', { order: r.id })} /></div>`}
       </div>`,
     )}</div>
   </${Card}>`;

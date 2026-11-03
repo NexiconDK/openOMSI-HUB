@@ -66,6 +66,8 @@ export const BCO_FIELDS = [
   ['tender_lines_per_round', 'Lines in a round', 'number', 'Empty: the rules\' and one more a company'],
   ['tender_reserve', 'Reserve buses (%)', 'number', "Of a tender's contract buses: shown on the tender page, not paid (10: ten per cent, at least one from five buses)"],
   ['tender_award', 'How tenders are awarded', [['viborg', 'The Viborg model: 50 % price + 50 % quality'], ['lowest', 'The lowest price wins']], 'Quality: the operating quality 25 %, the vehicles 10 %, the implementation plan 10 %, the working environment 5 %'],
+  ['doubling_price', 'Doubling: a timetable hour with a bus of no contract (kroner)', 'number', "An extra bus behind a full departure; one of the line's own buses standing free is paid at the contract's price"],
+  ['doubling_full', 'Doubling: full at (% of the places)', 'number', 'Seats and standing: 100 - people left at the stop. A departure full on 3 of its last 5 like days is ordered'],
   ["The authority's fines (kroner)"],
   ['fine_dropped_minute', 'A journey not run, a minute', 'number'],
   ['fine_wrong_bus', 'A smaller bus than the timetable asks', 'number'],
@@ -89,7 +91,7 @@ export const BCO_DEFAULTS = {
   name: 'Bus Company Online', real_time: '1', time: '06:00', first_port: '27015', max_worlds: '4', world_idle: '10', keep_worlds: '1', max_memory: '85', max_cpu: '90',
   traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
   price_level: 'dk', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
-  found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', tender_reserve: '10', fine_dropped_minute: '20.83',
+  found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', doubling_price: '650', doubling_full: '100', tender_reserve: '10', fine_dropped_minute: '20.83',
   fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_wrong_fuel: '2500', fine_wrong_floor: '2500', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',
 };
@@ -497,7 +499,8 @@ export function mountPanel(root, api, opts = {}) {
         fact(trf('%{a} + %{b} + %{c} days', { a: r.prep, b: r.days, c: r.start }), tr('A tender'), tr('to prepare, to bid, to the start')),
         fact(trf('%{a} / %{b} / %{c} days before', { a: (r.renew || [])[0], b: (r.renew || [])[1], c: (r.renew || [])[2] }), tr('A renewal'), tr('announced, opens, decided')),
         fact((r.lengths || []).map((x) => `${x[0]}/${x[1]}`).join(' · '), tr('Contract days, diesel/electric'), tr('small · medium · large work: under 1,000, up to 3,000, over 3,000 timetable hours a week')),
-        fact(trf('%{n} × %{d} days', { n: r.options, d: r.option_days }), tr('Option'), tr('when run satisfactorily: not red, at most 2 % of the journeys dropped'))),
+        fact(trf('%{n} × %{d} days', { n: r.options, d: r.option_days }), tr('Option'), tr('when run satisfactorily: not red, at most 2 % of the journeys dropped')),
+        fact(r.doubling_price != null ? kr(r.doubling_price) : '-', tr('Doubling a timetable hour'), trf('with a bus of no contract · full at %{p} % of the places', { p: r.doubling_full }))),
       h('div', { class: 'sp-dim' }, tr('Changed under Rules and economy: a new tender takes them; one open keeps its own (its cap can be set here).')));
     const number = (value, width = 90, placeholder = '') => h('input', { type: 'number', min: '0', step: '1', value: value ?? '', placeholder, style: `width:${width}px` });
     const dateIn = (value, min) => h('input', { type: 'date', value: value || '', min: min || '', style: 'width:150px' });
@@ -540,9 +543,16 @@ export function mountPanel(root, api, opts = {}) {
       // (3 November 2026: the companies' contracts - a contract's last day moved)
       const contracts = (m.contracts || []).map((x) => {
         const until = dateIn(x.until, d.earliest_end);
+        // (3 November 2026: an extra bus behind a departure of the line - a concert, say)
+        const dTour = h('input', { placeholder: tr('Tour'), style: 'width:60px' });
+        const dAt = h('input', { type: 'time', style: 'width:100px' });
+        const dFrom = dateIn(d.today, d.today);
+        const dUntil = dateIn(d.today, d.today);
         return h('tr', {}, h('td', {}, h('b', {}, x.number || x.line)), h('td', {}, x.name), h('td', {}, `${x.from} – ${x.until}`, h('div', { class: 'bco-sub' }, trf('next tender from %{d}', { d: x.next }))),
           h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end' }, until,
-            btn(tr('Move the end'), () => post('tender', { map: m.key, do: 'contract_until', company: x.company, line: x.line, until: until.value })))));
+            btn(tr('Move the end'), () => post('tender', { map: m.key, do: 'contract_until', company: x.company, line: x.line, until: until.value }))),
+            h('div', { class: 'sp-row', style: 'justify-content:flex-end;margin-top:6px' }, dTour, dAt, dFrom, dUntil,
+              btn(tr('Order a doubling'), () => post('tender', { map: m.key, do: 'doubling', company: x.company, line: x.line, tour: dTour.value, at: dAt.value, from: dFrom.value, until: dUntil.value }, trf('An extra bus behind the %{t} of tour %{n}: on the duty board from %{d}', { t: dAt.value, n: dTour.value, d: dFrom.value }))))));
       });
       const free = (m.lines || []).filter((l) => !l.company && !l.operator && !l.open && !l.event);
       // (the map's free lines, several at once; before the market has read them: names typed)

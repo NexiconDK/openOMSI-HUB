@@ -704,7 +704,19 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         s.maintenance += km * economy::maintenance_per_km(kind, age, &level) * maint;
         // (late by the UK standard on average - `economy::LATE_FROM` - or at a quarter of its stops)
         let late = t.average.is_some_and(|a| a >= (economy::LATE_FROM * 60) as f64) || (t.stops > 0 && t.late * 4 > t.stops);
-        journeys.ran(&c.lines[li].name, &t.tour, t.worst.map_or(0, |w| (w / 60.0).trunc() as i32), !t.completed, None, None, None);
+        // (NexiconDK, 3 November 2026: a player's trip of a doubling order's extra tour - by the
+        // duty it was - is none of the contract's journeys: `doubling`; a full bus is counted)
+        let duty_tour = c.together.trips.iter().find(|g| g.trip == *t).map(|g| g.duty.tour.clone()).unwrap_or_else(|| t.tour.clone());
+        if c.online.on_server && super::doubling::is_tour(&duty_tour) {
+            // (a player's extra run: paid at the admin's price - which bus stood free is the plan's)
+            journeys.doubled(super::bus_contracts::Doubled { line: c.lines[li].name.clone(), tour: duty_tour.clone(), run: t.completed, minutes: (t.seconds / 60.0).round() as i32, contract_bus: false });
+        } else {
+            journeys.ran(&c.lines[li].name, &t.tour, t.worst.map_or(0, |w| (w / 60.0).trunc() as i32), !t.completed, None, None, None);
+            if c.online.on_server && t.left_full > 0 {
+                let dep = (t.departure / 60.0).round() as i32;
+                journeys.full(&c.lines[li].name, &duty_tour, dep, dep + (t.seconds / 60.0).round() as i32, kind.size, t.left_full.max(0) as u32);
+            }
+        }
         journeys.red_lights(&c.lines[li].name, t.red_lights.max(0) as u32);
         // (on the server: its departures early, and late without the delay reported - by the
         // tour of the duty it was, `server_fines`)
@@ -822,6 +834,15 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     let late_model = super::lateness::model(c, &plan, &date, &cut);
     let mut lat = super::lateness::Lateness::default();
     let mut outcomes: Vec<super::lateness::Outcome> = Vec::new();
+    // (NexiconDK, 3 November 2026: the doubling orders' extra tours that run today - by their
+    // line, the tour they run behind and its departure - and the rules of a full bus)
+    let doubled_today: Vec<(String, String, i32)> = plan
+        .tours
+        .iter()
+        .filter(|tp| super::doubling::is_tour(&tp.tour.tour) && (tp.covered() || tp.by_player || tp.live))
+        .filter_map(|tp| super::doubling::base_of(&tp.tour.tour).map(|(b, d)| (tp.tour.line.clone(), b.to_string(), d)))
+        .collect();
+    let doubling_rules = c.online.doubling_rules.unwrap_or_default();
     for (ti, tp) in plan.tours.iter().enumerate() {
         let Some(li) = lines.iter().position(|l| l.line.eq_ignore_ascii_case(&tp.tour.line)) else { continue };
         lines[li].tours += 1;
@@ -829,8 +850,11 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         // (its timetabled minutes, first departure to last arrival: the timetable hours a
         // contract on the server pays by - `bus_contracts`)
         let counted: Vec<&network::PlannedTrip> = tp.tour.trips.iter().filter(|x| x.counts()).collect();
+        let extra = super::doubling::is_tour(&tp.tour.tour);
         if let (Some(a), Some(b)) = (counted.first(), counted.last()) {
-            journeys.timetabled(&tp.tour.line, b.arr - a.dep);
+            if !extra {
+                journeys.timetabled(&tp.tour.line, b.arr - a.dep);
+            }
         }
         if tp.covered() {
             lines[li].covered += 1;
@@ -918,7 +942,9 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                     if counts {
                         lines[li].dropped += 1;
                         report.dropped += 1;
-                        journeys.missed(&tp.tour.line, &tp.tour.tour, trip.arr - trip.dep);
+                        if !extra {
+                            journeys.missed(&tp.tour.line, &tp.tour.tour, trip.arr - trip.dep);
+                        }
                         let broke = broken_at.is_some_and(|x| x.lost(trip.dep));
                         let sent = broken_at.filter(|_| broke).and_then(|x| x.back.map(|b| (b, x.until)));
                         // (the bus and the driver it had, or the roster's that could not come)
@@ -963,10 +989,20 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                     ServiceKind::OnDemand => pax = pax.max(1.0),
                     _ => {}
                 }
+                // (3 November 2026: a departure with its extra bus running shares its passengers)
+                if c.online.on_server && !doubled_today.is_empty() {
+                    pax *= super::doubling::share(&doubled_today, &tp.tour.line, &tp.tour.tour, trip.dep);
+                }
                 // (what its bus can take: the rest stays at the stop - fares lost, and the
                 // reputation and the complaints hear of it)
                 {
-                    let (taken, left, crowded) = super::ownline::carried(pax, (trip.dep.rem_euclid(1440) / 60) as usize, v.kind.size);
+                    let hour = (trip.dep.rem_euclid(1440) / 60) as usize;
+                    let (taken, left, crowded) = super::ownline::carried(pax, hour, v.kind.size);
+                    // (3 November 2026: full by the server's rules - people left at the stop, or the
+                    // admin's share of the bus's places: `doubling`)
+                    if c.online.on_server && !extra && (left > 0.5 || super::doubling::is_full(super::ownline::load(pax, hour), v.kind.size, &doubling_rules)) {
+                        journeys.full(&tp.tour.line, &tp.tour.tour, trip.dep, trip.arr, v.kind.size, left.round() as u32);
+                    }
                     pax = taken;
                     report.crowded += crowded as u32;
                     report.left_behind += left.round() as u32;
@@ -1004,7 +1040,12 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                 let t = super::lateness::whole(&late_model, ti, j, rest.is_some());
                 let minutes = t.as_ref().map_or(0, |t| t.minutes());
                 lat.count(&tp.tour.number, &tp.tour.tour, k, e.id, trip.dep, minutes);
-                journeys.ran(&tp.tour.line, &tp.tour.tour, minutes, cut_short > 0.0, Some(v.id), Some(e.id), super::ownline::wanted(c, &tp.tour));
+                if extra {
+                    let contract_bus = plan.tours.iter().any(|o| o.bus == tp.bus && o.bus.is_some() && !super::doubling::is_tour(&o.tour.tour) && o.tour.line.eq_ignore_ascii_case(&tp.tour.line));
+                    journeys.doubled(super::bus_contracts::Doubled { line: tp.tour.line.clone(), tour: tp.tour.tour.clone(), run: cut_short <= 0.0, minutes: trip.arr - trip.dep, contract_bus });
+                } else {
+                    journeys.ran(&tp.tour.line, &tp.tour.tour, minutes, cut_short > 0.0, Some(v.id), Some(e.id), super::ownline::wanted(c, &tp.tour));
+                }
                 match t.filter(|_| minutes >= economy::LATE_FROM) {
                     Some(t) => {
                         lines[li].late += 1;
@@ -1069,6 +1110,9 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     // line's fares went to the authority with its takings, `income::book`; a commercial line has
     // none of it: `bus_contracts`)
     super::bus_contracts::close_day(c, &date, &journeys, &mut lines, &mut report);
+    // (NexiconDK, 3 November 2026: the doubling orders' runs paid, the full departures kept and
+    // ordered - `doubling`)
+    super::doubling::close_day(c, &date, &journeys, &mut report);
     // (the day's late and dropped trips kept for the planning and the advice: `lateness`)
     report.lateness = lat.finish(&outcomes);
     super::lateness::keep(c, &date, outcomes);
@@ -1754,3 +1798,4 @@ mod tests {
         assert!(count(GameMode::Realistic) > count(GameMode::Casual));
     }
 }
+

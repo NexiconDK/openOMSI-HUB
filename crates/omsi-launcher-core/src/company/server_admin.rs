@@ -409,6 +409,7 @@ fn market(api: &Api) -> Value {
     }
     let (today, _) = server_now(&m);
     let cfg = shared_tenders::TenderCfg::of(&m.data);
+    let doubling = super::doubling::Rules::of(&m.data);
     // (3 November 2026: the tenders' rules as they stand, in kroner)
     let rules = json!({
         "cap_hour": kr(cfg.cap_hour), "cap_bus_day": kr(cfg.cap_bus_day), "cap_factor": cfg.cap_factor, "low_share": (cfg.low_share * 1000.0).round() / 10.0,
@@ -418,6 +419,8 @@ fn market(api: &Api) -> Value {
         "renew": [shared_tenders::RENEW_ANNOUNCED, shared_tenders::RENEW_OPENS, shared_tenders::RENEW_DECIDED],
         "lengths": cn::SERVER_DAYS.iter().map(|x| [x.0, x.2]).collect::<Vec<_>>(),
         "options": shared_tenders::OPTIONS, "option_days": shared_tenders::OPTION_DAYS,
+        // (doubling: the price of a run with a bus of no contract, how full is full - 3 November 2026)
+        "doubling_price": kr(doubling.price_hour), "doubling_full": (doubling.full_share * 100.0).round(),
     });
     let maps: Vec<Value> = keys
         .iter()
@@ -776,7 +779,28 @@ fn tender_do(api: &Api, map: &str, a: &Value) -> Result<String, String> {
             shared_tenders::order_contract(&data, &company, &line, &until).map_err(|e| format!("{e:#}"))?;
             format!("the contract of {} on line {line} of {map} ends {until} (taken at the company's next step)", c.name)
         }
-        _ => return Err("open, direct, cap, close, cancel, operator_until, operator_end or contract_until".into()),
+        // (3 November 2026: an extra bus ordered behind a departure of a company's contract line,
+        // for a concert say - taken at its next step, on its duty board from its first day)
+        "doubling" => {
+            changed = false;
+            let (company, line, tour, at, from, until) = (s("company"), s("line"), s("tour"), s("at"), s("from"), s("until"));
+            let dep = at.split_once(':').and_then(|(h, m)| Some(h.trim().parse::<i32>().ok()? * 60 + m.trim().parse::<i32>().ok()?)).filter(|x| (0..1440).contains(x)).ok_or("the departure as HH:MM")?;
+            if tour.trim().is_empty() {
+                return Err("which tour?".into());
+            }
+            let from = if from.trim().is_empty() { today.clone() } else { from };
+            let until = if until.trim().is_empty() { from.clone() } else { until };
+            if dates::parse(&from).is_none() || dates::parse(&until).is_none() || dates::between(&from, &until) < 0 || dates::between(&today, &from) < 0 {
+                return Err(format!("the days as YYYY-MM-DD, from {today} on, the last not before the first"));
+            }
+            let c = store::load(&data, &company).map_err(|_| "no such company".to_string())?;
+            if !c.concessions.contracts.iter().any(|k| k.line.eq_ignore_ascii_case(&line) && k.live()) {
+                return Err("the company holds no contract on that line".into());
+            }
+            super::doubling::order_by_admin(&data, &company, &super::doubling::AdminOrder { line: line.clone(), tour: tour.trim().to_string(), dep, from: from.clone(), until: until.clone() }).map_err(|e| format!("{e:#}"))?;
+            format!("an extra bus behind the {at} of tour {} on line {line} of {}, {from} to {until} (taken at the company's next step)", tour.trim(), c.name)
+        }
+        _ => return Err("open, direct, cap, close, cancel, operator_until, operator_end, contract_until or doubling".into()),
     };
     if changed {
         shared_tenders::save(&data, &mk).map_err(|e| format!("{e:#}"))?;

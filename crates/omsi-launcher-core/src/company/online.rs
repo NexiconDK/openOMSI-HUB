@@ -86,6 +86,12 @@ pub struct Online {
     /// process, not kept: None elsewhere.
     #[serde(skip)]
     pub price_level: Option<String>,
+    /// (NexiconDK, 3 November 2026) Doubling: the full departures kept, the orders of extra buses
+    /// and their answers (`doubling`), and the server's rules of it (set by its process, not kept).
+    #[serde(default)]
+    pub doubling: super::doubling::Doubling,
+    #[serde(skip)]
+    pub doubling_rules: Option<super::doubling::Rules>,
     /// (NexiconDK, 3 November 2026) The server's admin's corrections of the buses (`server_buses`:
     /// floor, fuel, size, screens) and when their file was written, set by its process, not kept.
     #[serde(skip)]
@@ -149,7 +155,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
     }
 }
 
@@ -655,6 +661,10 @@ impl Host {
         if c.online.on_server && c.online.price_level.is_none() {
             c.online.price_level = Some(super::server_fines::price_level_of(&self.data));
         }
+        // (and its rules of doubling: the price of a run with a bus of no contract, how full is full)
+        if c.online.on_server && c.online.doubling_rules.is_none() {
+            c.online.doubling_rules = Some(super::doubling::Rules::of(&self.data));
+        }
         // (and the admin's corrections of the buses, read again when he changed them)
         if super::server_buses::refresh(&self.data, c) {
             self.dirty = true;
@@ -744,6 +754,11 @@ impl Host {
         // server decided - a line won is the company's at once, to be planned for its first day)
         // (3 November 2026: the server's admin moved a contract's last day)
         if super::shared_tenders::take_contract_orders(&self.data, c) {
+            self.dirty = true;
+            self.planned = None;
+        }
+        // (3 November 2026: the server's admin ordered an extra bus - on the duty board from its day)
+        if super::doubling::ordered_by_admin(&self.data, c) {
             self.dirty = true;
             self.planned = None;
         }

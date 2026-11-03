@@ -38,6 +38,7 @@ pub mod dealer;
 pub mod duty_launch;
 pub mod dutycard;
 pub mod depot;
+pub mod doubling;
 pub mod economy;
 // (the economy's parameters, from UK operator data: Realistic at factor 1.0)
 pub mod econ_uk;

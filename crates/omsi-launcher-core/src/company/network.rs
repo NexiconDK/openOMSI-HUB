@@ -323,6 +323,8 @@ pub fn automatic_tours_of_day(c: &Company, lines: &[LineInfo], date: &str) -> Ve
 fn finish_tours(c: &Company, mut out: Vec<TourOfDay>, date: &str, cuts: Vec<(usize, Vec<super::studio::TripRef>)>) -> Vec<TourOfDay> {
     // (the own lines' tours with their depot runs: their timetable has none)
     super::ownline::add_depot_runs(c, &mut out);
+    // (NexiconDK, 3 November 2026: the extra buses of doubling orders said yes to - `doubling`)
+    super::doubling::add_tours(c, date, &mut out);
     super::studio::resolve_cuts(&mut out, &cuts);
     for t in out.iter_mut() {
         let begins = super::clock::moment(date, t.from() as i64);
