@@ -2,6 +2,7 @@ _version: 2
 # The bus company's new pages and its staff's roles (shared by the company's builders).
 "Research":
   de: "Forschung"
+  da: "Forskning"
   fr: "Recherche"
   nl: "Onderzoek"
   pl: "Badania"
@@ -9,6 +10,7 @@ _version: 2
   uk: "Дослідження"
 "Contracts":
   de: "Verträge"
+  da: "Kontrakter"
   fr: "Contrats"
   nl: "Contracten"
   pl: "Umowy"
@@ -16,6 +18,7 @@ _version: 2
   uk: "Контракти"
 "Inbox":
   de: "Posteingang"
+  da: "Indbakke"
   fr: "Boîte de réception"
   nl: "Inbox"
   pl: "Skrzynka odbiorcza"
@@ -23,6 +26,7 @@ _version: 2
   uk: "Вхідні"
 "Bus driver":
   de: "Busfahrer"
+  da: "Buschauffør"
   fr: "Conducteur de bus"
   nl: "Buschauffeur"
   pl: "Kierowca autobusu"
@@ -30,6 +34,7 @@ _version: 2
   uk: "Водій автобуса"
 "Mechanic":
   de: "Mechaniker"
+  da: "Mekaniker"
   fr: "Mécanicien"
   nl: "Monteur"
   pl: "Mechanik"
@@ -37,6 +42,7 @@ _version: 2
   uk: "Механік"
 "Researcher":
   de: "Forscher"
+  da: "Forsker"
   fr: "Chercheur"
   nl: "Onderzoeker"
   pl: "Badacz"
@@ -44,6 +50,7 @@ _version: 2
   uk: "Дослідник"
 "Cleaner":
   de: "Reinigungskraft"
+  da: "Rengøringsmedarbejder"
   fr: "Agent d'entretien"
   nl: "Schoonmaker"
   pl: "Sprzątacz"
@@ -51,6 +58,7 @@ _version: 2
   uk: "Прибиральник"
 "Service employee":
   de: "Servicemitarbeiter"
+  da: "Servicemedarbejder"
   fr: "Employé du service client"
   nl: "Servicemedewerker"
   pl: "Pracownik obsługi"
@@ -58,6 +66,7 @@ _version: 2
   uk: "Працівник сервісу"
 "Ticket inspector":
   de: "Fahrkartenkontrolleur"
+  da: "Kontrollør"
   fr: "Contrôleur"
   nl: "Kaartjescontroleur"
   pl: "Kontroler biletów"
@@ -65,6 +74,7 @@ _version: 2
   uk: "Контролер"
 "Spare parts":
   de: "Ersatzteile"
+  da: "Reservedele"
   fr: "Pièces détachées"
   nl: "Onderdelen"
   pl: "Części zamienne"
@@ -72,6 +82,7 @@ _version: 2
   uk: "Запчастини"
 "Service contracts":
   de: "Dienstleistungsverträge"
+  da: "Servicekontrakter"
   fr: "Contrats de service"
   nl: "Dienstcontracten"
   pl: "Umowy serwisowe"
@@ -79,6 +90,7 @@ _version: 2
   uk: "Сервісні контракти"
 "Goal rewards":
   de: "Zielprämien"
+  da: "Målbelønninger"
   fr: "Primes d'objectifs"
   nl: "Doelbeloningen"
   pl: "Nagrody za cele"

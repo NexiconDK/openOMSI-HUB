@@ -22,6 +22,7 @@ pub const LANGUAGES: &[(&str, &str, &str, &[&str])] = &[
     ("ITA", "Italiano", "it", &["it", "italian", "italiano"]),
     ("NLD", "Nederlands", "nl", &["nl", "dutch", "nederlands"]),
     ("SWE", "Svenska", "sv", &["sv", "se", "sv-se", "sv-fi", "swedish", "svenska"]),
+    ("DAN", "Dansk", "da", &["da", "dk", "dan", "danish", "dansk"]),
     ("TUR", "Türkçe", "tr", &["tr", "turkish", "türkçe"]),
     ("JPN", "日本語", "ja", &["ja", "jp", "japanese", "日本語"]),
     ("ZHT", "繁體中文", "zh-tw", &["zh-tw", "zh-hant", "zh-hk", "zh-mo", "cht", "traditional chinese", "繁體中文", "繁体中文"]),

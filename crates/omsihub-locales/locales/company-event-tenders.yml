@@ -3,6 +3,7 @@ _version: 2
 # out to tender for its days (company::shared_tenders::MapEvent), the lines it takes off told.
 "This line runs only on an event of the map's: it goes out to tender before the event, for its days.":
   de: "Diese Linie fährt nur bei einem Ereignis der Karte: Sie wird vor dem Ereignis für seine Tage ausgeschrieben."
+  da: "Denne linje kører kun ved en begivenhed på kortet: den sendes i udbud før begivenheden, for dens dage."
   fr: "Cette ligne ne circule que lors d'un événement de la carte : elle est mise en appel d'offres avant l'événement, pour ses jours."
   nl: "Deze lijn rijdt alleen bij een evenement van de kaart: ze wordt vóór het evenement aanbesteed, voor de dagen ervan."
   pl: "Ta linia kursuje tylko podczas wydarzenia na mapie: trafia do przetargu przed wydarzeniem, na jego dni."
@@ -10,6 +11,7 @@ _version: 2
   uk: "Ця лінія працює лише під час події мапи: її виставляють на торги перед подією, на її дні."
 "%{event} takes your line %{n} off on %{date}: it does not run that day - nothing to drive, nothing paid, no fines.":
   de: "%{event} nimmt deine Linie %{n} am %{date} aus dem Fahrplan: Sie fährt an dem Tag nicht - nichts zu fahren, keine Bezahlung, keine Strafen."
+  da: "%{event} tager din linje %{n} af den %{date}: den kører ikke den dag - intet at køre, intet at betale, ingen bøder."
   fr: "%{event} retire ta ligne %{n} le %{date} : elle ne circule pas ce jour-là - rien à conduire, rien de payé, aucune amende."
   nl: "%{event} haalt je lijn %{n} op %{date} uit de dienst: ze rijdt die dag niet - niets te rijden, niets betaald, geen boetes."
   pl: "%{event} wyłącza twoją linię %{n} w dniu %{date}: tego dnia nie kursuje - nic do jazdy, bez zapłaty, bez kar."
@@ -17,6 +19,7 @@ _version: 2
   uk: "%{event} знімає твою лінію %{n} %{date}: цього дня вона не працює - їхати не треба, оплати немає, штрафів немає."
 "%{event} takes your line %{n} off for %{days} days from %{date}: it does not run those days - nothing to drive, nothing paid, no fines.":
   de: "%{event} nimmt deine Linie %{n} für %{days} Tage ab %{date} aus dem Fahrplan: Sie fährt an diesen Tagen nicht - nichts zu fahren, keine Bezahlung, keine Strafen."
+  da: "%{event} tager din linje %{n} af i %{days} dage fra %{date}: den kører ikke de dage - intet at køre, intet at betale, ingen bøder."
   fr: "%{event} retire ta ligne %{n} pour %{days} jours à partir du %{date} : elle ne circule pas ces jours-là - rien à conduire, rien de payé, aucune amende."
   nl: "%{event} haalt je lijn %{n} voor %{days} dagen vanaf %{date} uit de dienst: ze rijdt die dagen niet - niets te rijden, niets betaald, geen boetes."
   pl: "%{event} wyłącza twoją linię %{n} na %{days} dni od %{date}: w te dni nie kursuje - nic do jazdy, bez zapłaty, bez kar."
@@ -24,6 +27,7 @@ _version: 2
   uk: "%{event} знімає твою лінію %{n} на %{days} дн. з %{date}: у ці дні вона не працює - їхати не треба, оплати немає, штрафів немає."
 "Special service for %{who}: line %{n} is out to tender for its days, sealed bids until %{time}":
   de: "Sonderverkehr für %{who}: Linie %{n} ist für seine Tage ausgeschrieben, verdeckte Gebote bis %{time}"
+  da: "Ekstraservice for %{who}: linje %{n} er i udbud for sine dage, forseglede bud indtil %{time}"
   fr: "Service spécial pour %{who} : la ligne %{n} est en appel d'offres pour ses jours, offres cachetées jusqu'à %{time}"
   nl: "Speciale dienst voor %{who}: lijn %{n} is aanbesteed voor de dagen ervan, gesloten biedingen tot %{time}"
   pl: "Kursy specjalne na %{who}: linia %{n} jest w przetargu na jego dni, oferty zamknięte do %{time}"
@@ -31,6 +35,7 @@ _version: 2
   uk: "Спецрейси на %{who}: лінію %{n} виставлено на торги на її дні, закриті пропозиції до %{time}"
 "Special service: %{event}":
   de: "Sonderverkehr: %{event}"
+  da: "Ekstraservice: %{event}"
   fr: "Service spécial : %{event}"
   nl: "Speciale dienst: %{event}"
   pl: "Kursy specjalne: %{event}"
@@ -38,6 +43,7 @@ _version: 2
   uk: "Спецрейси: %{event}"
 "%{kind}, %{per}  ·  a special service for %{event}, its days alone: %{days}  ·  asks are a price a timetable hour, sealed until the close":
   de: "%{kind}, %{per}  ·  Sonderverkehr für %{event}, nur an seinen Tagen: %{days}  ·  Gebote sind ein Preis je Fahrplanstunde, verdeckt bis zum Schluss"
+  da: "%{kind}, %{per}  ·  en ekstraservice for %{event}, kun dens dage: %{days}  ·  der bydes en pris pr. køreplantime, forseglet indtil lukning"
   fr: "%{kind}, %{per}  ·  un service spécial pour %{event}, ses jours seulement : %{days}  ·  les offres sont un prix par heure de service, cachetées jusqu'à la clôture"
   nl: "%{kind}, %{per}  ·  een speciale dienst voor %{event}, alleen op de dagen ervan: %{days}  ·  biedingen zijn een prijs per dienstregelinguur, gesloten tot de sluiting"
   pl: "%{kind}, %{per}  ·  kursy specjalne na %{event}, tylko w jego dni: %{days}  ·  oferty to cena za godzinę rozkładową, zamknięte do zamknięcia"
@@ -45,6 +51,7 @@ _version: 2
   uk: "%{kind}, %{per}  ·  спецрейси на %{event}, лише в її дні: %{days}  ·  пропозиції — ціна за годину за розкладом, закриті до закриття"
 "Diesel buses":
   de: "Dieselbusse"
+  da: "Dieselbusser"
   fr: "Bus diesel"
   nl: "Dieselbussen"
   pl: "Autobusy diesla"
@@ -52,6 +59,7 @@ _version: 2
   uk: "Дизельні автобуси"
 "Your next bid is made with these buses: a special service runs its event's days whichever you choose; with electric buses its tours are run with electric ones.":
   de: "Dein nächstes Gebot wird mit diesen Bussen abgegeben: Ein Sonderverkehr läuft an den Tagen seines Ereignisses, egal was du wählst; mit Elektrobussen werden seine Umläufe elektrisch gefahren."
+  da: "Dit næste bud afgives med disse busser: en ekstraservice kører sin begivenheds dage, uanset hvad du vælger; med elbusser køres dens vognløb med elektriske."
   fr: "Ta prochaine offre est faite avec ces bus : un service spécial couvre les jours de son événement quel que soit ton choix ; avec des bus électriques, ses services sont assurés en électrique."
   nl: "Je volgende bod wordt met deze bussen gedaan: een speciale dienst loopt op de dagen van het evenement, wat je ook kiest; met elektrische bussen worden de omlopen elektrisch gereden."
   pl: "Twoja następna oferta jest składana z tymi autobusami: kursy specjalne obejmują dni wydarzenia niezależnie od wyboru; z autobusami elektrycznymi kursy są obsługiwane elektrycznie."
