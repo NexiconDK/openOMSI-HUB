@@ -3,6 +3,7 @@ _version: 2
 # saved in the original's place and restored: the English text is the key, as in app.yml.
 "Lines of the map":
   de: "Linien der Karte"
+  da: "Kortets linjer"
   fr: "Lignes de la carte"
   nl: "Lijnen van de kaart"
   pl: "Linie mapy"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Лінії мапи"
 "edited":
   de: "bearbeitet"
+  da: "redigeret"
   fr: "modifiée"
   nl: "bewerkt"
   pl: "zmieniona"
@@ -17,6 +19,7 @@ _version: 2
   uk: "змінена"
 "%{n} m · as the map drives it":
   de: "%{n} m · wie auf der Karte"
+  da: "%{n} m · som kortet kører den"
   fr: "%{n} m · comme sur la carte"
   nl: "%{n} m · zoals op de kaart"
   pl: "%{n} m · tak jak na mapie"
@@ -24,6 +27,7 @@ _version: 2
   uk: "%{n} м · як на мапі"
 "The table holds the map's departures, each in the tour the map runs it in: change them there. A change to the patterns below makes that group of days anew from them.":
   de: "Die Tabelle enthält die Abfahrten der Karte, jede in dem Umlauf, in dem die Karte sie fährt: dort änderst du sie. Eine Änderung an den Mustern unten erstellt diese Tagesgruppe neu aus ihnen."
+  da: "Tabellen indeholder kortets afgange, hver i det vognløb, kortet kører den i: ændr dem dér. En ændring af mønstrene nedenfor laver den gruppe af dage påny ud fra dem."
   fr: "Le tableau contient les départs de la carte, chacun dans le service où la carte le fait rouler : modifie-les là. Une modification des modèles ci-dessous refait ce groupe de jours à partir d'eux."
   nl: "De tabel bevat de vertrektijden van de kaart, elk in de omloop waarin de kaart hem rijdt: wijzig ze daar. Een wijziging in de patronen hieronder maakt die groep dagen opnieuw uit de patronen."
   pl: "Tabela zawiera odjazdy z mapy, każdy w obiegu, w którym jeździ na mapie: zmieniaj je tam. Zmiana wzorców poniżej tworzy tę grupę dni od nowa na ich podstawie."
@@ -31,6 +35,7 @@ _version: 2
   uk: "У таблиці — відправлення мапи, кожне в тому випуску, у якому його виконує мапа: змінюйте їх там. Зміна шаблонів нижче створює цю групу днів наново за ними."
 "Reading the map's roads: the line opens in a moment":
   de: "Die Straßen der Karte werden gelesen: die Linie öffnet sich gleich"
+  da: "Læser kortets veje: linjen åbner om et øjeblik"
   fr: "Lecture des routes de la carte : la ligne s'ouvre dans un instant"
   nl: "De wegen van de kaart worden gelezen: de lijn gaat zo open"
   pl: "Wczytywanie dróg mapy: linia zaraz się otworzy"
@@ -38,6 +43,7 @@ _version: 2
   uk: "Читаються дороги мапи: лінія зараз відкриється"
 "Line %{n} of the map runs no trip the timetable has: it cannot be opened":
   de: "Linie %{n} der Karte fährt keine Fahrt, die der Fahrplan kennt: sie lässt sich nicht öffnen"
+  da: "Kortets linje %{n} kører ingen tur, køreplanen har: den kan ikke åbnes"
   fr: "La ligne %{n} de la carte ne fait aucun trajet que l'horaire connaît : elle ne peut pas être ouverte"
   nl: "Lijn %{n} van de kaart rijdt geen rit die de dienstregeling kent: hij kan niet worden geopend"
   pl: "Linia %{n} mapy nie ma żadnego kursu znanego rozkładowi: nie można jej otworzyć"
@@ -45,6 +51,7 @@ _version: 2
   uk: "Лінія %{n} мапи не виконує жодного рейсу з розкладу: її не можна відкрити"
 "Line %{n} of the map is open: change it as one of your own. Saved, the game drives it instead of the map's original.":
   de: "Linie %{n} der Karte ist geöffnet: ändere sie wie eine eigene. Gespeichert fährt das Spiel sie statt des Originals der Karte."
+  da: "Kortets linje %{n} er åben: ændr den som en af dine egne. Gemt kører spillet den i stedet for kortets original."
   fr: "La ligne %{n} de la carte est ouverte : modifie-la comme une des tiennes. Enregistrée, le jeu la fait rouler à la place de l'originale de la carte."
   nl: "Lijn %{n} van de kaart is geopend: wijzig hem als een eigen lijn. Opgeslagen rijdt het spel hem in plaats van het origineel van de kaart."
   pl: "Linia %{n} mapy jest otwarta: zmieniaj ją jak własną. Po zapisaniu gra jeździ nią zamiast oryginału mapy."
@@ -52,6 +59,7 @@ _version: 2
   uk: "Лінію %{n} мапи відкрито: змінюйте її як свою. Після збереження гра їздить нею замість оригіналу мапи."
 "%{n} leg(s) the map has no way for are routed over the roads.":
   de: "%{n} Abschnitt(e), für die die Karte keinen Weg hat, sind über die Straßen geführt."
+  da: "%{n} strækning(er), kortet ikke har nogen vej for, er rutet over vejene."
   fr: "%{n} tronçon(s) sans chemin dans la carte passent par les routes."
   nl: "%{n} traject(en) waarvoor de kaart geen weg heeft, lopen nu over de wegen."
   pl: "%{n} odcinek(ów), dla których mapa nie ma drogi, poprowadzono po drogach."
@@ -59,6 +67,7 @@ _version: 2
   uk: "Ділянок без шляху на мапі, прокладених дорогами: %{n}."
 "%{n} of its trips could not be taken: they have fewer than two stops the timetable knows.":
   de: "%{n} ihrer Fahrten ließen sich nicht übernehmen: sie haben weniger als zwei Haltestellen, die der Fahrplan kennt."
+  da: "%{n} af dens ture kunne ikke tages: de har færre end to stoppesteder, køreplanen kender."
   fr: "%{n} de ses trajets n'ont pas pu être repris : ils ont moins de deux arrêts que l'horaire connaît."
   nl: "%{n} van zijn ritten konden niet worden overgenomen: ze hebben minder dan twee haltes die de dienstregeling kent."
   pl: "Nie udało się przejąć %{n} jej kursów: mają mniej niż dwa przystanki znane rozkładowi."
@@ -66,6 +75,7 @@ _version: 2
   uk: "Не вдалося взяти рейсів: %{n} — у них менше двох зупинок, відомих розкладу."
 "Your edit goes: the game runs the map's own line again, exactly as the map has it":
   de: "Deine Bearbeitung verschwindet: das Spiel fährt wieder die Linie der Karte, genau so, wie die Karte sie hat"
+  da: "Din redigering forsvinder: spillet kører igen kortets egen linje, præcis som kortet har den"
   fr: "Ta modification disparaît : le jeu refait rouler la ligne de la carte, exactement comme la carte l'a"
   nl: "Je bewerking verdwijnt: het spel rijdt weer de eigen lijn van de kaart, precies zoals de kaart hem heeft"
   pl: "Twoja zmiana znika: gra znów jeździ linią mapy, dokładnie taką, jaką ma mapa"
@@ -73,6 +83,7 @@ _version: 2
   uk: "Ваші зміни зникнуть: гра знову їздить лінією мапи точно так, як вона є на мапі"
 "Variant %{n}":
   de: "Variante %{n}"
+  da: "Variant %{n}"
   fr: "Variante %{n}"
   nl: "Variant %{n}"
   pl: "Wariant %{n}"
@@ -80,6 +91,7 @@ _version: 2
   uk: "Варіант %{n}"
 "Restore the map's original":
   de: "Original der Karte wiederherstellen"
+  da: "Gendan kortets original"
   fr: "Rétablir l'originale de la carte"
   nl: "Origineel van de kaart terugzetten"
   pl: "Przywróć oryginał mapy"
@@ -87,6 +99,7 @@ _version: 2
   uk: "Повернути оригінал мапи"
 "Press again: the map's original back":
   de: "Noch einmal: das Original der Karte zurück"
+  da: "Tryk igen: kortets original tilbage"
   fr: "Encore une fois : l'originale de la carte revient"
   nl: "Nog eens: het origineel van de kaart terug"
   pl: "Jeszcze raz: oryginał mapy wraca"
@@ -94,6 +107,7 @@ _version: 2
   uk: "Ще раз: повернути оригінал мапи"
 "Press again: the edit goes and the game runs the map's own line as before":
   de: "Noch einmal drücken: die Bearbeitung verschwindet und das Spiel fährt die Linie der Karte wie zuvor"
+  da: "Tryk igen: redigeringen forsvinder, og spillet kører kortets egen linje som før"
   fr: "Appuie encore : la modification disparaît et le jeu fait rouler la ligne de la carte comme avant"
   nl: "Druk nog eens: de bewerking verdwijnt en het spel rijdt de eigen lijn van de kaart weer zoals eerst"
   pl: "Naciśnij jeszcze raz: zmiana znika, a gra jeździ linią mapy jak wcześniej"
@@ -101,6 +115,7 @@ _version: 2
   uk: "Натисніть ще раз: зміни зникнуть, і гра їздитиме лінією мапи як раніше"
 "Line %{n} saved: the game drives it instead of the map's original (the next game start picks it up)":
   de: "Linie %{n} gespeichert: das Spiel fährt sie statt des Originals der Karte (der nächste Spielstart übernimmt sie)"
+  da: "Linje %{n} gemt: spillet kører den i stedet for kortets original (næste spilstart henter den)"
   fr: "Ligne %{n} enregistrée : le jeu la fait rouler à la place de l'originale de la carte (le prochain lancement du jeu la prend)"
   nl: "Lijn %{n} opgeslagen: het spel rijdt hem in plaats van het origineel van de kaart (de volgende start van het spel neemt hem mee)"
   pl: "Linia %{n} zapisana: gra jeździ nią zamiast oryginału mapy (następne uruchomienie gry ją uwzględni)"
@@ -108,6 +123,7 @@ _version: 2
   uk: "Лінію %{n} збережено: гра їздить нею замість оригіналу мапи (її підхопить наступний запуск гри)"
 "Not restored":
   de: "Nicht wiederhergestellt"
+  da: "Ikke gendannet"
   fr: "Non rétablie"
   nl: "Niet teruggezet"
   pl: "Nie przywrócono"
@@ -115,6 +131,7 @@ _version: 2
   uk: "Не повернуто"
 "Taken out of your lines, but there is no content folder to put the map's line back into":
   de: "Aus deinen Linien genommen, aber es gibt keinen Inhaltsordner, in den die Linie der Karte zurückgelegt werden kann"
+  da: "Taget ud af dine linjer, men der er ingen indholdsmappe at lægge kortets linje tilbage i"
   fr: "Retirée de tes lignes, mais il n'y a pas de dossier de contenu où remettre la ligne de la carte"
   nl: "Uit je lijnen gehaald, maar er is geen inhoudsmap om de lijn van de kaart in terug te zetten"
   pl: "Usunięto z twoich linii, ale nie ma folderu zawartości, do którego można przywrócić linię mapy"
@@ -122,6 +139,7 @@ _version: 2
   uk: "Прибрано з ваших ліній, але немає теки вмісту, куди повернути лінію мапи"
 "Line %{n} is the map's own again: the game runs its original as before":
   de: "Linie %{n} gehört wieder der Karte: das Spiel fährt ihr Original wie zuvor"
+  da: "Linje %{n} er kortets egen igen: spillet kører dens original som før"
   fr: "La ligne %{n} est de nouveau celle de la carte : le jeu fait rouler l'originale comme avant"
   nl: "Lijn %{n} is weer van de kaart: het spel rijdt het origineel zoals eerst"
   pl: "Linia %{n} znów należy do mapy: gra jeździ jej oryginałem jak wcześniej"
@@ -129,6 +147,7 @@ _version: 2
   uk: "Лінія %{n} знову мапи: гра їздить оригіналом як раніше"
 "Edit the line in the line editor: its route, timetable and displays":
   de: "Die Linie im Linieneditor bearbeiten: ihren Weg, ihren Fahrplan und ihre Anzeigen"
+  da: "Rediger linjen i linjeeditoren: dens rute, køreplan og skærme"
   fr: "Modifier la ligne dans l'éditeur de lignes : son parcours, son horaire et ses afficheurs"
   nl: "De lijn bewerken in de lijneditor: zijn route, dienstregeling en displays"
   pl: "Edytuj linię w edytorze linii: jej trasę, rozkład i wyświetlacze"
@@ -139,6 +158,7 @@ _version: 2
 # again).
 "Automatic: the program makes it":
   de: "Automatisch: das Programm legt ihn an"
+  da: "Automatisk: programmet laver den"
   fr: "Automatique : le programme le crée"
   nl: "Automatisch: het programma maakt hem"
   pl: "Automatycznie: program ją tworzy"
@@ -146,6 +166,7 @@ _version: 2
   uk: "Автоматично: його будує програма"
 "Manual: click its stops yourself":
   de: "Manuell: seine Haltestellen selbst anklicken"
+  da: "Manuelt: klik selv på dens stoppesteder"
   fr: "Manuel : cliquez vous-même ses arrêts"
   nl: "Handmatig: klik zelf de haltes aan"
   pl: "Ręcznie: sam klikasz jej przystanki"
@@ -153,6 +174,7 @@ _version: 2
   uk: "Вручну: клацайте його зупинки самі"
 "The program makes the way back from the outbound: its stops the other way round, each the stop across the road, and again whenever they change.":
   de: "Das Programm legt den Rückweg aus dem Hinweg an: seine Haltestellen in umgekehrter Reihenfolge, jeweils die Haltestelle gegenüber – und wieder neu, sobald sie sich ändern."
+  da: "Programmet laver returturen ud fra udturen: dens stoppesteder den anden vej, hvert det stoppested på den anden side af vejen, og igen, hver gang de ændres."
   fr: "Le programme crée le retour à partir de l'aller : ses arrêts dans l'autre sens, chacun remplacé par l'arrêt d'en face, et de nouveau dès qu'ils changent."
   nl: "Het programma maakt de terugweg van de heenweg: de haltes in omgekeerde volgorde, elk de halte aan de overkant, en opnieuw zodra die veranderen."
   pl: "Program tworzy drogę powrotną z kierunku tam: przystanki w odwrotnej kolejności, każdy zastąpiony przystankiem po drugiej stronie, i tworzy ją od nowa przy każdej ich zmianie."
@@ -160,6 +182,7 @@ _version: 2
   uk: "Програма будує зворотний шлях із напрямку туди: зупинки у зворотному порядку, кожна — зупинка через дорогу, і будує його заново щоразу, коли вони змінюються."
 "You click the stops of the way back on the map, as the outbound's.":
   de: "Du klickst die Haltestellen des Rückwegs selbst auf der Karte an, wie die des Hinwegs."
+  da: "Du klikker på returturens stoppesteder på kortet, som udturens."
   fr: "Vous cliquez vous-même les arrêts du retour sur la carte, comme ceux de l'aller."
   nl: "Je klikt de haltes van de terugweg zelf aan op de kaart, zoals die van de heenweg."
   pl: "Sam klikasz przystanki drogi powrotnej na mapie, tak jak kierunku tam."
@@ -167,6 +190,7 @@ _version: 2
   uk: "Ви самі клацаєте зупинки зворотного шляху на мапі, як і для напрямку туди."
 "Click a stop on the map to put it in, and again to take it out. Shift+click puts in a stop the line has already, as a loop needs.":
   de: "Klicke eine Haltestelle auf der Karte an, um sie aufzunehmen, und noch einmal, um sie wieder herauszunehmen. Umschalt+Klick nimmt eine Haltestelle auf, die die Linie schon hat, wie eine Schleife es braucht."
+  da: "Klik på et stoppested på kortet for at sætte det ind, og igen for at tage det ud. Shift+klik sætter et stoppested ind, som linjen allerede har, som en sløjfe kræver."
   fr: "Cliquez un arrêt sur la carte pour l'ajouter, et encore une fois pour le retirer. Maj+clic ajoute un arrêt que la ligne a déjà, comme il le faut pour une boucle."
   nl: "Klik een halte op de kaart aan om hem toe te voegen, en nog eens om hem eruit te halen. Shift+klik voegt een halte toe die de lijn al heeft, zoals een lus nodig heeft."
   pl: "Kliknij przystanek na mapie, aby go dodać, i jeszcze raz, aby go usunąć. Shift+klik dodaje przystanek, który linia już ma, jak w przypadku pętli."
@@ -174,6 +198,7 @@ _version: 2
   uk: "Клацніть зупинку на мапі, щоб додати її, і ще раз, щоб прибрати. Shift+клацання додає зупинку, яка вже є в лінії, — так потрібно для кільця."
 "Press Automatic again: the way back you made goes, and the program makes it from the outbound":
   de: "Noch einmal „Automatisch“ drücken: Dein Rückweg geht verloren, und das Programm legt ihn aus dem Hinweg an"
+  da: "Tryk på Automatisk igen: den returtur, du lavede, forsvinder, og programmet laver den ud fra udturen"
   fr: "Appuyez encore sur « Automatique » : le retour que vous avez fait disparaît et le programme le crée à partir de l'aller"
   nl: "Druk nog eens op Automatisch: de terugweg die je maakte verdwijnt, en het programma maakt hem van de heenweg"
   pl: "Naciśnij ponownie „Automatycznie”: Twoja droga powrotna zniknie, a program utworzy ją z kierunku tam"
@@ -181,6 +206,7 @@ _version: 2
   uk: "Натисніть «Автоматично» ще раз: ваш зворотний шлях зникне, і програма побудує його з напрямку туди"
 "The way back follows the outbound: give the outbound its stops, and it is made from them":
   de: "Der Rückweg folgt dem Hinweg: Gib dem Hinweg seine Haltestellen, dann wird er daraus angelegt"
+  da: "Returturen følger udturen: giv udturen dens stoppesteder, så laves den ud fra dem"
   fr: "Le retour suit l'aller : donnez ses arrêts à l'aller, et il sera créé à partir d'eux"
   nl: "De terugweg volgt de heenweg: geef de heenweg zijn haltes, dan wordt hij daaruit gemaakt"
   pl: "Droga powrotna podąża za kierunkiem tam: dodaj przystanki kierunku tam, a zostanie z nich utworzona"
@@ -188,6 +214,7 @@ _version: 2
   uk: "Зворотний шлях іде за напрямком туди: задайте зупинки напрямку туди, і його буде побудовано з них"
 "The program makes the way back from the outbound now, and makes it again whenever the outbound's stops change":
   de: "Das Programm legt den Rückweg jetzt aus dem Hinweg an, und wieder neu, sobald sich dessen Haltestellen ändern"
+  da: "Programmet laver nu returturen ud fra udturen og laver den igen, hver gang udturens stoppesteder ændres"
   fr: "Le programme crée maintenant le retour à partir de l'aller, et le recrée dès que les arrêts de l'aller changent"
   nl: "Het programma maakt de terugweg nu van de heenweg, en opnieuw zodra de haltes van de heenweg veranderen"
   pl: "Program tworzy teraz drogę powrotną z kierunku tam i tworzy ją od nowa, gdy zmienią się przystanki kierunku tam"
@@ -195,6 +222,7 @@ _version: 2
   uk: "Тепер програма будує зворотний шлях із напрямку туди й будує його заново щоразу, коли змінюються його зупинки"
 "The way back is yours now: click stops on the map to put them in or take them out":
   de: "Der Rückweg gehört jetzt dir: Klicke Haltestellen auf der Karte an, um sie aufzunehmen oder herauszunehmen"
+  da: "Returturen er nu din: klik på stoppesteder på kortet for at sætte dem ind eller tage dem ud"
   fr: "Le retour est à vous maintenant : cliquez des arrêts sur la carte pour les ajouter ou les retirer"
   nl: "De terugweg is nu van jou: klik haltes op de kaart aan om ze toe te voegen of eruit te halen"
   pl: "Droga powrotna jest teraz Twoja: klikaj przystanki na mapie, aby je dodać lub usunąć"
@@ -202,6 +230,7 @@ _version: 2
   uk: "Тепер зворотний шлях ваш: клацайте зупинки на мапі, щоб додати чи прибрати їх"
 "Click the stops of the way back on the map, in the order the bus calls at them":
   de: "Klicke die Haltestellen des Rückwegs auf der Karte an, in der Reihenfolge, in der der Bus sie anfährt"
+  da: "Klik på returturens stoppesteder på kortet, i den rækkefølge bussen standser ved dem"
   fr: "Cliquez les arrêts du retour sur la carte, dans l'ordre où le bus les dessert"
   nl: "Klik de haltes van de terugweg aan op de kaart, in de volgorde waarin de bus ze aandoet"
   pl: "Klikaj przystanki drogi powrotnej na mapie w kolejności, w jakiej obsługuje je autobus"
@@ -209,6 +238,7 @@ _version: 2
   uk: "Клацайте зупинки зворотного шляху на мапі в тому порядку, в якому їх проходить автобус"
 "The way back is set by hand now: it no longer follows the outbound":
   de: "Der Rückweg ist jetzt von Hand angelegt: Er folgt dem Hinweg nicht mehr"
+  da: "Returturen er nu sat i hånden: den følger ikke længere udturen"
   fr: "Le retour est maintenant fait à la main : il ne suit plus l'aller"
   nl: "De terugweg is nu met de hand gemaakt: hij volgt de heenweg niet meer"
   pl: "Droga powrotna jest teraz ustawiana ręcznie: nie podąża już za kierunkiem tam"
@@ -216,6 +246,7 @@ _version: 2
   uk: "Тепер зворотний шлях задається вручну: він більше не йде за напрямком туди"
 "Give the outbound its stops: the way back is made from them":
   de: "Gib dem Hinweg seine Haltestellen: Der Rückweg wird daraus angelegt"
+  da: "Giv udturen dens stoppesteder: returturen laves ud fra dem"
   fr: "Donnez ses arrêts à l'aller : le retour est créé à partir d'eux"
   nl: "Geef de heenweg zijn haltes: de terugweg wordt daaruit gemaakt"
   pl: "Dodaj przystanki kierunku tam: droga powrotna powstanie z nich"
@@ -223,6 +254,7 @@ _version: 2
   uk: "Задайте зупинки напрямку туди: зворотний шлях будується з них"
 "Across the road from %{name}: a name like it":
   de: "Gegenüber von %{name}: ein ähnlicher Name"
+  da: "Overfor %{name}: et navn som det"
   fr: "En face de %{name} : un nom semblable"
   nl: "Aan de overkant van %{name}: een naam die erop lijkt"
   pl: "Naprzeciw %{name}: podobna nazwa"
@@ -230,6 +262,7 @@ _version: 2
   uk: "Навпроти %{name}: схожа назва"
 "No stop across the road: the bus calls at this one both ways":
   de: "Keine Haltestelle gegenüber: Der Bus hält in beide Richtungen hier"
+  da: "Intet stoppested overfor: bussen standser ved dette begge veje"
   fr: "Pas d'arrêt en face : le bus dessert celui-ci dans les deux sens"
   nl: "Geen halte aan de overkant: de bus doet deze in beide richtingen aan"
   pl: "Brak przystanku po drugiej stronie: autobus zatrzymuje się tu w obu kierunkach"
@@ -237,6 +270,7 @@ _version: 2
   uk: "Немає зупинки через дорогу: автобус зупиняється тут в обох напрямках"
 "No stop across the road for %{n} stop(s): the bus calls at the outbound's own (%{names})":
   de: "Keine Haltestelle gegenüber für %{n} Haltestelle(n): Der Bus hält an denen des Hinwegs (%{names})"
+  da: "Intet stoppested overfor for %{n} stoppested(er): bussen standser ved udturens eget (%{names})"
   fr: "Pas d'arrêt en face pour %{n} arrêt(s) : le bus dessert ceux de l'aller (%{names})"
   nl: "Geen halte aan de overkant voor %{n} halte(s): de bus doet die van de heenweg aan (%{names})"
   pl: "Przystanki bez pary po drugiej stronie: %{n}; autobus zatrzymuje się na przystankach kierunku tam (%{names})"
@@ -244,6 +278,7 @@ _version: 2
   uk: "Зупинок без пари через дорогу: %{n}; автобус зупиняється на зупинках напрямку туди (%{names})"
 "%{n} leg(s) have no way over the roads (red): drag them, or set the way back by hand":
   de: "%{n} Abschnitt(e) haben keinen Weg über die Straßen (rot): ziehe sie oder lege den Rückweg von Hand an"
+  da: "%{n} strækning(er) har ingen vej over vejene (rød): træk dem, eller sæt returturen i hånden"
   fr: "%{n} tronçon(s) n'ont pas de chemin (en rouge) : faites-les glisser ou faites le retour à la main"
   nl: "%{n} deel/delen hebben geen weg over de wegen (rood): versleep ze of maak de terugweg met de hand"
   pl: "Odcinki bez drogi (czerwone): %{n}; przeciągnij je lub ustaw drogę powrotną ręcznie"
@@ -251,6 +286,7 @@ _version: 2
   uk: "Відрізків без шляху дорогами (червоні): %{n}; перетягніть їх або задайте зворотний шлях вручну"
 "%{n} stop(s) taken by a name like the outbound's (marked): check them on the map":
   de: "%{n} Haltestelle(n) nach einem ähnlichen Namen gewählt (markiert): prüfe sie auf der Karte"
+  da: "%{n} stoppested(er) taget efter et navn som udturens (markeret): tjek dem på kortet"
   fr: "%{n} arrêt(s) choisi(s) d'après un nom semblable (marqués) : vérifiez-les sur la carte"
   nl: "%{n} halte(s) gekozen op een naam die erop lijkt (gemarkeerd): controleer ze op de kaart"
   pl: "Przystanki wybrane po podobnej nazwie (oznaczone): %{n}; sprawdź je na mapie"
@@ -258,6 +294,7 @@ _version: 2
   uk: "Зупинок, вибраних за схожою назвою (позначені): %{n}; перевірте їх на мапі"
 "Every stop has its stop across the road, and every leg a way over the roads":
   de: "Jede Haltestelle hat ihre Haltestelle gegenüber und jeder Abschnitt einen Weg über die Straßen"
+  da: "Hvert stoppested har sit stoppested overfor, og hver strækning en vej over vejene"
   fr: "Chaque arrêt a son arrêt d'en face, et chaque tronçon un chemin"
   nl: "Elke halte heeft zijn halte aan de overkant, en elk deel een weg over de wegen"
   pl: "Każdy przystanek ma swój przystanek po drugiej stronie, a każdy odcinek drogę"

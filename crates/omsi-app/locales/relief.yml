@@ -3,6 +3,7 @@ _version: 2
 # takes a tour over from the AI waits on foot at the stop, the AI's bus is handed over there.
 "Wait here for your bus: line %{line} at %{time}. Its driver gets out at the stop, then G at the front door takes the wheel.":
   de: "Warte hier auf deinen Bus: Linie %{line} um %{time}. Sein Fahrer steigt an der Haltestelle aus, dann übernimmt G an der Vordertür das Steuer."
+  da: "Vent her på din bus: linje %{line} kl. %{time}. Dens chauffør stiger ud ved stoppestedet, og derefter tager G ved fordøren rattet."
   fr: "Attends ton bus ici : ligne %{line} à %{time}. Son conducteur descend à l'arrêt, puis G à la porte avant prend le volant."
   nl: "Wacht hier op je bus: lijn %{line} om %{time}. De chauffeur stapt bij de halte uit, daarna neemt G bij de voordeur het stuur over."
   pl: "Czekaj tu na swój autobus: linia %{line} o %{time}. Kierowca wysiądzie na przystanku, potem G przy przednich drzwiach przejmuje kierownicę."
@@ -10,6 +11,7 @@ _version: 2
   uk: "Чекай тут на свій автобус: маршрут %{line} о %{time}. Водій вийде на зупинці, потім G біля передніх дверей — за кермо."
 "Your bus is here: walk up to it.":
   de: "Dein Bus ist da: geh zu ihm hin."
+  da: "Din bus er her: gå hen til den."
   fr: "Ton bus est là : approche-toi."
   nl: "Je bus is er: loop ernaartoe."
   pl: "Twój autobus już jest: podejdź do niego."
@@ -17,6 +19,7 @@ _version: 2
   uk: "Твій автобус прибув: підійди до нього."
 "The driver switches the engine off and gets out: then G at the front door takes the wheel.":
   de: "Der Fahrer stellt den Motor ab und steigt aus: dann übernimmt G an der Vordertür das Steuer."
+  da: "Chaufføren slukker motoren og stiger ud: derefter tager G ved fordøren rattet."
   fr: "Le conducteur coupe le moteur et descend : ensuite G à la porte avant prend le volant."
   nl: "De chauffeur zet de motor af en stapt uit: daarna neemt G bij de voordeur het stuur over."
   pl: "Kierowca wyłącza silnik i wysiada: potem G przy przednich drzwiach przejmuje kierownicę."
@@ -24,6 +27,7 @@ _version: 2
   uk: "Водій глушить двигун і виходить: потім G біля передніх дверей — за кермо."
 "Your bus: G at the front door takes the wheel. The engine is off: start it (Shift+U).":
   de: "Dein Bus: G an der Vordertür übernimmt das Steuer. Der Motor ist aus: starte ihn (Umschalt+U)."
+  da: "Din bus: G ved fordøren tager rattet. Motoren er slukket: start den (Shift+U)."
   fr: "Ton bus : G à la porte avant prend le volant. Le moteur est coupé : démarre-le (Maj+U)."
   nl: "Je bus: G bij de voordeur neemt het stuur over. De motor staat uit: start hem (Shift+U)."
   pl: "Twój autobus: G przy przednich drzwiach przejmuje kierownicę. Silnik jest wyłączony: uruchom go (Shift+U)."
@@ -31,6 +35,7 @@ _version: 2
   uk: "Твій автобус: G біля передніх дверей — за кермо. Двигун заглушено: заведи його (Shift+U)."
 "Wait: the driver gets out first.":
   de: "Warte: zuerst steigt der Fahrer aus."
+  da: "Vent: chaufføren stiger først ud."
   fr: "Attends : le conducteur descend d'abord."
   nl: "Wacht: eerst stapt de chauffeur uit."
   pl: "Poczekaj: najpierw wysiada kierowca."
@@ -38,6 +43,7 @@ _version: 2
   uk: "Зачекай: спершу вийде водій."
 "You were not there in time: the AI drives the %{time}. Your bus comes to %{stop} for the %{next}: ride along to there (G at a door of the bus).":
   de: "Du warst nicht rechtzeitig da: die KI fährt die %{time}. Dein Bus kommt um %{next} nach %{stop}: fahr bis dorthin mit (G an einer Tür des Busses)."
+  da: "Du var ikke der i tide: AI'en kører turen kl. %{time}. Din bus kommer til %{stop} for turen %{next}: kør med derhen (G ved en dør på bussen)."
   fr: "Tu n'étais pas là à temps : l'IA fait le départ de %{time}. Ton bus arrive à %{stop} pour celui de %{next} : monte jusque-là (G à une porte du bus)."
   nl: "Je was er niet op tijd: de AI rijdt de %{time}. Je bus komt naar %{stop} voor de %{next}: rij tot daar mee (G bij een deur van de bus)."
   pl: "Nie zdążyłeś: SI prowadzi kurs o %{time}. Twój autobus przyjedzie na %{stop} na kurs o %{next}: jedź tam jako pasażer (G przy drzwiach autobusu)."
@@ -45,6 +51,7 @@ _version: 2
   uk: "Ти не встиг: рейс о %{time} веде ШІ. Твій автобус прийде на %{stop} до рейсу о %{next}: доїдь туди пасажиром (G біля дверей автобуса)."
 "You were not there in time: the AI drives the rest of your duty.":
   de: "Du warst nicht rechtzeitig da: die KI fährt den Rest deines Dienstes."
+  da: "Du var ikke der i tide: AI'en kører resten af din vagt."
   fr: "Tu n'étais pas là à temps : l'IA assure la fin de ton service."
   nl: "Je was er niet op tijd: de AI rijdt de rest van je dienst."
   pl: "Nie zdążyłeś: SI prowadzi resztę twojej służby."
@@ -52,6 +59,7 @@ _version: 2
   uk: "Ти не встиг: решту зміни веде ШІ."
 "The world does not know this trip: your bus is put at the stop.":
   de: "Die Welt kennt diese Fahrt nicht: dein Bus wird an die Haltestelle gestellt."
+  da: "Verdenen kender ikke denne tur: din bus sættes ved stoppestedet."
   fr: "Le monde ne connaît pas ce trajet : ton bus est placé à l'arrêt."
   nl: "De wereld kent deze rit niet: je bus wordt bij de halte neergezet."
   pl: "Świat nie zna tego kursu: twój autobus zostaje postawiony na przystanku."
@@ -59,6 +67,7 @@ _version: 2
   uk: "Світ не знає цього рейсу: твій автобус поставлено на зупинці."
 "Your bus could not be put down: %{why}":
   de: "Dein Bus konnte nicht hingestellt werden: %{why}"
+  da: "Din bus kunne ikke sættes af: %{why}"
   fr: "Ton bus n'a pas pu être placé : %{why}"
   nl: "Je bus kon niet worden neergezet: %{why}"
   pl: "Nie udało się postawić twojego autobusu: %{why}"
@@ -66,6 +75,7 @@ _version: 2
   uk: "Не вдалося поставити твій автобус: %{why}"
 "Your bus comes with %{name}: they get out at the stop and hand it over to you.":
   de: "Dein Bus kommt mit %{name}: an der Haltestelle steigt er aus und übergibt ihn dir."
+  da: "Din bus kommer med %{name}: de stiger ud ved stoppestedet og overdrager den til dig."
   fr: "Ton bus arrive avec %{name} : il descend à l'arrêt et te le remet."
   nl: "Je bus komt met %{name}: die stapt bij de halte uit en draagt hem aan jou over."
   pl: "Twój autobus przyjedzie z %{name}: wysiądzie na przystanku i przekaże ci go."
@@ -73,6 +83,7 @@ _version: 2
   uk: "Твій автобус веде %{name}: на зупинці він вийде й передасть його тобі."
 "%{name} waits here to take your bus over: stop, get up (Ctrl+Shift+G) and get out.":
   de: "%{name} wartet hier, um deinen Bus zu übernehmen: halte an, steh auf (Strg+Umschalt+G) und steig aus."
+  da: "%{name} venter her for at overtage din bus: stop, rejs dig (Ctrl+Shift+G) og stig ud."
   fr: "%{name} attend ici pour reprendre ton bus : arrête-toi, lève-toi (Ctrl+Maj+G) et descends."
   nl: "%{name} wacht hier om je bus over te nemen: stop, sta op (Ctrl+Shift+G) en stap uit."
   pl: "%{name} czeka tu, żeby przejąć twój autobus: zatrzymaj się, wstań (Ctrl+Shift+G) i wysiądź."
@@ -80,6 +91,7 @@ _version: 2
   uk: "%{name} чекає тут, щоб прийняти твій автобус: зупинись, встань (Ctrl+Shift+G) і вийди."
 "Handed over: %{name} drives on.":
   de: "Übergeben: %{name} fährt weiter."
+  da: "Overdraget: %{name} kører videre."
   fr: "Remis : %{name} continue."
   nl: "Overgedragen: %{name} rijdt verder."
   pl: "Przekazano: %{name} jedzie dalej."
@@ -89,6 +101,7 @@ _version: 2
 # own the player may drive the tour's next trip as well (the game menu's line, `relief::drive_on`).
 "Drive on with the next trip":
   de: "Mit der nächsten Fahrt weiterfahren"
+  da: "Kør videre med næste tur"
   fr: "Continuer avec le trajet suivant"
   nl: "Doorrijden met de volgende rit"
   pl: "Jedź dalej następnym kursem"
@@ -96,6 +109,7 @@ _version: 2
   uk: "Їхати далі наступним рейсом"
 "You drive on: the %{time} is yours too.":
   de: "Du fährst weiter: die Fahrt um %{time} gehört auch dir."
+  da: "Du kører videre: turen kl. %{time} er også din."
   fr: "Tu continues : le trajet de %{time} est aussi à toi."
   nl: "Je rijdt door: de rit van %{time} is ook van jou."
   pl: "Jedziesz dalej: kurs o %{time} też jest twój."
@@ -103,6 +117,7 @@ _version: 2
   uk: "Ти їдеш далі: рейс о %{time} теж твій."
 "The tour has no trip after this one for you, or it has left.":
   de: "Der Umlauf hat nach dieser Fahrt keine weitere für dich, oder sie ist schon abgefahren."
+  da: "Vognløbet har ingen tur efter denne til dig, eller den er kørt."
   fr: "Le service n'a pas de trajet après celui-ci pour toi, ou il est déjà parti."
   nl: "De omloop heeft na deze rit geen rit meer voor jou, of die is al vertrokken."
   pl: "Brygada nie ma dla ciebie kursu po tym albo już odjechał."
@@ -110,6 +125,7 @@ _version: 2
   uk: "Після цього рейсу у виходу немає рейсу для тебе, або він уже пішов."
 "End of your trip: the AI drives the tour on from here - or drive its next trip yourself (game menu › Drive on with the next trip).":
   de: "Ende deiner Fahrt: die KI fährt den Umlauf von hier aus weiter - oder fahre seine nächste Fahrt selbst (Spielmenü › Mit der nächsten Fahrt weiterfahren)."
+  da: "Slut på din tur: AI'en kører vognløbet videre herfra - eller kør selv dens næste tur (spilmenu › Kør videre med næste tur)."
   fr: "Fin de ton trajet : l'IA poursuit le service à partir d'ici - ou conduis toi-même son trajet suivant (menu du jeu › Continuer avec le trajet suivant)."
   nl: "Einde van je rit: de AI rijdt de omloop vanaf hier verder - of rijd de volgende rit zelf (spelmenu › Doorrijden met de volgende rit)."
   pl: "Koniec twojego kursu: SI prowadzi brygadę dalej stąd - albo poprowadź jej następny kurs sam (menu gry › Jedź dalej następnym kursem)."
@@ -120,6 +136,7 @@ _version: 2
 # another, his duty going on with another tour, waits for that trip's bus (`relief`).
 "The AI drives the tour on with your bus at %{time}: stop, get up (Ctrl+Shift+G) and get out - its driver takes it over.":
   de: "Die KI fährt den Umlauf um %{time} mit deinem Bus weiter: halte an, steh auf (Strg+Umschalt+G) und steig aus - ihr Fahrer übernimmt ihn."
+  da: "AI'en kører vognløbet videre med din bus kl. %{time}: stop, rejs dig (Ctrl+Shift+G) og stig ud - dens chauffør overtager den."
   fr: "L'IA poursuit le service avec ton bus à %{time} : arrête-toi, lève-toi (Ctrl+Maj+G) et descends - son conducteur le reprend."
   nl: "De AI rijdt de omloop om %{time} verder met jouw bus: stop, sta op (Ctrl+Shift+G) en stap uit - haar chauffeur neemt hem over."
   pl: "SI prowadzi brygadę dalej twoim autobusem o %{time}: zatrzymaj się, wstań (Ctrl+Shift+G) i wysiądź - jej kierowca go przejmie."
@@ -127,6 +144,7 @@ _version: 2
   uk: "ШІ продовжить вихід на твоєму автобусі о %{time}: зупинись, встань (Ctrl+Shift+G) і вийди - його водій прийме автобус."
 "The driver comes to take your bus over.":
   de: "Der Fahrer kommt, um deinen Bus zu übernehmen."
+  da: "Chaufføren kommer for at overtage din bus."
   fr: "Le conducteur arrive pour reprendre ton bus."
   nl: "De chauffeur komt je bus overnemen."
   pl: "Kierowca idzie przejąć twój autobus."
@@ -134,6 +152,7 @@ _version: 2
   uk: "Водій іде прийняти твій автобус."
 "Handed over: the AI drives the tour on.":
   de: "Übergeben: die KI fährt den Umlauf weiter."
+  da: "Overdraget: AI'en kører vognløbet videre."
   fr: "Remis : l'IA poursuit le service."
   nl: "Overgedragen: de AI rijdt de omloop verder."
   pl: "Przekazano: SI prowadzi brygadę dalej."
@@ -141,6 +160,7 @@ _version: 2
   uk: "Передано: ШІ веде вихід далі."
 "The AI could not take your bus over: it stays yours.":
   de: "Die KI konnte deinen Bus nicht übernehmen: er bleibt deiner."
+  da: "AI'en kunne ikke overtage din bus: den forbliver din."
   fr: "L'IA n'a pas pu reprendre ton bus : il reste le tien."
   nl: "De AI kon je bus niet overnemen: hij blijft van jou."
   pl: "SI nie mogła przejąć twojego autobusu: zostaje twój."
@@ -148,6 +168,7 @@ _version: 2
   uk: "ШІ не зміг прийняти твій автобус: він лишається твоїм."
 "Your duty goes on with line %{line} at %{time} from %{stop}: wait there for its bus.":
   de: "Dein Dienst geht weiter mit Linie %{line} um %{time} ab %{stop}: warte dort auf ihren Bus."
+  da: "Din vagt fortsætter med linje %{line} kl. %{time} fra %{stop}: vent dér på dens bus."
   fr: "Ton service continue avec la ligne %{line} à %{time} depuis %{stop} : attends-y son bus."
   nl: "Je dienst gaat verder met lijn %{line} om %{time} vanaf %{stop}: wacht daar op haar bus."
   pl: "Twoja służba trwa dalej linią %{line} o %{time} z przystanku %{stop}: czekaj tam na jej autobus."
@@ -155,6 +176,7 @@ _version: 2
   uk: "Твоя зміна триває маршрутом %{line} о %{time} від зупинки %{stop}: чекай там на його автобус."
 "Hand the bus over to the AI here":
   de: "Den Bus hier an die KI übergeben"
+  da: "Overdrag bussen til AI'en her"
   fr: "Remettre le bus à l'IA ici"
   nl: "De bus hier aan de AI overdragen"
   pl: "Przekaż tu autobus SI"
@@ -162,6 +184,7 @@ _version: 2
   uk: "Передати автобус ШІ тут"
 "The AI is asked to take your bus over here.":
   de: "Die KI wird gefragt, deinen Bus hier zu übernehmen."
+  da: "AI'en bliver bedt om at overtage din bus her."
   fr: "On demande à l'IA de reprendre ton bus ici."
   nl: "De AI wordt gevraagd je bus hier over te nemen."
   pl: "SI zostaje poproszona o przejęcie tu twojego autobusu."
@@ -169,6 +192,7 @@ _version: 2
   uk: "ШІ просять прийняти твій автобус тут."
 "Stop at a stop of your trip, or at its terminus, to hand the bus over.":
   de: "Halte an einer Haltestelle deiner Fahrt oder an ihrer Endhaltestelle, um den Bus zu übergeben."
+  da: "Stop ved et stoppested på din tur eller ved dens endestation for at overdrage bussen."
   fr: "Arrête-toi à un arrêt de ton trajet, ou à son terminus, pour remettre le bus."
   nl: "Stop bij een halte van je rit, of bij het eindpunt, om de bus over te dragen."
   pl: "Zatrzymaj się na przystanku swojego kursu albo na pętli, aby przekazać autobus."
@@ -176,6 +200,7 @@ _version: 2
   uk: "Зупинись на зупинці свого рейсу або на кінцевій, щоб передати автобус."
 "The AI takes your bus over here: get up (Ctrl+Shift+G) and get out - its driver comes.":
   de: "Die KI übernimmt deinen Bus hier: steh auf (Strg+Umschalt+G) und steig aus - ihr Fahrer kommt."
+  da: "AI'en overtager din bus her: rejs dig (Ctrl+Shift+G) og stig ud - dens chauffør kommer."
   fr: "L'IA reprend ton bus ici : lève-toi (Ctrl+Maj+G) et descends - son conducteur arrive."
   nl: "De AI neemt je bus hier over: sta op (Ctrl+Shift+G) en stap uit - haar chauffeur komt eraan."
   pl: "SI przejmuje tu twój autobus: wstań (Ctrl+Shift+G) i wysiądź - jej kierowca już idzie."
@@ -183,6 +208,7 @@ _version: 2
   uk: "ШІ приймає твій автобус тут: встань (Ctrl+Shift+G) і вийди - його водій уже йде."
 "The AI cannot take your bus over here: try at another stop.":
   de: "Die KI kann deinen Bus hier nicht übernehmen: versuch es an einer anderen Haltestelle."
+  da: "AI'en kan ikke overtage din bus her: prøv ved et andet stoppested."
   fr: "L'IA ne peut pas reprendre ton bus ici : essaie à un autre arrêt."
   nl: "De AI kan je bus hier niet overnemen: probeer het bij een andere halte."
   pl: "SI nie może tu przejąć twojego autobusu: spróbuj na innym przystanku."
@@ -190,6 +216,7 @@ _version: 2
   uk: "ШІ не може прийняти твій автобус тут: спробуй на іншій зупинці."
 "Hand-over called off: you drove off.":
   de: "Übergabe abgebrochen: du bist weggefahren."
+  da: "Overdragelsen afbrudt: du kørte væk."
   fr: "Remise annulée : tu es reparti."
   nl: "Overdracht afgebroken: je bent weggereden."
   pl: "Przekazanie odwołane: odjechałeś."
@@ -197,6 +224,7 @@ _version: 2
   uk: "Передачу скасовано: ти поїхав."
 "Handed over: the AI drives on, and you are free. Leave the server (Esc) to take another trip or duty in the launcher.":
   de: "Übergeben: die KI fährt weiter, und du bist frei. Verlass den Server (Esc), um im Launcher eine andere Fahrt oder einen anderen Dienst zu nehmen."
+  da: "Overdraget: AI'en kører videre, og du er fri. Forlad serveren (Esc) for at tage en anden tur eller vagt i launcheren."
   fr: "Remis : l'IA continue, et tu es libre. Quitte le serveur (Échap) pour prendre un autre trajet ou service dans le launcher."
   nl: "Overgedragen: de AI rijdt verder, en je bent vrij. Verlaat de server (Esc) om in de launcher een andere rit of dienst te nemen."
   pl: "Przekazano: SI jedzie dalej, a ty jesteś wolny. Opuść serwer (Esc), aby wziąć w launcherze inny kurs lub służbę."
@@ -204,6 +232,7 @@ _version: 2
   uk: "Передано: ШІ їде далі, а ти вільний. Залиш сервер (Esc), щоб узяти в лаунчері інший рейс або зміну."
 "Your bus is on its way: follow it on the map (game menu › City map).":
   de: "Dein Bus ist unterwegs: verfolge ihn auf der Karte (Spielmenü › Stadtplan)."
+  da: "Din bus er på vej: følg den på kortet (spilmenu › Bykort)."
   fr: "Ton bus est en route : suis-le sur la carte (menu du jeu › Plan de la ville)."
   nl: "Je bus is onderweg: volg hem op de kaart (spelmenu › Stadskaart)."
   pl: "Twój autobus jest w drodze: śledź go na mapie (menu gry › Mapa miasta)."
@@ -211,6 +240,7 @@ _version: 2
   uk: "Твій автобус у дорозі: стеж за ним на мапі (меню гри › Карта міста)."
 "Your bus":
   de: "Dein Bus"
+  da: "Din bus"
   fr: "Ton bus"
   nl: "Je bus"
   pl: "Twój autobus"
@@ -218,6 +248,7 @@ _version: 2
   uk: "Твій автобус"
 "%{n} min late":
   de: "%{n} Min. Verspätung"
+  da: "%{n} min forsinket"
   fr: "%{n} min de retard"
   nl: "%{n} min te laat"
   pl: "%{n} min spóźnienia"
@@ -225,6 +256,7 @@ _version: 2
   uk: "запізнюється на %{n} хв"
 "on its trip before":
   de: "auf seiner Fahrt davor"
+  da: "på dens tur før"
   fr: "sur son trajet précédent"
   nl: "op zijn rit ervoor"
   pl: "na poprzednim kursie"

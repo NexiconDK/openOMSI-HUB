@@ -3,6 +3,7 @@ _version: 2
 # its drawing in shell/pause.rs) - the tours whose trip starts near the bus.
 "All lines":
   de: "Alle Linien"
+  da: "Alle linjer"
   fr: "Toutes les lignes"
   nl: "Alle lijnen"
   pl: "Wszystkie linie"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Усі маршрути"
 "Nearby":
   de: "In der Nähe"
+  da: "I nærheden"
   fr: "À proximité"
   nl: "In de buurt"
   pl: "W pobliżu"
@@ -17,6 +19,7 @@ _version: 2
   uk: "Поруч"
 "Tours starting near your bus":
   de: "Umläufe, die nahe deinem Bus beginnen"
+  da: "Vognløb, der starter nær din bus"
   fr: "Services qui partent près de ton bus"
   nl: "Omlopen die dicht bij je bus beginnen"
   pl: "Brygady zaczynające się blisko twojego autobusu"
@@ -24,6 +27,7 @@ _version: 2
   uk: "Обороти, що починаються поруч із твоїм автобусом"
 "Where each tour's next trips start, nearest first, leaving within two hours":
   de: "Wo die nächsten Fahrten jedes Umlaufs beginnen, die nächste zuerst, Abfahrt innerhalb von zwei Stunden"
+  da: "Hvor hvert vognløbs næste ture starter, nærmeste først, afgang inden for to timer"
   fr: "Où commencent les prochaines courses de chaque service, la plus proche d'abord, départ dans les deux heures"
   nl: "Waar de volgende ritten van elke omloop beginnen, dichtstbijzijnde eerst, vertrek binnen twee uur"
   pl: "Gdzie zaczynają się najbliższe kursy każdej brygady, najbliższe najpierw, odjazd w ciągu dwóch godzin"
@@ -31,6 +35,7 @@ _version: 2
   uk: "Де починаються найближчі рейси кожного обороту, спершу найближчі, відправлення протягом двох годин"
 "Distances in a straight line from your bus":
   de: "Entfernungen in Luftlinie von deinem Bus"
+  da: "Afstande i luftlinje fra din bus"
   fr: "Distances à vol d'oiseau depuis ton bus"
   nl: "Afstanden in een rechte lijn vanaf je bus"
   pl: "Odległości w linii prostej od twojego autobusu"
@@ -38,6 +43,7 @@ _version: 2
   uk: "Відстані по прямій від твого автобуса"
 "1 more tour starts within %{dist}":
   de: "1 weiterer Umlauf beginnt im Umkreis von %{dist}"
+  da: "1 vognløb mere starter inden for %{dist}"
   fr: "1 service de plus part dans un rayon de %{dist}"
   nl: "Nog 1 omloop begint binnen %{dist}"
   pl: "Jeszcze 1 brygada zaczyna się w promieniu %{dist}"
@@ -45,6 +51,7 @@ _version: 2
   uk: "Ще 1 оборот починається в радіусі %{dist}"
 "%{count} more tours start within %{dist}":
   de: "%{count} weitere Umläufe beginnen im Umkreis von %{dist}"
+  da: "%{count} vognløb mere starter inden for %{dist}"
   fr: "%{count} services de plus partent dans un rayon de %{dist}"
   nl: "Nog %{count} omlopen beginnen binnen %{dist}"
   pl: "Jeszcze %{count} brygad zaczyna się w promieniu %{dist}"
@@ -52,6 +59,7 @@ _version: 2
   uk: "Ще %{count} оборотів починаються в радіусі %{dist}"
 "No tour starts within %{dist} of your bus in the next two hours.":
   de: "In den nächsten zwei Stunden beginnt kein Umlauf im Umkreis von %{dist} um deinen Bus."
+  da: "Intet vognløb starter inden for %{dist} af din bus i de næste to timer."
   fr: "Aucun service ne part à moins de %{dist} de ton bus dans les deux prochaines heures."
   nl: "Binnen %{dist} van je bus begint de komende twee uur geen omloop."
   pl: "W ciągu najbliższych dwóch godzin żadna brygada nie zaczyna się w promieniu %{dist} od twojego autobusu."
@@ -59,6 +67,7 @@ _version: 2
   uk: "Найближчі дві години жоден оборот не починається в радіусі %{dist} від твого автобуса."
 "Put a bus on the map to see the tours that start near it":
   de: "Setze einen Bus auf die Karte, um die Umläufe zu sehen, die in seiner Nähe beginnen"
+  da: "Sæt en bus på kortet for at se de vognløb, der starter nær den"
   fr: "Place un bus sur la carte pour voir les services qui partent près de lui"
   nl: "Zet een bus op de kaart om de omlopen te zien die er dichtbij beginnen"
   pl: "Postaw autobus na mapie, aby zobaczyć brygady zaczynające się w jego pobliżu"
@@ -66,6 +75,7 @@ _version: 2
   uk: "Постав автобус на мапу, щоб побачити обороти, що починаються поруч із ним"
 "The distances come once the navigator has read the map":
   de: "Die Entfernungen kommen, sobald das Navi die Karte gelesen hat"
+  da: "Afstandene kommer, når navigatoren har læst kortet"
   fr: "Les distances arrivent dès que le navigateur a lu la carte"
   nl: "De afstanden komen zodra de navigator de kaart heeft gelezen"
   pl: "Odległości pojawią się, gdy nawigacja wczyta mapę"
@@ -73,6 +83,7 @@ _version: 2
   uk: "Відстані з’являться, щойно навігатор прочитає мапу"
 "now":
   de: "jetzt"
+  da: "nu"
   fr: "maintenant"
   nl: "nu"
   pl: "teraz"
@@ -80,6 +91,7 @@ _version: 2
   uk: "зараз"
 "in %{min} min":
   de: "in %{min} Min."
+  da: "om %{min} min"
   fr: "dans %{min} min"
   nl: "over %{min} min"
   pl: "za %{min} min"
@@ -87,6 +99,7 @@ _version: 2
   uk: "через %{min} хв"
 "%{dist} from your bus":
   de: "%{dist} von deinem Bus"
+  da: "%{dist} fra din bus"
   fr: "à %{dist} de ton bus"
   nl: "%{dist} van je bus"
   pl: "%{dist} od twojego autobusu"
@@ -94,6 +107,7 @@ _version: 2
   uk: "%{dist} від твого автобуса"
 "%{dist} by road · about %{min} min":
   de: "%{dist} auf der Straße · etwa %{min} Min."
+  da: "%{dist} ad vej · omkring %{min} min"
   fr: "%{dist} par la route · environ %{min} min"
   nl: "%{dist} over de weg · ongeveer %{min} min"
   pl: "%{dist} drogą · około %{min} min"
@@ -101,6 +115,7 @@ _version: 2
   uk: "%{dist} дорогою · близько %{min} хв"
 "%{dist} in a straight line":
   de: "%{dist} Luftlinie"
+  da: "%{dist} i luftlinje"
   fr: "%{dist} à vol d'oiseau"
   nl: "%{dist} in een rechte lijn"
   pl: "%{dist} w linii prostej"
@@ -108,6 +123,7 @@ _version: 2
   uk: "%{dist} по прямій"
 "Show on city map":
   de: "Auf dem Stadtplan zeigen"
+  da: "Vis på bykortet"
   fr: "Voir sur le plan de ville"
   nl: "Op de stadskaart tonen"
   pl: "Pokaż na planie miasta"
@@ -115,6 +131,7 @@ _version: 2
   uk: "Показати на мапі міста"
 "Open the tour":
   de: "Umlauf öffnen"
+  da: "Åbn vognløbet"
   fr: "Ouvrir le service"
   nl: "Omloop openen"
   pl: "Otwórz brygadę"
