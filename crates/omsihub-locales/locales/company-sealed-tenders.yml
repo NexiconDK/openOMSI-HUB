@@ -4,6 +4,7 @@ _version: 2
 # abnormally low ones rejected, the operators' lines and their giving up.
 "Abnormally low: under 85 % of the authority's cost price a bid is rejected at the close.":
   de: "Ungewöhnlich niedrig: Ein Gebot unter 85 % des Kostenpreises der Behörde wird bei der Öffnung abgelehnt."
+  da: "Unormalt lavt: under 85 % af trafikselskabets kostpris afvises et bud ved lukningen."
   fr: "Anormalement bas : une offre sous 85 % du prix de revient de l'autorité est rejetée à la clôture."
   nl: "Abnormaal laag: een bod onder 85 % van de kostprijs van de overheid wordt bij de opening afgewezen."
   pl: "Rażąco niska: oferta poniżej 85 % ceny kosztowej organizatora zostaje odrzucona przy otwarciu."
@@ -11,6 +12,7 @@ _version: 2
   uk: "Аномально низька: пропозиція нижче 85 % собівартості замовника відхиляється під час розкриття."
 "One of the map's operators runs this line on the contract it won: it goes out to tender again when that ends.":
   de: "Einer der Betreiber der Karte fährt diese Linie im gewonnenen Vertrag: Sie wird nach dessen Ende neu ausgeschrieben."
+  da: "En af kortets operatører kører denne linje på den kontrakt, den vandt: den sendes i udbud igen, når den udløber."
   fr: "Un des exploitants de la carte exploite cette ligne selon le contrat qu'il a remporté : elle sera remise en appel d'offres à sa fin."
   nl: "Een van de vervoerders van de kaart rijdt deze lijn op het gewonnen contract: ze wordt opnieuw aanbesteed als dat afloopt."
   pl: "Jeden z przewoźników mapy obsługuje tę linię w ramach wygranej umowy: po jej zakończeniu trafi do nowego przetargu."
@@ -18,6 +20,7 @@ _version: 2
   uk: "Один із перевізників мапи обслуговує цю лінію за виграним контрактом: після його закінчення вона знову піде на торги."
 "%{who} gave line %{n} up: it is out to tender again, sealed bids until %{time}":
   de: "%{who} hat Linie %{n} aufgegeben: Sie ist neu ausgeschrieben, verdeckte Gebote bis %{time}"
+  da: "%{who} opgav linje %{n}: den er i udbud igen, forseglede bud indtil %{time}"
   fr: "%{who} a abandonné la ligne %{n} : elle est remise en appel d'offres, offres cachetées jusqu'à %{time}"
   nl: "%{who} heeft lijn %{n} opgegeven: ze is opnieuw aanbesteed, gesloten biedingen tot %{time}"
   pl: "%{who} zrezygnował z linii %{n}: trafia ponownie do przetargu, oferty zamknięte do %{time}"
@@ -25,6 +28,7 @@ _version: 2
   uk: "%{who} відмовився від лінії %{n}: вона знову на торгах, закриті пропозиції до %{time}"
 "The renewal of line %{n} is out to tender: sealed bids until %{time}":
   de: "Die Verlängerung von Linie %{n} ist ausgeschrieben: verdeckte Gebote bis %{time}"
+  da: "Fornyelsen af linje %{n} er i udbud: forseglede bud indtil %{time}"
   fr: "Le renouvellement de la ligne %{n} est en appel d'offres : offres cachetées jusqu'à %{time}"
   nl: "De verlenging van lijn %{n} is aanbesteed: gesloten biedingen tot %{time}"
   pl: "Przedłużenie linii %{n} jest w przetargu: oferty zamknięte do %{time}"
@@ -32,6 +36,7 @@ _version: 2
   uk: "Продовження лінії %{n} виставлено на торги: закриті пропозиції до %{time}"
 "Line %{n} is out to tender: sealed bids until %{time}":
   de: "Linie %{n} ist ausgeschrieben: verdeckte Gebote bis %{time}"
+  da: "Linje %{n} er i udbud: forseglede bud indtil %{time}"
   fr: "La ligne %{n} est en appel d'offres : offres cachetées jusqu'à %{time}"
   nl: "Lijn %{n} is aanbesteed: gesloten biedingen tot %{time}"
   pl: "Linia %{n} jest w przetargu: oferty zamknięte do %{time}"
@@ -39,6 +44,7 @@ _version: 2
   uk: "Лінію %{n} виставлено на торги: закриті пропозиції до %{time}"
 "sealed: opened at the close":
   de: "verdeckt: wird beim Schluss geöffnet"
+  da: "forseglet: åbnes ved lukningen"
   fr: "cachetée : ouverte à la clôture"
   nl: "gesloten: geopend bij de sluiting"
   pl: "zamknięta: otwierana przy zamknięciu"
@@ -46,6 +52,7 @@ _version: 2
   uk: "закрита: розкривається під час закриття"
 "no bid of yours yet":
   de: "noch kein Gebot von dir"
+  da: "endnu intet bud fra dig"
   fr: "pas encore d'offre de ta part"
   nl: "nog geen bod van jou"
   pl: "jeszcze bez twojej oferty"
@@ -53,6 +60,7 @@ _version: 2
   uk: "твоєї пропозиції ще немає"
 "your sealed bid is in":
   de: "dein verdecktes Gebot liegt vor"
+  da: "dit forseglede bud er afgivet"
   fr: "ton offre cachetée est déposée"
   nl: "je gesloten bod is binnen"
   pl: "twoja zamknięta oferta została złożona"
@@ -60,6 +68,7 @@ _version: 2
   uk: "твою закриту пропозицію подано"
 "Sealed bids until %{when}":
   de: "Verdeckte Gebote bis %{when}"
+  da: "Forseglede bud indtil %{when}"
   fr: "Offres cachetées jusqu'à %{when}"
   nl: "Gesloten biedingen tot %{when}"
   pl: "Oferty zamknięte do %{when}"
@@ -67,6 +76,7 @@ _version: 2
   uk: "Закриті пропозиції до %{when}"
 "rejected: abnormally low or above the cap":
   de: "abgelehnt: ungewöhnlich niedrig oder über der Obergrenze"
+  da: "afvist: unormalt lavt eller over loftet"
   fr: "rejetée : anormalement basse ou au-dessus du plafond"
   nl: "afgewezen: abnormaal laag of boven het plafond"
   pl: "odrzucona: rażąco niska lub powyżej limitu"
@@ -74,6 +84,7 @@ _version: 2
   uk: "відхилена: аномально низька або вище межі"
 "You won with %{amount}":
   de: "Du hast mit %{amount} gewonnen"
+  da: "Du vandt med %{amount}"
   fr: "Tu as gagné avec %{amount}"
   nl: "Je won met %{amount}"
   pl: "Wygrałeś z %{amount}"
@@ -81,6 +92,7 @@ _version: 2
   uk: "Ти виграв з %{amount}"
 "%{who} won with %{amount}":
   de: "%{who} hat mit %{amount} gewonnen"
+  da: "%{who} vandt med %{amount}"
   fr: "%{who} a gagné avec %{amount}"
   nl: "%{who} won met %{amount}"
   pl: "%{who} wygrał z %{amount}"
@@ -88,6 +100,7 @@ _version: 2
   uk: "%{who} виграв з %{amount}"
 "No valid bid":
   de: "Kein gültiges Gebot"
+  da: "Intet gyldigt bud"
   fr: "Aucune offre valable"
   nl: "Geen geldig bod"
   pl: "Brak ważnej oferty"
@@ -95,6 +108,7 @@ _version: 2
   uk: "Немає дійсної пропозиції"
 "Out again: %{who} gave the line up":
   de: "Erneut ausgeschrieben: %{who} hat die Linie aufgegeben"
+  da: "Ude igen: %{who} opgav linjen"
   fr: "Remise en appel d'offres : %{who} a abandonné la ligne"
   nl: "Opnieuw aanbesteed: %{who} heeft de lijn opgegeven"
   pl: "Ponownie w przetargu: %{who} zrezygnował z linii"
@@ -102,6 +116,7 @@ _version: 2
   uk: "Знову на торгах: %{who} відмовився від лінії"
 "Tender results":
   de: "Ausschreibungsergebnisse"
+  da: "Udbudsresultater"
   fr: "Résultats des appels d'offres"
   nl: "Aanbestedingsresultaten"
   pl: "Wyniki przetargów"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Результати торгів"
 "Every bid of the map's tenders, opened at their close":
   de: "Jedes Gebot der Ausschreibungen der Karte, bei ihrem Schluss geöffnet"
+  da: "Hvert bud i kortets udbud, åbnet ved deres lukning"
   fr: "Chaque offre des appels d'offres de la carte, ouverte à leur clôture"
   nl: "Elk bod van de aanbestedingen van de kaart, geopend bij hun sluiting"
   pl: "Każda oferta z przetargów mapy, otwarta przy ich zamknięciu"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Кожна пропозиція торгів мапи, розкрита під час їх закриття"
 "No tender of the map has closed yet: when one does, every bid is shown here with its points.":
   de: "Noch ist keine Ausschreibung der Karte geschlossen: Danach steht hier jedes Gebot mit seinen Punkten."
+  da: "Intet af kortets udbud er lukket endnu: når et gør, vises hvert bud her med sine point."
   fr: "Aucun appel d'offres de la carte n'est encore clos : ensuite, chaque offre s'affiche ici avec ses points."
   nl: "Nog geen aanbesteding van de kaart is gesloten: daarna staat hier elk bod met zijn punten."
   pl: "Żaden przetarg mapy nie został jeszcze zamknięty: potem każda oferta pojawi się tu z punktami."
@@ -123,6 +140,7 @@ _version: 2
   uk: "Торги мапи ще не закривалися: після закриття тут буде кожна пропозиція з балами."
 "Lowest valid ask":
   de: "Niedrigstes gültiges Gebot"
+  da: "Laveste gyldige pris"
   fr: "Offre minimale valable"
   nl: "Laagste geldige bod"
   pl: "Najniższa ważna oferta"
@@ -130,6 +148,7 @@ _version: 2
   uk: "Мінімальна допустима ціна"
 "85 % of the authority's cost price: a bid under it is abnormally low and is rejected when the bids are opened.":
   de: "85 % des Kostenpreises der Behörde: Ein Gebot darunter ist ungewöhnlich niedrig und wird bei der Öffnung abgelehnt."
+  da: "85 % af trafikselskabets kostpris: et bud under den er unormalt lavt og afvises, når buddene åbnes."
   fr: "85 % du prix de revient de l'autorité : une offre en dessous est anormalement basse et est rejetée à l'ouverture."
   nl: "85 % van de kostprijs van de overheid: een bod daaronder is abnormaal laag en wordt bij de opening afgewezen."
   pl: "85 % ceny kosztowej organizatora: oferta poniżej jest rażąco niska i zostaje odrzucona przy otwarciu."
@@ -137,6 +156,7 @@ _version: 2
   uk: "85 % собівартості замовника: пропозиція нижче аномально низька і відхиляється під час розкриття."
 "The authority's cost price by one and a half, at most the server's cap: an ask above it does not count.":
   de: "Der Kostenpreis der Behörde mal anderthalb, höchstens die Obergrenze des Servers: Ein Gebot darüber zählt nicht."
+  da: "Trafikselskabets kostpris gange halvanden, højst serverens loft: en pris over den tæller ikke."
   fr: "Le prix de revient de l'autorité multiplié par 1,5, au plus le plafond du serveur : une offre au-dessus ne compte pas."
   nl: "De kostprijs van de overheid maal anderhalf, hoogstens het plafond van de server: een bod daarboven telt niet."
   pl: "Cena kosztowa organizatora razy półtora, najwyżej limit serwera: oferta powyżej się nie liczy."
@@ -144,6 +164,7 @@ _version: 2
   uk: "Собівартість замовника, помножена на півтора, але не вище межі сервера: пропозиція вище не враховується."
 "Deadline":
   de: "Frist"
+  da: "Frist"
   fr: "Échéance"
   nl: "Deadline"
   pl: "Termin"
@@ -151,6 +172,7 @@ _version: 2
   uk: "Термін"
 "%{kind}, %{per}  ·  two weeks with diesel buses, a month with electric ones  ·  asks are a price a timetable hour, sealed until the close":
   de: "%{kind}, %{per}  ·  zwei Wochen mit Dieselbussen, ein Monat mit Elektrobussen  ·  Gebote sind ein Preis je Fahrplanstunde, verdeckt bis zum Schluss"
+  da: "%{kind}, %{per}  ·  to uger med dieselbusser, en måned med elbusser  ·  der bydes en pris pr. køreplantime, forseglet indtil lukning"
   fr: "%{kind}, %{per}  ·  deux semaines avec des bus diesel, un mois avec des bus électriques  ·  les offres sont un prix par heure de service, cachetées jusqu'à la clôture"
   nl: "%{kind}, %{per}  ·  twee weken met dieselbussen, een maand met elektrische  ·  biedingen zijn een prijs per dienstregelinguur, gesloten tot de sluiting"
   pl: "%{kind}, %{per}  ·  dwa tygodnie z autobusami diesla, miesiąc z elektrycznymi  ·  oferty to cena za godzinę rozkładową, zamknięte do zamknięcia"
@@ -158,6 +180,7 @@ _version: 2
   uk: "%{kind}, %{per}  ·  два тижні з дизельними автобусами, місяць з електричними  ·  пропозиції — ціна за годину за розкладом, закриті до закриття"
 "your company":
   de: "dein Unternehmen"
+  da: "dit selskab"
   fr: "ton entreprise"
   nl: "je bedrijf"
   pl: "twoja firma"
@@ -165,6 +188,7 @@ _version: 2
   uk: "твоя компанія"
 "%{amount}, rejected":
   de: "%{amount}, abgelehnt"
+  da: "%{amount}, afvist"
   fr: "%{amount}, rejetée"
   nl: "%{amount}, afgewezen"
   pl: "%{amount}, odrzucona"
@@ -172,6 +196,7 @@ _version: 2
   uk: "%{amount}, відхилена"
 "%{amount}, won":
   de: "%{amount}, gewonnen"
+  da: "%{amount}, vundet"
   fr: "%{amount}, gagnée"
   nl: "%{amount}, gewonnen"
   pl: "%{amount}, wygrana"
@@ -179,6 +204,7 @@ _version: 2
   uk: "%{amount}, виграла"
 "%{s} % of the cap  ·  sealed: nobody sees your bid, nor you theirs, till the close":
   de: "%{s} % der Obergrenze  ·  verdeckt: Niemand sieht dein Gebot und du nicht ihres, bis zum Schluss"
+  da: "%{s} % af loftet  ·  forseglet: ingen ser dit bud, og du ser ikke deres, før lukningen"
   fr: "%{s} % du plafond  ·  cachetée : personne ne voit ton offre, ni toi la leur, jusqu'à la clôture"
   nl: "%{s} % van het plafond  ·  gesloten: niemand ziet jouw bod, en jij niet het hunne, tot de sluiting"
   pl: "%{s} % limitu  ·  zamknięta: nikt nie widzi twojej oferty, ani ty ich, aż do zamknięcia"
@@ -186,6 +212,7 @@ _version: 2
   uk: "%{s} % межі  ·  закрита: ніхто не бачить твою пропозицію, а ти їхні, до закриття"
 "Your cost price with a 5 % margin: %{amount}":
   de: "Dein Kostenpreis mit 5 % Marge: %{amount}"
+  da: "Din kostpris med 5 % avance: %{amount}"
   fr: "Ton prix de revient avec une marge de 5 % : %{amount}"
   nl: "Je kostprijs met 5 % marge: %{amount}"
   pl: "Twoja cena kosztowa z 5 % marży: %{amount}"
@@ -193,6 +220,7 @@ _version: 2
   uk: "Твоя собівартість з націнкою 5 %: %{amount}"
 "Change your bid to %{amount}":
   de: "Gebot ändern auf %{amount}"
+  da: "Ændr dit bud til %{amount}"
   fr: "Modifier ton offre à %{amount}"
   nl: "Wijzig je bod naar %{amount}"
   pl: "Zmień ofertę na %{amount}"
@@ -200,6 +228,7 @@ _version: 2
   uk: "Змінити пропозицію на %{amount}"
 "Your price points are known when the bids are opened: the lowest valid ask gets all 70.":
   de: "Deine Preispunkte stehen fest, wenn die Gebote geöffnet werden: Das niedrigste gültige Gebot bekommt alle 70."
+  da: "Dine prispoint kendes, når buddene åbnes: den laveste gyldige pris får alle 70."
   fr: "Tes points de prix sont connus à l'ouverture des offres : l'offre valable la plus basse obtient les 70."
   nl: "Je prijspunten zijn bekend als de biedingen geopend worden: het laagste geldige bod krijgt alle 70."
   pl: "Twoje punkty za cenę będą znane po otwarciu ofert: najniższa ważna oferta dostaje wszystkie 70."
@@ -207,6 +236,7 @@ _version: 2
   uk: "Твої бали за ціну відомі після розкриття: найнижча дійсна пропозиція отримує всі 70."
 "Sealed bids: opened together at the close. Under 85 % of the authority's cost price a bid is rejected as abnormally low; above the cap it does not count.":
   de: "Verdeckte Gebote: gemeinsam beim Schluss geöffnet. Unter 85 % des Kostenpreises der Behörde wird ein Gebot als ungewöhnlich niedrig abgelehnt; über der Obergrenze zählt es nicht."
+  da: "Forseglede bud: åbnes samlet ved lukningen. Under 85 % af trafikselskabets kostpris afvises et bud som unormalt lavt; over loftet tæller det ikke."
   fr: "Offres cachetées : ouvertes ensemble à la clôture. Sous 85 % du prix de revient de l'autorité, une offre est rejetée comme anormalement basse ; au-dessus du plafond, elle ne compte pas."
   nl: "Gesloten biedingen: samen geopend bij de sluiting. Onder 85 % van de kostprijs van de overheid wordt een bod als abnormaal laag afgewezen; boven het plafond telt het niet."
   pl: "Oferty zamknięte: otwierane razem przy zamknięciu. Poniżej 85 % ceny kosztowej organizatora oferta jest odrzucana jako rażąco niska; powyżej limitu się nie liczy."
@@ -214,6 +244,7 @@ _version: 2
   uk: "Закриті пропозиції: розкриваються разом під час закриття. Нижче 85 % собівартості замовника пропозиція відхиляється як аномально низька; вище межі не враховується."
 "Sealed tender: nobody sees another's bid until it closes - not the other companies, not the operators. You may change your bid until the deadline: your last counts. At the close every bid is opened and shown with its points.":
   de: "Verdeckte Ausschreibung: Niemand sieht ein anderes Gebot vor dem Schluss - weder die anderen Unternehmen noch die Betreiber. Du kannst dein Gebot bis zur Frist ändern: Das letzte zählt. Beim Schluss wird jedes Gebot geöffnet und mit seinen Punkten gezeigt."
+  da: "Forseglet udbud: ingen ser en andens bud, før det lukker - hverken de andre selskaber eller operatørerne. Du kan ændre dit bud indtil fristen: dit sidste tæller. Ved lukningen åbnes hvert bud og vises med sine point."
   fr: "Appel d'offres cacheté : personne ne voit l'offre d'un autre avant la clôture - ni les autres entreprises, ni les exploitants. Tu peux modifier ton offre jusqu'à l'échéance : la dernière compte. À la clôture, chaque offre est ouverte et affichée avec ses points."
   nl: "Gesloten aanbesteding: niemand ziet een ander bod voor de sluiting - niet de andere bedrijven, niet de vervoerders. Je kunt je bod wijzigen tot de deadline: je laatste telt. Bij de sluiting wordt elk bod geopend en met zijn punten getoond."
   pl: "Przetarg z ofertami zamkniętymi: nikt nie widzi cudzej oferty przed zamknięciem - ani inne firmy, ani przewoźnicy. Możesz zmieniać ofertę do terminu: liczy się ostatnia. Przy zamknięciu każda oferta zostaje otwarta i pokazana z punktami."
@@ -221,6 +252,7 @@ _version: 2
   uk: "Закриті торги: ніхто не бачить чужу пропозицію до закриття - ні інші компанії, ні перевізники. Ти можеш змінювати пропозицію до терміну: враховується остання. Під час закриття кожну пропозицію розкривають і показують з балами."
 "Opened bids":
   de: "Geöffnete Gebote"
+  da: "Åbnede bud"
   fr: "Offres ouvertes"
   nl: "Geopende biedingen"
   pl: "Otwarte oferty"
@@ -228,6 +260,7 @@ _version: 2
   uk: "Розкриті пропозиції"
 "Sealed bids until %{time} (%{left} from now): every company of the map and its operators bid, nobody sees another's bid until the close, and they are scored 70 % price and 30 % quality. Ask at least %{low} and at most %{cap}.":
   de: "Verdeckte Gebote bis %{time} (noch %{left}): Jede Firma der Karte und ihre Betreiber bieten, niemand sieht ein anderes Gebot vor dem Schluss, und sie werden zu 70 % nach Preis und 30 % nach Qualität bewertet. Biete mindestens %{low} und höchstens %{cap}."
+  da: "Forseglede bud indtil %{time} (%{left} fra nu): hvert selskab på kortet og dets operatører byder, ingen ser en andens bud før lukningen, og de scores med 70 % pris og 30 % kvalitet. Byd mindst %{low} og højst %{cap}."
   fr: "Offres cachetées jusqu'à %{time} (dans %{left}) : chaque entreprise de la carte et ses exploitants font une offre, personne ne voit celle d'un autre avant la clôture, et elles sont notées à 70 % sur le prix et 30 % sur la qualité. Propose au moins %{low} et au plus %{cap}."
   nl: "Gesloten biedingen tot %{time} (nog %{left}): elk bedrijf van de kaart en haar vervoerders bieden, niemand ziet een ander bod voor de sluiting, en ze worden beoordeeld op 70 % prijs en 30 % kwaliteit. Bied minstens %{low} en hoogstens %{cap}."
   pl: "Oferty zamknięte do %{time} (za %{left}): każda firma mapy i jej przewoźnicy składają oferty, nikt nie widzi cudzej przed zamknięciem, a ocena to 70 % cena i 30 % jakość. Zaproponuj co najmniej %{low} i najwyżej %{cap}."

@@ -5,6 +5,7 @@ _version: 2
 "Click to choose the trip: Shift+click a range, Ctrl+click one more, Ctrl+A all":
   nl: "Klik om de rit te kiezen: Shift+klik een reeks, Ctrl+klik er een bij, Ctrl+A alle"
   de: "Klicken, um die Fahrt zu wählen: Umschalt+Klick einen Bereich, Strg+Klick eine dazu, Strg+A alle"
+  da: "Klik for at vælge turen: Shift+klik et område, Ctrl+klik en mere, Ctrl+A alle"
   fr: "Cliquez pour choisir le trajet : Maj+clic une plage, Ctrl+clic un de plus, Ctrl+A tous"
   pl: "Kliknij, aby wybrać kurs: Shift+klik zakres, Ctrl+klik jeszcze jeden, Ctrl+A wszystkie"
   ru: "Щёлкните, чтобы выбрать рейс: Shift+щелчок — диапазон, Ctrl+щелчок — ещё один, Ctrl+A — все"
@@ -12,6 +13,7 @@ _version: 2
 "Take the chosen trips out (Delete)":
   nl: "De gekozen ritten verwijderen (Delete)"
   de: "Die gewählten Fahrten entfernen (Entf)"
+  da: "Fjern de valgte ture (Delete)"
   fr: "Retirer les trajets choisis (Suppr)"
   pl: "Usuń wybrane kursy (Delete)"
   ru: "Удалить выбранные рейсы (Delete)"
@@ -19,6 +21,7 @@ _version: 2
 "The chosen trips' times from the running times again (their typed times go)":
   nl: "De tijden van de gekozen ritten weer uit de rijtijden (hun getypte tijden vervallen)"
   de: "Die Zeiten der gewählten Fahrten wieder aus den Fahrzeiten (ihre eingetippten Zeiten entfallen)"
+  da: "De valgte tures tider fra køretiderne igen (deres indtastede tider forsvinder)"
   fr: "Les heures des trajets choisis à nouveau d'après les temps de parcours (leurs heures saisies disparaissent)"
   pl: "Czasy wybranych kursów znowu z czasów przejazdu (wpisane czasy znikają)"
   ru: "Время выбранных рейсов снова по времени хода (введённое вручную пропадает)"
@@ -26,6 +29,7 @@ _version: 2
 "Copy to… other days: this day, the trips chosen or a template":
   nl: "Kopiëren naar… andere dagen: deze dag, de gekozen ritten of een sjabloon"
   de: "Kopieren nach… andere Tage: dieser Tag, die gewählten Fahrten oder eine Vorlage"
+  da: "Kopiér til… andre dage: denne dag, de valgte ture eller en skabelon"
   fr: "Copier vers… d'autres jours : ce jour, les trajets choisis ou un modèle"
   pl: "Kopiuj do… innych dni: ten dzień, wybrane kursy lub szablon"
   ru: "Копировать в… другие дни: этот день, выбранные рейсы или шаблон"
@@ -33,6 +37,7 @@ _version: 2
 "%{n} trips chosen":
   nl: "%{n} ritten gekozen"
   de: "%{n} Fahrten gewählt"
+  da: "%{n} ture valgt"
   fr: "%{n} trajets choisis"
   pl: "Wybrano kursów: %{n}"
   ru: "Выбрано рейсов: %{n}"
@@ -40,6 +45,7 @@ _version: 2
 "Choose none (Escape)":
   nl: "Niets kiezen (Escape)"
   de: "Nichts wählen (Esc)"
+  da: "Vælg ingen (Escape)"
   fr: "Ne rien choisir (Échap)"
   pl: "Nic nie wybieraj (Escape)"
   ru: "Снять выбор (Escape)"
@@ -47,6 +53,7 @@ _version: 2
 "The chosen trips earlier by these minutes":
   nl: "De gekozen ritten zoveel minuten eerder"
   de: "Die gewählten Fahrten um diese Minuten früher"
+  da: "De valgte ture tidligere med disse minutter"
   fr: "Les trajets choisis plus tôt de ces minutes"
   pl: "Wybrane kursy wcześniej o tyle minut"
   ru: "Выбранные рейсы раньше на столько минут"
@@ -54,6 +61,7 @@ _version: 2
 "The chosen trips later by these minutes":
   nl: "De gekozen ritten zoveel minuten later"
   de: "Die gewählten Fahrten um diese Minuten später"
+  da: "De valgte ture senere med disse minutter"
   fr: "Les trajets choisis plus tard de ces minutes"
   pl: "Wybrane kursy później o tyle minut"
   ru: "Выбранные рейсы позже на столько минут"
@@ -61,6 +69,7 @@ _version: 2
 "The pattern the chosen trips run":
   nl: "Het patroon dat de gekozen ritten rijden"
   de: "Das Muster, das die gewählten Fahrten fahren"
+  da: "Det mønster, de valgte ture kører"
   fr: "Le parcours que suivent les trajets choisis"
   pl: "Wariant, którym jadą wybrane kursy"
   ru: "Вариант, по которому идут выбранные рейсы"
@@ -68,6 +77,7 @@ _version: 2
 "Pattern…":
   nl: "Patroon…"
   de: "Muster…"
+  da: "Mønster…"
   fr: "Parcours…"
   pl: "Wariant…"
   ru: "Вариант…"
@@ -75,6 +85,7 @@ _version: 2
 "%{n} trips chosen: Shift+click a range, Ctrl+click one more or one less, Ctrl+A all, Escape none.":
   nl: "%{n} ritten gekozen: Shift+klik een reeks, Ctrl+klik er een bij of af, Ctrl+A alle, Escape geen."
   de: "%{n} Fahrten gewählt: Umschalt+Klick einen Bereich, Strg+Klick eine dazu oder weg, Strg+A alle, Esc keine."
+  da: "%{n} ture valgt: Shift+klik et område, Ctrl+klik en mere eller en mindre, Ctrl+A alle, Escape ingen."
   fr: "%{n} trajets choisis : Maj+clic une plage, Ctrl+clic un de plus ou de moins, Ctrl+A tous, Échap aucun."
   pl: "Wybrano kursów: %{n}. Shift+klik zakres, Ctrl+klik jeden więcej lub mniej, Ctrl+A wszystkie, Escape żaden."
   ru: "Выбрано рейсов: %{n}. Shift+щелчок — диапазон, Ctrl+щелчок — добавить или убрать, Ctrl+A — все, Escape — ни одного."
@@ -82,6 +93,7 @@ _version: 2
 "The whole day: %{day}":
   nl: "De hele dag: %{day}"
   de: "Der ganze Tag: %{day}"
+  da: "Hele dagen: %{day}"
   fr: "Toute la journée : %{day}"
   pl: "Cały dzień: %{day}"
   ru: "Весь день: %{day}"
@@ -89,6 +101,7 @@ _version: 2
 "The trips chosen":
   nl: "De gekozen ritten"
   de: "Die gewählten Fahrten"
+  da: "De valgte ture"
   fr: "Les trajets choisis"
   pl: "Wybrane kursy"
   ru: "Выбранные рейсы"
@@ -96,6 +109,7 @@ _version: 2
 "Rename the template":
   nl: "Het sjabloon hernoemen"
   de: "Die Vorlage umbenennen"
+  da: "Omdøb skabelonen"
   fr: "Renommer le modèle"
   pl: "Zmień nazwę szablonu"
   ru: "Переименовать шаблон"
@@ -103,6 +117,7 @@ _version: 2
 "Click again to throw the template away":
   nl: "Klik nogmaals om het sjabloon weg te gooien"
   de: "Noch einmal klicken, um die Vorlage zu verwerfen"
+  da: "Klik igen for at kassere skabelonen"
   fr: "Cliquez encore pour jeter le modèle"
   pl: "Kliknij ponownie, aby usunąć szablon"
   ru: "Щёлкните ещё раз, чтобы удалить шаблон"
@@ -110,6 +125,7 @@ _version: 2
 "Throw the template away":
   nl: "Het sjabloon weggooien"
   de: "Die Vorlage verwerfen"
+  da: "Kassér skabelonen"
   fr: "Jeter le modèle"
   pl: "Usuń szablon"
   ru: "Удалить шаблон"
@@ -117,6 +133,7 @@ _version: 2
 "No templates of this line yet: keep the day or the trips chosen as one below, to copy onto any day later.":
   nl: "Nog geen sjablonen van deze lijn: bewaar de dag of de gekozen ritten hieronder als sjabloon, om later naar elke dag te kopiëren."
   de: "Noch keine Vorlagen dieser Linie: Behalten Sie unten den Tag oder die gewählten Fahrten als Vorlage, um sie später auf jeden Tag zu kopieren."
+  da: "Ingen skabeloner til denne linje endnu: gem dagen eller de valgte ture som en nedenfor for senere at kopiere den til en hvilken som helst dag."
   fr: "Pas encore de modèle pour cette ligne : gardez ci-dessous le jour ou les trajets choisis comme modèle, à copier plus tard sur n'importe quel jour."
   pl: "Ta linia nie ma jeszcze szablonów: zachowaj poniżej dzień lub wybrane kursy jako szablon, by później kopiować go na dowolny dzień."
   ru: "У этой линии ещё нет шаблонов: сохраните ниже день или выбранные рейсы как шаблон, чтобы потом копировать его на любой день."
@@ -124,6 +141,7 @@ _version: 2
 "Onto these days":
   nl: "Naar deze dagen"
   de: "Auf diese Tage"
+  da: "Til disse dage"
   fr: "Vers ces jours"
   pl: "Na te dni"
   ru: "На эти дни"
@@ -131,6 +149,7 @@ _version: 2
 "The line does not run then":
   nl: "De lijn rijdt dan niet"
   de: "Die Linie fährt dann nicht"
+  da: "Linjen kører ikke da"
   fr: "La ligne ne circule pas ce jour-là"
   pl: "Linia wtedy nie kursuje"
   ru: "Линия в эти дни не ходит"
@@ -138,6 +157,7 @@ _version: 2
 "The day shown":
   nl: "De getoonde dag"
   de: "Der gezeigte Tag"
+  da: "Den viste dag"
   fr: "Le jour affiché"
   pl: "Pokazany dzień"
   ru: "Показанный день"
@@ -145,6 +165,7 @@ _version: 2
 "Its %{n} trips are replaced":
   nl: "Zijn %{n} ritten worden vervangen"
   de: "Seine %{n} Fahrten werden ersetzt"
+  da: "Dens %{n} ture erstattes"
   fr: "Ses %{n} trajets sont remplacés"
   pl: "Jego kursy (%{n}) zostaną zastąpione"
   ru: "Его рейсы (%{n}) будут заменены"
@@ -152,6 +173,7 @@ _version: 2
 "Replace their trips":
   nl: "Hun ritten vervangen"
   de: "Ihre Fahrten ersetzen"
+  da: "Erstat deres ture"
   fr: "Remplacer leurs trajets"
   pl: "Zastąp ich kursy"
   ru: "Заменить их рейсы"
@@ -159,6 +181,7 @@ _version: 2
 "Add to their trips":
   nl: "Bij hun ritten zetten"
   de: "Zu ihren Fahrten hinzufügen"
+  da: "Føj til deres ture"
   fr: "Ajouter à leurs trajets"
   pl: "Dodaj do ich kursów"
   ru: "Добавить к их рейсам"
@@ -166,6 +189,7 @@ _version: 2
 "Replace: the days ticked run these trips, with their running times, instead of their own.":
   nl: "Vervangen: de aangevinkte dagen rijden deze ritten, met hun rijtijden, in plaats van hun eigen."
   de: "Ersetzen: Die angehakten Tage fahren diese Fahrten mit ihren Fahrzeiten statt ihrer eigenen."
+  da: "Erstat: de afkrydsede dage kører disse ture med deres køretider i stedet for deres egne."
   fr: "Remplacer : les jours cochés font ces trajets, avec leurs temps de parcours, au lieu des leurs."
   pl: "Zastąp: zaznaczone dni jeżdżą tymi kursami, z ich czasami przejazdu, zamiast własnych."
   ru: "Заменить: отмеченные дни выполняют эти рейсы, с их временем хода, вместо своих."
@@ -173,6 +197,7 @@ _version: 2
 "Add: the trips go beside the days' own; one there already the same way at the same minute is not copied twice.":
   nl: "Toevoegen: de ritten komen naast de eigen ritten van die dagen; een rit die er al is, dezelfde kant op op dezelfde minuut, wordt niet dubbel gekopieerd."
   de: "Hinzufügen: Die Fahrten kommen neben die eigenen der Tage; eine, die schon in derselben Richtung zur selben Minute da ist, wird nicht doppelt kopiert."
+  da: "Føj til: turene kommer ved siden af dagenes egne; en, der allerede er der samme vej på samme minut, kopieres ikke to gange."
   fr: "Ajouter : les trajets s'ajoutent à ceux des jours ; un trajet déjà présent dans le même sens à la même minute n'est pas copié deux fois."
   pl: "Dodaj: kursy trafiają obok własnych kursów tych dni; kurs, który już jest w tym samym kierunku o tej samej minucie, nie jest kopiowany dwa razy."
   ru: "Добавить: рейсы встают рядом с собственными рейсами дней; рейс, который уже есть в том же направлении в ту же минуту, не копируется дважды."
@@ -180,6 +205,7 @@ _version: 2
 "It goes into the draft: Save keeps it, Undo takes it back. Saved and refreshed, SAVE › Apply to in Vehicles and Drivers copies the plan onto those days as well.":
   nl: "Het komt in het concept: Opslaan bewaart het, Ongedaan maken neemt het terug. Opgeslagen en ververst kopieert OPSLAAN › Toepassen op in Voertuigen en Chauffeurs ook de planning naar die dagen."
   de: "Es kommt in den Entwurf: Speichern behält es, Rückgängig nimmt es zurück. Gespeichert und aufgefrischt kopiert SPEICHERN › Anwenden auf in Fahrzeuge und Fahrer auch die Planung auf diese Tage."
+  da: "Det kommer i udkastet: Gem beholder det, Fortryd tager det tilbage. Gemt og opdateret kopierer GEM › Anvend på i Køretøjer og chauffører planen over på disse dage også."
   fr: "Cela va dans le brouillon : Enregistrer le garde, Annuler le reprend. Enregistré et actualisé, ENREGISTRER › Appliquer à dans Véhicules et Conducteurs copie aussi la planification sur ces jours."
   pl: "Trafia do szkicu: Zapisz go zachowuje, Cofnij go wycofuje. Po zapisaniu i odświeżeniu ZAPISZ › Zastosuj do w Pojazdach i Kierowcach skopiuje też plan na te dni."
   ru: "Это идёт в черновик: «Сохранить» оставляет, «Отменить» возвращает. После сохранения и обновления СОХРАНИТЬ › Применить к во вкладках «Транспорт» и «Водители» скопирует и план на эти дни."
@@ -187,6 +213,7 @@ _version: 2
 "Keep as a template":
   nl: "Als sjabloon bewaren"
   de: "Als Vorlage behalten"
+  da: "Gem som skabelon"
   fr: "Garder comme modèle"
   pl: "Zachowaj jako szablon"
   ru: "Сохранить как шаблон"
@@ -194,6 +221,7 @@ _version: 2
 "The trips chosen, kept by name to copy onto any day later.":
   nl: "De gekozen ritten, onder een naam bewaard om later naar elke dag te kopiëren."
   de: "Die gewählten Fahrten, unter einem Namen behalten, um sie später auf jeden Tag zu kopieren."
+  da: "De valgte ture, gemt under et navn for senere at kopiere dem til en hvilken som helst dag."
   fr: "Les trajets choisis, gardés sous un nom pour les copier plus tard sur n'importe quel jour."
   pl: "Wybrane kursy zachowane pod nazwą, by później kopiować je na dowolny dzień."
   ru: "Выбранные рейсы, сохранённые под именем, чтобы потом копировать их на любой день."
@@ -201,6 +229,7 @@ _version: 2
 "This day's timetable, kept by name to copy onto any day later.":
   nl: "De dienstregeling van deze dag, onder een naam bewaard om later naar elke dag te kopiëren."
   de: "Der Fahrplan dieses Tages, unter einem Namen behalten, um ihn später auf jeden Tag zu kopieren."
+  da: "Denne dags køreplan, gemt under et navn for senere at kopiere den til en hvilken som helst dag."
   fr: "L'horaire de ce jour, gardé sous un nom pour le copier plus tard sur n'importe quel jour."
   pl: "Rozkład tego dnia zachowany pod nazwą, by później kopiować go na dowolny dzień."
   ru: "Расписание этого дня, сохранённое под именем, чтобы потом копировать его на любой день."
@@ -208,6 +237,7 @@ _version: 2
 "A name, such as School days":
   nl: "Een naam, zoals Schooldagen"
   de: "Ein Name, etwa Schultage"
+  da: "Et navn, f.eks. Skoledage"
   fr: "Un nom, par exemple Jours d'école"
   pl: "Nazwa, np. Dni szkolne"
   ru: "Имя, например «Учебные дни»"
@@ -215,6 +245,7 @@ _version: 2
 "Nothing was copied: those days have every one of these trips already.":
   nl: "Er is niets gekopieerd: die dagen hebben al deze ritten al."
   de: "Nichts wurde kopiert: Diese Tage haben jede dieser Fahrten schon."
+  da: "Intet blev kopieret: de dage har allerede alle disse ture."
   fr: "Rien n'a été copié : ces jours ont déjà chacun de ces trajets."
   pl: "Nic nie skopiowano: te dni mają już wszystkie te kursy."
   ru: "Ничего не скопировано: в эти дни все эти рейсы уже есть."
@@ -222,6 +253,7 @@ _version: 2
 "%{n} trips copied to %{days}: Save keeps them, Undo takes them back.":
   nl: "%{n} ritten gekopieerd naar %{days}: Opslaan bewaart ze, Ongedaan maken neemt ze terug."
   de: "%{n} Fahrten nach %{days} kopiert: Speichern behält sie, Rückgängig nimmt sie zurück."
+  da: "%{n} ture kopieret til %{days}: Gem beholder dem, Fortryd tager dem tilbage."
   fr: "%{n} trajets copiés vers %{days} : Enregistrer les garde, Annuler les reprend."
   pl: "Skopiowano kursów: %{n} do %{days}. Zapisz je zachowuje, Cofnij je wycofuje."
   ru: "Скопировано рейсов: %{n} в %{days}. «Сохранить» оставляет их, «Отменить» возвращает."
@@ -229,6 +261,7 @@ _version: 2
 "%{n} were there already.":
   nl: "%{n} waren er al."
   de: "%{n} waren schon da."
+  da: "%{n} var der allerede."
   fr: "%{n} y étaient déjà."
   pl: "%{n} już tam było."
   ru: "%{n} там уже были."
@@ -236,6 +269,7 @@ _version: 2
 "%{n} of a pattern the line no longer has were left out.":
   nl: "%{n} van een patroon dat de lijn niet meer heeft, zijn weggelaten."
   de: "%{n} eines Musters, das die Linie nicht mehr hat, wurden ausgelassen."
+  da: "%{n} af et mønster, linjen ikke længere har, blev udeladt."
   fr: "%{n} d'un parcours que la ligne n'a plus ont été laissés de côté."
   pl: "Pominięto %{n} z wariantu, którego linia już nie ma."
   ru: "%{n} по варианту, которого у линии больше нет, пропущены."
@@ -243,6 +277,7 @@ _version: 2
 "Not copied to %{days}: the line does not run then.":
   nl: "Niet gekopieerd naar %{days}: de lijn rijdt dan niet."
   de: "Nicht nach %{days} kopiert: Die Linie fährt dann nicht."
+  da: "Ikke kopieret til %{days}: linjen kører ikke da."
   fr: "Pas copié vers %{days} : la ligne ne circule pas ces jours-là."
   pl: "Nie skopiowano do %{days}: linia wtedy nie kursuje."
   ru: "Не скопировано в %{days}: линия в эти дни не ходит."
@@ -250,6 +285,7 @@ _version: 2
 "The template is no longer there.":
   nl: "Het sjabloon bestaat niet meer."
   de: "Die Vorlage gibt es nicht mehr."
+  da: "Skabelonen findes ikke længere."
   fr: "Le modèle n'existe plus."
   pl: "Tego szablonu już nie ma."
   ru: "Этого шаблона больше нет."
@@ -257,6 +293,7 @@ _version: 2
 "There are no trips to copy.":
   nl: "Er zijn geen ritten om te kopiëren."
   de: "Es gibt keine Fahrten zum Kopieren."
+  da: "Der er ingen ture at kopiere."
   fr: "Il n'y a aucun trajet à copier."
   pl: "Nie ma kursów do skopiowania."
   ru: "Нет рейсов для копирования."
@@ -264,6 +301,7 @@ _version: 2
 "Give the template a name.":
   nl: "Geef het sjabloon een naam."
   de: "Geben Sie der Vorlage einen Namen."
+  da: "Giv skabelonen et navn."
   fr: "Donnez un nom au modèle."
   pl: "Nadaj szablonowi nazwę."
   ru: "Дайте шаблону имя."
@@ -271,6 +309,7 @@ _version: 2
 "Template “%{name}” kept: %{n} trips, to copy onto any day.":
   nl: "Sjabloon “%{name}” bewaard: %{n} ritten, om naar elke dag te kopiëren."
   de: "Vorlage “%{name}” behalten: %{n} Fahrten, um sie auf jeden Tag zu kopieren."
+  da: "Skabelon “%{name}” gemt: %{n} ture, som kan kopieres til en hvilken som helst dag."
   fr: "Modèle “%{name}” gardé : %{n} trajets, à copier sur n'importe quel jour."
   pl: "Zachowano szablon “%{name}”: kursów %{n}, do kopiowania na dowolny dzień."
   ru: "Шаблон “%{name}” сохранён: рейсов %{n}, для копирования на любой день."
@@ -278,6 +317,7 @@ _version: 2
 "Template “%{name}” thrown away.":
   nl: "Sjabloon “%{name}” weggegooid."
   de: "Vorlage “%{name}” verworfen."
+  da: "Skabelon “%{name}” kasseret."
   fr: "Modèle “%{name}” jeté."
   pl: "Usunięto szablon “%{name}”."
   ru: "Шаблон “%{name}” удалён."
@@ -285,6 +325,7 @@ _version: 2
 "%{n} trips taken out.":
   nl: "%{n} ritten verwijderd."
   de: "%{n} Fahrten entfernt."
+  da: "%{n} ture fjernet."
   fr: "%{n} trajets retirés."
   pl: "Usunięto kursów: %{n}."
   ru: "Удалено рейсов: %{n}."
@@ -292,6 +333,7 @@ _version: 2
 "%{n} trips run pattern %{code} now.":
   nl: "%{n} ritten rijden nu patroon %{code}."
   de: "%{n} Fahrten fahren jetzt Muster %{code}."
+  da: "%{n} ture kører nu mønster %{code}."
   fr: "%{n} trajets suivent maintenant le parcours %{code}."
   pl: "Kursy (%{n}) jadą teraz wariantem %{code}."
   ru: "Рейсы (%{n}) теперь идут по варианту %{code}."
@@ -299,6 +341,7 @@ _version: 2
 "%{days} run the timetable of another day type: copy the line's timetable there first (Timeplan, Timetable, Copy to…), save and Refresh - then the plan finds the same trips there.":
   nl: "%{days} rijden de dienstregeling van een ander dagtype: kopieer eerst de dienstregeling van de lijn daarheen (Dienstregelingsplan, Dienstregeling, Kopiëren naar…), sla op en ververs - dan vindt de planning daar dezelfde ritten."
   de: "%{days} fahren den Fahrplan eines anderen Tagestyps: Kopieren Sie zuerst den Fahrplan der Linie dorthin (Fahrplanentwurf, Fahrplan, Kopieren nach…), speichern und aktualisieren - dann findet die Planung dort dieselben Fahrten."
+  da: "%{days} kører en anden dagtypes køreplan: kopiér først linjens køreplan dertil (Tidsplan, Køreplan, Kopiér til…), gem og opdatér - så finder planen de samme ture dér."
   fr: "%{days} suivent l'horaire d'un autre type de jour : copiez d'abord l'horaire de la ligne vers ces jours (Plan horaire, Horaire, Copier vers…), enregistrez et actualisez - la planification y trouvera alors les mêmes trajets."
   pl: "%{days} jeżdżą według rozkładu innego typu dnia: najpierw skopiuj tam rozkład linii (Plan rozkładu, Rozkład, Kopiuj do…), zapisz i odśwież - wtedy plan znajdzie tam te same kursy."
   ru: "%{days} работают по расписанию другого типа дня: сначала скопируйте туда расписание линии (План расписания, Расписание, Копировать в…), сохраните и обновите - тогда план найдёт там те же рейсы."
@@ -306,6 +349,7 @@ _version: 2
 "A day of another day type gets the same trips once the line's timetable is copied there first (Timeplan, Timetable, Copy to…).":
   nl: "Een dag van een ander dagtype krijgt dezelfde ritten zodra de dienstregeling van de lijn er eerst heen is gekopieerd (Dienstregelingsplan, Dienstregeling, Kopiëren naar…)."
   de: "Ein Tag eines anderen Tagestyps bekommt dieselben Fahrten, sobald der Fahrplan der Linie zuerst dorthin kopiert ist (Fahrplanentwurf, Fahrplan, Kopieren nach…)."
+  da: "En dag af en anden dagtype får de samme ture, når linjens køreplan først er kopieret dertil (Tidsplan, Køreplan, Kopiér til…)."
   fr: "Un jour d'un autre type reçoit les mêmes trajets une fois l'horaire de la ligne copié d'abord vers lui (Plan horaire, Horaire, Copier vers…)."
   pl: "Dzień innego typu dostaje te same kursy, gdy najpierw skopiujesz tam rozkład linii (Plan rozkładu, Rozkład, Kopiuj do…)."
   ru: "День другого типа получает те же рейсы, когда туда сначала скопировано расписание линии (План расписания, Расписание, Копировать в…)."
