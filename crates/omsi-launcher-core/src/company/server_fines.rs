@@ -132,11 +132,17 @@ pub fn reported(c: &Company, date: &str, line: &str, tour: &str, minute: i32) ->
 /// `LATE_MINUTES` late (not those of a delay reported by then: `reported`, by its tour).
 pub fn departures(c: &Company, date: &str, t: &crate::TripRun, tour: Option<(&str, &str)>) -> (u32, u32) {
     let (mut early, mut late) = (0, 0);
+    // (3 November 2026: the server's roadworks on its line - a departure after their stretch late
+    // by their minutes more: `contract_events`)
+    let roadworks = tour.and_then(|(l, _)| super::contract_events::on_line(c, date, l));
+    let mut passed = false;
     for v in &t.visits {
+        let allowed = if passed { roadworks.map_or(0, |r| r.minutes.max(0)) } else { 0 };
+        passed |= roadworks.is_some_and(|r| r.on_stretch(&v.name));
         let Some(left) = v.left else { continue };
         if left < v.dep - EARLY_SECONDS {
             early += 1;
-        } else if left > v.dep + LATE_MINUTES as f64 * 60.0 && !tour.is_some_and(|(l, n)| reported(c, date, l, n, (left / 60.0) as i32)) {
+        } else if left > v.dep + (LATE_MINUTES + allowed) as f64 * 60.0 && !tour.is_some_and(|(l, n)| reported(c, date, l, n, (left / 60.0) as i32)) {
             late += 1;
         }
     }

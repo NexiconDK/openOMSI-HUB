@@ -1444,6 +1444,55 @@ departure that is full (`doubling`).
 
 Tested: `doubling::tests`.
 
+### Contract events: the timetable changes, holidays, roadworks (3 November 2026)
+
+Decided: what may happen to a contract during its term (the plan's H1-H3), in `contract_events`.
+
+- **H1 the timetable changes.** Each company contract row in the admin panel's market has
+  "Change": the map's new timetable taken into use for its lines (after a map update, say), a
+  line of the map added to it, or one of a package's lines taken out. The main server measures it
+  on the map's week - its timetable hours and kilometres, the buses at its peak and its stops, as
+  `concessions::week_of` gives a tender's (the company's own contract variations measure their
+  own lines' designs, `variations::measure`; a map line has none) - against the contract as agreed
+  (`variations::work_of`), and orders it through the company's admin orders
+  (`shared_tenders::order_change`). It applies `CHANGE_DAYS` (2) days later; the company is told
+  at once ("The authority changes your contract ... +120 timetable hours a week, +2 contract
+  buses"). On its day a new timetable's work and contract buses become the contracts', an added
+  line gets its concession in the package (a line that ran alone becomes a package of two, named
+  by its number) and its own contract at the package's price a timetable hour and a contract bus a
+  day to the contract's end, taken on with the lines won; a line taken out ends the day before at
+  once. The payment follows by itself (the timetable hours run, the contract buses, the quality
+  bonus 5 % of it all). T1: with `change_must_accept` (per cent, the admin panel's "A change a
+  company must run") a company may decline more service than that share of its hours within
+  `DECLINE_DAYS` (1) on its Concessions page ("Changes of your contracts"): an added line goes out
+  to tender on its own, a new timetable ends the contract the day before it (its lines go out
+  again as an ending contract's). Less service cannot be declined; empty or 0: every change runs.
+- **H2 holidays.** `calendar = dk` (the admin panel's "Calendar") lets the maps run by Denmark's
+  public holidays (New Year, Maundy Thursday to Easter Monday, Ascension, Whit Sunday and Monday,
+  Christmas Day and Boxing Day; Great Prayer Day until 2023) and school holidays (week 7, the
+  Saturday before Palm Sunday to Easter Monday, the last Saturday of June to the Sunday of week 32,
+  week 42, 21 December to 2 January) instead of each map's `Holidays.txt`; the admin's own
+  periods (the market tab's Holidays, `holidays.json`: a strike, an event) count as school
+  holidays on top. It is the process's calendar for the maps' tours (`service::ServerCalendar`,
+  read by `lines_in_map_dir` - the main server's markets and each company's process,
+  `contract_events::refresh_calendar`, again when the settings or the periods change). A contract
+  pays the timetable hours run that day and its buses every day. The tender page's tile
+  "Holidays" counts the public and school holidays of a diesel term from its start
+  (`holiday_days`); the passengers a day are not reckoned for holidays.
+- **H3 roadworks.** The market tab's Roadworks: a line, a stretch from stop to stop (a trip of the
+  line that serves both, either way: `stretch`), its days and the minutes it adds
+  (`roadworks.json`). OMSI drives the map's roads: the stops between are closed. Each company of
+  the map running the line takes them at its next step (`roadworks_step`) as a diversion of its
+  own (its drivers told before the closed stops, `ontime`, and its buses held up as by a
+  diversion) and the inbox's "roadworks" event on the line (passengers `ROADWORK_DEMAND`, 93 %).
+  A journey of the line is judged late by the minutes less (`judged`: not unpaid, no default
+  points, no fine for them), a player's departure after the stretch is fined late only beyond
+  15 minutes and them (`server_fines::departures`), and every journey run is paid the minutes on
+  top as timetable time. A map's own diversion trips ("Umleitung") are not chosen from the panel:
+  the timetable the companies run is the map's as it is.
+
+Tested: `contract_events::tests`, `bus_contracts::tests::roadworks_are_paid_and_their_lateness_allowed`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

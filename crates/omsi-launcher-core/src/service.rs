@@ -409,6 +409,124 @@ pub fn default_school_holidays() -> Vec<HolidayPeriod> {
     ]
 }
 
+// --- a server's calendar (NexiconDK, 3 November 2026) ------------------------------------------
+
+/// (NexiconDK, Bus Company Online, 3 November 2026) The calendar a server lets its maps run by
+/// (`calendar` of its `company-server.cfg`, the admin's own holiday periods): Denmark's - its
+/// public holidays and its school holidays - instead of each map's `Holidays.txt`, and the admin's
+/// periods (an event's days, a strike's) as school holidays on top. Set for the whole process by
+/// the server's own programs (`company::contract_events::refresh_calendar`); none elsewhere, and
+/// none on a server that keeps the maps' own calendars and named no period.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct ServerCalendar {
+    /// Denmark's public holidays and school holidays.
+    pub danish: bool,
+    /// The admin's own periods: first and last day (date codes), their name.
+    pub periods: Vec<(i32, i32, String)>,
+}
+
+static SERVER_CALENDAR: std::sync::RwLock<Option<ServerCalendar>> = std::sync::RwLock::new(None);
+
+/// The process's server calendar from now on (None: the maps' own).
+pub fn set_server_calendar(cal: Option<ServerCalendar>) {
+    *SERVER_CALENDAR.write().unwrap_or_else(|e| e.into_inner()) = cal;
+}
+
+/// The process's server calendar (None: the maps' own).
+pub fn server_calendar() -> Option<ServerCalendar> {
+    SERVER_CALENDAR.read().unwrap_or_else(|e| e.into_inner()).clone()
+}
+
+impl ServerCalendar {
+    /// Whether date code `code` is a public holiday: Denmark's, else the map's (`map`).
+    pub fn public_holiday(&self, code: i32, map: &omsi_map::Calendar) -> bool {
+        if self.danish {
+            danish_public_holiday(code)
+        } else {
+            map.is_holiday(code)
+        }
+    }
+
+    /// Whether date code `code` is in the school holidays: Denmark's (else the map's) or one of
+    /// the admin's periods.
+    pub fn school_holiday(&self, code: i32, map: &omsi_map::Calendar) -> bool {
+        let school = if self.danish { danish_school_holiday(code) } else { map.in_holiday_range(code) };
+        school || self.in_period(code)
+    }
+
+    /// One of the admin's periods covers date code `code`: its name.
+    pub fn period_of(&self, code: i32) -> Option<&str> {
+        self.periods.iter().find(|p| code >= p.0 && code <= p.1).map(|p| p.2.as_str())
+    }
+
+    pub fn in_period(&self, code: i32) -> bool {
+        self.period_of(code).is_some()
+    }
+
+    /// The tour mask bits it selects on date code `code` (as `DayType::bits`): the weekday's or the
+    /// public holiday's, the school holidays' or the school days'.
+    pub fn bits(&self, code: i32, map: &omsi_map::Calendar) -> (i32, i32) {
+        let weekday = day_of_code(code).map(dates::weekday).unwrap_or(0);
+        let day = if self.public_holiday(code, map) { 1 << 7 } else { 1 << weekday };
+        let school = if self.school_holiday(code, map) { 1 << 9 } else { 1 << 8 };
+        (day, school)
+    }
+}
+
+/// (3 November 2026) Denmark's public holidays (helligdage): New Year's Day, Maundy Thursday,
+/// Good Friday, Easter Sunday and Monday, Ascension Day, Whit Sunday and Monday, Christmas Day
+/// and Boxing Day - and Great Prayer Day (the fourth Friday after Easter) until 2023, when it was
+/// abolished.
+pub fn danish_public_holiday(code: i32) -> bool {
+    let (y, md) = (code / 10000, code % 10000);
+    if matches!(md, 101 | 1225 | 1226) {
+        return true;
+    }
+    let (em, ed) = easter(y);
+    let e = dates::days_from_civil(y, em, ed);
+    let Some(day) = day_of_code(code) else { return false };
+    let prayer = if y <= 2023 { Some(26) } else { None };
+    [-3, -2, 0, 1, 39, 49, 50].iter().copied().chain(prayer).any(|k| e + k == day)
+}
+
+/// (3 November 2026) Denmark's school holidays, as most municipalities have them: the winter
+/// holiday (week 7), Easter (the Saturday before Palm Sunday to Easter Monday), the summer
+/// holiday (the last Saturday of June to the Sunday of week 32), the autumn holiday (week 42)
+/// and Christmas (21 December to 2 January).
+pub fn danish_school_holiday(code: i32) -> bool {
+    let Some(day) = day_of_code(code) else { return false };
+    let (y, md) = (code / 10000, code % 10000);
+    let (week_year, week) = iso_week(day);
+    if week_year == y && (week == 7 || week == 42) {
+        return true;
+    }
+    if md >= 1221 || md <= 102 {
+        return true;
+    }
+    let (em, ed) = easter(y);
+    let e = dates::days_from_civil(y, em, ed);
+    if day >= e - 8 && day <= e + 1 {
+        return true;
+    }
+    // (the summer: from the last Saturday of June to the Sunday of week 32)
+    let june_end = dates::days_from_civil(y, 6, 30);
+    let start = june_end - ((dates::weekday(june_end) as i64 + 2) % 7);
+    let mut end = dates::days_from_civil(y, 8, 1);
+    while iso_week(end).1 < 32 || dates::weekday(end) != 6 {
+        end += 1;
+    }
+    day >= start && day <= end
+}
+
+/// The ISO week of a day number: its year and its week (1 to 53).
+pub fn iso_week(day: i64) -> (i32, u32) {
+    // (the week's Thursday decides its year)
+    let thursday = day - dates::weekday(day) as i64 + 3;
+    let (y, _, _) = dates::civil_from_days(thursday);
+    let jan1 = dates::days_from_civil(y, 1, 1);
+    (y, ((thursday - jan1) / 7 + 1) as u32)
+}
+
 /// Easter Sunday of a year (the Gregorian computus): (month, day).
 pub fn easter(y: i32) -> (u32, u32) {
     let a = y % 19;

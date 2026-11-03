@@ -1079,6 +1079,9 @@ pub fn decide(t: &Tender, all: &[MarketBid]) -> Decided {
 pub struct ContractOrder {
     pub line: String,
     pub until: String,
+    /// (3 November 2026) Not a last day but a change of the contract (`contract_events`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub change: Option<super::contract_events::ContractChange>,
 }
 
 /// The admin's orders to company `id` (`<folder>/admin-orders/<id>.jsonl`).
@@ -1088,7 +1091,13 @@ pub fn contract_orders_file(data: &Path, id: &str) -> PathBuf {
 
 /// The admin orders company `id`'s contract on `line` to end on `until`.
 pub fn order_contract(data: &Path, id: &str, line: &str, until: &str) -> Result<()> {
-    let o = ContractOrder { line: line.trim().to_string(), until: until.trim().to_string() };
+    let o = ContractOrder { line: line.trim().to_string(), until: until.trim().to_string(), change: None };
+    append(&contract_orders_file(data, id), &serde_json::to_string(&o)?)
+}
+
+/// (3 November 2026) The admin changes company `id`'s contract (`contract_events::measure`).
+pub fn order_change(data: &Path, id: &str, ch: &super::contract_events::ContractChange) -> Result<()> {
+    let o = ContractOrder { line: ch.line.clone(), until: String::new(), change: Some(ch.clone()) };
     append(&contract_orders_file(data, id), &serde_json::to_string(&o)?)
 }
 
@@ -1112,6 +1121,10 @@ pub fn take_contract_orders(data: &Path, c: &mut Company) -> bool {
             k.until = o.until.clone();
         }
         clock::tell(c, &mut run, at, CONTRACT_MOVED, vec![clock::arg("n", &number), clock::arg("date", &o.until)], Level::Warn);
+    }
+    // (3 November 2026: the authority's changes - from their day)
+    for ch in orders.into_iter().filter_map(|o| o.change) {
+        super::contract_events::received(c, ch, &mut run, at);
     }
     true
 }

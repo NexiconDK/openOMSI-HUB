@@ -326,6 +326,21 @@ impl MainCfg {
             }
             text.push_str(super::doubling::DOUBLING_CFG);
         }
+        // (3 November 2026) the calendar, and the changes of a running contract
+        if !text.lines().any(|l| l.trim_start().starts_with("calendar")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(super::contract_events::CALENDAR_CFG.as_bytes());
+            }
+            text.push_str(super::contract_events::CALENDAR_CFG);
+        }
+        if !text.lines().any(|l| l.trim_start().starts_with("change_must_accept")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(super::contract_events::CHANGE_CFG.as_bytes());
+            }
+            text.push_str(super::contract_events::CHANGE_CFG);
+        }
         // (3 November 2026) the tenders' rules
         if !text.lines().any(|l| l.trim_start().starts_with("tender_low_share")) {
             use std::io::Write;
@@ -757,6 +772,8 @@ impl MainServer {
     }
 
     pub fn markets(&mut self) {
+        // (3 November 2026: the maps' tours by the server's calendar)
+        super::contract_events::refresh_calendar(&self.data);
         let (date, secs) = self.clock.at_real(unix_now() as f64);
         let now = super::clock::moment(&date, (secs / 60.0) as i64);
         // (the maps with companies: by the plans they write for the worlds)

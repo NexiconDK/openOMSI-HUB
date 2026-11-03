@@ -1576,6 +1576,26 @@ pub fn list_lines(map: &str, date: &str) -> Result<Vec<LineInfo>> {
     lines_on(&map_dir, date)
 }
 
+/// (NexiconDK, Bus Company Online, 3 November 2026) How many of the `days` days from `from` on are
+/// public holidays or in the school holidays by the server's calendar (`service::ServerCalendar`)
+/// or else the map's own (`map`, its `global.cfg` as `list_lines` takes it; none found: the
+/// common public holidays alone): the days fewer journeys run.
+pub fn holiday_days(map: &str, from: &str, days: i64) -> u32 {
+    let dir = resolve_content(map).ok().and_then(|p| p.parent().map(|p| p.to_path_buf()));
+    let calendar = dir.map(|d| omsi_map::Calendar::load(&d.join("Holidays.txt")).unwrap_or_default()).unwrap_or_default();
+    let server = service::server_calendar();
+    let Some(first) = company::dates::parse(from) else { return 0 };
+    (0..days.max(0))
+        .filter(|k| {
+            let code = service::code_of_day(first + k);
+            match &server {
+                Some(s) => s.public_holiday(code, &calendar) || s.school_holiday(code, &calendar),
+                None => calendar.is_holiday(code) || calendar.in_holiday_range(code) || (calendar.holidays.is_empty() && service::common_public_holiday(code)),
+            }
+        })
+        .count() as u32
+}
+
 /// (NexiconDK, Bus Company Online) The lines of the map in `map_dir` on `date`, as `list_lines`
 /// gives them for a map of the launcher's OMSI folder: a server has the map's folder itself.
 pub fn lines_in_map_dir(map_dir: &Path, date: &str) -> Result<Vec<LineInfo>> {
@@ -1591,8 +1611,19 @@ fn lines_on(map_dir: &Path, date: &str) -> Result<Vec<LineInfo>> {
     // which tours run that day: the tour's mask as the game reads it (bits 0-6 Monday to
     // Sunday, 7 a public holiday, 8 school days, 9 school holidays: the original, #1883)
     let calendar = omsi_map::Calendar::load(&map_dir.join("Holidays.txt")).unwrap_or_default();
-    let day_bit = if calendar.is_holiday(code) { 1 << 7 } else { 1 << weekday(code) };
-    let school_bit = if calendar.in_holiday_range(code) { 1 << 9 } else { 1 << 8 };
+    // (NexiconDK, 3 November 2026: a server's own calendar - Denmark's, the admin's periods -
+    // over the map's: `service::ServerCalendar`)
+    let server = service::server_calendar();
+    let public = |c: i32| match &server {
+        Some(s) => s.public_holiday(c, &calendar),
+        None => calendar.is_holiday(c),
+    };
+    let school_holidays = |c: i32| match &server {
+        Some(s) => s.school_holiday(c, &calendar),
+        None => calendar.in_holiday_range(c),
+    };
+    let day_bit = if public(code) { 1 << 7 } else { 1 << weekday(code) };
+    let school_bit = if school_holidays(code) { 1 << 9 } else { 1 << 8 };
     // (the player's own lines: the map's calendar too, and where it has no school holidays or
     // no public holidays the line registry's periods and the common holidays - a school line
     // is in the depot in the holidays even where the map does not name them)
@@ -1614,8 +1645,8 @@ fn lines_on(map_dir: &Path, date: &str) -> Result<Vec<LineInfo>> {
             let runs_on = |c: i32| match own {
                 Some(cal) => service::mask_runs(mask, cal.day(c).bits()),
                 None => {
-                    let day = if calendar.is_holiday(c) { 1 << 7 } else { 1 << weekday(c) };
-                    let school = if calendar.in_holiday_range(c) { 1 << 9 } else { 1 << 8 };
+                    let day = if public(c) { 1 << 7 } else { 1 << weekday(c) };
+                    let school = if school_holidays(c) { 1 << 9 } else { 1 << 8 };
                     mask & day != 0 && mask & school != 0
                 }
             };

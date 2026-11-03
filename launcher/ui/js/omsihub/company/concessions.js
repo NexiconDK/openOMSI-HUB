@@ -33,6 +33,7 @@ export function ConcessionsPage() {
       </div>
       ${v.offers && html`<${Offers} o=${v.offers} />`}
       ${v.doubling && html`<${Doublings} o=${v.doubling} />`}
+      ${v.changes && html`<${Changes} o=${v.changes} />`}
       ${v.results && html`<${Results} r=${v.results} />`}
       <${Held} h=${v.held} />
     </div>
@@ -68,6 +69,22 @@ function Doublings({ o }) {
         <div class="co-pg-chips"><${Chip} text=${r.state} tone=${r.ask ? 'accent' : 'dim'} icon="schedule" /></div>
         ${r.ask && html`<div class="co-pg-line"><${Btn} kind="primary" icon="check_circle" label=${o.yes} onClick=${() => actMore('doubling_yes', { order: r.id })} />
           <${Btn} icon="close" label=${o.no} onClick=${() => actMore('doubling_no', { order: r.id })} /></div>`}
+      </div>`,
+    )}</div>
+  </${Card}>`;
+}
+
+/** (NexiconDK, 3 November 2026) The authority's changes of the company's contracts
+ * (`concessions::changes`): a line added or taken out, the map's new timetable - declined while
+ * the company may. */
+function Changes({ o }) {
+  return html`<${Card} title=${o.title} icon="edit_calendar">
+    <div class="co-pg-list">${o.rows.map(
+      (r) => html`<div class="co-pg-tender" style="cursor:default">
+        <div class="co-pg-line"><${Plate} p=${{ number: r.number }} h=${24} /><b class="co-pg-itemtitle grow co-pg-cut">${r.title}</b></div>
+        <p class="co-pg-note" style="margin:0">${r.say}</p>
+        <div class="co-pg-chips"><${Chip} text=${r.state} tone=${r.ask ? 'accent' : 'dim'} icon="schedule" /></div>
+        ${r.ask && html`<div class="co-pg-line"><${Btn} icon="close" label=${o.decline} onClick=${() => actMore('change_decline', { change: r.id })} /></div>`}
       </div>`,
     )}</div>
   </${Card}>`;

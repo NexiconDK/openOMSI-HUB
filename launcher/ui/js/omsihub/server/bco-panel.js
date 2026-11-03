@@ -65,6 +65,8 @@ export const BCO_FIELDS = [
   ['tender_round_weeks', 'A round of new lines every (weeks)', 'number'],
   ['tender_lines_per_round', 'Lines in a round', 'number', 'Empty: the rules\' and one more a company'],
   ['tender_reserve', 'Reserve buses (%)', 'number', "Of a tender's contract buses: shown on the tender page, not paid (10: ten per cent, at least one from five buses)"],
+  ['calendar', 'Calendar', [['map', "Each map's own"], ['dk', 'Denmark: school holidays and public holidays']], 'Which tours run on a day; your own holidays: Tenders and market'],
+  ['change_must_accept', 'A change a company must run (%)', 'number', 'More timetable hours than this share: the company may decline within a day. Empty or 0: every change'],
   ['tender_award', 'How tenders are awarded', [['viborg', 'The Viborg model: 50 % price + 50 % quality'], ['lowest', 'The lowest price wins']], 'Quality: the operating quality 25 %, the vehicles 10 %, the implementation plan 10 %, the working environment 5 %'],
   ['doubling_price', 'Doubling: a timetable hour with a bus of no contract (kroner)', 'number', "An extra bus behind a full departure; one of the line's own buses standing free is paid at the contract's price"],
   ['doubling_full', 'Doubling: full at (% of the places)', 'number', 'Seats and standing: 100 - people left at the stop. A departure full on 3 of its last 5 like days is ordered'],
@@ -91,7 +93,7 @@ export const BCO_DEFAULTS = {
   name: 'Bus Company Online', real_time: '1', time: '06:00', first_port: '27015', max_worlds: '4', world_idle: '10', keep_worlds: '1', max_memory: '85', max_cpu: '90',
   traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
   price_level: 'dk', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
-  found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', doubling_price: '650', doubling_full: '100', tender_reserve: '10', fine_dropped_minute: '20.83',
+  found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', calendar: 'map', doubling_price: '650', doubling_full: '100', tender_reserve: '10', fine_dropped_minute: '20.83',
   fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_wrong_fuel: '2500', fine_wrong_floor: '2500', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',
 };
@@ -502,9 +504,20 @@ export function mountPanel(root, api, opts = {}) {
         fact(trf('%{n} × %{d} days', { n: r.options, d: r.option_days }), tr('Option'), tr('when run satisfactorily: not red, at most 2 % of the journeys dropped')),
         fact(r.doubling_price != null ? kr(r.doubling_price) : '-', tr('Doubling a timetable hour'), trf('with a bus of no contract · full at %{p} % of the places', { p: r.doubling_full }))),
       h('div', { class: 'sp-dim' }, tr('Changed under Rules and economy: a new tender takes them; one open keeps its own (its cap can be set here).')));
+    // (3 November 2026: the server's calendar and the admin's own holidays - school holidays on top)
+    const hName = keep('holiday:name', h('input', { placeholder: tr('e.g. Strike'), style: 'width:160px' }));
+    const hFrom = keep('holiday:from', h('input', { type: 'date', style: 'width:150px' }));
+    const hUntil = keep('holiday:until', h('input', { type: 'date', style: 'width:150px' }));
+    const holidays = card(tr('Holidays'),
+      h('div', { class: 'sp-dim' }, d.calendar === 'dk' ? tr("The maps run by Denmark's school holidays and public holidays (Rules and economy: Calendar).") : tr("The maps run by their own calendars (Rules and economy: Calendar).")),
+      (d.holidays || []).length ? table([tr('Holidays'), tr('From'), tr('Until'), ''], d.holidays.map((p) => h('tr', {}, h('td', {}, h('b', {}, p.name)), h('td', {}, p.from), h('td', {}, p.until || p.from),
+        h('td', { class: 'sp-acts' }, sureButton(tr('Take away'), tr('Sure?'), () => post('events', { do: 'holiday_remove', id: p.id })))))) : null,
+      h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, hName, hFrom, hUntil,
+        btn(tr('Add the holidays'), () => post('events', { do: 'holiday_add', name: hName.value, from: hFrom.value, until: hUntil.value }), 'sp-btn small main')),
+      h('div', { class: 'sp-dim' }, tr('As school holidays: the tours of the school holidays run, a contract is paid the timetable hours run and its buses every day.')));
     const number = (value, width = 90, placeholder = '') => h('input', { type: 'number', min: '0', step: '1', value: value ?? '', placeholder, style: `width:${width}px` });
     const dateIn = (value, min) => h('input', { type: 'date', value: value || '', min: min || '', style: 'width:150px' });
-    return [rules, ...d.maps.map((m) => {
+    return [rules, holidays, ...d.maps.map((m) => {
       const open = m.open.map((t) => {
         const at = h('input', { type: 'datetime-local', value: local(t.closes), style: 'width:190px' });
         const cap = number(Math.round(t.cap_hour), 90);
@@ -552,9 +565,41 @@ export function mountPanel(root, api, opts = {}) {
           h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end' }, until,
             btn(tr('Move the end'), () => post('tender', { map: m.key, do: 'contract_until', company: x.company, line: x.line, until: until.value }))),
             h('div', { class: 'sp-row', style: 'justify-content:flex-end;margin-top:6px' }, dTour, dAt, dFrom, dUntil,
-              btn(tr('Order a doubling'), () => post('tender', { map: m.key, do: 'doubling', company: x.company, line: x.line, tour: dTour.value, at: dAt.value, from: dFrom.value, until: dUntil.value }, trf('An extra bus behind the %{t} of tour %{n}: on the duty board from %{d}', { t: dAt.value, n: dTour.value, d: dFrom.value }))))));
+              btn(tr('Order a doubling'), () => post('tender', { map: m.key, do: 'doubling', company: x.company, line: x.line, tour: dTour.value, at: dAt.value, from: dFrom.value, until: dUntil.value }, trf('An extra bus behind the %{t} of tour %{n}: on the duty board from %{d}', { t: dAt.value, n: dTour.value, d: dFrom.value })))),
+            changeRow(x)));
       });
       const free = (m.lines || []).filter((l) => !l.company && !l.operator && !l.open && !l.event);
+      // (3 November 2026: a contract changed - the map's new timetable, a line added or taken out)
+      function changeRow(x) {
+        const kind = h('select', {}, h('option', { value: 'timetable' }, tr("The map's new timetable")), h('option', { value: 'add' }, tr('Add a line')), h('option', { value: 'remove' }, tr('Take a line out')));
+        const addLine = h('select', {}, ...free.map((l) => h('option', { value: l.name }, l.name)));
+        const removeLine = h('select', {}, ...(x.lines || [x.line]).map((l) => h('option', { value: l }, l)));
+        const other = () => (kind.value === 'add' ? addLine.value : kind.value === 'remove' ? removeLine.value : '');
+        const show = () => {
+          addLine.style.display = kind.value === 'add' ? '' : 'none';
+          removeLine.style.display = kind.value === 'remove' ? '' : 'none';
+        };
+        kind.addEventListener('change', show);
+        show();
+        return h('div', { class: 'sp-row', style: 'justify-content:flex-end;margin-top:6px' }, kind, addLine, removeLine,
+          sureButton(tr('Change'), trf('Sure? It applies in %{n} days', { n: d.change_days || 2 }), () => post('events', { do: 'change', company: x.company, line: x.line, kind: kind.value, other: other() })));
+      }
+      // (3 November 2026: roadworks on a line - the stops between closed, the minutes it adds)
+      const rwLine = keep(m.key + ':rw-line', h('select', {}, ...(m.lines || []).map((l) => h('option', { value: l.name }, l.name))));
+      const rwA = keep(m.key + ':rw-a', h('input', { placeholder: tr('From stop'), style: 'width:150px' }));
+      const rwB = keep(m.key + ':rw-b', h('input', { placeholder: tr('To stop'), style: 'width:150px' }));
+      const rwFrom = keep(m.key + ':rw-from', dateIn(d.today, d.today));
+      const rwUntil = keep(m.key + ':rw-until', dateIn(d.today, d.today));
+      const rwMin = keep(m.key + ':rw-min', number('', 70, tr('min')));
+      const roadworks = h('div', { class: 'sp-card', style: 'background:var(--sp-field)' },
+        h('h3', {}, tr('Roadworks')),
+        h('div', { class: 'sp-dim' }, tr("The stops between the two close (OMSI drives the map's roads: no road round it). A journey of the line is not fined for being late by the minutes, and is paid them on top.")),
+        (m.roadworks || []).length ? table([tr('Line'), tr('Stretch'), tr('Days'), ''], m.roadworks.map((r) => h('tr', {}, h('td', {}, h('b', {}, r.number || r.line)),
+          h('td', {}, `${r.from_stop} – ${r.to_stop}`, h('div', { class: 'bco-sub' }, r.closed.length ? trf('closed: %{s}', { s: r.closed.join(', ') }) : tr('no stop between'))),
+          h('td', {}, `${r.from} – ${r.until}`, h('div', { class: 'bco-sub' }, trf('+%{n} min', { n: r.minutes }))),
+          h('td', { class: 'sp-acts' }, sureButton(tr('End'), tr('Sure?'), () => post('events', { do: 'roadworks_end', id: r.id })))))) : null,
+        h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, rwLine, rwA, rwB, rwFrom, rwUntil, rwMin,
+          btn(tr('Set the roadworks'), () => post('events', { do: 'roadworks', map: m.key, line: rwLine.value, from_stop: rwA.value, to_stop: rwB.value, from: rwFrom.value, until: rwUntil.value, minutes: rwMin.value }), 'sp-btn small main')));
       // (the map's free lines, several at once; before the market has read them: names typed)
       const pick = keep(m.key + ':lines', free.length ? h('select', { multiple: true, size: Math.min(6, free.length), style: 'min-width:200px' }, ...free.map((l) => h('option', { value: l.name }, l.name))) : h('input', { placeholder: tr("The lines' timetable names, comma between") }));
       const picked = () => (pick.tagName === 'SELECT' ? [...pick.selectedOptions].map((o) => o.value) : pick.value.split(',').map((x) => x.trim()).filter(Boolean));
@@ -609,7 +654,7 @@ export function mountPanel(root, api, opts = {}) {
         h('h3', {}, trf('Open tenders - %{n}', { n: m.open.length })),
         open.length ? table([tr('Line'), [tr('Opens'), 'sp-hide'], tr('Closes'), tr('Bids'), tr('Cap a timetable hour'), ''], open) : h('div', { class: 'sp-dim' }, tr('No tender is open.')),
         h('div', { class: 'sp-dim' }, tr('The bids stay sealed until the close: only how many companies bid shows here.')),
-        putOut, direct,
+        putOut, direct, roadworks,
         contracts.length ? h('h3', {}, tr("The companies' contracts")) : null,
         contracts.length ? h('div', { class: 'sp-dim' }, trf('A contract moved to end sooner goes out to tender as its end nears: not before %{d}.', { d: d.earliest_end })) : null,
         contracts.length ? table([tr('Line'), tr('Company'), tr('Term'), ''], contracts) : null,

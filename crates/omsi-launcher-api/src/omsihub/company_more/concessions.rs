@@ -219,6 +219,7 @@ pub fn view(s: &mut Session, args: &Value) -> Value {
         "auction": auction(&c, selected, args),
         "offers": offers(&c),
         "doubling": doubling_orders(&c),
+        "changes": changes(&c),
         "results": results(&c),
     })
 }
@@ -596,7 +597,50 @@ fn work_tiles(c: &Company, t: &Tender) -> Vec<Value> {
         let price = eur((rules.price_hour as f64 * c.price_index).round() as i64);
         tiles.push(tile("Doubling (extra buses)", trf("≈ %{n} full a week · ≈ %{h} hours", &[("n", &g(f.full_week)), ("h", &format!("{:.1}", f.doubling_hours))]), trf("%{p} an hour with a bus of no contract · not in the score", &[("p", &price)])));
     }
+    // (3 November 2026: the holidays of a diesel term from its start - fewer journeys then, the
+    // buses paid every day: `contract_events`)
+    let start = cn::server_start(t);
+    let days = cn::server_days(omsi_launcher_lib::company::model::Drive::Diesel, cn::WorkSize::of_hours(cn::week_hours(t)));
+    let holidays = core::holiday_days(&c.map, &start, days);
+    if holidays > 0 {
+        tiles.push(tile("Holidays", trf("%{n} of %{d} days", &[("n", &holidays.to_string()), ("d", &days.to_string())]), tr("public or school holidays in a diesel term: fewer journeys, the buses paid every day")));
+    }
     tiles
+}
+
+/// (NexiconDK, 3 November 2026) The authority's changes of the company's contracts
+/// (`contract_events`): waiting for their day - to decline while it may -, applied, declined.
+fn changes(c: &Company) -> Value {
+    use omsi_launcher_lib::company::contract_events::ChangeKind;
+    let today = c.date.clone();
+    let sign = |x: f64| if x.round() > 0.0 { format!("+{:.0}", x.round()) } else { format!("{:.0}", x.round()) };
+    let rows: Vec<Value> = c
+        .online
+        .changes
+        .iter()
+        .rev()
+        .take(8)
+        .map(|ch| {
+            let title = match ch.kind {
+                ChangeKind::Timetable => trf("%{name}: the map's new timetable", &[("name", &ch.name)]),
+                ChangeKind::AddLine => trf("%{name}: line %{n} added", &[("name", &ch.name), ("n", &ch.number)]),
+                ChangeKind::RemoveLine => trf("%{name}: line %{n} taken out", &[("name", &ch.name), ("n", &ch.number)]),
+            };
+            let say = trf("From %{date}: %{h} timetable hours a week (%{before} → %{after}), %{b} contract buses, %{s} stops.", &[("date", &day_label(&ch.from)), ("h", &sign(ch.hours_after - ch.hours_before)), ("before", &format!("{:.0}", ch.hours_before)), ("after", &format!("{:.0}", ch.hours_after)), ("b", &sign(ch.buses_after as f64 - ch.buses_before as f64)), ("s", &sign(ch.stops_after as f64 - ch.stops_before as f64))]);
+            let ask = ch.declinable(&today);
+            let state = match ch.state.as_str() {
+                "applied" => tr("Applied"),
+                "declined" => tr("Declined"),
+                _ if ask => trf("You may decline it until %{d}", &[("d", &day_label(&ch.decline_by))]),
+                _ => tr("To be run: plan your duties for it"),
+            };
+            json!({ "id": ch.id, "number": ch.number, "title": title, "say": say, "state": state, "ask": ask })
+        })
+        .collect();
+    if rows.is_empty() {
+        return Value::Null;
+    }
+    json!({ "title": tr("Changes of your contracts"), "rows": rows, "decline": tr("Decline") })
 }
 
 /// (NexiconDK, 3 November 2026) A server contract's term by the buses it is won with and the size
@@ -1019,6 +1063,18 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {
             match apply(s, |c| if c.online.on_server { co_tenders::bid_parts(&data, c, id, amount, bus_day) } else { cn::bid(c, id, amount) }) {
                 Ok(_) => {
                     s.say(tr("Your bid is in. The rivals answer as the clock goes on."), false);
+                    Ok(json!({}))
+                }
+                Err(p) => Ok(json!({ "popup": p })),
+            }
+        }
+        // (NexiconDK, 3 November 2026: a change of a contract declined while it may)
+        "change_decline" => {
+            let id = args.get("change").and_then(Value::as_u64).unwrap_or(0) as u32;
+            let data = super::super::data();
+            match apply(s, |c| omsi_launcher_lib::company::contract_events::decline(&data, c, id)) {
+                Ok(_) => {
+                    s.say(tr("The change is declined."), false);
                     Ok(json!({}))
                 }
                 Err(p) => Ok(json!({ "popup": p })),

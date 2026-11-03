@@ -172,6 +172,10 @@ pub fn handle(api: &Api, auth: &Mutex<Auth>, r: &Request) -> Option<Answer> {
             Err(e) => aw::error("400 Bad Request", &e),
         },
         // (3 November 2026) the installed buses, and the admin's corrections of one
+        ("events", true) => match events_do(api, &asked) {
+            Ok(text) => ok(json!({ "answer": text })),
+            Err(e) => aw::error("400 Bad Request", &e),
+        },
         ("buses", _) => ok(buses(api)),
         ("bus", true) => match bus_do(api, &asked) {
             Ok(text) => ok(json!({ "answer": text })),
@@ -480,7 +484,7 @@ fn market(api: &Api) -> Value {
             let here: Vec<&super::model::Company> = all.iter().filter(|c| shared_tenders::key_of(&c.map) == mk.key).collect();
             let contracts: Vec<Value> = here
                 .iter()
-                .flat_map(|c| c.concessions.held.iter().map(move |h| json!({ "company": c.id, "name": c.name, "line": h.line, "number": h.number, "from": h.from, "until": h.until, "next": next(&h.until), "package": h.package })))
+                .flat_map(|c| c.concessions.held.iter().map(move |h| json!({ "company": c.id, "name": c.name, "line": h.line, "number": h.number, "from": h.from, "until": h.until, "next": next(&h.until), "package": h.package, "lines": if h.with.len() > 1 { h.with.clone() } else { vec![h.line.clone()] } })))
                 .collect();
             let companies: Vec<Value> = here.iter().map(|c| json!({ "id": c.id, "name": c.name })).collect();
             let operators: Vec<Value> = mk.rivals.iter().map(|r| json!(r.name)).collect();
@@ -496,10 +500,14 @@ fn market(api: &Api) -> Value {
                     json!({ "name": l, "company": company, "operator": operator, "open": open, "event": event })
                 })
                 .collect();
-            json!({ "key": mk.key, "map": folder_name(&mk.map), "open": open, "decided": decided, "held": held, "events": mk.events, "lines": lines, "contracts": contracts, "companies": companies, "operators": operators })
+            // (3 November 2026: its roadworks - `contract_events`)
+            let roadworks: Vec<super::contract_events::Roadwork> = super::contract_events::load_roadworks(&m.data).into_iter().filter(|r| r.map == mk.key).collect();
+            json!({ "key": mk.key, "map": folder_name(&mk.map), "open": open, "decided": decided, "held": held, "events": mk.events, "lines": lines, "contracts": contracts, "companies": companies, "operators": operators, "roadworks": roadworks })
         })
         .collect();
-    json!({ "maps": maps, "rules": rules, "today": today, "earliest_end": dates::add(&today, shared_tenders::RENEW_ANNOUNCED) })
+    // (3 November 2026: the server's calendar and the admin's holidays - `contract_events`)
+    let calendar = if super::contract_events::danish(&m.data) { "dk" } else { "map" };
+    json!({ "maps": maps, "rules": rules, "today": today, "earliest_end": dates::add(&today, shared_tenders::RENEW_ANNOUNCED), "calendar": calendar, "holidays": super::contract_events::load_periods(&m.data), "must_accept": super::contract_events::must_accept(&m.data), "change_days": super::contract_events::CHANGE_DAYS })
 }
 
 /// The last `TAIL` lines of a file.
@@ -805,6 +813,65 @@ fn tender_do(api: &Api, map: &str, a: &Value) -> Result<String, String> {
     if changed {
         shared_tenders::save(&data, &mk).map_err(|e| format!("{e:#}"))?;
     }
+    m.say(&format!("admin panel: {said}"));
+    Ok(said)
+}
+
+/// (NexiconDK, 3 November 2026) What may happen to a contract, from the admin panel
+/// (`contract_events`): a company's contract changed (`change`: the map's timetable taken into
+/// use, a line added or taken out - measured on the map's week), the server's own holidays
+/// (`holiday_add`, `holiday_remove`) and roadworks on a line (`roadworks`, `roadworks_end`).
+fn events_do(api: &Api, a: &Value) -> Result<String, String> {
+    use super::contract_events as ev;
+    let s = |k: &str| a.get(k).and_then(Value::as_str).unwrap_or("").trim().to_string();
+    let int = |k: &str| a.get(k).and_then(|v| v.as_i64().or_else(|| v.as_str().and_then(|t| t.trim().parse::<i64>().ok()))).unwrap_or(0);
+    let m = server(api);
+    let data = m.data.clone();
+    let (today, _) = server_now(&m);
+    let said = match s("do").as_str() {
+        "holiday_add" => {
+            let p = ev::add_period(&data, &s("name"), &s("from"), &s("until"))?;
+            format!("holidays {}: {} to {}", p.name, p.from, p.until)
+        }
+        "holiday_remove" => {
+            let p = ev::remove_period(&data, int("id") as u32)?;
+            format!("holidays {} taken away", p.name)
+        }
+        "roadworks" => {
+            let map = s("map");
+            let mk = shared_tenders::load(&data, &map).ok_or("no such market")?;
+            let from = if s("from").is_empty() { today.clone() } else { s("from") };
+            let lines = crate::lines_in_map_dir(&ms::map_dir_of(&m.cfg.root, &mk.map), &from).map_err(|e| format!("{e:#}"))?;
+            let rw = ev::Roadwork { map: map.clone(), line: s("line"), from_stop: s("from_stop"), to_stop: s("to_stop"), from, until: s("until"), minutes: int("minutes") as i32, ..Default::default() };
+            let rw = ev::add_roadwork(&data, rw, &lines)?;
+            format!("roadworks on line {} of {map}, {} to {}, from {} to {}: {} stops closed, +{} minutes", rw.number, rw.from_stop, rw.to_stop, rw.from, rw.until, rw.closed.len(), rw.minutes)
+        }
+        "roadworks_end" => {
+            let rw = ev::end_roadwork(&data, int("id") as u32)?;
+            format!("the roadworks on line {} ended", rw.number)
+        }
+        "change" => {
+            let (company, line, other) = (s("company"), s("line"), s("other"));
+            let kind = match s("kind").as_str() {
+                "add" => ev::ChangeKind::AddLine,
+                "remove" => ev::ChangeKind::RemoveLine,
+                _ => ev::ChangeKind::Timetable,
+            };
+            let c = store::load(&data, &company).map_err(|_| "no such company".to_string())?;
+            let dir = ms::map_dir_of(&m.cfg.root, &c.map);
+            let day = dates::parse(&today).ok_or("the server's date")?;
+            let monday = day - dates::weekday(day) as i64;
+            let mut days = Vec::new();
+            for k in 0..7 {
+                days.push(crate::lines_in_map_dir(&dir, &dates::fmt(monday + k)).map_err(|e| format!("{e:#}"))?);
+            }
+            let ch = ev::measure(&c, kind, &line, &other, &days, &today, ev::must_accept(&data))?;
+            shared_tenders::order_change(&data, &company, &ch).map_err(|e| format!("{e:#}"))?;
+            let may = if ch.decline_by.is_empty() { String::new() } else { format!(", the company may decline it until {}", ch.decline_by) };
+            format!("the contract {} of {} changes from {}: {:.0} → {:.0} timetable hours a week, {} → {} buses{may} (taken at its next step)", ch.name, c.name, ch.from, ch.hours_before, ch.hours_after, ch.buses_before, ch.buses_after)
+        }
+        _ => return Err("change, holiday_add, holiday_remove, roadworks or roadworks_end".into()),
+    };
     m.say(&format!("admin panel: {said}"));
     Ok(said)
 }

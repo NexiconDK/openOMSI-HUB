@@ -784,3 +784,34 @@ fn a_two_part_contract_is_paid_by_the_hour_and_the_bus_and_earns_its_bonus() {
     assert!(!r.notes.iter().any(|n| matches!(n, Note::Bonus { .. })));
     assert_eq!(c.concessions.contracts.iter().find(|k| k.id == id).unwrap().bonus.paid_on, "");
 }
+
+/// (NexiconDK, 3 November 2026) Roadworks on a server contract's line (`contract_events`): each
+/// journey run is paid their minutes on top as timetable time, and a journey late by no more than
+/// them is paid and gets no default points for it.
+#[test]
+fn roadworks_are_paid_and_their_lateness_allowed() {
+    let mut c = company(GameMode::Normal);
+    c.online.on_server = true;
+    let today = c.date.clone();
+    let id = with_contract(&mut c, Kind::Gross, Period::Day, 300_000_00, &today);
+    let k = c.concessions.contracts.iter_mut().find(|k| k.id == id).unwrap();
+    (k.per_hour, k.per_bus_day, k.buses) = (100_00, 0, 0);
+    let index = k.index;
+    c.online.roadworks = vec![super::super::contract_events::Roadwork { line: "Linie5".into(), from: today.clone(), until: today.clone(), minutes: 20, ..Default::default() }];
+    let mut j = Journeys::default();
+    j.timetabled("Linie5", 600);
+    // (two journeys run, 18 minutes late: within the roadworks' 20)
+    j.ran("Linie5", "1", 18, false, None, None, None);
+    j.ran("Linie5", "1", 18, false, None, None, None);
+    close(&mut c, &j);
+    let f = c.contract_index / index;
+    assert_eq!(booked(&c, BookingKind::Contract), (640.0 / 60.0 * 100_00.0 * f).round() as Cents, "10 hours and 2 × 20 minutes");
+    let k = c.concessions.contracts.iter().find(|k| k.id == id).unwrap();
+    assert!(k.record.iter().all(|d| d.unpaid == 0 && d.slight == 0 && d.far == 0), "{:?}", k.record);
+    // (the next day, no roadworks: the same journeys go unpaid, 18 minutes late)
+    c.date = dates::add(&c.date, 1);
+    c.online.roadworks.clear();
+    close(&mut c, &j);
+    let k = c.concessions.contracts.iter().find(|k| k.id == id).unwrap();
+    assert!(k.record.last().is_some_and(|d| d.unpaid == 2), "{:?}", k.record);
+}

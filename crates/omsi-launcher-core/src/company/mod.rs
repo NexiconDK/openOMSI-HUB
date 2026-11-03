@@ -28,6 +28,7 @@ pub mod cloud;
 pub mod concessions;
 pub mod complaints;
 pub mod contracts;
+pub mod contract_events;
 // (Beta 62: the money shown and typed in the company's own currency)
 pub mod currency;
 pub mod control;

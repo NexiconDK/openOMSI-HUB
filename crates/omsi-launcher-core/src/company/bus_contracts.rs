@@ -1095,6 +1095,8 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         let mut pd = PointsDay { date: date.to_string(), ..Default::default() };
         let mut on_time_n = 0;
         let mut weather_half = 0u32;
+        // (3 November 2026: the server's roadworks on the line - late by their minutes allowed)
+        let extra = super::contract_events::extra_minutes(c, date, &k.line);
         // (a bus or a driver is judged once a day on a line, a bus's size once a tour)
         let mut seen: Vec<String> = Vec::new();
         let mut once = |key: String| {
@@ -1114,14 +1116,15 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
                 }
                 continue;
             }
-            if on_time(j.minutes) && !j.part {
+            let late = super::contract_events::judged(j.minutes, extra);
+            if on_time(late) && !j.part {
                 on_time_n += 1;
             }
-            if j.part || (!weather && unpaid_at(c, j.minutes)) {
+            if j.part || (!weather && unpaid_at(c, late)) {
                 pd.unpaid += 1;
             }
             if !weather {
-                let p = time_points(j.minutes);
+                let p = time_points(late);
                 if p >= econ_uk::POINTS_FAR {
                     pd.far += 1;
                 } else if p > 0.0 {
@@ -1155,7 +1158,9 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         let pay = match k.period {
             _ if hourly => {
                 let planned: i32 = journeys.planned.iter().filter(|p| p.0.eq_ignore_ascii_case(&k.line)).map(|p| p.1).sum();
-                let hours = (planned as i64 - missed_minutes).max(0) as f64 / 60.0;
+                // (3 November 2026: each journey run through roadworks paid their minutes on top)
+                let roadworks = extra as i64 * mine.iter().filter(|j| j.run).count() as i64;
+                let hours = (planned as i64 - missed_minutes + roadworks).max(0) as f64 / 60.0;
                 let index = c.contract_index / k.index.max(0.01);
                 (hours * k.per_hour as f64 * index + k.buses as f64 * k.per_bus_day as f64 * index).round() as Cents
             }
@@ -1270,6 +1275,8 @@ fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, s
     // journey's as it ran - late not fined when the dispatcher reports delays to the control room)
     let (mut early, mut late) = stops;
     let lack = |x: f64| (1.2 - x / 100.0).clamp(0.2, 1.2);
+    // (3 November 2026: the server's roadworks on the line - late by their minutes not fined)
+    let extra = super::contract_events::extra_minutes(c, date, &k.line);
     for j in mine {
         if !j.run {
             dropped += 1;
@@ -1296,7 +1303,7 @@ fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, s
         if j.driver.is_some() {
             if j.minutes < -1 {
                 early += 1;
-            } else if j.minutes > super::server_fines::LATE_MINUTES && !c.clock.dispatcher {
+            } else if super::contract_events::judged(j.minutes, extra) > super::server_fines::LATE_MINUTES && !c.clock.dispatcher {
                 late += 1;
             }
         }

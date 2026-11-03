@@ -86,6 +86,16 @@ pub struct Online {
     /// process, not kept: None elsewhere.
     #[serde(skip)]
     pub price_level: Option<String>,
+    /// (NexiconDK, 3 November 2026) The authority's changes of its running contracts
+    /// (`contract_events::ContractChange`): waiting for their day, applied or declined.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub changes: Vec<super::contract_events::ContractChange>,
+    /// (NexiconDK, 3 November 2026) The server's roadworks on its lines (`contract_events::Roadwork`),
+    /// as its process last read them, and when they were written: not kept.
+    #[serde(skip)]
+    pub roadworks: Vec<super::contract_events::Roadwork>,
+    #[serde(skip)]
+    pub roadworks_at: u64,
     /// (NexiconDK, 3 November 2026) Doubling: the full departures kept, the orders of extra buses
     /// and their answers (`doubling`), and the server's rules of it (set by its process, not kept).
     #[serde(default)]
@@ -155,7 +165,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, changes: Vec::new(), roadworks: Vec::new(), roadworks_at: 0, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
     }
 }
 
@@ -669,6 +679,15 @@ impl Host {
         if super::server_buses::refresh(&self.data, c) {
             self.dirty = true;
         }
+        // (3 November 2026: the server's calendar - Denmark's, the admin's holidays - for the
+        // maps' tours, and its roadworks on the company's lines, read again when changed)
+        if c.online.on_server {
+            super::contract_events::refresh_calendar(&self.data);
+        }
+        if super::contract_events::roadworks_step(&self.data, c) {
+            self.dirty = true;
+            self.planned = None;
+        }
         // (phase 6 step 3: a depot's big purchases, its head office's to approve)
         if c.online.on_server && c.online.big_purchase.is_none() {
             c.online.big_purchase = Some(super::server_depots::big_purchase_of(&self.data));
@@ -766,7 +785,14 @@ impl Host {
         if changed {
             self.dirty = true;
         }
-        if won {
+        // (3 November 2026: the authority's changes of its contracts due today - a line added is
+        // taken on with the lines won)
+        let (altered, added) = super::contract_events::step(c);
+        if altered {
+            self.dirty = true;
+            self.planned = None;
+        }
+        if won || added {
             let date = c.date.clone();
             let lines = w.lines(c, &date).map_err(anyhow::Error::msg)?;
             super::concessions::take_on(c, &lines);
