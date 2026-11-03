@@ -3,6 +3,7 @@ _version: 2
 # drivers' duties cut from them, edited by hand, with the rules and the day's figures.
 "Roster":
   de: "Dienstplan"
+  da: "Vagtplan"
   fr: "Roulement"
   nl: "Rooster"
   pl: "Grafik"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Графік"
 "Roster: who drives what. Vehicles and Drivers: the scheduling studio - the buses' blocks and the duties cut from them":
   de: "Dienstplan: wer was fährt. Fahrzeuge und Fahrer: das Planungsstudio – die Umläufe der Busse und die daraus geschnittenen Dienste"
+  da: "Vagtplan: hvem kører hvad. Køretøjer og chauffører: planlægningsstudiet - busernes vognløb og de vagter, der skæres fra dem"
   fr: "Roulement : qui conduit quoi. Véhicules et Conducteurs : l'atelier de planification – les services des bus et les services des conducteurs qui en sont découpés"
   nl: "Rooster: wie wat rijdt. Voertuigen en Chauffeurs: de planningsstudio – de omlopen van de bussen en de diensten die eruit gesneden zijn"
   pl: "Grafik: kto co prowadzi. Pojazdy i Kierowcy: studio planowania – brygady autobusów i wycięte z nich służby"
@@ -17,6 +19,7 @@ _version: 2
   uk: "Графік: хто що веде. Транспорт і Водії: студія планування – обороти автобусів і нарізані з них зміни"
 "Optimise":
   de: "Optimieren"
+  da: "Optimér"
   fr: "Optimiser"
   nl: "Optimaliseren"
   pl: "Optymalizuj"
@@ -24,6 +27,7 @@ _version: 2
   uk: "Оптимізувати"
 "Run the automatic blocking and runcutting: its result is shown as a proposal you can accept, then change by hand":
   de: "Die automatische Umlauf- und Dienstplanung laufen lassen: ihr Ergebnis erscheint als Vorschlag, den Sie annehmen und dann von Hand ändern können"
+  da: "Kør den automatiske vognløbsplanlægning og vagtopdeling: resultatet vises som et forslag, du kan acceptere og derefter ændre i hånden"
   fr: "Lancer la construction automatique des services des bus et des conducteurs : le résultat s'affiche comme une proposition que vous pouvez accepter, puis modifier à la main"
   nl: "De automatische omloop- en dienstplanning draaien: de uitkomst verschijnt als voorstel dat u kunt aannemen en daarna met de hand aanpassen"
   pl: "Uruchom automatyczne układanie brygad i służb: wynik pojawi się jako propozycja, którą możesz przyjąć, a potem zmienić ręcznie"
@@ -31,6 +35,7 @@ _version: 2
   uk: "Запустити автоматичне складання оборотів і змін: результат з'явиться як пропозиція, яку можна прийняти, а потім змінити вручну"
 "Take the last change of the blocks or duties back":
   de: "Die letzte Änderung an Umläufen oder Diensten zurücknehmen"
+  da: "Tag den sidste ændring af vognløb eller vagter tilbage"
   fr: "Annuler la dernière modification des services"
   nl: "De laatste wijziging van de omlopen of diensten terugdraaien"
   pl: "Cofnij ostatnią zmianę brygad lub służb"
@@ -38,6 +43,7 @@ _version: 2
   uk: "Скасувати останню зміну оборотів або змін"
 "Laid out by hand: holds every %{day}. The roster gives its buses and drivers.":
   de: "Von Hand geplant: gilt jeden %{day}. Der Dienstplan gibt ihm Busse und Fahrer."
+  da: "Lagt i hånden: gælder hver %{day}. Vagtplanen giver dens busser og chauffører."
   fr: "Composé à la main : vaut pour chaque %{day}. Le roulement lui donne ses bus et ses conducteurs."
   nl: "Met de hand ingedeeld: geldt elke %{day}. Het rooster geeft er de bussen en chauffeurs aan."
   pl: "Ułożone ręcznie: obowiązuje w każdy %{day}. Grafik przydziela autobusy i kierowców."
@@ -45,6 +51,7 @@ _version: 2
   uk: "Складено вручну: діє щоразу в %{day}. Автобуси й водіїв призначає графік."
 "The automatic blocks and duties of every %{day}: drag a trip or tap between two trips to change them.":
   de: "Die automatischen Umläufe und Dienste jedes %{day}: eine Fahrt ziehen oder zwischen zwei Fahrten tippen, um sie zu ändern."
+  da: "De automatiske vognløb og vagter for hver %{day}: træk en tur eller tryk mellem to ture for at ændre dem."
   fr: "Les services automatiques de chaque %{day} : faites glisser un voyage ou touchez entre deux voyages pour les modifier."
   nl: "De automatische omlopen en diensten van elke %{day}: sleep een rit of tik tussen twee ritten om ze te veranderen."
   pl: "Automatyczne brygady i służby na każdy %{day}: przeciągnij kurs albo stuknij między dwoma kursami, aby je zmienić."
@@ -52,6 +59,7 @@ _version: 2
   uk: "Автоматичні обороти й зміни на кожен %{day}: перетягніть рейс або торкніться між двома рейсами, щоб змінити їх."
 "The last change is taken back.":
   de: "Die letzte Änderung ist zurückgenommen."
+  da: "Den sidste ændring er taget tilbage."
   fr: "La dernière modification est annulée."
   nl: "De laatste wijziging is teruggedraaid."
   pl: "Ostatnia zmiana została cofnięta."
@@ -59,6 +67,7 @@ _version: 2
   uk: "Останню зміну скасовано."
 "The timetable changed: line %{n} runs with the automatic blocks and duties again.":
   de: "Der Fahrplan hat sich geändert: Linie %{n} fährt wieder mit den automatischen Umläufen und Diensten."
+  da: "Køreplanen er ændret: linje %{n} kører igen med de automatiske vognløb og vagter."
   fr: "L'horaire a changé : la ligne %{n} roule de nouveau avec les services automatiques."
   nl: "De dienstregeling is veranderd: lijn %{n} rijdt weer met de automatische omlopen en diensten."
   pl: "Rozkład się zmienił: linia %{n} znów jeździ według automatycznych brygad i służb."
@@ -66,6 +75,7 @@ _version: 2
   uk: "Розклад змінився: маршрут %{n} знову працює з автоматичними оборотами й змінами."
 "Buses at the peak":
   de: "Busse in der Spitze"
+  da: "Busser i spidsbelastning"
   fr: "Bus à la pointe"
   nl: "Bussen in de spits"
   pl: "Autobusy w szczycie"
@@ -73,6 +83,7 @@ _version: 2
   uk: "Автобусів у пік"
 "Paid driver hours":
   de: "Bezahlte Fahrerstunden"
+  da: "Betalte chaufførtimer"
   fr: "Heures de conduite payées"
   nl: "Betaalde chauffeursuren"
   pl: "Płatne godziny kierowców"
@@ -80,6 +91,7 @@ _version: 2
   uk: "Оплачувані години водіїв"
 "Deadhead km":
   de: "Leer-km"
+  da: "Tomkørsel km"
   fr: "Km haut-le-pied"
   nl: "Lege km"
   pl: "Km bez pasażerów"
@@ -87,6 +99,7 @@ _version: 2
   uk: "Нульовий пробіг"
 "Cost of the day":
   de: "Kosten des Tages"
+  da: "Dagens omkostning"
   fr: "Coût de la journée"
   nl: "Kosten van de dag"
   pl: "Koszt dnia"
@@ -94,6 +107,7 @@ _version: 2
   uk: "Витрати за день"
 "Keep mine":
   de: "Meins behalten"
+  da: "Behold mine"
   fr: "Garder le mien"
   nl: "Mijn eigen houden"
   pl: "Zostaw moje"
@@ -101,6 +115,7 @@ _version: 2
   uk: "Залишити моє"
 "Proposal: the automatic blocks and duties. The figures show it against yours.":
   de: "Vorschlag: die automatischen Umläufe und Dienste. Die Zahlen zeigen ihn gegenüber Ihren."
+  da: "Forslag: de automatiske vognløb og vagter. Tallene viser det mod dine."
   fr: "Proposition : les services automatiques. Les chiffres la comparent aux vôtres."
   nl: "Voorstel: de automatische omlopen en diensten. De cijfers zetten het af tegen de uwe."
   pl: "Propozycja: automatyczne brygady i służby. Liczby porównują ją z twoimi."
@@ -108,6 +123,7 @@ _version: 2
   uk: "Пропозиція: автоматичні обороти й зміни. Цифри порівнюють її з вашими."
 "Your day is the automatic one already: the proposal is the same.":
   de: "Ihr Tag ist schon der automatische: der Vorschlag ist derselbe."
+  da: "Din dag er allerede den automatiske: forslaget er det samme."
   fr: "Votre journée est déjà l'automatique : la proposition est identique."
   nl: "Uw dag is al de automatische: het voorstel is hetzelfde."
   pl: "Twój dzień już jest automatyczny: propozycja jest taka sama."
@@ -115,6 +131,7 @@ _version: 2
   uk: "Ваш день уже автоматичний: пропозиція така сама."
 "The automatic blocks and duties are taken: change them by hand from here.":
   de: "Die automatischen Umläufe und Dienste sind übernommen: ändern Sie sie von hier aus von Hand."
+  da: "De automatiske vognløb og vagter er taget: ændr dem i hånden herfra."
   fr: "Les services automatiques sont repris : modifiez-les à la main à partir d'ici."
   nl: "De automatische omlopen en diensten zijn overgenomen: pas ze vanaf hier met de hand aan."
   pl: "Przyjęto automatyczne brygady i służby: odtąd zmieniaj je ręcznie."
@@ -122,6 +139,7 @@ _version: 2
   uk: "Автоматичні обороти й зміни прийнято: далі змінюйте їх вручну."
 "Show more of the day (Ctrl and the wheel)":
   de: "Mehr vom Tag zeigen (Strg und Mausrad)"
+  da: "Vis mere af dagen (Ctrl og hjulet)"
   fr: "Afficher une plus grande partie de la journée (Ctrl et molette)"
   nl: "Meer van de dag tonen (Ctrl en het wieltje)"
   pl: "Pokaż większą część dnia (Ctrl i kółko)"
@@ -129,6 +147,7 @@ _version: 2
   uk: "Показати більше дня (Ctrl і коліщатко)"
 "Show the hours wider (Ctrl and the wheel; Shift and the wheel moves along the day)":
   de: "Die Stunden breiter zeigen (Strg und Mausrad; Umschalt und Mausrad verschiebt den Tag)"
+  da: "Vis timerne bredere (Ctrl og hjulet; Shift og hjulet flytter langs dagen)"
   fr: "Élargir les heures (Ctrl et molette ; Maj et molette pour parcourir la journée)"
   nl: "De uren breder tonen (Ctrl en het wieltje; Shift en het wieltje schuift door de dag)"
   pl: "Pokaż godziny szerzej (Ctrl i kółko; Shift i kółko przesuwa dzień)"
@@ -136,6 +155,7 @@ _version: 2
   uk: "Показати години ширше (Ctrl і коліщатко; Shift і коліщатко — прокрутка днем)"
 "Take the duty apart: each piece a duty of its own":
   de: "Den Dienst auflösen: jedes Stück ein eigener Dienst"
+  da: "Skil vagten ad: hver del en vagt for sig"
   fr: "Séparer le service : chaque morceau devient un service à part"
   nl: "De dienst uit elkaar halen: elk stuk een eigen dienst"
   pl: "Rozdziel służbę: każdy kawałek osobną służbą"
@@ -143,6 +163,7 @@ _version: 2
   uk: "Розділити зміну: кожна частина стане окремою зміною"
 "Split":
   de: "Geteilt"
+  da: "Del"
   fr: "Coupure"
   nl: "Gebroken"
   pl: "Przerwa"
@@ -150,6 +171,7 @@ _version: 2
   uk: "Розрив"
 "A driver takes over here, at %{stop}. Tap to join the two duties.":
   de: "Hier übernimmt ein Fahrer, an %{stop}. Tippen, um die beiden Dienste zu verbinden."
+  da: "En chauffør overtager her, ved %{stop}. Tryk for at slå de to vagter sammen."
   fr: "Un conducteur prend la relève ici, à %{stop}. Touchez pour réunir les deux services."
   nl: "Hier neemt een chauffeur het over, bij %{stop}. Tik om de twee diensten samen te voegen."
   pl: "Tu zmienia się kierowca, na przystanku %{stop}. Stuknij, aby połączyć obie służby."
@@ -157,6 +179,7 @@ _version: 2
   uk: "Тут водія змінюють, на %{stop}. Торкніться, щоб об'єднати дві зміни."
 "Tap to cut the duty here: a driver takes over at %{stop}.":
   de: "Tippen, um den Dienst hier zu teilen: an %{stop} übernimmt ein Fahrer."
+  da: "Tryk for at dele vagten her: en chauffør overtager ved %{stop}."
   fr: "Touchez pour couper le service ici : un conducteur prend la relève à %{stop}."
   nl: "Tik om de dienst hier te knippen: bij %{stop} neemt een chauffeur het over."
   pl: "Stuknij, aby przeciąć służbę tutaj: na przystanku %{stop} zmienia się kierowca."
@@ -164,6 +187,7 @@ _version: 2
   uk: "Торкніться, щоб розрізати зміну тут: на %{stop} водія змінюють."
 "Drop here: the trip runs with a new bus":
   de: "Hier ablegen: die Fahrt fährt mit einem neuen Bus"
+  da: "Slip her: turen kører med en ny bus"
   fr: "Déposez ici : le voyage roule avec un nouveau bus"
   nl: "Hier loslaten: de rit rijdt met een nieuwe bus"
   pl: "Upuść tutaj: kurs pojedzie nowym autobusem"
@@ -171,6 +195,7 @@ _version: 2
   uk: "Відпустіть тут: рейс піде новим автобусом"
 "New bus: drag a trip here":
   de: "Neuer Bus: eine Fahrt hierher ziehen"
+  da: "Ny bus: træk en tur hertil"
   fr: "Nouveau bus : faites glisser un voyage ici"
   nl: "Nieuwe bus: sleep een rit hierheen"
   pl: "Nowy autobus: przeciągnij tu kurs"
@@ -178,6 +203,7 @@ _version: 2
   uk: "Новий автобус: перетягніть сюди рейс"
 "In the timetable: tour %{t}":
   de: "Im Fahrplan: Umlauf %{t}"
+  da: "I køreplanen: vognløb %{t}"
   fr: "Dans l'horaire : service %{t}"
   nl: "In de dienstregeling: omloop %{t}"
   pl: "W rozkładzie: brygada %{t}"
@@ -185,6 +211,7 @@ _version: 2
   uk: "У розкладі: оборот %{t}"
 "Drag it to another bus of the line, or to the New bus row.":
   de: "Ziehen Sie sie auf einen anderen Bus der Linie oder in die Zeile Neuer Bus."
+  da: "Træk den til en anden bus på linjen eller til rækken Ny bus."
   fr: "Faites-le glisser vers un autre bus de la ligne, ou vers la rangée Nouveau bus."
   nl: "Sleep hem naar een andere bus van de lijn, of naar de rij Nieuwe bus."
   pl: "Przeciągnij go na inny autobus linii albo do wiersza Nowy autobus."
@@ -192,6 +219,7 @@ _version: 2
   uk: "Перетягніть його на інший автобус маршруту або в рядок «Новий автобус»."
 "Planning back to automatic":
   de: "Planung wieder automatisch"
+  da: "Planlægningen tilbage til automatisk"
   fr: "Planification revenue en automatique"
   nl: "Planning weer automatisch"
   pl: "Planowanie znów automatyczne"
@@ -199,6 +227,7 @@ _version: 2
   uk: "Планування знову автоматичне"
 "The timetable of line %{n} changed: the blocks and duties you laid out for it in the planning no longer fit, so it runs with the automatic ones again.":
   de: "Der Fahrplan der Linie %{n} hat sich geändert: die Umläufe und Dienste, die Sie in der Planung dafür angelegt hatten, passen nicht mehr, darum fährt sie wieder mit den automatischen."
+  da: "Køreplanen for linje %{n} er ændret: de vognløb og vagter, du lagde for den i planlægningen, passer ikke længere, så den kører igen med de automatiske."
   fr: "L'horaire de la ligne %{n} a changé : les services que vous aviez composés pour elle dans la planification ne conviennent plus, elle roule donc de nouveau avec les services automatiques."
   nl: "De dienstregeling van lijn %{n} is veranderd: de omlopen en diensten die u er in de planning voor had ingedeeld passen niet meer, dus rijdt hij weer met de automatische."
   pl: "Rozkład linii %{n} się zmienił: brygady i służby ułożone dla niej w planowaniu już nie pasują, więc znów jeździ według automatycznych."
@@ -206,6 +235,7 @@ _version: 2
   uk: "Розклад маршруту %{n} змінився: обороти й зміни, складені для нього в плануванні, більше не підходять, тому він знову працює з автоматичними."
 "It overlaps another trip of this bus.":
   de: "Sie überschneidet sich mit einer anderen Fahrt dieses Busses."
+  da: "Den overlapper en anden tur på denne bus."
   fr: "Il chevauche un autre voyage de ce bus."
   nl: "Hij overlapt een andere rit van deze bus."
   pl: "Nakłada się na inny kurs tego autobusu."
@@ -213,6 +243,7 @@ _version: 2
   uk: "Він перетинається з іншим рейсом цього автобуса."
 "No time to get there: the bus cannot reach the trip's first stop in time.":
   de: "Keine Zeit hinzukommen: der Bus erreicht die erste Haltestelle der Fahrt nicht rechtzeitig."
+  da: "Ingen tid til at nå frem: bussen kan ikke nå turens første stoppested i tide."
   fr: "Pas le temps d'y aller : le bus ne peut pas atteindre à temps le premier arrêt du voyage."
   nl: "Geen tijd om er te komen: de bus haalt de eerste halte van de rit niet op tijd."
   pl: "Brak czasu na dojazd: autobus nie zdąży na pierwszy przystanek kursu."
@@ -220,6 +251,7 @@ _version: 2
   uk: "Не встигнути: автобус не доїде вчасно до першої зупинки рейсу."
 "The bus is still in the depot then: it leaves for its first trip later.":
   de: "Der Bus ist dann noch im Depot: er rückt erst später zu seiner ersten Fahrt aus."
+  da: "Bussen er stadig i garagen da: den kører til sin første tur senere."
   fr: "Le bus est encore au dépôt à ce moment : il ne sort que plus tard pour son premier voyage."
   nl: "De bus staat dan nog in de remise: hij rukt pas later uit voor zijn eerste rit."
   pl: "Autobus jest wtedy jeszcze w zajezdni: wyjeżdża na pierwszy kurs później."
@@ -227,6 +259,7 @@ _version: 2
   uk: "Автобус тоді ще в депо: він виїжджає на перший рейс пізніше."
 "The bus is back in the depot by then.":
   de: "Der Bus ist bis dahin schon wieder im Depot."
+  da: "Bussen er tilbage i garagen på det tidspunkt."
   fr: "Le bus est déjà rentré au dépôt à ce moment."
   nl: "De bus is dan al terug in de remise."
   pl: "Autobus jest już wtedy z powrotem w zajezdni."
@@ -234,6 +267,7 @@ _version: 2
   uk: "На той час автобус уже повернувся в депо."
 "A bus keeps to its line: move the trip to a bus of the same line.":
   de: "Ein Bus bleibt auf seiner Linie: verschieben Sie die Fahrt auf einen Bus derselben Linie."
+  da: "En bus holder sig til sin linje: flyt turen til en bus på samme linje."
   fr: "Un bus reste sur sa ligne : déplacez le voyage vers un bus de la même ligne."
   nl: "Een bus blijft op zijn lijn: verplaats de rit naar een bus van dezelfde lijn."
   pl: "Autobus trzyma się swojej linii: przenieś kurs na autobus tej samej linii."
@@ -241,6 +275,7 @@ _version: 2
   uk: "Автобус працює на своєму маршруті: перенесіть рейс на автобус того самого маршруту."
 "Only a trip with passengers can be moved.":
   de: "Nur eine Fahrt mit Fahrgästen lässt sich verschieben."
+  da: "Kun en tur med passagerer kan flyttes."
   fr: "Seul un voyage avec voyageurs peut être déplacé."
   nl: "Alleen een rit met reizigers kan worden verplaatst."
   pl: "Przenieść można tylko kurs z pasażerami."
@@ -248,6 +283,7 @@ _version: 2
   uk: "Перенести можна лише рейс із пасажирами."
 "The trip is on this bus already.":
   de: "Die Fahrt ist schon auf diesem Bus."
+  da: "Turen er allerede på denne bus."
   fr: "Le voyage est déjà sur ce bus."
   nl: "De rit zit al op deze bus."
   pl: "Ten kurs jest już na tym autobusie."
@@ -255,6 +291,7 @@ _version: 2
   uk: "Цей рейс уже на цьому автобусі."
 "This bus runs only this trip already.":
   de: "Dieser Bus fährt schon nur diese Fahrt."
+  da: "Denne bus kører allerede kun denne tur."
   fr: "Ce bus ne fait déjà que ce voyage."
   nl: "Deze bus rijdt al alleen deze rit."
   pl: "Ten autobus i tak wykonuje tylko ten kurs."
@@ -262,6 +299,7 @@ _version: 2
   uk: "Цей автобус і так виконує лише цей рейс."
 "A duty can only be cut between two trips.":
   de: "Ein Dienst lässt sich nur zwischen zwei Fahrten teilen."
+  da: "En vagt kan kun deles mellem to ture."
   fr: "Un service ne peut être coupé qu'entre deux voyages."
   nl: "Een dienst kan alleen tussen twee ritten worden geknipt."
   pl: "Służbę można przeciąć tylko między dwoma kursami."
@@ -269,6 +307,7 @@ _version: 2
   uk: "Зміну можна розрізати лише між двома рейсами."
 "A new duty begins there already.":
   de: "Dort beginnt schon ein neuer Dienst."
+  da: "En ny vagt begynder allerede dér."
   fr: "Un nouveau service commence déjà là."
   nl: "Daar begint al een nieuwe dienst."
   pl: "Tam już zaczyna się nowa służba."
@@ -276,6 +315,7 @@ _version: 2
   uk: "Там уже починається нова зміна."
 "The bus is on the move there: drivers change only where it stands.":
   de: "Der Bus ist dort unterwegs: Fahrer wechseln nur, wo er steht."
+  da: "Bussen er i bevægelse dér: chauffører skifter kun, hvor den holder stille."
   fr: "Le bus roule à cet endroit : les conducteurs ne se relaient que là où il est à l'arrêt."
   nl: "De bus is daar onderweg: chauffeurs wisselen alleen waar hij stilstaat."
   pl: "Autobus jest tam w drodze: kierowcy zmieniają się tylko tam, gdzie stoi."
@@ -283,6 +323,7 @@ _version: 2
   uk: "Там автобус у дорозі: водії змінюються лише там, де він стоїть."
 "Drivers change only at the line's termini or at the depot.":
   de: "Fahrer wechseln nur an den Endhaltestellen der Linie oder im Depot."
+  da: "Chauffører skifter kun ved linjens endestationer eller i garagen."
   fr: "Les conducteurs ne se relaient qu'aux terminus de la ligne ou au dépôt."
   nl: "Chauffeurs wisselen alleen aan de eindpunten van de lijn of in de remise."
   pl: "Kierowcy zmieniają się tylko na pętlach linii albo w zajezdni."
@@ -290,6 +331,7 @@ _version: 2
   uk: "Водії змінюються лише на кінцевих маршруту або в депо."
 "Each duty needs a trip with passengers.":
   de: "Jeder Dienst braucht eine Fahrt mit Fahrgästen."
+  da: "Hver vagt skal have en tur med passagerer."
   fr: "Chaque service a besoin d'un voyage avec voyageurs."
   nl: "Elke dienst heeft een rit met reizigers nodig."
   pl: "Każda służba potrzebuje kursu z pasażerami."
@@ -297,6 +339,7 @@ _version: 2
   uk: "У кожній зміні потрібен рейс із пасажирами."
 "No duty begins there.":
   de: "Dort beginnt kein Dienst."
+  da: "Ingen vagt begynder dér."
   fr: "Aucun service ne commence là."
   nl: "Daar begint geen dienst."
   pl: "Tam nie zaczyna się żadna służba."
@@ -304,6 +347,7 @@ _version: 2
   uk: "Там не починається зміна."
 "That duty would be longer than a working day may be (10 h).":
   de: "Dieser Dienst wäre länger, als ein Arbeitstag sein darf (10 h)."
+  da: "Den vagt ville blive længere, end en arbejdsdag må være (10 t)."
   fr: "Ce service serait plus long qu'une journée de travail ne peut l'être (10 h)."
   nl: "Die dienst zou langer zijn dan een werkdag mag zijn (10 u)."
   pl: "Ta służba byłaby dłuższa, niż może trwać dzień pracy (10 h)."
@@ -311,6 +355,7 @@ _version: 2
   uk: "Ця зміна була б довшою за допустимий робочий день (10 год)."
 "That is the same duty.":
   de: "Das ist derselbe Dienst."
+  da: "Det er den samme vagt."
   fr: "C'est le même service."
   nl: "Dat is dezelfde dienst."
   pl: "To ta sama służba."
@@ -318,6 +363,7 @@ _version: 2
   uk: "Це та сама зміна."
 "This duty is not joined with another.":
   de: "Dieser Dienst ist mit keinem anderen verbunden."
+  da: "Denne vagt er ikke sluttet sammen med en anden."
   fr: "Ce service n'est réuni à aucun autre."
   nl: "Deze dienst is niet met een andere samengevoegd."
   pl: "Ta służba nie jest połączona z inną."
@@ -325,6 +371,7 @@ _version: 2
   uk: "Ця зміна не об'єднана з іншою."
 "The planning changed meanwhile: try again.":
   de: "Die Planung hat sich inzwischen geändert: versuchen Sie es noch einmal."
+  da: "Planlægningen er ændret i mellemtiden: prøv igen."
   fr: "La planification a changé entre-temps : réessayez."
   nl: "De planning is intussen veranderd: probeer het opnieuw."
   pl: "Planowanie w międzyczasie się zmieniło: spróbuj ponownie."
@@ -332,6 +379,7 @@ _version: 2
   uk: "Планування тим часом змінилося: спробуйте ще раз."
 "Overlaps other work":
   de: "Überschneidet sich mit anderer Arbeit"
+  da: "Overlapper andet arbejde"
   fr: "Chevauche un autre travail"
   nl: "Overlapt ander werk"
   pl: "Nakłada się na inną pracę"
@@ -339,6 +387,7 @@ _version: 2
   uk: "Перетинається з іншою роботою"
 "Too short a rest between two pieces":
   de: "Zu kurze Pause zwischen zwei Stücken"
+  da: "For kort hvile mellem to dele"
   fr: "Pause trop courte entre deux morceaux"
   nl: "Te korte pauze tussen twee stukken"
   pl: "Za krótka przerwa między dwoma kawałkami"
@@ -346,6 +395,7 @@ _version: 2
   uk: "Закороткий відпочинок між двома частинами"
 "Longer than a working day may be":
   de: "Länger, als ein Arbeitstag sein darf"
+  da: "Længere, end en arbejdsdag må være"
   fr: "Plus long qu'une journée de travail ne peut l'être"
   nl: "Langer dan een werkdag mag zijn"
   pl: "Dłużej, niż może trwać dzień pracy"
@@ -353,6 +403,7 @@ _version: 2
   uk: "Довше за допустимий робочий день"
 "Overtime":
   de: "Überstunden"
+  da: "Overtid"
   fr: "Heures supplémentaires"
   nl: "Overuren"
   pl: "Nadgodziny"
@@ -360,6 +411,7 @@ _version: 2
   uk: "Понаднормові"
 "A change of stops":
   de: "Ein Haltestellenwechsel"
+  da: "Et skift af stoppesteder"
   fr: "Un changement d'arrêt"
   nl: "Een wissel van halte"
   pl: "Zmiana przystanku"
@@ -367,6 +419,7 @@ _version: 2
   uk: "Зміна зупинки"
 "A long split":
   de: "Eine lange Teilung"
+  da: "En lang delt vagt"
   fr: "Une longue coupure"
   nl: "Een lange onderbreking"
   pl: "Długa przerwa"
