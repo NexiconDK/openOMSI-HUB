@@ -3,6 +3,7 @@ _version: 2
 # bco.js's head office page; the server's company::server_hq).
 "Over %{amount} goes home at the day's close":
   de: "Über %{amount} geht zum Tagesabschluss an die Zentrale"
+  da: "Beløb over %{amount} sendes hjem ved dagens afslutning"
   fr: "Au-delà de %{amount}, part au siège à la clôture du jour"
   nl: "Boven %{amount} gaat bij de dagafsluiting naar het hoofdkantoor"
   pl: "Powyżej %{amount} trafia do centrali przy zamknięciu dnia"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Понад %{amount} іде до головного офісу під час закриття дня"
 "Topped up below %{amount}":
   de: "Aufgefüllt unter %{amount}"
+  da: "Fyldt op under %{amount}"
   fr: "Renfloué en dessous de %{amount}"
   nl: "Aangevuld onder %{amount}"
   pl: "Uzupełniana poniżej %{amount}"
@@ -17,6 +19,7 @@ _version: 2
   uk: "Поповнюється нижче %{amount}"
 "%{n} days closed in the red":
   de: "%{n} Tage im Minus abgeschlossen"
+  da: "%{n} dage afsluttet i minus"
   fr: "%{n} jours clôturés dans le rouge"
   nl: "%{n} dagen in het rood afgesloten"
   pl: "Dni zamknięte na minusie: %{n}"
@@ -24,6 +27,7 @@ _version: 2
   uk: "Днів, закритих у мінусі: %{n}"
 "On its way to it: %{amount}":
   de: "Unterwegs zu ihm: %{amount}"
+  da: "På vej mod det: %{amount}"
   fr: "En route vers lui : %{amount}"
   nl: "Onderweg erheen: %{amount}"
   pl: "W drodze do niej: %{amount}"
@@ -31,6 +35,7 @@ _version: 2
   uk: "У дорозі до нього: %{amount}"
 "No rule: money moves by hand.":
   de: "Keine Regel: Geld wird von Hand bewegt."
+  da: "Ingen regel: penge flyttes i hånden."
   fr: "Pas de règle : l'argent se déplace à la main."
   nl: "Geen regel: geld gaat met de hand."
   pl: "Brak reguły: pieniądze przesyła się ręcznie."
@@ -38,6 +43,7 @@ _version: 2
   uk: "Правила немає: гроші переказуються вручну."
 "%{purpose}: %{amount} left, %{monthly} a month for %{n} months":
   de: "%{purpose}: noch %{amount}, %{monthly} im Monat für %{n} Monate"
+  da: "%{purpose}: %{amount} tilbage, %{monthly} om måneden i %{n} måneder"
   fr: "%{purpose} : reste %{amount}, %{monthly} par mois pendant %{n} mois"
   nl: "%{purpose}: nog %{amount}, %{monthly} per maand gedurende %{n} maanden"
   pl: "%{purpose}: zostało %{amount}, %{monthly} miesięcznie, miesięcy: %{n}"
@@ -45,6 +51,7 @@ _version: 2
   uk: "%{purpose}: залишилось %{amount}, %{monthly} на місяць, місяців: %{n}"
 "Head office · %{n} depots · %{mode}":
   de: "Zentrale · %{n} Depots · %{mode}"
+  da: "Hovedkontor · %{n} afdelinger · %{mode}"
   fr: "Siège · %{n} dépôts · %{mode}"
   nl: "Hoofdkantoor · %{n} depots · %{mode}"
   pl: "Centrala · zajezdnie: %{n} · %{mode}"
@@ -52,6 +59,7 @@ _version: 2
   uk: "Головний офіс · депо: %{n} · %{mode}"
 "The treasury":
   de: "Konzernkasse"
+  da: "Kassen"
   fr: "Trésorerie"
   nl: "Groepskas"
   pl: "Kasa grupy"
@@ -59,6 +67,7 @@ _version: 2
   uk: "Каса групи"
 "the head office's own: %{amount} owed":
   de: "der Zentrale selbst: %{amount} Schulden"
+  da: "hovedkontorets egen: %{amount} skyldig"
   fr: "propre au siège : %{amount} de dettes"
   nl: "van het hoofdkantoor zelf: %{amount} schuld"
   pl: "własna centrali: %{amount} długu"
@@ -66,6 +75,7 @@ _version: 2
   uk: "власна головного офісу: борг %{amount}"
 "The whole group":
   de: "Der ganze Konzern"
+  da: "Hele koncernen"
   fr: "Tout le groupe"
   nl: "De hele groep"
   pl: "Cała grupa"
@@ -73,6 +83,7 @@ _version: 2
   uk: "Уся група"
 "the head office and its depots together":
   de: "Zentrale und Depots zusammen"
+  da: "hovedkontoret og dets afdelinger tilsammen"
   fr: "le siège et ses dépôts ensemble"
   nl: "het hoofdkantoor en zijn depots samen"
   pl: "centrala i jej zajezdnie razem"
@@ -80,6 +91,7 @@ _version: 2
   uk: "головний офіс і його депо разом"
 "last month %{amount}":
   de: "letzter Monat %{amount}"
+  da: "sidste måned %{amount}"
   fr: "mois dernier %{amount}"
   nl: "vorige maand %{amount}"
   pl: "poprzedni miesiąc %{amount}"
@@ -87,6 +99,7 @@ _version: 2
   uk: "минулий місяць %{amount}"
 "The group's debt":
   de: "Schulden des Konzerns"
+  da: "Koncernens gæld"
   fr: "Dette du groupe"
   nl: "Schuld van de groep"
   pl: "Dług grupy"
@@ -94,6 +107,7 @@ _version: 2
   uk: "Борг групи"
 "the bank lends %{amount} more":
   de: "die Bank leiht noch %{amount}"
+  da: "banken låner %{amount} mere"
   fr: "la banque prête encore %{amount}"
   nl: "de bank leent nog %{amount}"
   pl: "bank pożyczy jeszcze %{amount}"
@@ -101,6 +115,7 @@ _version: 2
   uk: "банк позичить ще %{amount}"
 "The bank lends the group on its buses and what it earns: up to %{limit}, %{left} more, at %{rate} % a year.":
   de: "Die Bank leiht dem Konzern auf seine Busse und seine Erträge: bis zu %{limit}, noch %{left}, zu %{rate} % im Jahr."
+  da: "Banken låner koncernen penge på dens busser og det, den tjener: op til %{limit}, %{left} mere, til %{rate} % om året."
   fr: "La banque prête au groupe sur ses bus et ce qu'il gagne : jusqu'à %{limit}, encore %{left}, à %{rate} % par an."
   nl: "De bank leent de groep op zijn bussen en wat hij verdient: tot %{limit}, nog %{left}, tegen %{rate} % per jaar."
   pl: "Bank pożycza grupie pod jej autobusy i zarobki: do %{limit}, jeszcze %{left}, na %{rate} % rocznie."
@@ -108,6 +123,7 @@ _version: 2
   uk: "Банк кредитує групу під її автобуси та доходи: до %{limit}, ще %{left}, під %{rate} % річних."
 "A depot runs the group on another map of the server: its own lines, buses, staff and money there. It costs %{price} of the treasury, besides the starting money you give it.":
   de: "Ein Depot betreibt den Konzern auf einer anderen Karte des Servers: mit eigenen Linien, Bussen, Personal und Geld dort. Es kostet %{price} aus der Konzernkasse, zusätzlich zum Startgeld, das du ihm gibst."
+  da: "En afdeling driver koncernen på et andet kort på serveren: dens egne linjer, busser, personale og penge dér. Den koster %{price} af kassen, ud over de startpenge, du giver den."
   fr: "Un dépôt fait rouler le groupe sur une autre carte du serveur : ses propres lignes, bus, personnel et argent là-bas. Il coûte %{price} de la trésorerie, en plus de l'argent de départ que vous lui donnez."
   nl: "Een depot laat de groep rijden op een andere kaart van de server: met eigen lijnen, bussen, personeel en geld daar. Het kost %{price} uit de groepskas, naast het startgeld dat je het geeft."
   pl: "Zajezdnia prowadzi grupę na innej mapie serwera: własne linie, autobusy, personel i pieniądze. Kosztuje %{price} z kasy grupy, oprócz kapitału startowego, który jej dasz."
@@ -115,6 +131,7 @@ _version: 2
   uk: "Депо веде справи групи на іншій карті сервера: свої маршрути, автобуси, персонал і гроші. Воно коштує %{price} з каси групи, окрім стартових грошей, які ви йому дасте."
 "The group has a depot on every map of the server.":
   de: "Der Konzern hat auf jeder Karte des Servers ein Depot."
+  da: "Koncernen har en afdeling på hvert kort på serveren."
   fr: "Le groupe a un dépôt sur chaque carte du serveur."
   nl: "De groep heeft een depot op elke kaart van de server."
   pl: "Grupa ma zajezdnię na każdej mapie serwera."
@@ -122,6 +139,7 @@ _version: 2
   uk: "Група має депо на кожній карті сервера."
 "Money and books":
   de: "Geld und Bücher"
+  da: "Penge og regnskab"
   fr: "Argent et comptes"
   nl: "Geld en boeken"
   pl: "Pieniądze i księgi"
@@ -129,6 +147,7 @@ _version: 2
   uk: "Гроші та звітність"
 "Nothing new.":
   de: "Nichts Neues."
+  da: "Intet nyt."
   fr: "Rien de nouveau."
   nl: "Niets nieuws."
   pl: "Nic nowego."
@@ -136,6 +155,7 @@ _version: 2
   uk: "Нічого нового."
 "The group's books":
   de: "Die Bücher des Konzerns"
+  da: "Koncernens regnskab"
   fr: "Les comptes du groupe"
   nl: "De boeken van de groep"
   pl: "Księgi grupy"
@@ -143,6 +163,7 @@ _version: 2
   uk: "Звітність групи"
 "Money to a depot":
   de: "Geld an ein Depot"
+  da: "Penge til en afdeling"
   fr: "De l'argent pour un dépôt"
   nl: "Geld naar een depot"
   pl: "Pieniądze dla zajezdni"
@@ -150,6 +171,7 @@ _version: 2
   uk: "Гроші до депо"
 "The depots' rules":
   de: "Die Regeln der Depots"
+  da: "Afdelingernes regler"
   fr: "Les règles des dépôts"
   nl: "De regels van de depots"
   pl: "Reguły zajezdni"
@@ -157,6 +179,7 @@ _version: 2
   uk: "Правила депо"
 "At its day's close a depot sends home what it has over the amount it keeps; below the top-up the head office tops it up from the treasury, as far as the treasury goes. Leave a field empty for none.":
   de: "Zum Tagesabschluss schickt ein Depot alles über dem Betrag, den es behält, an die Zentrale; unter der Auffüllgrenze füllt die Zentrale es aus der Konzernkasse auf, soweit die Kasse reicht. Ein leeres Feld: keine."
+  da: "Ved dagens afslutning sender en afdeling det hjem, den har over det beløb, den beholder; under genopfyldningen fylder hovedkontoret den op fra kassen, så langt kassen rækker. Lad et felt stå tomt for ingen."
   fr: "À la clôture de sa journée, un dépôt envoie au siège ce qu'il a au-delà du montant qu'il garde ; en dessous du seuil, le siège le renfloue depuis la trésorerie, dans la limite de celle-ci. Laissez un champ vide pour aucun."
   nl: "Bij zijn dagafsluiting stuurt een depot wat het boven het bedrag dat het houdt heeft naar het hoofdkantoor; onder de aanvulgrens vult het hoofdkantoor het aan uit de groepskas, zover die reikt. Laat een veld leeg voor geen."
   pl: "Przy zamknięciu dnia zajezdnia wysyła do centrali to, co ma ponad kwotę, którą zatrzymuje; poniżej progu centrala uzupełnia ją z kasy grupy, na ile starczy. Puste pole: brak."
@@ -164,6 +187,7 @@ _version: 2
   uk: "Під час закриття дня депо надсилає до головного офісу все понад суму, яку залишає собі; нижче порогу головний офіс поповнює його з каси групи, наскільки вистачає грошей. Порожнє поле - без правила."
 "Keep at most":
   de: "Höchstens behalten"
+  da: "Behold højst"
   fr: "Garder au plus"
   nl: "Hooguit houden"
   pl: "Zatrzymaj najwyżej"
@@ -171,6 +195,7 @@ _version: 2
   uk: "Залишати не більше"
 "Top up below":
   de: "Auffüllen unter"
+  da: "Fyld op under"
   fr: "Renflouer sous"
   nl: "Aanvullen onder"
   pl: "Uzupełniaj poniżej"
@@ -178,6 +203,7 @@ _version: 2
   uk: "Поповнювати нижче"
 "Borrow":
   de: "Leihen"
+  da: "Lån"
   fr: "Emprunter"
   nl: "Lenen"
   pl: "Pożycz"
@@ -185,6 +211,7 @@ _version: 2
   uk: "Взяти кредит"
 "Pay back":
   de: "Zurückzahlen"
+  da: "Betal tilbage"
   fr: "Rembourser"
   nl: "Terugbetalen"
   pl: "Spłać"
@@ -192,6 +219,7 @@ _version: 2
   uk: "Погасити"
 "The head office has no loans.":
   de: "Die Zentrale hat keine Kredite."
+  da: "Hovedkontoret har ingen lån."
   fr: "Le siège n'a aucun prêt."
   nl: "Het hoofdkantoor heeft geen leningen."
   pl: "Centrala nie ma kredytów."
@@ -199,6 +227,7 @@ _version: 2
   uk: "Головний офіс не має кредитів."
 "The treasury's bookings":
   de: "Buchungen der Konzernkasse"
+  da: "Kassens posteringer"
   fr: "Écritures de la trésorerie"
   nl: "Boekingen van de groepskas"
   pl: "Operacje kasy grupy"
@@ -206,6 +235,7 @@ _version: 2
   uk: "Операції каси групи"
 "No bookings yet.":
   de: "Noch keine Buchungen."
+  da: "Ingen posteringer endnu."
   fr: "Aucune écriture pour l'instant."
   nl: "Nog geen boekingen."
   pl: "Brak operacji."
@@ -213,6 +243,7 @@ _version: 2
   uk: "Операцій поки немає."
 "Group loan":
   de: "Konzernkredit"
+  da: "Koncernlån"
   fr: "Prêt du groupe"
   nl: "Groepslening"
   pl: "Kredyt grupy"
@@ -220,6 +251,7 @@ _version: 2
   uk: "Кредит групи"
 "The group's head office could not be made: the server says why in its log.":
   de: "Die Zentrale des Konzerns konnte nicht angelegt werden: Der Server nennt den Grund in seinem Protokoll."
+  da: "Koncernens hovedkontor kunne ikke oprettes: serveren siger hvorfor i sin log."
   fr: "Le siège du groupe n'a pas pu être créé : le serveur en donne la raison dans son journal."
   nl: "Het hoofdkantoor van de groep kon niet worden gemaakt: de server zegt waarom in zijn log."
   pl: "Nie udało się utworzyć centrali grupy: serwer podaje powód w swoim dzienniku."
@@ -227,6 +259,7 @@ _version: 2
   uk: "Не вдалося створити головний офіс групи: причина вказана в журналі сервера."
 "This is not a group's head office.":
   de: "Das ist nicht die Zentrale eines Konzerns."
+  da: "Dette er ikke en koncerns hovedkontor."
   fr: "Ce n'est pas le siège d'un groupe."
   nl: "Dit is niet het hoofdkantoor van een groep."
   pl: "To nie jest centrala grupy."
@@ -234,6 +267,7 @@ _version: 2
   uk: "Це не головний офіс групи."
 "That is not a depot of the group.":
   de: "Das ist kein Depot des Konzerns."
+  da: "Det er ikke en afdeling i koncernen."
   fr: "Ce n'est pas un dépôt du groupe."
   nl: "Dat is geen depot van de groep."
   pl: "To nie jest zajezdnia grupy."
@@ -241,6 +275,7 @@ _version: 2
   uk: "Це не депо групи."
 "Top a depot up to less than it keeps: topped up over its surplus, it would send the money straight back.":
   de: "Fülle ein Depot auf weniger auf, als es behält: über seinen Überschuss aufgefüllt, schickte es das Geld gleich zurück."
+  da: "Fyld en afdeling op til mindre, end den beholder: fyldt op over sit overskud ville den sende pengene lige tilbage."
   fr: "Renflouez un dépôt à moins que ce qu'il garde : renfloué au-delà, il renverrait aussitôt l'argent."
   nl: "Vul een depot aan tot minder dan het houdt: boven zijn overschot aangevuld zou het het geld meteen terugsturen."
   pl: "Uzupełniaj zajezdnię do kwoty niższej niż ta, którą zatrzymuje: uzupełniona ponad nadwyżkę od razu odesłałaby pieniądze."
@@ -248,6 +283,7 @@ _version: 2
   uk: "Поповнюйте депо до суми, меншої за ту, що воно залишає собі: поповнене понад неї, воно одразу надішле гроші назад."
 "Only the group's owner and its management run its head office.":
   de: "Nur der Eigentümer des Konzerns und seine Konzernleitung führen die Zentrale."
+  da: "Kun koncernens ejer og dens ledelse driver dens hovedkontor."
   fr: "Seuls le propriétaire du groupe et sa direction dirigent son siège."
   nl: "Alleen de eigenaar van de groep en de groepsleiding leiden het hoofdkantoor."
   pl: "Centralę prowadzą tylko właściciel grupy i jej zarząd."
@@ -255,6 +291,7 @@ _version: 2
   uk: "Головним офісом керують лише власник групи та її керівництво."
 "That is less than the bank's smallest loan.":
   de: "Das ist weniger als der kleinste Kredit der Bank."
+  da: "Det er mindre end bankens mindste lån."
   fr: "C'est moins que le plus petit prêt de la banque."
   nl: "Dat is minder dan de kleinste lening van de bank."
   pl: "To mniej niż najmniejszy kredyt banku."
@@ -262,6 +299,7 @@ _version: 2
   uk: "Це менше за найменший кредит банку."
 "A company that does well opens a depot on another map: its own lines, buses, staff and money there. The company becomes a group: a head office with no map of its own above its depots, the first map's included. The head office keeps the group's treasury and its loans - the bank lends on the whole group - sends money to the depots by hand or by their rules, moves buses and lends staff between the maps, and approves a depot's big purchases.":
   de: "Eine erfolgreiche Firma eröffnet ein Depot auf einer anderen Karte: mit eigenen Linien, Bussen, Personal und Geld dort. Die Firma wird zum Konzern: eine Zentrale ohne eigene Karte über ihren Depots, das der ersten Karte eingeschlossen. Die Zentrale führt die Konzernkasse und ihre Kredite - die Bank leiht auf den ganzen Konzern -, schickt den Depots Geld von Hand oder nach ihren Regeln, verlegt Busse und verleiht Personal zwischen den Karten und genehmigt die großen Käufe eines Depots."
+  da: "Et selskab, der går godt, åbner en afdeling på et andet kort: dens egne linjer, busser, personale og penge dér. Selskabet bliver en koncern: et hovedkontor uden eget kort over sine afdelinger, det første korts inklusive. Hovedkontoret har koncernens kasse og dens lån - banken låner til hele koncernen - sender penge til afdelingerne i hånden eller efter deres regler, flytter busser og udlåner personale mellem kortene og godkender en afdelings store køb."
   fr: "Une entreprise qui réussit ouvre un dépôt sur une autre carte : ses propres lignes, bus, personnel et argent là-bas. L'entreprise devient un groupe : un siège sans carte à lui au-dessus de ses dépôts, celui de la première carte compris. Le siège tient la trésorerie du groupe et ses prêts - la banque prête sur tout le groupe -, envoie de l'argent aux dépôts à la main ou selon leurs règles, déplace des bus et prête du personnel entre les cartes, et approuve les gros achats d'un dépôt."
   nl: "Een bedrijf dat het goed doet, opent een depot op een andere kaart: met eigen lijnen, bussen, personeel en geld daar. Het bedrijf wordt een groep: een hoofdkantoor zonder eigen kaart boven zijn depots, dat van de eerste kaart inbegrepen. Het hoofdkantoor beheert de groepskas en de leningen - de bank leent op de hele groep -, stuurt de depots geld met de hand of volgens hun regels, verplaatst bussen en leent personeel uit tussen de kaarten, en keurt de grote aankopen van een depot goed."
   pl: "Firma, której dobrze idzie, otwiera zajezdnię na innej mapie: własne linie, autobusy, personel i pieniądze. Firma staje się grupą: centrala bez własnej mapy nad zajezdniami, łącznie z tą z pierwszej mapy. Centrala prowadzi kasę grupy i jej kredyty - bank pożycza całej grupie - wysyła zajezdniom pieniądze ręcznie lub według ich reguł, przenosi autobusy i wypożycza personel między mapami oraz zatwierdza duże zakupy zajezdni."
@@ -270,6 +308,7 @@ _version: 2
 # (step 3: the group's fleet and staff)
 "Fleet and staff":
   de: "Flotte und Personal"
+  da: "Flåde og personale"
   fr: "Flotte et personnel"
   nl: "Vloot en personeel"
   pl: "Flota i personel"
@@ -277,6 +316,7 @@ _version: 2
   uk: "Парк і персонал"
 "Leased or rented: it stays":
   de: "Geleast oder gemietet: bleibt"
+  da: "Leaset eller lejet: den bliver"
   fr: "En leasing ou loué : il reste"
   nl: "Geleaset of gehuurd: blijft"
   pl: "W leasingu lub wynajęty: zostaje"
@@ -284,6 +324,7 @@ _version: 2
   uk: "У лізингу чи оренді: залишається"
 "Lent by %{other} until %{day}":
   de: "Von %{other} geliehen bis %{day}"
+  da: "Udlånt af %{other} indtil %{day}"
   fr: "Prêté par %{other} jusqu'au %{day}"
   nl: "Uitgeleend door %{other} tot %{day}"
   pl: "Wypożyczony przez %{other} do %{day}"
@@ -291,6 +332,7 @@ _version: 2
   uk: "Позичений депо %{other} до %{day}"
 "Goes to %{other} tomorrow for %{n} days":
   de: "Geht morgen für %{n} Tage zu %{other}"
+  da: "Går til %{other} i morgen i %{n} dage"
   fr: "Part demain chez %{other} pour %{n} jours"
   nl: "Gaat morgen voor %{n} dagen naar %{other}"
   pl: "Jutro jedzie do %{other} na %{n} dni"
@@ -298,6 +340,7 @@ _version: 2
   uk: "Завтра вирушає до %{other} на %{n} дн."
 "Ordered: %{what} to %{other}":
   de: "Angeordnet: %{what} nach %{other}"
+  da: "Bestilt: %{what} til %{other}"
   fr: "Ordonné : %{what} vers %{other}"
   nl: "Opgedragen: %{what} naar %{other}"
   pl: "Polecono: %{what} do %{other}"
@@ -305,6 +348,7 @@ _version: 2
   uk: "Наказано: %{what} до %{other}"
 "Ordered: %{what} lent to %{other} for %{n} days":
   de: "Angeordnet: %{what} für %{n} Tage an %{other} verliehen"
+  da: "Bestilt: %{what} udlånt til %{other} i %{n} dage"
   fr: "Ordonné : %{what} prêté à %{other} pour %{n} jours"
   nl: "Opgedragen: %{what} voor %{n} dagen uitgeleend aan %{other}"
   pl: "Polecono: %{what} wypożyczony do %{other} na %{n} dni"
@@ -312,6 +356,7 @@ _version: 2
   uk: "Наказано: %{what} позичено до %{other} на %{n} дн."
 "A bus of the group's own moves to another depot for %{price} and is away %{n} days; a leased or rented bus stays with its contract. The depot does the order at its next step.":
   de: "Ein eigener Bus des Konzerns wechselt für %{price} in ein anderes Depot und ist %{n} Tage unterwegs; ein geleaster oder gemieteter Bus bleibt bei seinem Vertrag. Das Depot führt die Anordnung bei seinem nächsten Schritt aus."
+  da: "En bus, koncernen selv ejer, flyttes til en anden afdeling for %{price} og er væk i %{n} dage; en leaset eller lejet bus bliver med sin kontrakt. Afdelingen udfører bestillingen ved sit næste skridt."
   fr: "Un bus appartenant au groupe passe dans un autre dépôt pour %{price} et reste absent %{n} jours ; un bus en leasing ou loué reste lié à son contrat. Le dépôt exécute l'ordre à son prochain pas."
   nl: "Een eigen bus van de groep gaat voor %{price} naar een ander depot en is %{n} dagen weg; een geleasede of gehuurde bus blijft bij zijn contract. Het depot voert de opdracht uit bij zijn volgende stap."
   pl: "Własny autobus grupy przechodzi do innej zajezdni za %{price} i jest w drodze %{n} dni; autobus w leasingu lub wynajmie zostaje przy swojej umowie. Zajezdnia wykona polecenie przy swoim następnym kroku."
@@ -319,6 +364,7 @@ _version: 2
   uk: "Власний автобус групи переходить до іншого депо за %{price} і в дорозі %{n} дн.; автобус у лізингу чи оренді залишається за своїм договором. Депо виконає наказ на своєму наступному кроці."
 "Orders waiting for the depot":
   de: "Anordnungen, die auf das Depot warten"
+  da: "Bestillinger, der venter på afdelingen"
   fr: "Ordres en attente du dépôt"
   nl: "Opdrachten die op het depot wachten"
   pl: "Polecenia czekające na zajezdnię"
@@ -326,6 +372,7 @@ _version: 2
   uk: "Накази, що чекають на депо"
 "No buses.":
   de: "Keine Busse."
+  da: "Ingen busser."
   fr: "Aucun bus."
   nl: "Geen bussen."
   pl: "Brak autobusów."
@@ -333,6 +380,7 @@ _version: 2
   uk: "Автобусів немає."
 "No staff.":
   de: "Kein Personal."
+  da: "Intet personale."
   fr: "Aucun personnel."
   nl: "Geen personeel."
   pl: "Brak personelu."
@@ -340,6 +388,7 @@ _version: 2
   uk: "Персоналу немає."
 "Choose another depot to send it to.":
   de: "Wähle ein anderes Depot als Ziel."
+  da: "Vælg en anden afdeling at sende den til."
   fr: "Choisissez un autre dépôt de destination."
   nl: "Kies een ander depot om het naartoe te sturen."
   pl: "Wybierz inną zajezdnię docelową."
@@ -347,6 +396,7 @@ _version: 2
   uk: "Виберіть інше депо призначення."
 "The order could not be given: the server says why in its log.":
   de: "Die Anordnung konnte nicht erteilt werden: Der Server nennt den Grund in seinem Protokoll."
+  da: "Bestillingen kunne ikke gives: serveren siger hvorfor i sin log."
   fr: "L'ordre n'a pas pu être donné : le serveur en donne la raison dans son journal."
   nl: "De opdracht kon niet worden gegeven: de server zegt waarom in zijn log."
   pl: "Nie udało się wydać polecenia: serwer podaje powód w swoim dzienniku."
@@ -354,6 +404,7 @@ _version: 2
   uk: "Не вдалося віддати наказ: причина вказана в журналі сервера."
 "The head office sent %{bus} to %{other}":
   de: "Die Zentrale hat %{bus} nach %{other} geschickt"
+  da: "Hovedkontoret sendte %{bus} til %{other}"
   fr: "Le siège a envoyé %{bus} à %{other}"
   nl: "Het hoofdkantoor stuurde %{bus} naar %{other}"
   pl: "Centrala wysłała %{bus} do %{other}"
@@ -361,6 +412,7 @@ _version: 2
   uk: "Головний офіс відправив %{bus} до %{other}"
 "By the head office's order %{bus} is on its way to %{other}, there on %{day}.":
   de: "Auf Anordnung der Zentrale ist %{bus} unterwegs nach %{other}, dort am %{day}."
+  da: "På hovedkontorets ordre er %{bus} på vej til %{other}, dér den %{day}."
   fr: "Sur ordre du siège, %{bus} est en route vers %{other}, arrivée le %{day}."
   nl: "Op last van het hoofdkantoor is %{bus} onderweg naar %{other}, daar op %{day}."
   pl: "Na polecenie centrali %{bus} jest w drodze do %{other}, na miejscu %{day}."
@@ -368,6 +420,7 @@ _version: 2
   uk: "За наказом головного офісу %{bus} у дорозі до %{other}, прибуде %{day}."
 "The head office lent %{name} to %{other}":
   de: "Die Zentrale hat %{name} an %{other} verliehen"
+  da: "Hovedkontoret udlånte %{name} til %{other}"
   fr: "Le siège a prêté %{name} à %{other}"
   nl: "Het hoofdkantoor leende %{name} uit aan %{other}"
   pl: "Centrala wypożyczyła %{name} do %{other}"
@@ -375,6 +428,7 @@ _version: 2
   uk: "Головний офіс позичив %{name} до %{other}"
 "By the head office's order %{name} goes to %{other} tomorrow for %{n} days.":
   de: "Auf Anordnung der Zentrale geht %{name} morgen für %{n} Tage zu %{other}."
+  da: "På hovedkontorets ordre går %{name} til %{other} i morgen i %{n} dage."
   fr: "Sur ordre du siège, %{name} part demain chez %{other} pour %{n} jours."
   nl: "Op last van het hoofdkantoor gaat %{name} morgen voor %{n} dagen naar %{other}."
   pl: "Na polecenie centrali %{name} jedzie jutro do %{other} na %{n} dni."
@@ -382,6 +436,7 @@ _version: 2
   uk: "За наказом головного офісу %{name} завтра вирушає до %{other} на %{n} дн."
 "%{depot} could not do the order":
   de: "%{depot} konnte die Anordnung nicht ausführen"
+  da: "%{depot} kunne ikke udføre bestillingen"
   fr: "%{depot} n'a pas pu exécuter l'ordre"
   nl: "%{depot} kon de opdracht niet uitvoeren"
   pl: "%{depot} nie mogła wykonać polecenia"
@@ -389,6 +444,7 @@ _version: 2
   uk: "%{depot} не змогло виконати наказ"
 "%{depot} could not do the head office's order (%{what}): %{why}":
   de: "%{depot} konnte die Anordnung der Zentrale (%{what}) nicht ausführen: %{why}"
+  da: "%{depot} kunne ikke udføre hovedkontorets bestilling (%{what}): %{why}"
   fr: "%{depot} n'a pas pu exécuter l'ordre du siège (%{what}) : %{why}"
   nl: "%{depot} kon de opdracht van het hoofdkantoor (%{what}) niet uitvoeren: %{why}"
   pl: "%{depot} nie mogła wykonać polecenia centrali (%{what}): %{why}"
@@ -397,6 +453,7 @@ _version: 2
 # (step 4: the group's brand)
 "Brand":
   de: "Marke"
+  da: "Brand"
   fr: "Marque"
   nl: "Merk"
   pl: "Marka"
@@ -404,6 +461,7 @@ _version: 2
   uk: "Бренд"
 "The group's name and mark":
   de: "Name und Zeichen des Konzerns"
+  da: "Koncernens navn og mærke"
   fr: "Nom et emblème du groupe"
   nl: "Naam en beeldmerk van de groep"
   pl: "Nazwa i znak grupy"
@@ -411,6 +469,7 @@ _version: 2
   uk: "Назва і знак групи"
 "Every depot takes the group's name, short name, colours and logo within a minute, named by the group and its map.":
   de: "Jedes Depot übernimmt Name, Kurzname, Farben und Logo des Konzerns innerhalb einer Minute, benannt nach Konzern und Karte."
+  da: "Hver afdeling tager koncernens navn, kortnavn, farver og logo inden for et minut, navngivet efter koncernen og dens kort."
   fr: "Chaque dépôt reprend le nom, le nom court, les couleurs et le logo du groupe en moins d'une minute, nommé d'après le groupe et sa carte."
   nl: "Elk depot neemt de naam, korte naam, kleuren en het logo van de groep binnen een minuut over, genoemd naar de groep en zijn kaart."
   pl: "Każda zajezdnia przejmuje nazwę, skrót, kolory i logo grupy w ciągu minuty, nazwana od grupy i swojej mapy."
@@ -418,6 +477,7 @@ _version: 2
   uk: "Кожне депо протягом хвилини переймає назву, коротке ім'я, кольори й логотип групи та називається за групою і своєю картою."
 "Short name":
   de: "Kurzname"
+  da: "Kortnavn"
   fr: "Nom court"
   nl: "Korte naam"
   pl: "Skrót"
@@ -425,6 +485,7 @@ _version: 2
   uk: "Коротке ім'я"
 "Colours":
   de: "Farben"
+  da: "Farver"
   fr: "Couleurs"
   nl: "Kleuren"
   pl: "Kolory"
@@ -432,6 +493,7 @@ _version: 2
   uk: "Кольори"
 "The group's mark has a logo picture: a depot's.":
   de: "Das Zeichen des Konzerns hat ein Logobild: das eines Depots."
+  da: "Koncernens mærke har et logobillede: en afdelings."
   fr: "L'emblème du groupe a une image de logo : celle d'un dépôt."
   nl: "Het beeldmerk van de groep heeft een logoafbeelding: die van een depot."
   pl: "Znak grupy ma obraz logo: z jednej z zajezdni."
@@ -439,6 +501,7 @@ _version: 2
   uk: "Знак групи має зображення логотипа: від одного з депо."
 "Not taken yet by: %{names}":
   de: "Noch nicht übernommen von: %{names}"
+  da: "Endnu ikke taget af: %{names}"
   fr: "Pas encore repris par : %{names}"
   nl: "Nog niet overgenomen door: %{names}"
   pl: "Jeszcze nie przejęły: %{names}"
@@ -446,6 +509,7 @@ _version: 2
   uk: "Ще не перейнято: %{names}"
 "A depot's mark for the whole group":
   de: "Das Zeichen eines Depots für den ganzen Konzern"
+  da: "En afdelings mærke for hele koncernen"
   fr: "L'emblème d'un dépôt pour tout le groupe"
   nl: "Het beeldmerk van een depot voor de hele groep"
   pl: "Znak zajezdni dla całej grupy"
@@ -453,6 +517,7 @@ _version: 2
   uk: "Знак одного депо для всієї групи"
 "Choose the logo picture and the mark in a depot's settings, then make them the group's here.":
   de: "Wähle das Logobild und das Zeichen in den Einstellungen eines Depots und mache sie hier zu denen des Konzerns."
+  da: "Vælg logobilledet og mærket i en afdelings indstillinger, og gør dem derefter til koncernens her."
   fr: "Choisissez l'image du logo et l'emblème dans les réglages d'un dépôt, puis faites-en ceux du groupe ici."
   nl: "Kies de logoafbeelding en het beeldmerk in de instellingen van een depot en maak ze hier die van de groep."
   pl: "Wybierz obraz logo i znak w ustawieniach zajezdni, a potem ustaw je tutaj dla grupy."
@@ -460,6 +525,7 @@ _version: 2
   uk: "Виберіть зображення логотипа і знак у налаштуваннях депо, а потім зробіть їх тут знаком групи."
 "Use its mark":
   de: "Sein Zeichen verwenden"
+  da: "Brug dens mærke"
   fr: "Utiliser son emblème"
   nl: "Zijn beeldmerk gebruiken"
   pl: "Użyj jej znaku"
@@ -467,6 +533,7 @@ _version: 2
   uk: "Взяти його знак"
 "The group's liveries":
   de: "Die Lackierungen des Konzerns"
+  da: "Koncernens bemalinger"
   fr: "Les livrées du groupe"
   nl: "De lakken van de groep"
   pl: "Malowania grupy"
@@ -474,6 +541,7 @@ _version: 2
   uk: "Лівреї групи"
 "A livery a depot made in the livery studio, shared with the whole group: every depot paints its buses in it in the workshop, its design paid once.":
   de: "Eine Lackierung, die ein Depot im Lackierstudio entworfen hat, für den ganzen Konzern: Jedes Depot lackiert seine Busse damit in der Werkstatt, der Entwurf nur einmal bezahlt."
+  da: "En bemaling, en afdeling har lavet i bemalingsstudiet, delt med hele koncernen: hver afdeling maler sine busser i den på værkstedet, dens design betalt én gang."
   fr: "Une livrée qu'un dépôt a créée dans l'atelier de livrées, partagée avec tout le groupe : chaque dépôt en peint ses bus à l'atelier, le dessin payé une seule fois."
   nl: "Een lak die een depot in de lakstudio maakte, gedeeld met de hele groep: elk depot spuit zijn bussen ermee in de werkplaats, het ontwerp één keer betaald."
   pl: "Malowanie zaprojektowane przez zajezdnię w studiu malowań, wspólne dla całej grupy: każda zajezdnia maluje nim autobusy w warsztacie, projekt opłacony raz."
@@ -481,6 +549,7 @@ _version: 2
   uk: "Ліврея, створена депо в студії лівреї, спільна для всієї групи: кожне депо фарбує в неї автобуси в майстерні, дизайн оплачено один раз."
 "Share with the group":
   de: "Mit dem Konzern teilen"
+  da: "Del med koncernen"
   fr: "Partager avec le groupe"
   nl: "Delen met de groep"
   pl: "Udostępnij grupie"
@@ -488,6 +557,7 @@ _version: 2
   uk: "Поділитися з групою"
 "No liveries shared yet.":
   de: "Noch keine Lackierungen geteilt."
+  da: "Ingen bemalinger delt endnu."
   fr: "Aucune livrée partagée pour l'instant."
   nl: "Nog geen lakken gedeeld."
   pl: "Nie udostępniono jeszcze malowań."
@@ -495,6 +565,7 @@ _version: 2
   uk: "Спільних лівреї поки немає."
 "The depots' own liveries":
   de: "Die eigenen Lackierungen der Depots"
+  da: "Afdelingernes egne bemalinger"
   fr: "Les livrées propres des dépôts"
   nl: "De eigen lakken van de depots"
   pl: "Własne malowania zajezdni"
@@ -502,6 +573,7 @@ _version: 2
   uk: "Власні лівреї депо"
 "The group's brand changed":
   de: "Die Marke des Konzerns hat sich geändert"
+  da: "Koncernens brand er ændret"
   fr: "La marque du groupe a changé"
   nl: "Het merk van de groep is veranderd"
   pl: "Marka grupy się zmieniła"
@@ -509,6 +581,7 @@ _version: 2
   uk: "Бренд групи змінився"
 "The head office set the group's name, mark, colours and liveries: the depot wears them from now on. Its buses are painted in a livery of the group in the workshop, as in one of its own.":
   de: "Die Zentrale hat Name, Zeichen, Farben und Lackierungen des Konzerns festgelegt: Das Depot trägt sie ab jetzt. Seine Busse werden in der Werkstatt in einer Lackierung des Konzerns lackiert, wie in einer eigenen."
+  da: "Hovedkontoret har fastsat koncernens navn, mærke, farver og bemalinger: afdelingen bærer dem fra nu af. Dens busser males i en bemaling fra koncernen på værkstedet, som i en af sine egne."
   fr: "Le siège a fixé le nom, l'emblème, les couleurs et les livrées du groupe : le dépôt les porte désormais. Ses bus sont peints à l'atelier dans une livrée du groupe, comme dans une des siennes."
   nl: "Het hoofdkantoor heeft de naam, het beeldmerk, de kleuren en de lakken van de groep vastgelegd: het depot draagt ze voortaan. Zijn bussen worden in de werkplaats in een lak van de groep gespoten, net als in een eigen lak."
   pl: "Centrala ustaliła nazwę, znak, kolory i malowania grupy: zajezdnia nosi je od teraz. Jej autobusy są malowane w warsztacie w malowaniu grupy, jak we własnym."
@@ -516,6 +589,7 @@ _version: 2
   uk: "Головний офіс задав назву, знак, кольори й лівреї групи: депо носить їх відтепер. Його автобуси фарбують у майстерні в ліврею групи, як у власну."
 "A short name has two to four letters or digits.":
   de: "Ein Kurzname hat zwei bis vier Buchstaben oder Ziffern."
+  da: "Et kortnavn har to til fire bogstaver eller cifre."
   fr: "Un nom court compte deux à quatre lettres ou chiffres."
   nl: "Een korte naam heeft twee tot vier letters of cijfers."
   pl: "Skrót ma od dwóch do czterech liter lub cyfr."
@@ -523,6 +597,7 @@ _version: 2
   uk: "Коротке ім'я - від двох до чотирьох літер або цифр."
 "A colour is written #rrggbb.":
   de: "Eine Farbe wird #rrggbb geschrieben."
+  da: "En farve skrives #rrggbb."
   fr: "Une couleur s'écrit #rrggbb."
   nl: "Een kleur schrijf je als #rrggbb."
   pl: "Kolor zapisuje się jako #rrggbb."
@@ -530,6 +605,7 @@ _version: 2
   uk: "Колір записується як #rrggbb."
 "The depot has no such livery.":
   de: "Das Depot hat keine solche Lackierung."
+  da: "Afdelingen har ingen sådan bemaling."
   fr: "Le dépôt n'a pas cette livrée."
   nl: "Het depot heeft zo'n lak niet."
   pl: "Zajezdnia nie ma takiego malowania."
@@ -537,6 +613,7 @@ _version: 2
   uk: "Депо не має такої лівреї."
 "Give the group a name.":
   de: "Gib dem Konzern einen Namen."
+  da: "Giv koncernen et navn."
   fr: "Donnez un nom au groupe."
   nl: "Geef de groep een naam."
   pl: "Nadaj grupie nazwę."
@@ -545,6 +622,7 @@ _version: 2
 # (step 5: the group's roles)
 "Roles":
   de: "Rollen"
+  da: "Roller"
   fr: "Rôles"
   nl: "Rollen"
   pl: "Role"
@@ -552,6 +630,7 @@ _version: 2
   uk: "Ролі"
 "Management":
   de: "Konzernleitung"
+  da: "Ledelse"
   fr: "Direction"
   nl: "Groepsleiding"
   pl: "Zarząd"
@@ -559,6 +638,7 @@ _version: 2
   uk: "Керівництво"
 "Manager of %{depot}":
   de: "Leitung von %{depot}"
+  da: "Leder af %{depot}"
   fr: "Responsable de %{depot}"
   nl: "Leiding van %{depot}"
   pl: "Kierownik: %{depot}"
@@ -566,6 +646,7 @@ _version: 2
   uk: "Начальник депо %{depot}"
 "%{name} owns the group and gives its roles.":
   de: "%{name} gehört der Konzern, und er vergibt die Rollen."
+  da: "%{name} ejer koncernen og giver dens roller."
   fr: "%{name} possède le groupe et en attribue les rôles."
   nl: "%{name} is eigenaar van de groep en geeft de rollen."
   pl: "%{name} jest właścicielem grupy i nadaje role."
@@ -573,6 +654,7 @@ _version: 2
   uk: "%{name} володіє групою і роздає ролі."
 "The group's people":
   de: "Die Leute des Konzerns"
+  da: "Koncernens folk"
   fr: "Les gens du groupe"
   nl: "De mensen van de groep"
   pl: "Ludzie grupy"
@@ -580,6 +662,7 @@ _version: 2
   uk: "Люди групи"
 "The management runs the head office with the owner and is a co-owner of every depot; a depot's manager is a co-owner of his depot. Each depot takes the roles within a minute.":
   de: "Die Konzernleitung führt die Zentrale mit dem Eigentümer und ist Mitinhaber jedes Depots; die Leitung eines Depots ist Mitinhaber ihres Depots. Jedes Depot übernimmt die Rollen innerhalb einer Minute."
+  da: "Ledelsen driver hovedkontoret sammen med ejeren og er medejer af hver afdeling; en afdelings leder er medejer af sin afdeling. Hver afdeling tager rollerne inden for et minut."
   fr: "La direction dirige le siège avec le propriétaire et est copropriétaire de chaque dépôt ; le responsable d'un dépôt en est copropriétaire. Chaque dépôt reprend les rôles en moins d'une minute."
   nl: "De groepsleiding leidt het hoofdkantoor met de eigenaar en is mede-eigenaar van elk depot; de leiding van een depot is mede-eigenaar van dat depot. Elk depot neemt de rollen binnen een minuut over."
   pl: "Zarząd prowadzi centralę razem z właścicielem i jest współwłaścicielem każdej zajezdni; kierownik zajezdni jest współwłaścicielem swojej zajezdni. Każda zajezdnia przejmuje role w ciągu minuty."
@@ -587,6 +670,7 @@ _version: 2
   uk: "Керівництво керує головним офісом разом із власником і є співвласником кожного депо; начальник депо - співвласник свого депо. Кожне депо переймає ролі протягом хвилини."
 "Depot manager":
   de: "Depotleitung"
+  da: "Afdelingsleder"
   fr: "Responsable de dépôt"
   nl: "Depotleiding"
   pl: "Kierownik zajezdni"
@@ -594,6 +678,7 @@ _version: 2
   uk: "Начальник депо"
 "Player":
   de: "Spieler"
+  da: "Spiller"
   fr: "Joueur"
   nl: "Speler"
   pl: "Gracz"
@@ -601,6 +686,7 @@ _version: 2
   uk: "Гравець"
 "Give the role":
   de: "Rolle vergeben"
+  da: "Giv rollen"
   fr: "Attribuer le rôle"
   nl: "Rol geven"
   pl: "Nadaj rolę"
@@ -608,6 +694,7 @@ _version: 2
   uk: "Призначити роль"
 "Nobody yet: the owner runs the group alone.":
   de: "Noch niemand: Der Eigentümer führt den Konzern allein."
+  da: "Ingen endnu: ejeren driver koncernen alene."
   fr: "Personne pour l'instant : le propriétaire dirige seul le groupe."
   nl: "Nog niemand: de eigenaar leidt de groep alleen."
   pl: "Jeszcze nikt: właściciel prowadzi grupę sam."
@@ -615,6 +702,7 @@ _version: 2
   uk: "Поки нікого: власник керує групою сам."
 "Only the group's owner gives the group's roles.":
   de: "Nur der Eigentümer des Konzerns vergibt dessen Rollen."
+  da: "Kun koncernens ejer giver koncernens roller."
   fr: "Seul le propriétaire du groupe attribue les rôles du groupe."
   nl: "Alleen de eigenaar van de groep geeft de rollen van de groep."
   pl: "Tylko właściciel grupy nadaje role w grupie."
@@ -622,6 +710,7 @@ _version: 2
   uk: "Ролі в групі роздає лише її власник."
 "The server has no such player.":
   de: "Der Server kennt keinen solchen Spieler."
+  da: "Serveren har ingen sådan spiller."
   fr: "Le serveur n'a pas ce joueur."
   nl: "De server heeft zo'n speler niet."
   pl: "Serwer nie ma takiego gracza."
@@ -629,6 +718,7 @@ _version: 2
   uk: "На сервері немає такого гравця."
 "That is no role of the group.":
   de: "Das ist keine Rolle des Konzerns."
+  da: "Det er ingen rolle i koncernen."
   fr: "Ce n'est pas un rôle du groupe."
   nl: "Dat is geen rol van de groep."
   pl: "To nie jest rola w grupie."
@@ -636,6 +726,7 @@ _version: 2
   uk: "Такої ролі в групі немає."
 "The group's owner has every role already.":
   de: "Der Eigentümer des Konzerns hat schon jede Rolle."
+  da: "Koncernens ejer har allerede alle roller."
   fr: "Le propriétaire du groupe a déjà tous les rôles."
   nl: "De eigenaar van de groep heeft al elke rol."
   pl: "Właściciel grupy ma już każdą rolę."
@@ -644,6 +735,7 @@ _version: 2
 # (the company's settings: its first depot makes it a group)
 "The company becomes a group: a head office with no map above its depots - this company the first of them, named by its map - which its owner runs from Bus Company Online's server page.":
   de: "Die Firma wird zum Konzern: eine Zentrale ohne Karte über ihren Depots - diese Firma das erste davon, benannt nach ihrer Karte -, die ihr Eigentümer von der Server-Seite von Bus Company Online aus führt."
+  da: "Selskabet bliver en koncern: et hovedkontor uden kort over sine afdelinger - dette selskab den første af dem, navngivet efter sit kort - som dets ejer driver fra Bus Company Onlines serverside."
   fr: "L'entreprise devient un groupe : un siège sans carte au-dessus de ses dépôts - cette entreprise le premier d'entre eux, nommé d'après sa carte - que son propriétaire dirige depuis la page du serveur de Bus Company Online."
   nl: "Het bedrijf wordt een groep: een hoofdkantoor zonder kaart boven zijn depots - dit bedrijf het eerste daarvan, genoemd naar zijn kaart - dat de eigenaar leidt vanaf de serverpagina van Bus Company Online."
   pl: "Firma staje się grupą: centralą bez mapy nad zajezdniami - ta firma jest pierwszą z nich, nazwaną od swojej mapy - którą właściciel prowadzi ze strony serwera Bus Company Online."
@@ -652,6 +744,7 @@ _version: 2
 # (the treasury short at its day's close: its money called in from the depots)
 "The treasury called in %{amount}":
   de: "Die Konzernkasse hat %{amount} eingefordert"
+  da: "Kassen kaldte %{amount} ind"
   fr: "La trésorerie a rappelé %{amount}"
   nl: "De groepskas heeft %{amount} opgevraagd"
   pl: "Kasa grupy wezwała %{amount}"
@@ -659,6 +752,7 @@ _version: 2
   uk: "Каса групи затребувала %{amount}"
 "The treasury closed the day short: %{amount} called in from the depots with money (%{depots}), sent home at their next step.":
   de: "Die Konzernkasse hat den Tag im Minus abgeschlossen: %{amount} von den Depots mit Geld eingefordert (%{depots}), bei ihrem nächsten Schritt an die Zentrale geschickt."
+  da: "Kassen afsluttede dagen i underskud: %{amount} kaldt ind fra afdelingerne med penge (%{depots}), sendt hjem ved deres næste skridt."
   fr: "La trésorerie a clôturé la journée à découvert : %{amount} rappelés auprès des dépôts qui ont de l'argent (%{depots}), envoyés au siège à leur prochain pas."
   nl: "De groepskas sloot de dag af met een tekort: %{amount} opgevraagd bij de depots met geld (%{depots}), bij hun volgende stap naar het hoofdkantoor gestuurd."
   pl: "Kasa grupy zamknęła dzień z niedoborem: wezwano %{amount} od zajezdni, które mają pieniądze (%{depots}); wyślą je do centrali przy następnym kroku."
@@ -666,6 +760,7 @@ _version: 2
   uk: "Каса групи закрила день із нестачею: %{amount} затребувано в депо, які мають гроші (%{depots}); вони надішлють їх до головного офісу на наступному кроці."
 "The head office called in %{amount}":
   de: "Die Zentrale hat %{amount} eingefordert"
+  da: "Hovedkontoret kaldte %{amount} ind"
   fr: "Le siège a rappelé %{amount}"
   nl: "Het hoofdkantoor heeft %{amount} opgevraagd"
   pl: "Centrala wezwała %{amount}"
@@ -673,6 +768,7 @@ _version: 2
   uk: "Головний офіс затребував %{amount}"
 "The group's treasury was short at its day's close: %{amount} sent home.":
   de: "Die Konzernkasse war beim Tagesabschluss im Minus: %{amount} an die Zentrale geschickt."
+  da: "Koncernens kasse var i underskud ved dagens afslutning: %{amount} sendt hjem."
   fr: "La trésorerie du groupe était à découvert à la clôture du jour : %{amount} envoyés au siège."
   nl: "De groepskas had bij de dagafsluiting een tekort: %{amount} naar het hoofdkantoor gestuurd."
   pl: "Kasa grupy miała niedobór przy zamknięciu dnia: wysłano %{amount} do centrali."
