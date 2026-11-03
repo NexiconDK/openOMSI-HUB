@@ -203,6 +203,10 @@ pub struct Standing {
     /// of `amount` its timetable hours').
     #[serde(default, skip_serializing_if = "is_zero_cents")]
     pub bus_day: Cents,
+    /// (NexiconDK, 3 November 2026, K7) The share of the bidder's journeys its players drove live
+    /// when it bid (a company of the server's; 0: none, an operator).
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub live: f64,
 }
 
 fn no_parts(p: &[f64; 4]) -> bool {
@@ -1729,7 +1733,7 @@ pub fn take_line(c: &mut Company, l: &LineInfo) -> Result<(Event, Cents), &'stat
 pub fn standings(c: &Company, t: &Tender, placed: &[Placed]) -> Vec<Standing> {
     let (all, me) = humans_of(c, t);
     let hq: Vec<f64> = all.iter().map(|h| h.2).collect();
-    auction::points_many(placed, &bidders(c, t), &hq, Some(me)).into_iter().map(|p| Standing { name: bidder_name(c, t, p.who), amount: p.amount, price: p.price, quality: p.quality, total: p.total, rejected: false, parts: [0.0; 4], bus_day: 0 }).collect()
+    auction::points_many(placed, &bidders(c, t), &hq, Some(me)).into_iter().map(|p| Standing { name: bidder_name(c, t, p.who), amount: p.amount, price: p.price, quality: p.quality, total: p.total, rejected: false, parts: [0.0; 4], bus_day: 0, live: 0.0 }).collect()
 }
 
 /// The rivals' last bids, best first.

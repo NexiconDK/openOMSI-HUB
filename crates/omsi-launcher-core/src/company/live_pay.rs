@@ -43,11 +43,21 @@ pub struct LiveCfg {
     pub surcharge: f64,
     /// The AI drivers a map's companies may hire (0: as many as they like).
     pub pool: u32,
+    /// (K4, 3 November 2026) Whether a duty nobody covers is run by a free colleague or an agency
+    /// driver (`agency_fallback`; each company's owner may choose otherwise: `Online::agency`).
+    pub agency: bool,
+    /// (K6) What an urgent task pays a player on top (0.5: 50 %).
+    pub urgent: f64,
+    /// (K10) What a fixed duty pays its player on top (0.05: 5 %).
+    pub loyalty: f64,
+    /// (K12) The duties a week the owner or a co-owner drives live for the working environment's
+    /// points (`live_more::BOSS_POINTS`; 0: never).
+    pub boss_duties: u32,
 }
 
 impl Default for LiveCfg {
     fn default() -> LiveCfg {
-        LiveCfg { pay_share: 0.9, ai_cap: 70.0, surcharge: 0.05, pool: 0 }
+        LiveCfg { pay_share: 0.9, ai_cap: 70.0, surcharge: 0.05, pool: 0, agency: true, urgent: 0.5, loyalty: 0.05, boss_duties: 2 }
     }
 }
 
@@ -62,6 +72,10 @@ impl LiveCfg {
             ai_cap: num("ai_quality_cap").map_or(d.ai_cap, |x| x.min(100.0)),
             surcharge: num("live_surcharge").map_or(d.surcharge, |x| x.min(100.0) / 100.0),
             pool: num("driver_pool").map_or(d.pool, |x| x.round().min(100_000.0) as u32),
+            agency: num("agency_fallback").map_or(d.agency, |x| x != 0.0),
+            urgent: num("urgent_bonus").map_or(d.urgent, |x| x.min(500.0) / 100.0),
+            loyalty: num("loyalty_bonus").map_or(d.loyalty, |x| x.min(100.0) / 100.0),
+            boss_duties: num("boss_duties").map_or(d.boss_duties, |x| x.round().min(100.0) as u32),
         }
     }
 
@@ -70,6 +84,19 @@ impl LiveCfg {
         LiveCfg::of_keys(&super::server_fines::settings(data))
     }
 }
+
+/// (3 November 2026) The second part of the rules (K4's choice, K6, K10, K12), added to a
+/// `company-server.cfg` written before it.
+pub const MORE_LIVE_CFG: &str = "
+# a duty nobody covers: run by a free colleague or an agency driver (1) or dropped (0) - each
+# company's owner may choose otherwise; an urgent task (short-notice doubling, rail replacement)
+# pays a player this much more (per cent); a fixed duty pays its player this much more (per cent);
+# the duties a week the owner or a co-owner drives live for the working environment's points
+agency_fallback = 1
+urgent_bonus = 50
+loyalty_bonus = 5
+boss_duties = 2
+";
 
 /// The rules' part of the settings, added to a `company-server.cfg` written before it.
 pub const LIVE_CFG: &str = "
@@ -134,7 +161,12 @@ pub fn trip_pay(c: &Company, player: &str, t: &crate::TripRun, money: Cents) -> 
     if drives_free(c, player) {
         return 0;
     }
-    duty_pay(c, t)
+    // (3 November 2026: an urgent task's bonus and a fixed duty's - K6, K10 -, and the admin's
+    // supplements for the hour it leaves - K11)
+    let date = c.date.clone();
+    let base = (duty_pay(c, t) as f64 * super::live_more::pay_factor(c, player, &date, &t.line, &t.tour)).round() as Cents;
+    let minute = ((t.departure / 60.0).floor() as i32).rem_euclid(1440);
+    base + super::live_more::supplements_pay(c, &date, minute, base, trip_hours(t))
 }
 
 /// K5: whether player `guest` (his number in the company) may choose to drive for nothing: the
@@ -274,9 +306,24 @@ pub fn took_driver(c: &mut Company) {
 }
 
 /// K4: the open duties of a company on the server are run by agency drivers (or a free
-/// colleague) when nobody drives them: the AI always drives what no player does.
+/// colleague) when nobody drives them - the AI drives what no player does -, unless the server's
+/// rules (`agency_fallback`) or the company's owner (`Online::agency`) say they are dropped.
 pub fn agency_runs_open(c: &Company) -> bool {
-    c.online.on_server
+    c.online.on_server && c.online.agency.unwrap_or(cfg(c).agency)
+}
+
+/// Why a player may not choose for the company.
+pub const NOT_OWNER_AGENCY: &str = "Only the owner and the co-owners of the company choose what happens to the duties nobody covers.";
+
+/// K4 (3 November 2026): the owner or a co-owner (`guest`) chooses for the company what happens to
+/// a duty nobody covers: as the server's rules say (None), run by agency drivers (true), dropped
+/// (false).
+pub fn set_agency(c: &mut Company, guest: u32, agency: Option<bool>) -> Result<(), &'static str> {
+    if !may_drive_free(c, guest) {
+        return Err(NOT_OWNER_AGENCY);
+    }
+    c.online.agency = agency;
+    Ok(())
 }
 
 #[cfg(test)]

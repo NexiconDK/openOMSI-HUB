@@ -16,7 +16,7 @@ use super::super::plan::{BusOf, DayPlan, Who};
 use super::book::{self, ClaimState, Handed, LeftWhy};
 use super::code;
 use super::roles::{Perm, Role};
-use super::wire::{Card, DriveStart, DutyState, Notice, Request, SnapAsk, SnapBus, SnapDuty, SnapLine, SnapMember, SnapPart, SnapPlayer, SnapResult, SnapTrip, SnapYou, Snapshot, TripList};
+use super::wire::{Card, DriveStart, DutyState, Notice, Request, SnapAsk, SnapBus, SnapDuty, SnapLine, SnapMember, SnapPart, SnapPlayer, SnapDispatch, SnapFixed, SnapResult, SnapTrip, SnapYou, Snapshot, TripList};
 use serde_json::{json, Value};
 
 /// A player who has not been heard from for this long is offline (s).
@@ -481,6 +481,20 @@ impl HostState {
                     })
                 }
             },
+            // (NexiconDK, 3 November 2026, K10: a duty given to a player for good on its weekday, given
+            // back by him - or taken off him by one who gives duties)
+            "fixed_give" if !can(Perm::Assign) => Err(not_allowed(Perm::Assign)),
+            "fixed_give" => match (req.duty.as_ref(), p) {
+                (Some(r), Some(p)) => match book::find(p, r) {
+                    Ok((_, _, t)) => super::super::live_more::give_fixed(c, req.target, &r.date, &r.line, &t.tour.number, &r.tour, r.duty).map(|_| ()).map_err(refusal),
+                    Err(e) => Err(refusal(e)),
+                },
+                _ => Err(refusal(book::NO_DUTY)),
+            },
+            "fixed_return" => super::super::live_more::return_fixed(c, guest, req.msg as u32, can(Perm::Assign)).map(|_| ()).map_err(refusal),
+            // (K13: the dispatcher's duty while he is online)
+            "dispatch" if !can(Perm::Service) => Err(not_allowed(Perm::Service)),
+            "dispatch" => super::super::live_more::set_dispatcher(c, guest, &name, req.yes, now).map_err(refusal),
             "answer" if !can(Perm::Approve) => Err(not_allowed(Perm::Approve)),
             "answer" => match req.duty.as_ref() {
                 None => Err(refusal(book::NO_DUTY)),
@@ -767,6 +781,10 @@ impl HostState {
             return false;
         }
         let before = c.together.clone();
+        // (NexiconDK, 3 November 2026, K13: the dispatcher's duty ends when he is gone)
+        let now = here.now;
+        let on = |g: u32| self.is_online(g, now);
+        let off_duty = super::super::live_more::dispatcher_left(c, &on);
         let silent: Vec<(u32, LeftWhy)> = self.online.iter().filter(|o| here.now.saturating_sub(o.seen) > LEFT_AFTER).map(|o| (o.guest, LeftWhy::Silent)).collect();
         let away: Vec<(u32, LeftWhy)> = self.gone.iter().copied().chain(silent).collect();
         for (guest, why) in away {
@@ -787,7 +805,7 @@ impl HostState {
                 self.tell(here.now, TRIP_BACK, a);
             }
         }
-        c.together != before
+        c.together != before || off_duty
     }
 
     /// The boss ends the session (he stops sharing, closes the company, quits his launcher):
@@ -1164,9 +1182,36 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                     None if begun && book::joined_part(c, p, t, k, now).is_none() => (DutyState::Closed, String::new(), book::BEGUN.into()),
                     None => (DutyState::Open, String::new(), String::new()),
                 };
+                // (NexiconDK, 3 November 2026, K6: urgent - the players' bonus)
+                sd.urgent = super::super::live_more::urgent(c, &p.date, &t.tour.line, &t.tour.tour);
                 s.duties.push(sd);
             }
         }
+    }
+    // (NexiconDK, 3 November 2026: `live_more` - the urgent bonus, the fixed duties he has, or all
+    // of them for one who gives duties, and the dispatcher's duty with the late buses for him)
+    if c.online.on_server {
+        s.urgent_bonus = super::super::live_pay::cfg(c).urgent;
+        s.fixed = c
+            .online
+            .fixed
+            .iter()
+            .filter(|x| Some(x.guest) == guest || can(Perm::Assign))
+            .map(|x| SnapFixed { id: x.id, number: x.number.clone(), tour: x.tour.clone(), duty: x.duty, days: x.days, bonus: x.bonus, name: x.name.clone(), mine: Some(x.guest) == guest })
+            .collect();
+        let on = c.online.dispatcher.as_ref();
+        let mine = on.is_some_and(|d| Some(d.guest) == guest);
+        let late = match (mine, here.plan) {
+            (true, Some(p)) => super::super::control::live(c, p)
+                .buses
+                .iter()
+                .filter(|b| b.minutes > 0)
+                .filter_map(|b| p.tours.get(b.ti).map(|t| (t.tour.number.clone(), t.tour.tour.clone(), b.vehicle.and_then(|v| c.vehicle(v)).map(|v| v.number.clone()).unwrap_or_default(), b.minutes)))
+                .map(|(n, tour, bus, m)| (format!("{n} / {tour} · {bus}"), m))
+                .collect(),
+            _ => Vec::new(),
+        };
+        s.dispatch = Some(SnapDispatch { name: on.map(|d| d.name.clone()).unwrap_or_default(), mine, may: can(Perm::Service), late });
     }
     // (the duties of days closed since that are still the player's to drive)
     for x in c.together.claims.iter().filter(|x| x.late && Some(x.guest) == guest) {

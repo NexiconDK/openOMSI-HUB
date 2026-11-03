@@ -440,12 +440,17 @@ impl Api {
                 "lines": c.lines.len(), "buses": c.fleet.len(), "staff": c.staff.len(),
                 "hq": c.online.hq, "hq_name": hq_name,
                 "line_list": line_badges(c, map_colours.entry(c.map.clone()).or_insert_with(|| crate::lines::map_line_colours(&c.map))),
+                // (NexiconDK, 3 November 2026, K7: its share driven live)
+                "live": super::live_more::live_share(c),
             }));
         }
         // (his own first, then by name - a depot right under its head office)
         let head = |c: &Value| if c["hq"].as_str().unwrap_or("").is_empty() { c["name"].as_str().unwrap_or("").to_lowercase() } else { format!("{}\u{1}{}", c["hq_name"].as_str().unwrap_or("").to_lowercase(), c["name"].as_str().unwrap_or("").to_lowercase()) };
         list.sort_by_key(|c| (!c["mine"].as_bool().unwrap_or(false), c["role"].is_null(), head(c)));
-        json!({ "ok": true, "player": player_json(&me), "companies": list, "found": founding(&m, &me) })
+        // (K7: the driver of the month - the server's month by its date)
+        let month = server_day(&m).get(..7).unwrap_or("").to_string();
+        let ranking = super::live_more::ranking(m.players.players.iter().map(|p| (p.name.as_str(), p.months.as_slice())), &month, 5);
+        json!({ "ok": true, "player": player_json(&me), "companies": list, "found": founding(&m, &me), "month": { "month": month, "ranking": ranking } })
     }
 
     /// (Phase 7) Head office `group`'s page for its owner (`server_hq::view`).

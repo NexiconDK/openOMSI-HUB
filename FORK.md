@@ -471,4 +471,13 @@ Bus Company online (fase 1 af `docs/omsihub/BUS_COMPANY_ONLINE.md`). Én stor se
   - **K5:** Ejeren og medejerne vælger i firmaets indstillinger, om deres egen kørsel betaler dem eller er gratis for firmaet.
 
   Alt kan indstilles under "Driving yourself" i web admin.
+- **Kør selv kan betale sig, resten (Bus Company Online, 3. november 2026, K6, K7, K10-K13)**:
+  - **Vikarchauffører er et valg:** Admin vælger med `agency_fallback`, om vagter uden chauffør køres af en ledig kollega eller en vikarchauffør (standard) eller droppes som før. Ejeren og medejerne kan vælge noget andet i firmaets indstillinger: "som serveren", "vikarchauffører kører dem" eller "de droppes". Casual er uændret.
+  - **K6 Hasteopgaver:** En dublering, som admin har bestilt, og togbusser betaler en spiller 50 % mere. Admins dublering er kun for spillere, så tager ingen den, køres den ikke. Spillerne ser dem øverst på vagtsiden.
+  - **K7 Månedens chauffør:** Månedens chauffør er den, der har flest køreplantimer kørt live og bestået. Han vises i web admin og på spillernes serverside. Hvert firmas live-andel står på serversiden og ved de åbnede bud på udbudssiden.
+  - **K10 Faste vagter:** Et firma kan give en spiller en fast vagt på en ugedag med 5 % loyalitetstillæg. Spilleren kan aflevere den igen.
+  - **K11 Tillæg for ubekvem arbejdstid:** Admin opretter og sletter tillæg i web admin for hverdagsaftener, nætter, lørdage, søn- og helligdage og snedage. Et tillæg er en procentdel, kr. i timen eller begge dele og lægges til spillernes løn.
+  - **K12 Chefen kører:** Kører ejeren eller en medejer mindst 2 vagter live på en uge, giver det 10 point mere i arbejdsmiljø.
+  - **K13 Live-trafikleder:** En spiller kan tage trafiklederens vagt. Så når en reservebus frem på 15 minutter, de forsinkede busser venter på hans beslutning, og han svarer på dubleringsbestillingerne. Alle kan se, hvem der har vagten.
+  - **Udbudssiden:** Feltet med køreplantimer viser nu kontraktens dage for hvert drivmiddel, udbuddet tillader, fx "321 om ugen · over kontrakten: 643 med diesel (14 dage), 803 med CNG (17 dage), 964 med el (21 dage)".
 - Den dedikerede server har fået `idle_stop = <minutter>` i `server.cfg`. Er den sat, lukker serveren af sig selv efter så mange minutter uden spillere.

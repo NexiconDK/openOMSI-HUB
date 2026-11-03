@@ -273,6 +273,10 @@ pub struct MarketBid {
     pub amount: Cents,
     /// The buses it bids with (`concessions::Tender::drive`).
     pub drive: Drive,
+    /// (NexiconDK, 3 November 2026, K7) Its share of its journeys driven live then
+    /// (`live_more::live_share`; shown with its opened bid).
+    #[serde(default, skip_serializing_if = "no_share")]
+    pub live: f64,
 }
 
 fn no_parts(p: &super::viborg::Parts) -> bool {
@@ -1178,7 +1182,14 @@ pub fn decide_without(t: &Tender, all: &[MarketBid], out: &[String]) -> Decided 
         opened.push(super::sealed::Opened { who: hs.len() + k, name: o.name.clone(), quality: o.quality, amount: o.amount, parts: o.parts, bus_day: 0 });
     }
     let (winner, rows) = super::sealed::score(t, &opened);
-    let standings: Vec<Standing> = rows.into_iter().map(|r| r.1).collect();
+    let mut standings: Vec<Standing> = rows.into_iter().map(|r| r.1).collect();
+    // (K7: each company's share driven live, as its last bid said)
+    let tid = t.market.as_ref().map_or(t.id, |m| m.id);
+    for s in standings.iter_mut() {
+        if let Some(h) = hs.iter().find(|h| h.1 == s.name) {
+            s.live = all.iter().filter(|b| b.tender == tid && b.company == h.0).last().map_or(0.0, |b| b.live);
+        }
+    }
     match winner {
         Some(w) if w < hs.len() => Decided {
             winner: hs[w].0.clone(),
@@ -1553,7 +1564,7 @@ pub fn bid_parts(data: &Path, c: &mut Company, id: u32, amount: Cents, bus_day: 
     let Some(m) = t.market.as_ref() else { return Ok(()) };
     let at = t.offers.last().map_or(clock::now(c), |o| o.0);
     // (its first bid's quality counts in the market's auction: `humans`)
-    let b = MarketBid { tender: m.id, company: c.id.clone(), name: c.name.clone(), quality: cn::quality_in(c, t), parts: super::viborg::Parts::of(c, t), bus_day, at, amount, drive: t.drive };
+    let b = MarketBid { tender: m.id, company: c.id.clone(), name: c.name.clone(), quality: cn::quality_in(c, t), parts: super::viborg::Parts::of(c, t), bus_day, at, amount, drive: t.drive, live: super::live_more::live_share(c) };
     post_bid(data, &m.key, &b).map_err(|_| "The bid could not be written to the server's tenders.")
 }
 

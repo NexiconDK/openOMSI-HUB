@@ -161,6 +161,10 @@ pub fn cancel_test(p: &mut Player) {
 /// when it is the first trip since, with a bus of the test's class. The test taken.
 pub fn take_trip(p: &mut Player, pay: &Pay) -> Option<ExamRecord> {
     p.trips += 1;
+    // (NexiconDK, 3 November 2026, K7: a live trip that passed counts in his month)
+    if let Some(j) = pay.exam.as_ref() {
+        super::live_more::count_trip(&mut p.months, pay.at, pay.minutes, j.score as f64, j.passed);
+    }
     let b = p.tests.booked.clone()?;
     let judged = pay.exam.as_ref()?;
     if pay.class != Some(b.class) || pay.at < b.since {

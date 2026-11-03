@@ -196,13 +196,16 @@ pub fn plan(c: &Company, t: &Tender) -> f64 {
 /// The working environment points of company `c`: its staff's satisfaction (0 to 100) less the
 /// share of them off sick today. No staff yet: 50.
 pub fn work(c: &Company) -> f64 {
+    // (NexiconDK, 3 November 2026, K12: the owner or a co-owner who drives his duties a week -
+    // `live_more::boss_points`)
+    let boss = super::live_more::boss_points(c);
     if c.staff.is_empty() {
-        return 50.0;
+        return (50.0 + boss).min(100.0);
     }
     let n = c.staff.len() as f64;
     let content = c.staff.iter().map(|s| s.satisfaction.clamp(0.0, 100.0)).sum::<f64>() / n;
     let sick = c.staff.iter().filter(|s| s.sick_until.as_deref().is_some_and(|d| d >= c.date.as_str())).count() as f64 / n;
-    (content * (1.0 - sick)).clamp(0.0, 100.0)
+    (content * (1.0 - sick) + boss).clamp(0.0, 100.0)
 }
 
 /// An operator's parts in a tender: its quality, each part drawn a few points either side of it

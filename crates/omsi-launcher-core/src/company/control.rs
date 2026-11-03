@@ -720,7 +720,8 @@ pub fn watch(c: &mut Company, dp: &DayPlan, run: &mut Run) {
         return;
     }
     let mut lv = live(c, dp);
-    if super::autopilot::on(c) {
+    // (NexiconDK, 3 November 2026, K13: a live dispatcher on duty acts himself)
+    if super::autopilot::on(c) && !super::live_more::dispatcher_on(c) {
         let mut acted = false;
         for b in &lv.buses {
             if let Some(o) = b.options.iter().find(|o| o.best) {

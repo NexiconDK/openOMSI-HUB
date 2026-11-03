@@ -99,6 +99,23 @@ pub struct Online {
     pub live_days: Vec<super::live_pay::LiveDay>,
     #[serde(skip)]
     pub pool_free: Option<i64>,
+    /// (NexiconDK, 3 November 2026, K4) Its owner's choice for a duty nobody covers: run by agency
+    /// drivers (true), dropped (false); None: as the server's rules say (`live_pay::agency_runs_open`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub agency: Option<bool>,
+    /// (K6, K7, K10-K13: `live_more`) Its players' fixed duties, the duties its owner and co-owners
+    /// drove live (the last two weeks), its dispatcher on duty, and the admin's supplements for
+    /// unsocial hours as its process last read them (not kept) with when.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub fixed: Vec<super::live_more::FixedDuty>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub boss_drives: Vec<super::live_more::BossDrive>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dispatcher: Option<super::live_more::OnDuty>,
+    #[serde(skip)]
+    pub supplements: Vec<super::live_more::Supplement>,
+    #[serde(skip)]
+    pub supplements_at: u64,
     #[serde(skip)]
     pub pool_read: i64,
     /// (NexiconDK, 3 November 2026) Its subcontracts as the main server keeps them, given or run
@@ -198,7 +215,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, live: None, drives_free: Vec::new(), live_days: Vec::new(), pool_free: None, pool_read: 0, subs: Vec::new(), sub_out: Vec::new(), sub_in: Vec::new(), sub_read: 0, changes: Vec::new(), roadworks: Vec::new(), roadworks_at: 0, majeure: Vec::new(), majeure_at: 0, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, live: None, drives_free: Vec::new(), live_days: Vec::new(), pool_free: None, agency: None, fixed: Vec::new(), boss_drives: Vec::new(), dispatcher: None, supplements: Vec::new(), supplements_at: 0, pool_read: 0, subs: Vec::new(), sub_out: Vec::new(), sub_in: Vec::new(), sub_read: 0, changes: Vec::new(), roadworks: Vec::new(), roadworks_at: 0, majeure: Vec::new(), majeure_at: 0, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
     }
 }
 
@@ -230,6 +247,14 @@ pub struct Pay {
     pub class: Option<super::career::LicenceClass>,
     #[serde(default)]
     pub exam: Option<Judged>,
+    /// (NexiconDK, 3 November 2026, K7) The trip's timetabled minutes (0: a free drive's, or a
+    /// trip of before): its month's live hours for him (`live_more::count_trip`).
+    #[serde(default, skip_serializing_if = "is_zero_f64")]
+    pub minutes: f64,
+}
+
+fn is_zero_f64(x: &f64) -> bool {
+    *x == 0.0
 }
 
 /// A trip judged as a driving test (`career::judge_exam`).
@@ -714,6 +739,8 @@ impl Host {
             c.online.pool_free = super::live_pay::pool_free(c, others);
             c.online.pool_read = real;
         }
+        // (and the admin's supplements for unsocial hours, read again when he changed them - K11)
+        super::live_more::refresh_supplements(&self.data, c);
         // (and its rules of doubling: the price of a run with a bus of no contract, how full is full)
         if c.online.on_server && c.online.doubling_rules.is_none() {
             c.online.doubling_rules = Some(super::doubling::Rules::of(&self.data));

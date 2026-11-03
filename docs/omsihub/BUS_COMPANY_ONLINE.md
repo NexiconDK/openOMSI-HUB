@@ -1669,6 +1669,62 @@ map's market, and has the settings under "Driving yourself".
 
 Tested: `live_pay::tests`, `plan::tests::on_the_server_an_agency_driver_runs_a_duty_nobody_drives`.
 
+### Driving yourself pays, the rest (3 November 2026, K6, K7, K10-K13)
+
+More of what makes a player worth more than an AI driver (`live_more`, settings in
+`company-server.cfg` under "Driving yourself"):
+
+- **The agency fallback is a choice**: K4's "a duty with a bus and no driver is run by a free
+  colleague or an agency driver" is `agency_fallback` (1, today's behaviour; 0: such a duty is
+  dropped, fined and counts against the bonus as before). Each company's owner and co-owners may
+  choose otherwise in its settings - "As the server", "Agency drivers run them", "They are
+  dropped" (`Online::agency`, `None` as the server; the command `agency_fallback`, the role check
+  of `drive_free`; `live_pay::agency_runs_open`). Casual's autopilot is untouched.
+- **K6, urgent tasks**: a doubling the admin ordered (`doubling::order_of`, by `admin`) and the
+  duties of a rail replacement line (`rail_line`) are urgent. A player who drives one is paid
+  `urgent_bonus` (50 %) more (`pay_factor`). The admin's doubling is for players only: the
+  central dispatcher does not give it to the AI or an agency driver (`plan`'s `for_player`:
+  `players_only`), so nobody taking it leaves it unrun as the doubling rules say. The player's
+  Duties page lists them first, under "Urgent tasks".
+- **K7, the driver of the month**: a player's passed live trips count their timetabled minutes
+  and judgement by the month they were paid in (`server_players::Player::months`, `count_trip`,
+  three months kept). `ranking` orders the month by the hours, ties by the average score: the web
+  admin shows the top ten on the market page, the players' server page the top five with a
+  banner for the first. Each company's share of journeys run live over K2's 56 days
+  (`live_share`) is on its row of the server page and on the tender page's opened bids
+  (`MarketBid::live`, `Standing::live`: "35 % driven live").
+- **K10, fixed duties**: a player with Assign gives a player a duty for good on its weekday
+  ("Fixed duty" on the give row: `give_fixed`, `Online::fixed`). The duty is his ahead of the
+  roster (`book::claims_from_roster`, `fixed_for`) and pays `loyalty_bonus` (5 %, the server's
+  value when it was given) more. He - or a player with Assign - gives it back on the Duties page
+  (`return_fixed`).
+- **K11, supplements for unsocial hours**: the admin adds and removes them in the web admin
+  (market page; `<data>/supplements.json`, the actions `supplement_add` and `supplement_remove`):
+  a name, when - weekday evenings or nights from-to (past midnight when the end is earlier),
+  Saturdays, Sundays and holidays (Denmark's at the Danish price level, the common German and
+  Dutch ones elsewhere), snow days (H5's force majeure snow) - and a share of the pay, kroner an
+  hour (by the price level), or both. They add to a player's pay for a trip that leaves in their
+  hours (`supplements_pay`, in `live_pay::trip_pay`), each that applies; AI wages are as they
+  were. The company's process reads the file again when it changes (`refresh_supplements`).
+- **K12, the boss drives**: the owner or a co-owner driving `boss_duties` (2; 0: never) distinct
+  duties live in the last seven days raises the Viborg model's working environment by 10 points
+  (`boss_drove`, `Online::boss_drives`, `boss_points` in `viborg::Parts::work`, at most 100).
+- **K13, the live dispatcher**: a player with Service takes the dispatcher's duty on the Duties
+  page, one player at a time (`set_dispatcher`, `Online::dispatcher`); it ends with "End the
+  duty" or when he goes offline (`dispatcher_left` in the host's `watch`). While he is on duty a
+  spare bus reaches its trips in 15 minutes (`clock::spare_minutes`), Casual's autopilot leaves
+  the late buses to him (`control`), he sees them listed, and he may answer the doubling orders
+  (the relay lets Spend or Service answer them). Every player sees who is on duty. An order
+  nobody answers still gets the default answer at the close.
+
+The tender page's timetable-hours tile reads the term's days with each total and lists only the
+drives the tender allows: "321 a week · over the contract: 643 with diesel (14 days), 803 with
+CNG (17 days), 964 with electric (21 days)".
+
+Tested: `live_more::tests` (`urgent_tasks_for_players_only`, `the_driver_of_the_month`,
+`a_fixed_duty`, `supplements_for_unsocial_hours`, `the_boss_drives`, `the_live_dispatcher`,
+`the_agency_fallback_by_the_server_and_by_the_company`).
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

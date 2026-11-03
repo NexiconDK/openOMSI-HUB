@@ -149,7 +149,7 @@ pub(crate) fn take_world_trips(s: &mut Session, lines: &[core::LineInfo], trips:
                 Some(pay) => {
                     core::log_to_file(&format!("company {}: {name}'s free drive with bus {}: {:.1} km, {} passengers, paid {}", c.id, t.vehicle, t.metres / 1000.0, t.passengers, pay));
                     if pay > 0 {
-                        paid.push(co::online::Pay { player: id.clone(), name: name.clone(), cents: pay, line: "Free drive".into(), tour: String::new(), departure: 0.0, at: now, class, exam: None });
+                        paid.push(co::online::Pay { player: id.clone(), name: name.clone(), cents: pay, line: "Free drive".into(), tour: String::new(), departure: 0.0, at: now, class, exam: None, minutes: 0.0 });
                     }
                 }
                 None => core::log_to_file(&format!("company {}: a free drive of {name} with bus {} from the world: no drive of his with it today, or booked already", c.id, t.vehicle)),
@@ -221,7 +221,12 @@ pub(crate) fn take_world_trips(s: &mut Session, lines: &[core::LineInfo], trips:
                 });
                 let (passed, score, criteria) = co::career::judge_exam(&kept);
                 let exam = Some(co::online::Judged { passed, score, criteria });
-                paid.push(co::online::Pay { player: id.clone(), name: name.clone(), cents: pay, line: kept.line.clone(), tour: kept.tour.clone(), departure: kept.departure, at: now, class, exam });
+                // (NexiconDK, 3 November 2026: the boss's own duties - K12 -, and the trip's
+                // timetabled minutes for his month - K7)
+                let date = c.date.clone();
+                co::live_more::boss_drove(c, no, &date, &kept.line, &kept.tour);
+                let minutes = co::live_pay::trip_hours(&kept) * 60.0;
+                paid.push(co::online::Pay { player: id.clone(), name: name.clone(), cents: pay, line: kept.line.clone(), tour: kept.tour.clone(), departure: kept.departure, at: now, class, exam, minutes });
                 booked = true;
                 break;
             }

@@ -463,7 +463,7 @@ pub fn guest_left(c: &Company, no: u32) -> bool {
 }
 
 /// The tour and duty `r` names in `p`, with the tour.
-fn find<'a>(p: &'a DayPlan, r: &DutyRef) -> Result<(usize, usize, &'a DayTour), &'static str> {
+pub fn find<'a>(p: &'a DayPlan, r: &DutyRef) -> Result<(usize, usize, &'a DayTour), &'static str> {
     let (ti, k) = r.find(p).ok_or(NO_DUTY)?;
     Ok((ti, k, &p.tours[ti]))
 }
@@ -580,11 +580,14 @@ pub fn claims_from_roster(c: &mut Company, p: &DayPlan) -> bool {
         if t.by_player || !matches!(t.bus, Some(BusOf::Own(_))) {
             continue;
         }
-        let Some(r) = super::super::plan::roster(c, p.weekday, &t.tour.line, &t.tour.tour) else { continue };
-        let wanted: Vec<(usize, u32)> = r.duties.iter().enumerate().filter_map(|(k, w)| match w {
+        // (NexiconDK, 3 November 2026, K10: and the duties fixed for a player on this weekday)
+        let fixed: Vec<(usize, u32)> = (0..t.duties.len()).filter_map(|k| super::super::live_more::fixed_for(c, p.weekday, &t.tour.line, &t.tour.tour, k).map(|g| (k, g))).collect();
+        let mut wanted: Vec<(usize, u32)> = super::super::plan::roster(c, p.weekday, &t.tour.line, &t.tour.tour).map(|r| r.duties.iter().enumerate().filter_map(|(k, w)| match w {
             Some(super::super::plan::Who::Guest(g)) => Some((k, *g)),
             _ => None,
-        }).collect();
+        }).collect()).unwrap_or_default();
+        wanted.retain(|(k, _)| !fixed.iter().any(|f| f.0 == *k));
+        wanted.extend(fixed);
         for (k, g) in wanted {
             let Some(duty) = DutyRef::of(p, ti, k) else { continue };
             if k >= t.duties.len() || c.together.claim_of(&duty).is_some() || !c.together.guest(g).is_some_and(|x| !x.banned) || overlapping(c, p, &duty, None, g) {

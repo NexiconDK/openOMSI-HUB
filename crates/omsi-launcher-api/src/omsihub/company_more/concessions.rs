@@ -596,7 +596,7 @@ fn requirements(c: &Company, t: &Tender, week: Option<Week>) -> Value {
     let fg = cn::figures(t);
     let g = |x: f64| grouped(x.round());
     let mut work = vec![
-        row("Timetable hours", trf("%{h} a week · in all %{d} with diesel buses, %{e} with electric", &[("h", &g(fg.hours_week)), ("d", &g(fg.hours_diesel)), ("e", &g(fg.hours_electric))])),
+        row("Timetable hours", trf("%{h} a week · over the contract: %{list}", &[("h", &g(fg.hours_week)), ("list", &term_hours(t, fg.hours_week))])),
         row("Buses", trf("%{n} contract buses and %{r} reserve buses: the reserve is not paid as contract buses", &[("n", &fg.buses.to_string()), ("r", &fg.reserve.to_string())])),
         row("Drivers", trf("about %{n}: the week's paid hours (1.5 a timetable hour) by a driver's week of 37 hours", &[("n", &fg.drivers.to_string())])),
     ];
@@ -622,13 +622,31 @@ fn requirements(c: &Company, t: &Tender, week: Option<Week>) -> Value {
 /// (NexiconDK, 3 November 2026) The work of a tender of the server's as the tender page shows it
 /// (`concessions::figures`): its timetable hours a week and in all, its duties a day, its buses
 /// and reserve, the drivers it needs, its passengers a day - a package's the lines' together, and
+/// (NexiconDK, 3 November 2026) The timetable hours over the contract with each fuel the tender's
+/// requirements allow, each with its term's days ("643 with diesel (14 days), 803 with CNG (17
+/// days), 964 with electric (21 days)").
+fn term_hours(t: &Tender, hours_week: f64) -> String {
+    use omsi_launcher_lib::company::model::Drive;
+    let size = cn::WorkSize::of_hours(hours_week);
+    let rule = t.market.as_ref().and_then(|m| m.needs).map(|n| n.fuel);
+    [(Drive::Diesel, "%{h} with diesel (%{d} days)"), (Drive::Cng, "%{h} with CNG (%{d} days)"), (Drive::Electric, "%{h} with electric (%{d} days)")]
+        .iter()
+        .filter(|(d, _)| rule.is_none_or(|r| r.allows(*d)))
+        .map(|(d, text)| {
+            let days = cn::server_days(*d, size);
+            trf(text, &[("h", &grouped((hours_week / 7.0 * days as f64).round())), ("d", &days.to_string())])
+        })
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
 /// its lines. As tiles: label, value, the line under it.
 fn work_tiles(c: &Company, t: &Tender) -> Vec<Value> {
     let f = cn::figures(t);
     let g = |x: f64| grouped(x.round());
     let tile = |label: &str, value: String, sub: String| json!({ "label": tr(label).to_uppercase(), "value": value, "sub": sub });
     let mut tiles = vec![
-        tile("Timetable hours", trf("%{h} a week", &[("h", &g(f.hours_week))]), trf("in all %{d} with diesel buses, %{e} with electric", &[("d", &g(f.hours_diesel)), ("e", &g(f.hours_electric))])),
+        tile("Timetable hours", trf("%{h} a week", &[("h", &g(f.hours_week))]), trf("over the contract: %{list}", &[("list", &term_hours(t, f.hours_week))])),
         if f.by_day {
             tile("Duties a day", format!("{} · {} · {}", f.duties.0, f.duties.1, f.duties.2), tr("Mon–Fri · Saturday · Sunday"))
         } else {
@@ -856,6 +874,8 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
                 let shown = money_parts(t, s.amount, s.bus_day);
                 let (bid, tone) = if s.rejected { (trf("%{amount}, rejected", &[("amount", &shown)]), "danger") } else if k == 0 { (trf("%{amount}, won", &[("amount", &shown)]), "ok") } else { (shown.clone(), "text") };
                 let points = if s.rejected { tr("rejected: abnormally low or above the cap") } else { trf("%{p} price + %{q} quality = %{t} points", &[("p", &format!("{:.1}", s.price)), ("q", &format!("{:.1}", s.quality)), ("t", &format!("{:.1}", s.total))]) };
+                // (NexiconDK, 3 November 2026, K7: a company's share driven live, with its kind)
+                let kind = if s.live > 0.0 { format!("{kind} · {}", trf("%{p} % driven live", &[("p", &format!("{:.0}", s.live * 100.0))])) } else { kind };
                 json!({ "name": name, "kind": kind, "quality": q, "quality_text": if s.rejected { "–".to_string() } else { format!("{:.0}", q * 100.0) }, "bid": bid, "tone": tone, "leads": k == 0 && !s.rejected, "points": points })
             })
             .collect()

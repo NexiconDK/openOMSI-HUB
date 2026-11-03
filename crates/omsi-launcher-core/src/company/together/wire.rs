@@ -169,6 +169,10 @@ pub struct SnapDuty {
     /// driver's (`book::Claim::part`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub part: Option<SnapPart>,
+    /// (NexiconDK, 3 November 2026, K6) Urgent: an admin's doubling or rail replacement - paid
+    /// the urgent bonus to a player (`live_more::urgent`).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub urgent: bool,
 }
 
 /// (NexiconDK, single trips) The trips of a duty a player took on their own: from where and when
@@ -342,6 +346,41 @@ pub struct Snapshot {
     pub free_buses: Vec<SnapBus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub free_drive: Option<SnapBus>,
+    /// (NexiconDK, 3 November 2026: `live_more`) What an urgent task pays on top (K6, 0.5: 50 %),
+    /// the player's fixed duties (K10), and the dispatcher's duty (K13; None: not on the server).
+    #[serde(default)]
+    pub urgent_bonus: f64,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub fixed: Vec<SnapFixed>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dispatch: Option<SnapDispatch>,
+}
+
+/// (K10) A fixed duty as the player's page lists it: its id, line number, tour, duty, weekdays
+/// (bit 0 Monday), bonus and the player.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct SnapFixed {
+    pub id: u32,
+    pub number: String,
+    pub tour: String,
+    pub duty: usize,
+    pub days: u8,
+    pub bonus: f64,
+    pub name: String,
+    pub mine: bool,
+}
+
+/// (K13) The dispatcher's duty: who is on it (empty: nobody), whether it is the player and
+/// whether he may take it, and - for him - the late buses of the day now.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct SnapDispatch {
+    pub name: String,
+    pub mine: bool,
+    pub may: bool,
+    /// The late bus (line / tour · bus) and its minutes late; the player's launcher words it.
+    pub late: Vec<(String, i32)>,
 }
 
 /// (NexiconDK, free drives) A bus of the company as the player's page lists it to take out: its

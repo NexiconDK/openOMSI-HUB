@@ -211,6 +211,9 @@ function SettingsDialog({ d }) {
         ${v.online.own && html`<div class="co-caps">${v.online.own.caps}</div>
           <div class="pair"><${Seg} value=${v.online.own.value} options=${v.online.own.options.map((o) => [o.value, o.label])} onChange=${(k) => act('drive_free', { free: k === 'free' })} style="width:320px;height:40px" />
             <p class="co-note">${v.online.own.say}</p></div>`}
+        ${v.online.agency && html`<div class="co-caps">${v.online.agency.caps}</div>
+          <div class="pair"><${Seg} value=${v.online.agency.value} options=${v.online.agency.options.map((o) => [o.value, o.label])} onChange=${(k) => act('agency_fallback', { value: k })} style="width:420px;height:40px" />
+            <p class="co-note">${v.online.agency.say}</p></div>`}
         <div class="co-caps">${v.online.left_caps}</div>
         <div class="pair"><${Seg} value=${v.online.left} options=${v.online.left_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_left', { left: k })} style="width:320px;height:40px" />
           <p class="co-note">${v.online.left_say}</p></div>

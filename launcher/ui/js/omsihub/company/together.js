@@ -385,6 +385,7 @@ function GiveRow({ d, v, again }) {
     </select><${Icon} name="expand_more" size=${20} /></span>`}
     <span class="acts">
       ${p && html`<${Btn} kind="primary" icon="sync_alt" label=${w.give} onClick=${() => go('tg_assign', { duty: d.duty, guest: p.no })} />`}
+      ${p && w.fixed_give && html`<${Btn} icon="event_repeat" label=${w.fixed_give} onClick=${() => go('tg_fixed_give', { duty: d.duty, guest: p.no })} />`}
       ${d.key === 'player' && html`<${Btn} label=${w.off} onClick=${() => go('tg_unassign', { duty: d.duty })} />`}
     </span>
   </div>`;
@@ -400,6 +401,7 @@ function Duties({ v, ask }) {
   };
   return html`<div class="tg-cols">
     <div class="co-scroll tg-main">
+      ${v.urgent?.length > 0 && html`<section class="co-section"><div class="co-caps">${w.urgent_caps}</div><p class="note">${v.urgent_note}</p>${v.urgent.map((d) => html`<${DutyRow} d=${d} again=${ask} />`)}</section>`}
       <section class="co-section"><div class="co-caps">${w.open_caps}</div><p class="note">${v.take_note}</p>
         ${v.open.length ? v.open.map((d) => html`<${DutyRow} d=${d} again=${ask} />`) : html`<p class="dim">${v.reading ? '…' : w.no_open}</p>`}</section>
       ${v.ai?.length > 0 && html`<section class="co-section"><div class="co-caps">${w.ai_caps}</div><p class="note">${w.ai_note}</p>${v.ai.map((d) => html`<${DutyRow} d=${d} again=${ask} />`)}</section>`}
@@ -414,6 +416,13 @@ function Duties({ v, ask }) {
               <span class="acts"><${Btn} small=${true} kind="primary" label=${w.yes} onClick=${() => go('tg_answer', { duty: a.duty, yes: true })} /><${Btn} small=${true} label=${w.no} onClick=${() => go('tg_answer', { duty: a.duty, yes: false })} /></span></div>`)
           : html`<p class="dim">${w.no_asks}</p>`}</section>`}
       <section class="co-section"><div class="co-caps">${w.mine_caps}</div>${v.mine.length ? v.mine.map((d) => html`<${DutyRow} d=${d} again=${ask} />`) : html`<p class="dim">${w.no_mine}</p>`}</section>
+      ${v.fixed?.length > 0 && html`<section class="co-section"><div class="co-caps">${w.fixed_caps}</div>
+        ${v.fixed.map((f) => html`<div class="tg-ask"><div class="what"><b class="cut">${f.what}</b><span class="dim cut">${f.who}</span></div>
+          <span class="acts"><${Btn} small=${true} label=${w.fixed_back} onClick=${() => go('tg_fixed_return', { id: f.id })} /></span></div>`)}</section>`}
+      ${v.dispatch && html`<section class="co-section"><div class="co-caps">${w.dispatch_caps}</div>
+        <p class="note">${v.dispatch.who}</p><p class="dim">${v.dispatch.note}</p>
+        ${v.dispatch.may && html`<${Btn} kind=${v.dispatch.mine ? '' : 'primary'} icon="support_agent" label=${v.dispatch.mine ? w.dispatch_off : w.dispatch_on} onClick=${() => go('tg_dispatch', { on: !v.dispatch.mine })} />`}
+        ${v.dispatch.mine && html`<div class="co-caps">${w.late_caps}</div>${v.dispatch.late.length ? v.dispatch.late.map((l) => html`<p class="cut">${l}</p>`) : html`<p class="dim">${w.no_late}</p>`}`}</section>`}
     </div>
   </div>`;
 }

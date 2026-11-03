@@ -1824,7 +1824,13 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
     // the AI always drives what no player does, a free colleague or an agency driver at the
     // agency's price: `live_pay` K4)
     let central = |p: Option<Problem>| p.is_some_and(Problem::sudden) || (p == Some(Problem::Holiday) && c.game_mode != GameMode::Realistic) || (p == Some(Problem::Unassigned) && super::live_pay::agency_runs_open(c));
-    let for_player = |line: &str, tour: &str, k: usize| matches!(roster(c, wd, line, tour).and_then(|r| r.duties.get(k).copied().flatten()), Some(Who::Guest(g)) if c.together.guest(g).is_some_and(|x| !x.banned));
+    let for_player = |line: &str, tour: &str, k: usize| {
+        matches!(roster(c, wd, line, tour).and_then(|r| r.duties.get(k).copied().flatten()), Some(Who::Guest(g)) if c.together.guest(g).is_some_and(|x| !x.banned))
+            // (NexiconDK, 3 November 2026: a duty fixed for a player - K10 -, and an urgent task
+            // only a player may drive - K6)
+            || super::live_more::fixed_for(c, wd, line, tour, k).is_some_and(|g| c.together.guest(g).is_some_and(|x| !x.banned))
+            || super::live_more::players_only(c, date, line, tour)
+    };
     if today {
         let slot = super::plandays::slot_of(c, date);
         for &(i, k) in &order {

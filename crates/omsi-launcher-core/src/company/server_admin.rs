@@ -538,7 +538,12 @@ fn market(api: &Api) -> Value {
         .collect();
     // (3 November 2026: the server's calendar and the admin's holidays - `contract_events`)
     let calendar = if super::contract_events::danish(&m.data) { "dk" } else { "map" };
-    json!({ "maps": maps, "rules": rules, "today": today, "earliest_end": dates::add(&today, shared_tenders::RENEW_ANNOUNCED), "calendar": calendar, "holidays": super::contract_events::load_periods(&m.data), "must_accept": super::contract_events::must_accept(&m.data), "change_days": super::contract_events::CHANGE_DAYS, "force_majeure": super::contract_events::load_majeure(&m.data), "weather_files": super::contract_events::installed_weather(&m.cfg.root) })
+    json!({ "maps": maps, "rules": rules, "today": today, "earliest_end": dates::add(&today, shared_tenders::RENEW_ANNOUNCED), "calendar": calendar, "holidays": super::contract_events::load_periods(&m.data), "must_accept": super::contract_events::must_accept(&m.data), "change_days": super::contract_events::CHANGE_DAYS, "force_majeure": super::contract_events::load_majeure(&m.data), "weather_files": super::contract_events::installed_weather(&m.cfg.root),
+        // (NexiconDK, 3 November 2026: the supplements for unsocial hours - K11 -, and the month's
+        // ranking of live driving - K7)
+        "supplements": super::live_more::load_supplements(&m.data).iter().map(|x| json!({ "id": x.id, "name": x.name, "when": x.when, "percent": x.percent, "per_hour": x.per_hour })).collect::<Vec<_>>(),
+        "ranking": super::live_more::ranking(m.players.players.iter().map(|p| (p.name.as_str(), p.months.as_slice())), today.get(..7).unwrap_or(""), 10),
+    })
 }
 
 /// The last `TAIL` lines of a file.
@@ -1041,7 +1046,23 @@ fn events_do(api: &Api, a: &Value) -> Result<String, String> {
             let may = if ch.decline_by.is_empty() { String::new() } else { format!(", the company may decline it until {}", ch.decline_by) };
             format!("the contract {} of {} changes from {}: {:.0} → {:.0} timetable hours a week, {} → {} buses{may} (taken at its next step)", ch.name, c.name, ch.from, ch.hours_before, ch.hours_after, ch.buses_before, ch.buses_after)
         }
-        _ => return Err("change, holiday_add, holiday_remove, roadworks, roadworks_end, majeure or majeure_end".into()),
+        // (NexiconDK, 3 November 2026, K11: the supplements for unsocial hours)
+        "supplement_add" => {
+            let hm = |k: &str| {
+                let v = s(k);
+                let (h, mi) = v.split_once(':').unwrap_or((v.as_str(), "0"));
+                h.trim().parse::<i32>().unwrap_or(0).clamp(0, 23) * 60 + mi.trim().parse::<i32>().unwrap_or(0).clamp(0, 59)
+            };
+            let num = |k: &str| s(k).replace(',', ".").trim().parse::<f64>().unwrap_or(0.0);
+            let when = super::live_more::When::of(&s("when"), hm("from"), hm("to")).ok_or("evening, night, saturday, sunday or snow")?;
+            let id = super::live_more::add_supplement(&data, &s("name"), when, num("percent"), num("per_hour"))?;
+            format!("supplement {} ({}): {} % and {} kr. an hour (#{id})", s("name").trim(), when.key(), num("percent"), num("per_hour"))
+        }
+        "supplement_remove" => {
+            let x = super::live_more::remove_supplement(&data, int("id") as u32)?;
+            format!("supplement {} taken away", x.name)
+        }
+        _ => return Err("change, holiday_add, holiday_remove, roadworks, roadworks_end, majeure, majeure_end, supplement_add or supplement_remove".into()),
     };
     m.say(&format!("admin panel: {said}"));
     Ok(said)

@@ -545,6 +545,17 @@ pub(super) fn call(cmd: &str, args: &Value, p: &dyn Platform) -> Option<Answer> 
         "tg_rejoin" => Ok(rejoin()),
         // (what his role lets him do for the company: checked again by the boss's launcher)
         "tg_assign" => Ok(duty_act("assign", args, |r| r.target = guest)),
+        // (NexiconDK, 3 November 2026: a duty given for good - K10 -, given back; the
+        // dispatcher's duty - K13)
+        "tg_fixed_give" => Ok(duty_act("fixed_give", args, |r| r.target = guest)),
+        "tg_fixed_return" => {
+            let id = args.get("id").and_then(Value::as_u64).unwrap_or(0);
+            Ok(answer_of(send_now("fixed_return", |q| q.msg = id)))
+        }
+        "tg_dispatch" => {
+            let on = args.get("on").and_then(Value::as_bool).unwrap_or(false);
+            Ok(answer_of(send_now("dispatch", |q| q.yes = on)))
+        }
         "tg_unassign" => Ok(duty_act("unassign", args, |_| {})),
         "tg_answer" => {
             let yes = args.get("yes").and_then(Value::as_bool).unwrap_or(false);
@@ -995,7 +1006,15 @@ fn duty_row(d: &SnapDuty, open_claims: bool, ask: bool) -> Value {
         "from": d.from, "date": day_label(&d.duty.date),
         "route": format!("{} → {}", d.first, d.last), "facts": facts.join("  ·  "), "title": duty_words(&d.number, &d.duty),
         "state": state, "tone": tone, "acts": acts, "key": format!("{:?}", d.state).to_lowercase(), "guest": d.guest, "who": d.who,
+        // (NexiconDK, 3 November 2026, K6: urgent - players only, paid more)
+        "urgent": d.urgent,
     })
+}
+
+/// (NexiconDK, 3 November 2026, K10) The weekdays of a fixed duty (bit 0 Monday), in words.
+fn weekdays_words(days: u8) -> String {
+    const NAMES: [&str; 7] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    NAMES.iter().enumerate().filter(|(k, _)| days & (1 << k) != 0).map(|(_, n)| tr(n)).collect::<Vec<_>>().join(", ")
 }
 
 /// (NexiconDK, 27 October 2026) A duty of which a player took only some trips (`part`): his own,
@@ -1049,6 +1068,9 @@ fn view() -> Value {
         "role_caps": tr("Your role").to_uppercase(), "can_caps": tr("What you may do").to_uppercase(),
         "asks_caps": tr("Duty requests").to_uppercase(), "no_asks": tr("No duty requests."), "yes": tr("Approve"), "no": tr("Decline"),
         "give_caps": tr("Give duties").to_uppercase(), "give": tr("Give"), "off": tr("Take off"), "pick_player": tr("Choose a player"),
+        "urgent_caps": tr("Urgent tasks").to_uppercase(), "fixed_caps": tr("Fixed duties").to_uppercase(), "fixed_give": tr("Fixed duty"),
+        "fixed_back": tr("Give back"), "dispatch_caps": tr("Dispatcher").to_uppercase(), "dispatch_on": tr("Take the dispatcher's duty"), "dispatch_off": tr("End the duty"),
+        "late_caps": tr("Late buses now"), "no_late": tr("No bus is late."),
         "members_caps": tr("Manage players").to_uppercase(), "kick": tr("Send away"), "ban": tr("Remove"),
         "pages": tr("Company pages"), "pages_tip": tr("Open the company's pages your role allows"),
         "say": tr("Say something to everyone"), "send": tr("Send"),
@@ -1075,10 +1097,12 @@ fn view() -> Value {
     let ask = can(Perm::Drive);
     let rows = |pick: &dyn Fn(&SnapDuty) -> bool| -> Vec<Value> { s.duties.iter().filter(|d| pick(d)).map(|d| duty_row(d, s.open_claims || can(Perm::Approve), ask)).collect() };
     let mine = rows(&|d| matches!(d.state, DutyState::Mine | DutyState::Asked | DutyState::Driving | DutyState::Done | DutyState::Late | DutyState::Ai));
-    let open = rows(&|d| d.state == DutyState::Open);
+    // (NexiconDK, 3 November 2026, K6: the urgent ones apart - open, or the AI's to take over)
+    let urgent = rows(&|d| d.urgent && ask && (d.state == DutyState::Open || (d.state == DutyState::Company && d.take_over)));
+    let open = rows(&|d| d.state == DutyState::Open && !(d.urgent && ask));
     // (NexiconDK, Bus Company Online: the company's AI drivers' duties on the server, his to take
     // over - `book::takes_over`)
-    let over = |d: &SnapDuty| ask && d.state == DutyState::Company && d.take_over;
+    let over = |d: &SnapDuty| ask && d.state == DutyState::Company && d.take_over && !d.urgent;
     let ai = rows(&|d| over(d));
     // (none of them left to take over - the day's last trips begun: said, not an empty page)
     let ai_none = (ask && !j.me.ticket.is_empty() && ai.is_empty() && s.duties.iter().any(|d| d.state == DutyState::Company && !d.who.is_empty())).then(|| tr(NO_AI_LEFT));
@@ -1150,6 +1174,19 @@ fn view() -> Value {
         "free": free_json(s, j),
         "asks": asks, "members": members, "giveable": giveable, "roles": if can(Perm::Players) { roles_json() } else { Value::Null },
         "history": history_rows(), "driving": driving, "notices": notices, "last_notice": j.notices.last().map(|n| n.n).unwrap_or(0),
+        // (NexiconDK, 3 November 2026: `live_more` - urgent tasks K6, fixed duties K10, the dispatcher K13)
+        "urgent": urgent,
+        "urgent_note": trf("Paid %{p} % more to the player who drives it. A doubling the admin ordered at short notice is for players only: if nobody takes it, it does not run.", &[("p", &format!("{:.0}", s.urgent_bonus * 100.0))]),
+        "fixed": s.fixed.iter().map(|x| json!({
+            "id": x.id, "mine": x.mine,
+            "what": trf("Line %{n}, tour %{tour}, duty %{k}: every %{days} (+%{p} %)", &[("n", &x.number), ("tour", &x.tour), ("k", &(x.duty + 1).to_string()), ("days", &weekdays_words(x.days)), ("p", &format!("{:.0}", x.bonus * 100.0))]),
+            "who": x.name,
+        })).collect::<Vec<_>>(),
+        "dispatch": s.dispatch.as_ref().map(|d| json!({
+            "who": if d.name.is_empty() { tr("Nobody is on the dispatcher's duty: the control room decides by itself.") } else { trf("%{name} is on the dispatcher's duty.", &[("name", &d.name)]) },
+            "mine": d.mine, "may": d.may && (d.name.is_empty() || d.mine), "late": d.late.iter().map(|(what, m)| format!("{what} · {}", trf("+%{n} min", &[("n", &m.to_string())]))).collect::<Vec<_>>(),
+            "note": tr("On duty, a spare bus reaches its trips in 15 minutes, the late buses wait for your call on the control room's page and you answer the doubling orders."),
+        })),
         "online": s.players.iter().filter(|p| p.online).count(),
         "take_note": if !ask { tr("Your role does not drive: the boss can change it.") } else if s.open_claims || can(Perm::Approve) { tr("Take an open duty: it is yours at once.") } else { tr("Ask for an open duty: the boss, or a player who may, says yes or no.") },
     })

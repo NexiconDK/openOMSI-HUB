@@ -169,7 +169,7 @@ pub fn score(t: &Tender, bids: &[Opened]) -> (Option<usize>, Vec<(usize, Standin
                 Some(l) if ok => (viborg::price_points(b.amount, l, award), parts.points(award), parts.split(award)),
                 _ => (0.0, 0.0, [0.0; 4]),
             };
-            (b.who, Standing { name: b.name.clone(), amount: b.amount, price, quality, total: price + quality, rejected: !ok, parts: split, bus_day: b.bus_day })
+            (b.who, Standing { name: b.name.clone(), amount: b.amount, price, quality, total: price + quality, rejected: !ok, parts: split, bus_day: b.bus_day, live: 0.0 })
         })
         .collect();
     rows.sort_by(|a, b| {

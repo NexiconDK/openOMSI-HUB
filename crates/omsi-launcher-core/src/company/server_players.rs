@@ -55,6 +55,10 @@ pub struct Player {
     /// (1 November 2026) Banned by the server's admin (the admin panel), and why; empty: not.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub banned: String,
+    /// (NexiconDK, 3 November 2026, K7) His months of live driving: the trips that passed, their
+    /// timetabled minutes and scores (`live_more::count_trip`) - the driver of the month.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub months: Vec<super::live_more::LiveMonth>,
 }
 
 /// The ways to log in the server takes (`logins` in company-server.cfg).

@@ -68,7 +68,7 @@ function CompanyRow({ c, w, onJoin, depots = 0, open = false, onFold, onHq }) {
       <b class="cut" title=${c.name}>${c.name}</b>
       ${c.depot_of && html`<span class="cut bco-depot-of">${c.depot_of}</span>`}
       <span class="dim cut">${c.map ? `${c.map} · ` : ''}${c.mode} · ${w.owner}: ${c.owner}</span>
-      <span class="dim cut">${c.figures}</span>
+      <span class="dim cut">${c.figures}${c.live ? ` · ${c.live}` : ''}</span>
       <${LinePlates} lines=${c.line_list} />
       ${depots > 0 &&
       html`<button type="button" class=${'bco-fold' + (open ? ' open' : '')} onClick=${onFold}>
@@ -270,6 +270,7 @@ function Server({ v, again, onHq }) {
     </div>
     ${v.note && html`<p class="tg-banner t-warn"><${Icon} name="info" size=${16} />${v.note}</p>`}
     ${v.problem && html`<p class="tg-banner t-warn"><${Icon} name="warning" size=${16} />${v.problem}</p>`}
+    ${v.month && html`<p class="tg-banner" title=${v.month.rows.join('\n')}><${Icon} name="emoji_events" size=${16} />${v.month.title}<span class="dim">${v.month.rows.slice(1, 3).length ? '  ·  ' + v.month.rows.slice(1, 3).join('  ·  ') : ''}</span></p>`}
     <div class="co-scroll bco-list">
       <div class="co-caps">${w.companies_caps}</div>
       ${v.companies.length === 0 && html`<p class="dim">${w.none}</p>`}

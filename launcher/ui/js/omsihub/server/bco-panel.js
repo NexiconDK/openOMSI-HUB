@@ -75,6 +75,10 @@ export const BCO_FIELDS = [
   ['ai_quality_cap', 'An AI trip counts at most', 'number', 'In the operating quality of the tenders (0-100); a live trip that passes counts its judgement'],
   ['live_surcharge', 'Live surcharge (%)', 'number', "The authority's extra on the hour price for the hours driven live and passed; 0: none"],
   ['driver_pool', 'AI drivers a map', 'number', "Empty or 0: as many as the companies like. None left: agency drivers run their open duties at the agency's price"],
+  ['agency_fallback', 'Agency drivers run the duties nobody covers', BOOL, "Off: such a duty is dropped. Each company's owner may choose otherwise in its settings"],
+  ['urgent_bonus', 'Urgent tasks pay more (%)', 'number', 'A short-notice doubling the admin ordered (players only) or rail replacement: a player who drives it is paid this much more'],
+  ['loyalty_bonus', 'A fixed duty pays more (%)', 'number', 'A duty a company gives a player for good on its weekday'],
+  ['boss_duties', "The boss's duties a week", 'number', 'The owner or a co-owner driving this many duties live in a week raises the working environment by 10 points; 0: never'],
   ["The authority's fines (kroner)"],
   ['fine_dropped_minute', 'A journey not run, a minute', 'number'],
   ['fine_wrong_bus', 'A smaller bus than the timetable asks', 'number'],
@@ -98,7 +102,7 @@ export const BCO_FIELDS = [
 export const BCO_DEFAULTS = {
   name: 'Bus Company Online', real_time: '1', time: '06:00', first_port: '27015', max_worlds: '4', world_idle: '10', keep_worlds: '1', max_memory: '85', max_cpu: '90',
   traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
-  price_level: 'dk', player_pay_share: '90', ai_quality_cap: '70', live_surcharge: '5', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
+  price_level: 'dk', player_pay_share: '90', ai_quality_cap: '70', live_surcharge: '5', agency_fallback: '1', urgent_bonus: '50', loyalty_bonus: '5', boss_duties: '2', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
   found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', calendar: 'map', doubling_price: '650', doubling_full: '100', tender_reserve: '10', fine_dropped_minute: '20.83',
   fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_wrong_fuel: '2500', fine_wrong_floor: '2500', fine_inspection: '1000', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',
@@ -598,9 +602,30 @@ export function mountPanel(root, api, opts = {}) {
       h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, fmKind, fmFrom, fmUntil, fmMap, fmCompany, fmWeather,
         btn(tr('Declare force majeure'), () => post('events', { do: 'majeure', kind: fmKind.value, from: fmFrom.value, until: fmUntil.value, map: fmMap.value, company: fmKind.value === 'strike' ? fmCompany.value : '', weather: fmKind.value === 'strike' ? '' : fmWeather.value }), 'sp-btn small main')),
       h('div', { class: 'sp-dim' }, tr('The company is for a strike, the weather for snow or a storm.')));
+    // (NexiconDK, 3 November 2026: the supplements for unsocial hours - K11 -, and the driver of
+    // the month - K7)
+    const whens = [['evening', 'Weekday evenings'], ['night', 'Nights'], ['saturday', 'Saturdays'], ['sunday', 'Sundays and holidays'], ['snow', 'Snow days']];
+    const whenName = (w) => tr((whens.find((x) => x[0] === w.kind) || [w.kind, w.kind])[1]) + (w.from !== undefined ? ` ${String(Math.floor(w.from / 60)).padStart(2, '0')}:${String(w.from % 60).padStart(2, '0')}–${String(Math.floor(w.to / 60)).padStart(2, '0')}:${String(w.to % 60).padStart(2, '0')}` : '');
+    const suName = keep('su:name', h('input', { placeholder: tr('Name'), style: 'width:160px' }));
+    const suWhen = keep('su:when', h('select', {}, ...whens.map(([v, l]) => h('option', { value: v }, tr(l)))));
+    const suFrom = keep('su:from', h('input', { type: 'time', value: '18:00', style: 'width:110px' }));
+    const suTo = keep('su:to', h('input', { type: 'time', value: '23:00', style: 'width:110px' }));
+    const suPct = keep('su:pct', h('input', { type: 'number', min: '0', step: '1', placeholder: '%', style: 'width:80px' }));
+    const suKr = keep('su:kr', h('input', { type: 'number', min: '0', step: '1', placeholder: tr('kr. an hour'), style: 'width:110px' }));
+    const supplements = card(tr('Supplements for unsocial hours'),
+      h('div', { class: 'sp-dim' }, tr("Added to a player's pay for a trip that leaves in their hours: a share of the pay, kroner an hour, or both. Evenings and nights by the clock (past midnight when the end is earlier).")),
+      (d.supplements || []).length ? table([tr('Name'), tr('When'), tr('Share'), tr('kr. an hour'), ''], d.supplements.map((x) => h('tr', {}, h('td', {}, h('b', {}, x.name)), h('td', {}, whenName(x.when)), h('td', {}, `${x.percent} %`), h('td', {}, String(x.per_hour)),
+        h('td', { class: 'sp-acts' }, sureButton(tr('Remove'), tr('Sure?'), () => post('events', { do: 'supplement_remove', id: x.id })))))) : null,
+      h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, suName, suWhen, suFrom, suTo, suPct, suKr,
+        btn(tr('Add the supplement'), () => post('events', { do: 'supplement_add', name: suName.value, when: suWhen.value, from: suFrom.value, to: suTo.value, percent: suPct.value, per_hour: suKr.value }), 'sp-btn small main')),
+      h('div', { class: 'sp-dim' }, tr('From and to count for evenings and nights.')));
+    const ranking = card(tr('Driver of the month'),
+      (d.ranking || []).length
+        ? table([tr('Player'), tr('Live timetable hours'), tr('Score')], d.ranking.map((r) => h('tr', {}, h('td', {}, h('b', {}, r.name)), h('td', {}, r.hours.toFixed(1)), h('td', {}, r.score.toFixed(0)))))
+        : h('div', { class: 'sp-dim' }, tr('No live trip has passed this month yet.')));
     const number = (value, width = 90, placeholder = '') => h('input', { type: 'number', min: '0', step: '1', value: value ?? '', placeholder, style: `width:${width}px` });
     const dateIn = (value, min) => h('input', { type: 'date', value: value || '', min: min || '', style: 'width:150px' });
-    return [rules, holidays, majeure, ...d.maps.map((m) => {
+    return [rules, holidays, majeure, supplements, ranking, ...d.maps.map((m) => {
       const open = m.open.map((t) => {
         const at = h('input', { type: 'datetime-local', value: local(t.closes), style: 'width:190px' });
         const cap = number(Math.round(t.cap_hour), 90);

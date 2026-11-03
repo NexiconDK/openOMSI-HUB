@@ -766,6 +766,10 @@ pub fn arrivals(c: &Company, index: usize) -> (i32, i32) {
 /// `SPARE_LINE_MINUTES` while a spare line stands by at the depot then and until it is out (a
 /// spare line covers only within its own hours), else `SPARE_MINUTES`.
 pub fn spare_minutes(c: &Company, date: &str, at: i32) -> i32 {
+    // (NexiconDK, 3 November 2026, K13: a live dispatcher on duty sends it sooner)
+    if super::live_more::dispatcher_on(c) {
+        return super::live_more::DISPATCHER_SPARE;
+    }
     if super::rosterflow::spare_lines(c, date).iter().any(|x| x.at_depot() && x.covers(at, at + SPARE_LINE_MINUTES)) {
         SPARE_LINE_MINUTES
     } else {

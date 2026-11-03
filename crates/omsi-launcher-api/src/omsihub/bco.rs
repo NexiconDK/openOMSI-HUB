@@ -59,6 +59,9 @@ struct Linked {
     companies: Vec<Value>,
     /// (Phase 6) What founding asks of him and how far he is (`server_found::status_json`).
     found: Value,
+    /// (NexiconDK, 3 November 2026, K7) The month's ranking of live driving (`server_api`'s
+    /// `companies`: its month and rows).
+    month: Value,
 }
 
 /// What the page shows: the server linked, and what was said last.
@@ -181,7 +184,7 @@ fn connect(text: &str) -> Value {
     };
     {
         let mut s = state();
-        s.linked = Some(Linked { text: text.trim().to_string(), code, base, session, info, player, companies: Vec::new(), found: Value::Null });
+        s.linked = Some(Linked { text: text.trim().to_string(), code, base, session, info, player, companies: Vec::new(), found: Value::Null, month: Value::Null });
         s.error = None;
         s.note = note;
     }
@@ -235,6 +238,7 @@ fn refresh() -> Value {
                 l.companies = v.get("companies").and_then(Value::as_array).cloned().unwrap_or_default();
                 l.player = v.get("player").cloned().unwrap_or(Value::Null);
                 l.found = v.get("found").cloned().unwrap_or(Value::Null);
+                l.month = v.get("month").cloned().unwrap_or(Value::Null);
             }
             s.error = None;
             drop(s);
@@ -484,6 +488,8 @@ fn company_json(c: &Value) -> Value {
         "hq": s("hq"), "lines": n("lines"), "buses": n("buses"), "staff": n("staff"),
         // (its lines' numbers and colours: a driver chooses a company by them)
         "line_list": c.get("line_list").cloned().unwrap_or(json!([])),
+        // (NexiconDK, 3 November 2026, K7: its share driven live)
+        "live": c.get("live").and_then(Value::as_f64).filter(|x| *x > 0.0).map(|x| trf("%{p} % driven live", &[("p", &format!("{:.0}", x * 100.0))])),
         // (phase 7: a group's head office - no map, its depots under it; its owner opens it)
         "group": c.get("group").and_then(Value::as_bool).unwrap_or(false),
         "may_run": c.get("may_run").and_then(Value::as_bool).unwrap_or(false),
@@ -540,6 +546,19 @@ fn view() -> Value {
         "price": trf("Founding costs %{price} of your own money: you have %{money}.", &[("price", &euros(price * 100)), ("money", &euros(money * 100))]),
         "maps": maps.iter().map(|m| json!({ "key": m["folder"], "label": m["folder"] })).collect::<Vec<_>>(),
         "companies": l.companies.iter().map(company_json).collect::<Vec<_>>(),
+        // (NexiconDK, 3 November 2026, K7: the driver of the month and the next ones)
+        "month": month_json(&l.month),
+    })
+}
+
+/// (K7) The month's ranking of live driving on the server, for the page: None when nobody drove.
+fn month_json(m: &Value) -> Value {
+    let rows: Vec<Value> = m.get("ranking").and_then(Value::as_array).cloned().unwrap_or_default();
+    let Some(first) = rows.first() else { return Value::Null };
+    let row = |r: &Value| trf("%{name}: %{h} live timetable hours, score %{s}", &[("name", r["name"].as_str().unwrap_or("")), ("h", &format!("{:.1}", r["hours"].as_f64().unwrap_or(0.0))), ("s", &format!("{:.0}", r["score"].as_f64().unwrap_or(0.0)))]);
+    json!({
+        "title": trf("Driver of the month: %{name}", &[("name", first["name"].as_str().unwrap_or(""))]),
+        "rows": rows.iter().map(row).collect::<Vec<_>>(),
     })
 }
 

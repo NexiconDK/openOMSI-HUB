@@ -157,6 +157,9 @@ fn act_need(act: &str, what: &str) -> Need {
         // (NexiconDK, 3 November 2026: his own driving's pay - the owner's and the co-owners', who
         // the command itself checks: `live_pay::may_drive_free`)
         "drive_free" => Member,
+        // (K4's choice for the duties nobody covers: the owner's and the co-owners', checked by the
+        // command itself - `live_pay::set_agency`)
+        "agency_fallback" => Member,
         "dismiss" | "holiday" => STAFF,
         "ask_spare" | "ask_rental" | "ask_drop" | "ask_on" | "ask_dispatcher" => SERVICE,
         "morning_fill" => PLANS,
@@ -189,7 +192,9 @@ fn more_act_need(act: &str) -> Need {
         "pe_day" | "pe_sel" | "pe_pdir" | "pe_from" | "pe_close" => RF_VIEW,
         a if a.starts_with("pe_") => Any(&[Perm::Lines, Perm::Plans]),
         "depot_build" | "depot_cancel" | "depot_order" | "parts_auto" | "parts_buy" | "research_info" | "research_start" | "research_pause" | "research_stop" => SPEND,
-        "tender_pick" | "tender_bid" | "tender_buy" | "tender_step" | "tender_drive" | "takeover_yes" | "takeover_no" | "doubling_yes" | "doubling_no" | "change_decline" | "tender_complain" | "sub_propose" | "sub_answer" | "sub_end" | "joint_propose" => SPEND,
+        "tender_pick" | "tender_bid" | "tender_buy" | "tender_step" | "tender_drive" | "takeover_yes" | "takeover_no" | "change_decline" | "tender_complain" | "sub_propose" | "sub_answer" | "sub_end" | "joint_propose" => SPEND,
+        // (NexiconDK, 3 November 2026, K13: who runs the day's service answers the doubling orders too)
+        "doubling_yes" | "doubling_no" => Any(&[Perm::Spend, Perm::Service]),
         "goal_take" | "goal_give_up" | "net_take" | "net_cancel" | "net_top_up" | "fuel_sign" | "cleaning_sign" | "cleaning_end" | "contract_hand_back" => SPEND,
         // (a tendered line's contract changed, or an offer for it: what the contracts cost)
         "contract_vary" | "contract_offer" => SPEND,
