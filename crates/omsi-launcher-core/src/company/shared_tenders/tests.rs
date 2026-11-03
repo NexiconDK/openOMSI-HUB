@@ -451,8 +451,8 @@ fn the_servers_admin_opens_a_tender_and_calls_one_off() {
     let m = load(&data, &key).unwrap();
     // (the map's lines with passengers of their own, kept for the panel)
     assert!(m.lines.iter().any(|l| l == "Linie5") && m.lines.iter().any(|l| l == "Linie9"), "{:?}", m.lines);
-    ask_as_server(&data, &key, "Linie5").unwrap();
-    ask_as_server(&data, &key, "Linie99").unwrap();
+    ask_as_server(&data, &key, "Linie5", ServerAsk::default()).unwrap();
+    ask_as_server(&data, &key, "Linie99", ServerAsk::default()).unwrap();
     let said = step(&data, &key, MAP, DATE, now + 1, &mut read);
     assert!(said.iter().any(|s| s.contains("Linie99") && s.contains("no such line")), "{said:?}");
     let m = load(&data, &key).unwrap();
@@ -476,5 +476,82 @@ fn the_servers_admin_opens_a_tender_and_calls_one_off() {
     let fee = a.cash - cash;
     assert!(fee > 0, "its fee paid back");
     assert!(a.clock.feed.iter().any(|f| f.text == CALLED_OFF), "told");
+    let _ = std::fs::remove_dir_all(&data);
+}
+
+/// (3 November 2026, the admin panel) The tenders' rules of the server's settings: a cap of its own
+/// a timetable hour counts as it stands (before, it was only a ceiling over the cost price by 1.5
+/// and changed nothing), the abnormally low share is kept with each tender, and no operator bids
+/// when the admin wants none. The admin's own times and cap for a line he puts out; a line he
+/// awards directly to a company is decided for it at once - at his price, no bids - and the
+/// company takes it though it never saw the tender open; a cap he changes reaches the companies'
+/// copies; a contract he moves ends on his day.
+#[test]
+fn the_admins_rules_times_caps_direct_awards_and_contracts() {
+    let data = temp("admin-rules");
+    std::fs::create_dir_all(&data).unwrap();
+    std::fs::write(data.join(super::super::main_server::CFG_FILE), "cap_per_hour = 2500\ntender_operators = 0\ntender_low_share = 80\ntender_round_weeks = 2\ntender_lines_per_round = 1\n").unwrap();
+    let cfg = TenderCfg::of(&data);
+    assert_eq!((cfg.cap_hour, cfg.operators, cfg.round_weeks, cfg.per_round), (super::super::server_fines::Fines::cents(2500.0), Some(0), 2, Some(1)));
+    assert!((cfg.low_share - 0.80).abs() < 1e-9 && (cfg.cap_factor - super::super::sealed::CAP_SHARE).abs() < 1e-9);
+    assert_eq!(TenderCfg::of_keys(&Default::default()), TenderCfg::default(), "nothing set: the rules of before");
+    let lines = lines();
+    let key = key_of(MAP);
+    let now = clock::moment(DATE, 8 * 60);
+    let (mut a, b) = (company("Umove", "umove"), company("GoCollective", "gocollective"));
+    let (ca, cb) = (a.clone(), b.clone());
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]), events: Vec::new() });
+    step(&data, &key, MAP, DATE, now, &mut read);
+    // the admin's own times and cap: opens tomorrow at 10, closes two days later at 18, 1.800 kr.
+    let (opens, closes) = (clock::moment(&dates::add(DATE, 1), 10 * 60), clock::moment(&dates::add(DATE, 3), 18 * 60));
+    let fines = |kr: f64| super::super::server_fines::Fines::cents(kr);
+    ask_as_server(&data, &key, "Linie7", ServerAsk { opens_at: opens, closes_at: closes, cap_hour: fines(1800.0), ..ServerAsk::default() }).unwrap();
+    // and one awarded directly to B, at 1.100 kr., run with electric buses
+    ask_as_server(&data, &key, "Linie9", ServerAsk { cap_hour: fines(1100.0), direct: "gocollective".into(), direct_name: "GoCollective".into(), drive: Drive::Electric, ..ServerAsk::default() }).unwrap();
+    let said = step(&data, &key, MAP, DATE, now + 1, &mut read);
+    assert!(said.iter().any(|s| s.contains("awarded directly to GoCollective")), "{said:?}");
+    let m = load(&data, &key).unwrap();
+    let t7 = m.tenders.iter().find(|t| t.tender.line == "Linie7").unwrap().tender.clone();
+    assert_eq!((t7.opens_at, t7.closes_at), (opens, closes));
+    assert!((cn::per_hour(&t7, t7.reference) - fines(1800.0) as f64).abs() < 2.0, "the admin's cap");
+    assert!(t7.bidders.is_empty() && super::super::sealed::operator_bids(&t7).is_empty(), "no operators");
+    let r = super::super::auction::ROUND;
+    assert_eq!(super::super::sealed::low_line(&t7), (t7.cost as f64 * 0.80 / r as f64).ceil() as Cents * r, "80 % of the cost price");
+    // (a tender of the round: the server's own cap, not the cost price by 1.5)
+    if let Some(r) = m.tenders.iter().find(|t| t.tender.line != "Linie7" && t.tender.line != "Linie9") {
+        assert!((cn::per_hour(&r.tender, r.tender.reference) - fines(2500.0) as f64).abs() < 2.0);
+    }
+    // the direct award decided a minute later, for B at the admin's price
+    let said = step(&data, &key, MAP, DATE, now + 4, &mut read);
+    assert!(said.iter().any(|s| s.contains("line 9 won by the company GoCollective")), "{said:?}");
+    let m = load(&data, &key).unwrap();
+    let d = m.tenders.iter().find(|t| t.tender.line == "Linie9").and_then(|t| t.decided.clone()).unwrap();
+    assert_eq!((d.winner.as_str(), d.drive), ("gocollective", Drive::Electric));
+    let mut b = b;
+    at(&mut b, now + 5);
+    let (_, won) = sync(&data, &mut b);
+    assert!(won && b.concessions.held.iter().any(|h| h.line == "Linie9"), "B takes the line it never saw open");
+    let k = b.concessions.contracts.iter().find(|k| k.line == "Linie9").unwrap();
+    assert!(k.electric && (k.per_hour as f64 - fines(1100.0) as f64).abs() < 2.0);
+    // a cap the admin changes reaches A's copy of the open tender
+    at(&mut a, now + 5);
+    sync(&data, &mut a);
+    let mut m = load(&data, &key).unwrap();
+    let t = &mut m.tenders.iter_mut().find(|t| t.tender.line == "Linie7").unwrap().tender;
+    t.reference = cn::of_hour(t, fines(2000.0) as f64);
+    let cap = t.reference;
+    save(&data, &m).unwrap();
+    sync(&data, &mut a);
+    let mine = a.concessions.tenders.iter().find(|t| t.line == "Linie7").unwrap();
+    assert_eq!(mine.reference, cap);
+    assert!((mine.market.as_ref().unwrap().low_share - 0.80).abs() < 1e-9);
+    // the admin moves B's contract on Linie9 to end on a later day
+    let until = dates::add(DATE, 40);
+    order_contract(&data, "gocollective", "Linie9", &until).unwrap();
+    assert!(take_contract_orders(&data, &mut b));
+    assert!(!take_contract_orders(&data, &mut b), "once");
+    assert_eq!(b.concessions.held.iter().find(|h| h.line == "Linie9").unwrap().until, until);
+    assert_eq!(b.concessions.contracts.iter().find(|k| k.line == "Linie9").unwrap().until, until);
+    assert!(b.clock.feed.iter().any(|f| f.text == CONTRACT_MOVED), "told");
     let _ = std::fs::remove_dir_all(&data);
 }

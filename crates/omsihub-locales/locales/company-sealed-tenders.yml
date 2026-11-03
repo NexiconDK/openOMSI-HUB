@@ -233,3 +233,10 @@ _version: 2
   pl: "Oferty zamknięte do %{time} (za %{left}): każda firma mapy i jej przewoźnicy składają oferty, nikt nie widzi cudzej przed zamknięciem, a ocena to 70 % cena i 30 % jakość. Zaproponuj co najmniej %{low} i najwyżej %{cap}."
   ru: "Закрытые заявки до %{time} (через %{left}): каждая компания карты и её перевозчики подают заявки, никто не видит чужую до закрытия, а оценка — 70 % цена и 30 % качество. Предложи не меньше %{low} и не больше %{cap}."
   uk: "Закриті пропозиції до %{time} (через %{left}): кожна компанія карти та її перевізники подають пропозиції, ніхто не бачить чужу до закриття, а оцінка — 70 % ціна і 30 % якість. Запропонуй не менше %{low} і не більше %{cap}."
+"Your cost price with a 5 % margin is %{own}: under the abnormally low line, so ask at least %{amount}":
+  de: "Ihr Selbstkostenpreis mit 5 % Marge ist %{own}: unter der Grenze für ungewöhnlich niedrige Gebote, also bieten Sie mindestens %{amount}"
+  fr: "Votre prix de revient avec une marge de 5 % est de %{own} : sous le seuil anormalement bas, demandez donc au moins %{amount}"
+  nl: "Uw kostprijs met 5 % marge is %{own}: onder de grens voor abnormaal lage biedingen, vraag dus minstens %{amount}"
+  pl: "Twój koszt własny z 5 % marży to %{own}: poniżej progu rażąco niskiej ceny, więc żądaj co najmniej %{amount}"
+  ru: "Ваша себестоимость с наценкой 5 % — %{own}: ниже порога аномально низкой цены, поэтому просите не меньше %{amount}"
+  uk: "Ваша собівартість із націнкою 5 % — %{own}: нижче порогу аномально низької ціни, тож просіть щонайменше %{amount}"

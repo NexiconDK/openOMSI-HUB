@@ -5,8 +5,8 @@
 //! other way round), each departure from a stop more than a minute early or - not reported to the
 //! control room (`report_late`) - more than 15 minutes late, and each complaint about the
 //! driving, the temperature in the bus, the route driven, a ticket sold wrong and a red light
-//! run. And the most the authority pays a timetable hour (`cap_per_hour`): the companies bid by
-//! the timetable hour on the server.
+//! run. (The most the authority pays a timetable hour, `cap_per_hour`, is the tenders' rules':
+//! `shared_tenders::TenderCfg`.)
 //!
 //! The amounts are Danish kroner, in the main server's `company-server.cfg` (`FINES_CFG`), and
 //! each company pays them in its own currency (`Fines::cents`).
@@ -44,8 +44,6 @@ pub struct Fines {
 pub const EARLY_SECONDS: f64 = 60.0;
 pub const LATE_MINUTES: i32 = 15;
 
-/// The most the authority pays a timetable hour when the settings say nothing (kroner).
-pub const CAP_PER_HOUR: f64 = 1500.0;
 
 impl Default for Fines {
     fn default() -> Self {
@@ -80,7 +78,7 @@ impl Fines {
 }
 
 /// The settings' keys and values of the main server's folder `data` (`company-server.cfg`).
-fn settings(data: &std::path::Path) -> HashMap<String, String> {
+pub(crate) fn settings(data: &std::path::Path) -> HashMap<String, String> {
     let text = std::fs::read_to_string(data.join(super::main_server::CFG_FILE)).unwrap_or_default();
     text.lines()
         .map(str::trim)
@@ -88,13 +86,6 @@ fn settings(data: &std::path::Path) -> HashMap<String, String> {
         .filter_map(|l| l.split_once('='))
         .map(|(k, v)| (k.trim().to_string(), v.trim().to_string()))
         .collect()
-}
-
-/// The most the authority pays a timetable hour on the server of folder `data`, in euro cents
-/// (`cap_per_hour` in kroner: `CAP_PER_HOUR` when it says nothing).
-pub fn cap_per_hour(data: &std::path::Path) -> Cents {
-    let kr = settings(data).get("cap_per_hour").and_then(|v| v.trim().replace(',', ".").parse::<f64>().ok()).filter(|x| x.is_finite() && *x > 0.0).unwrap_or(CAP_PER_HOUR);
-    Fines::cents(kr)
 }
 
 /// A player's delay reported to the control room (`report_late`): his tour, from that minute of
@@ -169,8 +160,9 @@ fine_red_light = 2500
 # delay reported to the control room (by the departure)
 fine_early = 2500
 fine_late = 2500
-# the companies bid by the timetable hour: the most the authority pays one (kroner)
-cap_per_hour = 1500
+# the companies bid by the timetable hour: the most the authority pays one (kroner); 0: the
+# authority's cost price by tender_cap_factor
+cap_per_hour = 0
 ";
 
 #[cfg(test)]

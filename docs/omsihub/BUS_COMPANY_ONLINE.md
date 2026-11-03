@@ -1197,6 +1197,36 @@ depot was turned away.
 
 Tested: `server_hq::tests::the_owner_closes_a_depot_and_its_head_office_stays`.
 
+### The tenders from the admin panel (3 November 2026)
+
+The owner asked for more control of the tenders in the web admin, and found that raising "Most paid
+a timetable hour" to 2,500 kr. changed nothing. It was a ceiling over the cap: the cap was the
+authority's cost price × 1.5, and the setting only counted when it was lower. Now
+(`shared_tenders::TenderCfg`, read at each step from `company-server.cfg`):
+
+- `cap_per_hour` (kroner): 0 means the cost price × `tender_cap_factor` (1.5); another number is
+  the cap of every new tender (`sealed::cap_set`).
+- `tender_low_share` (per cent, 85) is kept with each tender (`Shared::low_share`, `sealed::low_line`).
+- `tender_operators`: how many of the map's operators bid in a tender (empty: the rules', 0: none).
+- `tender_round_weeks`, `tender_lines_per_round`: the rounds of new lines.
+
+The panel's "Tenders and market" (`server_admin::tender_do`) shows money in kroner (it showed euros),
+the rules, each open tender's estimate and abnormally low line, and the companies' contracts. It
+can:
+
+- set an open tender's cap: the companies' copies take it (`sync`);
+- put several lines out with the admin's own opening, close or days, and cap (`ServerAsk`);
+- award a line directly to a company of the map at a price a timetable hour (`Shared::direct`):
+  decided at once without bids, and taken by the company though it never saw the tender open; a
+  line's open tender ends so;
+- move an operator's last day, or end its term with the line out to tender at once;
+- move a company's last day (`shared_tenders::order_contract`, taken by its process:
+  `take_contract_orders`), not sooner than `RENEW_OPENS` days from the server's date so its renewal
+  gets its days.
+
+Tested: `shared_tenders::tests::the_admins_rules_times_caps_direct_awards_and_contracts`,
+`server_admin::tests::a_tender_moved_called_off_and_opened`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

@@ -487,9 +487,12 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
     let sealed_open = sealed && t.open();
     let low = omsi_launcher_lib::company::sealed::low_line(t);
     let cap_tip = if hourly { tr("The most the authority pays a timetable hour: an ask above it does not count.") } else { tr("The most the authority pays a year: an ask above it does not count.") };
+    // (NexiconDK, 3 November 2026: the advice never under the abnormally low line nor over the cap
+    // - the box said the company's raw cost price, the line under the slider the one it may ask)
+    let advised = if sealed { cn::recommended(c, t).0 } else { advice };
     let figures = if sealed {
         json!([
-            { "label": tr("Advice").to_uppercase(), "value": money(t, advice), "tone": "ok", "tip": tr("The work's cost price at your own costs, with a 5 % margin: drivers' paid hours, fuel, the workshop, a bus and its fixed costs, less BSOG.") },
+            { "label": tr("Advice").to_uppercase(), "value": money(t, advised), "tone": "ok", "tip": tr("The work's cost price at your own costs, with a 5 % margin: drivers' paid hours, fuel, the workshop, a bus and its fixed costs, less BSOG.") },
             { "label": tr("Lowest valid ask").to_uppercase(), "value": money(t, low), "tone": "warn", "tip": tr("85 % of the authority's cost price: a bid under it is abnormally low and is rejected when the bids are opened.") },
             { "label": tr("The cap").to_uppercase(), "value": money(t, t.reference), "tone": "text", "tip": tr("The authority's cost price by one and a half, at most the server's cap: an ask above it does not count.") },
             if t.open() { json!({ "label": tr("Deadline").to_uppercase(), "value": when(c, t.closes_at), "tone": "text" }) } else if let Some((_, days)) = event_of(t) { json!({ "label": tr("Term").to_uppercase(), "value": days, "tone": "text" }) } else { json!({ "label": tr("Term").to_uppercase(), "value": tr(if t.drive == Drive::Electric { "Electric · a month" } else { "Diesel · two weeks" }), "tone": "text" }) },
@@ -652,7 +655,10 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         // (and what it comes to: a week, the contract's days by the buses bid with)
         let total = hourly.then(|| {
             let from = t.market.as_ref().map(|m| m.from.clone()).filter(|f| !f.is_empty()).unwrap_or_else(|| dates::add(&ck::date_of(t.closes_at), 1));
-            let days = dates::between(&from, &cn::server_term(t.drive, &from)) + 1;
+            // (NexiconDK, 3 November 2026: a special service runs its event's days alone - it said
+            // the contract's 14 days for a match day)
+            let until = t.market.as_ref().filter(|m| !m.event.is_empty()).map(|m| m.until.clone()).filter(|u| dates::parse(u).is_some()).unwrap_or_else(|| cn::server_term(t.drive, &from));
+            let days = dates::between(&from, &until) + 1;
             let hours = cn::hours_year(t) / 365.0 * days as f64;
             let rate = cn::per_hour(t, amount);
             trf("About %{week} a week and %{term} for the contract's %{days} days: %{hours} timetable hours at %{rate}", &[("week", &eur((rate * cn::hours_year(t) / 52.0).round() as Cents)), ("term", &eur((rate * hours).round() as Cents)), ("days", &days.to_string()), ("hours", &format!("{hours:.0}")), ("rate", &money(t, amount))])
@@ -671,7 +677,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
             "kind": "running", "id": t.id, "lo": lo, "hi": hi, "amount": a, "label": tr(if hourly { "Your ask a timetable hour" } else { "Your ask" }),
             "per_hour": hourly, "total": total,
             "chance": said, "chance_tone": ctone,
-            "recommend": if sealed { Some(trf("Your cost price with a 5 % margin: %{amount}", &[("amount", &money(t, rec))])) } else { normal.then(|| trf("Recommended: %{amount} (%{s} % of the cap), about %{p} % to win", &[("amount", &money(t, rec)), ("s", &format!("{:.0}", t.share(rec) * 100.0)), ("p", &format!("{:.0}", rec_chance * 100.0))])) },
+            "recommend": if sealed && advice < rec { Some(trf("Your cost price with a 5 % margin is %{own}: under the abnormally low line, so ask at least %{amount}", &[("own", &money(t, advice)), ("amount", &money(t, rec))])) } else if sealed { Some(trf("Your cost price with a 5 % margin: %{amount}", &[("amount", &money(t, rec))])) } else { normal.then(|| trf("Recommended: %{amount} (%{s} % of the cap), about %{p} % to win", &[("amount", &money(t, rec)), ("s", &format!("{:.0}", t.share(rec) * 100.0)), ("p", &format!("{:.0}", rec_chance * 100.0))])) },
             "recommend_amount": unit(rec as f64),
             "bid": if sealed && !t.offers.is_empty() { trf("Change your bid to %{amount}", &[("amount", &money(t, amount))]) } else { trf("Ask %{amount}", &[("amount", &money(t, amount))]) },
             "buy": (!c.online.on_server).then(|| trf("Buy outright, %{amount}", &[("amount", &eur(t.buy_out()))])), "buy_tip": tr("Certain: the auction ends at once in your favour"),

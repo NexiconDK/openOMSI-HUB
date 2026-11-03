@@ -2479,3 +2479,10 @@ _version: 2
   pl: "%{end} · ponowny przetarg od %{open} do %{close}"
   ru: "%{end} · снова на тендере с %{open} по %{close}"
   uk: "%{end} · знову на тендері з %{open} по %{close}"
+"The authority moved the last day of your contract on line %{n} to %{date}.":
+  de: "Die Behörde hat den letzten Tag Ihres Vertrags auf Linie %{n} auf den %{date} verlegt."
+  fr: "L'autorité a déplacé le dernier jour de votre contrat sur la ligne %{n} au %{date}."
+  nl: "De vervoerder heeft de laatste dag van uw contract op lijn %{n} verplaatst naar %{date}."
+  pl: "Organizator przesunął ostatni dzień twojej umowy na linii %{n} na %{date}."
+  ru: "Организатор перенёс последний день вашего контракта на линии %{n} на %{date}."
+  uk: "Організатор переніс останній день вашого контракту на лінії %{n} на %{date}."

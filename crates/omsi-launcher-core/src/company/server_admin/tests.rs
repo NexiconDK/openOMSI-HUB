@@ -144,21 +144,21 @@ fn a_tender_moved_called_off_and_opened() {
     t.market = Some(cn::Shared { key: "lemmental".into(), id: 3, ..Default::default() });
     let m = shared_tenders::Market { key: "lemmental".into(), map: "maps/Lemmental/global.cfg".into(), tenders: vec![shared_tenders::MarketTender { tender: t, applied: Vec::new(), decided: None }], ..Default::default() };
     shared_tenders::save(&data, &m).unwrap();
-    assert!(tender_do(&api, "lemmental", 3, "close", "2024-03-09 12:30", "").unwrap().contains("2024-03-09 12:30"));
+    assert!(tender_do(&api, "lemmental", &json!({ "id": 3, "do": "close", "at": "2024-03-09 12:30", "line": "" })).unwrap().contains("2024-03-09 12:30"));
     let m = shared_tenders::load(&data, "lemmental").unwrap();
     assert_eq!((m.tenders[0].tender.closes_at, m.tenders[0].tender.closes.as_str()), (clock::moment("2024-03-09", 12 * 60 + 30), "2024-03-09"));
-    assert!(tender_do(&api, "lemmental", 3, "close", "2024-03-01 12:30", "").is_err(), "before it opens");
-    assert!(tender_do(&api, "lemmental", 3, "close", "9 March", "").is_err());
-    assert!(tender_do(&api, "lemmental", 4, "cancel", "", "").is_err(), "no such tender");
+    assert!(tender_do(&api, "lemmental", &json!({ "id": 3, "do": "close", "at": "2024-03-01 12:30", "line": "" })).is_err(), "before it opens");
+    assert!(tender_do(&api, "lemmental", &json!({ "id": 3, "do": "close", "at": "9 March", "line": "" })).is_err());
+    assert!(tender_do(&api, "lemmental", &json!({ "id": 4, "do": "cancel", "at": "", "line": "" })).is_err(), "no such tender");
     // the market as the panel shows it: the bids sealed, how many alone
     let v = market(&api);
     assert!(v["maps"].as_array().unwrap().is_empty(), "no company of the map: its market not listed");
-    tender_do(&api, "lemmental", 3, "cancel", "", "").unwrap();
+    tender_do(&api, "lemmental", &json!({ "id": 3, "do": "cancel", "at": "", "line": "" })).unwrap();
     assert!(shared_tenders::load(&data, "lemmental").unwrap().tenders.is_empty());
-    tender_do(&api, "lemmental", 0, "open", "", "Linie7").unwrap();
+    tender_do(&api, "lemmental", &json!({ "id": 0, "do": "open", "at": "", "line": "Linie7" })).unwrap();
     let asks = std::fs::read_to_string(shared_tenders::dir(&data).join("lemmental.asks.jsonl")).unwrap();
     assert!(asks.contains("Linie7") && asks.contains(shared_tenders::SERVER_ASKS), "{asks}");
-    assert!(tender_do(&api, "nowhere", 0, "open", "", "Linie7").is_err());
+    assert!(tender_do(&api, "nowhere", &json!({ "do": "open", "line": "Linie7" })).is_err());
     let _ = std::fs::remove_dir_all(&dir);
 }
 

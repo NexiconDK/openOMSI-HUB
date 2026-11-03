@@ -327,6 +327,20 @@ pub struct Shared {
     /// from `from` to it, the event's days alone. Empty: an ordinary tender.
     pub event: String,
     pub until: String,
+    /// (NexiconDK, 3 November 2026) The share of the authority's cost price under which a bid is
+    /// abnormally low, as the server set it when the tender was made (0: `sealed::LOW_SHARE`).
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub low_share: f64,
+    /// (NexiconDK, 3 November 2026) Awarded directly by the server's admin to this company (its
+    /// id), at the cap a timetable hour: no bidding (`shared_tenders::decide`).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub direct: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub direct_name: String,
+}
+
+fn is_zero(x: &f64) -> bool {
+    *x == 0.0
 }
 
 /// Another company's bids in a tender of the market: its id, its name, its quality in the
@@ -751,7 +765,8 @@ pub fn make_tender(c: &Company, l: &LineInfo, id: u32, opens_at: i64, renewal: b
     let work = bc::work_of(l);
     let (day_tours, day_km) = (work.buses, work.km);
     let mut pool: Vec<u32> = pool.to_vec();
-    let n = (rng.int(rivals.0, rivals.1).max(1) as usize).min(pool.len());
+    // (NexiconDK, 3 November 2026: none when the server's admin wants no operators - `rivals` (0, 0))
+    let n = (rng.int(rivals.0, rivals.1).max(rivals.1.min(1)) as usize).min(pool.len());
     let mut bidders = Vec::new();
     for _ in 0..n {
         bidders.push(pool.remove(rng.int(0, pool.len() as i64 - 1) as usize));

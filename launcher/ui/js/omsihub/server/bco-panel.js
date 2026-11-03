@@ -55,8 +55,14 @@ export const BCO_FIELDS = [
   ['course_price', "The course's price", 'number'],
   ['course_days', "The course's days", 'number'],
   ['found_test', 'A driving test passed', BOOL],
+  ['The tenders'],
+  ['cap_per_hour', 'The cap a timetable hour (kroner)', 'number', "0: the authority's estimate by the factor below. Another number: the cap of every new tender, whatever the estimate"],
+  ['tender_cap_factor', 'The cap: the estimate by', 'number', 'When the cap above is 0 (1.5: half again the estimate)'],
+  ['tender_low_share', 'Abnormally low under (%)', 'number', "Of the authority's estimate: a bid below it is rejected"],
+  ['tender_operators', 'Operators bidding in a tender', 'number', "Empty: as the rules draw them; 0: none - the map's companies alone"],
+  ['tender_round_weeks', 'A round of new lines every (weeks)', 'number'],
+  ['tender_lines_per_round', 'Lines in a round', 'number', 'Empty: the rules\' and one more a company'],
   ["The authority's fines (kroner)"],
-  ['cap_per_hour', 'Most paid a timetable hour', 'number', 'The cap of the tenders'],
   ['fine_dropped_minute', 'A journey not run, a minute', 'number'],
   ['fine_wrong_bus', 'A smaller bus than the timetable asks', 'number'],
   ['fine_diesel_on_electric', 'Diesel on an electric contract', 'number'],
@@ -77,7 +83,7 @@ export const BCO_DEFAULTS = {
   name: 'Bus Company Online', real_time: '1', time: '06:00', first_port: '27015', max_worlds: '4', world_idle: '10', keep_worlds: '1', max_memory: '85', max_cpu: '90',
   traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
   start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
-  found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '1500', fine_dropped_minute: '20.83',
+  found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', fine_dropped_minute: '20.83',
   fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',
 };
@@ -403,21 +409,49 @@ export function mountPanel(root, api, opts = {}) {
   // --- 5. the tenders and the market ------------------------------------------------------------
 
   const local = (s) => (s || '').replace(' ', 'T');
+  // (3 November 2026) what is typed or chosen in the tab's forms, kept over its redraws (every
+  // few seconds): by a key of the map and the field
+  const kept = {};
+  const keep = (key, el) => {
+    const multi = el.tagName === 'SELECT' && el.multiple;
+    if (kept[key] != null) {
+      if (multi) [...el.options].forEach((o) => (o.selected = kept[key].includes(o.value)));
+      else el.value = kept[key];
+    }
+    const save = () => (kept[key] = multi ? [...el.selectedOptions].map((o) => o.value) : el.value);
+    el.addEventListener('input', save);
+    el.addEventListener('change', save);
+    return el;
+  };
 
   function market() {
     const d = data.market;
     if (!d) return [card(tr('Tenders and market'), empty(tr('Asking the main server…')))];
     if (!d.maps.length) return [card(tr('Tenders and market'), empty(tr("No map has a market yet: it starts with a map's first company.")))];
-    return d.maps.map((m) => {
+    const kr = (n) => (n == null ? '-' : `${Math.round(n).toLocaleString()} kr.`);
+    // (3 November 2026: the tenders' rules as they stand - changed under Rules and economy)
+    const r = d.rules || {};
+    const rules = card(tr('The tenders\' rules'),
+      h('div', { class: 'sp-facts' },
+        fact(r.cap_hour ? kr(r.cap_hour) : trf('estimate × %{f}', { f: r.cap_factor }), tr('The cap a timetable hour'), r.cap_hour ? tr('for every new tender') : tr("the authority's estimate by the factor")),
+        fact(`${r.low_share} %`, tr('Abnormally low under'), tr("of the authority's estimate")),
+        fact(r.operators == null ? tr('as the rules draw them') : String(r.operators), tr('Operators in a tender')),
+        fact(trf('%{n} weeks', { n: r.round_weeks }), tr('A round of new lines'), r.per_round == null ? tr('the rules\' number of lines') : trf('%{n} lines', { n: r.per_round }))),
+      h('div', { class: 'sp-dim' }, tr('Changed under Rules and economy: a new tender takes them; one open keeps its own (its cap can be set here).')));
+    const number = (value, width = 90, placeholder = '') => h('input', { type: 'number', min: '0', step: '1', value: value ?? '', placeholder, style: `width:${width}px` });
+    const dateIn = (value, min) => h('input', { type: 'date', value: value || '', min: min || '', style: 'width:150px' });
+    return [rules, ...d.maps.map((m) => {
       const open = m.open.map((t) => {
         const at = h('input', { type: 'datetime-local', value: local(t.closes), style: 'width:190px' });
-        const kind = [t.renewal && !t.event ? tag(tr('Renewal')) : null, t.event ? tag(t.event, 'warn') : null, t.applied.length ? tag(tr('Applied for')) : null];
+        const cap = number(Math.round(t.cap_hour), 90);
+        const kind = [t.renewal && !t.event ? tag(tr('Renewal')) : null, t.event ? tag(t.event, 'warn') : null, t.applied.length ? tag(tr('Applied for')) : null, t.direct ? tag(trf('Direct: %{n}', { n: t.direct }), 'ok') : null];
         return h('tr', {},
           h('td', {}, h('b', {}, t.number || t.line), ...kind, t.caption ? h('div', { class: 'bco-sub' }, t.caption) : null, t.event && t.from ? h('div', { class: 'bco-sub' }, `${t.from} – ${t.until}`) : null),
           h('td', { class: 'sp-hide' }, t.opens),
           h('td', {}, t.closes),
           h('td', {}, t.bidders ? trf('%{n} bidders', { n: t.bidders }) : h('span', { class: 'sp-dim' }, tr('no bid yet'))),
-          h('td', { class: 'sp-hide' }, money(t.cap_hour)),
+          h('td', {}, h('div', { class: 'sp-row' }, cap, btn(tr('Set'), () => post('tender', { map: m.key, id: t.id, do: 'cap', cap: cap.value }))),
+            h('div', { class: 'bco-sub' }, trf('estimate %{e} · low under %{l}', { e: kr(t.cost_hour), l: kr(t.low_hour) }))),
           h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end' }, at,
             btn(tr('Move the close'), () => post('tender', { map: m.key, id: t.id, do: 'close', at: at.value.replace('T', ' ') })),
             sureButton(tr('Call off'), tr('Sure? Fees are paid back'), () => post('tender', { map: m.key, id: t.id, do: 'cancel' })))),
@@ -427,31 +461,75 @@ export function mountPanel(root, api, opts = {}) {
         h('td', {}, h('b', {}, t.number || t.line)),
         h('td', { class: 'sp-hide' }, t.closed),
         h('td', {}, t.winner ? [t.winner, tag(t.company ? tr('Company') : tr('Operator'), t.company ? 'ok' : '')] : h('span', { class: 'sp-dim' }, tr('nobody'))),
-        h('td', {}, t.winner ? money(t.hour) : '-',
-          t.bids.length ? h('ol', { class: 'bco-bids' }, t.bids.map((b) => h('li', {}, `${b.name}: ${money(b.hour)} · ${b.total} ${tr('points')}`, b.rejected ? tag(tr('rejected'), 'bad') : null))) : null),
+        h('td', {}, t.winner ? kr(t.hour) : '-',
+          t.bids.length ? h('ol', { class: 'bco-bids' }, t.bids.map((b) => h('li', {}, `${b.name}: ${kr(b.hour)} · ${b.total} ${tr('points')}`, b.rejected ? tag(tr('rejected'), 'bad') : null))) : null),
       ));
-      const held = m.held.map((x) => h('tr', {}, h('td', {}, h('b', {}, x.number || x.line)), h('td', {}, x.name), h('td', {}, `${x.from} – ${x.until}`), h('td', { class: 'sp-hide' }, x.gives_up ? trf('gives it up %{date}', { date: x.gives_up }) : '-')));
+      // (the operators' lines: their last day moved, or ended and out to tender at once)
+      const held = m.held.map((x) => {
+        const until = dateIn(x.until, d.today);
+        return h('tr', {}, h('td', {}, h('b', {}, x.number || x.line)), h('td', {}, x.name), h('td', {}, `${x.from} – ${x.until}`, h('div', { class: 'bco-sub' }, trf('next tender from %{d}', { d: x.next }))),
+          h('td', { class: 'sp-hide' }, x.gives_up ? trf('gives it up %{date}', { date: x.gives_up }) : '-'),
+          h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end' }, until,
+            btn(tr('Move the end'), () => post('tender', { map: m.key, do: 'operator_until', line: x.line, until: until.value })),
+            sureButton(tr('End and tender'), tr('Sure? The line goes out to tender at once'), () => post('tender', { map: m.key, do: 'operator_end', line: x.line })))));
+      });
+      // (3 November 2026: the companies' contracts - a contract's last day moved)
+      const contracts = (m.contracts || []).map((x) => {
+        const until = dateIn(x.until, d.earliest_end);
+        return h('tr', {}, h('td', {}, h('b', {}, x.number || x.line)), h('td', {}, x.name), h('td', {}, `${x.from} – ${x.until}`, h('div', { class: 'bco-sub' }, trf('next tender from %{d}', { d: x.next }))),
+          h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end' }, until,
+            btn(tr('Move the end'), () => post('tender', { map: m.key, do: 'contract_until', company: x.company, line: x.line, until: until.value })))));
+      });
       const free = (m.lines || []).filter((l) => !l.company && !l.operator && !l.open && !l.event);
-      // (the map's free lines; before the market has read them: the line's name typed)
-      const pick = free.length ? h('select', {}, ...free.map((l) => h('option', { value: l.name }, l.name))) : h('input', { placeholder: tr("The line's timetable name") });
+      // (the map's free lines, several at once; before the market has read them: names typed)
+      const pick = keep(m.key + ':lines', free.length ? h('select', { multiple: true, size: Math.min(6, free.length), style: 'min-width:200px' }, ...free.map((l) => h('option', { value: l.name }, l.name))) : h('input', { placeholder: tr("The lines' timetable names, comma between") }));
+      const picked = () => (pick.tagName === 'SELECT' ? [...pick.selectedOptions].map((o) => o.value) : pick.value.split(',').map((x) => x.trim()).filter(Boolean));
+      const opensIn = keep(m.key + ':opens', h('input', { type: 'datetime-local', style: 'width:190px' }));
+      const closesIn = keep(m.key + ':closes', h('input', { type: 'datetime-local', style: 'width:190px' }));
+      const daysIn = keep(m.key + ':days', number('', 70, '3'));
+      const capIn = keep(m.key + ':cap', number('', 90, tr('kr.')));
+      const putOut = h('div', { class: 'sp-card', style: 'background:var(--sp-field)' },
+        h('h3', {}, tr('Put out to tender')),
+        h('div', { class: 'sp-row', style: 'align-items:flex-start;flex-wrap:wrap' }, pick,
+          h('div', { style: 'display:flex;flex-direction:column;gap:6px' },
+            h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Opens (empty: now)')), opensIn),
+            h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Closes (or days)')), closesIn, daysIn),
+            h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Cap a timetable hour')), capIn, h('span', { class: 'sp-dim' }, tr('empty: the rules\''))),
+            btn(tr('Open the tender'), () => {
+              const lines = picked();
+              if (!lines.length) return say(tr('Choose the lines'), true);
+              post('tender', { map: m.key, do: 'open', lines, opens: opensIn.value.replace('T', ' '), closes: closesIn.value.replace('T', ' '), days: daysIn.value, cap: capIn.value }, trf('%{l} go out to tender in a moment', { l: lines.join(', ') }));
+            }, 'sp-btn small main'))));
+      // (a line awarded directly to a company of the map - no bids, at the admin's price)
+      const directLines = (m.lines || []).filter((l) => !l.company && !l.event && !l.operator);
+      const dLine = keep(m.key + ':d-line', h('select', {}, ...directLines.map((l) => h('option', { value: l.name }, l.name + (l.open ? ` (${tr('open tender')})` : '')))));
+      const dCompany = keep(m.key + ':d-company', h('select', {}, ...(m.companies || []).map((c) => h('option', { value: c.id }, c.name))));
+      const dPrice = keep(m.key + ':d-price', number('', 90, tr('kr.')));
+      const dDrive = keep(m.key + ':d-drive', h('select', {}, h('option', { value: 'diesel' }, tr('Diesel buses')), h('option', { value: 'electric' }, tr('Electric buses'))));
+      const direct = (m.companies || []).length && directLines.length ? h('div', { class: 'sp-card', style: 'background:var(--sp-field)' },
+        h('h3', {}, tr('Award directly (emergency service)')),
+        h('div', { class: 'sp-dim' }, tr('The line goes to the company without bidding, at your price a timetable hour; its open tender ends so. A line an operator runs: end its term first (below).')),
+        h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, dLine, dCompany, dPrice, h('span', { class: 'sp-dim' }, tr('kr. a timetable hour')), dDrive,
+          sureButton(tr('Award'), tr('Sure? No bids, no operators'), () => post('tender', { map: m.key, do: 'direct', line: dLine.value, company: dCompany.value, cap: dPrice.value, drive: dDrive.value })))) : null;
       const events = (m.events || []).map((e) => h('div', { class: 'bco-alert' }, h('b'), h('div', {}, h('b', {}, e.name), ` · ${e.from} – ${e.until}`,
         e.lines?.length ? h('div', { class: 'bco-sub' }, trf('Its own lines: %{l}', { l: e.lines.join(', ') })) : null,
         e.off?.length ? h('div', { class: 'bco-sub' }, trf('Takes off: %{l}', { l: e.off.join(', ') })) : null)));
       return card(m.map,
         h('h3', {}, trf('Open tenders - %{n}', { n: m.open.length })),
-        open.length ? table([tr('Line'), [tr('Opens'), 'sp-hide'], tr('Closes'), tr('Bids'), [tr('Cap / hour'), 'sp-hide'], ''], open) : h('div', { class: 'sp-dim' }, tr('No tender is open.')),
+        open.length ? table([tr('Line'), [tr('Opens'), 'sp-hide'], tr('Closes'), tr('Bids'), tr('Cap a timetable hour'), ''], open) : h('div', { class: 'sp-dim' }, tr('No tender is open.')),
         h('div', { class: 'sp-dim' }, tr('The bids stay sealed until the close: only how many companies bid shows here.')),
-        h('div', { class: 'sp-row' }, h('span', { class: 'sp-dim' }, tr('Put out to tender now')),
-          pick,
-          btn(tr('Open the tender'), () => { const line = (pick.value || '').trim(); if (line) post('tender', { map: m.key, do: 'open', line }, trf('Line %{l} goes out to tender in a moment', { l: line })); }, 'sp-btn small main')),
+        putOut, direct,
+        contracts.length ? h('h3', {}, tr("The companies' contracts")) : null,
+        contracts.length ? h('div', { class: 'sp-dim' }, trf('A contract moved to end sooner goes out to tender as its end nears: not before %{d}.', { d: d.earliest_end })) : null,
+        contracts.length ? table([tr('Line'), tr('Company'), tr('Term'), ''], contracts) : null,
+        held.length ? h('h3', {}, tr("The operators' lines")) : null,
+        held.length ? table([tr('Line'), tr('Operator'), tr('Term'), [tr('Gives up'), 'sp-hide'], ''], held) : null,
         decided.length ? h('h3', {}, tr('Decided lately')) : null,
         decided.length ? table([tr('Line'), [tr('Closed'), 'sp-hide'], tr('Won by'), tr('A timetable hour')], decided) : null,
-        held.length ? h('h3', {}, tr("The operators' lines")) : null,
-        held.length ? table([tr('Line'), tr('Operator'), tr('Term'), [tr('Gives up'), 'sp-hide']], held) : null,
         events.length ? h('h3', {}, tr('Events (Chrono)')) : null,
         ...events,
       );
-    });
+    })];
   }
 
   // --- 7. the log, and the console ---------------------------------------------------------------

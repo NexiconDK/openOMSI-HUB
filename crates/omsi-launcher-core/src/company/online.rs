@@ -119,6 +119,10 @@ pub struct Online {
     /// (`server_hq::orders_file`).
     #[serde(default)]
     pub orders_read: u64,
+    /// (NexiconDK, 3 November 2026) How far the server's admin's orders to the company were read
+    /// (`shared_tenders::contract_orders_file`).
+    #[serde(default)]
+    pub admin_read: u64,
     /// (Phase 7 step 5) The players the group made co-owners of the depot (its management, the
     /// depot's manager: `server_hq::take_group`) - back to drivers when the group takes it back.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -134,7 +138,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, group_roles: Vec::new() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
     }
 }
 
@@ -719,6 +723,11 @@ impl Host {
         }
         // (the map's tenders, shared by its companies: the other companies' bids, what the main
         // server decided - a line won is the company's at once, to be planned for its first day)
+        // (3 November 2026: the server's admin moved a contract's last day)
+        if super::shared_tenders::take_contract_orders(&self.data, c) {
+            self.dirty = true;
+            self.planned = None;
+        }
         let (changed, won) = super::shared_tenders::sync(&self.data, c);
         if changed {
             self.dirty = true;

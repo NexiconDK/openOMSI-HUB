@@ -302,6 +302,14 @@ impl MainCfg {
             }
             text.push_str(super::server_fines::FINES_CFG);
         }
+        // (3 November 2026) the tenders' rules
+        if !text.lines().any(|l| l.trim_start().starts_with("tender_low_share")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(super::shared_tenders::TENDER_CFG.as_bytes());
+            }
+            text.push_str(super::shared_tenders::TENDER_CFG);
+        }
         if !text.lines().any(|l| l.trim_start().starts_with("web_admin")) {
             use std::io::Write;
             if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {

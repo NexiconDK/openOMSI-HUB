@@ -217,6 +217,91 @@ pub struct MarketBid {
 pub struct MarketAsk {
     pub company: String,
     pub line: String,
+    /// (NexiconDK, 3 November 2026) The server's admin's choices (`ServerAsk`; none on a
+    /// company's application).
+    #[serde(default, skip_serializing_if = "ServerAsk::is_none")]
+    pub server: ServerAsk,
+}
+
+/// (NexiconDK, 3 November 2026) How the server's admin puts a line out (`ask_as_server`): when its
+/// bidding opens and closes (the server's minutes, `clock::moment`; 0: now, and the usual three
+/// days), its cap a timetable hour (euro cents; 0: the settings'), and - a direct award - the
+/// company that runs it without bidding (its id and name) and the buses (its term).
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct ServerAsk {
+    pub opens_at: i64,
+    pub closes_at: i64,
+    pub cap_hour: Cents,
+    pub direct: String,
+    pub direct_name: String,
+    pub drive: Drive,
+}
+
+impl ServerAsk {
+    fn is_none(&self) -> bool {
+        *self == ServerAsk::default()
+    }
+}
+
+/// (NexiconDK, 3 November 2026) The tenders' rules, added to a `company-server.cfg` written before
+/// them (`main_server`). `cap_per_hour` is in the fines' part (`server_fines::FINES_CFG`): a cap
+/// of its own there now counts as it stands, 0 is the cost price by `tender_cap_factor`.
+pub const TENDER_CFG: &str = "
+# the tenders: the cap is the authority's cost price by this when cap_per_hour is 0; a bid under
+# this share of the cost price is abnormally low (per cent); the operators bidding in a tender
+# (empty: as the rules draw them, 0: none); a new round of lines every so many weeks, and how many
+# lines (empty: the rules' and one more a company)
+tender_cap_factor = 1.5
+tender_low_share = 85
+tender_operators =
+tender_round_weeks = 4
+tender_lines_per_round =
+";
+
+/// (NexiconDK, 3 November 2026) The tenders' rules of the server's settings (`company-server.cfg`,
+/// the admin panel's "Rules and economy"): the cap a timetable hour (euro cents; 0: the cost
+/// price by `cap_factor`), the share of the cost price under which a bid is abnormally low, how
+/// many of the map's operators bid in a tender (None: as Normal's rules draw them), and the
+/// rounds of new lines - every so many weeks, so many lines (None: Normal's offers and one more a
+/// company).
+#[derive(Clone, Debug, PartialEq)]
+pub struct TenderCfg {
+    pub cap_hour: Cents,
+    pub cap_factor: f64,
+    pub low_share: f64,
+    pub operators: Option<i64>,
+    pub round_weeks: i64,
+    pub per_round: Option<usize>,
+}
+
+impl Default for TenderCfg {
+    fn default() -> TenderCfg {
+        TenderCfg { cap_hour: 0, cap_factor: super::sealed::CAP_SHARE, low_share: super::sealed::LOW_SHARE, operators: None, round_weeks: cn::ROUND_WEEKS, per_round: None }
+    }
+}
+
+impl TenderCfg {
+    /// The settings' keys: `cap_per_hour` (kroner, 0 or none: the cost price by
+    /// `tender_cap_factor`), `tender_low_share` (per cent), `tender_operators` (a number; empty or
+    /// "auto": the rules'), `tender_round_weeks`, `tender_lines_per_round` (empty: the rules').
+    pub fn of_keys(kv: &std::collections::HashMap<String, String>) -> TenderCfg {
+        let d = TenderCfg::default();
+        let num = |k: &str| kv.get(k).and_then(|v| v.trim().replace(',', ".").parse::<f64>().ok()).filter(|x| x.is_finite());
+        TenderCfg {
+            cap_hour: num("cap_per_hour").filter(|x| *x > 0.0).map_or(0, super::server_fines::Fines::cents),
+            cap_factor: num("tender_cap_factor").filter(|x| *x >= 1.0).map_or(d.cap_factor, |x| x.min(10.0)),
+            low_share: num("tender_low_share").filter(|x| *x > 0.0 && *x < 100.0).map_or(d.low_share, |x| x / 100.0),
+            operators: num("tender_operators").map(|x| (x.round() as i64).clamp(0, 6)),
+            round_weeks: num("tender_round_weeks").map_or(d.round_weeks, |x| (x.round() as i64).clamp(1, 52)),
+            per_round: num("tender_lines_per_round").map(|x| (x.round() as i64).clamp(0, 50) as usize),
+        }
+    }
+
+    /// Of the server's folder `data`.
+    pub fn of(data: &Path) -> TenderCfg {
+        TenderCfg::of_keys(&super::server_fines::settings(data))
+    }
 }
 
 /// The market of a map (`maps/<folder>/global.cfg`): its folder, lower case.
@@ -350,7 +435,7 @@ pub fn ask(data: &Path, c: &Company, l: &LineInfo) -> Result<&'static str, &'sta
     if load(data, &key).is_some_and(|m| m.held.iter().any(|h| h.line.eq_ignore_ascii_case(&l.name))) {
         return Err(OPERATOR_HELD);
     }
-    let a = MarketAsk { company: c.id.clone(), line: l.name.clone() };
+    let a = MarketAsk { company: c.id.clone(), line: l.name.clone(), server: ServerAsk::default() };
     append(&asks_file(data, &key), &serde_json::to_string(&a).map_err(|_| "The application could not be written.")?).map_err(|_| "The application could not be written.")?;
     Ok(ASKED)
 }
@@ -358,8 +443,11 @@ pub fn ask(data: &Path, c: &Company, l: &LineInfo) -> Result<&'static str, &'sta
 /// (1 November 2026) The server's admin puts line `line` of map `key` out to tender now (the
 /// admin panel): an application of the server's own, which the main server takes at its next step
 /// as a company's (`offer`: not when a company or an operator runs it, nor an event's line).
-pub fn ask_as_server(data: &Path, key: &str, line: &str) -> Result<()> {
-    let a = MarketAsk { company: SERVER_ASKS.to_string(), line: line.trim().to_string() };
+///
+/// (3 November 2026) With the admin's choices (`ServerAsk`): when it opens and closes, its cap, or
+/// a direct award to a company of the map.
+pub fn ask_as_server(data: &Path, key: &str, line: &str, server: ServerAsk) -> Result<()> {
+    let a = MarketAsk { company: SERVER_ASKS.to_string(), line: line.trim().to_string(), server };
     append(&asks_file(data, key), &serde_json::to_string(&a)?)
 }
 
@@ -412,7 +500,7 @@ pub fn step(data: &Path, key: &str, map: &str, date: &str, now: i64, read: &mut 
     let (asks, asks_to): (Vec<MarketAsk>, u64) = lines_from(&asks_file(data, key), m.asks_read);
     if m.day != date || !asks.is_empty() {
         if let Some(now_map) = read() {
-            offer(&mut m, &now_map, &asks, date, now, &mut said, super::server_fines::cap_per_hour(data));
+            offer(&mut m, &now_map, &asks, date, now, &mut said, &TenderCfg::of(data));
             m.asks_read = asks_to;
             m.day = date.to_string();
         }
@@ -460,24 +548,26 @@ fn open_of<'a>(m: &'a Market, line: &str) -> Option<&'a MarketTender> {
 
 /// A new tender of the market, its auction from `opens_at` to `closes_at`: a concession put out
 /// again (`holder` its company, its new term from `from`), or a line no company runs.
-fn add(m: &mut Market, c: &Company, l: &LineInfo, opens_at: i64, closes_at: i64, holder: Option<(&str, &str)>, cap_hour: Cents) -> u32 {
+fn add(m: &mut Market, c: &Company, l: &LineInfo, opens_at: i64, closes_at: i64, holder: Option<(&str, &str)>, cfg: &TenderCfg) -> u32 {
     m.counter += 1;
     let id = m.counter;
     let pool: Vec<u32> = m.rivals.iter().map(|r| r.id).collect();
-    let mut t = cn::make_tender(c, l, id, opens_at, holder.is_some(), &m.key, &pool, cn::rules(GameMode::Normal).rivals);
+    // (3 November 2026: as many of the map's operators as the server's admin wants)
+    let rivals = cfg.operators.map_or(cn::rules(GameMode::Normal).rivals, |n| (n, n));
+    let mut t = cn::make_tender(c, l, id, opens_at, holder.is_some(), &m.key, &pool, rivals);
     t.closes_at = closes_at.max(opens_at + 60);
     t.closes = clock::date_of(t.closes_at);
-    // (the cap: the cost price by `sealed::CAP_SHARE` - 31 October 2026: the server's most a
-    // timetable hour alone left room for the operators to bid far down - at most that)
-    let most = if cap_hour > 0 { cn::of_hour(&t, cap_hour as f64) } else { 0 };
-    t.reference = super::sealed::cap_of(t.cost, most);
-    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), ..Default::default() });
+    // (the cap: the cost price by the settings' factor - `sealed::CAP_SHARE` - or, 3 November
+    // 2026, the server's own a timetable hour when its admin set one: then that, whatever the cost
+    // price - before, his was only a ceiling over the factor's and changed nothing)
+    t.reference = super::sealed::cap_set(t.cost, cn::of_hour(&t, cfg.cap_hour as f64), cfg.cap_factor);
+    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), low_share: cfg.low_share, ..Default::default() });
     m.tenders.push(MarketTender { tender: t, applied: Vec::new(), decided: None });
     id
 }
 
 /// What the market offers now: the applications, a new round, the renewals.
-fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: i64, said: &mut Vec<String>, cap_hour: Cents) {
+fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: i64, said: &mut Vec<String>, cfg: &TenderCfg) {
     let MapNow { lines, companies, template, events } = now_map;
     let held = |line: &str| companies.iter().find(|c| c.lines.iter().any(|x| x.name.eq_ignore_ascii_case(line)));
     // (1 November 2026: the chrono events' own lines go out with their events alone)
@@ -507,11 +597,43 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
         if !cn::is_line(template, l) {
             continue;
         }
+        let x = &a.server;
         let id = match open_of(m, &l.name) {
+            // (3 November 2026) a direct award of the server's admin: decided at once for the
+            // company he named, at the cap - no bids, no operators; the line's open tender, if it
+            // has one, ends so
+            open if !x.direct.is_empty() => {
+                let id = match open {
+                    Some(t) => t.tender.id,
+                    None => add(m, template, l, now, now + 1, None, cfg),
+                };
+                if let Some(t) = m.tenders.iter_mut().find(|t| t.tender.id == id) {
+                    t.tender.closes_at = t.tender.opens_at.min(now) + 1;
+                    t.tender.closes = clock::date_of(t.tender.closes_at);
+                    if x.cap_hour > 0 {
+                        t.tender.reference = cn::of_hour(&t.tender, x.cap_hour as f64);
+                    }
+                    t.tender.drive = x.drive;
+                    t.tender.bidders.clear();
+                    if let Some(s) = t.tender.market.as_mut() {
+                        (s.direct, s.direct_name) = (x.direct.clone(), x.direct_name.clone());
+                    }
+                }
+                said.push(format!("{}: line {} awarded directly to {} by the server's admin", m.map, l.name, if x.direct_name.is_empty() { &x.direct } else { &x.direct_name }));
+                id
+            }
             Some(t) => t.tender.id,
             None => {
-                let id = add(m, template, l, now, now + TENDER_DAYS * clock::DAY, None, cap_hour);
-                said.push(format!("{}: line {} out to tender at once, on the application of {}", m.map, l.name, a.company));
+                // (the admin's own times and cap, when he chose them)
+                let opens = if x.opens_at > 0 { x.opens_at.max(now) } else { now };
+                let closes = if x.closes_at > opens { x.closes_at } else { opens + TENDER_DAYS * clock::DAY };
+                let id = add(m, template, l, opens, closes, None, cfg);
+                if x.cap_hour > 0 {
+                    if let Some(t) = m.tenders.iter_mut().find(|t| t.tender.id == id) {
+                        t.tender.reference = cn::of_hour(&t.tender, x.cap_hour as f64);
+                    }
+                }
+                said.push(format!("{}: line {} out to tender from {} {} to {} {}, on the application of {}", m.map, l.name, clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes), clock::hhmm(closes), a.company));
                 id
             }
         };
@@ -530,7 +652,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
         if !h.gives_up.is_empty() && dates::between(&h.gives_up, date) >= 0 {
             match lines.iter().find(|l| l.name.eq_ignore_ascii_case(&h.line)).filter(|_| open_of(m, &h.line).is_none()) {
                 Some(l) => {
-                    let id = add(m, template, l, now, now + TENDER_DAYS * clock::DAY, None, cap_hour);
+                    let id = add(m, template, l, now, now + TENDER_DAYS * clock::DAY, None, cfg);
                     if let Some(x) = m.tenders.iter_mut().find(|t| t.tender.id == id).and_then(|t| t.tender.market.as_mut()) {
                         x.failed = h.name.clone();
                     }
@@ -558,14 +680,14 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
                 let minute = 9 * 60 + rng.int(0, 24) * 15;
                 let opens = clock::moment(&dates::add(&from, -RENEW_OPENS), minute).max(now + 30);
                 let closes = clock::moment(&dates::add(&from, -RENEW_DECIDED), minute).max(opens + 60);
-                add(m, template, l, opens, closes, Some(("", &from)), cap_hour);
+                add(m, template, l, opens, closes, Some(("", &from)), cfg);
                 said.push(format!("{}: the operator {}'s contract on line {} out to tender again from {} {}", m.map, h.name, l.name, clock::date_of(opens), clock::hhmm(opens)));
             }
         }
         m.held.push(h);
     }
     // a new round: lines no company runs
-    let round = dates::week_of(date) / cn::ROUND_WEEKS;
+    let round = dates::week_of(date) / cfg.round_weeks.max(1);
     if m.round != round {
         m.round = round;
         m.tenders.retain(|t| t.decided.is_none() || dates::between(&t.tender.closes, date) < KEEP_DAYS);
@@ -579,7 +701,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
             .filter(|l| cn::is_line(template, l))
             .collect();
         let mut rng = Rng::of(&[&m.key, "round"], round);
-        let n = cn::rules(GameMode::Normal).offers + companies.len();
+        let n = cfg.per_round.unwrap_or(cn::rules(GameMode::Normal).offers + companies.len());
         let mut chosen = Vec::new();
         while chosen.len() < n && !free.is_empty() {
             let k = rng.int(0, free.len() as i64 - 1) as usize;
@@ -588,7 +710,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
         for (k, l) in chosen.into_iter().enumerate() {
             // (one a day, in the office hours, half an hour from now at the soonest; three days each)
             let at = clock::moment(&dates::add(date, k as i64), 9 * 60 + rng.int(0, 24) * 15).max(now + 30);
-            add(m, template, &l, at, at + TENDER_DAYS * clock::DAY, None, cap_hour);
+            add(m, template, &l, at, at + TENDER_DAYS * clock::DAY, None, cfg);
             said.push(format!("{}: line {} out to tender from {} {}", m.map, l.name, clock::date_of(at), clock::hhmm(at)));
         }
     }
@@ -610,7 +732,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
             let minute = 9 * 60 + rng.int(0, 24) * 15;
             let opens = clock::moment(&dates::add(&from, -RENEW_OPENS), minute).max(now + 30);
             let closes = clock::moment(&dates::add(&from, -RENEW_DECIDED), minute);
-            add(m, template, l, opens, closes, Some((&c.id, &from)), cap_hour);
+            add(m, template, l, opens, closes, Some((&c.id, &from)), cfg);
             said.push(format!("{}: the concession of {} on line {} out to tender again from {} {} to {}, open to every company", m.map, c.name, l.name, clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes)));
         }
     }
@@ -638,7 +760,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
                 said.push(format!("{}: the event '{}' too near for a tender of its line {}: the map's operators run it", m.map, e.name, l.name));
                 continue;
             }
-            let id = add(m, template, l, opens, closes, None, cap_hour);
+            let id = add(m, template, l, opens, closes, None, cfg);
             if let Some(t) = m.tenders.iter_mut().find(|t| t.tender.id == id) {
                 t.tender.week = Some(cn::week_of(std::slice::from_ref(&e.lines), &l.name));
                 if let Some(x) = t.tender.market.as_mut() {
@@ -678,6 +800,11 @@ fn humans_with(t: &Tender, all: &[MarketBid]) -> Vec<(String, String, f64, Vec<(
 /// (`sealed`) - each company's last bid before the close and each operator's, opened together and
 /// scored; the best valid total wins.
 pub fn decide(t: &Tender, all: &[MarketBid]) -> Decided {
+    // (3 November 2026: awarded directly by the server's admin - no bids opened)
+    if let Some(x) = t.market.as_ref().filter(|x| !x.direct.is_empty()) {
+        let name = if x.direct_name.is_empty() { x.direct.clone() } else { x.direct_name.clone() };
+        return Decided { winner: x.direct.clone(), name, amount: t.reference, drive: t.drive, ..Decided::default() };
+    }
     let hs = humans_with(t, all);
     let ops = super::sealed::operator_bids(t);
     // (the companies' first, then the operators': an index into both)
@@ -709,6 +836,54 @@ pub fn decide(t: &Tender, all: &[MarketBid]) -> Decided {
         }
         None => Decided { standings, ..Decided::default() },
     }
+}
+
+// --- the server's admin and a company's contract (3 November 2026) ----------------------------------
+
+/// The server's admin moves the last day of a company's contract on a line (the admin panel's
+/// contracts): later (an extension), or earlier - its renewal then opens as any concession's does
+/// (`offer`, `RENEW_OPENS` days before the new term), so the panel never asks for a day sooner
+/// than that from the server's date. Taken by the company's process (`take_contract_orders`).
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct ContractOrder {
+    pub line: String,
+    pub until: String,
+}
+
+/// The admin's orders to company `id` (`<folder>/admin-orders/<id>.jsonl`).
+pub fn contract_orders_file(data: &Path, id: &str) -> PathBuf {
+    data.join("admin-orders").join(format!("{id}.jsonl"))
+}
+
+/// The admin orders company `id`'s contract on `line` to end on `until`.
+pub fn order_contract(data: &Path, id: &str, line: &str, until: &str) -> Result<()> {
+    let o = ContractOrder { line: line.trim().to_string(), until: until.trim().to_string() };
+    append(&contract_orders_file(data, id), &serde_json::to_string(&o)?)
+}
+
+/// What the company is told of it.
+pub const CONTRACT_MOVED: &str = "The authority moved the last day of your contract on line %{n} to %{date}.";
+
+/// The admin's orders to company `c` since its last look: its concession on the line and the
+/// contract that ended with it end on the day he chose, told in its news. Whether any came.
+pub fn take_contract_orders(data: &Path, c: &mut Company) -> bool {
+    let (orders, to): (Vec<ContractOrder>, u64) = lines_from(&contract_orders_file(data, &c.id), c.online.admin_read);
+    if to == c.online.admin_read {
+        return false;
+    }
+    c.online.admin_read = to;
+    let mut run = Run::default();
+    let at = clock::now(c);
+    for o in orders.iter().filter(|o| dates::parse(&o.until).is_some()) {
+        let Some(h) = c.concessions.held.iter_mut().find(|h| h.line.eq_ignore_ascii_case(&o.line)) else { continue };
+        let (old, number) = (std::mem::replace(&mut h.until, o.until.clone()), h.number.clone());
+        for k in c.concessions.contracts.iter_mut().filter(|k| k.line.eq_ignore_ascii_case(&o.line) && k.until == old) {
+            k.until = o.until.clone();
+        }
+        clock::tell(c, &mut run, at, CONTRACT_MOVED, vec![clock::arg("n", &number), clock::arg("date", &o.until)], Level::Warn);
+    }
+    true
 }
 
 // --- the companies' side ----------------------------------------------------------------------
@@ -747,9 +922,10 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
         let others: Vec<OtherBids> = hs.iter().filter(|h| h.0 != c.id).map(|h| OtherBids { company: h.0.clone(), name: h.1.clone(), quality: h.2, offers: h.3.clone() }).collect();
         let mine: Option<Vec<(i64, Cents)>> = hs.iter().find(|h| h.0 == c.id).map(|h| h.3.clone());
         let local = c.concessions.tenders.iter().position(|t| t.market.as_ref().is_some_and(|x| x.key == key && x.id == id));
+        let direct = mt.tender.market.as_ref().is_some_and(|x| x.direct == c.id);
         let k = match local {
             Some(k) => k,
-            None if mt.decided.is_none() => {
+            None if mt.decided.is_none() || direct => {
                 let mut t = mt.tender.clone();
                 c.concessions.counter += 1;
                 t.id = c.concessions.counter;
@@ -772,6 +948,11 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
         // and its week, once the main server read it - `fill_weeks`)
         if t.open() {
             (t.opens_at, t.closes_at) = (mt.tender.opens_at, mt.tender.closes_at);
+            // (3 November 2026: its cap too - the admin may change it - and its limits)
+            t.reference = mt.tender.reference;
+            if let (Some(x), Some(y)) = (t.market.as_mut(), mt.tender.market.as_ref()) {
+                (x.low_share, x.direct, x.direct_name) = (y.low_share, y.direct.clone(), y.direct_name.clone());
+            }
             if mt.tender.week.is_some() {
                 t.week = mt.tender.week;
             }

@@ -46,9 +46,23 @@ fn round_up(x: f64) -> Cents {
     (x / auction::ROUND as f64).ceil() as Cents * auction::ROUND
 }
 
-/// The least a bid of tender `t` may ask a year: under it, abnormally low.
+/// The least a bid of tender `t` may ask a year: under it, abnormally low. (NexiconDK, 3 November
+/// 2026: the share the server set when the tender was made, `Shared::low_share`; `LOW_SHARE`
+/// without one.)
 pub fn low_line(t: &Tender) -> Cents {
-    round_up(t.cost.max(0) as f64 * LOW_SHARE)
+    let share = t.market.as_ref().map(|m| m.low_share).filter(|s| s.is_finite() && *s > 0.0).unwrap_or(LOW_SHARE);
+    round_up(t.cost.max(0) as f64 * share)
+}
+
+/// (NexiconDK, 3 November 2026) The cap of a tender of the cost price `cost` a year as the
+/// server's admin sets it (`shared_tenders::TenderCfg`): `fixed` a year when he named one (more
+/// than 0), else the cost price by `factor` (`CAP_SHARE` when it is not a number above 0).
+pub fn cap_set(cost: Cents, fixed: Cents, factor: f64) -> Cents {
+    if fixed > 0 {
+        return round_up(fixed as f64);
+    }
+    let factor = if factor.is_finite() && factor > 0.0 { factor } else { CAP_SHARE };
+    round_up(cost.max(0) as f64 * factor)
 }
 
 /// The cap of a tender of the cost price `cost` a year: `CAP_SHARE` of it, at most `most` (0:

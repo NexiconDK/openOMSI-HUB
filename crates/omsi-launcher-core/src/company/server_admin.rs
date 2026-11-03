@@ -14,7 +14,10 @@
 //!   his computers' keys;
 //! * `market` - each map's tenders: open ones (bids sealed: only how many), the last decided with
 //!   every bid opened, the operators' lines, the chrono events; `POST tender` moves a close, calls
-//!   one off, or puts a line out to tender now;
+//!   one off, or puts a line out to tender now; (3 November 2026) the tenders' rules as they stand,
+//!   the money in kroner, the companies' contracts - and `POST tender` sets an open tender's cap,
+//!   puts lines out with the admin's own times and cap, awards a line directly to a company, moves
+//!   an operator's or a company's last day, or ends an operator's term (`tender_do`);
 //! * `config` - `company-server.cfg` as text, written whole (read at the next start);
 //! * `log?from=`, `log?world=<map>`, `log?company=<id>` - the main server's log (its last thousand
 //!   lines), a world's output, a company process's;
@@ -29,6 +32,9 @@
 use super::main_server::{self as ms, MainServer};
 use super::server_api::Api;
 use super::together::server::{Extra, Request};
+use super::currency::Currency;
+use super::model::{Cents, Drive};
+use super::server_fines::Fines;
 use super::{clock, concessions as cn, dates, online, shared_tenders, store};
 use omsi_net::admin_web::{self as aw, Answer, Auth};
 use serde_json::{json, Value};
@@ -161,7 +167,7 @@ pub fn handle(api: &Api, auth: &Mutex<Auth>, r: &Request) -> Option<Answer> {
             Ok(text) => ok(json!({ "answer": text })),
             Err(e) => aw::error("400 Bad Request", &e),
         },
-        ("tender", true) => match tender_do(api, &s("map"), asked.get("id").and_then(Value::as_u64).unwrap_or(0) as u32, &s("do"), &s("at"), &s("line")) {
+        ("tender", true) => match tender_do(api, &s("map"), &asked) {
             Ok(text) => ok(json!({ "answer": text })),
             Err(e) => aw::error("400 Bad Request", &e),
         },
@@ -351,8 +357,35 @@ fn players(api: &Api) -> Value {
 }
 
 /// A price a year as the market's price a timetable hour (whole money).
+/// A tender's amount a year as kroner a timetable hour (3 November 2026: the panel's money is
+/// kroner, as the settings' - it said euros here).
 fn hour(t: &cn::Tender, amount: i64) -> f64 {
-    (cn::per_hour(t, amount) / 100.0 * 100.0).round() / 100.0
+    (Currency::Dkk.units(cn::per_hour(t, amount)) * 100.0).round() / 100.0
+}
+
+/// Kroner of euro cents, whole.
+fn kr(cents: Cents) -> i64 {
+    Currency::Dkk.units(cents as f64).round() as i64
+}
+
+/// The server's date and minute now (`clock::moment`).
+fn server_now(m: &MainServer) -> (String, i64) {
+    let (day, secs) = m.clock.at_real(unix_now() as f64);
+    let now = clock::moment(&day, (secs / 60.0).floor() as i64);
+    (day, now)
+}
+
+/// A moment typed `YYYY-MM-DD HH:MM` (or with a `T`), as the server's minutes.
+fn moment_of(text: &str) -> Result<i64, String> {
+    let text = text.trim().replace('T', " ");
+    let bad = || "the time as YYYY-MM-DD HH:MM".to_string();
+    let (day, hm) = text.split_once(' ').ok_or_else(bad)?;
+    let (h, mi) = hm.split_once(':').ok_or_else(bad)?;
+    let (h, mi) = (h.trim().parse::<i64>().map_err(|_| bad())?, mi.trim().parse::<i64>().map_err(|_| bad())?);
+    if dates::parse(day).is_none() || !(0..24).contains(&h) || !(0..60).contains(&mi) {
+        return Err(bad());
+    }
+    Ok(clock::moment(day, h * 60 + mi))
 }
 
 fn market(api: &Api) -> Value {
@@ -361,14 +394,20 @@ fn market(api: &Api) -> Value {
     keys.sort();
     keys.dedup();
     let at = |x: i64| format!("{} {}", clock::date_of(x), clock::hhmm(x));
+    let all: Vec<super::model::Company> = online::company_ids(&m.data).into_iter().filter_map(|id| store::load(&m.data, &id).ok()).collect();
     // (who runs each line of a map: its companies)
     let mut runs: Vec<(String, String, String)> = Vec::new();
-    for id in online::company_ids(&m.data) {
-        if let Ok(c) = store::load(&m.data, &id) {
-            let key = shared_tenders::key_of(&c.map);
-            runs.extend(c.lines.iter().map(|l| (key.clone(), l.name.to_lowercase(), c.name.clone())));
-        }
+    for c in &all {
+        let key = shared_tenders::key_of(&c.map);
+        runs.extend(c.lines.iter().map(|l| (key.clone(), l.name.to_lowercase(), c.name.clone())));
     }
+    let (today, _) = server_now(&m);
+    let cfg = shared_tenders::TenderCfg::of(&m.data);
+    // (3 November 2026: the tenders' rules as they stand, in kroner)
+    let rules = json!({
+        "cap_hour": kr(cfg.cap_hour), "cap_factor": cfg.cap_factor, "low_share": (cfg.low_share * 1000.0).round() / 10.0,
+        "operators": cfg.operators, "round_weeks": cfg.round_weeks, "per_round": cfg.per_round,
+    });
     let maps: Vec<Value> = keys
         .iter()
         .filter_map(|key| shared_tenders::load(&m.data, key))
@@ -391,6 +430,9 @@ fn market(api: &Api) -> Value {
                         "renewal": t.renewal, "event": x.map(|x| x.event.clone()).unwrap_or_default(),
                         "from": x.map(|x| x.from.clone()).unwrap_or_default(), "until": x.map(|x| x.until.clone()).unwrap_or_default(),
                         "cap_hour": hour(t, t.reference), "bidders": who.len(), "applied": mt.applied,
+                        // (3 November 2026: the authority's estimate and the abnormally low line, in kroner)
+                        "cost_hour": hour(t, t.cost), "low_hour": hour(t, super::sealed::low_line(t)),
+                        "direct": x.map(|x| x.direct_name.clone()).unwrap_or_default(),
                     })
                 })
                 .collect();
@@ -398,7 +440,7 @@ fn market(api: &Api) -> Value {
             decided.sort_by_key(|t| std::cmp::Reverse(t.tender.closes_at));
             let decided: Vec<Value> = decided
                 .into_iter()
-                .take(12)
+                .take(40)
                 .map(|mt| {
                     let t = &mt.tender;
                     let d = mt.decided.as_ref().expect("decided");
@@ -409,7 +451,17 @@ fn market(api: &Api) -> Value {
                     })
                 })
                 .collect();
-            let held: Vec<Value> = mk.held.iter().map(|h| json!({ "line": h.line, "number": h.number, "name": h.name, "from": h.from, "until": h.until, "gives_up": h.gives_up })).collect();
+            let next = |until: &str| dates::add(until, 1 - shared_tenders::RENEW_OPENS);
+            let held: Vec<Value> = mk.held.iter().map(|h| json!({ "line": h.line, "number": h.number, "name": h.name, "from": h.from, "until": h.until, "gives_up": h.gives_up, "next": next(&h.until) })).collect();
+            // (3 November 2026: the companies of the map and their contracts - the admin moves a
+            // contract's last day, awards a line directly)
+            let here: Vec<&super::model::Company> = all.iter().filter(|c| shared_tenders::key_of(&c.map) == mk.key).collect();
+            let contracts: Vec<Value> = here
+                .iter()
+                .flat_map(|c| c.concessions.held.iter().map(move |h| json!({ "company": c.id, "name": c.name, "line": h.line, "number": h.number, "from": h.from, "until": h.until, "next": next(&h.until) })))
+                .collect();
+            let companies: Vec<Value> = here.iter().map(|c| json!({ "id": c.id, "name": c.name })).collect();
+            let operators: Vec<Value> = mk.rivals.iter().map(|r| json!(r.name)).collect();
             let lines: Vec<Value> = mk
                 .lines
                 .iter()
@@ -422,10 +474,10 @@ fn market(api: &Api) -> Value {
                     json!({ "name": l, "company": company, "operator": operator, "open": open, "event": event })
                 })
                 .collect();
-            json!({ "key": mk.key, "map": folder_name(&mk.map), "open": open, "decided": decided, "held": held, "events": mk.events, "lines": lines })
+            json!({ "key": mk.key, "map": folder_name(&mk.map), "open": open, "decided": decided, "held": held, "events": mk.events, "lines": lines, "contracts": contracts, "companies": companies, "operators": operators })
         })
         .collect();
-    json!({ "maps": maps })
+    json!({ "maps": maps, "rules": rules, "today": today, "earliest_end": dates::add(&today, shared_tenders::RENEW_OPENS) })
 }
 
 /// The last `TAIL` lines of a file.
@@ -485,45 +537,129 @@ fn player_do(api: &Api, id: &str, what: &str, reason: &str) -> Result<String, St
     Ok(said)
 }
 
-/// A tender of map `map` (its market's key): its close moved (`close` to `at`, `YYYY-MM-DD HH:MM`),
-/// called off (`cancel`), or a line put out to tender now (`open`, `line`).
-fn tender_do(api: &Api, map: &str, id: u32, what: &str, at: &str, line: &str) -> Result<String, String> {
+/// A tender of map `map` (its market's key) as the panel asks (`a`: `do` and its arguments): its
+/// close moved (`close`, `id`, `at` = `YYYY-MM-DD HH:MM`), called off (`cancel`, `id`), its cap set
+/// (`cap`, `id`, `cap` in kroner a timetable hour), or lines put out to tender (`open`, `line` or
+/// `lines`, and as he chooses `opens`, `closes` or `days`, `cap`). (3 November 2026) Also: a line
+/// awarded directly to a company of the map (`direct`, `line`, `company`, `cap`, `drive`), an
+/// operator's term moved (`operator_until`, `line`, `until`) or ended with the line out to tender
+/// (`operator_end`, `line`), and a company's contract moved to end on another day
+/// (`contract_until`, `company`, `line`, `until`: not before `RENEW_OPENS` days from today).
+fn tender_do(api: &Api, map: &str, a: &Value) -> Result<String, String> {
+    use shared_tenders::ServerAsk;
+    let s = |k: &str| a.get(k).and_then(Value::as_str).unwrap_or("").trim().to_string();
+    let num = |k: &str| a.get(k).and_then(|v| v.as_f64().or_else(|| v.as_str().and_then(|t| t.trim().replace(',', ".").parse::<f64>().ok()))).filter(|x| x.is_finite() && *x > 0.0);
+    let id = a.get("id").and_then(Value::as_u64).unwrap_or(0) as u32;
+    let what = s("do");
     let m = server(api);
     let data = m.data.clone();
+    let (today, now) = server_now(&m);
     let mut mk = shared_tenders::load(&data, map).ok_or("no such market")?;
-    let said = match what {
+    let open_at = |mk: &shared_tenders::Market| mk.tenders.iter().position(|t| t.decided.is_none() && t.tender.market.as_ref().is_some_and(|x| x.id == id)).ok_or_else(|| "no such open tender".to_string());
+    let mut changed = true;
+    let said = match what.as_str() {
         "open" => {
+            changed = false;
+            let mut lines: Vec<String> = a.get("lines").and_then(Value::as_array).map(|l| l.iter().filter_map(|x| x.as_str()).map(|x| x.trim().to_string()).collect()).unwrap_or_default();
+            if lines.is_empty() {
+                lines.push(s("line"));
+            }
+            lines.retain(|l| !l.is_empty());
+            if lines.is_empty() {
+                return Err("which line?".into());
+            }
+            let opens = if s("opens").is_empty() { 0 } else { moment_of(&s("opens"))? };
+            let start = opens.max(now);
+            let closes = if !s("closes").is_empty() {
+                moment_of(&s("closes"))?
+            } else {
+                num("days").map_or(0, |d| start + (d.min(60.0) * clock::DAY as f64).round() as i64)
+            };
+            if closes > 0 && closes <= start {
+                return Err("it closes before it opens".into());
+            }
+            let ask = ServerAsk { opens_at: opens, closes_at: closes, cap_hour: num("cap").map_or(0, Fines::cents), ..ServerAsk::default() };
+            for l in &lines {
+                shared_tenders::ask_as_server(&data, map, l, ask.clone()).map_err(|e| format!("{e:#}"))?;
+            }
+            format!("line(s) {} of {map}: out to tender in a moment, unless a company or an operator runs them", lines.join(", "))
+        }
+        "direct" => {
+            changed = false;
+            let (line, company) = (s("line"), s("company"));
+            let cap = num("cap").ok_or("the price a timetable hour, in kroner")?;
+            let c = store::load(&data, &company).map_err(|_| "no such company".to_string())?;
+            if shared_tenders::key_of(&c.map) != map {
+                return Err("that company is not on this map".into());
+            }
             if line.is_empty() {
                 return Err("which line?".into());
             }
-            shared_tenders::ask_as_server(&data, map, line).map_err(|e| format!("{e:#}"))?;
-            format!("line {line} of {map}: out to tender at once, unless a company or an operator runs it")
+            let drive = if s("drive") == "electric" { Drive::Electric } else { Drive::Diesel };
+            let ask = ServerAsk { cap_hour: Fines::cents(cap), direct: c.id.clone(), direct_name: c.name.clone(), drive, ..ServerAsk::default() };
+            shared_tenders::ask_as_server(&data, map, &line, ask).map_err(|e| format!("{e:#}"))?;
+            format!("line {line} of {map}: awarded directly to {} at {cap:.2} kr. a timetable hour, at the next step", c.name)
+        }
+        "cap" => {
+            let k = open_at(&mk)?;
+            let cap = num("cap").ok_or("the cap a timetable hour, in kroner")?;
+            let t = &mut mk.tenders[k].tender;
+            t.reference = cn::of_hour(t, Fines::cents(cap) as f64);
+            format!("the tender of line {} of {map}: its cap is {cap:.2} kr. a timetable hour now", t.number)
         }
         "close" | "cancel" => {
-            let k = mk.tenders.iter().position(|t| t.decided.is_none() && t.tender.market.as_ref().is_some_and(|x| x.id == id)).ok_or("no such open tender")?;
+            let k = open_at(&mk)?;
             if what == "cancel" {
                 let t = mk.tenders.remove(k);
                 format!("the tender of line {} of {map} is called off", t.tender.number)
             } else {
-                let (day, hm) = at.split_once(' ').ok_or("the time as YYYY-MM-DD HH:MM")?;
-                let (h, mi) = hm.split_once(':').ok_or("the time as YYYY-MM-DD HH:MM")?;
-                let (h, mi) = (h.trim().parse::<i64>().map_err(|e| e.to_string())?, mi.trim().parse::<i64>().map_err(|e| e.to_string())?);
-                if dates::parse(day).is_none() || !(0..24).contains(&h) || !(0..60).contains(&mi) {
-                    return Err("the time as YYYY-MM-DD HH:MM".into());
-                }
+                let closes = moment_of(&s("at"))?;
                 let t = &mut mk.tenders[k].tender;
-                let closes = clock::moment(day, h * 60 + mi);
                 if closes <= t.opens_at {
                     return Err("it closes before it opens".into());
                 }
                 t.closes_at = closes;
-                t.closes = day.to_string();
-                format!("the tender of line {} of {map} closes {day} {hm} now", t.number)
+                t.closes = clock::date_of(closes);
+                format!("the tender of line {} of {map} closes {} {} now", t.number, t.closes, clock::hhmm(closes))
             }
         }
-        _ => return Err("open, close or cancel".into()),
+        "operator_until" => {
+            let (line, until) = (s("line"), s("until"));
+            if dates::parse(&until).is_none() || dates::between(&today, &until) < 0 {
+                return Err("the last day as YYYY-MM-DD, today or later".into());
+            }
+            let h = mk.held.iter_mut().find(|h| h.line.eq_ignore_ascii_case(&line)).ok_or("no operator runs that line")?;
+            h.until = until.clone();
+            // (a day it gives the line up on after its new last day: none)
+            if !h.gives_up.is_empty() && dates::between(&until, &h.gives_up) > 0 {
+                h.gives_up.clear();
+            }
+            format!("the operator {} runs line {line} of {map} until {until} now", h.name)
+        }
+        "operator_end" => {
+            let line = s("line");
+            let k = mk.held.iter().position(|h| h.line.eq_ignore_ascii_case(&line)).ok_or("no operator runs that line")?;
+            let h = mk.held.remove(k);
+            shared_tenders::ask_as_server(&data, map, &h.line, ServerAsk::default()).map_err(|e| format!("{e:#}"))?;
+            format!("the operator {} no longer runs line {line} of {map}: out to tender in a moment", h.name)
+        }
+        "contract_until" => {
+            changed = false;
+            let (company, line, until) = (s("company"), s("line"), s("until"));
+            let earliest = dates::add(&today, shared_tenders::RENEW_OPENS);
+            if dates::parse(&until).is_none() || dates::between(&earliest, &until) < 0 {
+                return Err(format!("the last day as YYYY-MM-DD, {earliest} or later: the line's next tender needs its days"));
+            }
+            let c = store::load(&data, &company).map_err(|_| "no such company".to_string())?;
+            if !c.concessions.held.iter().any(|h| h.line.eq_ignore_ascii_case(&line)) {
+                return Err("the company holds no contract on that line".into());
+            }
+            shared_tenders::order_contract(&data, &company, &line, &until).map_err(|e| format!("{e:#}"))?;
+            format!("the contract of {} on line {line} of {map} ends {until} (taken at the company's next step)", c.name)
+        }
+        _ => return Err("open, direct, cap, close, cancel, operator_until, operator_end or contract_until".into()),
     };
-    if what != "open" {
+    if changed {
         shared_tenders::save(&data, &mk).map_err(|e| format!("{e:#}"))?;
     }
     m.say(&format!("admin panel: {said}"));
