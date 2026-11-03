@@ -730,7 +730,7 @@ export function mountPanel(root, api, opts = {}) {
         h('h3', {}, tr('Rail replacement')),
         h('div', { class: 'sp-dim' }, tr("A timetable of the map's for rail replacement, run on your days: bids for a day at your fixed price a timetable hour - the quality decides - or given to a company directly.")),
         (m.rails || []).length ? table([tr('Line'), tr('Days'), tr('A timetable hour'), ''], m.rails.map((r) => h('tr', {}, h('td', {}, h('b', {}, r.line)), h('td', {}, `${r.from} – ${r.until}`),
-          h('td', {}, `${r.price} ${tr('kr.')}`), h('td', {}, r.direct ? trf('Directly to %{c}', { c: r.direct }) : r.offered ? tr('out to tender') : tr('at the next step')))))) : null,
+          h('td', {}, `${r.price} ${tr('kr.')}`), h('td', {}, r.direct ? trf('Directly to %{c}', { c: r.direct }) : r.offered ? tr('out to tender') : tr('at the next step'))))) : null,
         h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, rlLine, rlFrom, rlUntil, rlPrice, h('span', { class: 'sp-dim' }, tr('kr. a timetable hour')), rlCompany,
           btn(tr('Order rail replacement'), () => post('tender', { map: m.key, do: 'rail', line: rlLine.value, from: rlFrom.value, until: rlUntil.value, price: rlPrice.value, company: rlCompany.value }), 'sp-btn small main'))) : null;
       // (3 November 2026: the losing companies' complaints about awards, with the bids - H11)
