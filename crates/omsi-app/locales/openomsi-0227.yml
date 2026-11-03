@@ -2,6 +2,7 @@ _version: 2
 # openOMSI 0.2.27's texts the fork shows, in the fork's six languages (merged in by hand).
 "Add a key binding":
   de: "Tastenbelegung hinzufügen"
+  da: "Tilføj en tastebinding"
   fr: "Ajouter une touche"
   nl: "Toetskoppeling toevoegen"
   pl: "Dodaj przypisanie klawisza"
@@ -9,6 +10,7 @@ _version: 2
   uk: "Додати прив'язку клавіші"
 "Add another key for this action":
   de: "Eine weitere Taste für diese Aktion hinzufügen"
+  da: "Tilføj en anden tast til denne handling"
   fr: "Ajouter une autre touche pour cette action"
   nl: "Nog een toets voor deze actie toevoegen"
   pl: "Dodaj kolejny klawisz dla tej akcji"
@@ -16,6 +18,7 @@ _version: 2
   uk: "Додати ще одну клавішу для цієї дії"
 "Add binding":
   de: "Belegung hinzufügen"
+  da: "Tilføj binding"
   fr: "Ajouter une touche"
   nl: "Koppeling toevoegen"
   pl: "Dodaj przypisanie"
@@ -23,6 +26,7 @@ _version: 2
   uk: "Додати прив'язку"
 "Ambience (places, weather, nature, town)":
   de: "Umgebungsgeräusche (Orte, Wetter, Natur, Stadt)"
+  da: "Omgivelser (steder, vejr, natur, by)"
   fr: "Ambiance (lieux, météo, nature, ville)"
   nl: "Omgevingsgeluid (plaatsen, weer, natuur, stad)"
   pl: "Otoczenie (miejsca, pogoda, przyroda, miasto)"
@@ -30,6 +34,7 @@ _version: 2
   uk: "Оточення (місця, погода, природа, місто)"
 "Ambience volume":
   de: "Lautstärke der Umgebung"
+  da: "Lydstyrke for omgivelser"
   fr: "Volume de l'ambiance"
   nl: "Volume omgevingsgeluid"
   pl: "Głośność otoczenia"
@@ -37,6 +42,7 @@ _version: 2
   uk: "Гучність оточення"
 "Ambience":
   de: "Umgebung"
+  da: "Omgivelser"
   fr: "Ambiance"
   nl: "Omgevingsgeluid"
   pl: "Otoczenie"
@@ -44,6 +50,7 @@ _version: 2
   uk: "Оточення"
 "Binding added. Press the key you want to use (Escape cancels).":
   de: "Belegung hinzugefügt. Drücke die gewünschte Taste (Escape bricht ab)."
+  da: "Binding tilføjet. Tryk på den tast, du vil bruge (Escape annullerer)."
   fr: "Touche ajoutée. Appuyez sur la touche souhaitée (Échap annule)."
   nl: "Koppeling toegevoegd. Druk op de toets die je wilt gebruiken (Escape annuleert)."
   pl: "Przypisanie dodane. Naciśnij wybrany klawisz (Escape anuluje)."
@@ -51,6 +58,7 @@ _version: 2
   uk: "Прив'язку додано. Натисніть потрібну клавішу (Escape — скасувати)."
 "Bus files using this action":
   de: "Busdateien, die diese Aktion nutzen"
+  da: "Busfiler, der bruger denne handling"
   fr: "Fichiers de bus utilisant cette action"
   nl: "Busbestanden die deze actie gebruiken"
   pl: "Pliki autobusów używające tej akcji"
@@ -58,6 +66,7 @@ _version: 2
   uk: "Файли автобусів із цією дією"
 "Checking…":
   de: "Prüfe..."
+  da: "Kontrollerer…"
   fr: "Vérification..."
   nl: "Controleren..."
   pl: "Sprawdzanie..."
@@ -65,6 +74,7 @@ _version: 2
   uk: "Перевірка..."
 "Clear the key (the entry stays)":
   de: "Taste löschen (der Eintrag bleibt)"
+  da: "Ryd tasten (posten bliver)"
   fr: "Effacer la touche (l'entrée reste)"
   nl: "Toets wissen (de regel blijft)"
   pl: "Wyczyść klawisz (wpis zostaje)"
@@ -72,6 +82,7 @@ _version: 2
   uk: "Очистити клавішу (запис лишається)"
 "Default gamepad buttons (indicators, doors, views, gears, menu, pause)":
   de: "Standard-Gamepadtasten (Blinker, Türen, Ansichten, Gänge, Menü, Pause)"
+  da: "Standardknapper på gamepad (blinklys, døre, visninger, gear, menu, pause)"
   fr: "Boutons de manette par défaut (clignotants, portes, vues, rapports, menu, pause)"
   nl: "Standaardknoppen gamepad (knipperlichten, deuren, beelden, versnellingen, menu, pauze)"
   pl: "Domyślne przyciski pada (kierunkowskazy, drzwi, widoki, biegi, menu, pauza)"
@@ -79,6 +90,7 @@ _version: 2
   uk: "Кнопки геймпада за замовчуванням (поворотники, двері, вигляди, передачі, меню, пауза)"
 "Delete this mod (asks first; switch it off instead to keep it)":
   de: "Diesen Mod löschen (fragt zuerst; zum Behalten stattdessen ausschalten)"
+  da: "Slet denne mod (spørger først; slå den fra i stedet for at beholde den)"
   fr: "Supprimer ce mod (demande d'abord ; désactivez-le pour le garder)"
   nl: "Deze mod verwijderen (vraagt eerst; zet hem uit om hem te houden)"
   pl: "Usuń ten mod (najpierw zapyta; aby go zachować, wyłącz go)"
@@ -86,6 +98,7 @@ _version: 2
   uk: "Видалити цей мод (спершу спитає; щоб зберегти, просто вимкніть)"
 "Enhanced graphics: how much brighter the night is shown":
   de: "Verbesserte Grafik: wie viel heller die Nacht gezeigt wird"
+  da: "Forbedret grafik: hvor meget lysere natten vises"
   fr: "Graphismes améliorés : de combien la nuit est éclaircie"
   nl: "Verbeterde graphics: hoeveel lichter de nacht wordt getoond"
   pl: "Ulepszona grafika: o ile jaśniejsza jest noc"
@@ -93,6 +106,7 @@ _version: 2
   uk: "Покращена графіка: наскільки світлішою показано ніч"
 "Filter by bus folder or bus file (.bus)":
   de: "Nach Busordner oder Busdatei (.bus) filtern"
+  da: "Filtrér efter busmappe eller busfil (.bus)"
   fr: "Filtrer par dossier ou fichier de bus (.bus)"
   nl: "Filteren op busmap of busbestand (.bus)"
   pl: "Filtruj według folderu lub pliku autobusu (.bus)"
@@ -100,6 +114,7 @@ _version: 2
   uk: "Фільтр за текою або файлом автобуса (.bus)"
 "Gamepad type":
   de: "Gamepad-Typ"
+  da: "Gamepad-type"
   fr: "Type de manette"
   nl: "Type gamepad"
   pl: "Typ pada"
@@ -107,6 +122,7 @@ _version: 2
   uk: "Тип геймпада"
 "Head tilt. 100% is 1:1; the low end is deliberately finer.":
   de: "Kopfneigung. 100% ist 1:1; der untere Bereich ist bewusst feiner."
+  da: "Hovedvipning. 100 % er 1:1; den lave ende er med vilje finere."
   fr: "Inclinaison de la tête. 100 % = 1:1 ; le bas de l'échelle est volontairement plus fin."
   nl: "Hoofdkanteling. 100% is 1:1; het lage eind is bewust fijner."
   pl: "Przechył głowy. 100% to 1:1; dolny zakres jest celowo dokładniejszy."
@@ -114,6 +130,7 @@ _version: 2
   uk: "Нахил голови. 100% — 1:1; нижній діапазон навмисно точніший."
 "Head tracking (Tobii eye trackers, native TrackIR / OpenTrack)":
   de: "Headtracking (Tobii-Eyetracker, TrackIR / OpenTrack direkt)"
+  da: "Hovedsporing (Tobii-øjensporere, native TrackIR / OpenTrack)"
   fr: "Suivi de la tête (eye trackers Tobii, TrackIR / OpenTrack natifs)"
   nl: "Headtracking (Tobii-eyetrackers, TrackIR / OpenTrack direct)"
   pl: "Śledzenie głowy (eyetrackery Tobii, TrackIR / OpenTrack bezpośrednio)"
@@ -121,6 +138,7 @@ _version: 2
   uk: "Відстеження голови (айтрекери Tobii, TrackIR / OpenTrack напряму)"
 "Hold the cursor while steering":
   de: "Mauszeiger beim Lenken festhalten"
+  da: "Hold markøren under styring"
   fr: "Bloquer le curseur pendant la conduite"
   nl: "Cursor vasthouden tijdens het sturen"
   pl: "Trzymaj kursor podczas kierowania"
@@ -128,6 +146,7 @@ _version: 2
   uk: "Утримувати курсор під час кермування"
 "Hold the cursor while the mouse steers (off: the crosshair stays free, the window's edges are the lock)":
   de: "Mauszeiger festhalten, während die Maus lenkt (aus: das Fadenkreuz bleibt frei, die Fensterränder sind der Anschlag)"
+  da: "Hold markøren, mens musen styrer (fra: sigtekornet forbliver frit, vinduets kanter er låsen)"
   fr: "Bloquer le curseur quand la souris dirige (désactivé : le réticule reste libre, les bords de la fenêtre sont la butée)"
   nl: "Cursor vasthouden terwijl de muis stuurt (uit: het vizier blijft vrij, de vensterranden zijn de uitslag)"
   pl: "Trzymaj kursor, gdy mysz kieruje (wył.: celownik jest wolny, krawędzie okna to skrajne położenie)"
@@ -135,6 +154,7 @@ _version: 2
   uk: "Утримувати курсор, поки миша кермує (вимк.: приціл вільний, краї вікна — упор)"
 "How loud the ambience is":
   de: "Wie laut die Umgebung ist"
+  da: "Hvor høje omgivelserne er"
   fr: "Volume de l'ambiance"
   nl: "Hoe luid het omgevingsgeluid is"
   pl: "Jak głośne jest otoczenie"
@@ -142,6 +162,7 @@ _version: 2
   uk: "Наскільки гучне оточення"
 "Installed mods":
   de: "Installierte Mods"
+  da: "Installerede mods"
   fr: "Mods installés"
   nl: "Geïnstalleerde mods"
   pl: "Zainstalowane mody"
@@ -149,6 +170,7 @@ _version: 2
   uk: "Встановлені моди"
 "Invert TrackIR X":
   de: "TrackIR X umkehren"
+  da: "Inverter TrackIR X"
   fr: "Inverser TrackIR X"
   nl: "TrackIR X omkeren"
   pl: "Odwróć TrackIR X"
@@ -156,6 +178,7 @@ _version: 2
   uk: "Інвертувати TrackIR X"
 "Invert TrackIR Y":
   de: "TrackIR Y umkehren"
+  da: "Inverter TrackIR Y"
   fr: "Inverser TrackIR Y"
   nl: "TrackIR Y omkeren"
   pl: "Odwróć TrackIR Y"
@@ -163,6 +186,7 @@ _version: 2
   uk: "Інвертувати TrackIR Y"
 "Invert TrackIR Z":
   de: "TrackIR Z umkehren"
+  da: "Inverter TrackIR Z"
   fr: "Inverser TrackIR Z"
   nl: "TrackIR Z omkeren"
   pl: "Odwróć TrackIR Z"
@@ -170,6 +194,7 @@ _version: 2
   uk: "Інвертувати TrackIR Z"
 "Invert TrackIR pitch":
   de: "TrackIR-Nicken umkehren"
+  da: "Inverter TrackIR pitch"
   fr: "Inverser le tangage TrackIR"
   nl: "TrackIR-pitch omkeren"
   pl: "Odwróć pochylenie TrackIR"
@@ -177,6 +202,7 @@ _version: 2
   uk: "Інвертувати тангаж TrackIR"
 "Invert TrackIR roll":
   de: "TrackIR-Rollen umkehren"
+  da: "Inverter TrackIR roll"
   fr: "Inverser le roulis TrackIR"
   nl: "TrackIR-roll omkeren"
   pl: "Odwróć przechył TrackIR"
@@ -184,6 +210,7 @@ _version: 2
   uk: "Інвертувати крен TrackIR"
 "Invert TrackIR yaw":
   de: "TrackIR-Gieren umkehren"
+  da: "Inverter TrackIR yaw"
   fr: "Inverser le lacet TrackIR"
   nl: "TrackIR-yaw omkeren"
   pl: "Odwróć odchylenie TrackIR"
@@ -191,6 +218,7 @@ _version: 2
   uk: "Інвертувати рискання TrackIR"
 "Left / right head movement. 100% is 1:1; the low end is deliberately finer.":
   de: "Kopfbewegung links / rechts. 100% ist 1:1; der untere Bereich ist bewusst feiner."
+  da: "Hovedbevægelse til venstre / højre. 100 % er 1:1; den lave ende er med vilje finere."
   fr: "Mouvement de tête gauche / droite. 100 % = 1:1 ; le bas de l'échelle est volontairement plus fin."
   nl: "Hoofdbeweging links / rechts. 100% is 1:1; het lage eind is bewust fijner."
   pl: "Ruch głowy w lewo / w prawo. 100% to 1:1; dolny zakres jest celowo dokładniejszy."
@@ -198,6 +226,7 @@ _version: 2
   uk: "Рух голови ліворуч / праворуч. 100% — 1:1; нижній діапазон навмисно точніший."
 "Loading…":
   de: "Lädt..."
+  da: "Indlæser…"
   fr: "Chargement..."
   nl: "Laden..."
   pl: "Wczytywanie..."
@@ -205,6 +234,7 @@ _version: 2
   uk: "Завантаження..."
 "Lower is faster: the drops on the glass painted less often, less spray and fewer streaks; Low shows OMSI 2's own rain on the glass (from the next bus loaded)":
   de: "Niedriger ist schneller: Tropfen auf der Scheibe seltener gezeichnet, weniger Gischt und weniger Schlieren; Niedrig zeigt OMSI 2s eigenen Regen auf der Scheibe (ab dem nächsten geladenen Bus)"
+  da: "Lavere er hurtigere: dråberne på ruden males sjældnere, mindre sprøjt og færre striber; Lav viser OMSI 2's egen regn på ruden (fra den næste indlæste bus)"
   fr: "Plus bas est plus rapide : gouttes sur la vitre dessinées moins souvent, moins d'embruns et de traînées ; Bas montre la pluie d'OMSI 2 sur la vitre (à partir du prochain bus chargé)"
   nl: "Lager is sneller: de druppels op het glas minder vaak getekend, minder nevel en minder strepen; Laag toont de eigen regen op het glas van OMSI 2 (vanaf de volgende geladen bus)"
   pl: "Niżej znaczy szybciej: krople na szybie rysowane rzadziej, mniej rozprysków i smug; Niska pokazuje deszcz na szybie z OMSI 2 (od następnego wczytanego autobusu)"
@@ -212,6 +242,7 @@ _version: 2
   uk: "Нижче — швидше: краплі на склі малюються рідше, менше бризок і смуг; «Низько» показує рідний дощ OMSI 2 на склі (з наступного завантаженого автобуса)"
 "Move your head forward / back. 100% is 1:1; the low end is deliberately finer.":
   de: "Bewege den Kopf nach vorn / hinten. 100% ist 1:1; der untere Bereich ist bewusst feiner."
+  da: "Flyt hovedet frem / tilbage. 100 % er 1:1; den lave ende er med vilje finere."
   fr: "Déplacez la tête en avant / en arrière. 100 % = 1:1 ; le bas de l'échelle est volontairement plus fin."
   nl: "Beweeg je hoofd naar voren / achteren. 100% is 1:1; het lage eind is bewust fijner."
   pl: "Ruch głowy do przodu / do tyłu. 100% to 1:1; dolny zakres jest celowo dokładniejszy."
@@ -219,6 +250,7 @@ _version: 2
   uk: "Рух голови вперед / назад. 100% — 1:1; нижній діапазон навмисно точніший."
 "Move your head left / right. 100% is 1:1; the low end is deliberately finer.":
   de: "Bewege den Kopf nach links / rechts. 100% ist 1:1; der untere Bereich ist bewusst feiner."
+  da: "Flyt hovedet til venstre / højre. 100 % er 1:1; den lave ende er med vilje finere."
   fr: "Déplacez la tête à gauche / à droite. 100 % = 1:1 ; le bas de l'échelle est volontairement plus fin."
   nl: "Beweeg je hoofd naar links / rechts. 100% is 1:1; het lage eind is bewust fijner."
   pl: "Przesuń głowę w lewo / w prawo. 100% to 1:1; dolny zakres jest celowo dokładniejszy."
@@ -226,6 +258,7 @@ _version: 2
   uk: "Зсув голови ліворуч / праворуч. 100% — 1:1; нижній діапазон навмисно точніший."
 "Move your head up / down. 100% is 1:1; the low end is deliberately finer.":
   de: "Bewege den Kopf nach oben / unten. 100% ist 1:1; der untere Bereich ist bewusst feiner."
+  da: "Flyt hovedet op / ned. 100 % er 1:1; den lave ende er med vilje finere."
   fr: "Déplacez la tête vers le haut / le bas. 100 % = 1:1 ; le bas de l'échelle est volontairement plus fin."
   nl: "Beweeg je hoofd omhoog / omlaag. 100% is 1:1; het lage eind is bewust fijner."
   pl: "Przesuń głowę w górę / w dół. 100% to 1:1; dolny zakres jest celowo dokładniejszy."
@@ -233,6 +266,7 @@ _version: 2
   uk: "Зсув голови вгору / вниз. 100% — 1:1; нижній діапазон навмисно точніший."
 "Night brightness":
   de: "Nachthelligkeit"
+  da: "Natlysstyrke"
   fr: "Luminosité de nuit"
   nl: "Helderheid 's nachts"
   pl: "Jasność nocy"
@@ -240,6 +274,7 @@ _version: 2
   uk: "Яскравість уночі"
 "No matching actions.":
   de: "Keine passenden Aktionen."
+  da: "Ingen matchende handlinger."
   fr: "Aucune action correspondante."
   nl: "Geen passende acties."
   pl: "Brak pasujących akcji."
@@ -247,6 +282,7 @@ _version: 2
   uk: "Немає відповідних дій."
 "Position":
   de: "Position"
+  da: "Position"
   fr: "Position"
   nl: "Positie"
   pl: "Pozycja"
@@ -254,6 +290,7 @@ _version: 2
   uk: "Положення"
 "Rain quality":
   de: "Regenqualität"
+  da: "Regnkvalitet"
   fr: "Qualité de la pluie"
   nl: "Regenkwaliteit"
   pl: "Jakość deszczu"
@@ -261,6 +298,7 @@ _version: 2
   uk: "Якість дощу"
 "Reading the OMSI folder…":
   de: "OMSI-Ordner wird gelesen..."
+  da: "Læser OMSI-mappen…"
   fr: "Lecture du dossier OMSI..."
   nl: "OMSI-map wordt gelezen..."
   pl: "Wczytywanie folderu OMSI..."
@@ -268,6 +306,7 @@ _version: 2
   uk: "Читання теки OMSI..."
 "Reading the buses…":
   de: "Busse werden gelesen..."
+  da: "Læser busserne…"
   fr: "Lecture des bus..."
   nl: "Bussen worden gelezen..."
   pl: "Wczytywanie autobusów..."
@@ -275,6 +314,7 @@ _version: 2
   uk: "Читання автобусів..."
 "Reading the content folder...":
   de: "Inhaltsordner wird gelesen..."
+  da: "Læser indholdsmappen..."
   fr: "Lecture du dossier de contenu..."
   nl: "De inhoudsmap wordt gelezen..."
   pl: "Odczyt folderu zawartości..."
@@ -282,6 +322,7 @@ _version: 2
   uk: "Читання теки контенту..."
 "Reading the timetable…":
   de: "Fahrplan wird gelesen..."
+  da: "Læser køreplanen…"
   fr: "Lecture des horaires..."
   nl: "Dienstregeling wordt gelezen..."
   pl: "Wczytywanie rozkładu..."
@@ -289,6 +330,7 @@ _version: 2
   uk: "Читання розкладу..."
 "Remove the entry":
   de: "Eintrag entfernen"
+  da: "Fjern posten"
   fr: "Supprimer l'entrée"
   nl: "Regel verwijderen"
   pl: "Usuń wpis"
@@ -296,6 +338,7 @@ _version: 2
   uk: "Видалити запис"
 "Reverse forward / back head movement":
   de: "Kopfbewegung vor / zurück umkehren"
+  da: "Vend hovedbevægelse frem / tilbage om"
   fr: "Inverser le mouvement de tête avant / arrière"
   nl: "Hoofdbeweging voor / achter omkeren"
   pl: "Odwróć ruch głowy przód / tył"
@@ -303,6 +346,7 @@ _version: 2
   uk: "Інвертувати рух голови вперед / назад"
 "Reverse head tilt":
   de: "Kopfneigung umkehren"
+  da: "Vend hovedvipning om"
   fr: "Inverser l'inclinaison de la tête"
   nl: "Hoofdkanteling omkeren"
   pl: "Odwróć przechył głowy"
@@ -310,6 +354,7 @@ _version: 2
   uk: "Інвертувати нахил голови"
 "Reverse left / right head movement":
   de: "Kopfbewegung links / rechts umkehren"
+  da: "Vend hovedbevægelse til venstre / højre om"
   fr: "Inverser le mouvement de tête gauche / droite"
   nl: "Hoofdbeweging links / rechts omkeren"
   pl: "Odwróć ruch głowy lewo / prawo"
@@ -317,6 +362,7 @@ _version: 2
   uk: "Інвертувати рух голови ліворуч / праворуч"
 "Reverse left / right head rotation":
   de: "Kopfdrehung links / rechts umkehren"
+  da: "Vend hoveddrejning til venstre / højre om"
   fr: "Inverser la rotation de tête gauche / droite"
   nl: "Hoofddraai links / rechts omkeren"
   pl: "Odwróć obrót głowy lewo / prawo"
@@ -324,6 +370,7 @@ _version: 2
   uk: "Інвертувати поворот голови ліворуч / праворуч"
 "Reverse up / down head movement":
   de: "Kopfbewegung oben / unten umkehren"
+  da: "Vend hovedbevægelse op / ned om"
   fr: "Inverser le mouvement de tête haut / bas"
   nl: "Hoofdbeweging omhoog / omlaag omkeren"
   pl: "Odwróć ruch głowy góra / dół"
@@ -331,6 +378,7 @@ _version: 2
   uk: "Інвертувати рух голови вгору / вниз"
 "Reverse up / down head rotation":
   de: "Kopfdrehung oben / unten umkehren"
+  da: "Vend hoveddrejning op / ned om"
   fr: "Inverser la rotation de tête haut / bas"
   nl: "Hoofddraai omhoog / omlaag omkeren"
   pl: "Odwróć obrót głowy góra / dół"
@@ -338,6 +386,7 @@ _version: 2
   uk: "Інвертувати поворот голови вгору / вниз"
 "Search actions...":
   de: "Aktionen suchen..."
+  da: "Søg i handlinger..."
   fr: "Rechercher des actions..."
   nl: "Acties zoeken..."
   pl: "Szukaj akcji..."
@@ -345,6 +394,7 @@ _version: 2
   uk: "Пошук дій..."
 "Search buses…":
   de: "Busse suchen..."
+  da: "Søg i busser…"
   fr: "Rechercher des bus..."
   nl: "Bussen zoeken..."
   pl: "Szukaj autobusów..."
@@ -352,6 +402,7 @@ _version: 2
   uk: "Пошук автобусів..."
 "Search mods...":
   de: "Mods suchen..."
+  da: "Søg i mods..."
   fr: "Rechercher des mods..."
   nl: "Mods zoeken..."
   pl: "Szukaj modów..."
@@ -359,6 +410,7 @@ _version: 2
   uk: "Пошук модів..."
 "Search…":
   de: "Suchen…"
+  da: "Søg…"
   fr: "Rechercher..."
   nl: "Zoeken..."
   pl: "Szukaj..."
@@ -366,6 +418,7 @@ _version: 2
   uk: "Пошук…"
 "Stick dead zone":
   de: "Totzone des Sticks"
+  da: "Dødzone for stick"
   fr: "Zone morte du stick"
   nl: "Dode zone stick"
   pl: "Strefa martwa drążka"
@@ -373,6 +426,7 @@ _version: 2
   uk: "Мертва зона стіка"
 "Stick steering speed":
   de: "Lenkgeschwindigkeit des Sticks"
+  da: "Sticks styrehastighed"
   fr: "Vitesse de direction au stick"
   nl: "Stuursnelheid stick"
   pl: "Szybkość kierowania drążkiem"
@@ -380,6 +434,7 @@ _version: 2
   uk: "Швидкість кермування стіком"
 "The place, the weather, the birds of the season and the town's life, from real recordings":
   de: "Der Ort, das Wetter, die Vögel der Jahreszeit und das Leben der Stadt, aus echten Aufnahmen"
+  da: "Stedet, vejret, årstidens fugle og byens liv, fra rigtige optagelser"
   fr: "Le lieu, la météo, les oiseaux de la saison et la vie de la ville, d'après de vrais enregistrements"
   nl: "De plek, het weer, de vogels van het seizoen en het leven in de stad, van echte opnames"
   pl: "Miejsce, pogoda, ptaki pory roku i życie miasta — z prawdziwych nagrań"
@@ -387,6 +442,7 @@ _version: 2
   uk: "Місце, погода, птахи пори року й життя міста — зі справжніх записів"
 "The wheel reaches its lock past the window's edges; off: the crosshair stays free and without delay, as in OMSI":
   de: "Das Lenkrad erreicht seinen Anschlag jenseits der Fensterränder; aus: das Fadenkreuz bleibt frei und ohne Verzögerung, wie in OMSI"
+  da: "Rattet når sit anslag forbi vinduets kanter; fra: sigtekornet forbliver frit og uden forsinkelse, som i OMSI"
   fr: "Le volant atteint sa butée au-delà des bords de la fenêtre ; désactivé : le réticule reste libre et sans délai, comme dans OMSI"
   nl: "Het stuur bereikt zijn uitslag voorbij de vensterranden; uit: het vizier blijft vrij en zonder vertraging, zoals in OMSI"
   pl: "Kierownica osiąga skrajne położenie za krawędziami okna; wył.: celownik jest wolny i bez opóźnienia, jak w OMSI"
@@ -394,6 +450,7 @@ _version: 2
   uk: "Кермо доходить до упору за краями вікна; вимк.: приціл вільний і без затримки, як в OMSI"
 "TrackIR X sensitivity":
   de: "Empfindlichkeit TrackIR X"
+  da: "TrackIR X-følsomhed"
   fr: "Sensibilité TrackIR X"
   nl: "Gevoeligheid TrackIR X"
   pl: "Czułość TrackIR X"
@@ -401,6 +458,7 @@ _version: 2
   uk: "Чутливість TrackIR X"
 "TrackIR Y sensitivity":
   de: "Empfindlichkeit TrackIR Y"
+  da: "TrackIR Y-følsomhed"
   fr: "Sensibilité TrackIR Y"
   nl: "Gevoeligheid TrackIR Y"
   pl: "Czułość TrackIR Y"
@@ -408,6 +466,7 @@ _version: 2
   uk: "Чутливість TrackIR Y"
 "TrackIR Z sensitivity":
   de: "Empfindlichkeit TrackIR Z"
+  da: "TrackIR Z-følsomhed"
   fr: "Sensibilité TrackIR Z"
   nl: "Gevoeligheid TrackIR Z"
   pl: "Czułość TrackIR Z"
@@ -415,6 +474,7 @@ _version: 2
   uk: "Чутливість TrackIR Z"
 "TrackIR pitch sensitivity":
   de: "Empfindlichkeit TrackIR-Nicken"
+  da: "TrackIR pitch-følsomhed"
   fr: "Sensibilité du tangage TrackIR"
   nl: "Gevoeligheid TrackIR-pitch"
   pl: "Czułość pochylenia TrackIR"
@@ -422,6 +482,7 @@ _version: 2
   uk: "Чутливість тангажу TrackIR"
 "TrackIR roll sensitivity":
   de: "Empfindlichkeit TrackIR-Rollen"
+  da: "TrackIR roll-følsomhed"
   fr: "Sensibilité du roulis TrackIR"
   nl: "Gevoeligheid TrackIR-roll"
   pl: "Czułość przechyłu TrackIR"
@@ -429,6 +490,7 @@ _version: 2
   uk: "Чутливість крену TrackIR"
 "TrackIR yaw sensitivity":
   de: "Empfindlichkeit TrackIR-Gieren"
+  da: "TrackIR yaw-følsomhed"
   fr: "Sensibilité du lacet TrackIR"
   nl: "Gevoeligheid TrackIR-yaw"
   pl: "Czułość odchylenia TrackIR"
@@ -436,6 +498,7 @@ _version: 2
   uk: "Чутливість рискання TrackIR"
 "Up / down head movement. 100% is 1:1; the low end is deliberately finer.":
   de: "Kopfbewegung oben / unten. 100% ist 1:1; der untere Bereich ist bewusst feiner."
+  da: "Hovedbevægelse op / ned. 100 % er 1:1; den lave ende er med vilje finere."
   fr: "Mouvement de tête haut / bas. 100 % = 1:1 ; le bas de l'échelle est volontairement plus fin."
   nl: "Hoofdbeweging omhoog / omlaag. 100% is 1:1; het lage eind is bewust fijner."
   pl: "Ruch głowy w górę / w dół. 100% to 1:1; dolny zakres jest celowo dokładniejszy."
@@ -443,6 +506,7 @@ _version: 2
   uk: "Рух голови вгору / вниз. 100% — 1:1; нижній діапазон навмисно точніший."
 "https://...":
   de: "https://…"
+  da: "https://..."
   fr: "https://…"
   nl: "https://…"
   pl: "https://…"
