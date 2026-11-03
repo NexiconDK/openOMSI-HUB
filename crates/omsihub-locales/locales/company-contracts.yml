@@ -5,6 +5,7 @@ _version: 2
 "Notices":
   nl: "Mededelingen"
   de: "Hinweise"
+  da: "Meddelelser"
   fr: "Avis"
   ru: "Уведомления"
   uk: "Повідомлення"
@@ -12,6 +13,7 @@ _version: 2
 "Events":
   nl: "Gebeurtenissen"
   de: "Ereignisse"
+  da: "Begivenheder"
   fr: "Événements"
   ru: "События"
   uk: "Події"
@@ -19,6 +21,7 @@ _version: 2
 "Goals":
   nl: "Doelen"
   de: "Ziele"
+  da: "Mål"
   fr: "Objectifs"
   ru: "Цели"
   uk: "Цілі"
@@ -26,6 +29,7 @@ _version: 2
 "Fuel price change":
   nl: "Brandstofprijs verandert"
   de: "Kraftstoffpreis ändert sich"
+  da: "Ændring af brændstofpris"
   fr: "Changement du prix du carburant"
   ru: "Изменение цены топлива"
   uk: "Зміна ціни пального"
@@ -33,6 +37,7 @@ _version: 2
 "Due to a supply shortage at the refineries, diesel costs %{price_after} a litre instead of %{price} from %{from} until %{until}.":
   nl: "Door een tekort bij de raffinaderijen kost diesel van %{from} tot en met %{until} %{price_after} per liter in plaats van %{price}."
   de: "Wegen eines Lieferengpasses bei den Raffinerien kostet Diesel von %{from} bis %{until} %{price_after} pro Liter statt %{price}."
+  da: "På grund af forsyningsmangel på raffinaderierne koster diesel %{price_after} pr. liter i stedet for %{price} fra %{from} til %{until}."
   fr: "En raison d'une pénurie dans les raffineries, le gazole coûte %{price_after} le litre au lieu de %{price} du %{from} au %{until}."
   ru: "Из-за перебоев с поставками на НПЗ дизель с %{from} по %{until} стоит %{price_after} за литр вместо %{price}."
   uk: "Через перебої з постачанням на НПЗ дизель з %{from} по %{until} коштує %{price_after} за літр замість %{price}."
@@ -40,6 +45,7 @@ _version: 2
 "Diesel gets cheaper":
   nl: "Diesel wordt goedkoper"
   de: "Diesel wird billiger"
+  da: "Diesel bliver billigere"
   fr: "Le gazole baisse"
   ru: "Дизель дешевеет"
   uk: "Дизель дешевшає"
@@ -47,6 +53,7 @@ _version: 2
 "The oil price has fallen: from %{from} until %{until} diesel costs %{price_after} a litre instead of %{price}.":
   nl: "De olieprijs is gedaald: van %{from} tot en met %{until} kost diesel %{price_after} per liter in plaats van %{price}."
   de: "Der Ölpreis ist gefallen: von %{from} bis %{until} kostet Diesel %{price_after} pro Liter statt %{price}."
+  da: "Oliens pris er faldet: fra %{from} til %{until} koster diesel %{price_after} pr. liter i stedet for %{price}."
   fr: "Le prix du pétrole a baissé : du %{from} au %{until}, le gazole coûte %{price_after} le litre au lieu de %{price}."
   ru: "Цена на нефть упала: с %{from} по %{until} дизель стоит %{price_after} за литр вместо %{price}."
   uk: "Ціна на нафту впала: з %{from} по %{until} дизель коштує %{price_after} за літр замість %{price}."
@@ -54,6 +61,7 @@ _version: 2
 "Environment days":
   nl: "Milieudagen"
   de: "Umwelttage"
+  da: "Miljødage"
   fr: "Journées de l'environnement"
   ru: "Дни экологии"
   uk: "Дні довкілля"
@@ -61,6 +69,7 @@ _version: 2
 "From %{from} until %{until} the town asks people to leave their cars at home: more passengers are to be expected. Make sure there are enough buses, and use extra ones if you can.":
   nl: "Van %{from} tot en met %{until} vraagt de stad mensen hun auto thuis te laten: er worden meer reizigers verwacht. Zorg voor genoeg bussen en zet extra bussen in als je kunt."
   de: "Von %{from} bis %{until} bittet die Stadt, das Auto stehen zu lassen: Es werden mehr Fahrgäste erwartet. Sorge für genug Busse und setze wenn möglich zusätzliche ein."
+  da: "Fra %{from} til %{until} opfordrer byen folk til at lade bilen stå: flere passagerer kan forventes. Sørg for, at der er busser nok, og brug ekstra, hvis du kan."
   fr: "Du %{from} au %{until}, la ville demande de laisser la voiture au garage : attendez-vous à plus de voyageurs. Prévoyez assez de bus, et ajoutez-en si vous le pouvez."
   ru: "С %{from} по %{until} город просит оставить машины дома: ожидается больше пассажиров. Позаботьтесь, чтобы автобусов хватило, и по возможности выпустите дополнительные."
   uk: "З %{from} по %{until} місто просить залишити авто вдома: очікується більше пасажирів. Подбайте, щоб автобусів вистачило, і за змоги випустіть додаткові."
@@ -68,6 +77,7 @@ _version: 2
 "Trade fair":
   nl: "Beurs"
   de: "Messe"
+  da: "Messe"
   fr: "Salon professionnel"
   ru: "Выставка"
   uk: "Виставка"
@@ -75,6 +85,7 @@ _version: 2
 "A trade fair comes to town from %{from} until %{until}: many of its visitors take the bus.":
   nl: "Van %{from} tot en met %{until} is er een beurs in de stad: veel bezoekers nemen de bus."
   de: "Von %{from} bis %{until} ist Messe in der Stadt: viele Besucher fahren mit dem Bus."
+  da: "En messe kommer til byen fra %{from} til %{until}: mange af dens gæster tager bussen."
   fr: "Un salon se tient en ville du %{from} au %{until} : beaucoup de visiteurs prennent le bus."
   ru: "С %{from} по %{until} в городе проходит выставка: многие посетители едут на автобусе."
   uk: "З %{from} по %{until} у місті триває виставка: багато відвідувачів їдуть автобусом."
@@ -82,6 +93,7 @@ _version: 2
 "Football match":
   nl: "Voetbalwedstrijd"
   de: "Fußballspiel"
+  da: "Fodboldkamp"
   fr: "Match de football"
   ru: "Футбольный матч"
   uk: "Футбольний матч"
@@ -89,6 +101,7 @@ _version: 2
 "A big match on %{from}: the fans fill the buses before and after the game.":
   nl: "Een grote wedstrijd op %{from}: de supporters vullen de bussen voor en na de wedstrijd."
   de: "Ein großes Spiel am %{from}: Die Fans füllen die Busse vor und nach dem Spiel."
+  da: "En stor kamp den %{from}: fansene fylder busserne før og efter kampen."
   fr: "Un grand match le %{from} : les supporters remplissent les bus avant et après la rencontre."
   ru: "Большой матч %{from}: болельщики заполняют автобусы до и после игры."
   uk: "Великий матч %{from}: уболівальники заповнюють автобуси до й після гри."
@@ -96,6 +109,7 @@ _version: 2
 "Christmas market":
   nl: "Kerstmarkt"
   de: "Weihnachtsmarkt"
+  da: "Julemarked"
   fr: "Marché de Noël"
   ru: "Рождественская ярмарка"
   uk: "Різдвяний ярмарок"
@@ -103,6 +117,7 @@ _version: 2
 "The Christmas market is open from %{from} until %{until}: busy buses in the afternoons and evenings.":
   nl: "De kerstmarkt is open van %{from} tot en met %{until}: drukke bussen in de middag en de avond."
   de: "Der Weihnachtsmarkt ist von %{from} bis %{until} geöffnet: volle Busse am Nachmittag und am Abend."
+  da: "Julemarkedet er åbent fra %{from} til %{until}: travle busser om eftermiddagen og aftenen."
   fr: "Le marché de Noël est ouvert du %{from} au %{until} : des bus bondés l'après-midi et le soir."
   ru: "Рождественская ярмарка открыта с %{from} по %{until}: днём и вечером автобусы переполнены."
   uk: "Різдвяний ярмарок працює з %{from} по %{until}: удень і ввечері автобуси переповнені."
@@ -110,6 +125,7 @@ _version: 2
 "Railway strike":
   nl: "Spoorstaking"
   de: "Bahnstreik"
+  da: "Jernbanestrejke"
   fr: "Grève des chemins de fer"
   ru: "Забастовка железнодорожников"
   uk: "Страйк залізничників"
@@ -117,6 +133,7 @@ _version: 2
 "The railway workers are on strike from %{from} until %{until}: their passengers take the bus.":
   nl: "Het spoorpersoneel staakt van %{from} tot en met %{until}: hun reizigers nemen de bus."
   de: "Die Bahnbeschäftigten streiken von %{from} bis %{until}: ihre Fahrgäste nehmen den Bus."
+  da: "Jernbanearbejderne strejker fra %{from} til %{until}: deres passagerer tager bussen."
   fr: "Les cheminots sont en grève du %{from} au %{until} : leurs voyageurs prennent le bus."
   ru: "Железнодорожники бастуют с %{from} по %{until}: их пассажиры пересаживаются на автобус."
   uk: "Залізничники страйкують з %{from} по %{until}: їхні пасажири пересідають на автобус."
@@ -124,6 +141,7 @@ _version: 2
 "Town festival":
   nl: "Stadsfeest"
   de: "Stadtfest"
+  da: "Byfest"
   fr: "Fête de la ville"
   ru: "Городской праздник"
   uk: "Міське свято"
@@ -131,6 +149,7 @@ _version: 2
 "The town celebrates from %{from} until %{until}: more people are out and about, and some streets are closed.":
   nl: "De stad viert feest van %{from} tot en met %{until}: meer mensen op pad, en sommige straten zijn afgesloten."
   de: "Die Stadt feiert von %{from} bis %{until}: mehr Menschen sind unterwegs, und einige Straßen sind gesperrt."
+  da: "Byen fester fra %{from} til %{until}: flere er ude og går, og nogle gader er lukket."
   fr: "La ville est en fête du %{from} au %{until} : plus de monde dehors, et certaines rues sont fermées."
   ru: "Город празднует с %{from} по %{until}: на улицах больше людей, некоторые улицы перекрыты."
   uk: "Місто святкує з %{from} по %{until}: на вулицях більше людей, деякі вулиці перекриті."
@@ -138,6 +157,7 @@ _version: 2
 "Open-air concert":
   nl: "Openluchtconcert"
   de: "Open-Air-Konzert"
+  da: "Friluftskoncert"
   fr: "Concert en plein air"
   ru: "Концерт под открытым небом"
   uk: "Концерт просто неба"
@@ -145,6 +165,7 @@ _version: 2
 "An open-air concert on %{from} brings crowds into town.":
   nl: "Een openluchtconcert op %{from} brengt drommen mensen naar de stad."
   de: "Ein Open-Air-Konzert am %{from} bringt Massen in die Stadt."
+  da: "En friluftskoncert den %{from} trækker store skarer ind til byen."
   fr: "Un concert en plein air le %{from} attire la foule en ville."
   ru: "Концерт под открытым небом %{from} собирает в городе толпы."
   uk: "Концерт просто неба %{from} збирає в місті натовпи."
@@ -152,6 +173,7 @@ _version: 2
 "Town marathon":
   nl: "Stadsmarathon"
   de: "Stadtmarathon"
+  da: "Bymaraton"
   fr: "Marathon de la ville"
   ru: "Городской марафон"
   uk: "Міський марафон"
@@ -159,6 +181,7 @@ _version: 2
 "The marathon on %{from} closes the streets in the centre: the buses run late, and many come to watch.":
   nl: "De marathon op %{from} sluit de straten in het centrum af: de bussen rijden met vertraging, en velen komen kijken."
   de: "Der Marathon am %{from} sperrt die Straßen im Zentrum: Die Busse fahren verspätet, und viele kommen zum Zuschauen."
+  da: "Maratonløbet den %{from} lukker gaderne i centrum: busserne kører for sent, og mange kommer for at se på."
   fr: "Le marathon du %{from} ferme les rues du centre : les bus sont en retard, et beaucoup viennent regarder."
   ru: "Марафон %{from} перекрывает улицы в центре: автобусы опаздывают, а многие приезжают посмотреть."
   uk: "Марафон %{from} перекриває вулиці в центрі: автобуси запізнюються, а багато хто приїжджає подивитися."
@@ -166,6 +189,7 @@ _version: 2
 "Tourist season":
   nl: "Toeristenseizoen"
   de: "Touristensaison"
+  da: "Turistsæson"
   fr: "Saison touristique"
   ru: "Туристический сезон"
   uk: "Туристичний сезон"
@@ -173,6 +197,7 @@ _version: 2
 "From %{from} until %{until} the town is full of tourists: more passengers on the buses.":
   nl: "Van %{from} tot en met %{until} zit de stad vol toeristen: meer reizigers in de bussen."
   de: "Von %{from} bis %{until} ist die Stadt voller Touristen: mehr Fahrgäste in den Bussen."
+  da: "Fra %{from} til %{until} er byen fuld af turister: flere passagerer i busserne."
   fr: "Du %{from} au %{until}, la ville est pleine de touristes : plus de voyageurs dans les bus."
   ru: "С %{from} по %{until} город полон туристов: в автобусах больше пассажиров."
   uk: "З %{from} по %{until} місто повне туристів: в автобусах більше пасажирів."
@@ -180,6 +205,7 @@ _version: 2
 "The schools are closed from %{from} until %{until}: fewer pupils on the buses.":
   nl: "De scholen zijn dicht van %{from} tot en met %{until}: minder scholieren in de bussen."
   de: "Die Schulen sind von %{from} bis %{until} geschlossen: weniger Schüler in den Bussen."
+  da: "Skolerne er lukket fra %{from} til %{until}: færre elever i busserne."
   fr: "Les écoles sont fermées du %{from} au %{until} : moins d'élèves dans les bus."
   ru: "Школы закрыты с %{from} по %{until}: в автобусах меньше школьников."
   uk: "Школи зачинені з %{from} по %{until}: в автобусах менше школярів."
@@ -187,6 +213,7 @@ _version: 2
 "Heat wave":
   nl: "Hittegolf"
   de: "Hitzewelle"
+  da: "Hedebølge"
   fr: "Canicule"
   ru: "Жара"
   uk: "Спека"
@@ -194,6 +221,7 @@ _version: 2
 "Temperatures above 35 degrees from %{from} until %{until}: fewer people go out.":
   nl: "Temperaturen boven de 35 graden van %{from} tot en met %{until}: minder mensen gaan de deur uit."
   de: "Temperaturen über 35 Grad von %{from} bis %{until}: weniger Menschen gehen aus dem Haus."
+  da: "Temperaturer over 35 grader fra %{from} til %{until}: færre går ud."
   fr: "Plus de 35 degrés du %{from} au %{until} : moins de gens sortent."
   ru: "Температура выше 35 градусов с %{from} по %{until}: люди реже выходят из дома."
   uk: "Температура понад 35 градусів з %{from} по %{until}: люди рідше виходять з дому."
@@ -201,6 +229,7 @@ _version: 2
 "Storm warning":
   nl: "Stormwaarschuwing"
   de: "Sturmwarnung"
+  da: "Stormvarsel"
   fr: "Alerte tempête"
   ru: "Штормовое предупреждение"
   uk: "Штормове попередження"
@@ -208,6 +237,7 @@ _version: 2
 "A storm sweeps over the region from %{from} until %{until}: fewer passengers, fallen trees and delays.":
   nl: "Van %{from} tot en met %{until} raast een storm over de regio: minder reizigers, omgewaaide bomen en vertragingen."
   de: "Von %{from} bis %{until} fegt ein Sturm über die Region: weniger Fahrgäste, umgestürzte Bäume und Verspätungen."
+  da: "En storm fejer hen over regionen fra %{from} til %{until}: færre passagerer, væltede træer og forsinkelser."
   fr: "Une tempête balaie la région du %{from} au %{until} : moins de voyageurs, des arbres tombés et des retards."
   ru: "С %{from} по %{until} над регионом бушует шторм: меньше пассажиров, поваленные деревья и задержки."
   uk: "З %{from} по %{until} регіоном проноситься буря: менше пасажирів, повалені дерева й затримки."
@@ -215,6 +245,7 @@ _version: 2
 "Snow and ice":
   nl: "Sneeuw en ijzel"
   de: "Schnee und Glätte"
+  da: "Sne og is"
   fr: "Neige et verglas"
   ru: "Снег и гололёд"
   uk: "Сніг і ожеледь"
@@ -222,6 +253,7 @@ _version: 2
 "Snow and black ice from %{from} until %{until}: the buses run slowly and late, and fewer people go out.":
   nl: "Sneeuw en ijzel van %{from} tot en met %{until}: de bussen rijden langzaam en te laat, en minder mensen gaan de deur uit."
   de: "Schnee und Glatteis von %{from} bis %{until}: Die Busse fahren langsam und verspätet, und weniger Menschen gehen aus dem Haus."
+  da: "Sne og isslag fra %{from} til %{until}: busserne kører langsomt og for sent, og færre går ud."
   fr: "Neige et verglas du %{from} au %{until} : les bus roulent lentement et en retard, et moins de gens sortent."
   ru: "Снег и гололёд с %{from} по %{until}: автобусы едут медленно и опаздывают, люди реже выходят из дома."
   uk: "Сніг і ожеледь з %{from} по %{until}: автобуси їдуть повільно й запізнюються, люди рідше виходять з дому."
@@ -229,6 +261,7 @@ _version: 2
 "Roadworks on line %{n}":
   nl: "Werkzaamheden op lijn %{n}"
   de: "Baustelle auf Linie %{n}"
+  da: "Vejarbejde på linje %{n}"
   fr: "Travaux sur la ligne %{n}"
   ru: "Дорожные работы на линии %{n}"
   uk: "Дорожні роботи на лінії %{n}"
@@ -236,6 +269,7 @@ _version: 2
 "Roadworks on the route of line %{n} from %{from} until %{until}: its buses are held up.":
   nl: "Werkzaamheden op de route van lijn %{n} van %{from} tot en met %{until}: de bussen lopen vertraging op."
   de: "Baustelle auf dem Linienweg der Linie %{n} von %{from} bis %{until}: Ihre Busse werden aufgehalten."
+  da: "Vejarbejde på ruten for linje %{n} fra %{from} til %{until}: dens busser bliver forsinket."
   fr: "Travaux sur le parcours de la ligne %{n} du %{from} au %{until} : ses bus sont ralentis."
   ru: "Дорожные работы на маршруте линии %{n} с %{from} по %{until}: её автобусы задерживаются."
   uk: "Дорожні роботи на маршруті лінії %{n} з %{from} по %{until}: її автобуси затримуються."
@@ -243,6 +277,7 @@ _version: 2
 "Diversion on line %{n}":
   nl: "Omleiding op lijn %{n}"
   de: "Umleitung auf Linie %{n}"
+  da: "Omkørsel på linje %{n}"
   fr: "Déviation sur la ligne %{n}"
   ru: "Объезд на линии %{n}"
   uk: "Об'їзд на лінії %{n}"
@@ -250,6 +285,7 @@ _version: 2
 "A street on line %{n} is closed from %{from} until %{until}: its buses take a diversion, run late and miss some of their passengers.":
   nl: "Een straat op lijn %{n} is afgesloten van %{from} tot en met %{until}: de bussen rijden om, lopen vertraging op en missen een deel van hun reizigers."
   de: "Eine Straße auf Linie %{n} ist von %{from} bis %{until} gesperrt: Ihre Busse fahren eine Umleitung, verspäten sich und verpassen einen Teil ihrer Fahrgäste."
+  da: "En gade på linje %{n} er lukket fra %{from} til %{until}: dens busser kører en omvej, kører for sent og misser nogle af deres passagerer."
   fr: "Une rue de la ligne %{n} est fermée du %{from} au %{until} : ses bus font un détour, prennent du retard et perdent une partie de leurs voyageurs."
   ru: "Улица на линии %{n} закрыта с %{from} по %{until}: её автобусы едут в объезд, опаздывают и теряют часть пассажиров."
   uk: "Вулиця на лінії %{n} закрита з %{from} по %{until}: її автобуси їдуть в об'їзд, запізнюються й втрачають частину пасажирів."
@@ -257,6 +293,7 @@ _version: 2
 "It is today.":
   nl: "Het is vandaag."
   de: "Es ist heute."
+  da: "Det er i dag."
   fr: "C'est aujourd'hui."
   ru: "Это сегодня."
   uk: "Це сьогодні."
@@ -264,6 +301,7 @@ _version: 2
 "It begins today and lasts until %{until}.":
   nl: "Het begint vandaag en duurt tot en met %{until}."
   de: "Es beginnt heute und dauert bis %{until}."
+  da: "Det begynder i dag og varer til %{until}."
   fr: "Cela commence aujourd'hui et dure jusqu'au %{until}."
   ru: "Начинается сегодня и продлится по %{until}."
   uk: "Починається сьогодні й триватиме по %{until}."
@@ -271,6 +309,7 @@ _version: 2
 "It is over: everything is as usual again.":
   nl: "Het is voorbij: alles is weer als vanouds."
   de: "Es ist vorbei: Alles ist wieder wie gewohnt."
+  da: "Det er forbi: alt er som sædvanligt igen."
   fr: "C'est terminé : tout est redevenu normal."
   ru: "Всё закончилось: всё снова как обычно."
   uk: "Усе скінчилося: усе знову як завжди."
@@ -278,6 +317,7 @@ _version: 2
 "Welcome to your inbox":
   nl: "Welkom in je inbox"
   de: "Willkommen in deinem Posteingang"
+  da: "Velkommen til din indbakke"
   fr: "Bienvenue dans votre boîte de réception"
   ru: "Добро пожаловать во входящие"
   uk: "Ласкаво просимо до вхідних"
@@ -285,6 +325,7 @@ _version: 2
 "Here your company tells you what happens: events in town that bring more or fewer passengers or change the diesel's price, your staff, your buses and the workshop, your money, and the goals and contracts you can take on. A new message is marked until you have read it.":
   nl: "Hier vertelt je bedrijf wat er gebeurt: gebeurtenissen in de stad die meer of minder reizigers brengen of de dieselprijs veranderen, je personeel, je bussen en de werkplaats, je geld, en de doelen en contracten die je kunt aannemen. Een nieuw bericht blijft gemarkeerd tot je het hebt gelezen."
   de: "Hier erzählt dir dein Unternehmen, was passiert: Ereignisse in der Stadt, die mehr oder weniger Fahrgäste bringen oder den Dieselpreis ändern, dein Personal, deine Busse und die Werkstatt, dein Geld und die Ziele und Verträge, die du annehmen kannst. Eine neue Nachricht bleibt markiert, bis du sie gelesen hast."
+  da: "Her fortæller dit selskab dig, hvad der sker: begivenheder i byen, der giver flere eller færre passagerer eller ændrer dieselprisen, dit personale, dine busser og værkstedet, dine penge og de mål og kontrakter, du kan tage på dig. En ny besked er markeret, til du har læst den."
   fr: "Ici, votre entreprise vous dit ce qui se passe : les événements en ville qui amènent plus ou moins de voyageurs ou changent le prix du gazole, votre personnel, vos bus et l'atelier, votre argent, ainsi que les objectifs et contrats que vous pouvez accepter. Un nouveau message reste marqué jusqu'à ce que vous l'ayez lu."
   ru: "Здесь ваша компания сообщает, что происходит: события в городе, которые приводят больше или меньше пассажиров или меняют цену дизеля, ваш персонал, автобусы и мастерская, ваши деньги, а также цели и контракты, которые можно взять. Новое сообщение отмечено, пока вы его не прочтёте."
   uk: "Тут ваша компанія повідомляє, що відбувається: події в місті, які приводять більше чи менше пасажирів або змінюють ціну дизеля, ваш персонал, автобуси й майстерня, ваші гроші, а також цілі й контракти, які можна взяти. Нове повідомлення позначене, доки ви його не прочитаєте."
@@ -292,6 +333,7 @@ _version: 2
 "Breakdown":
   nl: "Pech"
   de: "Panne"
+  da: "Sammenbrud"
   fr: "Panne"
   ru: "Поломка"
   uk: "Поломка"
@@ -299,6 +341,7 @@ _version: 2
 "A bus went back":
   nl: "Een bus is teruggegaan"
   de: "Ein Bus ist zurückgegangen"
+  da: "En bus kom tilbage"
   fr: "Un bus a été rendu"
   ru: "Автобус возвращён"
   uk: "Автобус повернуто"
@@ -306,6 +349,7 @@ _version: 2
 "Loan paid off":
   nl: "Lening afgelost"
   de: "Kredit getilgt"
+  da: "Lån betalt"
   fr: "Prêt remboursé"
   ru: "Кредит погашен"
   uk: "Кредит погашено"
@@ -313,6 +357,7 @@ _version: 2
 "The month is closed":
   nl: "De maand is afgesloten"
   de: "Der Monat ist abgeschlossen"
+  da: "Måneden er afsluttet"
   fr: "Le mois est clôturé"
   ru: "Месяц закрыт"
   uk: "Місяць закрито"
@@ -320,6 +365,7 @@ _version: 2
 "Building work done":
   nl: "Bouwwerk klaar"
   de: "Bauarbeiten fertig"
+  da: "Byggearbejde færdigt"
   fr: "Travaux terminés"
   ru: "Строительство завершено"
   uk: "Будівництво завершено"
@@ -327,6 +373,7 @@ _version: 2
 "Waiting for a workshop bay":
   nl: "Wacht op een werkplaatsplek"
   de: "Wartet auf einen Werkstattplatz"
+  da: "Venter på en værkstedsplads"
   fr: "En attente d'une place à l'atelier"
   ru: "Ждёт места в мастерской"
   uk: "Чекає на місце в майстерні"
@@ -334,6 +381,7 @@ _version: 2
 "Concession won":
   nl: "Concessie gewonnen"
   de: "Konzession gewonnen"
+  da: "Koncession vundet"
   fr: "Concession remportée"
   ru: "Концессия получена"
   uk: "Концесію отримано"
@@ -341,6 +389,7 @@ _version: 2
 "Tender lost":
   nl: "Aanbesteding verloren"
   de: "Ausschreibung verloren"
+  da: "Udbud tabt"
   fr: "Appel d'offres perdu"
   ru: "Тендер проигран"
   uk: "Тендер програно"
@@ -348,6 +397,7 @@ _version: 2
 "Concession ended":
   nl: "Concessie afgelopen"
   de: "Konzession beendet"
+  da: "Koncession afsluttet"
   fr: "Concession terminée"
   ru: "Концессия завершена"
   uk: "Концесію завершено"
@@ -355,6 +405,7 @@ _version: 2
 "Line not in service":
   nl: "Lijn niet in dienst"
   de: "Linie nicht in Betrieb"
+  da: "Linje ikke i drift"
   fr: "Ligne pas en service"
   ru: "Линия не обслуживается"
   uk: "Лінія не обслуговується"
@@ -362,6 +413,7 @@ _version: 2
 "Accident":
   nl: "Ongeval"
   de: "Unfall"
+  da: "Uheld"
   fr: "Accident"
   ru: "Авария"
   uk: "Аварія"
@@ -369,6 +421,7 @@ _version: 2
 "Notice handed in":
   nl: "Ontslag genomen"
   de: "Gekündigt"
+  da: "Opsigelse indgivet"
   fr: "Démission"
   ru: "Увольнение по собственному желанию"
   uk: "Звільнення за власним бажанням"
@@ -376,6 +429,7 @@ _version: 2
 "Unhappy":
   nl: "Ontevreden"
   de: "Unzufrieden"
+  da: "Utilfreds"
   fr: "Mécontent"
   ru: "Недоволен"
   uk: "Незадоволений"
@@ -383,6 +437,7 @@ _version: 2
 "Left the company":
   nl: "Uit dienst"
   de: "Ausgeschieden"
+  da: "Forlod selskabet"
   fr: "A quitté l'entreprise"
   ru: "Покинул компанию"
   uk: "Залишив компанію"
@@ -390,6 +445,7 @@ _version: 2
 "Loan rates paid":
   nl: "Leningtermijnen betaald"
   de: "Kreditraten bezahlt"
+  da: "Lånerater betalt"
   fr: "Échéances de prêt payées"
   ru: "Платежи по кредитам внесены"
   uk: "Платежі за кредитами внесено"
@@ -397,6 +453,7 @@ _version: 2
 "The month's loan rates were paid: %{amount}, of which interest %{cost}.":
   nl: "De leningtermijnen van de maand zijn betaald: %{amount}, waarvan rente %{cost}."
   de: "Die Kreditraten des Monats wurden bezahlt: %{amount}, davon Zinsen %{cost}."
+  da: "Månedens lånerater blev betalt: %{amount}, heraf renter %{cost}."
   fr: "Les échéances de prêt du mois ont été payées : %{amount}, dont %{cost} d'intérêts."
   ru: "Платежи по кредитам за месяц внесены: %{amount}, из них проценты %{cost}."
   uk: "Платежі за кредитами за місяць внесено: %{amount}, з них відсотки %{cost}."
@@ -404,6 +461,7 @@ _version: 2
 "Tours not covered":
   nl: "Omlopen niet gedekt"
   de: "Umläufe nicht besetzt"
+  da: "Vognløb ikke dækket"
   fr: "Services non couverts"
   ru: "Выходы не обеспечены"
   uk: "Виходи не забезпечені"
@@ -411,6 +469,7 @@ _version: 2
 "Contract penalties":
   nl: "Contractboetes"
   de: "Vertragsstrafen"
+  da: "Kontraktbøder"
   fr: "Pénalités contractuelles"
   ru: "Штрафы по договору"
   uk: "Штрафи за договором"
@@ -418,6 +477,7 @@ _version: 2
 "Passenger complaints":
   nl: "Klachten van reizigers"
   de: "Fahrgastbeschwerden"
+  da: "Passagerklager"
   fr: "Plaintes des voyageurs"
   ru: "Жалобы пассажиров"
   uk: "Скарги пасажирів"
@@ -425,6 +485,7 @@ _version: 2
 "Full buses":
   nl: "Volle bussen"
   de: "Volle Busse"
+  da: "Fulde busser"
   fr: "Bus bondés"
   ru: "Переполненные автобусы"
   uk: "Переповнені автобуси"
@@ -432,6 +493,7 @@ _version: 2
 "The company is in the red":
   nl: "Het bedrijf staat rood"
   de: "Das Unternehmen ist im Minus"
+  da: "Selskabet er i minus"
   fr: "L'entreprise est dans le rouge"
   ru: "Компания в минусе"
   uk: "Компанія в мінусі"
@@ -439,6 +501,7 @@ _version: 2
 "The company has %{amount} in cash: it is overdrawn. Take a loan, sell a bus or cut costs before the wages are due.":
   nl: "Het bedrijf heeft %{amount} in kas: het staat rood. Neem een lening, verkoop een bus of bezuinig voordat de lonen betaald moeten worden."
   de: "Das Unternehmen hat %{amount} in der Kasse: Das Konto ist überzogen. Nimm einen Kredit auf, verkaufe einen Bus oder senke die Kosten, bevor die Löhne fällig sind."
+  da: "Selskabet har %{amount} i kontanter: det er overtrukket. Tag et lån, sælg en bus eller skær i omkostningerne, før lønningerne forfalder."
   fr: "L'entreprise a %{amount} en caisse : le compte est à découvert. Empruntez, vendez un bus ou réduisez les coûts avant l'échéance des salaires."
   ru: "У компании %{amount} в кассе: счёт в минусе. Возьмите кредит, продайте автобус или сократите расходы до выплаты зарплат."
   uk: "У компанії %{amount} в касі: рахунок у мінусі. Візьміть кредит, продайте автобус або скоротіть витрати до виплати зарплат."
@@ -446,6 +509,7 @@ _version: 2
 "Low cash":
   nl: "Weinig geld in kas"
   de: "Wenig Geld in der Kasse"
+  da: "Lave kontanter"
   fr: "Trésorerie faible"
   ru: "Мало денег"
   uk: "Мало грошей"
@@ -453,6 +517,7 @@ _version: 2
 "The company has %{amount} in cash, less than a month's wages (%{cost}).":
   nl: "Het bedrijf heeft %{amount} in kas, minder dan de lonen van een maand (%{cost})."
   de: "Das Unternehmen hat %{amount} in der Kasse, weniger als die Löhne eines Monats (%{cost})."
+  da: "Selskabet har %{amount} i kontanter, mindre end en måneds lønninger (%{cost})."
   fr: "L'entreprise a %{amount} en caisse, moins qu'un mois de salaires (%{cost})."
   ru: "У компании %{amount} в кассе, меньше месячной зарплаты (%{cost})."
   uk: "У компанії %{amount} в касі, менше за місячну зарплату (%{cost})."
@@ -460,6 +525,7 @@ _version: 2
 "Complete %{count} trips successfully":
   nl: "Rijd %{count} ritten met succes"
   de: "Fahre %{count} Fahrten erfolgreich"
+  da: "Gennemfør %{count} ture med succes"
   fr: "Effectuez %{count} trajets avec succès"
   ru: "Успешно выполните %{count} рейсов"
   uk: "Успішно виконайте %{count} рейсів"
@@ -467,6 +533,7 @@ _version: 2
 "Carry %{count} passengers":
   nl: "Vervoer %{count} reizigers"
   de: "Befördere %{count} Fahrgäste"
+  da: "Kør %{count} passagerer"
   fr: "Transportez %{count} voyageurs"
   ru: "Перевезите %{count} пассажиров"
   uk: "Перевезіть %{count} пасажирів"
@@ -474,6 +541,7 @@ _version: 2
 "Drive %{count} km on the lines":
   nl: "Rijd %{count} km op de lijnen"
   de: "Fahre %{count} km auf den Linien"
+  da: "Kør %{count} km på linjerne"
   fr: "Parcourez %{count} km sur les lignes"
   ru: "Проедьте %{count} км по линиям"
   uk: "Проїдьте %{count} км лініями"
@@ -481,6 +549,7 @@ _version: 2
 "Improve your company rating to %{stars} stars":
   nl: "Verbeter de beoordeling van je bedrijf tot %{stars} sterren"
   de: "Verbessere die Bewertung deines Unternehmens auf %{stars} Sterne"
+  da: "Forbedr dit selskabs vurdering til %{stars} stjerner"
   fr: "Portez la note de votre entreprise à %{stars} étoiles"
   ru: "Поднимите рейтинг компании до %{stars} звёзд"
   uk: "Підніміть рейтинг компанії до %{stars} зірок"
@@ -488,6 +557,7 @@ _version: 2
 "No dropped trips for %{days} days in a row":
   nl: "Geen uitgevallen ritten, %{days} dagen achter elkaar"
   de: "Keine ausgefallenen Fahrten an %{days} Tagen in Folge"
+  da: "Ingen droppede ture i %{days} dage i træk"
   fr: "Aucun trajet supprimé pendant %{days} jours d'affilée"
   ru: "Ни одного отменённого рейса %{days} дней подряд"
   uk: "Жодного скасованого рейсу %{days} днів поспіль"
@@ -495,6 +565,7 @@ _version: 2
 "At least %{pct} % of the trips on time for %{days} days in a row":
   nl: "Minstens %{pct} % van de ritten op tijd, %{days} dagen achter elkaar"
   de: "Mindestens %{pct} % der Fahrten pünktlich an %{days} Tagen in Folge"
+  da: "Mindst %{pct} % af turene til tiden i %{days} dage i træk"
   fr: "Au moins %{pct} % des trajets à l'heure pendant %{days} jours d'affilée"
   ru: "Не менее %{pct} % рейсов вовремя %{days} дней подряд"
   uk: "Щонайменше %{pct} % рейсів вчасно %{days} днів поспіль"
@@ -502,6 +573,7 @@ _version: 2
 "Run line %{n} on time for %{days} days in a row":
   nl: "Laat lijn %{n} op tijd rijden, %{days} dagen achter elkaar"
   de: "Betreibe Linie %{n} pünktlich an %{days} Tagen in Folge"
+  da: "Kør linje %{n} til tiden i %{days} dage i træk"
   fr: "Faites rouler la ligne %{n} à l'heure pendant %{days} jours d'affilée"
   ru: "Обслуживайте линию %{n} без опозданий %{days} дней подряд"
   uk: "Обслуговуйте лінію %{n} без запізнень %{days} днів поспіль"
@@ -509,6 +581,7 @@ _version: 2
 "Close %{days} days in profit":
   nl: "Sluit %{days} dagen af met winst"
   de: "Schließe %{days} Tage mit Gewinn ab"
+  da: "Afslut %{days} dage med overskud"
   fr: "Clôturez %{days} journées en bénéfice"
   ru: "Закройте %{days} дней с прибылью"
   uk: "Закрийте %{days} днів із прибутком"
@@ -516,6 +589,7 @@ _version: 2
 "Every trip run counts, yours too; a dropped one does not.":
   nl: "Elke gereden rit telt, ook die van jou; een uitgevallen rit niet."
   de: "Jede gefahrene Fahrt zählt, auch deine; eine ausgefallene nicht."
+  da: "Hver kørt tur tæller, også dine; en droppet gør ikke."
   fr: "Chaque trajet effectué compte, les vôtres aussi ; un trajet supprimé ne compte pas."
   ru: "Считается каждый выполненный рейс, и ваши тоже; отменённый — нет."
   uk: "Зараховується кожен виконаний рейс, і ваші теж; скасований — ні."
@@ -523,6 +597,7 @@ _version: 2
 "Every passenger on your lines counts.":
   nl: "Elke reiziger op je lijnen telt."
   de: "Jeder Fahrgast auf deinen Linien zählt."
+  da: "Hver passager på dine linjer tæller."
   fr: "Chaque voyageur sur vos lignes compte."
   ru: "Считается каждый пассажир на ваших линиях."
   uk: "Зараховується кожен пасажир на ваших лініях."
@@ -530,6 +605,7 @@ _version: 2
 "Every kilometre your buses run on the lines counts.":
   nl: "Elke kilometer die je bussen op de lijnen rijden telt."
   de: "Jeder Kilometer, den deine Busse auf den Linien fahren, zählt."
+  da: "Hver kilometer, dine busser kører på linjerne, tæller."
   fr: "Chaque kilomètre parcouru par vos bus sur les lignes compte."
   ru: "Считается каждый километр, пройденный вашими автобусами по линиям."
   uk: "Зараховується кожен кілометр, пройдений вашими автобусами лініями."
@@ -537,6 +613,7 @@ _version: 2
 "Your rating is your reputation in stars: trips on time and happy passengers raise it.":
   nl: "Je beoordeling is je reputatie in sterren: ritten op tijd en tevreden reizigers verhogen hem."
   de: "Deine Bewertung ist dein Ruf in Sternen: pünktliche Fahrten und zufriedene Fahrgäste heben sie."
+  da: "Din vurdering er dit omdømme i stjerner: ture til tiden og glade passagerer hæver den."
   fr: "Votre note est votre réputation en étoiles : les trajets à l'heure et les voyageurs satisfaits la font monter."
   ru: "Ваш рейтинг — это ваша репутация в звёздах: рейсы вовремя и довольные пассажиры повышают его."
   uk: "Ваш рейтинг — це ваша репутація в зірках: рейси вчасно й задоволені пасажири підвищують його."
@@ -544,6 +621,7 @@ _version: 2
 "A day with a dropped trip starts the count again.":
   nl: "Een dag met een uitgevallen rit laat de telling opnieuw beginnen."
   de: "Ein Tag mit einer ausgefallenen Fahrt beginnt die Zählung von vorn."
+  da: "En dag med en droppet tur starter optællingen forfra."
   fr: "Une journée avec un trajet supprimé remet le compte à zéro."
   ru: "День с отменённым рейсом обнуляет счёт."
   uk: "День зі скасованим рейсом обнуляє лік."
@@ -551,6 +629,7 @@ _version: 2
 "A day with fewer trips on time starts the count again.":
   nl: "Een dag met minder ritten op tijd laat de telling opnieuw beginnen."
   de: "Ein Tag mit weniger pünktlichen Fahrten beginnt die Zählung von vorn."
+  da: "En dag med færre ture til tiden starter optællingen forfra."
   fr: "Une journée avec moins de trajets à l'heure remet le compte à zéro."
   ru: "День с меньшей долей рейсов вовремя обнуляет счёт."
   uk: "День із меншою часткою рейсів вчасно обнуляє лік."
@@ -558,6 +637,7 @@ _version: 2
 "A day on which the line drops a trip or runs more than one in ten late starts the count again.":
   nl: "Een dag waarop de lijn een rit laat uitvallen of meer dan een op de tien te laat rijdt, laat de telling opnieuw beginnen."
   de: "Ein Tag, an dem die Linie eine Fahrt ausfallen lässt oder mehr als jede zehnte verspätet fährt, beginnt die Zählung von vorn."
+  da: "En dag, hvor linjen dropper en tur eller kører mere end en ud af ti for sent, starter optællingen forfra."
   fr: "Une journée où la ligne supprime un trajet ou en fait plus d'un sur dix en retard remet le compte à zéro."
   ru: "День, когда на линии отменён рейс или опоздал больше чем каждый десятый, обнуляет счёт."
   uk: "День, коли на лінії скасовано рейс або запізнився більше ніж кожен десятий, обнуляє лік."
@@ -565,6 +645,7 @@ _version: 2
 "Every day that ends with a profit counts.":
   nl: "Elke dag die met winst eindigt telt."
   de: "Jeder Tag, der mit Gewinn endet, zählt."
+  da: "Hver dag, der ender med overskud, tæller."
   fr: "Chaque journée qui se termine en bénéfice compte."
   ru: "Считается каждый день, закрытый с прибылью."
   uk: "Зараховується кожен день, закритий із прибутком."
@@ -572,6 +653,7 @@ _version: 2
 "Research WLAN on the buses first.":
   nl: "Onderzoek eerst wifi in de bussen."
   de: "Erforsche zuerst WLAN in den Bussen."
+  da: "Forsk først i WLAN på busserne."
   fr: "Recherchez d'abord le Wi-Fi dans les bus."
   ru: "Сначала исследуйте Wi-Fi в автобусах."
   uk: "Спершу дослідіть Wi-Fi в автобусах."
@@ -579,6 +661,7 @@ _version: 2
 "There is no such offer.":
   nl: "Dat aanbod bestaat niet."
   de: "Dieses Angebot gibt es nicht."
+  da: "Der er intet sådant tilbud."
   fr: "Cette offre n'existe pas."
   ru: "Такого предложения нет."
   uk: "Такої пропозиції немає."
@@ -586,6 +669,7 @@ _version: 2
 "The buses have no internet contract today.":
   nl: "De bussen hebben vandaag geen internetcontract."
   de: "Die Busse haben heute keinen Internetvertrag."
+  da: "Busserne har ingen internetkontrakt i dag."
   fr: "Les bus n'ont pas de contrat Internet aujourd'hui."
   ru: "Сегодня у автобусов нет интернет-контракта."
   uk: "Сьогодні в автобусів немає інтернет-контракту."
@@ -593,6 +677,7 @@ _version: 2
 "A fixed diesel price runs already.":
   nl: "Er loopt al een vaste dieselprijs."
   de: "Es läuft bereits ein fester Dieselpreis."
+  da: "En fast dieselpris kører allerede."
   fr: "Un prix fixe du gazole est déjà en cours."
   ru: "Фиксированная цена на дизель уже действует."
   uk: "Фіксована ціна на дизель уже діє."
@@ -600,6 +685,7 @@ _version: 2
 "Fixed diesel price":
   nl: "Vaste dieselprijs"
   de: "Fester Dieselpreis"
+  da: "Fast dieselpris"
   fr: "Prix fixe du gazole"
   ru: "Фиксированная цена на дизель"
   uk: "Фіксована ціна на дизель"
@@ -607,6 +693,7 @@ _version: 2
 "From tomorrow until %{until} the company pays %{price} a litre of diesel, whatever the market does.":
   nl: "Vanaf morgen tot en met %{until} betaalt het bedrijf %{price} per liter diesel, wat de markt ook doet."
   de: "Ab morgen bis %{until} zahlt das Unternehmen %{price} pro Liter Diesel, egal was der Markt macht."
+  da: "Fra i morgen til %{until} betaler selskabet %{price} pr. liter diesel, uanset hvad markedet gør."
   fr: "De demain au %{until}, l'entreprise paie %{price} le litre de gazole, quoi que fasse le marché."
   ru: "С завтрашнего дня по %{until} компания платит %{price} за литр дизеля, что бы ни происходило на рынке."
   uk: "З завтрашнього дня по %{until} компанія платить %{price} за літр дизеля, хоч би що робив ринок."
@@ -614,6 +701,7 @@ _version: 2
 "The cleaning company works for you already.":
   nl: "Het schoonmaakbedrijf werkt al voor je."
   de: "Die Reinigungsfirma arbeitet schon für dich."
+  da: "Rengøringsfirmaet arbejder allerede for dig."
   fr: "L'entreprise de nettoyage travaille déjà pour vous."
   ru: "Клининговая компания уже работает на вас."
   uk: "Клінінгова компанія вже працює на вас."
@@ -621,6 +709,7 @@ _version: 2
 "There is no such goal.":
   nl: "Dat doel bestaat niet."
   de: "Dieses Ziel gibt es nicht."
+  da: "Der er intet sådant mål."
   fr: "Cet objectif n'existe pas."
   ru: "Такой цели нет."
   uk: "Такої цілі немає."
@@ -628,6 +717,7 @@ _version: 2
 "This goal is taken already.":
   nl: "Dit doel is al aangenomen."
   de: "Dieses Ziel ist schon angenommen."
+  da: "Dette mål er allerede taget."
   fr: "Cet objectif est déjà accepté."
   ru: "Эта цель уже взята."
   uk: "Цю ціль уже взято."
@@ -635,6 +725,7 @@ _version: 2
 "This offer has run out.":
   nl: "Dit aanbod is verlopen."
   de: "Dieses Angebot ist abgelaufen."
+  da: "Dette tilbud er udløbet."
   fr: "Cette offre a expiré."
   ru: "Срок этого предложения истёк."
   uk: "Термін цієї пропозиції сплив."
@@ -642,6 +733,7 @@ _version: 2
 "Three goals run already: reach one or give one up first.":
   nl: "Er lopen al drie doelen: haal er eerst een of geef er een op."
   de: "Es laufen schon drei Ziele: Erreiche zuerst eines oder gib eines auf."
+  da: "Tre mål kører allerede: nå et eller opgiv et først."
   fr: "Trois objectifs sont déjà en cours : atteignez-en un ou abandonnez-en un d'abord."
   ru: "Уже выполняются три цели: сначала достигните одной или откажитесь от одной."
   uk: "Уже виконуються три цілі: спершу досягніть однієї або відмовтеся від однієї."
@@ -649,6 +741,7 @@ _version: 2
 "New goals on offer":
   nl: "Nieuwe doelen aangeboden"
   de: "Neue Ziele im Angebot"
+  da: "Nye mål til rådighed"
   fr: "Nouveaux objectifs proposés"
   ru: "Новые цели"
   uk: "Нові цілі"
@@ -656,6 +749,7 @@ _version: 2
 "%{count} new goals are on offer until %{until}, each with trophies and money as its reward. Take on up to three at once on the Contracts page.":
   nl: "Tot en met %{until} worden %{count} nieuwe doelen aangeboden, elk met trofeeën en geld als beloning. Neem er tot drie tegelijk aan op de pagina Contracten."
   de: "Bis %{until} gibt es %{count} neue Ziele, jedes mit Trophäen und Geld als Belohnung. Nimm auf der Seite Verträge bis zu drei gleichzeitig an."
+  da: "%{count} nye mål er til rådighed indtil %{until}, hvert med trofæer og penge som belønning. Tag op til tre på dig ad gangen på siden Kontrakter."
   fr: "%{count} nouveaux objectifs sont proposés jusqu'au %{until}, chacun récompensé par des trophées et de l'argent. Acceptez-en jusqu'à trois à la fois sur la page Contrats."
   ru: "До %{until} доступно %{count} новых целей, за каждую — трофеи и деньги. Берите до трёх одновременно на странице «Контракты»."
   uk: "До %{until} доступно %{count} нових цілей, за кожну — трофеї та гроші. Беріть до трьох одночасно на сторінці «Контракти»."
@@ -663,6 +757,7 @@ _version: 2
 "Goal taken on: reach it by %{date} for %{trophies} trophies and %{reward}.":
   nl: "Doel aangenomen: haal het uiterlijk %{date} voor %{trophies} trofeeën en %{reward}."
   de: "Ziel angenommen: Erreiche es bis %{date} für %{trophies} Trophäen und %{reward}."
+  da: "Mål taget på sig: nå det senest %{date} for %{trophies} trofæer og %{reward}."
   fr: "Objectif accepté : atteignez-le d'ici le %{date} pour %{trophies} trophées et %{reward}."
   ru: "Цель взята: достигните её до %{date} и получите %{trophies} трофеев и %{reward}."
   uk: "Ціль взято: досягніть її до %{date} й отримайте %{trophies} трофеїв і %{reward}."
@@ -670,6 +765,7 @@ _version: 2
 "You gave this goal up.":
   nl: "Je hebt dit doel opgegeven."
   de: "Du hast dieses Ziel aufgegeben."
+  da: "Du opgav dette mål."
   fr: "Vous avez abandonné cet objectif."
   ru: "Вы отказались от этой цели."
   uk: "Ви відмовилися від цієї цілі."
@@ -677,6 +773,7 @@ _version: 2
 "Goal reached: you earned %{trophies} trophies and %{reward}.":
   nl: "Doel gehaald: je hebt %{trophies} trofeeën en %{reward} verdiend."
   de: "Ziel erreicht: Du hast %{trophies} Trophäen und %{reward} verdient."
+  da: "Mål nået: du optjente %{trophies} trofæer og %{reward}."
   fr: "Objectif atteint : vous avez gagné %{trophies} trophées et %{reward}."
   ru: "Цель достигнута: вы заработали %{trophies} трофеев и %{reward}."
   uk: "Ціль досягнуто: ви заробили %{trophies} трофеїв і %{reward}."
@@ -684,6 +781,7 @@ _version: 2
 "Goal missed: its time ran out.":
   nl: "Doel gemist: de tijd is om."
   de: "Ziel verfehlt: Die Zeit ist abgelaufen."
+  da: "Mål ikke nået: dets tid løb ud."
   fr: "Objectif manqué : le temps est écoulé."
   ru: "Цель не достигнута: время вышло."
   uk: "Ціль не досягнуто: час вийшов."
@@ -691,6 +789,7 @@ _version: 2
 "Two days are left to reach this goal.":
   nl: "Er zijn nog twee dagen om dit doel te halen."
   de: "Es bleiben noch zwei Tage, um dieses Ziel zu erreichen."
+  da: "To dage er tilbage til at nå dette mål."
   fr: "Il reste deux jours pour atteindre cet objectif."
   ru: "На эту цель осталось два дня."
   uk: "На цю ціль залишилося два дні."
@@ -698,6 +797,7 @@ _version: 2
 "Trophy milestone reached":
   nl: "Trofeeënmijlpaal bereikt"
   de: "Trophäen-Meilenstein erreicht"
+  da: "Trofæmilepæl nået"
   fr: "Palier de trophées atteint"
   ru: "Рубеж трофеев достигнут"
   uk: "Рубіж трофеїв досягнуто"
@@ -705,6 +805,7 @@ _version: 2
 "Your goals have earned %{count} trophies in all: a bonus of %{reward}.":
   nl: "Je doelen hebben in totaal %{count} trofeeën opgeleverd: een bonus van %{reward}."
   de: "Deine Ziele haben insgesamt %{count} Trophäen eingebracht: ein Bonus von %{reward}."
+  da: "Dine mål har optjent %{count} trofæer i alt: en bonus på %{reward}."
   fr: "Vos objectifs ont rapporté %{count} trophées en tout : une prime de %{reward}."
   ru: "Ваши цели принесли всего %{count} трофеев: премия %{reward}."
   uk: "Ваші цілі принесли загалом %{count} трофеїв: премія %{reward}."
@@ -712,6 +813,7 @@ _version: 2
 "The buses' internet ran out":
   nl: "Het internet in de bussen is op"
   de: "Das Internet in den Bussen ist aufgebraucht"
+  da: "Busernes internet slap op"
   fr: "L'Internet des bus est épuisé"
   ru: "Интернет в автобусах закончился"
   uk: "Інтернет в автобусах закінчився"
@@ -719,6 +821,7 @@ _version: 2
 "Your passengers used %{used} GB, %{short} GB more than the %{gb} GB a day of the contract with %{name}: they were annoyed. Take more data a day, or top it up when it runs low.":
   nl: "Je reizigers gebruikten %{used} GB, %{short} GB meer dan de %{gb} GB per dag van het contract met %{name}: ze ergerden zich. Neem meer data per dag, of waardeer op als het opraakt."
   de: "Deine Fahrgäste haben %{used} GB verbraucht, %{short} GB mehr als die %{gb} GB pro Tag aus dem Vertrag mit %{name}: Sie waren verärgert. Nimm mehr Daten pro Tag oder buche nach, wenn es knapp wird."
+  da: "Dine passagerer brugte %{used} GB, %{short} GB mere end de %{gb} GB om dagen i kontrakten med %{name}: de blev irriterede. Tag flere data om dagen, eller fyld op, når det løber lavt."
   fr: "Vos voyageurs ont utilisé %{used} Go, soit %{short} Go de plus que les %{gb} Go par jour du contrat avec %{name} : ils étaient agacés. Prenez plus de données par jour, ou rechargez quand elles s'épuisent."
   ru: "Ваши пассажиры израсходовали %{used} ГБ, на %{short} ГБ больше, чем %{gb} ГБ в день по контракту с %{name}: они были недовольны. Возьмите больше трафика в день или докупайте, когда он заканчивается."
   uk: "Ваші пасажири витратили %{used} ГБ, на %{short} ГБ більше, ніж %{gb} ГБ на день за контрактом із %{name}: вони були невдоволені. Візьміть більше трафіку на день або докуповуйте, коли він закінчується."
@@ -726,6 +829,7 @@ _version: 2
 "Internet contract":
   nl: "Internetcontract"
   de: "Internetvertrag"
+  da: "Internetkontrakt"
   fr: "Contrat Internet"
   ru: "Интернет-контракт"
   uk: "Інтернет-контракт"
@@ -733,6 +837,7 @@ _version: 2
 "From today the buses' WLAN runs on %{name}'s network: %{gb} GB a day for %{amount} a day.":
   nl: "Vanaf vandaag draait de wifi in de bussen op het netwerk van %{name}: %{gb} GB per dag voor %{amount} per dag."
   de: "Ab heute läuft das WLAN der Busse im Netz von %{name}: %{gb} GB pro Tag für %{amount} pro Tag."
+  da: "Fra i dag kører busernes WLAN på %{name}s net: %{gb} GB om dagen for %{amount} om dagen."
   fr: "Dès aujourd'hui, le Wi-Fi des bus passe par le réseau de %{name} : %{gb} Go par jour pour %{amount} par jour."
   ru: "С сегодняшнего дня Wi-Fi в автобусах работает в сети %{name}: %{gb} ГБ в день за %{amount} в день."
   uk: "З сьогодні Wi-Fi в автобусах працює в мережі %{name}: %{gb} ГБ на день за %{amount} на день."
@@ -740,6 +845,7 @@ _version: 2
 "Internet contract ended":
   nl: "Internetcontract beëindigd"
   de: "Internetvertrag beendet"
+  da: "Internetkontrakt afsluttet"
   fr: "Contrat Internet terminé"
   ru: "Интернет-контракт завершён"
   uk: "Інтернет-контракт завершено"
@@ -747,6 +853,7 @@ _version: 2
 "From today the buses have no internet contract: the WLAN is off.":
   nl: "Vanaf vandaag hebben de bussen geen internetcontract: de wifi staat uit."
   de: "Ab heute haben die Busse keinen Internetvertrag: Das WLAN ist aus."
+  da: "Fra i dag har busserne ingen internetkontrakt: WLAN er slået fra."
   fr: "Dès aujourd'hui, les bus n'ont plus de contrat Internet : le Wi-Fi est coupé."
   ru: "С сегодняшнего дня у автобусов нет интернет-контракта: Wi-Fi выключен."
   uk: "З сьогодні в автобусів немає інтернет-контракту: Wi-Fi вимкнено."
@@ -754,6 +861,7 @@ _version: 2
 "Cleaning contract ended":
   nl: "Schoonmaakcontract beëindigd"
   de: "Reinigungsvertrag beendet"
+  da: "Rengøringskontrakt afsluttet"
   fr: "Contrat de nettoyage terminé"
   ru: "Договор на уборку завершён"
   uk: "Договір на прибирання завершено"
@@ -761,6 +869,7 @@ _version: 2
 "The cleaning company no longer cleans your buses.":
   nl: "Het schoonmaakbedrijf maakt je bussen niet meer schoon."
   de: "Die Reinigungsfirma reinigt deine Busse nicht mehr."
+  da: "Rengøringsfirmaet rengør ikke længere dine busser."
   fr: "L'entreprise de nettoyage ne nettoie plus vos bus."
   ru: "Клининговая компания больше не убирает ваши автобусы."
   uk: "Клінінгова компанія більше не прибирає ваші автобуси."
@@ -768,6 +877,7 @@ _version: 2
 "Fixed diesel price ends soon":
   nl: "Vaste dieselprijs loopt bijna af"
   de: "Fester Dieselpreis endet bald"
+  da: "Fast dieselpris slutter snart"
   fr: "Le prix fixe du gazole prend bientôt fin"
   ru: "Фиксированная цена на дизель скоро закончится"
   uk: "Фіксована ціна на дизель незабаром закінчиться"
@@ -775,6 +885,7 @@ _version: 2
 "Your fixed price of %{price} a litre ends on %{until}; after it the company pays the market's price again.":
   nl: "Je vaste prijs van %{price} per liter loopt af op %{until}; daarna betaalt het bedrijf weer de marktprijs."
   de: "Dein Festpreis von %{price} pro Liter endet am %{until}; danach zahlt das Unternehmen wieder den Marktpreis."
+  da: "Din faste pris på %{price} pr. liter slutter den %{until}; derefter betaler selskabet igen markedets pris."
   fr: "Votre prix fixe de %{price} le litre prend fin le %{until} ; ensuite, l'entreprise paie de nouveau le prix du marché."
   ru: "Ваша фиксированная цена %{price} за литр действует до %{until}; потом компания снова платит рыночную цену."
   uk: "Ваша фіксована ціна %{price} за літр діє до %{until}; потім компанія знову платить ринкову ціну."
@@ -782,6 +893,7 @@ _version: 2
 "Fixed diesel price ended":
   nl: "Vaste dieselprijs afgelopen"
   de: "Fester Dieselpreis beendet"
+  da: "Fast dieselpris sluttet"
   fr: "Prix fixe du gazole terminé"
   ru: "Фиксированная цена на дизель закончилась"
   uk: "Фіксована ціна на дизель закінчилася"
@@ -789,6 +901,7 @@ _version: 2
 "The supplier's fixed price has ended: the company pays the market's price for diesel again.":
   nl: "De vaste prijs van de leverancier is afgelopen: het bedrijf betaalt weer de marktprijs voor diesel."
   de: "Der Festpreis des Lieferanten ist beendet: Das Unternehmen zahlt wieder den Marktpreis für Diesel."
+  da: "Leverandørens faste pris er sluttet: selskabet betaler igen markedets pris for diesel."
   fr: "Le prix fixe du fournisseur a pris fin : l'entreprise paie de nouveau le gazole au prix du marché."
   ru: "Фиксированная цена поставщика закончилась: компания снова платит за дизель по рыночной цене."
   uk: "Фіксована ціна постачальника закінчилася: компанія знову платить за дизель за ринковою ціною."
@@ -796,6 +909,7 @@ _version: 2
 "Unread":
   nl: "Ongelezen"
   de: "Ungelesen"
+  da: "Ulæst"
   fr: "Non lus"
   ru: "Непрочитанные"
   uk: "Непрочитані"
@@ -803,6 +917,7 @@ _version: 2
 "Mark all read":
   nl: "Alles als gelezen markeren"
   de: "Alle als gelesen markieren"
+  da: "Markér alle som læst"
   fr: "Tout marquer comme lu"
   ru: "Отметить все прочитанными"
   uk: "Позначити все прочитаним"
@@ -810,6 +925,7 @@ _version: 2
 "Delete read":
   nl: "Gelezen verwijderen"
   de: "Gelesene löschen"
+  da: "Slet læste"
   fr: "Supprimer les lus"
   ru: "Удалить прочитанные"
   uk: "Видалити прочитані"
@@ -817,6 +933,7 @@ _version: 2
 "Delete the messages already read (of the kind shown)":
   nl: "Verwijder de berichten die al gelezen zijn (van de getoonde soort)"
   de: "Die bereits gelesenen Nachrichten löschen (der gezeigten Art)"
+  da: "Slet de allerede læste beskeder (af den viste slags)"
   fr: "Supprimer les messages déjà lus (du type affiché)"
   ru: "Удалить уже прочитанные сообщения (показанного вида)"
   uk: "Видалити вже прочитані повідомлення (показаного виду)"
@@ -824,6 +941,7 @@ _version: 2
 "Everything is read.":
   nl: "Alles is gelezen."
   de: "Alles ist gelesen."
+  da: "Alt er læst."
   fr: "Tout est lu."
   ru: "Всё прочитано."
   uk: "Усе прочитано."
@@ -831,6 +949,7 @@ _version: 2
 "No messages yet. What happens to your company and around it comes in here as its days go by.":
   nl: "Nog geen berichten. Wat er met je bedrijf en eromheen gebeurt, komt hier binnen naarmate de dagen verstrijken."
   de: "Noch keine Nachrichten. Was mit deinem Unternehmen und um es herum geschieht, kommt hier an, während die Tage vergehen."
+  da: "Ingen beskeder endnu. Det, der sker med dit selskab og omkring det, kommer ind her, efterhånden som dagene går."
   fr: "Aucun message pour l'instant. Ce qui arrive à votre entreprise et autour d'elle arrive ici au fil des jours."
   ru: "Сообщений пока нет. Всё, что происходит с вашей компанией и вокруг неё, будет приходить сюда день за днём."
   uk: "Повідомлень поки немає. Усе, що відбувається з вашою компанією та навколо неї, надходитиме сюди день за днем."
@@ -838,6 +957,7 @@ _version: 2
 "Trophies":
   nl: "Trofeeën"
   de: "Trophäen"
+  da: "Trofæer"
   fr: "Trophées"
   ru: "Трофеи"
   uk: "Трофеї"
@@ -845,6 +965,7 @@ _version: 2
 "To the staff":
   nl: "Naar het personeel"
   de: "Zum Personal"
+  da: "Til personalet"
   fr: "Vers le personnel"
   ru: "К персоналу"
   uk: "До персоналу"
@@ -852,6 +973,7 @@ _version: 2
 "To the fleet":
   nl: "Naar de vloot"
   de: "Zur Flotte"
+  da: "Til flåden"
   fr: "Vers la flotte"
   ru: "К автопарку"
   uk: "До автопарку"
@@ -859,6 +981,7 @@ _version: 2
 "To the workshop":
   nl: "Naar de werkplaats"
   de: "Zur Werkstatt"
+  da: "Til værkstedet"
   fr: "Vers l'atelier"
   ru: "В мастерскую"
   uk: "До майстерні"
@@ -866,6 +989,7 @@ _version: 2
 "To the research":
   nl: "Naar het onderzoek"
   de: "Zur Forschung"
+  da: "Til forskningen"
   fr: "Vers la recherche"
   ru: "К исследованиям"
   uk: "До досліджень"
@@ -873,6 +997,7 @@ _version: 2
 "To the contracts":
   nl: "Naar de contracten"
   de: "Zu den Verträgen"
+  da: "Til kontrakterne"
   fr: "Vers les contrats"
   ru: "К контрактам"
   uk: "До контрактів"
@@ -880,6 +1005,7 @@ _version: 2
 "Diesel price: %{pct}":
   nl: "Dieselprijs: %{pct}"
   de: "Dieselpreis: %{pct}"
+  da: "Dieselpris: %{pct}"
   fr: "Prix du gazole : %{pct}"
   ru: "Цена дизеля: %{pct}"
   uk: "Ціна дизеля: %{pct}"
@@ -887,6 +1013,7 @@ _version: 2
 "Passengers on the line: %{pct}":
   nl: "Reizigers op de lijn: %{pct}"
   de: "Fahrgäste auf der Linie: %{pct}"
+  da: "Passagerer på linjen: %{pct}"
   fr: "Voyageurs sur la ligne : %{pct}"
   ru: "Пассажиры на линии: %{pct}"
   uk: "Пасажири на лінії: %{pct}"
@@ -894,6 +1021,7 @@ _version: 2
 "Passengers: %{pct}":
   nl: "Reizigers: %{pct}"
   de: "Fahrgäste: %{pct}"
+  da: "Passagerer: %{pct}"
   fr: "Voyageurs : %{pct}"
   ru: "Пассажиры: %{pct}"
   uk: "Пасажири: %{pct}"
@@ -901,6 +1029,7 @@ _version: 2
 "Trips on the line late more often: %{pct}":
   nl: "Ritten op de lijn vaker te laat: %{pct}"
   de: "Fahrten auf der Linie öfter verspätet: %{pct}"
+  da: "Ture på linjen oftere forsinkede: %{pct}"
   fr: "Trajets de la ligne plus souvent en retard : %{pct}"
   ru: "Рейсы на линии чаще опаздывают: %{pct}"
   uk: "Рейси на лінії частіше запізнюються: %{pct}"
@@ -908,6 +1037,7 @@ _version: 2
 "Trips late more often: %{pct}":
   nl: "Ritten vaker te laat: %{pct}"
   de: "Fahrten öfter verspätet: %{pct}"
+  da: "Ture oftere forsinkede: %{pct}"
   fr: "Trajets plus souvent en retard : %{pct}"
   ru: "Рейсы чаще опаздывают: %{pct}"
   uk: "Рейси частіше запізнюються: %{pct}"
@@ -915,6 +1045,7 @@ _version: 2
 "Message":
   nl: "Bericht"
   de: "Nachricht"
+  da: "Besked"
   fr: "Message"
   ru: "Сообщение"
   uk: "Повідомлення"
@@ -922,6 +1053,7 @@ _version: 2
 "Click a message to read it here.":
   nl: "Klik op een bericht om het hier te lezen."
   de: "Klicke auf eine Nachricht, um sie hier zu lesen."
+  da: "Klik på en besked for at læse den her."
   fr: "Cliquez sur un message pour le lire ici."
   ru: "Нажмите на сообщение, чтобы прочитать его здесь."
   uk: "Натисніть на повідомлення, щоб прочитати його тут."
@@ -929,6 +1061,7 @@ _version: 2
 "What it does":
   nl: "Wat het doet"
   de: "Was es bewirkt"
+  da: "Hvad den gør"
   fr: "Ce que cela change"
   ru: "Что это меняет"
   uk: "Що це змінює"
@@ -936,6 +1069,7 @@ _version: 2
 "Starts in %{n} days":
   nl: "Begint over %{n} dagen"
   de: "Beginnt in %{n} Tagen"
+  da: "Starter om %{n} dage"
   fr: "Commence dans %{n} jours"
   ru: "Начнётся через %{n} дн."
   uk: "Почнеться через %{n} дн."
@@ -943,6 +1077,7 @@ _version: 2
 "Running: day %{a} of %{b}":
   nl: "Loopt: dag %{a} van %{b}"
   de: "Läuft: Tag %{a} von %{b}"
+  da: "Kører: dag %{a} af %{b}"
   fr: "En cours : jour %{a} sur %{b}"
   ru: "Идёт: день %{a} из %{b}"
   uk: "Триває: день %{a} з %{b}"
@@ -950,6 +1085,7 @@ _version: 2
 "Over":
   nl: "Voorbij"
   de: "Vorbei"
+  da: "Forbi"
   fr: "Terminé"
   ru: "Завершено"
   uk: "Завершено"
@@ -957,6 +1093,7 @@ _version: 2
 "On offer until %{date}":
   nl: "Aangeboden tot %{date}"
   de: "Im Angebot bis %{date}"
+  da: "Tilbydes indtil %{date}"
   fr: "Proposé jusqu'au %{date}"
   ru: "Доступно до %{date}"
   uk: "Доступно до %{date}"
@@ -964,6 +1101,7 @@ _version: 2
 "Running until %{date}":
   nl: "Loopt tot %{date}"
   de: "Läuft bis %{date}"
+  da: "Kører indtil %{date}"
   fr: "En cours jusqu'au %{date}"
   ru: "Действует до %{date}"
   uk: "Діє до %{date}"
@@ -971,6 +1109,7 @@ _version: 2
 "Reached":
   nl: "Gehaald"
   de: "Erreicht"
+  da: "Nået"
   fr: "Atteint"
   ru: "Достигнута"
   uk: "Досягнуто"
@@ -978,6 +1117,7 @@ _version: 2
 "Missed":
   nl: "Gemist"
   de: "Verfehlt"
+  da: "Ikke nået"
   fr: "Manqué"
   ru: "Не достигнута"
   uk: "Не досягнуто"
@@ -985,6 +1125,7 @@ _version: 2
 "Mark as unread":
   nl: "Markeer als ongelezen"
   de: "Als ungelesen markieren"
+  da: "Markér som ulæst"
   fr: "Marquer comme non lu"
   ru: "Отметить как непрочитанное"
   uk: "Позначити як непрочитане"
@@ -992,6 +1133,7 @@ _version: 2
 "%{a} / %{b} stars":
   nl: "%{a} / %{b} sterren"
   de: "%{a} / %{b} Sterne"
+  da: "%{a} / %{b} stjerner"
   fr: "%{a} / %{b} étoiles"
   ru: "%{a} / %{b} звёзд"
   uk: "%{a} / %{b} зірок"
@@ -999,6 +1141,7 @@ _version: 2
 "%{a} / %{b} days":
   nl: "%{a} / %{b} dagen"
   de: "%{a} / %{b} Tage"
+  da: "%{a} / %{b} dage"
   fr: "%{a} / %{b} jours"
   ru: "%{a} / %{b} дн."
   uk: "%{a} / %{b} дн."
@@ -1006,6 +1149,7 @@ _version: 2
 "The trophies your goals earned in all. At %{count} the company reaches its next milestone: a bonus of %{amount}.":
   nl: "De trofeeën die je doelen in totaal opleverden. Bij %{count} bereikt het bedrijf zijn volgende mijlpaal: een bonus van %{amount}."
   de: "Die Trophäen, die deine Ziele insgesamt eingebracht haben. Bei %{count} erreicht das Unternehmen seinen nächsten Meilenstein: ein Bonus von %{amount}."
+  da: "De trofæer, dine mål har optjent i alt. Ved %{count} når selskabet sin næste milepæl: en bonus på %{amount}."
   fr: "Les trophées rapportés par vos objectifs au total. À %{count}, l'entreprise atteint son prochain palier : une prime de %{amount}."
   ru: "Трофеи, заработанные вашими целями за всё время. На %{count} компания достигнет следующего рубежа: премия %{amount}."
   uk: "Трофеї, зароблені вашими цілями за весь час. На %{count} компанія досягне наступного рубежу: премія %{amount}."
@@ -1013,6 +1157,7 @@ _version: 2
 "to spend on research":
   nl: "uit te geven aan onderzoek"
   de: "für die Forschung"
+  da: "at bruge på forskning"
   fr: "à dépenser en recherche"
   ru: "на исследования"
   uk: "на дослідження"
@@ -1020,6 +1165,7 @@ _version: 2
 "Trophies are earned with goals; research costs trophies as well as money.":
   nl: "Trofeeën verdien je met doelen; onderzoek kost trofeeën en geld."
   de: "Trophäen verdienst du mit Zielen; Forschung kostet Trophäen und Geld."
+  da: "Trofæer optjenes med mål; forskning koster trofæer såvel som penge."
   fr: "Les trophées se gagnent avec les objectifs ; la recherche coûte des trophées et de l'argent."
   ru: "Трофеи зарабатываются целями; исследования стоят трофеев и денег."
   uk: "Трофеї заробляються цілями; дослідження коштують трофеїв і грошей."
@@ -1027,6 +1173,7 @@ _version: 2
 "Rating":
   nl: "Beoordeling"
   de: "Bewertung"
+  da: "Vurdering"
   fr: "Note"
   ru: "Рейтинг"
   uk: "Рейтинг"
@@ -1034,6 +1181,7 @@ _version: 2
 "The company's rating is its reputation in stars: trips on time and happy passengers raise it.":
   nl: "De beoordeling van het bedrijf is zijn reputatie in sterren: ritten op tijd en tevreden reizigers verhogen hem."
   de: "Die Bewertung des Unternehmens ist sein Ruf in Sternen: pünktliche Fahrten und zufriedene Fahrgäste heben sie."
+  da: "Selskabets vurdering er dets omdømme i stjerner: ture til tiden og glade passagerer hæver den."
   fr: "La note de l'entreprise est sa réputation en étoiles : les trajets à l'heure et les voyageurs satisfaits la font monter."
   ru: "Рейтинг компании — это её репутация в звёздах: рейсы вовремя и довольные пассажиры повышают его."
   uk: "Рейтинг компанії — це її репутація в зірках: рейси вчасно й задоволені пасажири підвищують його."
@@ -1041,6 +1189,7 @@ _version: 2
 "Goals running":
   nl: "Lopende doelen"
   de: "Laufende Ziele"
+  da: "Mål i gang"
   fr: "Objectifs en cours"
   ru: "Текущие цели"
   uk: "Поточні цілі"
@@ -1048,6 +1197,7 @@ _version: 2
 "at most three at once":
   nl: "hoogstens drie tegelijk"
   de: "höchstens drei gleichzeitig"
+  da: "højst tre ad gangen"
   fr: "trois au plus à la fois"
   ru: "не больше трёх одновременно"
   uk: "не більше трьох одночасно"
@@ -1055,6 +1205,7 @@ _version: 2
 "Trophy milestone":
   nl: "Trofeeënmijlpaal"
   de: "Trophäen-Meilenstein"
+  da: "Trofæmilepæl"
   fr: "Palier de trophées"
   ru: "Рубеж трофеев"
   uk: "Рубіж трофеїв"
@@ -1062,6 +1213,7 @@ _version: 2
 "On offer this week":
   nl: "Deze week aangeboden"
   de: "Diese Woche im Angebot"
+  da: "Tilbydes denne uge"
   fr: "Proposés cette semaine"
   ru: "Доступно на этой неделе"
   uk: "Доступно цього тижня"
@@ -1069,6 +1221,7 @@ _version: 2
 "Every goal of this week is taken. New ones come on Monday.":
   nl: "Alle doelen van deze week zijn aangenomen. Maandag komen er nieuwe."
   de: "Alle Ziele dieser Woche sind angenommen. Am Montag kommen neue."
+  da: "Hvert mål i denne uge er taget. Nye kommer mandag."
   fr: "Tous les objectifs de cette semaine sont pris. De nouveaux arrivent lundi."
   ru: "Все цели этой недели взяты. Новые появятся в понедельник."
   uk: "Усі цілі цього тижня взято. Нові з'являться в понеділок."
@@ -1076,6 +1229,7 @@ _version: 2
 "%{n} days to reach it":
   nl: "%{n} dagen om het te halen"
   de: "%{n} Tage Zeit"
+  da: "%{n} dage til at nå det"
   fr: "%{n} jours pour l'atteindre"
   ru: "%{n} дн. на выполнение"
   uk: "%{n} дн. на виконання"
@@ -1083,6 +1237,7 @@ _version: 2
 "Take it on":
   nl: "Aannemen"
   de: "Annehmen"
+  da: "Tag det på dig"
   fr: "Accepter"
   ru: "Взять"
   uk: "Взяти"
@@ -1090,6 +1245,7 @@ _version: 2
 "Running":
   nl: "Lopend"
   de: "Laufend"
+  da: "Kører"
   fr: "En cours"
   ru: "В работе"
   uk: "У роботі"
@@ -1097,6 +1253,7 @@ _version: 2
 "No goal runs now. Take on up to three of those on offer: each counts your company's days from today until it is reached or its time runs out.":
   nl: "Er loopt nu geen doel. Neem er tot drie van de aangeboden doelen aan: elk telt de dagen van je bedrijf vanaf vandaag tot het gehaald is of de tijd om is."
   de: "Gerade läuft kein Ziel. Nimm bis zu drei der angebotenen an: Jedes zählt die Tage deines Unternehmens ab heute, bis es erreicht ist oder die Zeit abläuft."
+  da: "Intet mål kører nu. Tag op til tre af dem, der tilbydes: hvert tæller dit selskabs dage fra i dag, til det er nået, eller dets tid løber ud."
   fr: "Aucun objectif en cours. Acceptez-en jusqu'à trois parmi ceux proposés : chacun compte les journées de votre entreprise à partir d'aujourd'hui jusqu'à ce qu'il soit atteint ou que le temps soit écoulé."
   ru: "Сейчас нет активных целей. Возьмите до трёх из предложенных: каждая учитывает дни вашей компании с сегодняшнего дня, пока не будет достигнута или не выйдет время."
   uk: "Зараз немає активних цілей. Візьміть до трьох із запропонованих: кожна враховує дні вашої компанії від сьогодні, доки її не досягнуто або не вийде час."
@@ -1104,6 +1261,7 @@ _version: 2
 "Today is its last day":
   nl: "Vandaag is de laatste dag"
   de: "Heute ist der letzte Tag"
+  da: "I dag er dets sidste dag"
   fr: "Aujourd'hui est le dernier jour"
   ru: "Сегодня последний день"
   uk: "Сьогодні останній день"
@@ -1111,6 +1269,7 @@ _version: 2
 "Until tomorrow":
   nl: "Tot morgen"
   de: "Bis morgen"
+  da: "Til i morgen"
   fr: "Jusqu'à demain"
   ru: "До завтра"
   uk: "До завтра"
@@ -1118,6 +1277,7 @@ _version: 2
 "Until %{date}: %{n} days left":
   nl: "Tot %{date}: nog %{n} dagen"
   de: "Bis %{date}: noch %{n} Tage"
+  da: "Til %{date}: %{n} dage tilbage"
   fr: "Jusqu'au %{date} : encore %{n} jours"
   ru: "До %{date}: осталось %{n} дн."
   uk: "До %{date}: залишилося %{n} дн."
@@ -1125,6 +1285,7 @@ _version: 2
 "Give up":
   nl: "Opgeven"
   de: "Aufgeben"
+  da: "Opgiv"
   fr: "Abandonner"
   ru: "Отказаться"
   uk: "Відмовитися"
@@ -1132,6 +1293,7 @@ _version: 2
 "Finished":
   nl: "Afgerond"
   de: "Abgeschlossen"
+  da: "Afsluttet"
   fr: "Terminés"
   ru: "Завершённые"
   uk: "Завершені"
@@ -1139,6 +1301,7 @@ _version: 2
 "The goals you reach or miss are listed here.":
   nl: "De doelen die je haalt of mist, staan hier."
   de: "Die Ziele, die du erreichst oder verfehlst, stehen hier."
+  da: "De mål, du når eller ikke når, er opført her."
   fr: "Les objectifs atteints ou manqués sont listés ici."
   ru: "Здесь перечислены достигнутые и недостигнутые цели."
   uk: "Тут перелічено досягнуті й недосягнуті цілі."
@@ -1146,6 +1309,7 @@ _version: 2
 "Reached on %{date}: %{trophies} trophies, %{amount}":
   nl: "Gehaald op %{date}: %{trophies} trofeeën, %{amount}"
   de: "Erreicht am %{date}: %{trophies} Trophäen, %{amount}"
+  da: "Nået den %{date}: %{trophies} trofæer, %{amount}"
   fr: "Atteint le %{date} : %{trophies} trophées, %{amount}"
   ru: "Достигнута %{date}: %{trophies} трофеев, %{amount}"
   uk: "Досягнуто %{date}: %{trophies} трофеїв, %{amount}"
@@ -1153,6 +1317,7 @@ _version: 2
 "Given up on %{date}":
   nl: "Opgegeven op %{date}"
   de: "Aufgegeben am %{date}"
+  da: "Opgivet den %{date}"
   fr: "Abandonné le %{date}"
   ru: "Отказ %{date}"
   uk: "Відмова %{date}"
@@ -1160,6 +1325,7 @@ _version: 2
 "Missed on %{date}":
   nl: "Gemist op %{date}"
   de: "Verfehlt am %{date}"
+  da: "Ikke nået den %{date}"
   fr: "Manqué le %{date}"
   ru: "Не достигнута %{date}"
   uk: "Не досягнуто %{date}"
@@ -1167,6 +1333,7 @@ _version: 2
 "Goal taken on: it counts from today.":
   nl: "Doel aangenomen: het telt vanaf vandaag."
   de: "Ziel angenommen: Es zählt ab heute."
+  da: "Mål taget på sig: det tæller fra i dag."
   fr: "Objectif accepté : il compte à partir d'aujourd'hui."
   ru: "Цель взята: отсчёт идёт с сегодняшнего дня."
   uk: "Ціль взято: відлік іде від сьогодні."
@@ -1174,6 +1341,7 @@ _version: 2
 "Internet on the buses":
   nl: "Internet in de bussen"
   de: "Internet in den Bussen"
+  da: "Internet på busserne"
   fr: "Internet dans les bus"
   ru: "Интернет в автобусах"
   uk: "Інтернет в автобусах"
@@ -1181,6 +1349,7 @@ _version: 2
 "The buses have no WLAN yet. Research it, and the internet providers make their offers here: your passengers like to be online, and a connection that lasts the day raises your reputation.":
   nl: "De bussen hebben nog geen wifi. Onderzoek het, en de internetproviders doen hier hun aanbod: je reizigers zijn graag online, en een verbinding die de hele dag meegaat verhoogt je reputatie."
   de: "Die Busse haben noch kein WLAN. Erforsche es, und die Internetanbieter machen hier ihre Angebote: Deine Fahrgäste sind gern online, und eine Verbindung, die den ganzen Tag hält, hebt deinen Ruf."
+  da: "Busserne har endnu intet WLAN. Forsk i det, så giver internetudbyderne deres tilbud her: dine passagerer kan lide at være online, og en forbindelse, der holder hele dagen, hæver dit omdømme."
   fr: "Les bus n'ont pas encore de Wi-Fi. Recherchez-le, et les fournisseurs d'accès feront leurs offres ici : vos voyageurs aiment être en ligne, et une connexion qui tient toute la journée améliore votre réputation."
   ru: "В автобусах пока нет Wi-Fi. Исследуйте его, и интернет-провайдеры сделают здесь свои предложения: пассажиры любят быть онлайн, а связь, которой хватает на весь день, повышает репутацию."
   uk: "В автобусах поки немає Wi-Fi. Дослідіть його, і інтернет-провайдери зроблять тут свої пропозиції: пасажири люблять бути онлайн, а зв'язок, якого вистачає на весь день, підвищує репутацію."
@@ -1188,6 +1357,7 @@ _version: 2
 "Used yesterday: %{n} GB":
   nl: "Gisteren gebruikt: %{n} GB"
   de: "Gestern verbraucht: %{n} GB"
+  da: "Brugt i går: %{n} GB"
   fr: "Utilisé hier : %{n} Go"
   ru: "Использовано вчера: %{n} ГБ"
   uk: "Використано вчора: %{n} ГБ"
@@ -1195,6 +1365,7 @@ _version: 2
 "Your passengers would use about %{n} GB a day":
   nl: "Je reizigers zouden ongeveer %{n} GB per dag gebruiken"
   de: "Deine Fahrgäste würden etwa %{n} GB pro Tag verbrauchen"
+  da: "Dine passagerer ville bruge omkring %{n} GB om dagen"
   fr: "Vos voyageurs utiliseraient environ %{n} Go par jour"
   ru: "Ваши пассажиры использовали бы около %{n} ГБ в день"
   uk: "Ваші пасажири використовували б близько %{n} ГБ на день"
@@ -1202,6 +1373,7 @@ _version: 2
 "%{pct} % customer satisfaction":
   nl: "%{pct} % klanttevredenheid"
   de: "%{pct} % Kundenzufriedenheit"
+  da: "%{pct} % kundetilfredshed"
   fr: "%{pct} % de satisfaction client"
   ru: "%{pct} % довольных клиентов"
   uk: "%{pct} % задоволених клієнтів"
@@ -1209,6 +1381,7 @@ _version: 2
 "%{amount} a GB a day":
   nl: "%{amount} per GB per dag"
   de: "%{amount} pro GB und Tag"
+  da: "%{amount} pr. GB om dagen"
   fr: "%{amount} par Go et par jour"
   ru: "%{amount} за ГБ в день"
   uk: "%{amount} за ГБ на день"
@@ -1216,6 +1389,7 @@ _version: 2
 "%{n} GB left today":
   nl: "Vandaag nog %{n} GB"
   de: "Heute noch %{n} GB"
+  da: "%{n} GB tilbage i dag"
   fr: "Encore %{n} Go aujourd'hui"
   ru: "Сегодня осталось %{n} ГБ"
   uk: "Сьогодні залишилося %{n} ГБ"
@@ -1223,6 +1397,7 @@ _version: 2
 "+%{n} GB for %{amount}":
   nl: "+%{n} GB voor %{amount}"
   de: "+%{n} GB für %{amount}"
+  da: "+%{n} GB for %{amount}"
   fr: "+%{n} Go pour %{amount}"
   ru: "+%{n} ГБ за %{amount}"
   uk: "+%{n} ГБ за %{amount}"
@@ -1230,6 +1405,7 @@ _version: 2
 "More data for today only, paid at once":
   nl: "Meer data, alleen voor vandaag, meteen betaald"
   de: "Mehr Daten nur für heute, sofort bezahlt"
+  da: "Flere data kun for i dag, betalt med det samme"
   fr: "Plus de données pour aujourd'hui seulement, payées tout de suite"
   ru: "Дополнительный трафик только на сегодня, оплата сразу"
   uk: "Додатковий трафік лише на сьогодні, оплата одразу"
@@ -1237,6 +1413,7 @@ _version: 2
 "The GB a day the contract gives the buses' WLAN":
   nl: "Het aantal GB per dag dat het contract de wifi in de bussen geeft"
   de: "Die GB pro Tag, die der Vertrag dem WLAN der Busse gibt"
+  da: "De GB om dagen, kontrakten giver busserne WLAN"
   fr: "Les Go par jour que le contrat donne au Wi-Fi des bus"
   ru: "Сколько ГБ в день контракт даёт Wi-Fi в автобусах"
   uk: "Скільки ГБ на день контракт дає Wi-Fi в автобусах"
@@ -1244,6 +1421,7 @@ _version: 2
 "%{amount} a day":
   nl: "%{amount} per dag"
   de: "%{amount} pro Tag"
+  da: "%{amount} om dagen"
   fr: "%{amount} par jour"
   ru: "%{amount} в день"
   uk: "%{amount} на день"
@@ -1251,6 +1429,7 @@ _version: 2
 "Changes are active from tomorrow":
   nl: "Wijzigingen gelden vanaf morgen"
   de: "Änderungen gelten ab morgen"
+  da: "Ændringer er aktive fra i morgen"
   fr: "Les changements s'appliquent dès demain"
   ru: "Изменения вступают в силу завтра"
   uk: "Зміни набувають чинності завтра"
@@ -1258,6 +1437,7 @@ _version: 2
 "From tomorrow: %{n} GB a day":
   nl: "Vanaf morgen: %{n} GB per dag"
   de: "Ab morgen: %{n} GB pro Tag"
+  da: "Fra i morgen: %{n} GB om dagen"
   fr: "Dès demain : %{n} Go par jour"
   ru: "С завтрашнего дня: %{n} ГБ в день"
   uk: "З завтра: %{n} ГБ на день"
@@ -1265,6 +1445,7 @@ _version: 2
 "Ends tonight":
   nl: "Eindigt vannacht"
   de: "Endet heute Nacht"
+  da: "Slutter i nat"
   fr: "Prend fin ce soir"
   ru: "Заканчивается сегодня ночью"
   uk: "Закінчується сьогодні вночі"
@@ -1272,6 +1453,7 @@ _version: 2
 "Your contract: %{n} GB a day":
   nl: "Je contract: %{n} GB per dag"
   de: "Dein Vertrag: %{n} GB pro Tag"
+  da: "Din kontrakt: %{n} GB om dagen"
   fr: "Votre contrat : %{n} Go par jour"
   ru: "Ваш контракт: %{n} ГБ в день"
   uk: "Ваш контракт: %{n} ГБ на день"
@@ -1279,6 +1461,7 @@ _version: 2
 "Keep it":
   nl: "Houden"
   de: "Behalten"
+  da: "Behold den"
   fr: "Le garder"
   ru: "Оставить"
   uk: "Залишити"
@@ -1286,6 +1469,7 @@ _version: 2
 "Accept":
   nl: "Accepteren"
   de: "Annehmen"
+  da: "Acceptér"
   fr: "Accepter"
   ru: "Принять"
   uk: "Прийняти"
@@ -1293,6 +1477,7 @@ _version: 2
 "The internet contract changes from tomorrow.":
   nl: "Het internetcontract verandert vanaf morgen."
   de: "Der Internetvertrag ändert sich ab morgen."
+  da: "Internetkontrakten ændres fra i morgen."
   fr: "Le contrat Internet change dès demain."
   ru: "Интернет-контракт изменится с завтрашнего дня."
   uk: "Інтернет-контракт зміниться з завтрашнього дня."
@@ -1300,6 +1485,7 @@ _version: 2
 "Topped up: %{n} GB for %{amount}.":
   nl: "Opgewaardeerd: %{n} GB voor %{amount}."
   de: "Nachgebucht: %{n} GB für %{amount}."
+  da: "Fyldt op: %{n} GB for %{amount}."
   fr: "Rechargé : %{n} Go pour %{amount}."
   ru: "Докуплено: %{n} ГБ за %{amount}."
   uk: "Докуплено: %{n} ГБ за %{amount}."
@@ -1307,6 +1493,7 @@ _version: 2
 "Diesel supplier":
   nl: "Dieselleverancier"
   de: "Diesellieferant"
+  da: "Dieselleverandør"
   fr: "Fournisseur de gazole"
   ru: "Поставщик дизеля"
   uk: "Постачальник дизеля"
@@ -1314,6 +1501,7 @@ _version: 2
 "Diesel today: %{price} a litre":
   nl: "Diesel vandaag: %{price} per liter"
   de: "Diesel heute: %{price} pro Liter"
+  da: "Diesel i dag: %{price} pr. liter"
   fr: "Gazole aujourd'hui : %{price} le litre"
   ru: "Дизель сегодня: %{price} за литр"
   uk: "Дизель сьогодні: %{price} за літр"
@@ -1321,6 +1509,7 @@ _version: 2
 "%{pct} against the usual %{price}, by the market's events":
   nl: "%{pct} ten opzichte van de gebruikelijke %{price}, door de gebeurtenissen op de markt"
   de: "%{pct} gegenüber den üblichen %{price}, durch die Ereignisse am Markt"
+  da: "%{pct} i forhold til det sædvanlige %{price}, ved markedets begivenheder"
   fr: "%{pct} par rapport aux %{price} habituels, à cause des événements du marché"
   ru: "%{pct} к обычным %{price} из-за событий на рынке"
   uk: "%{pct} до звичайних %{price} через події на ринку"
@@ -1328,6 +1517,7 @@ _version: 2
 "Fixed at %{price} a litre until %{date}.":
   nl: "Vast op %{price} per liter tot en met %{date}."
   de: "Fest bei %{price} pro Liter bis %{date}."
+  da: "Fast på %{price} pr. liter indtil %{date}."
   fr: "Fixé à %{price} le litre jusqu'au %{date}."
   ru: "Зафиксировано на %{price} за литр до %{date}."
   uk: "Зафіксовано на %{price} за літр до %{date}."
@@ -1335,6 +1525,7 @@ _version: 2
 "Fixed at %{price} a litre from tomorrow until %{date}.":
   nl: "Vast op %{price} per liter van morgen tot en met %{date}."
   de: "Fest bei %{price} pro Liter von morgen bis %{date}."
+  da: "Fast på %{price} pr. liter fra i morgen indtil %{date}."
   fr: "Fixé à %{price} le litre de demain au %{date}."
   ru: "Зафиксировано на %{price} за литр с завтрашнего дня до %{date}."
   uk: "Зафіксовано на %{price} за літр з завтра до %{date}."
@@ -1342,6 +1533,7 @@ _version: 2
 "A fixed price runs until its last day: it cannot be ended early.":
   nl: "Een vaste prijs loopt tot de laatste dag: hij kan niet eerder worden beëindigd."
   de: "Ein Festpreis läuft bis zu seinem letzten Tag: Er kann nicht vorzeitig beendet werden."
+  da: "En fast pris kører til sin sidste dag: den kan ikke afsluttes tidligt."
   fr: "Un prix fixe court jusqu'à son dernier jour : il ne peut pas être arrêté plus tôt."
   ru: "Фиксированная цена действует до последнего дня: досрочно её не отменить."
   uk: "Фіксована ціна діє до останнього дня: достроково її не скасувати."
@@ -1349,6 +1541,7 @@ _version: 2
 "Fix the price for a while: from tomorrow the company pays the same, whatever the market does. Sign before a price rise the inbox tells of - but a fixed price also stays when diesel gets cheaper.":
   nl: "Leg de prijs een tijd vast: vanaf morgen betaalt het bedrijf hetzelfde, wat de markt ook doet. Teken voor een prijsstijging die de inbox aankondigt - maar een vaste prijs blijft ook als diesel goedkoper wordt."
   de: "Lege den Preis für eine Weile fest: Ab morgen zahlt das Unternehmen dasselbe, egal was der Markt macht. Unterschreibe vor einer Preiserhöhung, die der Posteingang ankündigt - aber ein Festpreis bleibt auch, wenn Diesel billiger wird."
+  da: "Fastlæg prisen for en tid: fra i morgen betaler selskabet det samme, uanset hvad markedet gør. Skriv under før en prisstigning, som indbakken fortæller om - men en fast pris bliver også, når diesel bliver billigere."
   fr: "Fixez le prix pour un temps : dès demain, l'entreprise paie la même chose, quoi que fasse le marché. Signez avant une hausse annoncée dans la boîte de réception - mais un prix fixe reste aussi quand le gazole baisse."
   ru: "Зафиксируйте цену на время: с завтрашнего дня компания платит одинаково, что бы ни происходило на рынке. Подпишите до подорожания, о котором сообщают входящие, - но фиксированная цена остаётся и когда дизель дешевеет."
   uk: "Зафіксуйте ціну на якийсь час: з завтра компанія платить однаково, хоч би що робив ринок. Підпишіть до подорожчання, про яке повідомляють вхідні, - але фіксована ціна лишається й тоді, коли дизель дешевшає."
@@ -1356,6 +1549,7 @@ _version: 2
 "%{n} days: %{price} a litre, until %{date}":
   nl: "%{n} dagen: %{price} per liter, tot en met %{date}"
   de: "%{n} Tage: %{price} pro Liter, bis %{date}"
+  da: "%{n} dage: %{price} pr. liter, indtil %{date}"
   fr: "%{n} jours : %{price} le litre, jusqu'au %{date}"
   ru: "%{n} дн.: %{price} за литр, до %{date}"
   uk: "%{n} дн.: %{price} за літр, до %{date}"
@@ -1363,6 +1557,7 @@ _version: 2
 "Fix it":
   nl: "Vastleggen"
   de: "Festlegen"
+  da: "Fastlæg den"
   fr: "Fixer"
   ru: "Зафиксировать"
   uk: "Зафіксувати"
@@ -1370,6 +1565,7 @@ _version: 2
 "The diesel's price is fixed from tomorrow.":
   nl: "De dieselprijs ligt vanaf morgen vast."
   de: "Der Dieselpreis ist ab morgen festgelegt."
+  da: "Dieselprisen er fastlagt fra i morgen."
   fr: "Le prix du gazole est fixé dès demain."
   ru: "Цена дизеля зафиксирована с завтрашнего дня."
   uk: "Ціну дизеля зафіксовано з завтрашнього дня."
@@ -1377,6 +1573,7 @@ _version: 2
 "Cleaning company":
   nl: "Schoonmaakbedrijf"
   de: "Reinigungsfirma"
+  da: "Rengøringsfirma"
   fr: "Entreprise de nettoyage"
   ru: "Клининговая компания"
   uk: "Клінінгова компанія"
@@ -1384,6 +1581,7 @@ _version: 2
 "An outside company cleans your buses every night: %{amount} a bus, %{total} a day for your %{n} buses. Clean buses please the passengers: the reputation rises a little every day they run.":
   nl: "Een extern bedrijf maakt je bussen elke nacht schoon: %{amount} per bus, %{total} per dag voor je %{n} bussen. Schone bussen bevallen de reizigers: de reputatie stijgt elke dag dat ze rijden een beetje."
   de: "Eine externe Firma reinigt deine Busse jede Nacht: %{amount} pro Bus, %{total} pro Tag für deine %{n} Busse. Saubere Busse gefallen den Fahrgästen: Der Ruf steigt an jedem Tag, an dem sie fahren, ein wenig."
+  da: "Et eksternt firma rengør dine busser hver nat: %{amount} pr. bus, %{total} om dagen for dine %{n} busser. Rene busser glæder passagererne: omdømmet stiger lidt hver dag, de kører."
   fr: "Une entreprise extérieure nettoie vos bus chaque nuit : %{amount} par bus, %{total} par jour pour vos %{n} bus. Des bus propres plaisent aux voyageurs : la réputation monte un peu chaque jour où ils roulent."
   ru: "Сторонняя компания каждую ночь убирает ваши автобусы: %{amount} за автобус, %{total} в день за ваши %{n} автобусов. Чистые автобусы нравятся пассажирам: репутация немного растёт каждый день, когда они ездят."
   uk: "Стороння компанія щоночі прибирає ваші автобуси: %{amount} за автобус, %{total} на день за ваші %{n} автобусів. Чисті автобуси подобаються пасажирам: репутація трохи зростає щодня, коли вони їздять."
@@ -1391,6 +1589,7 @@ _version: 2
 "Starts tomorrow":
   nl: "Begint morgen"
   de: "Beginnt morgen"
+  da: "Starter i morgen"
   fr: "Commence demain"
   ru: "Начинается завтра"
   uk: "Починається завтра"
@@ -1398,6 +1597,7 @@ _version: 2
 "Cleaning your buses since %{date}":
   nl: "Maakt je bussen schoon sinds %{date}"
   de: "Reinigt deine Busse seit %{date}"
+  da: "Rengør dine busser siden %{date}"
   fr: "Nettoie vos bus depuis le %{date}"
   ru: "Убирает ваши автобусы с %{date}"
   uk: "Прибирає ваші автобуси з %{date}"
@@ -1405,6 +1605,7 @@ _version: 2
 "End the contract":
   nl: "Contract beëindigen"
   de: "Vertrag beenden"
+  da: "Afslut kontrakten"
   fr: "Mettre fin au contrat"
   ru: "Расторгнуть договор"
   uk: "Розірвати договір"

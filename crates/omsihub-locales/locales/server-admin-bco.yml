@@ -2,6 +2,7 @@ _version: 2
 # (NexiconDK, 1 November 2026) Bus Company Online's main server admin panel: the main server's /admin page and the launcher's Multiplayer > My server (launcher/ui/js/omsihub/server/bco-panel.js, my-server.js).
 "%{name} is in the red: %{money}":
   de: "%{name} ist im Minus: %{money}"
+  da: "%{name} er i minus: %{money}"
   fr: "%{name} est dans le rouge : %{money}"
   nl: "%{name} staat rood: %{money}"
   pl: "%{name} jest na minusie: %{money}"
@@ -9,6 +10,7 @@ _version: 2
   uk: "%{name} в мінусі: %{money}"
 "The world of %{name} has been loading for %{n} min":
   de: "Die Welt von %{name} lädt seit %{n} Min."
+  da: "%{name}s verden har indlæst i %{n} min"
   fr: "Le monde de %{name} charge depuis %{n} min"
   nl: "De wereld van %{name} laadt al %{n} min"
   pl: "Świat %{name} wczytuje się od %{n} min"
@@ -16,6 +18,7 @@ _version: 2
   uk: "Світ %{name} завантажується вже %{n} хв"
 "%{n} tenders of %{name} close today":
   de: "%{n} Ausschreibungen von %{name} schließen heute"
+  da: "%{n} udbud fra %{name} lukker i dag"
   fr: "%{n} appels d'offres de %{name} se clôturent aujourd'hui"
   nl: "%{n} aanbestedingen van %{name} sluiten vandaag"
   pl: "Przetargi %{name} zamykane dzisiaj: %{n}"
@@ -23,6 +26,7 @@ _version: 2
   uk: "Сьогодні закриваються торги %{name}: %{n}"
 "Asking the main server…":
   de: "Hauptserver wird gefragt…"
+  da: "Spørger hovedserveren…"
   fr: "Interrogation du serveur principal…"
   nl: "Hoofdserver wordt gevraagd…"
   pl: "Odpytywanie serwera głównego…"
@@ -30,6 +34,7 @@ _version: 2
   uk: "Запит до головного сервера…"
 "Players online":
   de: "Spieler online"
+  da: "Spillere online"
   fr: "Joueurs en ligne"
   nl: "Spelers online"
   pl: "Gracze online"
@@ -37,6 +42,7 @@ _version: 2
   uk: "Гравці онлайн"
 "logged in from their launchers today":
   de: "heute über ihre Launcher angemeldet"
+  da: "logget ind fra deres launchere i dag"
   fr: "connectés aujourd'hui depuis leurs launchers"
   nl: "vandaag ingelogd vanuit hun launchers"
   pl: "zalogowani dziś ze swoich launcherów"
@@ -44,6 +50,7 @@ _version: 2
   uk: "увійшли сьогодні зі своїх лаунчерів"
 "Companies":
   de: "Firmen"
+  da: "Selskaber"
   fr: "Entreprises"
   nl: "Bedrijven"
   pl: "Firmy"
@@ -51,6 +58,7 @@ _version: 2
   uk: "Компанії"
 "%{n} groups":
   de: "%{n} Konzerne"
+  da: "%{n} koncerner"
   fr: "%{n} groupes"
   nl: "%{n} groepen"
   pl: "grupy: %{n}"
@@ -58,6 +66,7 @@ _version: 2
   uk: "груп: %{n}"
 "Worlds running":
   de: "Laufende Welten"
+  da: "Verdener kørende"
   fr: "Mondes en marche"
   nl: "Draaiende werelden"
   pl: "Działające światy"
@@ -65,6 +74,7 @@ _version: 2
   uk: "Запущені світи"
 "%{n} loading":
   de: "%{n} laden"
+  da: "%{n} indlæser"
   fr: "%{n} en chargement"
   nl: "%{n} laden"
   pl: "wczytywane: %{n}"
@@ -72,6 +82,7 @@ _version: 2
   uk: "завантажуються: %{n}"
 "kept running":
   de: "bleiben an"
+  da: "holdt kørende"
   fr: "maintenus en marche"
   nl: "blijven draaien"
   pl: "utrzymywane w działaniu"
@@ -79,6 +90,7 @@ _version: 2
   uk: "не зупиняються"
 "The machine":
   de: "Der Rechner"
+  da: "Maskinen"
   fr: "La machine"
   nl: "De computer"
   pl: "Komputer"
@@ -86,6 +98,7 @@ _version: 2
   uk: "Комп'ютер"
 "The server's code":
   de: "Der Code des Servers"
+  da: "Serverens kode"
   fr: "Le code du serveur"
   nl: "De code van de server"
   pl: "Kod serwera"
@@ -93,6 +106,7 @@ _version: 2
   uk: "Код сервера"
 "The players' door is not open: see the log.":
   de: "Der Zugang für die Spieler ist nicht offen: Sieh ins Protokoll."
+  da: "Spillernes dør er ikke åben: se loggen."
   fr: "L'entrée des joueurs n'est pas ouverte : regarde le journal."
   nl: "De toegang voor spelers is niet open: kijk in het logboek."
   pl: "Wejście dla graczy nie jest otwarte: zajrzyj do dziennika."
@@ -100,6 +114,7 @@ _version: 2
   uk: "Вхід для гравців не відкрито: дивись журнал."
 "Players enter it in Bus Company Online in their launchers. The door is on port %{port}.":
   de: "Spieler geben ihn in ihren Launchern unter Bus Company Online ein. Der Zugang liegt auf Port %{port}."
+  da: "Spillere går ind i den i Bus Company Online i deres launchere. Døren er på port %{port}."
   fr: "Les joueurs le saisissent dans Bus Company Online, dans leurs launchers. L'entrée est sur le port %{port}."
   nl: "Spelers voeren hem in bij Bus Company Online in hun launchers. De toegang zit op poort %{port}."
   pl: "Gracze wpisują go w Bus Company Online w swoich launcherach. Wejście jest na porcie %{port}."
@@ -107,6 +122,7 @@ _version: 2
   uk: "Гравці вводять його в Bus Company Online у своїх лаунчерах. Вхід — на порту %{port}."
 "On the internet: ":
   de: "Im Internet: "
+  da: "På internettet: "
   fr: "Sur Internet : "
   nl: "Op internet: "
   pl: "W internecie: "
@@ -114,6 +130,7 @@ _version: 2
   uk: "В інтернеті: "
 "Wants looking at":
   de: "Braucht Aufmerksamkeit"
+  da: "Kræver opmærksomhed"
   fr: "À regarder"
   nl: "Vraagt aandacht"
   pl: "Wymaga uwagi"
@@ -121,6 +138,7 @@ _version: 2
   uk: "Потребує уваги"
 "Nothing wants looking at.":
   de: "Nichts braucht Aufmerksamkeit."
+  da: "Intet kræver opmærksomhed."
   fr: "Rien à regarder."
   nl: "Niets vraagt aandacht."
   pl: "Nic nie wymaga uwagi."
@@ -128,6 +146,7 @@ _version: 2
   uk: "Ніщо не потребує уваги."
 "It runs on this machine's real time.":
   de: "Sie läuft nach der echten Zeit dieses Rechners."
+  da: "Den kører på denne maskines rigtige tid."
   fr: "Elle suit l'heure réelle de cette machine."
   nl: "Hij loopt op de echte tijd van deze computer."
   pl: "Chodzi według rzeczywistego czasu tego komputera."
@@ -135,6 +154,7 @@ _version: 2
   uk: "Іде за реальним часом цього комп'ютера."
 "It runs 1:1 with the real clock from its first date and time.":
   de: "Sie läuft ab ihrem ersten Datum und ihrer ersten Uhrzeit 1:1 mit der echten Uhr."
+  da: "Den kører 1:1 med det rigtige ur fra sin første dato og tid."
   fr: "Elle tourne à 1:1 avec l'heure réelle à partir de sa date et de son heure de départ."
   nl: "Hij loopt 1:1 met de echte klok vanaf zijn eerste datum en tijd."
   pl: "Chodzi 1:1 z rzeczywistym zegarem od swojej początkowej daty i godziny."
@@ -142,6 +162,7 @@ _version: 2
   uk: "Іде 1:1 з реальним годинником від своїх початкових дати й часу."
 "Compare with the machine":
   de: "Mit dem Rechner vergleichen"
+  da: "Sammenlign med maskinen"
   fr: "Comparer avec la machine"
   nl: "Vergelijken met de computer"
   pl: "Porównaj z komputerem"
@@ -149,6 +170,7 @@ _version: 2
   uk: "Порівняти з комп'ютером"
 "Set to the machine's time now":
   de: "Jetzt auf die Zeit des Rechners stellen"
+  da: "Sæt til maskinens tid nu"
   fr: "Régler maintenant sur l'heure de la machine"
   nl: "Nu op de tijd van de computer zetten"
   pl: "Ustaw teraz na czas komputera"
@@ -156,6 +178,7 @@ _version: 2
   uk: "Виставити час комп'ютера зараз"
 "Stop the main server":
   de: "Hauptserver stoppen"
+  da: "Stop hovedserveren"
   fr: "Arrêter le serveur principal"
   nl: "Hoofdserver stoppen"
   pl: "Zatrzymaj serwer główny"
@@ -163,6 +186,7 @@ _version: 2
   uk: "Зупинити головний сервер"
 "Sure? The worlds stop, every company is saved":
   de: "Sicher? Die Welten stoppen, jede Firma wird gespeichert"
+  da: "Sikker? Verdenerne stopper, hvert selskab gemmes"
   fr: "Sûr ? Les mondes s'arrêtent, chaque entreprise est enregistrée"
   nl: "Zeker? De werelden stoppen, elk bedrijf wordt opgeslagen"
   pl: "Na pewno? Światy się zatrzymają, każda firma zostanie zapisana"
@@ -170,6 +194,7 @@ _version: 2
   uk: "Точно? Світи зупиняться, кожну компанію буде збережено"
 "The main server stops: the worlds stop and every company is saved.":
   de: "Der Hauptserver wird gestoppt: Die Welten stoppen, und jede Firma wird gespeichert."
+  da: "Hovedserveren stopper: verdenerne stopper, og hvert selskab gemmes."
   fr: "Le serveur principal s'arrête : les mondes s'arrêtent et chaque entreprise est enregistrée."
   nl: "De hoofdserver stopt: de werelden stoppen en elk bedrijf wordt opgeslagen."
   pl: "Serwer główny się zatrzymuje: światy się zatrzymują, a każda firma zostaje zapisana."
@@ -177,6 +202,7 @@ _version: 2
   uk: "Головний сервер зупиняється: світи зупиняються, і кожна компанія зберігається."
 "Worlds":
   de: "Welten"
+  da: "Verdener"
   fr: "Mondes"
   nl: "Werelden"
   pl: "Światy"
@@ -184,6 +210,7 @@ _version: 2
   uk: "Світи"
 "No map is installed in the OMSI folder of the settings.":
   de: "Im OMSI-Ordner aus den Einstellungen ist keine Karte installiert."
+  da: "Intet kort er installeret i OMSI-mappen i indstillingerne."
   fr: "Aucune carte n'est installée dans le dossier OMSI des paramètres."
   nl: "Er is geen kaart geïnstalleerd in de OMSI-map uit de instellingen."
   pl: "W folderze OMSI z ustawień nie ma zainstalowanej żadnej mapy."
@@ -191,6 +218,7 @@ _version: 2
   uk: "У теці OMSI з налаштувань не встановлено жодної мапи."
 "no players for %{n} min":
   de: "seit %{n} Min. ohne Spieler"
+  da: "ingen spillere i %{n} min"
   fr: "sans joueurs depuis %{n} min"
   nl: "al %{n} min zonder spelers"
   pl: "bez graczy od %{n} min"
@@ -198,6 +226,7 @@ _version: 2
   uk: "без гравців уже %{n} хв"
 "Admin":
   de: "Admin"
+  da: "Admin"
   fr: "Admin"
   nl: "Beheer"
   pl: "Admin"
@@ -205,6 +234,7 @@ _version: 2
   uk: "Адмін-панель"
 "Sure? %{n} players are in it":
   de: "Sicher? %{n} Spieler sind darin"
+  da: "Sikker? %{n} spillere er i den"
   fr: "Sûr ? %{n} joueurs y sont"
   nl: "Zeker? Er zitten %{n} spelers in"
   pl: "Na pewno? Graczy w nim: %{n}"
@@ -212,6 +242,7 @@ _version: 2
   uk: "Точно? Гравців у ньому: %{n}"
 "no company":
   de: "keine Firma"
+  da: "intet selskab"
   fr: "aucune entreprise"
   nl: "geen bedrijf"
   pl: "brak firmy"
@@ -219,6 +250,7 @@ _version: 2
   uk: "немає компанії"
 "The world's code":
   de: "Der Code der Welt"
+  da: "Verdens kode"
   fr: "Le code du monde"
   nl: "De code van de wereld"
   pl: "Kod świata"
@@ -226,6 +258,7 @@ _version: 2
   uk: "Код світу"
 "Worlds - %{n} at once at most":
   de: "Welten - höchstens %{n} gleichzeitig"
+  da: "Verdener - højst %{n} på én gang"
   fr: "Mondes - %{n} à la fois au plus"
   nl: "Werelden - hoogstens %{n} tegelijk"
   pl: "Światy - najwyżej %{n} naraz"
@@ -233,6 +266,7 @@ _version: 2
   uk: "Світи - не більше %{n} одночасно"
 "Ports":
   de: "Ports"
+  da: "Porte"
   fr: "Ports"
   nl: "Poorten"
   pl: "Porty"
@@ -240,6 +274,7 @@ _version: 2
   uk: "Порти"
 "A world starts by itself when a player of one of its companies comes; Start brings it up before.":
   de: "Eine Welt startet von selbst, wenn ein Spieler einer ihrer Firmen kommt; „Start“ fährt sie schon vorher hoch."
+  da: "En verden starter af sig selv, når en spiller fra et af dens selskaber kommer; Start bringer den op før."
   fr: "Un monde démarre tout seul quand un joueur d'une de ses entreprises arrive ; « Démarrer » le lance avant."
   nl: "Een wereld start vanzelf als een speler van een van haar bedrijven komt; \"Start\" zet haar al eerder aan."
   pl: "Świat uruchamia się sam, gdy przychodzi gracz jednej z jego firm; „Start” uruchamia go wcześniej."
@@ -247,6 +282,7 @@ _version: 2
   uk: "Світ запускається сам, коли приходить гравець однієї з його компаній; «Старт» піднімає його заздалегідь."
 "Group head office":
   de: "Konzernzentrale"
+  da: "Koncernens hovedkontor"
   fr: "Siège du groupe"
   nl: "Hoofdkantoor van de groep"
   pl: "Centrala grupy"
@@ -254,6 +290,7 @@ _version: 2
   uk: "Головний офіс групи"
 "nobody":
   de: "niemand"
+  da: "ingen"
   fr: "personne"
   nl: "niemand"
   pl: "nikt"
@@ -261,6 +298,7 @@ _version: 2
   uk: "ніхто"
 "debt %{m}":
   de: "Schulden %{m}"
+  da: "gæld %{m}"
   fr: "dette %{m}"
   nl: "schuld %{m}"
   pl: "dług %{m}"
@@ -268,6 +306,7 @@ _version: 2
   uk: "борг %{m}"
 "Lines / buses / staff":
   de: "Linien / Busse / Personal"
+  da: "Linjer / busser / personale"
   fr: "Lignes / bus / personnel"
   nl: "Lijnen / bussen / personeel"
   pl: "Linie / autobusy / personel"
@@ -275,6 +314,7 @@ _version: 2
   uk: "Лінії / автобуси / персонал"
 "Process":
   de: "Prozess"
+  da: "Proces"
   fr: "Processus"
   nl: "Proces"
   pl: "Proces"
@@ -282,6 +322,7 @@ _version: 2
   uk: "Процес"
 "No company has been founded on the server yet.":
   de: "Auf dem Server wurde noch keine Firma gegründet."
+  da: "Intet selskab er stiftet på serveren endnu."
   fr: "Aucune entreprise n'a encore été fondée sur le serveur."
   nl: "Er is nog geen bedrijf opgericht op de server."
   pl: "Na serwerze nie założono jeszcze żadnej firmy."
@@ -289,6 +330,7 @@ _version: 2
   uk: "На сервері ще не засновано жодної компанії."
 "Click a company for its details.":
   de: "Klick auf eine Firma für ihre Details."
+  da: "Klik på et selskab for at se dets detaljer."
   fr: "Clique sur une entreprise pour voir ses détails."
   nl: "Klik op een bedrijf voor de details."
   pl: "Kliknij firmę, aby zobaczyć szczegóły."
@@ -296,6 +338,7 @@ _version: 2
   uk: "Натисни на компанію, щоб побачити подробиці."
 "The company's name":
   de: "Name der Firma"
+  da: "Selskabets navn"
   fr: "Nom de l'entreprise"
   nl: "Naam van het bedrijf"
   pl: "Nazwa firmy"
@@ -303,6 +346,7 @@ _version: 2
   uk: "Назва компанії"
 "No owner yet":
   de: "Noch kein Inhaber"
+  da: "Ingen ejer endnu"
   fr: "Pas encore de propriétaire"
   nl: "Nog geen eigenaar"
   pl: "Jeszcze bez właściciela"
@@ -310,6 +354,7 @@ _version: 2
   uk: "Поки без власника"
 "%{name}: %{amount} booked as capital":
   de: "%{name}: %{amount} als Kapital gebucht"
+  da: "%{name}: %{amount} bogført som kapital"
   fr: "%{name} : %{amount} comptabilisé en capital"
   nl: "%{name}: %{amount} als kapitaal geboekt"
   pl: "%{name}: %{amount} zaksięgowano jako kapitał"
@@ -317,6 +362,7 @@ _version: 2
   uk: "%{name}: %{amount} проведено як капітал"
 "Banned":
   de: "Gebannt"
+  da: "Udelukket"
   fr: "Banni"
   nl: "Verbannen"
   pl: "Zbanowany"
@@ -324,6 +370,7 @@ _version: 2
   uk: "Забанено"
 "Port":
   de: "Port"
+  da: "Port"
   fr: "Port"
   nl: "Poort"
   pl: "Port"
@@ -331,6 +378,7 @@ _version: 2
   uk: "Порт"
 "Code: ":
   de: "Code: "
+  da: "Kode: "
   fr: "Code : "
   nl: "Code: "
   pl: "Kod: "
@@ -338,6 +386,7 @@ _version: 2
   uk: "Код: "
 "Its process does not run: money, owner and roles change when it does.":
   de: "Ihr Prozess läuft nicht: Geld, Inhaber und Rollen ändern sich, sobald er läuft."
+  da: "Dens proces kører ikke: penge, ejer og roller ændres, når den gør."
   fr: "Son processus ne tourne pas : l'argent, le propriétaire et les rôles changeront quand il tournera."
   nl: "Het proces draait niet: geld, eigenaar en rollen veranderen zodra het draait."
   pl: "Jej proces nie działa: pieniądze, właściciel i role zmienią się, gdy zacznie działać."
@@ -345,6 +394,7 @@ _version: 2
   uk: "Її процес не запущено: гроші, власник і ролі зміняться, коли він запрацює."
 "Make owner":
   de: "Zum Inhaber machen"
+  da: "Gør til ejer"
   fr: "Rendre propriétaire"
   nl: "Eigenaar maken"
   pl: "Ustaw jako właściciela"
@@ -352,6 +402,7 @@ _version: 2
   uk: "Зробити власником"
 "No player has logged in yet.":
   de: "Noch hat sich kein Spieler angemeldet."
+  da: "Ingen spiller har logget ind endnu."
   fr: "Aucun joueur ne s'est encore connecté."
   nl: "Er heeft nog geen speler ingelogd."
   pl: "Żaden gracz jeszcze się nie zalogował."
@@ -359,6 +410,7 @@ _version: 2
   uk: "Жоден гравець ще не входив."
 "Players and roles":
   de: "Spieler und Rollen"
+  da: "Spillere og roller"
   fr: "Joueurs et rôles"
   nl: "Spelers en rollen"
   pl: "Gracze i role"
@@ -366,6 +418,7 @@ _version: 2
   uk: "Гравці й ролі"
 "Nobody has joined the company yet.":
   de: "Noch ist niemand der Firma beigetreten."
+  da: "Ingen har deltaget i selskabet endnu."
   fr: "Personne n'a encore rejoint l'entreprise."
   nl: "Nog niemand is bij het bedrijf gekomen."
   pl: "Nikt jeszcze nie dołączył do firmy."
@@ -373,6 +426,7 @@ _version: 2
   uk: "До компанії ще ніхто не приєднався."
 "The process's log":
   de: "Protokoll des Prozesses"
+  da: "Procesens log"
   fr: "Journal du processus"
   nl: "Logboek van het proces"
   pl: "Dziennik procesu"
@@ -380,6 +434,7 @@ _version: 2
   uk: "Журнал процесу"
 "Find a player…":
   de: "Spieler suchen…"
+  da: "Find en spiller…"
   fr: "Chercher un joueur…"
   nl: "Speler zoeken…"
   pl: "Znajdź gracza…"
@@ -387,6 +442,7 @@ _version: 2
   uk: "Знайти гравця…"
 "Players - %{n}":
   de: "Spieler - %{n}"
+  da: "Spillere - %{n}"
   fr: "Joueurs - %{n}"
   nl: "Spelers - %{n}"
   pl: "Gracze - %{n}"
@@ -394,6 +450,7 @@ _version: 2
   uk: "Гравці - %{n}"
 "Logs in with":
   de: "Meldet sich an mit"
+  da: "Logger ind med"
   fr: "Se connecte avec"
   nl: "Logt in met"
   pl: "Loguje się przez"
@@ -401,6 +458,7 @@ _version: 2
   uk: "Входить через"
 "Owns":
   de: "Besitzt"
+  da: "Ejer"
   fr: "Possède"
   nl: "Bezit"
   pl: "Posiada"
@@ -408,6 +466,7 @@ _version: 2
   uk: "Володіє"
 "Last seen":
   de: "Zuletzt gesehen"
+  da: "Sidst set"
   fr: "Vu pour la dernière fois"
   nl: "Laatst gezien"
   pl: "Ostatnio widziany"
@@ -415,6 +474,7 @@ _version: 2
   uk: "Останній візит"
 "New balance":
   de: "Neuer Kontostand"
+  da: "Ny saldo"
   fr: "Nouveau solde"
   nl: "Nieuw saldo"
   pl: "Nowe saldo"
@@ -422,6 +482,7 @@ _version: 2
   uk: "Новий баланс"
 "Why (he is told)":
   de: "Grund (wird ihm mitgeteilt)"
+  da: "Hvorfor (han får besked)"
   fr: "Pourquoi (il en est informé)"
   nl: "Waarom (hij krijgt het te horen)"
   pl: "Powód (zostanie mu przekazany)"
@@ -429,6 +490,7 @@ _version: 2
   uk: "Причина (йому її повідомлять)"
 "Own money":
   de: "Eigenes Geld"
+  da: "Egne penge"
   fr: "Argent personnel"
   nl: "Eigen geld"
   pl: "Własne pieniądze"
@@ -436,6 +498,7 @@ _version: 2
   uk: "Власні гроші"
 "Trips driven":
   de: "Gefahrene Fahrten"
+  da: "Kørte ture"
   fr: "Courses effectuées"
   nl: "Gereden ritten"
   pl: "Przejechane kursy"
@@ -443,6 +506,7 @@ _version: 2
   uk: "Пройдено рейсів"
 "Leadership course":
   de: "Führungskurs"
+  da: "Lederskabskursus"
   fr: "Formation de direction"
   nl: "Leiderschapscursus"
   pl: "Kurs kierowniczy"
@@ -450,6 +514,7 @@ _version: 2
   uk: "Курс керівника"
 "Driving tests":
   de: "Fahrprüfungen"
+  da: "Køreprøver"
   fr: "Examens de conduite"
   nl: "Rijexamens"
   pl: "Egzaminy z jazdy"
@@ -457,6 +522,7 @@ _version: 2
   uk: "Іспити з водіння"
 "Computers with a key":
   de: "Rechner mit Schlüssel"
+  da: "Computere med en nøgle"
   fr: "Ordinateurs avec une clé"
   nl: "Computers met een sleutel"
   pl: "Komputery z kluczem"
@@ -464,6 +530,7 @@ _version: 2
   uk: "Комп'ютери з ключем"
 "First came":
   de: "Erster Besuch"
+  da: "Kom først"
   fr: "Première visite"
   nl: "Eerste bezoek"
   pl: "Pierwsza wizyta"
@@ -471,6 +538,7 @@ _version: 2
   uk: "Перший візит"
 "Banned: %{why}":
   de: "Gebannt: %{why}"
+  da: "Udelukket: %{why}"
   fr: "Banni : %{why}"
   nl: "Verbannen: %{why}"
   pl: "Zbanowany: %{why}"
@@ -478,6 +546,7 @@ _version: 2
   uk: "Забанено: %{why}"
 "Course done":
   de: "Kurs gemacht"
+  da: "Kursus gennemført"
   fr: "Formation suivie"
   nl: "Cursus gevolgd"
   pl: "Kurs ukończony"
@@ -485,6 +554,7 @@ _version: 2
   uk: "Курс пройдено"
 "Test passed":
   de: "Prüfung bestanden"
+  da: "Prøve bestået"
   fr: "Examen réussi"
   nl: "Examen gehaald"
   pl: "Egzamin zdany"
@@ -492,6 +562,7 @@ _version: 2
   uk: "Іспит складено"
 "Access":
   de: "Zutritt"
+  da: "Adgang"
   fr: "Accès"
   nl: "Toegang"
   pl: "Dostęp"
@@ -499,6 +570,7 @@ _version: 2
   uk: "Доступ"
 "Let him in again":
   de: "Wieder reinlassen"
+  da: "Slip ham ind igen"
   fr: "Le laisser revenir"
   nl: "Weer toelaten"
   pl: "Wpuść go ponownie"
@@ -506,6 +578,7 @@ _version: 2
   uk: "Знову впустити"
 "Sure? He cannot log in":
   de: "Sicher? Er kann sich nicht mehr anmelden"
+  da: "Sikker? Han kan ikke logge ind"
   fr: "Sûr ? Il ne pourra plus se connecter"
   nl: "Zeker? Hij kan niet meer inloggen"
   pl: "Na pewno? Nie będzie mógł się zalogować"
@@ -513,6 +586,7 @@ _version: 2
   uk: "Точно? Він не зможе увійти"
 "Forget his computers' keys":
   de: "Schlüssel seiner Rechner vergessen"
+  da: "Glem hans computeres nøgler"
   fr: "Oublier les clés de ses ordinateurs"
   nl: "Sleutels van zijn computers vergeten"
   pl: "Zapomnij klucze jego komputerów"
@@ -520,6 +594,7 @@ _version: 2
   uk: "Забути ключі його комп'ютерів"
 "A computer of his gets a new key at its next login with Steam (a lost or stolen PC).":
   de: "Ein Rechner von ihm bekommt bei der nächsten Anmeldung über Steam einen neuen Schlüssel (ein verlorener oder gestohlener PC)."
+  da: "En af hans computere får en ny nøgle ved sit næste login med Steam (en mistet eller stjålet pc)."
   fr: "Un de ses ordinateurs reçoit une nouvelle clé à sa prochaine connexion avec Steam (un PC perdu ou volé)."
   nl: "Een computer van hem krijgt bij de volgende login met Steam een nieuwe sleutel (een verloren of gestolen pc)."
   pl: "Jego komputer dostanie nowy klucz przy następnym logowaniu przez Steam (zgubiony lub skradziony PC)."
@@ -527,6 +602,7 @@ _version: 2
   uk: "Його комп'ютер отримає новий ключ під час наступного входу через Steam (загублений чи вкрадений ПК)."
 "Tenders and market":
   de: "Ausschreibungen und Markt"
+  da: "Udbud og marked"
   fr: "Appels d'offres et marché"
   nl: "Aanbestedingen en markt"
   pl: "Przetargi i rynek"
@@ -534,6 +610,7 @@ _version: 2
   uk: "Торги й ринок"
 "No map has a market yet: it starts with a map's first company.":
   de: "Noch hat keine Karte einen Markt: Er beginnt mit der ersten Firma einer Karte."
+  da: "Intet kort har et marked endnu: det starter med et korts første selskab."
   fr: "Aucune carte n'a encore de marché : il commence avec la première entreprise d'une carte."
   nl: "Nog geen kaart heeft een markt: die begint met het eerste bedrijf van een kaart."
   pl: "Żadna mapa nie ma jeszcze rynku: rusza wraz z pierwszą firmą na mapie."
@@ -541,6 +618,7 @@ _version: 2
   uk: "Жодна мапа ще не має ринку: він починається з першої компанії мапи."
 "Applied for":
   de: "Beantragt"
+  da: "Ansøgt om"
   fr: "Demandé"
   nl: "Aangevraagd"
   pl: "Na wniosek"
@@ -548,6 +626,7 @@ _version: 2
   uk: "На запит"
 "%{n} bidders":
   de: "%{n} Bieter"
+  da: "%{n} bydende"
   fr: "%{n} soumissionnaires"
   nl: "%{n} bieders"
   pl: "oferentów: %{n}"
@@ -555,6 +634,7 @@ _version: 2
   uk: "учасників: %{n}"
 "Move the close":
   de: "Schluss verschieben"
+  da: "Flyt lukningen"
   fr: "Déplacer la clôture"
   nl: "Sluiting verzetten"
   pl: "Przesuń zamknięcie"
@@ -562,6 +642,7 @@ _version: 2
   uk: "Перенести закриття"
 "Call off":
   de: "Absagen"
+  da: "Aflys"
   fr: "Annuler"
   nl: "Afblazen"
   pl: "Odwołaj"
@@ -569,6 +650,7 @@ _version: 2
   uk: "Скасувати"
 "Sure? Fees are paid back":
   de: "Sicher? Gebühren werden erstattet"
+  da: "Sikker? Gebyrer betales tilbage"
   fr: "Sûr ? Les frais sont remboursés"
   nl: "Zeker? Kosten worden terugbetaald"
   pl: "Na pewno? Opłaty zostaną zwrócone"
@@ -576,6 +658,7 @@ _version: 2
   uk: "Точно? Внески буде повернуто"
 "Operator":
   de: "Betreiber"
+  da: "Operatør"
   fr: "Exploitant"
   nl: "Vervoerder"
   pl: "Przewoźnik"
@@ -583,6 +666,7 @@ _version: 2
   uk: "Перевізник"
 "points":
   de: "Punkte"
+  da: "point"
   fr: "points"
   nl: "punten"
   pl: "pkt"
@@ -590,6 +674,7 @@ _version: 2
   uk: "балів"
 "gives it up %{date}":
   de: "gibt sie am %{date} auf"
+  da: "opgiver den %{date}"
   fr: "l'abandonne le %{date}"
   nl: "geeft haar op %{date} op"
   pl: "rezygnuje %{date}"
@@ -597,6 +682,7 @@ _version: 2
   uk: "відмовиться %{date}"
 "The line's timetable name":
   de: "Fahrplanname der Linie"
+  da: "Linjens køreplansnavn"
   fr: "Nom de la ligne dans les horaires"
   nl: "Dienstregelingnaam van de lijn"
   pl: "Nazwa linii w rozkładzie"
@@ -604,6 +690,7 @@ _version: 2
   uk: "Назва лінії в розкладі"
 "Its own lines: %{l}":
   de: "Eigene Linien: %{l}"
+  da: "Dens egne linjer: %{l}"
   fr: "Ses propres lignes : %{l}"
   nl: "Eigen lijnen: %{l}"
   pl: "Własne linie: %{l}"
@@ -611,6 +698,7 @@ _version: 2
   uk: "Власні лінії: %{l}"
 "Takes off: %{l}":
   de: "Nimmt aus dem Fahrplan: %{l}"
+  da: "Tager af: %{l}"
   fr: "Retire : %{l}"
   nl: "Haalt uit de dienst: %{l}"
   pl: "Wyłącza: %{l}"
@@ -618,6 +706,7 @@ _version: 2
   uk: "Знімає: %{l}"
 "Open tenders - %{n}":
   de: "Offene Ausschreibungen - %{n}"
+  da: "Åbne udbud - %{n}"
   fr: "Appels d'offres ouverts - %{n}"
   nl: "Open aanbestedingen - %{n}"
   pl: "Otwarte przetargi - %{n}"
@@ -625,6 +714,7 @@ _version: 2
   uk: "Відкриті торги - %{n}"
 "Opens":
   de: "Öffnet"
+  da: "Åbner"
   fr: "Ouverture"
   nl: "Opent"
   pl: "Otwarcie"
@@ -632,6 +722,7 @@ _version: 2
   uk: "Відкриття"
 "Closes":
   de: "Schließt"
+  da: "Lukker"
   fr: "Clôture"
   nl: "Sluit"
   pl: "Zamknięcie"
@@ -639,6 +730,7 @@ _version: 2
   uk: "Закриття"
 "Cap / hour":
   de: "Obergrenze / Stunde"
+  da: "Loft / time"
   fr: "Plafond / heure"
   nl: "Plafond / uur"
   pl: "Limit / godz."
@@ -646,6 +738,7 @@ _version: 2
   uk: "Межа / год"
 "No tender is open.":
   de: "Keine Ausschreibung ist offen."
+  da: "Intet udbud er åbent."
   fr: "Aucun appel d'offres n'est ouvert."
   nl: "Er is geen aanbesteding open."
   pl: "Żaden przetarg nie jest otwarty."
@@ -653,6 +746,7 @@ _version: 2
   uk: "Відкритих торгів немає."
 "The bids stay sealed until the close: only how many companies bid shows here.":
   de: "Die Gebote bleiben bis zum Schluss verdeckt: Hier steht nur, wie viele Firmen bieten."
+  da: "Buddene forbliver forseglede til lukningen: kun hvor mange selskaber der byder, vises her."
   fr: "Les offres restent cachetées jusqu'à la clôture : seul le nombre d'entreprises qui font une offre s'affiche ici."
   nl: "De biedingen blijven gesloten tot de sluiting: hier staat alleen hoeveel bedrijven bieden."
   pl: "Oferty pozostają zamknięte do zamknięcia: widać tu tylko, ile firm złożyło ofertę."
@@ -660,6 +754,7 @@ _version: 2
   uk: "Пропозиції лишаються закритими до закриття: тут видно лише, скільки компаній подали пропозиції."
 "Put out to tender now":
   de: "Jetzt ausschreiben"
+  da: "Send i udbud nu"
   fr: "Mettre en appel d'offres maintenant"
   nl: "Nu aanbesteden"
   pl: "Wystaw do przetargu teraz"
@@ -667,6 +762,7 @@ _version: 2
   uk: "Виставити на торги зараз"
 "Open the tender":
   de: "Ausschreibung eröffnen"
+  da: "Åbn udbuddet"
   fr: "Ouvrir l'appel d'offres"
   nl: "Aanbesteding openen"
   pl: "Otwórz przetarg"
@@ -674,6 +770,7 @@ _version: 2
   uk: "Відкрити торги"
 "Line %{l} goes out to tender in a moment":
   de: "Linie %{l} wird gleich ausgeschrieben"
+  da: "Linje %{l} sendes i udbud om et øjeblik"
   fr: "La ligne %{l} est mise en appel d'offres dans un instant"
   nl: "Lijn %{l} wordt zo aanbesteed"
   pl: "Linia %{l} za chwilę trafi do przetargu"
@@ -681,6 +778,7 @@ _version: 2
   uk: "Лінію %{l} зараз буде виставлено на торги"
 "Decided lately":
   de: "Kürzlich entschieden"
+  da: "Afgjort på det seneste"
   fr: "Décidés récemment"
   nl: "Onlangs beslist"
   pl: "Ostatnio rozstrzygnięte"
@@ -688,6 +786,7 @@ _version: 2
   uk: "Нещодавно вирішені"
 "Closed":
   de: "Geschlossen"
+  da: "Lukket"
   fr: "Clôturé"
   nl: "Gesloten"
   pl: "Zamknięty"
@@ -695,6 +794,7 @@ _version: 2
   uk: "Закрито"
 "Won by":
   de: "Gewonnen von"
+  da: "Vundet af"
   fr: "Remporté par"
   nl: "Gewonnen door"
   pl: "Wygrał"
@@ -702,6 +802,7 @@ _version: 2
   uk: "Переможець"
 "A timetable hour":
   de: "Je Fahrplanstunde"
+  da: "En køreplantime"
   fr: "Par heure de service"
   nl: "Per dienstregelinguur"
   pl: "Za godzinę rozkładową"
@@ -709,6 +810,7 @@ _version: 2
   uk: "За годину за розкладом"
 "The operators' lines":
   de: "Die Linien der Betreiber"
+  da: "Operatørernes linjer"
   fr: "Les lignes des exploitants"
   nl: "De lijnen van de vervoerders"
   pl: "Linie przewoźników"
@@ -716,6 +818,7 @@ _version: 2
   uk: "Лінії перевізників"
 "Gives up":
   de: "Gibt auf"
+  da: "Opgiver"
   fr: "Abandonne"
   nl: "Geeft op"
   pl: "Rezygnuje"
@@ -723,6 +826,7 @@ _version: 2
   uk: "Відмовиться"
 "Events (Chrono)":
   de: "Ereignisse (Chrono)"
+  da: "Begivenheder (Chrono)"
   fr: "Événements (Chrono)"
   nl: "Evenementen (Chrono)"
   pl: "Wydarzenia (Chrono)"
@@ -730,6 +834,7 @@ _version: 2
   uk: "Події (Chrono)"
 "The main server":
   de: "Der Hauptserver"
+  da: "Hovedserveren"
   fr: "Le serveur principal"
   nl: "De hoofdserver"
   pl: "Serwer główny"
@@ -737,6 +842,7 @@ _version: 2
   uk: "Головний сервер"
 "World: %{map}":
   de: "Welt: %{map}"
+  da: "Verden: %{map}"
   fr: "Monde : %{map}"
   nl: "Wereld: %{map}"
   pl: "Świat: %{map}"
@@ -744,6 +850,7 @@ _version: 2
   uk: "Світ: %{map}"
 "Company: %{name}":
   de: "Firma: %{name}"
+  da: "Selskab: %{name}"
   fr: "Entreprise : %{name}"
   nl: "Bedrijf: %{name}"
   pl: "Firma: %{name}"
@@ -751,6 +858,7 @@ _version: 2
   uk: "Компанія: %{name}"
 "A console command: help lists them":
   de: "Ein Konsolenbefehl: help listet sie auf"
+  da: "En konsolkommando: help viser dem"
   fr: "Une commande de console : help les liste"
   nl: "Een consoleopdracht: help toont ze allemaal"
   pl: "Polecenie konsoli: help je wypisuje"
@@ -758,6 +866,7 @@ _version: 2
   uk: "Команда консолі: help виводить їх список"
 "Console":
   de: "Konsole"
+  da: "Konsol"
   fr: "Console"
   nl: "Console"
   pl: "Konsola"
@@ -765,6 +874,7 @@ _version: 2
   uk: "Консоль"
 "Run":
   de: "Ausführen"
+  da: "Kør"
   fr: "Exécuter"
   nl: "Uitvoeren"
   pl: "Wykonaj"
@@ -772,6 +882,7 @@ _version: 2
   uk: "Виконати"
 "Door port":
   de: "Zugangsport"
+  da: "Dørport"
   fr: "Port d'entrée"
   nl: "Toegangspoort"
   pl: "Port wejścia"
@@ -779,6 +890,7 @@ _version: 2
   uk: "Порт входу"
 "Shown in the players' launchers":
   de: "Wird in den Launchern der Spieler angezeigt"
+  da: "Vises i spillernes launchere"
   fr: "Affiché dans les launchers des joueurs"
   nl: "Getoond in de launchers van de spelers"
   pl: "Wyświetlane w launcherach graczy"
@@ -786,6 +898,7 @@ _version: 2
   uk: "Показується в лаунчерах гравців"
 "OMSI folder":
   de: "OMSI-Ordner"
+  da: "OMSI-mappe"
   fr: "Dossier OMSI"
   nl: "OMSI-map"
   pl: "Folder OMSI"
@@ -793,6 +906,7 @@ _version: 2
   uk: "Тека OMSI"
 "The folder with the maps; empty: the one the launcher on this machine uses":
   de: "Der Ordner mit den Karten; leer: der, den der Launcher auf diesem Rechner nutzt"
+  da: "Mappen med kortene; tomt: den, launcheren på denne maskine bruger"
   fr: "Le dossier avec les cartes ; vide : celui qu'utilise le launcher de cette machine"
   nl: "De map met de kaarten; leeg: die van de launcher op deze computer"
   pl: "Folder z mapami; puste: ten, którego używa launcher na tym komputerze"
@@ -800,6 +914,7 @@ _version: 2
   uk: "Тека з мапами; порожньо: та, яку використовує лаунчер на цьому комп'ютері"
 "Off: the date and time below at the very first start, then 1:1 with the real clock":
   de: "Aus: Datum und Uhrzeit unten beim allerersten Start, danach 1:1 mit der echten Uhr"
+  da: "Fra: datoen og tiden nedenfor ved allerførste start, derefter 1:1 med det rigtige ur"
   fr: "Désactivé : la date et l'heure ci-dessous au tout premier démarrage, puis 1:1 avec l'heure réelle"
   nl: "Uit: de datum en tijd hieronder bij de allereerste start, daarna 1:1 met de echte klok"
   pl: "Wył.: data i godzina poniżej przy pierwszym uruchomieniu, potem 1:1 z rzeczywistym zegarem"
@@ -807,6 +922,7 @@ _version: 2
   uk: "Вимк.: дата й час нижче під час найпершого запуску, потім 1:1 з реальним годинником"
 "First date":
   de: "Erstes Datum"
+  da: "Første dato"
   fr: "Date de départ"
   nl: "Eerste datum"
   pl: "Data początkowa"
@@ -814,6 +930,7 @@ _version: 2
   uk: "Початкова дата"
 "First time":
   de: "Erste Uhrzeit"
+  da: "Første tid"
   fr: "Heure de départ"
   nl: "Eerste tijd"
   pl: "Godzina początkowa"
@@ -821,6 +938,7 @@ _version: 2
   uk: "Початковий час"
 "The maps' worlds":
   de: "Die Welten der Karten"
+  da: "Kortenes verdener"
   fr: "Les mondes des cartes"
   nl: "De werelden van de kaarten"
   pl: "Światy map"
@@ -828,6 +946,7 @@ _version: 2
   uk: "Світи мап"
 "Empty: the one beside the main server":
   de: "Leer: das neben dem Hauptserver"
+  da: "Tomt: den ved siden af hovedserveren"
   fr: "Vide : celui à côté du serveur principal"
   nl: "Leeg: dat naast de hoofdserver"
   pl: "Puste: ten obok serwera głównego"
@@ -835,6 +954,7 @@ _version: 2
   uk: "Порожньо: та, що поруч із головним сервером"
 "First port":
   de: "Erster Port"
+  da: "Første port"
   fr: "Premier port"
   nl: "Eerste poort"
   pl: "Pierwszy port"
@@ -842,6 +962,7 @@ _version: 2
   uk: "Перший порт"
 "Each world takes two: UDP and its web port":
   de: "Jede Welt braucht zwei: UDP und ihren Web-Port"
+  da: "Hver verden tager to: UDP og sin webport"
   fr: "Chaque monde en prend deux : UDP et son port web"
   nl: "Elke wereld neemt er twee: UDP en haar webpoort"
   pl: "Każdy świat zajmuje dwa: UDP i swój port web"
@@ -849,6 +970,7 @@ _version: 2
   uk: "Кожен світ займає два: UDP і свій веб-порт"
 "Worlds at once":
   de: "Welten gleichzeitig"
+  da: "Verdener på én gang"
   fr: "Mondes à la fois"
   nl: "Werelden tegelijk"
   pl: "Światy naraz"
@@ -856,6 +978,7 @@ _version: 2
   uk: "Світів одночасно"
 "Minutes without players":
   de: "Minuten ohne Spieler"
+  da: "Minutter uden spillere"
   fr: "Minutes sans joueurs"
   nl: "Minuten zonder spelers"
   pl: "Minuty bez graczy"
@@ -863,6 +986,7 @@ _version: 2
   uk: "Хвилин без гравців"
 "A world stops this long after its last player (when not kept running)":
   de: "So lange nach ihrem letzten Spieler stoppt eine Welt (wenn sie nicht weiterläuft)"
+  da: "En verden stopper så længe efter sin sidste spiller (når den ikke holdes kørende)"
   fr: "Un monde s'arrête ce temps-là après son dernier joueur (s'il n'est pas maintenu en marche)"
   nl: "Zo lang na haar laatste speler stopt een wereld (als ze niet blijft draaien)"
   pl: "Po takim czasie od ostatniego gracza świat się zatrzymuje (gdy nie jest utrzymywany w działaniu)"
@@ -870,6 +994,7 @@ _version: 2
   uk: "Через стільки після останнього гравця світ зупиняється (якщо його не тримають запущеним)"
 "Keep worlds running":
   de: "Welten weiterlaufen lassen"
+  da: "Hold verdener kørende"
   fr: "Garder les mondes en marche"
   nl: "Werelden laten draaien"
   pl: "Utrzymuj światy w działaniu"
@@ -877,6 +1002,7 @@ _version: 2
   uk: "Тримати світи запущеними"
 "While the machine can carry them":
   de: "Solange der Rechner sie tragen kann"
+  da: "Så længe maskinen kan bære dem"
   fr: "Tant que la machine peut les supporter"
   nl: "Zolang de computer ze aankan"
   pl: "Dopóki komputer je udźwignie"
@@ -884,6 +1010,7 @@ _version: 2
   uk: "Поки комп'ютер їх тягне"
 "Most memory in use (%)":
   de: "Höchste Speichernutzung (%)"
+  da: "Mest hukommelse i brug (%)"
   fr: "Mémoire utilisée max. (%)"
   nl: "Max. geheugengebruik (%)"
   pl: "Maks. użycie pamięci (%)"
@@ -891,6 +1018,7 @@ _version: 2
   uk: "Макс. використання пам'яті (%)"
 "Most processor in use (%)":
   de: "Höchste Prozessorauslastung (%)"
+  da: "Mest processor i brug (%)"
   fr: "Processeur utilisé max. (%)"
   nl: "Max. processorgebruik (%)"
   pl: "Maks. użycie procesora (%)"
@@ -898,6 +1026,7 @@ _version: 2
   uk: "Макс. завантаження процесора (%)"
 "Random cars in each world":
   de: "Zufällige Autos in jeder Welt"
+  da: "Tilfældige biler i hver verden"
   fr: "Voitures aléatoires dans chaque monde"
   nl: "Willekeurige auto's in elke wereld"
   pl: "Losowe samochody w każdym świecie"
@@ -905,6 +1034,7 @@ _version: 2
   uk: "Випадкові машини в кожному світі"
 "Most players a world":
   de: "Max. Spieler je Welt"
+  da: "Flest spillere pr. verden"
   fr: "Joueurs max. par monde"
   nl: "Max. spelers per wereld"
   pl: "Maks. graczy na świat"
@@ -912,6 +1042,7 @@ _version: 2
   uk: "Макс. гравців на світ"
 "The players' door":
   de: "Der Zugang für die Spieler"
+  da: "Spillernes dør"
   fr: "L'entrée des joueurs"
   nl: "De toegang voor spelers"
   pl: "Wejście dla graczy"
@@ -919,6 +1050,7 @@ _version: 2
   uk: "Вхід для гравців"
 "The players' launchers come here - and this panel":
   de: "Hierher kommen die Launcher der Spieler - und dieses Panel"
+  da: "Spillernes launchere kommer hertil - og dette panel"
   fr: "Les launchers des joueurs arrivent ici - et ce panneau"
   nl: "Hier komen de launchers van de spelers binnen - en dit paneel"
   pl: "Tu łączą się launchery graczy - i ten panel"
@@ -926,6 +1058,7 @@ _version: 2
   uk: "Сюди підключаються лаунчери гравців - і ця панель"
 "The companies' first port":
   de: "Erster Port der Firmen"
+  da: "Selskabernes første port"
   fr: "Premier port des entreprises"
   nl: "Eerste poort van de bedrijven"
   pl: "Pierwszy port firm"
@@ -933,6 +1066,7 @@ _version: 2
   uk: "Перший порт компаній"
 "An https address for the door, the companies and the worlds: players anywhere":
   de: "Eine https-Adresse für den Zugang, die Firmen und die Welten: Spieler überall"
+  da: "En https-adresse til døren, selskaberne og verdenerne: spillere overalt"
   fr: "Une adresse https pour l'entrée, les entreprises et les mondes : des joueurs de partout"
   nl: "Een https-adres voor de toegang, de bedrijven en de werelden: spelers overal"
   pl: "Adres https dla wejścia, firm i światów: gracze z każdego miejsca"
@@ -940,6 +1074,7 @@ _version: 2
   uk: "Адреса https для входу, компаній і світів: гравці звідусіль"
 "Ways to log in":
   de: "Anmeldewege"
+  da: "Måder at logge ind på"
   fr: "Moyens de connexion"
   nl: "Manieren om in te loggen"
   pl: "Sposoby logowania"
@@ -947,6 +1082,7 @@ _version: 2
   uk: "Способи входу"
 "Omsi-Hub account and Steam":
   de: "Omsi-Hub-Konto und Steam"
+  da: "Omsi-Hub-konto og Steam"
   fr: "Compte Omsi-Hub et Steam"
   nl: "Omsi-Hub-account en Steam"
   pl: "Konto Omsi-Hub i Steam"
@@ -954,6 +1090,7 @@ _version: 2
   uk: "Обліковий запис Omsi-Hub і Steam"
 "Omsi-Hub account only":
   de: "Nur Omsi-Hub-Konto"
+  da: "Kun Omsi-Hub-konto"
   fr: "Compte Omsi-Hub uniquement"
   nl: "Alleen Omsi-Hub-account"
   pl: "Tylko konto Omsi-Hub"
@@ -961,6 +1098,7 @@ _version: 2
   uk: "Лише обліковий запис Omsi-Hub"
 "Steam only":
   de: "Nur Steam"
+  da: "Kun Steam"
   fr: "Steam uniquement"
   nl: "Alleen Steam"
   pl: "Tylko Steam"
@@ -968,6 +1106,7 @@ _version: 2
   uk: "Лише Steam"
 "A new player starts with":
   de: "Ein neuer Spieler startet mit"
+  da: "En ny spiller starter med"
   fr: "Un nouveau joueur commence avec"
   nl: "Een nieuwe speler begint met"
   pl: "Nowy gracz zaczyna z"
@@ -975,6 +1114,7 @@ _version: 2
   uk: "Новий гравець починає з"
 "Whole units":
   de: "Ganze Einheiten"
+  da: "Hele enheder"
   fr: "Unités entières"
   nl: "Hele eenheden"
   pl: "Pełne jednostki"
@@ -982,6 +1122,7 @@ _version: 2
   uk: "Цілі одиниці"
 "Founding a company costs":
   de: "Eine Firma zu gründen kostet"
+  da: "At stifte et selskab koster"
   fr: "Fonder une entreprise coûte"
   nl: "Een bedrijf oprichten kost"
   pl: "Założenie firmy kosztuje"
@@ -989,6 +1130,7 @@ _version: 2
   uk: "Заснування компанії коштує"
 "Of the player's own money":
   de: "Vom eigenen Geld des Spielers"
+  da: "Af spillerens egne penge"
   fr: "De l'argent personnel du joueur"
   nl: "Van het eigen geld van de speler"
   pl: "Z własnych pieniędzy gracza"
@@ -996,6 +1138,7 @@ _version: 2
   uk: "З власних грошей гравця"
 "A depot on another map":
   de: "Ein Depot auf einer anderen Karte"
+  da: "En afdeling på et andet kort"
   fr: "Un dépôt sur une autre carte"
   nl: "Een depot op een andere kaart"
   pl: "Zajezdnia na innej mapie"
@@ -1003,6 +1146,7 @@ _version: 2
   uk: "Депо на іншій мапі"
 "Of the company's money":
   de: "Vom Geld der Firma"
+  da: "Af selskabets penge"
   fr: "De l'argent de l'entreprise"
   nl: "Van het geld van het bedrijf"
   pl: "Z pieniędzy firmy"
@@ -1010,6 +1154,7 @@ _version: 2
   uk: "З грошей компанії"
 "Moving a bus to another map":
   de: "Einen Bus auf eine andere Karte verlegen"
+  da: "At flytte en bus til et andet kort"
   fr: "Déplacer un bus vers une autre carte"
   nl: "Een bus naar een andere kaart verplaatsen"
   pl: "Przeniesienie autobusu na inną mapę"
@@ -1017,6 +1162,7 @@ _version: 2
   uk: "Переведення автобуса на іншу мапу"
 "Days a moved bus is away":
   de: "Tage, die ein verlegter Bus weg ist"
+  da: "Dage en flyttet bus er væk"
   fr: "Jours d'absence d'un bus déplacé"
   nl: "Dagen dat een verplaatste bus weg is"
   pl: "Dni nieobecności przenoszonego autobusu"
@@ -1024,6 +1170,7 @@ _version: 2
   uk: "Днів у дорозі в автобуса, що переводиться"
 "A depot's purchase that waits for the head office":
   de: "Ein Kauf eines Depots, der auf die Zentrale wartet"
+  da: "En afdelings køb, der venter på hovedkontoret"
   fr: "Un achat de dépôt qui attend le siège"
   nl: "Een aankoop van een depot die op het hoofdkantoor wacht"
   pl: "Zakup zajezdni czekający na centralę"
@@ -1031,6 +1178,7 @@ _version: 2
   uk: "Покупка депо, що чекає на головний офіс"
 "Trips driven first":
   de: "Vorher gefahrene Fahrten"
+  da: "Ture kørt først"
   fr: "Courses effectuées avant"
   nl: "Eerst gereden ritten"
   pl: "Wcześniej przejechane kursy"
@@ -1038,6 +1186,7 @@ _version: 2
   uk: "Спершу пройти рейсів"
 "0: none":
   de: "0: keine"
+  da: "0: ingen"
   fr: "0 : aucune"
   nl: "0: geen"
   pl: "0: brak"
@@ -1045,6 +1194,7 @@ _version: 2
   uk: "0: не потрібно"
 "The leadership course":
   de: "Der Führungskurs"
+  da: "Lederskabskurset"
   fr: "La formation de direction"
   nl: "De leiderschapscursus"
   pl: "Kurs kierowniczy"
@@ -1052,6 +1202,7 @@ _version: 2
   uk: "Курс керівника"
 "The course's price":
   de: "Preis des Kurses"
+  da: "Kursets pris"
   fr: "Prix de la formation"
   nl: "Prijs van de cursus"
   pl: "Cena kursu"
@@ -1059,6 +1210,7 @@ _version: 2
   uk: "Ціна курсу"
 "The course's days":
   de: "Tage des Kurses"
+  da: "Kursets dage"
   fr: "Jours de la formation"
   nl: "Dagen van de cursus"
   pl: "Dni kursu"
@@ -1066,6 +1218,7 @@ _version: 2
   uk: "Днів курсу"
 "A driving test passed":
   de: "Eine bestandene Fahrprüfung"
+  da: "En bestået køreprøve"
   fr: "Un examen de conduite réussi"
   nl: "Een gehaald rijexamen"
   pl: "Zdany egzamin z jazdy"
@@ -1073,6 +1226,7 @@ _version: 2
   uk: "Складений іспит з водіння"
 "The authority's fines (kroner)":
   de: "Die Strafen der Behörde (Kronen)"
+  da: "Trafikselskabets bøder (kroner)"
   fr: "Les amendes de l'autorité (couronnes)"
   nl: "De boetes van de overheid (kronen)"
   pl: "Kary organizatora (korony)"
@@ -1080,6 +1234,7 @@ _version: 2
   uk: "Штрафи замовника (крони)"
 "Most paid a timetable hour":
   de: "Höchstens bezahlt je Fahrplanstunde"
+  da: "Højst betalt pr. køreplantime"
   fr: "Payé au plus par heure de service"
   nl: "Hoogstens betaald per dienstregelinguur"
   pl: "Najwyżej płacone za godzinę rozkładową"
@@ -1087,6 +1242,7 @@ _version: 2
   uk: "Максимум за годину за розкладом"
 "The cap of the tenders":
   de: "Die Obergrenze der Ausschreibungen"
+  da: "Udbuddenes loft"
   fr: "Le plafond des appels d'offres"
   nl: "Het plafond van de aanbestedingen"
   pl: "Limit przetargów"
@@ -1094,6 +1250,7 @@ _version: 2
   uk: "Межа торгів"
 "A journey not run, a minute":
   de: "Eine ausgefallene Fahrt, je Minute"
+  da: "En tur, der ikke er kørt, pr. minut"
   fr: "Une course non effectuée, par minute"
   nl: "Een uitgevallen rit, per minuut"
   pl: "Niewykonany kurs, za minutę"
@@ -1101,6 +1258,7 @@ _version: 2
   uk: "Невиконаний рейс, за хвилину"
 "A smaller bus than the timetable asks":
   de: "Ein kleinerer Bus als im Fahrplan verlangt"
+  da: "En mindre bus, end køreplanen kræver"
   fr: "Un bus plus petit que celui prévu par l'horaire"
   nl: "Een kleinere bus dan de dienstregeling vraagt"
   pl: "Mniejszy autobus niż wymaga rozkład"
@@ -1108,6 +1266,7 @@ _version: 2
   uk: "Автобус менший, ніж вимагає розклад"
 "Diesel on an electric contract":
   de: "Diesel bei einem Elektrovertrag"
+  da: "Diesel på en elkontrakt"
   fr: "Diesel sur un contrat électrique"
   nl: "Diesel op een elektrisch contract"
   pl: "Diesel na umowie elektrycznej"
@@ -1115,6 +1274,7 @@ _version: 2
   uk: "Дизель на електричному контракті"
 "Late without telling the control room":
   de: "Verspätet, ohne der Leitstelle Bescheid zu geben"
+  da: "For sent uden at sige det til kontrolrummet"
   fr: "En retard sans prévenir la régulation"
   nl: "Te laat zonder het de verkeersleiding te melden"
   pl: "Spóźnienie bez zgłoszenia do dyspozytorni"
@@ -1122,6 +1282,7 @@ _version: 2
   uk: "Запізнення без повідомлення диспетчерській"
 "At least 8 characters - this panel and every world's":
   de: "Mindestens 8 Zeichen - dieses Panel und das jeder Welt"
+  da: "Mindst 8 tegn - dette panel og hver verdens"
   fr: "Au moins 8 caractères - ce panneau et celui de chaque monde"
   nl: "Minstens 8 tekens - dit paneel en dat van elke wereld"
   pl: "Co najmniej 8 znaków - ten panel i panel każdego świata"
@@ -1129,6 +1290,7 @@ _version: 2
   uk: "Щонайменше 8 символів - ця панель і панель кожного світу"
 "Off: only on this machine. On: from anywhere the door is reached, the tunnel too, with the admin password":
   de: "Aus: nur auf diesem Rechner. An: von überall, wo der Zugang erreichbar ist, auch über den Tunnel, mit dem Admin-Passwort"
+  da: "Fra: kun på denne maskine. Til: fra overalt, hvor døren nås, tunnelen også, med administratoradgangskoden"
   fr: "Désactivé : seulement sur cette machine. Activé : de partout où l'entrée est accessible, le tunnel aussi, avec le mot de passe admin"
   nl: "Uit: alleen op deze computer. Aan: overal waar de toegang bereikbaar is, ook via de tunnel, met het beheerderswachtwoord"
   pl: "Wył.: tylko na tym komputerze. Wł.: wszędzie, gdzie dostępne jest wejście, także przez tunel, z hasłem administratora"
@@ -1136,6 +1298,7 @@ _version: 2
   uk: "Вимк.: лише на цьому комп'ютері. Увімк.: скрізь, де доступний вхід, і через тунель теж, з паролем адміністратора"
 "Main server settings":
   de: "Einstellungen des Hauptservers"
+  da: "Hovedserverens indstillinger"
   fr: "Paramètres du serveur principal"
   nl: "Instellingen van de hoofdserver"
   pl: "Ustawienia serwera głównego"
@@ -1143,6 +1306,7 @@ _version: 2
   uk: "Налаштування головного сервера"
 "Reading company-server.cfg…":
   de: "company-server.cfg wird gelesen…"
+  da: "Læser company-server.cfg…"
   fr: "Lecture de company-server.cfg…"
   nl: "company-server.cfg wordt gelezen…"
   pl: "Wczytywanie company-server.cfg…"
@@ -1150,6 +1314,7 @@ _version: 2
   uk: "Читання company-server.cfg…"
 "Edit company-server.cfg as text":
   de: "company-server.cfg als Text bearbeiten"
+  da: "Rediger company-server.cfg som tekst"
   fr: "Modifier company-server.cfg en texte"
   nl: "company-server.cfg als tekst bewerken"
   pl: "Edytuj company-server.cfg jako tekst"
@@ -1157,6 +1322,7 @@ _version: 2
   uk: "Редагувати company-server.cfg як текст"
 "Rules and economy":
   de: "Regeln und Wirtschaft"
+  da: "Regler og økonomi"
   fr: "Règles et économie"
   nl: "Regels en economie"
   pl: "Zasady i ekonomia"
@@ -1164,6 +1330,7 @@ _version: 2
   uk: "Правила й економіка"
 "Planner":
   de: "Planer"
+  da: "Planlægger"
   fr: "Planificateur"
   nl: "Planner"
   pl: "Planista"
@@ -1171,6 +1338,7 @@ _version: 2
   uk: "Планувальник"
 "Bus Company Online's main server on this machine":
   de: "Der Hauptserver von Bus Company Online auf diesem Rechner"
+  da: "Bus Company Onlines hovedserver på denne maskine"
   fr: "Le serveur principal de Bus Company Online sur cette machine"
   nl: "De hoofdserver van Bus Company Online op deze computer"
   pl: "Serwer główny Bus Company Online na tym komputerze"
@@ -1178,6 +1346,7 @@ _version: 2
   uk: "Головний сервер Bus Company Online на цьому комп'ютері"
 "The companies, the players, the maps' worlds and their tenders - run and administered from here: choose its folder, one with its company-server.cfg or an empty one for a new server.":
   de: "Die Firmen, die Spieler, die Welten der Karten und ihre Ausschreibungen - von hier aus betrieben und verwaltet: Wähle seinen Ordner, einen mit seiner company-server.cfg oder einen leeren für einen neuen Server."
+  da: "Selskaberne, spillerne, kortenes verdener og deres udbud - drevet og administreret herfra: vælg dens mappe, en med dens company-server.cfg eller en tom til en ny server."
   fr: "Les entreprises, les joueurs, les mondes des cartes et leurs appels d'offres - gérés et administrés d'ici : choisis son dossier, un avec son company-server.cfg ou un vide pour un nouveau serveur."
   nl: "De bedrijven, de spelers, de werelden van de kaarten en hun aanbestedingen - van hieruit gedraaid en beheerd: kies zijn map, een met zijn company-server.cfg of een lege voor een nieuwe server."
   pl: "Firmy, gracze, światy map i ich przetargi - uruchamiane i zarządzane stąd: wybierz jego folder, z jego company-server.cfg albo pusty dla nowego serwera."
@@ -1185,6 +1354,7 @@ _version: 2
   uk: "Компанії, гравці, світи мап і їхні торги - запуск і керування звідси: вибери його теку, з його company-server.cfg або порожню для нового сервера."
 "Choose the main server's folder…":
   de: "Ordner des Hauptservers wählen…"
+  da: "Vælg hovedserverens mappe…"
   fr: "Choisir le dossier du serveur principal…"
   nl: "Map van de hoofdserver kiezen…"
   pl: "Wybierz folder serwera głównego…"
@@ -1192,6 +1362,7 @@ _version: 2
   uk: "Вибрати теку головного сервера…"
 "Multiplayer server":
   de: "Multiplayer-Server"
+  da: "Multiplayer-server"
   fr: "Serveur multijoueur"
   nl: "Multiplayerserver"
   pl: "Serwer multiplayer"
@@ -1199,6 +1370,7 @@ _version: 2
   uk: "Мультиплеєрний сервер"
 "Bus Company Online server":
   de: "Bus-Company-Online-Server"
+  da: "Bus Company Online-server"
   fr: "Serveur Bus Company Online"
   nl: "Bus Company Online-server"
   pl: "Serwer Bus Company Online"
@@ -1206,6 +1378,7 @@ _version: 2
   uk: "Сервер Bus Company Online"
 "You are banned from this server: %{why}":
   de: "Du bist von diesem Server gebannt: %{why}"
+  da: "Du er udelukket fra denne server: %{why}"
   fr: "Tu es banni de ce serveur : %{why}"
   nl: "Je bent verbannen van deze server: %{why}"
   pl: "Masz bana na tym serwerze: %{why}"
@@ -1213,6 +1386,7 @@ _version: 2
   uk: "Тебе забанено на цьому сервері: %{why}"
 "The tender of line %{n} is called off by the server: its fee is paid back.":
   de: "Die Ausschreibung von Linie %{n} wurde vom Server abgesagt: Die Gebühr wird erstattet."
+  da: "Udbuddet på linje %{n} er aflyst af serveren: dets gebyr betales tilbage."
   fr: "L'appel d'offres de la ligne %{n} est annulé par le serveur : ses frais sont remboursés."
   nl: "De aanbesteding van lijn %{n} is door de server afgeblazen: de kosten worden terugbetaald."
   pl: "Przetarg na linię %{n} został odwołany przez serwer: opłata zostanie zwrócona."
