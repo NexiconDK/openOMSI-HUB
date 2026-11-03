@@ -4,6 +4,7 @@ _version: 2
 # the line editor's note when a contracted line of the map's is changed.
 "Request a change":
   de: "Änderung beantragen"
+  da: "Anmod om en ændring"
   fr: "Demander une modification"
   nl: "Wijziging aanvragen"
   pl: "Wnioskuj o zmianę"
@@ -11,6 +12,7 @@ _version: 2
   uk: "Запросити зміну"
 "Change the timetable, the route, the days or the bus type by agreement with the authority: priced by the size of the change.":
   de: "Fahrplan, Linienweg, Verkehrstage oder Bustyp im Einvernehmen mit dem Aufgabenträger ändern: der Preis richtet sich nach dem Umfang der Änderung."
+  da: "Ændr køreplanen, ruten, dagene eller bustypen efter aftale med trafikselskabet: prissat efter ændringens størrelse."
   fr: "Modifier l'horaire, l'itinéraire, les jours ou le type de bus en accord avec l'autorité : le prix dépend de l'ampleur de la modification."
   nl: "Dienstregeling, route, dagen of bustype wijzigen in overleg met de opdrachtgever: de prijs hangt af van de omvang van de wijziging."
   pl: "Zmień rozkład, trasę, dni kursowania lub typ autobusu w porozumieniu z organizatorem: cena zależy od wielkości zmiany."
@@ -18,6 +20,7 @@ _version: 2
   uk: "Змінити розклад, маршрут, дні роботи або тип автобуса за погодженням із замовником: ціна залежить від обсягу зміни."
 "Request a change: line %{n}":
   de: "Änderung beantragen: Linie %{n}"
+  da: "Anmod om en ændring: linje %{n}"
   fr: "Demander une modification : ligne %{n}"
   nl: "Wijziging aanvragen: lijn %{n}"
   pl: "Wniosek o zmianę: linia %{n}"
@@ -25,6 +28,7 @@ _version: 2
   uk: "Запит на зміну: лінія %{n}"
 "The authority prices a change of a tendered line by its size: a few minutes or a few per cent cost an admin fee, a larger change a fee with the payment adjusted pro rata, a major one a penalty as well.":
   de: "Der Aufgabenträger bepreist die Änderung einer ausgeschriebenen Linie nach ihrem Umfang: ein paar Minuten oder wenige Prozent kosten eine Verwaltungsgebühr, eine größere Änderung eine Gebühr und eine anteilig angepasste Zahlung, eine große zusätzlich eine Vertragsstrafe."
+  da: "Trafikselskabet prissætter en ændring af en udbudt linje efter dens størrelse: nogle få minutter eller nogle få procent koster et administrationsgebyr, en større ændring et gebyr med betalingen justeret forholdsmæssigt, en stor også en bod."
   fr: "L'autorité tarife la modification d'une ligne attribuée par appel d'offres selon son ampleur : quelques minutes ou quelques pour cent coûtent des frais administratifs, une modification plus large des frais et un paiement ajusté au prorata, une modification majeure une pénalité en plus."
   nl: "De opdrachtgever prijst een wijziging van een aanbestede lijn naar haar omvang: een paar minuten of een paar procent kosten administratiekosten, een grotere wijziging een vergoeding en een naar rato aangepaste betaling, een grote bovendien een boete."
   pl: "Organizator wycenia zmianę linii z przetargu według jej wielkości: kilka minut lub kilka procent kosztuje opłatę administracyjną, większa zmiana opłatę i proporcjonalnie skorygowaną płatność, duża dodatkowo karę umowną."
@@ -32,6 +36,7 @@ _version: 2
   uk: "Замовник оцінює зміну тендерної лінії за її обсягом: кілька хвилин або кілька відсотків коштують адміністративного збору, більша зміна — збору й пропорційно перерахованого платежу, велика — ще й штрафу."
 "Days of operation":
   de: "Verkehrstage"
+  da: "Driftsdage"
   fr: "Jours de service"
   nl: "Rijdagen"
   pl: "Dni kursowania"
@@ -39,6 +44,7 @@ _version: 2
   uk: "Дні роботи"
 "The map's line back":
   de: "Die Linie der Karte zurück"
+  da: "Kortets linje tilbage"
   fr: "La ligne de la carte rétablie"
   nl: "De lijn van de kaart terug"
   pl: "Linia z mapy przywrócona"
@@ -46,6 +52,7 @@ _version: 2
   uk: "Лінію мапи повернуто"
 "Minor":
   de: "Geringfügig"
+  da: "Mindre"
   fr: "Mineure"
   nl: "Klein"
   pl: "Drobna"
@@ -53,6 +60,7 @@ _version: 2
   uk: "Незначна"
 "Moderate":
   de: "Mittel"
+  da: "Moderat"
   fr: "Moyenne"
   nl: "Middelgroot"
   pl: "Średnia"
@@ -60,6 +68,7 @@ _version: 2
   uk: "Помірна"
 "Major":
   de: "Groß"
+  da: "Større"
   fr: "Majeure"
   nl: "Groot"
   pl: "Duża"
@@ -67,6 +76,7 @@ _version: 2
   uk: "Велика"
 "Standard bus (12 m)":
   de: "Standardbus (12 m)"
+  da: "Standardbus (12 m)"
   fr: "Bus standard (12 m)"
   nl: "Standaardbus (12 m)"
   pl: "Autobus standardowy (12 m)"
@@ -74,6 +84,7 @@ _version: 2
   uk: "Стандартний автобус (12 м)"
 "Articulated bus (18 m)":
   de: "Gelenkbus (18 m)"
+  da: "Ledbus (18 m)"
   fr: "Bus articulé (18 m)"
   nl: "Gelede bus (18 m)"
   pl: "Autobus przegubowy (18 m)"
@@ -81,6 +92,7 @@ _version: 2
   uk: "Зчленований автобус (18 м)"
 "Journeys a day":
   de: "Fahrten am Tag"
+  da: "Ture om dagen"
   fr: "Courses par jour"
   nl: "Ritten per dag"
   pl: "Kursy dziennie"
@@ -88,6 +100,7 @@ _version: 2
   uk: "Рейсів на день"
 "First and last trip: the day longer by":
   de: "Erste und letzte Fahrt: der Tag länger um"
+  da: "Første og sidste tur: dagen længere med"
   fr: "Premier et dernier départ : la journée plus longue de"
   nl: "Eerste en laatste rit: de dag langer met"
   pl: "Pierwszy i ostatni kurs: dzień dłuższy o"
@@ -95,6 +108,7 @@ _version: 2
   uk: "Перший і останній рейс: день довший на"
 "min a bus":
   de: "Min. je Bus"
+  da: "min pr. bus"
   fr: "min par bus"
   nl: "min per bus"
   pl: "min na autobus"
@@ -102,6 +116,7 @@ _version: 2
   uk: "хв на автобус"
 "Running time of a journey":
   de: "Fahrzeit einer Fahrt"
+  da: "Køretid for en tur"
   fr: "Temps de parcours d'une course"
   nl: "Rijtijd van een rit"
   pl: "Czas przejazdu kursu"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Час у дорозі одного рейсу"
 "Stops added":
   de: "Haltestellen hinzu"
+  da: "Stoppesteder tilføjet"
   fr: "Arrêts ajoutés"
   nl: "Haltes erbij"
   pl: "Dodane przystanki"
@@ -116,6 +132,7 @@ _version: 2
   uk: "Додано зупинок"
 "Stops removed":
   de: "Haltestellen weg"
+  da: "Stoppesteder fjernet"
   fr: "Arrêts supprimés"
   nl: "Haltes eraf"
   pl: "Usunięte przystanki"
@@ -123,6 +140,7 @@ _version: 2
   uk: "Прибрано зупинок"
 "Diversion: a journey longer by":
   de: "Umleitung: eine Fahrt länger um"
+  da: "Omkørsel: en tur længere med"
   fr: "Déviation : une course plus longue de"
   nl: "Omleiding: een rit langer met"
   pl: "Objazd: kurs dłuższy o"
@@ -130,6 +148,7 @@ _version: 2
   uk: "Об'їзд: рейс довший на"
 "A core stop (a terminus) is given up":
   de: "Eine Kernhaltestelle (eine Endhaltestelle) entfällt"
+  da: "Et kernestoppested (en endestation) opgives"
   fr: "Un arrêt principal (un terminus) est abandonné"
   nl: "Een kernhalte (een eindpunt) vervalt"
   pl: "Rezygnacja z przystanku kluczowego (pętli)"
@@ -137,6 +156,7 @@ _version: 2
   uk: "Скасовується ключова зупинка (кінцева)"
 "Operating days a week":
   de: "Verkehrstage in der Woche"
+  da: "Driftsdage om ugen"
   fr: "Jours de service par semaine"
   nl: "Rijdagen per week"
   pl: "Dni kursowania w tygodniu"
@@ -144,6 +164,7 @@ _version: 2
   uk: "Днів роботи на тиждень"
 "Bus type":
   de: "Bustyp"
+  da: "Bustype"
   fr: "Type de bus"
   nl: "Bustype"
   pl: "Typ autobusu"
@@ -151,6 +172,7 @@ _version: 2
   uk: "Тип автобуса"
 "Minor: an admin fee, the payment stays as it is.":
   de: "Geringfügig: eine Verwaltungsgebühr, die Zahlung bleibt, wie sie ist."
+  da: "Mindre: et administrationsgebyr, betalingen forbliver, som den er."
   fr: "Mineure : des frais administratifs, le paiement reste tel quel."
   nl: "Klein: administratiekosten, de betaling blijft zoals ze is."
   pl: "Drobna: opłata administracyjna, płatność bez zmian."
@@ -158,6 +180,7 @@ _version: 2
   uk: "Незначна: адміністративний збір, платіж не змінюється."
 "Moderate: a variation fee, and the payment follows the service pro rata.":
   de: "Mittel: eine Änderungsgebühr, und die Zahlung folgt anteilig der Leistung."
+  da: "Moderat: et ændringsgebyr, og betalingen følger servicen forholdsmæssigt."
   fr: "Moyenne : des frais de modification, et le paiement suit le service au prorata."
   nl: "Middelgroot: wijzigingskosten, en de betaling volgt de dienst naar rato."
   pl: "Średnia: opłata za zmianę, a płatność zmienia się proporcjonalnie do usługi."
@@ -165,6 +188,7 @@ _version: 2
   uk: "Помірна: збір за зміну, і платіж змінюється пропорційно обсягу роботи."
 "Major: a penalty of the contract's value still to come, default points and reputation, and the payment pro rata.":
   de: "Groß: eine Vertragsstrafe auf den noch ausstehenden Vertragswert, Strafpunkte und Ansehen, und die Zahlung anteilig."
+  da: "Større: en bod på kontraktens resterende værdi, misligholdelsespoint og omdømme, og betalingen forholdsmæssigt."
   fr: "Majeure : une pénalité sur la valeur restante du contrat, des points de pénalité et de la réputation, et le paiement au prorata."
   nl: "Groot: een boete over de nog resterende contractwaarde, strafpunten en reputatie, en de betaling naar rato."
   pl: "Duża: kara od pozostałej wartości umowy, punkty karne i reputacja, a płatność proporcjonalnie."
@@ -172,6 +196,7 @@ _version: 2
   uk: "Велика: штраф від решти вартості контракту, штрафні бали й репутація, і платіж пропорційно."
 "Kilometres a year":
   de: "Kilometer im Jahr"
+  da: "Kilometer om året"
   fr: "Kilomètres par an"
   nl: "Kilometers per jaar"
   pl: "Kilometry rocznie"
@@ -179,6 +204,7 @@ _version: 2
   uk: "Кілометрів на рік"
 "Hours a year":
   de: "Stunden im Jahr"
+  da: "Timer om året"
   fr: "Heures par an"
   nl: "Uren per jaar"
   pl: "Godziny rocznie"
@@ -186,6 +212,7 @@ _version: 2
   uk: "Годин на рік"
 "Days a week":
   de: "Tage in der Woche"
+  da: "Dage om ugen"
   fr: "Jours par semaine"
   nl: "Dagen per week"
   pl: "Dni w tygodniu"
@@ -193,6 +220,7 @@ _version: 2
   uk: "Днів на тиждень"
 "Buses at the peak":
   de: "Busse in der Spitze"
+  da: "Busser i spidsbelastning"
   fr: "Bus en heure de pointe"
   nl: "Bussen in de spits"
   pl: "Autobusy w szczycie"
@@ -200,6 +228,7 @@ _version: 2
   uk: "Автобусів у пік"
 "%{a} stops added, %{r} removed":
   de: "%{a} Haltestellen hinzu, %{r} weg"
+  da: "%{a} stoppesteder tilføjet, %{r} fjernet"
   fr: "%{a} arrêts ajoutés, %{r} supprimés"
   nl: "%{a} haltes erbij, %{r} eraf"
   pl: "%{a} przystanków dodanych, %{r} usuniętych"
@@ -207,6 +236,7 @@ _version: 2
   uk: "додано зупинок: %{a}, прибрано: %{r}"
 "a core stop given up":
   de: "eine Kernhaltestelle entfällt"
+  da: "et kernestoppested opgivet"
   fr: "un arrêt principal abandonné"
   nl: "een kernhalte vervalt"
   pl: "rezygnacja z przystanku kluczowego"
@@ -214,6 +244,7 @@ _version: 2
   uk: "скасовано ключову зупинку"
 "Admin fee":
   de: "Verwaltungsgebühr"
+  da: "Administrationsgebyr"
   fr: "Frais administratifs"
   nl: "Administratiekosten"
   pl: "Opłata administracyjna"
@@ -221,6 +252,7 @@ _version: 2
   uk: "Адміністративний збір"
 "Variation fee":
   de: "Änderungsgebühr"
+  da: "Ændringsgebyr"
   fr: "Frais de modification"
   nl: "Wijzigingskosten"
   pl: "Opłata za zmianę"
@@ -228,6 +260,7 @@ _version: 2
   uk: "Збір за зміну"
 "Penalty: %{pct} % of the value still to come":
   de: "Vertragsstrafe: %{pct} % des noch ausstehenden Werts"
+  da: "Bod: %{pct} % af den resterende værdi"
   fr: "Pénalité : %{pct} % de la valeur restante"
   nl: "Boete: %{pct} % van de nog resterende waarde"
   pl: "Kara: %{pct} % pozostałej wartości"
@@ -235,6 +268,7 @@ _version: 2
   uk: "Штраф: %{pct} % решти вартості"
 "To pay now":
   de: "Jetzt zu zahlen"
+  da: "At betale nu"
   fr: "À payer maintenant"
   nl: "Nu te betalen"
   pl: "Do zapłaty teraz"
@@ -242,6 +276,7 @@ _version: 2
   uk: "До сплати зараз"
 "Subsidy a week":
   de: "Zuschuss in der Woche"
+  da: "Tilskud om ugen"
   fr: "Subvention par semaine"
   nl: "Subsidie per week"
   pl: "Dopłata tygodniowo"
@@ -249,6 +284,7 @@ _version: 2
   uk: "Субсидія на тиждень"
 "Payment a week":
   de: "Zahlung in der Woche"
+  da: "Betaling om ugen"
   fr: "Paiement par semaine"
   nl: "Betaling per week"
   pl: "Płatność tygodniowo"
@@ -256,6 +292,7 @@ _version: 2
   uk: "Платіж на тиждень"
 "%{before} a year, then %{after}":
   de: "%{before} im Jahr, danach %{after}"
+  da: "%{before} om året, derefter %{after}"
   fr: "%{before} par an, puis %{after}"
   nl: "%{before} per jaar, daarna %{after}"
   pl: "%{before} rocznie, potem %{after}"
@@ -263,6 +300,7 @@ _version: 2
   uk: "%{before} на рік, потім %{after}"
 "A net subsidy follows the cost less the fares and BSOG you keep: the revenue risk stays yours.":
   de: "Ein Nettozuschuss folgt den Kosten abzüglich der Fahrgelder und des BSOG, die Sie behalten: das Erlösrisiko bleibt bei Ihnen."
+  da: "Et nettotilskud følger omkostningen fratrukket de billetindtægter og BSOG, du beholder: indtægtsrisikoen forbliver din."
   fr: "Une subvention nette suit le coût moins les recettes et le BSOG que vous gardez : le risque sur les recettes reste le vôtre."
   nl: "Een nettosubsidie volgt de kosten min de opbrengsten en de BSOG die je houdt: het opbrengstrisico blijft bij jou."
   pl: "Dopłata netto podąża za kosztem pomniejszonym o wpływy z biletów i BSOG, które zatrzymujesz: ryzyko przychodów zostaje po twojej stronie."
@@ -270,6 +308,7 @@ _version: 2
   uk: "Нетто-субсидія йде за витратами без виручки та BSOG, які лишаються вам: ризик за виручкою лишається на вас."
 "A gross-cost payment follows the cost of the work: the fares stay the authority's.":
   de: "Eine Bruttozahlung folgt den Kosten der Leistung: die Fahrgelder bleiben beim Aufgabenträger."
+  da: "En bruttobetaling følger arbejdets omkostning: billetindtægterne forbliver trafikselskabets."
   fr: "Un paiement à coût brut suit le coût du service : les recettes restent à l'autorité."
   nl: "Een brutobetaling volgt de kosten van het werk: de opbrengsten blijven van de opdrachtgever."
   pl: "Płatność brutto podąża za kosztem pracy: wpływy z biletów zostają u organizatora."
@@ -277,6 +316,7 @@ _version: 2
   uk: "Брутто-платіж іде за витратами на роботу: виручка лишається в замовника."
 "%{n} default points on the contract: its rating, and your quality in the next tenders":
   de: "%{n} Strafpunkte auf dem Vertrag: seine Bewertung und Ihre Qualität in den nächsten Ausschreibungen"
+  da: "%{n} misligholdelsespoint på kontrakten: dens vurdering og din kvalitet i de næste udbud"
   fr: "%{n} points de pénalité sur le contrat : sa note, et votre qualité aux prochains appels d'offres"
   nl: "%{n} strafpunten op het contract: de beoordeling ervan, en je kwaliteit in de volgende aanbestedingen"
   pl: "%{n} punktów karnych na umowie: jej ocena i twoja jakość w kolejnych przetargach"
@@ -284,6 +324,7 @@ _version: 2
   uk: "%{n} штрафних балів за контрактом: його рейтинг і ваша якість у наступних тендерах"
 "About %{n} points of reputation":
   de: "Etwa %{n} Punkte Ansehen"
+  da: "Omkring %{n} point omdømme"
   fr: "Environ %{n} points de réputation"
   nl: "Ongeveer %{n} punten reputatie"
   pl: "Około %{n} punktów reputacji"
@@ -291,6 +332,7 @@ _version: 2
   uk: "Близько %{n} пунктів репутації"
 "The higher payment begins when the line runs the change: save it in the line editor.":
   de: "Die höhere Zahlung beginnt, wenn die Linie die Änderung fährt: speichern Sie sie im Linieneditor."
+  da: "Den højere betaling begynder, når linjen kører ændringen: gem den i linjeeditoren."
   fr: "Le paiement plus élevé commence quand la ligne applique la modification : enregistrez-la dans l'éditeur de lignes."
   nl: "De hogere betaling begint zodra de lijn de wijziging rijdt: sla haar op in de lijneditor."
   pl: "Wyższa płatność zaczyna się, gdy linia realizuje zmianę: zapisz ją w edytorze linii."
@@ -298,6 +340,7 @@ _version: 2
   uk: "Вищий платіж почнеться, коли лінія працюватиме за зміною: збережіть її в редакторі ліній."
 "Then change the line in the line editor: a save that runs the change agreed costs nothing more.":
   de: "Ändern Sie danach die Linie im Linieneditor: ein Speichern, das die vereinbarte Änderung umsetzt, kostet nichts mehr."
+  da: "Ændr derefter linjen i linjeeditoren: en gemning, der kører den aftalte ændring, koster ikke mere."
   fr: "Modifiez ensuite la ligne dans l'éditeur de lignes : un enregistrement qui applique la modification convenue ne coûte rien de plus."
   nl: "Pas daarna de lijn aan in de lijneditor: een opslag die de afgesproken wijziging uitvoert, kost niets meer."
   pl: "Następnie zmień linię w edytorze linii: zapis realizujący uzgodnioną zmianę nic już nie kosztuje."
@@ -305,6 +348,7 @@ _version: 2
   uk: "Потім змініть лінію в редакторі ліній: збереження, що втілює погоджену зміну, більше нічого не коштує."
 "Choose what changes: its price is shown here.":
   de: "Wählen Sie, was sich ändert: der Preis wird hier angezeigt."
+  da: "Vælg, hvad der ændres: dens pris vises her."
   fr: "Choisissez ce qui change : son prix s'affiche ici."
   nl: "Kies wat er verandert: de prijs staat hier."
   pl: "Wybierz, co się zmienia: cena pojawi się tutaj."
@@ -312,6 +356,7 @@ _version: 2
   uk: "Виберіть, що змінюється: ціну показано тут."
 "%{date}: %{change}, %{class}  ·  %{amount} paid  ·  %{year} a year after":
   de: "%{date}: %{change}, %{class}  ·  %{amount} bezahlt  ·  danach %{year} im Jahr"
+  da: "%{date}: %{change}, %{class}  ·  %{amount} betalt  ·  %{year} om året efter"
   fr: "%{date} : %{change}, %{class}  ·  %{amount} payés  ·  %{year} par an ensuite"
   nl: "%{date}: %{change}, %{class}  ·  %{amount} betaald  ·  daarna %{year} per jaar"
   pl: "%{date}: %{change}, %{class}  ·  zapłacono %{amount}  ·  potem %{year} rocznie"
@@ -319,6 +364,7 @@ _version: 2
   uk: "%{date}: %{change}, %{class}  ·  сплачено %{amount}  ·  далі %{year} на рік"
 "by your offer":
   de: "durch Ihr Angebot"
+  da: "efter dit tilbud"
   fr: "par votre offre"
   nl: "door je bod"
   pl: "dzięki twojej ofercie"
@@ -326,6 +372,7 @@ _version: 2
   uk: "за вашою пропозицією"
 "waiting for the line to run it":
   de: "wartet darauf, dass die Linie sie fährt"
+  da: "venter på, at linjen kører den"
   fr: "en attente que la ligne l'applique"
   nl: "wacht tot de lijn haar rijdt"
   pl: "czeka, aż linia ją zrealizuje"
@@ -333,6 +380,7 @@ _version: 2
   uk: "чекає, поки лінія почне за нею працювати"
 "Agree and pay %{amount}":
   de: "Vereinbaren und %{amount} zahlen"
+  da: "Acceptér og betal %{amount}"
   fr: "Accepter et payer %{amount}"
   nl: "Akkoord en %{amount} betalen"
   pl: "Uzgodnij i zapłać %{amount}"
@@ -340,6 +388,7 @@ _version: 2
   uk: "Погодити й сплатити %{amount}"
 "Agree the change":
   de: "Änderung vereinbaren"
+  da: "Acceptér ændringen"
   fr: "Accepter la modification"
   nl: "Wijziging afspreken"
   pl: "Uzgodnij zmianę"
@@ -347,6 +396,7 @@ _version: 2
   uk: "Погодити зміну"
 "Your next offer can be made on %{date}.":
   de: "Ihr nächstes Angebot ist am %{date} möglich."
+  da: "Dit næste tilbud kan afgives den %{date}."
   fr: "Votre prochaine offre est possible le %{date}."
   nl: "Je volgende bod kan op %{date}."
   pl: "Kolejną ofertę możesz złożyć %{date}."
@@ -354,6 +404,7 @@ _version: 2
   uk: "Наступну пропозицію можна зробити %{date}."
 "Or make an offer":
   de: "Oder ein Angebot machen"
+  da: "Eller afgiv et tilbud"
   fr: "Ou faire une offre"
   nl: "Of een bod doen"
   pl: "Albo złóż ofertę"
@@ -361,6 +412,7 @@ _version: 2
   uk: "Або зробити пропозицію"
 "Offer a sum instead of the price asked. The authority weighs the size of the change and your track record (the contract's rating, your default points); it answers one offer a week on a contract.":
   de: "Bieten Sie statt des verlangten Preises eine Summe. Der Aufgabenträger wägt den Umfang der Änderung und Ihre Bilanz ab (die Bewertung des Vertrags, Ihre Strafpunkte); er beantwortet ein Angebot pro Woche und Vertrag."
+  da: "Tilbyd en sum i stedet for den forlangte pris. Trafikselskabet vejer ændringens størrelse og din track record (kontraktens vurdering, dine misligholdelsespoint); det svarer på ét tilbud om ugen på en kontrakt."
   fr: "Proposez une somme au lieu du prix demandé. L'autorité pèse l'ampleur de la modification et votre bilan (la note du contrat, vos points de pénalité) ; elle répond à une offre par semaine et par contrat."
   nl: "Bied een bedrag in plaats van de gevraagde prijs. De opdrachtgever weegt de omvang van de wijziging en je staat van dienst (de beoordeling van het contract, je strafpunten); hij beantwoordt één bod per week per contract."
   pl: "Zaproponuj kwotę zamiast żądanej ceny. Organizator waży wielkość zmiany i twoją historię (ocenę umowy, twoje punkty karne); odpowiada na jedną ofertę tygodniowo dla każdej umowy."
@@ -368,6 +420,7 @@ _version: 2
   uk: "Запропонуйте суму замість запитаної ціни. Замовник зважає на обсяг зміни та вашу історію (рейтинг контракту, ваші штрафні бали); він відповідає на одну пропозицію на тиждень за кожним контрактом."
 "Make the offer":
   de: "Angebot machen"
+  da: "Afgiv tilbuddet"
   fr: "Faire l'offre"
   nl: "Bod doen"
   pl: "Złóż ofertę"
@@ -375,6 +428,7 @@ _version: 2
   uk: "Зробити пропозицію"
 "Variations agreed":
   de: "Vereinbarte Änderungen"
+  da: "Aftalte ændringer"
   fr: "Modifications convenues"
   nl: "Afgesproken wijzigingen"
   pl: "Uzgodnione zmiany"
@@ -382,6 +436,7 @@ _version: 2
   uk: "Погоджені зміни"
 "The change is agreed: %{amount} paid.":
   de: "Die Änderung ist vereinbart: %{amount} bezahlt."
+  da: "Ændringen er aftalt: %{amount} betalt."
   fr: "La modification est convenue : %{amount} payés."
   nl: "De wijziging is afgesproken: %{amount} betaald."
   pl: "Zmiana uzgodniona: zapłacono %{amount}."
@@ -389,6 +444,7 @@ _version: 2
   uk: "Зміну погоджено: сплачено %{amount}."
 "The authority takes your offer: the change is agreed for %{amount}.":
   de: "Der Aufgabenträger nimmt Ihr Angebot an: die Änderung ist für %{amount} vereinbart."
+  da: "Trafikselskabet tager imod dit tilbud: ændringen er aftalt for %{amount}."
   fr: "L'autorité accepte votre offre : la modification est convenue pour %{amount}."
   nl: "De opdrachtgever neemt je bod aan: de wijziging is afgesproken voor %{amount}."
   pl: "Organizator przyjmuje twoją ofertę: zmiana uzgodniona za %{amount}."
@@ -396,6 +452,7 @@ _version: 2
   uk: "Замовник приймає вашу пропозицію: зміну погоджено за %{amount}."
 "The authority refuses your offer. You can make another in a week.":
   de: "Der Aufgabenträger lehnt Ihr Angebot ab. In einer Woche können Sie ein neues machen."
+  da: "Trafikselskabet afviser dit tilbud. Du kan afgive et nyt om en uge."
   fr: "L'autorité refuse votre offre. Vous pourrez en faire une autre dans une semaine."
   nl: "De opdrachtgever weigert je bod. Over een week kun je een nieuw doen."
   pl: "Organizator odrzuca twoją ofertę. Kolejną możesz złożyć za tydzień."
@@ -403,6 +460,7 @@ _version: 2
   uk: "Замовник відхиляє вашу пропозицію. Нову можна зробити за тиждень."
 "This line has no tendered contract to change.":
   de: "Diese Linie hat keinen ausgeschriebenen Vertrag, der sich ändern ließe."
+  da: "Denne linje har ingen udbudt kontrakt at ændre."
   fr: "Cette ligne n'a pas de contrat attribué par appel d'offres à modifier."
   nl: "Deze lijn heeft geen aanbesteed contract om te wijzigen."
   pl: "Ta linia nie ma umowy z przetargu, którą można zmienić."
@@ -410,6 +468,7 @@ _version: 2
   uk: "Ця лінія не має тендерного контракту, який можна змінити."
 "The authority refuses a change this large: it would put the line out to tender again.":
   de: "Der Aufgabenträger lehnt eine so große Änderung ab: er würde die Linie neu ausschreiben."
+  da: "Trafikselskabet afviser en så stor ændring: den ville sende linjen i udbud igen."
   fr: "L'autorité refuse une modification aussi large : elle remettrait la ligne en appel d'offres."
   nl: "De opdrachtgever weigert een zo grote wijziging: hij zou de lijn opnieuw aanbesteden."
   pl: "Organizator odrzuca tak dużą zmianę: ogłosiłby na linię nowy przetarg."
@@ -417,6 +476,7 @@ _version: 2
   uk: "Замовник відхиляє таку велику зміну: він виставив би лінію на новий тендер."
 "The authority agrees no major change while the contract is red.":
   de: "Solange der Vertrag rot ist, vereinbart der Aufgabenträger keine große Änderung."
+  da: "Trafikselskabet aftaler ingen større ændring, mens kontrakten er rød."
   fr: "L'autorité n'accepte aucune modification majeure tant que le contrat est rouge."
   nl: "Zolang het contract rood is, spreekt de opdrachtgever geen grote wijziging af."
   pl: "Dopóki umowa jest czerwona, organizator nie zgodzi się na dużą zmianę."
@@ -424,6 +484,7 @@ _version: 2
   uk: "Поки контракт червоний, замовник не погодить великої зміни."
 "Nothing changes: choose what the change is.":
   de: "Es ändert sich nichts: wählen Sie, was sich ändern soll."
+  da: "Intet ændres: vælg, hvad ændringen er."
   fr: "Rien ne change : choisissez la modification."
   nl: "Er verandert niets: kies wat de wijziging is."
   pl: "Nic się nie zmienia: wybierz, na czym polega zmiana."
@@ -431,6 +492,7 @@ _version: 2
   uk: "Нічого не змінюється: виберіть, у чому зміна."
 "The authority answers one offer a week on a contract.":
   de: "Der Aufgabenträger beantwortet ein Angebot pro Woche und Vertrag."
+  da: "Trafikselskabet svarer på ét tilbud om ugen på en kontrakt."
   fr: "L'autorité répond à une offre par semaine et par contrat."
   nl: "De opdrachtgever beantwoordt één bod per week per contract."
   pl: "Organizator odpowiada na jedną ofertę tygodniowo dla każdej umowy."
@@ -438,6 +500,7 @@ _version: 2
   uk: "Замовник відповідає на одну пропозицію на тиждень за кожним контрактом."
 "An offer cannot be less than nothing.":
   de: "Ein Angebot kann nicht kleiner als null sein."
+  da: "Et tilbud kan ikke være mindre end ingenting."
   fr: "Une offre ne peut pas être inférieure à zéro."
   nl: "Een bod kan niet minder dan niets zijn."
   pl: "Oferta nie może być mniejsza niż zero."
@@ -445,6 +508,7 @@ _version: 2
   uk: "Пропозиція не може бути меншою за нуль."
 "A contracted line changed a great deal":
   de: "Eine Vertragslinie stark geändert"
+  da: "En kontraktlinje er ændret meget"
   fr: "Une ligne sous contrat fortement modifiée"
   nl: "Een contractlijn sterk gewijzigd"
   pl: "Linia z umowy mocno zmieniona"
@@ -452,6 +516,7 @@ _version: 2
   uk: "Контрактну лінію суттєво змінено"
 "The change agreed with the authority: nothing more to pay.":
   de: "Die mit dem Aufgabenträger vereinbarte Änderung: nichts mehr zu zahlen."
+  da: "Den ændring, der er aftalt med trafikselskabet: intet mere at betale."
   fr: "La modification convenue avec l'autorité : plus rien à payer."
   nl: "De met de opdrachtgever afgesproken wijziging: niets meer te betalen."
   pl: "Zmiana uzgodniona z organizatorem: nic więcej do zapłaty."
@@ -459,6 +524,7 @@ _version: 2
   uk: "Зміна, погоджена із замовником: більше нічого платити не треба."
 "This line runs under a tendered contract":
   de: "Diese Linie fährt unter einem ausgeschriebenen Vertrag"
+  da: "Denne linje kører under en udbudt kontrakt"
   fr: "Cette ligne est exploitée sous un contrat d'appel d'offres"
   nl: "Deze lijn rijdt onder een aanbesteed contract"
   pl: "Ta linia kursuje na podstawie umowy z przetargu"
@@ -466,6 +532,7 @@ _version: 2
   uk: "Ця лінія працює за тендерним контрактом"
 "%{class} change, %{share} % of the service: %{amount}":
   de: "Änderung %{class}, %{share} % der Leistung: %{amount}"
+  da: "%{class} ændring, %{share} % af servicen: %{amount}"
   fr: "Modification %{class}, %{share} % du service : %{amount}"
   nl: "Wijziging %{class}, %{share} % van de dienst: %{amount}"
   pl: "Zmiana: %{class}, %{share} % usługi: %{amount}"
@@ -473,6 +540,7 @@ _version: 2
   uk: "Зміна: %{class}, %{share} % обсягу роботи: %{amount}"
 "Penalty: %{amount}":
   de: "Vertragsstrafe: %{amount}"
+  da: "Bod: %{amount}"
   fr: "Pénalité : %{amount}"
   nl: "Boete: %{amount}"
   pl: "Kara: %{amount}"
@@ -480,6 +548,7 @@ _version: 2
   uk: "Штраф: %{amount}"
 "Payment a week: %{before} → %{after}":
   de: "Zahlung in der Woche: %{before} → %{after}"
+  da: "Betaling om ugen: %{before} → %{after}"
   fr: "Paiement par semaine : %{before} → %{after}"
   nl: "Betaling per week: %{before} → %{after}"
   pl: "Płatność tygodniowo: %{before} → %{after}"
@@ -487,6 +556,7 @@ _version: 2
   uk: "Платіж на тиждень: %{before} → %{after}"
 "Subsidy a week: %{before} → %{after}":
   de: "Zuschuss in der Woche: %{before} → %{after}"
+  da: "Tilskud om ugen: %{before} → %{after}"
   fr: "Subvention par semaine : %{before} → %{after}"
   nl: "Subsidie per week: %{before} → %{after}"
   pl: "Dopłata tygodniowo: %{before} → %{after}"
@@ -494,6 +564,7 @@ _version: 2
   uk: "Субсидія на тиждень: %{before} → %{after}"
 "%{n} default points on the contract":
   de: "%{n} Strafpunkte auf dem Vertrag"
+  da: "%{n} misligholdelsespoint på kontrakten"
   fr: "%{n} points de pénalité sur le contrat"
   nl: "%{n} strafpunten op het contract"
   pl: "%{n} punktów karnych na umowie"

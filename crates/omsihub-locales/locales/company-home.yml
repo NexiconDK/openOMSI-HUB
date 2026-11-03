@@ -2,6 +2,7 @@ _version: 2
 # The bus company's start screen: its tiles, the way round its pages, what it has under its name.
 "Start screen":
   de: "Startseite"
+  da: "Startskærm"
   fr: "Accueil"
   nl: "Startscherm"
   pl: "Start"
@@ -9,6 +10,7 @@ _version: 2
   uk: "Головна"
 "Every part of the company as a tile (Escape)":
   de: "Jeder Teil des Betriebs als Kachel (Esc)"
+  da: "Hver del af selskabet som en flise (Escape)"
   fr: "Chaque partie de l'entreprise en tuile (Échap)"
   nl: "Elk deel van het bedrijf als tegel (Esc)"
   pl: "Każda część firmy jako kafelek (Esc)"
@@ -16,6 +18,7 @@ _version: 2
   uk: "Усі розділи компанії плитками (Esc)"
 "Cash: the money the company has now":
   de: "Kasse: das Geld, das der Betrieb jetzt hat"
+  da: "Kontanter: de penge, selskabet har nu"
   fr: "Trésorerie : l'argent dont l'entreprise dispose"
   nl: "Kas: het geld dat het bedrijf nu heeft"
   pl: "Gotówka: pieniądze, które firma ma teraz"
@@ -23,6 +26,7 @@ _version: 2
   uk: "Каса: гроші компанії зараз"
 "Trophies: earned with goals and contracts, spent on research":
   de: "Trophäen: verdient mit Zielen und Verträgen, ausgegeben für Forschung"
+  da: "Trofæer: optjent med mål og kontrakter, brugt på forskning"
   fr: "Trophées : gagnés avec les objectifs et les contrats, dépensés en recherche"
   nl: "Trofeeën: verdiend met doelen en contracten, besteed aan onderzoek"
   pl: "Trofea: zdobywane za cele i umowy, wydawane na badania"
@@ -30,6 +34,7 @@ _version: 2
   uk: "Трофеї: за цілі й контракти, витрачаються на дослідження"
 "Reputation: what passengers and the authority think of the company":
   de: "Ruf: was Fahrgäste und die Behörde vom Betrieb halten"
+  da: "Omdømme: hvad passagerer og trafikselskabet mener om selskabet"
   fr: "Réputation : ce que les voyageurs et l'autorité pensent de l'entreprise"
   nl: "Reputatie: wat reizigers en de opdrachtgever van het bedrijf vinden"
   pl: "Reputacja: co pasażerowie i organizator myślą o firmie"
@@ -37,6 +42,7 @@ _version: 2
   uk: "Репутація: що пасажири й замовник думають про компанію"
 "At a glance":
   de: "Auf einen Blick"
+  da: "I overblik"
   fr: "En un coup d'œil"
   nl: "In één oogopslag"
   pl: "W skrócie"
@@ -44,6 +50,7 @@ _version: 2
   uk: "Коротко"
 "Operations":
   de: "Fahrbetrieb"
+  da: "Drift"
   fr: "Exploitation"
   nl: "Exploitatie"
   pl: "Eksploatacja"
@@ -51,6 +58,7 @@ _version: 2
   uk: "Перевезення"
 "People":
   de: "Team"
+  da: "Personer"
   fr: "Équipe"
   nl: "Mensen"
   pl: "Ludzie"
@@ -58,6 +66,7 @@ _version: 2
   uk: "Люди"
 "Business":
   de: "Geschäft"
+  da: "Forretning"
   fr: "Affaires"
   nl: "Zaken"
   pl: "Biznes"
@@ -65,6 +74,7 @@ _version: 2
   uk: "Бізнес"
 "This month: %{amount}":
   de: "Diesen Monat: %{amount}"
+  da: "Denne måned: %{amount}"
   fr: "Ce mois-ci : %{amount}"
   nl: "Deze maand: %{amount}"
   pl: "W tym miesiącu: %{amount}"
@@ -72,6 +82,7 @@ _version: 2
   uk: "Цього місяця: %{amount}"
 "%{n} unread":
   de: "%{n} ungelesen"
+  da: "%{n} ulæste"
   fr: "Non lus : %{n}"
   nl: "%{n} ongelezen"
   pl: "Nieprzeczytane: %{n}"
@@ -79,6 +90,7 @@ _version: 2
   uk: "Непрочитаних: %{n}"
 "Nothing unread":
   de: "Nichts ungelesen"
+  da: "Intet ulæst"
   fr: "Rien de non lu"
   nl: "Niets ongelezen"
   pl: "Brak nieprzeczytanych"
@@ -86,6 +98,7 @@ _version: 2
   uk: "Немає непрочитаних"
 "No messages yet":
   de: "Noch keine Nachrichten"
+  da: "Ingen beskeder endnu"
   fr: "Pas encore de messages"
   nl: "Nog geen berichten"
   pl: "Brak wiadomości"
@@ -93,6 +106,7 @@ _version: 2
   uk: "Повідомлень поки немає"
 "%{b} without a bus · %{d} without a driver":
   de: "%{b} ohne Bus · %{d} ohne Fahrer"
+  da: "%{b} uden bus · %{d} uden chauffør"
   fr: "%{b} sans bus · %{d} sans conducteur"
   nl: "%{b} zonder bus · %{d} zonder chauffeur"
   pl: "%{b} bez autobusu · %{d} bez kierowcy"
@@ -100,6 +114,7 @@ _version: 2
   uk: "%{b} без автобуса · %{d} без водія"
 "Every tour has its bus and drivers":
   de: "Jeder Umlauf hat Bus und Fahrer"
+  da: "Hvert vognløb har sin bus og sine chauffører"
   fr: "Chaque service a son bus et ses conducteurs"
   nl: "Elke omloop heeft bus en chauffeurs"
   pl: "Każda brygada ma autobus i kierowców"
@@ -107,6 +122,7 @@ _version: 2
   uk: "Кожен оборот має автобус і водіїв"
 "No line yet: take one on":
   de: "Noch keine Linie: übernimm eine"
+  da: "Ingen linje endnu: tag en på dig"
   fr: "Pas encore de ligne : prenez-en une"
   nl: "Nog geen lijn: neem er een aan"
   pl: "Brak linii: przejmij jakąś"
@@ -114,6 +130,7 @@ _version: 2
   uk: "Ліній поки немає: візьміть лінію"
 "%{n} not in service yet":
   de: "%{n} noch nicht in Betrieb"
+  da: "%{n} endnu ikke i drift"
   fr: "%{n} pas encore en service"
   nl: "%{n} nog niet in dienst"
   pl: "Jeszcze nie kursuje: %{n}"
@@ -121,6 +138,7 @@ _version: 2
   uk: "Ще не працюють: %{n}"
 "All in service":
   de: "Alle in Betrieb"
+  da: "Alle i drift"
   fr: "Toutes en service"
   nl: "Alle in dienst"
   pl: "Wszystkie kursują"
@@ -128,6 +146,7 @@ _version: 2
   uk: "Усі працюють"
 "%{n} buses on the road now":
   de: "%{n} Busse gerade unterwegs"
+  da: "%{n} busser på vejen nu"
   fr: "%{n} bus sur la route"
   nl: "%{n} bussen nu onderweg"
   pl: "Autobusy w trasie: %{n}"
@@ -135,6 +154,7 @@ _version: 2
   uk: "Автобусів у дорозі: %{n}"
 "Every line and bus where it is":
   de: "Jede Linie und jeder Bus, wo er ist"
+  da: "Hver linje og bus, hvor den er"
   fr: "Chaque ligne et chaque bus là où il est"
   nl: "Elke lijn en bus waar hij is"
   pl: "Każda linia i autobus tam, gdzie jest"
@@ -142,6 +162,7 @@ _version: 2
   uk: "Кожна лінія й автобус там, де він є"
 "No bus yet: buy, lease or rent one":
   de: "Noch kein Bus: kaufen, leasen oder mieten"
+  da: "Ingen bus endnu: køb, lease eller lej en"
   fr: "Pas encore de bus : achat, leasing ou location"
   nl: "Nog geen bus: koop, lease of huur er een"
   pl: "Brak autobusu: kup, weź w leasing lub wynajmij"
@@ -149,6 +170,7 @@ _version: 2
   uk: "Автобусів немає: купіть, візьміть у лізинг чи оренду"
 "%{n} buses":
   de: "%{n} Busse"
+  da: "%{n} busser"
   fr: "%{n} bus"
   nl: "%{n} bussen"
   pl: "Autobusy: %{n}"
@@ -156,6 +178,7 @@ _version: 2
   uk: "Автобусів: %{n}"
 "%{n} in the workshop":
   de: "%{n} in der Werkstatt"
+  da: "%{n} på værkstedet"
   fr: "%{n} à l'atelier"
   nl: "%{n} in de werkplaats"
   pl: "W warsztacie: %{n}"
@@ -163,6 +186,7 @@ _version: 2
   uk: "У майстерні: %{n}"
 "Nobody works here yet":
   de: "Hier arbeitet noch niemand"
+  da: "Ingen arbejder her endnu"
   fr: "Personne ne travaille encore ici"
   nl: "Er werkt hier nog niemand"
   pl: "Nikt tu jeszcze nie pracuje"
@@ -170,6 +194,7 @@ _version: 2
   uk: "Тут поки ніхто не працює"
 "%{n} people":
   de: "%{n} Personen"
+  da: "%{n} personer"
   fr: "%{n} personnes"
   nl: "%{n} mensen"
   pl: "Osoby: %{n}"
@@ -177,6 +202,7 @@ _version: 2
   uk: "Працівників: %{n}"
 "Hire staff":
   de: "Personal einstellen"
+  da: "Ansæt personale"
   fr: "Embaucher"
   nl: "Personeel aannemen"
   pl: "Zatrudnij personel"
@@ -184,6 +210,7 @@ _version: 2
   uk: "Найняти персонал"
 "%{n} applicants this week":
   de: "%{n} Bewerber diese Woche"
+  da: "%{n} ansøgere denne uge"
   fr: "%{n} candidats cette semaine"
   nl: "%{n} sollicitanten deze week"
   pl: "Kandydaci w tym tygodniu: %{n}"
@@ -191,6 +218,7 @@ _version: 2
   uk: "Кандидатів цього тижня: %{n}"
 "%{n} on a course today":
   de: "%{n} heute in einem Kurs"
+  da: "%{n} på kursus i dag"
   fr: "%{n} en formation aujourd'hui"
   nl: "%{n} vandaag op cursus"
   pl: "Na kursie dziś: %{n}"
@@ -198,6 +226,7 @@ _version: 2
   uk: "Сьогодні на курсах: %{n}"
 "Courses for drivers and staff":
   de: "Kurse für Fahrer und Personal"
+  da: "Kurser for chauffører og personale"
   fr: "Formations pour conducteurs et personnel"
   nl: "Cursussen voor chauffeurs en personeel"
   pl: "Kursy dla kierowców i personelu"
@@ -205,6 +234,7 @@ _version: 2
   uk: "Курси для водіїв і персоналу"
 "No loans":
   de: "Keine Kredite"
+  da: "Ingen lån"
   fr: "Aucun prêt"
   nl: "Geen leningen"
   pl: "Brak kredytów"
@@ -212,6 +242,7 @@ _version: 2
   uk: "Кредитів немає"
 "%{n} concessions held":
   de: "%{n} eigene Konzessionen"
+  da: "%{n} koncessioner"
   fr: "%{n} concessions détenues"
   nl: "%{n} concessies in bezit"
   pl: "Posiadane koncesje: %{n}"
@@ -219,6 +250,7 @@ _version: 2
   uk: "Концесій у компанії: %{n}"
 "%{n} tenders open":
   de: "%{n} offene Ausschreibungen"
+  da: "%{n} udbud åbne"
   fr: "%{n} appels d'offres ouverts"
   nl: "%{n} open aanbestedingen"
   pl: "Otwarte przetargi: %{n}"
@@ -226,6 +258,7 @@ _version: 2
   uk: "Відкритих тендерів: %{n}"
 "%{n} auctions running now":
   de: "%{n} Auktionen laufen gerade"
+  da: "%{n} auktioner kører nu"
   fr: "%{n} enchères en cours"
   nl: "%{n} veilingen lopen nu"
   pl: "Trwające aukcje: %{n}"
@@ -233,6 +266,7 @@ _version: 2
   uk: "Триває аукціонів: %{n}"
 "%{n} trophies":
   de: "%{n} Trophäen"
+  da: "%{n} trofæer"
   fr: "%{n} trophées"
   nl: "%{n} trofeeën"
   pl: "Trofea: %{n}"
@@ -240,6 +274,7 @@ _version: 2
   uk: "Трофеїв: %{n}"
 "Goals, and internet for the buses":
   de: "Ziele und Internet für die Busse"
+  da: "Mål og internet til busserne"
   fr: "Objectifs, et internet pour les bus"
   nl: "Doelen, en internet voor de bussen"
   pl: "Cele oraz internet w autobusach"
@@ -247,6 +282,7 @@ _version: 2
   uk: "Цілі та інтернет для автобусів"
 "Goals with a reward, service contracts":
   de: "Ziele mit Belohnung, Dienstleistungsverträge"
+  da: "Mål med en belønning, servicekontrakter"
   fr: "Objectifs récompensés, contrats de service"
   nl: "Doelen met een beloning, dienstcontracten"
   pl: "Cele z nagrodą, umowy serwisowe"
@@ -254,6 +290,7 @@ _version: 2
   uk: "Цілі з нагородою, сервісні контракти"
 "%{n} of %{m} places taken":
   de: "%{n} von %{m} Stellplätzen belegt"
+  da: "%{n} af %{m} pladser optaget"
   fr: "%{n} places occupées sur %{m}"
   nl: "%{n} van %{m} plaatsen bezet"
   pl: "Zajęte miejsca: %{n} z %{m}"
@@ -261,6 +298,7 @@ _version: 2
   uk: "Зайнято місць: %{n} з %{m}"
 "%{n} building works under way":
   de: "%{n} Bauarbeiten laufen"
+  da: "%{n} byggearbejder i gang"
   fr: "%{n} travaux en cours"
   nl: "%{n} bouwwerken bezig"
   pl: "Trwające budowy: %{n}"
@@ -268,6 +306,7 @@ _version: 2
   uk: "Триває будівництв: %{n}"
 "%{n} buses in the workshop":
   de: "%{n} Busse in der Werkstatt"
+  da: "%{n} busser på værkstedet"
   fr: "%{n} bus à l'atelier"
   nl: "%{n} bussen in de werkplaats"
   pl: "Autobusy w warsztacie: %{n}"
@@ -275,6 +314,7 @@ _version: 2
   uk: "Автобусів у майстерні: %{n}"
 "%{n} jobs waiting":
   de: "%{n} Aufträge warten"
+  da: "%{n} opgaver venter"
   fr: "%{n} travaux en attente"
   nl: "%{n} klussen wachten"
   pl: "Oczekujące zlecenia: %{n}"
@@ -282,6 +322,7 @@ _version: 2
   uk: "Очікують робіт: %{n}"
 "Spare parts and repairs":
   de: "Ersatzteile und Reparaturen"
+  da: "Reservedele og reparationer"
   fr: "Pièces détachées et réparations"
   nl: "Onderdelen en reparaties"
   pl: "Części zamienne i naprawy"
@@ -289,6 +330,7 @@ _version: 2
   uk: "Запчастини та ремонт"
 "%{n} researched":
   de: "%{n} erforscht"
+  da: "%{n} undersøgt"
   fr: "%{n} recherches terminées"
   nl: "%{n} onderzocht"
   pl: "Zbadane: %{n}"
@@ -296,6 +338,7 @@ _version: 2
   uk: "Досліджено: %{n}"
 "%{n} trophies to spend":
   de: "%{n} Trophäen zum Ausgeben"
+  da: "%{n} trofæer at bruge"
   fr: "%{n} trophées à dépenser"
   nl: "%{n} trofeeën te besteden"
   pl: "Trofea do wydania: %{n}"
@@ -303,6 +346,7 @@ _version: 2
   uk: "Трофеїв до витрати: %{n}"
 "1 line":
   de: "1 Linie"
+  da: "1 linje"
   fr: "1 ligne"
   nl: "1 lijn"
   pl: "1 linia"
@@ -310,6 +354,7 @@ _version: 2
   uk: "1 лінія"
 "1 bus on the road now":
   de: "1 Bus gerade unterwegs"
+  da: "1 bus på vejen nu"
   fr: "1 bus sur la route"
   nl: "1 bus nu onderweg"
   pl: "1 autobus w trasie"
@@ -317,6 +362,7 @@ _version: 2
   uk: "1 автобус у дорозі"
 "1 bus":
   de: "1 Bus"
+  da: "1 bus"
   fr: "1 bus"
   nl: "1 bus"
   pl: "1 autobus"
@@ -324,6 +370,7 @@ _version: 2
   uk: "1 автобус"
 "1 person":
   de: "1 Person"
+  da: "1 person"
   fr: "1 personne"
   nl: "1 persoon"
   pl: "1 osoba"
@@ -331,6 +378,7 @@ _version: 2
   uk: "1 працівник"
 "1 applicant this week":
   de: "1 Bewerber diese Woche"
+  da: "1 ansøger denne uge"
   fr: "1 candidat cette semaine"
   nl: "1 sollicitant deze week"
   pl: "1 kandydat w tym tygodniu"
@@ -338,6 +386,7 @@ _version: 2
   uk: "1 кандидат цього тижня"
 "1 concession held":
   de: "1 eigene Konzession"
+  da: "1 koncession"
   fr: "1 concession détenue"
   nl: "1 concessie in bezit"
   pl: "1 posiadana koncesja"
@@ -345,6 +394,7 @@ _version: 2
   uk: "1 концесія у компанії"
 "1 tender open":
   de: "1 offene Ausschreibung"
+  da: "1 udbud åbent"
   fr: "1 appel d'offres ouvert"
   nl: "1 open aanbesteding"
   pl: "1 otwarty przetarg"
@@ -352,6 +402,7 @@ _version: 2
   uk: "1 відкритий тендер"
 "1 auction running now":
   de: "1 Auktion läuft gerade"
+  da: "1 auktion kører nu"
   fr: "1 enchère en cours"
   nl: "1 veiling loopt nu"
   pl: "1 trwająca aukcja"
@@ -359,6 +410,7 @@ _version: 2
   uk: "Триває 1 аукціон"
 "1 trophy":
   de: "1 Trophäe"
+  da: "1 trofæ"
   fr: "1 trophée"
   nl: "1 trofee"
   pl: "1 trofeum"
@@ -366,6 +418,7 @@ _version: 2
   uk: "1 трофей"
 "1 building work under way":
   de: "1 Bauarbeit läuft"
+  da: "1 byggearbejde i gang"
   fr: "1 chantier en cours"
   nl: "1 bouwwerk bezig"
   pl: "1 trwająca budowa"
@@ -373,6 +426,7 @@ _version: 2
   uk: "Триває 1 будівництво"
 "1 bus in the workshop":
   de: "1 Bus in der Werkstatt"
+  da: "1 bus på værkstedet"
   fr: "1 bus à l'atelier"
   nl: "1 bus in de werkplaats"
   pl: "1 autobus w warsztacie"
@@ -380,6 +434,7 @@ _version: 2
   uk: "1 автобус у майстерні"
 "1 job waiting":
   de: "1 Auftrag wartet"
+  da: "1 opgave venter"
   fr: "1 travail en attente"
   nl: "1 klus wacht"
   pl: "1 oczekujące zlecenie"
@@ -387,6 +442,7 @@ _version: 2
   uk: "1 робота чекає"
 "1 trophy to spend":
   de: "1 Trophäe zum Ausgeben"
+  da: "1 trofæ at bruge"
   fr: "1 trophée à dépenser"
   nl: "1 trofee te besteden"
   pl: "1 trofeum do wydania"
@@ -394,6 +450,7 @@ _version: 2
   uk: "1 трофей до витрати"
 "Name, mark, date and buying":
   de: "Name, Logo, Datum und Einkauf"
+  da: "Navn, mærke, dato og køb"
   fr: "Nom, logo, date et achats"
   nl: "Naam, logo, datum en inkoop"
   pl: "Nazwa, logo, data i zakupy"
@@ -401,6 +458,7 @@ _version: 2
   uk: "Назва, логотип, дата й закупівлі"
 "Its start screen":
   de: "Die Startseite"
+  da: "Dens startskærm"
   fr: "Son accueil"
   nl: "Het startscherm"
   pl: "Ekran startowy"
@@ -408,6 +466,7 @@ _version: 2
   uk: "Головна"
 "Every part a tile":
   de: "Jeder Teil eine Kachel"
+  da: "Hver del en flise"
   fr: "Chaque partie, une tuile"
   nl: "Elk deel een tegel"
   pl: "Każda część to kafelek"
@@ -415,6 +474,7 @@ _version: 2
   uk: "Кожен розділ — плитка"
 "Each part of the company has a tile here, grouped by theme, with what matters there now. A badge says where something waits: unread messages, tours without a driver.":
   de: "Jeder Teil des Betriebs hat hier eine Kachel, nach Themen geordnet, mit dem, was dort gerade zählt. Ein Abzeichen zeigt, wo etwas wartet: ungelesene Nachrichten, Umläufe ohne Fahrer."
+  da: "Hver del af selskabet har en flise her, grupperet efter tema, med det, der betyder noget lige nu. Et mærke viser, hvor noget venter: ulæste beskeder, vognløb uden chauffør."
   fr: "Chaque partie de l'entreprise a ici sa tuile, rangée par thème, avec ce qui compte maintenant. Une pastille montre où quelque chose attend : des messages non lus, des services sans conducteur."
   nl: "Elk deel van het bedrijf heeft hier een tegel, per thema gegroepeerd, met wat er nu toe doet. Een badge laat zien waar iets wacht: ongelezen berichten, omlopen zonder chauffeur."
   pl: "Każda część firmy ma tu swój kafelek, pogrupowany tematycznie, z tym, co teraz ważne. Znaczek pokazuje, gdzie coś czeka: nieprzeczytane wiadomości, brygady bez kierowcy."
@@ -422,6 +482,7 @@ _version: 2
   uk: "Кожен розділ компанії має тут свою плитку, за темами, з тим, що важливо зараз. Значок показує, де щось чекає: непрочитані повідомлення, обороти без водія."
 "Cash, trophies, reputation":
   de: "Kasse, Trophäen, Ruf"
+  da: "Kontanter, trofæer, omdømme"
   fr: "Trésorerie, trophées, réputation"
   nl: "Kas, trofeeën, reputatie"
   pl: "Gotówka, trofea, reputacja"
@@ -429,6 +490,7 @@ _version: 2
   uk: "Каса, трофеї, репутація"
 "Under the company's name, always in view: its cash, the trophies earned with goals and contracts, and its reputation. A click opens the page about it.":
   de: "Unter dem Namen des Betriebs, immer im Blick: seine Kasse, die mit Zielen und Verträgen verdienten Trophäen und sein Ruf. Ein Klick öffnet die Seite dazu."
+  da: "Under selskabets navn, altid synlig: dets kontanter, de trofæer, der er optjent med mål og kontrakter, og dets omdømme. Et klik åbner siden om det."
   fr: "Sous le nom de l'entreprise, toujours en vue : sa trésorerie, les trophées gagnés avec les objectifs et les contrats, et sa réputation. Un clic ouvre la page correspondante."
   nl: "Onder de naam van het bedrijf, altijd in zicht: de kas, de trofeeën verdiend met doelen en contracten, en de reputatie. Een klik opent de pagina erover."
   pl: "Pod nazwą firmy, zawsze na widoku: gotówka, trofea zdobyte za cele i umowy oraz reputacja. Kliknięcie otwiera odpowiednią stronę."
@@ -436,6 +498,7 @@ _version: 2
   uk: "Під назвою компанії, завжди на виду: каса, трофеї за цілі й контракти та репутація. Клацання відкриває відповідну сторінку."
 "Back and across":
   de: "Zurück und hinüber"
+  da: "Tilbage og på tværs"
   fr: "Retour et passage"
   nl: "Terug en verder"
   pl: "Wstecz i dalej"
@@ -443,6 +506,7 @@ _version: 2
   uk: "Назад і далі"
 "This button takes you back to the start screen from every page, as Escape does. The icons on the right open any other page at once.":
   de: "Diese Schaltfläche bringt dich von jeder Seite zurück zur Startseite, wie Esc. Die Symbole rechts öffnen sofort jede andere Seite."
+  da: "Denne knap fører dig tilbage til startskærmen fra hver side, som Escape gør. Ikonerne til højre åbner enhver anden side med det samme."
   fr: "Ce bouton vous ramène à l'accueil depuis chaque page, comme Échap. Les icônes à droite ouvrent aussitôt n'importe quelle autre page."
   nl: "Deze knop brengt je vanaf elke pagina terug naar het startscherm, net als Esc. De pictogrammen rechts openen meteen elke andere pagina."
   pl: "Ten przycisk z każdej strony wraca do ekranu startowego, tak jak Esc. Ikony po prawej od razu otwierają każdą inną stronę."
@@ -450,6 +514,7 @@ _version: 2
   uk: "Ця кнопка повертає на головну з будь-якої сторінки, як і Esc. Значки праворуч одразу відкривають будь-яку іншу сторінку."
 "1 goal running":
   de: "1 Ziel läuft"
+  da: "1 mål i gang"
   fr: "1 objectif en cours"
   nl: "1 doel loopt"
   pl: "1 cel w toku"
@@ -457,6 +522,7 @@ _version: 2
   uk: "1 ціль у роботі"
 "%{n} goals running":
   de: "%{n} Ziele laufen"
+  da: "%{n} mål i gang"
   fr: "%{n} objectifs en cours"
   nl: "%{n} doelen lopen"
   pl: "Celów w toku: %{n}"
@@ -464,6 +530,7 @@ _version: 2
   uk: "Цілей у роботі: %{n}"
 "1 bus waits for a part":
   de: "1 Bus wartet auf ein Teil"
+  da: "1 bus venter på en reservedel"
   fr: "1 bus attend une pièce"
   nl: "1 bus wacht op een onderdeel"
   pl: "1 autobus czeka na część"
@@ -471,6 +538,7 @@ _version: 2
   uk: "1 автобус чекає на запчастину"
 "%{n} buses wait for parts":
   de: "%{n} Busse warten auf Teile"
+  da: "%{n} busser venter på reservedele"
   fr: "%{n} bus attendent des pièces"
   nl: "%{n} bussen wachten op onderdelen"
   pl: "Autobusy czekające na części: %{n}"
