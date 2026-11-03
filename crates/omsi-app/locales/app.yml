@@ -27605,6 +27605,7 @@ _version: 2
 "All day":
   nl: "Hele dag"
   de: "Ganzer Tag"
+  da: "Hele dagen"
   fr: "Toute la journée"
   ru: "Весь день"
   uk: "Увесь день"
@@ -27612,6 +27613,7 @@ _version: 2
 "Midday":
   nl: "Middag"
   de: "Mittag"
+  da: "Midt på dagen"
   fr: "Midi"
   ru: "День"
   uk: "День"
@@ -27619,6 +27621,7 @@ _version: 2
 "When the shift's first trip leaves":
   nl: "Wanneer de eerste rit van de dienst vertrekt"
   de: "Wann die erste Fahrt des Dienstes abfährt"
+  da: "Når vagtens første rejse afgår"
   fr: "Quand part le premier trajet du poste"
   ru: "Когда отправляется первый рейс смены"
   uk: "Коли вирушає перший рейс зміни"
@@ -27626,6 +27629,7 @@ _version: 2
 "Shifts":
   nl: "Diensten"
   de: "Dienste"
+  da: "Vagter"
   fr: "Postes"
   ru: "Смены"
   uk: "Зміни"
@@ -27633,6 +27637,7 @@ _version: 2
 "Other shifts":
   nl: "Andere diensten"
   de: "Andere Dienste"
+  da: "Andre vagter"
   fr: "Autres postes"
   ru: "Другие смены"
   uk: "Інші зміни"
@@ -27640,6 +27645,7 @@ _version: 2
 "The shifts are drawn from the timetable by chance: the same length and time give others":
   nl: "De diensten worden willekeurig uit de dienstregeling samengesteld: dezelfde lengte en tijd geven andere"
   de: "Die Dienste werden zufällig aus dem Fahrplan zusammengestellt: dieselbe Länge und Zeit ergeben andere"
+  da: "Vagterne trækkes tilfældigt fra køreplanen: samme længde og tid giver andre"
   fr: "Les postes sont tirés au hasard de l'horaire : la même durée et la même heure en donnent d'autres"
   ru: "Смены составляются из расписания случайно: та же длительность и время дадут другие"
   uk: "Зміни складаються з розкладу випадково: та сама тривалість і час дадуть інші"
@@ -27647,6 +27653,7 @@ _version: 2
 "No shift of this length begins at this time of day. Try another length or part of the day.":
   nl: "Op dit dagdeel begint geen dienst van deze lengte. Probeer een andere lengte of een ander dagdeel."
   de: "Zu dieser Tageszeit beginnt kein Dienst dieser Länge. Versuche eine andere Länge oder Tageszeit."
+  da: "Ingen vagt af denne længde begynder på dette tidspunkt af dagen. Prøv en anden længde eller en anden del af dagen."
   fr: "Aucun poste de cette durée ne commence à ce moment de la journée. Essaie une autre durée ou un autre moment."
   ru: "В это время суток не начинается смена такой длительности. Попробуйте другую длительность или время суток."
   uk: "У цей час доби не починається зміна такої тривалості. Спробуйте іншу тривалість або час доби."
@@ -27654,6 +27661,7 @@ _version: 2
 "%{n} trip":
   nl: "%{n} rit"
   de: "%{n} Fahrt"
+  da: "%{n} rejse"
   fr: "%{n} trajet"
   ru: "рейсов: %{n}"
   uk: "рейсів: %{n}"
@@ -27661,6 +27669,7 @@ _version: 2
 "%{n} trips":
   nl: "%{n} ritten"
   de: "%{n} Fahrten"
+  da: "%{n} rejser"
   fr: "%{n} trajets"
   ru: "рейсов: %{n}"
   uk: "рейсів: %{n}"
@@ -27668,6 +27677,7 @@ _version: 2
 "one tour":
   nl: "één omloop"
   de: "ein Umlauf"
+  da: "én tur"
   fr: "un seul service"
   ru: "один выход"
   uk: "один оборот"
@@ -27675,6 +27685,7 @@ _version: 2
 "1 change":
   nl: "1 wissel"
   de: "1 Wechsel"
+  da: "1 skift"
   fr: "1 changement"
   ru: "переходов: 1"
   uk: "переходів: 1"
@@ -27682,6 +27693,7 @@ _version: 2
 "%{n} changes":
   nl: "%{n} wissels"
   de: "%{n} Wechsel"
+  da: "%{n} skift"
   fr: "%{n} changements"
   ru: "переходов: %{n}"
   uk: "переходів: %{n}"
@@ -27689,6 +27701,7 @@ _version: 2
 "No shift chosen yet. Pick one of the shifts on the left: its trips, and where it goes on with another line, are shown here.":
   nl: "Nog geen dienst gekozen. Kies links een van de diensten: de ritten, en waar hij verdergaat met een andere lijn, staan dan hier."
   de: "Noch kein Dienst gewählt. Wähle links einen der Dienste: seine Fahrten, und wo er mit einer anderen Linie weitergeht, stehen dann hier."
+  da: "Ingen vagt valgt endnu. Vælg en af vagterne til venstre: dens rejser, og hvor den fortsætter med en anden linje, vises her."
   fr: "Aucun poste choisi. Choisis-en un à gauche : ses trajets, et où il continue avec une autre ligne, s'affichent ici."
   ru: "Смена ещё не выбрана. Выберите одну из смен слева: здесь появятся её рейсы и место, где она продолжается другой линией."
   uk: "Зміну ще не вибрано. Виберіть одну зі змін ліворуч: тут з'являться її рейси і місце, де вона продовжується іншою лінією."
@@ -27696,6 +27709,7 @@ _version: 2
 "On with line %{line}, tour %{tour} · %{min} min":
   nl: "Verder met lijn %{line}, omloop %{tour} · %{min} min"
   de: "Weiter mit Linie %{line}, Umlauf %{tour} · %{min} Min."
+  da: "Videre med linje %{line}, tur %{tour} · %{min} min"
   fr: "Ensuite ligne %{line}, service %{tour} · %{min} min"
   ru: "Дальше линия %{line}, выход %{tour} · %{min} мин"
   uk: "Далі лінія %{line}, оборот %{tour} · %{min} хв"
@@ -27703,6 +27717,7 @@ _version: 2
 "Shift: choose one":
   nl: "Dienst: kies er een"
   de: "Dienst: wähle einen"
+  da: "Vagt: vælg en"
   fr: "Poste : choisis-en un"
   ru: "Смена: выберите"
   uk: "Зміна: виберіть"
@@ -27710,6 +27725,7 @@ _version: 2
 "Shift · line":
   nl: "Dienst · lijn"
   de: "Dienst · Linie"
+  da: "Vagt · linje"
   fr: "Poste · ligne"
   ru: "Смена · линия"
   uk: "Зміна · лінія"
@@ -27717,6 +27733,7 @@ _version: 2
 "Mode":
   nl: "Modus"
   de: "Modus"
+  da: "Tilstand"
   fr: "Mode"
   ru: "Режим"
   uk: "Режим"
@@ -27745,6 +27762,7 @@ _version: 2
 "Next step":
   nl: "Verder"
   de: "Weiter"
+  da: "Næste trin"
   fr: "Suivant"
   ru: "Далее"
   uk: "Далі"
@@ -27752,6 +27770,7 @@ _version: 2
 "Bus drivers":
   nl: "Chauffeurs"
   de: "Fahrer"
+  da: "Buschauffører"
   fr: "Conducteurs"
   ru: "Водители"
   uk: "Водії"
@@ -27759,6 +27778,7 @@ _version: 2
 "Who is driving today?":
   nl: "Wie rijdt er vandaag?"
   de: "Wer fährt heute?"
+  da: "Hvem kører i dag?"
   fr: "Qui conduit aujourd'hui ?"
   ru: "Кто сегодня за рулём?"
   uk: "Хто сьогодні за кермом?"
@@ -27766,6 +27786,7 @@ _version: 2
 "%{n} drivers on this computer":
   nl: "%{n} chauffeurs op deze computer"
   de: "%{n} Fahrer auf diesem Computer"
+  da: "%{n} chauffører på denne computer"
   fr: "%{n} conducteurs sur cet ordinateur"
   ru: "Водителей на этом компьютере: %{n}"
   uk: "Водіїв на цьому комп'ютері: %{n}"
@@ -27773,6 +27794,7 @@ _version: 2
 "Service record":
   nl: "Staat van dienst"
   de: "Dienstakte"
+  da: "Tjenestebog"
   fr: "États de service"
   ru: "Послужной список"
   uk: "Послужний список"
@@ -27780,6 +27802,7 @@ _version: 2
 "New driver":
   nl: "Nieuwe chauffeur"
   de: "Neuer Fahrer"
+  da: "Ny chauffør"
   fr: "Nouveau conducteur"
   ru: "Новый водитель"
   uk: "Новий водій"
@@ -27787,6 +27810,7 @@ _version: 2
 "Good morning %{name}":
   nl: "Goedemorgen %{name}"
   de: "Guten Morgen %{name}"
+  da: "Godmorgen %{name}"
   fr: "Bonjour %{name}"
   ru: "Доброе утро, %{name}"
   uk: "Доброго ранку, %{name}"
@@ -27794,6 +27818,7 @@ _version: 2
 "Good afternoon %{name}":
   nl: "Goedemiddag %{name}"
   de: "Guten Tag %{name}"
+  da: "God eftermiddag %{name}"
   fr: "Bon après-midi %{name}"
   ru: "Добрый день, %{name}"
   uk: "Доброго дня, %{name}"
@@ -27801,6 +27826,7 @@ _version: 2
 "Good evening %{name}":
   nl: "Goedenavond %{name}"
   de: "Guten Abend %{name}"
+  da: "God aften %{name}"
   fr: "Bonsoir %{name}"
   ru: "Добрый вечер, %{name}"
   uk: "Доброго вечора, %{name}"
@@ -27808,6 +27834,7 @@ _version: 2
 "How do you want to drive today?":
   nl: "Hoe wil je vandaag rijden?"
   de: "Wie möchtest du heute fahren?"
+  da: "Hvordan vil du køre i dag?"
   fr: "Comment veux-tu conduire aujourd'hui ?"
   ru: "Как вы хотите ездить сегодня?"
   uk: "Як ви хочете їздити сьогодні?"
@@ -27815,6 +27842,7 @@ _version: 2
 "Choose how long you want to drive and when: openOMSI puts a shift together from the timetable's real trips, on with another line where lines meet.":
   nl: "Kies zelf hoe lang je wilt rijden en wanneer: openOMSI stelt een dienst samen uit echte ritten van de dienstregeling, verder met een andere lijn waar lijnen elkaar raken."
   de: "Wähle selbst, wie lange und wann du fahren willst: openOMSI stellt aus echten Fahrten des Fahrplans einen Dienst zusammen, weiter mit einer anderen Linie, wo sich Linien treffen."
+  da: "Vælg, hvor længe du vil køre, og hvornår: openOMSI sammensætter en vagt af køreplanens rigtige rejser, videre med en anden linje, hvor linjer mødes."
   fr: "Choisis combien de temps et quand tu veux conduire : openOMSI compose un poste à partir des vrais trajets de l'horaire, avec une autre ligne là où les lignes se croisent."
   ru: "Выберите, как долго и когда вы хотите ездить: openOMSI составит смену из настоящих рейсов расписания, с переходом на другую линию там, где линии встречаются."
   uk: "Виберіть, як довго і коли ви хочете їздити: openOMSI складе зміну зі справжніх рейсів розкладу, з переходом на іншу лінію там, де лінії зустрічаються."
@@ -27822,6 +27850,7 @@ _version: 2
 "One bus's trips on one line, as OMSI's timetable dialog gives them: pick the line, the tour and the trip to start with.":
   nl: "De ritten van één bus op één lijn, zoals de dienstregeling van OMSI ze geeft: kies de lijn, de omloop en de rit waarmee je begint."
   de: "Die Fahrten eines Busses auf einer Linie, wie OMSIs Fahrplan sie vorgibt: wähle Linie, Umlauf und die erste Fahrt."
+  da: "Én buss rejser på én linje, som OMSI's køreplansdialog giver dem: vælg linjen, turen og den rejse, du vil starte med."
   fr: "Les trajets d'un bus sur une ligne, comme l'horaire d'OMSI les donne : choisis la ligne, le service et le trajet de départ."
   ru: "Рейсы одного автобуса на одной линии, как их даёт расписание OMSI: выберите линию, выход и первый рейс."
   uk: "Рейси одного автобуса на одній лінії, як їх дає розклад OMSI: виберіть лінію, оборот і перший рейс."
@@ -27829,6 +27858,7 @@ _version: 2
 "Only a map and a bus. The traffic and the timetable's buses drive around you; nothing is booked.":
   nl: "Alleen een kaart en een bus. Het verkeer en de bussen van de dienstregeling rijden om je heen; er wordt niets geboekt."
   de: "Nur eine Karte und ein Bus. Der Verkehr und die Fahrplanbusse fahren um dich herum; nichts wird gebucht."
+  da: "Kun et kort og en bus. Trafikken og køreplanens busser kører omkring dig; intet er bestilt."
   fr: "Juste une carte et un bus. La circulation et les bus de l'horaire roulent autour de toi ; rien n'est enregistré."
   ru: "Только карта и автобус. Вокруг ездят машины и автобусы по расписанию; ничего не учитывается."
   uk: "Лише карта й автобус. Довкола їздять машини й автобуси за розкладом; нічого не враховується."
@@ -27836,6 +27866,7 @@ _version: 2
 "Your service record":
   nl: "Je staat van dienst"
   de: "Deine Dienstakte"
+  da: "Din tjenestebog"
   fr: "Tes états de service"
   ru: "Ваш послужной список"
   uk: "Ваш послужний список"
@@ -27843,6 +27874,7 @@ _version: 2
 "sessions":
   nl: "diensten"
   de: "Dienste"
+  da: "sessioner"
   fr: "services"
   ru: "смен"
   uk: "змін"
@@ -27850,6 +27882,7 @@ _version: 2
 "driven":
   nl: "gereden"
   de: "gefahren"
+  da: "kørt"
   fr: "conduit"
   ru: "за рулём"
   uk: "за кермом"
@@ -27857,6 +27890,7 @@ _version: 2
 "km":
   nl: "km"
   de: "km"
+  da: "km"
   fr: "km"
   ru: "км"
   uk: "км"
@@ -27864,6 +27898,7 @@ _version: 2
 "level":
   nl: "niveau"
   de: "Stufe"
+  da: "niveau"
   fr: "niveau"
   ru: "уровень"
   uk: "рівень"
@@ -27871,6 +27906,7 @@ _version: 2
 "Level %{level} · %{xp} of %{next} points":
   nl: "Niveau %{level} · %{xp} van %{next} punten"
   de: "Stufe %{level} · %{xp} von %{next} Punkten"
+  da: "Niveau %{level} · %{xp} af %{next} point"
   fr: "Niveau %{level} · %{xp} sur %{next} points"
   ru: "Уровень %{level} · %{xp} из %{next} очков"
   uk: "Рівень %{level} · %{xp} з %{next} очок"
@@ -27878,6 +27914,7 @@ _version: 2
 "Driver: %{name}":
   nl: "Chauffeur: %{name}"
   de: "Fahrer: %{name}"
+  da: "Chauffør: %{name}"
   fr: "Conducteur : %{name}"
   ru: "Водитель: %{name}"
   uk: "Водій: %{name}"
@@ -27885,6 +27922,7 @@ _version: 2
 "Maps":
   nl: "Kaarten"
   de: "Karten"
+  da: "Kort"
   fr: "Cartes"
   ru: "Карты"
   uk: "Карти"
@@ -27912,6 +27950,7 @@ _version: 2
 "Tours":
   nl: "Omlopen"
   de: "Umläufe"
+  da: "Ture"
   fr: "Services"
   ru: "Выходы"
   uk: "Обороти"
@@ -27919,6 +27958,7 @@ _version: 2
 "%{n} maps installed":
   nl: "%{n} kaarten geïnstalleerd"
   de: "%{n} Karten installiert"
+  da: "%{n} kort installeret"
   fr: "%{n} cartes installées"
   ru: "Установлено карт: %{n}"
   uk: "Встановлено карт: %{n}"
@@ -27926,6 +27966,7 @@ _version: 2
 "Starts":
   nl: "Startpunten"
   de: "Startpunkte"
+  da: "Starter"
   fr: "Départs"
   ru: "Точки старта"
   uk: "Точки старту"
@@ -27933,6 +27974,7 @@ _version: 2
 "Next: the bus":
   nl: "Verder: de bus"
   de: "Weiter: der Bus"
+  da: "Næste: bussen"
   fr: "Suite : le bus"
   ru: "Далее: автобус"
   uk: "Далі: автобус"
@@ -27940,6 +27982,7 @@ _version: 2
 "Buses":
   nl: "Bussen"
   de: "Busse"
+  da: "Busser"
   fr: "Bus"
   ru: "Автобусы"
   uk: "Автобуси"
@@ -27967,6 +28010,7 @@ _version: 2
 "Your pass":
   nl: "Je dienstpas"
   de: "Dein Dienstausweis"
+  da: "Dit kort"
   fr: "Votre carte de service"
   ru: "Ваш служебный пропуск"
   uk: "Ваша службова перепустка"
@@ -27974,6 +28018,7 @@ _version: 2
 "Personnel number":
   nl: "Personeelsnummer"
   de: "Personalnummer"
+  da: "Personalenummer"
   fr: "Matricule"
   ru: "Табельный номер"
   uk: "Табельний номер"
@@ -27981,6 +28026,7 @@ _version: 2
 "Code":
   nl: "Pincode"
   de: "PIN"
+  da: "Kode"
   fr: "Code"
   ru: "Код"
   uk: "Код"
@@ -27988,6 +28034,7 @@ _version: 2
 "Not known here. Your number and code are on your pass below.":
   nl: "Hier niet bekend. Je nummer en pincode staan hieronder op je dienstpas."
   de: "Hier nicht bekannt. Nummer und PIN stehen unten auf deinem Dienstausweis."
+  da: "Ukendt her. Dit nummer og din kode står på dit kort nedenfor."
   fr: "Inconnu ici. Votre matricule et votre code figurent ci-dessous sur votre carte de service."
   ru: "Здесь не известно. Номер и код указаны ниже, на вашем служебном пропуске."
   uk: "Тут не відомо. Номер і код указано нижче, на вашій службовій перепустці."
@@ -27995,6 +28042,7 @@ _version: 2
 "Signed on":
   nl: "Aangemeld"
   de: "Angemeldet"
+  da: "Logget på"
   fr: "En service"
   ru: "На смене"
   uk: "На зміні"
@@ -28002,6 +28050,7 @@ _version: 2
 "Not signed on":
   nl: "Niet aangemeld"
   de: "Nicht angemeldet"
+  da: "Ikke logget på"
   fr: "Hors service"
   ru: "Не на смене"
   uk: "Не на зміні"
@@ -28009,6 +28058,7 @@ _version: 2
 "Tour %{tour}":
   nl: "Omloop %{tour}"
   de: "Umlauf %{tour}"
+  da: "Tur %{tour}"
   fr: "Service %{tour}"
   ru: "Выход %{tour}"
   uk: "Оборот %{tour}"
@@ -28016,6 +28066,7 @@ _version: 2
 "Driving without a duty":
   nl: "Rijden zonder dienst"
   de: "Fahrt ohne Dienst"
+  da: "Kører uden vagt"
   fr: "Conduite sans service"
   ru: "Езда без смены"
   uk: "Їзда без зміни"
@@ -28023,6 +28074,7 @@ _version: 2
 "On break":
   nl: "Pauze loopt"
   de: "Pause läuft"
+  da: "På pause"
   fr: "En pause"
   ru: "Идёт перерыв"
   uk: "Триває перерва"
@@ -28030,6 +28082,7 @@ _version: 2
 "No tours on this line.":
   nl: "Deze lijn heeft geen omlopen."
   de: "Diese Linie hat keine Umläufe."
+  da: "Ingen ture på denne linje."
   fr: "Cette ligne n’a aucun service."
   ru: "На этой линии нет выходов."
   uk: "На цій лінії немає оборотів."
@@ -28037,6 +28090,7 @@ _version: 2
 "Phone & tablet":
   nl: "Telefoon en tablet"
   de: "Handy & Tablet"
+  da: "Telefon og tablet"
   fr: "Téléphone et tablette"
   ru: "Телефон и планшет"
   uk: "Телефон і планшет"
@@ -28044,6 +28098,7 @@ _version: 2
 "Phone & tablet is off. Turn it on in the settings to have the duty and the bus's screens on a phone or tablet.":
   nl: "Telefoon en tablet staat uit. Zet het aan in de instellingen om je dienst en de schermen van de bus op een telefoon of tablet te hebben."
   de: "Handy & Tablet ist aus. Schalte es in den Einstellungen ein, um den Dienst und die Bildschirme des Busses auf Handy oder Tablet zu haben."
+  da: "Telefon og tablet er slået fra. Slå det til i indstillingerne for at få vagten og busens skærme på en telefon eller tablet."
   fr: "Téléphone et tablette est désactivé. Activez-le dans les paramètres pour avoir le service et les écrans du bus sur un téléphone ou une tablette."
   ru: "«Телефон и планшет» выключен. Включите его в настройках, чтобы смена и экраны автобуса были на телефоне или планшете."
   uk: "«Телефон і планшет» вимкнено. Увімкніть його в налаштуваннях, щоб зміна й екрани автобуса були на телефоні чи планшеті."
@@ -28051,6 +28106,7 @@ _version: 2
 "Starting…":
   nl: "Bezig met starten…"
   de: "Wird gestartet…"
+  da: "Starter…"
   fr: "Démarrage…"
   ru: "Запуск…"
   uk: "Запуск…"
@@ -28060,6 +28116,7 @@ _version: 2
 "This computer has no network address. Is it on Wi-Fi or a network cable?":
   nl: "Deze computer heeft geen netwerkadres. Zit hij aan wifi of een netwerkkabel?"
   de: "Dieser Computer hat keine Netzwerkadresse. Ist er per WLAN oder Kabel verbunden?"
+  da: "Denne computer har ingen netværksadresse. Er den på Wi-Fi eller et netværkskabel?"
   fr: "Cet ordinateur n’a pas d’adresse réseau. Est-il connecté en Wi-Fi ou par câble ?"
   ru: "У этого компьютера нет сетевого адреса. Он подключён к Wi-Fi или сетевому кабелю?"
   uk: "Цей комп’ютер не має мережевої адреси. Він підключений до Wi-Fi чи мережевого кабелю?"
@@ -28067,6 +28124,7 @@ _version: 2
 "On a phone or tablet on the same network, open":
   nl: "Open op een telefoon of tablet in hetzelfde netwerk"
   de: "Öffne auf einem Handy oder Tablet im selben Netzwerk"
+  da: "Åbn på en telefon eller tablet på samme netværk"
   fr: "Sur un téléphone ou une tablette du même réseau, ouvrez"
   ru: "На телефоне или планшете в той же сети откройте"
   uk: "На телефоні чи планшеті в тій самій мережі відкрийте"
@@ -28074,6 +28132,7 @@ _version: 2
 "and enter the pairing code":
   nl: "en toets de koppelcode in"
   de: "und gib den Kopplungscode ein"
+  da: "og indtast parringskoden"
   fr: "et saisissez le code d’appairage"
   ru: "и введите код сопряжения"
   uk: "і введіть код спарювання"
@@ -28081,6 +28140,7 @@ _version: 2
 "Shows %{screen}":
   nl: "Toont %{screen}"
   de: "Zeigt %{screen}"
+  da: "Viser %{screen}"
   fr: "Affiche %{screen}"
   ru: "Показывает %{screen}"
   uk: "Показує %{screen}"
@@ -28088,6 +28148,7 @@ _version: 2
 "Connected":
   nl: "Verbonden"
   de: "Verbunden"
+  da: "Forbundet"
   fr: "Connecté"
   ru: "Подключено"
   uk: "Підключено"
@@ -28116,6 +28177,7 @@ _version: 2
 "No device paired yet.":
   nl: "Nog geen toestel gekoppeld."
   de: "Noch kein Gerät gekoppelt."
+  da: "Ingen enhed parret endnu."
   fr: "Aucun appareil appairé pour l’instant."
   ru: "Сопряжённых устройств пока нет."
   uk: "Спарених пристроїв ще немає."
@@ -28123,6 +28185,7 @@ _version: 2
 "Paired devices: %{n}":
   nl: "Gekoppelde toestellen: %{n}"
   de: "Gekoppelte Geräte: %{n}"
+  da: "Parrede enheder: %{n}"
   fr: "Appareils appairés : %{n}"
   ru: "Сопряжённые устройства: %{n}"
   uk: "Спарені пристрої: %{n}"
@@ -28130,6 +28193,7 @@ _version: 2
 "New pairing code":
   nl: "Nieuwe koppelcode"
   de: "Neuer Kopplungscode"
+  da: "Ny parringskode"
   fr: "Nouveau code d’appairage"
   ru: "Новый код сопряжения"
   uk: "Новий код спарювання"
@@ -28137,6 +28201,7 @@ _version: 2
 "Forget devices":
   nl: "Toestellen vergeten"
   de: "Geräte vergessen"
+  da: "Glem enheder"
   fr: "Oublier les appareils"
   ru: "Забыть устройства"
   uk: "Забути пристрої"
@@ -28144,6 +28209,7 @@ _version: 2
 "Not signed on: click here to sign on":
   nl: "Niet aangemeld: klik hier om je aan te melden"
   de: "Nicht angemeldet: hier klicken zum Anmelden"
+  da: "Ikke logget på: klik her for at logge på"
   fr: "Hors service : cliquez ici pour prendre votre service"
   ru: "Не на смене: нажмите здесь, чтобы войти на смену"
   uk: "Не на зміні: натисніть тут, щоб увійти на зміну"
@@ -28151,6 +28217,7 @@ _version: 2
 "Your duty assignment is waiting: click here to accept it":
   nl: "Je dienstopdracht wacht: klik hier om hem te aanvaarden"
   de: "Dein Dienstauftrag wartet: hier klicken zum Annehmen"
+  da: "Din vagttildeling venter: klik her for at acceptere den"
   fr: "Votre ordre de service attend : cliquez ici pour l’accepter"
   ru: "Наряд на смену ждёт: нажмите здесь, чтобы принять его"
   uk: "Наряд на зміну чекає: натисніть тут, щоб прийняти його"
@@ -28158,6 +28225,7 @@ _version: 2
 "Which bus are you taking out?":
   nl: "Met welke bus ga je rijden?"
   de: "Mit welchem Bus fährst du raus?"
+  da: "Hvilken bus tager du ud?"
   fr: "Quel bus sortez-vous ?"
   ru: "На каком автобусе вы выезжаете?"
   uk: "На якому автобусі ви виїжджаєте?"
@@ -28165,6 +28233,7 @@ _version: 2
 "Which model?":
   nl: "Welk type?"
   de: "Welches Modell?"
+  da: "Hvilken model?"
   fr: "Quel modèle ?"
   ru: "Какая модель?"
   uk: "Яка модель?"
@@ -28172,6 +28241,7 @@ _version: 2
 "Which version? Gearbox, doors and cab differ.":
   nl: "Welke uitvoering? Bak, deuren en cabine verschillen."
   de: "Welche Ausführung? Getriebe, Türen und Kabine unterscheiden sich."
+  da: "Hvilken version? Gearkasse, døre og førerrum er forskellige."
   fr: "Quelle version ? Boîte, portes et cabine diffèrent."
   ru: "Какое исполнение? Коробка, двери и кабина различаются."
   uk: "Яке виконання? Коробка, двері й кабіна різняться."
@@ -28179,6 +28249,7 @@ _version: 2
 "%{count} versions":
   nl: "%{count} uitvoeringen"
   de: "%{count} Ausführungen"
+  da: "%{count} versioner"
   fr: "%{count} versions"
   ru: "Исполнений: %{count}"
   uk: "Виконань: %{count}"
@@ -28186,6 +28257,7 @@ _version: 2
 "one version":
   nl: "één uitvoering"
   de: "eine Ausführung"
+  da: "én version"
   fr: "une version"
   ru: "одно исполнение"
   uk: "одне виконання"
@@ -28193,6 +28265,7 @@ _version: 2
 "%{count} liveries":
   nl: "%{count} kleurstellingen"
   de: "%{count} Lackierungen"
+  da: "%{count} bemalinger"
   fr: "%{count} livrées"
   ru: "Окрасок: %{count}"
   uk: "Ліврей: %{count}"
@@ -28200,6 +28273,7 @@ _version: 2
 "one livery":
   nl: "één kleurstelling"
   de: "eine Lackierung"
+  da: "én bemaling"
   fr: "une livrée"
   ru: "одна окраска"
   uk: "одна ліврея"
@@ -28207,6 +28281,7 @@ _version: 2
 "fits best":
   nl: "past het best"
   de: "passt am besten"
+  da: "passer bedst"
   fr: "convient le mieux"
   ru: "подходит лучше всего"
   uk: "пасує найкраще"
@@ -28214,6 +28289,7 @@ _version: 2
 "drives here most":
   nl: "rijdt hier het meest"
   de: "fährt hier am meisten"
+  da: "kører mest her"
   fr: "le plus courant ici"
   ru: "чаще всего ездит здесь"
   uk: "найчастіше їздить тут"
@@ -28221,6 +28297,7 @@ _version: 2
 "%{n} buses installed":
   nl: "%{n} bussen geïnstalleerd"
   de: "%{n} Busse installiert"
+  da: "%{n} busser installeret"
   fr: "%{n} bus installés"
   ru: "Установлено автобусов: %{n}"
   uk: "Встановлено автобусів: %{n}"
@@ -28228,6 +28305,7 @@ _version: 2
 "%{bus} fits this duty best":
   nl: "%{bus} past het best bij deze dienst"
   de: "%{bus} passt am besten zu diesem Dienst"
+  da: "%{bus} passer bedst til denne vagt"
   fr: "%{bus} convient le mieux à ce service"
   ru: "%{bus} лучше всего подходит для этой смены"
   uk: "%{bus} найкраще пасує до цієї зміни"
@@ -28235,6 +28313,7 @@ _version: 2
 "%{bus} drives here most":
   nl: "%{bus} rijdt het meest op deze kaart"
   de: "%{bus} fährt auf dieser Karte am meisten"
+  da: "%{bus} kører mest her"
   fr: "%{bus} est le plus courant sur cette carte"
   ru: "%{bus} чаще всего ездит на этой карте"
   uk: "%{bus} найчастіше їздить на цій карті"
@@ -28242,6 +28321,7 @@ _version: 2
 "Fits this duty best":
   nl: "Past het best bij deze dienst"
   de: "Passt am besten zu diesem Dienst"
+  da: "Passer bedst til denne vagt"
   fr: "Convient le mieux à ce service"
   ru: "Лучше всего подходит для этой смены"
   uk: "Найкраще пасує до цієї зміни"
@@ -28249,6 +28329,7 @@ _version: 2
 "Drives on this map most":
   nl: "Rijdt het meest op deze kaart"
   de: "Fährt auf dieser Karte am meisten"
+  da: "Kører mest på dette kort"
   fr: "Le plus courant sur cette carte"
   ru: "Чаще всего ездит на этой карте"
   uk: "Найчастіше їздить на цій карті"
@@ -28256,6 +28337,7 @@ _version: 2
 "Search: %{q}":
   nl: "Zoeken: %{q}"
   de: "Suche: %{q}"
+  da: "Søg: %{q}"
   fr: "Recherche : %{q}"
   ru: "Поиск: %{q}"
   uk: "Пошук: %{q}"
@@ -28263,6 +28345,7 @@ _version: 2
 "Update bus pictures":
   nl: "Busplaatjes bijwerken"
   de: "Busbilder aktualisieren"
+  da: "Opdatér busbilleder"
   fr: "Mettre à jour les images"
   ru: "Обновить картинки автобусов"
   uk: "Оновити зображення автобусів"
@@ -28270,6 +28353,7 @@ _version: 2
 "Pictures: %{done} of %{total}":
   nl: "Plaatjes: %{done} van %{total}"
   de: "Bilder: %{done} von %{total}"
+  da: "Billeder: %{done} af %{total}"
   fr: "Images : %{done} sur %{total}"
   ru: "Картинки: %{done} из %{total}"
   uk: "Зображення: %{done} з %{total}"
@@ -28277,6 +28361,7 @@ _version: 2
 "openOMSI draws a picture of every bus from its own 3D model, so that you see which bus you are choosing. It does them one by one while the launcher is idle.":
   nl: "openOMSI tekent van elke bus een plaatje uit zijn eigen 3D-model, zodat je bij het kiezen ziet welke bus het is. Dat gebeurt een voor een, terwijl de launcher niets te doen heeft."
   de: "openOMSI zeichnet von jedem Bus ein Bild aus seinem eigenen 3D-Modell, damit du bei der Auswahl siehst, welcher Bus es ist. Das geschieht einer nach dem anderen, während der Launcher nichts zu tun hat."
+  da: "openOMSI tegner et billede af hver bus ud fra dens egen 3D-model, så du kan se, hvilken bus du vælger. Det gør dem én ad gangen, mens launcheren er ledig."
   fr: "openOMSI dessine une image de chaque bus à partir de son propre modèle 3D, pour que vous voyiez quel bus vous choisissez. Il les fait une par une, quand le lanceur n’a rien d’autre à faire."
   ru: "openOMSI рисует картинку каждого автобуса по его собственной 3D-модели, чтобы при выборе было видно, какой это автобус. Картинки делаются по одной, пока лаунчер свободен."
   uk: "openOMSI малює зображення кожного автобуса з його власної 3D-моделі, щоб під час вибору було видно, який це автобус. Зображення робляться по одному, поки лаунчер вільний."
@@ -28284,6 +28369,7 @@ _version: 2
 "View in 3D":
   nl: "Bekijk in 3D"
   de: "In 3D ansehen"
+  da: "Se i 3D"
   fr: "Voir en 3D"
   ru: "Смотреть в 3D"
   uk: "Переглянути в 3D"
@@ -28291,6 +28377,7 @@ _version: 2
 "Choose another bus":
   nl: "Andere bus kiezen"
   de: "Anderen Bus wählen"
+  da: "Vælg en anden bus"
   fr: "Choisir un autre bus"
   ru: "Выбрать другой автобус"
   uk: "Вибрати інший автобус"
@@ -28298,6 +28385,7 @@ _version: 2
 "This bus is ready for you":
   nl: "Deze bus staat voor je klaar"
   de: "Dieser Bus steht für dich bereit"
+  da: "Denne bus er klar til dig"
   fr: "Ce bus vous attend"
   ru: "Этот автобус ждёт вас"
   uk: "Цей автобус чекає на вас"
@@ -28305,6 +28393,7 @@ _version: 2
 "Take this one":
   nl: "Deze nemen"
   de: "Diesen nehmen"
+  da: "Tag denne"
   fr: "Prendre celui-ci"
   ru: "Взять этот"
   uk: "Взяти цей"
@@ -28312,6 +28401,7 @@ _version: 2
 "Pick one myself":
   nl: "Zelf kiezen"
   de: "Selbst wählen"
+  da: "Vælg selv"
   fr: "Choisir moi-même"
   ru: "Выбрать самому"
   uk: "Вибрати самому"
@@ -28319,6 +28409,7 @@ _version: 2
 "It knows every destination of this duty. Take it out, or pick one yourself.":
   nl: "Hij kent alle eindbestemmingen van deze dienst. Neem hem mee, of kies er zelf een."
   de: "Er kennt alle Ziele dieses Dienstes. Nimm ihn mit, oder wähle selbst."
+  da: "Den kender alle destinationer på denne vagt. Tag den ud, eller vælg selv."
   fr: "Il connaît toutes les destinations de ce service. Prenez-le, ou choisissez vous-même."
   ru: "Он знает все конечные пункты этой смены. Берите его или выберите сами."
   uk: "Він знає всі кінцеві пункти цієї зміни. Беріть його або виберіть самі."
@@ -28326,6 +28417,7 @@ _version: 2
 "It knows %{percent}% of the destinations of this duty - the best of what is installed. Take it out, or pick one yourself.":
   nl: "Hij kent %{percent}% van de eindbestemmingen van deze dienst - het beste van wat er staat. Neem hem mee, of kies er zelf een."
   de: "Er kennt %{percent}% der Ziele dieses Dienstes - das Beste, was installiert ist. Nimm ihn mit, oder wähle selbst."
+  da: "Den kender %{percent} % af destinationerne på denne vagt - den bedste af det installerede. Tag den ud, eller vælg selv."
   fr: "Il connaît %{percent}% des destinations de ce service - le meilleur parmi les bus installés. Prenez-le, ou choisissez vous-même."
   ru: "Он знает %{percent}% конечных пунктов этой смены - лучший из установленных. Берите его или выберите сами."
   uk: "Він знає %{percent}% кінцевих пунктів цієї зміни - найкращий із встановлених. Беріть його або виберіть самі."
@@ -28333,6 +28425,7 @@ _version: 2
 "openOMSI picked it for this duty: the map's own depot runs it. Take it out, or pick one yourself.":
   nl: "openOMSI koos hem voor deze dienst: de remise van de kaart zelf rijdt ermee. Neem hem mee, of kies er zelf een."
   de: "openOMSI hat ihn für diesen Dienst gewählt: Der Betriebshof der Karte fährt ihn selbst. Nimm ihn mit, oder wähle selbst."
+  da: "openOMSI valgte den til denne vagt: kortets eget depot kører den. Tag den ud, eller vælg selv."
   fr: "openOMSI l’a choisi pour ce service : le dépôt de la carte l’utilise lui-même. Prenez-le, ou choisissez vous-même."
   ru: "openOMSI выбрал его для этой смены: на нём ездит депо самой карты. Берите его или выберите сами."
   uk: "openOMSI вибрав його для цієї зміни: на ньому їздить депо самої карти. Беріть його або виберіть самі."
@@ -28340,6 +28433,7 @@ _version: 2
 "Select a shift to continue":
   nl: "Kies een dienst om verder te gaan"
   de: "Wähle einen Dienst, um fortzufahren"
+  da: "Vælg en vagt for at fortsætte"
   fr: "Choisissez un poste pour continuer"
   ru: "Выберите смену, чтобы продолжить"
   uk: "Виберіть зміну, щоб продовжити"
@@ -28347,6 +28441,7 @@ _version: 2
 "Pick a line, a tour and the trip to start with":
   nl: "Kies een lijn, een omloop en de rit waarmee je begint"
   de: "Wähle eine Linie, einen Umlauf und die Fahrt, mit der du beginnst"
+  da: "Vælg en linje, en tur og den rejse, du vil starte med"
   fr: "Choisissez une ligne, un service et la course de départ"
   ru: "Выберите линию, выход и рейс, с которого начать"
   uk: "Виберіть лінію, оборот і рейс, з якого почати"
@@ -28354,6 +28449,7 @@ _version: 2
 "Shift length":
   nl: "Dienstlengte"
   de: "Dienstlänge"
+  da: "Vagtens længde"
   fr: "Durée du poste"
   ru: "Длительность смены"
   uk: "Тривалість зміни"
@@ -28361,6 +28457,7 @@ _version: 2
 "Time of day":
   nl: "Dagdeel"
   de: "Tageszeit"
+  da: "Tidspunkt på dagen"
   fr: "Moment de la journée"
   ru: "Время суток"
   uk: "Час доби"
@@ -28389,6 +28486,7 @@ _version: 2
 "Departure":
   nl: "Vertrek"
   de: "Abfahrt"
+  da: "Afgang"
   fr: "Départ"
   ru: "Отправление"
   uk: "Відправлення"
@@ -28396,6 +28494,7 @@ _version: 2
 "Arrival":
   nl: "Aankomst"
   de: "Ankunft"
+  da: "Ankomst"
   fr: "Arrivée"
   ru: "Прибытие"
   uk: "Прибуття"
@@ -28403,6 +28502,7 @@ _version: 2
 "Duration":
   nl: "Duur"
   de: "Dauer"
+  da: "Varighed"
   fr: "Durée"
   ru: "Длительность"
   uk: "Тривалість"
@@ -28410,6 +28510,7 @@ _version: 2
 "%{h}h %{mm}m":
   nl: "%{h}u %{mm}m"
   de: "%{h} Std %{mm} Min"
+  da: "%{h} t %{mm} m"
   fr: "%{h}h %{mm}min"
   ru: "%{h} ч %{mm} мин"
   uk: "%{h} год %{mm} хв"
@@ -28417,6 +28518,7 @@ _version: 2
 "%{time} break":
   nl: "%{time} pauze"
   de: "%{time} Pause"
+  da: "%{time} pause"
   fr: "%{time} de pause"
   ru: "перерыв %{time}"
   uk: "перерва %{time}"
@@ -28424,6 +28526,7 @@ _version: 2
 "%{n} stop":
   nl: "%{n} halte"
   de: "%{n} Haltestelle"
+  da: "%{n} stoppested"
   fr: "%{n} arrêt"
   ru: "%{n} остановка"
   uk: "%{n} зупинка"
@@ -28431,6 +28534,7 @@ _version: 2
 "%{n} stops":
   nl: "%{n} haltes"
   de: "%{n} Haltestellen"
+  da: "%{n} stoppesteder"
   fr: "%{n} arrêts"
   ru: "остановок: %{n}"
   uk: "зупинок: %{n}"
@@ -28438,6 +28542,7 @@ _version: 2
 "%{n} line":
   nl: "%{n} lijn"
   de: "%{n} Linie"
+  da: "%{n} linje"
   fr: "%{n} ligne"
   ru: "%{n} линия"
   uk: "%{n} лінія"
@@ -28445,6 +28550,7 @@ _version: 2
 "%{n} lines":
   nl: "%{n} lijnen"
   de: "%{n} Linien"
+  da: "%{n} linjer"
   fr: "%{n} lignes"
   ru: "линий: %{n}"
   uk: "ліній: %{n}"
@@ -28452,6 +28558,7 @@ _version: 2
 "On with line %{line}, tour %{tour}":
   nl: "Verder met lijn %{line}, omloop %{tour}"
   de: "Weiter mit Linie %{line}, Umlauf %{tour}"
+  da: "Videre med linje %{line}, tur %{tour}"
   fr: "Suite avec la ligne %{line}, service %{tour}"
   ru: "Далее линия %{line}, выход %{tour}"
   uk: "Далі лінія %{line}, оборот %{tour}"
@@ -28459,6 +28566,7 @@ _version: 2
 "%{n} shifts available":
   nl: "%{n} diensten beschikbaar"
   de: "%{n} Dienste verfügbar"
+  da: "%{n} vagter til rådighed"
   fr: "%{n} postes disponibles"
   ru: "доступно смен: %{n}"
   uk: "доступно змін: %{n}"
@@ -28466,6 +28574,7 @@ _version: 2
 "one shift available":
   nl: "één dienst beschikbaar"
   de: "ein Dienst verfügbar"
+  da: "én vagt til rådighed"
   fr: "un poste disponible"
   ru: "доступна одна смена"
   uk: "доступна одна зміна"
@@ -28473,6 +28582,7 @@ _version: 2
 "%{n} tours on this day":
   nl: "%{n} omlopen op deze dag"
   de: "%{n} Umläufe an diesem Tag"
+  da: "%{n} ture på denne dag"
   fr: "%{n} services ce jour-là"
   ru: "выходов в этот день: %{n}"
   uk: "оборотів цього дня: %{n}"
@@ -28480,6 +28590,7 @@ _version: 2
 "one tour on this day":
   nl: "één omloop op deze dag"
   de: "ein Umlauf an diesem Tag"
+  da: "én tur på denne dag"
   fr: "un service ce jour-là"
   ru: "один выход в этот день"
   uk: "один оборот цього дня"
@@ -28487,6 +28598,7 @@ _version: 2
 "%{n} lines on this day":
   nl: "%{n} lijnen op deze dag"
   de: "%{n} Linien an diesem Tag"
+  da: "%{n} linjer på denne dag"
   fr: "%{n} lignes ce jour-là"
   ru: "линий в этот день: %{n}"
   uk: "ліній цього дня: %{n}"
@@ -28494,6 +28606,7 @@ _version: 2
 "one line on this day":
   nl: "één lijn op deze dag"
   de: "eine Linie an diesem Tag"
+  da: "én linje på denne dag"
   fr: "une ligne ce jour-là"
   ru: "одна линия в этот день"
   uk: "одна лінія цього дня"
@@ -28501,6 +28614,7 @@ _version: 2
 "Find other shifts":
   nl: "Andere diensten zoeken"
   de: "Andere Dienste suchen"
+  da: "Find andre vagter"
   fr: "Chercher d'autres postes"
   ru: "Найти другие смены"
   uk: "Знайти інші зміни"
@@ -28508,6 +28622,7 @@ _version: 2
 "Centre the map on the route":
   nl: "Kaart op de route centreren"
   de: "Karte auf die Route zentrieren"
+  da: "Centrér kortet på ruten"
   fr: "Centrer la carte sur l'itinéraire"
   ru: "Показать маршрут целиком"
   uk: "Показати маршрут повністю"
@@ -28515,6 +28630,7 @@ _version: 2
 "Zoom in":
   nl: "Inzoomen"
   de: "Vergrößern"
+  da: "Zoom ind"
   fr: "Zoom avant"
   ru: "Приблизить"
   uk: "Наблизити"
@@ -28543,6 +28659,7 @@ _version: 2
 "Zoom out":
   nl: "Uitzoomen"
   de: "Verkleinern"
+  da: "Zoom ud"
   fr: "Zoom arrière"
   ru: "Отдалить"
   uk: "Віддалити"
@@ -28571,6 +28688,7 @@ _version: 2
 "Choose a line…":
   nl: "Kies een lijn…"
   de: "Linie wählen…"
+  da: "Vælg en linje…"
   fr: "Choisir une ligne…"
   ru: "Выберите линию…"
   uk: "Виберіть лінію…"
@@ -28578,6 +28696,7 @@ _version: 2
 "Where the bus is put down. The light dots on the map are the same places: click one to take it.":
   nl: "Waar de bus wordt neergezet. De lichte stippen op de kaart zijn dezelfde plekken: klik er een aan om die te nemen."
   de: "Wo der Bus abgestellt wird. Die hellen Punkte auf der Karte sind dieselben Orte: Klicke einen an, um ihn zu nehmen."
+  da: "Hvor bussen stilles. De lyse prikker på kortet er de samme steder: klik på en for at vælge den."
   fr: "L'endroit où le bus est posé. Les points clairs sur la carte sont les mêmes endroits : cliquez sur l'un d'eux pour le prendre."
   ru: "Где появится автобус. Светлые точки на карте — те же места: щёлкните по одной, чтобы выбрать её."
   uk: "Де з'явиться автобус. Світлі точки на мапі — ті самі місця: клацніть одну, щоб вибрати її."
@@ -28585,6 +28704,7 @@ _version: 2
 "Line %{line} · tour %{tour} · from %{time}":
   nl: "Lijn %{line} · omloop %{tour} · vanaf %{time}"
   de: "Linie %{line} · Umlauf %{tour} · ab %{time}"
+  da: "Linje %{line} · tur %{tour} · fra %{time}"
   fr: "Ligne %{line} · service %{tour} · à partir de %{time}"
   ru: "Линия %{line} · выход %{tour} · с %{time}"
   uk: "Лінія %{line} · оборот %{tour} · з %{time}"
@@ -28592,6 +28712,7 @@ _version: 2
 "line %{line}":
   nl: "lijn %{line}"
   de: "Linie %{line}"
+  da: "linje %{line}"
   fr: "ligne %{line}"
   ru: "линия %{line}"
   uk: "лінія %{line}"
@@ -28599,6 +28720,7 @@ _version: 2
 "Tiles":
   nl: "Tegels"
   de: "Kacheln"
+  da: "Fliser"
   fr: "Vignettes"
   ru: "Плитки"
   uk: "Плитки"
@@ -28606,6 +28728,7 @@ _version: 2
 "List":
   nl: "Lijst"
   de: "Liste"
+  da: "Liste"
   fr: "Liste"
   ru: "Список"
   uk: "Список"
@@ -28613,6 +28736,7 @@ _version: 2
 "Era":
   nl: "Tijdvak"
   de: "Zeit"
+  da: "Tidsalder"
   fr: "Époque"
   ru: "Эпоха"
   uk: "Епоха"
@@ -28620,6 +28744,7 @@ _version: 2
 "%{n} tours":
   nl: "%{n} omlopen"
   de: "%{n} Umläufe"
+  da: "%{n} ture"
   fr: "%{n} services"
   ru: "Выходов: %{n}"
   uk: "Оборотів: %{n}"
@@ -28627,6 +28752,7 @@ _version: 2
 "1 tour":
   nl: "1 omloop"
   de: "1 Umlauf"
+  da: "1 tur"
   fr: "1 service"
   ru: "1 выход"
   uk: "1 оборот"
@@ -28634,6 +28760,7 @@ _version: 2
 "No timetable":
   nl: "Geen dienstregeling"
   de: "Kein Fahrplan"
+  da: "Ingen køreplan"
   fr: "Pas d'horaire"
   ru: "Нет расписания"
   uk: "Немає розкладу"
@@ -28641,6 +28768,7 @@ _version: 2
 "Where are you driving today?":
   nl: "Waar rijd je vandaag?"
   de: "Wo fährst du heute?"
+  da: "Hvor kører du i dag?"
   fr: "Où conduisez-vous aujourd'hui ?"
   ru: "Где вы сегодня едете?"
   uk: "Де ви сьогодні їдете?"
@@ -28648,6 +28776,7 @@ _version: 2
 "Check installed folders":
   nl: "Controleer geïnstalleerde mappen"
   de: "Installierte Ordner prüfen"
+  da: "Tjek installerede mapper"
   fr: "Vérifier les dossiers installés"
   ru: "Проверить установленные папки"
   uk: "Перевірити встановлені теки"
@@ -28655,6 +28784,7 @@ _version: 2
 "%{k} of %{n} maps":
   nl: "%{k} van %{n} kaarten"
   de: "%{k} von %{n} Karten"
+  da: "%{k} af %{n} kort"
   fr: "%{k} cartes sur %{n}"
   ru: "Карт: %{k} из %{n}"
   uk: "Мап: %{k} з %{n}"
@@ -28662,6 +28792,7 @@ _version: 2
 "No map matches the search.":
   nl: "Geen kaart past bij de zoekterm."
   de: "Keine Karte passt zur Suche."
+  da: "Intet kort passer til søgningen."
   fr: "Aucune carte ne correspond à la recherche."
   ru: "Ни одна карта не подходит под поиск."
   uk: "Жодна мапа не відповідає пошуку."
@@ -28669,6 +28800,7 @@ _version: 2
 "The maps are read from the maps folder of the OMSI 2 folder and from the content folder. Check installed folders shows where they are looked for.":
   nl: "De kaarten worden gelezen uit de map maps in de OMSI 2-map en uit de inhoudsmap. Controleer geïnstalleerde mappen laat zien waar ze gezocht worden."
   de: "Die Karten werden aus dem Ordner maps im OMSI-2-Ordner und aus dem Inhaltsordner gelesen. Installierte Ordner prüfen zeigt, wo sie gesucht werden."
+  da: "Kortene læses fra maps-mappen i OMSI 2-mappen og fra indholdsmappen. Tjek installerede mapper viser, hvor der søges."
   fr: "Les cartes sont lues dans le dossier maps du dossier OMSI 2 et dans le dossier de contenu. Vérifier les dossiers installés montre où elles sont cherchées."
   ru: "Карты читаются из папки maps в папке OMSI 2 и из папки контента. «Проверить установленные папки» показывает, где их ищут."
   uk: "Мапи читаються з теки maps у теці OMSI 2 і з теки вмісту. «Перевірити встановлені теки» показує, де їх шукають."
@@ -28676,6 +28808,7 @@ _version: 2
 "Choose a map first.":
   nl: "Kies eerst een kaart."
   de: "Wähle zuerst eine Karte."
+  da: "Vælg først et kort."
   fr: "Choisissez d'abord une carte."
   ru: "Сначала выберите карту."
   uk: "Спершу виберіть мапу."
@@ -28683,6 +28816,7 @@ _version: 2
 "Places the bus can start at":
   nl: "Plekken waar de bus kan beginnen"
   de: "Orte, an denen der Bus starten kann"
+  da: "Steder, bussen kan starte"
   fr: "Endroits où le bus peut démarrer"
   ru: "Места, где может стартовать автобус"
   uk: "Місця, де може стартувати автобус"
@@ -28690,6 +28824,7 @@ _version: 2
 "%{server} chooses the map":
   nl: "%{server} kiest de kaart"
   de: "%{server} wählt die Karte"
+  da: "%{server} vælger kortet"
   fr: "%{server} choisit la carte"
   ru: "Карту выбирает %{server}"
   uk: "Мапу вибирає %{server}"
@@ -28697,6 +28832,7 @@ _version: 2
 "On a server the map is the server's: it comes with the server when the game joins.":
   nl: "Op een server is de kaart die van de server: hij komt mee als het spel meedoet."
   de: "Auf einem Server ist die Karte die des Servers: Sie kommt mit, wenn das Spiel beitritt."
+  da: "På en server er kortet serverens: det følger med serveren, når spillet tilmelder sig."
   fr: "Sur un serveur, la carte est celle du serveur : elle arrive avec lui quand le jeu le rejoint."
   ru: "На сервере карта — серверная: она приходит с сервером, когда игра подключается."
   uk: "На сервері мапа — серверна: вона приходить із сервером, коли гра приєднується."
@@ -28704,6 +28840,7 @@ _version: 2
 "No duty running":
   nl: "Er loopt geen dienst."
   de: "Kein Dienst aktiv."
+  da: "Ingen vagt i gang"
   fr: "Aucun service en cours."
   ru: "Смена не идёт."
   uk: "Наряд не виконується."
@@ -28711,6 +28848,7 @@ _version: 2
 "Empty run":
   nl: "Leegrit"
   de: "Betriebsfahrt"
+  da: "Tom kørsel"
   fr: "Haut-le-pied"
   ru: "Служебный рейс"
   uk: "Службовий рейс"
@@ -28718,6 +28856,7 @@ _version: 2
 "trip %{k} of %{n}":
   nl: "rit %{k} van %{n}"
   de: "Fahrt %{k} von %{n}"
+  da: "rejse %{k} af %{n}"
   fr: "course %{k} sur %{n}"
   ru: "рейс %{k} из %{n}"
   uk: "рейс %{k} з %{n}"
@@ -28725,6 +28864,7 @@ _version: 2
 "arrives %{time}":
   nl: "aankomst %{time}"
   de: "Ankunft %{time}"
+  da: "ankommer %{time}"
   fr: "arrivée %{time}"
   ru: "прибытие %{time}"
   uk: "прибуття %{time}"
@@ -28732,6 +28872,7 @@ _version: 2
 "leaves %{time}":
   nl: "vertrek %{time}"
   de: "Abfahrt %{time}"
+  da: "afgår %{time}"
   fr: "départ %{time}"
   ru: "отправление %{time}"
   uk: "відправлення %{time}"
@@ -28739,6 +28880,7 @@ _version: 2
 "leaves in %{m} min":
   nl: "vertrek over %{m} min"
   de: "Abfahrt in %{m} Min"
+  da: "afgår om %{m} min"
   fr: "départ dans %{m} min"
   ru: "отправление через %{m} мин"
   uk: "відправлення через %{m} хв"
@@ -28746,6 +28888,7 @@ _version: 2
 "break, %{m} min left":
   nl: "pauze, nog %{m} min"
   de: "Pause, noch %{m} Min"
+  da: "pause, %{m} min tilbage"
   fr: "pause, encore %{m} min"
   ru: "перерыв, ещё %{m} мин"
   uk: "перерва, ще %{m} хв"
@@ -28753,6 +28896,7 @@ _version: 2
 "%{m} min over":
   nl: "%{m} min over tijd"
   de: "%{m} Min drüber"
+  da: "%{m} min over"
   fr: "%{m} min de trop"
   ru: "на %{m} мин дольше"
   uk: "на %{m} хв довше"
@@ -28760,6 +28904,7 @@ _version: 2
 "Duty finished":
   nl: "Dienst uitgereden"
   de: "Dienst gefahren"
+  da: "Vagt færdig"
   fr: "Service terminé"
   ru: "Смена завершена"
   uk: "Наряд завершено"
@@ -28767,6 +28912,7 @@ _version: 2
 "and %{n} more to %{terminus}":
   nl: "en nog %{n} verder naar %{terminus}"
   de: "und noch %{n} bis %{terminus}"
+  da: "og %{n} mere til %{terminus}"
   fr: "et encore %{n} jusqu'à %{terminus}"
   ru: "и ещё %{n} до %{terminus}"
   uk: "і ще %{n} до %{terminus}"
@@ -28774,6 +28920,7 @@ _version: 2
 "terminus":
   nl: "eindpunt"
   de: "Endhalt"
+  da: "endestation"
   fr: "terminus"
   ru: "конечная"
   uk: "кінцева"
@@ -28781,6 +28928,7 @@ _version: 2
 "Next %{time}":
   nl: "Daarna %{time}"
   de: "Danach %{time}"
+  da: "Næste %{time}"
   fr: "Ensuite %{time}"
   ru: "Далее %{time}"
   uk: "Далі %{time}"
@@ -28788,6 +28936,7 @@ _version: 2
 "%{m} min break":
   nl: "%{m} min pauze"
   de: "%{m} Min Pause"
+  da: "%{m} min pause"
   fr: "%{m} min de pause"
   ru: "перерыв %{m} мин"
   uk: "перерва %{m} хв"
@@ -28795,6 +28944,7 @@ _version: 2
 "Continue on line %{line}, tour %{tour}":
   nl: "Verder met lijn %{line}, omloop %{tour}"
   de: "Weiter mit Linie %{line}, Umlauf %{tour}"
+  da: "Fortsæt på linje %{line}, tur %{tour}"
   fr: "Ensuite ligne %{line}, service %{tour}"
   ru: "Далее маршрут %{line}, выход %{tour}"
   uk: "Далі маршрут %{line}, випуск %{tour}"
@@ -28802,6 +28952,7 @@ _version: 2
 "In the game":
   nl: "In het spel"
   de: "Im Spiel"
+  da: "I spillet"
   fr: "Dans le jeu"
   ru: "В игре"
   uk: "У грі"
@@ -28809,6 +28960,7 @@ _version: 2
 "Delay":
   nl: "Vertraging"
   de: "Verspätung"
+  da: "Forsinkelse"
   fr: "Retard"
   ru: "Опоздание"
   uk: "Запізнення"
@@ -28816,6 +28968,7 @@ _version: 2
 "1 stop":
   nl: "1 halte"
   de: "1 Haltestelle"
+  da: "1 stoppested"
   fr: "1 arrêt"
   ru: "1 остановка"
   uk: "1 зупинка"
@@ -28823,6 +28976,7 @@ _version: 2
 "%{n} duties":
   nl: "%{n} diensten"
   de: "%{n} Dienste"
+  da: "%{n} vagter"
   fr: "%{n} services"
   ru: "Смен: %{n}"
   uk: "Змін: %{n}"
@@ -28830,6 +28984,7 @@ _version: 2
 "duties":
   nl: "diensten"
   de: "Dienste"
+  da: "vagter"
   fr: "services"
   ru: "смены"
   uk: "зміни"
@@ -28837,6 +28992,7 @@ _version: 2
 "Open the service record":
   nl: "Staat van dienst openen"
   de: "Dienstakte öffnen"
+  da: "Åbn tjenestebogen"
   fr: "Ouvrir les états de service"
   ru: "Открыть послужной список"
   uk: "Відкрити послужний список"
@@ -28844,6 +29000,7 @@ _version: 2
 "Other languages":
   nl: "Andere talen"
   de: "Weitere Sprachen"
+  da: "Andre sprog"
   fr: "Autres langues"
   ru: "Другие языки"
   uk: "Інші мови"
@@ -28851,6 +29008,7 @@ _version: 2
 "%{h}h %{m}m":
   nl: "%{h}u %{m}m"
   de: "%{h}Std %{m}Min"
+  da: "%{h} t %{m} m"
   fr: "%{h}h %{m}min"
   ru: "%{h} ч %{m} мин"
   uk: "%{h} год %{m} хв"
@@ -28858,6 +29016,7 @@ _version: 2
 "%{amount} per hour":
   nl: "%{amount} per uur"
   de: "%{amount} pro Stunde"
+  da: "%{amount} i timen"
   fr: "%{amount} de l'heure"
   ru: "%{amount} в час"
   uk: "%{amount} за годину"
@@ -28865,6 +29024,7 @@ _version: 2
 "%{good} of %{all} stops on time":
   nl: "%{good} van %{all} haltes op tijd"
   de: "%{good} von %{all} Haltestellen pünktlich"
+  da: "%{good} af %{all} stoppesteder til tiden"
   fr: "%{good} arrêts sur %{all} à l'heure"
   ru: "%{good} из %{all} остановок вовремя"
   uk: "%{good} з %{all} зупинок вчасно"
@@ -28872,6 +29032,7 @@ _version: 2
 "%{n} tickets":
   nl: "%{n} kaartjes"
   de: "%{n} Fahrscheine"
+  da: "%{n} billetter"
   fr: "%{n} billets"
   ru: "Билетов: %{n}"
   uk: "Квитків: %{n}"
@@ -28879,6 +29040,7 @@ _version: 2
 "%{pct} % of %{n} stops on time":
   nl: "%{pct} % van %{n} haltes op tijd"
   de: "%{pct} % von %{n} Haltestellen pünktlich"
+  da: "%{pct} % af %{n} stoppesteder til tiden"
   fr: "%{pct} % des %{n} arrêts à l'heure"
   ru: "%{pct} % из %{n} остановок вовремя"
   uk: "%{pct} % з %{n} зупинок вчасно"
@@ -28886,6 +29048,7 @@ _version: 2
 "%{xp} of %{next} points to level %{n}":
   nl: "%{xp} van %{next} punten tot niveau %{n}"
   de: "%{xp} von %{next} Punkten bis Stufe %{n}"
+  da: "%{xp} af %{next} point til niveau %{n}"
   fr: "%{xp} sur %{next} points jusqu'au niveau %{n}"
   ru: "%{xp} из %{next} очков до уровня %{n}"
   uk: "%{xp} з %{next} очок до рівня %{n}"
@@ -28893,6 +29056,7 @@ _version: 2
 "At the wheel":
   nl: "Achter het stuur"
   de: "Am Steuer"
+  da: "Ved rattet"
   fr: "Au volant"
   ru: "За рулём"
   uk: "За кермом"
@@ -28900,6 +29064,7 @@ _version: 2
 "Busiest duty":
   nl: "Drukste dienst"
   de: "Vollster Dienst"
+  da: "Travleste vagt"
   fr: "Service le plus chargé"
   ru: "Самая загруженная смена"
   uk: "Найзавантаженіша зміна"
@@ -28907,6 +29072,7 @@ _version: 2
 "Closest to the timetable":
   nl: "Dichtst bij de dienstregeling"
   de: "Am nächsten am Fahrplan"
+  da: "Tættest på køreplanen"
   fr: "Au plus près de l'horaire"
   ru: "Ближе всего к расписанию"
   uk: "Найближче до розкладу"
@@ -28914,6 +29080,7 @@ _version: 2
 "Collisions":
   nl: "Aanrijdingen"
   de: "Zusammenstöße"
+  da: "Kollisioner"
   fr: "Collisions"
   ru: "Столкновения"
   uk: "Зіткнення"
@@ -28921,6 +29088,7 @@ _version: 2
 "Comfort":
   nl: "Comfort"
   de: "Komfort"
+  da: "Komfort"
   fr: "Confort"
   ru: "Комфорт"
   uk: "Комфорт"
@@ -28928,6 +29096,7 @@ _version: 2
 "Driven":
   nl: "Gereden"
   de: "Gefahren"
+  da: "Kørt"
   fr: "Parcourus"
   ru: "Пройдено"
   uk: "Пройдено"
@@ -28935,6 +29104,7 @@ _version: 2
 "Driver %{name} created.":
   nl: "Chauffeur %{name} aangemaakt."
   de: "Fahrer %{name} angelegt."
+  da: "Chauffør %{name} oprettet."
   fr: "Conducteur %{name} créé."
   ru: "Водитель %{name} создан."
   uk: "Водія %{name} створено."
@@ -28942,6 +29112,7 @@ _version: 2
 "Driving since %{date}":
   nl: "Chauffeur sinds %{date}"
   de: "Fährt seit %{date}"
+  da: "Kører siden %{date}"
   fr: "Au volant depuis le %{date}"
   ru: "За рулём с %{date}"
   uk: "За кермом з %{date}"
@@ -28949,6 +29120,7 @@ _version: 2
 "Driving style":
   nl: "Rijstijl"
   de: "Fahrstil"
+  da: "Kørestil"
   fr: "Style de conduite"
   ru: "Стиль вождения"
   uk: "Стиль керування"
@@ -28956,6 +29128,7 @@ _version: 2
 "Duties":
   nl: "Diensten"
   de: "Dienste"
+  da: "Vagter"
   fr: "Services"
   ru: "Смены"
   uk: "Зміни"
@@ -28963,6 +29136,7 @@ _version: 2
 "Early":
   nl: "Te vroeg"
   de: "Zu früh"
+  da: "Tidlig"
   fr: "En avance"
   ru: "Рано"
   uk: "Рано"
@@ -28991,6 +29165,7 @@ _version: 2
 "Everything the logbook kept, from the first duty to the last.":
   nl: "Alles wat het logboek heeft bijgehouden, van de eerste dienst tot de laatste."
   de: "Alles, was das Fahrtenbuch festgehalten hat, vom ersten Dienst bis zum letzten."
+  da: "Alt, hvad kørebogen har gemt, fra den første vagt til den sidste."
   fr: "Tout ce que le carnet de bord a retenu, du premier service au dernier."
   ru: "Всё, что сохранил журнал, от первой смены до последней."
   uk: "Усе, що зберіг журнал, від першої зміни до останньої."
@@ -28998,6 +29173,7 @@ _version: 2
 "Furthest":
   nl: "Verste rit"
   de: "Weiteste Fahrt"
+  da: "Længst"
   fr: "Plus longue distance"
   ru: "Самая дальняя поездка"
   uk: "Найдальша поїздка"
@@ -29005,6 +29181,7 @@ _version: 2
 "How you drive":
   nl: "Hoe je rijdt"
   de: "Wie du fährst"
+  da: "Hvordan du kører"
   fr: "Votre conduite"
   ru: "Как вы водите"
   uk: "Як ви керуєте"
@@ -29012,6 +29189,7 @@ _version: 2
 "Jolts per 100 km":
   nl: "Schokken per 100 km"
   de: "Rucke pro 100 km"
+  da: "Stød pr. 100 km"
   fr: "À-coups par 100 km"
   ru: "Толчков на 100 км"
   uk: "Поштовхів на 100 км"
@@ -29019,6 +29197,7 @@ _version: 2
 "Last duties":
   nl: "Laatste diensten"
   de: "Letzte Dienste"
+  da: "Seneste vagter"
   fr: "Derniers services"
   ru: "Последние смены"
   uk: "Останні зміни"
@@ -29026,6 +29205,7 @@ _version: 2
 "Late":
   nl: "Te laat"
   de: "Verspätet"
+  da: "Forsinket"
   fr: "En retard"
   ru: "Опоздание"
   uk: "Запізнення"
@@ -29054,6 +29234,7 @@ _version: 2
 "Level %{n}":
   nl: "Niveau %{n}"
   de: "Stufe %{n}"
+  da: "Niveau %{n}"
   fr: "Niveau %{n}"
   ru: "Уровень %{n}"
   uk: "Рівень %{n}"
@@ -29061,6 +29242,7 @@ _version: 2
 "Longest duty":
   nl: "Langste dienst"
   de: "Längster Dienst"
+  da: "Længste vagt"
   fr: "Service le plus long"
   ru: "Самая длинная смена"
   uk: "Найдовша зміна"
@@ -29068,6 +29250,7 @@ _version: 2
 "No personnel file yet: the game writes it after the first run.":
   nl: "Nog geen personeelsdossier: het spel schrijft het na de eerste rit."
   de: "Noch keine Personalakte: das Spiel schreibt sie nach der ersten Fahrt."
+  da: "Ingen personalemappe endnu: spillet skriver den efter den første kørsel."
   fr: "Pas encore de dossier : le jeu l'écrit après la première course."
   ru: "Личного дела пока нет: игра создаст его после первой поездки."
   uk: "Особової справи ще немає: гра створить її після першої поїздки."
@@ -29075,6 +29258,7 @@ _version: 2
 "Nothing driven yet. Complete a duty and it appears here: hours, kilometres, punctuality, and how you drove.":
   nl: "Nog niets gereden. Rond een dienst af, dan staat het hier: uren, kilometers, stiptheid en hoe je reed."
   de: "Noch nichts gefahren. Schließe einen Dienst ab, dann steht es hier: Stunden, Kilometer, Pünktlichkeit und wie du gefahren bist."
+  da: "Intet kørt endnu. Fuldfør en vagt, så dukker den op her: timer, kilometer, punktlighed og hvordan du kørte."
   fr: "Rien de conduit pour l'instant. Terminez un service et tout apparaît ici : heures, kilomètres, ponctualité et votre conduite."
   ru: "Пока ничего не пройдено. Завершите смену, и здесь появятся часы, километры, пунктуальность и стиль вождения."
   uk: "Поки нічого не пройдено. Завершіть зміну, і тут з'являться години, кілометри, пунктуальність і стиль керування."
@@ -29082,6 +29266,7 @@ _version: 2
 "On time":
   nl: "Op tijd"
   de: "Pünktlich"
+  da: "Til tiden"
   fr: "À l'heure"
   ru: "Вовремя"
   uk: "Вчасно"
@@ -29089,6 +29274,7 @@ _version: 2
 "Pedestrians hurt":
   nl: "Gewonde voetgangers"
   de: "Verletzte Fußgänger"
+  da: "Sårede fodgængere"
   fr: "Piétons blessés"
   ru: "Пострадавшие пешеходы"
   uk: "Постраждалі пішоходи"
@@ -29096,6 +29282,7 @@ _version: 2
 "Personnel file of %{name} deleted.":
   nl: "Personeelsdossier van %{name} verwijderd."
   de: "Personalakte von %{name} gelöscht."
+  da: "Personalemappen for %{name} er slettet."
   fr: "Dossier de %{name} supprimé."
   ru: "Личное дело %{name} удалено."
   uk: "Особову справу %{name} видалено."
@@ -29103,6 +29290,7 @@ _version: 2
 "Punctuality":
   nl: "Stiptheid"
   de: "Pünktlichkeit"
+  da: "Punktlighed"
   fr: "Ponctualité"
   ru: "Пунктуальность"
   uk: "Пунктуальність"
@@ -29110,6 +29298,7 @@ _version: 2
 "Records":
   nl: "Records"
   de: "Bestwerte"
+  da: "Rekorder"
   fr: "Records"
   ru: "Рекорды"
   uk: "Рекорди"
@@ -29117,6 +29306,7 @@ _version: 2
 "Stops served":
   nl: "Haltes aangedaan"
   de: "Haltestellen"
+  da: "Betjente stoppesteder"
   fr: "Arrêts desservis"
   ru: "Обслужено остановок"
   uk: "Обслуговано зупинок"
@@ -29124,6 +29314,7 @@ _version: 2
 "Takings":
   nl: "Opbrengst"
   de: "Einnahmen"
+  da: "Billetindtægter"
   fr: "Recettes"
   ru: "Выручка"
   uk: "Виторг"
@@ -29131,6 +29322,7 @@ _version: 2
 "The new driver's name":
   nl: "Naam van de nieuwe chauffeur"
   de: "Name des neuen Fahrers"
+  da: "Den nye chaufførs navn"
   fr: "Nom du nouveau conducteur"
   ru: "Имя нового водителя"
   uk: "Ім'я нового водія"
@@ -29138,6 +29330,7 @@ _version: 2
 "Ticket selling":
   nl: "Kaartverkoop"
   de: "Fahrscheinverkauf"
+  da: "Billetsalg"
   fr: "Vente de billets"
   ru: "Продажа билетов"
   uk: "Продаж квитків"
@@ -29145,6 +29338,7 @@ _version: 2
 "Tickets sold":
   nl: "Kaartjes verkocht"
   de: "Fahrscheine"
+  da: "Solgte billetter"
   fr: "Billets vendus"
   ru: "Продано билетов"
   uk: "Продано квитків"
@@ -29152,6 +29346,7 @@ _version: 2
 "What you drive":
   nl: "Waarmee je rijdt"
   de: "Was du fährst"
+  da: "Hvad du kører"
   fr: "Ce que vous conduisez"
   ru: "На чём вы ездите"
   uk: "На чому ви їздите"
@@ -29159,6 +29354,7 @@ _version: 2
 "When you finish a duty":
   nl: "Wanneer je een dienst afrondt"
   de: "Wann du Dienstschluss machst"
+  da: "Når du afslutter en vagt"
   fr: "Quand vous terminez un service"
   ru: "Когда вы заканчиваете смену"
   uk: "Коли ви завершуєте зміну"
@@ -29166,6 +29362,7 @@ _version: 2
 "Where you drive":
   nl: "Waar je rijdt"
   de: "Wo du fährst"
+  da: "Hvor du kører"
   fr: "Où vous conduisez"
   ru: "Где вы ездите"
   uk: "Де ви їздите"
@@ -29173,6 +29370,7 @@ _version: 2
 "enough to fill %{count} buses":
   nl: "genoeg voor %{count} volle bussen"
   de: "genug für %{count} volle Busse"
+  da: "nok til at fylde %{count} busser"
   fr: "de quoi remplir %{count} bus"
   ru: "хватит на %{count} полных автобусов"
   uk: "вистачить на %{count} повних автобусів"
@@ -29180,6 +29378,7 @@ _version: 2
 "Automatic updates are off in this build":
   nl: "Automatisch bijwerken staat uit in deze versie"
   de: "Automatische Updates sind in dieser Version aus"
+  da: "Automatiske opdateringer er slået fra i denne build"
   fr: "Les mises à jour automatiques sont désactivées dans cette version"
   ru: "Автообновление в этой сборке отключено"
   uk: "Автооновлення в цій збірці вимкнено"
@@ -29187,6 +29386,7 @@ _version: 2
 "Anything put into this folder is installed by itself once it has finished copying.":
   nl: "Alles wat in deze map wordt gezet, wordt vanzelf geïnstalleerd zodra het klaar is met kopiëren."
   de: "Alles, was in diesen Ordner gelegt wird, wird von selbst installiert, sobald es fertig kopiert ist."
+  da: "Alt, hvad der lægges i denne mappe, installeres af sig selv, når det er kopieret færdigt."
   fr: "Tout ce qui est placé dans ce dossier s'installe de lui-même une fois la copie terminée."
   ru: "Всё, что положено в эту папку, устанавливается само, как только копирование завершено."
   uk: "Усе, що покладено в цю теку, встановлюється саме, щойно копіювання завершено."
@@ -29194,6 +29394,7 @@ _version: 2
 "Sign on, the duty menu and the bus's screens on a phone or tablet in your network. The game shows the address and the pairing code when you drive.":
   nl: "Aanmelden, het dienstmenu en de schermen van de bus op een telefoon of tablet in je netwerk. Het spel toont het adres en de koppelcode als je rijdt."
   de: "Anmelden, das Dienstmenü und die Bildschirme des Busses auf einem Telefon oder Tablet in deinem Netzwerk. Das Spiel zeigt die Adresse und den Kopplungscode, wenn du fährst."
+  da: "Log på, vagtmenuen og busens skærme på en telefon eller tablet i dit netværk. Spillet viser adressen og parringskoden, når du kører."
   fr: "La prise de service, le menu du service et les écrans du bus sur un téléphone ou une tablette de votre réseau. Le jeu affiche l'adresse et le code d'appairage pendant la conduite."
   ru: "Регистрация, меню смены и экраны автобуса на телефоне или планшете в вашей сети. Игра показывает адрес и код сопряжения, когда вы едете."
   uk: "Реєстрація, меню зміни та екрани автобуса на телефоні або планшеті у вашій мережі. Гра показує адресу й код сполучення, коли ви їдете."
@@ -29201,6 +29402,7 @@ _version: 2
 "Trips":
   nl: "Ritten"
   de: "Fahrten"
+  da: "Rejser"
   fr: "Courses"
   ru: "Рейсы"
   uk: "Рейси"
@@ -29208,6 +29410,7 @@ _version: 2
 "Start point":
   nl: "Beginpunt"
   de: "Startpunkt"
+  da: "Startpunkt"
   fr: "Point de départ"
   ru: "Место старта"
   uk: "Місце старту"
@@ -29215,6 +29418,7 @@ _version: 2
 "Free":
   nl: "Vrij"
   de: "Frei"
+  da: "Fri"
   fr: "Libre"
   ru: "Свободно"
   uk: "Вільно"
@@ -29243,6 +29447,7 @@ _version: 2
 "Choose a line yourself":
   nl: "Zelf een lijn kiezen"
   de: "Selbst eine Linie wählen"
+  da: "Vælg selv en linje"
   fr: "Choisir une ligne soi-même"
   ru: "Выбрать линию самому"
   uk: "Обрати лінію самому"
@@ -29250,6 +29455,7 @@ _version: 2
 "Free: the bus starts where you choose, without a line. Choose a line yourself: it starts at the first stop of the route you pick, and the navigator and the IBIS know the line - nothing is booked either way.":
   nl: "Vrij: de bus staat waar je kiest, zonder lijn. Zelf een lijn kiezen: hij begint bij de eerste halte van de route die je kiest, en de navigatie en de IBIS kennen de lijn - geboekt wordt er in beide gevallen niets."
   de: "Frei: Der Bus steht, wo du willst, ohne Linie. Selbst eine Linie wählen: Er beginnt an der ersten Haltestelle der gewählten Route, und Navi und IBIS kennen die Linie - gebucht wird in beiden Fällen nichts."
+  da: "Fri: bussen starter, hvor du vælger, uden en linje. Vælg selv en linje: den starter ved den valgte rutes første stoppested, og navigatoren og IBIS kender linjen - intet er bestilt i begge tilfælde."
   fr: "Libre : le bus est placé où vous voulez, sans ligne. Choisir une ligne soi-même : il part du premier arrêt de l’itinéraire choisi, et le navigateur et l’IBIS connaissent la ligne - rien n’est réservé dans les deux cas."
   ru: "Свободно: автобус стоит там, где вы выберете, без линии. Выбрать линию самому: он начинает с первой остановки выбранного маршрута, навигатор и IBIS знают линию - в обоих случаях ничего не бронируется."
   uk: "Вільно: автобус стоїть там, де ви оберете, без лінії. Обрати лінію самому: він починає з першої зупинки обраного маршруту, навігатор та IBIS знають лінію - в обох випадках нічого не бронюється."
@@ -29257,6 +29463,7 @@ _version: 2
 "Starting points (%{n})":
   nl: "Beginpunten (%{n})"
   de: "Startpunkte (%{n})"
+  da: "Startpunkter (%{n})"
   fr: "Points de départ (%{n})"
   ru: "Начальные (%{n})"
   uk: "Початкові (%{n})"
@@ -29264,6 +29471,7 @@ _version: 2
 "Intermediate stops (%{n})":
   nl: "Tussenhaltes (%{n})"
   de: "Zwischenhalte (%{n})"
+  da: "Mellemstoppesteder (%{n})"
   fr: "Arrêts intermédiaires (%{n})"
   ru: "Промежуточные (%{n})"
   uk: "Проміжні (%{n})"
@@ -29271,6 +29479,7 @@ _version: 2
 "Entry points (%{n})":
   nl: "Inzetpunten (%{n})"
   de: "Einsetzpunkte (%{n})"
+  da: "Indgangspunkter (%{n})"
   fr: "Points d’entrée (%{n})"
   ru: "Точки появления (%{n})"
   uk: "Точки появи (%{n})"
@@ -29278,6 +29487,7 @@ _version: 2
 "Search entry points…":
   nl: "Inzetpunten zoeken…"
   de: "Einsetzpunkte suchen…"
+  da: "Søg indgangspunkter…"
   fr: "Chercher un point d’entrée…"
   ru: "Поиск точек появления…"
   uk: "Пошук точок появи…"
@@ -29285,6 +29495,7 @@ _version: 2
 "Search stops…":
   nl: "Haltes zoeken…"
   de: "Haltestellen suchen…"
+  da: "Søg stoppesteder…"
   fr: "Chercher un arrêt…"
   ru: "Поиск остановок…"
   uk: "Пошук зупинок…"
@@ -29292,6 +29503,7 @@ _version: 2
 "Bus stop":
   nl: "Halte"
   de: "Haltestelle"
+  da: "Busstoppested"
   fr: "Arrêt"
   ru: "Остановка"
   uk: "Зупинка"
@@ -29320,6 +29532,7 @@ _version: 2
 "Departures":
   nl: "Vertrekken"
   de: "Abfahrten"
+  da: "Afgange"
   fr: "Départs"
   ru: "Отправления"
   uk: "Відправлення"
@@ -29327,6 +29540,7 @@ _version: 2
 "Buses calling":
   nl: "Ritten langs"
   de: "Fahrten"
+  da: "Busser, der standser"
   fr: "Passages"
   ru: "Рейсы"
   uk: "Рейси"
@@ -29334,6 +29548,7 @@ _version: 2
 "The timetable has no such stops on this day.":
   nl: "De dienstregeling heeft op deze dag geen haltes van deze soort."
   de: "Der Fahrplan hat an diesem Tag keine solchen Haltestellen."
+  da: "Køreplanen har ingen sådanne stoppesteder på denne dag."
   fr: "L’horaire n’a pas de tels arrêts ce jour-là."
   ru: "В расписании на этот день нет таких остановок."
   uk: "У розкладі на цей день немає таких зупинок."
@@ -29341,6 +29556,7 @@ _version: 2
 "No stop of that name.":
   nl: "Geen halte met die naam."
   de: "Keine Haltestelle mit diesem Namen."
+  da: "Intet stoppested med det navn."
   fr: "Aucun arrêt de ce nom."
   ru: "Нет остановки с таким названием."
   uk: "Немає зупинки з такою назвою."
@@ -29348,6 +29564,7 @@ _version: 2
 "service trips":
   nl: "dienstritten"
   de: "Betriebsfahrten"
+  da: "rejser i drift"
   fr: "trajets de service"
   ru: "служебные рейсы"
   uk: "службові рейси"
@@ -29355,6 +29572,7 @@ _version: 2
 "Entry point":
   nl: "Inzetpunt"
   de: "Einsetzpunkt"
+  da: "Indgangspunkt"
   fr: "Point d’entrée"
   ru: "Точка появления"
   uk: "Точка появи"
@@ -29362,6 +29580,7 @@ _version: 2
 "Search lines…":
   nl: "Lijnen zoeken…"
   de: "Linien suchen…"
+  da: "Søg linjer…"
   fr: "Chercher une ligne…"
   ru: "Поиск линий…"
   uk: "Пошук ліній…"
@@ -29369,6 +29588,7 @@ _version: 2
 "Routes":
   nl: "Routes"
   de: "Routen"
+  da: "Ruter"
   fr: "Itinéraires"
   ru: "Маршруты"
   uk: "Маршрути"
@@ -29376,6 +29596,7 @@ _version: 2
 "This map has no timetable: drive free instead.":
   nl: "Deze kaart heeft geen dienstregeling: rijd vrij."
   de: "Diese Karte hat keinen Fahrplan: fahr frei."
+  da: "Dette kort har ingen køreplan: kør i stedet frit."
   fr: "Cette carte n’a pas d’horaire : conduisez librement."
   ru: "У этой карты нет расписания: ездите свободно."
   uk: "Ця мапа не має розкладу: їздіть вільно."
@@ -29383,6 +29604,7 @@ _version: 2
 "No line like that.":
   nl: "Geen lijn die daarop lijkt."
   de: "Keine solche Linie."
+  da: "Ingen sådan linje."
   fr: "Aucune ligne de ce type."
   ru: "Такой линии нет."
   uk: "Такої лінії немає."
@@ -29390,6 +29612,7 @@ _version: 2
 "Other line":
   nl: "Andere lijn"
   de: "Andere Linie"
+  da: "Anden linje"
   fr: "Autre ligne"
   ru: "Другая линия"
   uk: "Інша лінія"
@@ -29397,6 +29620,7 @@ _version: 2
 "Direction":
   nl: "Richting"
   de: "Richtung"
+  da: "Retning"
   fr: "Direction"
   ru: "Направление"
   uk: "Напрямок"
@@ -29404,6 +29628,7 @@ _version: 2
 "Today":
   nl: "Vandaag"
   de: "Heute"
+  da: "I dag"
   fr: "Aujourd’hui"
   ru: "Сегодня"
   uk: "Сьогодні"
@@ -29411,6 +29636,7 @@ _version: 2
 "from %{stop} · %{n} stops · %{km} km":
   nl: "vanaf %{stop} · %{n} haltes · %{km} km"
   de: "ab %{stop} · %{n} Haltestellen · %{km} km"
+  da: "fra %{stop} · %{n} stoppesteder · %{km} km"
   fr: "depuis %{stop} · %{n} arrêts · %{km} km"
   ru: "от %{stop} · остановок: %{n} · %{km} км"
   uk: "від %{stop} · зупинок: %{n} · %{km} км"
@@ -29418,6 +29644,7 @@ _version: 2
 "Line %{line} to %{terminus}":
   nl: "Lijn %{line} naar %{terminus}"
   de: "Linie %{line} nach %{terminus}"
+  da: "Linje %{line} mod %{terminus}"
   fr: "Ligne %{line} vers %{terminus}"
   ru: "Линия %{line} до %{terminus}"
   uk: "Лінія %{line} до %{terminus}"
@@ -29425,6 +29652,7 @@ _version: 2
 "Your bus starts at the entry point nearest to %{stop}, the route's first stop. Nothing is booked: drive the line as you like.":
   nl: "Je bus begint bij het inzetpunt het dichtst bij %{stop}, de eerste halte van de route. Er wordt niets geboekt: rijd de lijn zoals je wilt."
   de: "Dein Bus beginnt am Einsetzpunkt, der %{stop} am nächsten liegt, der ersten Haltestelle der Route. Gebucht wird nichts: fahr die Linie, wie du willst."
+  da: "Din bus starter ved det indgangspunkt, der er nærmest %{stop}, rutens første stoppested. Intet er bestilt: kør linjen, som du vil."
   fr: "Votre bus part du point d’entrée le plus proche de %{stop}, premier arrêt de l’itinéraire. Rien n’est réservé : conduisez la ligne comme vous voulez."
   ru: "Ваш автобус начинает с точки появления, ближайшей к %{stop}, первой остановке маршрута. Ничего не бронируется: ездите по линии как хотите."
   uk: "Ваш автобус починає з точки появи, найближчої до %{stop}, першої зупинки маршруту. Нічого не бронюється: їздіть лінією як хочете."
@@ -29432,6 +29660,7 @@ _version: 2
 "Choose a line, then the way it goes: the bus starts at its first stop.":
   nl: "Kies een lijn en dan de richting: de bus begint bij de eerste halte."
   de: "Wähle eine Linie, dann ihre Richtung: Der Bus beginnt an der ersten Haltestelle."
+  da: "Vælg en linje og så den retning, den kører: bussen starter ved dens første stoppested."
   fr: "Choisissez une ligne, puis sa direction : le bus part de son premier arrêt."
   ru: "Выберите линию, затем направление: автобус начнёт с первой остановки."
   uk: "Оберіть лінію, потім напрямок: автобус почне з першої зупинки."
@@ -29439,6 +29668,7 @@ _version: 2
 "Your bus stands at %{entry}, the entry point nearest to %{stop} (%{distance} away).":
   nl: "Je bus staat bij %{entry}, het inzetpunt het dichtst bij %{stop} (%{distance} verderop)."
   de: "Dein Bus steht an %{entry}, dem Einsetzpunkt, der %{stop} am nächsten liegt (%{distance} entfernt)."
+  da: "Din bus står ved %{entry}, det indgangspunkt, der er nærmest %{stop} (%{distance} væk)."
   fr: "Votre bus est à %{entry}, le point d’entrée le plus proche de %{stop} (à %{distance})."
   ru: "Ваш автобус стоит у %{entry}, ближайшей к %{stop} точки появления (в %{distance})."
   uk: "Ваш автобус стоїть біля %{entry}, найближчої до %{stop} точки появи (за %{distance})."
@@ -29446,6 +29676,7 @@ _version: 2
 "Your bus stands at the entry point nearest to %{stop}.":
   nl: "Je bus staat bij het inzetpunt het dichtst bij %{stop}."
   de: "Dein Bus steht am Einsetzpunkt, der %{stop} am nächsten liegt."
+  da: "Din bus står ved det indgangspunkt, der er nærmest %{stop}."
   fr: "Votre bus est au point d’entrée le plus proche de %{stop}."
   ru: "Ваш автобус стоит у ближайшей к %{stop} точки появления."
   uk: "Ваш автобус стоїть біля найближчої до %{stop} точки появи."
@@ -29453,6 +29684,7 @@ _version: 2
 "Your bus stands at %{entry}. The orange marks on the map are the entry points: click one to start there.":
   nl: "Je bus staat bij %{entry}. De oranje stippen op de kaart zijn de inzetpunten: klik er een aan om daar te beginnen."
   de: "Dein Bus steht an %{entry}. Die orangen Punkte auf der Karte sind die Einsetzpunkte: Klick einen an, um dort zu beginnen."
+  da: "Din bus står ved %{entry}. De orange mærker på kortet er indgangspunkterne: klik på et for at starte dér."
   fr: "Votre bus est à %{entry}. Les points orange sur la carte sont les points d’entrée : cliquez-en un pour y commencer."
   ru: "Ваш автобус стоит у %{entry}. Оранжевые точки на карте - точки появления: нажмите на одну, чтобы начать там."
   uk: "Ваш автобус стоїть біля %{entry}. Помаранчеві точки на мапі - точки появи: натисніть одну, щоб почати там."
@@ -29460,6 +29692,7 @@ _version: 2
 "Your bus stands at the map's first entry point. Choose a stop, or click an orange mark on the map.":
   nl: "Je bus staat bij het eerste inzetpunt van de kaart. Kies een halte, of klik op een oranje stip op de kaart."
   de: "Dein Bus steht am ersten Einsetzpunkt der Karte. Wähle eine Haltestelle oder klick einen orangen Punkt auf der Karte an."
+  da: "Din bus står ved kortets første indgangspunkt. Vælg et stoppested, eller klik på et orange mærke på kortet."
   fr: "Votre bus est au premier point d’entrée de la carte. Choisissez un arrêt ou cliquez sur un point orange de la carte."
   ru: "Ваш автобус стоит у первой точки появления карты. Выберите остановку или нажмите оранжевую точку на карте."
   uk: "Ваш автобус стоїть біля першої точки появи мапи. Оберіть зупинку або натисніть помаранчеву точку на мапі."
@@ -29467,6 +29700,7 @@ _version: 2
 "When":
   nl: "Wanneer"
   de: "Wann"
+  da: "Hvornår"
   fr: "Quand"
   ru: "Когда"
   uk: "Коли"
@@ -29476,6 +29710,7 @@ _version: 2
 "At the start":
   nl: "Bij het starten"
   de: "Beim Start"
+  da: "Ved starten"
   fr: "Au départ"
   ru: "При старте"
   uk: "На старті"
@@ -29483,6 +29718,7 @@ _version: 2
 "METAR of %{code} (fetched at the start)":
   nl: "METAR van %{code} (opgehaald bij het starten)"
   de: "METAR von %{code} (beim Start abgerufen)"
+  da: "METAR fra %{code} (hentet ved starten)"
   fr: "METAR de %{code} (récupéré au départ)"
   ru: "METAR %{code} (загружается при старте)"
   uk: "METAR %{code} (завантажується на старті)"
@@ -29490,6 +29726,7 @@ _version: 2
 "Monday":
   nl: "maandag"
   de: "Montag"
+  da: "Mandag"
   fr: "lundi"
   ru: "понедельник"
   uk: "понеділок"
@@ -29497,6 +29734,7 @@ _version: 2
 "Tuesday":
   nl: "dinsdag"
   de: "Dienstag"
+  da: "Tirsdag"
   fr: "mardi"
   ru: "вторник"
   uk: "вівторок"
@@ -29504,6 +29742,7 @@ _version: 2
 "Wednesday":
   nl: "woensdag"
   de: "Mittwoch"
+  da: "Onsdag"
   fr: "mercredi"
   ru: "среда"
   uk: "середа"
@@ -29511,6 +29750,7 @@ _version: 2
 "Thursday":
   nl: "donderdag"
   de: "Donnerstag"
+  da: "Torsdag"
   fr: "jeudi"
   ru: "четверг"
   uk: "четвер"
@@ -29518,6 +29758,7 @@ _version: 2
 "Friday":
   nl: "vrijdag"
   de: "Freitag"
+  da: "Fredag"
   fr: "vendredi"
   ru: "пятница"
   uk: "пʼятниця"
@@ -29525,6 +29766,7 @@ _version: 2
 "Saturday":
   nl: "zaterdag"
   de: "Samstag"
+  da: "Lørdag"
   fr: "samedi"
   ru: "суббота"
   uk: "субота"
@@ -29532,6 +29774,7 @@ _version: 2
 "Sunday":
   nl: "zondag"
   de: "Sonntag"
+  da: "Søndag"
   fr: "dimanche"
   ru: "воскресенье"
   uk: "неділя"
@@ -29539,6 +29782,7 @@ _version: 2
 "1 line runs on this day":
   nl: "op deze dag rijdt 1 lijn"
   de: "an diesem Tag fährt 1 Linie"
+  da: "1 linje kører på denne dag"
   fr: "1 ligne circule ce jour-là"
   ru: "в этот день ходит 1 линия"
   uk: "цього дня курсує 1 лінія"
@@ -29546,6 +29790,7 @@ _version: 2
 "%{n} lines run on this day":
   nl: "op deze dag rijden %{n} lijnen"
   de: "an diesem Tag fahren %{n} Linien"
+  da: "%{n} linjer kører på denne dag"
   fr: "%{n} lignes circulent ce jour-là"
   ru: "в этот день ходят линий: %{n}"
   uk: "цього дня курсують ліній: %{n}"
@@ -29553,6 +29798,7 @@ _version: 2
 "Set by %{name}":
   nl: "Bepaald door %{name}"
   de: "Festgelegt von %{name}"
+  da: "Indstillet af %{name}"
   fr: "Défini par %{name}"
   ru: "Задаёт %{name}"
   uk: "Задає %{name}"
@@ -29560,6 +29806,7 @@ _version: 2
 "As on the map":
   nl: "Zoals de kaart"
   de: "Wie auf der Karte"
+  da: "Som på kortet"
   fr: "Comme sur la carte"
   ru: "Как на карте"
   uk: "Як на мапі"
@@ -29567,6 +29814,7 @@ _version: 2
 "Current weather at %{code}":
   nl: "Huidig weer bij %{code}"
   de: "Aktuelles Wetter in %{code}"
+  da: "Aktuelt vejr ved %{code}"
   fr: "Météo actuelle à %{code}"
   ru: "Текущая погода в %{code}"
   uk: "Поточна погода в %{code}"
@@ -29574,6 +29822,7 @@ _version: 2
 "unlimited":
   nl: "onbeperkt"
   de: "unbegrenzt"
+  da: "ubegrænset"
   fr: "illimitée"
   ru: "без ограничений"
   uk: "без обмежень"
@@ -29581,6 +29830,7 @@ _version: 2
 "No clouds":
   nl: "Geen wolken"
   de: "Keine Wolken"
+  da: "Ingen skyer"
   fr: "Sans nuages"
   ru: "Без облаков"
   uk: "Без хмар"
@@ -29589,6 +29839,7 @@ _version: 2
 "End of the line: drive on freely, or choose another line in the launcher":
   nl: "Einde van de lijn: rijd vrij verder, of kies in de launcher een andere lijn"
   de: "Ende der Linie: fahre frei weiter oder wähle im Launcher eine andere Linie"
+  da: "Linjens ende: kør frit videre, eller vælg en anden linje i launcheren"
   fr: "Fin de la ligne : continue librement, ou choisis une autre ligne dans le lanceur"
   ru: "Конец линии: езжай дальше свободно или выбери другую линию в лаунчере"
   uk: "Кінець лінії: їдь далі вільно або обери іншу лінію в лаунчері"
@@ -29596,6 +29847,7 @@ _version: 2
 "Launcher size":
   nl: "Grootte van de launcher"
   de: "Größe des Launchers"
+  da: "Launcherens størrelse"
   fr: "Taille du lanceur"
   ru: "Размер лаунчера"
   uk: "Розмір лаунчера"
@@ -29624,6 +29876,7 @@ _version: 2
 "Launcher size: %{pct} (Ctrl+wheel, Ctrl 0 for the normal size)":
   nl: "Grootte van de launcher: %{pct} (Ctrl+wiel, Ctrl 0 voor de normale grootte)"
   de: "Größe des Launchers: %{pct} (Strg+Mausrad, Strg 0 für die normale Größe)"
+  da: "Launcherens størrelse: %{pct} (Ctrl+hjul, Ctrl 0 for normal størrelse)"
   fr: "Taille du lanceur : %{pct} (Ctrl+molette, Ctrl 0 pour la taille normale)"
   ru: "Размер лаунчера: %{pct} (Ctrl+колесо, Ctrl 0 — обычный размер)"
   uk: "Розмір лаунчера: %{pct} (Ctrl+коліщатко, Ctrl 0 — звичайний розмір)"
@@ -29631,6 +29884,7 @@ _version: 2
 "Animations":
   nl: "Animaties"
   de: "Animationen"
+  da: "Animationer"
   fr: "Animations"
   ru: "Анимации"
   uk: "Анімації"
@@ -29638,6 +29892,7 @@ _version: 2
 "Launcher":
   nl: "Launcher"
   de: "Launcher"
+  da: "Launcher"
   fr: "Lanceur"
   ru: "Лаунчер"
   uk: "Лаунчер"
@@ -29647,6 +29902,7 @@ _version: 2
 "Classic":
   nl: "Klassiek"
   de: "Klassisch"
+  da: "Klassisk"
   fr: "Classique"
   ru: "Классический"
   uk: "Класичний"
@@ -29654,6 +29910,7 @@ _version: 2
 "New (Omsi-Hub)":
   nl: "Nieuw (Omsi-Hub)"
   de: "Neu (Omsi-Hub)"
+  da: "Ny (Omsi-Hub)"
   fr: "Nouveau (Omsi-Hub)"
   ru: "Новый (Omsi-Hub)"
   uk: "Новий (Omsi-Hub)"
@@ -29661,6 +29918,7 @@ _version: 2
 "The new launcher opens the next time the launcher starts.":
   nl: "De nieuwe launcher gaat open zodra je de launcher opnieuw start."
   de: "Der neue Launcher öffnet sich beim nächsten Start des Launchers."
+  da: "Den nye launcher åbner, næste gang launcheren starter."
   fr: "Le nouveau lanceur s'ouvrira au prochain démarrage du lanceur."
   ru: "Новый лаунчер откроется при следующем запуске лаунчера."
   uk: "Новий лаунчер відкриється під час наступного запуску лаунчера."
@@ -29668,6 +29926,7 @@ _version: 2
 "The new launcher opens at once: the launcher starts again":
   nl: "De nieuwe launcher gaat meteen open: de launcher start opnieuw"
   de: "Der neue Launcher öffnet sich sofort: der Launcher startet neu"
+  da: "Den nye launcher åbner med det samme: launcheren starter igen"
   fr: "Le nouveau lanceur s'ouvre aussitôt : le lanceur redémarre"
   ru: "Новый лаунчер откроется сразу: лаунчер перезапустится"
   uk: "Новий лаунчер відкриється одразу: лаунчер перезапуститься"
@@ -29675,6 +29934,7 @@ _version: 2
 "Where the bus is put down. The blue marks on the map are the same places: click one to take it.":
   nl: "Waar de bus wordt neergezet. De markeringen op de kaart zijn dezelfde plekken: klik er een aan om hem te kiezen."
   de: "Wo der Bus abgestellt wird. Die Markierungen auf der Karte sind dieselben Orte: Klicke eine an, um sie zu wählen."
+  da: "Hvor bussen stilles. De blå mærker på kortet er de samme steder: klik på et for at vælge det."
   fr: "Où le bus est posé. Les marques sur la carte sont les mêmes endroits : cliquez-en une pour la prendre."
   ru: "Где ставится автобус. Метки на карте — те же места: щёлкните по одной, чтобы выбрать её."
   uk: "Де ставиться автобус. Позначки на мапі — ті самі місця: клацніть одну, щоб вибрати її."
@@ -29682,6 +29942,7 @@ _version: 2
 "Game folder":
   nl: "Spelmap"
   de: "Spielordner"
+  da: "Spilmappe"
   fr: "Dossier du jeu"
   ru: "Папка игры"
   uk: "Тека гри"
@@ -29689,6 +29950,7 @@ _version: 2
 "Your driver":
   nl: "Je chauffeur"
   de: "Dein Fahrer"
+  da: "Din chauffør"
   fr: "Ton conducteur"
   ru: "Твой водитель"
   uk: "Твій водій"
@@ -29696,6 +29958,7 @@ _version: 2
 "Step %{n} of %{total}":
   nl: "Stap %{n} van %{total}"
   de: "Schritt %{n} von %{total}"
+  da: "Trin %{n} af %{total}"
   fr: "Étape %{n} sur %{total}"
   ru: "Шаг %{n} из %{total}"
   uk: "Крок %{n} з %{total}"
@@ -29703,6 +29966,7 @@ _version: 2
 "Welcome to openOMSI":
   nl: "Welkom bij openOMSI"
   de: "Willkommen bei openOMSI"
+  da: "Velkommen til openOMSI"
   fr: "Bienvenue dans openOMSI"
   ru: "Добро пожаловать в openOMSI"
   uk: "Ласкаво просимо до openOMSI"
@@ -29710,6 +29974,7 @@ _version: 2
 "Choose the language of the launcher and the game. It applies at once, and you can change it any time in the settings.":
   nl: "Kies de taal van de launcher en het spel. Hij geldt meteen, en je kunt hem altijd aanpassen in de instellingen."
   de: "Wähle die Sprache des Launchers und des Spiels. Sie gilt sofort, und du kannst sie jederzeit in den Einstellungen ändern."
+  da: "Vælg launcherens og spillets sprog. Det gælder med det samme, og du kan altid ændre det i indstillingerne."
   fr: "Choisis la langue du lanceur et du jeu. Elle s’applique tout de suite, et tu peux la changer à tout moment dans les paramètres."
   ru: "Выбери язык лаунчера и игры. Он применяется сразу, и его всегда можно сменить в настройках."
   uk: "Обери мову лаунчера й гри. Вона застосовується одразу, і її завжди можна змінити в налаштуваннях."
@@ -29717,6 +29982,7 @@ _version: 2
 "Animations on or off?":
   nl: "Animaties aan of uit?"
   de: "Animationen an oder aus?"
+  da: "Animationer til eller fra?"
   fr: "Animations activées ou non ?"
   ru: "Анимации: включить или выключить?"
   uk: "Анімації: увімкнути чи вимкнути?"
@@ -29724,6 +29990,7 @@ _version: 2
 "Screens that slide in, tiles that rise under the mouse, a bus between the menus. Some like it lively, others calm.":
   nl: "Schermen die binnenschuiven, tegels die opkomen onder de muis, een bus tussen de menu's. De een houdt van levendig, de ander van rustig."
   de: "Bildschirme, die hereingleiten, Kacheln, die sich unter der Maus heben, ein Bus zwischen den Menüs. Die einen mögen es lebhaft, die anderen ruhig."
+  da: "Skærme, der glider ind, fliser, der hæver sig under musen, en bus mellem menuerne. Nogle kan lide det livligt, andre roligt."
   fr: "Des écrans qui glissent, des tuiles qui se soulèvent sous la souris, un bus entre les menus. Certains aiment le mouvement, d’autres le calme."
   ru: "Экраны, которые выезжают, плитки, что приподнимаются под мышью, автобус между меню. Кому-то нравится живо, кому-то спокойно."
   uk: "Екрани, що виїжджають, плитки, що підіймаються під мишею, автобус між меню. Комусь до вподоби жваво, комусь спокійно."
@@ -29731,6 +29998,7 @@ _version: 2
 "Where is OMSI 2?":
   nl: "Waar staat OMSI 2?"
   de: "Wo liegt OMSI 2?"
+  da: "Hvor er OMSI 2?"
   fr: "Où se trouve OMSI 2 ?"
   ru: "Где находится OMSI 2?"
   uk: "Де знаходиться OMSI 2?"
@@ -29738,6 +30006,7 @@ _version: 2
 "openOMSI drives on the maps and buses of the original OMSI 2. Point once to the folder you play from.":
   nl: "openOMSI rijdt op de kaarten en met de bussen van het originele OMSI 2. Wijs eenmaal de map aan waaruit je speelt."
   de: "openOMSI fährt auf den Karten und mit den Bussen des originalen OMSI 2. Zeig einmal auf den Ordner, aus dem du spielst."
+  da: "openOMSI kører på det originale OMSI 2's kort og busser. Peg én gang på den mappe, du spiller fra."
   fr: "openOMSI roule sur les cartes et avec les bus de l’OMSI 2 d’origine. Indique une fois le dossier depuis lequel tu joues."
   ru: "openOMSI ездит по картам и на автобусах оригинального OMSI 2. Один раз укажи папку, из которой ты играешь."
   uk: "openOMSI їздить мапами й автобусами оригінального OMSI 2. Один раз вкажи теку, з якої ти граєш."
@@ -29745,6 +30014,7 @@ _version: 2
 "Who is driving?":
   nl: "Wie rijdt er?"
   de: "Wer fährt?"
+  da: "Hvem kører?"
   fr: "Qui conduit ?"
   ru: "Кто за рулём?"
   uk: "Хто за кермом?"
@@ -29752,6 +30022,7 @@ _version: 2
 "Your duties, kilometres and level are kept per driver. Everything stays on this computer: there is nothing to sign in to.":
   nl: "Je diensten, kilometers en niveau worden per chauffeur bewaard. Alles blijft op deze computer staan: er is nergens om in te loggen."
   de: "Deine Dienste, Kilometer und deine Stufe werden je Fahrer gespeichert. Alles bleibt auf diesem Rechner: Anmelden musst du dich nirgends."
+  da: "Dine vagter, kilometer og niveau gemmes pr. chauffør. Alt bliver på denne computer: der er intet at logge ind på."
   fr: "Tes services, tes kilomètres et ton niveau sont gardés par conducteur. Tout reste sur cet ordinateur : il n’y a aucun compte à créer."
   ru: "Твои смены, километры и уровень хранятся для каждого водителя. Всё остаётся на этом компьютере: входить никуда не нужно."
   uk: "Твої зміни, кілометри й рівень зберігаються для кожного водія. Усе залишається на цьому комп’ютері: входити нікуди не треба."
@@ -29759,6 +30030,7 @@ _version: 2
 "Ready to go, %{name}":
   nl: "Klaar voor vertrek, %{name}"
   de: "Bereit zur Abfahrt, %{name}"
+  da: "Klar til at køre, %{name}"
   fr: "Prêt au départ, %{name}"
   ru: "Готов к отправлению, %{name}"
   uk: "Готовий до відправлення, %{name}"
@@ -29766,6 +30038,7 @@ _version: 2
 "Show the tour":
   nl: "Rondleiding bekijken"
   de: "Rundgang zeigen"
+  da: "Vis rundvisningen"
   fr: "Voir la visite guidée"
   ru: "Пройти экскурсию"
   uk: "Пройти екскурсію"
@@ -29773,6 +30046,7 @@ _version: 2
 "Guided tour":
   nl: "Rondleiding"
   de: "Rundgang"
+  da: "Rundvisning"
   fr: "Visite guidée"
   ru: "Экскурсия"
   uk: "Екскурсія"
@@ -29780,6 +30054,7 @@ _version: 2
 "The start":
   nl: "De start"
   de: "Der Start"
+  da: "Starten"
   fr: "L'accueil"
   ru: "Начало"
   uk: "Початок"
@@ -29787,6 +30062,7 @@ _version: 2
 "The map":
   nl: "De kaart"
   de: "Die Karte"
+  da: "Kortet"
   fr: "La carte"
   ru: "Карта"
   uk: "Мапа"
@@ -29794,6 +30070,7 @@ _version: 2
 "The day":
   nl: "De dag"
   de: "Der Tag"
+  da: "Dagen"
   fr: "Le jour"
   ru: "День"
   uk: "День"
@@ -29801,6 +30078,7 @@ _version: 2
 "The duty":
   nl: "De dienst"
   de: "Der Dienst"
+  da: "Vagten"
   fr: "Le poste"
   ru: "Смена"
   uk: "Зміна"
@@ -29808,6 +30086,7 @@ _version: 2
 "The bus":
   nl: "De bus"
   de: "Der Bus"
+  da: "Bussen"
   fr: "Le bus"
   ru: "Автобус"
   uk: "Автобус"
@@ -29815,6 +30094,7 @@ _version: 2
 "Welcome aboard":
   nl: "Welkom aan boord"
   de: "Willkommen an Bord"
+  da: "Velkommen om bord"
   fr: "Bienvenue à bord"
   ru: "Добро пожаловать на борт"
   uk: "Ласкаво просимо на борт"
@@ -29822,6 +30102,7 @@ _version: 2
 "Welcome aboard, %{name}":
   nl: "Welkom aan boord, %{name}"
   de: "Willkommen an Bord, %{name}"
+  da: "Velkommen om bord, %{name}"
   fr: "Bienvenue à bord, %{name}"
   ru: "Добро пожаловать на борт, %{name}"
   uk: "Ласкаво просимо на борт, %{name}"
@@ -29829,6 +30110,7 @@ _version: 2
 "Show me around":
   nl: "Rondleiding starten"
   de: "Rundgang starten"
+  da: "Vis mig rundt"
   fr: "Commencer la visite"
   ru: "Начать экскурсию"
   uk: "Почати екскурсію"
@@ -29836,6 +30118,7 @@ _version: 2
 "Let's drive":
   nl: "Aan de slag"
   de: "Los geht's"
+  da: "Lad os køre"
   fr: "C'est parti"
   ru: "Поехали"
   uk: "Поїхали"
@@ -29843,6 +30126,7 @@ _version: 2
 "How do you want to drive?":
   nl: "Hoe wil je rijden?"
   de: "Wie willst du fahren?"
+  da: "Hvordan vil du køre?"
   fr: "Comment veux-tu conduire ?"
   ru: "Как ты хочешь ездить?"
   uk: "Як ти хочеш їздити?"
@@ -29850,6 +30134,7 @@ _version: 2
 "Your record and the rest":
   nl: "Je staat van dienst en de rest"
   de: "Deine Dienstakte und der Rest"
+  da: "Dine rekorder og resten"
   fr: "Tes états de service et le reste"
   ru: "Твой послужной список и всё остальное"
   uk: "Твій послужний список і все інше"
@@ -29857,6 +30142,7 @@ _version: 2
 "Your language":
   nl: "Jouw taal"
   de: "Deine Sprache"
+  da: "Dit sprog"
   fr: "Ta langue"
   ru: "Твой язык"
   uk: "Твоя мова"
@@ -29864,6 +30150,7 @@ _version: 2
 "Step by step":
   nl: "Stap voor stap"
   de: "Schritt für Schritt"
+  da: "Trin for trin"
   fr: "Étape par étape"
   ru: "Шаг за шагом"
   uk: "Крок за кроком"
@@ -29871,6 +30158,7 @@ _version: 2
 "Tiles or a list":
   nl: "Tegels of een lijst"
   de: "Kacheln oder Liste"
+  da: "Fliser eller en liste"
   fr: "Tuiles ou liste"
   ru: "Плитки или список"
   uk: "Плитки або список"
@@ -29878,6 +30166,7 @@ _version: 2
 "A map":
   nl: "Een kaart"
   de: "Eine Karte"
+  da: "Et kort"
   fr: "Une carte"
   ru: "Карта"
   uk: "Мапа"
@@ -29885,6 +30174,7 @@ _version: 2
 "Where the bus starts":
   nl: "Waar de bus begint"
   de: "Wo der Bus startet"
+  da: "Hvor bussen starter"
   fr: "Où le bus démarre"
   ru: "Где начинает автобус"
   uk: "Де починає автобус"
@@ -29892,6 +30182,7 @@ _version: 2
 "On you go":
   nl: "Verder"
   de: "Weiter geht's"
+  da: "Af sted"
   fr: "On continue"
   ru: "Дальше"
   uk: "Далі"
@@ -29899,6 +30190,7 @@ _version: 2
 "Day and weather":
   nl: "Dag en weer"
   de: "Tag und Wetter"
+  da: "Dag og vejr"
   fr: "Jour et météo"
   ru: "День и погода"
   uk: "День і погода"
@@ -29906,6 +30198,7 @@ _version: 2
 "How long do you want to drive?":
   nl: "Hoe lang wil je rijden?"
   de: "Wie lange willst du fahren?"
+  da: "Hvor længe vil du køre?"
   fr: "Combien de temps veux-tu conduire ?"
   ru: "Сколько ты хочешь ездить?"
   uk: "Скільки ти хочеш їздити?"
@@ -29913,6 +30206,7 @@ _version: 2
 "Your shifts":
   nl: "Jouw diensten"
   de: "Deine Dienste"
+  da: "Dine vagter"
   fr: "Tes postes"
   ru: "Твои смены"
   uk: "Твої зміни"
@@ -29920,6 +30214,7 @@ _version: 2
 "Your route":
   nl: "Je route"
   de: "Deine Strecke"
+  da: "Din rute"
   fr: "Ton itinéraire"
   ru: "Твой маршрут"
   uk: "Твій маршрут"
@@ -29927,6 +30222,7 @@ _version: 2
 "Where do you start?":
   nl: "Waar begin je?"
   de: "Wo fängst du an?"
+  da: "Hvor starter du?"
   fr: "Où commences-tu ?"
   ru: "Где ты начинаешь?"
   uk: "Де ти починаєш?"
@@ -29934,6 +30230,7 @@ _version: 2
 "Choose your bus":
   nl: "Kies je bus"
   de: "Wähle deinen Bus"
+  da: "Vælg din bus"
   fr: "Choisis ton bus"
   ru: "Выбери автобус"
   uk: "Обери автобус"
@@ -29941,6 +30238,7 @@ _version: 2
 "Your duty on the navigator":
   nl: "Je dienst op de navigatie"
   de: "Dein Dienst im Navigator"
+  da: "Din vagt på navigatoren"
   fr: "Ton poste sur le navigateur"
   ru: "Твоя смена на навигаторе"
   uk: "Твоя зміна на навігаторі"
@@ -29948,6 +30246,7 @@ _version: 2
 "The city map and signing on":
   nl: "De stadskaart en aanmelden"
   de: "Der Stadtplan und das Anmelden"
+  da: "Bykortet og logon"
   fr: "Le plan de la ville et la prise de service"
   ru: "Карта города и вход на смену"
   uk: "Карта міста і вхід на зміну"
@@ -29955,6 +30254,7 @@ _version: 2
 "Ready to go":
   nl: "Klaar voor vertrek"
   de: "Bereit zur Abfahrt"
+  da: "Klar til at køre"
   fr: "Prêt au départ"
   ru: "Готов к отправлению"
   uk: "Готовий до відправлення"
@@ -29962,6 +30262,7 @@ _version: 2
 "That is everything. The classic launcher opens as soon as the launcher has started again.":
   nl: "Dat was alles. De klassieke launcher gaat open zodra de launcher opnieuw is gestart."
   de: "Das war alles. Der klassische Launcher öffnet sich, sobald der Launcher neu gestartet ist."
+  da: "Det var alt. Den klassiske launcher åbner, så snart launcheren er startet igen."
   fr: "C’est tout. Le lanceur classique s’ouvre dès que le lanceur a redémarré."
   ru: "Вот и всё. Классический лаунчер откроется, как только лаунчер перезапустится."
   uk: "Ось і все. Класичний лаунчер відкриється, щойно лаунчер перезапуститься."
@@ -29969,6 +30270,7 @@ _version: 2
 "That is everything. Would you like a short tour of the launcher first?":
   nl: "Dat was alles. Wil je eerst een korte rondleiding door de launcher?"
   de: "Das war alles. Möchtest du zuerst einen kurzen Rundgang durch den Launcher?"
+  da: "Det var alt. Vil du have en kort rundvisning i launcheren først?"
   fr: "C’est tout. Veux-tu d’abord une courte visite guidée du lanceur ?"
   ru: "Вот и всё. Хочешь сначала короткую экскурсию по лаунчеру?"
   uk: "Ось і все. Хочеш спершу коротку екскурсію лаунчером?"
@@ -29976,6 +30278,7 @@ _version: 2
 "Skip for now":
   nl: "Nu overslaan"
   de: "Vorerst überspringen"
+  da: "Spring over for nu"
   fr: "Passer pour l’instant"
   ru: "Пока пропустить"
   uk: "Поки пропустити"
@@ -29983,6 +30286,7 @@ _version: 2
 "Restart in the classic interface":
   nl: "Herstarten in de klassieke interface"
   de: "In der klassischen Oberfläche neu starten"
+  da: "Genstart i den klassiske grænseflade"
   fr: "Redémarrer dans l’interface classique"
   ru: "Перезапустить в классическом интерфейсе"
   uk: "Перезапустити в класичному інтерфейсі"
@@ -29990,6 +30294,7 @@ _version: 2
 "New to OMSI? Driving lessons":
   nl: "Nieuw in OMSI? Rijlessen"
   de: "Neu bei OMSI? Fahrstunden"
+  da: "Ny i OMSI? Kørselslektioner"
   fr: "Nouveau sur OMSI ? Leçons de conduite"
   ru: "Впервые в OMSI? Уроки вождения"
   uk: "Уперше в OMSI? Уроки водіння"
@@ -29997,6 +30302,7 @@ _version: 2
 "Which interface do you want to use?":
   nl: "Wil je de nieuwe of de oude interface gebruiken?"
   de: "Welche Oberfläche möchtest du nutzen?"
+  da: "Hvilken grænseflade vil du bruge?"
   fr: "Quelle interface veux-tu utiliser ?"
   ru: "Какой интерфейс ты хочешь использовать?"
   uk: "Яким інтерфейсом ти хочеш користуватися?"
@@ -30004,6 +30310,7 @@ _version: 2
 "Both start the same game, and you can switch later.":
   nl: "Beide starten hetzelfde spel, en je kunt later nog wisselen."
   de: "Beide starten dasselbe Spiel, und du kannst später noch wechseln."
+  da: "Begge starter det samme spil, og du kan skifte senere."
   fr: "Les deux lancent le même jeu, et tu pourras changer plus tard."
   ru: "Оба запускают одну и ту же игру, а переключиться можно и позже."
   uk: "Обидва запускають ту саму гру, а перемкнутися можна й пізніше."
@@ -30011,6 +30318,7 @@ _version: 2
 "New interface":
   nl: "Nieuwe interface"
   de: "Neue Oberfläche"
+  da: "Ny grænseflade"
   fr: "Nouvelle interface"
   ru: "Новый интерфейс"
   uk: "Новий інтерфейс"
@@ -30018,6 +30326,7 @@ _version: 2
 "Classic interface":
   nl: "Klassieke interface"
   de: "Klassische Oberfläche"
+  da: "Klassisk grænseflade"
   fr: "Interface classique"
   ru: "Классический интерфейс"
   uk: "Класичний інтерфейс"
@@ -30025,6 +30334,7 @@ _version: 2
 "Omsi-Hub's look: you set up your duty step by step on the map, with your bus in 3D.":
   nl: "De look van Omsi-Hub: je zet je dienst stap voor stap klaar op de kaart, met je bus in 3D."
   de: "Der Look von Omsi-Hub: Du stellst deinen Dienst Schritt für Schritt auf der Karte zusammen, mit deinem Bus in 3D."
+  da: "Omsi-Hubs udseende: du sætter din vagt op trin for trin på kortet, med din bus i 3D."
   fr: "Le style d’Omsi-Hub : tu prépares ton service étape par étape sur la carte, avec ton bus en 3D."
   ru: "Стиль Omsi-Hub: смена собирается шаг за шагом на карте, а автобус виден в 3D."
   uk: "Стиль Omsi-Hub: зміна складається крок за кроком на мапі, а автобус видно в 3D."
@@ -30032,6 +30342,7 @@ _version: 2
 "openOMSI's own launcher: every page in one window, with the menu on the left.":
   nl: "De eigen launcher van openOMSI: elke pagina in één venster, met het menu links."
   de: "Der eigene Launcher von openOMSI: jede Seite in einem Fenster, mit dem Menü links."
+  da: "openOMSI's egen launcher: alle sider i ét vindue, med menuen til venstre."
   fr: "Le lanceur propre à openOMSI : chaque page dans une seule fenêtre, avec le menu à gauche."
   ru: "Собственный лаунчер openOMSI: все страницы в одном окне, меню слева."
   uk: "Власний лаунчер openOMSI: усі сторінки в одному вікні, меню ліворуч."
@@ -30039,6 +30350,7 @@ _version: 2
 "Animations on":
   nl: "Animaties aan"
   de: "Animationen an"
+  da: "Animationer til"
   fr: "Animations activées"
   ru: "Анимации включены"
   uk: "Анімації увімкнено"
@@ -30046,6 +30358,7 @@ _version: 2
 "Animations off":
   nl: "Animaties uit"
   de: "Animationen aus"
+  da: "Animationer fra"
   fr: "Animations désactivées"
   ru: "Анимации выключены"
   uk: "Анімації вимкнено"
@@ -30053,6 +30366,7 @@ _version: 2
 "Screens slide in, tiles rise under the mouse and a bus drives between the menus.":
   nl: "Schermen schuiven binnen, tegels komen omhoog onder de muis en er rijdt een bus tussen de menu's."
   de: "Bildschirme gleiten herein, Kacheln heben sich unter der Maus und ein Bus fährt zwischen den Menüs."
+  da: "Skærme glider ind, fliser hæver sig under musen, og en bus kører mellem menuerne."
   fr: "Les écrans glissent, les tuiles se soulèvent sous la souris et un bus roule entre les menus."
   ru: "Экраны выезжают, плитки приподнимаются под мышью, а между меню проезжает автобус."
   uk: "Екрани виїжджають, плитки підіймаються під мишею, а між меню проїжджає автобус."
@@ -30060,6 +30374,7 @@ _version: 2
 "Everything stands still and each screen is there at once: calmer, and lighter for an older computer.":
   nl: "Alles staat stil en elk scherm is er meteen: rustiger, en lichter voor een oudere computer."
   de: "Alles steht still und jeder Bildschirm ist sofort da: ruhiger und leichter für einen älteren Rechner."
+  da: "Alt står stille, og hver skærm er der med det samme: roligere og lettere for en ældre computer."
   fr: "Tout reste immobile et chaque écran s’affiche aussitôt : plus calme, et plus léger pour un ordinateur ancien."
   ru: "Всё неподвижно, и каждый экран появляется сразу: спокойнее и легче для старого компьютера."
   uk: "Усе нерухоме, і кожен екран з’являється одразу: спокійніше й легше для старого комп’ютера."
@@ -30067,6 +30382,7 @@ _version: 2
 "A complete OMSI 2: the maps, the buses and everything the game needs are there.":
   nl: "Een complete OMSI 2: de kaarten, de bussen en alles wat het spel nodig heeft, staan erin."
   de: "Ein vollständiges OMSI 2: Karten, Busse und alles, was das Spiel braucht, sind da."
+  da: "Et komplet OMSI 2: kortene, busserne og alt, spillet har brug for, er der."
   fr: "Un OMSI 2 complet : les cartes, les bus et tout ce dont le jeu a besoin sont là."
   ru: "Полный OMSI 2: карты, автобусы и всё, что нужно игре, на месте."
   uk: "Повний OMSI 2: мапи, автобуси й усе, що потрібно грі, на місці."
@@ -30074,6 +30390,7 @@ _version: 2
 "openOMSI did not find OMSI 2 by itself. Choose the folder with Omsi.exe in it.":
   nl: "openOMSI heeft OMSI 2 niet zelf gevonden. Kies de map waar Omsi.exe in staat."
   de: "openOMSI hat OMSI 2 nicht selbst gefunden. Wähle den Ordner, in dem die Omsi.exe liegt."
+  da: "openOMSI fandt ikke OMSI 2 af sig selv. Vælg mappen med Omsi.exe i."
   fr: "openOMSI n’a pas trouvé OMSI 2 tout seul. Choisis le dossier qui contient Omsi.exe."
   ru: "openOMSI не нашёл OMSI 2 сам. Выбери папку, в которой лежит Omsi.exe."
   uk: "openOMSI не знайшов OMSI 2 сам. Обери теку, у якій лежить Omsi.exe."
@@ -30081,6 +30398,7 @@ _version: 2
 "That folder does not exist.":
   nl: "Die map bestaat niet."
   de: "Diesen Ordner gibt es nicht."
+  da: "Den mappe findes ikke."
   fr: "Ce dossier n’existe pas."
   ru: "Такой папки нет."
   uk: "Такої теки немає."
@@ -30088,6 +30406,7 @@ _version: 2
 "That is openOMSI's own folder. Choose the original OMSI 2, the one with Omsi.exe in it.":
   nl: "Dat is de eigen map van openOMSI. Kies het originele OMSI 2, die met Omsi.exe erin."
   de: "Das ist der eigene Ordner von openOMSI. Wähle das originale OMSI 2, das mit der Omsi.exe darin."
+  da: "Det er openOMSI's egen mappe. Vælg det originale OMSI 2, det med Omsi.exe i."
   fr: "C’est le dossier propre à openOMSI. Choisis l’OMSI 2 d’origine, celui qui contient Omsi.exe."
   ru: "Это собственная папка openOMSI. Выбери оригинальный OMSI 2 — тот, где лежит Omsi.exe."
   uk: "Це власна тека openOMSI. Обери оригінальний OMSI 2 — той, де лежить Omsi.exe."
@@ -30095,6 +30414,7 @@ _version: 2
 "Not a complete OMSI 2: it lacks %{what}.":
   nl: "Geen complete OMSI 2: er ontbreekt %{what}."
   de: "Kein vollständiges OMSI 2: Es fehlt %{what}."
+  da: "Ikke et komplet OMSI 2: der mangler %{what}."
   fr: "Pas un OMSI 2 complet : il manque %{what}."
   ru: "Это не полный OMSI 2: не хватает %{what}."
   uk: "Це не повний OMSI 2: бракує %{what}."
@@ -30102,6 +30422,7 @@ _version: 2
 "Steam, the box version, a folder you moved yourself - all fine. openOMSI only reads it and never writes into it.":
   nl: "Steam, de doosversie, een map die je zelf hebt verplaatst - allemaal goed. openOMSI leest er alleen uit en schrijft er nooit in."
   de: "Steam, die Box-Version, ein selbst verschobener Ordner - alles recht. openOMSI liest nur daraus und schreibt nie hinein."
+  da: "Steam, bokssudgaven, en mappe, du selv har flyttet - alt er fint. openOMSI læser den kun og skriver aldrig i den."
   fr: "Steam, la version en boîte, un dossier déplacé à la main - tout convient. openOMSI ne fait qu’y lire et n’y écrit jamais."
   ru: "Steam, коробочная версия, папка, которую ты перенёс сам, - всё подходит. openOMSI только читает её и никогда в неё не пишет."
   uk: "Steam, коробкова версія, тека, яку ти переніс сам, - усе підходить. openOMSI лише читає її й ніколи в неї не пише."
@@ -30109,6 +30430,7 @@ _version: 2
 "Type a name for your driver first.":
   nl: "Typ eerst een naam voor je chauffeur."
   de: "Gib zuerst einen Namen für deinen Fahrer ein."
+  da: "Skriv først et navn til din chauffør."
   fr: "Tape d’abord un nom pour ton conducteur."
   ru: "Сначала введи имя водителя."
   uk: "Спершу введи ім’я водія."
@@ -30116,6 +30438,7 @@ _version: 2
 "The driver's name is the name of their personnel file, as in OMSI 2: the game adds every duty to it.":
   nl: "De naam van de chauffeur is de naam van zijn personeelsdossier, zoals in OMSI 2: het spel schrijft er elke dienst bij."
   de: "Der Name des Fahrers ist der Name seiner Personalakte, wie in OMSI 2: Das Spiel trägt jeden Dienst darin ein."
+  da: "Chaufførens navn er navnet på vedkommendes personalemappe, som i OMSI 2: spillet tilføjer hver vagt til den."
   fr: "Le nom du conducteur est celui de son dossier du personnel, comme dans OMSI 2 : le jeu y ajoute chaque service."
   ru: "Имя водителя — это имя его личного дела, как в OMSI 2: игра записывает туда каждую смену."
   uk: "Ім’я водія — це назва його особової справи, як в OMSI 2: гра записує туди кожну зміну."
@@ -30123,6 +30446,7 @@ _version: 2
 "Personnel pass":
   nl: "Dienstpas"
   de: "Dienstausweis"
+  da: "Personalekort"
   fr: "Carte de service"
   ru: "Служебный пропуск"
   uk: "Службова перепустка"
@@ -30130,6 +30454,7 @@ _version: 2
 "Bus driver · level %{level}":
   nl: "Buschauffeur · niveau %{level}"
   de: "Busfahrer · Stufe %{level}"
+  da: "Buschauffør · niveau %{level}"
   fr: "Conducteur de bus · niveau %{level}"
   ru: "Водитель автобуса · уровень %{level}"
   uk: "Водій автобуса · рівень %{level}"
@@ -30137,6 +30462,7 @@ _version: 2
 "You sign on with these before every duty.":
   nl: "Hiermee meld je je aan voor elke dienst."
   de: "Damit meldest du dich vor jedem Dienst an."
+  da: "Du logger på med disse før hver vagt."
   fr: "C’est avec eux que tu prends chaque service."
   ru: "С ними ты отмечаешься перед каждой сменой."
   uk: "З ними ти відмічаєшся перед кожною зміною."
@@ -30144,6 +30470,7 @@ _version: 2
 "Your personnel number and code are made when you first sign on for a duty.":
   nl: "Je personeelsnummer en pincode krijg je bij je eerste aanmelding voor een dienst."
   de: "Personalnummer und PIN bekommst du bei deiner ersten Anmeldung zu einem Dienst."
+  da: "Dit personalenummer og din kode oprettes, når du logger på til en vagt for første gang."
   fr: "Ton matricule et ton code sont créés à ta première prise de service."
   ru: "Табельный номер и код появятся при первой отметке на смену."
   uk: "Табельний номер і код з’являться під час першої відмітки на зміну."
@@ -30151,6 +30478,7 @@ _version: 2
 "On this computer":
   nl: "Op deze computer"
   de: "Auf diesem Rechner"
+  da: "På denne computer"
   fr: "Sur cet ordinateur"
   ru: "На этом компьютере"
   uk: "На цьому комп’ютері"
@@ -30158,6 +30486,7 @@ _version: 2
 "From now on openOMSI opens in its classic launcher.":
   nl: "Voortaan opent openOMSI in de klassieke launcher."
   de: "Ab jetzt öffnet sich openOMSI im klassischen Launcher."
+  da: "Fra nu af åbner openOMSI i sin klassiske launcher."
   fr: "Désormais, openOMSI s’ouvre dans le lanceur classique."
   ru: "Отныне openOMSI открывается в классическом лаунчере."
   uk: "Відтепер openOMSI відкривається в класичному лаунчері."
@@ -30165,6 +30494,7 @@ _version: 2
 "Take the tour":
   nl: "Rondleiding volgen"
   de: "Rundgang machen"
+  da: "Tag rundvisningen"
   fr: "Faire la visite"
   ru: "Пройти экскурсию"
   uk: "Пройти екскурсію"
@@ -30172,6 +30502,7 @@ _version: 2
 "A minute along the launcher: where you set up a duty, your service record and the settings.":
   nl: "Een minuutje langs de launcher: waar je een dienst klaarzet, je staat van dienst en de instellingen."
   de: "Eine Minute durch den Launcher: wo du einen Dienst zusammenstellst, deine Dienstakte und die Einstellungen."
+  da: "Et minut gennem launcheren: hvor du sætter en vagt op, din tjenestebog og indstillingerne."
   fr: "Une minute dans le lanceur : où préparer un service, tes états de service et les paramètres."
   ru: "Минута по лаунчеру: где собрать смену, твой послужной список и настройки."
   uk: "Хвилина лаунчером: де скласти зміну, твій послужний список і налаштування."
@@ -30179,6 +30510,7 @@ _version: 2
 "Start right away":
   nl: "Meteen beginnen"
   de: "Gleich loslegen"
+  da: "Start med det samme"
   fr: "Commencer tout de suite"
   ru: "Начать сразу"
   uk: "Почати одразу"
@@ -30186,6 +30518,7 @@ _version: 2
 "Straight to the start: choose how you want to drive today.":
   nl: "Direct naar de start: kies hoe je vandaag wilt rijden."
   de: "Direkt zum Start: Wähle, wie du heute fahren möchtest."
+  da: "Direkte til starten: vælg, hvordan du vil køre i dag."
   fr: "Directement au départ : choisis comment tu veux conduire aujourd’hui."
   ru: "Сразу к старту: выбери, как ты хочешь ездить сегодня."
   uk: "Одразу до старту: обери, як ти хочеш їздити сьогодні."
@@ -30193,6 +30526,7 @@ _version: 2
 "Show the welcome screen again":
   nl: "Welkomscherm opnieuw tonen"
   de: "Willkommensbildschirm erneut zeigen"
+  da: "Vis velkomstskærmen igen"
   fr: "Revoir l’écran d’accueil"
   ru: "Снова показать экран приветствия"
   uk: "Знову показати екран вітання"
@@ -30200,6 +30534,7 @@ _version: 2
 "Start the tour":
   nl: "Rondleiding starten"
   de: "Rundgang starten"
+  da: "Start rundvisningen"
   fr: "Lancer la visite guidée"
   ru: "Начать экскурсию"
   uk: "Почати екскурсію"
@@ -30207,6 +30542,7 @@ _version: 2
 "openOMSI puts real duties together from the timetables of your own OMSI maps and gets the game ready for you. In a minute you'll know where everything is.":
   nl: "openOMSI maakt echte diensten uit de dienstregelingen van je eigen OMSI-kaarten en zet het spel voor je klaar. In een minuut weet je waar alles zit."
   de: "openOMSI baut echte Dienste aus den Fahrplänen deiner eigenen OMSI-Karten und richtet das Spiel für dich ein. In einer Minute weißt du, wo alles ist."
+  da: "openOMSI sammensætter rigtige vagter af køreplanerne på dine egne OMSI-kort og gør spillet klar til dig. Om et minut ved du, hvor alt er."
   fr: "openOMSI crée de vrais postes à partir des horaires de tes propres cartes OMSI et prépare le jeu pour toi. En une minute, tu sauras où tout se trouve."
   ru: "openOMSI составляет настоящие смены из расписаний твоих карт OMSI и готовит для тебя игру. Через минуту ты будешь знать, где что находится."
   uk: "openOMSI складає справжні зміни з розкладів твоїх мап OMSI і готує для тебе гру. За хвилину ти знатимеш, де що є."
@@ -30214,6 +30550,7 @@ _version: 2
 "A work shift is put together from the timetable's real trips. A tour is one bus's trips on one line, as OMSI gives them. And a free drive is just a map and a bus.":
   nl: "Een dienst stelt openOMSI samen uit de echte ritten van de dienstregeling. Een omloop zijn de ritten van één bus op één lijn, zoals OMSI ze geeft. En vrij rijden is alleen een kaart en een bus."
   de: "Ein Dienst wird aus den echten Fahrten des Fahrplans zusammengestellt. Ein Umlauf sind die Fahrten eines Busses auf einer Linie, wie OMSI sie vorgibt. Und freie Fahrt ist nur eine Karte und ein Bus."
+  da: "En arbejdsvagt sammensættes af køreplanens rigtige rejser. En tur er én buss rejser på én linje, som OMSI giver dem. Og en fri kørsel er bare et kort og en bus."
   fr: "Un poste est composé à partir des vrais trajets de l'horaire. Un service, ce sont les trajets d'un bus sur une ligne, comme OMSI les donne. Et la conduite libre, c'est juste une carte et un bus."
   ru: "Смена собирается из настоящих рейсов расписания. Выход — это рейсы одного автобуса на одной линии, как их даёт OMSI. А свободная езда — это просто карта и автобус."
   uk: "Зміна складається зі справжніх рейсів розкладу. Оборот — це рейси одного автобуса на одній лінії, як їх дає OMSI. А вільна поїздка — це лише мапа й автобус."
@@ -30221,6 +30558,7 @@ _version: 2
 "On the left, your service record: what you have driven and how close the next level is. On the right, the way to everything else: mods, settings, controls, timetables and more.":
   nl: "Links je staat van dienst: wat je gereden hebt en hoe dicht het volgende niveau is. Rechts de weg naar al het andere: mods, instellingen, toetsen, dienstregelingen en meer."
   de: "Links deine Dienstakte: was du gefahren bist und wie nah die nächste Stufe ist. Rechts der Weg zu allem anderen: Mods, Einstellungen, Steuerung, Fahrpläne und mehr."
+  da: "Til venstre din tjenestebog: hvad du har kørt, og hvor tæt det næste niveau er. Til højre vejen til alt andet: mods, indstillinger, styringer, køreplaner og mere."
   fr: "À gauche, tes états de service : ce que tu as conduit et à quel point le niveau suivant est proche. À droite, le chemin vers tout le reste : mods, paramètres, commandes, horaires et plus."
   ru: "Слева — твой послужной список: что ты уже проехал и сколько осталось до следующего уровня. Справа — путь ко всему остальному: моды, настройки, управление, расписания и не только."
   uk: "Ліворуч — твій послужний список: що ти вже проїхав і скільки лишилося до наступного рівня. Праворуч — шлях до всього іншого: моди, налаштування, керування, розклади й не тільки."
@@ -30228,6 +30566,7 @@ _version: 2
 "A flag switches the language at once; the globe beside them has all the others. The game speaks it too.":
   nl: "Met een vlag wissel je meteen van taal; achter de wereldbol ernaast staan alle andere. Het spel praat dan mee."
   de: "Eine Flagge wechselt die Sprache sofort; der Globus daneben hat alle anderen. Das Spiel spricht sie dann auch."
+  da: "Et flag skifter sproget med det samme; globussen ved siden af har alle de andre. Spillet taler det også."
   fr: "Un drapeau change la langue tout de suite ; le globe à côté propose toutes les autres. Le jeu la parle aussi."
   ru: "Флаг сразу меняет язык, а под глобусом рядом — все остальные. Игра тоже заговорит на нём."
   uk: "Прапорець одразу змінює мову, а під глобусом поруч — усі інші. Гра теж говоритиме нею."
@@ -30235,6 +30574,7 @@ _version: 2
 "Up here are the steps, in the order a driver thinks: who drives, how, where, when, what and with which bus. A step you have been to is one click away.":
   nl: "Bovenin staan de stappen, in de volgorde waarin een chauffeur denkt: wie rijdt, hoe, waar, wanneer, wat en met welke bus. Een stap waar je al was, is één klik terug."
   de: "Hier oben stehen die Schritte, in der Reihenfolge, in der ein Fahrer denkt: wer fährt, wie, wo, wann, was und mit welchem Bus. Einen Schritt, bei dem du schon warst, erreichst du mit einem Klick."
+  da: "Heroppe er trinene i den rækkefølge, en chauffør tænker: hvem der kører, hvordan, hvor, hvornår, hvad og med hvilken bus. Et trin, du har været ved, er ét klik væk."
   fr: "Ici en haut, les étapes, dans l'ordre où pense un conducteur : qui conduit, comment, où, quand, quoi et avec quel bus. Une étape déjà visitée est à un clic."
   ru: "Вверху — шаги в том порядке, в каком думает водитель: кто едет, как, где, когда, что и на каком автобусе. К шагу, где ты уже был, можно вернуться одним щелчком."
   uk: "Угорі — кроки в тому порядку, в якому думає водій: хто їде, як, де, коли, що і яким автобусом. До кроку, де ти вже був, можна повернутися одним клацанням."
@@ -30242,6 +30582,7 @@ _version: 2
 "Every map you have in OMSI is here: as tiles with their picture, or as a list with the map beside it. You switch between them here.":
   nl: "Elke kaart die je in OMSI hebt, staat hier: als tegels met hun plaatje, of als lijst met de kaart ernaast. Hier wissel je tussen die twee."
   de: "Jede Karte, die du in OMSI hast, ist hier: als Kacheln mit ihrem Bild oder als Liste mit der Karte daneben. Hier wechselst du zwischen beiden."
+  da: "Hvert kort, du har i OMSI, er her: som fliser med deres billede eller som en liste med kortet ved siden af. Du skifter mellem dem her."
   fr: "Toutes les cartes que tu as dans OMSI sont ici : en tuiles avec leur image, ou en liste avec la carte à côté. C'est ici que tu passes de l'une à l'autre."
   ru: "Здесь все карты, что есть у тебя в OMSI: плитками с картинкой или списком с картой рядом. Переключаешься между ними здесь."
   uk: "Тут усі мапи, які є в тебе в OMSI: плитками з картинкою або списком із мапою поруч. Перемикаєшся між ними тут."
@@ -30249,6 +30590,7 @@ _version: 2
 "A tile shows how many tours a map has, which year it is set in and at how many places the bus can start. Click it and it's yours.":
   nl: "Op een tegel zie je hoeveel omlopen een kaart heeft, in welk jaar hij speelt en op hoeveel plekken de bus kan beginnen. Klik erop en hij is van jou."
   de: "Eine Kachel zeigt, wie viele Umläufe eine Karte hat, in welchem Jahr sie spielt und an wie vielen Orten der Bus starten kann. Klick darauf, und sie gehört dir."
+  da: "En flise viser, hvor mange ture et kort har, hvilket år det foregår i, og på hvor mange steder bussen kan starte. Klik på den, og den er din."
   fr: "Une tuile montre combien de services compte une carte, en quelle année elle se passe et à combien d'endroits le bus peut démarrer. Clique dessus et elle est à toi."
   ru: "Плитка показывает, сколько выходов на карте, в каком году она происходит и в скольких местах может начать автобус. Нажми на неё — и она твоя."
   uk: "Плитка показує, скільки оборотів має мапа, у якому році вона відбувається і в скількох місцях може почати автобус. Клацни — і вона твоя."
@@ -30256,6 +30598,7 @@ _version: 2
 "On Automatic the bus is put down nearest to your duty's first stop. Or pick a place yourself: the orange marks on the map are the same places.":
   nl: "Op Automatisch wordt de bus zo dicht mogelijk bij de eerste halte van je dienst neergezet. Of kies zelf een plek: de oranje stippen op de kaart zijn dezelfde plekken."
   de: "Auf Automatisch wird der Bus möglichst nah an der ersten Haltestelle deines Dienstes abgestellt. Oder wähle selbst einen Ort: Die orangen Markierungen auf der Karte sind dieselben Orte."
+  da: "Ved Automatisk stilles bussen nærmest din vagts første stoppested. Eller vælg selv et sted: de orange mærker på kortet er de samme steder."
   fr: "En Automatique, le bus est posé au plus près du premier arrêt de ton poste. Ou choisis toi-même un endroit : les marques orange sur la carte sont les mêmes endroits."
   ru: "В режиме «Автоматически» автобус ставится как можно ближе к первой остановке твоей смены. Или выбери место сам: оранжевые метки на карте — это те же места."
   uk: "У режимі «Автоматично» автобус ставиться якомога ближче до першої зупинки твоєї зміни. Або обери місце сам: помаранчеві позначки на мапі — це ті самі місця."
@@ -30263,6 +30606,7 @@ _version: 2
 "Bottom right, on every step, is the button that takes you on. On the last step it starts the game with your duty.":
   nl: "Rechtsonder staat op elke stap de knop die je verder brengt. Op de laatste stap start hij het spel met je dienst."
   de: "Unten rechts ist auf jedem Schritt der Knopf, der dich weiterbringt. Beim letzten Schritt startet er das Spiel mit deinem Dienst."
+  da: "Nederst til højre, på hvert trin, er knappen, der fører dig videre. På det sidste trin starter den spillet med din vagt."
   fr: "En bas à droite, à chaque étape, il y a le bouton qui te fait avancer. À la dernière étape, il lance le jeu avec ton poste."
   ru: "Справа внизу на каждом шаге — кнопка, которая ведёт дальше. На последнем шаге она запускает игру с твоей сменой."
   uk: "Праворуч унизу на кожному кроці — кнопка, що веде далі. На останньому кроці вона запускає гру з твоєю зміною."
@@ -30270,6 +30614,7 @@ _version: 2
 "Choose the date, the time and the weather. The timetable runs as it does on that day: on a Sunday there are often fewer buses.":
   nl: "Kies de datum, de tijd en het weer. De dienstregeling rijdt zoals op die dag: op zondag rijden er vaak minder bussen."
   de: "Wähle Datum, Uhrzeit und Wetter. Der Fahrplan läuft wie an diesem Tag: Sonntags fahren oft weniger Busse."
+  da: "Vælg datoen, tiden og vejret. Køreplanen kører, som den gør den dag: på en søndag er der ofte færre busser."
   fr: "Choisis la date, l'heure et la météo. L'horaire tourne comme ce jour-là : le dimanche, il y a souvent moins de bus."
   ru: "Выбери дату, время и погоду. Расписание работает как в этот день: в воскресенье автобусов часто меньше."
   uk: "Обери дату, час і погоду. Розклад працює як у цей день: у неділю автобусів часто менше."
@@ -30277,6 +30622,7 @@ _version: 2
 "Say how long your shift is and in which part of the day it starts. openOMSI looks for shifts like that among the timetable's real trips.":
   nl: "Zeg hoe lang je dienst duurt en in welk deel van de dag hij begint. openOMSI zoekt zulke diensten tussen de echte ritten van de dienstregeling."
   de: "Sag, wie lang dein Dienst ist und zu welcher Tageszeit er beginnt. openOMSI sucht solche Dienste unter den echten Fahrten des Fahrplans."
+  da: "Sig, hvor lang din vagt er, og i hvilken del af dagen den begynder. openOMSI leder efter den slags vagter blandt køreplanens rigtige rejser."
   fr: "Dis combien de temps dure ton poste et à quel moment de la journée il commence. openOMSI cherche de tels postes parmi les vrais trajets de l'horaire."
   ru: "Укажи, сколько длится твоя смена и в какое время дня она начинается. openOMSI найдёт такие смены среди настоящих рейсов расписания."
   uk: "Вкажи, скільки триває твоя зміна і в яку пору дня вона починається. openOMSI знайде такі зміни серед справжніх рейсів розкладу."
@@ -30284,6 +30630,7 @@ _version: 2
 "These are the shifts that fit. Click one to see all its trips, with the breaks in between; Find other shifts draws new ones.":
   nl: "Dit zijn de diensten die passen. Klik er een aan en je ziet al zijn ritten, met de pauzes ertussen; Andere diensten zoeken geeft je nieuwe."
   de: "Das sind die passenden Dienste. Klick einen an, um alle seine Fahrten mit den Pausen dazwischen zu sehen; Andere Dienste suchen zieht neue."
+  da: "Det er de vagter, der passer. Klik på en for at se alle dens rejser med pauserne imellem; Find andre vagter tegner nye."
   fr: "Voici les postes qui conviennent. Clique sur l'un d'eux pour voir tous ses trajets, avec les pauses entre eux ; Chercher d'autres postes en tire de nouveaux."
   ru: "Вот подходящие смены. Нажми на любую, чтобы увидеть все её рейсы с перерывами между ними; «Найти другие смены» подберёт новые."
   uk: "Ось зміни, що підходять. Клацни будь-яку, щоб побачити всі її рейси з перервами між ними; «Знайти інші зміни» добере нові."
@@ -30291,6 +30638,7 @@ _version: 2
 "On the map, in blue, is where the shift you pick takes you, with every stop on the way. Drag to look around; the wheel zooms.":
   nl: "Op de kaart zie je in het blauw waar de dienst die je kiest je heen brengt, met elke halte onderweg. Sleep om rond te kijken; met het wieltje zoom je."
   de: "Auf der Karte siehst du in Blau, wohin dich der gewählte Dienst bringt, mit jeder Haltestelle unterwegs. Zieh, um dich umzusehen; das Mausrad zoomt."
+  da: "På kortet, i blåt, er det sted, den vagt du vælger fører dig hen, med hvert stoppested på vejen. Træk for at se dig omkring; hjulet zoomer."
   fr: "Sur la carte, en bleu, l'endroit où t'emmène le poste choisi, avec chaque arrêt en route. Fais glisser pour regarder autour ; la molette zoome."
   ru: "Синим на карте показано, куда тебя ведёт выбранная смена, со всеми остановками по пути. Перетаскивай, чтобы осмотреться; колесо мыши меняет масштаб."
   uk: "Синім на мапі показано, куди тебе веде обрана зміна, з усіма зупинками дорогою. Перетягуй, щоб роззирнутися; коліщатко змінює масштаб."
@@ -30298,6 +30646,7 @@ _version: 2
 "On a free drive you choose where the bus starts: at a stop where trips begin, at one on the way, or at one of the map's entry points. The traffic and the timetable's buses drive around you.":
   nl: "Bij vrij rijden kies je zelf waar de bus begint: bij een beginhalte, een halte onderweg of een ingang van de kaart. Het verkeer en de bussen uit de dienstregeling rijden om je heen."
   de: "Bei freier Fahrt wählst du, wo der Bus startet: an einer Haltestelle, an der Fahrten beginnen, an einer unterwegs oder an einem Einstiegspunkt der Karte. Der Verkehr und die Busse des Fahrplans fahren um dich herum."
+  da: "Ved fri kørsel vælger du, hvor bussen starter: ved et stoppested, hvor rejser begynder, ved et undervejs eller ved et af kortets indgangspunkter. Trafikken og køreplanens busser kører omkring dig."
   fr: "En conduite libre, tu choisis où le bus démarre : à un arrêt où commencent des trajets, à un arrêt en route ou à un point d'entrée de la carte. La circulation et les bus de l'horaire roulent autour de toi."
   ru: "При свободной езде ты сам выбираешь, где начнёт автобус: на начальной остановке, на промежуточной или в одной из точек входа карты. Вокруг ездят машины и автобусы по расписанию."
   uk: "У вільній поїздці ти сам обираєш, де почне автобус: на початковій зупинці, на проміжній або в одній із точок входу мапи. Навколо їздять машини й автобуси за розкладом."
@@ -30305,6 +30654,7 @@ _version: 2
 "Want to follow a line after all? Pick it here: its route is on the map, and the navigator and the IBIS know the line. Nothing is booked.":
   nl: "Wil je toch een lijn volgen? Kies hem hier: de route staat op de kaart, en de navigatie en de IBIS kennen de lijn. Er wordt niets geboekt."
   de: "Willst du doch einer Linie folgen? Wähle sie hier: Ihre Strecke ist auf der Karte, und Navigator und IBIS kennen die Linie. Gebucht wird nichts."
+  da: "Vil du alligevel følge en linje? Vælg den her: dens rute er på kortet, og navigatoren og IBIS kender linjen. Intet er bestilt."
   fr: "Tu veux quand même suivre une ligne ? Choisis-la ici : son itinéraire est sur la carte, et le navigateur et l'IBIS connaissent la ligne. Rien n'est réservé."
   ru: "Всё-таки хочешь ехать по линии? Выбери её здесь: маршрут появится на карте, а навигатор и IBIS будут знать линию. Ничего не бронируется."
   uk: "Усе ж хочеш їхати лінією? Обери її тут: маршрут з'явиться на мапі, а навігатор і IBIS знатимуть лінію. Нічого не бронюється."
@@ -30312,6 +30662,7 @@ _version: 2
 "First the maker, then the model and the version, each with a photo. Up here you see where you are: click it to go back up. The bus that fits your duty best says so on its tile.":
   nl: "Eerst het merk, dan het model en de uitvoering, elk met een foto. Bovenaan zie je waar je bent: klik erop om terug te gaan. Op de tegel van de bus die het best bij je dienst past, staat dat erbij."
   de: "Erst der Hersteller, dann Modell und Version, jeweils mit Foto. Oben siehst du, wo du bist: Klick darauf, um zurückzugehen. Der Bus, der am besten zu deinem Dienst passt, sagt es auf seiner Kachel."
+  da: "Først producenten, så modellen og versionen, hver med et foto. Heroppe ser du, hvor du er: klik på det for at gå op igen. Den bus, der passer bedst til din vagt, siger det på sin flise."
   fr: "D'abord le constructeur, puis le modèle et la version, chacun avec une photo. En haut, tu vois où tu es : clique pour remonter. Le bus qui convient le mieux à ton poste l'indique sur sa tuile."
   ru: "Сначала производитель, потом модель и версия — у каждого своё фото. Вверху видно, где ты: нажми, чтобы вернуться. Автобус, который лучше всего подходит к смене, отмечен на своей плитке."
   uk: "Спершу виробник, потім модель і версія — у кожного своє фото. Угорі видно, де ти: клацни, щоб повернутися. Автобус, що найкраще пасує до зміни, позначено на його плитці."
@@ -30319,6 +30670,7 @@ _version: 2
 "Your bus in the showroom: turn it with the mouse, zoom with the wheel, and choose its livery, fleet number and plate.":
   nl: "Je bus in de showroom: draai hem met de muis, zoom met het wieltje en kies zijn kleuren, wagennummer en kenteken."
   de: "Dein Bus im Showroom: Dreh ihn mit der Maus, zoom mit dem Mausrad und wähle Lackierung, Wagennummer und Kennzeichen."
+  da: "Din bus i udstillingslokalet: drej den med musen, zoom med hjulet, og vælg dens bemaling, vognnummer og nummerplade."
   fr: "Ton bus dans le showroom : fais-le tourner à la souris, zoome avec la molette et choisis sa livrée, son numéro de parc et sa plaque."
   ru: "Твой автобус в шоуруме: крути его мышью, приближай колесом и выбирай окраску, бортовой номер и номерной знак."
   uk: "Твій автобус у шоурумі: крути його мишею, наближай коліщатком і обирай фарбування, бортовий номер і номерний знак."
@@ -30326,6 +30678,7 @@ _version: 2
 "Shift+N switches the navigator between the map, the map with your duty board, and off. The board shows the trip you are on, the stops ahead and whether you are on time.":
   nl: "Met Shift+N wissel je de navigatie tussen de kaart, de kaart met je dienstbord, en uit. Op het dienstbord zie je je rit, de haltes die komen en of je op tijd rijdt."
   de: "Shift+N schaltet den Navigator zwischen Karte, Karte mit Diensttafel und aus. Die Tafel zeigt deine Fahrt, die kommenden Haltestellen und ob du pünktlich bist."
+  da: "Shift+N skifter navigatoren mellem kortet, kortet med din vagttavle og fra. Tavlen viser den rejse, du er på, stoppestederne forude og om du er til tiden."
   fr: "Shift+N fait passer le navigateur de la carte à la carte avec ton tableau de service, puis l'éteint. Le tableau montre ton trajet, les prochains arrêts et si tu es à l'heure."
   ru: "Shift+N переключает навигатор: карта, карта с табло смены, выключен. Табло показывает текущий рейс, ближайшие остановки и идёшь ли ты по графику."
   uk: "Shift+N перемикає навігатор: мапа, мапа з табло зміни, вимкнено. Табло показує поточний рейс, найближчі зупинки і чи йдеш ти за графіком."
@@ -30333,6 +30686,7 @@ _version: 2
 "Shift+M, or a click on the navigator, opens the city map with your route. Beside it you sign on for your duty with your personnel number and code: they are on your driver's pass, right there.":
   nl: "Shift+M, of een klik op de navigatie, opent de stadskaart met je route. Daarnaast meld je je aan voor je dienst met je personeelsnummer en code: die staan op je dienstpas, er vlak onder."
   de: "Shift+M oder ein Klick auf den Navigator öffnet den Stadtplan mit deiner Strecke. Daneben meldest du dich mit Personalnummer und Code zum Dienst an: Sie stehen gleich dort auf deinem Fahrerausweis."
+  da: "Shift+M, eller et klik på navigatoren, åbner bykortet med din rute. Ved siden af logger du på din vagt med dit personalenummer og din kode: de står på din chaufførs kort, lige dér."
   fr: "Shift+M, ou un clic sur le navigateur, ouvre le plan de la ville avec ton itinéraire. À côté, tu prends ton service avec ton matricule et ton code : ils sont juste là, sur ta carte de conducteur."
   ru: "Shift+M или щелчок по навигатору открывает карту города с твоим маршрутом. Рядом ты отмечаешься на смену табельным номером и кодом: они прямо там, на твоём удостоверении водителя."
   uk: "Shift+M або клацання по навігатору відкриває карту міста з твоїм маршрутом. Поруч ти відмічаєшся на зміну табельним номером і кодом: вони просто там, на твоєму посвідченні водія."
@@ -30340,6 +30694,7 @@ _version: 2
 "Signing on, the duty menu and the bus's screens can also be on a phone or tablet in your network. Turn it on under Settings › General › Phone & tablet; the game shows the address and the code when you drive.":
   nl: "Aanmelden, het dienstmenu en de schermen van de bus kunnen ook op een telefoon of tablet in je netwerk. Zet het aan bij Instellingen › Algemeen › Telefoon en tablet; het spel toont het adres en de code als je rijdt."
   de: "Anmelden, das Dienstmenü und die Bildschirme des Busses gehen auch auf einem Handy oder Tablet in deinem Netzwerk. Schalte es unter Einstellungen › Allgemein › Handy & Tablet ein; das Spiel zeigt Adresse und Code, wenn du fährst."
+  da: "Logon, vagtmenuen og busens skærme kan også være på en telefon eller tablet i dit netværk. Slå det til under Indstillinger › Generelt › Telefon og tablet; spillet viser adressen og koden, når du kører."
   fr: "La prise de service, le menu des postes et les écrans du bus peuvent aussi être sur un téléphone ou une tablette de ton réseau. Active-le dans Paramètres › Général › Téléphone et tablette ; le jeu affiche l'adresse et le code quand tu conduis."
   ru: "Отметка на смену, меню смен и экраны автобуса могут быть и на телефоне или планшете в твоей сети. Включи это в Настройки › Общие › Телефон и планшет; игра покажет адрес и код, когда ты поедешь."
   uk: "Відмітка на зміну, меню змін і екрани автобуса можуть бути й на телефоні чи планшеті у твоїй мережі. Увімкни це в Налаштування › Загальні › Телефон і планшет; гра покаже адресу й код, коли ти їхатимеш."
@@ -30347,6 +30702,7 @@ _version: 2
 "This question mark shows the tour again. Have a good ride!":
   nl: "Met dit vraagteken zie je de rondleiding opnieuw. Goede rit!"
   de: "Mit diesem Fragezeichen siehst du den Rundgang noch einmal. Gute Fahrt!"
+  da: "Dette spørgsmålstegn viser rundvisningen igen. God tur!"
   fr: "Ce point d'interrogation relance la visite. Bonne route !"
   ru: "Этот вопросительный знак покажет экскурсию снова. Счастливого пути!"
   uk: "Цей знак питання покаже екскурсію знову. Щасливої дороги!"
@@ -30354,6 +30710,7 @@ _version: 2
 "That's the tour. Have a good ride!":
   nl: "Dat was de rondleiding. Goede rit!"
   de: "Das war der Rundgang. Gute Fahrt!"
+  da: "Det var rundvisningen. God tur!"
   fr: "C'était la visite. Bonne route !"
   ru: "Вот и вся экскурсия. Счастливого пути!"
   uk: "Ось і вся екскурсія. Щасливої дороги!"
@@ -30361,6 +30718,7 @@ _version: 2
 "This bus has it already: %{file}":
   nl: "Deze bus heeft het al: %{file}"
   de: "Dieser Bus hat sie schon: %{file}"
+  da: "Denne bus har den allerede: %{file}"
   fr: "Ce bus l’a déjà : %{file}"
   ru: "У этого автобуса он уже есть: %{file}"
   uk: "У цього автобуса він уже є: %{file}"
@@ -30368,6 +30726,7 @@ _version: 2
 "A file called %{file} lies beside this bus already, and is never written over":
   nl: "Naast deze bus ligt al een bestand %{file}, en dat wordt nooit overschreven"
   de: "Neben diesem Bus liegt schon eine Datei %{file}, und sie wird nie überschrieben"
+  da: "En fil, der hedder %{file}, ligger allerede ved siden af denne bus og bliver aldrig overskrevet"
   fr: "Un fichier %{file} se trouve déjà à côté de ce bus, et il n’est jamais écrasé"
   ru: "Рядом с этим автобусом уже лежит файл %{file}, и он никогда не перезаписывается"
   uk: "Поруч із цим автобусом уже лежить файл %{file}, і його ніколи не буде перезаписано"
@@ -30375,6 +30734,7 @@ _version: 2
 "No copy of it on this computer":
   nl: "Er staat geen exemplaar van op deze computer"
   de: "Auf diesem Rechner gibt es keine Kopie davon"
+  da: "Ingen kopi af den på denne computer"
   fr: "Aucune copie sur cet ordinateur"
   ru: "На этом компьютере нет его копии"
   uk: "На цьому комп’ютері немає його копії"
@@ -30382,6 +30742,7 @@ _version: 2
 "openOMSI has no folder of its own to put it in":
   nl: "openOMSI heeft geen eigen map om het in te zetten"
   de: "openOMSI hat keinen eigenen Ordner, um sie abzulegen"
+  da: "openOMSI har ingen egen mappe at lægge den i"
   fr: "openOMSI n’a pas de dossier à lui où le placer"
   ru: "У openOMSI нет собственной папки, куда его положить"
   uk: "openOMSI не має власної теки, куди його покласти"
@@ -30389,6 +30750,7 @@ _version: 2
 "That would be in the OMSI 2 folder, which openOMSI does not write to":
   nl: "Dat zou in de map van OMSI 2 zijn, en daarin schrijft openOMSI niet"
   de: "Das wäre im OMSI-2-Ordner, in den openOMSI nicht schreibt"
+  da: "Det ville være i OMSI 2-mappen, som openOMSI ikke skriver i"
   fr: "Ce serait dans le dossier d’OMSI 2, où openOMSI n’écrit pas"
   ru: "Это была бы папка OMSI 2, а openOMSI в неё не пишет"
   uk: "Це була б тека OMSI 2, а openOMSI в неї не пише"
@@ -30396,6 +30758,7 @@ _version: 2
 "The copy found cannot be read: %{why}":
   nl: "Het gevonden exemplaar is niet te lezen: %{why}"
   de: "Die gefundene Kopie lässt sich nicht lesen: %{why}"
+  da: "Den fundne kopi kan ikke læses: %{why}"
   fr: "La copie trouvée est illisible : %{why}"
   ru: "Найденную копию не удаётся прочитать: %{why}"
   uk: "Знайдену копію не вдається прочитати: %{why}"
@@ -30403,6 +30766,7 @@ _version: 2
 "Writing it failed: %{why}":
   nl: "Wegschrijven lukte niet: %{why}"
   de: "Das Schreiben ist fehlgeschlagen: %{why}"
+  da: "Skrivningen mislykkedes: %{why}"
   fr: "L’écriture a échoué : %{why}"
   ru: "Не удалось записать: %{why}"
   uk: "Не вдалося записати: %{why}"
@@ -30410,6 +30774,7 @@ _version: 2
 "%{file} added beside %{bus}":
   nl: "%{file} staat nu bij de %{bus}"
   de: "%{file} liegt jetzt neben %{bus}"
+  da: "%{file} tilføjet ved siden af %{bus}"
   fr: "%{file} placé à côté de %{bus}"
   ru: "%{file} добавлен к %{bus}"
   uk: "%{file} додано до %{bus}"
@@ -30417,6 +30782,7 @@ _version: 2
 "Not added: %{why}":
   nl: "Niet toegevoegd: %{why}"
   de: "Nicht hinzugefügt: %{why}"
+  da: "Ikke tilføjet: %{why}"
   fr: "Non ajouté : %{why}"
   ru: "Не добавлено: %{why}"
   uk: "Не додано: %{why}"
@@ -30424,6 +30790,7 @@ _version: 2
 "Or take one of its own":
   nl: "Of neem er een van hemzelf"
   de: "Oder nimm eine eigene"
+  da: "Eller tag en af dens egne"
   fr: "Ou prenez l’un des siens"
   ru: "Или возьмите один из его собственных"
   uk: "Або візьміть один із його власних"
@@ -30431,6 +30798,7 @@ _version: 2
 "Choose a depot file":
   nl: "Hof-bestand kiezen"
   de: "Hofdatei wählen"
+  da: "Vælg en depotfil"
   fr: "Choisir un fichier de dépôt"
   ru: "Выбрать файл депо"
   uk: "Вибрати файл депо"
@@ -30438,6 +30806,7 @@ _version: 2
 "This bus does not know this map":
   nl: "Deze bus kent deze kaart niet"
   de: "Dieser Bus kennt diese Karte nicht"
+  da: "Denne bus kender ikke dette kort"
   fr: "Ce bus ne connaît pas cette carte"
   ru: "Этот автобус не знает эту карту"
   uk: "Цей автобус не знає цієї мапи"
@@ -30445,6 +30814,7 @@ _version: 2
 "%{bus} does not carry %{hof}, the depot file of %{map}. A bus's IBIS and destination displays know only the codes and destinations of the depot files beside it.":
   nl: "De %{bus} heeft %{hof} niet bij zich, het hof-bestand van %{map}. De IBIS en de bestemmingsfilm van een bus kennen alleen de codes en bestemmingen van de hof-bestanden die naast hem liggen."
   de: "%{bus} hat %{hof} nicht dabei, die Hofdatei von %{map}. IBIS und Zielanzeigen eines Busses kennen nur die Codes und Ziele der Hofdateien, die neben ihm liegen."
+  da: "%{bus} har ikke %{hof}, depotfilen til %{map}. En buss IBIS og destinationsskilte kender kun koderne og destinationerne i de depotfiler, der ligger ved siden af den."
   fr: "%{bus} n’a pas %{hof}, le fichier de dépôt de %{map}. L’IBIS et les girouettes d’un bus ne connaissent que les codes et destinations des fichiers de dépôt placés à côté de lui."
   ru: "У %{bus} нет %{hof} — файла депо карты %{map}. IBIS и указатели маршрута автобуса знают только коды и конечные пункты из файлов депо, лежащих рядом с ним."
   uk: "У %{bus} немає %{hof} — файлу депо мапи %{map}. IBIS і покажчики маршруту автобуса знають лише коди й кінцеві зупинки з файлів депо, що лежать поруч із ним."
@@ -30452,6 +30822,7 @@ _version: 2
 "Add the map's depot file":
   nl: "Hof-bestand van de kaart toevoegen"
   de: "Hofdatei der Karte hinzufügen"
+  da: "Tilføj kortets depotfil"
   fr: "Ajouter le fichier de dépôt de la carte"
   ru: "Добавить файл депо карты"
   uk: "Додати файл депо мапи"
@@ -30459,6 +30830,7 @@ _version: 2
 "%{hof} is the depot file of %{map}: with it beside the bus, its IBIS and destination displays know the map's codes and destinations.":
   nl: "%{hof} is het hof-bestand van %{map}. Ligt het naast de bus, dan kennen zijn IBIS en bestemmingsfilm de codes en bestemmingen van de kaart."
   de: "%{hof} ist die Hofdatei von %{map}: Liegt sie neben dem Bus, kennen sein IBIS und seine Zielanzeigen die Codes und Ziele der Karte."
+  da: "%{hof} er depotfilen til %{map}: med den ved siden af bussen kender dens IBIS og destinationsskilte kortets koder og destinationer."
   fr: "%{hof} est le fichier de dépôt de %{map} : placé à côté du bus, son IBIS et ses girouettes connaissent les codes et destinations de la carte."
   ru: "%{hof} — файл депо карты %{map}: если он лежит рядом с автобусом, его IBIS и указатели знают коды и конечные пункты карты."
   uk: "%{hof} — файл депо мапи %{map}: якщо він лежить поруч з автобусом, його IBIS і покажчики знають коди й кінцеві зупинки мапи."
@@ -30466,6 +30838,7 @@ _version: 2
 "For this drive openOMSI borrows it from %{folder}, which carries it. Beside this bus it is the bus's own, in its list of depot files.":
   nl: "Voor deze rit leent openOMSI het van %{folder}, die het wel heeft. Naast deze bus wordt het van de bus zelf, in zijn lijst met hof-bestanden."
   de: "Für diese Fahrt leiht openOMSI sie von %{folder}, der sie hat. Neben diesem Bus gehört sie dem Bus selbst, in seiner Liste der Hofdateien."
+  da: "Til denne kørsel låner openOMSI den fra %{folder}, som har den. Ved siden af denne bus er den busens egen, på dens liste over depotfiler."
   fr: "Pour ce trajet, openOMSI l’emprunte à %{folder}, qui l’a. À côté de ce bus, il devient le sien, dans sa liste de fichiers de dépôt."
   ru: "В этой поездке openOMSI берёт его у %{folder}, у которого он есть. Рядом с этим автобусом он станет его собственным, в его списке файлов депо."
   uk: "У цій поїздці openOMSI позичає його в %{folder}, де він є. Поруч із цим автобусом він стане його власним, у його списку файлів депо."
@@ -30473,6 +30846,7 @@ _version: 2
 "Without it the bus takes %{file}, which knows %{known} of the %{total} destinations here.":
   nl: "Zonder neemt de bus %{file}, en dat kent %{known} van de %{total} bestemmingen hier."
   de: "Ohne sie nimmt der Bus %{file}, die %{known} der %{total} Ziele hier kennt."
+  da: "Uden den tager bussen %{file}, som kender %{known} af de %{total} destinationer her."
   fr: "Sans lui, le bus prend %{file}, qui connaît %{known} des %{total} destinations d’ici."
   ru: "Без него автобус возьмёт %{file}, который знает %{known} из %{total} конечных пунктов здесь."
   uk: "Без нього автобус візьме %{file}, що знає %{known} із %{total} кінцевих зупинок тут."
@@ -30480,6 +30854,7 @@ _version: 2
 "Without it the bus takes %{file}.":
   nl: "Zonder neemt de bus %{file}."
   de: "Ohne sie nimmt der Bus %{file}."
+  da: "Uden den tager bussen %{file}."
   fr: "Sans lui, le bus prend %{file}."
   ru: "Без него автобус возьмёт %{file}."
   uk: "Без нього автобус візьме %{file}."
@@ -30487,6 +30862,7 @@ _version: 2
 "Without it the IBIS takes none of the map's codes, and the destination displays stay blank.":
   nl: "Zonder neemt de IBIS geen enkele code van de kaart aan en blijft de bestemmingsfilm leeg."
   de: "Ohne sie nimmt das IBIS keinen Code der Karte an, und die Zielanzeigen bleiben leer."
+  da: "Uden den tager IBIS ingen af kortets koder, og destinationsskiltene forbliver tomme."
   fr: "Sans lui, l’IBIS refuse tous les codes de la carte et les girouettes restent vides."
   ru: "Без него IBIS не примет ни одного кода карты, а указатели маршрута останутся пустыми."
   uk: "Без нього IBIS не прийме жодного коду мапи, а покажчики маршруту лишаться порожніми."
@@ -30494,6 +30870,7 @@ _version: 2
 "Add %{file} beside this bus? It came with the map and knows %{n} destinations.":
   nl: "Zal ik %{file} bij deze bus neerzetten? Het kwam met de kaart mee en kent %{n} bestemmingen."
   de: "%{file} neben diesen Bus legen? Sie kam mit der Karte und kennt %{n} Ziele."
+  da: "Tilføj %{file} ved siden af denne bus? Den fulgte med kortet og kender %{n} destinationer."
   fr: "Placer %{file} à côté de ce bus ? Il est venu avec la carte et connaît %{n} destinations."
   ru: "Положить %{file} рядом с этим автобусом? Он пришёл вместе с картой и знает %{n} конечных пунктов."
   uk: "Покласти %{file} поруч із цим автобусом? Він прийшов разом із мапою і знає %{n} кінцевих зупинок."
@@ -30501,6 +30878,7 @@ _version: 2
 "Add %{file} beside this bus? It is the copy %{folder} carries, and knows %{n} destinations.":
   nl: "Zal ik %{file} bij deze bus neerzetten? Het is het exemplaar dat %{folder} heeft, en het kent %{n} bestemmingen."
   de: "%{file} neben diesen Bus legen? Es ist die Kopie, die %{folder} hat, und sie kennt %{n} Ziele."
+  da: "Tilføj %{file} ved siden af denne bus? Det er den kopi, %{folder} har, og den kender %{n} destinationer."
   fr: "Placer %{file} à côté de ce bus ? C’est la copie qu’a %{folder}, et il connaît %{n} destinations."
   ru: "Положить %{file} рядом с этим автобусом? Это копия из %{folder}, она знает %{n} конечных пунктов."
   uk: "Покласти %{file} поруч із цим автобусом? Це копія з %{folder}, вона знає %{n} кінцевих зупинок."
@@ -30508,6 +30886,7 @@ _version: 2
 "Add it":
   nl: "Toevoegen"
   de: "Hinzufügen"
+  da: "Tilføj den"
   fr: "Ajouter"
   ru: "Добавить"
   uk: "Додати"
@@ -30515,6 +30894,7 @@ _version: 2
 "No copy of %{hof} was found on this computer: no other bus carries it, and the map's folder has none.":
   nl: "Op deze computer is geen exemplaar van %{hof} gevonden: geen andere bus heeft het, en de map van de kaart ook niet."
   de: "Auf diesem Rechner wurde keine Kopie von %{hof} gefunden: Kein anderer Bus hat sie, und der Ordner der Karte auch nicht."
+  da: "Ingen kopi af %{hof} blev fundet på denne computer: ingen anden bus har den, og kortets mappe har ingen."
   fr: "Aucune copie de %{hof} n’a été trouvée sur cet ordinateur : aucun autre bus ne l’a, et le dossier de la carte non plus."
   ru: "На этом компьютере не найдено ни одной копии %{hof}: её нет ни у другого автобуса, ни в папке карты."
   uk: "На цьому комп’ютері не знайдено жодної копії %{hof}: її немає ні в іншого автобуса, ні в теці мапи."
@@ -30522,6 +30902,7 @@ _version: 2
 "The copy goes into openOMSI's own folder, beside this bus. Nothing in OMSI 2 is changed or written over.":
   nl: "Het exemplaar komt in de eigen map van openOMSI, naast deze bus. In OMSI 2 wordt niets veranderd of overschreven."
   de: "Die Kopie kommt in den eigenen Ordner von openOMSI, neben diesen Bus. In OMSI 2 wird nichts geändert oder überschrieben."
+  da: "Kopien lægges i openOMSI's egen mappe, ved siden af denne bus. Intet i OMSI 2 ændres eller overskrives."
   fr: "La copie va dans le dossier propre d’openOMSI, à côté de ce bus. Rien n’est modifié ni écrasé dans OMSI 2."
   ru: "Копия ляжет в собственную папку openOMSI, рядом с этим автобусом. В OMSI 2 ничего не меняется и не перезаписывается."
   uk: "Копія ляже до власної теки openOMSI, поруч із цим автобусом. В OMSI 2 нічого не змінюється й не перезаписується."
@@ -30529,6 +30910,7 @@ _version: 2
 "Reading the depot files…":
   nl: "Hof-bestanden lezen…"
   de: "Hofdateien werden gelesen…"
+  da: "Læser depotfilerne…"
   fr: "Lecture des fichiers de dépôt…"
   ru: "Чтение файлов депо…"
   uk: "Читання файлів депо…"
@@ -30536,6 +30918,7 @@ _version: 2
 "Borrowed from %{folder} for this drive":
   nl: "Voor deze rit geleend van %{folder}"
   de: "Für diese Fahrt von %{folder} geliehen"
+  da: "Lånt fra %{folder} til denne kørsel"
   fr: "Emprunté à %{folder} pour ce trajet"
   ru: "Взят у %{folder} на эту поездку"
   uk: "Позичено в %{folder} на цю поїздку"
@@ -30543,6 +30926,7 @@ _version: 2
 "This bus has no depot file":
   nl: "Deze bus heeft geen hof-bestand"
   de: "Dieser Bus hat keine Hofdatei"
+  da: "Denne bus har ingen depotfil"
   fr: "Ce bus n’a aucun fichier de dépôt"
   ru: "У этого автобуса нет файла депо"
   uk: "У цього автобуса немає файлу депо"
@@ -30550,6 +30934,7 @@ _version: 2
 "This map's depot file":
   nl: "Het hof-bestand van deze kaart"
   de: "Die Hofdatei dieser Karte"
+  da: "Dette korts depotfil"
   fr: "Le fichier de dépôt de cette carte"
   ru: "Файл депо этой карты"
   uk: "Файл депо цієї мапи"
@@ -30557,6 +30942,7 @@ _version: 2
 "Fits this map":
   nl: "Past bij deze kaart"
   de: "Passt zu dieser Karte"
+  da: "Passer til dette kort"
   fr: "Convient à cette carte"
   ru: "Подходит к этой карте"
   uk: "Підходить до цієї мапи"
@@ -30564,6 +30950,7 @@ _version: 2
 "Knows %{known} of %{total} destinations here":
   nl: "Kent %{known} van de %{total} bestemmingen hier"
   de: "Kennt hier %{known} von %{total} Zielen"
+  da: "Kender %{known} af %{total} destinationer her"
   fr: "Connaît %{known} des %{total} destinations d’ici"
   ru: "Знает %{known} из %{total} конечных пунктов здесь"
   uk: "Знає %{known} із %{total} кінцевих зупинок тут"
@@ -30571,6 +30958,7 @@ _version: 2
 "None of this map's destinations":
   nl: "Geen enkele bestemming van deze kaart"
   de: "Kein Ziel dieser Karte"
+  da: "Ingen af dette korts destinationer"
   fr: "Aucune destination de cette carte"
   ru: "Ни одного конечного пункта этой карты"
   uk: "Жодної кінцевої зупинки цієї мапи"
@@ -30578,6 +30966,7 @@ _version: 2
 "one destination":
   nl: "één bestemming"
   de: "ein Ziel"
+  da: "én destination"
   fr: "une destination"
   ru: "один конечный пункт"
   uk: "одна кінцева зупинка"
@@ -30585,6 +30974,7 @@ _version: 2
 "%{n} destinations":
   nl: "%{n} bestemmingen"
   de: "%{n} Ziele"
+  da: "%{n} destinationer"
   fr: "%{n} destinations"
   ru: "конечных пунктов: %{n}"
   uk: "кінцевих зупинок: %{n}"
@@ -30592,6 +30982,7 @@ _version: 2
 "The depot files of this bus: which one the drive takes, and adding the map's":
   nl: "De hof-bestanden van deze bus: welke de rit neemt, en dat van de kaart toevoegen"
   de: "Die Hofdateien dieses Busses: welche die Fahrt nimmt, und die der Karte hinzufügen"
+  da: "Denne buss depotfiler: hvilken kørslen tager, og tilføjelse af kortets"
   fr: "Les fichiers de dépôt de ce bus : celui que prend le trajet, et ajouter celui de la carte"
   ru: "Файлы депо этого автобуса: какой возьмёт поездка, и добавление файла карты"
   uk: "Файли депо цього автобуса: який візьме поїздка, і додавання файлу мапи"
@@ -30599,6 +30990,7 @@ _version: 2
 "In use":
   nl: "In gebruik"
   de: "In Gebrauch"
+  da: "I brug"
   fr: "Utilisé"
   ru: "Используется"
   uk: "Використовується"
@@ -30606,6 +30998,7 @@ _version: 2
 "from %{folder}":
   nl: "van %{folder}"
   de: "von %{folder}"
+  da: "fra %{folder}"
   fr: "de %{folder}"
   ru: "из %{folder}"
   uk: "з %{folder}"
@@ -30613,6 +31006,7 @@ _version: 2
 "Borrowed for this drive":
   nl: "Geleend voor deze rit"
   de: "Für diese Fahrt geliehen"
+  da: "Lånt til denne kørsel"
   fr: "Emprunté pour ce trajet"
   ru: "Взят на эту поездку"
   uk: "Позичено на цю поїздку"
@@ -30620,6 +31014,7 @@ _version: 2
 "best for this map":
   nl: "past het best bij deze kaart"
   de: "passt am besten zu dieser Karte"
+  da: "bedst til dette kort"
   fr: "le meilleur pour cette carte"
   ru: "лучше всего для этой карты"
   uk: "найкраще для цієї мапи"
@@ -30627,6 +31022,7 @@ _version: 2
 "automatic":
   nl: "automatisch"
   de: "automatisch"
+  da: "automatisk"
   fr: "automatique"
   ru: "автоматически"
   uk: "автоматично"
@@ -30634,6 +31030,7 @@ _version: 2
 "added by openOMSI":
   nl: "toegevoegd door openOMSI"
   de: "von openOMSI hinzugefügt"
+  da: "tilføjet af openOMSI"
   fr: "ajouté par openOMSI"
   ru: "добавлен openOMSI"
   uk: "додано openOMSI"
@@ -30641,6 +31038,7 @@ _version: 2
 "from the map's folder":
   nl: "uit de map van de kaart"
   de: "aus dem Ordner der Karte"
+  da: "fra kortets mappe"
   fr: "du dossier de la carte"
   ru: "из папки карты"
   uk: "з теки мапи"
@@ -30648,6 +31046,7 @@ _version: 2
 "This bus has the depot file of this map":
   nl: "Deze bus heeft het hof-bestand van deze kaart al"
   de: "Dieser Bus hat die Hofdatei dieser Karte schon"
+  da: "Denne bus har dette korts depotfil"
   fr: "Ce bus a déjà le fichier de dépôt de cette carte"
   ru: "У этого автобуса уже есть файл депо этой карты"
   uk: "У цього автобуса вже є файл депо цієї мапи"
@@ -30655,6 +31054,7 @@ _version: 2
 "Nothing to add":
   nl: "Niets toe te voegen"
   de: "Nichts hinzuzufügen"
+  da: "Intet at tilføje"
   fr: "Rien à ajouter"
   ru: "Нечего добавлять"
   uk: "Нічого додавати"
@@ -30662,6 +31062,7 @@ _version: 2
 "This bus does not carry %{hof}, the depot file of this map.":
   nl: "Deze bus heeft %{hof} niet, het hof-bestand van deze kaart."
   de: "Dieser Bus hat %{hof} nicht, die Hofdatei dieser Karte."
+  da: "Denne bus har ikke %{hof}, dette korts depotfil."
   fr: "Ce bus n’a pas %{hof}, le fichier de dépôt de cette carte."
   ru: "У этого автобуса нет %{hof} — файла депо этой карты."
   uk: "У цього автобуса немає %{hof} — файлу депо цієї мапи."
@@ -30669,6 +31070,7 @@ _version: 2
 "This bus has no depot files of its own.":
   nl: "Deze bus heeft geen eigen hof-bestanden."
   de: "Dieser Bus hat keine eigenen Hofdateien."
+  da: "Denne bus har ingen egne depotfiler."
   fr: "Ce bus n’a aucun fichier de dépôt à lui."
   ru: "У этого автобуса нет собственных файлов депо."
   uk: "У цього автобуса немає власних файлів депо."
@@ -30676,6 +31078,7 @@ _version: 2
 "The depot file decides which destinations the IBIS and the displays know.":
   nl: "Het hof-bestand bepaalt welke bestemmingen de IBIS en de borden kennen."
   de: "Die Hofdatei bestimmt, welche Ziele das IBIS und die Anzeigen kennen."
+  da: "Depotfilen afgør, hvilke destinationer IBIS og skiltene kender."
   fr: "Le fichier de dépôt décide des destinations que connaissent l’IBIS et les girouettes."
   ru: "Файл депо определяет, какие конечные пункты знают IBIS и указатели."
   uk: "Файл депо визначає, які кінцеві зупинки знають IBIS і покажчики."
@@ -30683,6 +31086,7 @@ _version: 2
 "%{map} names no depot file of its own":
   nl: "%{map} noemt geen eigen hof-bestand"
   de: "%{map} nennt keine eigene Hofdatei"
+  da: "%{map} angiver ingen egen depotfil"
   fr: "%{map} n’indique aucun fichier de dépôt"
   ru: "%{map} не указывает собственного файла депо"
   uk: "%{map} не вказує власного файлу депо"
@@ -30690,6 +31094,7 @@ _version: 2
 "The depot file of %{map}: %{hof}":
   nl: "Hof-bestand van %{map}: %{hof}"
   de: "Hofdatei von %{map}: %{hof}"
+  da: "Depotfilen til %{map}: %{hof}"
   fr: "Fichier de dépôt de %{map} : %{hof}"
   ru: "Файл депо карты %{map}: %{hof}"
   uk: "Файл депо мапи %{map}: %{hof}"
@@ -30697,6 +31102,7 @@ _version: 2
 "one depot file beside this bus":
   nl: "één hof-bestand bij deze bus"
   de: "eine Hofdatei bei diesem Bus"
+  da: "én depotfil ved siden af denne bus"
   fr: "un fichier de dépôt pour ce bus"
   ru: "один файл депо у этого автобуса"
   uk: "один файл депо в цього автобуса"
@@ -30704,6 +31110,7 @@ _version: 2
 "%{n} depot files beside this bus":
   nl: "%{n} hof-bestanden bij deze bus"
   de: "%{n} Hofdateien bei diesem Bus"
+  da: "%{n} depotfiler ved siden af denne bus"
   fr: "%{n} fichiers de dépôt pour ce bus"
   ru: "файлов депо у этого автобуса: %{n}"
   uk: "файлів депо в цього автобуса: %{n}"
@@ -30711,6 +31118,7 @@ _version: 2
 "your choice":
   nl: "je eigen keuze"
   de: "deine Wahl"
+  da: "dit valg"
   fr: "votre choix"
   ru: "ваш выбор"
   uk: "ваш вибір"
@@ -30718,6 +31126,7 @@ _version: 2
 "In use: %{hof}":
   nl: "In gebruik: %{hof}"
   de: "In Gebrauch: %{hof}"
+  da: "I brug: %{hof}"
   fr: "Utilisé : %{hof}"
   ru: "Используется: %{hof}"
   uk: "Використовується: %{hof}"
@@ -30725,6 +31134,7 @@ _version: 2
 "Delete %{name}?":
   nl: "%{name} verwijderen?"
   de: "%{name} löschen?"
+  da: "Slet %{name}?"
   fr: "Supprimer %{name} ?"
   ru: "Удалить %{name}?"
   uk: "Видалити %{name}?"
@@ -30732,6 +31142,7 @@ _version: 2
 "Their personnel file and service record on this computer are deleted. This cannot be undone.":
   nl: "Het personeelsdossier en de staat van dienst op deze computer worden verwijderd. Dit kan niet ongedaan worden gemaakt."
   de: "Personalakte und Dienstbilanz auf diesem Computer werden gelöscht. Das lässt sich nicht rückgängig machen."
+  da: "Vedkommendes personalemappe og tjenestebog på denne computer slettes. Det kan ikke fortrydes."
   fr: "Son dossier et ses états de service sur cet ordinateur sont supprimés. C'est irréversible."
   ru: "Личное дело и послужной список на этом компьютере будут удалены. Это нельзя отменить."
   uk: "Особова справа та послужний список на цьому комп'ютері будуть видалені. Це не можна скасувати."
@@ -30739,6 +31150,7 @@ _version: 2
 "Navigator size":
   nl: "Grootte van de navigator"
   de: "Größe des Navigators"
+  da: "Navigatorens størrelse"
   fr: "Taille du navigateur"
   ru: "Размер навигатора"
   uk: "Розмір навігатора"
@@ -30746,6 +31158,7 @@ _version: 2
 "Bus stop signs":
   nl: "Haltebordjes"
   de: "Haltestellenschilder"
+  da: "Stoppestedsskilte"
   fr: "Panneaux d'arrêt"
   ru: "Знаки остановок"
   uk: "Знаки зупинок"
@@ -30753,6 +31166,7 @@ _version: 2
 "German (H)":
   nl: "Duits (H)"
   de: "Deutsch (H)"
+  da: "Tysk (H)"
   fr: "Allemand (H)"
   ru: "Немецкие (H)"
   uk: "Німецькі (H)"
@@ -30760,6 +31174,7 @@ _version: 2
 "British":
   nl: "Brits"
   de: "Britisch"
+  da: "Britisk"
   fr: "Britannique"
   ru: "Британские"
   uk: "Британські"
@@ -30767,6 +31182,7 @@ _version: 2
 "French":
   nl: "Frans"
   de: "Französisch"
+  da: "Fransk"
   fr: "Français"
   ru: "Французские"
   uk: "Французькі"
@@ -30774,6 +31190,7 @@ _version: 2
 "Scan with your phone or tablet":
   nl: "Scan met je telefoon of tablet"
   de: "Mit Handy oder Tablet scannen"
+  da: "Scan med din telefon eller tablet"
   fr: "Scannez avec votre téléphone ou votre tablette"
   ru: "Отсканируйте телефоном или планшетом"
   uk: "Відскануйте телефоном або планшетом"
@@ -30781,6 +31198,7 @@ _version: 2
 "Pairing code %{code}":
   nl: "Koppelcode %{code}"
   de: "Kopplungscode %{code}"
+  da: "Parringskode %{code}"
   fr: "Code d’appairage %{code}"
   ru: "Код сопряжения %{code}"
   uk: "Код спарювання %{code}"
@@ -30788,6 +31206,7 @@ _version: 2
 "Trip completed":
   nl: "Rit voltooid"
   de: "Fahrt abgeschlossen"
+  da: "Rejse gennemført"
   fr: "Course terminée"
   ru: "Рейс завершён"
   uk: "Рейс завершено"
@@ -30795,6 +31214,7 @@ _version: 2
 "Trip ended":
   nl: "Rit afgesloten"
   de: "Fahrt beendet"
+  da: "Rejse afsluttet"
   fr: "Fin de la course"
   ru: "Рейс окончен"
   uk: "Рейс закінчено"
@@ -30802,6 +31222,7 @@ _version: 2
 "Worst delay":
   nl: "Grootste afwijking"
   de: "Größte Abweichung"
+  da: "Værste forsinkelse"
   fr: "Plus gros écart"
   ru: "Наибольшее отклонение"
   uk: "Найбільше відхилення"
@@ -30809,6 +31230,7 @@ _version: 2
 "Average delay":
   nl: "Gemiddelde afwijking"
   de: "Mittlere Abweichung"
+  da: "Gennemsnitlig forsinkelse"
   fr: "Écart moyen"
   ru: "Среднее отклонение"
   uk: "Середнє відхилення"
@@ -30816,6 +31238,7 @@ _version: 2
 "Driving time":
   nl: "Rijtijd"
   de: "Fahrzeit"
+  da: "Køretid"
   fr: "Temps de conduite"
   ru: "Время в пути"
   uk: "Час у дорозі"
@@ -30823,6 +31246,7 @@ _version: 2
 "Distance":
   nl: "Afstand"
   de: "Strecke"
+  da: "Afstand"
   fr: "Distance"
   ru: "Расстояние"
   uk: "Відстань"
@@ -30832,6 +31256,7 @@ _version: 2
 "Jolts":
   nl: "Schokken"
   de: "Rucke"
+  da: "Stød"
   fr: "À-coups"
   ru: "Толчки"
   uk: "Поштовхи"
@@ -30839,6 +31264,7 @@ _version: 2
 "%{m} min":
   nl: "%{m} min"
   de: "%{m} Min."
+  da: "%{m} min"
   fr: "%{m} min"
   ru: "%{m} мин"
   uk: "%{m} хв"
@@ -30846,6 +31272,7 @@ _version: 2
 "Saved to your service record":
   nl: "Bijgeschreven in je staat van dienst"
   de: "In deiner Dienstakte gespeichert"
+  da: "Gemt i din tjenestebog"
   fr: "Enregistrée dans vos états de service"
   ru: "Сохранено в послужном списке"
   uk: "Збережено в послужному списку"
@@ -30853,6 +31280,7 @@ _version: 2
 "The trip could not be saved":
   nl: "De rit kon niet worden bewaard"
   de: "Die Fahrt konnte nicht gespeichert werden"
+  da: "Rejsen kunne ikke gemmes"
   fr: "La course n’a pas pu être enregistrée"
   ru: "Не удалось сохранить рейс"
   uk: "Не вдалося зберегти рейс"
@@ -30860,6 +31288,7 @@ _version: 2
 "Enter or click to close":
   nl: "Enter of klik om te sluiten"
   de: "Enter oder Klick zum Schließen"
+  da: "Enter eller klik for at lukke"
   fr: "Entrée ou clic pour fermer"
   ru: "Enter или щелчок, чтобы закрыть"
   uk: "Enter або клацання, щоб закрити"
@@ -30867,6 +31296,7 @@ _version: 2
 "No timetable: nothing to be early or late for":
   nl: "Zonder dienstregeling is niets te vroeg of te laat"
   de: "Ohne Fahrplan ist nichts zu früh oder zu spät"
+  da: "Ingen køreplan: intet at være tidlig eller forsinket i forhold til"
   fr: "Sans horaire, rien n’est en avance ni en retard"
   ru: "Без расписания нельзя опоздать или приехать раньше"
   uk: "Без розкладу не можна запізнитися чи приїхати раніше"
@@ -30874,6 +31304,7 @@ _version: 2
 "No stop of this trip was served":
   nl: "Op deze rit is geen halte aangedaan"
   de: "Auf dieser Fahrt wurde keine Haltestelle bedient"
+  da: "Intet stoppested på denne rejse blev betjent"
   fr: "Aucun arrêt de cette course n’a été desservi"
   ru: "На этом рейсе не обслужено ни одной остановки"
   uk: "На цьому рейсі не обслуговано жодної зупинки"
@@ -30881,6 +31312,7 @@ _version: 2
 "Average":
   nl: "Gemiddeld"
   de: "Mittel"
+  da: "Gennemsnit"
   fr: "Moyenne"
   ru: "Среднее"
   uk: "Середнє"
@@ -30888,6 +31320,7 @@ _version: 2
 "Worst":
   nl: "Uitschieter"
   de: "Ausreißer"
+  da: "Værst"
   fr: "Pire écart"
   ru: "Худшее"
   uk: "Найгірше"
@@ -30895,6 +31328,7 @@ _version: 2
 "Trip reports":
   nl: "Ritverslagen"
   de: "Fahrtberichte"
+  da: "Rejserapporter"
   fr: "Rapports de course"
   ru: "Отчёты о рейсах"
   uk: "Звіти про рейси"
@@ -30902,6 +31336,7 @@ _version: 2
 "Destination":
   nl: "Bestemming"
   de: "Ziel"
+  da: "Destination"
   fr: "Destination"
   ru: "Назначение"
   uk: "Призначення"
@@ -30930,6 +31365,7 @@ _version: 2
 "Diversion":
   nl: "Omleiding"
   de: "Umleitung"
+  da: "Omkørsel"
   fr: "Déviation"
   ru: "Объезд"
   uk: "Об’їзд"
@@ -30937,6 +31373,7 @@ _version: 2
 "Via %{n}":
   nl: "Via %{n}"
   de: "Via %{n}"
+  da: "Via %{n}"
   fr: "Étape %{n}"
   ru: "Точка %{n}"
   uk: "Точка %{n}"
@@ -30944,6 +31381,7 @@ _version: 2
 "Via %{n} reached":
   nl: "Via %{n} bereikt"
   de: "Via %{n} erreicht"
+  da: "Via %{n} nået"
   fr: "Étape %{n} atteinte"
   ru: "Точка %{n} пройдена"
   uk: "Точку %{n} пройдено"
@@ -30951,6 +31389,7 @@ _version: 2
 "You have arrived":
   nl: "Je bent op je bestemming"
   de: "Ziel erreicht"
+  da: "Du er fremme"
   fr: "Vous êtes arrivé"
   ru: "Вы прибыли"
   uk: "Ви прибули"
@@ -30958,6 +31397,7 @@ _version: 2
 "No road within 60 m":
   nl: "Geen weg binnen 60 m"
   de: "Keine Straße im Umkreis von 60 m"
+  da: "Ingen vej inden for 60 m"
   fr: "Aucune route à moins de 60 m"
   ru: "Нет дороги в пределах 60 м"
   uk: "Немає дороги в межах 60 м"
@@ -30965,6 +31405,7 @@ _version: 2
 "No way found to this point":
   nl: "Geen weg naar dit punt gevonden"
   de: "Kein Weg zu diesem Punkt gefunden"
+  da: "Ingen vej fundet til dette punkt"
   fr: "Aucun chemin trouvé vers ce point"
   ru: "Путь к этой точке не найден"
   uk: "Шлях до цієї точки не знайдено"
@@ -30972,6 +31413,7 @@ _version: 2
 "Ten points at most":
   nl: "Hooguit tien punten"
   de: "Höchstens zehn Punkte"
+  da: "Højst ti punkter"
   fr: "Dix points au maximum"
   ru: "Не больше десяти точек"
   uk: "Не більше десяти точок"
@@ -30979,6 +31421,7 @@ _version: 2
 "Point %{n}":
   nl: "Punt %{n}"
   de: "Punkt %{n}"
+  da: "Punkt %{n}"
   fr: "Point %{n}"
   ru: "Место %{n}"
   uk: "Місце %{n}"
@@ -30986,6 +31429,7 @@ _version: 2
 "For your navigation only":
   nl: "Alleen voor je eigen navigatie"
   de: "Nur für deine Navigation"
+  da: "Kun til din navigation"
   fr: "Pour votre navigation uniquement"
   ru: "Только для вашей навигации"
   uk: "Лише для вашої навігації"
@@ -30993,6 +31437,7 @@ _version: 2
 "Click the map where you want to go.":
   nl: "Klik op de kaart waar je heen wilt."
   de: "Klicke auf der Karte, wohin du fahren willst."
+  da: "Klik på kortet, hvor du vil hen."
   fr: "Cliquez sur la carte là où vous voulez aller."
   ru: "Нажмите на карте туда, куда хотите поехать."
   uk: "Натисніть на мапі туди, куди хочете поїхати."
@@ -31000,6 +31445,7 @@ _version: 2
 "Click the map to add a via for your navigation.":
   nl: "Klik op de kaart om een via-punt aan je navigatie toe te voegen."
   de: "Klicke auf die Karte, um deiner Navigation ein Via hinzuzufügen."
+  da: "Klik på kortet for at tilføje et via til din navigation."
   fr: "Cliquez sur la carte pour ajouter une étape à votre navigation."
   ru: "Нажмите на карту, чтобы добавить точку в навигацию."
   uk: "Натисніть на мапу, щоб додати точку до навігації."
@@ -31007,6 +31453,7 @@ _version: 2
 "A right-click on the map works without the tool.":
   nl: "Rechtsklikken op de kaart werkt ook zonder deze knop."
   de: "Ein Rechtsklick auf die Karte geht auch ohne dieses Werkzeug."
+  da: "Et højreklik på kortet virker uden værktøjet."
   fr: "Un clic droit sur la carte marche aussi sans cet outil."
   ru: "Правый щелчок по карте работает и без этого инструмента."
   uk: "Правий клік по мапі працює і без цього інструмента."
@@ -31014,6 +31461,7 @@ _version: 2
 "Clear all":
   nl: "Alles wissen"
   de: "Alle löschen"
+  da: "Ryd alle"
   fr: "Tout effacer"
   ru: "Удалить все"
   uk: "Видалити все"
@@ -31021,6 +31469,7 @@ _version: 2
 "Clear diversion":
   nl: "Omleiding wissen"
   de: "Umleitung löschen"
+  da: "Ryd omkørsel"
   fr: "Supprimer la déviation"
   ru: "Убрать объезд"
   uk: "Прибрати об’їзд"
@@ -31028,6 +31477,7 @@ _version: 2
 "%{n} more":
   nl: "nog %{n}"
   de: "%{n} weitere"
+  da: "%{n} flere"
   fr: "%{n} de plus"
   ru: "ещё %{n}"
   uk: "ще %{n}"
