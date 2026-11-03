@@ -469,15 +469,64 @@ fn requirements(c: &Company, t: &Tender, week: Option<Week>) -> Value {
         row("A ticket sold wrong", kr(f.ticket)),
         row("A red light run", kr(f.red_light)),
     ];
+    // (NexiconDK, 3 November 2026: the work - a package's lines, each with its caption)
+    let fg = cn::figures(t);
+    let g = |x: f64| grouped(x.round());
+    let mut work = vec![
+        row("Timetable hours", trf("%{h} a week · in all %{d} with diesel buses, %{e} with electric", &[("h", &g(fg.hours_week)), ("d", &g(fg.hours_diesel)), ("e", &g(fg.hours_electric))])),
+        row("Buses", trf("%{n} contract buses and %{r} reserve buses: the reserve is not paid as contract buses", &[("n", &fg.buses.to_string()), ("r", &fg.reserve.to_string())])),
+        row("Drivers", trf("about %{n}: the week's paid hours (1.5 a timetable hour) by a driver's week of 37 hours", &[("n", &fg.drivers.to_string())])),
+    ];
+    if fg.pax.iter().any(|x| *x > 0.0) {
+        work.push(row("Passengers a day", trf("%{wd} Mon–Fri · %{sat} Saturday · %{sun} Sunday, as the game expects them", &[("wd", &g(fg.pax[0])), ("sat", &g(fg.pax[1])), ("sun", &g(fg.pax[2]))])));
+    }
+    for (number, caption) in &fg.lines {
+        work.push(json!([trf("Line %{n}", &[("n", number)]), caption]));
+    }
+    let title = if t.is_package() { trf("Contract requirements: the package %{n}", &[("n", &t.number)]) } else { trf("Contract requirements: line %{n}", &[("n", &t.number)]) };
     json!({
-        "title": trf("Contract requirements: line %{n}", &[("n", &t.number)]),
+        "title": title,
         "groups": [
+            { "caps": tr("The work").to_uppercase(), "rows": work },
             { "caps": tr("The buses").to_uppercase(), "rows": buses },
             { "caps": tr("The tender").to_uppercase(), "rows": tender },
             { "caps": tr("The authority's fines").to_uppercase(), "rows": fines },
         ],
         "close": tr("Close"),
     })
+}
+
+/// (NexiconDK, 3 November 2026) The work of a tender of the server's as the tender page shows it
+/// (`concessions::figures`): its timetable hours a week and in all, its duties a day, its buses
+/// and reserve, the drivers it needs, its passengers a day - a package's the lines' together, and
+/// its lines. As tiles: label, value, the line under it.
+fn work_tiles(t: &Tender) -> Vec<Value> {
+    let f = cn::figures(t);
+    let g = |x: f64| grouped(x.round());
+    let tile = |label: &str, value: String, sub: String| json!({ "label": tr(label).to_uppercase(), "value": value, "sub": sub });
+    let mut tiles = vec![
+        tile("Timetable hours", trf("%{h} a week", &[("h", &g(f.hours_week))]), trf("in all %{d} with diesel buses, %{e} with electric", &[("d", &g(f.hours_diesel)), ("e", &g(f.hours_electric))])),
+        if f.by_day {
+            tile("Duties a day", format!("{} · {} · {}", f.duties.0, f.duties.1, f.duties.2), tr("Mon–Fri · Saturday · Sunday"))
+        } else {
+            tile("Duties a day", f.duties.0.to_string(), tr("on the day it was offered"))
+        },
+        tile("Buses · drivers", format!("{} + {} · ≈ {}", f.buses, f.reserve, f.drivers), tr("contract + reserve · drivers expected")),
+    ];
+    if f.pax.iter().any(|x| *x > 0.0) {
+        tiles.push(tile("Passengers a day", format!("{} · {} · {}", g(f.pax[0]), g(f.pax[1]), g(f.pax[2])), tr("Mon–Fri · Saturday · Sunday, expected")));
+    }
+    if !f.lines.is_empty() {
+        tiles.push(tile("Lines", f.lines.len().to_string(), f.lines.iter().map(|l| l.0.clone()).collect::<Vec<_>>().join(", ")));
+    }
+    tiles
+}
+
+/// (NexiconDK, 3 November 2026) A server contract's term by the buses it is won with and the size
+/// of its work (`concessions::server_days`).
+fn term_text(t: &Tender) -> String {
+    let days = cn::server_days(t.drive, cn::WorkSize::of_hours(cn::week_hours(t))).to_string();
+    trf(if t.drive == Drive::Electric { "Electric · %{n} days" } else { "Diesel · %{n} days" }, &[("n", &days)])
 }
 
 /// How a tender's contract is paid, in words.
@@ -515,7 +564,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
             { "label": tr("Advice").to_uppercase(), "value": money(t, advised), "tone": "ok", "tip": tr("The work's cost price at your own costs, with a 5 % margin: drivers' paid hours, fuel, the workshop, a bus and its fixed costs, less BSOG.") },
             { "label": tr("Lowest valid ask").to_uppercase(), "value": money(t, low), "tone": "warn", "tip": tr("85 % of the authority's cost price: a bid under it is abnormally low and is rejected when the bids are opened.") },
             { "label": tr("The cap").to_uppercase(), "value": money(t, t.reference), "tone": "text", "tip": tr("The authority's cost price by one and a half, at most the server's cap: an ask above it does not count.") },
-            if t.open() { json!({ "label": tr("Deadline").to_uppercase(), "value": when(c, t.closes_at), "tone": "text" }) } else if let Some((_, days)) = event_of(t) { json!({ "label": tr("Term").to_uppercase(), "value": days, "tone": "text" }) } else { json!({ "label": tr("Term").to_uppercase(), "value": tr(if t.drive == Drive::Electric { "Electric · a month" } else { "Diesel · two weeks" }), "tone": "text" }) },
+            if t.open() { json!({ "label": tr("Deadline").to_uppercase(), "value": when(c, t.closes_at), "tone": "text" }) } else if let Some((_, days)) = event_of(t) { json!({ "label": tr("Term").to_uppercase(), "value": days, "tone": "text" }) } else { json!({ "label": tr("Term").to_uppercase(), "value": term_text(t), "tone": "text" }) },
         ])
     } else {
         json!([
@@ -779,6 +828,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
     });
     json!({
         "timeline": timeline, "score": score, "rivals": rivals,
+        "work": t.market.is_some().then(|| work_tiles(t)),
         "rivals_title": tr(if sealed { "Opened bids" } else { "Rivals" }), "rivals_heads": [tr("Bidder"), tr("Kind"), tr("Quality"), tr("Bid")],
         "title": title, "id": t.id, "number": t.number, "caption": caption_of(t),
         "sealed": sealed_open.then(|| tr("Sealed tender: nobody sees another's bid until it closes - not the other companies, not the operators. You may change your bid until the deadline: your last counts. At the close every bid is opened and shown with its points.")),
@@ -939,7 +989,8 @@ mod tests {
         .unwrap();
         let rows = |t: &Tender| -> Vec<(String, String)> {
             let r = requirements(&c, t, None);
-            serde_json::from_value(r["groups"][1]["rows"].clone()).unwrap()
+            // (3 November 2026: the work first, then the buses, the tender and the fines)
+            serde_json::from_value(r["groups"][2]["rows"].clone()).unwrap()
         };
         let got = rows(&t);
         let of = |label: &str| got.iter().find(|(k, _)| k == label).map(|x| x.1.clone()).unwrap_or_default();
@@ -950,7 +1001,9 @@ mod tests {
         let electric = of("Ends with electric buses");
         assert!(electric.contains("30 Mar 2024") && electric.contains("26 Mar 2024") && electric.contains("29 Mar 2024"), "{electric}");
         // (the work's size and its days)
-        let buses: Vec<(String, String)> = serde_json::from_value(requirements(&c, &t, None)["groups"][0]["rows"].clone()).unwrap();
+        let work: Vec<(String, String)> = serde_json::from_value(requirements(&c, &t, None)["groups"][0]["rows"].clone()).unwrap();
+        assert!(work.iter().any(|(k, v)| k == "Buses" && v.contains("contract buses")), "{work:?}");
+        let buses: Vec<(String, String)> = serde_json::from_value(requirements(&c, &t, None)["groups"][1]["rows"].clone()).unwrap();
         let sizes = buses.iter().find(|(k, _)| k == "Diesel or electric").map(|x| x.1.clone()).unwrap_or_default();
         assert!(sizes.contains("14 days") && sizes.contains("21 days"), "{sizes}");
         assert_eq!(got.iter().position(|(k, _)| k == "Ends with diesel buses"), Some(2), "after the term's first day");

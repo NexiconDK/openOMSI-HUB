@@ -112,6 +112,9 @@ function Auction({ a, st }) {
       <p class="co-pg-note" style="margin:0">${a.drive.say}</p>`}
     ${a.mine && html`<p class=${'co-pg-small t-' + a.mine_tone} style="font-weight:700;margin:0">${a.mine}</p>`}
     <${Timeline} steps=${a.timeline} frac=${a.frac} times=${a.times} />
+    ${a.work && html`<div class="co-pg-tiles">
+      ${a.work.map((f) => html`<div class="co-pg-tile"><span>${f.label}</span><b class="t-text">${f.value}</b>${f.sub && html`<span class="co-pg-small t-faint" style="text-transform:none;letter-spacing:0">${f.sub}</span>`}</div>`)}
+    </div>`}
     <div class="co-pg-tiles">
       ${shown.map((f) => html`<div class=${'co-pg-tile' + (f.tone === 'ok' ? ' good' : '')} title=${f.tip || ''}><span>${f.label}</span><b class=${'t-' + f.tone}>${f.value}</b></div>`)}
       ${running &&

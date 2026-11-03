@@ -1335,6 +1335,42 @@ its end.
 Tested: `bus_contracts::tests::a_two_part_contract_is_paid_by_the_hour_and_the_bus_and_earns_its_bonus`,
 `shared_tenders::tests::a_bid_in_two_parts_a_timetable_hour_and_a_bus_a_day`.
 
+### Packages and the tender page's figures (3 November 2026)
+
+Decided: the admin builds packages of lines, let as one tender, as Danish authorities let theirs.
+
+- **A package.** The admin panel's "Put out to tender" puts the lines chosen out as one tender when
+  it names them ("As one package, named"; `ServerAsk::package`, `lines`). The tender is the first
+  line's with the others' added (`concessions::package_of`): its work, week, tours, kilometres
+  and bus sizes the lines' together, its number the package's name and its caption the lines'
+  numbers, priced on it all; each line's own is kept (`Package`, `PackageLine`). Bids, scores,
+  the two-part price, the term (by the package's week hours: small, medium, large) and the
+  daily payment are the package's. A package with a line that is no line of the map's to run, an
+  event's, run by a company or an operator, or in an open tender is not put out (the main
+  server's log says which); a single line is a tender of its own as before.
+- **Won.** Every line is the winner's from the same first day for the same term, each with its own
+  contract at the package's price a timetable hour and a contract bus a day - its share of the
+  ask its hours and its buses (`concessions::take_package`); its concessions name the package
+  and its lines (`Concession::package`, `with`). Lost by the company that held it, every line's
+  buses are offered to the winner. An operator holds every line of it (`OperatorHold::package`).
+- **Again.** A package goes out again as the package, by its first line: a company's renewal, an
+  operator's term ending or its giving up (`lines_of`). The authority's option is taken on the
+  package as one: every line run satisfactorily, every line seven days on.
+- **The reserve.** A tender's work needs reserve buses besides its contract buses: ten per cent
+  by default (`tender_reserve`, the admin panel's "Reserve buses (%)", or his own share when he
+  puts a tender out), rounded half up and at least one from five buses on (`concessions::reserve_of`;
+  21 buses: 2). Shown, not paid as contract buses.
+- **The tender page.** Above the bid's tiles: the timetable hours a week and in all (a diesel
+  term's and an electric one's days), the duties a day on weekdays, Saturdays and Sundays, the
+  contract buses + reserve and the drivers expected (the week's paid hours, 1.5 a timetable hour,
+  by a driver's 37-hour week), the passengers a day on weekdays, Saturdays and Sundays as the game
+  expects them (`income::trip_demand` of each trip with passengers - a typical line, a school run
+  its pupils - read with the week, `Week::pax`), and a package's lines (`concessions::figures`).
+  The contract requirements' "The work" says the same, with each line of a package.
+
+Tested: `concessions::tests::a_package_of_lines_the_reserve_and_the_figures`,
+`shared_tenders::tests::a_package_of_lines_is_let_as_one_and_goes_out_again_as_one`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

@@ -181,6 +181,12 @@ pub struct OperatorHold {
     pub amount: Cents,
     pub own_cost: Cents,
     pub gives_up: String,
+    /// (3 November 2026) Won in a package (`concessions::Package`): its name and every line of it,
+    /// the first the one it goes out again by.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub package: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub with: Vec<String>,
 }
 
 /// A tender of the market: the tender (its market part: the market's id, the operators, the
@@ -270,6 +276,19 @@ pub struct ServerAsk {
     pub direct: String,
     pub direct_name: String,
     pub drive: Drive,
+    /// (3 November 2026) A package: its name and every line of it (the ask's `line` the first) -
+    /// one tender for them all (`concessions::package_of`). Empty: a line of its own.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub package: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub lines: Vec<String>,
+    /// (3 November 2026) The reserve buses' share the admin chose for it (0: the rules').
+    #[serde(default, skip_serializing_if = "no_share")]
+    pub reserve: f64,
+}
+
+fn no_share(x: &f64) -> bool {
+    *x == 0.0
 }
 
 impl ServerAsk {
@@ -294,6 +313,13 @@ tender_lines_per_round =
 # how a tender is awarded: viborg (price 50 %, quality 50 %: the operating quality 25 %, the
 # vehicles 10 %, the implementation plan 10 %, the working environment 5 %) or lowest (price alone)
 tender_award = viborg
+";
+
+/// (3 November 2026) The reserve buses' share, added to a `company-server.cfg` written before it.
+pub const RESERVE_CFG: &str = "
+# the reserve buses a tender's work needs besides its contract buses, a share of them (per cent;
+# rounded, at least one from five buses on) - shown on the tender page, not paid as contract buses
+tender_reserve = 10
 ";
 
 /// (3 November 2026) The bid in two parts' cap, added to a `company-server.cfg` written before it.
@@ -323,11 +349,16 @@ pub struct TenderCfg {
     pub per_round: Option<usize>,
     /// (3 November 2026) How the new tenders are awarded (`tender_award`).
     pub award: super::viborg::Award,
+    /// (3 November 2026) The reserve buses' share of a work's contract buses (`tender_reserve`).
+    pub reserve: f64,
 }
+
+/// The reserve buses' share of a work's contract buses by default: ten per cent.
+pub const RESERVE_SHARE: f64 = 0.10;
 
 impl Default for TenderCfg {
     fn default() -> TenderCfg {
-        TenderCfg { cap_hour: 0, cap_bus_day: 0, cap_factor: super::sealed::CAP_SHARE, low_share: super::sealed::LOW_SHARE, operators: None, round_weeks: cn::ROUND_WEEKS, per_round: None, award: super::viborg::Award::Viborg }
+        TenderCfg { cap_hour: 0, cap_bus_day: 0, cap_factor: super::sealed::CAP_SHARE, low_share: super::sealed::LOW_SHARE, operators: None, round_weeks: cn::ROUND_WEEKS, per_round: None, award: super::viborg::Award::Viborg, reserve: RESERVE_SHARE }
     }
 }
 
@@ -347,6 +378,7 @@ impl TenderCfg {
             round_weeks: num("tender_round_weeks").map_or(d.round_weeks, |x| (x.round() as i64).clamp(1, 52)),
             per_round: num("tender_lines_per_round").map(|x| (x.round() as i64).clamp(0, 50) as usize),
             award: kv.get("tender_award").map_or(d.award, |v| super::viborg::Award::of(v)),
+            reserve: num("tender_reserve").filter(|x| *x >= 0.0).map_or(d.reserve, |x| x.min(100.0) / 100.0),
         }
     }
 
@@ -416,8 +448,20 @@ pub fn fill_weeks(data: &Path, key: &str, date: &str, read: &mut dyn FnMut(&str)
         }
     }
     for i in missing {
-        let w = cn::week_of(&days, &m.tenders[i].tender.line);
-        m.tenders[i].tender.week = Some(w);
+        let t = &mut m.tenders[i].tender;
+        // (3 November 2026: a package's - each line's own, and the lines' together)
+        match t.package.as_mut().filter(|p| p.lines.len() > 1) {
+            Some(p) => {
+                let mut all = cn::Week { by_day: true, ..Default::default() };
+                for l in p.lines.iter_mut() {
+                    let w = cn::week_of(&days, &l.line);
+                    all.add(&w);
+                    l.week = Some(w);
+                }
+                t.week = Some(all);
+            }
+            None => t.week = Some(cn::week_of(&days, &t.line)),
+        }
     }
     save(data, &m).is_ok()
 }
@@ -579,8 +623,19 @@ pub fn step(data: &Path, key: &str, map: &str, date: &str, now: i64, read: &mut 
                 // (a special service is run to its end: its days are few)
                 let event = t.market.as_ref().is_some_and(|x| !x.event.is_empty());
                 let gives = if event { String::new() } else { super::sealed::gives_up(d.amount, d.own_cost, days, &[key, "gives up", &t.line, &from]).map(|k| dates::add(&from, k)).unwrap_or_default() };
-                m.held.retain(|h| !h.line.eq_ignore_ascii_case(&t.line));
-                m.held.push(OperatorHold { line: t.line.clone(), number: t.number.clone(), name: d.name.clone(), from, until, amount: d.amount, own_cost: d.own_cost, gives_up: gives });
+                // (3 November 2026: a package's every line, the same term; it goes out again as the package)
+                let (package, with) = match t.package.as_ref().filter(|p| p.lines.len() > 1) {
+                    Some(p) => (p.name.clone(), p.lines.iter().map(|l| l.line.clone()).collect::<Vec<_>>()),
+                    None => (String::new(), Vec::new()),
+                };
+                let lines: Vec<(String, String)> = match t.package.as_ref().filter(|p| p.lines.len() > 1) {
+                    Some(p) => p.lines.iter().map(|l| (l.line.clone(), l.number.clone())).collect(),
+                    None => vec![(t.line.clone(), t.number.clone())],
+                };
+                for (line, number) in lines {
+                    m.held.retain(|h| !h.line.eq_ignore_ascii_case(&line));
+                    m.held.push(OperatorHold { line, number, name: d.name.clone(), from: from.clone(), until: until.clone(), amount: d.amount, own_cost: d.own_cost, gives_up: gives.clone(), package: package.clone(), with: with.clone() });
+                }
             }
             m.tenders[i].decided = Some(d);
         }
@@ -593,20 +648,41 @@ pub fn step(data: &Path, key: &str, map: &str, date: &str, now: i64, read: &mut 
     said
 }
 
+/// (3 November 2026) The map's lines of a concession or an operator's line to put out again: its
+/// package's every line still on the map (`with`), else its own.
+fn lines_of<'a>(lines: &'a [LineInfo], line: &str, with: &[String]) -> Vec<&'a LineInfo> {
+    if with.is_empty() {
+        return lines.iter().filter(|l| l.name.eq_ignore_ascii_case(line)).collect();
+    }
+    with.iter().filter_map(|w| lines.iter().find(|l| l.name.eq_ignore_ascii_case(w))).collect()
+}
+
 /// The open tender of a line in the market.
 fn open_of<'a>(m: &'a Market, line: &str) -> Option<&'a MarketTender> {
-    m.tenders.iter().find(|t| t.decided.is_none() && t.tender.line.eq_ignore_ascii_case(line))
+    m.tenders.iter().find(|t| t.decided.is_none() && t.tender.has_line(line))
 }
 
 /// A new tender of the market, its auction from `opens_at` to `closes_at`: a concession put out
 /// again (`holder` its company, its new term from `from`), or a line no company runs.
 fn add(m: &mut Market, c: &Company, l: &LineInfo, opens_at: i64, closes_at: i64, holder: Option<(&str, &str)>, cfg: &TenderCfg) -> u32 {
+    add_lines(m, c, &[l], "", opens_at, closes_at, holder, cfg)
+}
+
+/// (3 November 2026) `add` for a package of lines `ls` named `name` (the first its tender's own
+/// line: `concessions::package_of`); one line: a tender of its own.
+fn add_lines(m: &mut Market, c: &Company, ls: &[&LineInfo], name: &str, opens_at: i64, closes_at: i64, holder: Option<(&str, &str)>, cfg: &TenderCfg) -> u32 {
     m.counter += 1;
     let id = m.counter;
     let pool: Vec<u32> = m.rivals.iter().map(|r| r.id).collect();
     // (3 November 2026: as many of the map's operators as the server's admin wants)
     let rivals = cfg.operators.map_or(cn::rules(GameMode::Normal).rivals, |n| (n, n));
+    let l = ls[0];
     let mut t = cn::make_tender(c, l, id, opens_at, holder.is_some(), &m.key, &pool, rivals);
+    if ls.len() > 1 {
+        let others: Vec<Tender> = ls[1..].iter().map(|x| cn::make_tender(c, x, id, opens_at, holder.is_some(), &m.key, &[], (0, 0))).collect();
+        let name = if name.trim().is_empty() { ls.iter().map(|x| x.name.clone()).collect::<Vec<_>>().join(" + ") } else { name.to_string() };
+        t = cn::package_of(c, t, others, &name);
+    }
     // (3 November 2026: a gross-cost contract paid by the day, as Danish authorities let them)
     cn::as_server(c, &mut t);
     t.closes_at = closes_at.max(opens_at + 60);
@@ -621,7 +697,7 @@ fn add(m: &mut Market, c: &Company, l: &LineInfo, opens_at: i64, closes_at: i64,
     let bus_cap = super::sealed::cap_set(bus_cost, cfg.cap_bus_day, cfg.cap_factor);
     let hours_cost = (t.cost - cn::bus_year(&t, bus_cost)).max(t.cost * 3 / 10);
     t.reference = super::sealed::cap_set(hours_cost, cn::of_hour(&t, cfg.cap_hour as f64), cfg.cap_factor) + cn::bus_year(&t, bus_cap);
-    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), low_share: cfg.low_share, award: cfg.award, bus_cap, bus_cost, ..Default::default() });
+    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), low_share: cfg.low_share, award: cfg.award, bus_cap, bus_cost, reserve: cn::reserve_of(cn::contract_buses(&t), cfg.reserve), ..Default::default() });
     m.tenders.push(MarketTender { tender: t, applied: Vec::new(), decided: None });
     id
 }
@@ -636,6 +712,54 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
     let of_event = |line: &str| events.iter().any(|e| e.own.iter().any(|o| o.eq_ignore_ascii_case(line)));
     // the applications: at once
     for a in asks {
+        // (3 November 2026) a package of the server's admin: one tender for all its lines - not put
+        // out when any of them is no line of the map's to run, an event's, run by a company or an
+        // operator, or in an open tender
+        if a.server.lines.len() > 1 {
+            let x = &a.server;
+            let mut ls: Vec<&LineInfo> = Vec::new();
+            let mut why = None;
+            for name in &x.lines {
+                why = match lines.iter().find(|l| l.name.eq_ignore_ascii_case(name)) {
+                    None => Some(format!("the map has no line {name}")),
+                    Some(l) if of_event(&l.name) => Some(format!("line {} is an event's", l.name)),
+                    Some(l) if !cn::is_line(template, l) => Some(format!("{} is no line to run", l.name)),
+                    Some(l) => match (held(&l.name), m.held.iter().find(|h| h.line.eq_ignore_ascii_case(&l.name))) {
+                        (Some(c), _) => Some(format!("{} runs line {}", c.name, l.name)),
+                        (_, Some(h)) => Some(format!("the operator {} runs line {} until {}", h.name, l.name, h.until)),
+                        _ if open_of(m, &l.name).is_some() => Some(format!("line {} is in an open tender", l.name)),
+                        _ => {
+                            ls.push(l);
+                            None
+                        }
+                    },
+                };
+                if why.is_some() {
+                    break;
+                }
+            }
+            if let Some(why) = why {
+                said.push(format!("{}: the server's package {} not put out to tender - {why}", m.map, x.package));
+                continue;
+            }
+            let opens = if x.opens_at > 0 { x.opens_at.max(now) } else { now + PREP_DAYS * clock::DAY };
+            let closes = if x.closes_at > opens { x.closes_at } else { opens + TENDER_DAYS * clock::DAY };
+            let id = add_lines(m, template, &ls, &x.package, opens, closes, None, cfg);
+            if let Some(t) = m.tenders.iter_mut().find(|t| t.tender.id == id) {
+                if x.cap_hour > 0 {
+                    t.tender.reference = cn::cap_of_hour(&t.tender, x.cap_hour as f64);
+                }
+                if x.reserve > 0.0 {
+                    let r = cn::reserve_of(cn::contract_buses(&t.tender), x.reserve);
+                    if let Some(s) = t.tender.market.as_mut() {
+                        s.reserve = r;
+                    }
+                }
+                t.applied.push(a.company.clone());
+            }
+            said.push(format!("{}: the package {} ({}) out to tender from {} {} to {} {}", m.map, x.package, x.lines.join(", "), clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes), clock::hhmm(closes)));
+            continue;
+        }
         let Some(l) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&a.line)) else {
             if a.company == SERVER_ASKS {
                 said.push(format!("{}: the server's admin asked for line {} - the map has no such line", m.map, a.line));
@@ -688,9 +812,16 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
                 let opens = if x.opens_at > 0 { x.opens_at.max(now) } else { now + PREP_DAYS * clock::DAY };
                 let closes = if x.closes_at > opens { x.closes_at } else { opens + TENDER_DAYS * clock::DAY };
                 let id = add(m, template, l, opens, closes, None, cfg);
-                if x.cap_hour > 0 {
-                    if let Some(t) = m.tenders.iter_mut().find(|t| t.tender.id == id) {
+                if let Some(t) = m.tenders.iter_mut().find(|t| t.tender.id == id) {
+                    if x.cap_hour > 0 {
                         t.tender.reference = cn::cap_of_hour(&t.tender, x.cap_hour as f64);
+                    }
+                    // (3 November 2026: the admin's reserve share for it)
+                    if x.reserve > 0.0 {
+                        let r = cn::reserve_of(cn::contract_buses(&t.tender), x.reserve);
+                        if let Some(s) = t.tender.market.as_mut() {
+                            s.reserve = r;
+                        }
                     }
                 }
                 said.push(format!("{}: line {} out to tender from {} {} to {} {}, on the application of {}", m.map, l.name, clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes), clock::hhmm(closes), a.company));
@@ -710,9 +841,14 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
     // own cost) puts it out to tender at once; a term ending goes out again as a company's does
     for h in std::mem::take(&mut m.held) {
         if !h.gives_up.is_empty() && dates::between(&h.gives_up, date) >= 0 {
-            match lines.iter().find(|l| l.name.eq_ignore_ascii_case(&h.line)).filter(|_| open_of(m, &h.line).is_none()) {
-                Some(l) => {
-                    let id = add(m, template, l, now + PREP_DAYS * clock::DAY, now + (PREP_DAYS + TENDER_DAYS) * clock::DAY, None, cfg);
+            // (3 November 2026: a package's lines go out again as the package, by its first)
+            if h.with.first().is_some_and(|w| !w.eq_ignore_ascii_case(&h.line)) {
+                continue;
+            }
+            let ls = lines_of(lines, &h.line, &h.with);
+            match Some(ls).filter(|ls| !ls.is_empty() && ls.iter().all(|l| open_of(m, &l.name).is_none())) {
+                Some(ls) => {
+                    let id = add_lines(m, template, &ls, &h.package, now + PREP_DAYS * clock::DAY, now + (PREP_DAYS + TENDER_DAYS) * clock::DAY, None, cfg);
                     if let Some(x) = m.tenders.iter_mut().find(|t| t.tender.id == id).and_then(|t| t.tender.market.as_mut()) {
                         x.failed = h.name.clone();
                     }
@@ -734,14 +870,17 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
         }
         let from = dates::add(&h.until, 1);
         let decided = m.tenders.iter().any(|t| t.tender.renewal && t.tender.line.eq_ignore_ascii_case(&h.line) && t.tender.market.as_ref().is_some_and(|x| x.from == from));
-        if dates::between(date, &from) <= RENEW_ANNOUNCED && !decided && open_of(m, &h.line).is_none() {
-            if let Some(l) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&h.line)) {
+        // (3 November 2026: a package's by its first line, as the package)
+        let first = h.with.first().is_none_or(|w| w.eq_ignore_ascii_case(&h.line));
+        if first && dates::between(date, &from) <= RENEW_ANNOUNCED && !decided && open_of(m, &h.line).is_none() {
+            let ls = lines_of(lines, &h.line, &h.with);
+            if !ls.is_empty() {
                 let mut rng = Rng::of(&[&m.key, "renewal", &h.line], dates::parse(&from).unwrap_or(0));
                 let minute = 9 * 60 + rng.int(0, 24) * 15;
                 let opens = clock::moment(&dates::add(&from, -RENEW_OPENS), minute).max(now + 30);
                 let closes = clock::moment(&dates::add(&from, -RENEW_DECIDED), minute).max(opens + 60);
-                add(m, template, l, opens, closes, Some(("", &from)), cfg);
-                said.push(format!("{}: the operator {}'s contract on line {} out to tender again from {} {}", m.map, h.name, l.name, clock::date_of(opens), clock::hhmm(opens)));
+                add_lines(m, template, &ls, &h.package, opens, closes, Some(("", &from)), cfg);
+                said.push(format!("{}: the operator {}'s contract on line {} out to tender again from {} {}", m.map, h.name, if h.package.is_empty() { &h.line } else { &h.package }, clock::date_of(opens), clock::hhmm(opens)));
             }
         }
         m.held.push(h);
@@ -782,6 +921,10 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
     // hours
     for c in companies {
         for h in &c.concessions.held {
+            // (3 November 2026: a package's lines go out again as the package, by its first)
+            if h.with.first().is_some_and(|w| !w.eq_ignore_ascii_case(&h.line)) {
+                continue;
+            }
             let from = dates::add(&h.until, 1);
             if dates::between(date, &from) > RENEW_ANNOUNCED || open_of(m, &h.line).is_some() || of_event(&h.line) {
                 continue;
@@ -790,13 +933,16 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
             if m.tenders.iter().any(|t| t.tender.renewal && t.tender.line.eq_ignore_ascii_case(&h.line) && t.tender.market.as_ref().is_some_and(|x| x.from == from)) {
                 continue;
             }
-            let Some(l) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&h.line)) else { continue };
+            let ls = lines_of(lines, &h.line, &h.with);
+            if ls.is_empty() {
+                continue;
+            }
             let mut rng = Rng::of(&[&m.key, "renewal", &h.line], dates::parse(&from).unwrap_or(0));
             let minute = 9 * 60 + rng.int(0, 24) * 15;
             let opens = clock::moment(&dates::add(&from, -RENEW_OPENS), minute).max(now + 30);
             let closes = clock::moment(&dates::add(&from, -RENEW_DECIDED), minute);
-            add(m, template, l, opens, closes, Some((&c.id, &from)), cfg);
-            said.push(format!("{}: the concession of {} on line {} out to tender again from {} {} to {}, open to every company", m.map, c.name, l.name, clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes)));
+            add_lines(m, template, &ls, &h.package, opens, closes, Some((&c.id, &from)), cfg);
+            said.push(format!("{}: the concession of {} on line {} out to tender again from {} {} to {}, open to every company", m.map, c.name, if h.package.is_empty() { &h.line } else { &h.package }, clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes)));
         }
     }
     // (1 November 2026) the special services: an event's own lines out to tender for its days -
@@ -1038,6 +1184,12 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
         let Some(d) = mt.decided.clone().filter(|_| t.open()) else { continue };
         let (lid, number, renewal, mine_bid) = (t.id, t.number.clone(), t.renewal, !t.offers.is_empty());
         let (line, from) = (t.line.clone(), t.market.as_ref().map(|m| m.from.clone()).unwrap_or_default());
+        // (3 November 2026: a package's lines - each line's buses offered on, the package named)
+        let lines: Vec<(String, String)> = match t.package.as_ref().filter(|p| p.lines.len() > 1) {
+            Some(p) => p.lines.iter().map(|l| (l.line.clone(), l.number.clone())).collect(),
+            None => vec![(line.clone(), number.clone())],
+        };
+        let package = t.is_package();
         let me = d.winner == c.id;
         // (3 November 2026: its bid's bus part, the contract's buses a day)
         if me {
@@ -1048,6 +1200,11 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
         let Some((ev, amount)) = cn::decide_shared(c, lid, me, &d.name, d.amount, d.standings.clone(), d.drive) else { continue };
         let closes = c.concessions.tenders.iter().find(|t| t.id == lid).map_or(at, |t| t.closes_at);
         match ev {
+            cn::Event::Won { until, .. } if package => {
+                won = true;
+                let numbers = lines.iter().map(|l| l.1.clone()).collect::<Vec<_>>().join(", ");
+                clock::tell(c, &mut run, closes, PACKAGE_WON, vec![clock::arg("n", &number), clock::arg("lines", numbers), clock::arg("amount", amount), clock::arg("date", until)], Level::Good);
+            }
             cn::Event::Won { until, .. } => {
                 won = true;
                 clock::tell(c, &mut run, closes, "Line %{n} won for %{amount}: the concession runs until %{date}", vec![clock::arg("n", &number), clock::arg("amount", amount), clock::arg("date", until)], Level::Good);
@@ -1057,7 +1214,9 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
                 // (its concession won by another company: the buses it ran the line with offered
                 // to it - `takeover`)
                 if renewal && !d.winner.is_empty() && !from.is_empty() {
-                    super::takeover::offer(data, c, &d.winner, &line, &number, &from);
+                    for (line, number) in &lines {
+                        super::takeover::offer(data, c, &d.winner, line, number, &from);
+                    }
                 }
                 let level = if mine_bid || renewal { Level::Bad } else { Level::Minor };
                 let text = if renewal { "Line %{n} went to %{who} for %{amount}: your concession ends with its term" } else { "Line %{n} went to %{who} for %{amount}" };
@@ -1121,6 +1280,9 @@ pub fn satisfactory(k: &super::bus_contracts::Contract, today: &str) -> bool {
     journeys <= 0.0 || missed as f64 <= OPTION_MOST_DROPPED * journeys
 }
 
+/// (3 November 2026) A package won (`concessions::Package`).
+pub const PACKAGE_WON: &str = "The package %{n} (lines %{lines}) won for %{amount}: its concessions run until %{date}";
+
 /// The authority told a company it takes its option (`options`).
 pub const OPTION_TAKEN: &str = "The authority takes its option on your contract on line %{n}: satisfactory running, so it runs %{days} days more, to %{date} (option %{k} of %{most}).";
 
@@ -1137,6 +1299,33 @@ pub fn options(c: &mut Company, run: &mut Run, at: i64) -> bool {
         let h = c.concessions.held[k].clone();
         let from = dates::add(&h.until, 1);
         if h.direct || h.options >= OPTIONS || dates::between(&today, &from) != RENEW_ANNOUNCED + 1 {
+            continue;
+        }
+        // (3 November 2026: a package's as one, by its first line - every line run satisfactorily,
+        // every line seven days on)
+        if !h.with.is_empty() {
+            if !h.with[0].eq_ignore_ascii_case(&h.line) {
+                continue;
+            }
+            let ks: Vec<usize> = (0..c.concessions.held.len()).filter(|&j| h.with.iter().any(|w| w.eq_ignore_ascii_case(&c.concessions.held[j].line)) && c.concessions.held[j].until == h.until).collect();
+            let kis: Vec<Option<usize>> = ks.iter().map(|&j| c.concessions.contracts.iter().position(|x| x.line.eq_ignore_ascii_case(&c.concessions.held[j].line) && x.until == h.until && x.ended.is_none())).collect();
+            let announced = c.concessions.tenders.iter().any(|t| t.has_line(&h.line) && t.market.as_ref().is_some_and(|m| m.from == from));
+            if announced || kis.iter().any(|x| x.is_none()) || !kis.iter().flatten().all(|&ki| satisfactory(&c.concessions.contracts[ki], &today)) {
+                continue;
+            }
+            let until = dates::add(&h.until, OPTION_DAYS);
+            for ki in kis.into_iter().flatten() {
+                c.concessions.contracts[ki].until = until.clone();
+            }
+            let mut n = 0;
+            for &j in &ks {
+                let x = &mut c.concessions.held[j];
+                x.until = until.clone();
+                x.options += 1;
+                n = x.options;
+            }
+            clock::tell(c, run, at, OPTION_TAKEN, vec![clock::arg("n", &h.package), clock::arg("days", OPTION_DAYS), clock::arg("date", until), clock::arg("k", n), clock::arg("most", OPTIONS)], Level::Good);
+            taken = true;
             continue;
         }
         let event = c.concessions.tenders.iter().any(|t| t.line.eq_ignore_ascii_case(&h.line) && t.market.as_ref().is_some_and(|m| !m.event.is_empty()));

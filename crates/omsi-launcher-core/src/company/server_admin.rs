@@ -441,6 +441,9 @@ fn market(api: &Api) -> Value {
                         "cost_hour": hour(t, (t.cost - cn::bus_year(t, bus_cost)).max(0)), "low_hour": hour(t, super::sealed::low_line(t)),
                         "bus_cap": kr(bus_cap), "bus_cost": kr(bus_cost), "buses": cn::contract_buses(t),
                         "direct": x.map(|x| x.direct_name.clone()).unwrap_or_default(),
+                        // (3 November 2026: a package's name and lines, and the work's reserve buses)
+                        "package": t.package.as_ref().filter(|p| p.lines.len() > 1).map(|p| p.name.clone()).unwrap_or_default(),
+                        "lines": t.lines(), "reserve": x.map_or(0, |x| x.reserve),
                     })
                 })
                 .collect();
@@ -460,13 +463,13 @@ fn market(api: &Api) -> Value {
                 })
                 .collect();
             let next = |until: &str| dates::add(until, 1 - shared_tenders::RENEW_OPENS);
-            let held: Vec<Value> = mk.held.iter().map(|h| json!({ "line": h.line, "number": h.number, "name": h.name, "from": h.from, "until": h.until, "gives_up": h.gives_up, "next": next(&h.until) })).collect();
+            let held: Vec<Value> = mk.held.iter().map(|h| json!({ "line": h.line, "number": h.number, "name": h.name, "from": h.from, "until": h.until, "gives_up": h.gives_up, "next": next(&h.until), "package": h.package })).collect();
             // (3 November 2026: the companies of the map and their contracts - the admin moves a
             // contract's last day, awards a line directly)
             let here: Vec<&super::model::Company> = all.iter().filter(|c| shared_tenders::key_of(&c.map) == mk.key).collect();
             let contracts: Vec<Value> = here
                 .iter()
-                .flat_map(|c| c.concessions.held.iter().map(move |h| json!({ "company": c.id, "name": c.name, "line": h.line, "number": h.number, "from": h.from, "until": h.until, "next": next(&h.until) })))
+                .flat_map(|c| c.concessions.held.iter().map(move |h| json!({ "company": c.id, "name": c.name, "line": h.line, "number": h.number, "from": h.from, "until": h.until, "next": next(&h.until), "package": h.package })))
                 .collect();
             let companies: Vec<Value> = here.iter().map(|c| json!({ "id": c.id, "name": c.name })).collect();
             let operators: Vec<Value> = mk.rivals.iter().map(|r| json!(r.name)).collect();
@@ -477,7 +480,7 @@ fn market(api: &Api) -> Value {
                     let low = l.to_lowercase();
                     let company = runs.iter().find(|r| r.0 == mk.key && r.1 == low).map(|r| r.2.clone());
                     let operator = mk.held.iter().find(|h| h.line.eq_ignore_ascii_case(l)).map(|h| h.name.clone());
-                    let open = mk.tenders.iter().any(|t| t.decided.is_none() && t.tender.line.eq_ignore_ascii_case(l));
+                    let open = mk.tenders.iter().any(|t| t.decided.is_none() && t.tender.has_line(l));
                     let event = mk.events.iter().any(|e| e.lines.iter().any(|x| x.eq_ignore_ascii_case(l)));
                     json!({ "name": l, "company": company, "operator": operator, "open": open, "event": event })
                 })
@@ -586,11 +589,21 @@ fn tender_do(api: &Api, map: &str, a: &Value) -> Result<String, String> {
             if closes > 0 && closes <= start {
                 return Err("it closes before it opens".into());
             }
-            let ask = ServerAsk { opens_at: opens, closes_at: closes, cap_hour: num("cap").map_or(0, Fines::cents), ..ServerAsk::default() };
-            for l in &lines {
-                shared_tenders::ask_as_server(&data, map, l, ask.clone()).map_err(|e| format!("{e:#}"))?;
+            // (3 November 2026: the reserve buses' share for it, per cent; 0 or none: the rules')
+            let reserve = num("reserve").filter(|x| *x > 0.0).map_or(0.0, |x| x.min(100.0) / 100.0);
+            let ask = ServerAsk { opens_at: opens, closes_at: closes, cap_hour: num("cap").map_or(0, Fines::cents), reserve, ..ServerAsk::default() };
+            // (3 November 2026: several lines with a package's name - one tender for them all)
+            let package = s("package");
+            if !package.is_empty() && lines.len() > 1 {
+                let ask = ServerAsk { package: package.clone(), lines: lines.clone(), ..ask };
+                shared_tenders::ask_as_server(&data, map, &lines[0], ask).map_err(|e| format!("{e:#}"))?;
+                format!("the package {package} of {map} ({}): out to tender in a moment, unless a company or an operator runs one of its lines", lines.join(", "))
+            } else {
+                for l in &lines {
+                    shared_tenders::ask_as_server(&data, map, l, ask.clone()).map_err(|e| format!("{e:#}"))?;
+                }
+                format!("line(s) {} of {map}: out to tender in a moment, unless a company or an operator runs them", lines.join(", "))
             }
-            format!("line(s) {} of {map}: out to tender in a moment, unless a company or an operator runs them", lines.join(", "))
         }
         "direct" => {
             changed = false;

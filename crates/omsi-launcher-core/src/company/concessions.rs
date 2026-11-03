@@ -86,6 +86,12 @@ pub struct Concession {
     /// each, at most `shared_tenders::OPTIONS` (`shared_tenders::options`).
     #[serde(default, skip_serializing_if = "is_zero_u32")]
     pub options: u32,
+    /// (NexiconDK, 3 November 2026) Won in a package of lines (`Package`): its name and every line
+    /// of it, the first the one its renewal goes out by (empty: a line of its own).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub package: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub with: Vec<String>,
 }
 
 fn is_zero_u32(x: &u32) -> bool {
@@ -120,6 +126,34 @@ pub struct Week {
     pub sun: u32,
     #[serde(default)]
     pub by_day: bool,
+    /// (NexiconDK, 3 November 2026) Its passengers a day as the game expects them, before the
+    /// day's draws (`income::trip_demand`): on a weekday (the average of Monday to Friday), on
+    /// Saturday and on Sunday.
+    #[serde(default, skip_serializing_if = "no_pax")]
+    pub pax: [f64; 3],
+}
+
+fn no_pax(p: &[f64; 3]) -> bool {
+    p.iter().all(|x| *x == 0.0)
+}
+
+impl Week {
+    /// (NexiconDK, 3 November 2026) Another line's week added: a package's.
+    pub fn add(&mut self, o: &Week) {
+        self.tours += o.tours;
+        self.trips += o.trips;
+        self.km += o.km;
+        self.peak += o.peak;
+        self.days = self.days.max(o.days);
+        self.hours += o.hours;
+        self.mon_fri += o.mon_fri;
+        self.sat += o.sat;
+        self.sun += o.sun;
+        self.by_day &= o.by_day;
+        for k in 0..3 {
+            self.pax[k] += o.pax[k];
+        }
+    }
 }
 
 /// A bidder's last bid when a tender closed.
@@ -274,6 +308,42 @@ pub struct Tender {
     /// tour of the contract is run with a bus of that size (`network::wants_size`).
     #[serde(default)]
     pub sizes: Sizes,
+    /// (NexiconDK, 3 November 2026) A package of lines the server's admin put out as one tender
+    /// (`package_of`): bid on, scored, let and paid as one - its work, week and buses the lines'
+    /// together -, each line its own concession and contract to the winner (`take`). None: a line
+    /// of its own (`line`; a package's first line is `line` too).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub package: Option<Package>,
+}
+
+/// (NexiconDK, 3 November 2026) A package of lines let as one tender: its name ("Ahlheim By") and
+/// its lines, the first the tender's own (`Tender::line`).
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct Package {
+    pub name: String,
+    pub lines: Vec<PackageLine>,
+}
+
+/// A line of a package: what its own tender would have had.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct PackageLine {
+    pub line: String,
+    pub number: String,
+    pub caption: String,
+    pub day_tours: u32,
+    pub day_km: f64,
+    pub work: Work,
+    pub week: Option<Week>,
+    pub sizes: Sizes,
+}
+
+impl PackageLine {
+    /// Its contract buses (`contract_buses`).
+    pub fn buses(&self) -> u32 {
+        self.work.buses.max(self.day_tours).max(1)
+    }
 }
 
 /// (NexiconDK) A line's tours of a day by the bus their timetable asks for (its AI group:
@@ -472,6 +542,11 @@ pub struct Shared {
     /// made: the Viborg model's price 50 % and quality 50 %, or the lowest price (`viborg`).
     #[serde(default, skip_serializing_if = "super::viborg::Award::is_default")]
     pub award: super::viborg::Award,
+    /// (NexiconDK, 3 November 2026) The reserve buses the work needs besides its contract buses
+    /// (`reserve_of`: ten per cent, the server's `tender_reserve` or its admin's for the package) -
+    /// shown, not paid as contract buses.
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub reserve: u32,
     /// (NexiconDK, 3 November 2026) The bid in two parts: the cap of the amount a contract bus a
     /// day (euro cents; 0: a bid of the timetable hour alone, as before), and the authority's
     /// reckoning of a contract bus a day (`bus_contracts::bus_day_price`).
@@ -500,6 +575,24 @@ pub struct OtherBids {
 pub const NOT_ON_SERVER: &str = "On the Bus Company Online server every line is won in its tender: it cannot be bought outright.";
 
 impl Tender {
+    /// (NexiconDK, 3 November 2026) Its lines' timetable names: a package's every line, else its one.
+    pub fn lines(&self) -> Vec<String> {
+        match self.package.as_ref().filter(|p| !p.lines.is_empty()) {
+            Some(p) => p.lines.iter().map(|l| l.line.clone()).collect(),
+            None => vec![self.line.clone()],
+        }
+    }
+
+    /// Whether line `line` is let in it (a package's any).
+    pub fn has_line(&self, line: &str) -> bool {
+        self.line.eq_ignore_ascii_case(line) || self.package.as_ref().is_some_and(|p| p.lines.iter().any(|l| l.line.eq_ignore_ascii_case(line)))
+    }
+
+    /// A package of more than one line.
+    pub fn is_package(&self) -> bool {
+        self.package.as_ref().is_some_and(|p| p.lines.len() > 1)
+    }
+
     /// Not decided yet (announced or running).
     pub fn open(&self) -> bool {
         self.outcome.is_none()
@@ -793,6 +886,13 @@ pub fn week_of(days: &[Vec<LineInfo>], line: &str) -> Week {
                 w.hours += (arr - dep) / 3600.0;
             }
         }
+        // (NexiconDK, 3 November 2026: its passengers that day as the game expects them - a
+        // typical line, or a school run's pupils; the schools in on a weekday)
+        let kind = if w.by_day { [0, 0, 0, 0, 0, 1, 2][k.min(6)] } else { 0 };
+        let lt = if specials::line_kind(l, &[]) == specials::Kind::School { super::income::LineType::School } else { super::income::LineType::Typical };
+        let day = super::income::DayOf { kind, school: kind == 0 };
+        let pax: f64 = runs.iter().flat_map(|t| t.trips.iter()).filter(|x| x.stops.len() >= 3).map(|x| super::income::trip_demand(lt, day, (x.departure / 60.0) as i32, ((x.arrival - x.departure) / 60.0).max(0.0))).sum();
+        w.pax[kind] += if kind == 0 && w.by_day { pax / 5.0 } else { pax };
     }
     w
 }
@@ -843,7 +943,7 @@ pub fn ensure(c: &mut Company) -> bool {
     for l in lines.iter().filter(|l| !l.own) {
         if of_line(c, &l.name).is_none() {
             let until = dates::add(&c.date, r.term_weeks as i64 * 7 - 1);
-            c.concessions.held.push(Concession { line: l.name.clone(), number: l.number.clone(), from: c.date.clone(), until, price: 1.0, direct: true, after: String::new(), options: 0 });
+            c.concessions.held.push(Concession { line: l.name.clone(), number: l.number.clone(), from: c.date.clone(), until, price: 1.0, direct: true, after: String::new(), options: 0, package: String::new(), with: Vec::new() });
             changed = true;
         }
     }
@@ -954,9 +1054,105 @@ pub fn make_tender(c: &Company, l: &LineInfo, id: u32, opens_at: i64, renewal: b
         drive: Drive::Diesel,
         bus_day: 0,
         sizes: Sizes::of(l),
+        package: None,
     };
     price(c, &mut t);
     t
+}
+
+/// (NexiconDK, 3 November 2026) A package of lines as one tender (the server's admin builds them:
+/// `shared_tenders`): tender `first` with the lines of `others` (their own tenders, made as
+/// `first` was) added - its work, week, tours, kilometres and bus sizes the lines' together, its
+/// number the package's name and its caption the lines' numbers -, priced anew. Each line's own
+/// is kept (`Package`) for the contracts the winner gets.
+pub fn package_of(c: &Company, first: Tender, others: Vec<Tender>, name: &str) -> Tender {
+    let line_of = |t: &Tender| PackageLine { line: t.line.clone(), number: t.number.clone(), caption: t.caption.clone(), day_tours: t.day_tours, day_km: t.day_km, work: t.work, week: t.week, sizes: t.sizes };
+    let mut lines = vec![line_of(&first)];
+    lines.extend(others.iter().map(line_of));
+    let mut t = first;
+    // (the work of a year the lines' together: a day's hours and kilometres at the most days any runs)
+    let days = lines.iter().map(|l| l.work.days).max().unwrap_or(0).max(1);
+    let year = |f: &dyn Fn(&Work) -> f64| lines.iter().map(|l| f(&l.work) * l.work.days.max(1) as f64).sum::<f64>() / days as f64;
+    t.work = Work { hours: year(&|w| w.hours), km: year(&|w| w.km), journeys: lines.iter().map(|l| l.work.journeys).sum(), buses: lines.iter().map(|l| l.work.buses).sum(), days };
+    t.day_tours = lines.iter().map(|l| l.day_tours).sum();
+    t.day_km = lines.iter().map(|l| l.day_km).sum();
+    t.week = lines.iter().try_fold(Week { by_day: true, ..Default::default() }, |mut w, l| {
+        w.add(&l.week?);
+        Some(w)
+    });
+    let mut s = Sizes::default();
+    for l in &lines {
+        (s.articulated, s.solo, s.midi, s.double, s.any) = (s.articulated + l.sizes.articulated, s.solo + l.sizes.solo, s.midi + l.sizes.midi, s.double + l.sizes.double, s.any + l.sizes.any);
+    }
+    t.sizes = s;
+    t.number = name.trim().to_string();
+    t.caption = lines.iter().map(|l| l.number.clone()).collect::<Vec<_>>().join(", ");
+    t.package = Some(Package { name: name.trim().to_string(), lines });
+    price(c, &mut t);
+    t
+}
+
+/// (NexiconDK, 3 November 2026) The reserve buses of a work of `buses` contract buses at the share
+/// `share` (0.1: ten per cent): rounded, half up, and at least one from five buses on; none at a
+/// share of none.
+pub fn reserve_of(buses: u32, share: f64) -> u32 {
+    if !(share > 0.0) {
+        return 0;
+    }
+    let r = (buses as f64 * share).round() as u32;
+    if buses >= 5 {
+        r.max(1)
+    } else {
+        r
+    }
+}
+
+/// A driver's week in hours (a Danish full-time week: 37): the drivers a work needs, by its paid
+/// hours (`econ_uk::PAID_PER_TIMETABLED_HOUR` a timetabled one).
+pub const DRIVER_WEEK_HOURS: f64 = 37.0;
+
+/// (NexiconDK, 3 November 2026) What the tender page shows of a tender's work: its timetable hours
+/// a week and in all (a diesel term's and an electric one's days), its duties a day on weekdays,
+/// Saturdays and Sundays, its contract buses and reserve, the drivers it needs and its
+/// passengers a day; a package's the lines' together, with its lines.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Figures {
+    pub hours_week: f64,
+    pub days_diesel: i64,
+    pub days_electric: i64,
+    pub hours_diesel: f64,
+    pub hours_electric: f64,
+    pub duties: (u32, u32, u32),
+    pub by_day: bool,
+    pub buses: u32,
+    pub reserve: u32,
+    pub drivers: u32,
+    pub pax: [f64; 3],
+    /// The package's lines (number, caption); empty for a line of its own.
+    pub lines: Vec<(String, String)>,
+}
+
+pub fn figures(t: &Tender) -> Figures {
+    let week = t.week.unwrap_or_default();
+    let hours_week = week_hours(t);
+    let size = WorkSize::of_hours(hours_week);
+    let (days_diesel, days_electric) = (server_days(Drive::Diesel, size), server_days(Drive::Electric, size));
+    let duties = if week.by_day { (week.mon_fri, week.sat, week.sun) } else { (t.day_tours, 0, 0) };
+    let lines = t.package.as_ref().filter(|p| p.lines.len() > 1).map(|p| p.lines.iter().map(|l| (l.number.clone(), l.caption.clone())).collect()).unwrap_or_default();
+    Figures {
+        hours_week,
+        days_diesel,
+        days_electric,
+        hours_diesel: hours_week / 7.0 * days_diesel as f64,
+        hours_electric: hours_week / 7.0 * days_electric as f64,
+        duties,
+        by_day: week.by_day,
+        buses: contract_buses(t),
+        reserve: t.market.as_ref().map_or(0, |m| m.reserve),
+        drivers: (hours_week * econ_uk::PAID_PER_TIMETABLED_HOUR / DRIVER_WEEK_HOURS).ceil() as u32,
+        pax: week.pax,
+        lines,
+    }
 }
 
 /// The market as the day `lines` were read for has it: a new round of tenders every four
@@ -1077,7 +1273,8 @@ fn mend_tenders(c: &mut Company, lines: &[LineInfo]) -> bool {
     // (a special service's line is an occasional one: its tender stays - `is_event_line`)
     c.concessions.tenders.retain(|t| !t.open() || t.market.as_ref().is_some_and(|m| !m.event.is_empty()) || of(&t.line).is_none_or(|l| specials::line_kind(l, &[&depot]).line()));
     let mut changed = before != c.concessions.tenders.len();
-    for t in c.concessions.tenders.iter_mut().filter(|t| t.open()) {
+    // (a package's number is its name, its caption its lines': 3 November 2026)
+    for t in c.concessions.tenders.iter_mut().filter(|t| t.open() && !t.is_package()) {
         let Some(l) = of(&t.line) else { continue };
         let (number, caption) = (specials::number_of(l, &[&depot]), specials::caption_of(l, &[&depot]));
         if t.number != number || t.caption != caption {
@@ -1486,6 +1683,10 @@ fn last_bids(c: &Company, t: &Tender, placed: &[Placed]) -> Vec<RivalBid> {
 /// `take_on`), or a renewal added to the old term; its bus contract for the term
 /// (`bus_contracts::make`: a renewal's from the old one's end).
 fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
+    // (NexiconDK, 3 November 2026: a package - each of its lines)
+    if let Some(p) = t.package.as_ref().filter(|p| p.lines.len() > 1 && t.market.is_some()) {
+        return take_package(c, t, amount, p);
+    }
     let tomorrow = dates::add(&c.date, 1);
     let price = ((t.share(amount)) * 1000.0).round() / 1000.0;
     let work = if t.work == Work::default() { bc::rough_work(t.day_tours, t.day_km) } else { t.work };
@@ -1519,7 +1720,7 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
                 }
                 h.price = price;
             }
-            None => c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false, after: String::new(), options: 0 }),
+            None => c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false, after: String::new(), options: 0, package: String::new(), with: Vec::new() }),
         }
         return Event::Won { number: t.number.clone(), until };
     }
@@ -1552,7 +1753,48 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
     c.concessions.contracts.push(k);
     // (won from another company of the map: it runs the line until then)
     let after = t.market.as_ref().map(|m| m.holder.clone()).filter(|h| *h != c.id).unwrap_or_default();
-    c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false, after, options: 0 });
+    c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false, after, options: 0, package: String::new(), with: Vec::new() });
+    Event::Won { number: t.number.clone(), until }
+}
+
+/// (NexiconDK, 3 November 2026) A package won on the server: each of its lines the company's from
+/// the same first day for the same term (the package's: `server_term` by its week), each with its
+/// own contract at the package's price a timetable hour and a contract bus a day - its share of
+/// the ask its hours and its buses (`PackageLine::buses`). A renewal of the company's own lines
+/// follows on from their last day.
+fn take_package(c: &mut Company, t: &Tender, amount: Cents, p: &Package) -> Event {
+    let tomorrow = dates::add(&c.date, 1);
+    let price = ((t.share(amount)) * 1000.0).round() / 1000.0;
+    let hour = hour_part(t, amount, t.bus_day);
+    let with: Vec<String> = p.lines.iter().map(|l| l.line.clone()).collect();
+    let held_until = c.concessions.held.iter().filter(|h| with.iter().any(|l| l.eq_ignore_ascii_case(&h.line))).map(|h| h.until.clone()).max();
+    let from = match held_until {
+        Some(u) => dates::add(&u, 1),
+        None => Some(server_start(t)).filter(|f| dates::parse(f).is_some() && dates::between(&tomorrow, f) > 0).unwrap_or(tomorrow),
+    };
+    let until = server_term(t.drive, week_hours(t), &from);
+    let after = t.market.as_ref().map(|m| m.holder.clone()).filter(|h| *h != c.id).unwrap_or_default();
+    for pl in &p.lines {
+        let work = if pl.work == Work::default() { bc::rough_work(pl.day_tours, pl.day_km) } else { pl.work };
+        let buses = pl.buses();
+        let line_amount = (hour * work.hours * work.days.max(1) as f64).round() as Cents + t.bus_day.max(0) * buses as Cents * 365;
+        let mut k = bc::make(c, &pl.line, &pl.number, t.kind, t.period, line_amount, &work, &from, &until);
+        k.extensions_left = 0;
+        k.electric = t.drive == Drive::Electric;
+        k.per_hour = hour.round() as Cents;
+        if t.bus_day > 0 {
+            k.per_bus_day = t.bus_day;
+            k.buses = buses;
+        }
+        c.concessions.contracts.push(k);
+        match c.concessions.held.iter_mut().find(|h| h.line.eq_ignore_ascii_case(&pl.line)) {
+            Some(h) => {
+                (h.until, h.price, h.direct, h.options) = (until.clone(), price, false, 0);
+                (h.package, h.with) = (p.name.clone(), with.clone());
+            }
+            None => c.concessions.held.push(Concession { line: pl.line.clone(), number: pl.number.clone(), from: from.clone(), until: until.clone(), price, direct: false, after: after.clone(), options: 0, package: p.name.clone(), with: with.clone() }),
+        }
+    }
     Event::Won { number: t.number.clone(), until }
 }
 
@@ -1731,6 +1973,40 @@ pub(crate) mod tests {
             out.extend(after_day(c, &date, &[], lines));
         }
         out
+    }
+
+    /// (NexiconDK, 3 November 2026) A package: its work, tours and buses the lines' together, its
+    /// name and its lines' numbers, priced on it all; the reserve rounded half up, at least one
+    /// from five buses; the tender page's figures of a line's week of seven days.
+    #[test]
+    fn a_package_of_lines_the_reserve_and_the_figures() {
+        let c = company(GameMode::Normal);
+        let (a, b) = (line("Linie5", "5", 3, true), line("Linie7", "7", 2, true));
+        let ta = make_tender(&c, &a, 1, 0, false, "k", &[], (0, 0));
+        let tb = make_tender(&c, &b, 1, 0, false, "k", &[], (0, 0));
+        assert!(!ta.is_package() && ta.lines() == vec!["Linie5".to_string()]);
+        let p = package_of(&c, ta.clone(), vec![tb.clone()], "By");
+        assert!(p.is_package() && p.has_line("linie7") && p.has_line("Linie5") && !p.has_line("Linie9"));
+        assert_eq!(p.lines(), vec!["Linie5".to_string(), "Linie7".to_string()]);
+        assert_eq!((p.number.as_str(), p.caption.as_str(), p.line.as_str()), ("By", "5, 7", "Linie5"));
+        assert_eq!((p.day_tours, p.work.buses), (ta.day_tours + tb.day_tours, ta.work.buses + tb.work.buses));
+        let year = |t: &Tender| t.work.hours * t.work.days as f64;
+        assert!((year(&p) - year(&ta) - year(&tb)).abs() < 1e-6);
+        assert!(p.cost > ta.cost && p.cost > tb.cost);
+        assert_eq!(p.package.as_ref().unwrap().lines[1].buses(), tb.work.buses.max(tb.day_tours).max(1));
+        assert_eq!((reserve_of(3, 0.1), reserve_of(5, 0.1), reserve_of(15, 0.1), reserve_of(21, 0.1), reserve_of(21, 0.0)), (0, 1, 2, 2, 0));
+        // (three tours a weekday, two on Saturday, one on Sunday: a tour 06:00 to 09:30)
+        let days: Vec<Vec<LineInfo>> = (0..7).map(|k| vec![line("Linie5", "5", [3, 3, 3, 3, 3, 2, 1][k], true)]).collect();
+        let mut t = ta.clone();
+        t.week = Some(week_of(&days, "Linie5"));
+        let f = figures(&t);
+        assert_eq!((f.duties, f.by_day), ((3, 2, 1), true));
+        assert!((f.hours_week - 18.0 * 3.5).abs() < 1e-6, "{}", f.hours_week);
+        assert_eq!(f.drivers, (63.0 * 1.5 / 37.0_f64).ceil() as u32);
+        assert!(f.pax[0] > f.pax[1] && f.pax[1] > f.pax[2] && f.pax[2] > 0.0, "{:?}", f.pax);
+        assert_eq!((f.days_diesel, f.days_electric), (14, 21));
+        assert!((f.hours_diesel - 63.0 * 2.0).abs() < 1e-6 && f.lines.is_empty());
+        assert_eq!(figures(&p).lines, vec![("5".to_string(), ta.caption.clone()), ("7".to_string(), tb.caption.clone())]);
     }
 
     #[test]

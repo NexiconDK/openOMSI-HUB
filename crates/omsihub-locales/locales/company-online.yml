@@ -2855,3 +2855,11 @@ _version: 2
   pl: "Organizator korzysta z opcji na twoją umowę na linii %{n}: zadowalająca eksploatacja, trwa %{days} dni dłużej, do %{date} (opcja %{k} z %{most})."
   ru: "Заказчик использует опцион по вашему контракту на линии %{n}: работа удовлетворительна, он продлён на %{days} дней, до %{date} (опцион %{k} из %{most})."
   uk: "Замовник використовує опціон за вашим контрактом на лінії %{n}: робота задовільна, його продовжено на %{days} днів, до %{date} (опціон %{k} з %{most})."
+"The package %{n} (lines %{lines}) won for %{amount}: its concessions run until %{date}":
+  de: "Das Paket %{n} (Linien %{lines}) für %{amount} gewonnen: seine Konzessionen laufen bis %{date}"
+  da: "Pakken %{n} (linje %{lines}) vundet for %{amount}: koncessionerne løber til %{date}"
+  fr: "Le lot %{n} (lignes %{lines}) gagné pour %{amount} : ses concessions courent jusqu'au %{date}"
+  nl: "Het pakket %{n} (lijnen %{lines}) gewonnen voor %{amount}: de concessies lopen tot %{date}"
+  pl: "Pakiet %{n} (linie %{lines}) wygrany za %{amount}: jego koncesje trwają do %{date}"
+  ru: "Пакет %{n} (линии %{lines}) выигран за %{amount}: его концессии действуют до %{date}"
+  uk: "Пакет %{n} (лінії %{lines}) виграно за %{amount}: його концесії діють до %{date}"

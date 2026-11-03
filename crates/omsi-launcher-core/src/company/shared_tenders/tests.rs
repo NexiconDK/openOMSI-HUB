@@ -188,7 +188,7 @@ fn a_concession_ending_goes_out_to_every_company() {
     network::add_line(&mut a, &lines[0], None).unwrap();
     let until = dates::add(DATE, 5);
     a.concessions.held.retain(|h| h.line != "Linie5");
-    a.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.clone(), price: 1.0, direct: false, after: String::new(), options: 0 });
+    a.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.clone(), price: 1.0, direct: false, after: String::new(), options: 0, package: String::new(), with: Vec::new() });
     let key = key_of(MAP);
     let (ca, cb) = (a.clone(), b.clone());
     let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]), events: Vec::new() });
@@ -657,7 +657,7 @@ fn the_option_takes_a_contract_run_well_seven_days_on_twice_at_most() {
     let held = |c: &mut Company, until: &str| {
         c.concessions.held.retain(|h| h.line != "Linie5");
         c.concessions.contracts.clear();
-        c.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.into(), price: 1.0, direct: false, after: String::new(), options: 0 });
+        c.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.into(), price: 1.0, direct: false, after: String::new(), options: 0, package: String::new(), with: Vec::new() });
         let k = bc::make(c, "Linie5", "5", Kind::Gross, Period::Day, 1_000_000, &bc::work_of(&l), DATE, until);
         c.concessions.contracts.push(k);
     };
@@ -693,4 +693,75 @@ fn the_option_takes_a_contract_run_well_seven_days_on_twice_at_most() {
     c.concessions.tenders.push(t);
     assert!(!options(&mut c, &mut run, 0));
     assert_eq!(cn::of_line(&c, "Linie5").unwrap().until, until);
+}
+
+/// (3 November 2026) A package the server's admin puts out: one tender for its lines - their work
+/// together, its reserve by the admin's share -; a package holding a line of another open tender
+/// is not put out. Won, every line is the company's for the same term, each with its contract at
+/// the package's price; its renewal goes out as the package again, by its first line.
+#[test]
+fn a_package_of_lines_is_let_as_one_and_goes_out_again_as_one() {
+    let data = temp("package");
+    std::fs::create_dir_all(&data).unwrap();
+    std::fs::write(data.join(super::super::main_server::CFG_FILE), "tender_operators = 0\ntender_reserve = 20\ntender_lines_per_round = 0\n").unwrap();
+    assert!((TenderCfg::of(&data).reserve - 0.2).abs() < 1e-9);
+    let lines = lines();
+    let key = key_of(MAP);
+    let now = clock::moment(DATE, 8 * 60);
+    let a = company("Umove", "umove");
+    let ca = a.clone();
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone()], template: template(MAP, DATE, &[]), events: Vec::new() });
+    step(&data, &key, MAP, DATE, now, &mut read);
+    let pack = |name: &str, ls: &[&str]| ServerAsk { package: name.into(), lines: ls.iter().map(|x| x.to_string()).collect(), ..ServerAsk::default() };
+    ask_as_server(&data, &key, "Linie5", pack("By", &["Linie5", "Linie7"])).unwrap();
+    ask_as_server(&data, &key, "Linie7", pack("Bad", &["Linie7", "Linie9"])).unwrap();
+    let said = step(&data, &key, MAP, DATE, now + 1, &mut read);
+    assert!(said.iter().any(|s| s.contains("package Bad not put out") && s.contains("open tender")), "{said:?}");
+    let m = load(&data, &key).unwrap();
+    let with7: Vec<&MarketTender> = m.tenders.iter().filter(|t| t.tender.has_line("Linie7")).collect();
+    assert_eq!(with7.len(), 1);
+    let t = with7[0].tender.clone();
+    assert!(t.is_package() && t.lines() == vec!["Linie5".to_string(), "Linie7".to_string()] && t.number == "By");
+    assert!(!m.tenders.iter().any(|x| x.tender.has_line("Linie9")), "the refused package's other line not out either");
+    let (l5, l7) = (cn::make_tender(&a, &lines[0], 1, 0, false, "k", &[], (0, 0)), cn::make_tender(&a, &lines[1], 1, 0, false, "k", &[], (0, 0)));
+    assert_eq!(cn::contract_buses(&t), l5.work.buses + l7.work.buses);
+    assert_eq!(t.market.as_ref().unwrap().reserve, cn::reserve_of(cn::contract_buses(&t), 0.2));
+    // a bid of the company's at the cap wins it
+    let mut a = a;
+    at(&mut a, t.opens_at + 5);
+    sync(&data, &mut a);
+    let mine = a.concessions.tenders.iter().find(|x| x.has_line("Linie7") && x.open()).unwrap().clone();
+    assert!(mine.is_package());
+    bid(&data, &mut a, mine.id, t.reference).unwrap();
+    let said = step(&data, &key, MAP, DATE, t.closes_at + CLOSE_AFTER + 1, &mut read);
+    assert!(said.iter().any(|s| s.contains("won by the company Umove")), "{said:?}");
+    at(&mut a, t.closes_at + CLOSE_AFTER + 2);
+    let (_, won) = sync(&data, &mut a);
+    assert!(won);
+    let held: Vec<&cn::Concession> = a.concessions.held.iter().filter(|h| h.package == "By").collect();
+    assert_eq!(held.len(), 2, "{:?}", a.concessions.held);
+    assert!(held.iter().all(|h| h.with == vec!["Linie5".to_string(), "Linie7".to_string()] && h.until == held[0].until && h.from == held[0].from));
+    let ks: Vec<&super::super::bus_contracts::Contract> = a.concessions.contracts.iter().filter(|k| k.line == "Linie5" || k.line == "Linie7").collect();
+    assert_eq!(ks.len(), 2);
+    assert!(ks[0].per_hour == ks[1].per_hour && ks[0].per_hour > 0 && ks.iter().all(|k| k.until == held[0].until));
+    // the authority's option on the package: every line seven days on, together
+    let until = held[0].until.clone();
+    let mut o = a.clone();
+    at(&mut o, clock::moment(&dates::add(&until, -RENEW_ANNOUNCED), 8 * 60));
+    let when = clock::now(&o);
+    assert!(options(&mut o, &mut Run::default(), when));
+    let later: Vec<&cn::Concession> = o.concessions.held.iter().filter(|h| h.package == "By").collect();
+    assert!(later.len() == 2 && later.iter().all(|h| h.until == dates::add(&until, OPTION_DAYS) && h.options == 1), "{later:?}");
+    assert_eq!(o.concessions.contracts.iter().filter(|k| k.until == dates::add(&until, OPTION_DAYS)).count(), 2);
+    // its renewal: one tender for the package, by its first line
+    let day = dates::add(&until, 1 - RENEW_ANNOUNCED);
+    let ca = a.clone();
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone()], template: template(MAP, &day, &[]), events: Vec::new() });
+    let said = step(&data, &key, MAP, &day, clock::moment(&day, 8 * 60), &mut read);
+    let m = load(&data, &key).unwrap();
+    let open: Vec<&MarketTender> = m.tenders.iter().filter(|x| x.decided.is_none() && x.tender.has_line("Linie7")).collect();
+    assert_eq!(open.len(), 1, "{said:?}");
+    let r = &open[0].tender;
+    assert!(r.renewal && r.is_package() && r.line == "Linie5" && r.market.as_ref().is_some_and(|x| x.holder == "umove" && x.from == dates::add(&until, 1)), "{said:?}");
+    let _ = std::fs::remove_dir_all(&data);
 }

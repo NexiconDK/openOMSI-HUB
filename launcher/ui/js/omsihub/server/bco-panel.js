@@ -64,6 +64,7 @@ export const BCO_FIELDS = [
   ['tender_operators', 'Operators bidding in a tender', 'number', "Empty: as the rules draw them; 0: none - the map's companies alone"],
   ['tender_round_weeks', 'A round of new lines every (weeks)', 'number'],
   ['tender_lines_per_round', 'Lines in a round', 'number', 'Empty: the rules\' and one more a company'],
+  ['tender_reserve', 'Reserve buses (%)', 'number', "Of a tender's contract buses: shown on the tender page, not paid (10: ten per cent, at least one from five buses)"],
   ['tender_award', 'How tenders are awarded', [['viborg', 'The Viborg model: 50 % price + 50 % quality'], ['lowest', 'The lowest price wins']], 'Quality: the operating quality 25 %, the vehicles 10 %, the implementation plan 10 %, the working environment 5 %'],
   ["The authority's fines (kroner)"],
   ['fine_dropped_minute', 'A journey not run, a minute', 'number'],
@@ -86,7 +87,7 @@ export const BCO_DEFAULTS = {
   name: 'Bus Company Online', real_time: '1', time: '06:00', first_port: '27015', max_worlds: '4', world_idle: '10', keep_worlds: '1', max_memory: '85', max_cpu: '90',
   traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
   price_level: 'dk', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
-  found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', fine_dropped_minute: '20.83',
+  found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', tender_reserve: '10', fine_dropped_minute: '20.83',
   fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',
 };
@@ -454,7 +455,7 @@ export function mountPanel(root, api, opts = {}) {
       const open = m.open.map((t) => {
         const at = h('input', { type: 'datetime-local', value: local(t.closes), style: 'width:190px' });
         const cap = number(Math.round(t.cap_hour), 90);
-        const kind = [t.renewal && !t.event ? tag(tr('Renewal')) : null, t.event ? tag(t.event, 'warn') : null, t.applied.length ? tag(tr('Applied for')) : null, t.direct ? tag(trf('Direct: %{n}', { n: t.direct }), 'ok') : null];
+        const kind = [t.package ? tag(tr('Package')) : null, t.renewal && !t.event ? tag(tr('Renewal')) : null, t.event ? tag(t.event, 'warn') : null, t.applied.length ? tag(tr('Applied for')) : null, t.direct ? tag(trf('Direct: %{n}', { n: t.direct }), 'ok') : null];
         return h('tr', {},
           h('td', {}, h('b', {}, t.number || t.line), ...kind, t.caption ? h('div', { class: 'bco-sub' }, t.caption) : null, t.event && t.from ? h('div', { class: 'bco-sub' }, `${t.from} – ${t.until}`) : null),
           h('td', { class: 'sp-hide' }, t.opens),
@@ -462,7 +463,8 @@ export function mountPanel(root, api, opts = {}) {
           h('td', {}, t.bidders ? trf('%{n} bidders', { n: t.bidders }) : h('span', { class: 'sp-dim' }, tr('no bid yet'))),
           h('td', {}, h('div', { class: 'sp-row' }, cap, btn(tr('Set'), () => post('tender', { map: m.key, id: t.id, do: 'cap', cap: cap.value }))),
             h('div', { class: 'bco-sub' }, trf('estimate %{e} · low under %{l}', { e: kr(t.cost_hour), l: kr(t.low_hour) })),
-            t.bus_cap ? h('div', { class: 'bco-sub' }, trf('%{n} contract buses: at most %{cap} a day (estimate %{e})', { n: t.buses, cap: kr(t.bus_cap), e: kr(t.bus_cost) })) : null),
+            t.bus_cap ? h('div', { class: 'bco-sub' }, trf('%{n} contract buses: at most %{cap} a day (estimate %{e})', { n: t.buses, cap: kr(t.bus_cap), e: kr(t.bus_cost) })) : null,
+            t.reserve ? h('div', { class: 'bco-sub' }, trf('and %{n} reserve buses', { n: t.reserve })) : null),
           h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end' }, at,
             btn(tr('Move the close'), () => post('tender', { map: m.key, id: t.id, do: 'close', at: at.value.replace('T', ' ') })),
             sureButton(tr('Call off'), tr('Sure? Fees are paid back'), () => post('tender', { map: m.key, id: t.id, do: 'cancel' })))),
@@ -499,6 +501,9 @@ export function mountPanel(root, api, opts = {}) {
       const closesIn = keep(m.key + ':closes', h('input', { type: 'datetime-local', style: 'width:190px' }));
       const daysIn = keep(m.key + ':days', number('', 70, '3'));
       const capIn = keep(m.key + ':cap', number('', 90, tr('kr.')));
+      // (3 November 2026: several lines as one package, and its reserve buses' share)
+      const packIn = keep(m.key + ':package', h('input', { placeholder: tr('e.g. Ahlheim By'), style: 'width:190px' }));
+      const reserveIn = keep(m.key + ':reserve', number('', 70, '10'));
       const putOut = h('div', { class: 'sp-card', style: 'background:var(--sp-field)' },
         h('h3', {}, tr('Put out to tender')),
         h('div', { class: 'sp-row', style: 'align-items:flex-start;flex-wrap:wrap' }, pick,
@@ -506,10 +511,14 @@ export function mountPanel(root, api, opts = {}) {
             h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Opens (empty: now)')), opensIn),
             h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Closes (or days)')), closesIn, daysIn),
             h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Cap a timetable hour')), capIn, h('span', { class: 'sp-dim' }, tr('empty: the rules\''))),
+            h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('As one package, named')), packIn, h('span', { class: 'sp-dim' }, tr('empty: each line its own tender'))),
+            h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Reserve buses (%)')), reserveIn, h('span', { class: 'sp-dim' }, tr('empty: the rules\''))),
             btn(tr('Open the tender'), () => {
               const lines = picked();
               if (!lines.length) return say(tr('Choose the lines'), true);
-              post('tender', { map: m.key, do: 'open', lines, opens: opensIn.value.replace('T', ' '), closes: closesIn.value.replace('T', ' '), days: daysIn.value, cap: capIn.value }, trf('%{l} go out to tender in a moment', { l: lines.join(', ') }));
+              const pkg = packIn.value.trim();
+              if (pkg && lines.length < 2) return say(tr('A package has two lines or more'), true);
+              post('tender', { map: m.key, do: 'open', lines, package: pkg, reserve: reserveIn.value, opens: opensIn.value.replace('T', ' '), closes: closesIn.value.replace('T', ' '), days: daysIn.value, cap: capIn.value }, pkg ? trf('The package %{p} (%{l}) goes out to tender in a moment', { p: pkg, l: lines.join(', ') }) : trf('%{l} go out to tender in a moment', { l: lines.join(', ') }));
             }, 'sp-btn small main'))));
       // (a line awarded directly to a company of the map - no bids, at the admin's price)
       const directLines = (m.lines || []).filter((l) => !l.company && !l.event && !l.operator);
