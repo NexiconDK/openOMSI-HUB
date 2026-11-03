@@ -318,6 +318,10 @@ pub fn pay_text(c: &Company, k: &Contract) -> String {
             };
             out = format!("{out}  ·  {bonus}");
         }
+        // (3 November 2026: the authority's surcharge for the hours driven live - `live_pay`, K3)
+        if k.live_paid > 0 {
+            out = format!("{out}  ·  {}", trf("live surcharge so far %{amount}", &[("amount", &eur(k.live_paid))]));
+        }
         return out;
     }
     let each = eur(bc::payment(c, k));

@@ -60,6 +60,7 @@ pub mod incidents;
 pub mod income;
 pub mod levels;
 pub mod licences;
+pub mod live_pay;
 pub mod livery;
 pub mod market;
 pub mod model;

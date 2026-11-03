@@ -154,6 +154,9 @@ fn act_need(act: &str, what: &str) -> Need {
         "sell" => SPEND,
         // (NexiconDK, phase 6 step 3: a depot asks its head office for a big purchase)
         "approval_ask" => SPEND,
+        // (NexiconDK, 3 November 2026: his own driving's pay - the owner's and the co-owners', who
+        // the command itself checks: `live_pay::may_drive_free`)
+        "drive_free" => Member,
         "dismiss" | "holiday" => STAFF,
         "ask_spare" | "ask_rental" | "ask_drop" | "ask_on" | "ask_dispatcher" => SERVICE,
         "morning_fill" => PLANS,

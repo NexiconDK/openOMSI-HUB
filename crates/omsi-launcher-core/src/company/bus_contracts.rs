@@ -248,6 +248,10 @@ pub struct Contract {
     pub per_bus_day: Cents,
     #[serde(default, skip_serializing_if = "is_zero_u32")]
     pub buses: u32,
+    /// (NexiconDK, 3 November 2026) What the authority paid on top for the timetabled hours its
+    /// players drove live and passed (`live_pay`, K3), so far.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub live_paid: Cents,
     /// (NexiconDK, 3 November 2026) A contract of the server's: its quality bonus (`Bonus`), paid
     /// at its end.
     #[serde(default, skip_serializing_if = "Bonus::is_none")]
@@ -685,6 +689,7 @@ pub fn make(c: &mut Company, line: &str, number: &str, kind: Kind, period: Perio
         per_hour: 0,
         per_bus_day: 0,
         buses: 0,
+        live_paid: 0,
         bonus: Bonus::default(),
         watch: Watch::default(),
     }
@@ -990,6 +995,10 @@ pub struct Journeys {
     doubled: Vec<Doubled>,
     /// (3 November 2026) The lines whose buses had an accident today, one each (H4).
     accidents: Vec<String>,
+    /// (3 November 2026) The trips the players drove live, by line: their timetabled minutes and
+    /// their judgements (score, passed) - the operating quality and the live surcharge
+    /// (`live_pay`, K2 and K3).
+    live: Vec<(String, i32, f64, bool)>,
 }
 
 /// (NexiconDK, 3 November 2026) A line's day as one company ran it for another's contract
@@ -1072,6 +1081,22 @@ impl Journeys {
     /// (3 November 2026) A bus of `line` had an accident today (its contract's default points).
     pub fn accident(&mut self, line: &str) {
         self.accidents.push(line.to_string());
+    }
+
+    /// (3 November 2026) A trip of `line` a player drove live, `minutes` of its timetable, judged
+    /// `score` (0 to 100), `passed` or not (`live_pay`).
+    pub fn live(&mut self, line: &str, minutes: i32, score: f64, passed: bool) {
+        self.live.push((line.to_string(), minutes.max(0), score, passed));
+    }
+
+    /// The day's live trips (line, timetabled minutes, score, passed).
+    pub fn lives(&self) -> &[(String, i32, f64, bool)] {
+        &self.live
+    }
+
+    /// The journeys of the day run, of every line.
+    pub fn run_count(&self) -> u32 {
+        self.list.iter().filter(|j| j.run).count() as u32
     }
 
     /// A tour of `line` of the day, `minutes` long by its timetable (its first departure to its
@@ -1299,6 +1324,10 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
             }
             _ => 0,
         };
+        // (3 November 2026: the authority's surcharge on the hour price for the timetabled hours
+        // its players drove live and passed - `live_pay`, K3)
+        let live_minutes: i64 = journeys.live.iter().filter(|l| l.3 && l.0.eq_ignore_ascii_case(&k.line)).map(|l| l.1 as i64).sum();
+        let surcharge = if hourly { super::live_pay::surcharge(c, k.per_hour as f64 * (c.contract_index / k.index.max(0.01)), live_minutes) } else { 0 };
         // (each journey not paid its share of the day: a net subsidy's day is its year's share)
         let per = if strict > 0.0 && n > 0 { day_value(c, &k) / n as f64 } else { 0.0 };
         let full = pd.unpaid - weather_half;
@@ -1338,6 +1367,9 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         if pay != 0 {
             c.book(BookingKind::Contract, pay, format!("Line {}: {label} contract", k.number), false);
         }
+        if surcharge > 0 {
+            c.book(BookingKind::Contract, surcharge, format!("Line {}: live surcharge ({:.1} timetable hours driven by players)", k.number, live_minutes as f64 / 60.0), false);
+        }
         if deducted - fined != 0 {
             c.book(BookingKind::Contract, -(deducted - fined), format!("Line {}: {} journeys not paid", k.number, pd.unpaid), false);
         }
@@ -1348,8 +1380,8 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
             if k.kind == Kind::Gross {
                 out.fares_handed += l.takings.for_authority;
             }
-            l.contract += pay;
-            l.revenue += pay - deducted;
+            l.contract += pay + surcharge;
+            l.revenue += pay + surcharge - deducted;
             l.penalty += deducted;
         }
         let Some(x) = c.concessions.contracts.iter_mut().find(|x| x.id == id) else { continue };
@@ -1360,7 +1392,8 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         x.month.on_time += on_time_n;
         x.month.unpaid += pd.unpaid;
         x.month.serious += pd.serious;
-        x.month.paid += pay - deducted;
+        x.month.paid += pay + surcharge - deducted;
+        x.live_paid += surcharge;
         // (3 November 2026: the quality bonus's pool and what takes off it)
         if hourly {
             x.bonus.pool += (pay.max(0) as f64 * BONUS_SHARE).round() as Cents;
@@ -1395,7 +1428,7 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
             x.record.push(pd.clone());
         }
         let net = x.net_points(date);
-        out.paid += pay;
+        out.paid += pay + surcharge;
         out.deducted += deducted;
         out.unpaid += pd.unpaid;
         out.points += today_points;

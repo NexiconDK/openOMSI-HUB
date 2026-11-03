@@ -411,6 +411,9 @@ pub struct Session {
     /// The player of "Play together" a relayed command runs for (his name: the sender of the
     /// messages he sends, `messages::send`). None: the boss himself.
     pub sender: Option<String>,
+    /// (NexiconDK, 3 November 2026) His number in the company (None: the boss himself) - what is
+    /// his own to choose, his own driving's pay (`live_pay`, K5).
+    pub sender_guest: Option<u32>,
 }
 
 /// The timetables of the company's week, read on a thread, and the plans made of them for a
@@ -1462,6 +1465,7 @@ pub fn relayed(s: &mut Session, v: &mut Viewer, cmd: &str, args: &Value, perms: 
     v.swap(s);
     // (what he sends goes by his name)
     s.sender = Some(v.name.clone()).filter(|n| !n.trim().is_empty()).or_else(|| Some(format!("#{}", v.guest)));
+    s.sender_guest = Some(v.guest);
     let r = match cmd {
         "co_tick" => Ok(super::together::relay::shell_for(shell(s), perms)),
         // (a duty card: the player's own duty's, or as his role allows - `dutycard::relayed`)
@@ -1480,6 +1484,7 @@ pub fn relayed(s: &mut Session, v: &mut Viewer, cmd: &str, args: &Value, perms: 
         other => Err(format!("no command {other}")),
     };
     s.sender = None;
+    s.sender_guest = None;
     v.swap(s);
     r
 }

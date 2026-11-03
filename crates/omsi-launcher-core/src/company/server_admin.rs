@@ -420,6 +420,7 @@ fn market(api: &Api) -> Value {
     let (today, _) = server_now(&m);
     let cfg = shared_tenders::TenderCfg::of(&m.data);
     let doubling = super::doubling::Rules::of(&m.data);
+    let live = super::live_pay::LiveCfg::of(&m.data);
     // (3 November 2026: the tenders' rules as they stand, in kroner)
     let rules = json!({
         "cap_hour": kr(cfg.cap_hour), "cap_bus_day": kr(cfg.cap_bus_day), "cap_factor": cfg.cap_factor, "low_share": (cfg.low_share * 1000.0).round() / 10.0,
@@ -431,6 +432,9 @@ fn market(api: &Api) -> Value {
         "options": shared_tenders::OPTIONS, "option_days": shared_tenders::OPTION_DAYS,
         // (doubling: the price of a run with a bus of no contract, how full is full - 3 November 2026)
         "doubling_price": kr(doubling.price_hour), "doubling_full": (doubling.full_share * 100.0).round(),
+        // (driving yourself pays: a player's pay against an AI driver's, the AI's cap in the
+        // operating quality, the live surcharge, the AI drivers a map - 3 November 2026, `live_pay`)
+        "player_pay": (live.pay_share * 100.0).round(), "ai_cap": live.ai_cap.round(), "live_surcharge": (live.surcharge * 1000.0).round() / 10.0, "driver_pool": live.pool,
     });
     let maps: Vec<Value> = keys
         .iter()
@@ -526,7 +530,10 @@ fn market(api: &Api) -> Value {
                     })
                 })
                 .collect();
-            json!({ "key": mk.key, "map": folder_name(&mk.map), "open": open, "decided": decided, "held": held, "events": mk.events, "lines": lines, "contracts": contracts, "companies": companies, "operators": operators, "roadworks": roadworks, "rail_lines": mk.rail_lines, "rails": rails, "complaints": complaints })
+            // (the AI drivers its companies employ, against the pool - `live_pay`, K4)
+            let hired: u32 = all.iter().filter(|c| c.online.on_server && shared_tenders::key_of(&c.map) == mk.key).map(super::live_pay::drivers_of).sum();
+            let drivers = json!({ "pool": live.pool, "hired": hired });
+            json!({ "key": mk.key, "map": folder_name(&mk.map), "drivers": drivers, "open": open, "decided": decided, "held": held, "events": mk.events, "lines": lines, "contracts": contracts, "companies": companies, "operators": operators, "roadworks": roadworks, "rail_lines": mk.rail_lines, "rails": rails, "complaints": complaints })
         })
         .collect();
     // (3 November 2026: the server's calendar and the admin's holidays - `contract_events`)

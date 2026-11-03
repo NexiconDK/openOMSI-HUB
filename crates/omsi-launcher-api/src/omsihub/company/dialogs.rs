@@ -68,16 +68,32 @@ pub fn switch_text(c: &Company, to: GameMode) -> String {
 
 /// (NexiconDK, Bus Company Online phase 3) The settings' share of a company on the server: what
 /// it keeps of what a trip of its players in the map's world brings in (the rest their pay).
-fn online_part(c: &co::Company) -> Value {
+fn online_part(c: &co::Company, viewer: Option<u32>) -> Value {
     if !c.online.on_server {
         return Value::Null;
     }
-    let share = c.online.share.min(100);
+    // (NexiconDK, 3 November 2026: its players are paid a share of what an AI driver costs for
+    // the time - the server's rule, `live_pay` K1 -; the owner and the co-owners choose whether
+    // their own driving pays them, K5)
+    let rules = co::live_pay::cfg(c);
+    let pay_say = trf("A player of the company is paid %{share} % of what an AI driver costs for the same time (the server's rule): about %{amount} a timetable hour.", &[("share", &format!("{:.0}", rules.pay_share * 100.0)), ("amount", &eur((rules.pay_share * co::live_pay::ai_hour(c) * co::econ_uk::PAID_PER_TIMETABLED_HOUR).round() as i64))]);
+    let own = viewer.filter(|g| co::live_pay::may_drive_free(c, *g)).map(|g| {
+        let id = c.together.guests.iter().find(|x| x.no == g).map(|x| x.id.clone()).unwrap_or_default();
+        let free = co::live_pay::drives_free(c, &id);
+        json!({
+            "caps": tr("Your own driving").to_uppercase(),
+            "value": if free { "free" } else { "paid" },
+            "options": [
+                { "value": "paid", "label": tr("Pays me") },
+                { "value": "free", "label": tr("Free for the company") },
+            ],
+            "say": tr(if free { "You drive for the company for nothing: what an AI driver would cost stays in the company." } else { "You are paid for your trips as every player is, into your own money on the server." }),
+        })
+    });
     json!({
-        "caps": tr("The company's share").to_uppercase(),
-        "share": share, "options": (0..=20).map(|k| k * 5).collect::<Vec<u8>>(),
-        "say": trf("The company keeps %{share} % of what a trip of its players brings in; the rest is the driver's pay, into his money on the server.", &[("share", &share.to_string())]),
-        "next": c.online.share_next.map(|n| trf("From tomorrow: %{share} %", &[("share", &n.to_string())])),
+        "caps": tr("Pay for the players").to_uppercase(),
+        "say": pay_say,
+        "own": own,
         // (phase 3 step 3: what a player leaves of his duty - its owner's choice)
         "left_caps": tr("When a player leaves his duty halfway").to_uppercase(),
         "left": if c.together.left_dropped { "dropped" } else { "ai" },
@@ -235,10 +251,24 @@ const TRIPS_CLOSED: &str = "Players take whole duties only: a duty planned for t
 /// {left: "ai" | "dropped"}`: `together::Together::left_dropped`, at once) - a company on Bus
 /// Company Online's server only.
 pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, String>> {
-    if what != "online_share" && what != "online_left" && what != "online_trips" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" && what != "approval_ask" && what != "approval_answer" {
+    if what != "online_share" && what != "online_left" && what != "online_trips" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" && what != "approval_ask" && what != "approval_answer" && what != "drive_free" {
         return None;
     }
+    let guest = s.sender_guest;
     let Some(c) = s.company.as_mut().filter(|c| c.online.on_server) else { return Some(Ok(json!({}))) };
+    // (NexiconDK, 3 November 2026: the owner or a co-owner chooses whether his own driving pays
+    // him - `live_pay`, K5)
+    if what == "drive_free" {
+        let free = args.get("free").and_then(Value::as_bool).unwrap_or(false);
+        return Some(Ok(match guest.ok_or(co::live_pay::NOT_OWNER).and_then(|g| co::live_pay::set_drives_free(c, g, free)) {
+            Ok(()) => {
+                super::changed(s);
+                s.say(tr(if free { "From now on your own driving for the company is free." } else { "From now on your own driving for the company pays you." }), false);
+                json!({})
+            }
+            Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
+        }));
+    }
     // (phase 6 step 3: a depot asks its head office for a big purchase - who spends its money)
     if what == "approval_ask" {
         let amount = args.get("amount").and_then(Value::as_i64).unwrap_or(0);
@@ -377,7 +407,7 @@ fn settings(s: &mut Session, args: &Value) -> Value {
         "company_mode": super::sandbox::settings_part(&c),
         "country": super::country::settings_part(&c),
         // (NexiconDK: a company on Bus Company Online's server - its share of its players' trips)
-        "online": online_part(&c),
+        "online": online_part(&c, s.sender_guest),
         "currency": super::currency::settings_part(&c),
         "buying": (!easy).then(|| {
             let mode = BuyingMode::ALL.iter().position(|m| *m == c.dealer.mode).unwrap_or(1);

@@ -275,7 +275,13 @@ fn hire_part(c: &Company, ui: &Value) -> Value {
     let pick = ui.get("hire_role").and_then(Value::as_u64).unwrap_or(0).min(Role::ALL.len() as u64 - 1) as usize;
     let chips: Vec<String> = Role::ALL.iter().map(|r| format!("{}  {}", tr(staff::plural(*r)), market.iter().filter(|a| a.role == *r).count())).collect();
     let role = Role::ALL[pick];
-    let foot = trf("New applicants come on %{date}. Every role has its own market: wages around what the market pays for their experience.", &[("date", &day_label(&co::network::next_monday(c)))]);
+    let mut foot = trf("New applicants come on %{date}. Every role has its own market: wages around what the market pays for their experience.", &[("date", &day_label(&co::network::next_monday(c)))]);
+    // (NexiconDK, 3 November 2026: the AI drivers left in the map's pool on the server - `live_pay`, K4)
+    if role == Role::Driver && c.online.on_server {
+        if let Some((free, pool)) = co::live_pay::pool_of(c) {
+            foot = format!("{foot} {}", trf("AI drivers left to hire on this map: %{free} of %{pool}. None left, agency drivers run the duties nobody drives.", &[("free", &free.max(0).to_string()), ("pool", &pool.to_string())]));
+        }
+    }
     let mut out = json!({ "kind": "hire", "chips": chips, "pick": pick, "foot": foot });
     if let Err(why) = staff::hireable(c, role) {
         let easy = co::autopilot::on(c);

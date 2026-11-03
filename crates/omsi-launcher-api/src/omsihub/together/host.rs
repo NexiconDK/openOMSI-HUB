@@ -207,7 +207,9 @@ pub(crate) fn take_world_trips(s: &mut Session, lines: &[core::LineInfo], trips:
             if let Ok((1, _)) = book::report(c, Some(&p), r, no, std::slice::from_ref(t), now) {
                 let kept = c.together.trips.last().map(|g| g.trip.clone()).unwrap_or_else(|| t.clone());
                 let money = book::trip_money(c, &kept);
-                let pay = co::online::pay_of(c, money);
+                // (NexiconDK, 3 November 2026: on the server a share of what an AI driver costs for
+                // the time - nothing when the owner drives for free: `live_pay`, K1 and K5)
+                let pay = co::live_pay::trip_pay(c, &id, &kept, money);
                 if pay > 0 {
                     c.book(co::model::BookingKind::Wages, -pay, format!("{name}: line {} tour {} (a player of the company)", kept.line, kept.tour), false);
                 }

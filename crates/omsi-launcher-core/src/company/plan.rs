@@ -1820,7 +1820,11 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
     }
     // what is open today: the dispatcher's choice, else the central for what came suddenly (and,
     // but on Realistic, for a holiday nobody could cover: an agency driver)
-    let central = |p: Option<Problem>| p.is_some_and(Problem::sudden) || (p == Some(Problem::Holiday) && c.game_mode != GameMode::Realistic);
+    // (NexiconDK, 3 November 2026: on Bus Company Online's server a duty nobody was given too -
+    // the AI always drives what no player does, a free colleague or an agency driver at the
+    // agency's price: `live_pay` K4)
+    let central = |p: Option<Problem>| p.is_some_and(Problem::sudden) || (p == Some(Problem::Holiday) && c.game_mode != GameMode::Realistic) || (p == Some(Problem::Unassigned) && super::live_pay::agency_runs_open(c));
+    let for_player = |line: &str, tour: &str, k: usize| matches!(roster(c, wd, line, tour).and_then(|r| r.duties.get(k).copied().flatten()), Some(Who::Guest(g)) if c.together.guest(g).is_some_and(|x| !x.banned));
     if today {
         let slot = super::plandays::slot_of(c, date);
         for &(i, k) in &order {
@@ -1848,8 +1852,9 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
                 Some(Fill::Player) => (None, Source::Dispatcher),
                 Some(Fill::Drop) => (None, Source::Dispatcher),
                 // (the central: a free colleague - the agency drivers booked for the day first -,
-                // else one sent by the agency)
-                _ if central(problem) => match pick(&work, &bus, &block) {
+                // else one sent by the agency; NexiconDK, 3 November 2026: on the server not a duty
+                // the roster gives a player - his claim puts him on it as the day begins)
+                _ if central(problem) && !(problem == Some(Problem::Unassigned) && for_player(&out[i].tour.line, &out[i].tour.tour, k)) => match pick(&work, &bus, &block) {
                     Some((id, _)) => (Some(Who::Staff(id)), Source::Central),
                     None => (Some(Who::Agency), Source::Central),
                 },
@@ -3374,5 +3379,21 @@ mod tests {
         let tuesday = dates::add(&c.date, 1);
         let p = day_plan(&c, &tuesday, tours, &[], &[], false);
         assert!(candidates(&c, &p, 1, 0)[0].fit.is_ok());
+    }
+
+    /// (NexiconDK, 3 November 2026: `live_pay` K4) On the server a duty nobody drives is run by an
+    /// agency driver (a free colleague first): the AI always drives what no player does. Off the
+    /// server it stays open.
+    #[test]
+    fn on_the_server_an_agency_driver_runs_a_duty_nobody_drives() {
+        // (a bus for the tour, nobody to drive it)
+        let mut c = quiet(1, 0);
+        c.game_mode = GameMode::Normal;
+        let tours = vec![tour("1", 6 * 60, 3)];
+        let p = day_plan(&c, &c.date, tours.clone(), &[], &[], false);
+        assert_eq!((p.tours[0].duties[0].who, p.tours[0].duties[0].problem), (None, Some(Problem::Unassigned)));
+        c.online.on_server = true;
+        let p = day_plan(&c, &c.date, tours, &[], &[], false);
+        assert_eq!((p.tours[0].duties[0].who, p.tours[0].duties[0].from_), (Some(Who::Agency), Source::Central));
     }
 }

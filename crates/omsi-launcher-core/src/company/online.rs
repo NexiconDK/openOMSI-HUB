@@ -41,7 +41,8 @@ pub const SAVE_EVERY: i64 = 60;
 pub struct Online {
     /// It runs on a server. In Normal and Realistic its roster is its planners' alone: the day's
     /// repair of the roster (`plan::repair_day`: a driver ill, a bus broken) is not run for
-    /// them, and what nobody filled does not run. The easy mode's own routine fills the roster
+    /// them, and what nobody filled does not run - (3 November 2026) but for a duty with a bus
+    /// nobody was given: a free colleague or an agency driver runs it (`live_pay`, K4). The easy mode's own routine fills the roster
     /// as it does on a player's computer (`autopilot::morning`). The map's lines no company has
     /// run as the map has them.
     #[serde(default)]
@@ -86,6 +87,20 @@ pub struct Online {
     /// process, not kept: None elsewhere.
     #[serde(skip)]
     pub price_level: Option<String>,
+    /// (NexiconDK, 3 November 2026) Driving yourself pays (`live_pay`, K1-K5): the server's rules
+    /// as its process read them (not kept), the players - the owner, the co-owners - who drive for
+    /// it for nothing (K5), its days of journeys and live trips (K2) and the drivers left in its
+    /// map's pool as last counted, and when (K4; not kept).
+    #[serde(skip)]
+    pub live: Option<super::live_pay::LiveCfg>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub drives_free: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub live_days: Vec<super::live_pay::LiveDay>,
+    #[serde(skip)]
+    pub pool_free: Option<i64>,
+    #[serde(skip)]
+    pub pool_read: i64,
     /// (NexiconDK, 3 November 2026) Its subcontracts as the main server keeps them, given or run
     /// (`subcontracts`; read by its process, not kept), the days it ran for others still to send,
     /// those run for it not yet taken into its contracts, and how far their file was read.
@@ -183,7 +198,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, subs: Vec::new(), sub_out: Vec::new(), sub_in: Vec::new(), sub_read: 0, changes: Vec::new(), roadworks: Vec::new(), roadworks_at: 0, majeure: Vec::new(), majeure_at: 0, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, live: None, drives_free: Vec::new(), live_days: Vec::new(), pool_free: None, pool_read: 0, subs: Vec::new(), sub_out: Vec::new(), sub_in: Vec::new(), sub_read: 0, changes: Vec::new(), roadworks: Vec::new(), roadworks_at: 0, majeure: Vec::new(), majeure_at: 0, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
     }
 }
 
@@ -688,6 +703,16 @@ impl Host {
         // (and the server's price level: its companies' wages, fuel, buses and contracts - 3 November 2026)
         if c.online.on_server && c.online.price_level.is_none() {
             c.online.price_level = Some(super::server_fines::price_level_of(&self.data));
+        }
+        // (and its rules of driving yourself, and - every five minutes - the AI drivers left in
+        // its map's pool: `live_pay`, K1-K5)
+        if c.online.on_server && c.online.live.is_none() {
+            c.online.live = Some(super::live_pay::LiveCfg::of(&self.data));
+        }
+        if c.online.on_server && super::live_pay::cfg(c).pool > 0 && (c.online.pool_free.is_none() || (real - c.online.pool_read).abs() >= 300) {
+            let others = super::live_pay::others_drivers(&self.data, c);
+            c.online.pool_free = super::live_pay::pool_free(c, others);
+            c.online.pool_read = real;
         }
         // (and its rules of doubling: the price of a run with a bus of no contract, how full is full)
         if c.online.on_server && c.online.doubling_rules.is_none() {

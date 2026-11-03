@@ -308,6 +308,11 @@ pub fn hireable(c: &Company, role: Role) -> Result<(), &'static str> {
     if role == Role::Inspector && !super::research::has(c, super::research::keys::TICKET_INSPECTORS) {
         return Err("Ticket inspectors can be hired once the company has researched ticket inspection.");
     }
+    // (NexiconDK, 3 November 2026: on the server the AI drivers of a map are short - its pool,
+    // `live_pay` K4)
+    if role == Role::Driver {
+        super::live_pay::may_hire_driver(c)?;
+    }
     Ok(())
 }
 
@@ -1475,6 +1480,8 @@ pub fn hire(c: &mut Company, a: &Applicant) -> Result<u32, &'static str> {
     // (the induction: the fleet's models)
     if a.role == Role::Driver {
         super::licences::induction(c, id);
+        // (one fewer left in the map's pool on the server - `live_pay`, K4)
+        super::live_pay::took_driver(c);
     }
     // (a sandbox: qualified for every bus with everything unlocked, and new applicants at once
     // when it hires without limits and the role's are all hired)

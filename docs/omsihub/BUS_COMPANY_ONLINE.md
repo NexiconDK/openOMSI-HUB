@@ -1630,6 +1630,45 @@ tab "Competitors").
 Tested: `competitors::tests`,
 `server_admin::tests::the_admin_makes_takes_over_changes_and_deletes_competitors`.
 
+### Driving yourself pays (3 November 2026, K1-K5)
+
+Decided: a company of the server does better with its players driving than with AI drivers alone
+- but when no player drives, the AI drives. A player who drove a duty was paid 75 % of what its
+trips brought in (`online::pay_of`), an AI driver costs his wage: at the Danish price level a
+player cost about 750 kr. a timetable hour, an AI driver about 550. Now (`live_pay`):
+
+- **K1, a player is cheaper**: a trip of his duty pays `player_pay_share` (90 %) of what an AI
+  driver costs for its paid hours - `pay::driver_hour` by the trip's timetabled time (departure
+  to arrival) by `econ_uk::PAID_PER_TIMETABLED_HOUR` (1.5), about 500 kr. a timetable hour; a free
+  drive the same share of the hours driven (`free_drive::book_run`). Booked as before (Wages, "a
+  player of the company"). The company's share of its players' trips is no setting on the server
+  any more; its settings say the rule instead.
+- **K2, live driving scores better operating quality**: each day the close records the journeys
+  run and the players' live trips with their judgements (`career::judge_exam`; `Online::
+  live_days`, 56 days). The operating quality of the Viborg model on the server is
+  `(1 - s) × min(record, cap) + s × live`: `s` the share of the journeys run live, `live` the live
+  trips' average judgement (a failed one counts at most the cap), `record` the track record
+  (`bus_contracts::quality`), `cap` `ai_quality_cap` (70). No live trip: the capped record - an
+  AI-only company has at most 70 operating points.
+- **K3, the live surcharge**: a contract paid by the timetable hour pays `live_surcharge` (5 %) of
+  its hour price on top for the timetabled minutes of the live trips that passed
+  (`bus_contracts::close_day`, `Contract::live_paid`, shown on the contract).
+- **K4, drivers are short**: `driver_pool` AI drivers a map (empty or 0: as many as the companies
+  like). The company's process counts the drivers its map's companies employ every five minutes
+  (`Online::pool_free`); none left, hiring a driver is refused (`staff::hireable`, the staff
+  page says why and how many are left). A duty nobody was given on a server company is run by a
+  free colleague or an agency driver at the agency's price (`plan`'s central dispatcher:
+  `live_pay::agency_runs_open`) - nothing is dropped for want of a driver; a player may still
+  take it, and a duty the roster gives a player waits for his claim as the day begins.
+- **K5, the owner chooses**: the owner and the co-owners choose in the company's settings whether
+  their own live driving pays them or is free (`Online::drives_free`, the command
+  `drive_free`): free, a trip of theirs books no wage.
+
+The web admin shows the rules under the tenders' rules, the AI drivers hired of the pool on each
+map's market, and has the settings under "Driving yourself".
+
+Tested: `live_pay::tests`, `plan::tests::on_the_server_an_agency_driver_runs_a_duty_nobody_drives`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

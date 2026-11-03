@@ -70,6 +70,11 @@ export const BCO_FIELDS = [
   ['tender_award', 'How tenders are awarded', [['viborg', 'The Viborg model: 50 % price + 50 % quality'], ['lowest', 'The lowest price wins']], 'Quality: the operating quality 25 %, the vehicles 10 %, the implementation plan 10 %, the working environment 5 %'],
   ['doubling_price', 'Doubling: a timetable hour with a bus of no contract (kroner)', 'number', "An extra bus behind a full departure; one of the line's own buses standing free is paid at the contract's price"],
   ['doubling_full', 'Doubling: full at (% of the places)', 'number', 'Seats and standing: 100 - people left at the stop. A departure full on 3 of its last 5 like days is ordered'],
+  ['Driving yourself'],
+  ['player_pay_share', "A player's pay (%)", 'number', "Of what an AI driver costs the company for the same time (90: a player is cheaper than an AI driver)"],
+  ['ai_quality_cap', 'An AI trip counts at most', 'number', 'In the operating quality of the tenders (0-100); a live trip that passes counts its judgement'],
+  ['live_surcharge', 'Live surcharge (%)', 'number', "The authority's extra on the hour price for the hours driven live and passed; 0: none"],
+  ['driver_pool', 'AI drivers a map', 'number', "Empty or 0: as many as the companies like. None left: agency drivers run their open duties at the agency's price"],
   ["The authority's fines (kroner)"],
   ['fine_dropped_minute', 'A journey not run, a minute', 'number'],
   ['fine_wrong_bus', 'A smaller bus than the timetable asks', 'number'],
@@ -93,7 +98,7 @@ export const BCO_FIELDS = [
 export const BCO_DEFAULTS = {
   name: 'Bus Company Online', real_time: '1', time: '06:00', first_port: '27015', max_worlds: '4', world_idle: '10', keep_worlds: '1', max_memory: '85', max_cpu: '90',
   traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
-  price_level: 'dk', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
+  price_level: 'dk', player_pay_share: '90', ai_quality_cap: '70', live_surcharge: '5', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
   found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', calendar: 'map', doubling_price: '650', doubling_full: '100', tender_reserve: '10', fine_dropped_minute: '20.83',
   fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_wrong_fuel: '2500', fine_wrong_floor: '2500', fine_inspection: '1000', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',
@@ -557,7 +562,12 @@ export function mountPanel(root, api, opts = {}) {
         fact(trf('%{a} / %{b} / %{c} days before', { a: (r.renew || [])[0], b: (r.renew || [])[1], c: (r.renew || [])[2] }), tr('A renewal'), tr('announced, opens, decided')),
         fact((r.lengths || []).map((x) => `${x[0]}/${x[1]}`).join(' · '), tr('Contract days, diesel/electric'), tr('small · medium · large work: under 1,000, up to 3,000, over 3,000 timetable hours a week')),
         fact(trf('%{n} × %{d} days', { n: r.options, d: r.option_days }), tr('Option'), tr('when run satisfactorily: not red, at most 2 % of the journeys dropped')),
-        fact(r.doubling_price != null ? kr(r.doubling_price) : '-', tr('Doubling a timetable hour'), trf('with a bus of no contract · full at %{p} % of the places', { p: r.doubling_full }))),
+        fact(r.doubling_price != null ? kr(r.doubling_price) : '-', tr('Doubling a timetable hour'), trf('with a bus of no contract · full at %{p} % of the places', { p: r.doubling_full })),
+        // (3 November 2026: driving yourself pays - K1-K4)
+        fact(`${r.player_pay} %`, tr("A player's pay"), tr("of what an AI driver costs for the same time")),
+        fact(String(r.ai_cap), tr('An AI trip counts at most'), tr('in the operating quality: a live trip that passes counts its judgement')),
+        fact(`${r.live_surcharge} %`, tr('Live surcharge'), tr('on the hour price, for the hours driven live')),
+        fact(r.driver_pool ? String(r.driver_pool) : tr('as many as they like'), tr('AI drivers a map'), tr('none left: agency drivers run the open duties'))),
       h('div', { class: 'sp-dim' }, tr('Changed under Rules and economy: a new tender takes them; one open keeps its own (its cap can be set here).')));
     // (3 November 2026: the server's calendar and the admin's own holidays - school holidays on top)
     const hName = keep('holiday:name', h('input', { placeholder: tr('e.g. Strike'), style: 'width:160px' }));
@@ -719,7 +729,7 @@ export function mountPanel(root, api, opts = {}) {
         h('h3', {}, tr('Award directly (emergency service)')),
         h('div', { class: 'sp-dim' }, tr('The line goes to the company without bidding, at your price a timetable hour; its open tender ends so. A line an operator runs: end its term first (below).')),
         h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, dLine, dCompany, dPrice, h('span', { class: 'sp-dim' }, tr('kr. a timetable hour')), dDrive,
-          sureButton(tr('Award'), tr('Sure? No bids, no operators'), () => post('tender', { map: m.key, do: 'direct', line: dLine.value, company: dCompany.value, cap: dPrice.value, drive: dDrive.value })))) : null;
+          sureButton(tr('Award'), tr('Click again to award it directly: no bids, no operators'), () => post('tender', { map: m.key, do: 'direct', line: dLine.value, company: dCompany.value, cap: dPrice.value, drive: dDrive.value })))) : null;
       // (3 November 2026: rail replacement - only where the map has a timetable for it, H9)
       const rlLine = keep(m.key + ':rl-line', h('select', {}, ...(m.rail_lines || []).map((l) => h('option', { value: l }, l))));
       const rlFrom = keep(m.key + ':rl-from', dateIn(d.today, d.today));
@@ -745,6 +755,7 @@ export function mountPanel(root, api, opts = {}) {
         e.lines?.length ? h('div', { class: 'bco-sub' }, trf('Its own lines: %{l}', { l: e.lines.join(', ') })) : null,
         e.off?.length ? h('div', { class: 'bco-sub' }, trf('Takes off: %{l}', { l: e.off.join(', ') })) : null)));
       return card(m.map,
+        m.drivers && m.drivers.pool ? h('div', { class: 'sp-dim' }, trf('AI drivers on this map: %{h} hired of %{p}', { h: m.drivers.hired, p: m.drivers.pool })) : null,
         h('h3', {}, trf('Open tenders - %{n}', { n: m.open.length })),
         open.length ? table([tr('Line'), [tr('Opens'), 'sp-hide'], tr('Closes'), tr('Bids'), tr('Cap a timetable hour'), ''], open) : h('div', { class: 'sp-dim' }, tr('No tender is open.')),
         h('div', { class: 'sp-dim' }, tr('The bids stay sealed until the close: only how many companies bid shows here.')),

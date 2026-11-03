@@ -115,6 +115,9 @@ pub fn load(data: &Path, id: &str) -> Result<Company> {
     // its process, the market's pricing: 3 November 2026)
     if c.online.on_server {
         c.online.price_level = Some(super::server_fines::price_level_of(data));
+        // (its rules of driving yourself: a player's pay, the quality, the surcharge, the pool -
+        // `live_pay`)
+        c.online.live = Some(super::live_pay::LiveCfg::of(data));
         c.online.doubling_rules = Some(super::doubling::Rules::of(data));
         // (the admin's corrections of the buses: their floor, fuel, size and screens)
         super::server_buses::refresh(data, &mut c);

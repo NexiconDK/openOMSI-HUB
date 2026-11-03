@@ -463,4 +463,12 @@ Bus Company online (fase 1 af `docs/omsihub/BUS_COMPANY_ONLINE.md`). Én stor se
   - **Kvalitet:** den stiger et point for hver kontrakt, der køres til ende, og falder fem for hver, der opgives.
   - **Ændringer:** en konkurrent kan ændres og slettes. Kontrakterne, den allerede har, kører færdig.
   - **Uden en liste** beholder hvert kort sine egne trukne operatører. Med "Take them over as competitors" laver admin dem om til konkurrenter, som han så kan ændre.
+- **Kør selv kan betale sig (Bus Company Online, 3. november 2026, K1-K5)**: Før fik en spiller 75 % af det, hans ture gav firmaet, og var dermed dyrere end en AI-chauffør. Nu:
+  - **K1:** En spiller får 90 % af det, en AI-chauffør koster for samme tid, ca. 500 kr. pr. køreplantime. Det gælder også fri kørsel.
+  - **K2:** Live-ture tæller deres bedømmelse i driftskvaliteten, mens AI-ture højst tæller 70.
+  - **K3:** Trafikselskabet betaler 5 % live-tillæg på timeprisen for timer, der er kørt live og bestået.
+  - **K4:** Admin kan sætte et antal AI-chauffører pr. kort. Er de brugt, kan firmaerne ikke ansætte flere. Vagter, som ingen kører, køres altid af en ledig kollega eller en vikarchauffør til vikarbureauets pris, så intet udgår, fordi der mangler en chauffør.
+  - **K5:** Ejeren og medejerne vælger i firmaets indstillinger, om deres egen kørsel betaler dem eller er gratis for firmaet.
+
+  Alt kan indstilles under "Driving yourself" i web admin.
 - Den dedikerede server har fået `idle_stop = <minutter>` i `server.cfg`. Er den sat, lukker serveren af sig selv efter så mange minutter uden spillere.

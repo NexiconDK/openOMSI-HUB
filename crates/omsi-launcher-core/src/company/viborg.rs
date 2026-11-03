@@ -7,7 +7,8 @@
 //!
 //! Each part is 0 to 100 points, the weights make them the bid's points:
 //! * **the price**: the lowest valid ask gets them all, another the share the lowest is of it;
-//! * **the operating quality**: the company's track record (`bus_contracts::quality`);
+//! * **the operating quality**: the company's track record (`bus_contracts::quality`; on the server
+//!   its players' live trips count their judgements, the AI's at most a cap: `live_pay::operation`);
 //! * **the vehicles**: its buses - their age (new 100, `OLD_YEARS` or older 0), how clean they
 //!   run (electric 100, CNG 80, diesel 50) and their floor (low floor 100, low entry 70, high
 //!   floor 30), 50 / 30 / 20 %;
@@ -121,7 +122,10 @@ impl Parts {
 
     /// Company `c`'s parts in tender `t` now.
     pub fn of(c: &Company, t: &Tender) -> Parts {
-        Parts { operation: super::concessions::quality(c).clamp(0.0, 100.0), vehicles: vehicles(c), plan: plan(c, t), work: work(c) }
+        // (NexiconDK, 3 November 2026: on the server the journeys its players drove live count
+        // their judgements, the AI's at most its cap - `live_pay::operation`, K2)
+        let operation = if c.online.on_server { super::live_pay::operation(c) } else { super::concessions::quality(c) };
+        Parts { operation: operation.clamp(0.0, 100.0), vehicles: vehicles(c), plan: plan(c, t), work: work(c) }
     }
 
     /// The points each part gives (operation, vehicles, plan, work) by the award.

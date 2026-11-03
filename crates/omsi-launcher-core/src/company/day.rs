@@ -759,6 +759,12 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
             }
         }
         journeys.red_lights(&c.lines[li].name, t.red_lights.max(0) as u32);
+        // (NexiconDK, 3 November 2026: a player's live trip, judged - the operating quality and
+        // the authority's live surcharge, `live_pay` K2/K3; not a doubling's extra run)
+        if c.online.on_server && !super::doubling::is_tour(&duty_tour) && c.together.trips.iter().any(|g| g.trip == *t) {
+            let (passed, score, _) = super::career::judge_exam(t);
+            journeys.live(&c.lines[li].name, (super::live_pay::trip_hours(t) * 60.0).round() as i32, score as f64, passed);
+        }
         // (on the server: its departures early, and late without the delay reported - by the
         // tour of the duty it was, `server_fines`)
         if c.online.on_server {
@@ -1168,6 +1174,10 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     // into its contracts - `subcontracts`)
     super::subcontracts::close_day(c, &date, &mut journeys);
     super::bus_contracts::close_day(c, &date, &journeys, &mut lines, &mut report);
+    // (NexiconDK, 3 November 2026: the day's journeys and live trips, for the operating quality -
+    // `live_pay`, K2)
+    let live: Vec<(f64, bool)> = journeys.lives().iter().map(|l| (l.2, l.3)).collect();
+    super::live_pay::record_day(c, &date, journeys.run_count(), &live);
     // (NexiconDK, 3 November 2026: the doubling orders' runs paid, the full departures kept and
     // ordered - `doubling`)
     super::doubling::close_day(c, &date, &journeys, &mut report);

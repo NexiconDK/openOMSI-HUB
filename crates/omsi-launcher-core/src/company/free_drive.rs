@@ -5,7 +5,9 @@
 //! tour" he drives as a single trip taken over from the AI (`together::book::claim_driven_trip`),
 //! or behind it as an extra bus (its passengers this drive's). The bus's odometer and tank go on
 //! from the company's (`fuel`), and come back with what he drove; he is paid his share of the
-//! fares (`online::pay_of`) and half a driver's wage for the time his bus was moving.
+//! fares (`online::pay_of`) and half a driver's wage for the time his bus was moving - on Bus
+//! Company Online's server (3 November 2026) the server's share of what an AI driver costs for
+//! that time, as a duty's trip is paid (`live_pay`).
 //!
 //! The drive itself (`FreeDrive`) is the company's from when he takes the bus to when his game
 //! ends; what it came to (`FreeRun`) comes from the world, which checked it against where it saw
@@ -184,7 +186,16 @@ pub fn book_run(c: &mut Company, guest: u32, run: &TripRun, now: u64) -> Option<
     let taken: i32 = c.together.trips.iter().filter(|g| g.guest == guest && g.trip.vehicle == d.vehicle && g.trip.time >= d.since).map(|g| g.trip.passengers.max(0)).sum();
     let passengers = (run.passengers.max(0) - taken).clamp(0, 2000);
     let fares = fares_of(c, passengers, km);
-    let pay = super::online::pay_of(c, fares) + hourly_pay(c, minutes);
+    // (NexiconDK, 3 November 2026: on the server a share of what an AI driver costs for the time
+    // driven, as a duty's trip is paid - nothing when the owner drives for free: `live_pay`)
+    let player = c.together.guests.iter().find(|g| g.no == guest).map(|g| g.id.clone()).unwrap_or_default();
+    let pay = if !c.online.on_server {
+        super::online::pay_of(c, fares) + hourly_pay(c, minutes)
+    } else if super::live_pay::drives_free(c, &player) {
+        0
+    } else {
+        super::live_pay::free_drive_pay(c, minutes)
+    };
     if let (Some(f), Some(v)) = (run.fuel, c.fleet.iter_mut().find(|v| v.id == d.vehicle)) {
         v.fuel = f.clamp(0.0, 1.0);
         v.fuel_at = Some(c.clock.minute as i32);
