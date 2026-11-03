@@ -111,6 +111,7 @@ pub mod together;
 pub mod training;
 pub mod unassign;
 pub mod variations;
+pub mod viborg;
 pub mod vehicles;
 
 pub use model::*;

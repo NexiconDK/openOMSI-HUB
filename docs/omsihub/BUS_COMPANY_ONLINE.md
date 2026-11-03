@@ -1252,6 +1252,24 @@ buses stand more of the day dearer, about 1,030 and 1,180 kr. at five hours a bu
 Tested: `econ_uk::reference::the_danish_price_level_lets_a_timetable_hour_at_danish_prices`,
 `server_fines::tests::the_price_level_of_the_settings_reaches_the_server_companies`.
 
+### The Viborg model (3 November 2026)
+
+Decided: the server's tenders are awarded as Midttrafik weighed the bids in its 65th tender (the
+town buses of Viborg): price 50 %, operating quality 25 %, vehicles 10 %, implementation plan 10 %,
+working environment 5 % (`viborg`), where the sealed bids scored 70 % price and 30 % one quality
+before. The admin may award by the lowest price alone (`tender_award = lowest`, the admin panel's
+"How tenders are awarded"); a tender keeps the award it was made with (`Shared::award`).
+
+- A company's parts are taken with its first bid (`viborg::Parts::of`, kept in the bids' file):
+  the operating quality its track record; the vehicles its buses' age (new 100, 12 years 0) and
+  drive (electric 100, diesel 50); the implementation plan room in its depot, buses and drivers
+  for the work besides what it runs; the working environment its staff's satisfaction less those
+  off sick. An operator's lie around its quality (`viborg::operator_parts`).
+- The opened bids show each part's points; the tender page shows the criteria and the company's
+  points now (its price points once the bids are opened).
+
+Tested: `viborg::tests`, `sealed::tests::the_viborg_model_and_the_lowest_price`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

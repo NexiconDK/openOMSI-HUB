@@ -1603,3 +1603,17 @@ _version: 2
   pl: "Płace, paliwo i autobusy firm oraz szacunek organizatora w przetargach"
   ru: "Зарплаты, топливо и автобусы компаний и оценка заказчика в тендерах"
   uk: "Зарплати, пальне й автобуси компаній та оцінка замовника в тендерах"
+"How tenders are awarded":
+  de: "Wie Ausschreibungen vergeben werden"
+  fr: "Attribution des appels d'offres"
+  nl: "Hoe aanbestedingen worden gegund"
+  pl: "Jak przyznawane są przetargi"
+  ru: "Как присуждаются тендеры"
+  uk: "Як присуджують тендери"
+"Quality: the operating quality 25 %, the vehicles 10 %, the implementation plan 10 %, the working environment 5 %":
+  de: "Qualität: Betriebsqualität 25 %, Fahrzeuge 10 %, Umsetzungsplan 10 %, Arbeitsumfeld 5 %"
+  fr: "Qualité : qualité d'exploitation 25 %, véhicules 10 %, plan de mise en œuvre 10 %, conditions de travail 5 %"
+  nl: "Kwaliteit: exploitatiekwaliteit 25 %, voertuigen 10 %, implementatieplan 10 %, werkomgeving 5 %"
+  pl: "Jakość: jakość eksploatacji 25 %, pojazdy 10 %, plan wdrożenia 10 %, środowisko pracy 5 %"
+  ru: "Качество: качество эксплуатации 25 %, автобусы 10 %, план внедрения 10 %, условия труда 5 %"
+  uk: "Якість: якість експлуатації 25 %, автобуси 10 %, план впровадження 10 %, умови праці 5 %"

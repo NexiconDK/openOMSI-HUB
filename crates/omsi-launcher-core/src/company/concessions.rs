@@ -135,6 +135,15 @@ pub struct Standing {
     /// or above the cap (`sealed::score`) - no points.
     #[serde(default)]
     pub rejected: bool,
+    /// (NexiconDK, 3 November 2026) The quality points by their parts (`viborg`): the operating
+    /// quality, the vehicles, the implementation plan and the working environment (none: the
+    /// 70/30 score's one quality).
+    #[serde(default, skip_serializing_if = "no_parts")]
+    pub parts: [f64; 4],
+}
+
+fn no_parts(p: &[f64; 4]) -> bool {
+    p.iter().all(|x| *x == 0.0)
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -337,6 +346,10 @@ pub struct Shared {
     pub direct: String,
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub direct_name: String,
+    /// (NexiconDK, 3 November 2026) How it is awarded, as the server set it when the tender was
+    /// made: the Viborg model's price 50 % and quality 50 %, or the lowest price (`viborg`).
+    #[serde(default, skip_serializing_if = "super::viborg::Award::is_default")]
+    pub award: super::viborg::Award,
 }
 
 fn is_zero(x: &f64) -> bool {
@@ -1324,7 +1337,7 @@ pub fn take_line(c: &mut Company, l: &LineInfo) -> Result<(Event, Cents), &'stat
 pub fn standings(c: &Company, t: &Tender, placed: &[Placed]) -> Vec<Standing> {
     let (all, me) = humans_of(c, t);
     let hq: Vec<f64> = all.iter().map(|h| h.2).collect();
-    auction::points_many(placed, &bidders(c, t), &hq, Some(me)).into_iter().map(|p| Standing { name: bidder_name(c, t, p.who), amount: p.amount, price: p.price, quality: p.quality, total: p.total, rejected: false }).collect()
+    auction::points_many(placed, &bidders(c, t), &hq, Some(me)).into_iter().map(|p| Standing { name: bidder_name(c, t, p.who), amount: p.amount, price: p.price, quality: p.quality, total: p.total, rejected: false, parts: [0.0; 4] }).collect()
 }
 
 /// The rivals' last bids, best first.
@@ -1444,7 +1457,7 @@ pub fn decide_shared(c: &mut Company, id: u32, mine: bool, winner: &str, amount:
     // (its own name in the points as the company's: empty, as in a tender of its own)
     let board: Vec<Standing> = board.into_iter().map(|s| if s.name == c.name { Standing { name: String::new(), ..s } } else { s }).collect();
     let me = board.iter().find(|s| s.name.is_empty()).map_or(0.0, |s| s.total);
-    let rivals: Vec<RivalBid> = board.iter().filter(|s| !s.name.is_empty()).map(|s| RivalBid { name: s.name.clone(), price: t.share(s.amount), quality: s.quality / auction::QUALITY_POINTS * 100.0, score: s.total, amount: s.amount }).collect();
+    let rivals: Vec<RivalBid> = board.iter().filter(|s| !s.name.is_empty()).map(|s| RivalBid { name: s.name.clone(), price: t.share(s.amount), quality: quality_share(&t, s.quality) * 100.0, score: s.total, amount: s.amount }).collect();
     let (outcome, event) = if mine {
         let ev = take(c, &t, amount);
         (Outcome::Won { score: me, rivals, amount, bought: false }, ev)
@@ -1460,6 +1473,17 @@ pub fn decide_shared(c: &mut Company, id: u32, mine: bool, winner: &str, amount:
         x.standings = board;
     }
     Some((event, amount))
+}
+
+/// The share of the most quality points a tender gives that `points` are: the 70/30 score's 30,
+/// a tender of the server's by its award (`viborg`; the lowest price: none, 0).
+pub fn quality_share(t: &Tender, points: f64) -> f64 {
+    let most = t.market.as_ref().map_or(auction::QUALITY_POINTS, |m| m.award.quality_most());
+    if most > 0.0 {
+        (points / most).clamp(0.0, 1.0)
+    } else {
+        0.0
+    }
 }
 
 /// What a closed tender, a concession that ended or the licence came to, for the report.

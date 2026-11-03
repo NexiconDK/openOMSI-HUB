@@ -19,6 +19,7 @@ use omsi_launcher_lib::company::auction::{Placed, Who};
 use omsi_launcher_lib::company::bus_contracts::{self as bc, Period};
 use omsi_launcher_lib::company::clock::{self as ck, Step};
 use omsi_launcher_lib::company::concessions::{self as cn, Outcome, Tender, Week};
+use omsi_launcher_lib::company::viborg::{self, Award};
 use omsi_launcher_lib::company::shared_tenders as co_tenders;
 use omsi_launcher_lib::company::{dates, Cents, Company, Drive};
 use serde_json::{json, Value};
@@ -230,7 +231,15 @@ fn results(c: &Company) -> Value {
                 .iter()
                 .map(|s| {
                     let who = if s.name.is_empty() { tr("You") } else { s.name.clone() };
-                    let points = if s.rejected { tr("rejected: abnormally low or above the cap") } else { trf("%{p} price + %{q} quality = %{t} points", &[("p", &format!("{:.1}", s.price)), ("q", &format!("{:.1}", s.quality)), ("t", &format!("{:.1}", s.total))]) };
+                    let points = if s.rejected {
+                    tr("rejected: abnormally low or above the cap")
+                } else if s.parts.iter().any(|x| *x != 0.0) {
+                    // (3 November 2026: the Viborg model's quality by its parts)
+                    let f = |x: f64| format!("{x:.1}");
+                    trf("%{p} price + %{q} quality (operation %{a}, vehicles %{v}, plan %{l}, working environment %{w}) = %{t} points", &[("p", &f(s.price)), ("q", &f(s.quality)), ("a", &f(s.parts[0])), ("v", &f(s.parts[1])), ("l", &f(s.parts[2])), ("w", &f(s.parts[3])), ("t", &f(s.total))])
+                } else {
+                    trf("%{p} price + %{q} quality = %{t} points", &[("p", &format!("{:.1}", s.price)), ("q", &format!("{:.1}", s.quality)), ("t", &format!("{:.1}", s.total))])
+                };
                     json!({ "who": who, "bid": money(t, s.amount), "points": points, "rejected": s.rejected, "me": s.name.is_empty(), "won": winner.is_some_and(|w| std::ptr::eq(w, s)) })
                 })
                 .collect();
@@ -580,7 +589,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
             .map(|(k, s)| {
                 let name = if s.name.is_empty() { tr("You") } else { s.name.clone() };
                 let kind = if s.name.is_empty() { tr("your company") } else { operator(&s.name).unwrap_or_else(|| tr("a company of the server")) };
-                let q = s.quality / omsi_launcher_lib::company::auction::QUALITY_POINTS;
+                let q = cn::quality_share(t, s.quality);
                 let (bid, tone) = if s.rejected { (trf("%{amount}, rejected", &[("amount", &money(t, s.amount))]), "danger") } else if k == 0 { (trf("%{amount}, won", &[("amount", &money(t, s.amount))]), "ok") } else { (money(t, s.amount), "text") };
                 let points = if s.rejected { tr("rejected: abnormally low or above the cap") } else { trf("%{p} price + %{q} quality = %{t} points", &[("p", &format!("{:.1}", s.price)), ("q", &format!("{:.1}", s.quality)), ("t", &format!("{:.1}", s.total))]) };
                 json!({ "name": name, "kind": kind, "quality": q, "quality_text": if s.rejected { "–".to_string() } else { format!("{:.0}", q * 100.0) }, "bid": bid, "tone": tone, "leads": k == 0 && !s.rejected, "points": points })
@@ -716,6 +725,11 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         _ => mine_last,
     };
     let score = t.scored().then(|| {
+        // (NexiconDK, 3 November 2026: a tender of the server's by its award - the Viborg model's
+        // price 50 % and quality parts 50 %, or the lowest price)
+        if let Some(award) = t.market.as_ref().map(|m| m.award) {
+            return viborg_score(c, t, award, sealed_open);
+        }
         // (sealed: the price points are known once the bids are opened)
         let me = mine_amount.filter(|_| !sealed_open).and_then(|a| {
             let mut with: Vec<Placed> = placed.iter().filter(|p| p.who != Who::Player).copied().collect();
@@ -746,6 +760,35 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         "figures": figures, "terms": terms, "frac": frac, "times": times, "bidders": bidders, "drive": drive,
         "log_title": tr("Bids").to_uppercase(), "log": log, "no_log": tr("No bid yet."),
         "actions": actions,
+    })
+}
+
+/// (NexiconDK, 3 November 2026) How the bids of a tender of the server's are scored, and the
+/// company's quality points now by their parts (`viborg`): its price points are known once the
+/// sealed bids are opened.
+fn viborg_score(c: &core::company::model::Company, t: &Tender, award: Award, sealed_open: bool) -> Value {
+    let parts = viborg::Parts::of(c, t);
+    let split = parts.split(award);
+    let quality = parts.points(award);
+    let (pm, qm) = (award.price_most(), award.quality_most());
+    let f = |x: f64| format!("{x:.0}");
+    let g = |x: f64| format!("{x:.1}");
+    let mut lines = vec![trf("Price %{w} %: the lowest valid ask gets all %{w} points, every other ask lowest ÷ ask of them.", &[("w", &f(pm))])];
+    if award == Award::Viborg {
+        lines.push(trf("Operating quality %{w} %: your track record, %{v} of 100 - %{p} points.", &[("w", &f(viborg::OPERATION)), ("v", &f(parts.operation)), ("p", &g(split[0]))]));
+        lines.push(trf("Vehicles %{w} %: your buses' age and drive, %{v} of 100 - %{p} points.", &[("w", &f(viborg::VEHICLES)), ("v", &f(parts.vehicles)), ("p", &g(split[1]))]));
+        lines.push(trf("Implementation plan %{w} %: room, buses and drivers for the work, %{v} of 100 - %{p} points.", &[("w", &f(viborg::PLAN)), ("v", &f(parts.plan)), ("p", &g(split[2]))]));
+        lines.push(trf("Working environment %{w} %: your staff's satisfaction, less those off sick, %{v} of 100 - %{p} points.", &[("w", &f(viborg::WORK)), ("v", &f(parts.work)), ("p", &g(split[3]))]));
+    }
+    lines.push(tr("Sealed bids: opened together at the close. Under 85 % of the authority's cost price a bid is rejected as abnormally low; above the cap it does not count."));
+    json!({
+        "title": tr("How bids are scored"),
+        "head": tr(match award { Award::Viborg => "The Viborg model: 50 % price + 50 % quality", Award::Lowest => "The lowest price wins" }),
+        "price": 0.0, "quality": quality, "has": false,
+        "price_label": trf("Price up to %{p}", &[("p", &f(pm))]),
+        "quality_label": trf("Quality %{q} of %{m}", &[("q", &g(quality)), ("m", &f(qm))]),
+        "total": tr(if sealed_open { "Your price points are known when the bids are opened: the lowest valid ask gets them all." } else { "The bids are opened: their points are below." }),
+        "lines": lines,
     })
 }
 

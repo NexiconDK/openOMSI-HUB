@@ -205,10 +205,17 @@ pub struct MarketBid {
     pub name: String,
     /// The company's quality in the authority's eyes when it bid (its first bid's counts).
     pub quality: f64,
+    /// (3 November 2026) Its quality's parts then (`viborg::Parts::of`; its first bid's count).
+    #[serde(default, skip_serializing_if = "no_parts")]
+    pub parts: super::viborg::Parts,
     pub at: i64,
     pub amount: Cents,
     /// The buses it bids with (`concessions::Tender::drive`).
     pub drive: Drive,
+}
+
+fn no_parts(p: &super::viborg::Parts) -> bool {
+    !p.given()
 }
 
 /// A company's application for a line of the map (its Lines page's "Apply").
@@ -257,6 +264,9 @@ tender_low_share = 85
 tender_operators =
 tender_round_weeks = 4
 tender_lines_per_round =
+# how a tender is awarded: viborg (price 50 %, quality 50 %: the operating quality 25 %, the
+# vehicles 10 %, the implementation plan 10 %, the working environment 5 %) or lowest (price alone)
+tender_award = viborg
 ";
 
 /// (NexiconDK, 3 November 2026) The tenders' rules of the server's settings (`company-server.cfg`,
@@ -273,11 +283,13 @@ pub struct TenderCfg {
     pub operators: Option<i64>,
     pub round_weeks: i64,
     pub per_round: Option<usize>,
+    /// (3 November 2026) How the new tenders are awarded (`tender_award`).
+    pub award: super::viborg::Award,
 }
 
 impl Default for TenderCfg {
     fn default() -> TenderCfg {
-        TenderCfg { cap_hour: 0, cap_factor: super::sealed::CAP_SHARE, low_share: super::sealed::LOW_SHARE, operators: None, round_weeks: cn::ROUND_WEEKS, per_round: None }
+        TenderCfg { cap_hour: 0, cap_factor: super::sealed::CAP_SHARE, low_share: super::sealed::LOW_SHARE, operators: None, round_weeks: cn::ROUND_WEEKS, per_round: None, award: super::viborg::Award::Viborg }
     }
 }
 
@@ -295,6 +307,7 @@ impl TenderCfg {
             operators: num("tender_operators").map(|x| (x.round() as i64).clamp(0, 6)),
             round_weeks: num("tender_round_weeks").map_or(d.round_weeks, |x| (x.round() as i64).clamp(1, 52)),
             per_round: num("tender_lines_per_round").map(|x| (x.round() as i64).clamp(0, 50) as usize),
+            award: kv.get("tender_award").map_or(d.award, |v| super::viborg::Award::of(v)),
         }
     }
 
@@ -561,7 +574,7 @@ fn add(m: &mut Market, c: &Company, l: &LineInfo, opens_at: i64, closes_at: i64,
     // 2026, the server's own a timetable hour when its admin set one: then that, whatever the cost
     // price - before, his was only a ceiling over the factor's and changed nothing)
     t.reference = super::sealed::cap_set(t.cost, cn::of_hour(&t, cfg.cap_hour as f64), cfg.cap_factor);
-    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), low_share: cfg.low_share, ..Default::default() });
+    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), low_share: cfg.low_share, award: cfg.award, ..Default::default() });
     m.tenders.push(MarketTender { tender: t, applied: Vec::new(), decided: None });
     id
 }
@@ -778,10 +791,14 @@ fn humans(t: &Tender, all: &[MarketBid]) -> Vec<(String, String, f64, Vec<(i64, 
     humans_with(t, all).into_iter().map(|h| (h.0, h.1, h.2, h.3)).collect()
 }
 
-/// `humans`, each with the buses of his last bid.
-fn humans_with(t: &Tender, all: &[MarketBid]) -> Vec<(String, String, f64, Vec<(i64, Cents)>, Drive)> {
+/// A company's bids in a tender: its id, name, quality and its quality's parts (its first
+/// bid's), its asks (when, how much) and the buses of its last.
+type Human = (String, String, f64, Vec<(i64, Cents)>, Drive, super::viborg::Parts);
+
+/// `humans`, each with the buses of his last bid and his quality's parts.
+fn humans_with(t: &Tender, all: &[MarketBid]) -> Vec<Human> {
     let id = t.market.as_ref().map_or(t.id, |m| m.id);
-    let mut out: Vec<(String, String, f64, Vec<(i64, Cents)>, Drive)> = Vec::new();
+    let mut out: Vec<Human> = Vec::new();
     for b in all.iter().filter(|b| b.tender == id) {
         match out.iter_mut().find(|h| h.0 == b.company) {
             Some(h) => {
@@ -789,7 +806,7 @@ fn humans_with(t: &Tender, all: &[MarketBid]) -> Vec<(String, String, f64, Vec<(
                 h.3.push((b.at, b.amount));
                 h.4 = b.drive;
             }
-            None => out.push((b.company.clone(), b.name.clone(), b.quality, vec![(b.at, b.amount)], b.drive)),
+            None => out.push((b.company.clone(), b.name.clone(), b.quality, vec![(b.at, b.amount)], b.drive, b.parts)),
         }
     }
     out.sort_by(|a, b| a.0.cmp(&b.0));
@@ -812,12 +829,12 @@ pub fn decide(t: &Tender, all: &[MarketBid]) -> Decided {
     let mut last: Vec<(usize, Cents, Drive)> = Vec::new();
     for (k, h) in hs.iter().enumerate() {
         if let Some(&(_, amount)) = h.3.iter().filter(|o| o.0 <= t.closes_at).last() {
-            opened.push(super::sealed::Opened { who: k, name: h.1.clone(), quality: h.2, amount });
+            opened.push(super::sealed::Opened { who: k, name: h.1.clone(), quality: h.2, amount, parts: h.5 });
             last.push((k, amount, h.4));
         }
     }
     for (k, o) in ops.iter().enumerate() {
-        opened.push(super::sealed::Opened { who: hs.len() + k, name: o.name.clone(), quality: o.quality, amount: o.amount });
+        opened.push(super::sealed::Opened { who: hs.len() + k, name: o.name.clone(), quality: o.quality, amount: o.amount, parts: o.parts });
     }
     let (winner, rows) = super::sealed::score(t, &opened);
     let standings: Vec<Standing> = rows.into_iter().map(|r| r.1).collect();
@@ -951,7 +968,7 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
             // (3 November 2026: its cap too - the admin may change it - and its limits)
             t.reference = mt.tender.reference;
             if let (Some(x), Some(y)) = (t.market.as_mut(), mt.tender.market.as_ref()) {
-                (x.low_share, x.direct, x.direct_name) = (y.low_share, y.direct.clone(), y.direct_name.clone());
+                (x.low_share, x.direct, x.direct_name, x.award) = (y.low_share, y.direct.clone(), y.direct_name.clone(), y.award);
             }
             if mt.tender.week.is_some() {
                 t.week = mt.tender.week;
@@ -1037,7 +1054,7 @@ pub fn bid(data: &Path, c: &mut Company, id: u32, amount: Cents) -> Result<(), &
     let Some(m) = t.market.as_ref() else { return Ok(()) };
     let at = t.offers.last().map_or(clock::now(c), |o| o.0);
     // (its first bid's quality counts in the market's auction: `humans`)
-    let b = MarketBid { tender: m.id, company: c.id.clone(), name: c.name.clone(), quality: cn::quality_in(c, t), at, amount, drive: t.drive };
+    let b = MarketBid { tender: m.id, company: c.id.clone(), name: c.name.clone(), quality: cn::quality_in(c, t), parts: super::viborg::Parts::of(c, t), at, amount, drive: t.drive };
     post_bid(data, &m.key, &b).map_err(|_| "The bid could not be written to the server's tenders.")
 }
 

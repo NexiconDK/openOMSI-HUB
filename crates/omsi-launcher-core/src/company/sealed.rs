@@ -2,7 +2,8 @@
 //! authority lets them: every company of the map and the map's operators that take part hand in
 //! one bid each - a company may change its own until the deadline, its last counts - nobody sees
 //! another's, and at the close they are opened together and scored 70/30 (`auction::score`)
-//! against the lowest valid one. The best total wins.
+//! against the lowest valid one. The best total wins. (3 November 2026: by the tender's award -
+//! the Viborg model's price 50 % and quality parts 50 %, or the lowest price: `viborg`.)
 //!
 //! Before, the map's tenders were open auctions: every bid shown at once, each new one had to
 //! lead, and the operators answered down to a floor of the authority's cost price - reckoned on
@@ -24,6 +25,7 @@ use super::auction::{self, Character};
 use super::concessions::{Standing, Tender};
 use super::model::Cents;
 use super::rng::Rng;
+use super::viborg::{self, Parts};
 
 /// Bids under this share of the authority's cost price are abnormally low: rejected.
 pub const LOW_SHARE: f64 = 0.85;
@@ -82,6 +84,8 @@ pub struct OperatorBid {
     pub rival: u32,
     pub name: String,
     pub quality: f64,
+    /// Its quality's parts in this tender (`viborg::operator_parts`).
+    pub parts: Parts,
     pub amount: Cents,
     pub own_cost: Cents,
 }
@@ -102,7 +106,8 @@ pub fn operator_bids(t: &Tender) -> Vec<OperatorBid> {
         if amount > t.reference {
             continue;
         }
-        out.push(OperatorBid { rival: rv.id, name: rv.name.clone(), quality: rv.quality, amount, own_cost: round_up(own) });
+        let parts = viborg::operator_parts(rv.quality, &[&m.key, "parts", &rv.name], m.id as i64);
+        out.push(OperatorBid { rival: rv.id, name: rv.name.clone(), quality: rv.quality, parts, amount, own_cost: round_up(own) });
     }
     out
 }
@@ -114,25 +119,30 @@ pub struct Opened {
     pub name: String,
     pub quality: f64,
     pub amount: Cents,
+    /// Its quality's parts (`viborg`; a bid of before them: its one quality in each).
+    pub parts: Parts,
 }
 
-/// The bids of tender `t` opened and scored: every valid one 70/30 against the lowest valid ask,
+/// The bids of tender `t` opened and scored by its award (`viborg`: the price points against the
+/// lowest valid ask, the quality points by their parts; before 3 November 2026 70/30),
 /// the best first (on equal totals the better price, then the better quality); those under the
 /// abnormally low line or above the cap rejected, last, with no points. The winner: the first,
 /// if it is valid.
 pub fn score(t: &Tender, bids: &[Opened]) -> (Option<usize>, Vec<(usize, Standing)>) {
     let low = low_line(t);
+    let award = t.market.as_ref().map(|m| m.award).unwrap_or_default();
     let valid = |b: &Opened| b.amount >= low && t.counts(b.amount);
     let lowest = bids.iter().filter(|b| valid(b)).map(|b| b.amount).min();
     let mut rows: Vec<(usize, Standing)> = bids
         .iter()
         .map(|b| {
             let ok = valid(b);
-            let (price, quality) = match lowest {
-                Some(l) if ok => (auction::price_points(b.amount, l), auction::quality_points(b.quality)),
-                _ => (0.0, 0.0),
+            let parts = if b.parts.given() { b.parts } else { Parts::even(b.quality) };
+            let (price, quality, split) = match lowest {
+                Some(l) if ok => (viborg::price_points(b.amount, l, award), parts.points(award), parts.split(award)),
+                _ => (0.0, 0.0, [0.0; 4]),
             };
-            (b.who, Standing { name: b.name.clone(), amount: b.amount, price, quality, total: price + quality, rejected: !ok })
+            (b.who, Standing { name: b.name.clone(), amount: b.amount, price, quality, total: price + quality, rejected: !ok, parts: split })
         })
         .collect();
     rows.sort_by(|a, b| {
@@ -176,21 +186,49 @@ mod tests {
         t
     }
 
-    /// Opened together: the lowest valid ask gets the 70 price points; one under 85 % of the cost
+    /// Opened together: the lowest valid ask gets the 50 price points (the Viborg model); one
+    /// under 85 % of the cost
     /// price or above the cap is rejected, last, with none; the best valid total wins.
     #[test]
     fn the_bids_are_opened_and_scored_and_the_abnormally_low_rejected() {
         let t = tender(100_000_00);
-        let bid = |who: usize, amount: Cents, quality: f64| Opened { who, name: format!("B{who}"), quality, amount };
+        let bid = |who: usize, amount: Cents, quality: f64| Opened { who, name: format!("B{who}"), quality, amount, parts: Parts::default() };
         let (w, rows) = score(&t, &[bid(0, 80_000_00, 100.0), bid(1, 95_000_00, 90.0), bid(2, 110_000_00, 100.0), bid(3, 160_000_00, 100.0)]);
         assert_eq!(w, Some(1), "{rows:?}");
-        assert!((rows[0].1.price - 70.0).abs() < 1e-9 && rows[0].1.total > rows[1].1.total);
+        assert!((rows[0].1.price - viborg::PRICE).abs() < 1e-9 && rows[0].1.total > rows[1].1.total);
+        assert!((rows[0].1.quality - 45.0).abs() < 1e-9 && (rows[0].1.parts[0] - 22.5).abs() < 1e-9, "{rows:?}");
         let rejected: Vec<usize> = rows.iter().filter(|r| r.1.rejected).map(|r| r.0).collect();
         assert_eq!(rejected, vec![0, 3], "too low, above the cap");
         assert!(rows.iter().rev().take(2).all(|r| r.1.rejected && r.1.total == 0.0));
         // nothing valid: nobody wins
         assert_eq!(score(&t, &[bid(0, 10_000_00, 100.0)]).0, None);
         assert_eq!(low_line(&t), 85_000_00);
+    }
+
+    /// (3 November 2026) The Viborg model scores a bid's quality by its parts - the dearer, better
+    /// company wins -; awarded by the lowest price the cheaper one does. A bid of before the parts
+    /// counts its one quality in each; the operators' parts lie around their quality.
+    #[test]
+    fn the_viborg_model_and_the_lowest_price() {
+        let mut t = tender(100_000_00);
+        let a = Opened { who: 0, name: "A".into(), quality: 0.0, amount: 100_000_00, parts: Parts { operation: 50.0, vehicles: 50.0, plan: 60.0, work: 50.0 } };
+        let b = Opened { who: 1, name: "B".into(), quality: 0.0, amount: 108_000_00, parts: Parts { operation: 90.0, vehicles: 80.0, plan: 90.0, work: 80.0 } };
+        let (w, rows) = score(&t, &[a.clone(), b.clone()]);
+        assert_eq!(w, Some(1), "{rows:?}");
+        assert!((rows[0].1.total - 89.8).abs() < 0.05 && (rows[1].1.total - 76.0).abs() < 0.01, "{rows:?}");
+        assert!((rows[0].1.parts[2] - 9.0).abs() < 1e-9);
+        t.market.as_mut().unwrap().award = viborg::Award::Lowest;
+        let (w, rows) = score(&t, &[a, b]);
+        assert_eq!(w, Some(0), "{rows:?}");
+        assert!((rows[0].1.total - 100.0).abs() < 1e-9 && rows[0].1.quality == 0.0);
+        // (a bid of before: its one quality)
+        t.market.as_mut().unwrap().award = viborg::Award::Viborg;
+        let old = Opened { who: 2, name: "Old".into(), quality: 80.0, amount: 100_000_00, parts: Parts::default() };
+        let (_, rows) = score(&t, &[old]);
+        assert!((rows[0].1.quality - 40.0).abs() < 1e-9, "{rows:?}");
+        for o in operator_bids(&t) {
+            assert!(o.parts.given() && (o.parts.vehicles - o.quality).abs() <= 8.0, "{o:?}");
+        }
     }
 
     /// The operators bid their own cost by their margin: never under the abnormally low line,
