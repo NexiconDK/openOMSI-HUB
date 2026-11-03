@@ -6,6 +6,7 @@ _version: 2
 # already keeps that table's translation; it is here too so this one is whole.
 "Bus %{bus}: %{note}":
   de: "Bus %{bus}: %{note}"
+  da: "Bus %{bus}: %{note}"
   fr: "Bus %{bus} : %{note}"
   nl: "Bus %{bus}: %{note}"
   pl: "Autobus %{bus}: %{note}"
@@ -13,6 +14,7 @@ _version: 2
   uk: "Автобус %{bus}: %{note}"
 "Bus %{bus}: %{defect} reported to the workshop":
   de: "Bus %{bus}: %{defect} an die Werkstatt gemeldet"
+  da: "Bus %{bus}: %{defect} meldt til værkstedet"
   fr: "Bus %{bus} : %{defect} signalé à l’atelier"
   nl: "Bus %{bus}: %{defect} gemeld bij de werkplaats"
   pl: "Autobus %{bus}: %{defect} zgłoszono do warsztatu"
@@ -20,6 +22,7 @@ _version: 2
   uk: "Автобус %{bus}: %{defect} — повідомлено в майстерню"
 "Broke down on the way":
   de: "Unterwegs liegen geblieben"
+  da: "Brød sammen undervejs"
   fr: "Tombé en panne en route"
   nl: "Onderweg met pech gestrand"
   pl: "Zepsuł się w trasie"
@@ -27,6 +30,7 @@ _version: 2
   uk: "Зламався в дорозі"
 "Collision damage":
   de: "Unfallschaden"
+  da: "Kollisionsskade"
   fr: "Dégâts de collision"
   nl: "Aanrijdingsschade"
   pl: "Uszkodzenie po kolizji"
@@ -34,6 +38,7 @@ _version: 2
   uk: "Пошкодження від зіткнення"
 "Damaged in an accident":
   de: "Bei einem Unfall beschädigt"
+  da: "Beskadiget i et uheld"
   fr: "Endommagé dans un accident"
   nl: "Beschadigd bij een ongeluk"
   pl: "Uszkodzony w wypadku"
@@ -41,6 +46,7 @@ _version: 2
   uk: "Пошкоджений в аварії"
 "That duty is not in the planning of the day.":
   de: "Dieser Dienst steht nicht in der Planung des Tages."
+  da: "Den vagt er ikke i dagens planlægning."
   fr: "Ce service ne figure pas dans la planification du jour."
   nl: "Die dienst staat niet in de planning van de dag."
   pl: "Tej służby nie ma w planie dnia."
@@ -48,6 +54,7 @@ _version: 2
   uk: "Цієї зміни немає в плані дня."
 "That duty is not yours.":
   de: "Dieser Dienst ist nicht deiner."
+  da: "Den vagt er ikke din."
   fr: "Ce service n’est pas le vôtre."
   nl: "Die dienst is niet van jou."
   pl: "To nie jest twoja służba."
@@ -55,6 +62,7 @@ _version: 2
   uk: "Це не ваша зміна."
 "That duty has begun already.":
   de: "Dieser Dienst hat schon begonnen."
+  da: "Den vagt er allerede begyndt."
   fr: "Ce service a déjà commencé."
   nl: "Die dienst is al begonnen."
   pl: "Ta służba już się zaczęła."
@@ -62,6 +70,7 @@ _version: 2
   uk: "Ця зміна вже почалася."
 "A swap of that duty is asked for already.":
   de: "Für diesen Dienst ist schon ein Tausch angefragt."
+  da: "Et bytte af den vagt er allerede anmodet om."
   fr: "Un échange de ce service est déjà demandé."
   nl: "Voor die dienst is al een ruil gevraagd."
   pl: "O zamianę tej służby już poproszono."
@@ -69,6 +78,7 @@ _version: 2
   uk: "Обмін цієї зміни вже запитано."
 "There is no such colleague.":
   de: "Diese Kollegin oder diesen Kollegen gibt es nicht."
+  da: "Der er ingen sådan kollega."
   fr: "Ce collègue n’existe pas."
   nl: "Die collega bestaat niet."
   pl: "Nie ma takiego współpracownika."
@@ -76,6 +86,7 @@ _version: 2
   uk: "Такого колеги немає."
 "Swaps go between the staff and you, or between the players of the session.":
   de: "Getauscht wird zwischen dir und dem Personal oder zwischen den Spielern der Sitzung."
+  da: "Bytter sker mellem personalet og dig eller mellem sessionens spillere."
   fr: "Les échanges se font entre vous et le personnel, ou entre les joueurs de la session."
   nl: "Ruilen gaat tussen jou en het personeel, of tussen de spelers van de sessie."
   pl: "Zamiany odbywają się między tobą a personelem albo między graczami sesji."
@@ -83,6 +94,7 @@ _version: 2
   uk: "Обмінюватися можна між вами й персоналом або між гравцями сесії."
 "That swap request is no longer there.":
   de: "Diese Tauschanfrage gibt es nicht mehr."
+  da: "Den bytteanmodning findes ikke længere."
   fr: "Cette demande d’échange n’existe plus."
   nl: "Dat ruilverzoek is er niet meer."
   pl: "Tej prośby o zamianę już nie ma."
@@ -90,6 +102,7 @@ _version: 2
   uk: "Цього запиту на обмін більше немає."
 "They are off that day.":
   de: "An dem Tag hat sie oder er frei."
+  da: "De har fri den dag."
   fr: "Ce jour-là, ce collègue ne travaille pas."
   nl: "Die dag is die collega vrij."
   pl: "Tego dnia ma wolne."
@@ -97,6 +110,7 @@ _version: 2
   uk: "Цього дня в колеги вихідний."
 "They have more than one duty that day.":
   de: "An dem Tag hat sie oder er mehr als einen Dienst."
+  da: "De har mere end én vagt den dag."
   fr: "Ce jour-là, ce collègue a plus d’un service."
   nl: "Die collega heeft die dag meer dan één dienst."
   pl: "Tego dnia ma więcej niż jedną służbę."
@@ -104,6 +118,7 @@ _version: 2
   uk: "Цього дня в колеги більше однієї зміни."
 "The rules do not let them drive your duty: their licence or their working time.":
   de: "Die Regeln lassen sie oder ihn deinen Dienst nicht fahren: Führerschein oder Arbeitszeit."
+  da: "Reglerne lader dem ikke køre din vagt: deres kørekort eller deres arbejdstid."
   fr: "Les règles ne lui permettent pas d’assurer votre service : son permis ou son temps de travail."
   nl: "De regels laten die collega jouw dienst niet rijden: het rijbewijs of de werktijd."
   pl: "Przepisy nie pozwalają mu prowadzić twojej służby: prawo jazdy albo czas pracy."
@@ -111,6 +126,7 @@ _version: 2
   uk: "Правила не дозволяють колезі взяти вашу зміну: посвідчення або робочий час."
 "Their duty clashes with your other work that day.":
   de: "Ihr oder sein Dienst überschneidet sich mit deiner anderen Arbeit an dem Tag."
+  da: "Deres vagt støder sammen med dit andet arbejde den dag."
   fr: "Son service empiète sur votre autre travail ce jour-là."
   nl: "Die dienst botst met je andere werk van die dag."
   pl: "Jego służba koliduje z twoją inną pracą tego dnia."
@@ -118,6 +134,7 @@ _version: 2
   uk: "Зміна колеги перетинається з вашою іншою роботою цього дня."
 "They would rather keep their own duty.":
   de: "Sie oder er behält lieber den eigenen Dienst."
+  da: "De vil hellere beholde deres egen vagt."
   fr: "Ce collègue préfère garder son propre service."
   nl: "Die collega houdt liever de eigen dienst."
   pl: "Woli zostać przy swojej służbie."
@@ -125,6 +142,7 @@ _version: 2
   uk: "Колега воліє залишити свою зміну."
 "%{name} swaps with you: you drive %{theirs}, they drive %{mine}":
   de: "%{name} tauscht mit dir: du fährst %{theirs}, dafür wird %{mine} übernommen"
+  da: "%{name} bytter med dig: du kører %{theirs}, de kører %{mine}"
   fr: "%{name} échange avec vous : vous assurez %{theirs}, en échange de %{mine}"
   nl: "%{name} ruilt met je: jij rijdt %{theirs}, in ruil voor %{mine}"
   pl: "%{name} zamienia się z tobą: prowadzisz %{theirs} w zamian za %{mine}"
@@ -132,6 +150,7 @@ _version: 2
   uk: "%{name} міняється з вами: ви їдете %{theirs} замість %{mine}"
 "%{name} takes over your duty %{mine}":
   de: "%{name} übernimmt deinen Dienst %{mine}"
+  da: "%{name} overtager din vagt %{mine}"
   fr: "%{name} reprend votre service %{mine}"
   nl: "%{name} neemt je dienst %{mine} over"
   pl: "%{name} przejmuje twoją służbę %{mine}"
@@ -139,6 +158,7 @@ _version: 2
   uk: "%{name} бере вашу зміну %{mine}"
 "%{name} does not swap: %{why}":
   de: "%{name} tauscht nicht: %{why}"
+  da: "%{name} bytter ikke: %{why}"
   fr: "%{name} n’échange pas : %{why}"
   nl: "%{name} ruilt niet: %{why}"
   pl: "%{name} nie zamienia się: %{why}"
@@ -146,6 +166,7 @@ _version: 2
   uk: "%{name} не міняється: %{why}"
 "%{name} asks you to swap duty %{mine}":
   de: "%{name} bittet dich, den Dienst %{mine} zu tauschen"
+  da: "%{name} beder dig bytte vagt %{mine}"
   fr: "%{name} vous demande d’échanger le service %{mine}"
   nl: "%{name} vraagt je dienst %{mine} te ruilen"
   pl: "%{name} prosi cię o zamianę służby %{mine}"
@@ -153,6 +174,7 @@ _version: 2
   uk: "%{name} просить вас помінятися зміною %{mine}"
 "A day off today is a sick call.":
   de: "Wer heute frei braucht, meldet sich krank."
+  da: "En fridag i dag er en sygemelding."
   fr: "Un jour de congé aujourd’hui, c’est un arrêt maladie."
   nl: "Vandaag vrij is een ziekmelding."
   pl: "Wolne dzisiaj to zgłoszenie choroby."
@@ -160,6 +182,7 @@ _version: 2
   uk: "Вихідний сьогодні — це лікарняний."
 "Those days are not right.":
   de: "Diese Tage stimmen nicht."
+  da: "Disse dage er ikke rigtige."
   fr: "Ces jours ne conviennent pas."
   nl: "Die dagen kloppen niet."
   pl: "Te dni są nieprawidłowe."
@@ -167,6 +190,7 @@ _version: 2
   uk: "Ці дні вказано неправильно."
 "Ask for three weeks at most.":
   de: "Frag nach höchstens drei Wochen."
+  da: "Bed om højst tre uger."
   fr: "Demandez trois semaines au plus."
   nl: "Vraag hooguit drie weken."
   pl: "Poproś o najwyżej trzy tygodnie."
@@ -174,6 +198,7 @@ _version: 2
   uk: "Просіть не більше трьох тижнів."
 "You have asked for those days already.":
   de: "Diese Tage hast du schon beantragt."
+  da: "Du har allerede anmodet om disse dage."
   fr: "Vous avez déjà demandé ces jours."
   nl: "Die dagen heb je al gevraagd."
   pl: "O te dni już prosiłeś."
@@ -181,6 +206,7 @@ _version: 2
   uk: "Ви вже просили ці дні."
 "You have not enough holiday days left.":
   de: "Du hast nicht mehr genug Urlaubstage."
+  da: "Du har ikke feriedage nok tilbage."
   fr: "Il ne vous reste pas assez de jours de congé."
   nl: "Je hebt niet genoeg vakantiedagen meer."
   pl: "Nie masz już wystarczająco dni urlopu."
@@ -188,6 +214,7 @@ _version: 2
   uk: "У вас лишилося замало днів відпустки."
 "You are reported ill already.":
   de: "Du bist schon krank gemeldet."
+  da: "Du er allerede meldt syg."
   fr: "Vous êtes déjà déclaré malade."
   nl: "Je bent al ziek gemeld."
   pl: "Jesteś już zgłoszony jako chory."
@@ -195,6 +222,7 @@ _version: 2
   uk: "Ви вже на лікарняному."
 "Your holiday from %{from} until %{until} was approved":
   de: "Dein Urlaub vom %{from} bis %{until} wurde genehmigt"
+  da: "Din ferie fra %{from} til %{until} blev godkendt"
   fr: "Vos congés du %{from} au %{until} ont été accordés"
   nl: "Je vakantie van %{from} tot %{until} is goedgekeurd"
   pl: "Twój urlop od %{from} do %{until} został zatwierdzony"
@@ -202,6 +230,7 @@ _version: 2
   uk: "Вашу відпустку з %{from} по %{until} схвалено"
 "Your holiday from %{from} until %{until} was rejected: %{why}":
   de: "Dein Urlaub vom %{from} bis %{until} wurde abgelehnt: %{why}"
+  da: "Din ferie fra %{from} til %{until} blev afvist: %{why}"
   fr: "Vos congés du %{from} au %{until} ont été refusés : %{why}"
   nl: "Je vakantie van %{from} tot %{until} is afgewezen: %{why}"
   pl: "Twój urlop od %{from} do %{until} został odrzucony: %{why}"
@@ -209,6 +238,7 @@ _version: 2
   uk: "Вашу відпустку з %{from} по %{until} відхилено: %{why}"
 "You called in sick until %{date}: the dispatcher covers your duties":
   de: "Du hast dich bis %{date} krank gemeldet: die Disposition besetzt deine Dienste"
+  da: "Du meldte dig syg indtil %{date}: trafiklederen dækker dine vagter"
   fr: "Vous êtes en arrêt maladie jusqu’au %{date} : le régulateur couvre vos services"
   nl: "Je hebt je ziek gemeld tot %{date}: de dienstregelaar vult je diensten in"
   pl: "Zgłosiłeś chorobę do %{date}: dyspozytor obsadza twoje służby"
@@ -216,6 +246,7 @@ _version: 2
   uk: "Ви на лікарняному до %{date}: диспетчер закриває ваші зміни"
 "%{name} called in sick: their duties of today are open again":
   de: "%{name} hat sich krank gemeldet: die heutigen Dienste sind wieder offen"
+  da: "%{name} meldte sig syg: deres vagter i dag er åbne igen"
   fr: "%{name} est en arrêt maladie : ses services du jour sont de nouveau libres"
   nl: "%{name} heeft zich ziek gemeld: de diensten van vandaag zijn weer open"
   pl: "%{name} zgłosił chorobę: dzisiejsze służby są znów wolne"
@@ -223,6 +254,7 @@ _version: 2
   uk: "%{name} на лікарняному: сьогоднішні зміни знову вільні"
 "%{name} is off from %{from} until %{until}: their duties of those days are open again":
   de: "%{name} hat vom %{from} bis %{until} frei: die Dienste dieser Tage sind wieder offen"
+  da: "%{name} har fri fra %{from} til %{until}: deres vagter de dage er åbne igen"
   fr: "%{name} est absent du %{from} au %{until} : ses services de ces jours sont de nouveau libres"
   nl: "%{name} is vrij van %{from} tot %{until}: de diensten van die dagen zijn weer open"
   pl: "%{name} ma wolne od %{from} do %{until}: służby z tych dni są znów wolne"
@@ -230,6 +262,7 @@ _version: 2
   uk: "%{name} відпочиває з %{from} по %{until}: зміни цих днів знову вільні"
 "A door sticks":
   de: "Eine Tür klemmt"
+  da: "En dør hænger"
   fr: "Une porte coince"
   nl: "Een deur klemt"
   pl: "Drzwi się zacinają"
@@ -237,6 +270,7 @@ _version: 2
   uk: "Двері заїдають"
 "The ticket machine plays up":
   de: "Der Fahrscheindrucker spinnt"
+  da: "Billetautomaten driller"
   fr: "Le distributeur de billets fait des siennes"
   nl: "De kaartautomaat doet raar"
   pl: "Kasownik biletowy szwankuje"
@@ -244,6 +278,7 @@ _version: 2
   uk: "Квитковий автомат глючить"
 "The heating or air conditioning is weak":
   de: "Heizung oder Klimaanlage schwach"
+  da: "Varmen eller airconditionen er svag"
   fr: "Le chauffage ou la climatisation est faible"
   nl: "De verwarming of airco is zwak"
   pl: "Ogrzewanie lub klimatyzacja działa słabo"
@@ -251,6 +286,7 @@ _version: 2
   uk: "Опалення чи кондиціонер працює слабко"
 "It is dirty inside":
   de: "Innen schmutzig"
+  da: "Der er beskidt indeni"
   fr: "L’intérieur est sale"
   nl: "Het is vuil binnen"
   pl: "W środku jest brudno"
@@ -258,6 +294,7 @@ _version: 2
   uk: "Усередині брудно"
 "A mirror is loose":
   de: "Ein Spiegel ist locker"
+  da: "Et spejl sidder løst"
   fr: "Un rétroviseur est desserré"
   nl: "Een spiegel zit los"
   pl: "Lusterko jest luźne"
@@ -265,6 +302,7 @@ _version: 2
   uk: "Дзеркало розхиталося"
 "The brakes pull to one side":
   de: "Die Bremsen ziehen zur Seite"
+  da: "Bremserne trækker til den ene side"
   fr: "Les freins tirent d’un côté"
   nl: "De remmen trekken naar één kant"
   pl: "Hamulce ściągają na bok"
@@ -272,6 +310,7 @@ _version: 2
   uk: "Гальма тягнуть убік"
 "The destination display is faulty":
   de: "Die Zielanzeige ist defekt"
+  da: "Destinationsskiltet er defekt"
   fr: "La girouette est défectueuse"
   nl: "De richtingaanwijzer is defect"
   pl: "Wyświetlacz kierunku jest uszkodzony"
@@ -279,6 +318,7 @@ _version: 2
   uk: "Покажчик маршруту несправний"
 "The wipers smear":
   de: "Die Scheibenwischer schmieren"
+  da: "Viskerne smører"
   fr: "Les essuie-glaces laissent des traces"
   nl: "De ruitenwissers smeren"
   pl: "Wycieraczki smużą"
@@ -286,6 +326,7 @@ _version: 2
   uk: "Двірники розмазують"
 "Fuel is low: refuel at the depot":
   de: "Wenig Kraftstoff: im Betriebshof tanken"
+  da: "Brændstoffet er lavt: tank op i garagen"
   fr: "Carburant bas : faites le plein au dépôt"
   nl: "Weinig brandstof: tanken in de remise"
   pl: "Mało paliwa: zatankuj w zajezdni"
@@ -293,6 +334,7 @@ _version: 2
   uk: "Мало пального: заправтеся в депо"
 "Doors":
   de: "Türen"
+  da: "Døre"
   fr: "Portes"
   nl: "Deuren"
   pl: "Drzwi"
@@ -300,6 +342,7 @@ _version: 2
   uk: "Двері"
 "Lights":
   de: "Beleuchtung"
+  da: "Lys"
   fr: "Éclairage"
   nl: "Verlichting"
   pl: "Światła"
@@ -307,6 +350,7 @@ _version: 2
   uk: "Фари"
 "Mirrors":
   de: "Spiegel"
+  da: "Spejle"
   fr: "Rétroviseurs"
   nl: "Spiegels"
   pl: "Lusterka"
@@ -314,6 +358,7 @@ _version: 2
   uk: "Дзеркала"
 "Wipers":
   de: "Scheibenwischer"
+  da: "Viskere"
   fr: "Essuie-glaces"
   nl: "Ruitenwissers"
   pl: "Wycieraczki"
@@ -321,6 +366,7 @@ _version: 2
   uk: "Двірники"
 "Tyres":
   de: "Reifen"
+  da: "Dæk"
   fr: "Pneus"
   nl: "Banden"
   pl: "Opony"
@@ -328,6 +374,7 @@ _version: 2
   uk: "Шини"
 "Air conditioning":
   de: "Klimaanlage"
+  da: "Aircondition"
   fr: "Climatisation"
   nl: "Airconditioning"
   pl: "Klimatyzacja"
@@ -335,6 +382,7 @@ _version: 2
   uk: "Кондиціонер"
 "Ticket machine":
   de: "Fahrscheindrucker"
+  da: "Billetautomat"
   fr: "Distributeur de billets"
   nl: "Kaartautomaat"
   pl: "Kasownik biletowy"
@@ -342,6 +390,7 @@ _version: 2
   uk: "Квитковий автомат"
 "Other":
   de: "Sonstiges"
+  da: "Andet"
   fr: "Autre"
   nl: "Overig"
   pl: "Inne"
@@ -349,6 +398,7 @@ _version: 2
   uk: "Інше"
 "Overtime today: %{m} min":
   de: "Heute Überstunden: %{m} Min."
+  da: "Overtid i dag: %{m} min"
   fr: "Heures supplémentaires aujourd’hui : %{m} min"
   nl: "Vandaag overuren: %{m} min"
   pl: "Nadgodziny dzisiaj: %{m} min"
@@ -356,6 +406,7 @@ _version: 2
   uk: "Сьогодні понаднормово: %{m} хв"
 "An extra duty the dispatcher gave you today":
   de: "Ein Zusatzdienst, den die Disposition dir heute gab"
+  da: "En ekstra vagt, trafiklederen gav dig i dag"
   fr: "Un service supplémentaire donné aujourd’hui par le régulateur"
   nl: "Een extra dienst die de dienstregelaar je vandaag gaf"
   pl: "Dodatkowa służba przydzielona dziś przez dyspozytora"
@@ -363,6 +414,7 @@ _version: 2
   uk: "Додаткова зміна від диспетчера на сьогодні"
 "Swapped with %{name}":
   de: "Getauscht mit %{name}"
+  da: "Byttet med %{name}"
   fr: "Échangé avec %{name}"
   nl: "Geruild met %{name}"
   pl: "Zamienione z: %{name}"
@@ -370,6 +422,7 @@ _version: 2
   uk: "Обмін із: %{name}"
 "Changed relief: %{name} takes over":
   de: "Geänderte Ablösung: %{name} übernimmt"
+  da: "Ændret afløsning: %{name} overtager"
   fr: "Relève modifiée : %{name} prend la suite"
   nl: "Gewijzigde aflossing: %{name} neemt over"
   pl: "Zmiana zmiany: przejmuje %{name}"
@@ -377,6 +430,7 @@ _version: 2
   uk: "Зміна змінника: приймає %{name}"
 "No relief planned yet: the dispatcher covers it":
   de: "Noch keine Ablösung geplant: die Disposition besetzt sie"
+  da: "Ingen afløsning planlagt endnu: trafiklederen dækker den"
   fr: "Pas encore de relève prévue : le régulateur s’en charge"
   nl: "Nog geen aflossing gepland: de dienstregelaar regelt het"
   pl: "Zmiennik jeszcze nie zaplanowany: dyspozytor go obsadzi"
@@ -384,6 +438,7 @@ _version: 2
   uk: "Змінника ще не призначено: диспетчер закриє"
 "The note is empty.":
   de: "Die Notiz ist leer."
+  da: "Noten er tom."
   fr: "La note est vide."
   nl: "De notitie is leeg."
   pl: "Notatka jest pusta."
@@ -391,6 +446,7 @@ _version: 2
   uk: "Нотатка порожня."
 "This bus has enough notes for today.":
   de: "Dieser Bus hat für heute genug Notizen."
+  da: "Denne bus har nok noter for i dag."
   fr: "Ce bus a assez de notes pour aujourd’hui."
   nl: "Deze bus heeft genoeg notities voor vandaag."
   pl: "Ten autobus ma dość notatek na dziś."
@@ -398,6 +454,7 @@ _version: 2
   uk: "Цей автобус має досить нотаток на сьогодні."
 "My duties":
   de: "Meine Dienste"
+  da: "Mine vagter"
   fr: "Mes services"
   nl: "Mijn diensten"
   pl: "Moje służby"
@@ -405,6 +462,7 @@ _version: 2
   uk: "Мої наряди"
 "My week":
   de: "Meine Woche"
+  da: "Min uge"
   fr: "Ma semaine"
   nl: "Mijn week"
   pl: "Mój tydzień"
@@ -412,6 +470,7 @@ _version: 2
   uk: "Мій тиждень"
 "Off":
   de: "Aus"
+  da: "Fri"
   fr: "Désactivé"
   nl: "Uit"
   pl: "Wył."
@@ -419,6 +478,7 @@ _version: 2
   uk: "Вимк."
 "Ill":
   de: "Krank"
+  da: "Syg"
   fr: "Malade"
   nl: "Ziek"
   pl: "Chory"
@@ -426,6 +486,7 @@ _version: 2
   uk: "Хворіє"
 "On holiday":
   de: "Im Urlaub"
+  da: "På ferie"
   fr: "En congé"
   nl: "Met vakantie"
   pl: "Na urlopie"
@@ -433,6 +494,7 @@ _version: 2
   uk: "У відпустці"
 "Swap":
   de: "Tauschen"
+  da: "Byt"
   fr: "Échanger"
   nl: "Wisselen"
   pl: "Zamień"
@@ -440,6 +502,7 @@ _version: 2
   uk: "Замінити"
 "Ask to swap with":
   de: "Tausch anfragen bei"
+  da: "Bed om at bytte med"
   fr: "Demander un échange à"
   nl: "Ruil vragen aan"
   pl: "Poproś o zamianę"
@@ -447,6 +510,7 @@ _version: 2
   uk: "Попросити обмін у"
 "Ask":
   de: "Anfragen"
+  da: "Bed"
   fr: "Demander"
   nl: "Vragen"
   pl: "Poproś"
@@ -454,6 +518,7 @@ _version: 2
   uk: "Запитати"
 "Cancel":
   de: "Abbrechen"
+  da: "Annuller"
   fr: "Annuler"
   nl: "Annuleren"
   pl: "Anuluj"
@@ -461,6 +526,7 @@ _version: 2
   uk: "Скасувати"
 "Swap requests":
   de: "Tauschanfragen"
+  da: "Bytteanmodninger"
   fr: "Demandes d’échange"
   nl: "Ruilverzoeken"
   pl: "Prośby o zamianę"
@@ -468,6 +534,7 @@ _version: 2
   uk: "Запити на обмін"
 "asked":
   de: "angefragt"
+  da: "anmodet"
   fr: "demandé"
   nl: "gevraagd"
   pl: "wysłano"
@@ -475,6 +542,7 @@ _version: 2
   uk: "запитано"
 "accepted":
   de: "angenommen"
+  da: "accepteret"
   fr: "accepté"
   nl: "aangenomen"
   pl: "przyjęto"
@@ -482,6 +550,7 @@ _version: 2
   uk: "прийнято"
 "refused":
   de: "abgelehnt"
+  da: "afvist"
   fr: "refusé"
   nl: "geweigerd"
   pl: "odmówiono"
@@ -489,6 +558,7 @@ _version: 2
   uk: "відмовлено"
 "Holiday":
   de: "Urlaub"
+  da: "Ferie"
   fr: "Congés"
   nl: "Vakantie"
   pl: "Urlop"
@@ -496,6 +566,7 @@ _version: 2
   uk: "Відпустка"
 "From":
   de: "Von"
+  da: "Fra"
   fr: "Du"
   nl: "Vanaf"
   pl: "Od"
@@ -503,6 +574,7 @@ _version: 2
   uk: "З"
 "Until":
   de: "Bis"
+  da: "Til"
   fr: "Jusqu'à"
   nl: "Tot"
   pl: "Do"
@@ -510,6 +582,7 @@ _version: 2
   uk: "До"
 "Reason":
   de: "Grund"
+  da: "Årsag"
   fr: "Motif"
   nl: "Reden"
   pl: "Powód"
@@ -517,6 +590,7 @@ _version: 2
   uk: "Причина"
 "Ask for these days":
   de: "Diese Tage beantragen"
+  da: "Bed om disse dage"
   fr: "Demander ces jours"
   nl: "Deze dagen aanvragen"
   pl: "Poproś o te dni"
@@ -524,6 +598,7 @@ _version: 2
   uk: "Попросити ці дні"
 "approved":
   de: "genehmigt"
+  da: "godkendt"
   fr: "accordé"
   nl: "goedgekeurd"
   pl: "zatwierdzono"
@@ -531,6 +606,7 @@ _version: 2
   uk: "схвалено"
 "rejected":
   de: "abgelehnt"
+  da: "afvist"
   fr: "refusé"
   nl: "afgewezen"
   pl: "odrzucono"
@@ -538,6 +614,7 @@ _version: 2
   uk: "відхилено"
 "Sick call":
   de: "Krankmeldung"
+  da: "Sygemelding"
   fr: "Arrêt maladie"
   nl: "Ziekmelding"
   pl: "Zgłoszenie choroby"
@@ -545,6 +622,7 @@ _version: 2
   uk: "Лікарняний"
 "You are reported ill until %{date}.":
   de: "Du bist bis %{date} krank gemeldet."
+  da: "Du er meldt syg indtil %{date}."
   fr: "Vous êtes en arrêt maladie jusqu’au %{date}."
   nl: "Je bent ziek gemeld tot %{date}."
   pl: "Jesteś na zwolnieniu do %{date}."
@@ -552,6 +630,7 @@ _version: 2
   uk: "Ви на лікарняному до %{date}."
 "I am well again":
   de: "Ich bin wieder gesund"
+  da: "Jeg er rask igen"
   fr: "Je suis rétabli"
   nl: "Ik ben weer beter"
   pl: "Jestem już zdrowy"
@@ -559,6 +638,7 @@ _version: 2
   uk: "Я знову здоровий"
 "Days":
   de: "Tage"
+  da: "Dage"
   fr: "Jours"
   nl: "Dagen"
   pl: "Dni"
@@ -566,6 +646,7 @@ _version: 2
   uk: "Дні"
 "Call in sick":
   de: "Krank melden"
+  da: "Meld dig syg"
   fr: "Se déclarer malade"
   nl: "Ziek melden"
   pl: "Zgłoś chorobę"
@@ -573,6 +654,7 @@ _version: 2
   uk: "Взяти лікарняний"
 "Your duties of those days go to the dispatcher. Call in sick?":
   de: "Deine Dienste dieser Tage gehen an die Disposition. Krank melden?"
+  da: "Dine vagter de dage går til trafiklederen. Meld dig syg?"
   fr: "Vos services de ces jours passent au régulateur. Se déclarer malade ?"
   nl: "Je diensten van die dagen gaan naar de dienstregelaar. Ziek melden?"
   pl: "Twoje służby z tych dni trafią do dyspozytora. Zgłosić chorobę?"
@@ -580,6 +662,7 @@ _version: 2
   uk: "Ваші зміни цих днів перейдуть диспетчеру. Взяти лікарняний?"
 "Bus %{bus} today":
   de: "Bus %{bus} heute"
+  da: "Bus %{bus} i dag"
   fr: "Bus %{bus} aujourd’hui"
   nl: "Bus %{bus} vandaag"
   pl: "Autobus %{bus} dzisiaj"
@@ -587,6 +670,7 @@ _version: 2
   uk: "Автобус %{bus} сьогодні"
 "No duty with a bus today.":
   de: "Heute kein Dienst mit einem Bus."
+  da: "Ingen vagt med bus i dag."
   fr: "Pas de service avec un bus aujourd’hui."
   nl: "Vandaag geen dienst met een bus."
   pl: "Dziś brak służby z autobusem."
@@ -594,6 +678,7 @@ _version: 2
   uk: "Сьогодні немає зміни з автобусом."
 "Handover notes":
   de: "Übergabenotizen"
+  da: "Overleveringsnoter"
   fr: "Notes de relève"
   nl: "Overdrachtsnotities"
   pl: "Notatki przekazania"
@@ -601,6 +686,7 @@ _version: 2
   uk: "Нотатки при передачі"
 "No notes for today.":
   de: "Keine Notizen für heute."
+  da: "Ingen noter for i dag."
   fr: "Pas de notes pour aujourd’hui."
   nl: "Geen notities voor vandaag."
   pl: "Brak notatek na dziś."
@@ -608,6 +694,7 @@ _version: 2
   uk: "На сьогодні нотаток немає."
 "Leave a note":
   de: "Notiz hinterlassen"
+  da: "Efterlad en note"
   fr: "Laisser une note"
   nl: "Notitie achterlaten"
   pl: "Zostaw notatkę"
@@ -615,6 +702,7 @@ _version: 2
   uk: "Залишити нотатку"
 "Template":
   de: "Vorlage"
+  da: "Skabelon"
   fr: "Modèle"
   nl: "Sjabloon"
   pl: "Szablon"
@@ -622,6 +710,7 @@ _version: 2
   uk: "Шаблон"
 "None":
   de: "Keine"
+  da: "Ingen"
   fr: "Aucun"
   nl: "Geen"
   pl: "Brak"
@@ -629,6 +718,7 @@ _version: 2
   uk: "Немає"
 "Or type a note":
   de: "Oder Notiz eingeben"
+  da: "Eller skriv en note"
   fr: "Ou saisissez une note"
   nl: "Of typ een notitie"
   pl: "Albo wpisz notatkę"
@@ -636,6 +726,7 @@ _version: 2
   uk: "Або введіть нотатку"
 "Defects":
   de: "Mängel"
+  da: "Fejl"
   fr: "Défauts"
   nl: "Defecten"
   pl: "Usterki"
@@ -643,6 +734,7 @@ _version: 2
   uk: "Несправності"
 "No open defects.":
   de: "Keine offenen Mängel."
+  da: "Ingen åbne fejl."
   fr: "Aucun défaut en cours."
   nl: "Geen openstaande defecten."
   pl: "Brak otwartych usterek."
@@ -650,6 +742,7 @@ _version: 2
   uk: "Відкритих несправностей немає."
 "Report a defect":
   de: "Mangel melden"
+  da: "Meld en fejl"
   fr: "Signaler un défaut"
   nl: "Defect melden"
   pl: "Zgłoś usterkę"
@@ -657,6 +750,7 @@ _version: 2
   uk: "Повідомити про несправність"
 "What is wrong (optional)":
   de: "Was ist kaputt (optional)"
+  da: "Hvad er der galt (valgfrit)"
   fr: "Ce qui ne va pas (facultatif)"
   nl: "Wat is er mis (optioneel)"
   pl: "Co jest nie tak (opcjonalnie)"
@@ -664,6 +758,7 @@ _version: 2
   uk: "Що не так (необов’язково)"
 "Report":
   de: "Melden"
+  da: "Meld"
   fr: "Signaler"
   nl: "Melden"
   pl: "Zgłoś"
@@ -671,6 +766,7 @@ _version: 2
   uk: "Повідомити"
 "No duty in the week ahead.":
   de: "Kein Dienst in der kommenden Woche."
+  da: "Ingen vagt i den kommende uge."
   fr: "Aucun service dans la semaine à venir."
   nl: "Geen dienst in de komende week."
   pl: "Brak służb w nadchodzącym tygodniu."
@@ -678,6 +774,7 @@ _version: 2
   uk: "На найближчому тижні змін немає."
 "begun":
   de: "begonnen"
+  da: "begyndt"
   fr: "commencé"
   nl: "begonnen"
   pl: "rozpoczęta"
@@ -685,6 +782,7 @@ _version: 2
   uk: "почалася"
 "in %{h} h %{m} min":
   de: "in %{h} Std. %{m} Min."
+  da: "om %{h} t %{m} min"
   fr: "dans %{h} h %{m} min"
   nl: "over %{h} u %{m} min"
   pl: "za %{h} h %{m} min"
@@ -692,6 +790,7 @@ _version: 2
   uk: "через %{h} год %{m} хв"
 "in %{m} min":
   de: "in %{m} Min."
+  da: "om %{m} min"
   fr: "dans %{m} min"
   nl: "over %{m} min"
   pl: "za %{m} min"
@@ -699,6 +798,7 @@ _version: 2
   uk: "через %{m} хв"
 "Sign on at %{place} at %{time}":
   de: "Dienstbeginn in %{place} um %{time}"
+  da: "Mød ind ved %{place} kl. %{time}"
   fr: "Prise de service à %{place} à %{time}"
   nl: "Aanmelden bij %{place} om %{time}"
   pl: "Rozpoczęcie służby: %{place} o %{time}"
@@ -706,6 +806,7 @@ _version: 2
   uk: "Початок зміни: %{place} о %{time}"
 "Empty run to %{place} until %{time}":
   de: "Leerfahrt nach %{place} bis %{time}"
+  da: "Tomkørsel til %{place} til kl. %{time}"
   fr: "Haut-le-pied vers %{place} jusqu’à %{time}"
   nl: "Lege rit naar %{place} tot %{time}"
   pl: "Przejazd techniczny do %{place} do %{time}"
@@ -713,6 +814,7 @@ _version: 2
   uk: "Холостий рейс до %{place} до %{time}"
 "Line %{line} to %{place} until %{time}":
   de: "Linie %{line} nach %{place} bis %{time}"
+  da: "Linje %{line} til %{place} til kl. %{time}"
   fr: "Ligne %{line} vers %{place} jusqu’à %{time}"
   nl: "Lijn %{line} naar %{place} tot %{time}"
   pl: "Linia %{line} do %{place} do %{time}"
@@ -720,6 +822,7 @@ _version: 2
   uk: "Лінія %{line} до %{place} до %{time}"
 "Break at %{place} until %{time}":
   de: "Pause in %{place} bis %{time}"
+  da: "Pause ved %{place} til kl. %{time}"
   fr: "Pause à %{place} jusqu’à %{time}"
   nl: "Pauze bij %{place} tot %{time}"
   pl: "Przerwa: %{place} do %{time}"
@@ -727,6 +830,7 @@ _version: 2
   uk: "Перерва: %{place} до %{time}"
 "On duty":
   de: "Im Dienst"
+  da: "På vagt"
   fr: "En service"
   nl: "In dienst"
   pl: "Na służbie"
@@ -734,6 +838,7 @@ _version: 2
   uk: "На зміні"
 "Fuel low":
   de: "Wenig Kraftstoff"
+  da: "Lavt brændstof"
   fr: "Carburant bas"
   nl: "Weinig brandstof"
   pl: "Mało paliwa"
@@ -741,6 +846,7 @@ _version: 2
   uk: "Мало пального"
 "Return to the depot to refuel":
   de: "Zum Tanken in den Betriebshof"
+  da: "Kør tilbage til garagen for at tanke"
   fr: "Retour au dépôt pour faire le plein"
   nl: "Terug naar de remise om te tanken"
   pl: "Wróć do zajezdni zatankować"
@@ -748,6 +854,7 @@ _version: 2
   uk: "Поверніться в депо на заправку"
 "A note for the next driver of bus %{bus}":
   de: "Eine Notiz für den nächsten Fahrer von Bus %{bus}"
+  da: "En note til den næste chauffør i bus %{bus}"
   fr: "Une note pour le prochain conducteur du bus %{bus}"
   nl: "Een notitie voor de volgende chauffeur van bus %{bus}"
   pl: "Notatka dla następnego kierowcy autobusu %{bus}"
@@ -755,6 +862,7 @@ _version: 2
   uk: "Нотатка для наступного водія автобуса %{bus}"
 "Leave the note":
   de: "Notiz hinterlassen"
+  da: "Efterlad noten"
   fr: "Laisser la note"
   nl: "Notitie achterlaten"
   pl: "Zostaw notatkę"
@@ -762,6 +870,7 @@ _version: 2
   uk: "Залишити нотатку"
 "Close":
   de: "Schließen"
+  da: "Luk"
   fr: "Fermer"
   nl: "Sluiten"
   pl: "Zamknij"
@@ -769,6 +878,7 @@ _version: 2
   uk: "Закрити"
 "Walk-around check of bus %{bus}":
   de: "Abfahrtskontrolle von Bus %{bus}"
+  da: "Rundtur om bus %{bus}"
   fr: "Tour du bus %{bus}"
   nl: "Rondje om bus %{bus}"
   pl: "Obchód autobusu %{bus}"
@@ -776,6 +886,7 @@ _version: 2
   uk: "Обхід автобуса %{bus}"
 "Tick what is not in order: the workshop gets it.":
   de: "Hake an, was nicht in Ordnung ist: die Werkstatt bekommt es."
+  da: "Afkryds det, der ikke er i orden: værkstedet får det."
   fr: "Cochez ce qui ne va pas : l’atelier le reçoit."
   nl: "Vink aan wat niet in orde is: de werkplaats krijgt het."
   pl: "Zaznacz, co jest nie w porządku: warsztat to dostanie."
@@ -783,6 +894,7 @@ _version: 2
   uk: "Позначте, що не гаразд: майстерня це отримає."
 "Report defects":
   de: "Mängel melden"
+  da: "Meld fejl"
   fr: "Signaler les défauts"
   nl: "Defecten melden"
   pl: "Zgłoś usterki"
@@ -790,6 +902,7 @@ _version: 2
   uk: "Повідомити про несправності"
 "All in order":
   de: "Alles in Ordnung"
+  da: "Alt i orden"
   fr: "Tout est en ordre"
   nl: "Alles in orde"
   pl: "Wszystko w porządku"
@@ -797,6 +910,7 @@ _version: 2
   uk: "Усе гаразд"
 "now, until %{time}":
   de: "jetzt, bis %{time}"
+  da: "nu, til kl. %{time}"
   fr: "maintenant, jusqu’à %{time}"
   nl: "nu, tot %{time}"
   pl: "teraz, do %{time}"
@@ -804,6 +918,7 @@ _version: 2
   uk: "зараз, до %{time}"
 "Next break":
   de: "Nächste Pause"
+  da: "Næste pause"
   fr: "Prochaine pause"
   nl: "Volgende pauze"
   pl: "Następna przerwa"
@@ -811,6 +926,7 @@ _version: 2
   uk: "Наступна перерва"
 "Next relief":
   de: "Nächste Ablösung"
+  da: "Næste afløsning"
   fr: "Prochaine relève"
   nl: "Volgende aflossing"
   pl: "Następna zmiana kierowcy"
@@ -818,6 +934,7 @@ _version: 2
   uk: "Наступна перезмінка"
 "Relief due":
   de: "Ablösung steht an"
+  da: "Afløsning forfalden"
   fr: "Relève imminente"
   nl: "Aflossing komt eraan"
   pl: "Zbliża się zmiana kierowcy"
@@ -825,6 +942,7 @@ _version: 2
   uk: "Скоро перезмінка"
 "At %{place} at %{time}":
   de: "In %{place} um %{time}"
+  da: "Ved %{place} kl. %{time}"
   fr: "À %{place} à %{time}"
   nl: "Bij %{place} om %{time}"
   pl: "%{place}, godz. %{time}"
@@ -832,6 +950,7 @@ _version: 2
   uk: "%{place}, о %{time}"
 "End of duty":
   de: "Dienstende"
+  da: "Vagtens slutning"
   fr: "Fin de service"
   nl: "Einde dienst"
   pl: "Koniec służby"
@@ -839,6 +958,7 @@ _version: 2
   uk: "Кінець зміни"
 "Charge":
   de: "Ladung"
+  da: "Opladning"
   fr: "Charge"
   nl: "Lading"
   pl: "Naładowanie"
@@ -846,6 +966,7 @@ _version: 2
   uk: "Заряд"
 "Fuel":
   de: "Kraftstoff"
+  da: "Brændstof"
   fr: "Carburant"
   nl: "Brandstof"
   pl: "Paliwo"
@@ -853,6 +974,7 @@ _version: 2
   uk: "Пальне"
 "Defect check":
   de: "Mängelkontrolle"
+  da: "Fejltjek"
   fr: "Contrôle des défauts"
   nl: "Defectencontrole"
   pl: "Kontrola usterek"
@@ -860,6 +982,7 @@ _version: 2
   uk: "Перевірка несправностей"
 "A note was left for you":
   de: "Für dich wurde eine Notiz hinterlassen"
+  da: "En note blev efterladt til dig"
   fr: "Une note vous a été laissée"
   nl: "Er is een notitie voor je achtergelaten"
   pl: "Zostawiono dla ciebie notatkę"
@@ -867,6 +990,7 @@ _version: 2
   uk: "Для вас залишено нотатку"
 "Defects reported":
   de: "Gemeldete Mängel"
+  da: "Fejl meldt"
   fr: "Défauts signalés"
   nl: "Gemelde defecten"
   pl: "Zgłoszone usterki"
@@ -874,6 +998,7 @@ _version: 2
   uk: "Повідомлені несправності"
 "%{n} reported to the workshop":
   de: "%{n} an die Werkstatt gemeldet"
+  da: "%{n} meldt til værkstedet"
   fr: "%{n} signalé(s) à l’atelier"
   nl: "%{n} gemeld bij de werkplaats"
   pl: "%{n} zgłoszono do warsztatu"
@@ -881,6 +1006,7 @@ _version: 2
   uk: "%{n} — повідомлено в майстерню"
 "Note left":
   de: "Notiz hinterlassen"
+  da: "Note efterladt"
   fr: "Note laissée"
   nl: "Notitie achtergelaten"
   pl: "Notatka zostawiona"
@@ -888,6 +1014,7 @@ _version: 2
   uk: "Нотатку залишено"
 "The next driver of bus %{bus} sees it":
   de: "Der nächste Fahrer von Bus %{bus} sieht sie"
+  da: "Den næste chauffør i bus %{bus} ser den"
   fr: "Le prochain conducteur du bus %{bus} la verra"
   nl: "De volgende chauffeur van bus %{bus} ziet hem"
   pl: "Następny kierowca autobusu %{bus} ją zobaczy"
@@ -895,6 +1022,7 @@ _version: 2
   uk: "Наступний водій автобуса %{bus} її побачить"
 "Accept":
   de: "Annehmen"
+  da: "Acceptér"
   fr: "Accepter"
   nl: "Accepteren"
   pl: "Akceptuj"
@@ -902,6 +1030,7 @@ _version: 2
   uk: "Прийняти"
 "Refuse":
   de: "Ablehnen"
+  da: "Afvis"
   fr: "Refuser"
   nl: "Weigeren"
   pl: "Odmów"
@@ -909,6 +1038,7 @@ _version: 2
   uk: "Відмовити"
 "Sent: the boss's launcher carries it out.":
   de: "Gesendet: der Launcher des Chefs führt es aus."
+  da: "Sendt: chefens launcher udfører det."
   fr: "Envoyé : le lanceur du patron s’en charge."
   nl: "Verzonden: de launcher van de baas voert het uit."
   pl: "Wysłano: launcher szefa to wykona."
@@ -916,6 +1046,7 @@ _version: 2
   uk: "Надіслано: лаунчер начальника це виконає."
 "This cannot be done":
   de: "Das geht nicht"
+  da: "Det kan ikke gøres"
   fr: "Impossible"
   nl: "Dit kan niet"
   pl: "Tego nie da się zrobić"
@@ -923,6 +1054,7 @@ _version: 2
   uk: "Це неможливо"
 "That is not the bus of your duty.":
   de: "Das ist nicht der Bus deines Dienstes."
+  da: "Det er ikke din vagts bus."
   fr: "Ce n’est pas le bus de votre service."
   nl: "Dat is niet de bus van je dienst."
   pl: "To nie jest autobus twojej służby."
@@ -930,6 +1062,7 @@ _version: 2
   uk: "Це не автобус вашої зміни."
 "The timetable of the day is still being read.":
   de: "Der Fahrplan des Tages wird noch gelesen."
+  da: "Dagens køreplan læses stadig."
   fr: "L'horaire du jour est encore en cours de lecture."
   nl: "De dienstregeling van de dag wordt nog gelezen."
   pl: "Rozkład dnia jest jeszcze wczytywany."
@@ -937,6 +1070,7 @@ _version: 2
   uk: "Розклад дня ще читається."
 "Handover notes today":
   de: "Übergabenotizen von heute"
+  da: "Overleveringsnoter i dag"
   fr: "Notes de relève du jour"
   nl: "Overdrachtsnotities van vandaag"
   pl: "Dzisiejsze notatki przekazania"
@@ -944,6 +1078,7 @@ _version: 2
   uk: "Нотатки при передачі за сьогодні"
 "No notes today.":
   de: "Heute keine Notizen."
+  da: "Ingen noter i dag."
   fr: "Pas de notes aujourd’hui."
   nl: "Vandaag geen notities."
   pl: "Dziś brak notatek."
@@ -951,6 +1086,7 @@ _version: 2
   uk: "Сьогодні нотаток немає."
 "No defects reported.":
   de: "Keine Mängel gemeldet."
+  da: "Ingen fejl meldt."
   fr: "Aucun défaut signalé."
   nl: "Geen defecten gemeld."
   pl: "Brak zgłoszonych usterek."
@@ -958,6 +1094,7 @@ _version: 2
   uk: "Про несправності не повідомлялося."
 "put right":
   de: "behoben"
+  da: "rettet"
   fr: "réparé"
   nl: "verholpen"
   pl: "usunięto"
@@ -965,6 +1102,7 @@ _version: 2
   uk: "усунено"
 "in the workshop until %{date}":
   de: "in der Werkstatt bis %{date}"
+  da: "på værkstedet indtil %{date}"
   fr: "à l'atelier jusqu'au %{date}"
   nl: "in de werkplaats tot %{date}"
   pl: "w warsztacie do %{date}"
@@ -972,6 +1110,7 @@ _version: 2
   uk: "у майстерні до %{date}"
 "waiting for a bay":
   de: "wartet auf einen Stand"
+  da: "venter på en plads"
   fr: "attend un poste"
   nl: "wacht op een werkplek"
   pl: "czeka na stanowisko"
@@ -979,6 +1118,7 @@ _version: 2
   uk: "чекає посту"
 "no job yet: not enough cash":
   de: "noch kein Auftrag: nicht genug Geld"
+  da: "ingen opgave endnu: ikke penge nok"
   fr: "pas encore de travaux : trésorerie insuffisante"
   nl: "nog geen opdracht: te weinig geld"
   pl: "brak zlecenia: za mało gotówki"
@@ -986,6 +1126,7 @@ _version: 2
   uk: "замовлення ще немає: бракує грошей"
 "logged on the way":
   de: "unterwegs erfasst"
+  da: "logget undervejs"
   fr: "relevé en route"
   nl: "onderweg vastgelegd"
   pl: "zarejestrowano w trasie"
@@ -993,6 +1134,7 @@ _version: 2
   uk: "зафіксовано в дорозі"
 "reported by %{name}":
   de: "gemeldet von %{name}"
+  da: "meldt af %{name}"
   fr: "signalé par %{name}"
   nl: "gemeld door %{name}"
   pl: "zgłosił: %{name}"
@@ -1000,6 +1142,7 @@ _version: 2
   uk: "повідомив(ла): %{name}"
 "off the road that day":
   de: "an dem Tag außer Betrieb"
+  da: "ude af drift den dag"
   fr: "immobilisé ce jour-là"
   nl: "die dag buiten dienst"
   pl: "tego dnia wycofany z ruchu"
@@ -1007,6 +1150,7 @@ _version: 2
   uk: "цього дня знятий з лінії"
 "From the drivers' walk-around checks and what went wrong on the way: each is a repair job here.":
   de: "Aus den Abfahrtskontrollen der Fahrer und dem, was unterwegs schiefging: jeder ist hier ein Reparaturauftrag."
+  da: "Fra chaufførernes rundture og det, der gik galt undervejs: hver er en reparationsopgave her."
   fr: "Issus des tours de contrôle des conducteurs et des incidents en route : chacun est ici une réparation."
   nl: "Uit de controlerondes van de chauffeurs en wat onderweg misging: elk is hier een reparatieopdracht."
   pl: "Z obchodów kierowców i z tego, co zepsuło się w trasie: każda jest tu zleceniem naprawy."
