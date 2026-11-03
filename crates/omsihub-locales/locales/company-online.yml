@@ -2681,6 +2681,7 @@ _version: 2
   uk: "Маршрути: %{lines} · автобуси: %{buses} · депо: %{depots}"
 "Close the depot":
   de: "Depot schließen"
+  da: "Luk garagen"
   fr: "Fermer le dépôt"
   nl: "Remise sluiten"
   pl: "Zamknij zajezdnię"
@@ -2688,6 +2689,7 @@ _version: 2
   uk: "Закрити депо"
 "Close %{name}?":
   de: "%{name} schließen?"
+  da: "Luk %{name}?"
   fr: "Fermer %{name} ?"
   nl: "%{name} sluiten?"
   pl: "Zamknąć %{name}?"
@@ -2695,6 +2697,7 @@ _version: 2
   uk: "Закрити %{name}?"
 "Closes at its next step":
   de: "Schließt bei seinem nächsten Schritt"
+  da: "Lukker ved næste skridt"
   fr: "Ferme à sa prochaine étape"
   nl: "Sluit bij de volgende stap"
   pl: "Zamyka się w następnym kroku"
@@ -2702,6 +2705,7 @@ _version: 2
   uk: "Закриється на наступному кроці"
 "The depot closes at its next step, within a minute: the buses it owns go to the depot you choose, as far as its yard has room, or are sold; a leased or rented bus is handed back. Its staff are let go and its lines go out to tender again. What is left of its money goes to the treasury, and a loss is covered by it. This cannot be undone.":
   de: "Das Depot schließt bei seinem nächsten Schritt, innerhalb einer Minute: Seine eigenen Busse gehen an das gewählte Depot, soweit dessen Hof Platz hat, oder werden verkauft; ein geleaster oder gemieteter Bus wird zurückgegeben. Sein Personal wird entlassen und seine Linien werden neu ausgeschrieben. Was von seinem Geld übrig ist, geht an die Kasse der Zentrale, die auch einen Verlust deckt. Das kann nicht rückgängig gemacht werden."
+  da: "Garagen lukker ved sit næste skridt, inden for et minut: dens egne busser kører til den garage, du vælger, så langt der er plads i gården, eller sælges; en leaset eller lejet bus leveres tilbage. Personalet afskediges, og linjerne kommer i udbud igen. Det, der er tilbage af pengene, går til kassen, og et underskud dækkes af den. Det kan ikke fortrydes."
   fr: "Le dépôt ferme à sa prochaine étape, en moins d'une minute : les bus qui lui appartiennent vont au dépôt choisi, dans la limite de la place dans sa cour, ou sont vendus ; un bus en leasing ou loué est rendu. Son personnel est licencié et ses lignes sont remises en appel d'offres. Ce qui reste de son argent va à la trésorerie, qui couvre aussi une perte. C'est irréversible."
   nl: "De remise sluit bij de volgende stap, binnen een minuut: de eigen bussen gaan naar de gekozen remise, voor zover daar plaats is, of worden verkocht; een geleasde of gehuurde bus gaat terug. Het personeel wordt ontslagen en de lijnen worden opnieuw aanbesteed. Wat er over is van het geld gaat naar de kas van het hoofdkantoor, die ook een verlies dekt. Dit kan niet ongedaan worden gemaakt."
   pl: "Zajezdnia zamyka się w następnym kroku, w ciągu minuty: jej własne autobusy trafiają do wybranej zajezdni, o ile jest tam miejsce, albo zostają sprzedane; autobus w leasingu lub wynajmie jest zwracany. Personel zostaje zwolniony, a linie wracają do przetargu. Pozostałe pieniądze trafiają do kasy centrali, która pokrywa też stratę. Tego nie można cofnąć."
@@ -2709,6 +2713,7 @@ _version: 2
   uk: "Депо закриється на наступному кроці, протягом хвилини: його власні автобуси підуть до вибраного депо, наскільки там вистачить місця, або будуть продані; автобус у лізингу чи оренді повернуть. Персонал звільнять, лінії знову виставлять на тендер. Залишок грошей піде до каси головного офісу, який покриє і збиток. Це не можна скасувати."
 "Its own buses":
   de: "Seine eigenen Busse"
+  da: "Dens egne busser"
   fr: "Ses propres bus"
   nl: "De eigen bussen"
   pl: "Własne autobusy"
@@ -2716,6 +2721,7 @@ _version: 2
   uk: "Власні автобуси"
 "Sell them":
   de: "Verkaufen"
+  da: "Sælg dem"
   fr: "Les vendre"
   nl: "Verkopen"
   pl: "Sprzedać"
@@ -2723,6 +2729,7 @@ _version: 2
   uk: "Продати"
 "Move them to %{depot}":
   de: "Nach %{depot} umsetzen"
+  da: "Flyt dem til %{depot}"
   fr: "Les transférer à %{depot}"
   nl: "Verplaatsen naar %{depot}"
   pl: "Przenieść do %{depot}"
@@ -2730,6 +2737,7 @@ _version: 2
   uk: "Перевести до %{depot}"
 "Ordered: %{what} closes":
   de: "Angeordnet: %{what} schließt"
+  da: "Bestilt: %{what} lukker"
   fr: "Ordonné : %{what} ferme"
   nl: "Opgedragen: %{what} sluit"
   pl: "Polecono: %{what} zostaje zamknięta"
@@ -2737,6 +2745,7 @@ _version: 2
   uk: "Наказано: %{what} закривається"
 "Only the group's owner closes a depot.":
   de: "Nur der Eigentümer der Gruppe schließt ein Depot."
+  da: "Kun gruppens ejer kan lukke en garage."
   fr: "Seul le propriétaire du groupe ferme un dépôt."
   nl: "Alleen de eigenaar van de groep sluit een remise."
   pl: "Tylko właściciel grupy zamyka zajezdnię."
@@ -2744,6 +2753,7 @@ _version: 2
   uk: "Закрити депо може лише власник групи."
 "The depot is being closed already: it closes at its next step.":
   de: "Das Depot wird bereits geschlossen: Es schließt bei seinem nächsten Schritt."
+  da: "Garagen er allerede ved at lukke: den lukker ved sit næste skridt."
   fr: "Le dépôt est déjà en cours de fermeture : il ferme à sa prochaine étape."
   nl: "De remise wordt al gesloten: ze sluit bij de volgende stap."
   pl: "Zajezdnia jest już zamykana: zamknie się w następnym kroku."
@@ -2751,6 +2761,7 @@ _version: 2
   uk: "Депо вже закривається: воно закриється на наступному кроці."
 "By the head office's order depot %{name} is closed: %{moved} of its buses are on their way to %{other}, the others sold or handed back, its staff gone and its lines out to tender again. What was left of it, %{amount}, is the head office's.":
   de: "Auf Anordnung der Zentrale ist Depot %{name} geschlossen: %{moved} seiner Busse sind auf dem Weg nach %{other}, die übrigen verkauft oder zurückgegeben, sein Personal weg und seine Linien neu ausgeschrieben. Was übrig blieb, %{amount}, gehört der Zentrale."
+  da: "Efter hovedkontorets ordre er garagen %{name} lukket: %{moved} af dens busser er på vej til %{other}, de andre er solgt eller leveret tilbage, personalet er væk, og linjerne er i udbud igen. Det, der var tilbage, %{amount}, tilhører hovedkontoret."
   fr: "Sur ordre du siège, le dépôt %{name} est fermé : %{moved} de ses bus sont en route vers %{other}, les autres vendus ou rendus, son personnel parti et ses lignes remises en appel d'offres. Ce qui en restait, %{amount}, revient au siège."
   nl: "Op last van het hoofdkantoor is remise %{name} gesloten: %{moved} van haar bussen zijn onderweg naar %{other}, de andere verkocht of teruggegeven, haar personeel weg en haar lijnen opnieuw aanbesteed. Wat ervan overbleef, %{amount}, is van het hoofdkantoor."
   pl: "Na polecenie centrali zajezdnia %{name} została zamknięta: %{moved} jej autobusów jedzie do %{other}, pozostałe sprzedane lub zwrócone, personel odszedł, a linie wróciły do przetargu. To, co zostało, %{amount}, należy do centrali."
@@ -2758,6 +2769,7 @@ _version: 2
   uk: "За наказом головного офісу депо %{name} закрите: %{moved} його автобусів їдуть до %{other}, решта продані або повернуті, персонал пішов, лінії знову на тендері. Залишок, %{amount}, належить головному офісу."
 "By the head office's order depot %{name} is closed: its buses sold or handed back, its staff gone, its lines out to tender again. What was left of it, %{amount}, is the head office's.":
   de: "Auf Anordnung der Zentrale ist Depot %{name} geschlossen: seine Busse verkauft oder zurückgegeben, sein Personal weg, seine Linien neu ausgeschrieben. Was übrig blieb, %{amount}, gehört der Zentrale."
+  da: "Efter hovedkontorets ordre er garagen %{name} lukket: busserne er solgt eller leveret tilbage, personalet er væk, og linjerne er i udbud igen. Det, der var tilbage, %{amount}, tilhører hovedkontoret."
   fr: "Sur ordre du siège, le dépôt %{name} est fermé : ses bus vendus ou rendus, son personnel parti, ses lignes remises en appel d'offres. Ce qui en restait, %{amount}, revient au siège."
   nl: "Op last van het hoofdkantoor is remise %{name} gesloten: haar bussen verkocht of teruggegeven, haar personeel weg, haar lijnen opnieuw aanbesteed. Wat ervan overbleef, %{amount}, is van het hoofdkantoor."
   pl: "Na polecenie centrali zajezdnia %{name} została zamknięta: autobusy sprzedane lub zwrócone, personel odszedł, linie wróciły do przetargu. To, co zostało, %{amount}, należy do centrali."
@@ -2765,6 +2777,7 @@ _version: 2
   uk: "За наказом головного офісу депо %{name} закрите: автобуси продані або повернуті, персонал пішов, лінії знову на тендері. Залишок, %{amount}, належить головному офісу."
 "By the head office's order depot %{name} is closed: its buses sold or handed back, its staff gone, its lines out to tender again. The head office covered its loss of %{amount}.":
   de: "Auf Anordnung der Zentrale ist Depot %{name} geschlossen: seine Busse verkauft oder zurückgegeben, sein Personal weg, seine Linien neu ausgeschrieben. Die Zentrale hat seinen Verlust von %{amount} gedeckt."
+  da: "Efter hovedkontorets ordre er garagen %{name} lukket: busserne er solgt eller leveret tilbage, personalet er væk, og linjerne er i udbud igen. Hovedkontoret dækkede underskuddet på %{amount}."
   fr: "Sur ordre du siège, le dépôt %{name} est fermé : ses bus vendus ou rendus, son personnel parti, ses lignes remises en appel d'offres. Le siège a couvert sa perte de %{amount}."
   nl: "Op last van het hoofdkantoor is remise %{name} gesloten: haar bussen verkocht of teruggegeven, haar personeel weg, haar lijnen opnieuw aanbesteed. Het hoofdkantoor dekte haar verlies van %{amount}."
   pl: "Na polecenie centrali zajezdnia %{name} została zamknięta: autobusy sprzedane lub zwrócone, personel odszedł, linie wróciły do przetargu. Centrala pokryła jej stratę w wysokości %{amount}."
@@ -2772,6 +2785,7 @@ _version: 2
   uk: "За наказом головного офісу депо %{name} закрите: автобуси продані або повернуті, персонал пішов, лінії знову на тендері. Головний офіс покрив його збиток у %{amount}."
 "The term ends":
   de: "Die Laufzeit endet"
+  da: "Kontrakten slutter"
   fr: "Fin de la durée"
   nl: "De looptijd eindigt"
   pl: "Koniec umowy"
@@ -2779,6 +2793,7 @@ _version: 2
   uk: "Строк закінчується"
 "%{date}, the event's last day":
   de: "%{date}, der letzte Tag der Veranstaltung"
+  da: "%{date}, eventets sidste dag"
   fr: "%{date}, le dernier jour de l'événement"
   nl: "%{date}, de laatste dag van het evenement"
   pl: "%{date}, ostatni dzień wydarzenia"
@@ -2786,6 +2801,7 @@ _version: 2
   uk: "%{date}, останній день події"
 "Out to tender again":
   de: "Wieder ausgeschrieben"
+  da: "I udbud igen"
   fr: "Remise en appel d'offres"
   nl: "Opnieuw aanbesteed"
   pl: "Ponowny przetarg"
@@ -2793,6 +2809,7 @@ _version: 2
   uk: "Знову на тендері"
 "Ends with diesel buses":
   de: "Ende mit Dieselbussen"
+  da: "Slutter med dieselbusser"
   fr: "Fin avec des bus diesel"
   nl: "Einde met dieselbussen"
   pl: "Koniec z autobusami diesla"
@@ -2800,6 +2817,7 @@ _version: 2
   uk: "Кінець із дизельними автобусами"
 "Ends with electric buses":
   de: "Ende mit Elektrobussen"
+  da: "Slutter med elbusser"
   fr: "Fin avec des bus électriques"
   nl: "Einde met elektrische bussen"
   pl: "Koniec z autobusami elektrycznymi"
@@ -2807,6 +2825,7 @@ _version: 2
   uk: "Кінець з електробусами"
 "%{end} · out to tender again from %{open} to %{close}":
   de: "%{end} · wieder ausgeschrieben vom %{open} bis %{close}"
+  da: "%{end} · i udbud igen fra %{open} til %{close}"
   fr: "%{end} · remis en appel d'offres du %{open} au %{close}"
   nl: "%{end} · opnieuw aanbesteed van %{open} tot %{close}"
   pl: "%{end} · ponowny przetarg od %{open} do %{close}"
@@ -2814,6 +2833,7 @@ _version: 2
   uk: "%{end} · знову на тендері з %{open} по %{close}"
 "The authority moved the last day of your contract on line %{n} to %{date}.":
   de: "Die Behörde hat den letzten Tag Ihres Vertrags auf Linie %{n} auf den %{date} verlegt."
+  da: "Trafikselskabet har flyttet den sidste dag i din kontrakt på linje %{n} til %{date}."
   fr: "L'autorité a déplacé le dernier jour de votre contrat sur la ligne %{n} au %{date}."
   nl: "De vervoerder heeft de laatste dag van uw contract op lijn %{n} verplaatst naar %{date}."
   pl: "Organizator przesunął ostatni dzień twojej umowy na linii %{n} na %{date}."
@@ -2821,6 +2841,7 @@ _version: 2
   uk: "Організатор переніс останній день вашого контракту на лінії %{n} на %{date}."
 "The line goes out to tender: announced now, it takes bids from tomorrow for three days - on the Concessions page.":
   de: "Die Linie wird ausgeschrieben: jetzt angekündigt, Gebote ab morgen drei Tage lang - auf der Seite Konzessionen."
+  da: "Linjen kommer i udbud: annonceret nu, den tager imod bud fra i morgen i tre dage - på siden Koncessioner."
   fr: "La ligne est mise en appel d'offres : annoncée maintenant, elle reçoit des offres dès demain pendant trois jours - page Concessions."
   nl: "De lijn wordt aanbesteed: nu aangekondigd, biedingen vanaf morgen drie dagen lang - op de pagina Concessies."
   pl: "Linia trafia do przetargu: ogłoszona teraz, oferty od jutra przez trzy dni - na stronie Koncesje."
@@ -2828,6 +2849,7 @@ _version: 2
   uk: "Лінію виставлено на тендер: оголошено зараз, ставки приймаються з завтра три дні - на сторінці «Концесії»."
 "The authority takes its option on your contract on line %{n}: satisfactory running, so it runs %{days} days more, to %{date} (option %{k} of %{most}).":
   de: "Der Aufgabenträger zieht die Option auf deinen Vertrag für Linie %{n}: zufriedenstellender Betrieb, er läuft %{days} Tage länger, bis %{date} (Option %{k} von %{most})."
+  da: "Trafikselskabet tager sin option på din kontrakt på linje %{n}: tilfredsstillende kørsel, så den kører %{days} dage mere, til %{date} (option %{k} af %{most})."
   fr: "L'autorité lève son option sur votre contrat de la ligne %{n} : exploitation satisfaisante, il court %{days} jours de plus, jusqu'au %{date} (option %{k} sur %{most})."
   nl: "De opdrachtgever lost de optie op je contract voor lijn %{n}: naar tevredenheid gereden, het loopt %{days} dagen langer, tot %{date} (optie %{k} van %{most})."
   pl: "Organizator korzysta z opcji na twoją umowę na linii %{n}: zadowalająca eksploatacja, trwa %{days} dni dłużej, do %{date} (opcja %{k} z %{most})."

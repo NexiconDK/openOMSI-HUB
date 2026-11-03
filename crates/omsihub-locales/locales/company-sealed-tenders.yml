@@ -268,6 +268,7 @@ _version: 2
   uk: "Закриті пропозиції до %{time} (через %{left}): кожна компанія карти та її перевізники подають пропозиції, ніхто не бачить чужу до закриття, а оцінка — 70 % ціна і 30 % якість. Запропонуй не менше %{low} і не більше %{cap}."
 "Your cost price with a 5 % margin is %{own}: under the abnormally low line, so ask at least %{amount}":
   de: "Ihr Selbstkostenpreis mit 5 % Marge ist %{own}: unter der Grenze für ungewöhnlich niedrige Gebote, also bieten Sie mindestens %{amount}"
+  da: "Din kostpris med 5 % avance er %{own}: under grænsen for unormalt lave bud, så byd mindst %{amount}"
   fr: "Votre prix de revient avec une marge de 5 % est de %{own} : sous le seuil anormalement bas, demandez donc au moins %{amount}"
   nl: "Uw kostprijs met 5 % marge is %{own}: onder de grens voor abnormaal lage biedingen, vraag dus minstens %{amount}"
   pl: "Twój koszt własny z 5 % marży to %{own}: poniżej progu rażąco niskiej ceny, więc żądaj co najmniej %{amount}"
@@ -275,6 +276,7 @@ _version: 2
   uk: "Ваша собівартість із націнкою 5 % — %{own}: нижче порогу аномально низької ціни, тож просіть щонайменше %{amount}"
 "%{p} price + %{q} quality (operation %{a}, vehicles %{v}, plan %{l}, working environment %{w}) = %{t} points":
   de: "%{p} Preis + %{q} Qualität (Betrieb %{a}, Fahrzeuge %{v}, Plan %{l}, Arbeitsumfeld %{w}) = %{t} Punkte"
+  da: "%{p} pris + %{q} kvalitet (drift %{a}, materiel %{v}, plan %{l}, arbejdsmiljø %{w}) = %{t} point"
   fr: "%{p} prix + %{q} qualité (exploitation %{a}, véhicules %{v}, plan %{l}, conditions de travail %{w}) = %{t} points"
   nl: "%{p} prijs + %{q} kwaliteit (exploitatie %{a}, voertuigen %{v}, plan %{l}, werkomgeving %{w}) = %{t} punten"
   pl: "%{p} cena + %{q} jakość (eksploatacja %{a}, pojazdy %{v}, plan %{l}, środowisko pracy %{w}) = %{t} pkt"
@@ -282,6 +284,7 @@ _version: 2
   uk: "%{p} ціна + %{q} якість (експлуатація %{a}, автобуси %{v}, план %{l}, умови праці %{w}) = %{t} балів"
 "Price %{w} %: the lowest valid ask gets all %{w} points, every other ask lowest ÷ ask of them.":
   de: "Preis %{w} %: das niedrigste gültige Gebot bekommt alle %{w} Punkte, jedes andere niedrigstes ÷ eigenes davon."
+  da: "Pris %{w} %: det laveste gyldige bud får alle %{w} point, ethvert andet bud laveste ÷ eget bud af dem."
   fr: "Prix %{w} % : l'offre valide la plus basse obtient les %{w} points, toute autre la plus basse ÷ la sienne."
   nl: "Prijs %{w} %: het laagste geldige bod krijgt alle %{w} punten, elk ander laagste ÷ eigen bod ervan."
   pl: "Cena %{w} %: najniższa ważna oferta dostaje wszystkie %{w} pkt, każda inna najniższa ÷ własna z nich."
@@ -289,6 +292,7 @@ _version: 2
   uk: "Ціна %{w} %: найнижча дійсна ставка отримує всі %{w} балів, решта — найнижча ÷ своя."
 "Operating quality %{w} %: your track record, %{v} of 100 - %{p} points.":
   de: "Betriebsqualität %{w} %: deine Bilanz, %{v} von 100 - %{p} Punkte."
+  da: "Driftskvalitet %{w} %: din historik, %{v} af 100 - %{p} point."
   fr: "Qualité d'exploitation %{w} % : votre bilan, %{v} sur 100 - %{p} points."
   nl: "Exploitatiekwaliteit %{w} %: je staat van dienst, %{v} van 100 - %{p} punten."
   pl: "Jakość eksploatacji %{w} %: twój dorobek, %{v} na 100 - %{p} pkt."
@@ -296,6 +300,7 @@ _version: 2
   uk: "Якість експлуатації %{w} %: ваша репутація, %{v} зі 100 - %{p} балів."
 "Vehicles %{w} %: your buses' age and drive, %{v} of 100 - %{p} points.":
   de: "Fahrzeuge %{w} %: Alter und Antrieb deiner Busse, %{v} von 100 - %{p} Punkte."
+  da: "Materiel %{w} %: dine bussers alder og drivmiddel, %{v} af 100 - %{p} point."
   fr: "Véhicules %{w} % : âge et motorisation de vos bus, %{v} sur 100 - %{p} points."
   nl: "Voertuigen %{w} %: leeftijd en aandrijving van je bussen, %{v} van 100 - %{p} punten."
   pl: "Pojazdy %{w} %: wiek i napęd twoich autobusów, %{v} na 100 - %{p} pkt."
@@ -303,6 +308,7 @@ _version: 2
   uk: "Автобуси %{w} %: вік і тип приводу ваших автобусів, %{v} зі 100 - %{p} балів."
 "Implementation plan %{w} %: room, buses and drivers for the work, %{v} of 100 - %{p} points.":
   de: "Umsetzungsplan %{w} %: Platz, Busse und Fahrer für die Leistung, %{v} von 100 - %{p} Punkte."
+  da: "Implementeringsplan %{w} %: plads, busser og chauffører til opgaven, %{v} af 100 - %{p} point."
   fr: "Plan de mise en œuvre %{w} % : place, bus et conducteurs pour le service, %{v} sur 100 - %{p} points."
   nl: "Implementatieplan %{w} %: ruimte, bussen en chauffeurs voor het werk, %{v} van 100 - %{p} punten."
   pl: "Plan wdrożenia %{w} %: miejsce, autobusy i kierowcy do pracy, %{v} na 100 - %{p} pkt."
@@ -310,6 +316,7 @@ _version: 2
   uk: "План впровадження %{w} %: місце, автобуси й водії для роботи, %{v} зі 100 - %{p} балів."
 "Working environment %{w} %: your staff's satisfaction, less those off sick, %{v} of 100 - %{p} points.":
   de: "Arbeitsumfeld %{w} %: Zufriedenheit deines Personals, abzüglich Kranker, %{v} von 100 - %{p} Punkte."
+  da: "Arbejdsmiljø %{w} %: personalets tilfredshed minus de syge, %{v} af 100 - %{p} point."
   fr: "Conditions de travail %{w} % : satisfaction de votre personnel, moins les malades, %{v} sur 100 - %{p} points."
   nl: "Werkomgeving %{w} %: tevredenheid van je personeel, min de zieken, %{v} van 100 - %{p} punten."
   pl: "Środowisko pracy %{w} %: zadowolenie personelu, minus chorzy, %{v} na 100 - %{p} pkt."
@@ -317,6 +324,7 @@ _version: 2
   uk: "Умови праці %{w} %: задоволеність персоналу за вирахуванням хворих, %{v} зі 100 - %{p} балів."
 "The Viborg model: 50 % price + 50 % quality":
   de: "Das Viborg-Modell: 50 % Preis + 50 % Qualität"
+  da: "Viborg-modellen: 50 % pris + 50 % kvalitet"
   fr: "Le modèle de Viborg : 50 % prix + 50 % qualité"
   nl: "Het Viborg-model: 50 % prijs + 50 % kwaliteit"
   pl: "Model Viborg: 50 % cena + 50 % jakość"
@@ -324,6 +332,7 @@ _version: 2
   uk: "Модель Віборга: 50 % ціна + 50 % якість"
 "The lowest price wins":
   de: "Der niedrigste Preis gewinnt"
+  da: "Laveste pris vinder"
   fr: "Le prix le plus bas l'emporte"
   nl: "De laagste prijs wint"
   pl: "Wygrywa najniższa cena"
@@ -331,6 +340,7 @@ _version: 2
   uk: "Перемагає найнижча ціна"
 "Price up to %{p}":
   de: "Preis bis %{p}"
+  da: "Pris op til %{p}"
   fr: "Prix jusqu'à %{p}"
   nl: "Prijs tot %{p}"
   pl: "Cena do %{p}"
@@ -338,6 +348,7 @@ _version: 2
   uk: "Ціна до %{p}"
 "Quality %{q} of %{m}":
   de: "Qualität %{q} von %{m}"
+  da: "Kvalitet %{q} af %{m}"
   fr: "Qualité %{q} sur %{m}"
   nl: "Kwaliteit %{q} van %{m}"
   pl: "Jakość %{q} z %{m}"
@@ -345,6 +356,7 @@ _version: 2
   uk: "Якість %{q} з %{m}"
 "Your price points are known when the bids are opened: the lowest valid ask gets them all.":
   de: "Deine Preispunkte stehen fest, wenn die Gebote geöffnet werden: das niedrigste gültige Gebot bekommt alle."
+  da: "Dine prispoint kendes, når buddene åbnes: det laveste gyldige bud får dem alle."
   fr: "Vos points de prix sont connus à l'ouverture des offres : l'offre valide la plus basse les obtient tous."
   nl: "Je prijspunten zijn bekend als de biedingen worden geopend: het laagste geldige bod krijgt ze allemaal."
   pl: "Twoje punkty za cenę będą znane po otwarciu ofert: najniższa ważna oferta dostaje wszystkie."
@@ -352,6 +364,7 @@ _version: 2
   uk: "Ваші бали за ціну стануть відомі під час розкриття ставок: найнижча дійсна отримує всі."
 "The bids are opened: their points are below.":
   de: "Die Gebote sind geöffnet: ihre Punkte stehen unten."
+  da: "Buddene er åbnet: deres point står nedenfor."
   fr: "Les offres sont ouvertes : leurs points sont ci-dessous."
   nl: "De biedingen zijn geopend: hun punten staan hieronder."
   pl: "Oferty są otwarte: ich punkty są poniżej."
@@ -359,6 +372,7 @@ _version: 2
   uk: "Ставки розкрито: їхні бали нижче."
 "From %{date}. Option: %{d} days more, at most %{n} times, when run satisfactorily (not red, at most 2 % of its journeys dropped)":
   de: "Ab %{date}. Option: %{d} Tage mehr, höchstens %{n}-mal, bei zufriedenstellendem Betrieb (nicht rot, höchstens 2 % der Fahrten ausgefallen)"
+  da: "Fra %{date}. Option: %{d} dage mere, højst %{n} gange, ved tilfredsstillende kørsel (ikke rød, højst 2 % af turene udgået)"
   fr: "À partir du %{date}. Option : %{d} jours de plus, au plus %{n} fois, si l'exploitation est satisfaisante (pas rouge, au plus 2 % des courses supprimées)"
   nl: "Vanaf %{date}. Optie: %{d} dagen meer, hoogstens %{n} keer, bij goede uitvoering (niet rood, hoogstens 2 % van de ritten uitgevallen)"
   pl: "Od %{date}. Opcja: %{d} dni więcej, najwyżej %{n} razy, przy zadowalającej eksploatacji (nie czerwona, najwyżej 2 % kursów odwołanych)"
@@ -366,6 +380,7 @@ _version: 2
   uk: "З %{date}. Опціон: на %{d} днів більше, не більше %{n} разів, за задовільної роботи (не червоний, скасовано не більше 2 % рейсів)"
 "The next term is announced six days before it begins, takes bids from five days before and is decided two days before it: the winner has two days to make ready.":
   de: "Die nächste Laufzeit wird sechs Tage vor ihrem Beginn angekündigt, nimmt ab fünf Tage davor Gebote an und wird zwei Tage davor entschieden: der Gewinner hat zwei Tage zur Vorbereitung."
+  da: "Næste periode annonceres seks dage før den begynder, tager imod bud fra fem dage før og afgøres to dage før: vinderen har to dage til at gøre klar."
   fr: "La période suivante est annoncée six jours avant son début, reçoit des offres à partir de cinq jours avant et est attribuée deux jours avant : le gagnant a deux jours pour se préparer."
   nl: "De volgende termijn wordt zes dagen voor de start aangekondigd, neemt biedingen aan vanaf vijf dagen ervoor en wordt twee dagen ervoor gegund: de winnaar heeft twee dagen om zich voor te bereiden."
   pl: "Kolejny okres ogłaszany jest sześć dni przed jego początkiem, przyjmuje oferty od pięciu dni przed i jest rozstrzygany dwa dni przed: zwycięzca ma dwa dni na przygotowanie."
@@ -373,6 +388,7 @@ _version: 2
   uk: "Наступний строк оголошують за шість днів до початку, ставки приймають за п'ять днів, рішення за два дні: переможець має два дні на підготовку."
 "Small work (%{h} timetable hours a week): with diesel buses the contract runs %{d} days, with electric buses %{e} days, every tour run with an electric bus.":
   de: "Kleine Leistung (%{h} Fahrplanstunden pro Woche): mit Dieselbussen läuft der Vertrag %{d} Tage, mit Elektrobussen %{e} Tage, jeder Umlauf mit einem Elektrobus."
+  da: "Lille opgave (%{h} køreplantimer om ugen): med dieselbusser kører kontrakten %{d} dage, med elbusser %{e} dage, hvor hvert vognløb køres med elbus."
   fr: "Petit service (%{h} heures d'horaire par semaine) : avec des bus diesel le contrat dure %{d} jours, avec des bus électriques %{e} jours, chaque service avec un bus électrique."
   nl: "Klein werk (%{h} dienstregelingsuren per week): met dieselbussen loopt het contract %{d} dagen, met elektrische bussen %{e} dagen, elke omloop met een elektrische bus."
   pl: "Mała praca (%{h} godzin rozkładowych tygodniowo): z autobusami diesla umowa trwa %{d} dni, z elektrycznymi %{e} dni, każdy obieg autobusem elektrycznym."
@@ -380,6 +396,7 @@ _version: 2
   uk: "Малий обсяг (%{h} годин за розкладом на тиждень): з дизельними автобусами контракт триває %{d} днів, з електробусами %{e} днів, кожен виїзд на електробусі."
 "Medium work (%{h} timetable hours a week): with diesel buses the contract runs %{d} days, with electric buses %{e} days, every tour run with an electric bus.":
   de: "Mittlere Leistung (%{h} Fahrplanstunden pro Woche): mit Dieselbussen läuft der Vertrag %{d} Tage, mit Elektrobussen %{e} Tage, jeder Umlauf mit einem Elektrobus."
+  da: "Mellemstor opgave (%{h} køreplantimer om ugen): med dieselbusser kører kontrakten %{d} dage, med elbusser %{e} dage, hvor hvert vognløb køres med elbus."
   fr: "Service moyen (%{h} heures d'horaire par semaine) : avec des bus diesel le contrat dure %{d} jours, avec des bus électriques %{e} jours, chaque service avec un bus électrique."
   nl: "Middelgroot werk (%{h} dienstregelingsuren per week): met dieselbussen loopt het contract %{d} dagen, met elektrische bussen %{e} dagen, elke omloop met een elektrische bus."
   pl: "Średnia praca (%{h} godzin rozkładowych tygodniowo): z autobusami diesla umowa trwa %{d} dni, z elektrycznymi %{e} dni, każdy obieg autobusem elektrycznym."
@@ -387,6 +404,7 @@ _version: 2
   uk: "Середній обсяг (%{h} годин за розкладом на тиждень): з дизельними автобусами контракт триває %{d} днів, з електробусами %{e} днів, кожен виїзд на електробусі."
 "Large work (%{h} timetable hours a week): with diesel buses the contract runs %{d} days, with electric buses %{e} days, every tour run with an electric bus.":
   de: "Große Leistung (%{h} Fahrplanstunden pro Woche): mit Dieselbussen läuft der Vertrag %{d} Tage, mit Elektrobussen %{e} Tage, jeder Umlauf mit einem Elektrobus."
+  da: "Stor opgave (%{h} køreplantimer om ugen): med dieselbusser kører kontrakten %{d} dage, med elbusser %{e} dage, hvor hvert vognløb køres med elbus."
   fr: "Grand service (%{h} heures d'horaire par semaine) : avec des bus diesel le contrat dure %{d} jours, avec des bus électriques %{e} jours, chaque service avec un bus électrique."
   nl: "Groot werk (%{h} dienstregelingsuren per week): met dieselbussen loopt het contract %{d} dagen, met elektrische bussen %{e} dagen, elke omloop met een elektrische bus."
   pl: "Duża praca (%{h} godzin rozkładowych tygodniowo): z autobusami diesla umowa trwa %{d} dni, z elektrycznymi %{e} dni, każdy obieg autobusem elektrycznym."

@@ -1394,6 +1394,7 @@ _version: 2
   uk: "Торги на лінію %{n} скасовано сервером: внесок повертається."
 "The tenders":
   de: "Die Ausschreibungen"
+  da: "Udbuddene"
   fr: "Les appels d'offres"
   nl: "De aanbestedingen"
   pl: "Przetargi"
@@ -1401,6 +1402,7 @@ _version: 2
   uk: "Тендери"
 "The cap a timetable hour (kroner)":
   de: "Die Obergrenze je Fahrplanstunde (Kronen)"
+  da: "Loftet pr. køreplantime (kroner)"
   fr: "Le plafond par heure d'horaire (couronnes)"
   nl: "Het plafond per dienstregelingsuur (kronen)"
   pl: "Limit za godzinę rozkładową (korony)"
@@ -1408,6 +1410,7 @@ _version: 2
   uk: "Стеля за годину за розкладом (крони)"
 "0: the authority's estimate by the factor below. Another number: the cap of every new tender, whatever the estimate":
   de: "0: die Schätzung der Behörde mal dem Faktor unten. Eine andere Zahl: die Obergrenze jeder neuen Ausschreibung, unabhängig von der Schätzung"
+  da: "0: trafikselskabets overslag gange faktoren nedenfor. Et andet tal: loftet for alle nye udbud, uanset overslaget"
   fr: "0 : l'estimation de l'autorité multipliée par le facteur ci-dessous. Un autre nombre : le plafond de chaque nouvel appel d'offres, quelle que soit l'estimation"
   nl: "0: de raming van de vervoerder maal de factor hieronder. Een ander getal: het plafond van elke nieuwe aanbesteding, ongeacht de raming"
   pl: "0: szacunek organizatora razy współczynnik poniżej. Inna liczba: limit każdego nowego przetargu, niezależnie od szacunku"
@@ -1415,6 +1418,7 @@ _version: 2
   uk: "0: оцінка організатора, помножена на коефіцієнт нижче. Інше число: стеля кожного нового тендеру, незалежно від оцінки"
 "The cap: the estimate by":
   de: "Die Obergrenze: die Schätzung mal"
+  da: "Loftet: overslaget gange"
   fr: "Le plafond : l'estimation multipliée par"
   nl: "Het plafond: de raming maal"
   pl: "Limit: szacunek razy"
@@ -1422,6 +1426,7 @@ _version: 2
   uk: "Стеля: оцінка, помножена на"
 "When the cap above is 0 (1.5: half again the estimate)":
   de: "Wenn die Obergrenze oben 0 ist (1,5: die Schätzung und die Hälfte dazu)"
+  da: "Når loftet ovenfor er 0 (1,5: overslaget plus det halve)"
   fr: "Quand le plafond ci-dessus vaut 0 (1,5 : l'estimation plus la moitié)"
   nl: "Als het plafond hierboven 0 is (1,5: de raming plus de helft)"
   pl: "Gdy limit powyżej wynosi 0 (1,5: szacunek plus połowa)"
@@ -1429,6 +1434,7 @@ _version: 2
   uk: "Коли стеля вище дорівнює 0 (1,5: оцінка плюс половина)"
 "Abnormally low under (%)":
   de: "Ungewöhnlich niedrig unter (%)"
+  da: "Unormalt lavt under (%)"
   fr: "Anormalement bas en dessous de (%)"
   nl: "Abnormaal laag onder (%)"
   pl: "Rażąco niska poniżej (%)"
@@ -1436,6 +1442,7 @@ _version: 2
   uk: "Аномально низька нижче (%)"
 "Of the authority's estimate: a bid below it is rejected":
   de: "Der Schätzung der Behörde: ein Gebot darunter wird abgelehnt"
+  da: "Af trafikselskabets overslag: et bud derunder afvises"
   fr: "De l'estimation de l'autorité : une offre en dessous est rejetée"
   nl: "Van de raming van de vervoerder: een bod daaronder wordt afgewezen"
   pl: "Szacunku organizatora: oferta poniżej jest odrzucana"
@@ -1443,6 +1450,7 @@ _version: 2
   uk: "Від оцінки організатора: заявка нижче відхиляється"
 "Operators bidding in a tender":
   de: "Betreiber, die in einer Ausschreibung bieten"
+  da: "Operatører, der byder i et udbud"
   fr: "Opérateurs qui soumissionnent dans un appel d'offres"
   nl: "Vervoerders die in een aanbesteding bieden"
   pl: "Przewoźnicy składający oferty w przetargu"
@@ -1450,6 +1458,7 @@ _version: 2
   uk: "Оператори, що беруть участь у тендері"
 "Empty: as the rules draw them; 0: none - the map's companies alone":
   de: "Leer: wie die Regeln sie auslosen; 0: keine - nur die Firmen der Karte"
+  da: "Tom: som reglerne trækker dem; 0: ingen - kun kortets firmaer"
   fr: "Vide : comme les règles les tirent ; 0 : aucun - les entreprises de la carte seules"
   nl: "Leeg: zoals de regels ze trekken; 0: geen - alleen de bedrijven van de kaart"
   pl: "Puste: jak losują zasady; 0: brak - tylko firmy z mapy"
@@ -1457,6 +1466,7 @@ _version: 2
   uk: "Порожньо: як їх обирають правила; 0: жодного - лише компанії мапи"
 "A round of new lines every (weeks)":
   de: "Eine Runde neuer Linien alle (Wochen)"
+  da: "En runde nye linjer hver (uger)"
   fr: "Une série de nouvelles lignes toutes les (semaines)"
   nl: "Een ronde nieuwe lijnen elke (weken)"
   pl: "Runda nowych linii co (tygodnie)"
@@ -1464,6 +1474,7 @@ _version: 2
   uk: "Раунд нових ліній кожні (тижні)"
 "Lines in a round":
   de: "Linien je Runde"
+  da: "Linjer i en runde"
   fr: "Lignes par série"
   nl: "Lijnen per ronde"
   pl: "Linie w rundzie"
@@ -1471,6 +1482,7 @@ _version: 2
   uk: "Ліній у раунді"
 "Empty: the rules' and one more a company":
   de: "Leer: die der Regeln und eine mehr je Firma"
+  da: "Tom: reglernes og én mere pr. firma"
   fr: "Vide : celles des règles et une de plus par entreprise"
   nl: "Leeg: die van de regels en één extra per bedrijf"
   pl: "Puste: według zasad i jedna więcej na firmę"
@@ -1478,6 +1490,7 @@ _version: 2
   uk: "Порожньо: за правилами і ще одна на компанію"
 "The tenders' rules":
   de: "Die Regeln der Ausschreibungen"
+  da: "Udbuddenes regler"
   fr: "Les règles des appels d'offres"
   nl: "De regels van de aanbestedingen"
   pl: "Zasady przetargów"
@@ -1485,6 +1498,7 @@ _version: 2
   uk: "Правила тендерів"
 "estimate × %{f}":
   de: "Schätzung × %{f}"
+  da: "overslag × %{f}"
   fr: "estimation × %{f}"
   nl: "raming × %{f}"
   pl: "szacunek × %{f}"
@@ -1492,6 +1506,7 @@ _version: 2
   uk: "оцінка × %{f}"
 "The cap a timetable hour":
   de: "Die Obergrenze je Fahrplanstunde"
+  da: "Loftet pr. køreplantime"
   fr: "Le plafond par heure d'horaire"
   nl: "Het plafond per dienstregelingsuur"
   pl: "Limit za godzinę rozkładową"
@@ -1499,6 +1514,7 @@ _version: 2
   uk: "Стеля за годину за розкладом"
 "for every new tender":
   de: "für jede neue Ausschreibung"
+  da: "for alle nye udbud"
   fr: "pour chaque nouvel appel d'offres"
   nl: "voor elke nieuwe aanbesteding"
   pl: "dla każdego nowego przetargu"
@@ -1506,6 +1522,7 @@ _version: 2
   uk: "для кожного нового тендеру"
 "the authority's estimate by the factor":
   de: "die Schätzung der Behörde mal dem Faktor"
+  da: "trafikselskabets overslag gange faktoren"
   fr: "l'estimation de l'autorité multipliée par le facteur"
   nl: "de raming van de vervoerder maal de factor"
   pl: "szacunek organizatora razy współczynnik"
@@ -1513,6 +1530,7 @@ _version: 2
   uk: "оцінка організатора, помножена на коефіцієнт"
 "Abnormally low under":
   de: "Ungewöhnlich niedrig unter"
+  da: "Unormalt lavt under"
   fr: "Anormalement bas en dessous de"
   nl: "Abnormaal laag onder"
   pl: "Rażąco niska poniżej"
@@ -1520,6 +1538,7 @@ _version: 2
   uk: "Аномально низька нижче"
 "of the authority's estimate":
   de: "der Schätzung der Behörde"
+  da: "af trafikselskabets overslag"
   fr: "de l'estimation de l'autorité"
   nl: "van de raming van de vervoerder"
   pl: "szacunku organizatora"
@@ -1527,6 +1546,7 @@ _version: 2
   uk: "від оцінки організатора"
 "as the rules draw them":
   de: "wie die Regeln sie auslosen"
+  da: "som reglerne trækker dem"
   fr: "comme les règles les tirent"
   nl: "zoals de regels ze trekken"
   pl: "jak losują zasady"
@@ -1534,6 +1554,7 @@ _version: 2
   uk: "як їх обирають правила"
 "Operators in a tender":
   de: "Betreiber je Ausschreibung"
+  da: "Operatører i et udbud"
   fr: "Opérateurs par appel d'offres"
   nl: "Vervoerders per aanbesteding"
   pl: "Przewoźnicy w przetargu"
@@ -1541,6 +1562,7 @@ _version: 2
   uk: "Операторів у тендері"
 "%{n} weeks":
   de: "%{n} Wochen"
+  da: "%{n} uger"
   fr: "%{n} semaines"
   nl: "%{n} weken"
   pl: "%{n} tyg."
@@ -1548,6 +1570,7 @@ _version: 2
   uk: "%{n} тиж."
 "A round of new lines":
   de: "Eine Runde neuer Linien"
+  da: "En runde nye linjer"
   fr: "Une série de nouvelles lignes"
   nl: "Een ronde nieuwe lijnen"
   pl: "Runda nowych linii"
@@ -1555,6 +1578,7 @@ _version: 2
   uk: "Раунд нових ліній"
 "the rules' number of lines":
   de: "die Zahl der Linien nach den Regeln"
+  da: "reglernes antal linjer"
   fr: "le nombre de lignes des règles"
   nl: "het aantal lijnen volgens de regels"
   pl: "liczba linii według zasad"
@@ -1562,6 +1586,7 @@ _version: 2
   uk: "кількість ліній за правилами"
 "%{n} lines":
   de: "%{n} Linien"
+  da: "%{n} linjer"
   fr: "%{n} lignes"
   nl: "%{n} lijnen"
   pl: "%{n} linii"
@@ -1569,6 +1594,7 @@ _version: 2
   uk: "%{n} ліній"
 "Changed under Rules and economy: a new tender takes them; one open keeps its own (its cap can be set here).":
   de: "Geändert unter Regeln und Wirtschaft: eine neue Ausschreibung übernimmt sie; eine offene behält ihre eigenen (ihre Obergrenze lässt sich hier setzen)."
+  da: "Ændres under Regler og økonomi: et nyt udbud tager dem; et åbent beholder sine egne (dets loft kan sættes her)."
   fr: "Modifiées sous Règles et économie : un nouvel appel d'offres les reprend ; un appel ouvert garde les siennes (son plafond se règle ici)."
   nl: "Gewijzigd onder Regels en economie: een nieuwe aanbesteding neemt ze over; een open aanbesteding houdt de hare (haar plafond is hier in te stellen)."
   pl: "Zmieniane w Zasady i ekonomia: nowy przetarg je przejmuje; otwarty zachowuje swoje (jego limit można ustawić tutaj)."
@@ -1576,6 +1602,7 @@ _version: 2
   uk: "Змінюються в розділі Правила й економіка: новий тендер бере їх; відкритий зберігає свої (його стелю можна задати тут)."
 "Direct: %{n}":
   de: "Direkt: %{n}"
+  da: "Direkte: %{n}"
   fr: "Direct : %{n}"
   nl: "Direct: %{n}"
   pl: "Bezpośrednio: %{n}"
@@ -1583,6 +1610,7 @@ _version: 2
   uk: "Напряму: %{n}"
 "Set":
   de: "Setzen"
+  da: "Sæt"
   fr: "Fixer"
   nl: "Instellen"
   pl: "Ustaw"
@@ -1590,6 +1618,7 @@ _version: 2
   uk: "Задати"
 "estimate %{e} · low under %{l}":
   de: "Schätzung %{e} · niedrig unter %{l}"
+  da: "overslag %{e} · lavt under %{l}"
   fr: "estimation %{e} · bas sous %{l}"
   nl: "raming %{e} · laag onder %{l}"
   pl: "szacunek %{e} · nisko poniżej %{l}"
@@ -1597,6 +1626,7 @@ _version: 2
   uk: "оцінка %{e} · низько нижче %{l}"
 "next tender from %{d}":
   de: "nächste Ausschreibung ab %{d}"
+  da: "næste udbud fra %{d}"
   fr: "prochain appel d'offres dès le %{d}"
   nl: "volgende aanbesteding vanaf %{d}"
   pl: "następny przetarg od %{d}"
@@ -1604,6 +1634,7 @@ _version: 2
   uk: "наступний тендер з %{d}"
 "Move the end":
   de: "Ende verschieben"
+  da: "Flyt slutdatoen"
   fr: "Déplacer la fin"
   nl: "Einde verplaatsen"
   pl: "Przesuń koniec"
@@ -1611,6 +1642,7 @@ _version: 2
   uk: "Перенести кінець"
 "End and tender":
   de: "Beenden und ausschreiben"
+  da: "Afslut og sæt i udbud"
   fr: "Terminer et mettre en appel d'offres"
   nl: "Beëindigen en aanbesteden"
   pl: "Zakończ i ogłoś przetarg"
@@ -1618,6 +1650,7 @@ _version: 2
   uk: "Завершити й виставити на тендер"
 "Sure? The line goes out to tender at once":
   de: "Sicher? Die Linie wird sofort ausgeschrieben"
+  da: "Sikker? Linjen kommer i udbud med det samme"
   fr: "Sûr ? La ligne est mise en appel d'offres tout de suite"
   nl: "Zeker? De lijn wordt meteen aanbesteed"
   pl: "Na pewno? Linia od razu trafi do przetargu"
@@ -1625,6 +1658,7 @@ _version: 2
   uk: "Впевнені? Лінію одразу виставлять на тендер"
 "The lines' timetable names, comma between":
   de: "Die Fahrplannamen der Linien, durch Komma getrennt"
+  da: "Linjernes køreplannavne, komma imellem"
   fr: "Les noms d'horaire des lignes, séparés par des virgules"
   nl: "De dienstregelingsnamen van de lijnen, gescheiden door komma's"
   pl: "Nazwy linii z rozkładu, oddzielone przecinkami"
@@ -1632,6 +1666,7 @@ _version: 2
   uk: "Назви ліній у розкладі, через кому"
 "Put out to tender":
   de: "Ausschreiben"
+  da: "Sæt i udbud"
   fr: "Mettre en appel d'offres"
   nl: "Aanbesteden"
   pl: "Ogłoś przetarg"
@@ -1639,6 +1674,7 @@ _version: 2
   uk: "Виставити на тендер"
 "Opens (empty: now)":
   de: "Öffnet (leer: jetzt)"
+  da: "Åbner (tom: nu)"
   fr: "S'ouvre (vide : maintenant)"
   nl: "Opent (leeg: nu)"
   pl: "Otwiera się (puste: teraz)"
@@ -1646,6 +1682,7 @@ _version: 2
   uk: "Відкривається (порожньо: зараз)"
 "Closes (or days)":
   de: "Schließt (oder Tage)"
+  da: "Lukker (eller dage)"
   fr: "Se clôt (ou jours)"
   nl: "Sluit (of dagen)"
   pl: "Zamyka się (lub dni)"
@@ -1653,6 +1690,7 @@ _version: 2
   uk: "Закривається (або дні)"
 "empty: the rules'":
   de: "leer: nach den Regeln"
+  da: "tom: reglernes"
   fr: "vide : celui des règles"
   nl: "leeg: volgens de regels"
   pl: "puste: według zasad"
@@ -1660,6 +1698,7 @@ _version: 2
   uk: "порожньо: за правилами"
 "Choose the lines":
   de: "Linien wählen"
+  da: "Vælg linjerne"
   fr: "Choisissez les lignes"
   nl: "Kies de lijnen"
   pl: "Wybierz linie"
@@ -1667,6 +1706,7 @@ _version: 2
   uk: "Виберіть лінії"
 "%{l} go out to tender in a moment":
   de: "%{l} werden gleich ausgeschrieben"
+  da: "%{l} kommer i udbud om et øjeblik"
   fr: "%{l} sont mises en appel d'offres dans un instant"
   nl: "%{l} worden zo aanbesteed"
   pl: "%{l} za chwilę trafią do przetargu"
@@ -1674,6 +1714,7 @@ _version: 2
   uk: "%{l} зараз виставляються на тендер"
 "kr.":
   de: "kr."
+  da: "kr."
   fr: "kr."
   nl: "kr."
   pl: "kr."
@@ -1681,6 +1722,7 @@ _version: 2
   uk: "кр."
 "open tender":
   de: "offene Ausschreibung"
+  da: "åbent udbud"
   fr: "appel d'offres ouvert"
   nl: "open aanbesteding"
   pl: "otwarty przetarg"
@@ -1688,6 +1730,7 @@ _version: 2
   uk: "відкритий тендер"
 "Electric buses":
   de: "Elektrobusse"
+  da: "Elbusser"
   fr: "Bus électriques"
   nl: "Elektrische bussen"
   pl: "Autobusy elektryczne"
@@ -1695,6 +1738,7 @@ _version: 2
   uk: "Електробуси"
 "Award directly (emergency service)":
   de: "Direkt vergeben (Notverkehr)"
+  da: "Tildel direkte (nødkørsel)"
   fr: "Attribuer directement (service d'urgence)"
   nl: "Direct gunnen (noodvervoer)"
   pl: "Przyznaj bezpośrednio (komunikacja awaryjna)"
@@ -1702,6 +1746,7 @@ _version: 2
   uk: "Передати напряму (аварійне обслуговування)"
 "The line goes to the company without bidding, at your price a timetable hour; its open tender ends so. A line an operator runs: end its term first (below).":
   de: "Die Linie geht ohne Gebote an die Firma, zu Ihrem Preis je Fahrplanstunde; ihre offene Ausschreibung endet damit. Eine Linie, die ein Betreiber fährt: zuerst seine Laufzeit beenden (unten)."
+  da: "Linjen går til firmaet uden bud, til din pris pr. køreplantime; dens åbne udbud slutter dermed. En linje, som en operatør kører: afslut først dens periode (nedenfor)."
   fr: "La ligne va à l'entreprise sans appel d'offres, à votre prix par heure d'horaire ; son appel d'offres ouvert se termine ainsi. Une ligne qu'un opérateur exploite : terminez d'abord son contrat (ci-dessous)."
   nl: "De lijn gaat zonder biedingen naar het bedrijf, tegen uw prijs per dienstregelingsuur; haar open aanbesteding eindigt daarmee. Een lijn die een vervoerder rijdt: beëindig eerst zijn looptijd (hieronder)."
   pl: "Linia trafia do firmy bez przetargu, po twojej cenie za godzinę rozkładową; jej otwarty przetarg się kończy. Linia, którą obsługuje przewoźnik: najpierw zakończ jego umowę (poniżej)."
@@ -1709,6 +1754,7 @@ _version: 2
   uk: "Лінія переходить до компанії без торгів, за вашою ціною за годину за розкладом; її відкритий тендер на цьому завершується. Лінія оператора: спершу завершіть його строк (нижче)."
 "kr. a timetable hour":
   de: "kr. je Fahrplanstunde"
+  da: "kr. pr. køreplantime"
   fr: "kr. par heure d'horaire"
   nl: "kr. per dienstregelingsuur"
   pl: "kr. za godzinę rozkładową"
@@ -1716,6 +1762,7 @@ _version: 2
   uk: "кр. за годину за розкладом"
 "Award":
   de: "Vergeben"
+  da: "Tildel"
   fr: "Attribuer"
   nl: "Gunnen"
   pl: "Przyznaj"
@@ -1723,6 +1770,7 @@ _version: 2
   uk: "Передати"
 "Sure? No bids, no operators":
   de: "Sicher? Keine Gebote, keine Betreiber"
+  da: "Sikker? Ingen bud, ingen operatører"
   fr: "Sûr ? Ni offres, ni opérateurs"
   nl: "Zeker? Geen biedingen, geen vervoerders"
   pl: "Na pewno? Bez ofert, bez przewoźników"
@@ -1730,6 +1778,7 @@ _version: 2
   uk: "Впевнені? Без заявок і операторів"
 "The companies' contracts":
   de: "Die Verträge der Firmen"
+  da: "Firmaernes kontrakter"
   fr: "Les contrats des entreprises"
   nl: "De contracten van de bedrijven"
   pl: "Umowy firm"
@@ -1737,6 +1786,7 @@ _version: 2
   uk: "Контракти компаній"
 "A contract moved to end sooner goes out to tender as its end nears: not before %{d}.":
   de: "Ein Vertrag, der früher enden soll, wird ausgeschrieben, wenn sein Ende naht: nicht vor dem %{d}."
+  da: "En kontrakt, der flyttes til at slutte før, kommer i udbud, når slutningen nærmer sig: ikke før %{d}."
   fr: "Un contrat avancé est mis en appel d'offres à l'approche de sa fin : pas avant le %{d}."
   nl: "Een contract dat eerder eindigt, wordt aanbesteed als het einde nadert: niet vóór %{d}."
   pl: "Umowa skrócona trafia do przetargu, gdy zbliża się jej koniec: nie przed %{d}."
@@ -1744,6 +1794,7 @@ _version: 2
   uk: "Контракт, перенесений на раніше закінчення, виставляють на тендер ближче до кінця: не раніше %{d}."
 "Cap a timetable hour":
   de: "Obergrenze je Fahrplanstunde"
+  da: "Loft pr. køreplantime"
   fr: "Plafond par heure d'horaire"
   nl: "Plafond per dienstregelingsuur"
   pl: "Limit za godzinę rozkładową"
@@ -1751,6 +1802,7 @@ _version: 2
   uk: "Стеля за годину"
 "Price level":
   de: "Preisniveau"
+  da: "Prisniveau"
   fr: "Niveau des prix"
   nl: "Prijsniveau"
   pl: "Poziom cen"
@@ -1758,6 +1810,7 @@ _version: 2
   uk: "Рівень цін"
 "Denmark: a timetable hour about 1,000 kr.":
   de: "Dänemark: eine Fahrplanstunde etwa 1.000 kr."
+  da: "Danmark: en køreplantime ca. 1.000 kr."
   fr: "Danemark : une heure d'horaire environ 1 000 kr."
   nl: "Denemarken: een dienstregelingsuur ongeveer 1.000 kr."
   pl: "Dania: godzina rozkładowa około 1000 kr."
@@ -1765,6 +1818,7 @@ _version: 2
   uk: "Данія: година за розкладом близько 1000 kr."
 "Each company's own country":
   de: "Das eigene Land jeder Firma"
+  da: "Hvert firmas eget land"
   fr: "Le pays de chaque entreprise"
   nl: "Het eigen land van elk bedrijf"
   pl: "Własny kraj każdej firmy"
@@ -1772,6 +1826,7 @@ _version: 2
   uk: "Своя країна кожної компанії"
 "The companies' wages, fuel and buses, and the authority's estimate in the tenders":
   de: "Löhne, Kraftstoff und Busse der Firmen und die Schätzung des Aufgabenträgers in den Ausschreibungen"
+  da: "Firmaernes løn, brændstof og busser og trafikselskabets overslag i udbuddene"
   fr: "Les salaires, le carburant et les bus des entreprises, et l'estimation de l'autorité dans les appels d'offres"
   nl: "De lonen, brandstof en bussen van de bedrijven, en de raming van de opdrachtgever in de aanbestedingen"
   pl: "Płace, paliwo i autobusy firm oraz szacunek organizatora w przetargach"
@@ -1779,6 +1834,7 @@ _version: 2
   uk: "Зарплати, пальне й автобуси компаній та оцінка замовника в тендерах"
 "How tenders are awarded":
   de: "Wie Ausschreibungen vergeben werden"
+  da: "Sådan tildeles udbud"
   fr: "Attribution des appels d'offres"
   nl: "Hoe aanbestedingen worden gegund"
   pl: "Jak przyznawane są przetargi"
@@ -1786,6 +1842,7 @@ _version: 2
   uk: "Як присуджують тендери"
 "Quality: the operating quality 25 %, the vehicles 10 %, the implementation plan 10 %, the working environment 5 %":
   de: "Qualität: Betriebsqualität 25 %, Fahrzeuge 10 %, Umsetzungsplan 10 %, Arbeitsumfeld 5 %"
+  da: "Kvalitet: driftskvalitet 25 %, materiel 10 %, implementeringsplan 10 %, arbejdsmiljø 5 %"
   fr: "Qualité : qualité d'exploitation 25 %, véhicules 10 %, plan de mise en œuvre 10 %, conditions de travail 5 %"
   nl: "Kwaliteit: exploitatiekwaliteit 25 %, voertuigen 10 %, implementatieplan 10 %, werkomgeving 5 %"
   pl: "Jakość: jakość eksploatacji 25 %, pojazdy 10 %, plan wdrożenia 10 %, środowisko pracy 5 %"
@@ -1793,6 +1850,7 @@ _version: 2
   uk: "Якість: якість експлуатації 25 %, автобуси 10 %, план впровадження 10 %, умови праці 5 %"
 "%{a} + %{b} + %{c} days":
   de: "%{a} + %{b} + %{c} Tage"
+  da: "%{a} + %{b} + %{c} dage"
   fr: "%{a} + %{b} + %{c} jours"
   nl: "%{a} + %{b} + %{c} dagen"
   pl: "%{a} + %{b} + %{c} dni"
@@ -1800,6 +1858,7 @@ _version: 2
   uk: "%{a} + %{b} + %{c} дн."
 "A tender":
   de: "Eine Ausschreibung"
+  da: "Et udbud"
   fr: "Un appel d'offres"
   nl: "Een aanbesteding"
   pl: "Przetarg"
@@ -1807,6 +1866,7 @@ _version: 2
   uk: "Тендер"
 "to prepare, to bid, to the start":
   de: "Vorbereitung, Gebote, bis zum Start"
+  da: "til forberedelse, til bud, til start"
   fr: "préparation, offres, jusqu'au début"
   nl: "voorbereiden, bieden, tot de start"
   pl: "przygotowanie, oferty, do startu"
@@ -1814,6 +1874,7 @@ _version: 2
   uk: "підготовка, ставки, до старту"
 "%{a} / %{b} / %{c} days before":
   de: "%{a} / %{b} / %{c} Tage vorher"
+  da: "%{a} / %{b} / %{c} dage før"
   fr: "%{a} / %{b} / %{c} jours avant"
   nl: "%{a} / %{b} / %{c} dagen ervoor"
   pl: "%{a} / %{b} / %{c} dni przed"
@@ -1821,6 +1882,7 @@ _version: 2
   uk: "за %{a} / %{b} / %{c} дн."
 "A renewal":
   de: "Eine Verlängerung"
+  da: "En fornyelse"
   fr: "Un renouvellement"
   nl: "Een verlenging"
   pl: "Odnowienie"
@@ -1828,6 +1890,7 @@ _version: 2
   uk: "Продовження"
 "announced, opens, decided":
   de: "angekündigt, geöffnet, entschieden"
+  da: "annonceret, åbner, afgjort"
   fr: "annoncé, ouvert, attribué"
   nl: "aangekondigd, open, gegund"
   pl: "ogłoszony, otwarty, rozstrzygnięty"
@@ -1835,6 +1898,7 @@ _version: 2
   uk: "оголошено, відкрито, вирішено"
 "Contract days, diesel/electric":
   de: "Vertragstage, Diesel/Elektro"
+  da: "Kontraktdage, diesel/el"
   fr: "Jours de contrat, diesel/électrique"
   nl: "Contractdagen, diesel/elektrisch"
   pl: "Dni umowy, diesel/elektryczny"
@@ -1842,6 +1906,7 @@ _version: 2
   uk: "Днів контракту, дизель/електро"
 "small · medium · large work: under 1,000, up to 3,000, over 3,000 timetable hours a week":
   de: "kleine · mittlere · große Leistung: unter 1.000, bis 3.000, über 3.000 Fahrplanstunden pro Woche"
+  da: "lille · mellem · stor opgave: under 1.000, op til 3.000, over 3.000 køreplantimer om ugen"
   fr: "petit · moyen · grand service : moins de 1 000, jusqu'à 3 000, plus de 3 000 heures d'horaire par semaine"
   nl: "klein · middel · groot werk: onder 1.000, tot 3.000, boven 3.000 dienstregelingsuren per week"
   pl: "mała · średnia · duża praca: poniżej 1000, do 3000, powyżej 3000 godzin rozkładowych tygodniowo"
@@ -1849,6 +1914,7 @@ _version: 2
   uk: "малий · середній · великий обсяг: до 1000, до 3000, понад 3000 годин за розкладом на тиждень"
 "%{n} × %{d} days":
   de: "%{n} × %{d} Tage"
+  da: "%{n} × %{d} dage"
   fr: "%{n} × %{d} jours"
   nl: "%{n} × %{d} dagen"
   pl: "%{n} × %{d} dni"
@@ -1856,6 +1922,7 @@ _version: 2
   uk: "%{n} × %{d} дн."
 "Option":
   de: "Option"
+  da: "Option"
   fr: "Option"
   nl: "Optie"
   pl: "Opcja"
@@ -1863,6 +1930,7 @@ _version: 2
   uk: "Опціон"
 "when run satisfactorily: not red, at most 2 % of the journeys dropped":
   de: "bei zufriedenstellendem Betrieb: nicht rot, höchstens 2 % der Fahrten ausgefallen"
+  da: "ved tilfredsstillende kørsel: ikke rød, højst 2 % af turene udgået"
   fr: "si l'exploitation est satisfaisante : pas rouge, au plus 2 % des courses supprimées"
   nl: "bij goede uitvoering: niet rood, hoogstens 2 % van de ritten uitgevallen"
   pl: "przy zadowalającej eksploatacji: nie czerwona, najwyżej 2 % kursów odwołanych"
