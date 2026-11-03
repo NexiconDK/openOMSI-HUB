@@ -815,3 +815,109 @@ fn roadworks_are_paid_and_their_lateness_allowed() {
     let k = c.concessions.contracts.iter().find(|k| k.id == id).unwrap();
     assert!(k.record.last().is_some_and(|d| d.unpaid == 2), "{:?}", k.record);
 }
+
+/// (NexiconDK, 3 November 2026) The contract events H4, H5, H7 on a server contract's day: a
+/// breakdown's journeys within the spare bus's 20 minutes are not paid, but neither fined nor
+/// off the bonus nor a default; a journey of the company's own default is all three; a day of
+/// force majeure (snow) drops one without a fine or anything off the bonus; a day nothing ran
+/// pays no contract buses (a winner that could not start); an accident gives default points.
+#[test]
+fn excused_journeys_force_majeure_and_a_day_nothing_ran() {
+    use super::super::contract_events::{ForceMajeure, Majeure};
+    let mut c = company(GameMode::Normal);
+    c.online.on_server = true;
+    let today = c.date.clone();
+    let id = with_contract(&mut c, Kind::Gross, Period::Day, 300_000_00, &today);
+    let k = c.concessions.contracts.iter_mut().find(|k| k.id == id).unwrap();
+    (k.per_hour, k.per_bus_day, k.buses) = (100_00, 200_00, 2);
+    let f = c.contract_index / k.index;
+    let contract = |c: &Company| c.concessions.contracts.iter().find(|k| k.id == id).unwrap().clone();
+    let next = |c: &mut Company| c.date = dates::add(&c.date, 1);
+    // (a breakdown: two journeys within its 20 minutes excused, one run)
+    let mut j = Journeys::default();
+    j.timetabled("Linie5", 90);
+    j.excused("Linie5", "1", 30);
+    j.excused("Linie5", "1", 30);
+    j.ran("Linie5", "1", 0, false, None, None, None);
+    close(&mut c, &j);
+    assert_eq!(booked(&c, BookingKind::Contract), (0.5 * 100_00.0 * f + 2.0 * 200_00.0 * f).round() as Cents, "half an hour run and the buses");
+    assert_eq!(booked(&c, BookingKind::Penalty), 0, "no fine");
+    let k = contract(&c);
+    assert!(k.bonus.lost_minutes == 0 && k.record.iter().all(|d| d.missed == 0 && d.default == 0.0), "{:?} {:?}", k.bonus, k.record);
+    assert_eq!(k.watch.days.last(), Some(&(today.clone(), 3, 0)));
+    // (a journey of its own default: fined, off the bonus, watched)
+    next(&mut c);
+    let mut j = Journeys::default();
+    j.timetabled("Linie5", 60);
+    j.missed("Linie5", "1", 30);
+    j.ran("Linie5", "1", 0, false, None, None, None);
+    close(&mut c, &j);
+    assert!(booked(&c, BookingKind::Penalty) < 0);
+    assert_eq!(contract(&c).bonus.lost_minutes, 30);
+    // (snow, force majeure: the same day is no fine, nothing off the bonus, not watched - and the
+    // journey dropped not paid)
+    next(&mut c);
+    let snow = c.date.clone();
+    c.online.majeure = vec![ForceMajeure { id: 1, kind: Majeure::Snow, from: snow.clone(), until: snow.clone(), ..Default::default() }];
+    close(&mut c, &j);
+    assert_eq!(booked(&c, BookingKind::Penalty), 0);
+    assert_eq!(booked(&c, BookingKind::Contract), (0.5 * 100_00.0 * f + 2.0 * 200_00.0 * f).round() as Cents);
+    let k = contract(&c);
+    assert!(k.bonus.lost_minutes == 30 && k.watch.days.iter().all(|d| d.0 != snow));
+    c.online.majeure.clear();
+    // (nothing ran: no contract buses paid, the journeys fined)
+    next(&mut c);
+    let mut j = Journeys::default();
+    j.timetabled("Linie5", 60);
+    j.missed("Linie5", "1", 30);
+    j.missed("Linie5", "1", 30);
+    close(&mut c, &j);
+    assert_eq!(booked(&c, BookingKind::Contract), 0);
+    assert!(booked(&c, BookingKind::Penalty) < 0);
+    // (an accident of a bus of the line: default points)
+    next(&mut c);
+    let mut j = Journeys::default();
+    j.timetabled("Linie5", 30);
+    j.ran("Linie5", "1", 0, false, None, None, None);
+    j.accident("Linie5");
+    close(&mut c, &j);
+    let k = contract(&c);
+    assert!(k.record.iter().any(|d| d.date == c.date && d.default > 0.0), "{:?}", k.record);
+}
+
+/// (3 November 2026, H8) More than 3 % of a week's journeys dropped: a warning; another such week
+/// within four weeks ends the contract two days later - its concession with it, no bonus.
+#[test]
+fn a_contract_warned_then_ended_for_journeys_dropped() {
+    let mut c = company(GameMode::Normal);
+    c.online.on_server = true;
+    let today = c.date.clone();
+    let id = with_contract(&mut c, Kind::Gross, Period::Day, 300_000_00, &today);
+    let k = c.concessions.contracts.iter_mut().find(|k| k.id == id).unwrap();
+    (k.per_hour, k.per_bus_day, k.buses) = (100_00, 0, 0);
+    let until = k.until.clone();
+    c.concessions.held.push(super::super::concessions::Concession { line: "Linie5".into(), number: "5".into(), from: today.clone(), until: until.clone(), price: 1.0, direct: false, after: String::new(), options: 0, package: String::new(), with: Vec::new() });
+    // (each day 20 journeys, one dropped: 5 %)
+    let mut j = Journeys::default();
+    j.timetabled("Linie5", 600);
+    j.missed("Linie5", "1", 30);
+    for _ in 0..19 {
+        j.ran("Linie5", "1", 0, false, None, None, None);
+    }
+    let mut notes = Vec::new();
+    for _ in 0..14 {
+        let (r, _) = close(&mut c, &j);
+        notes.extend(r.notes);
+        c.date = dates::add(&c.date, 1);
+    }
+    assert!(notes.iter().any(|n| matches!(n, Note::Warned { share, .. } if share == "5.0")), "{notes:?}");
+    let end = notes.iter().find_map(|n| if let Note::Ending { until, .. } = n { Some(until.clone()) } else { None }).expect("ended");
+    let k = c.concessions.contracts.iter().find(|k| k.id == id).unwrap();
+    assert_eq!((k.until.as_str(), k.watch.ending.as_deref()), (end.as_str(), Some(end.as_str())));
+    assert_eq!(c.concessions.held[0].until, end);
+    // (past its end: ended for default, its bonus not paid)
+    c.date = dates::add(&end, 1);
+    tidy(&mut c);
+    let k = c.concessions.contracts.iter().find(|k| k.id == id).unwrap();
+    assert_eq!(k.end, Some(End::Terminated));
+}

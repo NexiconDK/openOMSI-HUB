@@ -1299,7 +1299,8 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
 /// the authority's option: not red, and at most `OPTION_MOST_DROPPED` of its journeys of the term
 /// dropped (its record's journeys not run, against its journeys a day by the days closed).
 pub fn satisfactory(k: &super::bus_contracts::Contract, today: &str) -> bool {
-    if k.rag(today) == super::bus_contracts::Rag::Red {
+    // (3 November 2026: warned or ended by the authority for its journeys dropped - no option, H8)
+    if k.rag(today) == super::bus_contracts::Rag::Red || k.watch.ending.is_some() || k.watch.warned.is_some() {
         return false;
     }
     let days = dates::between(&k.from, today).max(1) as f64;

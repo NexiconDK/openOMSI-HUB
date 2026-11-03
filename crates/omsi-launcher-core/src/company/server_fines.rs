@@ -43,6 +43,10 @@ pub struct Fines {
     /// asked, low entry where low floor only).
     pub wrong_fuel: f64,
     pub wrong_floor: f64,
+    /// (3 November 2026) Each fault the authority's inspection of a contract's buses finds: a
+    /// dirty bus, a damaged one, no passenger information where it is asked
+    /// (`contract_events::inspect`).
+    pub inspection: f64,
 }
 
 /// A departure is early from more than this many seconds before its time, and late - unless
@@ -53,7 +57,7 @@ pub const LATE_MINUTES: i32 = 15;
 
 impl Default for Fines {
     fn default() -> Self {
-        Fines { dropped_minute: 20.83, wrong_bus: 2500.0, diesel_on_electric: 2500.0, driving: 2000.0, temperature: 1500.0, route: 2500.0, ticket: 2500.0, red_light: 2500.0, early: 2500.0, late: 2500.0, wrong_fuel: 2500.0, wrong_floor: 2500.0 }
+        Fines { dropped_minute: 20.83, wrong_bus: 2500.0, diesel_on_electric: 2500.0, driving: 2000.0, temperature: 1500.0, route: 2500.0, ticket: 2500.0, red_light: 2500.0, early: 2500.0, late: 2500.0, wrong_fuel: 2500.0, wrong_floor: 2500.0, inspection: 1000.0 }
     }
 }
 
@@ -81,6 +85,7 @@ impl Fines {
             late: f("fine_late", d.late),
             wrong_fuel: f("fine_wrong_fuel", d.wrong_fuel),
             wrong_floor: f("fine_wrong_floor", d.wrong_floor),
+            inspection: f("fine_inspection", d.inspection),
         }
     }
 }
@@ -169,6 +174,14 @@ pub const BUS_FINES_CFG: &str = "
 # (high floor where low floor or low entry is asked, low entry where low floor only)
 fine_wrong_fuel = 2500
 fine_wrong_floor = 2500
+";
+
+/// (3 November 2026) The fine for each fault of the authority's inspections, added to a
+/// `company-server.cfg` written before it.
+pub const INSPECTION_CFG: &str = "
+# each fault the authority's weekly inspection of a contract's buses finds (kroner): a dirty bus,
+# a damaged one, no passenger information where the tender asks for it
+fine_inspection = 1000
 ";
 
 /// The price level's part of the settings, added to a `company-server.cfg` written before it.

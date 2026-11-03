@@ -76,6 +76,7 @@ export const BCO_FIELDS = [
   ['fine_diesel_on_electric', 'Diesel on an electric contract', 'number'],
   ['fine_wrong_fuel', 'A bus of a fuel the tender does not allow', 'number'],
   ['fine_wrong_floor', 'A bus of a floor the tender does not allow', 'number'],
+  ['fine_inspection', 'A fault the weekly inspection finds', 'number', 'A dirty bus, a damaged one, no passenger information where the tender asks for it'],
   ['fine_early', 'Leaving a stop early', 'number'],
   ['fine_late', 'Late without telling the control room', 'number'],
   ['fine_driving', 'A complaint about the driving', 'number'],
@@ -94,7 +95,7 @@ export const BCO_DEFAULTS = {
   traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
   price_level: 'dk', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
   found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', calendar: 'map', doubling_price: '650', doubling_full: '100', tender_reserve: '10', fine_dropped_minute: '20.83',
-  fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_wrong_fuel: '2500', fine_wrong_floor: '2500', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
+  fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_wrong_fuel: '2500', fine_wrong_floor: '2500', fine_inspection: '1000', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',
 };
 
@@ -515,9 +516,27 @@ export function mountPanel(root, api, opts = {}) {
       h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, hName, hFrom, hUntil,
         btn(tr('Add the holidays'), () => post('events', { do: 'holiday_add', name: hName.value, from: hFrom.value, until: hUntil.value }), 'sp-btn small main')),
       h('div', { class: 'sp-dim' }, tr('As school holidays: the tours of the school holidays run, a contract is paid the timetable hours run and its buses every day.')));
+    // (3 November 2026: force majeure - snow, a storm or a strike: no fines for what is dropped, H5)
+    const kinds = [['snow', 'Snow'], ['storm', 'Storm'], ['strike', 'Strike']];
+    const fmKind = keep('fm:kind', h('select', {}, ...kinds.map(([v, l]) => h('option', { value: v }, tr(l)))));
+    const fmFrom = keep('fm:from', h('input', { type: 'date', style: 'width:150px' }));
+    const fmUntil = keep('fm:until', h('input', { type: 'date', style: 'width:150px' }));
+    const fmMap = keep('fm:map', h('select', {}, h('option', { value: '' }, tr('Every map')), ...d.maps.map((m) => h('option', { value: m.key }, m.map))));
+    const everyone = [...new Map(d.maps.flatMap((m) => m.companies || []).map((c) => [c.id, c])).values()];
+    const fmCompany = keep('fm:company', h('select', {}, h('option', { value: '' }, tr('Every company')), ...everyone.map((c) => h('option', { value: c.id }, c.name))));
+    const fmWeather = keep('fm:weather', h('select', {}, h('option', { value: '' }, tr('As its name says (snow, storm)')), ...(d.weather_files || []).map((f) => h('option', { value: f }, f.replace(/^Weather\//, '')))));
+    const kindName = (k) => tr((kinds.find((x) => x[0] === k) || [k, k])[1]);
+    const majeure = card(tr('Force majeure'),
+      h('div', { class: 'sp-dim' }, tr('Snow or a storm: every world of the map takes its weather, the buses run late and fewer ride. A strike: the duties of the company (or every company) do not run. What is dropped then is not fined, nor off the quality bonus - nor paid.')),
+      (d.force_majeure || []).length ? table([tr('Kind'), tr('From'), tr('Until'), tr('Where'), ''], d.force_majeure.map((f) => h('tr', {}, h('td', {}, h('b', {}, kindName(f.kind))), h('td', {}, f.from), h('td', {}, f.until || f.from),
+        h('td', {}, [f.map ? (d.maps.find((m) => m.key === f.map) || {}).map || f.map : tr('Every map'), f.kind === 'strike' ? ' · ' + (f.company ? (everyone.find((c) => c.id === f.company) || {}).name || f.company : tr('Every company')) : (f.weather ? ' · ' + f.weather.replace(/^Weather\//, '') : '')].join('')),
+        h('td', { class: 'sp-acts' }, sureButton(tr('End'), tr('Sure?'), () => post('events', { do: 'majeure_end', id: f.id })))))) : null,
+      h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, fmKind, fmFrom, fmUntil, fmMap, fmCompany, fmWeather,
+        btn(tr('Declare force majeure'), () => post('events', { do: 'majeure', kind: fmKind.value, from: fmFrom.value, until: fmUntil.value, map: fmMap.value, company: fmKind.value === 'strike' ? fmCompany.value : '', weather: fmKind.value === 'strike' ? '' : fmWeather.value }), 'sp-btn small main')),
+      h('div', { class: 'sp-dim' }, tr('The company is for a strike, the weather for snow or a storm.')));
     const number = (value, width = 90, placeholder = '') => h('input', { type: 'number', min: '0', step: '1', value: value ?? '', placeholder, style: `width:${width}px` });
     const dateIn = (value, min) => h('input', { type: 'date', value: value || '', min: min || '', style: 'width:150px' });
-    return [rules, holidays, ...d.maps.map((m) => {
+    return [rules, holidays, majeure, ...d.maps.map((m) => {
       const open = m.open.map((t) => {
         const at = h('input', { type: 'datetime-local', value: local(t.closes), style: 'width:190px' });
         const cap = number(Math.round(t.cap_hour), 90);

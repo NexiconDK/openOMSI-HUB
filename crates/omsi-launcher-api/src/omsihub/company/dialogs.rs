@@ -538,6 +538,11 @@ fn note_text(n: &Note, easy: bool) -> (String, &'static str, Option<Go>) {
         Note::NotExtended { number, until } => (trf("The contract for line %{n} was not green when its extension was decided: it ends on %{date}, and the line is put out to tender again.", &[("n", number), ("date", &day_label(until))]), "warn", None),
         Note::Terminated { number, cost } => (trf("The authority ended the contract for line %{n}: it was red. The company pays the replacement's extra cost, %{amount}.", &[("n", number), ("amount", &eur(*cost))]), "danger", None),
         Note::Bonus { number, amount, kept, hours, complaints } => (trf("The contract on line %{n} has ended: the authority pays its quality bonus, %{amount} - %{kept} % of the pool after %{hours} timetable hours lost and %{complaints} complaints.", &[("n", number), ("amount", &eur(*amount)), ("kept", &kept.to_string()), ("hours", hours), ("complaints", &complaints.to_string())]), if *kept >= 50 { "ok" } else { "warn" }, None),
+        // (NexiconDK, 3 November 2026: the contract events H6-H8)
+        Note::Inspection { number, buses, dirty, damaged, screens, fine } => (trf("The authority inspected %{buses} buses of line %{n}: %{dirty} dirty, %{damaged} damaged, %{screens} without the passenger information asked - %{amount} in fines.", &[("buses", &buses.to_string()), ("n", number), ("dirty", &dirty.to_string()), ("damaged", &damaged.to_string()), ("screens", &screens.to_string()), ("amount", &eur(*fine))]), if dirty + damaged + screens > 0 { "warn" } else { "ok" }, None),
+        Note::Warned { number, share } => (trf("%{share} % of the journeys of line %{n} were dropped this week, more than 3 %: another such week within four weeks ends the contract.", &[("share", share), ("n", number)]), "danger", None),
+        Note::Ending { number, share, until } => (trf("%{share} % of the journeys of line %{n} were dropped this week, after a warning: the authority ends the contract on %{date}, and the line goes out to tender again.", &[("share", share), ("n", number), ("date", until)]), "danger", None),
+        Note::NotRun { number, journeys } => (trf("Line %{n} of the contract you won is not in service: its %{journeys} journeys today are dropped - fined, and off the quality bonus.", &[("n", number), ("journeys", &journeys.to_string())]), "danger", None),
     }
 }
 

@@ -608,6 +608,11 @@ pub fn bridge(c: &mut Company, date: &str, report: &DayReport) {
             Note::NotExtended { number, until } => add(Kind::Contract, Level::Warn, "", NOT_EXTENDED, vec![arg("n", number), arg("date", until)]),
             Note::Terminated { number, cost } => add(Kind::Contract, Level::Bad, "", TERMINATED, vec![arg("n", number), arg("amount", cost)]),
             Note::Bonus { number, amount, kept, hours, complaints } => add(Kind::Contract, if *kept >= 50 { Level::Good } else { Level::Warn }, "", BONUS, vec![arg("n", number), arg("amount", amount), arg("kept", kept), arg("hours", hours), arg("complaints", complaints)]),
+            // (3 November 2026: the contract events H6-H8)
+            Note::Inspection { number, buses, dirty, damaged, screens, fine } => add(Kind::Contract, if dirty + damaged + screens > 0 { Level::Warn } else { Level::Good }, "", INSPECTION, vec![arg("buses", buses), arg("n", number), arg("dirty", dirty), arg("damaged", damaged), arg("screens", screens), arg("amount", fine)]),
+            Note::Warned { number, share } => add(Kind::Contract, Level::Bad, "", WARNED, vec![arg("share", share), arg("n", number)]),
+            Note::Ending { number, share, until } => add(Kind::Contract, Level::Bad, "", ENDING, vec![arg("share", share), arg("n", number), arg("date", until)]),
+            Note::NotRun { number, journeys } => add(Kind::Lines, Level::Bad, "", NOT_RUN, vec![arg("n", number), arg("journeys", journeys)]),
         }
     }
     for s in &report.staff {
@@ -682,6 +687,10 @@ const EXTENDED: (&str, &str) = ("Contract extended", "The contract for line %{n}
 const NOT_EXTENDED: (&str, &str) = ("No extension", "The contract for line %{n} was not green when its extension was decided: it ends on %{date}, and the line is put out to tender again.");
 const TERMINATED: (&str, &str) = ("Contract ended for default", "The authority ended the contract for line %{n}: it was red. The company pays the replacement's extra cost, %{amount}.");
 /// (NexiconDK, 3 November 2026) A server contract's quality bonus at its end.
+const INSPECTION: (&str, &str) = ("The authority's inspection", "The authority inspected %{buses} buses of line %{n}: %{dirty} dirty, %{damaged} damaged, %{screens} without the passenger information asked - %{amount} in fines.");
+const WARNED: (&str, &str) = ("Warning from the authority", "%{share} % of the journeys of line %{n} were dropped this week, more than 3 %: another such week within four weeks ends the contract.");
+const ENDING: (&str, &str) = ("Contract ended for journeys dropped", "%{share} % of the journeys of line %{n} were dropped this week, after a warning: the authority ends the contract on %{date}, and the line goes out to tender again.");
+const NOT_RUN: (&str, &str) = ("Line not in service", "Line %{n} of the contract you won is not in service: its %{journeys} journeys today are dropped - fined, and off the quality bonus.");
 const BONUS: (&str, &str) = ("Quality bonus paid", "The contract on line %{n} has ended: the authority pays its quality bonus, %{amount} - %{kept} % of the pool after %{hours} timetable hours lost and %{complaints} complaints.");
 /// (#96: the day ran the saved planning, not RosterFlow's draft)
 pub const UNSAVED: (&str, &str) = ("RosterFlow not saved", "RosterFlow had changes of this day that were not saved: the day ran the saved blocks and duties. Save them in RosterFlow (or discard them) so the day runs what it shows.");
@@ -705,7 +714,7 @@ pub fn texts() -> Vec<&'static str> {
     out.extend(Kind::ALL.iter().map(|k| k.label()));
     out.extend(["It is today.", "It begins today and lasts until %{until}.", "It is over: everything is as usual again."]);
     for (a, b) in [
-        WELCOME, BREAKDOWN, BREAKDOWN_ON, SERVICE, RETURNED, LOAN_PAID, MONTH, BUILT, BAY_WAIT, WON, LOST, ENDED, NOT_STARTED, ACCIDENT, EXTENDED, NOT_EXTENDED, TERMINATED, BONUS, UNSAVED, ILL, HOLIDAY, RESIGNED, UNHAPPY, LEFT, RATES, UNCOVERED, PENALTIES, FINES, COMPLAINTS, CROWDED, IN_THE_RED, LOW_CASH,
+        WELCOME, BREAKDOWN, BREAKDOWN_ON, SERVICE, RETURNED, LOAN_PAID, MONTH, BUILT, BAY_WAIT, WON, LOST, ENDED, NOT_STARTED, ACCIDENT, EXTENDED, NOT_EXTENDED, TERMINATED, BONUS, INSPECTION, WARNED, ENDING, NOT_RUN, UNSAVED, ILL, HOLIDAY, RESIGNED, UNHAPPY, LEFT, RATES, UNCOVERED, PENALTIES, FINES, COMPLAINTS, CROWDED, IN_THE_RED, LOW_CASH,
     ] {
         out.extend([a, b]);
     }

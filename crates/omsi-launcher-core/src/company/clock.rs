@@ -531,6 +531,11 @@ fn told_notes(c: &Company, date: &str) -> Vec<(i64, String, Vec<(String, String)
             Note::NotExtended { number, until } => (0, "The contract of line %{n} is not extended: it ends on %{date}", vec![arg("n", number), arg("date", until)], Level::Warn),
             Note::Terminated { number, cost } => (0, "The authority ended the contract of line %{n}: %{amount}", vec![arg("n", number), arg("amount", cost)], Level::Bad),
             Note::Bonus { number, amount, kept, .. } => (0, "The quality bonus of line %{n}'s contract: %{amount}, %{kept} % of its pool", vec![arg("n", number), arg("amount", amount), arg("kept", kept)], if *kept >= 50 { Level::Good } else { Level::Warn }),
+            // (3 November 2026: the contract events H6-H8)
+            Note::Inspection { number, buses, dirty, damaged, screens, fine } => (0, "The authority inspected %{buses} buses of line %{n}: %{faults} faults, %{amount}", vec![arg("buses", buses), arg("n", number), arg("faults", dirty + damaged + screens), arg("amount", fine)], if dirty + damaged + screens > 0 { Level::Warn } else { Level::Good }),
+            Note::Warned { number, share } => (0, "The authority warns: %{share} % of line %{n}'s journeys dropped this week", vec![arg("share", share), arg("n", number)], Level::Bad),
+            Note::Ending { number, share, until } => (0, "The authority ends the contract of line %{n} on %{date}: %{share} % of its journeys dropped", vec![arg("n", number), arg("date", until), arg("share", share)], Level::Bad),
+            Note::NotRun { number, journeys } => (0, "Line %{n} is not in service: its %{journeys} journeys were dropped", vec![arg("n", number), arg("journeys", journeys)], Level::Bad),
             Note::Breakdown { .. } | Note::LoanPaid { .. } | Note::Lost { .. } | Note::Unsaved => continue,
         };
         out.push((x.0, x.1.to_string(), x.2, x.3));
@@ -1024,6 +1029,11 @@ fn apply(c: &mut Company, due: Due, quick: bool, run: &mut Run) {
                     tell(c, run, when, text, vec![arg("bus", &b.bus), arg("n", &b.line)], Level::Bad);
                     // (the inbox says it at once, with the spare buses free: wherever the player is)
                     post_break(c, index);
+                    // (3 November 2026: a player driving the bus live is told to set his passengers
+                    // down - the spare runs the rest of the block, H4)
+                    if c.online.on_server {
+                        super::contract_events::tell_driver(c, b.vehicle, b.accident);
+                    }
                     if asks && !c.clock.dispatcher {
                         c.clock.ask = Some(Ask::Breakdown { index });
                     } else {

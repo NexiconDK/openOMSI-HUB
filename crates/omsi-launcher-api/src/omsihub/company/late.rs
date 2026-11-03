@@ -142,7 +142,7 @@ pub fn dropped_text(c: &Company, why: DropWhy, problem: Option<Problem>, bus: Op
             Some(b) => format!("{}: {}", tr(why.label()), b),
             None => tr(why.label()),
         },
-        DropWhy::NoBlock | DropWhy::Left | DropWhy::Cancelled => tr(why.label()),
+        DropWhy::NoBlock | DropWhy::Left | DropWhy::Cancelled | DropWhy::Strike | DropWhy::NotStarted => tr(why.label()),
     }
 }
 

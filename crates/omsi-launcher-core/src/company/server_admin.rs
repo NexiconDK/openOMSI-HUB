@@ -507,7 +507,7 @@ fn market(api: &Api) -> Value {
         .collect();
     // (3 November 2026: the server's calendar and the admin's holidays - `contract_events`)
     let calendar = if super::contract_events::danish(&m.data) { "dk" } else { "map" };
-    json!({ "maps": maps, "rules": rules, "today": today, "earliest_end": dates::add(&today, shared_tenders::RENEW_ANNOUNCED), "calendar": calendar, "holidays": super::contract_events::load_periods(&m.data), "must_accept": super::contract_events::must_accept(&m.data), "change_days": super::contract_events::CHANGE_DAYS })
+    json!({ "maps": maps, "rules": rules, "today": today, "earliest_end": dates::add(&today, shared_tenders::RENEW_ANNOUNCED), "calendar": calendar, "holidays": super::contract_events::load_periods(&m.data), "must_accept": super::contract_events::must_accept(&m.data), "change_days": super::contract_events::CHANGE_DAYS, "force_majeure": super::contract_events::load_majeure(&m.data), "weather_files": super::contract_events::installed_weather(&m.cfg.root) })
 }
 
 /// The last `TAIL` lines of a file.
@@ -850,6 +850,18 @@ fn events_do(api: &Api, a: &Value) -> Result<String, String> {
             let rw = ev::end_roadwork(&data, int("id") as u32)?;
             format!("the roadworks on line {} ended", rw.number)
         }
+        // (H5: snow, a storm or a strike - force majeure)
+        "majeure" => {
+            let kind = ev::Majeure::of_key(&s("kind")).ok_or("snow, storm or strike")?;
+            let from = if s("from").is_empty() { today.clone() } else { s("from") };
+            let fm = ev::add_majeure(&data, ev::ForceMajeure { kind, from, until: s("until"), map: s("map"), company: s("company"), weather: s("weather"), ..Default::default() })?;
+            let whose = if fm.kind == ev::Majeure::Strike { if fm.company.is_empty() { ", every company".to_string() } else { format!(", company {}", fm.company) } } else { String::new() };
+            format!("force majeure: {} from {} to {}{}{whose}", fm.kind.key(), fm.from, fm.until, if fm.map.is_empty() { String::new() } else { format!(" on {}", fm.map) })
+        }
+        "majeure_end" => {
+            let fm = ev::end_majeure(&data, int("id") as u32)?;
+            format!("the force majeure ({}, {} to {}) ended", fm.kind.key(), fm.from, fm.until)
+        }
         "change" => {
             let (company, line, other) = (s("company"), s("line"), s("other"));
             let kind = match s("kind").as_str() {
@@ -870,7 +882,7 @@ fn events_do(api: &Api, a: &Value) -> Result<String, String> {
             let may = if ch.decline_by.is_empty() { String::new() } else { format!(", the company may decline it until {}", ch.decline_by) };
             format!("the contract {} of {} changes from {}: {:.0} → {:.0} timetable hours a week, {} → {} buses{may} (taken at its next step)", ch.name, c.name, ch.from, ch.hours_before, ch.hours_after, ch.buses_before, ch.buses_after)
         }
-        _ => return Err("change, holiday_add, holiday_remove, roadworks or roadworks_end".into()),
+        _ => return Err("change, holiday_add, holiday_remove, roadworks, roadworks_end, majeure or majeure_end".into()),
     };
     m.say(&format!("admin panel: {said}"));
     Ok(said)

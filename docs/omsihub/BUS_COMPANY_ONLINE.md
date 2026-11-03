@@ -1493,6 +1493,58 @@ Decided: what may happen to a contract during its term (the plan's H1-H3), in `c
 
 Tested: `contract_events::tests`, `bus_contracts::tests::roadworks_are_paid_and_their_lateness_allowed`.
 
+### Contract events: breakdowns, force majeure, inspections, a winner that cannot start, termination (3 November 2026)
+
+Decided: the plan's H4-H8 (T2-T4), in `contract_events`.
+
+- **H4 breakdowns: the spare bus has 20 minutes.** The company's day draws breakdowns and
+  accidents as ever (`clock`: by the bus's condition, its service due, its drivers; a spare bus
+  from the depot after `SPARE_MINUTES` 30, after `SPARE_LINE_MINUTES` 20 with a standby duty at
+  the depot, a rental after 45). On a server contract the journeys lost within
+  `BREAKDOWN_ALLOWED` (20) minutes of it are excused (`Journeys::excused`: not paid, but no
+  default, no fine, nothing off the bonus); those lost after it - the spare came later, a rental,
+  none - are dropped as any. The planner chooses spare, rental or drop; nobody there, the control
+  room. A player driving the bus live is told at once (`tell_driver`: an urgent message to his
+  duty - drive to the next stop, set the passengers down; the spare runs the rest of the block as
+  the AI), and may say it himself with the drivers' quick buttons "Breakdown" and "Accident"
+  (`messages::Quick`, the day's incident as the clock's own). T2: an accident on a server keeps
+  its bus 1-3 days in the workshop (`ACCIDENT_DAYS`) and gives the contract of its line
+  `ACCIDENT_POINTS` default points (its operating quality).
+- **H5 force majeure.** The admin panel's market tab "Force majeure": snow, a storm or a strike,
+  its days, a map or every map, and - a strike - a company or every company (`force_majeure.json`).
+  Each company it touches takes it at its next step (`majeure_step`; snow and a storm also as the
+  inbox's weather event: its buses held up, fewer passengers, a day of bad weather for its
+  contracts' timing). On its days the journeys dropped are not paid, but no default, no fine,
+  nothing off the bonus, and the authority's week does not count them (H8); a strike's company
+  runs none of its duties (`day`'s `DropWhy::Strike`). Snow or a storm: every running world of the
+  map takes its weather (`MainServer::force_majeure_weather`, the world's admin command
+  `weather set …` through its admin door on the machine): the admin's file, or the first installed
+  weather whose name says it (Schnee, snow, ice … / Gewitter, Sturm, storm …: `weather_file`),
+  and when it ends CAVOK or the first clear one again (`clear_weather`).
+- **H6 inspections (T3).** Every `INSPECT_EVERY` (7) days of a server contract's term (its fourth
+  day first) the authority looks at two or three of the buses that ran it that day (`inspect`):
+  each dirty one (cleanliness under 50), damaged one (condition under 50) and - where its tender
+  asks for screens - one without passenger information (the bus list's flag) is a fault, fined
+  `fine_inspection` (1,000 kr., the admin panel's "A fault the weekly inspection finds") and
+  `INSPECTION_POINTS` default points. The day's report and the inbox say what was found.
+- **H7 the winner cannot start.** A server contract's line not in service runs nothing: its tours
+  of the day are dropped (`DropWhy::NotStarted`) - fined by the minute, off the bonus, watched -,
+  the day pays no contract buses (every timetabled minute dropped), and the report says how many
+  (`Note::NotRun`). The single player's "not started" charge is not taken on a server.
+- **H8 termination (T4).** The contract keeps its days' journeys and those dropped of its own
+  default (`bus_contracts::Watch`; force majeure's days not). On each seventh day of its term
+  `watch_week` judges the week: more than 3 % dropped (`DROPPED_MOST`) is a warning
+  (`Note::Warned`); another such week within four weeks (`WARNED_DAYS`) ends it two days later
+  (`NOTICE_DAYS`, `Note::Ending`): its last day and its concession's move there, it is ended for
+  default (`End::Terminated`: no quality bonus, no extension, no option - a warned contract takes
+  no option either) and its line goes out to tender again as an ending contract's does.
+
+Tested: `contract_events::tests` (`a_breakdown_has_twenty_minutes_and_its_live_driver_is_told`,
+`force_majeure_snow_a_storm_a_strike`, `the_weekly_inspection_finds_dirty_and_damaged_buses`,
+`a_line_not_started_drops_its_journeys`, `the_authority_judges_each_week`),
+`bus_contracts::tests::excused_journeys_force_majeure_and_a_day_nothing_ran`,
+`bus_contracts::tests::a_contract_warned_then_ended_for_journeys_dropped`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

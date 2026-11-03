@@ -310,6 +310,14 @@ impl MainCfg {
             }
             text.push_str(super::server_fines::BUS_FINES_CFG);
         }
+        // (3 November 2026) the inspections' fine
+        if !text.lines().any(|l| l.trim_start().starts_with("fine_inspection")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(super::server_fines::INSPECTION_CFG.as_bytes());
+            }
+            text.push_str(super::server_fines::INSPECTION_CFG);
+        }
         // (3 November 2026) the price level
         if !text.lines().any(|l| l.trim_start().starts_with("price_level")) {
             use std::io::Write;
@@ -644,6 +652,9 @@ pub struct MainServer {
     pub code: Option<String>,
     /// (1 November 2026) The door's tunnel on the internet, when it is up (for the admin panel).
     pub tunnel_url: Option<String>,
+    /// (3 November 2026) The weather each running world was told for force majeure (its folder:
+    /// the force majeure's id, 0 its end's clear weather - `force_majeure_weather`).
+    weather_sent: HashMap<PathBuf, u32>,
     /// The folder taken for this main server, as long as it runs.
     _lock: std::fs::File,
 }
@@ -668,7 +679,7 @@ impl MainServer {
         // (the tickets' secret: the companies' processes check the players with it)
         online::server_secret(data)?;
         let players = Players::load(data)?;
-        let mut m = MainServer { data: data.to_path_buf(), cfg, clock, companies: Vec::new(), held: HashMap::new(), said: HashMap::new(), worlds: Vec::new(), machine: Default::default(), load: None, players, code: None, tunnel_url: None, _lock: lock };
+        let mut m = MainServer { data: data.to_path_buf(), cfg, clock, companies: Vec::new(), held: HashMap::new(), said: HashMap::new(), worlds: Vec::new(), machine: Default::default(), load: None, players, code: None, tunnel_url: None, weather_sent: HashMap::new(), _lock: lock };
         online::bump_plans(data)?;
         // (phase 7: a head office of before - a company with depots - split into its group's
         // head office and a depot, before any company's process runs)
@@ -704,6 +715,8 @@ impl MainServer {
         self.markets();
         // (phase 6: the worlds kept running while the machine can carry them)
         self.keep_worlds(unix_now() as f64);
+        // (3 November 2026: snow or a storm the admin declared - the worlds' weather, H5)
+        self.force_majeure_weather();
         // (phase 7: the groups' head offices a step on)
         self.groups();
         let mut n = 0;
@@ -1047,6 +1060,52 @@ impl MainServer {
     /// players since when (`world_status`; one still starting counts as busy), and the machine's
     /// load - over the limits while the worlds are kept running, the world empty the longest is
     /// stopped (one a look).
+    /// (NexiconDK, 3 November 2026) Force majeure of snow or a storm on a running world's map
+    /// (`contract_events::ForceMajeure`): the world takes its weather - the admin's file, or the
+    /// first installed one whose name says it (`weather_file`) - through its admin door on this
+    /// machine (`weather set …`, the world's admin command), once; when it ends the clear weather
+    /// again (`clear_weather`). Every player of the world sees it: the host sends the weather.
+    fn force_majeure_weather(&mut self) {
+        let (date, _) = self.clock.at_real(unix_now() as f64);
+        let all = super::contract_events::load_majeure(&self.data);
+        if all.is_empty() && self.weather_sent.is_empty() {
+            return;
+        }
+        let files = super::contract_events::installed_weather(&self.cfg.root);
+        let mut sent: Vec<(PathBuf, Option<u32>)> = Vec::new();
+        for w in self.worlds.iter().filter(|w| w.running()) {
+            let key = super::shared_tenders::key_of(&w.map);
+            let want = all.iter().find(|f| f.on(&date) && f.kind != super::contract_events::Majeure::Strike && (f.map.is_empty() || f.map == key));
+            let had = self.weather_sent.get(&w.dir).copied();
+            let (file, id) = match want {
+                Some(f) if had != Some(f.id) => (super::contract_events::weather_file(f, &files), f.id),
+                None if had.is_some_and(|x| x != 0) => (super::contract_events::clear_weather(&files), 0),
+                _ => continue,
+            };
+            let Some(file) = file else {
+                warn!("{}: no weather file for the force majeure (name one in the admin panel)", map_name(&w.map));
+                sent.push((w.dir.clone(), Some(id)));
+                continue;
+            };
+            let url = format!("http://127.0.0.1:{}/admin", w.web_port);
+            match omsi_net::http::request("POST", &url, &[("X-Admin-Password", &self.cfg.admin_password)], Some(&format!("weather set {file}\n")), Duration::from_secs(5)) {
+                Ok((code, _)) if code < 300 => {
+                    info!("{}: the weather is {file} (force majeure)", map_name(&w.map));
+                    sent.push((w.dir.clone(), Some(id)));
+                }
+                Ok((code, text)) => warn!("{}: its weather not set ({code}: {text})", map_name(&w.map)),
+                Err(e) => warn!("{}: its weather not set ({e})", map_name(&w.map)),
+            }
+        }
+        for (dir, id) in sent {
+            match id {
+                Some(id) => self.weather_sent.insert(dir, id),
+                None => self.weather_sent.remove(&dir),
+            };
+        }
+        self.weather_sent.retain(|d, _| self.worlds.iter().any(|w| &w.dir == d));
+    }
+
     fn keep_worlds(&mut self, now: f64) {
         use super::server_machine::{to_stop, LOOK_EVERY};
         if now - self.machine.looked < LOOK_EVERY {

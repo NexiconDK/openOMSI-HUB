@@ -341,6 +341,15 @@ pub enum Note {
     /// (`bus_contracts::Bonus`) - the share of its pool kept (per cent) after the timetable hours
     /// lost and the complaints.
     Bonus { number: String, amount: Cents, kept: u32, hours: String, complaints: u32 },
+    /// (NexiconDK, 3 November 2026) The authority inspected buses of a contract (H6): how many,
+    /// those dirty, damaged and without the passenger information asked, and the fine.
+    Inspection { number: String, buses: u32, dirty: u32, damaged: u32, screens: u32, fine: Cents },
+    /// (3 November 2026) The authority's warning: the week's share of a contract's journeys
+    /// dropped (per cent), and its end for another such week (H8).
+    Warned { number: String, share: String },
+    Ending { number: String, share: String, until: String },
+    /// (3 November 2026) A contract line not in service: its journeys of the day dropped (H7).
+    NotRun { number: String, journeys: u32 },
 }
 
 /// Why trips of the day were dropped (#96: the report says why each was).
@@ -364,10 +373,16 @@ pub enum DropWhy {
     Left,
     /// Service control cancelled it (`control::Act::Cancel`).
     Cancelled,
+    /// (NexiconDK, 3 November 2026) The drivers strike: force majeure the server's admin declared
+    /// (`contract_events::ForceMajeure`).
+    Strike,
+    /// (NexiconDK, 3 November 2026) Its contract line is not in service: the winner of its tender
+    /// could not start (H7).
+    NotStarted,
 }
 
 impl DropWhy {
-    pub const LABELS: [&'static str; 8] = ["No bus", "No driver", "The bus broke down on the way", "The driver came late", "On no bus: the trips wait on RosterFlow's stack", "The bus had an accident on the way", "Its player left the duty", "Cancelled by service control"];
+    pub const LABELS: [&'static str; 10] = ["No bus", "No driver", "The bus broke down on the way", "The driver came late", "On no bus: the trips wait on RosterFlow's stack", "The bus had an accident on the way", "Its player left the duty", "Cancelled by service control", "The drivers strike", "The line is not in service"];
 
     pub fn label(self) -> &'static str {
         Self::LABELS[self as usize]
@@ -624,6 +639,9 @@ pub fn close_day(c: &mut Company, tours: Vec<TourOfDay>, trips: &[TripRun]) -> D
 /// line in service they are dropped too, with the contract's penalty (#96: the day left them
 /// out as if the timetable had none).
 pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(String, network::PlannedTrip)], trips: &[TripRun]) -> DayReport {
+    // (3 November 2026: a contract line of the server's not in service - the winner of its tender
+    // could not start: its tours run nothing, their journeys are dropped - H7)
+    let not_started: Vec<TourOfDay> = if c.online.on_server { tours.iter().filter(|t| t.unplanned && super::bus_contracts::on_line(c, &t.line, &c.date).is_some_and(|k| k.per_hour > 0)).cloned().collect() } else { Vec::new() };
     // (only what is planned runs: a line not in service books nothing)
     let tours = network::in_service_only(tours);
     // (the passengers answer the fares: `fares`)
@@ -677,6 +695,29 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     let mut timed = 0u32;
     // (every journey of the day for the bus contracts to judge: `bus_contracts::close_day`)
     let mut journeys = super::bus_contracts::Journeys::default();
+    // (3 November 2026: on a server - the drivers on strike, force majeure (H5); the buses that
+    // had an accident (H4); the journeys of a contract line not in service, dropped (H7))
+    let on_server = c.online.on_server;
+    let struck = on_server && super::contract_events::struck(c, &date);
+    let mut crashed: Vec<u32> = Vec::new();
+    for t in &not_started {
+        let counted: Vec<&network::PlannedTrip> = t.trips.iter().filter(|x| x.counts()).collect();
+        if let (Some(a), Some(b)) = (counted.first(), counted.last()) {
+            journeys.timetabled(&t.line, b.arr - a.dep);
+        }
+        for x in &counted {
+            journeys.missed(&t.line, &t.tour, x.arr - x.dep);
+            note_drop(&mut report.drops, &t.line, &t.number, &t.tour, None, x, DropWhy::NotStarted, None, None);
+        }
+        report.dropped += counted.len() as u32;
+        if let Some(l) = lines.iter_mut().find(|l| l.line.eq_ignore_ascii_case(&t.line)) {
+            l.dropped += counted.len() as u32;
+        }
+        match report.notes.iter_mut().find(|n| matches!(n, Note::NotRun { number, .. } if *number == t.number)) {
+            Some(Note::NotRun { journeys: j, .. }) => *j += counted.len() as u32,
+            _ => report.notes.push(Note::NotRun { number: t.number.clone(), journeys: counted.len() as u32 }),
+        }
+    }
 
     // 1. what the player drove himself (measured)
     let mut player: Vec<(String, String)> = Vec::new();
@@ -871,6 +912,12 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         // (a bus broken down or crashed: the trips from then are lost, but those the bus sent
         // for it runs - from when it came, until it had to go: `clock::Cut`)
         let broken_at = tp.bus.and_then(|b| cut.iter().find(|x| x.vehicle == b)).copied();
+        // (3 November 2026: an accident of the bus on a server contract's line - its default
+        // points, once a bus: H4/T2)
+        if let Some(x) = broken_at.filter(|x| x.accident && on_server && !crashed.contains(&x.vehicle)) {
+            crashed.push(x.vehicle);
+            journeys.accident(&tp.tour.line);
+        }
         // (a spare bus sent for it runs the trips after it came: its kilometres, its wear)
         let spare = tp.bus.and_then(|b| super::clock::spare_of(c, &date, b)).and_then(|id| c.vehicle(id)).cloned();
         for (k, d) in tp.duties.iter().enumerate() {
@@ -933,6 +980,8 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                 let left = ai && super::together::book::dropped_runs(c, &date, &tp.tour.line, &tp.tour.tour, k, j - d.start, tp.tour.trips[j].whole_dep());
                 let fate = if left {
                     Some((DropWhy::Left, None, Some(k)))
+                } else if struck {
+                    Some((DropWhy::Strike, None, Some(k)))
                 } else if super::control::cancelled(c, &date, &tp.tour.line, &tp.tour.tour, trip.dep) {
                     Some((DropWhy::Cancelled, None, Some(k)))
                 } else {
@@ -942,10 +991,16 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                     if counts {
                         lines[li].dropped += 1;
                         report.dropped += 1;
-                        if !extra {
-                            journeys.missed(&tp.tour.line, &tp.tour.tour, trip.arr - trip.dep);
-                        }
                         let broke = broken_at.is_some_and(|x| x.lost(trip.dep));
+                        if !extra {
+                            // (3 November 2026: on a server contract a breakdown's journeys within
+                            // the spare bus's 20 minutes are not the company's default - H4)
+                            if on_server && broke && broken_at.is_some_and(|x| super::contract_events::excused_breakdown(x.at, trip.dep)) {
+                                journeys.excused(&tp.tour.line, &tp.tour.tour, trip.arr - trip.dep);
+                            } else {
+                                journeys.missed(&tp.tour.line, &tp.tour.tour, trip.arr - trip.dep);
+                            }
+                        }
                         let sent = broken_at.filter(|_| broke).and_then(|x| x.back.map(|b| (b, x.until)));
                         // (the bus and the driver it had, or the roster's that could not come)
                         let o = super::lateness::dropped(c, &date, tp, k, trip, why, problem);
@@ -1133,8 +1188,9 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     if tally.fine_cost > 0 {
         c.book(BookingKind::Fine, -tally.fine_cost, format!("Traffic fines of the drivers ({})", tally.fines), false);
     }
-    // a concession not in service after its grace: the authority charges for the day
-    for (li, cl) in c.lines.clone().iter().enumerate() {
+    // a concession not in service after its grace: the authority charges for the day (3 November
+    // 2026: on a server its journeys are dropped and fined instead - H7)
+    for (li, cl) in c.lines.clone().iter().enumerate().filter(|_| !on_server) {
         if let Some((days, charge)) = network::late_start(c, cl, &date) {
             c.book(BookingKind::Penalty, -charge, format!("Line {}: service not started", cl.number), false);
             report.penalties += charge;
@@ -1170,7 +1226,8 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         if let Some(x) = cut.iter().find(|x| x.vehicle == v.id && x.accident) {
             // (an accident: in the workshop for its damage, booked with the day's accidents)
             let mut crash = Rng::of(&[&c.id, "crash-days", &x.vehicle.to_string()], dates::parse(&date).unwrap_or(0));
-            let days = crash.int(2, 4);
+            // (3 November 2026: on a server 1 to 3 days - T2)
+            let days = if on_server { crash.int(super::contract_events::ACCIDENT_DAYS.0, super::contract_events::ACCIDENT_DAYS.1) } else { crash.int(2, 4) };
             let days = if mechanics > 0 { (days - 1).max(1) } else { days };
             v.workshop_until = Some(dates::add(&date, days));
             v.condition = (v.condition - 8.0).max(0.0);

@@ -252,6 +252,10 @@ pub struct Contract {
     /// at its end.
     #[serde(default, skip_serializing_if = "Bonus::is_none")]
     pub bonus: Bonus,
+    /// (NexiconDK, 3 November 2026) Its days' journeys and those dropped, and the authority's
+    /// warning and notice (`contract_events::watch_week`, H8).
+    #[serde(default, skip_serializing_if = "Watch::is_none")]
+    pub watch: Watch,
     /// The work it was agreed for: the tender's, changed by its variations (None: an older
     /// file's, `variations::work_of`).
     #[serde(default)]
@@ -677,6 +681,7 @@ pub fn make(c: &mut Company, line: &str, number: &str, kind: Kind, period: Perio
         per_bus_day: 0,
         buses: 0,
         bonus: Bonus::default(),
+        watch: Watch::default(),
     }
 }
 
@@ -734,6 +739,24 @@ impl Bonus {
 
 /// (NexiconDK, 3 November 2026) The quality bonuses of the contracts whose term ended (expired,
 /// on `date` or before) and that are not paid yet: each booked as the contract's payment and told.
+/// (NexiconDK, 3 November 2026) A server contract's days as the authority watches them (H8): each
+/// day its journeys and those dropped (not those excused: a breakdown's 20 minutes, force
+/// majeure), the last `contract_events::WATCH_KEPT`; the day of its last warning, and the last day
+/// it was ended for (None: none).
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct Watch {
+    pub days: Vec<(String, u32, u32)>,
+    pub warned: Option<String>,
+    pub ending: Option<String>,
+}
+
+impl Watch {
+    pub fn is_none(&self) -> bool {
+        *self == Watch::default()
+    }
+}
+
 pub fn pay_bonuses(c: &mut Company, date: &str) -> Vec<Note> {
     let due: Vec<u32> = c.concessions.contracts.iter().filter(|k| k.end == Some(End::Expired) && k.bonus.pool > 0 && k.bonus.paid_on.is_empty()).map(|k| k.id).collect();
     let mut notes = Vec::new();
@@ -817,7 +840,8 @@ pub fn tidy(c: &mut Company) {
         }
         if dates::between(&k.until, &today) > 0 {
             k.ended = Some(k.until.clone());
-            k.end = Some(End::Expired);
+            // (3 November 2026: ended by the authority for its journeys dropped - no bonus, H8)
+            k.end = Some(if k.watch.ending.is_some() { End::Terminated } else { End::Expired });
         }
         if k.kind == Kind::Net && k.fare_base.is_none() {
             k.fare_base = fares.iter().find(|f| f.0.eq_ignore_ascii_case(&k.line)).map(|f| f.1);
@@ -849,7 +873,8 @@ pub enum Event {
 pub fn extend_due(c: &mut Company) -> Vec<Event> {
     let today = c.date.clone();
     let mut out = Vec::new();
-    let due: Vec<u32> = c.concessions.contracts.iter().filter(|k| k.live() && k.decided != k.until && dates::between(&today, &k.until) <= super::concessions::RENEW_BEFORE && dates::between(&k.from, &today) >= 0).map(|k| k.id).collect();
+    // (3 November 2026: not one the authority ends for its journeys dropped - H8)
+    let due: Vec<u32> = c.concessions.contracts.iter().filter(|k| k.live() && k.watch.ending.is_none() && k.decided != k.until && dates::between(&today, &k.until) <= super::concessions::RENEW_BEFORE && dates::between(&k.from, &today) >= 0).map(|k| k.id).collect();
     for id in due {
         let Some(k) = c.concessions.contracts.iter_mut().find(|k| k.id == id) else { continue };
         k.decided = k.until.clone();
@@ -935,6 +960,10 @@ struct Journey {
     /// Its timetabled minutes (a journey not run: the authority's fine by the minute on the
     /// server, `server_fines`).
     length: i32,
+    /// (NexiconDK, 3 November 2026) Not run, but not the company's fault: lost within the spare
+    /// bus's 20 minutes of a breakdown (`contract_events::BREAKDOWN_ALLOWED`) - not paid, not
+    /// fined, nothing off the bonus.
+    excused: bool,
 }
 
 /// The day's journeys of every line with passengers, as the close runs them (`day::close_day`
@@ -954,6 +983,8 @@ pub struct Journeys {
     /// tours of doubling orders run or not (`doubling`): none of the contract's journeys.
     full: Vec<super::doubling::Full>,
     doubled: Vec<Doubled>,
+    /// (3 November 2026) The lines whose buses had an accident today, one each (H4).
+    accidents: Vec<String>,
 }
 
 /// (NexiconDK, 3 November 2026) An extra tour of a doubling order of the day (`doubling`): its
@@ -990,7 +1021,18 @@ impl Journeys {
 
     /// A journey not run (dropped, or on no bus), of `length` timetabled minutes.
     pub fn missed(&mut self, line: &str, tour: &str, length: i32) {
-        self.list.push(Journey { line: line.to_string(), tour: tour.to_string(), minutes: 0, run: false, part: false, bus: None, driver: None, wants: None, length });
+        self.list.push(Journey { line: line.to_string(), tour: tour.to_string(), minutes: 0, run: false, part: false, bus: None, driver: None, wants: None, length, excused: false });
+    }
+
+    /// (3 November 2026) A journey not run of `length` timetabled minutes that is not the
+    /// company's fault (a breakdown's 20 minutes: `contract_events::excused_breakdown`).
+    pub fn excused(&mut self, line: &str, tour: &str, length: i32) {
+        self.list.push(Journey { line: line.to_string(), tour: tour.to_string(), minutes: 0, run: false, part: false, bus: None, driver: None, wants: None, length, excused: true });
+    }
+
+    /// (3 November 2026) A bus of `line` had an accident today (its contract's default points).
+    pub fn accident(&mut self, line: &str) {
+        self.accidents.push(line.to_string());
     }
 
     /// A tour of `line` of the day, `minutes` long by its timetable (its first departure to its
@@ -1017,7 +1059,7 @@ impl Journeys {
     /// bus and driver, of a tour that asks for buses of `wants`.
     #[allow(clippy::too_many_arguments)]
     pub fn ran(&mut self, line: &str, tour: &str, minutes: i32, part: bool, bus: Option<u32>, driver: Option<u32>, wants: Option<BusSize>) {
-        self.list.push(Journey { line: line.to_string(), tour: tour.to_string(), minutes, run: true, part, bus, driver, wants, length: 0 });
+        self.list.push(Journey { line: line.to_string(), tour: tour.to_string(), minutes, run: true, part, bus, driver, wants, length: 0, excused: false });
     }
 
     pub fn len(&self) -> usize {
@@ -1097,6 +1139,9 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         let mut weather_half = 0u32;
         // (3 November 2026: the server's roadworks on the line - late by their minutes allowed)
         let extra = super::contract_events::extra_minutes(c, date, &k.line);
+        // (3 November 2026: force majeure on the company today - snow, a storm, a strike: its
+        // journeys dropped no default, no fine, nothing off the bonus; not paid, H5)
+        let majeure = c.online.on_server && super::contract_events::majeure_on(c, date).is_some();
         // (a bus or a driver is judged once a day on a line, a bus's size once a tour)
         let mut seen: Vec<String> = Vec::new();
         let mut once = |key: String| {
@@ -1109,8 +1154,13 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         };
         for j in &mine {
             if !j.run {
-                pd.missed += 1;
                 pd.unpaid += 1;
+                // (3 November 2026: lost within a breakdown's 20 minutes, or on a day of force
+                // majeure - not the company's default)
+                if j.excused || majeure {
+                    continue;
+                }
+                pd.missed += 1;
                 if weather {
                     weather_half += 1;
                 }
@@ -1155,6 +1205,14 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         // - a bid in two parts, 3 November 2026 - its contract buses a day, every day of its term)
         let hourly = c.online.on_server && k.per_hour > 0;
         let missed_minutes: i64 = mine.iter().filter(|j| !j.run).map(|j| j.length.max(0) as i64).sum();
+        // (3 November 2026: of them the company's own - not a breakdown's 20 minutes, not force
+        // majeure: off the quality bonus, and watched for its end - H4, H5, H8)
+        let dropped: Vec<&&Journey> = mine.iter().filter(|j| !j.run && !j.excused && !majeure).collect();
+        let lost_minutes: i64 = dropped.iter().map(|j| j.length.max(0) as i64).sum();
+        // (H7: a day whose timetabled journeys all dropped by the company's default - a winner
+        // that could not start - pays no contract buses either)
+        let planned_minutes: i64 = journeys.planned.iter().filter(|p| p.0.eq_ignore_ascii_case(&k.line)).map(|p| p.1 as i64).sum();
+        let buses_paid = planned_minutes == 0 || lost_minutes < planned_minutes || majeure;
         let pay = match k.period {
             _ if hourly => {
                 let planned: i32 = journeys.planned.iter().filter(|p| p.0.eq_ignore_ascii_case(&k.line)).map(|p| p.1).sum();
@@ -1162,7 +1220,8 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
                 let roadworks = extra as i64 * mine.iter().filter(|j| j.run).count() as i64;
                 let hours = (planned as i64 - missed_minutes + roadworks).max(0) as f64 / 60.0;
                 let index = c.contract_index / k.index.max(0.01);
-                (hours * k.per_hour as f64 * index + k.buses as f64 * k.per_bus_day as f64 * index).round() as Cents
+                let buses = if buses_paid { k.buses as f64 * k.per_bus_day as f64 * index } else { 0.0 };
+                (hours * k.per_hour as f64 * index + buses).round() as Cents
             }
             Period::Day if n > 0 => payment(c, &k),
             Period::Week if sunday => {
@@ -1187,7 +1246,27 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         // (NexiconDK, Bus Company Online: the authority's fines - `server_fines`)
         let red: u32 = journeys.red.iter().filter(|r| r.0.eq_ignore_ascii_case(&k.line)).map(|r| r.1).sum();
         let stops = journeys.stops.iter().filter(|s| s.0.eq_ignore_ascii_case(&k.line)).fold((0, 0), |a, s| (a.0 + s.1, a.1 + s.2));
-        let (fined, complaints) = if c.online.on_server { authority_fines(c, &k, &mine, red, stops, date) } else { (0, 0) };
+        let (fined, complaints) = if c.online.on_server { authority_fines(c, &k, &mine, red, stops, date, majeure) } else { (0, 0) };
+        // (3 November 2026: an accident of a bus of the line - its operating quality, H4/T2)
+        let crashes = journeys.accidents.iter().filter(|l| l.eq_ignore_ascii_case(&k.line)).count();
+        if c.online.on_server && crashes > 0 {
+            pd.default += crashes as f64 * super::contract_events::ACCIDENT_POINTS * strict;
+        }
+        // (3 November 2026: the authority's inspection of the buses that ran today, every week - a
+        // fine and default points for each fault, H6)
+        let ran: Vec<u32> = mine.iter().filter(|j| j.run).filter_map(|j| j.bus).collect();
+        let mut inspected = 0;
+        if let Some(ins) = (hourly).then(|| super::contract_events::inspect(c, &k, date, &ran)).flatten() {
+            let f = c.online.fines.unwrap_or_default();
+            let amount = super::server_fines::Fines::cents(ins.faults() as f64 * f.inspection);
+            if amount > 0 {
+                c.book(BookingKind::Penalty, -amount, format!("Line {}: the authority's inspection - {} faults on {} buses", k.number, ins.faults(), ins.buses), false);
+                inspected = amount;
+            }
+            pd.default += ins.faults() as f64 * super::contract_events::INSPECTION_POINTS * strict;
+            report.notes.push(Note::Inspection { number: k.number.clone(), buses: ins.buses, dirty: ins.dirty, damaged: ins.damaged, screens: ins.no_screens, fine: amount });
+        }
+        let fined = fined + inspected;
         let deducted = deducted + fined;
         pd.deducted = deducted;
         let label = Kind::label(k.kind).to_lowercase();
@@ -1220,8 +1299,31 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         // (3 November 2026: the quality bonus's pool and what takes off it)
         if hourly {
             x.bonus.pool += (pay.max(0) as f64 * BONUS_SHARE).round() as Cents;
-            x.bonus.lost_minutes += missed_minutes;
+            x.bonus.lost_minutes += lost_minutes;
             x.bonus.complaints += complaints;
+            // (3 November 2026: the authority watches its weeks - a warning, then its end, H8;
+            // a day of force majeure does not count)
+            if !majeure {
+                x.watch.days.push((date.to_string(), n, dropped.len() as u32));
+                let over = x.watch.days.len().saturating_sub(super::contract_events::WATCH_KEPT);
+                x.watch.days.drain(..over);
+            }
+            match super::contract_events::watch_week(x, date) {
+                super::contract_events::Verdict::Warned { share } => {
+                    x.watch.warned = Some(date.to_string());
+                    report.notes.push(Note::Warned { number: x.number.clone(), share: format!("{:.1}", share * 100.0) });
+                }
+                super::contract_events::Verdict::Ending { share, until } => {
+                    x.watch.ending = Some(until.clone());
+                    x.until = until.clone();
+                    let line = x.line.clone();
+                    report.notes.push(Note::Ending { number: x.number.clone(), share: format!("{:.1}", share * 100.0), until: until.clone() });
+                    if let Some(h) = c.concessions.held.iter_mut().find(|h| h.line.eq_ignore_ascii_case(&line) && dates::between(&until, &h.until) > 0) {
+                        h.until = until;
+                    }
+                }
+                super::contract_events::Verdict::None => {}
+            }
         }
         let today_points = pd.default;
         if pd.default > 0.0 || pd.unpaid > 0 {
@@ -1262,7 +1364,7 @@ pub const COMPLAINT_COLD: f64 = 0.003;
 /// contract won with electric buses - with a diesel bus, and each complaint (drawn by the
 /// journey from its driver's skills and its bus's condition; a player's red lights as he ran
 /// them). What they came to, and the complaints (3 November 2026: they take off the bonus).
-fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, stops: (u32, u32), date: &str) -> (Cents, u32) {
+fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, stops: (u32, u32), date: &str, majeure: bool) -> (Cents, u32) {
     use super::server_fines::Fines;
     let f = c.online.fines.unwrap_or_default();
     let mut rng = Rng::of(&[&c.id, "authority fines", &k.line], dates::parse(date).unwrap_or(0));
@@ -1277,8 +1379,16 @@ fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, s
     let lack = |x: f64| (1.2 - x / 100.0).clamp(0.2, 1.2);
     // (3 November 2026: the server's roadworks on the line - late by their minutes not fined)
     let extra = super::contract_events::extra_minutes(c, date, &k.line);
+    // (3 November 2026: force majeure - no fine for a journey dropped nor a departure late, H5)
+    if majeure {
+        late = 0;
+    }
     for j in mine {
         if !j.run {
+            // (lost within a breakdown's 20 minutes, or force majeure: no fine - H4, H5)
+            if j.excused || majeure {
+                continue;
+            }
             dropped += 1;
             minutes += j.length.max(0) as i64;
             continue;
@@ -1303,7 +1413,7 @@ fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, s
         if j.driver.is_some() {
             if j.minutes < -1 {
                 early += 1;
-            } else if super::contract_events::judged(j.minutes, extra) > super::server_fines::LATE_MINUTES && !c.clock.dispatcher {
+            } else if !majeure && super::contract_events::judged(j.minutes, extra) > super::server_fines::LATE_MINUTES && !c.clock.dispatcher {
                 late += 1;
             }
         }

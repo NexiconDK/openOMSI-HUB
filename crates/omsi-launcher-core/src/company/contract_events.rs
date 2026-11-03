@@ -25,6 +25,20 @@
 //!   of the line is not fined nor unpaid for being late up to those minutes, a player's departure
 //!   after the stretch neither (`allowance`, `server_fines::departures`), and every journey run is
 //!   paid the minutes on top as timetable time (`extra_minutes`).
+//! * **H4 breakdowns** (`BREAKDOWN_ALLOWED`): on a server contract a breakdown's or an accident's
+//!   journeys are the company's fault only from 20 minutes after it - the spare bus's time; a
+//!   player driving the bus live is told to set his passengers down (`tell_driver`); an accident
+//!   keeps the bus 1-3 days in the workshop and gives the contract default points.
+//! * **H5 force majeure** (`ForceMajeure`): snow, a storm or a strike the admin declares - the
+//!   worlds take a snow or storm weather (the main server), the companies the inbox's weather
+//!   event, a strike's company does not run its duties; the journeys dropped are not fined nor
+//!   off the bonus, nor paid.
+//! * **H6 inspections** (`inspect`): every week two or three of a contract's buses, a fine for each
+//!   one dirty, damaged or without the passenger information its tender asks for.
+//! * **H7 the winner cannot start**: a contract line not in service runs nothing - its journeys
+//!   are dropped (`day`), fined and off the bonus, its buses not paid that day.
+//! * **H8 termination** (`watch_week`): over 3 % of a week's journeys dropped - a warning; again
+//!   within four weeks, the contract ends two days later and its line goes out to tender.
 
 use super::bus_contracts::{self as bc, Work};
 use super::clock::{self, Level, Run};
@@ -598,7 +612,7 @@ pub fn roadworks_step(data: &Path, c: &mut Company) -> bool {
     let before = (c.ontime.diversions.clone(), c.inbox.events.clone(), c.online.roadworks.clone());
     let ids: Vec<u64> = mine.iter().map(|r| ROADWORK_IDS + r.id as u64).collect();
     c.ontime.diversions.retain(|d| d.id < ROADWORK_IDS || ids.contains(&d.id));
-    c.inbox.events.retain(|e| e.id < ROADWORK_IDS || ids.contains(&e.id));
+    c.inbox.events.retain(|e| e.id < ROADWORK_IDS || e.id >= MAJEURE_IDS || ids.contains(&e.id));
     for r in &mine {
         let id = ROADWORK_IDS + r.id as u64;
         let number = c.lines.iter().find(|l| l.name.eq_ignore_ascii_case(&r.line)).map(|l| l.number.clone()).unwrap_or_else(|| r.number.clone());
@@ -632,6 +646,360 @@ pub fn judged(minutes: i32, extra: i32) -> i32 {
         (minutes - extra.max(0)).max(0)
     } else {
         minutes
+    }
+}
+
+// --- H4: breakdowns and accidents ------------------------------------------------------------
+
+/// A journey lost to a breakdown or an accident on a server contract is the company's fault only
+/// from this many minutes after it - the spare bus's time to come (`excused_breakdown`): lost
+/// later (the spare came after them, a rental, none) it is dropped - fined by the minute, off the
+/// quality bonus. A standby duty with a reserve bus at the depot keeps the limit (`clock`'s
+/// `SPARE_LINE_MINUTES`).
+pub const BREAKDOWN_ALLOWED: i32 = 20;
+
+/// Whether a journey leaving at `dep` (minutes of the day) lost to a breakdown at `at` left within
+/// the spare bus's `BREAKDOWN_ALLOWED` minutes: not paid, not fined, nothing off the bonus.
+pub fn excused_breakdown(at: i32, dep: i32) -> bool {
+    dep >= at && dep < at + BREAKDOWN_ALLOWED
+}
+
+/// (T2) On a server an accident keeps its bus in the workshop these days (from, to), and gives
+/// the contract of its line these default points (its operating quality).
+pub const ACCIDENT_DAYS: (i64, i64) = (1, 3);
+pub const ACCIDENT_POINTS: f64 = super::econ_uk::POINTS_MISSED;
+
+/// What a player who drives a bus that broke down, or had an accident, is told (urgent, to his
+/// duty).
+pub const BUS_FAULT: &str = "Your bus has a fault: drive to the next stop, set the passengers down and wait. The spare bus takes over the rest of your block.";
+pub const BUS_CRASHED: &str = "Your bus had an accident: stop at the next safe place and set the passengers down. The spare bus takes over the rest of your block.";
+
+/// A breakdown or an accident of bus `vehicle` drawn on the company's day (as the day model draws
+/// them: by its condition, its kilometres to its service, its drivers): the player who drives it
+/// live now is told at once - drive to the next stop, set the passengers down; the spare bus runs
+/// the rest of the block as the AI (the clock's own choice: a spare, a rental, dropped). He may
+/// say it himself too: the drivers' quick button "Breakdown" or "Accident" (`messages::Quick`).
+/// Whether a player was told.
+pub fn tell_driver(c: &mut Company, vehicle: u32, accident: bool) -> bool {
+    use super::messages::{self as ms, From, Priority, To};
+    use super::together::book::ClaimState;
+    let today = c.date.clone();
+    let duties: Vec<(String, String)> = c
+        .together
+        .claims
+        .iter()
+        .filter(|x| x.duty.date == today && x.state == ClaimState::Driving && x.ai_now().is_none() && (x.vehicle == vehicle || x.own_bus == Some(vehicle)))
+        .map(|x| (x.duty.line.clone(), x.duty.tour.clone()))
+        .collect();
+    for (line, tour) in &duties {
+        ms::send(c, From::Dispatcher, To::Duty { line: line.clone(), tour: tour.clone() }, Priority::Urgent, if accident { BUS_CRASHED } else { BUS_FAULT }, Vec::new(), false, None);
+    }
+    !duties.is_empty()
+}
+
+// --- H5: force majeure ------------------------------------------------------------------------
+
+/// What the admin declares force majeure for.
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum Majeure {
+    #[default]
+    Snow,
+    Storm,
+    /// The drivers strike: every company's duties, or one company's.
+    Strike,
+}
+
+impl Majeure {
+    pub fn of_key(k: &str) -> Option<Majeure> {
+        match k.trim().to_lowercase().as_str() {
+            "snow" => Some(Majeure::Snow),
+            "storm" => Some(Majeure::Storm),
+            "strike" => Some(Majeure::Strike),
+            _ => None,
+        }
+    }
+
+    pub fn key(self) -> &'static str {
+        match self {
+            Majeure::Snow => "snow",
+            Majeure::Storm => "storm",
+            Majeure::Strike => "strike",
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Majeure::Snow => "Snow",
+            Majeure::Storm => "Storm",
+            Majeure::Strike => "Strike",
+        }
+    }
+
+    /// The inbox's weather event it is for the companies (its key, the passengers against the
+    /// usual and the chance a trip runs late: the middle of the catalogue's snow and storm), and
+    /// the words of a weather file's name that bring it (`weather_file`). A strike: none.
+    fn event(self) -> Option<(&'static str, f64, f64)> {
+        match self {
+            Majeure::Snow => Some(("snow", 0.90, 0.15)),
+            Majeure::Storm => Some(("storm", 0.82, 0.12)),
+            Majeure::Strike => None,
+        }
+    }
+
+    fn words(self) -> &'static [&'static str] {
+        match self {
+            Majeure::Snow => &["schnee", "snow", "blizzard", "eis", "ice", "winter"],
+            Majeure::Storm => &["gewitter", "sturm", "storm", "thunder", "orkan", "unwetter"],
+            Majeure::Strike => &[],
+        }
+    }
+}
+
+/// The ids of the inbox's weather events the server's force majeure is kept as by each company.
+pub const MAJEURE_IDS: u64 = 9_500_000;
+
+/// A force majeure the admin declared (`force_majeure.json`): snow, a storm or a strike, its days,
+/// the map (empty: every map) and - a strike - the company whose duties stop (empty: every
+/// company's), and - snow or a storm - the weather file the worlds take (empty: the first
+/// installed one whose name says it, `weather_file`). Its journeys dropped are not fined nor off
+/// the quality bonus - nor paid.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct ForceMajeure {
+    pub id: u32,
+    pub kind: Majeure,
+    pub from: String,
+    pub until: String,
+    pub map: String,
+    pub company: String,
+    pub weather: String,
+}
+
+impl ForceMajeure {
+    pub fn on(&self, date: &str) -> bool {
+        dates::between(&self.from, date) >= 0 && dates::between(date, &self.until) >= 0
+    }
+
+    /// It is company `c`'s: of its map (or every map) and - a strike - of it (or every company).
+    pub fn touches(&self, c: &Company) -> bool {
+        (self.map.is_empty() || self.map == super::shared_tenders::key_of(&c.map)) && (self.kind != Majeure::Strike || self.company.is_empty() || self.company == c.id)
+    }
+}
+
+pub fn majeure_file(data: &Path) -> PathBuf {
+    data.join("force_majeure.json")
+}
+
+pub fn load_majeure(data: &Path) -> Vec<ForceMajeure> {
+    std::fs::read_to_string(majeure_file(data)).ok().and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default()
+}
+
+/// The admin declares force majeure `fm` (its days YYYY-MM-DD; a weather file as `Weather/….owt`).
+pub fn add_majeure(data: &Path, mut fm: ForceMajeure) -> Result<ForceMajeure, String> {
+    if fm.until.trim().is_empty() {
+        fm.until = fm.from.clone();
+    }
+    if dates::parse(&fm.from).is_none() || dates::parse(&fm.until).is_none() || dates::between(&fm.from, &fm.until) < 0 {
+        return Err("the days as YYYY-MM-DD, the last not before the first".into());
+    }
+    let w = fm.weather.trim().replace('\\', "/");
+    if !w.is_empty() && (w.contains("..") || !w.to_lowercase().starts_with("weather/") || !w.to_lowercase().ends_with(".owt")) {
+        return Err("the weather as an installed file, Weather/<name>.owt".into());
+    }
+    fm.weather = if fm.kind == Majeure::Strike { String::new() } else { w };
+    if fm.kind != Majeure::Strike {
+        fm.company.clear();
+    }
+    let mut all = load_majeure(data);
+    fm.id = all.iter().map(|x| x.id).max().unwrap_or(0) + 1;
+    all.push(fm.clone());
+    save_json(&majeure_file(data), &all).map_err(|e| format!("{e:#}"))?;
+    Ok(fm)
+}
+
+/// The admin ends force majeure `id`.
+pub fn end_majeure(data: &Path, id: u32) -> Result<ForceMajeure, String> {
+    let mut all = load_majeure(data);
+    let k = all.iter().position(|x| x.id == id).ok_or("no such force majeure")?;
+    let fm = all.remove(k);
+    save_json(&majeure_file(data), &all).map_err(|e| format!("{e:#}"))?;
+    Ok(fm)
+}
+
+fn majeure_stamp(data: &Path) -> u64 {
+    std::fs::metadata(majeure_file(data)).and_then(|m| m.modified()).ok().and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()).map_or(0, |d| d.as_secs().max(1))
+}
+
+/// Company `c` takes the server's force majeure that touches it, read again when the admin
+/// changed it (`Online::majeure`): snow or a storm also as the inbox's weather event of its days
+/// (its buses held up, fewer passengers - `inbox::line_effect`, `demand_factor`; the day judged
+/// as one of bad weather, `bus_contracts::bad_weather`); those the admin ended go. Whether
+/// anything changed.
+pub fn majeure_step(data: &Path, c: &mut Company) -> bool {
+    if !c.online.on_server {
+        return false;
+    }
+    let at = majeure_stamp(data);
+    if c.online.majeure_at == at && at != 0 {
+        return false;
+    }
+    c.online.majeure_at = at;
+    let mine: Vec<ForceMajeure> = load_majeure(data).into_iter().filter(|f| f.touches(c)).collect();
+    let before = (c.inbox.events.clone(), c.online.majeure.clone());
+    let ids: Vec<u64> = mine.iter().filter(|f| f.kind.event().is_some()).map(|f| MAJEURE_IDS + f.id as u64).collect();
+    c.inbox.events.retain(|e| e.id < MAJEURE_IDS || e.id >= MAJEURE_IDS + 1_000_000 || ids.contains(&e.id));
+    for f in &mine {
+        let Some((key, demand, late)) = f.kind.event() else { continue };
+        let id = MAJEURE_IDS + f.id as u64;
+        if !c.inbox.events.iter().any(|e| e.id == id) {
+            c.inbox.events.push(super::inbox::Event { id, key: key.into(), from: f.from.clone(), until: f.until.clone(), fuel: 1.0, demand, late, line: None, started: false, ended: false });
+        }
+    }
+    c.online.majeure = mine;
+    (c.inbox.events.clone(), c.online.majeure.clone()) != before
+}
+
+/// The force majeure on company `c` on `date` (the first), if any.
+pub fn majeure_on<'a>(c: &'a Company, date: &str) -> Option<&'a ForceMajeure> {
+    c.online.majeure.iter().find(|f| f.on(date))
+}
+
+/// Company `c`'s drivers strike on `date`: its duties do not run (`day`'s `DropWhy::Strike`).
+pub fn struck(c: &Company, date: &str) -> bool {
+    c.online.majeure.iter().any(|f| f.on(date) && f.kind == Majeure::Strike)
+}
+
+/// The weather files under `root`'s `Weather` folder, as the worlds name them (`Weather/<name>.owt`),
+/// sorted.
+pub fn installed_weather(root: &Path) -> Vec<String> {
+    let mut out: Vec<String> = std::fs::read_dir(omsi_cfg::resolve_path(root, "Weather"))
+        .map(|rd| rd.flatten().filter_map(|e| e.file_name().to_str().map(str::to_string)).filter(|n| n.to_lowercase().ends_with(".owt")).map(|n| format!("Weather/{n}")).collect())
+        .unwrap_or_default();
+    out.sort();
+    out
+}
+
+/// The weather file force majeure `fm` brings to the worlds of its map: the admin's own, or the
+/// first of `files` whose name says snow (Schnee, snow, ice ...) or a storm (Gewitter, Sturm,
+/// storm ...). None: a strike, or no such file.
+pub fn weather_file(fm: &ForceMajeure, files: &[String]) -> Option<String> {
+    if fm.kind == Majeure::Strike {
+        return None;
+    }
+    if !fm.weather.is_empty() {
+        return Some(fm.weather.clone());
+    }
+    files.iter().find(|f| fm.kind.words().iter().any(|w| f.to_lowercase().contains(w))).cloned()
+}
+
+/// The weather the worlds take again when force majeure ends: CAVOK, or the first file that says
+/// neither snow nor a storm.
+pub fn clear_weather(files: &[String]) -> Option<String> {
+    let bad = |f: &str| Majeure::Snow.words().iter().chain(Majeure::Storm.words()).any(|w| f.to_lowercase().contains(w));
+    files.iter().find(|f| f.to_lowercase().contains("cavok")).or_else(|| files.iter().find(|f| !bad(f))).cloned()
+}
+
+// --- H6: the authority's inspections ------------------------------------------------------------
+
+/// Every this many days of a contract's term the authority inspects some of its buses.
+pub const INSPECT_EVERY: i64 = 7;
+/// The buses an inspection looks at (from, to: as many as ran the line that day, at most).
+pub const INSPECT_BUSES: (i64, i64) = (2, 3);
+/// A bus is dirty under this cleanliness, damaged under this condition (0 to 100).
+pub const DIRTY_UNDER: f64 = 50.0;
+pub const DAMAGED_UNDER: f64 = 50.0;
+/// The default points each fault gives the contract (its operating quality).
+pub const INSPECTION_POINTS: f64 = super::econ_uk::POINTS_SLIGHT;
+
+/// What an inspection found: the buses looked at and the faults - dirty, damaged, no passenger
+/// information where the tender asks for it.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Inspection {
+    pub buses: u32,
+    pub dirty: u32,
+    pub damaged: u32,
+    pub no_screens: u32,
+}
+
+impl Inspection {
+    pub fn faults(&self) -> u32 {
+        self.dirty + self.damaged + self.no_screens
+    }
+}
+
+/// The authority's inspection of contract `k` on `date`, every `INSPECT_EVERY` days of its term
+/// (its fourth day first): two or three of the buses that ran its journeys today (`ran`, the
+/// fleet's ids), drawn by the day (None: not its day, or no bus ran).
+pub fn inspect(c: &Company, k: &bc::Contract, date: &str, ran: &[u32]) -> Option<Inspection> {
+    let day = dates::between(&k.from, date);
+    if day < 3 || (day - 3) % INSPECT_EVERY != 0 {
+        return None;
+    }
+    let mut buses: Vec<u32> = ran.to_vec();
+    buses.sort();
+    buses.dedup();
+    if buses.is_empty() {
+        return None;
+    }
+    let mut rng = super::rng::Rng::of(&[&c.id, "inspection", &k.line], dates::parse(date).unwrap_or(0));
+    let n = (rng.int(INSPECT_BUSES.0, INSPECT_BUSES.1) as usize).min(buses.len());
+    let mut out = Inspection::default();
+    for _ in 0..n {
+        let id = buses.remove(rng.int(0, buses.len() as i64 - 1) as usize);
+        let Some(v) = c.vehicle(id) else { continue };
+        out.buses += 1;
+        out.dirty += (v.clean < DIRTY_UNDER) as u32;
+        out.damaged += (v.condition < DAMAGED_UNDER) as u32;
+        out.no_screens += (k.needs.is_some_and(|x| x.screens) && !super::server_buses::screens_of(c, v)) as u32;
+    }
+    Some(out)
+}
+
+// --- H8: a contract terminated for journeys dropped ---------------------------------------------
+
+/// A week of a contract with more than this share of its journeys dropped (not those excused: a
+/// breakdown's 20 minutes, force majeure) brings a warning; another within `WARNED_DAYS` its end,
+/// `NOTICE_DAYS` later - its line goes out to tender again as an ending contract's does.
+pub const DROPPED_MOST: f64 = 0.03;
+pub const WARNED_DAYS: i64 = 28;
+pub const NOTICE_DAYS: i64 = 2;
+/// The days of a contract's journeys kept for it (`Watch::days`).
+pub const WATCH_KEPT: usize = 35;
+
+/// What the authority decided of a contract's week (`watch_week`).
+#[derive(Clone, Debug, PartialEq)]
+pub enum Verdict {
+    /// Well run, or not its day.
+    None,
+    /// A warning: the week's dropped share.
+    Warned { share: f64 },
+    /// Ended: the week's share, and its last day.
+    Ending { share: f64, until: String },
+}
+
+/// The week to `date` of contract `k` (its days kept: `bc::Watch`): judged on each seventh day of
+/// its term. Over `DROPPED_MOST` dropped: a warning, or - warned within `WARNED_DAYS` - its end
+/// `NOTICE_DAYS` later. A contract ending sooner, or ended, nothing.
+pub fn watch_week(k: &bc::Contract, date: &str) -> Verdict {
+    let day = dates::between(&k.from, date);
+    if day < 6 || (day + 1) % 7 != 0 || k.watch.ending.is_some() {
+        return Verdict::None;
+    }
+    let week: Vec<&(String, u32, u32)> = k.watch.days.iter().filter(|d| (0..7).contains(&dates::between(&d.0, date))).collect();
+    let (journeys, dropped) = week.iter().fold((0u32, 0u32), |a, d| (a.0 + d.1, a.1 + d.2));
+    if journeys == 0 {
+        return Verdict::None;
+    }
+    let share = dropped as f64 / journeys as f64;
+    if share <= DROPPED_MOST {
+        return Verdict::None;
+    }
+    let until = dates::add(date, NOTICE_DAYS);
+    if k.watch.warned.as_deref().is_some_and(|w| (0..=WARNED_DAYS).contains(&dates::between(w, date))) && dates::between(&until, &k.until) > 0 {
+        Verdict::Ending { share, until }
+    } else {
+        Verdict::Warned { share }
     }
 }
 

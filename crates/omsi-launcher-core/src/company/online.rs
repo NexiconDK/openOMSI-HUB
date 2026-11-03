@@ -96,6 +96,13 @@ pub struct Online {
     pub roadworks: Vec<super::contract_events::Roadwork>,
     #[serde(skip)]
     pub roadworks_at: u64,
+    /// (NexiconDK, 3 November 2026) The server's force majeure that touches it
+    /// (`contract_events::ForceMajeure`: snow, a storm, a strike), as its process last read it,
+    /// and when it was written: not kept.
+    #[serde(skip)]
+    pub majeure: Vec<super::contract_events::ForceMajeure>,
+    #[serde(skip)]
+    pub majeure_at: u64,
     /// (NexiconDK, 3 November 2026) Doubling: the full departures kept, the orders of extra buses
     /// and their answers (`doubling`), and the server's rules of it (set by its process, not kept).
     #[serde(default)]
@@ -165,7 +172,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, changes: Vec::new(), roadworks: Vec::new(), roadworks_at: 0, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, changes: Vec::new(), roadworks: Vec::new(), roadworks_at: 0, majeure: Vec::new(), majeure_at: 0, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
     }
 }
 
@@ -687,6 +694,10 @@ impl Host {
         if super::contract_events::roadworks_step(&self.data, c) {
             self.dirty = true;
             self.planned = None;
+        }
+        // (3 November 2026: the server's force majeure - snow, a storm, a strike - H5)
+        if super::contract_events::majeure_step(&self.data, c) {
+            self.dirty = true;
         }
         // (phase 6 step 3: a depot's big purchases, its head office's to approve)
         if c.online.on_server && c.online.big_purchase.is_none() {

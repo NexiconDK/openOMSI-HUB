@@ -205,3 +205,125 @@ fn roadworks_close_a_stretch() {
     assert!(!c.ontime.diversions.iter().any(|d| d.id >= ROADWORK_IDS) && !c.inbox.events.iter().any(|e| e.id >= ROADWORK_IDS) && c.online.roadworks.is_empty());
     let _ = std::fs::remove_dir_all(&data);
 }
+
+/// H4: a breakdown's journeys within the spare bus's 20 minutes are excused, those after not; a
+/// player driving the broken bus live is told to set his passengers down.
+#[test]
+fn a_breakdown_has_twenty_minutes_and_its_live_driver_is_told() {
+    assert!(excused_breakdown(600, 600) && excused_breakdown(600, 619));
+    assert!(!excused_breakdown(600, 620) && !excused_breakdown(600, 599));
+    let mut c = holder();
+    use crate::company::duty_launch::DutyRef;
+    use crate::company::together::book::{Claim, ClaimState};
+    c.together.claims.push(Claim { duty: DutyRef { date: c.date.clone(), line: "Linie5".into(), tour: "2".into(), duty: 0 }, guest: 7, state: ClaimState::Driving, vehicle: 42, ..Default::default() });
+    assert!(!tell_driver(&mut c, 41, false), "another bus");
+    assert!(tell_driver(&mut c, 42, true));
+    let m = c.messages.list.last().unwrap();
+    assert_eq!(m.text, BUS_CRASHED);
+}
+
+/// H5: force majeure the admin declares - kept in the server's folder, a company of its map takes
+/// it (snow as the inbox's weather event, kept when the roadworks are read again); a strike
+/// touches its company alone; the worlds' weather by the files' names.
+#[test]
+fn force_majeure_snow_a_storm_a_strike() {
+    let data = temp("majeure");
+    let snow = ForceMajeure { kind: Majeure::Snow, from: "2026-11-04".into(), until: "2026-11-05".into(), ..Default::default() };
+    assert!(add_majeure(&data, ForceMajeure { from: "x".into(), ..snow.clone() }).is_err());
+    assert!(add_majeure(&data, ForceMajeure { weather: "../x.owt".into(), ..snow.clone() }).is_err());
+    let snow = add_majeure(&data, snow).unwrap();
+    let strike = add_majeure(&data, ForceMajeure { kind: Majeure::Strike, from: "2026-11-06".into(), company: "someone-else".into(), ..Default::default() }).unwrap();
+    assert_eq!((snow.id, strike.id, strike.until.as_str()), (1, 2, "2026-11-06"));
+    let mut c = holder();
+    assert!(majeure_step(&data, &mut c));
+    assert_eq!(c.online.majeure.len(), 1, "the other company's strike is not its");
+    let e = c.inbox.events.iter().find(|e| e.id == MAJEURE_IDS + 1).unwrap();
+    assert_eq!((e.key.as_str(), e.from.as_str(), e.until.as_str()), ("snow", "2026-11-04", "2026-11-05"));
+    assert!(majeure_on(&c, "2026-11-05").is_some() && majeure_on(&c, "2026-11-06").is_none());
+    assert!(!struck(&c, "2026-11-06"));
+    // (the roadworks read again keep it)
+    c.online.roadworks_at = 0;
+    roadworks_step(&data, &mut c);
+    assert!(c.inbox.events.iter().any(|e| e.id == MAJEURE_IDS + 1));
+    // (its own company's strike)
+    add_majeure(&data, ForceMajeure { kind: Majeure::Strike, from: "2026-11-06".into(), company: c.id.clone(), ..Default::default() }).unwrap();
+    c.online.majeure_at = 0;
+    assert!(majeure_step(&data, &mut c));
+    assert!(struck(&c, "2026-11-06"));
+    // (the weather files)
+    let files = vec!["Weather/#CAVOK.owt".to_string(), "Weather/Gewitter.owt".to_string(), "Weather/Schneefall.owt".to_string()];
+    assert_eq!(weather_file(&snow, &files).as_deref(), Some("Weather/Schneefall.owt"));
+    assert_eq!(weather_file(&ForceMajeure { kind: Majeure::Storm, ..Default::default() }, &files).as_deref(), Some("Weather/Gewitter.owt"));
+    assert_eq!(weather_file(&ForceMajeure { weather: "Weather/Mine.owt".into(), ..snow.clone() }, &files).as_deref(), Some("Weather/Mine.owt"));
+    assert_eq!(weather_file(&strike, &files), None);
+    assert_eq!(clear_weather(&files).as_deref(), Some("Weather/#CAVOK.owt"));
+    // (ended: it goes)
+    end_majeure(&data, 1).unwrap();
+    end_majeure(&data, 3).unwrap();
+    c.online.majeure_at = 0;
+    assert!(majeure_step(&data, &mut c));
+    assert!(c.online.majeure.is_empty() && !c.inbox.events.iter().any(|e| e.id >= MAJEURE_IDS));
+    let _ = std::fs::remove_dir_all(&data);
+}
+
+/// H6: every week of a contract's term (its fourth day first) the authority inspects two or
+/// three of the buses that ran it: a dirty one and a damaged one are faults; without passenger
+/// information only where the tender asks for it.
+#[test]
+fn the_weekly_inspection_finds_dirty_and_damaged_buses() {
+    use crate::company::market::{self, MarketBus};
+    use crate::company::model::Tenure;
+    let mut c = holder();
+    let b = MarketBus { file: "Vehicles/X/x.bus".into(), name: "X".into(), ..Default::default() };
+    let ids: Vec<u32> = (0..2).map(|_| market::add_vehicle(&mut c, &b, "2024-01-01".into(), 0.0, 90.0, Tenure::Owned { paid: 0, new_value: 0 }, "")).collect();
+    for v in c.fleet.iter_mut() {
+        v.clean = 90.0;
+    }
+    c.fleet[0].clean = 30.0;
+    c.fleet[1].condition = 40.0;
+    let k = c.concessions.contracts[0].clone();
+    assert!(inspect(&c, &k, "2026-11-03", &ids).is_none(), "not its day");
+    assert!(inspect(&c, &k, "2026-11-04", &[]).is_none(), "no bus ran");
+    let ins = inspect(&c, &k, "2026-11-04", &ids).unwrap();
+    assert_eq!((ins.buses, ins.dirty, ins.damaged, ins.no_screens, ins.faults()), (2, 1, 1, 0, 2));
+    let mut k = k;
+    k.needs = Some(crate::company::server_buses::Needs { screens: true, ..Default::default() });
+    let ins = inspect(&c, &k, "2026-11-11", &ids).unwrap();
+    assert_eq!(ins.no_screens, 2, "no screens where the tender asks for them");
+}
+
+/// H7: a contract line not in service - the winner could not start - runs nothing: its
+/// journeys of the day are dropped, fined, and the report says so; no "not started" charge.
+#[test]
+fn a_line_not_started_drops_its_journeys() {
+    let mut c = holder();
+    c.lines.push(crate::company::model::CompanyLine { name: "Linie5".into(), number: "5".into(), added: "2026-11-01".into(), ..Default::default() });
+    let mut t = crate::company::econ_uk::reference::tour_on("Linie5", "5", "1".into(), 8 * 60);
+    t.unplanned = true;
+    let r = crate::company::day::close_day(&mut c, vec![t], &[]);
+    assert!(r.notes.iter().any(|n| matches!(n, crate::company::day::Note::NotRun { number, journeys: 8 } if number == "5")), "{:?}", r.notes);
+    assert!(!r.notes.iter().any(|n| matches!(n, crate::company::day::Note::NotStarted { .. })));
+    assert!(r.drops.iter().any(|d| d.why == crate::company::day::DropWhy::NotStarted));
+    let k = &c.concessions.contracts[0];
+    assert!(k.bonus.lost_minutes >= 8 * 50, "{:?}", k.bonus);
+}
+
+/// H8 by itself: a week judged on each seventh day of the term; over 3 % dropped a warning,
+/// again within four weeks the end two days later; at most 3 % nothing.
+#[test]
+fn the_authority_judges_each_week() {
+    let mut k = holder().concessions.contracts[0].clone();
+    let week = |k: &mut bc::Contract, last: &str, dropped: u32| {
+        k.watch.days = (0..7).map(|d| (dates::add(last, -d), 20, if d == 0 { dropped } else { 0 })).collect();
+    };
+    week(&mut k, "2026-11-07", 5);
+    assert_eq!(watch_week(&k, "2026-11-07"), Verdict::Warned { share: 5.0 / 140.0 });
+    assert_eq!(watch_week(&k, "2026-11-06"), Verdict::None, "not its day");
+    week(&mut k, "2026-11-07", 4);
+    assert_eq!(watch_week(&k, "2026-11-07"), Verdict::None, "under 3 %");
+    k.watch.warned = Some("2026-11-07".into());
+    week(&mut k, "2026-11-14", 5);
+    assert_eq!(watch_week(&k, "2026-11-14"), Verdict::Ending { share: 5.0 / 140.0, until: "2026-11-16".into() });
+    k.watch.warned = Some("2026-10-01".into());
+    assert!(matches!(watch_week(&k, "2026-11-14"), Verdict::Warned { .. }), "warned too long ago");
+}
