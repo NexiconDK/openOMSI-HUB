@@ -31485,6 +31485,7 @@ _version: 2
 "In the game, the city map (Shift+M) sets a destination: right-click it, or use its pin tool.":
   nl: "In het spel zet je op de stadskaart (Shift+M) een bestemming: klik er met rechts op, of gebruik de speldknop."
   de: "Im Spiel setzt die Stadtkarte (Shift+M) ein Ziel: Rechtsklick darauf oder ihr Stecknadel-Werkzeug."
+  da: "I spillet sætter bykortet (Shift+M) en destination: højreklik på det, eller brug dets nåleværktøj."
   fr: "En jeu, le plan de ville (Maj+M) fixe une destination : clic droit dessus, ou son outil épingle."
   ru: "В игре на карте города (Shift+M) можно задать пункт назначения: правым щелчком или булавкой."
   uk: "У грі на мапі міста (Shift+M) можна задати пункт призначення: правим кліком або шпилькою."
@@ -31492,6 +31493,7 @@ _version: 2
 "Bus options":
   nl: "Busopties"
   de: "Busoptionen"
+  da: "Busvalg"
   fr: "Options du bus"
   ru: "Опции автобуса"
   uk: "Опції автобуса"
@@ -31499,6 +31501,7 @@ _version: 2
 "As the livery (%{value})":
   nl: "Kleurstelling (%{value})"
   de: "Lackierung (%{value})"
+  da: "Som bemalingen (%{value})"
   fr: "Livrée (%{value})"
   ru: "Окраска (%{value})"
   uk: "Фарбування (%{value})"
@@ -31506,6 +31509,7 @@ _version: 2
 "As the livery (usually %{value})":
   nl: "Kleurstelling (meestal %{value})"
   de: "Lackierung (meist %{value})"
+  da: "Som bemalingen (normalt %{value})"
   fr: "Livrée (souvent %{value})"
   ru: "Окраска (обычно %{value})"
   uk: "Фарбування (зазвичай %{value})"
@@ -31513,6 +31517,7 @@ _version: 2
 "%{value} – as %{liveries}":
   nl: "%{value} – zoals %{liveries}"
   de: "%{value} – wie %{liveries}"
+  da: "%{value} – som %{liveries}"
   fr: "%{value} – comme %{liveries}"
   ru: "%{value} – как %{liveries}"
   uk: "%{value} – як %{liveries}"
@@ -31520,6 +31525,7 @@ _version: 2
 "Technical":
   nl: "Techniek"
   de: "Technik"
+  da: "Teknisk"
   fr: "Technique"
   ru: "Техника"
   uk: "Техніка"
@@ -31527,6 +31533,7 @@ _version: 2
 "These change how the bus works: its scripts read them.":
   nl: "Deze veranderen hoe de bus werkt: zijn scripts lezen ze."
   de: "Diese ändern, wie der Bus funktioniert: seine Skripte lesen sie."
+  da: "Disse ændrer, hvordan bussen fungerer: dens scripts læser dem."
   fr: "Elles changent le fonctionnement du bus : ses scripts les lisent."
   ru: "Они меняют работу автобуса: их читают его скрипты."
   uk: "Вони змінюють роботу автобуса: їх читають його скрипти."
@@ -31534,6 +31541,7 @@ _version: 2
 "Every option back as the livery has it":
   nl: "Alle opties terug zoals de kleurstelling ze heeft"
   de: "Alle Optionen zurück, wie die Lackierung sie hat"
+  da: "Alle valg tilbage, som bemalingen har dem"
   fr: "Toutes les options comme la livrée les a"
   ru: "Вернуть все опции как в окраске"
   uk: "Повернути всі опції як у фарбуванні"
@@ -31541,6 +31549,7 @@ _version: 2
 "Editor":
   nl: "Editor"
   de: "Editor"
+  da: "Editor"
   fr: "Éditeur"
   ru: "Редактор"
   uk: "Редактор"
@@ -31548,6 +31557,7 @@ _version: 2
 "Line editor":
   nl: "Lijneneditor"
   de: "Linieneditor"
+  da: "Linjeeditor"
   fr: "Éditeur de lignes"
   ru: "Редактор линий"
   uk: "Редактор ліній"
@@ -31555,6 +31565,7 @@ _version: 2
 "Livery editor":
   nl: "Lakeditor"
   de: "Lackierungseditor"
+  da: "Bemalingseditor"
   fr: "Éditeur de livrées"
   ru: "Редактор окраски"
   uk: "Редактор фарбування"
@@ -31562,6 +31573,7 @@ _version: 2
 "Map objects":
   nl: "Kaartobjecten"
   de: "Kartenobjekte"
+  da: "Kortobjekter"
   fr: "Objets de la carte"
   ru: "Объекты карты"
   uk: "Об’єкти мапи"
@@ -31569,6 +31581,7 @@ _version: 2
 "Lines of your own on any map, liveries, the timetable and the map's objects.":
   nl: "Eigen lijnen op elke kaart, lakken, de dienstregeling en de objecten van de kaart."
   de: "Eigene Linien auf jeder Karte, Lackierungen, der Fahrplan und die Objekte der Karte."
+  da: "Egne linjer på et hvilket som helst kort, bemalinger, køreplanen og kortets objekter."
   fr: "Vos propres lignes sur n'importe quelle carte, les livrées, l'horaire et les objets de la carte."
   ru: "Свои линии на любой карте, окраски, расписание и объекты карты."
   uk: "Власні лінії на будь-якій мапі, фарбування, розклад і об’єкти мапи."
@@ -31576,6 +31589,7 @@ _version: 2
 "Make the map your own: lines of your own, liveries, the timetable and the map's objects.":
   nl: "Maak de kaart van jezelf: eigen lijnen, lakken, de dienstregeling en de objecten van de kaart."
   de: "Mach die Karte zu deiner: eigene Linien, Lackierungen, der Fahrplan und die Objekte der Karte."
+  da: "Gør kortet til dit eget: egne linjer, bemalinger, køreplanen og kortets objekter."
   fr: "Faites de la carte la vôtre : vos lignes, les livrées, l'horaire et les objets de la carte."
   ru: "Сделайте карту своей: свои линии, окраски, расписание и объекты карты."
   uk: "Зробіть мапу своєю: власні лінії, фарбування, розклад і об’єкти мапи."
@@ -31583,6 +31597,7 @@ _version: 2
 "Click the stops in order: the way between them is found over the roads. Saved, the line is driven by you and by the timetable's buses.":
   nl: "Klik de haltes op volgorde aan: de weg ertussen wordt over de wegen gezocht. Opgeslagen rijd jij de lijn en de bussen van de dienstregeling ook."
   de: "Klicke die Haltestellen der Reihe nach an: der Weg dazwischen wird über die Straßen gesucht. Gespeichert fährst du die Linie, und die Fahrplanbusse auch."
+  da: "Klik på stoppestederne i rækkefølge: vejen imellem dem findes over vejene. Når linjen er gemt, køres den af dig og af køreplanens busser."
   fr: "Cliquez les arrêts dans l'ordre : le chemin entre eux est trouvé sur les routes. Enregistrée, la ligne est conduite par vous et par les bus de l'horaire."
   ru: "Щёлкайте остановки по порядку: путь между ними прокладывается по дорогам. Сохранённую линию водите вы и автобусы расписания."
   uk: "Клацайте зупинки по черзі: шлях між ними прокладається дорогами. Збережену лінію водите ви й автобуси розкладу."
@@ -31590,6 +31605,7 @@ _version: 2
 "Compose a line of your own on any map: click its stops, the way between them is found over the roads. You and the timetable's buses drive it.":
   nl: "Stel op elke kaart een eigen lijn samen: klik de haltes aan, de weg ertussen wordt over de wegen gezocht. Jij en de bussen van de dienstregeling rijden hem."
   de: "Stelle auf jeder Karte eine eigene Linie zusammen: klicke ihre Haltestellen an, der Weg dazwischen wird über die Straßen gesucht. Du und die Fahrplanbusse fahren sie."
+  da: "Sammensæt en linje af din egen på et hvilket som helst kort: klik på dens stoppesteder, vejen imellem dem findes over vejene. Du og køreplanens busser kører den."
   fr: "Composez votre propre ligne sur n'importe quelle carte : cliquez ses arrêts, le chemin est trouvé sur les routes. Vous et les bus de l'horaire la conduisez."
   ru: "Составьте свою линию на любой карте: щёлкните её остановки, путь найдётся по дорогам. Её водите вы и автобусы расписания."
   uk: "Складіть власну лінію на будь-якій мапі: клацніть її зупинки, шлях знайдеться дорогами. Її водите ви й автобуси розкладу."
@@ -31597,6 +31613,7 @@ _version: 2
 "Paint a bus in colours of your own and drive it.":
   nl: "Lak een bus in je eigen kleuren en rijd ermee."
   de: "Lackiere einen Bus in deinen Farben und fahre ihn."
+  da: "Mal en bus i dine egne farver, og kør den."
   fr: "Peignez un bus à vos couleurs et conduisez-le."
   ru: "Покрасьте автобус в свои цвета и водите его."
   uk: "Пофарбуйте автобус у свої кольори та водіть його."
@@ -31604,6 +31621,7 @@ _version: 2
 "The map's lines: their tours and when each trip leaves.":
   nl: "De lijnen van de kaart: hun omlopen en wanneer elke rit vertrekt."
   de: "Die Linien der Karte: ihre Umläufe und wann jede Fahrt abfährt."
+  da: "Kortets linjer: deres ture og hvornår hver rejse afgår."
   fr: "Les lignes de la carte : leurs services et le départ de chaque course."
   ru: "Линии карты: их выпуски и когда отправляется каждый рейс."
   uk: "Лінії мапи: їхні випуски й коли вирушає кожен рейс."
@@ -31611,6 +31629,7 @@ _version: 2
 "The game's object editor on a map: move, turn, add and delete its objects and shape the ground. The game starts with the editor on.":
   nl: "De objecteditor van het spel op een kaart: objecten verplaatsen, draaien, toevoegen en verwijderen en het terrein vormen. Het spel start met de editor aan."
   de: "Der Objekteditor des Spiels auf einer Karte: Objekte verschieben, drehen, hinzufügen und löschen und das Gelände formen. Das Spiel startet mit eingeschaltetem Editor."
+  da: "Spillets objekteditor på et kort: flyt, drej, tilføj og slet dets objekter, og form terrænet. Spillet starter med editoren slået til."
   fr: "L'éditeur d'objets du jeu sur une carte : déplacer, tourner, ajouter et supprimer des objets et modeler le terrain. Le jeu démarre avec l'éditeur actif."
   ru: "Редактор объектов игры на карте: двигайте, поворачивайте, добавляйте и удаляйте объекты и меняйте рельеф. Игра запускается с включённым редактором."
   uk: "Редактор об’єктів гри на мапі: пересувайте, повертайте, додавайте й видаляйте об’єкти та змінюйте рельєф. Гра запускається з увімкненим редактором."
@@ -31618,6 +31637,7 @@ _version: 2
 "Start the object editor":
   nl: "Objecteditor starten"
   de: "Objekteditor starten"
+  da: "Start objekteditoren"
   fr: "Lancer l'éditeur d'objets"
   ru: "Запустить редактор объектов"
   uk: "Запустити редактор об’єктів"
@@ -31625,6 +31645,7 @@ _version: 2
 "The livery editor opens from here once it is part of this build…":
   nl: "De lakeditor opent hier zodra hij in deze versie zit…"
   de: "Der Lackierungseditor öffnet sich hier, sobald er Teil dieser Version ist…"
+  da: "Bemalingseditoren åbner herfra, når den er en del af denne build…"
   fr: "L'éditeur de livrées s'ouvrira d'ici dès qu'il fera partie de cette version…"
   ru: "Редактор окраски откроется отсюда, когда войдёт в эту сборку…"
   uk: "Редактор фарбування відкриється звідси, щойно ввійде в цю збірку…"
@@ -31632,6 +31653,7 @@ _version: 2
 "Own lines, liveries, the timetable":
   nl: "Eigen lijnen, lakken, dienstregeling"
   de: "Eigene Linien, Lackierungen, Fahrplan"
+  da: "Egne linjer, bemalinger, køreplanen"
   fr: "Vos lignes, livrées, horaire"
   ru: "Свои линии, окраски, расписание"
   uk: "Власні лінії, фарбування, розклад"
@@ -31639,6 +31661,7 @@ _version: 2
 "Choose a bus on the Drive page first: the editor starts with it on the map.":
   nl: "Kies eerst een bus op de pagina Rijden: de editor start met die bus op de kaart."
   de: "Wähle zuerst einen Bus auf der Seite Fahren: der Editor startet mit ihm auf der Karte."
+  da: "Vælg først en bus på siden Kør: editoren starter med den på kortet."
   fr: "Choisissez d'abord un bus sur la page Conduire : l'éditeur démarre avec lui sur la carte."
   ru: "Сначала выберите автобус на странице «Поездка»: редактор запускается с ним на карте."
   uk: "Спершу виберіть автобус на сторінці «Поїздка»: редактор запускається з ним на мапі."
@@ -31646,6 +31669,7 @@ _version: 2
 "Starting the object editor…":
   nl: "De objecteditor start…"
   de: "Der Objekteditor startet…"
+  da: "Starter objekteditoren…"
   fr: "Lancement de l'éditeur d'objets…"
   ru: "Запуск редактора объектов…"
   uk: "Запуск редактора об’єктів…"
@@ -31653,6 +31677,7 @@ _version: 2
 "Your lines":
   nl: "Jouw lijnen"
   de: "Deine Linien"
+  da: "Dine linjer"
   fr: "Vos lignes"
   ru: "Ваши линии"
   uk: "Ваші лінії"
@@ -31660,6 +31685,7 @@ _version: 2
 "No lines of your own on this map yet":
   nl: "Nog geen eigen lijnen op deze kaart"
   de: "Noch keine eigenen Linien auf dieser Karte"
+  da: "Endnu ingen egne linjer på dette kort"
   fr: "Pas encore de ligne à vous sur cette carte"
   ru: "На этой карте ещё нет ваших линий"
   uk: "На цій мапі ще немає ваших ліній"
@@ -31667,6 +31693,7 @@ _version: 2
 "New line":
   nl: "Nieuwe lijn"
   de: "Neue Linie"
+  da: "Ny linje"
   fr: "Nouvelle ligne"
   ru: "Новая линия"
   uk: "Нова лінія"
@@ -31674,6 +31701,7 @@ _version: 2
 "Now click the line's stops on the map, in the order the bus calls at them":
   nl: "Klik nu de haltes van de lijn op de kaart aan, in de volgorde waarin de bus ze aandoet"
   de: "Klicke jetzt die Haltestellen der Linie auf der Karte an, in der Reihenfolge, in der der Bus sie anfährt"
+  da: "Klik nu på linjens stoppesteder på kortet i den rækkefølge, bussen standser ved dem"
   fr: "Cliquez maintenant les arrêts de la ligne sur la carte, dans l'ordre où le bus les dessert"
   ru: "Теперь щёлкните остановки линии на карте в том порядке, в каком их проходит автобус"
   uk: "Тепер клацніть зупинки лінії на мапі в тому порядку, в якому їх проходить автобус"
@@ -31681,6 +31709,7 @@ _version: 2
 "Number":
   nl: "Nummer"
   de: "Nummer"
+  da: "Nummer"
   fr: "Numéro"
   ru: "Номер"
   uk: "Номер"
@@ -31688,6 +31717,7 @@ _version: 2
 "Select":
   nl: "Selecteren"
   de: "Auswählen"
+  da: "Vælg"
   fr: "Sélection"
   ru: "Выбор"
   uk: "Вибір"
@@ -31716,6 +31746,7 @@ _version: 2
 "Fill":
   nl: "Vullen"
   de: "Füllen"
+  da: "Udfyld"
   fr: "Remplir"
   ru: "Заливка"
   uk: "Заливка"
@@ -31723,6 +31754,7 @@ _version: 2
 "Stripe":
   nl: "Strook"
   de: "Streifen"
+  da: "Stribe"
   fr: "Bande"
   ru: "Полоса"
   uk: "Смуга"
@@ -31730,6 +31762,7 @@ _version: 2
 "Text":
   nl: "Tekst"
   de: "Text"
+  da: "Tekst"
   fr: "Texte"
   ru: "Текст"
   uk: "Текст"
@@ -31737,6 +31770,7 @@ _version: 2
 "Image":
   nl: "Afbeelding"
   de: "Bild"
+  da: "Billede"
   fr: "Image"
   ru: "Изображение"
   uk: "Зображення"
@@ -31744,6 +31778,7 @@ _version: 2
 "Shapes":
   nl: "Vormen"
   de: "Formen"
+  da: "Former"
   fr: "Formes"
   ru: "Фигуры"
   uk: "Фігури"
@@ -31751,6 +31786,7 @@ _version: 2
 "Pen":
   nl: "Pen"
   de: "Stift"
+  da: "Pen"
   fr: "Plume"
   ru: "Перо"
   uk: "Перо"
@@ -31758,6 +31794,7 @@ _version: 2
 "Mirror":
   nl: "Spiegel"
   de: "Spiegeln"
+  da: "Spejl"
   fr: "Miroir"
   ru: "Зеркало"
   uk: "Дзеркало"
@@ -31786,6 +31823,7 @@ _version: 2
 "Decals on one side are copied onto the other":
   nl: "Wat op de ene kant staat, komt ook op de andere"
   de: "Was auf einer Seite ist, kommt auch auf die andere"
+  da: "Mærkater på den ene side kopieres over på den anden"
   fr: "Ce qui est sur un côté est copié sur l'autre"
   ru: "Наклейки с одной стороны копируются на другую"
   uk: "Наліпки з одного боку копіюються на інший"
@@ -31793,6 +31831,7 @@ _version: 2
 "Undo (Ctrl+Z)":
   nl: "Ongedaan maken (Ctrl+Z)"
   de: "Rückgängig (Strg+Z)"
+  da: "Fortryd (Ctrl+Z)"
   fr: "Annuler (Ctrl+Z)"
   ru: "Отменить (Ctrl+Z)"
   uk: "Скасувати (Ctrl+Z)"
@@ -31800,6 +31839,7 @@ _version: 2
 "Redo (Ctrl+Y)":
   nl: "Opnieuw (Ctrl+Y)"
   de: "Wiederholen (Strg+Y)"
+  da: "Gentag (Ctrl+Y)"
   fr: "Rétablir (Ctrl+Y)"
   ru: "Повторить (Ctrl+Y)"
   uk: "Повторити (Ctrl+Y)"
@@ -31807,6 +31847,7 @@ _version: 2
 "Name of the livery":
   nl: "Naam van de lak"
   de: "Name der Lackierung"
+  da: "Bemalingens navn"
   fr: "Nom de la livrée"
   ru: "Название окраски"
   uk: "Назва лівреї"
@@ -31814,6 +31855,7 @@ _version: 2
 "Save again":
   nl: "Opnieuw opslaan"
   de: "Erneut speichern"
+  da: "Gem igen"
   fr: "Enregistrer à nouveau"
   ru: "Сохранить снова"
   uk: "Зберегти знову"
@@ -31821,6 +31863,7 @@ _version: 2
 "Save to game":
   nl: "Opslaan in het spel"
   de: "Im Spiel speichern"
+  da: "Gem i spillet"
   fr: "Enregistrer dans le jeu"
   ru: "Сохранить в игру"
   uk: "Зберегти в гру"
@@ -31828,6 +31871,7 @@ _version: 2
 "Livery studio":
   nl: "Lakstudio"
   de: "Lackierstudio"
+  da: "Bemalingsstudie"
   fr: "Atelier de livrées"
   ru: "Студия окраски"
   uk: "Студія ліврей"
@@ -31835,6 +31879,7 @@ _version: 2
 "Loading the bus…":
   nl: "De bus wordt geladen…"
   de: "Der Bus wird geladen…"
+  da: "Indlæser bussen…"
   fr: "Chargement du bus…"
   ru: "Загрузка автобуса…"
   uk: "Завантаження автобуса…"
@@ -31842,6 +31887,7 @@ _version: 2
 "Preparing the paint…":
   nl: "De lak wordt voorbereid…"
   de: "Der Lack wird vorbereitet…"
+  da: "Forbereder malingen…"
   fr: "Préparation de la peinture…"
   ru: "Подготовка окраски…"
   uk: "Підготовка фарбування…"
@@ -31849,6 +31895,7 @@ _version: 2
 "The bus cannot be painted: %{e}":
   nl: "Deze bus kan niet gelakt worden: %{e}"
   de: "Dieser Bus kann nicht lackiert werden: %{e}"
+  da: "Bussen kan ikke males: %{e}"
   fr: "Ce bus ne peut pas être peint : %{e}"
   ru: "Этот автобус нельзя покрасить: %{e}"
   uk: "Цей автобус не можна пофарбувати: %{e}"
@@ -31856,6 +31903,7 @@ _version: 2
 "Paint a bus in 3D and drive it in your own livery.":
   nl: "Lak een bus in 3D en rijd hem in je eigen kleuren."
   de: "Lackiere einen Bus in 3D und fahre ihn in deinen eigenen Farben."
+  da: "Mal en bus i 3D, og kør den i din egen bemaling."
   fr: "Peins un bus en 3D et conduis-le dans ta propre livrée."
   ru: "Покрасьте автобус в 3D и ездите в своей окраске."
   uk: "Пофарбуйте автобус у 3D і їздіть у власній лівреї."
@@ -31863,6 +31911,7 @@ _version: 2
 "Continue a livery":
   nl: "Verder met een lak"
   de: "Eine Lackierung fortsetzen"
+  da: "Fortsæt en bemaling"
   fr: "Reprendre une livrée"
   ru: "Продолжить окраску"
   uk: "Продовжити ліврею"
@@ -31870,6 +31919,7 @@ _version: 2
 "None yet.":
   nl: "Nog geen."
   de: "Noch keine."
+  da: "Ingen endnu."
   fr: "Aucune pour l'instant."
   ru: "Пока нет."
   uk: "Поки немає."
@@ -31877,6 +31927,7 @@ _version: 2
 "Untitled livery":
   nl: "Lak zonder naam"
   de: "Lackierung ohne Namen"
+  da: "Unavngivet bemaling"
   fr: "Livrée sans nom"
   ru: "Окраска без названия"
   uk: "Ліврея без назви"
@@ -31884,6 +31935,7 @@ _version: 2
 "layers":
   nl: "lagen"
   de: "Ebenen"
+  da: "lag"
   fr: "calques"
   ru: "слоёв"
   uk: "шарів"
@@ -31891,6 +31943,7 @@ _version: 2
 "Paint a new livery":
   nl: "Een nieuwe lak maken"
   de: "Eine neue Lackierung"
+  da: "Mal en ny bemaling"
   fr: "Nouvelle livrée"
   ru: "Новая окраска"
   uk: "Нова ліврея"
@@ -31898,6 +31951,7 @@ _version: 2
 "Search a bus":
   nl: "Zoek een bus"
   de: "Bus suchen"
+  da: "Søg en bus"
   fr: "Chercher un bus"
   ru: "Найти автобус"
   uk: "Знайти автобус"
@@ -31905,6 +31959,7 @@ _version: 2
 "The model's own paint":
   nl: "De eigen lak van het model"
   de: "Die Lackierung des Modells"
+  da: "Modellens egen maling"
   fr: "La peinture d'origine du modèle"
   ru: "Родная окраска модели"
   uk: "Рідна ліврея моделі"
@@ -31912,6 +31967,7 @@ _version: 2
 "Begin from":
   nl: "Beginnen met"
   de: "Beginnen mit"
+  da: "Begynd fra"
   fr: "Partir de"
   ru: "Начать с"
   uk: "Почати з"
@@ -31919,6 +31975,7 @@ _version: 2
 "Start painting":
   nl: "Beginnen met lakken"
   de: "Lackieren"
+  da: "Begynd at male"
   fr: "Commencer à peindre"
   ru: "Начать покраску"
   uk: "Почати фарбування"
@@ -31926,6 +31983,7 @@ _version: 2
 "Choose the bus to paint.":
   nl: "Kies de bus die je wilt lakken."
   de: "Wähle den Bus, den du lackieren willst."
+  da: "Vælg den bus, der skal males."
   fr: "Choisis le bus à peindre."
   ru: "Выберите автобус для покраски."
   uk: "Виберіть автобус для фарбування."
@@ -31933,6 +31991,7 @@ _version: 2
 "Layers":
   nl: "Lagen"
   de: "Ebenen"
+  da: "Lag"
   fr: "Calques"
   ru: "Слои"
   uk: "Шари"
@@ -31940,6 +31999,7 @@ _version: 2
 "Nothing painted yet. Choose a tool above, or begin with the quick livery on the right.":
   nl: "Nog niets gelakt. Kies hierboven een gereedschap, of begin rechts met Snelle lak."
   de: "Noch nichts lackiert. Wähle oben ein Werkzeug oder beginne rechts mit der Schnelllackierung."
+  da: "Intet malet endnu. Vælg et værktøj ovenfor, eller begynd med den hurtige bemaling til højre."
   fr: "Rien n'est encore peint. Choisis un outil en haut, ou commence par la livrée rapide à droite."
   ru: "Пока ничего не покрашено. Выберите инструмент сверху или начните с быстрой окраски справа."
   uk: "Поки нічого не пофарбовано. Виберіть інструмент угорі або почніть зі швидкої лівреї праворуч."
@@ -31947,6 +32007,7 @@ _version: 2
 "Show or hide":
   nl: "Tonen of verbergen"
   de: "Zeigen oder verbergen"
+  da: "Vis eller skjul"
   fr: "Afficher ou masquer"
   ru: "Показать или скрыть"
   uk: "Показати або сховати"
@@ -31954,6 +32015,7 @@ _version: 2
 "Lock":
   nl: "Vergrendelen"
   de: "Sperren"
+  da: "Lås"
   fr: "Verrouiller"
   ru: "Заблокировать"
   uk: "Заблокувати"
@@ -31961,6 +32023,7 @@ _version: 2
 "Copy":
   nl: "Kopiëren"
   de: "Kopieren"
+  da: "Kopiér"
   fr: "Copier"
   ru: "Копировать"
   uk: "Копіювати"
@@ -31989,6 +32052,7 @@ _version: 2
 "the model's own":
   nl: "de eigen lak van het model"
   de: "der Lack des Modells"
+  da: "modellens egen"
   fr: "la peinture d'origine"
   ru: "родная окраска"
   uk: "рідна ліврея"
@@ -31996,6 +32060,7 @@ _version: 2
 "Begun from:":
   nl: "Begonnen met:"
   de: "Begonnen mit:"
+  da: "Begyndt fra:"
   fr: "Partie de :"
   ru: "Начато с:"
   uk: "Почато з:"
@@ -32003,6 +32068,7 @@ _version: 2
 "texels/m":
   nl: "texels/m"
   de: "Texel/m"
+  da: "texel/m"
   fr: "texels/m"
   ru: "тексел/м"
   uk: "тексел/м"
@@ -32010,6 +32076,7 @@ _version: 2
 "Quick livery":
   nl: "Snelle lak"
   de: "Schnelllackierung"
+  da: "Hurtig bemaling"
   fr: "Livrée rapide"
   ru: "Быстрая окраска"
   uk: "Швидка ліврея"
@@ -32017,6 +32084,7 @@ _version: 2
 "Three colours, a stripe, a name and a logo: every choice becomes a layer you can change afterwards.":
   nl: "Drie kleuren, een strook, een naam en een logo: elke keuze wordt een laag die je daarna nog kunt aanpassen."
   de: "Drei Farben, ein Streifen, ein Name und ein Logo: Jede Wahl wird eine Ebene, die du danach noch ändern kannst."
+  da: "Tre farver, en stribe, et navn og et logo: hvert valg bliver et lag, du kan ændre bagefter."
   fr: "Trois couleurs, une bande, un nom et un logo : chaque choix devient un calque modifiable ensuite."
   ru: "Три цвета, полоса, название и логотип: каждый выбор становится слоем, который можно изменить потом."
   uk: "Три кольори, смуга, назва і логотип: кожен вибір стає шаром, який можна змінити потім."
@@ -32024,6 +32092,7 @@ _version: 2
 "Body":
   nl: "Carrosserie"
   de: "Karosserie"
+  da: "Karrosseri"
   fr: "Carrosserie"
   ru: "Кузов"
   uk: "Кузов"
@@ -32052,6 +32121,7 @@ _version: 2
 "Driven by the buses of":
   nl: "Gereden door de bussen van"
   de: "Gefahren von den Bussen von"
+  da: "Kørt af busserne fra"
   fr: "Desservie par les bus de"
   ru: "Обслуживают автобусы"
   uk: "Обслуговують автобуси"
@@ -32059,6 +32129,7 @@ _version: 2
 "Depot group (ailists.cfg)":
   nl: "Depotgroep (ailists.cfg)"
   de: "Depotgruppe (ailists.cfg)"
+  da: "Depotgruppe (ailists.cfg)"
   fr: "Groupe de dépôt (ailists.cfg)"
   ru: "Группа депо (ailists.cfg)"
   uk: "Група депо (ailists.cfg)"
@@ -32066,6 +32137,7 @@ _version: 2
 "This map's ailists.cfg has no depot group with buses: the timetable's buses cannot drive the line (you can).":
   nl: "De ailists.cfg van deze kaart heeft geen depotgroep met bussen: de bussen van de dienstregeling kunnen de lijn niet rijden (jij wel)."
   de: "Die ailists.cfg dieser Karte hat keine Depotgruppe mit Bussen: die Fahrplanbusse können die Linie nicht fahren (du schon)."
+  da: "Dette korts ailists.cfg har ingen depotgruppe med busser: køreplanens busser kan ikke køre linjen (det kan du)."
   fr: "Le ailists.cfg de cette carte n'a aucun groupe de dépôt avec des bus : les bus de l'horaire ne peuvent pas la desservir (vous si)."
   ru: "В ailists.cfg этой карты нет группы депо с автобусами: автобусы расписания не смогут ездить по линии (вы сможете)."
   uk: "В ailists.cfg цієї мапи немає групи депо з автобусами: автобуси розкладу не зможуть їздити лінією (ви зможете)."
@@ -32073,6 +32145,7 @@ _version: 2
 "Save line":
   nl: "Lijn opslaan"
   de: "Linie speichern"
+  da: "Gem linje"
   fr: "Enregistrer la ligne"
   ru: "Сохранить линию"
   uk: "Зберегти лінію"
@@ -32080,6 +32153,7 @@ _version: 2
 "Press again":
   nl: "Nogmaals drukken"
   de: "Noch einmal drücken"
+  da: "Tryk igen"
   fr: "Appuyez encore"
   ru: "Нажмите ещё раз"
   uk: "Натисніть ще раз"
@@ -32087,6 +32161,7 @@ _version: 2
 "Delete line":
   nl: "Lijn verwijderen"
   de: "Linie löschen"
+  da: "Slet linje"
   fr: "Supprimer la ligne"
   ru: "Удалить линию"
   uk: "Видалити лінію"
@@ -32094,6 +32169,7 @@ _version: 2
 "Press \"Delete line\" again: the line and its files go":
   nl: "Druk nogmaals op \"Lijn verwijderen\": de lijn en haar bestanden verdwijnen"
   de: "Drücke noch einmal \"Linie löschen\": die Linie und ihre Dateien verschwinden"
+  da: "Tryk på \"Slet linje\" igen: linjen og dens filer forsvinder"
   fr: "Appuyez encore sur « Supprimer la ligne » : la ligne et ses fichiers disparaissent"
   ru: "Нажмите «Удалить линию» ещё раз: линия и её файлы будут удалены"
   uk: "Натисніть «Видалити лінію» ще раз: лінію та її файли буде видалено"
@@ -32101,6 +32177,7 @@ _version: 2
 "Drive it":
   nl: "Rijd hem"
   de: "Fahre sie"
+  da: "Kør den"
   fr: "La conduire"
   ru: "Проехать"
   uk: "Проїхати"
@@ -32108,6 +32185,7 @@ _version: 2
 "The changes to the line on the map before were not saved":
   nl: "De wijzigingen aan de lijn op de vorige kaart zijn niet opgeslagen"
   de: "Die Änderungen an der Linie auf der vorigen Karte wurden nicht gespeichert"
+  da: "Ændringerne af linjen på kortet før blev ikke gemt"
   fr: "Les modifications de la ligne sur la carte précédente n'ont pas été enregistrées"
   ru: "Изменения линии на предыдущей карте не сохранены"
   uk: "Зміни лінії на попередній мапі не збережено"
@@ -32115,6 +32193,7 @@ _version: 2
 "Saved in your lines, but there is no content folder to write the timetable into":
   nl: "Bewaard bij je lijnen, maar er is geen contentmap om de dienstregeling in te schrijven"
   de: "In deinen Linien gespeichert, aber es gibt keinen Inhaltsordner für den Fahrplan"
+  da: "Gemt i dine linjer, men der er ingen indholdsmappe at skrive køreplanen i"
   fr: "Enregistrée dans vos lignes, mais aucun dossier de contenu où écrire l'horaire"
   ru: "Сохранено в ваших линиях, но нет папки контента для расписания"
   uk: "Збережено у ваших лініях, але немає теки вмісту для розкладу"
@@ -32122,6 +32201,7 @@ _version: 2
 "Line %{n} kept as a draft: %{why}":
   nl: "Lijn %{n} bewaard als concept: %{why}"
   de: "Linie %{n} als Entwurf gespeichert: %{why}"
+  da: "Linje %{n} beholdt som kladde: %{why}"
   fr: "Ligne %{n} gardée en brouillon : %{why}"
   ru: "Линия %{n} сохранена как черновик: %{why}"
   uk: "Лінію %{n} збережено як чернетку: %{why}"
@@ -32129,6 +32209,7 @@ _version: 2
 "Line %{n} saved: it is in the map's timetable now (the next game start picks it up)":
   nl: "Lijn %{n} opgeslagen: hij staat nu in de dienstregeling van de kaart (de volgende start van het spel neemt hem mee)"
   de: "Linie %{n} gespeichert: sie steht jetzt im Fahrplan der Karte (der nächste Spielstart übernimmt sie)"
+  da: "Linje %{n} gemt: den er nu i kortets køreplan (næste spilstart henter den)"
   fr: "Ligne %{n} enregistrée : elle est dans l'horaire de la carte (le prochain lancement du jeu la prend)"
   ru: "Линия %{n} сохранена: она теперь в расписании карты (её подхватит следующий запуск игры)"
   uk: "Лінію %{n} збережено: вона тепер у розкладі мапи (її підхопить наступний запуск гри)"
@@ -32136,6 +32217,7 @@ _version: 2
 "The timetable files could not be written":
   nl: "De dienstregelingsbestanden konden niet worden geschreven"
   de: "Die Fahrplandateien konnten nicht geschrieben werden"
+  da: "Køreplansfilerne kunne ikke skrives"
   fr: "Les fichiers d'horaire n'ont pas pu être écrits"
   ru: "Не удалось записать файлы расписания"
   uk: "Не вдалося записати файли розкладу"
@@ -32143,6 +32225,7 @@ _version: 2
 "Line %{n} deleted":
   nl: "Lijn %{n} verwijderd"
   de: "Linie %{n} gelöscht"
+  da: "Linje %{n} slettet"
   fr: "Ligne %{n} supprimée"
   ru: "Линия %{n} удалена"
   uk: "Лінію %{n} видалено"
@@ -32150,6 +32233,7 @@ _version: 2
 "Save the line first: the game drives what is saved":
   nl: "Sla de lijn eerst op: het spel rijdt wat opgeslagen is"
   de: "Speichere die Linie zuerst: das Spiel fährt, was gespeichert ist"
+  da: "Gem først linjen: spillet kører det, der er gemt"
   fr: "Enregistrez d'abord la ligne : le jeu conduit ce qui est enregistré"
   ru: "Сначала сохраните линию: игра использует сохранённое"
   uk: "Спершу збережіть лінію: гра використовує збережене"
@@ -32157,6 +32241,7 @@ _version: 2
 "The line needs a number":
   nl: "De lijn heeft een nummer nodig"
   de: "Die Linie braucht eine Nummer"
+  da: "Linjen skal have et nummer"
   fr: "La ligne a besoin d'un numéro"
   ru: "Линии нужен номер"
   uk: "Лінії потрібен номер"
@@ -32164,6 +32249,7 @@ _version: 2
 "Choose the depot whose buses drive the line":
   nl: "Kies het depot waarvan de bussen de lijn rijden"
   de: "Wähle das Depot, dessen Busse die Linie fahren"
+  da: "Vælg det depot, hvis busser kører linjen"
   fr: "Choisissez le dépôt dont les bus desservent la ligne"
   ru: "Выберите депо, автобусы которого обслуживают линию"
   uk: "Виберіть депо, автобуси якого обслуговують лінію"
@@ -32171,6 +32257,7 @@ _version: 2
 "The outbound direction needs at least two stops":
   nl: "De heenrichting heeft minstens twee haltes nodig"
   de: "Die Hinrichtung braucht mindestens zwei Haltestellen"
+  da: "Udturen skal have mindst to stoppesteder"
   fr: "L'aller a besoin d'au moins deux arrêts"
   ru: "Прямому направлению нужно не менее двух остановок"
   uk: "Прямому напрямку потрібно щонайменше дві зупинки"
@@ -32178,6 +32265,7 @@ _version: 2
 "The way back needs at least two stops":
   nl: "De terugweg heeft minstens twee haltes nodig"
   de: "Der Rückweg braucht mindestens zwei Haltestellen"
+  da: "Returturen skal have mindst to stoppesteder"
   fr: "Le retour a besoin d'au moins deux arrêts"
   ru: "Обратному направлению нужно не менее двух остановок"
   uk: "Зворотному напрямку потрібно щонайменше дві зупинки"
@@ -32185,6 +32273,7 @@ _version: 2
 "%{n} leg(s) of the outbound direction have no way over the roads":
   nl: "%{n} deel/delen van de heenrichting hebben geen weg over de wegen"
   de: "%{n} Abschnitt(e) der Hinrichtung haben keinen Weg über die Straßen"
+  da: "%{n} strækning(er) af udturen har ingen vej over vejene"
   fr: "%{n} tronçon(s) de l'aller n'ont pas de chemin sur les routes"
   ru: "У %{n} участк(ов) прямого направления нет пути по дорогам"
   uk: "%{n} відрізк(ів) прямого напрямку не мають шляху дорогами"
@@ -32192,6 +32281,7 @@ _version: 2
 "%{n} leg(s) of the way back have no way over the roads":
   nl: "%{n} deel/delen van de terugweg hebben geen weg over de wegen"
   de: "%{n} Abschnitt(e) des Rückwegs haben keinen Weg über die Straßen"
+  da: "%{n} strækning(er) af returturen har ingen vej over vejene"
   fr: "%{n} tronçon(s) du retour n'ont pas de chemin sur les routes"
   ru: "У %{n} участк(ов) обратного направления нет пути по дорогам"
   uk: "%{n} відрізк(ів) зворотного напрямку не мають шляху дорогами"
@@ -32199,6 +32289,7 @@ _version: 2
 "The line runs on no day":
   nl: "De lijn rijdt op geen enkele dag"
   de: "Die Linie fährt an keinem Tag"
+  da: "Linjen kører ingen dag"
   fr: "La ligne ne circule aucun jour"
   ru: "Линия не ходит ни в один день"
   uk: "Лінія не ходить жодного дня"
@@ -32206,6 +32297,7 @@ _version: 2
 "The line":
   nl: "De lijn"
   de: "Die Linie"
+  da: "Linjen"
   fr: "La ligne"
   ru: "Линия"
   uk: "Лінія"
@@ -32213,6 +32305,7 @@ _version: 2
 "Choose one of your lines, or make a new one.":
   nl: "Kies een van je lijnen, of maak een nieuwe."
   de: "Wähle eine deiner Linien oder lege eine neue an."
+  da: "Vælg en af dine linjer, eller lav en ny."
   fr: "Choisissez une de vos lignes, ou créez-en une."
   ru: "Выберите одну из своих линий или создайте новую."
   uk: "Виберіть одну зі своїх ліній або створіть нову."
@@ -32220,6 +32313,7 @@ _version: 2
 "Stops":
   nl: "Haltes"
   de: "Haltestellen"
+  da: "Stoppesteder"
   fr: "Arrêts"
   ru: "Остановки"
   uk: "Зупинки"
@@ -32229,6 +32323,7 @@ _version: 2
 "Outbound":
   nl: "Heen"
   de: "Hin"
+  da: "Udtur"
   fr: "Aller"
   ru: "Туда"
   uk: "Туди"
@@ -32236,6 +32331,7 @@ _version: 2
 "Return":
   nl: "Terug"
   de: "Zurück"
+  da: "Returtur"
   fr: "Retour"
   ru: "Обратно"
   uk: "Назад"
@@ -32243,6 +32339,7 @@ _version: 2
 "Without a way back the line goes round: the bus starts again at the first stop.":
   nl: "Zonder terugweg rijdt de lijn rond: de bus begint weer bij de eerste halte."
   de: "Ohne Rückweg fährt die Linie im Kreis: der Bus beginnt wieder an der ersten Haltestelle."
+  da: "Uden returtur kører linjen rundt: bussen starter igen ved det første stoppested."
   fr: "Sans retour, la ligne tourne en boucle : le bus repart du premier arrêt."
   ru: "Без обратного пути линия кольцевая: автобус снова начинает с первой остановки."
   uk: "Без зворотного шляху лінія кільцева: автобус знову починає з першої зупинки."
@@ -32250,6 +32347,7 @@ _version: 2
 "Reverse: make the way back":
   nl: "Omdraaien: maak de terugweg"
   de: "Umkehren: Rückweg anlegen"
+  da: "Vend om: lav returturen"
   fr: "Inverser : créer le retour"
   ru: "Развернуть: создать обратный путь"
   uk: "Розвернути: створити зворотний шлях"
@@ -32257,6 +32355,7 @@ _version: 2
 "Last stop: %{name}":
   nl: "Laatste halte: %{name}"
   de: "Letzte Haltestelle: %{name}"
+  da: "Sidste stoppested: %{name}"
   fr: "Dernier arrêt : %{name}"
   ru: "Последняя остановка: %{name}"
   uk: "Остання зупинка: %{name}"
@@ -32264,6 +32363,7 @@ _version: 2
 "or type it":
   nl: "of typ hem"
   de: "oder eintippen"
+  da: "eller skriv det"
   fr: "ou tapez-la"
   ru: "или введите"
   uk: "або введіть"
@@ -32271,6 +32371,7 @@ _version: 2
 "Click the stops on the map in the order the bus calls at them.":
   nl: "Klik de haltes op de kaart aan in de volgorde waarin de bus ze aandoet."
   de: "Klicke die Haltestellen auf der Karte in der Reihenfolge an, in der der Bus sie anfährt."
+  da: "Klik på stoppestederne på kortet i den rækkefølge, bussen standser ved dem."
   fr: "Cliquez les arrêts sur la carte dans l'ordre où le bus les dessert."
   ru: "Щёлкайте остановки на карте в том порядке, в каком их проходит автобус."
   uk: "Клацайте зупинки на мапі в тому порядку, в якому їх проходить автобус."
@@ -32278,6 +32379,7 @@ _version: 2
 "A minute later":
   nl: "Een minuut later"
   de: "Eine Minute später"
+  da: "Et minut senere"
   fr: "Une minute plus tard"
   ru: "На минуту позже"
   uk: "На хвилину пізніше"
@@ -32285,6 +32387,7 @@ _version: 2
 "A minute earlier":
   nl: "Een minuut eerder"
   de: "Eine Minute früher"
+  da: "Et minut tidligere"
   fr: "Une minute plus tôt"
   ru: "На минуту раньше"
   uk: "На хвилину раніше"
@@ -32292,6 +32395,7 @@ _version: 2
 "Earlier in the line":
   nl: "Eerder in de lijn"
   de: "Früher in der Linie"
+  da: "Tidligere på linjen"
   fr: "Plus tôt dans la ligne"
   ru: "Раньше в линии"
   uk: "Раніше в лінії"
@@ -32299,6 +32403,7 @@ _version: 2
 "Later in the line":
   nl: "Later in de lijn"
   de: "Später in der Linie"
+  da: "Senere på linjen"
   fr: "Plus tard dans la ligne"
   ru: "Позже в линии"
   uk: "Пізніше в лінії"
@@ -32306,6 +32411,7 @@ _version: 2
 "Take the stop out":
   nl: "Halte eruit halen"
   de: "Haltestelle herausnehmen"
+  da: "Tag stoppestedet ud"
   fr: "Retirer l'arrêt"
   ru: "Убрать остановку"
   uk: "Прибрати зупинку"
@@ -32313,6 +32419,7 @@ _version: 2
 "no way over the roads":
   nl: "geen weg over de wegen"
   de: "kein Weg über die Straßen"
+  da: "ingen vej over vejene"
   fr: "pas de chemin sur les routes"
   ru: "нет пути по дорогам"
   uk: "немає шляху дорогами"
@@ -32320,6 +32427,7 @@ _version: 2
 "Straighten the leg (its dragged points go)":
   nl: "Deel rechttrekken (de versleepte punten verdwijnen)"
   de: "Abschnitt glätten (die gezogenen Punkte verschwinden)"
+  da: "Ret strækningen ud (dens trukne punkter forsvinder)"
   fr: "Redresser le tronçon (ses points déplacés disparaissent)"
   ru: "Выпрямить участок (перетащенные точки исчезнут)"
   uk: "Випрямити відрізок (перетягнуті точки зникнуть)"
@@ -32327,6 +32435,7 @@ _version: 2
 "%{n} min from the first stop to the last":
   nl: "%{n} min van de eerste tot de laatste halte"
   de: "%{n} min von der ersten bis zur letzten Haltestelle"
+  da: "%{n} min fra det første stoppested til det sidste"
   fr: "%{n} min du premier au dernier arrêt"
   ru: "%{n} мин от первой до последней остановки"
   uk: "%{n} хв від першої до останньої зупинки"
@@ -32334,6 +32443,7 @@ _version: 2
 "The whole trip a minute shorter":
   nl: "De hele rit een minuut korter"
   de: "Die ganze Fahrt eine Minute kürzer"
+  da: "Hele rejsen et minut kortere"
   fr: "Toute la course une minute plus courte"
   ru: "Весь рейс на минуту короче"
   uk: "Увесь рейс на хвилину коротший"
@@ -32341,6 +32451,7 @@ _version: 2
 "The whole trip a minute longer":
   nl: "De hele rit een minuut langer"
   de: "Die ganze Fahrt eine Minute länger"
+  da: "Hele rejsen et minut længere"
   fr: "Toute la course une minute plus longue"
   ru: "Весь рейс на минуту дольше"
   uk: "Увесь рейс на хвилину довший"
@@ -32348,6 +32459,7 @@ _version: 2
 "Times from the roads":
   nl: "Tijden uit de wegen"
   de: "Zeiten aus den Straßen"
+  da: "Tider fra vejene"
   fr: "Temps selon les routes"
   ru: "Время по дорогам"
   uk: "Час за дорогами"
@@ -32355,6 +32467,7 @@ _version: 2
 "Reverse again":
   nl: "Opnieuw omdraaien"
   de: "Erneut umkehren"
+  da: "Vend om igen"
   fr: "Inverser à nouveau"
   ru: "Развернуть заново"
   uk: "Розвернути знову"
@@ -32362,6 +32475,7 @@ _version: 2
 "Reverse":
   nl: "Omdraaien"
   de: "Umkehren"
+  da: "Vend om"
   fr: "Inverser"
   ru: "Развернуть"
   uk: "Розвернути"
@@ -32369,6 +32483,7 @@ _version: 2
 "Give the outbound direction its stops first":
   nl: "Geef de heenrichting eerst haar haltes"
   de: "Gib der Hinrichtung zuerst ihre Haltestellen"
+  da: "Giv først udturen dens stoppesteder"
   fr: "Donnez d'abord ses arrêts à l'aller"
   ru: "Сначала задайте остановки прямого направления"
   uk: "Спершу задайте зупинки прямого напрямку"
@@ -32376,6 +32491,7 @@ _version: 2
 "The way back is made; %{n} leg(s) have no way over the roads (red): drag them, or change a stop":
   nl: "De terugweg is gemaakt; %{n} deel/delen hebben geen weg over de wegen (rood): versleep ze of wijzig een halte"
   de: "Der Rückweg ist angelegt; %{n} Abschnitt(e) haben keinen Weg über die Straßen (rot): ziehe sie oder ändere eine Haltestelle"
+  da: "Returturen er lavet; %{n} strækning(er) har ingen vej over vejene (røde): træk i dem, eller ændr et stoppested"
   fr: "Le retour est créé ; %{n} tronçon(s) n'ont pas de chemin (en rouge) : faites-les glisser ou changez un arrêt"
   ru: "Обратный путь создан; у %{n} участк(ов) нет пути по дорогам (красные): перетащите их или измените остановку"
   uk: "Зворотний шлях створено; %{n} відрізк(ів) не мають шляху дорогами (червоні): перетягніть їх або змініть зупинку"
@@ -32383,6 +32499,7 @@ _version: 2
 "The way back is made from the stops across the road":
   nl: "De terugweg is gemaakt van de haltes aan de overkant"
   de: "Der Rückweg ist aus den Haltestellen gegenüber angelegt"
+  da: "Returturen er lavet af stoppestederne på den anden side af vejen"
   fr: "Le retour est créé à partir des arrêts d'en face"
   ru: "Обратный путь создан из остановок через дорогу"
   uk: "Зворотний шлях створено із зупинок через дорогу"
@@ -32390,6 +32507,7 @@ _version: 2
 "Mon - Fri":
   nl: "Ma - Vr"
   de: "Mo - Fr"
+  da: "Man - Fre"
   fr: "Lun - Ven"
   ru: "Пн - Пт"
   uk: "Пн - Пт"
@@ -32397,6 +32515,7 @@ _version: 2
 "First":
   nl: "Eerste"
   de: "Erste"
+  da: "Første"
   fr: "Premier"
   ru: "Первый"
   uk: "Перший"
@@ -32404,6 +32523,7 @@ _version: 2
 "Last":
   nl: "Laatste"
   de: "Letzte"
+  da: "Sidste"
   fr: "Dernier"
   ru: "Последний"
   uk: "Останній"
@@ -32411,6 +32531,7 @@ _version: 2
 "Every":
   nl: "Elke"
   de: "Alle"
+  da: "Hver"
   fr: "Toutes les"
   ru: "Каждые"
   uk: "Кожні"
@@ -32418,6 +32539,7 @@ _version: 2
 "Stands":
   nl: "Staat"
   de: "Steht"
+  da: "Holder"
   fr: "Arrêt"
   ru: "Стоит"
   uk: "Стоїть"
@@ -32425,6 +32547,7 @@ _version: 2
 "%{b} buses, %{t} trips":
   nl: "%{b} bussen, %{t} ritten"
   de: "%{b} Busse, %{t} Fahrten"
+  da: "%{b} busser, %{t} rejser"
   fr: "%{b} bus, %{t} courses"
   ru: "%{b} автобусов, %{t} рейсов"
   uk: "%{b} автобусів, %{t} рейсів"
@@ -32432,6 +32555,7 @@ _version: 2
 "Each group of days becomes tours of its own; the buses go back and forth, each standing at the end for at least as long as set.":
   nl: "Elke groep dagen krijgt eigen omlopen; de bussen rijden heen en weer en staan aan het eind minstens zo lang als ingesteld."
   de: "Jede Tagesgruppe bekommt eigene Umläufe; die Busse pendeln und stehen am Ende mindestens so lange wie eingestellt."
+  da: "Hver gruppe af dage bliver til egne ture; busserne kører frem og tilbage og holder hver i enden mindst så længe, som der er angivet."
   fr: "Chaque groupe de jours a ses propres services ; les bus font des allers-retours et stationnent au terminus au moins le temps réglé."
   ru: "Каждая группа дней получает свои выпуски; автобусы ходят туда и обратно и стоят на конечной не меньше заданного."
   uk: "Кожна група днів отримує свої випуски; автобуси ходять туди й назад і стоять на кінцевій не менше заданого."
@@ -32439,6 +32563,7 @@ _version: 2
 "Click the line's first stop":
   nl: "Klik de eerste halte van de lijn aan"
   de: "Klicke die erste Haltestelle der Linie an"
+  da: "Klik på linjens første stoppested"
   fr: "Cliquez le premier arrêt de la ligne"
   ru: "Щёлкните первую остановку линии"
   uk: "Клацніть першу зупинку лінії"
@@ -32446,6 +32571,7 @@ _version: 2
 "The whole map":
   nl: "De hele kaart"
   de: "Die ganze Karte"
+  da: "Hele kortet"
   fr: "Toute la carte"
   ru: "Вся карта"
   uk: "Уся мапа"
@@ -32453,6 +32579,7 @@ _version: 2
 "The line editor needs a wider window: open it on a computer. Your lines of this map:":
   nl: "De lijneneditor heeft een breder venster nodig: open hem op een computer. Jouw lijnen op deze kaart:"
   de: "Der Linieneditor braucht ein breiteres Fenster: öffne ihn am Computer. Deine Linien dieser Karte:"
+  da: "Linjeeditoren kræver et bredere vindue: åbn den på en computer. Dine linjer på dette kort:"
   fr: "L'éditeur de lignes demande une fenêtre plus large : ouvrez-le sur un ordinateur. Vos lignes de cette carte :"
   ru: "Редактору линий нужно более широкое окно: откройте его на компьютере. Ваши линии этой карты:"
   uk: "Редактору ліній потрібне ширше вікно: відкрийте його на комп’ютері. Ваші лінії цієї мапи:"
@@ -32460,6 +32587,7 @@ _version: 2
 "Name on the bus":
   nl: "Naam op de bus"
   de: "Name auf dem Bus"
+  da: "Navn på bussen"
   fr: "Nom sur le bus"
   ru: "Надпись на автобусе"
   uk: "Напис на автобусі"
@@ -32467,6 +32595,7 @@ _version: 2
 "Logo":
   nl: "Logo"
   de: "Logo"
+  da: "Logo"
   fr: "Logo"
   ru: "Логотип"
   uk: "Логотип"
@@ -32474,6 +32603,7 @@ _version: 2
 "Another logo…":
   nl: "Ander logo…"
   de: "Anderes Logo…"
+  da: "Et andet logo…"
   fr: "Autre logo…"
   ru: "Другой логотип…"
   uk: "Інший логотип…"
@@ -32481,6 +32611,7 @@ _version: 2
 "Choose a logo…":
   nl: "Kies een logo…"
   de: "Logo wählen…"
+  da: "Vælg et logo…"
   fr: "Choisir un logo…"
   ru: "Выбрать логотип…"
   uk: "Вибрати логотип…"
@@ -32488,6 +32619,7 @@ _version: 2
 "No logo":
   nl: "Geen logo"
   de: "Kein Logo"
+  da: "Intet logo"
   fr: "Pas de logo"
   ru: "Без логотипа"
   uk: "Без логотипа"
@@ -32495,6 +32627,7 @@ _version: 2
 "Click a layer on the bus to change it, drag it to move it. Right-drag turns the bus, the wheel zooms, 1-6 are the views, F fits, O held shows the livery before.":
   nl: "Klik op een laag op de bus om hem aan te passen, sleep om hem te verplaatsen. Rechts slepen draait de bus, het wiel zoomt, 1-6 zijn de aanzichten, F past in, O ingedrukt toont de lak van ervoor."
   de: "Klicke eine Ebene auf dem Bus an, um sie zu ändern, ziehe sie zum Verschieben. Rechts ziehen dreht den Bus, das Rad zoomt, 1-6 sind die Ansichten, F passt ein, O gedrückt zeigt den Lack von vorher."
+  da: "Klik på et lag på bussen for at ændre det, træk i det for at flytte det. Højre træk drejer bussen, hjulet zoomer, 1-6 er visningerne, F tilpasser, O holdt nede viser bemalingen før."
   fr: "Clique sur un calque du bus pour le modifier, fais-le glisser pour le déplacer. Clic droit glissé : tourner le bus, molette : zoom, 1-6 : vues, F : cadrer, O maintenu : la livrée d'avant."
   ru: "Щёлкните слой на автобусе, чтобы изменить его, перетащите, чтобы сдвинуть. Правая кнопка вращает автобус, колесо приближает, 1-6 — виды, F — вписать, удерживая O — окраска до."
   uk: "Клацніть шар на автобусі, щоб змінити його, перетягніть, щоб посунути. Права кнопка обертає автобус, коліщатко наближає, 1-6 — види, F — вписати, утримуючи O — ліврея до."
@@ -32502,6 +32635,7 @@ _version: 2
 "Click a colour on the bus: all of that colour takes the new one. Rubbers, lamps and windows keep theirs.":
   nl: "Klik op een kleur op de bus: alles in die kleur krijgt de nieuwe. Rubbers, lampen en ramen houden de hunne."
   de: "Klicke eine Farbe auf dem Bus an: Alles in dieser Farbe bekommt die neue. Gummis, Lampen und Fenster behalten ihre."
+  da: "Klik på en farve på bussen: al den farve får den nye. Gummi, lamper og ruder beholder deres."
   fr: "Clique sur une couleur du bus : tout ce qui a cette couleur prend la nouvelle. Joints, feux et vitres gardent la leur."
   ru: "Щёлкните цвет на автобусе: всё этого цвета получит новый. Резина, фары и стёкла сохранят свой."
   uk: "Клацніть колір на автобусі: усе цього кольору отримає новий. Гума, фари й вікна збережуть свій."
@@ -32509,6 +32643,7 @@ _version: 2
 "Paint the whole bus":
   nl: "De hele bus lakken"
   de: "Den ganzen Bus lackieren"
+  da: "Mal hele bussen"
   fr: "Peindre tout le bus"
   ru: "Покрасить весь автобус"
   uk: "Пофарбувати весь автобус"
@@ -32516,6 +32651,7 @@ _version: 2
 "Choose a stripe: it is laid round the bus at the height of its windows. Drag its edges on the bus afterwards.":
   nl: "Kies een strook: hij komt rond de bus op de hoogte van de ramen. Sleep daarna de randen op de bus."
   de: "Wähle einen Streifen: Er wird in Höhe der Fenster um den Bus gelegt. Ziehe danach seine Kanten auf dem Bus."
+  da: "Vælg en stribe: den lægges rundt om bussen i højde med dens ruder. Træk i dens kanter på bussen bagefter."
   fr: "Choisis une bande : elle fait le tour du bus à hauteur des vitres. Fais ensuite glisser ses bords sur le bus."
   ru: "Выберите полосу: она ляжет вокруг автобуса на высоте окон. Потом перетаскивайте её края на автобусе."
   uk: "Виберіть смугу: вона ляже навколо автобуса на висоті вікон. Потім перетягуйте її краї на автобусі."
@@ -32523,6 +32659,7 @@ _version: 2
 "Type the text, then click on the bus where it goes.":
   nl: "Typ de tekst en klik dan op de bus waar hij moet komen."
   de: "Tippe den Text und klicke dann auf den Bus, wo er hin soll."
+  da: "Skriv teksten, og klik så på bussen, hvor den skal være."
   fr: "Tape le texte, puis clique sur le bus à l'endroit voulu."
   ru: "Введите текст, затем щёлкните место на автобусе."
   uk: "Введіть текст, потім клацніть місце на автобусі."
@@ -32530,6 +32667,7 @@ _version: 2
 "Letter height":
   nl: "Letterhoogte"
   de: "Buchstabenhöhe"
+  da: "Bogstavhøjde"
   fr: "Hauteur des lettres"
   ru: "Высота букв"
   uk: "Висота літер"
@@ -32537,6 +32675,7 @@ _version: 2
 "Picture":
   nl: "Afbeelding"
   de: "Bild"
+  da: "Billede"
   fr: "Image"
   ru: "Картинка"
   uk: "Картинка"
@@ -32544,6 +32683,7 @@ _version: 2
 "A logo, a coat of arms, a photo: PNG, JPG, BMP, TGA or SVG. Choose one or drop it onto the window, then click on the bus where it goes.":
   nl: "Een logo, een wapen, een foto: PNG, JPG, BMP, TGA of SVG. Kies er een of sleep hem op het venster en klik dan op de bus waar hij moet komen."
   de: "Ein Logo, ein Wappen, ein Foto: PNG, JPG, BMP, TGA oder SVG. Wähle eines oder ziehe es auf das Fenster und klicke dann auf den Bus, wo es hin soll."
+  da: "Et logo, et våbenskjold, et foto: PNG, JPG, BMP, TGA eller SVG. Vælg et, eller slip det på vinduet, og klik så på bussen, hvor det skal være."
   fr: "Un logo, un blason, une photo : PNG, JPG, BMP, TGA ou SVG. Choisis-en une ou dépose-la sur la fenêtre, puis clique sur le bus à l'endroit voulu."
   ru: "Логотип, герб, фото: PNG, JPG, BMP, TGA или SVG. Выберите файл или перетащите его в окно, затем щёлкните место на автобусе."
   uk: "Логотип, герб, фото: PNG, JPG, BMP, TGA або SVG. Виберіть файл або перетягніть його у вікно, потім клацніть місце на автобусі."
@@ -32551,6 +32691,7 @@ _version: 2
 "Choose a picture…":
   nl: "Kies een afbeelding…"
   de: "Bild wählen…"
+  da: "Vælg et billede…"
   fr: "Choisir une image…"
   ru: "Выбрать картинку…"
   uk: "Вибрати картинку…"
@@ -32558,6 +32699,7 @@ _version: 2
 "Ready to place: %{w} × %{h} pixels. Click on the bus.":
   nl: "Klaar om te plaatsen: %{w} × %{h} pixels. Klik op de bus."
   de: "Bereit zum Platzieren: %{w} × %{h} Pixel. Klicke auf den Bus."
+  da: "Klar til at placere: %{w} × %{h} pixel. Klik på bussen."
   fr: "Prête à placer : %{w} × %{h} pixels. Clique sur le bus."
   ru: "Готово к размещению: %{w} × %{h} пикселей. Щёлкните по автобусу."
   uk: "Готово до розміщення: %{w} × %{h} пікселів. Клацніть по автобусу."
@@ -32565,6 +32707,7 @@ _version: 2
 "Choose a shape, then click on the bus where it goes. With the pen you draw shapes of your own.":
   nl: "Kies een vorm en klik dan op de bus waar hij moet komen. Met de pen teken je eigen vormen."
   de: "Wähle eine Form und klicke dann auf den Bus, wo sie hin soll. Mit dem Stift zeichnest du eigene Formen."
+  da: "Vælg en form, og klik så på bussen, hvor den skal være. Med pennen tegner du dine egne former."
   fr: "Choisis une forme, puis clique sur le bus à l'endroit voulu. Avec la plume, tu dessines tes propres formes."
   ru: "Выберите фигуру, затем щёлкните место на автобусе. Пером можно рисовать свои фигуры."
   uk: "Виберіть фігуру, потім клацніть місце на автобусі. Пером можна малювати власні фігури."
@@ -32572,6 +32715,7 @@ _version: 2
 "Click the corners of your shape on the bus. Hold the button and drag to bend the line into a curve. Click the first corner again or press Enter to finish; Escape lets go.":
   nl: "Klik de hoeken van je vorm op de bus. Houd de knop vast en sleep om de lijn tot een bocht te buigen. Klik weer op de eerste hoek of druk op Enter om af te ronden; Escape laat los."
   de: "Klicke die Ecken deiner Form auf den Bus. Halte die Taste und ziehe, um die Linie zu einer Kurve zu biegen. Klicke erneut die erste Ecke oder drücke Enter zum Abschließen; Escape bricht ab."
+  da: "Klik på din forms hjørner på bussen. Hold knappen nede, og træk for at bøje linjen til en kurve. Klik på det første hjørne igen, eller tryk på Enter for at afslutte; Escape giver slip."
   fr: "Clique les coins de ta forme sur le bus. Maintiens le bouton et fais glisser pour courber le trait. Clique de nouveau sur le premier coin ou appuie sur Entrée pour finir ; Échap abandonne."
   ru: "Щёлкайте углы фигуры на автобусе. Удерживайте кнопку и тяните, чтобы изогнуть линию. Щёлкните первый угол снова или нажмите Enter, чтобы закончить; Escape — отмена."
   uk: "Клацайте кути фігури на автобусі. Утримуйте кнопку й тягніть, щоб вигнути лінію. Клацніть перший кут знову або натисніть Enter, щоб завершити; Escape — скасувати."
@@ -32579,6 +32723,7 @@ _version: 2
 "%{n} corners":
   nl: "%{n} hoeken"
   de: "%{n} Ecken"
+  da: "%{n} hjørner"
   fr: "%{n} coins"
   ru: "углов: %{n}"
   uk: "кутів: %{n}"
@@ -32586,6 +32731,7 @@ _version: 2
 "Done (Escape)":
   nl: "Klaar (Escape)"
   de: "Fertig (Escape)"
+  da: "Færdig (Escape)"
   fr: "Terminé (Échap)"
   ru: "Готово (Escape)"
   uk: "Готово (Escape)"
@@ -32593,6 +32739,7 @@ _version: 2
 "This layer is locked: unlock it in the list to change it.":
   nl: "Deze laag is vergrendeld: ontgrendel hem in de lijst om hem aan te passen."
   de: "Diese Ebene ist gesperrt: Entsperre sie in der Liste, um sie zu ändern."
+  da: "Dette lag er låst: lås det op på listen for at ændre det."
   fr: "Ce calque est verrouillé : déverrouille-le dans la liste pour le modifier."
   ru: "Слой заблокирован: разблокируйте его в списке, чтобы изменить."
   uk: "Шар заблоковано: розблокуйте його у списку, щоб змінити."
@@ -32600,6 +32747,7 @@ _version: 2
 "Layer name":
   nl: "Naam van de laag"
   de: "Name der Ebene"
+  da: "Lagets navn"
   fr: "Nom du calque"
   ru: "Название слоя"
   uk: "Назва шару"
@@ -32607,6 +32755,7 @@ _version: 2
 "Colour range":
   nl: "Kleurbereik"
   de: "Farbbereich"
+  da: "Farveområde"
   fr: "Plage de couleur"
   ru: "Диапазон цвета"
   uk: "Діапазон кольору"
@@ -32614,6 +32763,7 @@ _version: 2
 "Lower edge":
   nl: "Onderkant"
   de: "Unterkante"
+  da: "Nedre kant"
   fr: "Bord inférieur"
   ru: "Нижний край"
   uk: "Нижній край"
@@ -32621,6 +32771,7 @@ _version: 2
 "Upper edge":
   nl: "Bovenkant"
   de: "Oberkante"
+  da: "Øvre kant"
   fr: "Bord supérieur"
   ru: "Верхний край"
   uk: "Верхній край"
@@ -32628,6 +32779,7 @@ _version: 2
 "Slant":
   nl: "Schuinte"
   de: "Schräge"
+  da: "Skråning"
   fr: "Inclinaison"
   ru: "Наклон"
   uk: "Нахил"
@@ -32635,6 +32787,7 @@ _version: 2
 "Wave":
   nl: "Golf"
   de: "Welle"
+  da: "Bølge"
   fr: "Vague"
   ru: "Волна"
   uk: "Хвиля"
@@ -32642,6 +32795,7 @@ _version: 2
 "All round":
   nl: "Rondom"
   de: "Rundum"
+  da: "Hele vejen rundt"
   fr: "Tout autour"
   ru: "Вокруг"
   uk: "Навколо"
@@ -32649,6 +32803,7 @@ _version: 2
 "Sides":
   nl: "Zijkanten"
   de: "Seiten"
+  da: "Sider"
   fr: "Côtés"
   ru: "Бока"
   uk: "Боки"
@@ -32656,6 +32811,7 @@ _version: 2
 "Front":
   nl: "Voorkant"
   de: "Front"
+  da: "Front"
   fr: "Avant"
   ru: "Перед"
   uk: "Перед"
@@ -32663,6 +32819,7 @@ _version: 2
 "Rear":
   nl: "Achterkant"
   de: "Heck"
+  da: "Bagende"
   fr: "Arrière"
   ru: "Зад"
   uk: "Зад"
@@ -32670,6 +32827,7 @@ _version: 2
 "Letter spacing":
   nl: "Letterafstand"
   de: "Buchstabenabstand"
+  da: "Bogstavafstand"
   fr: "Espacement"
   ru: "Межбуквенный интервал"
   uk: "Міжлітерний інтервал"
@@ -32677,6 +32835,7 @@ _version: 2
 "Another picture…":
   nl: "Andere afbeelding…"
   de: "Anderes Bild…"
+  da: "Et andet billede…"
   fr: "Autre image…"
   ru: "Другая картинка…"
   uk: "Інша картинка…"
@@ -32684,6 +32843,7 @@ _version: 2
 "White becomes transparent":
   nl: "Wit wordt doorzichtig"
   de: "Weiß wird durchsichtig"
+  da: "Hvid bliver gennemsigtig"
   fr: "Le blanc devient transparent"
   ru: "Белое становится прозрачным"
   uk: "Біле стає прозорим"
@@ -32691,6 +32851,7 @@ _version: 2
 "Width":
   nl: "Breedte"
   de: "Breite"
+  da: "Bredde"
   fr: "Largeur"
   ru: "Ширина"
   uk: "Ширина"
@@ -32698,6 +32859,7 @@ _version: 2
 "Height":
   nl: "Hoogte"
   de: "Höhe"
+  da: "Højde"
   fr: "Hauteur"
   ru: "Высота"
   uk: "Висота"
@@ -32705,6 +32867,7 @@ _version: 2
 "Colour":
   nl: "Kleur"
   de: "Farbe"
+  da: "Farve"
   fr: "Couleur"
   ru: "Цвет"
   uk: "Колір"
@@ -32733,6 +32896,7 @@ _version: 2
 "Outline":
   nl: "Omlijning"
   de: "Kontur"
+  da: "Kontur"
   fr: "Contour"
   ru: "Обводка"
   uk: "Обведення"
@@ -32740,6 +32904,7 @@ _version: 2
 "Gradient":
   nl: "Verloop"
   de: "Verlauf"
+  da: "Gradient"
   fr: "Dégradé"
   ru: "Градиент"
   uk: "Градієнт"
@@ -32747,6 +32912,7 @@ _version: 2
 "Linear":
   nl: "Lineair"
   de: "Linear"
+  da: "Lineær"
   fr: "Linéaire"
   ru: "Линейный"
   uk: "Лінійний"
@@ -32775,6 +32941,7 @@ _version: 2
 "Radial":
   nl: "Radiaal"
   de: "Radial"
+  da: "Radial"
   fr: "Radial"
   ru: "Радиальный"
   uk: "Радіальний"
@@ -32782,6 +32949,7 @@ _version: 2
 "Painting":
   nl: "Lakken"
   de: "Lackieren"
+  da: "Maling"
   fr: "Peinture"
   ru: "Нанесение"
   uk: "Нанесення"
@@ -32789,6 +32957,7 @@ _version: 2
 "Keep details":
   nl: "Details behouden"
   de: "Details behalten"
+  da: "Behold detaljer"
   fr: "Garder les détails"
   ru: "Сохранять детали"
   uk: "Зберігати деталі"
@@ -32796,6 +32965,7 @@ _version: 2
 "How much of the seams, dirt and shading of the paint below shows through":
   nl: "Hoeveel van de naden, het vuil en de schaduw van de lak eronder zichtbaar blijft"
   de: "Wie viel von Fugen, Schmutz und Schatten des Lacks darunter durchscheint"
+  da: "Hvor meget af sømmene, snavset og skyggerne i malingen under der skinner igennem"
   fr: "Combien des joints, de la saleté et des ombres de la peinture dessous restent visibles"
   ru: "Насколько видны швы, грязь и тени нижней окраски"
   uk: "Наскільки видно шви, бруд і тіні нижньої лівреї"
@@ -32803,6 +32973,7 @@ _version: 2
 "Also over rubbers and lamps":
   nl: "Ook over rubbers en lampen"
   de: "Auch über Gummis und Lampen"
+  da: "Også over gummi og lamper"
   fr: "Aussi sur les joints et les feux"
   ru: "Также поверх резины и фар"
   uk: "Також поверх гуми та фар"
@@ -32810,6 +32981,7 @@ _version: 2
 "Rotation":
   nl: "Draaiing"
   de: "Drehung"
+  da: "Drejning"
   fr: "Rotation"
   ru: "Поворот"
   uk: "Поворот"
@@ -32819,6 +32991,7 @@ _version: 2
 "Roof":
   nl: "Dak"
   de: "Dach"
+  da: "Tag"
   fr: "Toit"
   ru: "Крыша"
   uk: "Дах"
@@ -32826,6 +32999,7 @@ _version: 2
 "Also on the other side":
   nl: "Ook aan de andere kant"
   de: "Auch auf der anderen Seite"
+  da: "Også på den anden side"
   fr: "Aussi de l'autre côté"
   ru: "Также с другой стороны"
   uk: "Також з іншого боку"
@@ -32833,6 +33007,7 @@ _version: 2
 "The same way round there (not mirrored)":
   nl: "Daar dezelfde kant op (niet gespiegeld)"
   de: "Dort gleich herum (nicht gespiegelt)"
+  da: "Samme vej rundt dér (ikke spejlvendt)"
   fr: "Dans le même sens là-bas (pas en miroir)"
   ru: "Там в том же направлении (не зеркально)"
   uk: "Там у тому ж напрямку (не дзеркально)"
@@ -32840,6 +33015,7 @@ _version: 2
 "From the bus":
   nl: "Van de bus"
   de: "Vom Bus"
+  da: "Fra bussen"
   fr: "Depuis le bus"
   ru: "С автобуса"
   uk: "З автобуса"
@@ -32847,6 +33023,7 @@ _version: 2
 "Used last":
   nl: "Laatst gebruikt"
   de: "Zuletzt verwendet"
+  da: "Brugt sidst"
   fr: "Utilisées récemment"
   ru: "Недавние"
   uk: "Нещодавні"
@@ -32854,6 +33031,7 @@ _version: 2
 "Choose a picture":
   nl: "Kies een afbeelding"
   de: "Bild wählen"
+  da: "Vælg et billede"
   fr: "Choisir une image"
   ru: "Выберите картинку"
   uk: "Виберіть картинку"
@@ -32861,6 +33039,7 @@ _version: 2
 "Pictures":
   nl: "Afbeeldingen"
   de: "Bilder"
+  da: "Billeder"
   fr: "Images"
   ru: "Картинки"
   uk: "Картинки"
@@ -32868,6 +33047,7 @@ _version: 2
 "Click on the bus where the picture goes.":
   nl: "Klik op de bus waar de afbeelding moet komen."
   de: "Klicke auf den Bus, wo das Bild hin soll."
+  da: "Klik på bussen, hvor billedet skal være."
   fr: "Clique sur le bus là où l'image doit aller."
   ru: "Щёлкните место на автобусе для картинки."
   uk: "Клацніть місце на автобусі для картинки."
@@ -32875,6 +33055,7 @@ _version: 2
 "Angled":
   nl: "Schuin"
   de: "Schräg"
+  da: "Skrå"
   fr: "De biais"
   ru: "Под углом"
   uk: "Під кутом"
@@ -32882,6 +33063,7 @@ _version: 2
 "Before / after":
   nl: "Voor / na"
   de: "Vorher / nachher"
+  da: "Før / efter"
   fr: "Avant / après"
   ru: "До / после"
   uk: "До / після"
@@ -32889,6 +33071,7 @@ _version: 2
 "Hold to see the livery before (or hold O)":
   nl: "Ingedrukt houden toont de lak van ervoor (of houd O ingedrukt)"
   de: "Gedrückt halten zeigt den Lack von vorher (oder O halten)"
+  da: "Hold for at se bemalingen før (eller hold O)"
   fr: "Maintiens pour voir la livrée d'avant (ou maintiens O)"
   ru: "Удерживайте, чтобы увидеть окраску до (или держите O)"
   uk: "Утримуйте, щоб побачити ліврею до (або тримайте O)"
@@ -32896,6 +33079,7 @@ _version: 2
 "Skirt band":
   nl: "Onderband"
   de: "Sockelstreifen"
+  da: "Skørtebånd"
   fr: "Bande basse"
   ru: "Нижняя полоса"
   uk: "Нижня смуга"
@@ -32903,6 +33087,7 @@ _version: 2
 "Window band":
   nl: "Raamband"
   de: "Fensterband"
+  da: "Rudebånd"
   fr: "Bande des vitres"
   ru: "Полоса у окон"
   uk: "Смуга біля вікон"
@@ -32910,6 +33095,7 @@ _version: 2
 "Roof band":
   nl: "Dakband"
   de: "Dachstreifen"
+  da: "Tagbånd"
   fr: "Bande de toit"
   ru: "Полоса у крыши"
   uk: "Смуга біля даху"
@@ -32917,6 +33103,7 @@ _version: 2
 "Slanted":
   nl: "Schuin"
   de: "Schräg"
+  da: "Skråt"
   fr: "Oblique"
   ru: "Наклонная"
   uk: "Похила"
@@ -32924,6 +33111,7 @@ _version: 2
 "Two-tone":
   nl: "Tweekleurig"
   de: "Zweifarbig"
+  da: "To farver"
   fr: "Bicolore"
   ru: "Двухцветная"
   uk: "Двоколірна"
@@ -32931,6 +33119,7 @@ _version: 2
 "Front face":
   nl: "Frontvlak"
   de: "Frontfläche"
+  da: "Forside"
   fr: "Face avant"
   ru: "Передняя часть"
   uk: "Передня частина"
@@ -32938,6 +33127,7 @@ _version: 2
 "Rear face":
   nl: "Achtervlak"
   de: "Heckfläche"
+  da: "Bagside"
   fr: "Face arrière"
   ru: "Задняя часть"
   uk: "Задня частина"
@@ -32945,6 +33135,7 @@ _version: 2
 "Rectangle":
   nl: "Rechthoek"
   de: "Rechteck"
+  da: "Rektangel"
   fr: "Rectangle"
   ru: "Прямоугольник"
   uk: "Прямокутник"
@@ -32952,6 +33143,7 @@ _version: 2
 "Rounded rectangle":
   nl: "Afgeronde rechthoek"
   de: "Abgerundetes Rechteck"
+  da: "Afrundet rektangel"
   fr: "Rectangle arrondi"
   ru: "Скруглённый прямоугольник"
   uk: "Заокруглений прямокутник"
@@ -32959,6 +33151,7 @@ _version: 2
 "Ellipse":
   nl: "Ellips"
   de: "Ellipse"
+  da: "Ellipse"
   fr: "Ellipse"
   ru: "Эллипс"
   uk: "Еліпс"
@@ -32966,6 +33159,7 @@ _version: 2
 "Triangle":
   nl: "Driehoek"
   de: "Dreieck"
+  da: "Trekant"
   fr: "Triangle"
   ru: "Треугольник"
   uk: "Трикутник"
@@ -32994,6 +33188,7 @@ _version: 2
 "Chevron":
   nl: "Chevron"
   de: "Winkel"
+  da: "Chevron"
   fr: "Chevron"
   ru: "Шеврон"
   uk: "Шеврон"
@@ -33001,6 +33196,7 @@ _version: 2
 "Starburst":
   nl: "Zon"
   de: "Strahlenkranz"
+  da: "Stjerneudbrud"
   fr: "Soleil"
   ru: "Звезда-вспышка"
   uk: "Зірка-спалах"
@@ -33008,6 +33204,7 @@ _version: 2
 "Arrow":
   nl: "Pijl"
   de: "Pfeil"
+  da: "Pil"
   fr: "Flèche"
   ru: "Стрелка"
   uk: "Стрілка"
@@ -33015,6 +33212,7 @@ _version: 2
 "Bar":
   nl: "Streep"
   de: "Balken"
+  da: "Bjælke"
   fr: "Barre"
   ru: "Полоска"
   uk: "Смужка"
@@ -33022,6 +33220,7 @@ _version: 2
 "Circle":
   nl: "Cirkel"
   de: "Kreis"
+  da: "Cirkel"
   fr: "Cercle"
   ru: "Круг"
   uk: "Коло"
@@ -33050,6 +33249,7 @@ _version: 2
 "Star":
   nl: "Ster"
   de: "Stern"
+  da: "Stjerne"
   fr: "Étoile"
   ru: "Звезда"
   uk: "Зірка"
@@ -33059,6 +33259,7 @@ _version: 2
 "Wheelchair":
   nl: "Rolstoel"
   de: "Rollstuhl"
+  da: "Kørestol"
   fr: "Fauteuil roulant"
   ru: "Инвалидная коляска"
   uk: "Інвалідний візок"
@@ -33066,6 +33267,7 @@ _version: 2
 "Pram":
   nl: "Kinderwagen"
   de: "Kinderwagen"
+  da: "Barnevogn"
   fr: "Poussette"
   ru: "Детская коляска"
   uk: "Дитячий візок"
@@ -33073,6 +33275,7 @@ _version: 2
 "Bicycle":
   nl: "Fiets"
   de: "Fahrrad"
+  da: "Cykel"
   fr: "Vélo"
   ru: "Велосипед"
   uk: "Велосипед"
@@ -33080,6 +33283,7 @@ _version: 2
 "Shield frame":
   nl: "Wapenkader"
   de: "Wappenrahmen"
+  da: "Skjoldramme"
   fr: "Cadre de blason"
   ru: "Рамка герба"
   uk: "Рамка герба"
@@ -33087,6 +33291,7 @@ _version: 2
 "Base colour":
   nl: "Grondkleur"
   de: "Grundfarbe"
+  da: "Grundfarve"
   fr: "Couleur de base"
   ru: "Основной цвет"
   uk: "Основний колір"
@@ -33094,6 +33299,7 @@ _version: 2
 "Shape":
   nl: "Vorm"
   de: "Form"
+  da: "Form"
   fr: "Forme"
   ru: "Фигура"
   uk: "Фігура"
@@ -33101,6 +33307,7 @@ _version: 2
 "Own shape":
   nl: "Eigen vorm"
   de: "Eigene Form"
+  da: "Egen form"
   fr: "Forme personnelle"
   ru: "Своя фигура"
   uk: "Власна фігура"
@@ -33108,6 +33315,7 @@ _version: 2
 "Give the livery a name.":
   nl: "Geef de lak een naam."
   de: "Gib der Lackierung einen Namen."
+  da: "Giv bemalingen et navn."
   fr: "Donne un nom à la livrée."
   ru: "Дайте окраске название."
   uk: "Дайте лівреї назву."
@@ -33115,6 +33323,7 @@ _version: 2
 "The name is too long (48 characters at most).":
   nl: "De naam is te lang (hooguit 48 tekens)."
   de: "Der Name ist zu lang (höchstens 48 Zeichen)."
+  da: "Navnet er for langt (højst 48 tegn)."
   fr: "Le nom est trop long (48 caractères au plus)."
   ru: "Название слишком длинное (не более 48 символов)."
   uk: "Назва задовга (не більше 48 символів)."
@@ -33122,6 +33331,7 @@ _version: 2
 "OMSI cannot read the character '%{c}' in a name.":
   nl: "OMSI kan het teken '%{c}' in een naam niet lezen."
   de: "OMSI kann das Zeichen '%{c}' in einem Namen nicht lesen."
+  da: "OMSI kan ikke læse tegnet '%{c}' i et navn."
   fr: "OMSI ne peut pas lire le caractère '%{c}' dans un nom."
   ru: "OMSI не читает символ '%{c}' в названии."
   uk: "OMSI не читає символ '%{c}' у назві."
@@ -33129,6 +33339,7 @@ _version: 2
 "The name cannot begin or end with a space.":
   nl: "De naam mag niet met een spatie beginnen of eindigen."
   de: "Der Name darf nicht mit einem Leerzeichen beginnen oder enden."
+  da: "Navnet må ikke begynde eller slutte med et mellemrum."
   fr: "Le nom ne peut pas commencer ou finir par une espace."
   ru: "Название не может начинаться или заканчиваться пробелом."
   uk: "Назва не може починатися чи закінчуватися пробілом."
@@ -33136,6 +33347,7 @@ _version: 2
 "The name cannot begin with '['.":
   nl: "De naam mag niet met '[' beginnen."
   de: "Der Name darf nicht mit '[' beginnen."
+  da: "Navnet må ikke begynde med '['."
   fr: "Le nom ne peut pas commencer par '['."
   ru: "Название не может начинаться с '['."
   uk: "Назва не може починатися з '['."
@@ -33143,6 +33355,7 @@ _version: 2
 "That name is reserved; choose another.":
   nl: "Die naam is gereserveerd; kies een andere."
   de: "Dieser Name ist reserviert; wähle einen anderen."
+  da: "Det navn er reserveret; vælg et andet."
   fr: "Ce nom est réservé ; choisis-en un autre."
   ru: "Это название зарезервировано; выберите другое."
   uk: "Цю назву зарезервовано; виберіть іншу."
@@ -33150,6 +33363,7 @@ _version: 2
 "This bus already has a livery called '%{name}'.":
   nl: "Deze bus heeft al een lak die '%{name}' heet."
   de: "Dieser Bus hat schon eine Lackierung namens '%{name}'."
+  da: "Denne bus har allerede en bemaling, der hedder '%{name}'."
   fr: "Ce bus a déjà une livrée appelée '%{name}'."
   ru: "У этого автобуса уже есть окраска '%{name}'."
   uk: "У цього автобуса вже є ліврея '%{name}'."
@@ -33157,6 +33371,7 @@ _version: 2
 "Painting the textures…":
   nl: "De texturen worden gelakt…"
   de: "Die Texturen werden lackiert…"
+  da: "Maler teksturerne…"
   fr: "Peinture des textures…"
   ru: "Окраска текстур…"
   uk: "Фарбування текстур…"
@@ -33164,6 +33379,7 @@ _version: 2
 "Compressing…":
   nl: "Comprimeren…"
   de: "Komprimieren…"
+  da: "Komprimerer…"
   fr: "Compression…"
   ru: "Сжатие…"
   uk: "Стиснення…"
@@ -33171,6 +33387,7 @@ _version: 2
 "The picture is larger than 20 MB.":
   nl: "De afbeelding is groter dan 20 MB."
   de: "Das Bild ist größer als 20 MB."
+  da: "Billedet er større end 20 MB."
   fr: "L'image dépasse 20 Mo."
   ru: "Картинка больше 20 МБ."
   uk: "Картинка більша за 20 МБ."
@@ -33178,6 +33395,7 @@ _version: 2
 "This picture cannot be read: %{e}":
   nl: "Deze afbeelding kan niet gelezen worden: %{e}"
   de: "Dieses Bild kann nicht gelesen werden: %{e}"
+  da: "Dette billede kan ikke læses: %{e}"
   fr: "Cette image ne peut pas être lue : %{e}"
   ru: "Эту картинку нельзя прочитать: %{e}"
   uk: "Цю картинку не вдається прочитати: %{e}"
@@ -33185,6 +33403,7 @@ _version: 2
 "This bus has no paint the game lets change ([CTC]).":
   nl: "Deze bus heeft geen lak die het spel laat veranderen ([CTC])."
   de: "Dieser Bus hat keinen Lack, den das Spiel ändern lässt ([CTC])."
+  da: "Denne bus har ingen maling, spillet lader ændre ([CTC])."
   fr: "Ce bus n'a pas de peinture que le jeu laisse changer ([CTC])."
   ru: "У этого автобуса нет окраски, которую игра позволяет менять ([CTC])."
   uk: "У цього автобуса немає лівреї, яку гра дозволяє змінювати ([CTC])."
@@ -33192,6 +33411,7 @@ _version: 2
 "The paint textures of this bus were not found.":
   nl: "De laktexturen van deze bus zijn niet gevonden."
   de: "Die Lacktexturen dieses Busses wurden nicht gefunden."
+  da: "Denne buss malingsteksturer blev ikke fundet."
   fr: "Les textures de peinture de ce bus sont introuvables."
   ru: "Текстуры окраски этого автобуса не найдены."
   uk: "Текстури лівреї цього автобуса не знайдено."
@@ -33199,6 +33419,7 @@ _version: 2
 "The content folder was not found.":
   nl: "De inhoudsmap is niet gevonden."
   de: "Der Inhaltsordner wurde nicht gefunden."
+  da: "Indholdsmappen blev ikke fundet."
   fr: "Le dossier de contenu est introuvable."
   ru: "Папка контента не найдена."
   uk: "Теку вмісту не знайдено."
@@ -33206,6 +33427,7 @@ _version: 2
 "This bus lies outside the game's folders; its livery cannot be saved.":
   nl: "Deze bus staat buiten de mappen van het spel; zijn lak kan niet opgeslagen worden."
   de: "Dieser Bus liegt außerhalb der Spielordner; seine Lackierung kann nicht gespeichert werden."
+  da: "Denne bus ligger uden for spillets mapper; dens bemaling kan ikke gemmes."
   fr: "Ce bus se trouve hors des dossiers du jeu ; sa livrée ne peut pas être enregistrée."
   ru: "Этот автобус вне папок игры; его окраску нельзя сохранить."
   uk: "Цей автобус поза теками гри; його ліврею не можна зберегти."
@@ -33213,6 +33435,7 @@ _version: 2
 "The livery was not saved: %{e}":
   nl: "De lak is niet opgeslagen: %{e}"
   de: "Die Lackierung wurde nicht gespeichert: %{e}"
+  da: "Bemalingen blev ikke gemt: %{e}"
   fr: "La livrée n'a pas été enregistrée : %{e}"
   ru: "Окраска не сохранена: %{e}"
   uk: "Ліврею не збережено: %{e}"
@@ -33220,6 +33443,7 @@ _version: 2
 "'%{name}' is in the game: choose it on the bus step.":
   nl: "'%{name}' staat in het spel: kies hem bij de buskeuze."
   de: "'%{name}' ist im Spiel: Wähle sie bei der Busauswahl."
+  da: "'%{name}' er i spillet: vælg den på busvalget."
   fr: "'%{name}' est dans le jeu : choisis-la à l'étape du bus."
   ru: "'%{name}' добавлена в игру: выберите её на шаге автобуса."
   uk: "'%{name}' додано в гру: виберіть її на кроці автобуса."
@@ -33227,6 +33451,7 @@ _version: 2
 "The livery studio needs a computer: open the launcher on your PC to paint a bus.":
   nl: "De lakstudio heeft een computer nodig: open de launcher op je pc om een bus te lakken."
   de: "Das Lackierstudio braucht einen Computer: Öffne den Launcher auf deinem PC, um einen Bus zu lackieren."
+  da: "Bemalingsstudiet kræver en computer: åbn launcheren på din pc for at male en bus."
   fr: "L'atelier de livrées demande un ordinateur : ouvre le lanceur sur ton PC pour peindre un bus."
   ru: "Студии окраски нужен компьютер: откройте лаунчер на ПК, чтобы покрасить автобус."
   uk: "Студії ліврей потрібен комп'ютер: відкрийте лаунчер на ПК, щоб пофарбувати автобус."
@@ -33234,6 +33459,7 @@ _version: 2
 "Paint a bus in 3D: colours, stripes, texts, pictures and shapes, saved as a livery the game offers.":
   nl: "Lak een bus in 3D: kleuren, strepen, teksten, afbeeldingen en vormen, opgeslagen als een lak die het spel aanbiedt."
   de: "Lackiere einen Bus in 3D: Farben, Streifen, Texte, Bilder und Formen, gespeichert als Lackierung, die das Spiel anbietet."
+  da: "Mal en bus i 3D: farver, striber, tekster, billeder og former, gemt som en bemaling, spillet tilbyder."
   fr: "Peins un bus en 3D : couleurs, bandes, textes, images et formes, enregistrés comme une livrée proposée par le jeu."
   ru: "Покрасьте автобус в 3D: цвета, полосы, надписи, картинки и фигуры сохраняются как окраска в игре."
   uk: "Пофарбуйте автобус у 3D: кольори, смуги, написи, картинки й фігури зберігаються як ліврея в грі."
@@ -33241,6 +33467,7 @@ _version: 2
 "Paint a livery of your own":
   nl: "Eigen lak maken"
   de: "Eigene Lackierung gestalten"
+  da: "Mal en bemaling af din egen"
   fr: "Créer votre propre livrée"
   ru: "Создать свою окраску"
   uk: "Створити власне фарбування"
@@ -33248,6 +33475,7 @@ _version: 2
 "Displays":
   nl: "Displays"
   de: "Anzeigen"
+  da: "Skærme"
   fr: "Girouettes"
   ru: "Табло"
   uk: "Табло"
@@ -33255,6 +33483,7 @@ _version: 2
 "IBIS display":
   nl: "IBIS-display"
   de: "IBIS-Anzeige"
+  da: "IBIS-skærm"
   fr: "Affichage IBIS"
   ru: "Дисплей IBIS"
   uk: "Дисплей IBIS"
@@ -33262,6 +33491,7 @@ _version: 2
 "Front, line 1":
   nl: "Voorkant, regel 1"
   de: "Front, Zeile 1"
+  da: "Front, linje 1"
   fr: "Avant, ligne 1"
   ru: "Спереди, строка 1"
   uk: "Спереду, рядок 1"
@@ -33269,6 +33499,7 @@ _version: 2
 "Front, line 2":
   nl: "Voorkant, regel 2"
   de: "Front, Zeile 2"
+  da: "Front, linje 2"
   fr: "Avant, ligne 2"
   ru: "Спереди, строка 2"
   uk: "Спереду, рядок 2"
@@ -33276,6 +33507,7 @@ _version: 2
 "Side":
   nl: "Zijkant"
   de: "Seite"
+  da: "Side"
   fr: "Côté"
   ru: "Сбоку"
   uk: "Збоку"
@@ -33283,6 +33515,7 @@ _version: 2
 "Roller blind texture":
   nl: "Rolfilm-textuur"
   de: "Rollbandtextur"
+  da: "Rulleskilt-tekstur"
   fr: "Texture du rouleau"
   ru: "Текстура роллбанда"
   uk: "Текстура ролбанда"
@@ -33290,6 +33523,7 @@ _version: 2
 "IBIS 2 (name as written)":
   nl: "IBIS 2 (naam zoals geschreven)"
   de: "IBIS 2 (Klarname)"
+  da: "IBIS 2 (navn som skrevet)"
   fr: "IBIS 2 (nom tel qu'écrit)"
   ru: "IBIS 2 (название как пишется)"
   uk: "IBIS 2 (назва як пишеться)"
@@ -33297,6 +33531,7 @@ _version: 2
 "Extra sign":
   nl: "Extra bord"
   de: "Zusätzliches Schild"
+  da: "Ekstra skilt"
   fr: "Panneau supplémentaire"
   ru: "Дополнительная табличка"
   uk: "Додаткова табличка"
@@ -33304,6 +33539,7 @@ _version: 2
 "Text %{n}":
   nl: "Tekst %{n}"
   de: "Text %{n}"
+  da: "Tekst %{n}"
   fr: "Texte %{n}"
   ru: "Текст %{n}"
   uk: "Текст %{n}"
@@ -33311,6 +33547,7 @@ _version: 2
 "The depot group has no depot file: the buses' displays and IBIS cannot know the line.":
   nl: "De depotgroep heeft geen hof-bestand: de displays en de IBIS van de bussen kunnen de lijn niet kennen."
   de: "Die Depotgruppe hat keine Hof-Datei: Anzeigen und IBIS der Busse können die Linie nicht kennen."
+  da: "Depotgruppen har ingen depotfil: busserne skærme og IBIS kan ikke kende linjen."
   fr: "Le groupe de dépôt n'a pas de fichier de dépôt : les girouettes et l'IBIS des bus ne peuvent pas connaître la ligne."
   ru: "У группы депо нет файла депо: табло и IBIS автобусов не узнают линию."
   uk: "Група депо не має файлу депо: табло та IBIS автобусів не знатимуть лінію."
@@ -33318,6 +33555,7 @@ _version: 2
 "The depot file %{hof} was not found beside any bus: the displays and the IBIS cannot know the line.":
   nl: "Het hof-bestand %{hof} staat bij geen enkele bus: de displays en de IBIS kunnen de lijn niet kennen."
   de: "Die Hof-Datei %{hof} liegt bei keinem Bus: Anzeigen und IBIS können die Linie nicht kennen."
+  da: "Depotfilen %{hof} blev ikke fundet ved siden af nogen bus: skærmene og IBIS kan ikke kende linjen."
   fr: "Le fichier de dépôt %{hof} n'a été trouvé auprès d'aucun bus : les girouettes et l'IBIS ne peuvent pas connaître la ligne."
   ru: "Файл депо %{hof} не найден ни у одного автобуса: табло и IBIS не узнают линию."
   uk: "Файл депо %{hof} не знайдено в жодного автобуса: табло та IBIS не знатимуть лінію."
@@ -33325,6 +33563,7 @@ _version: 2
 "Give the direction its stops first: the destination is its last one, or the one chosen with the stops.":
   nl: "Geef de richting eerst haar haltes: de bestemming is de laatste, of die bij de haltes gekozen is."
   de: "Gib der Richtung zuerst ihre Haltestellen: das Ziel ist die letzte oder das bei den Haltestellen gewählte."
+  da: "Giv først retningen dens stoppesteder: destinationen er det sidste, eller det, der er valgt ved stoppestederne."
   fr: "Donnez d'abord ses arrêts à la direction : la destination est le dernier, ou celle choisie avec les arrêts."
   ru: "Сначала задайте остановки направления: конечная — последняя из них или выбранная вместе с остановками."
   uk: "Спершу задайте зупинки напрямку: кінцева — остання з них або обрана разом із зупинками."
@@ -33332,6 +33571,7 @@ _version: 2
 "New destination: %{name}":
   nl: "Nieuwe bestemming: %{name}"
   de: "Neues Ziel: %{name}"
+  da: "Ny destination: %{name}"
   fr: "Nouvelle destination : %{name}"
   ru: "Новая конечная: %{name}"
   uk: "Нова кінцева: %{name}"
@@ -33339,6 +33579,7 @@ _version: 2
 "%{name}, from the depot file":
   nl: "%{name}, uit het hof-bestand"
   de: "%{name}, aus der Hof-Datei"
+  da: "%{name}, fra depotfilen"
   fr: "%{name}, du fichier de dépôt"
   ru: "%{name}, из файла депо"
   uk: "%{name}, з файлу депо"
@@ -33346,6 +33587,7 @@ _version: 2
 "The texts made from the destination again":
   nl: "De teksten opnieuw uit de bestemming maken"
   de: "Die Texte wieder aus dem Ziel bilden"
+  da: "Teksterne lavet af destinationen igen"
   fr: "Refaire les textes à partir de la destination"
   ru: "Снова составить тексты из названия конечной"
   uk: "Знову скласти тексти з назви кінцевої"
@@ -33353,6 +33595,7 @@ _version: 2
 "Display texts":
   nl: "Displayteksten"
   de: "Anzeigetexte"
+  da: "Skærmtekster"
   fr: "Textes des girouettes"
   ru: "Тексты табло"
   uk: "Тексти табло"
@@ -33360,6 +33603,7 @@ _version: 2
 "IBIS route":
   nl: "IBIS-route"
   de: "IBIS-Route"
+  da: "IBIS-rute"
   fr: "Itinéraire IBIS"
   ru: "Маршрут IBIS"
   uk: "Маршрут IBIS"
@@ -33367,6 +33611,7 @@ _version: 2
 "Given when the line is saved":
   nl: "Wordt gekozen bij het opslaan van de lijn"
   de: "Wird beim Speichern der Linie vergeben"
+  da: "Gives, når linjen gemmes"
   fr: "Attribué à l'enregistrement de la ligne"
   ru: "Назначается при сохранении линии"
   uk: "Призначається під час збереження лінії"
@@ -33374,6 +33619,7 @@ _version: 2
 "Not a route of line %{n} (%{n}01 - %{n}99): another is given on saving":
   nl: "Geen route van lijn %{n} (%{n}01 - %{n}99): bij het opslaan wordt een andere gekozen"
   de: "Keine Route der Linie %{n} (%{n}01 - %{n}99): beim Speichern wird eine andere vergeben"
+  da: "Ikke en rute på linje %{n} (%{n}01 - %{n}99): en anden gives ved gemning"
   fr: "Pas un itinéraire de la ligne %{n} (%{n}01 - %{n}99) : un autre est attribué à l'enregistrement"
   ru: "Не маршрут линии %{n} (%{n}01 - %{n}99): при сохранении будет назначен другой"
   uk: "Не маршрут лінії %{n} (%{n}01 - %{n}99): під час збереження буде призначено інший"
@@ -33381,6 +33627,7 @@ _version: 2
 "The depot file has this code already: another is given on saving":
   nl: "Het hof-bestand heeft deze code al: bij het opslaan wordt een andere gekozen"
   de: "Die Hof-Datei hat diesen Code schon: beim Speichern wird ein anderer vergeben"
+  da: "Depotfilen har allerede denne kode: en anden gives ved gemning"
   fr: "Le fichier de dépôt a déjà ce code : un autre est attribué à l'enregistrement"
   ru: "В файле депо этот код уже есть: при сохранении будет назначен другой"
   uk: "У файлі депо цей код уже є: під час збереження буде призначено інший"
@@ -33388,6 +33635,7 @@ _version: 2
 "Line %{l}, route %{r} on the IBIS":
   nl: "Lijn %{l}, route %{r} in de IBIS"
   de: "Linie %{l}, Route %{r} im IBIS"
+  da: "Linje %{l}, rute %{r} på IBIS"
   fr: "Ligne %{l}, itinéraire %{r} dans l'IBIS"
   ru: "Линия %{l}, маршрут %{r} в IBIS"
   uk: "Лінія %{l}, маршрут %{r} в IBIS"
@@ -33395,6 +33643,7 @@ _version: 2
 "Stop names on the IBIS":
   nl: "Haltenamen in de IBIS"
   de: "Haltestellennamen im IBIS"
+  da: "Stoppestedsnavne på IBIS"
   fr: "Noms des arrêts dans l'IBIS"
   ru: "Названия остановок в IBIS"
   uk: "Назви зупинок в IBIS"
@@ -33402,6 +33651,7 @@ _version: 2
 "The line is saved, but a depot file could not be written (displays and IBIS)":
   nl: "De lijn is opgeslagen, maar een hof-bestand kon niet worden geschreven (displays en IBIS)"
   de: "Die Linie ist gespeichert, aber eine Hof-Datei konnte nicht geschrieben werden (Anzeigen und IBIS)"
+  da: "Linjen er gemt, men en depotfil kunne ikke skrives (skærme og IBIS)"
   fr: "La ligne est enregistrée, mais un fichier de dépôt n'a pas pu être écrit (girouettes et IBIS)"
   ru: "Линия сохранена, но файл депо записать не удалось (табло и IBIS)"
   uk: "Лінію збережено, але файл депо записати не вдалося (табло та IBIS)"
@@ -33409,6 +33659,7 @@ _version: 2
 "A depot file could not be written (displays and IBIS)":
   nl: "Een hof-bestand kon niet worden geschreven (displays en IBIS)"
   de: "Eine Hof-Datei konnte nicht geschrieben werden (Anzeigen und IBIS)"
+  da: "En depotfil kunne ikke skrives (skærme og IBIS)"
   fr: "Un fichier de dépôt n'a pas pu être écrit (girouettes et IBIS)"
   ru: "Не удалось записать файл депо (табло и IBIS)"
   uk: "Не вдалося записати файл депо (табло та IBIS)"
@@ -33416,6 +33667,7 @@ _version: 2
 "Fill in the IBIS automatically":
   nl: "IBIS automatisch invullen"
   de: "IBIS automatisch ausfüllen"
+  da: "Udfyld IBIS automatisk"
   fr: "Remplir l'IBIS automatiquement"
   ru: "Заполнять IBIS автоматически"
   uk: "Заповнювати IBIS автоматично"
@@ -33423,6 +33675,7 @@ _version: 2
 "The game types the duty's line, route and destination into the IBIS; off, you type them yourself":
   nl: "Het spel voert lijn, route en bestemming van de dienst in de IBIS in; uit: je typt ze zelf"
   de: "Das Spiel tippt Linie, Route und Ziel des Dienstes ins IBIS; aus: du tippst sie selbst"
+  da: "Spillet skriver vagtens linje, rute og destination ind i IBIS; fra: du skriver dem selv"
   fr: "Le jeu saisit la ligne, l'itinéraire et la destination du service dans l'IBIS ; désactivé, vous les saisissez vous-même"
   ru: "Игра сама вводит в IBIS линию, маршрут и конечную смены; если выключено — вводите сами"
   uk: "Гра сама вводить в IBIS лінію, маршрут і кінцеву зміни; якщо вимкнено — вводите самі"
@@ -33430,6 +33683,7 @@ _version: 2
 "Accent colour":
   nl: "Accentkleur"
   de: "Akzentfarbe"
+  da: "Accentfarve"
   fr: "Couleur d'accent"
   ru: "Цвет акцента"
   uk: "Колір акценту"
@@ -33437,6 +33691,7 @@ _version: 2
 "Custom…":
   nl: "Eigen kleur…"
   de: "Eigene Farbe…"
+  da: "Brugerdefineret…"
   fr: "Personnalisée…"
   ru: "Свой цвет…"
   uk: "Свій колір…"
@@ -33444,6 +33699,7 @@ _version: 2
 "Orange":
   nl: "Oranje"
   de: "Orange"
+  da: "Orange"
   fr: "Orange"
   ru: "Оранжевый"
   uk: "Помаранчевий"
@@ -33451,6 +33707,7 @@ _version: 2
 "Blue":
   nl: "Blauw"
   de: "Blau"
+  da: "Blå"
   fr: "Bleu"
   ru: "Синий"
   uk: "Синій"
@@ -33458,6 +33715,7 @@ _version: 2
 "Green":
   nl: "Groen"
   de: "Grün"
+  da: "Grøn"
   fr: "Vert"
   ru: "Зелёный"
   uk: "Зелений"
@@ -33465,6 +33723,7 @@ _version: 2
 "Red":
   nl: "Rood"
   de: "Rot"
+  da: "Rød"
   fr: "Rouge"
   ru: "Красный"
   uk: "Червоний"
@@ -33472,6 +33731,7 @@ _version: 2
 "Purple":
   nl: "Paars"
   de: "Lila"
+  da: "Lilla"
   fr: "Violet"
   ru: "Фиолетовый"
   uk: "Фіолетовий"
@@ -33479,6 +33739,7 @@ _version: 2
 "Teal":
   nl: "Turquoise"
   de: "Türkis"
+  da: "Blågrøn"
   fr: "Turquoise"
   ru: "Бирюзовый"
   uk: "Бірюзовий"
@@ -33486,6 +33747,7 @@ _version: 2
 "Pink":
   nl: "Roze"
   de: "Pink"
+  da: "Pink"
   fr: "Rose"
   ru: "Розовый"
   uk: "Рожевий"
@@ -33493,6 +33755,7 @@ _version: 2
 "Yellow":
   nl: "Geel"
   de: "Gelb"
+  da: "Gul"
   fr: "Jaune"
   ru: "Жёлтый"
   uk: "Жовтий"
@@ -33500,6 +33763,7 @@ _version: 2
 "Sign on with personnel number and code":
   nl: "Aanmelden met personeelsnummer en code"
   de: "Mit Personalnummer und Code anmelden"
+  da: "Log på med personalenummer og kode"
   fr: "Se connecter avec le matricule et le code"
   ru: "Вход по табельному номеру и коду"
   uk: "Вхід за табельним номером і кодом"
@@ -33507,6 +33771,7 @@ _version: 2
 "Before a duty the navigator asks for your number and code and for the duty order to be accepted. Off, the map and the duty show at once.":
   nl: "Voor een dienst vraagt de navigator je nummer en code en moet je de dienstopdracht accepteren. Uit: de kaart en de dienst staan er meteen."
   de: "Vor einem Dienst fragt das Navi nach Nummer und Code, und der Dienstauftrag muss angenommen werden. Aus: Karte und Dienst sind sofort da."
+  da: "Før en vagt spørger navigatoren efter dit nummer og din kode og om, at vagtordren accepteres. Fra: kortet og vagten vises med det samme."
   fr: "Avant un service, le navigateur demande votre matricule et votre code, puis l'acceptation de l'ordre de service. Désactivé : la carte et le service s'affichent aussitôt."
   ru: "Перед сменой навигатор спрашивает номер и код и просит принять наряд. Если выключено — карта и смена видны сразу."
   uk: "Перед зміною навігатор питає номер і код і просить прийняти наряд. Якщо вимкнено — мапа і зміна видно одразу."
@@ -33514,6 +33779,7 @@ _version: 2
 "Make one in Editor → Line editor":
   nl: "Maak er een in Editor → Lijneneditor"
   de: "Erstelle eine unter Editor → Linieneditor"
+  da: "Lav en under Editor → Linjeeditor"
   fr: "Créez-en une dans Éditeur → Éditeur de lignes"
   ru: "Создайте её в разделе Редактор → Редактор линий"
   uk: "Створіть її в розділі Редактор → Редактор ліній"
@@ -33521,6 +33787,7 @@ _version: 2
 "Map lines (%{n})":
   nl: "Lijnen van de kaart (%{n})"
   de: "Linien der Karte (%{n})"
+  da: "Kortets linjer (%{n})"
   fr: "Lignes de la carte (%{n})"
   ru: "Линии карты (%{n})"
   uk: "Лінії мапи (%{n})"
@@ -33528,6 +33795,7 @@ _version: 2
 "My lines (%{n})":
   nl: "Mijn lijnen (%{n})"
   de: "Meine Linien (%{n})"
+  da: "Mine linjer (%{n})"
   fr: "Mes lignes (%{n})"
   ru: "Мои линии (%{n})"
   uk: "Мої лінії (%{n})"
@@ -33535,6 +33803,7 @@ _version: 2
 "own":
   nl: "eigen"
   de: "eigene"
+  da: "egen"
   fr: "perso"
   ru: "своя"
   uk: "своя"
@@ -33542,6 +33811,7 @@ _version: 2
 "own line":
   nl: "eigen lijn"
   de: "eigene Linie"
+  da: "egen linje"
   fr: "ligne perso"
   ru: "своя линия"
   uk: "своя лінія"
@@ -33549,6 +33819,7 @@ _version: 2
 "The lines you made in the line editor":
   nl: "De lijnen die je in de lijneneditor hebt gemaakt"
   de: "Die Linien, die du im Linieneditor erstellt hast"
+  da: "De linjer, du lavede i linjeeditoren"
   fr: "Les lignes que vous avez créées dans l'éditeur de lignes"
   ru: "Линии, созданные вами в редакторе линий"
   uk: "Лінії, які ви створили в редакторі ліній"
@@ -33556,6 +33827,7 @@ _version: 2
 "Search your lines…":
   nl: "Zoek in je lijnen…"
   de: "Deine Linien durchsuchen…"
+  da: "Søg i dine linjer…"
   fr: "Chercher dans vos lignes…"
   ru: "Поиск по вашим линиям…"
   uk: "Пошук у ваших лініях…"
@@ -33563,6 +33835,7 @@ _version: 2
 "Your own lines":
   nl: "Je eigen lijnen"
   de: "Deine eigenen Linien"
+  da: "Dine egne linjer"
   fr: "Vos propres lignes"
   ru: "Ваши собственные линии"
   uk: "Ваші власні лінії"
@@ -33570,6 +33843,7 @@ _version: 2
 "Lines of the timetable. Your own: make one in Editor → Line editor":
   nl: "Lijnen van de dienstregeling. Een eigen lijn maak je in Editor → Lijneneditor"
   de: "Linien des Fahrplans. Eigene erstellst du unter Editor → Linieneditor"
+  da: "Linjer fra køreplanen. Dine egne: lav en under Editor → Linjeeditor"
   fr: "Lignes de l'horaire. Les vôtres se créent dans Éditeur → Éditeur de lignes"
   ru: "Линии расписания. Свою можно создать в разделе Редактор → Редактор линий"
   uk: "Лінії розкладу. Власну можна створити в розділі Редактор → Редактор ліній"
@@ -33577,6 +33851,7 @@ _version: 2
 "Bus across the screen between pages":
   nl: "Bus door het scherm bij een andere pagina"
   de: "Bus über den Bildschirm beim Seitenwechsel"
+  da: "Bus hen over skærmen mellem siderne"
   fr: "Bus qui traverse l'écran entre les pages"
   ru: "Автобус через экран при смене страницы"
   uk: "Автобус через екран під час зміни сторінки"
@@ -33584,6 +33859,7 @@ _version: 2
 "Through Cloudflare: reachable outside your network too.":
   nl: "Via Cloudflare: ook buiten je netwerk bereikbaar."
   de: "Über Cloudflare: auch außerhalb deines Netzwerks erreichbar."
+  da: "Gennem Cloudflare: kan også nås uden for dit netværk."
   fr: "Via Cloudflare : accessible aussi hors de votre réseau."
   ru: "Через Cloudflare: доступно и вне вашей сети."
   uk: "Через Cloudflare: доступно й поза вашою мережею."
@@ -33591,6 +33867,7 @@ _version: 2
 "Connecting through Cloudflare…":
   nl: "Verbinden via Cloudflare…"
   de: "Verbinde über Cloudflare…"
+  da: "Forbinder gennem Cloudflare…"
   fr: "Connexion via Cloudflare…"
   ru: "Подключение через Cloudflare…"
   uk: "Підключення через Cloudflare…"
@@ -33598,6 +33875,7 @@ _version: 2
 "Cloudflare: cloudflared is not installed. Download it in the launcher under Settings › General.":
   nl: "Cloudflare: cloudflared is niet geïnstalleerd. Download het in de launcher onder Instellingen › Algemeen."
   de: "Cloudflare: cloudflared ist nicht installiert. Lade es im Launcher unter Einstellungen › Allgemein herunter."
+  da: "Cloudflare: cloudflared er ikke installeret. Hent det i launcheren under Indstillinger › Generelt."
   fr: "Cloudflare : cloudflared n'est pas installé. Téléchargez-le dans le lanceur sous Paramètres › Général."
   ru: "Cloudflare: cloudflared не установлен. Скачайте его в лаунчере: Настройки › Общие."
   uk: "Cloudflare: cloudflared не встановлено. Завантажте його в лаунчері: Налаштування › Загальні."
@@ -33605,6 +33883,7 @@ _version: 2
 "The Cloudflare tunnel could not start. Trying again…":
   nl: "De Cloudflare-tunnel kon niet starten. Opnieuw proberen…"
   de: "Der Cloudflare-Tunnel konnte nicht starten. Neuer Versuch…"
+  da: "Cloudflare-tunnelen kunne ikke starte. Prøver igen…"
   fr: "Le tunnel Cloudflare n'a pas pu démarrer. Nouvel essai…"
   ru: "Не удалось запустить туннель Cloudflare. Повторная попытка…"
   uk: "Не вдалося запустити тунель Cloudflare. Повторна спроба…"
@@ -33612,6 +33891,7 @@ _version: 2
 "Hide again":
   nl: "Weer verbergen"
   de: "Wieder verbergen"
+  da: "Skjul igen"
   fr: "Masquer à nouveau"
   ru: "Снова скрыть"
   uk: "Знову приховати"
@@ -33619,6 +33899,7 @@ _version: 2
 "On a phone or tablet, open":
   nl: "Open op een telefoon of tablet"
   de: "Öffne auf einem Handy oder Tablet"
+  da: "Åbn på en telefon eller tablet"
   fr: "Sur un téléphone ou une tablette, ouvrez"
   ru: "На телефоне или планшете откройте"
   uk: "На телефоні чи планшеті відкрийте"
@@ -33626,6 +33907,7 @@ _version: 2
 "Address and pairing code hidden":
   nl: "Adres en koppelcode verborgen"
   de: "Adresse und Kopplungscode verborgen"
+  da: "Adresse og parringskode skjult"
   fr: "Adresse et code d'appairage masqués"
   ru: "Адрес и код сопряжения скрыты"
   uk: "Адресу й код спряження приховано"
@@ -33633,6 +33915,7 @@ _version: 2
 "Covered for streaming. Nobody sees them on screen.":
   nl: "Afgedekt voor het streamen. Niemand ziet ze op het scherm."
   de: "Fürs Streamen verdeckt. Niemand sieht sie auf dem Bildschirm."
+  da: "Dækket til streaming. Ingen ser dem på skærmen."
   fr: "Masqués pour le streaming. Personne ne les voit à l'écran."
   ru: "Скрыто для трансляции. На экране их никто не увидит."
   uk: "Приховано для трансляції. На екрані їх ніхто не побачить."
@@ -33640,6 +33923,7 @@ _version: 2
 "Hide address and pairing code (streaming)":
   nl: "Adres en koppelcode verbergen (streamen)"
   de: "Adresse und Kopplungscode verbergen (Streaming)"
+  da: "Skjul adresse og parringskode (streaming)"
   fr: "Masquer l'adresse et le code d'appairage (streaming)"
   ru: "Скрывать адрес и код сопряжения (трансляции)"
   uk: "Приховувати адресу й код спряження (трансляції)"
@@ -33647,6 +33931,7 @@ _version: 2
 "The navigator and the game menu cover the address, the pairing code and the QR code until you press Show.":
   nl: "De navigator en het spelmenu dekken het adres, de koppelcode en de QR-code af tot je op Tonen drukt."
   de: "Navi und Spielmenü verdecken Adresse, Kopplungscode und QR-Code, bis du auf Anzeigen drückst."
+  da: "Navigatoren og spilmenuen dækker adressen, parringskoden og QR-koden, til du trykker på Vis."
   fr: "Le navigateur et le menu du jeu masquent l'adresse, le code d'appairage et le QR code jusqu'à ce que vous appuyiez sur Afficher."
   ru: "Навигатор и меню игры скрывают адрес, код сопряжения и QR-код, пока вы не нажмёте «Показать»."
   uk: "Навігатор і меню гри приховують адресу, код спряження та QR-код, доки ви не натиснете «Показати»."
@@ -33654,6 +33939,7 @@ _version: 2
 "Connect through Cloudflare (also outside your network)":
   nl: "Verbinden via Cloudflare (ook buiten je netwerk)"
   de: "Über Cloudflare verbinden (auch außerhalb deines Netzwerks)"
+  da: "Forbind gennem Cloudflare (også uden for dit netværk)"
   fr: "Se connecter via Cloudflare (aussi hors de votre réseau)"
   ru: "Подключение через Cloudflare (и вне вашей сети)"
   uk: "Підключення через Cloudflare (і поза вашою мережею)"
@@ -33661,6 +33947,7 @@ _version: 2
 "A free Cloudflare quick tunnel makes the page reachable at an https address from anywhere, e.g. over mobile data. Devices still need the pairing code.":
   nl: "Een gratis Cloudflare-snelle tunnel maakt de pagina overal bereikbaar op een https-adres, bijvoorbeeld via mobiele data. Apparaten hebben nog steeds de koppelcode nodig."
   de: "Ein kostenloser Cloudflare-Schnelltunnel macht die Seite überall unter einer https-Adresse erreichbar, z. B. über mobile Daten. Geräte brauchen weiterhin den Kopplungscode."
+  da: "En gratis Cloudflare-quicktunnel gør siden tilgængelig på en https-adresse fra hvor som helst, f.eks. over mobildata. Enheder skal stadig bruge parringskoden."
   fr: "Un tunnel rapide Cloudflare gratuit rend la page accessible partout à une adresse https, par exemple en données mobiles. Les appareils ont toujours besoin du code d'appairage."
   ru: "Бесплатный быстрый туннель Cloudflare делает страницу доступной отовсюду по адресу https, например через мобильный интернет. Устройствам по-прежнему нужен код сопряжения."
   uk: "Безкоштовний швидкий тунель Cloudflare робить сторінку доступною звідусіль за адресою https, наприклад через мобільний інтернет. Пристроям і далі потрібен код спряження."
@@ -33668,6 +33955,7 @@ _version: 2
 "cloudflared is installed.":
   nl: "cloudflared is geïnstalleerd."
   de: "cloudflared ist installiert."
+  da: "cloudflared er installeret."
   fr: "cloudflared est installé."
   ru: "cloudflared установлен."
   uk: "cloudflared встановлено."
@@ -33675,6 +33963,7 @@ _version: 2
 "The tunnel needs cloudflared, Cloudflare's own program (about 40 MB).":
   nl: "De tunnel heeft cloudflared nodig, het programma van Cloudflare zelf (ongeveer 40 MB)."
   de: "Der Tunnel braucht cloudflared, das Programm von Cloudflare selbst (etwa 40 MB)."
+  da: "Tunnelen kræver cloudflared, Cloudflares eget program (ca. 40 MB)."
   fr: "Le tunnel a besoin de cloudflared, le programme de Cloudflare (environ 40 Mo)."
   ru: "Для туннеля нужен cloudflared — программа самой Cloudflare (около 40 МБ)."
   uk: "Для тунелю потрібен cloudflared — програма самої Cloudflare (близько 40 МБ)."
@@ -33682,6 +33971,7 @@ _version: 2
 "Downloading cloudflared…":
   nl: "cloudflared downloaden…"
   de: "cloudflared wird heruntergeladen…"
+  da: "Henter cloudflared…"
   fr: "Téléchargement de cloudflared…"
   ru: "Загрузка cloudflared…"
   uk: "Завантаження cloudflared…"
@@ -33689,6 +33979,7 @@ _version: 2
 "cloudflared could not be downloaded. Check the internet connection and try again.":
   nl: "cloudflared kon niet worden gedownload. Controleer de internetverbinding en probeer het opnieuw."
   de: "cloudflared konnte nicht heruntergeladen werden. Prüfe die Internetverbindung und versuche es erneut."
+  da: "cloudflared kunne ikke hentes. Tjek internetforbindelsen, og prøv igen."
   fr: "cloudflared n'a pas pu être téléchargé. Vérifiez la connexion internet et réessayez."
   ru: "Не удалось скачать cloudflared. Проверьте подключение к интернету и попробуйте снова."
   uk: "Не вдалося завантажити cloudflared. Перевірте підключення до інтернету й спробуйте знову."
@@ -33696,6 +33987,7 @@ _version: 2
 "Download cloudflared":
   nl: "cloudflared downloaden"
   de: "cloudflared herunterladen"
+  da: "Hent cloudflared"
   fr: "Télécharger cloudflared"
   ru: "Скачать cloudflared"
   uk: "Завантажити cloudflared"
@@ -33703,6 +33995,7 @@ _version: 2
 "Mirror image on the other side":
   nl: "Spiegelbeeld aan de andere kant"
   de: "Spiegelbild auf der anderen Seite"
+  da: "Spejlbillede på den anden side"
   fr: "Image miroir de l'autre côté"
   ru: "Зеркальное отражение на другой стороне"
   uk: "Дзеркальне відображення з іншого боку"
@@ -33710,6 +34003,7 @@ _version: 2
 "Also over the windows":
   nl: "Ook over de ramen"
   de: "Auch über die Fenster"
+  da: "Også over ruderne"
   fr: "Aussi sur les vitres"
   ru: "Также поверх окон"
   uk: "Також поверх вікон"
@@ -33717,6 +34011,7 @@ _version: 2
 "Keep proportions":
   nl: "Verhouding vasthouden"
   de: "Seitenverhältnis beibehalten"
+  da: "Bevar proportioner"
   fr: "Conserver les proportions"
   ru: "Сохранять пропорции"
   uk: "Зберігати пропорції"
@@ -33724,6 +34019,7 @@ _version: 2
 "This bus's windows cannot carry a livery: their texture is not one a livery can change.":
   nl: "De ramen van deze bus kunnen geen lak dragen: hun textuur is er geen die een lak kan veranderen."
   de: "Die Fenster dieses Busses können keine Lackierung tragen: Ihre Textur lässt sich durch keine Lackierung ändern."
+  da: "Denne buss ruder kan ikke have en bemaling: deres tekstur er ikke en, en bemaling kan ændre."
   fr: "Les vitres de ce bus ne peuvent pas porter de livrée : leur texture n'est pas de celles qu'une livrée peut changer."
   ru: "Окна этого автобуса не могут нести окраску: их текстуру окраска изменить не может."
   uk: "Вікна цього автобуса не можуть нести фарбування: їхню текстуру фарбування змінити не може."
@@ -33731,6 +34027,7 @@ _version: 2
 "Body colour":
   nl: "Carrosseriekleur"
   de: "Wagenkastenfarbe"
+  da: "Karrosserifarve"
   fr: "Couleur de la carrosserie"
   ru: "Цвет кузова"
   uk: "Колір кузова"
@@ -33738,6 +34035,7 @@ _version: 2
 "Second colour":
   nl: "Tweede kleur"
   de: "Zweitfarbe"
+  da: "Anden farve"
   fr: "Deuxième couleur"
   ru: "Второй цвет"
   uk: "Другий колір"
@@ -33745,6 +34043,7 @@ _version: 2
 "Brush":
   nl: "Penseel"
   de: "Pinsel"
+  da: "Pensel"
   fr: "Pinceau"
   ru: "Кисть"
   uk: "Пензель"
@@ -33752,6 +34051,7 @@ _version: 2
 "Eraser":
   nl: "Gum"
   de: "Radierer"
+  da: "Viskelæder"
   fr: "Gomme"
   ru: "Ластик"
   uk: "Гумка"
@@ -33759,6 +34059,7 @@ _version: 2
 "Paint on the bus with the left button. E switches between the brush and the eraser, [ and ] make it smaller and larger. The strokes are kept as lines on the bus: they stay sharp at any size.":
   nl: "Schilder met de linkerknop op de bus. E wisselt tussen penseel en gum, [ en ] maken hem kleiner en groter. De streken worden als lijnen op de bus bewaard: ze blijven op elke maat scherp."
   de: "Male mit der linken Taste auf den Bus. E wechselt zwischen Pinsel und Radierer, [ und ] machen ihn kleiner und größer. Die Striche werden als Linien auf dem Bus gespeichert: Sie bleiben in jeder Größe scharf."
+  da: "Mal på bussen med venstre knap. E skifter mellem penslen og viskelæderet, [ og ] gør den mindre og større. Penselstrøgene gemmes som linjer på bussen: de forbliver skarpe i enhver størrelse."
   fr: "Peignez sur le bus avec le bouton gauche. E passe du pinceau à la gomme, [ et ] le rendent plus petit ou plus grand. Les traits sont gardés comme des lignes sur le bus : ils restent nets à toute taille."
   ru: "Рисуйте на автобусе левой кнопкой. E переключает кисть и ластик, [ и ] уменьшают и увеличивают их. Мазки хранятся как линии на автобусе и остаются чёткими при любом размере."
   uk: "Малюйте на автобусі лівою кнопкою. E перемикає пензель і гумку, [ і ] зменшують і збільшують їх. Мазки зберігаються як лінії на автобусі й лишаються чіткими за будь-якого розміру."
@@ -33766,6 +34067,7 @@ _version: 2
 "Size":
   nl: "Grootte"
   de: "Größe"
+  da: "Størrelse"
   fr: "Taille"
   ru: "Размер"
   uk: "Розмір"
@@ -33773,6 +34075,7 @@ _version: 2
 "Hardness":
   nl: "Hardheid"
   de: "Härte"
+  da: "Hårdhed"
   fr: "Dureté"
   ru: "Жёсткость"
   uk: "Жорсткість"
@@ -33780,6 +34083,7 @@ _version: 2
 "Cover":
   nl: "Dekking"
   de: "Deckkraft"
+  da: "Dækning"
   fr: "Couvrance"
   ru: "Плотность"
   uk: "Щільність"
@@ -33787,6 +34091,7 @@ _version: 2
 "%{n} strokes of the brush, %{e} of the eraser. Choose the brush tool to paint on in this layer.":
   nl: "%{n} penseelstreken, %{e} met de gum. Kies het penseel om in deze laag verder te schilderen."
   de: "%{n} Pinselstriche, %{e} mit dem Radierer. Wähle den Pinsel, um in dieser Ebene weiterzumalen."
+  da: "%{n} penselstrøg, %{e} med viskelæderet. Vælg penselværktøjet for at male i dette lag."
   fr: "%{n} traits de pinceau, %{e} de gomme. Choisissez le pinceau pour continuer à peindre dans ce calque."
   ru: "Мазков кистью: %{n}, ластиком: %{e}. Выберите кисть, чтобы рисовать в этом слое дальше."
   uk: "Мазків пензлем: %{n}, гумкою: %{e}. Виберіть пензель, щоб малювати в цьому шарі далі."
@@ -33794,6 +34099,7 @@ _version: 2
 "Take back the last stroke":
   nl: "Laatste streek terugnemen"
   de: "Letzten Strich zurücknehmen"
+  da: "Fortryd det sidste strøg"
   fr: "Annuler le dernier trait"
   ru: "Отменить последний мазок"
   uk: "Скасувати останній мазок"
@@ -33801,6 +34107,7 @@ _version: 2
 "Nothing painted with the brush yet to erase.":
   nl: "Er is nog niets met het penseel geschilderd om uit te gummen."
   de: "Mit dem Pinsel wurde noch nichts gemalt, das sich radieren ließe."
+  da: "Intet malet med penslen endnu at viske ud."
   fr: "Rien n'a encore été peint au pinceau à gommer."
   ru: "Кистью ещё ничего не нарисовано, стирать нечего."
   uk: "Пензлем ще нічого не намальовано, стирати нічого."
@@ -33808,6 +34115,7 @@ _version: 2
 "Mirror plane":
   nl: "Spiegelvlak"
   de: "Spiegelebene"
+  da: "Spejlplan"
   fr: "Plan de symétrie"
   ru: "Плоскость отражения"
   uk: "Площина віддзеркалення"
@@ -33815,6 +34123,7 @@ _version: 2
 "Where the copies on the other side are mirrored, from the bus's middle":
   nl: "Waar de kopieën naar de andere kant gespiegeld worden, vanaf het midden van de bus"
   de: "Wo die Kopien auf die andere Seite gespiegelt werden, von der Busmitte aus"
+  da: "Hvor kopierne på den anden side spejles, regnet fra busens midte"
   fr: "Où les copies de l'autre côté sont reflétées, depuis le milieu du bus"
   ru: "Где копии отражаются на другую сторону, от середины автобуса"
   uk: "Де копії віддзеркалюються на інший бік, від середини автобуса"
@@ -33822,6 +34131,7 @@ _version: 2
 "Click again to remove it":
   nl: "Klik nog eens om hem te verwijderen"
   de: "Zum Entfernen noch einmal klicken"
+  da: "Klik igen for at fjerne den"
   fr: "Cliquez à nouveau pour la retirer"
   ru: "Нажмите ещё раз, чтобы удалить"
   uk: "Натисніть ще раз, щоб видалити"
@@ -33829,6 +34139,7 @@ _version: 2
 "Remove from the game":
   nl: "Uit het spel verwijderen"
   de: "Aus dem Spiel entfernen"
+  da: "Fjern fra spillet"
   fr: "Retirer du jeu"
   ru: "Удалить из игры"
   uk: "Видалити з гри"
@@ -33836,6 +34147,7 @@ _version: 2
 "Takes the saved livery out of the game; the design stays here":
   nl: "Haalt de bewaarde lak uit het spel; het ontwerp blijft hier"
   de: "Nimmt die gespeicherte Lackierung aus dem Spiel; der Entwurf bleibt hier"
+  da: "Tager den gemte bemaling ud af spillet; designet bliver her"
   fr: "Retire la livrée enregistrée du jeu ; le projet reste ici"
   ru: "Убирает сохранённую окраску из игры; проект остаётся здесь"
   uk: "Прибирає збережене фарбування з гри; проєкт лишається тут"
@@ -33843,6 +34155,7 @@ _version: 2
 "Some files of the livery could not be removed (is the game using them?).":
   nl: "Sommige bestanden van de lak konden niet verwijderd worden (gebruikt het spel ze?)."
   de: "Einige Dateien der Lackierung ließen sich nicht entfernen (benutzt das Spiel sie?)."
+  da: "Nogle af bemalingens filer kunne ikke fjernes (bruger spillet dem?)."
   fr: "Certains fichiers de la livrée n'ont pas pu être supprimés (le jeu les utilise-t-il ?)."
   ru: "Некоторые файлы окраски удалить не удалось (их использует игра?)."
   uk: "Деякі файли фарбування не вдалося видалити (їх використовує гра?)."
@@ -33850,6 +34163,7 @@ _version: 2
 "'%{name}' is no longer in the game.":
   nl: "'%{name}' staat niet meer in het spel."
   de: "„%{name}“ ist nicht mehr im Spiel."
+  da: "'%{name}' er ikke længere i spillet."
   fr: "« %{name} » n'est plus dans le jeu."
   ru: "«%{name}» больше нет в игре."
   uk: "«%{name}» більше немає в грі."
@@ -33857,6 +34171,7 @@ _version: 2
 "Close the game first: it may be using the livery.":
   nl: "Sluit eerst het spel: het gebruikt de lak misschien."
   de: "Schließe zuerst das Spiel: Es benutzt die Lackierung vielleicht."
+  da: "Luk først spillet: det bruger måske bemalingen."
   fr: "Fermez d'abord le jeu : il utilise peut-être la livrée."
   ru: "Сначала закройте игру: она может использовать окраску."
   uk: "Спершу закрийте гру: вона може використовувати фарбування."
@@ -33864,6 +34179,7 @@ _version: 2
 "The game is running: the livery is saved into it as soon as the game is closed.":
   nl: "Het spel draait: de lak wordt erin bewaard zodra het spel gesloten is."
   de: "Das Spiel läuft: Die Lackierung wird gespeichert, sobald das Spiel geschlossen ist."
+  da: "Spillet kører: bemalingen gemmes i det, så snart spillet lukkes."
   fr: "Le jeu est lancé : la livrée y sera enregistrée dès sa fermeture."
   ru: "Игра запущена: окраска будет сохранена, как только игра закроется."
   uk: "Гра запущена: фарбування буде збережено, щойно гра закриється."
@@ -33871,6 +34187,7 @@ _version: 2
 "Saved once the game closes":
   nl: "Bewaard zodra het spel sluit"
   de: "Gespeichert, sobald das Spiel schließt"
+  da: "Gemmes, når spillet lukker"
   fr: "Enregistrée à la fermeture du jeu"
   ru: "Сохранится после закрытия игры"
   uk: "Збережеться після закриття гри"
@@ -33878,6 +34195,7 @@ _version: 2
 "Save when the game closes":
   nl: "Bewaren als het spel sluit"
   de: "Speichern, wenn das Spiel schließt"
+  da: "Gem, når spillet lukker"
   fr: "Enregistrer à la fermeture du jeu"
   ru: "Сохранить после закрытия игры"
   uk: "Зберегти після закриття гри"
@@ -33885,6 +34203,7 @@ _version: 2
 "This livery as it is":
   nl: "Deze lak precies"
   de: "Diese Lackierung genau so"
+  da: "Denne bemaling, som den er"
   fr: "Cette livrée telle quelle"
   ru: "Эта окраска как есть"
   uk: "Це фарбування як є"
@@ -33892,6 +34211,7 @@ _version: 2
 "Its colours, plain":
   nl: "Effen in de kleuren van deze lak"
   de: "Einfarbig in den Farben dieser Lackierung"
+  da: "Dens farver, ensfarvet"
   fr: "Unie, dans ses couleurs"
   ru: "Однотонно в её цветах"
   uk: "Однотонно в її кольорах"
@@ -33899,6 +34219,7 @@ _version: 2
 "Plain":
   nl: "Effen"
   de: "Einfarbig"
+  da: "Ensfarvet"
   fr: "Unie"
   ru: "Однотонно"
   uk: "Однотонно"
@@ -33907,6 +34228,7 @@ _version: 2
 "Begin with":
   nl: "Beginnen met"
   de: "Beginnen mit"
+  da: "Begynd med"
   fr: "Commencer par"
   ru: "Начать с"
   uk: "Почати з"
@@ -33914,6 +34236,7 @@ _version: 2
 "Here the bus's two sides share their paint: what stands here shows on the other side too, the wrong way round.":
   nl: "Hier delen de twee kanten van de bus hun lak: wat hier staat, verschijnt ook aan de andere kant, in spiegelschrift."
   de: "Hier teilen sich die beiden Seiten des Busses ihre Lackierung: Was hier steht, erscheint auch auf der anderen Seite, spiegelverkehrt."
+  da: "Her deler busens to sider deres maling: det, der står her, vises også på den anden side, spejlvendt."
   fr: "Ici, les deux côtés du bus partagent leur peinture : ce qui est placé ici apparaît aussi de l'autre côté, inversé."
   ru: "Здесь обе стороны автобуса делят окраску: то, что здесь, появится и на другой стороне, зеркально."
   uk: "Тут обидва боки автобуса мають спільне фарбування: те, що тут, з'явиться й на іншому боці, дзеркально."
@@ -33921,6 +34244,7 @@ _version: 2
 "Move to a free spot":
   nl: "Schuif naar een vrij stuk"
   de: "Auf eine freie Stelle schieben"
+  da: "Flyt til en ledig plads"
   fr: "Déplacer vers un endroit libre"
   ru: "Сдвинуть на свободное место"
   uk: "Зсунути на вільне місце"
@@ -33928,6 +34252,7 @@ _version: 2
 "No free spot was found on this side.":
   nl: "Aan deze kant is geen vrij stuk gevonden."
   de: "Auf dieser Seite wurde keine freie Stelle gefunden."
+  da: "Ingen ledig plads blev fundet på denne side."
   fr: "Aucun endroit libre n'a été trouvé de ce côté."
   ru: "На этой стороне не найдено свободного места."
   uk: "На цьому боці не знайдено вільного місця."
@@ -33935,6 +34260,7 @@ _version: 2
 "Other side":
   nl: "Andere kant"
   de: "Andere Seite"
+  da: "Anden side"
   fr: "Autre côté"
   ru: "Другая сторона"
   uk: "Інший бік"
@@ -33942,6 +34268,7 @@ _version: 2
 "Also on":
   nl: "Komt ook op"
   de: "Passt auch auf"
+  da: "Også på"
   fr: "Va aussi sur"
   ru: "Подходит также для"
   uk: "Підходить також для"
@@ -33949,6 +34276,7 @@ _version: 2
 "These buses take the same paint. Look at the livery on them; those with a folder of their own get it too when you tick them.":
   nl: "Deze bussen hebben dezelfde lak. Bekijk de lak erop; bussen met een eigen map krijgen hem ook als je ze aanvinkt."
   de: "Diese Busse tragen dieselbe Lackierung. Sieh sie dir darauf an; Busse mit eigenem Ordner bekommen sie auch, wenn du sie ankreuzt."
+  da: "Disse busser tager den samme maling. Se bemalingen på dem; de med en egen mappe får den også, når du sætter flueben ved dem."
   fr: "Ces bus prennent la même peinture. Regardez la livrée sur eux ; ceux qui ont leur propre dossier la reçoivent aussi si vous les cochez."
   ru: "Эти автобусы берут ту же окраску. Посмотрите её на них; автобусы со своей папкой получат её, если их отметить."
   uk: "Ці автобуси беруть те саме фарбування. Подивіться його на них; автобуси з власною текою отримають його, якщо їх позначити."
@@ -33956,6 +34284,7 @@ _version: 2
 "Look":
   nl: "Bekijk"
   de: "Ansehen"
+  da: "Se"
   fr: "Voir"
   ru: "Смотреть"
   uk: "Переглянути"
@@ -33963,6 +34292,7 @@ _version: 2
 "Save the livery for this bus too":
   nl: "De lak ook voor deze bus bewaren"
   de: "Die Lackierung auch für diesen Bus speichern"
+  da: "Gem også bemalingen til denne bus"
   fr: "Enregistrer la livrée aussi pour ce bus"
   ru: "Сохранить окраску и для этого автобуса"
   uk: "Зберегти фарбування й для цього автобуса"
@@ -33970,6 +34300,7 @@ _version: 2
 "It shares the bus's folder: the livery comes on it by itself":
   nl: "Hij deelt de map van de bus: de lak komt er vanzelf op"
   de: "Er teilt den Ordner des Busses: Die Lackierung kommt von selbst darauf"
+  da: "Den deler busens mappe: bemalingen kommer på den af sig selv"
   fr: "Il partage le dossier du bus : la livrée y apparaît d'elle-même"
   ru: "У него общая папка с автобусом: окраска появится на нём сама"
   uk: "Він має спільну теку з автобусом: фарбування з'явиться на ньому саме"
@@ -33977,6 +34308,7 @@ _version: 2
 "Go back to your own bus to save the livery.":
   nl: "Ga terug naar je eigen bus om de lak te bewaren."
   de: "Geh zurück zu deinem eigenen Bus, um die Lackierung zu speichern."
+  da: "Gå tilbage til din egen bus for at gemme bemalingen."
   fr: "Revenez à votre propre bus pour enregistrer la livrée."
   ru: "Вернитесь к своему автобусу, чтобы сохранить окраску."
   uk: "Поверніться до свого автобуса, щоб зберегти фарбування."
@@ -33984,6 +34316,7 @@ _version: 2
 "Bus company":
   nl: "Busbedrijf"
   de: "Busunternehmen"
+  da: "Buselskab"
   fr: "Entreprise de bus"
   ru: "Автобусное предприятие"
   uk: "Автобусне підприємство"
@@ -33991,6 +34324,7 @@ _version: 2
 "Your own transport company: buy, lease or rent buses, hire drivers and run lines day by day.":
   nl: "Je eigen vervoersbedrijf: koop, lease of huur bussen, neem chauffeurs aan en rijd lijnen, dag na dag."
   de: "Dein eigenes Verkehrsunternehmen: Busse kaufen, leasen oder mieten, Fahrer einstellen und Linien betreiben, Tag für Tag."
+  da: "Dit eget transportselskab: køb, lease eller lej busser, ansæt chauffører, og kør linjer dag for dag."
   fr: "Votre propre entreprise de transport : achetez, louez en leasing ou louez des bus, embauchez des conducteurs et exploitez des lignes jour après jour."
   ru: "Своё транспортное предприятие: покупайте, берите в лизинг или арендуйте автобусы, нанимайте водителей и обслуживайте линии день за днём."
   uk: "Власне транспортне підприємство: купуйте, беріть у лізинг або орендуйте автобуси, наймайте водіїв і обслуговуйте лінії день за днем."
@@ -33998,6 +34332,7 @@ _version: 2
 "Your own transport company: buses, people and lines, settled day by day.":
   nl: "Je eigen vervoersbedrijf: bussen, mensen en lijnen, dag na dag afgerekend."
   de: "Dein eigenes Verkehrsunternehmen: Busse, Personal und Linien, Tag für Tag abgerechnet."
+  da: "Dit eget transportselskab: busser, mennesker og linjer, afregnet dag for dag."
   fr: "Votre propre entreprise de transport : bus, personnel et lignes, réglés jour après jour."
   ru: "Своё транспортное предприятие: автобусы, люди и линии, с расчётом за каждый день."
   uk: "Власне транспортне підприємство: автобуси, люди й лінії, з розрахунком за кожен день."
@@ -34005,6 +34340,7 @@ _version: 2
 "Buses, staff and lines of your own":
   nl: "Eigen bussen, personeel en lijnen"
   de: "Eigene Busse, eigenes Personal, eigene Linien"
+  da: "Egne busser, personale og linjer"
   fr: "Vos bus, votre personnel, vos lignes"
   ru: "Свои автобусы, персонал и линии"
   uk: "Власні автобуси, персонал і лінії"
@@ -34012,6 +34348,7 @@ _version: 2
 "Overview":
   nl: "Overzicht"
   de: "Übersicht"
+  da: "Overblik"
   fr: "Vue d'ensemble"
   ru: "Обзор"
   uk: "Огляд"
@@ -34019,6 +34356,7 @@ _version: 2
 "Fleet":
   nl: "Wagenpark"
   de: "Fuhrpark"
+  da: "Flåde"
   fr: "Parc"
   ru: "Парк"
   uk: "Парк"
@@ -34026,6 +34364,7 @@ _version: 2
 "Staff":
   nl: "Personeel"
   de: "Personal"
+  da: "Personale"
   fr: "Personnel"
   ru: "Персонал"
   uk: "Персонал"
@@ -34033,6 +34372,7 @@ _version: 2
 "Finances":
   nl: "Financiën"
   de: "Finanzen"
+  da: "Økonomi"
   fr: "Finances"
   ru: "Финансы"
   uk: "Фінанси"
@@ -34040,6 +34380,7 @@ _version: 2
 "Close the day":
   nl: "Dag afsluiten"
   de: "Tag abschließen"
+  da: "Afslut dagen"
   fr: "Clôturer la journée"
   ru: "Закрыть день"
   uk: "Закрити день"
@@ -34047,6 +34388,7 @@ _version: 2
 "7 days":
   nl: "7 dagen"
   de: "7 Tage"
+  da: "7 dage"
   fr: "7 jours"
   ru: "7 дней"
   uk: "7 днів"
@@ -34054,6 +34396,7 @@ _version: 2
 "Close the next seven days one after the other":
   nl: "Sluit de komende zeven dagen na elkaar af"
   de: "Die nächsten sieben Tage nacheinander abschließen"
+  da: "Afslut de næste syv dage efter hinanden"
   fr: "Clôturer les sept prochains jours l'un après l'autre"
   ru: "Закрыть следующие семь дней один за другим"
   uk: "Закрити наступні сім днів один за одним"
@@ -34061,6 +34404,7 @@ _version: 2
 "Company day":
   nl: "Bedrijfsdag"
   de: "Betriebstag"
+  da: "Selskabets dag"
   fr: "Jour d'exploitation"
   ru: "День предприятия"
   uk: "День підприємства"
@@ -34068,6 +34412,7 @@ _version: 2
 "Closing the day…":
   nl: "De dag wordt afgesloten…"
   de: "Der Tag wird abgeschlossen…"
+  da: "Afslutter dagen…"
   fr: "Clôture de la journée…"
   ru: "День закрывается…"
   uk: "День закривається…"
@@ -34075,6 +34420,7 @@ _version: 2
 "Reading your companies…":
   nl: "Je bedrijven worden gelezen…"
   de: "Deine Unternehmen werden gelesen…"
+  da: "Læser dine selskaber…"
   fr: "Lecture de vos entreprises…"
   ru: "Чтение ваших предприятий…"
   uk: "Читання ваших підприємств…"
@@ -34082,6 +34428,7 @@ _version: 2
 "Found your bus company":
   nl: "Richt je busbedrijf op"
   de: "Gründe dein Busunternehmen"
+  da: "Stift dit buselskab"
   fr: "Fondez votre entreprise de bus"
   ru: "Основайте своё автобусное предприятие"
   uk: "Заснуйте своє автобусне підприємство"
@@ -34089,6 +34436,7 @@ _version: 2
 "Run your own transport company on a map: buy, lease or rent buses, hire drivers and run the map's lines or your own. Every day of the company is settled with \"Close the day\"; what you drive yourself counts as it was driven.":
   nl: "Run je eigen vervoersbedrijf op een kaart: koop, lease of huur bussen, neem chauffeurs aan en rijd de lijnen van de kaart of je eigen lijnen. Elke bedrijfsdag wordt afgerekend met \"Dag afsluiten\"; wat je zelf rijdt, telt zoals het gereden is."
   de: "Führe dein eigenes Verkehrsunternehmen auf einer Karte: Busse kaufen, leasen oder mieten, Fahrer einstellen und die Linien der Karte oder deine eigenen betreiben. Jeder Betriebstag wird mit \"Tag abschließen\" abgerechnet; was du selbst fährst, zählt so, wie es gefahren wurde."
+  da: "Driv dit eget transportselskab på et kort: køb, lease eller lej busser, ansæt chauffører, og kør kortets linjer eller dine egne. Hver dag i selskabet afregnes med \"Afslut dagen\"; det, du selv kører, tæller, som det blev kørt."
   fr: "Dirigez votre propre entreprise de transport sur une carte : achetez, louez en leasing ou louez des bus, embauchez des conducteurs et exploitez les lignes de la carte ou les vôtres. Chaque journée est réglée avec « Clôturer la journée » ; ce que vous conduisez vous-même compte tel que vous l'avez conduit."
   ru: "Управляйте своим транспортным предприятием на карте: покупайте, берите в лизинг или арендуйте автобусы, нанимайте водителей и обслуживайте линии карты или свои собственные. Каждый день предприятия рассчитывается кнопкой «Закрыть день»; то, что вы проехали сами, засчитывается так, как было проехано."
   uk: "Керуйте власним транспортним підприємством на карті: купуйте, беріть у лізинг або орендуйте автобуси, наймайте водіїв і обслуговуйте лінії карти або власні. Кожен день підприємства розраховується кнопкою «Закрити день»; те, що ви проїхали самі, зараховується так, як було проїхано."
@@ -34096,6 +34444,7 @@ _version: 2
 "The company":
   nl: "Het bedrijf"
   de: "Das Unternehmen"
+  da: "Selskabet"
   fr: "L'entreprise"
   ru: "Предприятие"
   uk: "Підприємство"
@@ -34103,6 +34452,7 @@ _version: 2
 "Short name (plates and logo)":
   nl: "Korte naam (kentekens en logo)"
   de: "Kurzname (Kennzeichen und Logo)"
+  da: "Kort navn (nummerplader og logo)"
   fr: "Nom court (plaques et logo)"
   ru: "Краткое название (номера и логотип)"
   uk: "Коротка назва (номери й логотип)"
@@ -34110,6 +34460,7 @@ _version: 2
 "Main colour":
   nl: "Hoofdkleur"
   de: "Hauptfarbe"
+  da: "Hovedfarve"
   fr: "Couleur principale"
   ru: "Основной цвет"
   uk: "Основний колір"
@@ -34117,6 +34468,7 @@ _version: 2
 "No logo picture: the short name is the mark.":
   nl: "Geen logoafbeelding: de korte naam is het merk."
   de: "Kein Logobild: der Kurzname ist das Zeichen."
+  da: "Intet logobillede: det korte navn er mærket."
   fr: "Pas d'image de logo : le nom court sert d'emblème."
   ru: "Нет картинки логотипа: знаком служит краткое название."
   uk: "Немає зображення логотипа: знаком є коротка назва."
@@ -34124,6 +34476,7 @@ _version: 2
 "Choose a logo picture":
   nl: "Kies een logoafbeelding"
   de: "Logobild wählen"
+  da: "Vælg et logobillede"
   fr: "Choisir une image de logo"
   ru: "Выбрать картинку логотипа"
   uk: "Вибрати зображення логотипа"
@@ -34131,6 +34484,7 @@ _version: 2
 "Home and difficulty":
   nl: "Thuisbasis en moeilijkheid"
   de: "Heimat und Schwierigkeit"
+  da: "Hjem og sværhedsgrad"
   fr: "Base et difficulté"
   ru: "База и сложность"
   uk: "База й складність"
@@ -34138,6 +34492,7 @@ _version: 2
 "No maps found: the company needs a map to be at home on.":
   nl: "Geen kaarten gevonden: het bedrijf heeft een kaart nodig om thuis te zijn."
   de: "Keine Karten gefunden: das Unternehmen braucht eine Karte als Heimat."
+  da: "Ingen kort fundet: selskabet har brug for et kort at høre hjemme på."
   fr: "Aucune carte trouvée : l'entreprise a besoin d'une carte comme base."
   ru: "Карты не найдены: предприятию нужна карта, где оно будет базироваться."
   uk: "Карти не знайдено: підприємству потрібна карта, де воно базуватиметься."
@@ -34145,6 +34500,7 @@ _version: 2
 "Home map":
   nl: "Thuiskaart"
   de: "Heimatkarte"
+  da: "Hjemmekort"
   fr: "Carte de base"
   ru: "Домашняя карта"
   uk: "Домашня карта"
@@ -34152,6 +34508,7 @@ _version: 2
 "Depot (the buses' depot file)":
   nl: "Remise (het hof-bestand van de bussen)"
   de: "Betriebshof (die Hof-Datei der Busse)"
+  da: "Depot (busserne depotfil)"
   fr: "Dépôt (le fichier hof des bus)"
   ru: "Депо (hof-файл автобусов)"
   uk: "Депо (hof-файл автобусів)"
@@ -34159,6 +34516,7 @@ _version: 2
 "First company day":
   nl: "Eerste bedrijfsdag"
   de: "Erster Betriebstag"
+  da: "Selskabets første dag"
   fr: "Premier jour d'exploitation"
   ru: "Первый день предприятия"
   uk: "Перший день підприємства"
@@ -34166,6 +34524,7 @@ _version: 2
 "The map has no depot file.":
   nl: "De kaart heeft geen hof-bestand."
   de: "Die Karte hat keine Hof-Datei."
+  da: "Kortet har ingen depotfil."
   fr: "La carte n'a pas de fichier de dépôt."
   ru: "У карты нет файла депо."
   uk: "Карта не має файла депо."
@@ -34173,6 +34532,7 @@ _version: 2
 "Difficulty":
   nl: "Moeilijkheid"
   de: "Schwierigkeit"
+  da: "Sværhedsgrad"
   fr: "Difficulté"
   ru: "Сложность"
   uk: "Складність"
@@ -34180,6 +34540,7 @@ _version: 2
 "Easy":
   nl: "Makkelijk"
   de: "Leicht"
+  da: "Let"
   fr: "Facile"
   ru: "Легко"
   uk: "Легко"
@@ -34187,6 +34548,7 @@ _version: 2
 "Realistic":
   nl: "Realistisch"
   de: "Realistisch"
+  da: "Realistisk"
   fr: "Réaliste"
   ru: "Реалистично"
   uk: "Реалістично"
@@ -34194,6 +34556,7 @@ _version: 2
 "Hard":
   nl: "Moeilijk"
   de: "Schwer"
+  da: "Svær"
   fr: "Difficile"
   ru: "Сложно"
   uk: "Складно"
@@ -34201,6 +34564,7 @@ _version: 2
 "Generous: grants on new buses, more passengers, few breakdowns, loans without interest.":
   nl: "Royaal: subsidie op nieuwe bussen, meer reizigers, weinig pech, leningen zonder rente."
   de: "Großzügig: Zuschüsse für neue Busse, mehr Fahrgäste, wenige Pannen, Kredite ohne Zinsen."
+  da: "Generøs: tilskud på nye busser, flere passagerer, få nedbrud, lån uden renter."
   fr: "Généreux : subventions sur les bus neufs, plus de voyageurs, peu de pannes, prêts sans intérêts."
   ru: "Щедро: субсидии на новые автобусы, больше пассажиров, мало поломок, кредиты без процентов."
   uk: "Щедро: субсидії на нові автобуси, більше пасажирів, мало поломок, кредити без відсотків."
@@ -34208,6 +34572,7 @@ _version: 2
 "German city bus prices and wages, contracts with penalties, a margin of a few per cent.":
   nl: "Duitse prijzen en lonen voor stadsbussen, contracten met boetes, een marge van een paar procent."
   de: "Deutsche Stadtbuspreise und -löhne, Verträge mit Vertragsstrafen, eine Marge von wenigen Prozent."
+  da: "Tyske bybuspriser og lønninger, kontrakter med bøder, en margin på nogle få procent."
   fr: "Prix et salaires des bus urbains allemands, contrats avec pénalités, une marge de quelques pour cent."
   ru: "Цены и зарплаты немецких городских автобусов, контракты со штрафами, маржа в несколько процентов."
   uk: "Ціни й зарплати німецьких міських автобусів, контракти зі штрафами, маржа кілька відсотків."
@@ -34215,6 +34580,7 @@ _version: 2
 "Tight: prices rise faster than the contract pays, dear loans, more breakdowns and illness.":
   nl: "Krap: prijzen stijgen sneller dan het contract betaalt, dure leningen, meer pech en ziekte."
   de: "Knapp: die Preise steigen schneller als der Vertrag zahlt, teure Kredite, mehr Pannen und Krankheit."
+  da: "Stram: priserne stiger hurtigere, end kontrakten betaler, dyre lån, flere nedbrud og mere sygdom."
   fr: "Serré : les prix montent plus vite que ce que paie le contrat, prêts chers, plus de pannes et de maladies."
   ru: "Жёстко: цены растут быстрее, чем платит контракт, дорогие кредиты, больше поломок и болезней."
   uk: "Жорстко: ціни ростуть швидше, ніж платить контракт, дорогі кредити, більше поломок і хвороб."
@@ -34222,6 +34588,7 @@ _version: 2
 "Give the company a name.":
   nl: "Geef het bedrijf een naam."
   de: "Gib dem Unternehmen einen Namen."
+  da: "Giv selskabet et navn."
   fr: "Donnez un nom à l'entreprise."
   ru: "Дайте предприятию название."
   uk: "Дайте підприємству назву."
@@ -34229,6 +34596,7 @@ _version: 2
 "Found the company":
   nl: "Bedrijf oprichten"
   de: "Unternehmen gründen"
+  da: "Stift selskabet"
   fr: "Fonder l'entreprise"
   ru: "Основать предприятие"
   uk: "Заснувати підприємство"
@@ -34236,6 +34604,7 @@ _version: 2
 "%{name} is founded. Add a line, buy a bus and hire drivers.":
   nl: "%{name} is opgericht. Voeg een lijn toe, koop een bus en neem chauffeurs aan."
   de: "%{name} ist gegründet. Füge eine Linie hinzu, kaufe einen Bus und stelle Fahrer ein."
+  da: "%{name} er stiftet. Tilføj en linje, køb en bus, og ansæt chauffører."
   fr: "%{name} est fondée. Ajoutez une ligne, achetez un bus et embauchez des conducteurs."
   ru: "%{name} основано. Добавьте линию, купите автобус и наймите водителей."
   uk: "%{name} засновано. Додайте лінію, купіть автобус і найміть водіїв."
@@ -34243,6 +34612,7 @@ _version: 2
 "Cash":
   nl: "Kas"
   de: "Kasse"
+  da: "Kontanter"
   fr: "Trésorerie"
   ru: "Касса"
   uk: "Каса"
@@ -34250,6 +34620,7 @@ _version: 2
 "This month":
   nl: "Deze maand"
   de: "Dieser Monat"
+  da: "Denne måned"
   fr: "Ce mois-ci"
   ru: "Этот месяц"
   uk: "Цей місяць"
@@ -34257,6 +34628,7 @@ _version: 2
 "Loans: %{amount}":
   nl: "Leningen: %{amount}"
   de: "Kredite: %{amount}"
+  da: "Lån: %{amount}"
   fr: "Prêts : %{amount}"
   ru: "Кредиты: %{amount}"
   uk: "Кредити: %{amount}"
@@ -34264,6 +34636,7 @@ _version: 2
 "%{n} ready today":
   nl: "%{n} vandaag inzetbaar"
   de: "%{n} heute einsatzbereit"
+  da: "%{n} klar i dag"
   fr: "%{n} disponibles aujourd'hui"
   ru: "%{n} готовы сегодня"
   uk: "%{n} готові сьогодні"
@@ -34271,6 +34644,7 @@ _version: 2
 "%{n} at work today":
   nl: "%{n} vandaag aan het werk"
   de: "%{n} heute im Dienst"
+  da: "%{n} på arbejde i dag"
   fr: "%{n} au travail aujourd'hui"
   ru: "%{n} на работе сегодня"
   uk: "%{n} на роботі сьогодні"
@@ -34278,6 +34652,7 @@ _version: 2
 "of the trips, lately":
   nl: "van de ritten, de laatste tijd"
   de: "der Fahrten, zuletzt"
+  da: "af rejserne, på det seneste"
   fr: "des trajets, récemment"
   ru: "рейсов за последнее время"
   uk: "рейсів останнім часом"
@@ -34285,6 +34660,7 @@ _version: 2
 "Reputation":
   nl: "Reputatie"
   de: "Ruf"
+  da: "Omdømme"
   fr: "Réputation"
   ru: "Репутация"
   uk: "Репутація"
@@ -34292,6 +34668,7 @@ _version: 2
 "of 100":
   nl: "van 100"
   de: "von 100"
+  da: "af 100"
   fr: "sur 100"
   ru: "из 100"
   uk: "зі 100"
@@ -34299,6 +34676,7 @@ _version: 2
 "The last 30 days":
   nl: "De laatste 30 dagen"
   de: "Die letzten 30 Tage"
+  da: "De seneste 30 dage"
   fr: "Les 30 derniers jours"
   ru: "Последние 30 дней"
   uk: "Останні 30 днів"
@@ -34306,6 +34684,7 @@ _version: 2
 "No day closed yet. The chart shows each day's result once days are closed.":
   nl: "Nog geen dag afgesloten. De grafiek toont het resultaat van elke dag zodra er dagen zijn afgesloten."
   de: "Noch kein Tag abgeschlossen. Das Diagramm zeigt das Ergebnis jedes Tages, sobald Tage abgeschlossen sind."
+  da: "Ingen dag afsluttet endnu. Diagrammet viser hver dags resultat, når dage er afsluttet."
   fr: "Aucune journée clôturée. Le graphique montre le résultat de chaque jour dès que des journées sont clôturées."
   ru: "Ещё ни один день не закрыт. График покажет результат каждого дня, когда дни будут закрыты."
   uk: "Ще жодного дня не закрито. Графік покаже результат кожного дня, щойно дні будуть закриті."
@@ -34313,6 +34692,7 @@ _version: 2
 "%{c} of %{t} tours":
   nl: "%{c} van %{t} omlopen"
   de: "%{c} von %{t} Umläufen"
+  da: "%{c} af %{t} ture"
   fr: "%{c} services sur %{t}"
   ru: "%{c} из %{t} выходов"
   uk: "%{c} з %{t} оборотів"
@@ -34320,6 +34700,7 @@ _version: 2
 "%{c} of %{t} tours covered":
   nl: "%{c} van %{t} omlopen gedekt"
   de: "%{c} von %{t} Umläufen besetzt"
+  da: "%{c} af %{t} ture dækket"
   fr: "%{c} services sur %{t} assurés"
   ru: "%{c} из %{t} выходов обеспечены"
   uk: "%{c} з %{t} оборотів забезпечено"
@@ -34327,6 +34708,7 @@ _version: 2
 "No tours run today.":
   nl: "Vandaag rijden er geen omlopen."
   de: "Heute fahren keine Umläufe."
+  da: "Ingen ture kører i dag."
   fr: "Aucun service ne roule aujourd'hui."
   ru: "Сегодня выходов нет."
   uk: "Сьогодні оборотів немає."
@@ -34334,6 +34716,7 @@ _version: 2
 "The map's timetable could not be read.":
   nl: "De dienstregeling van de kaart kon niet gelezen worden."
   de: "Der Fahrplan der Karte konnte nicht gelesen werden."
+  da: "Kortets køreplan kunne ikke læses."
   fr: "L'horaire de la carte n'a pas pu être lu."
   ru: "Не удалось прочитать расписание карты."
   uk: "Не вдалося прочитати розклад карти."
@@ -34341,6 +34724,7 @@ _version: 2
 "Nothing wants your attention.":
   nl: "Niets vraagt je aandacht."
   de: "Nichts braucht deine Aufmerksamkeit."
+  da: "Intet kræver din opmærksomhed."
   fr: "Rien ne demande votre attention."
   ru: "Ничего не требует вашего внимания."
   uk: "Ніщо не потребує вашої уваги."
@@ -34348,6 +34732,7 @@ _version: 2
 "The company runs no line yet: add one on the Lines page.":
   nl: "Het bedrijf rijdt nog geen lijn: voeg er een toe op de pagina Lijnen."
   de: "Das Unternehmen betreibt noch keine Linie: füge eine auf der Seite Linien hinzu."
+  da: "Selskabet kører endnu ingen linje: tilføj en på siden Linjer."
   fr: "L'entreprise n'exploite encore aucune ligne : ajoutez-en une sur la page Lignes."
   ru: "Предприятие пока не обслуживает ни одной линии: добавьте её на странице «Маршруты»."
   uk: "Підприємство ще не обслуговує жодної лінії: додайте її на сторінці «Лінії»."
@@ -34355,6 +34740,7 @@ _version: 2
 "There is no bus in the fleet: buy, lease or rent one.":
   nl: "Er staat geen bus in het wagenpark: koop, lease of huur er een."
   de: "Im Fuhrpark steht kein Bus: kaufe, lease oder miete einen."
+  da: "Der er ingen bus i flåden: køb, lease eller lej en."
   fr: "Le parc ne compte aucun bus : achetez-en, louez-en un en leasing ou en location."
   ru: "В парке нет автобусов: купите, возьмите в лизинг или арендуйте."
   uk: "У парку немає автобусів: купіть, візьміть у лізинг або орендуйте."
@@ -34362,6 +34748,7 @@ _version: 2
 "Nobody works here yet: hire drivers on the Staff page.":
   nl: "Er werkt hier nog niemand: neem chauffeurs aan op de pagina Personeel."
   de: "Hier arbeitet noch niemand: stelle Fahrer auf der Seite Personal ein."
+  da: "Ingen arbejder her endnu: ansæt chauffører på siden Personale."
   fr: "Personne ne travaille encore ici : embauchez des conducteurs sur la page Personnel."
   ru: "Здесь пока никто не работает: наймите водителей на странице «Персонал»."
   uk: "Тут поки ніхто не працює: найміть водіїв на сторінці «Персонал»."
@@ -34369,6 +34756,7 @@ _version: 2
 "%{n} tours are not covered today":
   nl: "%{n} omlopen zijn vandaag niet gedekt"
   de: "%{n} Umläufe sind heute nicht besetzt"
+  da: "%{n} ture er ikke dækket i dag"
   fr: "%{n} services ne sont pas assurés aujourd'hui"
   ru: "%{n} выходов сегодня не обеспечены"
   uk: "%{n} оборотів сьогодні не забезпечено"
@@ -34376,6 +34764,7 @@ _version: 2
 ": %{n} without a bus":
   nl: ": %{n} zonder bus"
   de: ": %{n} ohne Bus"
+  da: ": %{n} uden bus"
   fr: " : %{n} sans bus"
   ru: ": %{n} без автобуса"
   uk: ": %{n} без автобуса"
@@ -34383,6 +34772,7 @@ _version: 2
 ", %{n} duties without a driver":
   nl: ", %{n} diensten zonder chauffeur"
   de: ", %{n} Dienste ohne Fahrer"
+  da: ", %{n} vagter uden chauffør"
   fr: ", %{n} postes sans conducteur"
   ru: ", %{n} смен без водителя"
   uk: ", %{n} змін без водія"
@@ -34390,6 +34780,7 @@ _version: 2
 "Cash is low: less than a month's wages.":
   nl: "De kas is laag: minder dan een maand lonen."
   de: "Die Kasse ist knapp: weniger als ein Monatslohn."
+  da: "Kontanterne er lave: mindre end en måneds løn."
   fr: "La trésorerie est basse : moins d'un mois de salaires."
   ru: "В кассе мало денег: меньше месячной зарплаты."
   uk: "У касі мало грошей: менше місячної зарплати."
@@ -34397,6 +34788,7 @@ _version: 2
 "%{n} buses are due for their service.":
   nl: "%{n} bussen moeten naar de onderhoudsbeurt."
   de: "%{n} Busse sind zur Wartung fällig."
+  da: "%{n} busser skal til service."
   fr: "%{n} bus doivent passer à l'entretien."
   ru: "%{n} автобусам пора на техобслуживание."
   uk: "%{n} автобусам час на техобслуговування."
@@ -34404,6 +34796,7 @@ _version: 2
 "%{n} employees are unhappy and may leave.":
   nl: "%{n} medewerkers zijn ontevreden en kunnen vertrekken."
   de: "%{n} Mitarbeiter sind unzufrieden und könnten gehen."
+  da: "%{n} ansatte er utilfredse og kan forlade selskabet."
   fr: "%{n} employés sont mécontents et pourraient partir."
   ru: "%{n} сотрудников недовольны и могут уйти."
   uk: "%{n} працівників незадоволені й можуть піти."
@@ -34411,6 +34804,7 @@ _version: 2
 "Bus %{n} goes back on %{date}.":
   nl: "Bus %{n} gaat terug op %{date}."
   de: "Bus %{n} geht am %{date} zurück."
+  da: "Bus %{n} er tilbage den %{date}."
   fr: "Le bus %{n} est rendu le %{date}."
   ru: "Автобус %{n} возвращается %{date}."
   uk: "Автобус %{n} повертається %{date}."
@@ -34418,6 +34812,7 @@ _version: 2
 "The last day closed":
   nl: "De laatst afgesloten dag"
   de: "Der zuletzt abgeschlossene Tag"
+  da: "Den sidst afsluttede dag"
   fr: "La dernière journée clôturée"
   ru: "Последний закрытый день"
   uk: "Останній закритий день"
@@ -34425,6 +34820,7 @@ _version: 2
 "When the company's day is over, close it with \"Close the day\" at the top: the tours are run, the money booked, and the next day begins. What you drove yourself on the company's lines counts as measured.":
   nl: "Als de bedrijfsdag voorbij is, sluit je hem af met \"Dag afsluiten\" bovenaan: de omlopen worden gereden, het geld geboekt en de volgende dag begint. Wat je zelf op de lijnen van het bedrijf reed, telt als gemeten."
   de: "Ist der Betriebstag vorbei, schließe ihn oben mit \"Tag abschließen\" ab: die Umläufe werden gefahren, das Geld gebucht und der nächste Tag beginnt. Was du selbst auf den Linien des Unternehmens gefahren bist, zählt als gemessen."
+  da: "Når selskabets dag er slut, afslut den med \"Afslut dagen\" øverst: turene køres, pengene bogføres, og den næste dag begynder. Det, du selv kørte på selskabets linjer, tæller som målt."
   fr: "Quand la journée est finie, clôturez-la avec « Clôturer la journée » en haut : les services roulent, l'argent est comptabilisé et le jour suivant commence. Ce que vous avez conduit vous-même sur les lignes de l'entreprise compte comme mesuré."
   ru: "Когда день предприятия закончится, закройте его кнопкой «Закрыть день» вверху: выходы выполняются, деньги проводятся, начинается следующий день. То, что вы проехали сами на линиях предприятия, засчитывается как измеренное."
   uk: "Коли день підприємства закінчиться, закрийте його кнопкою «Закрити день» угорі: обороти виконуються, гроші проводяться, починається наступний день. Те, що ви проїхали самі на лініях підприємства, зараховується як виміряне."
@@ -34432,6 +34828,7 @@ _version: 2
 "%{n} passengers":
   nl: "%{n} reizigers"
   de: "%{n} Fahrgäste"
+  da: "%{n} passagerer"
   fr: "%{n} voyageurs"
   ru: "%{n} пассажиров"
   uk: "%{n} пасажирів"
@@ -34439,6 +34836,7 @@ _version: 2
 "Show the report":
   nl: "Toon het verslag"
   de: "Bericht zeigen"
+  da: "Vis rapporten"
   fr: "Afficher le rapport"
   ru: "Показать отчёт"
   uk: "Показати звіт"
@@ -34446,6 +34844,7 @@ _version: 2
 "Your companies":
   nl: "Je bedrijven"
   de: "Deine Unternehmen"
+  da: "Dine selskaber"
   fr: "Vos entreprises"
   ru: "Ваши предприятия"
   uk: "Ваші підприємства"
@@ -34453,6 +34852,7 @@ _version: 2
 "Founded on %{date}.":
   nl: "Opgericht op %{date}."
   de: "Gegründet am %{date}."
+  da: "Stiftet den %{date}."
   fr: "Fondée le %{date}."
   ru: "Основано %{date}."
   uk: "Засновано %{date}."
@@ -34460,6 +34860,7 @@ _version: 2
 "Found another company":
   nl: "Nog een bedrijf oprichten"
   de: "Weiteres Unternehmen gründen"
+  da: "Stift et andet selskab"
   fr: "Fonder une autre entreprise"
   ru: "Основать ещё одно предприятие"
   uk: "Заснувати ще одне підприємство"
@@ -34467,6 +34868,7 @@ _version: 2
 "Result":
   nl: "Resultaat"
   de: "Ergebnis"
+  da: "Resultat"
   fr: "Résultat"
   ru: "Результат"
   uk: "Результат"
@@ -34474,6 +34876,7 @@ _version: 2
 "Tours run":
   nl: "Gereden omlopen"
   de: "Gefahrene Umläufe"
+  da: "Kørte ture"
   fr: "Services assurés"
   ru: "Выполнено выходов"
   uk: "Виконано оборотів"
@@ -34481,6 +34884,7 @@ _version: 2
 "%{n} trips dropped":
   nl: "%{n} ritten uitgevallen"
   de: "%{n} Fahrten ausgefallen"
+  da: "%{n} rejser droppet"
   fr: "%{n} trajets supprimés"
   ru: "%{n} рейсов выпало"
   uk: "%{n} рейсів випало"
@@ -34488,6 +34892,7 @@ _version: 2
 "%{n} trips late":
   nl: "%{n} ritten te laat"
   de: "%{n} Fahrten verspätet"
+  da: "%{n} rejser forsinket"
   fr: "%{n} trajets en retard"
   ru: "%{n} рейсов с опозданием"
   uk: "%{n} рейсів із запізненням"
@@ -34495,6 +34900,7 @@ _version: 2
 "in":
   nl: "in"
   de: "ein"
+  da: "ind"
   fr: "entrées"
   ru: "приход"
   uk: "прихід"
@@ -34502,6 +34908,7 @@ _version: 2
 "out":
   nl: "uit"
   de: "aus"
+  da: "ud"
   fr: "sorties"
   ru: "расход"
   uk: "витрати"
@@ -34509,6 +34916,7 @@ _version: 2
 "You drove %{n} trips yourself: booked as measured.":
   nl: "Je reed zelf %{n} ritten: geboekt als gemeten."
   de: "Du bist %{n} Fahrten selbst gefahren: als gemessen gebucht."
+  da: "Du kørte selv %{n} rejser: bogført som målt."
   fr: "Vous avez conduit vous-même %{n} trajets : comptabilisés comme mesurés."
   ru: "Вы сами проехали %{n} рейсов: проведено как измеренное."
   uk: "Ви самі проїхали %{n} рейсів: проведено як виміряне."
@@ -34516,6 +34924,7 @@ _version: 2
 "Contract penalties: %{amount}.":
   nl: "Contractboetes: %{amount}."
   de: "Vertragsstrafen: %{amount}."
+  da: "Kontraktbøder: %{amount}."
   fr: "Pénalités contractuelles : %{amount}."
   ru: "Штрафы по контракту: %{amount}."
   uk: "Штрафи за контрактом: %{amount}."
@@ -34523,6 +34932,7 @@ _version: 2
 "Your reputation rose to %{n}.":
   nl: "Je reputatie steeg naar %{n}."
   de: "Dein Ruf stieg auf %{n}."
+  da: "Dit omdømme steg til %{n}."
   fr: "Votre réputation est montée à %{n}."
   ru: "Ваша репутация выросла до %{n}."
   uk: "Ваша репутація зросла до %{n}."
@@ -34530,6 +34940,7 @@ _version: 2
 "Your reputation fell to %{n}.":
   nl: "Je reputatie daalde naar %{n}."
   de: "Dein Ruf sank auf %{n}."
+  da: "Dit omdømme faldt til %{n}."
   fr: "Votre réputation est tombée à %{n}."
   ru: "Ваша репутация упала до %{n}."
   uk: "Ваша репутація впала до %{n}."
@@ -34537,6 +34948,7 @@ _version: 2
 "No tours ran: add lines on the Lines page, and buy buses and hire drivers for them.":
   nl: "Er reden geen omlopen: voeg lijnen toe op de pagina Lijnen, en koop er bussen voor en neem chauffeurs aan."
   de: "Es fuhren keine Umläufe: füge Linien auf der Seite Linien hinzu und kaufe Busse und stelle Fahrer dafür ein."
+  da: "Ingen ture kørte: tilføj linjer på siden Linjer, og køb busser og ansæt chauffører til dem."
   fr: "Aucun service n'a roulé : ajoutez des lignes sur la page Lignes, puis achetez des bus et embauchez des conducteurs."
   ru: "Выходов не было: добавьте линии на странице «Маршруты», купите для них автобусы и наймите водителей."
   uk: "Оборотів не було: додайте лінії на сторінці «Лінії», купіть для них автобуси й найміть водіїв."
@@ -34544,6 +34956,7 @@ _version: 2
 "%{c} of %{t} tours  ·  %{d} trips dropped":
   nl: "%{c} van %{t} omlopen  ·  %{d} ritten uitgevallen"
   de: "%{c} von %{t} Umläufen  ·  %{d} Fahrten ausgefallen"
+  da: "%{c} af %{t} ture  ·  %{d} rejser droppet"
   fr: "%{c} services sur %{t}  ·  %{d} trajets supprimés"
   ru: "%{c} из %{t} выходов  ·  %{d} рейсов выпало"
   uk: "%{c} з %{t} оборотів  ·  %{d} рейсів випало"
@@ -34551,6 +34964,7 @@ _version: 2
 "What happened":
   nl: "Wat er gebeurde"
   de: "Was geschah"
+  da: "Hvad der skete"
   fr: "Ce qui s'est passé"
   ru: "Что произошло"
   uk: "Що сталося"
@@ -34558,6 +34972,7 @@ _version: 2
 "Bus %{n} broke down on its tour: in the workshop until %{date}, repairs %{amount}.":
   nl: "Bus %{n} kreeg pech op zijn omloop: in de werkplaats tot %{date}, reparatie %{amount}."
   de: "Bus %{n} hatte eine Panne auf seinem Umlauf: in der Werkstatt bis %{date}, Reparatur %{amount}."
+  da: "Bus %{n} brød sammen på sin tur: på værkstedet til %{date}, reparationer %{amount}."
   fr: "Le bus %{n} est tombé en panne pendant son service : à l'atelier jusqu'au %{date}, réparation %{amount}."
   ru: "Автобус %{n} сломался на выходе: в мастерской до %{date}, ремонт %{amount}."
   uk: "Автобус %{n} зламався на обороті: у майстерні до %{date}, ремонт %{amount}."
@@ -34565,6 +34980,7 @@ _version: 2
 "Bus %{n} is due for its service: in the workshop tomorrow.":
   nl: "Bus %{n} moet naar de onderhoudsbeurt: morgen in de werkplaats."
   de: "Bus %{n} ist zur Wartung fällig: morgen in der Werkstatt."
+  da: "Bus %{n} skal til service: på værkstedet i morgen."
   fr: "Le bus %{n} doit passer à l'entretien : demain à l'atelier."
   ru: "Автобусу %{n} пора на техобслуживание: завтра в мастерской."
   uk: "Автобусу %{n} час на техобслуговування: завтра в майстерні."
@@ -34572,6 +34988,7 @@ _version: 2
 "Bus %{n} (%{name}) went back: its lease or rental ended.":
   nl: "Bus %{n} (%{name}) is teruggegaan: de lease of huur is afgelopen."
   de: "Bus %{n} (%{name}) ist zurückgegangen: Leasing oder Miete ist abgelaufen."
+  da: "Bus %{n} (%{name}) blev afleveret: dens leasing eller leje sluttede."
   fr: "Le bus %{n} (%{name}) a été rendu : son leasing ou sa location est terminé."
   ru: "Автобус %{n} (%{name}) возвращён: лизинг или аренда закончились."
   uk: "Автобус %{n} (%{name}) повернуто: лізинг або оренда закінчилися."
@@ -34579,6 +34996,7 @@ _version: 2
 "A loan is paid off: %{what}.":
   nl: "Een lening is afgelost: %{what}."
   de: "Ein Kredit ist getilgt: %{what}."
+  da: "Et lån er betalt: %{what}."
   fr: "Un prêt est remboursé : %{what}."
   ru: "Кредит погашен: %{what}."
   uk: "Кредит погашено: %{what}."
@@ -34586,6 +35004,7 @@ _version: 2
 "%{month} is closed: wages, leases, insurance, the depot and loan rates are booked. The month's result: %{amount}.":
   nl: "%{month} is afgesloten: lonen, leases, verzekering, de remise en leningtermijnen zijn geboekt. Het resultaat van de maand: %{amount}."
   de: "%{month} ist abgeschlossen: Löhne, Leasing, Versicherung, Betriebshof und Kreditraten sind gebucht. Das Monatsergebnis: %{amount}."
+  da: "%{month} er afsluttet: lønninger, leasing, forsikring, depotet og lånerenter er bogført. Månedens resultat: %{amount}."
   fr: "%{month} est clôturé : salaires, leasings, assurance, dépôt et échéances de prêt sont comptabilisés. Le résultat du mois : %{amount}."
   ru: "%{month} закрыт: зарплаты, лизинг, страховка, депо и платежи по кредитам проведены. Результат месяца: %{amount}."
   uk: "%{month} закрито: зарплати, лізинг, страховку, депо й платежі за кредитами проведено. Результат місяця: %{amount}."
@@ -34593,6 +35012,7 @@ _version: 2
 "%{name} is ill until %{date}.":
   nl: "%{name} is ziek tot %{date}."
   de: "%{name} ist krank bis %{date}."
+  da: "%{name} er syg til %{date}."
   fr: "%{name} est malade jusqu'au %{date}."
   ru: "%{name} болеет до %{date}."
   uk: "%{name} хворіє до %{date}."
@@ -34600,6 +35020,7 @@ _version: 2
 "%{name} is on holiday until %{date}.":
   nl: "%{name} is met vakantie tot %{date}."
   de: "%{name} ist im Urlaub bis %{date}."
+  da: "%{name} har ferie til %{date}."
   fr: "%{name} est en congé jusqu'au %{date}."
   ru: "%{name} в отпуске до %{date}."
   uk: "%{name} у відпустці до %{date}."
@@ -34607,6 +35028,7 @@ _version: 2
 "%{name} has resigned; their last day is %{date}.":
   nl: "%{name} heeft ontslag genomen; de laatste werkdag is %{date}."
   de: "%{name} hat gekündigt; der letzte Arbeitstag ist der %{date}."
+  da: "%{name} har sagt op; vedkommendes sidste dag er %{date}."
   fr: "%{name} a démissionné ; son dernier jour est le %{date}."
   ru: "%{name} уволился; последний рабочий день %{date}."
   uk: "%{name} звільнився; останній робочий день %{date}."
@@ -34614,6 +35036,7 @@ _version: 2
 "%{name} is unhappy with their pay or their hours.":
   nl: "%{name} is ontevreden over loon of werktijden."
   de: "%{name} ist mit Lohn oder Arbeitszeiten unzufrieden."
+  da: "%{name} er utilfreds med sin løn eller sine timer."
   fr: "%{name} est mécontent de son salaire ou de ses horaires."
   ru: "%{name} недоволен зарплатой или графиком."
   uk: "%{name} незадоволений зарплатою чи графіком."
@@ -34621,6 +35044,7 @@ _version: 2
 "%{name} has left the company.":
   nl: "%{name} heeft het bedrijf verlaten."
   de: "%{name} hat das Unternehmen verlassen."
+  da: "%{name} har forladt selskabet."
   fr: "%{name} a quitté l'entreprise."
   ru: "%{name} покинул предприятие."
   uk: "%{name} залишив підприємство."
@@ -34628,6 +35052,7 @@ _version: 2
 "A dealer pays %{amount} for %{bus}.":
   nl: "Een handelaar betaalt %{amount} voor %{bus}."
   de: "Ein Händler zahlt %{amount} für %{bus}."
+  da: "En forhandler betaler %{amount} for %{bus}."
   fr: "Un revendeur paie %{amount} pour %{bus}."
   ru: "Дилер платит %{amount} за %{bus}."
   uk: "Дилер платить %{amount} за %{bus}."
@@ -34635,6 +35060,7 @@ _version: 2
 "Giving the leased bus back early costs %{amount} (three monthly rates).":
   nl: "De leasebus vroeg teruggeven kost %{amount} (drie maandtermijnen)."
   de: "Den Leasingbus früher zurückzugeben kostet %{amount} (drei Monatsraten)."
+  da: "At aflevere den leasede bus tidligt koster %{amount} (tre månedlige rater)."
   fr: "Rendre le bus en leasing plus tôt coûte %{amount} (trois mensualités)."
   ru: "Досрочный возврат лизингового автобуса стоит %{amount} (три месячных платежа)."
   uk: "Дострокове повернення лізингового автобуса коштує %{amount} (три місячні платежі)."
@@ -34642,6 +35068,7 @@ _version: 2
 "The rented bus goes back today; the days rented are paid.":
   nl: "De huurbus gaat vandaag terug; de gehuurde dagen zijn betaald."
   de: "Der Mietbus geht heute zurück; die gemieteten Tage sind bezahlt."
+  da: "Den lejede bus afleveres i dag; de lejede dage betales."
   fr: "Le bus loué est rendu aujourd'hui ; les jours de location sont payés."
   ru: "Арендованный автобус возвращается сегодня; дни аренды оплачены."
   uk: "Орендований автобус повертається сьогодні; дні оренди оплачено."
@@ -34649,6 +35076,7 @@ _version: 2
 "%{name} works %{days} more days (the notice) and then leaves.":
   nl: "%{name} werkt nog %{days} dagen (de opzegtermijn) en vertrekt dan."
   de: "%{name} arbeitet noch %{days} Tage (die Kündigungsfrist) und geht dann."
+  da: "%{name} arbejder %{days} dage mere (opsigelsen) og forlader så selskabet."
   fr: "%{name} travaille encore %{days} jours (le préavis) puis part."
   ru: "%{name} отработает ещё %{days} дней (срок уведомления) и уйдёт."
   uk: "%{name} відпрацює ще %{days} днів (строк попередження) і піде."
@@ -34656,6 +35084,7 @@ _version: 2
 "They are paid half a month's wage for every year they worked here.":
   nl: "Er wordt een half maandloon betaald voor elk jaar dat iemand hier werkte."
   de: "Für jedes Jahr hier wird ein halber Monatslohn als Abfindung gezahlt."
+  da: "De får en halv månedsløn for hvert år, de har arbejdet her."
   fr: "Une indemnité d'un demi-mois de salaire par année travaillée ici est versée."
   ru: "Выплачивается половина месячной зарплаты за каждый отработанный здесь год."
   uk: "Виплачується половина місячної зарплати за кожен відпрацьований тут рік."
@@ -34663,6 +35092,7 @@ _version: 2
 "Dismiss":
   nl: "Ontslaan"
   de: "Kündigen"
+  da: "Afskedig"
   fr: "Licencier"
   ru: "Уволить"
   uk: "Звільнити"
@@ -34670,6 +35100,7 @@ _version: 2
 "Line %{n}":
   nl: "Lijn %{n}"
   de: "Linie %{n}"
+  da: "Linje %{n}"
   fr: "Ligne %{n}"
   ru: "Линия %{n}"
   uk: "Лінія %{n}"
@@ -34677,6 +35108,7 @@ _version: 2
 "The company stops running this line from today. Its buses and drivers stay.":
   nl: "Het bedrijf stopt vanaf vandaag met deze lijn. Bussen en chauffeurs blijven."
   de: "Das Unternehmen betreibt diese Linie ab heute nicht mehr. Busse und Fahrer bleiben."
+  da: "Selskabet holder op med at køre denne linje fra i dag. Dens busser og chauffører bliver."
   fr: "L'entreprise cesse d'exploiter cette ligne dès aujourd'hui. Ses bus et conducteurs restent."
   ru: "Предприятие перестаёт обслуживать эту линию с сегодняшнего дня. Автобусы и водители остаются."
   uk: "Підприємство припиняє обслуговувати цю лінію від сьогодні. Автобуси й водії залишаються."
@@ -34684,6 +35116,7 @@ _version: 2
 "Stop running it":
   nl: "Lijn stoppen"
   de: "Linie einstellen"
+  da: "Hold op med at køre den"
   fr: "Arrêter la ligne"
   ru: "Прекратить"
   uk: "Припинити"
@@ -34691,6 +35124,7 @@ _version: 2
 "Their last day is %{date}.":
   nl: "De laatste werkdag is %{date}."
   de: "Der letzte Arbeitstag ist der %{date}."
+  da: "Deres sidste dag er %{date}."
   fr: "Son dernier jour est le %{date}."
   ru: "Последний рабочий день: %{date}."
   uk: "Останній робочий день: %{date}."
@@ -34698,6 +35132,7 @@ _version: 2
 "Solo":
   nl: "Solo"
   de: "Solo"
+  da: "Solo"
   fr: "Standard"
   ru: "Одиночный"
   uk: "Одиночний"
@@ -34705,6 +35140,7 @@ _version: 2
 "Articulated":
   nl: "Geleed"
   de: "Gelenk"
+  da: "Led"
   fr: "Articulé"
   ru: "Сочленённый"
   uk: "Зчленований"
@@ -34712,6 +35148,7 @@ _version: 2
 "Midibus":
   nl: "Midibus"
   de: "Midibus"
+  da: "Midibus"
   fr: "Midibus"
   ru: "Мидибус"
   uk: "Мідібус"
@@ -34719,6 +35156,7 @@ _version: 2
 "Double-decker":
   nl: "Dubbeldekker"
   de: "Doppeldecker"
+  da: "Dobbeltdækker"
   fr: "Impériale"
   ru: "Двухэтажный"
   uk: "Двоповерховий"
@@ -34726,6 +35164,7 @@ _version: 2
 "Electric":
   nl: "Elektrisch"
   de: "Elektrisch"
+  da: "Elektrisk"
   fr: "Électrique"
   ru: "Электрический"
   uk: "Електричний"
@@ -34733,6 +35172,7 @@ _version: 2
 "Our buses (%{n})":
   nl: "Onze bussen (%{n})"
   de: "Unsere Busse (%{n})"
+  da: "Vores busser (%{n})"
   fr: "Nos bus (%{n})"
   ru: "Наши автобусы (%{n})"
   uk: "Наші автобуси (%{n})"
@@ -34740,6 +35180,7 @@ _version: 2
 "New buses":
   nl: "Nieuwe bussen"
   de: "Neue Busse"
+  da: "Nye busser"
   fr: "Bus neufs"
   ru: "Новые автобусы"
   uk: "Нові автобуси"
@@ -34747,6 +35188,7 @@ _version: 2
 "Used buses (%{n})":
   nl: "Tweedehands bussen (%{n})"
   de: "Gebrauchte Busse (%{n})"
+  da: "Brugte busser (%{n})"
   fr: "Bus d'occasion (%{n})"
   ru: "Подержанные автобусы (%{n})"
   uk: "Вживані автобуси (%{n})"
@@ -34754,6 +35196,7 @@ _version: 2
 "Its own livery":
   nl: "Eigen kleurstelling"
   de: "Eigene Lackierung"
+  da: "Egen bemaling"
   fr: "Sa propre livrée"
   ru: "Своя окраска"
   uk: "Власне фарбування"
@@ -34761,6 +35204,7 @@ _version: 2
 "In the workshop until %{date}":
   nl: "In de werkplaats tot %{date}"
   de: "In der Werkstatt bis %{date}"
+  da: "På værkstedet til %{date}"
   fr: "À l'atelier jusqu'au %{date}"
   ru: "В мастерской до %{date}"
   uk: "У майстерні до %{date}"
@@ -34768,6 +35212,7 @@ _version: 2
 "Service due":
   nl: "Onderhoud nodig"
   de: "Wartung fällig"
+  da: "Service forfalden"
   fr: "Entretien à faire"
   ru: "Пора на ТО"
   uk: "Час на ТО"
@@ -34775,6 +35220,7 @@ _version: 2
 "Rented until %{date}":
   nl: "Gehuurd tot %{date}"
   de: "Gemietet bis %{date}"
+  da: "Lejet til %{date}"
   fr: "Loué jusqu'au %{date}"
   ru: "В аренде до %{date}"
   uk: "В оренді до %{date}"
@@ -34782,6 +35228,7 @@ _version: 2
 "Leased until %{date}":
   nl: "Geleased tot %{date}"
   de: "Geleast bis %{date}"
+  da: "Leaset til %{date}"
   fr: "En leasing jusqu'au %{date}"
   ru: "В лизинге до %{date}"
   uk: "У лізингу до %{date}"
@@ -34789,6 +35236,7 @@ _version: 2
 "The fleet is empty. Buy a new bus, one of the week's used ones, lease one for years or rent one for a few days - each is a bus installed in your OMSI.":
   nl: "Het wagenpark is leeg. Koop een nieuwe bus of een van de tweedehands bussen van de week, lease er een voor jaren of huur er een voor een paar dagen - elk is een bus die in je OMSI geïnstalleerd is."
   de: "Der Fuhrpark ist leer. Kaufe einen neuen Bus oder einen der gebrauchten der Woche, lease einen für Jahre oder miete einen für ein paar Tage - jeder ist ein in deinem OMSI installierter Bus."
+  da: "Flåden er tom. Køb en ny bus, en af ugens brugte, lease en i flere år, eller lej en i nogle dage - hver er en bus, der er installeret i dit OMSI."
   fr: "Le parc est vide. Achetez un bus neuf ou l'un des bus d'occasion de la semaine, prenez-en un en leasing pour des années ou louez-en un pour quelques jours - chacun est un bus installé dans votre OMSI."
   ru: "Парк пуст. Купите новый автобус или один из подержанных на этой неделе, возьмите в лизинг на годы или арендуйте на несколько дней - каждый из них установлен в вашем OMSI."
   uk: "Парк порожній. Купіть новий автобус або один із вживаних цього тижня, візьміть у лізинг на роки чи орендуйте на кілька днів - кожен із них установлено у вашому OMSI."
@@ -34796,6 +35244,7 @@ _version: 2
 "To the market":
   nl: "Naar de markt"
   de: "Zum Markt"
+  da: "Til markedet"
   fr: "Vers le marché"
   ru: "На рынок"
   uk: "На ринок"
@@ -34803,6 +35252,7 @@ _version: 2
 "%{n} years":
   nl: "%{n} jaar"
   de: "%{n} Jahre"
+  da: "%{n} år"
   fr: "%{n} ans"
   ru: "%{n} лет"
   uk: "%{n} років"
