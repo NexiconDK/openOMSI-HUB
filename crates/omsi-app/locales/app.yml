@@ -38926,6 +38926,7 @@ _version: 2
 "Third depot hall":
   nl: "Derde remisehal"
   de: "Dritte Depothalle"
+  da: "Tredje depothal"
   fr: "Troisième hall de dépôt"
   ru: "Третий ангар депо"
   uk: "Третій ангар депо"
@@ -38933,6 +38934,7 @@ _version: 2
 "Better loan terms":
   nl: "Betere leenvoorwaarden"
   de: "Bessere Kreditbedingungen"
+  da: "Bedre lånevilkår"
   fr: "Meilleures conditions de prêt"
   ru: "Лучшие условия кредита"
   uk: "Кращі умови кредиту"
@@ -38940,6 +38942,7 @@ _version: 2
 "Customer service":
   nl: "Klantvriendelijkheid"
   de: "Kundenservice"
+  da: "Kundeservice"
   fr: "Service client"
   ru: "Работа с клиентами"
   uk: "Робота з клієнтами"
@@ -38947,6 +38950,7 @@ _version: 2
 "Eco driving":
   nl: "Zuinig rijden"
   de: "Spritsparendes Fahren"
+  da: "Økonomisk kørsel"
   fr: "Écoconduite"
   ru: "Экономичное вождение"
   uk: "Економне водіння"
@@ -38954,6 +38958,7 @@ _version: 2
 "Workshop skills":
   nl: "Werkplaatsvaardigheden"
   de: "Werkstattkenntnisse"
+  da: "Værkstedsfærdigheder"
   fr: "Compétences d'atelier"
   ru: "Навыки мастерской"
   uk: "Навички майстерні"
@@ -38961,6 +38966,7 @@ _version: 2
 "Large buses":
   nl: "Grote bussen"
   de: "Große Busse"
+  da: "Store busser"
   fr: "Grands bus"
   ru: "Большие автобусы"
   uk: "Великі автобуси"
@@ -38968,6 +38974,7 @@ _version: 2
 "Workshop basics":
   nl: "Werkplaats basis"
   de: "Werkstatt-Grundkurs"
+  da: "Værkstedsgrundkursus"
   fr: "Bases de l'atelier"
   ru: "Основы мастерской"
   uk: "Основи майстерні"
@@ -38975,6 +38982,7 @@ _version: 2
 "Punctuality +15: fewer late trips":
   nl: "Stiptheid +15: minder te late ritten"
   de: "Pünktlichkeit +15: weniger verspätete Fahrten"
+  da: "Punktlighed +15: færre forsinkede rejser"
   fr: "Ponctualité +15 : moins de trajets en retard"
   ru: "Пунктуальность +15: меньше опозданий"
   uk: "Пунктуальність +15: менше запізнень"
@@ -38982,6 +38990,7 @@ _version: 2
 "Service +15: more passengers":
   nl: "Service +15: meer reizigers"
   de: "Service +15: mehr Fahrgäste"
+  da: "Service +15: flere passagerer"
   fr: "Service +15 : plus de voyageurs"
   ru: "Сервис +15: больше пассажиров"
   uk: "Сервіс +15: більше пасажирів"
@@ -38989,6 +38998,7 @@ _version: 2
 "Driving +8, and 8 % less fuel and power on their share of the tours":
   nl: "Rijden +8, en 8 % minder brandstof en stroom op hun deel van de omlopen"
   de: "Fahren +8 und 8 % weniger Kraftstoff und Strom auf ihrem Anteil der Umläufe"
+  da: "Kørsel +8 og 8 % mindre brændstof og strøm på deres del af turene"
   fr: "Conduite +8, et 8 % de carburant et d'électricité en moins sur leur part des services"
   ru: "Вождение +8 и на 8 % меньше топлива и энергии на их доле рейсов"
   uk: "Водіння +8 і на 8 % менше пального та енергії на їхній частці рейсів"
@@ -38996,6 +39006,7 @@ _version: 2
 "A mechanic: 6 % of maintenance and repairs done in-house (up to four)":
   nl: "Een monteur: 6 % van onderhoud en reparaties in eigen huis (tot vier)"
   de: "Ein Mechaniker: 6 % von Wartung und Reparaturen im eigenen Haus (bis zu vier)"
+  da: "En mekaniker: 6 % af vedligeholdelsen og reparationerne udført internt (op til fire)"
   fr: "Un mécanicien : 6 % de l'entretien et des réparations en interne (jusqu'à quatre)"
   ru: "Механик: 6 % ТО и ремонтов своими силами (до четырёх)"
   uk: "Механік: 6 % ТО й ремонтів власними силами (до чотирьох)"
@@ -39003,6 +39014,7 @@ _version: 2
 "Articulated buses and double-deckers without a warning":
   nl: "Gelede bussen en dubbeldekkers zonder waarschuwing"
   de: "Gelenkbusse und Doppeldecker ohne Warnung"
+  da: "Ledbusser og dobbeltdækkere uden advarsel"
   fr: "Bus articulés et à impériale sans avertissement"
   ru: "Сочленённые и двухэтажные автобусы без предупреждения"
   uk: "Зчленовані й двоповерхові автобуси без попередження"
@@ -39010,6 +39022,7 @@ _version: 2
 "You may service the company's buses yourself":
   nl: "Je mag de bussen van het bedrijf zelf onderhouden"
   de: "Du darfst die Busse des Unternehmens selbst warten"
+  da: "Du må selv servicere selskabets busser"
   fr: "Tu peux entretenir toi-même les bus de l'entreprise"
   ru: "Вы можете сами проводить ТО автобусов компании"
   uk: "Ви можете самі проводити ТО автобусів підприємства"
@@ -39017,6 +39030,7 @@ _version: 2
 "You may repair broken-down buses yourself":
   nl: "Je mag gestrande bussen zelf repareren"
   de: "Du darfst liegengebliebene Busse selbst reparieren"
+  da: "Du må selv reparere busser, der er brudt sammen"
   fr: "Tu peux réparer toi-même les bus en panne"
   ru: "Вы можете сами ремонтировать сломавшиеся автобусы"
   uk: "Ви можете самі ремонтувати зламані автобуси"
@@ -39024,6 +39038,7 @@ _version: 2
 "This course is not for them.":
   nl: "Deze cursus is niet voor hen."
   de: "Dieser Kurs ist nicht für diese Person."
+  da: "Dette kursus er ikke for dem."
   fr: "Ce cours n'est pas pour cette personne."
   ru: "Этот курс не для этого человека."
   uk: "Цей курс не для цієї людини."
@@ -39031,6 +39046,7 @@ _version: 2
 "Your company's level does not offer this course yet.":
   nl: "Het niveau van je bedrijf biedt deze cursus nog niet."
   de: "Die Stufe deines Unternehmens bietet diesen Kurs noch nicht."
+  da: "Dit selskabs niveau tilbyder endnu ikke dette kursus."
   fr: "Le niveau de ton entreprise ne propose pas encore ce cours."
   ru: "Уровень вашей компании пока не позволяет этот курс."
   uk: "Рівень вашого підприємства поки не дозволяє цей курс."
@@ -39038,6 +39054,7 @@ _version: 2
 "This course is done already.":
   nl: "Deze cursus is al gedaan."
   de: "Dieser Kurs ist schon gemacht."
+  da: "Dette kursus er allerede gennemført."
   fr: "Ce cours est déjà fait."
   ru: "Этот курс уже пройден."
   uk: "Цей курс уже пройдено."
@@ -39045,6 +39062,7 @@ _version: 2
 "This course is booked already.":
   nl: "Deze cursus is al geboekt."
   de: "Dieser Kurs ist schon gebucht."
+  da: "Dette kursus er allerede bestilt."
   fr: "Ce cours est déjà réservé."
   ru: "На этот курс уже записаны."
   uk: "На цей курс уже записано."
@@ -39052,6 +39070,7 @@ _version: 2
 "This person does not work here.":
   nl: "Deze persoon werkt hier niet."
   de: "Diese Person arbeitet nicht hier."
+  da: "Denne person arbejder ikke her."
   fr: "Cette personne ne travaille pas ici."
   ru: "Этот человек здесь не работает."
   uk: "Ця людина тут не працює."
@@ -39059,6 +39078,7 @@ _version: 2
 "They are leaving the company.":
   nl: "Diegene verlaat het bedrijf."
   de: "Die Person verlässt das Unternehmen."
+  da: "De forlader selskabet."
   fr: "Cette personne quitte l'entreprise."
   ru: "Этот человек уходит из компании."
   uk: "Ця людина йде з підприємства."
@@ -39066,6 +39086,7 @@ _version: 2
 "They are on another course.":
   nl: "Diegene volgt al een andere cursus."
   de: "Die Person ist schon in einem anderen Kurs."
+  da: "De er på et andet kursus."
   fr: "Cette personne suit déjà un autre cours."
   ru: "Этот человек уже на другом курсе."
   uk: "Ця людина вже на іншому курсі."
@@ -39073,6 +39094,7 @@ _version: 2
 "They are away today.":
   nl: "Diegene is vandaag afwezig."
   de: "Die Person ist heute abwesend."
+  da: "De er væk i dag."
   fr: "Cette personne est absente aujourd'hui."
   ru: "Этого человека сегодня нет."
   uk: "Цієї людини сьогодні немає."
@@ -39080,6 +39102,7 @@ _version: 2
 "Not enough money for the course.":
   nl: "Niet genoeg geld voor de cursus."
   de: "Nicht genug Geld für den Kurs."
+  da: "Ikke penge nok til kurset."
   fr: "Pas assez d'argent pour le cours."
   ru: "Не хватает денег на курс."
   uk: "Не вистачає грошей на курс."
@@ -39087,6 +39110,7 @@ _version: 2
 "Lights":
   nl: "Verlichting"
   de: "Beleuchtung"
+  da: "Lys"
   fr: "Éclairage"
   ru: "Фары"
   uk: "Фари"
@@ -39094,6 +39118,7 @@ _version: 2
 "Doors":
   nl: "Deuren"
   de: "Türen"
+  da: "Døre"
   fr: "Portes"
   ru: "Двери"
   uk: "Двері"
@@ -39101,6 +39126,7 @@ _version: 2
 "Engine oil":
   nl: "Motorolie"
   de: "Motoröl"
+  da: "Motorolie"
   fr: "Huile moteur"
   ru: "Моторное масло"
   uk: "Моторна олива"
@@ -39108,6 +39134,7 @@ _version: 2
 "Brakes":
   nl: "Remmen"
   de: "Bremsen"
+  da: "Bremser"
   fr: "Freins"
   ru: "Тормоза"
   uk: "Гальма"
@@ -39115,6 +39142,7 @@ _version: 2
 "Tyres":
   nl: "Banden"
   de: "Reifen"
+  da: "Dæk"
   fr: "Pneus"
   ru: "Шины"
   uk: "Шини"
@@ -39122,6 +39150,7 @@ _version: 2
 "Suspension":
   nl: "Vering"
   de: "Federung"
+  da: "Affjedring"
   fr: "Suspension"
   ru: "Подвеска"
   uk: "Підвіска"
@@ -39129,6 +39158,7 @@ _version: 2
 "All lamps work, the headlights are aimed right":
   nl: "Alle lampen werken, de koplampen staan goed afgesteld"
   de: "Alle Lampen funktionieren, die Scheinwerfer sind richtig eingestellt"
+  da: "Alle lamper virker, forlygterne er rettet rigtigt"
   fr: "Toutes les lampes marchent, les phares sont bien réglés"
   ru: "Все лампы работают, фары отрегулированы верно"
   uk: "Усі лампи працюють, фари відрегульовано правильно"
@@ -39136,6 +39166,7 @@ _version: 2
 "The left headlight is out":
   nl: "De linker koplamp is kapot"
   de: "Der linke Scheinwerfer ist ausgefallen"
+  da: "Den venstre forlygte er gået"
   fr: "Le phare gauche est grillé"
   ru: "Левая фара не горит"
   uk: "Ліва фара не світить"
@@ -39143,6 +39174,7 @@ _version: 2
 "The headlights are aimed too high":
   nl: "De koplampen staan te hoog afgesteld"
   de: "Die Scheinwerfer sind zu hoch eingestellt"
+  da: "Forlygterne er rettet for højt"
   fr: "Les phares sont réglés trop haut"
   ru: "Фары направлены слишком высоко"
   uk: "Фари спрямовано зависоко"
@@ -39150,6 +39182,7 @@ _version: 2
 "The blades wipe clean, the washer is full":
   nl: "De wissers vegen schoon, de sproeier is vol"
   de: "Die Wischerblätter wischen sauber, die Waschanlage ist voll"
+  da: "Viskerne tørrer rent, sprinklervæsken er fyldt"
   fr: "Les balais essuient bien, le lave-glace est plein"
   ru: "Щётки чистят хорошо, омыватель полон"
   uk: "Щітки чистять добре, омивач повний"
@@ -39157,6 +39190,7 @@ _version: 2
 "The blades are torn and streak":
   nl: "De wisserbladen zijn gescheurd en strepen"
   de: "Die Wischerblätter sind eingerissen und schmieren"
+  da: "Viskerbladene er revnede og smører"
   fr: "Les balais sont déchirés et laissent des traces"
   ru: "Щётки порваны и оставляют полосы"
   uk: "Щітки порвані й залишають смуги"
@@ -39164,6 +39198,7 @@ _version: 2
 "The washer fluid is empty":
   nl: "Het ruitensproeiervloeistof is op"
   de: "Das Wischwasser ist leer"
+  da: "Sprinklervæsken er tom"
   fr: "Le liquide lave-glace est vide"
   ru: "Омывающая жидкость закончилась"
   uk: "Омивальна рідина закінчилася"
@@ -39171,6 +39206,7 @@ _version: 2
 "The doors open and close smoothly":
   nl: "De deuren gaan soepel open en dicht"
   de: "Die Türen öffnen und schließen sanft"
+  da: "Dørene åbner og lukker jævnt"
   fr: "Les portes s'ouvrent et se ferment en douceur"
   ru: "Двери открываются и закрываются плавно"
   uk: "Двері відчиняються й зачиняються плавно"
@@ -39178,6 +39214,7 @@ _version: 2
 "The seal of door 2 is torn":
   nl: "De rubber van deur 2 is gescheurd"
   de: "Die Dichtung von Tür 2 ist gerissen"
+  da: "Pakningen på dør 2 er revnet"
   fr: "Le joint de la porte 2 est déchiré"
   ru: "Уплотнитель двери 2 порван"
   uk: "Ущільнювач дверей 2 порваний"
@@ -39185,6 +39222,7 @@ _version: 2
 "Door 2 closes slowly and jerks":
   nl: "Deur 2 sluit langzaam en schokt"
   de: "Tür 2 schließt langsam und ruckelt"
+  da: "Dør 2 lukker langsomt og hakker"
   fr: "La porte 2 se ferme lentement et par à-coups"
   ru: "Дверь 2 закрывается медленно и рывками"
   uk: "Двері 2 зачиняються повільно й ривками"
@@ -39192,6 +39230,7 @@ _version: 2
 "The oil is clean and at the mark":
   nl: "De olie is schoon en op peil"
   de: "Das Öl ist sauber und auf der Markierung"
+  da: "Olien er ren og ved mærket"
   fr: "L'huile est propre et au niveau"
   ru: "Масло чистое и на отметке"
   uk: "Олива чиста й на позначці"
@@ -39199,6 +39238,7 @@ _version: 2
 "The oil is black and past its interval":
   nl: "De olie is zwart en over de verversingstermijn"
   de: "Das Öl ist schwarz und über dem Wechselintervall"
+  da: "Olien er sort og over sit interval"
   fr: "L'huile est noire et a dépassé son intervalle"
   ru: "Масло чёрное, срок замены прошёл"
   uk: "Олива чорна, строк заміни минув"
@@ -39206,6 +39246,7 @@ _version: 2
 "The oil is below the minimum":
   nl: "De olie staat onder het minimum"
   de: "Das Öl ist unter dem Minimum"
+  da: "Olien er under minimum"
   fr: "L'huile est sous le minimum"
   ru: "Масло ниже минимума"
   uk: "Олива нижче мінімуму"
@@ -39213,6 +39254,7 @@ _version: 2
 "The pads have 9 mm left":
   nl: "De remblokken hebben nog 9 mm"
   de: "Die Beläge haben noch 9 mm"
+  da: "Klodserne har 9 mm tilbage"
   fr: "Les plaquettes ont encore 9 mm"
   ru: "Колодкам осталось 9 мм"
   uk: "Колодкам лишилося 9 мм"
@@ -39220,6 +39262,7 @@ _version: 2
 "The pads are down to 3 mm":
   nl: "De remblokken zijn tot 3 mm versleten"
   de: "Die Beläge sind auf 3 mm abgefahren"
+  da: "Klodserne er nede på 3 mm"
   fr: "Les plaquettes sont usées à 3 mm"
   ru: "Колодки стёрты до 3 мм"
   uk: "Колодки стерті до 3 мм"
@@ -39227,6 +39270,7 @@ _version: 2
 "The brake travel is too long":
   nl: "De rempedaal heeft te veel slag"
   de: "Der Bremsweg des Pedals ist zu lang"
+  da: "Bremsevejen er for lang"
   fr: "La course de frein est trop longue"
   ru: "Слишком большой ход тормоза"
   uk: "Завеликий хід гальма"
@@ -39234,6 +39278,7 @@ _version: 2
 "Tread 8 mm, pressure 8.5 bar":
   nl: "Profiel 8 mm, spanning 8,5 bar"
   de: "Profil 8 mm, Druck 8,5 bar"
+  da: "Mønster 8 mm, tryk 8,5 bar"
   fr: "Sculpture 8 mm, pression 8,5 bar"
   ru: "Протектор 8 мм, давление 8,5 бар"
   uk: "Протектор 8 мм, тиск 8,5 бар"
@@ -39241,6 +39286,7 @@ _version: 2
 "The front tread is down to 1.5 mm":
   nl: "Het profiel voor is nog maar 1,5 mm"
   de: "Das Profil vorn ist auf 1,5 mm abgefahren"
+  da: "Det forreste mønster er nede på 1,5 mm"
   fr: "La sculpture avant n'a plus que 1,5 mm"
   ru: "Передний протектор стёрт до 1,5 мм"
   uk: "Передній протектор стертий до 1,5 мм"
@@ -39248,6 +39294,7 @@ _version: 2
 "The pressure is 6 bar instead of 8.5":
   nl: "De spanning is 6 bar in plaats van 8,5"
   de: "Der Druck ist 6 bar statt 8,5"
+  da: "Trykket er 6 bar i stedet for 8,5"
   fr: "La pression est de 6 bar au lieu de 8,5"
   ru: "Давление 6 бар вместо 8,5"
   uk: "Тиск 6 бар замість 8,5"
@@ -39255,6 +39302,7 @@ _version: 2
 "The bellows hold, the ride height is even":
   nl: "De balgen houden, de rijhoogte is gelijk"
   de: "Die Bälge halten, das Niveau ist gleichmäßig"
+  da: "Bælgene holder, køretøjshøjden er jævn"
   fr: "Les soufflets tiennent, la garde au sol est égale"
   ru: "Пневмобаллоны держат, высота ровная"
   uk: "Пневмоподушки тримають, висота рівна"
@@ -39262,6 +39310,7 @@ _version: 2
 "A rear air bellows leaks":
   nl: "Een luchtbalg achter lekt"
   de: "Ein hinterer Luftbalg ist undicht"
+  da: "En bageste luftbælg lækker"
   fr: "Un soufflet arrière fuit"
   ru: "Задний пневмобаллон травит"
   uk: "Задня пневмоподушка травить"
@@ -39269,6 +39318,7 @@ _version: 2
 "The bus leans to one side":
   nl: "De bus helt naar één kant"
   de: "Der Bus hängt auf einer Seite"
+  da: "Bussen hælder til den ene side"
   fr: "Le bus penche d'un côté"
   ru: "Автобус кренится на один бок"
   uk: "Автобус хилиться на один бік"
@@ -39276,6 +39326,7 @@ _version: 2
 "27.6 V while charging: good":
   nl: "27,6 V bij het laden: goed"
   de: "27,6 V beim Laden: gut"
+  da: "27,6 V under opladning: godt"
   fr: "27,6 V en charge : bon"
   ru: "27,6 В при зарядке: хорошо"
   uk: "27,6 В під час заряджання: добре"
@@ -39283,6 +39334,7 @@ _version: 2
 "The battery holds no charge any more":
   nl: "De accu houdt geen lading meer"
   de: "Die Batterie hält keine Ladung mehr"
+  da: "Batteriet holder ikke længere ladning"
   fr: "La batterie ne tient plus la charge"
   ru: "Аккумулятор больше не держит заряд"
   uk: "Акумулятор більше не тримає заряд"
@@ -39290,6 +39342,7 @@ _version: 2
 "The battery's acid is low":
   nl: "Het accuzuur staat laag"
   de: "Die Batteriesäure ist zu niedrig"
+  da: "Batteriets syre er lav"
   fr: "Le niveau d'acide de la batterie est bas"
   ru: "Мало электролита в аккумуляторе"
   uk: "Мало електроліту в акумуляторі"
@@ -39297,6 +39350,7 @@ _version: 2
 "Replace":
   nl: "Vervangen"
   de: "Tauschen"
+  da: "Udskift"
   fr: "Remplacer"
   ru: "Заменить"
   uk: "Замінити"
@@ -39304,6 +39358,7 @@ _version: 2
 "Adjust":
   nl: "Afstellen"
   de: "Einstellen"
+  da: "Justér"
   fr: "Régler"
   ru: "Отрегулировать"
   uk: "Відрегулювати"
@@ -39311,6 +39366,7 @@ _version: 2
 "Top up":
   nl: "Bijvullen"
   de: "Nachfüllen"
+  da: "Fyld op"
   fr: "Faire l'appoint"
   ru: "Долить"
   uk: "Долити"
@@ -39318,6 +39374,7 @@ _version: 2
 "It is fine":
   nl: "Het is in orde"
   de: "Alles in Ordnung"
+  da: "Det er fint"
   fr: "C'est bon"
   ru: "Всё в порядке"
   uk: "Усе гаразд"
@@ -39325,6 +39382,7 @@ _version: 2
 "This bus cannot be serviced by you today.":
   nl: "Deze bus kun je vandaag niet zelf onderhouden."
   de: "Diesen Bus kannst du heute nicht selbst warten."
+  da: "Du kan ikke servicere denne bus i dag."
   fr: "Tu ne peux pas entretenir ce bus aujourd'hui."
   ru: "Сегодня вы не можете провести ТО этого автобуса."
   uk: "Сьогодні ви не можете провести ТО цього автобуса."
@@ -39332,6 +39390,7 @@ _version: 2
 "You need the repairs course first.":
   nl: "Je hebt eerst de cursus reparaties nodig."
   de: "Du brauchst zuerst den Kurs Reparaturen."
+  da: "Du skal først have reparationskurset."
   fr: "Il te faut d'abord le cours réparations."
   ru: "Сначала нужен курс ремонта."
   uk: "Спершу потрібен курс ремонту."
@@ -39339,6 +39398,7 @@ _version: 2
 "This bus has no repair waiting.":
   nl: "Deze bus wacht niet op een reparatie."
   de: "Für diesen Bus steht keine Reparatur an."
+  da: "Denne bus har ingen reparation, der venter."
   fr: "Ce bus n'attend aucune réparation."
   ru: "Этот автобус не ждёт ремонта."
   uk: "Цей автобус не чекає ремонту."
@@ -39346,6 +39406,7 @@ _version: 2
 "Traffic fines":
   nl: "Verkeersboetes"
   de: "Bußgelder im Verkehr"
+  da: "Trafikbøder"
   fr: "Amendes de circulation"
   ru: "Дорожные штрафы"
   uk: "Дорожні штрафи"
@@ -39353,6 +39414,7 @@ _version: 2
 "Quality bonus":
   nl: "Kwaliteitsbonus"
   de: "Qualitätsbonus"
+  da: "Kvalitetsbonus"
   fr: "Prime de qualité"
   ru: "Премия за качество"
   uk: "Премія за якість"
@@ -39360,6 +39422,7 @@ _version: 2
 "Course completed":
   nl: "Afgerond"
   de: "Abgeschlossen"
+  da: "Kursus gennemført"
   fr: "Terminé"
   ru: "Пройден"
   uk: "Пройдено"
@@ -39367,6 +39430,7 @@ _version: 2
 "Depot building":
   nl: "Bouw van de remise"
   de: "Bau des Betriebshofs"
+  da: "Depotbyggeri"
   fr: "Construction du dépôt"
   ru: "Строительство депо"
   uk: "Будівництво депо"
@@ -39374,6 +39438,7 @@ _version: 2
 "Concessions and licences":
   nl: "Concessies en vergunningen"
   de: "Konzessionen und Genehmigungen"
+  da: "Koncessioner og kørekort"
   fr: "Concessions et licences"
   ru: "Концессии и лицензии"
   uk: "Концесії та ліцензії"
@@ -39381,6 +39446,7 @@ _version: 2
 "The depot's building work is done: %{what}.":
   nl: "De bouw in de remise is klaar: %{what}."
   de: "Die Bauarbeiten im Betriebshof sind fertig: %{what}."
+  da: "Depotets byggearbejde er færdigt: %{what}."
   fr: "Les travaux du dépôt sont terminés : %{what}."
   ru: "Строительство в депо завершено: %{what}."
   uk: "Будівництво в депо завершено: %{what}."
@@ -39388,6 +39454,7 @@ _version: 2
 "Bus %{n} waits for a free workshop bay.":
   nl: "Bus %{n} wacht op een vrije werkplek."
   de: "Bus %{n} wartet auf einen freien Werkstattstand."
+  da: "Bus %{n} venter på en ledig værkstedsplads."
   fr: "Le bus %{n} attend un poste d'atelier libre."
   ru: "Автобус %{n} ждёт свободного поста мастерской."
   uk: "Автобус %{n} чекає вільного посту майстерні."
@@ -39395,6 +39462,7 @@ _version: 2
 "The concession for line %{n} is yours until %{date}.":
   nl: "De concessie voor lijn %{n} is van jou tot %{date}."
   de: "Die Konzession für Linie %{n} gehört dir bis %{date}."
+  da: "Koncessionen på linje %{n} er din til %{date}."
   fr: "La concession de la ligne %{n} est à vous jusqu'au %{date}."
   ru: "Концессия на линию %{n} ваша до %{date}."
   uk: "Концесія на лінію %{n} ваша до %{date}."
@@ -39402,6 +39470,7 @@ _version: 2
 "%{who} won the tender for line %{n}.":
   nl: "%{who} heeft de aanbesteding voor lijn %{n} gewonnen."
   de: "%{who} hat die Ausschreibung für Linie %{n} gewonnen."
+  da: "%{who} vandt udbuddet på linje %{n}."
   fr: "%{who} a remporté l'appel d'offres de la ligne %{n}."
   ru: "%{who} выиграл тендер на линию %{n}."
   uk: "%{who} виграв тендер на лінію %{n}."
@@ -39409,6 +39478,7 @@ _version: 2
 "The concession for line %{n} has ended: the line is no longer yours.":
   nl: "De concessie voor lijn %{n} is afgelopen: de lijn is niet meer van jou."
   de: "Die Konzession für Linie %{n} ist abgelaufen: die Linie gehört dir nicht mehr."
+  da: "Koncessionen på linje %{n} er udløbet: linjen er ikke længere din."
   fr: "La concession de la ligne %{n} a pris fin : la ligne n'est plus à vous."
   ru: "Концессия на линию %{n} закончилась: линия больше не ваша."
   uk: "Концесія на лінію %{n} закінчилася: лінія більше не ваша."
@@ -39416,6 +39486,7 @@ _version: 2
 "The best score wins a tender: the price counts 60 %, quality 40 % - yours is %{q} of 100, from your reputation and punctuality.":
   nl: "De beste score wint een aanbesteding: de prijs telt 60 %, kwaliteit 40 % - de jouwe is %{q} van 100, uit je reputatie en stiptheid."
   de: "Die beste Wertung gewinnt eine Ausschreibung: der Preis zählt 60 %, die Qualität 40 % - deine ist %{q} von 100, aus Ruf und Pünktlichkeit."
+  da: "Den bedste score vinder et udbud: prisen tæller 60 %, kvaliteten 40 % - din er %{q} af 100, ud fra dit omdømme og din punktlighed."
   fr: "Le meilleur score remporte un appel d'offres : le prix compte pour 60 %, la qualité pour 40 % - la vôtre est de %{q} sur 100, selon votre réputation et votre ponctualité."
   ru: "Тендер выигрывает лучший балл: цена весит 60 %, качество 40 % - ваше %{q} из 100, по репутации и пунктуальности."
   uk: "Тендер виграє найкращий бал: ціна важить 60 %, якість 40 % - ваша %{q} зі 100, за репутацією та пунктуальністю."
@@ -39423,6 +39494,7 @@ _version: 2
 "Tenders":
   nl: "Aanbestedingen"
   de: "Ausschreibungen"
+  da: "Udbud"
   fr: "Appels d'offres"
   ru: "Тендеры"
   uk: "Тендери"
@@ -39430,6 +39502,7 @@ _version: 2
 "On an easy economy the map's lines are taken on directly on the Lines page and their concessions renew by themselves; tenders are offered all the same, for the practice.":
   nl: "In een makkelijke economie neem je de lijnen van de kaart direct over op de pagina Lijnen en verlengen de concessies vanzelf; aanbestedingen zijn er toch, om te oefenen."
   de: "In einer leichten Wirtschaft übernimmst du die Linien der Karte direkt auf der Seite Linien, und die Konzessionen verlängern sich von selbst; Ausschreibungen gibt es trotzdem, zum Üben."
+  da: "Ved en let økonomi tages kortets linjer direkte på siden Linjer, og deres koncessioner fornyes af sig selv; der udbydes alligevel, for øvelsens skyld."
   fr: "En économie facile, les lignes de la carte se reprennent directement sur la page Lignes et leurs concessions se renouvellent d'elles-mêmes ; les appels d'offres restent proposés, pour s'exercer."
   ru: "В лёгкой экономике линии карты берутся прямо на странице «Линии», а концессии продлеваются сами; тендеры всё равно предлагаются, для практики."
   uk: "У легкій економіці лінії мапи беруться прямо на сторінці «Лінії», а концесії подовжуються самі; тендери все одно пропонуються, для практики."
@@ -39437,6 +39510,7 @@ _version: 2
 "No line is out to tender now. A new round comes every four weeks; a line of the map can also be applied for on the Lines page.":
   nl: "Er is nu geen lijn in aanbesteding. Elke vier weken komt er een nieuwe ronde; op een lijn van de kaart kun je ook inschrijven op de pagina Lijnen."
   de: "Gerade ist keine Linie ausgeschrieben. Alle vier Wochen kommt eine neue Runde; auf eine Linie der Karte kannst du dich auch auf der Seite Linien bewerben."
+  da: "Ingen linje er i udbud nu. En ny runde kommer hver fjerde uge; en linje på kortet kan også søges på siden Linjer."
   fr: "Aucune ligne n'est en appel d'offres. Une nouvelle série arrive toutes les quatre semaines ; une ligne de la carte peut aussi être demandée sur la page Lignes."
   ru: "Сейчас линий на тендере нет. Новый раунд каждые четыре недели; на линию карты можно подать заявку и на странице «Линии»."
   uk: "Зараз ліній на тендері немає. Новий раунд щочотири тижні; на лінію мапи можна подати заявку й на сторінці «Лінії»."
@@ -39444,6 +39518,7 @@ _version: 2
 "%{t} tours, %{km} km a week  ·  about %{amount}":
   nl: "%{t} omlopen, %{km} km per week  ·  ongeveer %{amount}"
   de: "%{t} Umläufe, %{km} km pro Woche  ·  etwa %{amount}"
+  da: "%{t} ture, %{km} km om ugen  ·  ca. %{amount}"
   fr: "%{t} services, %{km} km par semaine  ·  environ %{amount}"
   ru: "%{t} оборотов, %{km} км в неделю  ·  около %{amount}"
   uk: "%{t} обертів, %{km} км на тиждень  ·  близько %{amount}"
@@ -39451,6 +39526,7 @@ _version: 2
 "Reading its week…":
   nl: "De week wordt gelezen…"
   de: "Die Woche wird gelesen…"
+  da: "Læser dens uge…"
   fr: "Lecture de la semaine…"
   ru: "Чтение недели…"
   uk: "Читання тижня…"
@@ -39458,6 +39534,7 @@ _version: 2
 "%{t} tours, %{km} km on the day it was offered":
   nl: "%{t} omlopen, %{km} km op de dag van het aanbod"
   de: "%{t} Umläufe, %{km} km am Tag der Ausschreibung"
+  da: "%{t} ture, %{km} km den dag, den blev udbudt"
   fr: "%{t} services, %{km} km le jour de l'appel"
   ru: "%{t} оборотов, %{km} км в день объявления"
   uk: "%{t} обертів, %{km} км у день оголошення"
@@ -39465,6 +39542,7 @@ _version: 2
 "closes tonight":
   nl: "sluit vanavond"
   de: "endet heute Abend"
+  da: "lukker i aften"
   fr: "clôture ce soir"
   ru: "закрывается сегодня вечером"
   uk: "закривається сьогодні ввечері"
@@ -39472,6 +39550,7 @@ _version: 2
 "closes %{date}":
   nl: "sluit %{date}"
   de: "endet %{date}"
+  da: "lukker %{date}"
   fr: "clôture le %{date}"
   ru: "закрывается %{date}"
   uk: "закривається %{date}"
@@ -39479,6 +39558,7 @@ _version: 2
 "your bid %{p} %":
   nl: "jouw bod %{p} %"
   de: "dein Gebot %{p} %"
+  da: "dit bud %{p} %"
   fr: "votre offre %{p} %"
   ru: "ваша ставка %{p} %"
   uk: "ваша ставка %{p} %"
@@ -39486,6 +39566,7 @@ _version: 2
 "no bid yet":
   nl: "nog geen bod"
   de: "noch kein Gebot"
+  da: "intet bud endnu"
   fr: "pas encore d'offre"
   ru: "ставки пока нет"
   uk: "ставки ще немає"
@@ -39493,6 +39574,7 @@ _version: 2
 "term":
   nl: "looptijd"
   de: "Laufzeit"
+  da: "løbetid"
   fr: "durée"
   ru: "срок"
   uk: "строк"
@@ -39500,6 +39582,7 @@ _version: 2
 "weeks":
   nl: "weken"
   de: "Wochen"
+  da: "uger"
   fr: "semaines"
   ru: "недель"
   uk: "тижнів"
@@ -39507,6 +39590,7 @@ _version: 2
 "Won":
   nl: "Gewonnen"
   de: "Gewonnen"
+  da: "Vundet"
   fr: "Remporté"
   ru: "Выиграно"
   uk: "Виграно"
@@ -39514,6 +39598,7 @@ _version: 2
 "Lost to %{who}":
   nl: "Verloren aan %{who}"
   de: "Verloren an %{who}"
+  da: "Tabt til %{who}"
   fr: "Perdu au profit de %{who}"
   ru: "Проиграно: %{who}"
   uk: "Програно: %{who}"
@@ -39521,6 +39606,7 @@ _version: 2
 "Went to %{who} without a bid of yours":
   nl: "Naar %{who}, zonder bod van jou"
   de: "An %{who}, ohne Gebot von dir"
+  da: "Gik til %{who} uden et bud fra dig"
   fr: "Attribué à %{who}, sans offre de votre part"
   ru: "Досталось %{who}, без вашей ставки"
   uk: "Дісталося %{who}, без вашої ставки"
@@ -39528,6 +39614,7 @@ _version: 2
 "renewal":
   nl: "verlenging"
   de: "Verlängerung"
+  da: "fornyelse"
   fr: "renouvellement"
   ru: "продление"
   uk: "подовження"
@@ -39535,6 +39622,7 @@ _version: 2
 "Change the bid":
   nl: "Bod wijzigen"
   de: "Gebot ändern"
+  da: "Ændr buddet"
   fr: "Modifier l'offre"
   ru: "Изменить ставку"
   uk: "Змінити ставку"
@@ -39542,6 +39630,7 @@ _version: 2
 "Bid":
   nl: "Bieden"
   de: "Bieten"
+  da: "Bud"
   fr: "Faire une offre"
   ru: "Сделать ставку"
   uk: "Зробити ставку"
@@ -39549,6 +39638,7 @@ _version: 2
 "Your concessions":
   nl: "Je concessies"
   de: "Deine Konzessionen"
+  da: "Dine koncessioner"
   fr: "Vos concessions"
   ru: "Ваши концессии"
   uk: "Ваші концесії"
@@ -39556,6 +39646,7 @@ _version: 2
 "The company holds no concession yet. Win a tender, or apply for a line of the map on the Lines page.":
   nl: "Het bedrijf heeft nog geen concessie. Win een aanbesteding, of schrijf in op een lijn van de kaart op de pagina Lijnen."
   de: "Das Unternehmen hat noch keine Konzession. Gewinne eine Ausschreibung oder bewirb dich auf der Seite Linien um eine Linie der Karte."
+  da: "Selskabet har endnu ingen koncession. Vind et udbud, eller søg en linje på kortet på siden Linjer."
   fr: "L'entreprise n'a encore aucune concession. Remportez un appel d'offres, ou demandez une ligne de la carte sur la page Lignes."
   ru: "У предприятия пока нет концессий. Выиграйте тендер или подайте заявку на линию карты на странице «Линии»."
   uk: "Підприємство ще не має концесій. Виграйте тендер або подайте заявку на лінію мапи на сторінці «Лінії»."
@@ -39563,6 +39654,7 @@ _version: 2
 "until %{date}":
   nl: "tot %{date}"
   de: "bis %{date}"
+  da: "til %{date}"
   fr: "jusqu'au %{date}"
   ru: "до %{date}"
   uk: "до %{date}"
@@ -39570,6 +39662,7 @@ _version: 2
 "%{p} % of the reference: %{km} a kilometre":
   nl: "%{p} % van de referentie: %{km} per kilometer"
   de: "%{p} % des Richtwerts: %{km} je Kilometer"
+  da: "%{p} % af referencen: %{km} pr. kilometer"
   fr: "%{p} % de la référence : %{km} par kilomètre"
   ru: "%{p} % от эталона: %{km} за километр"
   uk: "%{p} % від еталона: %{km} за кілометр"
@@ -39577,6 +39670,7 @@ _version: 2
 "direct":
   nl: "direct"
   de: "direkt"
+  da: "direkte"
   fr: "directe"
   ru: "напрямую"
   uk: "напряму"
@@ -39584,6 +39678,7 @@ _version: 2
 "Your own line: no concession, a licence of %{amount} a month":
   nl: "Je eigen lijn: geen concessie, een vergunning van %{amount} per maand"
   de: "Deine eigene Linie: keine Konzession, eine Genehmigung für %{amount} im Monat"
+  da: "Din egen linje: ingen koncession, en licens på %{amount} om måneden"
   fr: "Votre propre ligne : pas de concession, une licence de %{amount} par mois"
   ru: "Ваша собственная линия: без концессии, лицензия %{amount} в месяц"
   uk: "Ваша власна лінія: без концесії, ліцензія %{amount} на місяць"
@@ -39591,6 +39686,7 @@ _version: 2
 "Tender for line %{n}":
   nl: "Aanbesteding lijn %{n}"
   de: "Ausschreibung Linie %{n}"
+  da: "Udbud på linje %{n}"
   fr: "Appel d'offres ligne %{n}"
   ru: "Тендер на линию %{n}"
   uk: "Тендер на лінію %{n}"
@@ -39598,6 +39694,7 @@ _version: 2
 "The line's week":
   nl: "De week van de lijn"
   de: "Die Woche der Linie"
+  da: "Linjens uge"
   fr: "La semaine de la ligne"
   ru: "Неделя линии"
   uk: "Тиждень лінії"
@@ -39605,6 +39702,7 @@ _version: 2
 "%{t} tours, %{n} trips, %{km} km":
   nl: "%{t} omlopen, %{n} ritten, %{km} km"
   de: "%{t} Umläufe, %{n} Fahrten, %{km} km"
+  da: "%{t} ture, %{n} rejser, %{km} km"
   fr: "%{t} services, %{n} courses, %{km} km"
   ru: "%{t} оборотов, %{n} рейсов, %{km} км"
   uk: "%{t} обертів, %{n} рейсів, %{km} км"
@@ -39612,6 +39710,7 @@ _version: 2
 "%{t} tours, %{km} km a day":
   nl: "%{t} omlopen, %{km} km per dag"
   de: "%{t} Umläufe, %{km} km pro Tag"
+  da: "%{t} ture, %{km} km om dagen"
   fr: "%{t} services, %{km} km par jour"
   ru: "%{t} оборотов, %{km} км в день"
   uk: "%{t} обертів, %{km} км на день"
@@ -39619,6 +39718,7 @@ _version: 2
 "%{n} weeks":
   nl: "%{n} weken"
   de: "%{n} Wochen"
+  da: "%{n} uger"
   fr: "%{n} semaines"
   ru: "%{n} недель"
   uk: "%{n} тижнів"
@@ -39626,6 +39726,7 @@ _version: 2
 "Bids close":
   nl: "Inschrijving sluit"
   de: "Angebotsschluss"
+  da: "Bud lukker"
   fr: "Clôture des offres"
   ru: "Приём ставок до"
   uk: "Приймання ставок до"
@@ -39633,6 +39734,7 @@ _version: 2
 "Your price":
   nl: "Jouw prijs"
   de: "Dein Preis"
+  da: "Din pris"
   fr: "Votre prix"
   ru: "Ваша цена"
   uk: "Ваша ціна"
@@ -39640,6 +39742,7 @@ _version: 2
 "The authority pays a kilometre":
   nl: "De opdrachtgever betaalt per kilometer"
   de: "Der Aufgabenträger zahlt je Kilometer"
+  da: "Trafikselskabet betaler pr. kilometer"
   fr: "L'autorité paie par kilomètre"
   ru: "Заказчик платит за километр"
   uk: "Замовник платить за кілометр"
@@ -39647,6 +39750,7 @@ _version: 2
 "Brings in a week, with the fares":
   nl: "Brengt per week op, met de kaartjes"
   de: "Bringt pro Woche ein, mit den Fahrgeldern"
+  da: "Indbringer om ugen, med billetindtægterne"
   fr: "Rapporte par semaine, billets compris"
   ru: "Приносит в неделю, с выручкой от билетов"
   uk: "Приносить на тиждень, з виручкою від квитків"
@@ -39654,6 +39758,7 @@ _version: 2
 "Your score":
   nl: "Jouw score"
   de: "Deine Wertung"
+  da: "Din score"
   fr: "Votre score"
   ru: "Ваш балл"
   uk: "Ваш бал"
@@ -39661,6 +39766,7 @@ _version: 2
 "quality":
   nl: "kwaliteit"
   de: "Qualität"
+  da: "kvalitet"
   fr: "qualité"
   ru: "качество"
   uk: "якість"
@@ -39668,6 +39774,7 @@ _version: 2
 "Fee for taking part":
   nl: "Inschrijfkosten"
   de: "Teilnahmegebühr"
+  da: "Gebyr for at deltage"
   fr: "Frais de participation"
   ru: "Взнос за участие"
   uk: "Внесок за участь"
@@ -39675,6 +39782,7 @@ _version: 2
 "Withdraw":
   nl: "Intrekken"
   de: "Zurückziehen"
+  da: "Træk tilbage"
   fr: "Retirer"
   ru: "Отозвать"
   uk: "Відкликати"
@@ -39682,6 +39790,7 @@ _version: 2
 "Bid %{p} %":
   nl: "%{p} % bieden"
   de: "%{p} % bieten"
+  da: "Bud %{p} %"
   fr: "Offrir %{p} %"
   ru: "Ставка %{p} %"
   uk: "Ставка %{p} %"
@@ -39689,6 +39798,7 @@ _version: 2
 "Your bid is in: the tender closes on %{date}.":
   nl: "Je bod is binnen: de aanbesteding sluit op %{date}."
   de: "Dein Gebot ist abgegeben: die Ausschreibung endet am %{date}."
+  da: "Dit bud er afgivet: udbuddet lukker den %{date}."
   fr: "Votre offre est déposée : l'appel d'offres clôture le %{date}."
   ru: "Ставка принята: тендер закрывается %{date}."
   uk: "Ставку прийнято: тендер закривається %{date}."
@@ -39696,6 +39806,7 @@ _version: 2
 "The authority does not take that price.":
   nl: "Die prijs neemt de opdrachtgever niet aan."
   de: "Diesen Preis nimmt der Aufgabenträger nicht an."
+  da: "Trafikselskabet tager ikke den pris."
   fr: "L'autorité n'accepte pas ce prix."
   ru: "Заказчик не примет такую цену."
   uk: "Замовник не прийме таку ціну."
@@ -39703,6 +39814,7 @@ _version: 2
 "There is no such tender.":
   nl: "Die aanbesteding bestaat niet."
   de: "Diese Ausschreibung gibt es nicht."
+  da: "Der er intet sådant udbud."
   fr: "Cet appel d'offres n'existe pas."
   ru: "Такого тендера нет."
   uk: "Такого тендера немає."
@@ -39710,6 +39822,7 @@ _version: 2
 "This tender is closed.":
   nl: "Deze aanbesteding is gesloten."
   de: "Diese Ausschreibung ist beendet."
+  da: "Dette udbud er lukket."
   fr: "Cet appel d'offres est clos."
   ru: "Этот тендер закрыт."
   uk: "Цей тендер закрито."
@@ -39717,6 +39830,7 @@ _version: 2
 "Bid made":
   nl: "Bod gedaan"
   de: "Gebot abgegeben"
+  da: "Bud afgivet"
   fr: "Offre déposée"
   ru: "Ставка сделана"
   uk: "Ставку зроблено"
@@ -39724,6 +39838,7 @@ _version: 2
 "Apply":
   nl: "Inschrijven"
   de: "Bewerben"
+  da: "Ansøg"
   fr: "Candidater"
   ru: "Подать заявку"
   uk: "Подати заявку"
@@ -39731,6 +39846,7 @@ _version: 2
 "A line of the map is run under a concession: bid in its tender, and the line is the company's if the bid wins":
   nl: "Een lijn van de kaart rijd je onder een concessie: bied in de aanbesteding, en de lijn is van het bedrijf als het bod wint"
   de: "Eine Linie der Karte fährt man mit einer Konzession: biete in der Ausschreibung, und die Linie gehört dem Unternehmen, wenn das Gebot gewinnt"
+  da: "En linje på kortet køres under en koncession: byd i dens udbud, og linjen er selskabets, hvis buddet vinder"
   fr: "Une ligne de la carte s'exploite sous concession : faites une offre à son appel d'offres, et la ligne est à l'entreprise si l'offre l'emporte"
   ru: "Линия карты обслуживается по концессии: сделайте ставку в тендере, и линия станет вашей, если ставка выиграет"
   uk: "Лінія мапи обслуговується за концесією: зробіть ставку в тендері, і лінія стане вашою, якщо ставка виграє"
@@ -39738,6 +39854,7 @@ _version: 2
 "Fleet map":
   nl: "Vlootkaart"
   de: "Flottenkarte"
+  da: "Flådekort"
   fr: "Carte de la flotte"
   ru: "Карта парка"
   uk: "Мапа парку"
@@ -39745,6 +39862,7 @@ _version: 2
 "Live: the game's time":
   nl: "Live: de tijd van het spel"
   de: "Live: die Zeit des Spiels"
+  da: "Live: spillets tid"
   fr: "En direct : l'heure du jeu"
   ru: "В реальном времени: время игры"
   uk: "Наживо: час гри"
@@ -39752,6 +39870,7 @@ _version: 2
 "Live: the time of day":
   nl: "Live: de tijd van nu"
   de: "Live: die Uhrzeit"
+  da: "Live: tidspunktet på dagen"
   fr: "En direct : l'heure actuelle"
   ru: "В реальном времени: текущее время"
   uk: "Наживо: поточний час"
@@ -39759,6 +39878,7 @@ _version: 2
 "Stop the clock":
   nl: "Klok stilzetten"
   de: "Uhr anhalten"
+  da: "Stop uret"
   fr: "Arrêter l'horloge"
   ru: "Остановить часы"
   uk: "Зупинити годинник"
@@ -39766,6 +39886,7 @@ _version: 2
 "Run the clock":
   nl: "Klok laten lopen"
   de: "Uhr laufen lassen"
+  da: "Kør uret"
   fr: "Faire tourner l'horloge"
   ru: "Запустить часы"
   uk: "Запустити годинник"
@@ -39773,6 +39894,7 @@ _version: 2
 "Back to now":
   nl: "Terug naar nu"
   de: "Zurück zu jetzt"
+  da: "Tilbage til nu"
   fr: "Revenir à maintenant"
   ru: "Вернуться к текущему времени"
   uk: "Повернутися до поточного часу"
@@ -39780,6 +39902,7 @@ _version: 2
 "On the road: %{n}  ·  at a terminus: %{p}  ·  tours today: %{t}":
   nl: "Onderweg: %{n}  ·  op een eindpunt: %{p}  ·  omlopen vandaag: %{t}"
   de: "Unterwegs: %{n}  ·  an der Endhaltestelle: %{p}  ·  Umläufe heute: %{t}"
+  da: "På vejen: %{n}  ·  ved endestation: %{p}  ·  ture i dag: %{t}"
   fr: "En route : %{n}  ·  au terminus : %{p}  ·  services aujourd'hui : %{t}"
   ru: "В пути: %{n}  ·  на конечной: %{p}  ·  оборотов сегодня: %{t}"
   uk: "У дорозі: %{n}  ·  на кінцевій: %{p}  ·  обертів сьогодні: %{t}"
@@ -39787,6 +39910,7 @@ _version: 2
 "The company runs no line on this day.":
   nl: "Het bedrijf rijdt deze dag geen lijn."
   de: "Das Unternehmen fährt an diesem Tag keine Linie."
+  da: "Selskabet kører ingen linje på denne dag."
   fr: "L'entreprise n'exploite aucune ligne ce jour-là."
   ru: "В этот день предприятие не обслуживает линий."
   uk: "Цього дня підприємство не обслуговує ліній."
@@ -39794,6 +39918,7 @@ _version: 2
 "In the depot: leaves at %{time}":
   nl: "In de remise: vertrekt om %{time}"
   de: "Im Betriebshof: fährt um %{time} aus"
+  da: "I depotet: afgår kl. %{time}"
   fr: "Au dépôt : sort à %{time}"
   ru: "В депо: выезд в %{time}"
   uk: "У депо: виїзд о %{time}"
@@ -39801,6 +39926,7 @@ _version: 2
 "Its day is done.":
   nl: "Zijn dag zit erop."
   de: "Sein Tag ist vorbei."
+  da: "Dens dag er slut."
   fr: "Sa journée est finie."
   ru: "Его день окончен."
   uk: "Його день закінчено."
@@ -39808,6 +39934,7 @@ _version: 2
 "On its way to %{stop}":
   nl: "Onderweg naar %{stop}"
   de: "Unterwegs nach %{stop}"
+  da: "På vej til %{stop}"
   fr: "En route vers %{stop}"
   ru: "В пути на %{stop}"
   uk: "У дорозі до %{stop}"
@@ -39815,6 +39942,7 @@ _version: 2
 "At the terminus until %{time}":
   nl: "Op het eindpunt tot %{time}"
   de: "An der Endhaltestelle bis %{time}"
+  da: "Ved endestationen til kl. %{time}"
   fr: "Au terminus jusqu'à %{time}"
   ru: "На конечной до %{time}"
   uk: "На кінцевій до %{time}"
@@ -39822,6 +39950,7 @@ _version: 2
 "Leaves the depot at %{time}":
   nl: "Vertrekt uit de remise om %{time}"
   de: "Fährt um %{time} aus dem Betriebshof"
+  da: "Forlader depotet kl. %{time}"
   fr: "Sort du dépôt à %{time}"
   ru: "Выезжает из депо в %{time}"
   uk: "Виїжджає з депо о %{time}"
@@ -39829,6 +39958,7 @@ _version: 2
 "Next: %{stop} at %{time}":
   nl: "Volgende: %{stop} om %{time}"
   de: "Nächste: %{stop} um %{time}"
+  da: "Næste: %{stop} kl. %{time}"
   fr: "Prochain : %{stop} à %{time}"
   ru: "Следующая: %{stop} в %{time}"
   uk: "Наступна: %{stop} о %{time}"
@@ -39836,6 +39966,7 @@ _version: 2
 "Passengers this trip":
   nl: "Reizigers deze rit"
   de: "Fahrgäste dieser Fahrt"
+  da: "Passagerer på denne rejse"
   fr: "Voyageurs de cette course"
   ru: "Пассажиров за рейс"
   uk: "Пасажирів за рейс"
@@ -39843,6 +39974,7 @@ _version: 2
 "%{t} tours, %{n} trips a week":
   nl: "%{t} omlopen, %{n} ritten per week"
   de: "%{t} Umläufe, %{n} Fahrten pro Woche"
+  da: "%{t} ture, %{n} rejser om ugen"
   fr: "%{t} services, %{n} courses par semaine"
   ru: "%{t} оборотов, %{n} рейсов в неделю"
   uk: "%{t} обертів, %{n} рейсів на тиждень"
@@ -39850,6 +39982,7 @@ _version: 2
 "Articulated buses open at a higher company level.":
   nl: "Gelede bussen komen vrij op een hoger bedrijfsniveau."
   de: "Gelenkbusse werden auf einer höheren Firmenstufe freigeschaltet."
+  da: "Ledbusser åbner på et højere selskabsniveau."
   fr: "Les bus articulés se débloquent à un niveau d'entreprise supérieur."
   ru: "Сочленённые автобусы откроются на более высоком уровне компании."
   uk: "Зчленовані автобуси відкриються на вищому рівні компанії."
@@ -39857,6 +39990,7 @@ _version: 2
 "Double-deckers open at a higher company level.":
   nl: "Dubbeldekkers komen vrij op een hoger bedrijfsniveau."
   de: "Doppeldecker werden auf einer höheren Firmenstufe freigeschaltet."
+  da: "Dobbeltdækkere åbner på et højere selskabsniveau."
   fr: "Les bus à impériale se débloquent à un niveau d'entreprise supérieur."
   ru: "Двухэтажные автобусы откроются на более высоком уровне компании."
   uk: "Двоповерхові автобуси відкриються на вищому рівні компанії."
@@ -39864,6 +39998,7 @@ _version: 2
 "Electric buses open at a higher company level.":
   nl: "Elektrische bussen komen vrij op een hoger bedrijfsniveau."
   de: "Elektrobusse werden auf einer höheren Firmenstufe freigeschaltet."
+  da: "Elbusser åbner på et højere selskabsniveau."
   fr: "Les bus électriques se débloquent à un niveau d'entreprise supérieur."
   ru: "Электробусы откроются на более высоком уровне компании."
   uk: "Електробуси відкриються на вищому рівні компанії."
@@ -39871,6 +40006,7 @@ _version: 2
 "Editor: lines, liveries, the timetable and the map's objects":
   nl: "Editor: lijnen, lakken, de dienstregeling en de objecten van de kaart"
   de: "Editor: Linien, Lackierungen, der Fahrplan und die Objekte der Karte"
+  da: "Editor: linjer, bemalinger, køreplanen og kortets objekter"
   fr: "Éditeur : lignes, livrées, les horaires et les objets de la carte"
   ru: "Редактор: линии, окраски, расписание и объекты карты"
   uk: "Редактор: лінії, фарбування, розклад і об'єкти карти"
@@ -39878,6 +40014,7 @@ _version: 2
 "The company's map is not installed.":
   nl: "De kaart van het bedrijf is niet geïnstalleerd."
   de: "Die Karte des Unternehmens ist nicht installiert."
+  da: "Selskabets kort er ikke installeret."
   fr: "La carte de l'entreprise n'est pas installée."
   ru: "Карта компании не установлена."
   uk: "Карту компанії не встановлено."
@@ -39885,6 +40022,7 @@ _version: 2
 "draft":
   nl: "concept"
   de: "Entwurf"
+  da: "kladde"
   fr: "brouillon"
   ru: "черновик"
   uk: "чернетка"
@@ -39892,6 +40030,7 @@ _version: 2
 "The company has no line of its own yet":
   nl: "Het bedrijf heeft nog geen eigen lijn"
   de: "Das Unternehmen hat noch keine eigene Linie"
+  da: "Selskabet har endnu ingen linje af sin egen"
   fr: "L'entreprise n'a pas encore de ligne à elle"
   ru: "У компании пока нет своей линии"
   uk: "У компанії ще немає власної лінії"
@@ -39899,6 +40038,7 @@ _version: 2
 "Live displays at %{n} transfer stops":
   nl: "Actuele vertrektijden op %{n} overstaphaltes"
   de: "Live-Anzeigen an %{n} Umsteigehaltestellen"
+  da: "Live-skærme ved %{n} skiftestopper"
   fr: "Afficheurs en temps réel à %{n} arrêts de correspondance"
   ru: "Табло реального времени на %{n} пересадочных остановках"
   uk: "Табло реального часу на %{n} пересадкових зупинках"
@@ -39906,6 +40046,7 @@ _version: 2
 "Click the line's stops on the map; the estimate shows what it costs and brings.":
   nl: "Klik de haltes van de lijn op de kaart aan; de raming toont wat ze kost en oplevert."
   de: "Klicke die Haltestellen der Linie auf der Karte an; die Schätzung zeigt, was sie kostet und bringt."
+  da: "Klik på linjens stoppesteder på kortet; overslaget viser, hvad det koster og indbringer."
   fr: "Cliquez les arrêts de la ligne sur la carte ; l'estimation montre ce qu'elle coûte et rapporte."
   ru: "Щёлкните остановки линии на карте; оценка покажет, сколько она стоит и приносит."
   uk: "Клацніть зупинки лінії на карті; оцінка покаже, скільки вона коштує і приносить."
@@ -39913,6 +40054,7 @@ _version: 2
 "Reading the company…":
   nl: "Het bedrijf wordt gelezen…"
   de: "Das Unternehmen wird gelesen…"
+  da: "Læser selskabet…"
   fr: "Lecture de l'entreprise…"
   ru: "Чтение данных компании…"
   uk: "Читання даних компанії…"
@@ -39920,6 +40062,7 @@ _version: 2
 "The company has %{cash}: not enough for the line. A loan on the Finances page helps.":
   nl: "Het bedrijf heeft %{cash}: niet genoeg voor de lijn. Een lening op de pagina Financiën helpt."
   de: "Das Unternehmen hat %{cash}: nicht genug für die Linie. Ein Kredit auf der Seite Finanzen hilft."
+  da: "Selskabet har %{cash}: ikke nok til linjen. Et lån på siden Økonomi hjælper."
   fr: "L'entreprise dispose de %{cash} : pas assez pour la ligne. Un prêt sur la page Finances aide."
   ru: "У компании %{cash}: на линию не хватает. Поможет кредит на странице «Финансы»."
   uk: "У компанії %{cash}: на лінію не вистачає. Допоможе кредит на сторінці «Фінанси»."
@@ -39927,6 +40070,7 @@ _version: 2
 "The company has %{cash}: not enough for the change.":
   nl: "Het bedrijf heeft %{cash}: niet genoeg voor de wijziging."
   de: "Das Unternehmen hat %{cash}: nicht genug für die Änderung."
+  da: "Selskabet har %{cash}: ikke nok til ændringen."
   fr: "L'entreprise dispose de %{cash} : pas assez pour la modification."
   ru: "У компании %{cash}: на изменение не хватает."
   uk: "У компанії %{cash}: на зміну не вистачає."
@@ -39934,6 +40078,7 @@ _version: 2
 "Confirm and pay %{amount}":
   nl: "Bevestigen en %{amount} betalen"
   de: "Bestätigen und %{amount} bezahlen"
+  da: "Bekræft og betal %{amount}"
   fr: "Confirmer et payer %{amount}"
   ru: "Подтвердить и оплатить %{amount}"
   uk: "Підтвердити й сплатити %{amount}"
@@ -39941,6 +40086,7 @@ _version: 2
 "Save draft":
   nl: "Concept opslaan"
   de: "Entwurf speichern"
+  da: "Gem kladde"
   fr: "Enregistrer le brouillon"
   ru: "Сохранить черновик"
   uk: "Зберегти чернетку"
@@ -39948,6 +40094,7 @@ _version: 2
 "Delete draft":
   nl: "Concept verwijderen"
   de: "Entwurf löschen"
+  da: "Slet kladde"
   fr: "Supprimer le brouillon"
   ru: "Удалить черновик"
   uk: "Видалити чернетку"
@@ -39955,6 +40102,7 @@ _version: 2
 "Press \"Delete draft\" again: the draft goes":
   nl: "Druk nog eens op \"Concept verwijderen\": het concept verdwijnt"
   de: "Drücke noch einmal auf \"Entwurf löschen\": der Entwurf wird gelöscht"
+  da: "Tryk på \"Slet kladde\" igen: kladden forsvinder"
   fr: "Appuyez encore sur \"Supprimer le brouillon\" : le brouillon disparaît"
   ru: "Нажмите «Удалить черновик» ещё раз: черновик будет удалён"
   uk: "Натисніть «Видалити чернетку» ще раз: чернетку буде видалено"
@@ -39962,6 +40110,7 @@ _version: 2
 "Pay %{amount} and save":
   nl: "%{amount} betalen en opslaan"
   de: "%{amount} bezahlen und speichern"
+  da: "Betal %{amount}, og gem"
   fr: "Payer %{amount} et enregistrer"
   ru: "Оплатить %{amount} и сохранить"
   uk: "Сплатити %{amount} і зберегти"
@@ -39969,6 +40118,7 @@ _version: 2
 "Undo the changes":
   nl: "Wijzigingen ongedaan maken"
   de: "Änderungen verwerfen"
+  da: "Fortryd ændringerne"
   fr: "Annuler les modifications"
   ru: "Отменить изменения"
   uk: "Скасувати зміни"
@@ -39976,6 +40126,7 @@ _version: 2
 "The company runs this line. A changed route is approved anew; the line is given up on the company's Lines page.":
   nl: "Het bedrijf rijdt deze lijn. Een gewijzigde route wordt opnieuw goedgekeurd; de lijn opgeven doe je op de pagina Lijnen van het bedrijf."
   de: "Das Unternehmen betreibt diese Linie. Eine geänderte Strecke wird neu genehmigt; aufgegeben wird die Linie auf der Seite Linien des Unternehmens."
+  da: "Selskabet kører denne linje. En ændret rute godkendes påny; linjen opgives på selskabets side Linjer."
   fr: "L'entreprise exploite cette ligne. Un itinéraire modifié est approuvé à nouveau ; on abandonne la ligne sur la page Lignes de l'entreprise."
   ru: "Компания обслуживает эту линию. Изменённый маршрут утверждается заново; отказаться от линии можно на странице «Линии» компании."
   uk: "Компанія обслуговує цю лінію. Змінений маршрут затверджується заново; відмовитися від лінії можна на сторінці «Лінії» компанії."
@@ -39983,6 +40134,7 @@ _version: 2
 "The changes are undone":
   nl: "De wijzigingen zijn ongedaan gemaakt"
   de: "Die Änderungen sind verworfen"
+  da: "Ændringerne er fortrudt"
   fr: "Les modifications sont annulées"
   ru: "Изменения отменены"
   uk: "Зміни скасовано"
@@ -39990,6 +40142,7 @@ _version: 2
 "Line %{n} is the company's now: %{amount} paid. Its tours are on the Planning page.":
   nl: "Lijn %{n} is nu van het bedrijf: %{amount} betaald. De omlopen staan op de pagina Planning."
   de: "Linie %{n} gehört jetzt dem Unternehmen: %{amount} bezahlt. Ihre Umläufe stehen auf der Seite Planung."
+  da: "Linje %{n} er nu selskabets: %{amount} betalt. Dens ture er på siden Planlægning."
   fr: "La ligne %{n} appartient maintenant à l'entreprise : %{amount} payés. Ses services sont sur la page Planification."
   ru: "Линия %{n} теперь принадлежит компании: оплачено %{amount}. Её обороты — на странице «Планирование»."
   uk: "Лінія %{n} тепер належить компанії: сплачено %{amount}. Її оберти — на сторінці «Планування»."
@@ -39997,6 +40150,7 @@ _version: 2
 "Line %{n} saved: its new route is approved for %{amount}.":
   nl: "Lijn %{n} opgeslagen: de nieuwe route is goedgekeurd voor %{amount}."
   de: "Linie %{n} gespeichert: die neue Strecke ist für %{amount} genehmigt."
+  da: "Linje %{n} gemt: dens nye rute er godkendt for %{amount}."
   fr: "Ligne %{n} enregistrée : son nouvel itinéraire est approuvé pour %{amount}."
   ru: "Линия %{n} сохранена: новый маршрут утверждён за %{amount}."
   uk: "Лінію %{n} збережено: новий маршрут затверджено за %{amount}."
@@ -40004,6 +40158,7 @@ _version: 2
 "Paid to start":
   nl: "Betaald bij de start"
   de: "Zum Start bezahlt"
+  da: "Betalt for at starte"
   fr: "Payé au lancement"
   ru: "Оплачено при запуске"
   uk: "Сплачено під час запуску"
@@ -40011,6 +40166,7 @@ _version: 2
 "To start":
   nl: "Om te starten"
   de: "Zum Start"
+  da: "For at starte"
   fr: "Pour lancer"
   ru: "Для запуска"
   uk: "Для запуску"
@@ -40018,6 +40174,7 @@ _version: 2
 "the company runs it":
   nl: "het bedrijf rijdt haar"
   de: "das Unternehmen betreibt sie"
+  da: "selskabet kører den"
   fr: "l'entreprise l'exploite"
   ru: "компания её обслуживает"
   uk: "компанія її обслуговує"
@@ -40025,6 +40182,7 @@ _version: 2
 "licence, stops, tariff, launch":
   nl: "vergunning, haltes, tarief, lancering"
   de: "Genehmigung, Haltestellen, Tarif, Start"
+  da: "licens, stoppesteder, takst, lancering"
   fr: "licence, arrêts, tarif, lancement"
   ru: "лицензия, остановки, тариф, запуск"
   uk: "ліцензія, зупинки, тариф, запуск"
@@ -40032,6 +40190,7 @@ _version: 2
 "A month":
   nl: "Per maand"
   de: "Pro Monat"
+  da: "En måned"
   fr: "Par mois"
   ru: "В месяц"
   uk: "На місяць"
@@ -40039,6 +40198,7 @@ _version: 2
 "Passengers a day":
   nl: "Reizigers per dag"
   de: "Fahrgäste pro Tag"
+  da: "Passagerer om dagen"
   fr: "Voyageurs par jour"
   ru: "Пассажиров в день"
   uk: "Пасажирів на день"
@@ -40046,6 +40206,7 @@ _version: 2
 "Sat %{s} · Sun %{u}":
   nl: "za %{s} · zo %{u}"
   de: "Sa %{s} · So %{u}"
+  da: "Lør %{s} · søn %{u}"
   fr: "sam. %{s} · dim. %{u}"
   ru: "сб %{s} · вс %{u}"
   uk: "сб %{s} · нд %{u}"
@@ -40053,6 +40214,7 @@ _version: 2
 "Buses peak / midday":
   nl: "Bussen spits / overdag"
   de: "Busse Spitze / mittags"
+  da: "Busser i myldretid / midt på dagen"
   fr: "Bus pointe / midi"
   ru: "Автобусы пик / день"
   uk: "Автобуси пік / день"
@@ -40060,6 +40222,7 @@ _version: 2
 "none yet":
   nl: "nog geen"
   de: "noch keine"
+  da: "ingen endnu"
   fr: "aucun pour l'instant"
   ru: "пока нет"
   uk: "поки немає"
@@ -40067,6 +40230,7 @@ _version: 2
 "The costs in detail":
   nl: "De kosten in detail"
   de: "Die Kosten im Einzelnen"
+  da: "Omkostningerne i detaljer"
   fr: "Les coûts en détail"
   ru: "Затраты подробно"
   uk: "Витрати докладно"
@@ -40074,6 +40238,7 @@ _version: 2
 "Once":
   nl: "Eenmalig"
   de: "Einmalig"
+  da: "Én gang"
   fr: "Une fois"
   ru: "Единовременно"
   uk: "Одноразово"
@@ -40081,6 +40246,7 @@ _version: 2
 "A working day":
   nl: "Een werkdag"
   de: "Ein Werktag"
+  da: "En arbejdsdag"
   fr: "Un jour ouvré"
   ru: "Рабочий день"
   uk: "Робочий день"
@@ -40088,6 +40254,7 @@ _version: 2
 "no buses":
   nl: "geen bussen"
   de: "keine Busse"
+  da: "ingen busser"
   fr: "pas de bus"
   ru: "нет автобусов"
   uk: "немає автобусів"
@@ -40095,6 +40262,7 @@ _version: 2
 "%{bus}: full on %{n} trips, %{need} would fit":
   nl: "%{bus}: vol op %{n} ritten, een %{need} past"
   de: "%{bus}: voll auf %{n} Fahrten, ein %{need} würde passen"
+  da: "%{bus}: fuld på %{n} rejser, %{need} ville passe"
   fr: "%{bus} : plein sur %{n} courses, un %{need} conviendrait"
   ru: "%{bus}: переполнен на %{n} рейсах, подошёл бы %{need}"
   uk: "%{bus}: переповнений на %{n} рейсах, підійшов би %{need}"
@@ -40102,6 +40270,7 @@ _version: 2
 "%{bus}: bigger than needed, %{need} would do":
   nl: "%{bus}: groter dan nodig, een %{need} volstaat"
   de: "%{bus}: größer als nötig, ein %{need} reicht"
+  da: "%{bus}: større end nødvendigt, %{need} ville række"
   fr: "%{bus} : plus grand que nécessaire, un %{need} suffirait"
   ru: "%{bus}: больше, чем нужно, хватило бы %{need}"
   uk: "%{bus}: більший, ніж треба, вистачило б %{need}"
@@ -40109,6 +40278,7 @@ _version: 2
 "%{bus}, up to %{n} on board":
   nl: "%{bus}, tot %{n} aan boord"
   de: "%{bus}, bis zu %{n} an Bord"
+  da: "%{bus}, op til %{n} om bord"
   fr: "%{bus}, jusqu'à %{n} à bord"
   ru: "%{bus}, до %{n} на борту"
   uk: "%{bus}, до %{n} на борту"
@@ -40116,6 +40286,7 @@ _version: 2
 "Passengers from the stops, the transfers at them and the service; the rush hours busiest. A month: the drivers, buses and running at full cost.":
   nl: "Reizigers volgen uit de haltes, de overstappen daar en het aanbod; de spits het drukst. Per maand: chauffeurs, bussen en exploitatie tegen volle kosten."
   de: "Fahrgäste aus den Haltestellen, den Umstiegen dort und dem Angebot; die Spitzen am vollsten. Pro Monat: Fahrer, Busse und Betrieb zu vollen Kosten."
+  da: "Passagerer fra stoppestederne, skiftene ved dem og servicen; myldretiderne travlest. En måned: chaufførerne, busserne og driften til fuld pris."
   fr: "Voyageurs selon les arrêts, les correspondances et l'offre ; les heures de pointe les plus chargées. Par mois : conducteurs, bus et exploitation à coût complet."
   ru: "Пассажиры — от остановок, пересадок на них и частоты; больше всего в часы пик. В месяц: водители, автобусы и эксплуатация по полной стоимости."
   uk: "Пасажири — від зупинок, пересадок на них і частоти; найбільше в години пік. На місяць: водії, автобуси й експлуатація за повною вартістю."
@@ -40123,6 +40294,7 @@ _version: 2
 "Morning peak":
   nl: "Ochtendspits"
   de: "Morgenspitze"
+  da: "Morgenmyldretid"
   fr: "Pointe du matin"
   ru: "Утренний пик"
   uk: "Ранковий пік"
@@ -40130,6 +40302,7 @@ _version: 2
 "Daytime":
   nl: "Overdag"
   de: "Tagsüber"
+  da: "Dagtimer"
   fr: "Journée"
   ru: "Днём"
   uk: "Вдень"
@@ -40137,6 +40310,7 @@ _version: 2
 "Afternoon peak":
   nl: "Middagspits"
   de: "Nachmittagsspitze"
+  da: "Eftermiddagsmyldretid"
   fr: "Pointe de l'après-midi"
   ru: "Вечерний пик"
   uk: "Вечірній пік"
@@ -40144,6 +40318,7 @@ _version: 2
 "Launch marketing":
   nl: "Marketing bij de start"
   de: "Marketing zum Start"
+  da: "Lanceringsmarkedsføring"
   fr: "Marketing de lancement"
   ru: "Маркетинг при запуске"
   uk: "Маркетинг під час запуску"
@@ -40151,6 +40326,7 @@ _version: 2
 "Fuel":
   nl: "Brandstof"
   de: "Kraftstoff"
+  da: "Brændstof"
   fr: "Carburant"
   ru: "Топливо"
   uk: "Пальне"
@@ -40158,6 +40334,7 @@ _version: 2
 "Stop fees":
   nl: "Haltegelden"
   de: "Haltestellenentgelte"
+  da: "Stoppestedsgebyrer"
   fr: "Redevances d'arrêt"
   ru: "Плата за остановки"
   uk: "Плата за зупинки"
@@ -40165,6 +40342,7 @@ _version: 2
 "Line licence":
   nl: "Lijnvergunning"
   de: "Liniengenehmigung"
+  da: "Linjelicens"
   fr: "Licence de ligne"
   ru: "Лицензия линии"
   uk: "Ліцензія лінії"
@@ -40172,6 +40350,7 @@ _version: 2
 "One headway":
   nl: "Eén interval"
   de: "Ein Takt"
+  da: "Én frekvens"
   fr: "Une fréquence"
   ru: "Один интервал"
   uk: "Один інтервал"
@@ -40179,6 +40358,7 @@ _version: 2
 "Time bands":
   nl: "Tijdvakken"
   de: "Zeitbänder"
+  da: "Tidsbånd"
   fr: "Plages horaires"
   ru: "Временные интервалы"
   uk: "Часові проміжки"
@@ -40186,6 +40366,7 @@ _version: 2
 "Take the band out":
   nl: "Tijdvak verwijderen"
   de: "Zeitband entfernen"
+  da: "Tag tidsbåndet ud"
   fr: "Retirer la plage"
   ru: "Убрать интервал"
   uk: "Прибрати проміжок"
@@ -40193,6 +40374,7 @@ _version: 2
 "Add a band":
   nl: "Tijdvak toevoegen"
   de: "Zeitband hinzufügen"
+  da: "Tilføj et tidsbånd"
   fr: "Ajouter une plage"
   ru: "Добавить интервал"
   uk: "Додати проміжок"
@@ -40200,6 +40382,7 @@ _version: 2
 "%{b} buses in %{n} tours (some for the rush hours only), %{t} trips":
   nl: "%{b} bussen in %{n} omlopen (sommige alleen voor de spits), %{t} ritten"
   de: "%{b} Busse in %{n} Umläufen (einige nur für die Spitzen), %{t} Fahrten"
+  da: "%{b} busser på %{n} ture (nogle kun til myldretiderne), %{t} rejser"
   fr: "%{b} bus en %{n} services (certains pour les heures de pointe seulement), %{t} courses"
   ru: "%{b} автобусов в %{n} оборотах (некоторые только в часы пик), %{t} рейсов"
   uk: "%{b} автобусів у %{n} обертах (деякі лише в години пік), %{t} рейсів"
@@ -40207,6 +40390,7 @@ _version: 2
 "Each group of days becomes tours of its own; the buses go back and forth, each standing at the end for at least as long as set. With time bands the buses added for the rush hours go back to the depot after them.":
   nl: "Elke groep dagen krijgt eigen omlopen; de bussen rijden heen en weer en staan aan het eind minstens zo lang als ingesteld. Met tijdvakken gaan de extra spitsbussen daarna terug naar de remise."
   de: "Jede Gruppe von Tagen bekommt eigene Umläufe; die Busse pendeln und stehen am Ende mindestens so lange wie eingestellt. Mit Zeitbändern fahren die Verstärker der Spitzen danach zurück in den Betriebshof."
+  da: "Hver gruppe af dage bliver til egne ture; busserne kører frem og tilbage og holder hver i enden mindst så længe, som der er angivet. Med tidsbånd kører busserne, der er lagt til myldretiderne, tilbage til depotet efter dem."
   fr: "Chaque groupe de jours a ses propres services ; les bus font la navette et stationnent au terminus au moins le temps réglé. Avec des plages horaires, les bus ajoutés aux heures de pointe rentrent ensuite au dépôt."
   ru: "Каждая группа дней получает свои обороты; автобусы ходят туда и обратно и стоят на конечной не меньше заданного. С временными интервалами автобусы, добавленные на час пик, потом возвращаются в депо."
   uk: "Кожна група днів має свої оберти; автобуси курсують туди й назад і стоять на кінцевій не менше заданого. З часовими проміжками автобуси, додані на годину пік, потім повертаються в депо."
@@ -40214,6 +40398,7 @@ _version: 2
 "The line is not finished yet.":
   nl: "De lijn is nog niet af."
   de: "Die Linie ist noch nicht fertig."
+  da: "Linjen er ikke færdig endnu."
   fr: "La ligne n'est pas encore terminée."
   ru: "Линия ещё не готова."
   uk: "Лінія ще не готова."
@@ -40221,6 +40406,7 @@ _version: 2
 "The company cannot pay for the line: take a loan on the Finances page, or make it smaller.":
   nl: "Het bedrijf kan de lijn niet betalen: neem een lening op de pagina Financiën, of maak de lijn kleiner."
   de: "Das Unternehmen kann die Linie nicht bezahlen: nimm einen Kredit auf der Seite Finanzen oder mach die Linie kleiner."
+  da: "Selskabet kan ikke betale for linjen: tag et lån på siden Økonomi, eller gør den mindre."
   fr: "L'entreprise ne peut pas payer la ligne : prenez un prêt sur la page Finances, ou réduisez-la."
   ru: "Компании не хватает денег на линию: возьмите кредит на странице «Финансы» или сделайте линию меньше."
   uk: "Компанії не вистачає грошей на лінію: візьміть кредит на сторінці «Фінанси» або зробіть лінію меншою."
@@ -40228,6 +40414,7 @@ _version: 2
 "The company cannot pay for the change: take a loan on the Finances page.":
   nl: "Het bedrijf kan de wijziging niet betalen: neem een lening op de pagina Financiën."
   de: "Das Unternehmen kann die Änderung nicht bezahlen: nimm einen Kredit auf der Seite Finanzen."
+  da: "Selskabet kan ikke betale for ændringen: tag et lån på siden Økonomi."
   fr: "L'entreprise ne peut pas payer la modification : prenez un prêt sur la page Finances."
   ru: "Компании не хватает денег на изменение: возьмите кредит на странице «Финансы»."
   uk: "Компанії не вистачає грошей на зміну: візьміть кредит на сторінці «Фінанси»."
@@ -40235,6 +40422,7 @@ _version: 2
 "The company does not run this line.":
   nl: "Het bedrijf rijdt deze lijn niet."
   de: "Das Unternehmen betreibt diese Linie nicht."
+  da: "Selskabet kører ikke denne linje."
   fr: "L'entreprise n'exploite pas cette ligne."
   ru: "Компания не обслуживает эту линию."
   uk: "Компанія не обслуговує цю лінію."
@@ -40242,6 +40430,7 @@ _version: 2
 "Change the line in the line editor":
   nl: "De lijn wijzigen in de lijneditor"
   de: "Die Linie im Linieneditor ändern"
+  da: "Ændr linjen i linjeeditoren"
   fr: "Modifier la ligne dans l'éditeur de lignes"
   ru: "Изменить линию в редакторе линий"
   uk: "Змінити лінію в редакторі ліній"
@@ -40249,6 +40438,7 @@ _version: 2
 "Make a new line":
   nl: "Nieuwe lijn maken"
   de: "Neue Linie erstellen"
+  da: "Lav en ny linje"
   fr: "Créer une nouvelle ligne"
   ru: "Создать новую линию"
   uk: "Створити нову лінію"
@@ -40256,6 +40446,7 @@ _version: 2
 "Draw a line of the company's own in the line editor: it shows what the line costs and brings, and you confirm and pay for it there":
   nl: "Teken een eigen lijn van het bedrijf in de lijneditor: die toont wat de lijn kost en oplevert, en daar bevestig en betaal je haar"
   de: "Zeichne im Linieneditor eine eigene Linie des Unternehmens: er zeigt, was die Linie kostet und bringt, und dort bestätigst und bezahlst du sie"
+  da: "Tegn en linje af selskabets egen i linjeeditoren: den viser, hvad linjen koster og indbringer, og du bekræfter og betaler for den dér"
   fr: "Dessinez une ligne propre à l'entreprise dans l'éditeur de lignes : il montre ce qu'elle coûte et rapporte, et c'est là que vous la confirmez et la payez"
   ru: "Нарисуйте собственную линию компании в редакторе линий: он покажет, сколько она стоит и приносит, там же её подтверждают и оплачивают"
   uk: "Намалюйте власну лінію компанії в редакторі ліній: він покаже, скільки вона коштує і приносить, там же її підтверджують і оплачують"
@@ -40263,6 +40454,7 @@ _version: 2
 "At the busiest the tours ask for %{n} × %{bus} (or bigger); the fleet has %{have}.":
   nl: "Op het drukst vragen de omlopen %{n} × %{bus} (of groter); de vloot heeft er %{have}."
   de: "In der Spitze verlangen die Umläufe %{n} × %{bus} (oder größer); die Flotte hat %{have}."
+  da: "På det travleste kræver turene %{n} × %{bus} (eller større); flåden har %{have}."
   fr: "Au plus fort, les services demandent %{n} × %{bus} (ou plus grand) ; la flotte en a %{have}."
   ru: "В пик обороты требуют %{n} × %{bus} (или больше); в парке их %{have}."
   uk: "У пік оберти потребують %{n} × %{bus} (або більше); у парку їх %{have}."
@@ -40270,6 +40462,7 @@ _version: 2
 "%{n} trips of your own lines were full; %{p} passengers were left at the stop.":
   nl: "%{n} ritten van je eigen lijnen zaten vol; %{p} reizigers bleven op de halte staan."
   de: "%{n} Fahrten deiner eigenen Linien waren voll; %{p} Fahrgäste blieben an der Haltestelle stehen."
+  da: "%{n} rejser på dine egne linjer var fulde; %{p} passagerer blev efterladt ved stoppestedet."
   fr: "%{n} courses de vos propres lignes étaient pleines ; %{p} voyageurs sont restés à l'arrêt."
   ru: "%{n} рейсов ваших линий были переполнены; %{p} пассажиров остались на остановке."
   uk: "%{n} рейсів ваших ліній були переповнені; %{p} пасажирів лишилися на зупинці."
@@ -40277,6 +40470,7 @@ _version: 2
 "Licence application":
   nl: "Vergunningsaanvraag"
   de: "Genehmigungsantrag"
+  da: "Licensansøgning"
   fr: "Demande de licence"
   ru: "Заявка на лицензию"
   uk: "Заявка на ліцензію"
@@ -40284,6 +40478,7 @@ _version: 2
 "Stop timetables":
   nl: "Haltedienstregelingen"
   de: "Aushangfahrpläne"
+  da: "Stoppestedskøreplaner"
   fr: "Horaires aux arrêts"
   ru: "Расписания на остановках"
   uk: "Розклади на зупинках"
@@ -40291,6 +40486,7 @@ _version: 2
 "Live displays":
   nl: "Actuele vertrekborden"
   de: "Live-Anzeigen"
+  da: "Live-skærme"
   fr: "Afficheurs en temps réel"
   ru: "Табло реального времени"
   uk: "Табло реального часу"
@@ -40298,6 +40494,7 @@ _version: 2
 "Tariff integration":
   nl: "Opname in het tarief"
   de: "Tarifintegration"
+  da: "Takstintegration"
   fr: "Intégration tarifaire"
   ru: "Включение в тариф"
   uk: "Включення до тарифу"
@@ -40305,6 +40502,7 @@ _version: 2
 "Association entry":
   nl: "Toetreding verbond"
   de: "Verbundbeitritt"
+  da: "Indtræden i sammenslutning"
   fr: "Adhésion à la communauté"
   ru: "Вступление в союз"
   uk: "Вступ до союзу"
@@ -40312,6 +40510,7 @@ _version: 2
 "Association share":
   nl: "Aandeel verbond"
   de: "Verbundanteil"
+  da: "Andel i sammenslutning"
   fr: "Part de la communauté"
   ru: "Доля союза"
   uk: "Частка союзу"
@@ -40319,6 +40518,7 @@ _version: 2
 "Payment per km":
   nl: "Vergoeding per km"
   de: "Zahlung pro km"
+  da: "Betaling pr. km"
   fr: "Paiement par km"
   ru: "Оплата за км"
   uk: "Оплата за км"
@@ -40326,6 +40526,7 @@ _version: 2
 "Duty board under the navigator":
   nl: "Dienstpaneel onder de navigator"
   de: "Dienstanzeige unter dem Navigator"
+  da: "Vagttavle under navigatoren"
   fr: "Tableau de service sous le navigateur"
   ru: "Табло смены под навигатором"
   uk: "Табло зміни під навігатором"
@@ -40333,6 +40534,7 @@ _version: 2
 "The trip, its stops and what comes next under the map; off, the map alone (the handle on the navigator switches it too)":
   nl: "De rit, de haltes en wat er daarna komt onder de kaart; uit, alleen de kaart (het handvat op de navigator schakelt het ook)"
   de: "Die Fahrt, ihre Haltestellen und was danach kommt unter der Karte; aus, nur die Karte (der Griff am Navigator schaltet es auch)"
+  da: "Rejsen, dens stoppesteder og hvad der kommer næste gang under kortet; fra: kortet alene (håndtaget på navigatoren skifter det også)"
   fr: "La course, ses arrêts et la suite sous la carte ; désactivé, la carte seule (la poignée du navigateur le bascule aussi)"
   ru: "Рейс, его остановки и что дальше под картой; выкл. — только карта (ручка на навигаторе тоже переключает)"
   uk: "Рейс, його зупинки й що далі під мапою; вимк. — лише мапа (ручка на навігаторі теж перемикає)"
@@ -40340,6 +40542,7 @@ _version: 2
 "Reset navigator":
   nl: "Navigator herstellen"
   de: "Navigator zurücksetzen"
+  da: "Nulstil navigator"
   fr: "Réinitialiser le navigateur"
   ru: "Сбросить навигатор"
   uk: "Скинути навігатор"
@@ -40347,6 +40550,7 @@ _version: 2
 "Back to its corner and its own size, with the duty board (drag its edges and corners to size it)":
   nl: "Terug naar de hoek en de eigen grootte, met het dienstpaneel (sleep aan de randen en hoeken om de grootte te wijzigen)"
   de: "Zurück in die Ecke und auf die eigene Größe, mit der Dienstanzeige (Ränder und Ecken ziehen, um die Größe zu ändern)"
+  da: "Tilbage til sit hjørne og sin egen størrelse, med vagttavlen (træk i dens kanter og hjørner for at ændre størrelsen)"
   fr: "Retour dans son coin et à sa taille, avec le tableau de service (faites glisser ses bords et ses coins pour le redimensionner)"
   ru: "Вернуть в угол и к своему размеру, с табло смены (тяните за края и углы, чтобы изменить размер)"
   uk: "Повернути в кут і до власного розміру, з табло зміни (тягніть за краї й кути, щоб змінити розмір)"
@@ -40354,6 +40558,7 @@ _version: 2
 "Simulate to tomorrow":
   nl: "Simuleer tot morgen"
   de: "Bis morgen simulieren"
+  da: "Simulér til i morgen"
   fr: "Simuler jusqu'à demain"
   ru: "Симулировать до завтра"
   uk: "Симулювати до завтра"
@@ -40361,6 +40566,7 @@ _version: 2
 "More steps, the clock's speed and the dispatcher":
   nl: "Meer stappen, de snelheid van de klok en de dienstleider"
   de: "Weitere Schritte, das Tempo der Uhr und der Disponent"
+  da: "Flere trin, urets hastighed og trafiklederen"
   fr: "Plus de pas, la vitesse de l'horloge et le régulateur"
   ru: "Другие шаги, скорость часов и диспетчер"
   uk: "Інші кроки, швидкість годинника та диспетчер"
@@ -40368,6 +40574,7 @@ _version: 2
 "The game leads the company's clock while it runs":
   nl: "Het spel bepaalt de klok van het bedrijf zolang het draait"
   de: "Solange das Spiel läuft, gibt es die Uhr der Firma vor"
+  da: "Spillet fører selskabets ur, mens det kører"
   fr: "Tant que le jeu tourne, il mène l'horloge de l'entreprise"
   ru: "Пока игра запущена, она ведёт часы компании"
   uk: "Поки гра запущена, вона веде годинник компанії"
@@ -40375,6 +40582,7 @@ _version: 2
 "Simulate the rest of the day: the tours run, what happens is told, and the day is closed at midnight":
   nl: "Simuleer de rest van de dag: de omlopen rijden, wat er gebeurt wordt verteld en om middernacht wordt de dag afgesloten"
   de: "Den Rest des Tages simulieren: die Umläufe fahren, was geschieht, wird erzählt, und um Mitternacht wird der Tag abgeschlossen"
+  da: "Simulér resten af dagen: turene køres, det, der sker, fortælles, og dagen afsluttes ved midnat"
   fr: "Simuler le reste de la journée : les services roulent, ce qui arrive est raconté, et la journée est clôturée à minuit"
   ru: "Симулировать остаток дня: обороты выполняются, события показываются, в полночь день закрывается"
   uk: "Симулювати решту дня: оберти виконуються, події показуються, опівночі день закривається"
@@ -40382,6 +40590,7 @@ _version: 2
 "+1 h":
   nl: "+1 u"
   de: "+1 Std."
+  da: "+1 t"
   fr: "+1 h"
   ru: "+1 ч"
   uk: "+1 год"
@@ -40389,6 +40598,7 @@ _version: 2
 "Run the company's clock while this page is open":
   nl: "Laat de klok van het bedrijf lopen zolang deze pagina open is"
   de: "Die Uhr der Firma laufen lassen, solange diese Seite offen ist"
+  da: "Kør selskabets ur, mens denne side er åben"
   fr: "Faire tourner l'horloge de l'entreprise tant que cette page est ouverte"
   ru: "Запустить часы компании, пока открыта эта страница"
   uk: "Запустити годинник компанії, поки відкрита ця сторінка"
@@ -40396,6 +40606,7 @@ _version: 2
 "Company time · the game's":
   nl: "Bedrijfstijd · die van het spel"
   de: "Firmenzeit · die des Spiels"
+  da: "Selskabets tid · spillets"
   fr: "Heure de l'entreprise · celle du jeu"
   ru: "Время компании · игровое"
   uk: "Час компанії · ігровий"
@@ -40403,6 +40614,7 @@ _version: 2
 "Company time":
   nl: "Bedrijfstijd"
   de: "Firmenzeit"
+  da: "Selskabets tid"
   fr: "Heure de l'entreprise"
   ru: "Время компании"
   uk: "Час компанії"
@@ -40410,6 +40622,7 @@ _version: 2
 "Company time: %{now}":
   nl: "Bedrijfstijd: %{now}"
   de: "Firmenzeit: %{now}"
+  da: "Selskabets tid: %{now}"
   fr: "Heure de l'entreprise : %{now}"
   ru: "Время компании: %{now}"
   uk: "Час компанії: %{now}"
@@ -40417,6 +40630,7 @@ _version: 2
 "The game runs on the company's map: its clock leads, and the company's day goes along with it. Simulating is offered again when the game is closed.":
   nl: "Het spel draait op de kaart van het bedrijf: zijn klok bepaalt en de dag van het bedrijf gaat mee. Simuleren kan weer zodra het spel dicht is."
   de: "Das Spiel läuft auf der Karte der Firma: seine Uhr gibt den Takt vor, der Tag der Firma geht mit. Simulieren ist wieder möglich, wenn das Spiel geschlossen ist."
+  da: "Spillet kører på selskabets kort: dets ur fører, og selskabets dag følger med. Simulering tilbydes igen, når spillet er lukket."
   fr: "Le jeu tourne sur la carte de l'entreprise : son horloge mène et la journée de l'entreprise suit. La simulation revient quand le jeu est fermé."
   ru: "Игра идёт на карте компании: её часы ведут, и день компании идёт вместе с ней. Симуляция снова доступна после закрытия игры."
   uk: "Гра йде на мапі компанії: її годинник веде, і день компанії йде разом із нею. Симуляція знову доступна після закриття гри."
@@ -40424,6 +40638,7 @@ _version: 2
 "Simulate":
   nl: "Simuleren"
   de: "Simulieren"
+  da: "Simulér"
   fr: "Simuler"
   ru: "Симулировать"
   uk: "Симулювати"
@@ -40431,6 +40646,7 @@ _version: 2
 "+15 min":
   nl: "+15 min"
   de: "+15 Min."
+  da: "+15 min"
   fr: "+15 min"
   ru: "+15 мин"
   uk: "+15 хв"
@@ -40438,6 +40654,7 @@ _version: 2
 "+6 h":
   nl: "+6 u"
   de: "+6 Std."
+  da: "+6 t"
   fr: "+6 h"
   ru: "+6 ч"
   uk: "+6 год"
@@ -40445,6 +40662,7 @@ _version: 2
 "To the morning":
   nl: "Tot de ochtend"
   de: "Bis zum Morgen"
+  da: "Til morgen"
   fr: "Jusqu'au matin"
   ru: "До утра"
   uk: "До ранку"
@@ -40452,6 +40670,7 @@ _version: 2
 "To tomorrow":
   nl: "Tot morgen"
   de: "Bis morgen"
+  da: "Til i morgen"
   fr: "Jusqu'à demain"
   ru: "До завтра"
   uk: "До завтра"
@@ -40459,6 +40678,7 @@ _version: 2
 "+1 day":
   nl: "+1 dag"
   de: "+1 Tag"
+  da: "+1 dag"
   fr: "+1 jour"
   ru: "+1 день"
   uk: "+1 день"
@@ -40466,6 +40686,7 @@ _version: 2
 "+2 days":
   nl: "+2 dagen"
   de: "+2 Tage"
+  da: "+2 dage"
   fr: "+2 jours"
   ru: "+2 дня"
   uk: "+2 дні"
@@ -40473,6 +40694,7 @@ _version: 2
 "+3 days":
   nl: "+3 dagen"
   de: "+3 Tage"
+  da: "+3 dage"
   fr: "+3 jours"
   ru: "+3 дня"
   uk: "+3 дні"
@@ -40480,6 +40702,7 @@ _version: 2
 "+7 days":
   nl: "+7 dagen"
   de: "+7 Tage"
+  da: "+7 dage"
   fr: "+7 jours"
   ru: "+7 дней"
   uk: "+7 днів"
@@ -40487,6 +40710,7 @@ _version: 2
 "Until":
   nl: "Tot"
   de: "Bis"
+  da: "Til"
   fr: "Jusqu'à"
   ru: "До"
   uk: "До"
@@ -40494,6 +40718,7 @@ _version: 2
 "Simulate until %{time}":
   nl: "Simuleer tot %{time}"
   de: "Bis %{time} simulieren"
+  da: "Simulér til kl. %{time}"
   fr: "Simuler jusqu'à %{time}"
   ru: "Симулировать до %{time}"
   uk: "Симулювати до %{time}"
@@ -40501,6 +40726,7 @@ _version: 2
 "×60: a minute a second; it stops for what needs you.":
   nl: "×60: een minuut per seconde; hij stopt voor wat jou nodig heeft."
   de: "×60: eine Minute pro Sekunde; sie hält an, wenn du gebraucht wirst."
+  da: "×60: et minut i sekundet; den stopper for det, der kræver dig."
   fr: "×60 : une minute par seconde ; elle s'arrête quand on a besoin de vous."
   ru: "×60: минута в секунду; часы останавливаются, когда нужно ваше решение."
   uk: "×60: хвилина за секунду; годинник зупиняється, коли потрібне ваше рішення."
@@ -40508,6 +40734,7 @@ _version: 2
 "Decisions":
   nl: "Beslissingen"
   de: "Entscheidungen"
+  da: "Beslutninger"
   fr: "Décisions"
   ru: "Решения"
   uk: "Рішення"
@@ -40515,6 +40742,7 @@ _version: 2
 "The dispatcher decides breakdowns (a rental bus while the cash allows)":
   nl: "De dienstleider beslist bij pech (een huurbus zolang de kas het toelaat)"
   de: "Der Disponent entscheidet bei Pannen (ein Mietbus, solange die Kasse es erlaubt)"
+  da: "Trafiklederen afgør nedbrud (en lejebus, så længe kontanterne rækker)"
   fr: "Le régulateur décide en cas de panne (un bus de location tant que la trésorerie le permet)"
   ru: "Диспетчер решает при поломках (арендный автобус, пока позволяет касса)"
   uk: "Диспетчер вирішує при поломках (орендований автобус, поки дозволяє каса)"
@@ -40522,6 +40750,7 @@ _version: 2
 "Close the day quickly":
   nl: "Dag snel afsluiten"
   de: "Tag schnell abschließen"
+  da: "Afslut dagen hurtigt"
   fr: "Clôturer la journée rapidement"
   ru: "Быстро закрыть день"
   uk: "Швидко закрити день"
@@ -40529,6 +40758,7 @@ _version: 2
 "The rest of the day at once: nothing stops, the dispatcher decides":
   nl: "De rest van de dag in één keer: niets stopt, de dienstleider beslist"
   de: "Der Rest des Tages auf einmal: nichts hält an, der Disponent entscheidet"
+  da: "Resten af dagen på én gang: intet stopper, trafiklederen afgør"
   fr: "Le reste de la journée d'un coup : rien ne s'arrête, le régulateur décide"
   ru: "Остаток дня сразу: ничего не останавливается, решает диспетчер"
   uk: "Решта дня одразу: нічого не зупиняється, вирішує диспетчер"
@@ -40536,6 +40766,7 @@ _version: 2
 "rental bus":
   nl: "huurbus"
   de: "Mietbus"
+  da: "lejebus"
   fr: "bus de location"
   ru: "арендный автобус"
   uk: "орендований автобус"
@@ -40543,6 +40774,7 @@ _version: 2
 "All tours":
   nl: "Alle omlopen"
   de: "Alle Umläufe"
+  da: "Alle ture"
   fr: "Tous les services"
   ru: "Все обороты"
   uk: "Усі оберти"
@@ -40550,6 +40782,7 @@ _version: 2
 "Nothing happened yet. Simulate the company's time at the top: by the hour, to the morning, to tomorrow or days at once; what happens is told here.":
   nl: "Er is nog niets gebeurd. Simuleer de tijd van het bedrijf bovenaan: per uur, tot de ochtend, tot morgen of dagen tegelijk; wat er gebeurt, staat hier."
   de: "Noch ist nichts geschehen. Simuliere die Zeit der Firma oben: stundenweise, bis zum Morgen, bis morgen oder mehrere Tage; was geschieht, steht hier."
+  da: "Intet er sket endnu. Simulér selskabets tid øverst: pr. time, til morgen, til i morgen eller dage på én gang; det, der sker, fortælles her."
   fr: "Rien ne s'est encore passé. Simulez le temps de l'entreprise en haut : à l'heure, jusqu'au matin, jusqu'à demain ou plusieurs jours ; ce qui arrive s'affiche ici."
   ru: "Пока ничего не произошло. Симулируйте время компании вверху: по часу, до утра, до завтра или сразу несколько дней; события появятся здесь."
   uk: "Поки нічого не сталося. Симулюйте час компанії вгорі: по годині, до ранку, до завтра або одразу кілька днів; події з'являться тут."
@@ -40557,6 +40790,7 @@ _version: 2
 "%{time}  Bus %{bus} broke down":
   nl: "%{time}  Bus %{bus} heeft pech"
   de: "%{time}  Bus %{bus} hat eine Panne"
+  da: "%{time}  Bus %{bus} brød sammen"
   fr: "%{time}  Le bus %{bus} est en panne"
   ru: "%{time}  Автобус %{bus} сломался"
   uk: "%{time}  Автобус %{bus} зламався"
@@ -40564,6 +40798,7 @@ _version: 2
 "It was on line %{n}; it goes to the workshop. A rental bus can take over its trips from %{time} for %{amount}; else its trips are dropped for the rest of the day, with the contract's penalty.":
   nl: "Hij reed op lijn %{n}; hij gaat naar de werkplaats. Een huurbus kan zijn ritten vanaf %{time} overnemen voor %{amount}; anders vallen zijn ritten de rest van de dag uit, met de boete uit het contract."
   de: "Er fuhr auf Linie %{n}; er kommt in die Werkstatt. Ein Mietbus kann seine Fahrten ab %{time} für %{amount} übernehmen; sonst fallen seine Fahrten für den Rest des Tages aus, mit der Vertragsstrafe."
+  da: "Den var på linje %{n}; den kommer på værkstedet. En lejebus kan overtage dens rejser fra kl. %{time} for %{amount}; ellers droppes dens rejser resten af dagen, med kontraktens bøde."
   fr: "Il roulait sur la ligne %{n} ; il part à l'atelier. Un bus de location peut reprendre ses courses à partir de %{time} pour %{amount} ; sinon ses courses sont supprimées pour le reste de la journée, avec la pénalité du contrat."
   ru: "Он был на линии %{n}; он едет в мастерскую. Арендный автобус может взять его рейсы с %{time} за %{amount}; иначе его рейсы до конца дня отменяются, со штрафом по договору."
   uk: "Він був на лінії %{n}; він їде до майстерні. Орендований автобус може взяти його рейси з %{time} за %{amount}; інакше його рейси до кінця дня скасовуються, зі штрафом за договором."
@@ -40571,6 +40806,7 @@ _version: 2
 "From now on the dispatcher decides":
   nl: "Voortaan beslist de dienstleider"
   de: "Ab jetzt entscheidet der Disponent"
+  da: "Fra nu af afgør trafiklederen"
   fr: "Désormais le régulateur décide"
   ru: "Отныне решает диспетчер"
   uk: "Відтепер вирішує диспетчер"
@@ -40578,6 +40814,7 @@ _version: 2
 "Drop its trips":
   nl: "Ritten laten uitvallen"
   de: "Fahrten ausfallen lassen"
+  da: "Drop dens rejser"
   fr: "Supprimer ses courses"
   ru: "Отменить его рейсы"
   uk: "Скасувати його рейси"
@@ -40585,6 +40822,7 @@ _version: 2
 "Rental bus, %{amount}":
   nl: "Huurbus, %{amount}"
   de: "Mietbus, %{amount}"
+  da: "Lejebus, %{amount}"
   fr: "Bus de location, %{amount}"
   ru: "Арендный автобус, %{amount}"
   uk: "Орендований автобус, %{amount}"
@@ -40592,6 +40830,7 @@ _version: 2
 "%{time}  Your bid for line %{n} is beaten":
   nl: "%{time}  Je bod op lijn %{n} is overboden"
   de: "%{time}  Dein Gebot für Linie %{n} wurde überboten"
+  da: "%{time}  Dit bud på linje %{n} er overbudt"
   fr: "%{time}  Votre offre pour la ligne %{n} est dépassée"
   ru: "%{time}  Вашу ставку на линию %{n} перебили"
   uk: "%{time}  Вашу ставку на лінію %{n} перебили"
@@ -40599,6 +40838,7 @@ _version: 2
 "%{time}  Line %{n} is out to tender":
   nl: "%{time}  Lijn %{n} wordt aanbesteed"
   de: "%{time}  Linie %{n} ist ausgeschrieben"
+  da: "%{time}  Linje %{n} er i udbud"
   fr: "%{time}  La ligne %{n} est mise en appel d'offres"
   ru: "%{time}  Линия %{n} выставлена на торги"
   uk: "%{time}  Лінію %{n} виставлено на торги"
@@ -40606,6 +40846,7 @@ _version: 2
 "Bids until %{time} (%{left} from now). The least bid now: %{amount}; buying it outright: %{buy}.":
   nl: "Bieden kan tot %{time} (nog %{left}). Het laagste bod nu: %{amount}; direct kopen: %{buy}."
   de: "Gebote bis %{time} (noch %{left}). Das niedrigste Gebot jetzt: %{amount}; sofort kaufen: %{buy}."
+  da: "Bud til kl. %{time} (%{left} fra nu). Det laveste bud nu: %{amount}; at købe den med det samme: %{buy}."
   fr: "Offres jusqu'à %{time} (encore %{left}). L'offre minimale maintenant : %{amount} ; achat immédiat : %{buy}."
   ru: "Ставки до %{time} (ещё %{left}). Минимальная ставка сейчас: %{amount}; выкуп сразу: %{buy}."
   uk: "Ставки до %{time} (ще %{left}). Мінімальна ставка зараз: %{amount}; викуп одразу: %{buy}."
@@ -40613,6 +40854,7 @@ _version: 2
 "%{who} bids %{amount}.":
   nl: "%{who} biedt %{amount}."
   de: "%{who} bietet %{amount}."
+  da: "%{who} byder %{amount}."
   fr: "%{who} offre %{amount}."
   ru: "%{who} ставит %{amount}."
   uk: "%{who} ставить %{amount}."
@@ -40620,6 +40862,7 @@ _version: 2
 "Let it go":
   nl: "Laat maar"
   de: "Sein lassen"
+  da: "Lad den gå"
   fr: "Laisser filer"
   ru: "Отказаться"
   uk: "Відмовитися"
@@ -40627,6 +40870,7 @@ _version: 2
 "Go on":
   nl: "Verder"
   de: "Weiter"
+  da: "Fortsæt"
   fr: "Continuer"
   ru: "Дальше"
   uk: "Далі"
@@ -40634,6 +40878,7 @@ _version: 2
 "To the auction":
   nl: "Naar de veiling"
   de: "Zur Auktion"
+  da: "Til auktionen"
   fr: "Vers l'enchère"
   ru: "К торгам"
   uk: "До торгів"
@@ -40641,6 +40886,7 @@ _version: 2
 "%{time}  The morning":
   nl: "%{time}  De ochtend"
   de: "%{time}  Der Morgen"
+  da: "%{time}  Morgenen"
   fr: "%{time}  Le matin"
   ru: "%{time}  Утро"
   uk: "%{time}  Ранок"
@@ -40648,6 +40894,7 @@ _version: 2
 "%{n} things fell out this morning: drivers late, buses that did not start. The central fills them as it can; the planning shows them and lets you choose.":
   nl: "Vanochtend viel er %{n} keer iets uit: chauffeurs te laat, bussen die niet startten. De centrale vult het in waar ze kan; de planning toont het en laat je kiezen."
   de: "Heute Morgen ist %{n}-mal etwas ausgefallen: Fahrer zu spät, Busse, die nicht ansprangen. Die Zentrale füllt es, so gut sie kann; die Planung zeigt es und lässt dich wählen."
+  da: "%{n} ting gik galt i morges: chauffører for sent, busser, der ikke startede. Kontrolrummet udfylder dem, så godt det kan; planlægningen viser dem og lader dig vælge."
   fr: "Ce matin, %{n} choses ont manqué : des conducteurs en retard, des bus qui n'ont pas démarré. Le central comble comme il peut ; la planification les montre et vous laisse choisir."
   ru: "Этим утром выпало %{n}: опоздавшие водители, незаводившиеся автобусы. Центральная служба закрывает, что может; планирование показывает это и даёт выбрать."
   uk: "Цього ранку випало %{n}: водії запізнилися, автобуси не завелися. Центральна служба закриває, що може; планування показує це й дає вибрати."
@@ -40655,6 +40902,7 @@ _version: 2
 "Open the planning":
   nl: "Open de planning"
   de: "Planung öffnen"
+  da: "Åbn planlægningen"
   fr: "Ouvrir la planification"
   ru: "Открыть планирование"
   uk: "Відкрити планування"
@@ -40662,6 +40910,7 @@ _version: 2
 "Opens %{when}":
   nl: "Opent %{when}"
   de: "Öffnet %{when}"
+  da: "Åbner %{when}"
   fr: "Ouvre %{when}"
   ru: "Открывается %{when}"
   uk: "Відкривається %{when}"
@@ -40669,6 +40918,7 @@ _version: 2
 "you lead with %{amount}":
   nl: "jij staat voor met %{amount}"
   de: "du führst mit %{amount}"
+  da: "du fører med %{amount}"
   fr: "vous menez avec %{amount}"
   ru: "вы лидируете с %{amount}"
   uk: "ви лідируєте з %{amount}"
@@ -40676,6 +40926,7 @@ _version: 2
 "%{who} leads with %{amount}":
   nl: "%{who} staat voor met %{amount}"
   de: "%{who} führt mit %{amount}"
+  da: "%{who} fører med %{amount}"
   fr: "%{who} mène avec %{amount}"
   ru: "%{who} лидирует с %{amount}"
   uk: "%{who} лідирує з %{amount}"
@@ -40683,6 +40934,7 @@ _version: 2
 "Running until %{time}":
   nl: "Loopt tot %{time}"
   de: "Läuft bis %{time}"
+  da: "Løber til kl. %{time}"
   fr: "En cours jusqu'à %{time}"
   ru: "Идут до %{time}"
   uk: "Тривають до %{time}"
@@ -40690,6 +40942,7 @@ _version: 2
 "Bought for %{amount}":
   nl: "Gekocht voor %{amount}"
   de: "Gekauft für %{amount}"
+  da: "Købt for %{amount}"
   fr: "Achetée pour %{amount}"
   ru: "Выкуплена за %{amount}"
   uk: "Викуплено за %{amount}"
@@ -40697,6 +40950,7 @@ _version: 2
 "Won for %{amount}":
   nl: "Gewonnen voor %{amount}"
   de: "Gewonnen für %{amount}"
+  da: "Vundet for %{amount}"
   fr: "Gagnée pour %{amount}"
   ru: "Выиграна за %{amount}"
   uk: "Виграно за %{amount}"
@@ -40704,6 +40958,7 @@ _version: 2
 "Lost to %{who} for %{amount}":
   nl: "Verloren aan %{who} voor %{amount}"
   de: "An %{who} verloren für %{amount}"
+  da: "Tabt til %{who} for %{amount}"
   fr: "Perdue face à %{who} pour %{amount}"
   ru: "Проиграна %{who} за %{amount}"
   uk: "Програно %{who} за %{amount}"
@@ -40711,6 +40966,7 @@ _version: 2
 "Went to %{who} for %{amount}":
   nl: "Naar %{who} voor %{amount}"
   de: "An %{who} für %{amount}"
+  da: "Gik til %{who} for %{amount}"
   fr: "Attribuée à %{who} pour %{amount}"
   ru: "Досталась %{who} за %{amount}"
   uk: "Дісталася %{who} за %{amount}"
@@ -40718,6 +40974,7 @@ _version: 2
 "Nobody bid":
   nl: "Niemand bood"
   de: "Niemand hat geboten"
+  da: "Ingen bød"
   fr: "Personne n'a fait d'offre"
   ru: "Никто не сделал ставку"
   uk: "Ніхто не зробив ставку"
@@ -40725,6 +40982,7 @@ _version: 2
 "An auction runs a few hours of the company's time; the best offer when it closes wins, weighed with the bidder's name - yours is %{q} of 100, from your reputation and punctuality.":
   nl: "Een veiling duurt een paar uur bedrijfstijd; het beste bod bij het sluiten wint, gewogen met de naam van de bieder - de jouwe is %{q} van 100, uit je reputatie en stiptheid."
   de: "Eine Auktion dauert ein paar Stunden Firmenzeit; das beste Gebot beim Schluss gewinnt, gewichtet mit dem Ruf des Bieters - deiner ist %{q} von 100, aus Ruf und Pünktlichkeit."
+  da: "En auktion løber nogle timer af selskabets tid; det bedste tilbud, når den lukker, vinder, vejet med budgiverens navn - dit er %{q} af 100, ud fra dit omdømme og din punktlighed."
   fr: "Une enchère dure quelques heures du temps de l'entreprise ; la meilleure offre à la clôture gagne, pondérée par le nom de l'enchérisseur - le vôtre vaut %{q} sur 100, d'après votre réputation et votre ponctualité."
   ru: "Торги длятся несколько часов времени компании; побеждает лучшая ставка на момент закрытия с учётом имени участника - ваше %{q} из 100, по репутации и пунктуальности."
   uk: "Торги тривають кілька годин часу компанії; перемагає найкраща ставка на момент закриття з урахуванням імені учасника - ваше %{q} зі 100, за репутацією та пунктуальністю."
@@ -40732,6 +40990,7 @@ _version: 2
 "live":
   nl: "live"
   de: "live"
+  da: "live"
   fr: "en direct"
   ru: "идут"
   uk: "тривають"
@@ -40739,6 +40998,7 @@ _version: 2
 "from %{date}":
   nl: "vanaf %{date}"
   de: "ab %{date}"
+  da: "fra %{date}"
   fr: "à partir du %{date}"
   ru: "с %{date}"
   uk: "з %{date}"
@@ -40746,6 +41006,7 @@ _version: 2
 "Auction":
   nl: "Veiling"
   de: "Auktion"
+  da: "Auktion"
   fr: "Enchère"
   ru: "Торги"
   uk: "Торги"
@@ -40753,6 +41014,7 @@ _version: 2
 "Pick a tender on the left: its auction is shown here as it runs.":
   nl: "Kies links een aanbesteding: de veiling staat hier terwijl ze loopt."
   de: "Wähle links eine Ausschreibung: ihre Auktion erscheint hier, während sie läuft."
+  da: "Vælg et udbud til venstre: dets auktion vises her, mens den kører."
   fr: "Choisissez un appel d'offres à gauche : son enchère s'affiche ici pendant qu'elle se déroule."
   ru: "Выберите торги слева: они показываются здесь по ходу."
   uk: "Виберіть торги ліворуч: вони показуються тут по ходу."
@@ -40760,6 +41022,7 @@ _version: 2
 "The line's worth":
   nl: "Waarde van de lijn"
   de: "Wert der Linie"
+  da: "Linjens værdi"
   fr: "Valeur de la ligne"
   ru: "Стоимость линии"
   uk: "Вартість лінії"
@@ -40767,6 +41030,7 @@ _version: 2
 "Least bid now":
   nl: "Laagste bod nu"
   de: "Mindestgebot jetzt"
+  da: "Laveste bud nu"
   fr: "Offre minimale"
   ru: "Мин. ставка сейчас"
   uk: "Мін. ставка зараз"
@@ -40774,6 +41038,7 @@ _version: 2
 "Buy outright":
   nl: "Direct kopen"
   de: "Sofort kaufen"
+  da: "Køb med det samme"
   fr: "Achat immédiat"
   ru: "Выкуп сразу"
   uk: "Викуп одразу"
@@ -40781,6 +41046,7 @@ _version: 2
 "Closed at %{when}":
   nl: "Gesloten om %{when}"
   de: "Geschlossen um %{when}"
+  da: "Lukkede %{when}"
   fr: "Clôturée à %{when}"
   ru: "Закрыты в %{when}"
   uk: "Закрито о %{when}"
@@ -40788,6 +41054,7 @@ _version: 2
 "Opens %{when}, runs %{len}":
   nl: "Opent %{when}, duurt %{len}"
   de: "Öffnet %{when}, dauert %{len}"
+  da: "Åbner %{when}, løber %{len}"
   fr: "Ouvre %{when}, dure %{len}"
   ru: "Откроются %{when}, продлятся %{len}"
   uk: "Відкриються %{when}, триватимуть %{len}"
@@ -40795,6 +41062,7 @@ _version: 2
 "Closes at %{time}: %{left} left":
   nl: "Sluit om %{time}: nog %{left}"
   de: "Schließt um %{time}: noch %{left}"
+  da: "Lukker kl. %{time}: %{left} tilbage"
   fr: "Clôture à %{time} : encore %{left}"
   ru: "Закроются в %{time}: осталось %{left}"
   uk: "Закриються о %{time}: залишилось %{left}"
@@ -40802,6 +41070,7 @@ _version: 2
 "your name counts ×%{w}":
   nl: "je naam telt ×%{w}"
   de: "dein Ruf zählt ×%{w}"
+  da: "dit navn tæller ×%{w}"
   fr: "votre nom compte ×%{w}"
   ru: "ваше имя весит ×%{w}"
   uk: "ваше ім'я важить ×%{w}"
@@ -40809,6 +41078,7 @@ _version: 2
 "no bid":
   nl: "geen bod"
   de: "kein Gebot"
+  da: "intet bud"
   fr: "pas d'offre"
   ru: "нет ставки"
   uk: "немає ставки"
@@ -40816,6 +41086,7 @@ _version: 2
 "Bids":
   nl: "Biedingen"
   de: "Gebote"
+  da: "Bud"
   fr: "Offres"
   ru: "Ставки"
   uk: "Ставки"
@@ -40823,6 +41094,7 @@ _version: 2
 "No bid yet.":
   nl: "Nog geen bod."
   de: "Noch kein Gebot."
+  da: "Intet bud endnu."
   fr: "Pas encore d'offre."
   ru: "Ставок пока нет."
   uk: "Ставок поки немає."
@@ -40830,6 +41102,7 @@ _version: 2
 "Your bid":
   nl: "Jouw bod"
   de: "Dein Gebot"
+  da: "Dit bud"
   fr: "Votre offre"
   ru: "Ваша ставка"
   uk: "Ваша ставка"
@@ -40837,6 +41110,7 @@ _version: 2
 "Chance to win, as it looks now: about %{p} %":
   nl: "Kans om te winnen, zoals het er nu uitziet: ongeveer %{p} %"
   de: "Gewinnchance, wie es jetzt aussieht: etwa %{p} %"
+  da: "Chance for at vinde, som det ser ud nu: ca. %{p} %"
   fr: "Chance de gagner, en l'état : environ %{p} %"
   ru: "Шанс на победу на сейчас: около %{p} %"
   uk: "Шанс на перемогу зараз: близько %{p} %"
@@ -40844,6 +41118,7 @@ _version: 2
 "taking part costs %{amount}":
   nl: "meedoen kost %{amount}"
   de: "Teilnahme kostet %{amount}"
+  da: "at deltage koster %{amount}"
   fr: "participer coûte %{amount}"
   ru: "участие стоит %{amount}"
   uk: "участь коштує %{amount}"
@@ -40851,6 +41126,7 @@ _version: 2
 "Bid %{amount}":
   nl: "Bied %{amount}"
   de: "%{amount} bieten"
+  da: "Byd %{amount}"
   fr: "Offrir %{amount}"
   ru: "Ставка %{amount}"
   uk: "Ставка %{amount}"
@@ -40858,6 +41134,7 @@ _version: 2
 "Your bid is in. The rivals answer as the clock goes on.":
   nl: "Je bod staat. De concurrenten reageren naarmate de klok verder loopt."
   de: "Dein Gebot steht. Die Konkurrenz antwortet, während die Uhr weiterläuft."
+  da: "Dit bud er afgivet. Konkurrenterne svarer, efterhånden som uret går."
   fr: "Votre offre est déposée. Les concurrents répondent à mesure que l'horloge avance."
   ru: "Ставка принята. Конкуренты ответят по ходу времени."
   uk: "Ставку прийнято. Конкуренти відповідатимуть з плином часу."
@@ -40865,6 +41142,7 @@ _version: 2
 "Buy outright, %{amount}":
   nl: "Direct kopen, %{amount}"
   de: "Sofort kaufen, %{amount}"
+  da: "Køb med det samme, %{amount}"
   fr: "Achat immédiat, %{amount}"
   ru: "Выкупить, %{amount}"
   uk: "Викупити, %{amount}"
@@ -40872,6 +41150,7 @@ _version: 2
 "Line %{n} is yours: it runs from tomorrow.":
   nl: "Lijn %{n} is van jou: hij rijdt vanaf morgen."
   de: "Linie %{n} gehört dir: sie fährt ab morgen."
+  da: "Linje %{n} er din: den kører fra i morgen."
   fr: "La ligne %{n} est à vous : elle roule dès demain."
   ru: "Линия %{n} ваша: она работает с завтрашнего дня."
   uk: "Лінія %{n} ваша: вона працює з завтрашнього дня."
@@ -40879,6 +41158,7 @@ _version: 2
 "Certain: the auction ends at once in your favour":
   nl: "Zeker: de veiling eindigt meteen in jouw voordeel"
   de: "Sicher: die Auktion endet sofort zu deinen Gunsten"
+  da: "Sikkert: auktionen slutter med det samme til din fordel"
   fr: "Certain : l'enchère se termine aussitôt en votre faveur"
   ru: "Наверняка: торги сразу заканчиваются в вашу пользу"
   uk: "Напевно: торги одразу закінчуються на вашу користь"
@@ -40886,6 +41166,7 @@ _version: 2
 "To its close":
   nl: "Tot het sluiten"
   de: "Bis zum Schluss"
+  da: "Til dens lukning"
   fr: "Jusqu'à la clôture"
   ru: "До закрытия"
   uk: "До закриття"
@@ -40893,6 +41174,7 @@ _version: 2
 "Simulate until it opens":
   nl: "Simuleer tot ze opent"
   de: "Bis zur Öffnung simulieren"
+  da: "Simulér, til den åbner"
   fr: "Simuler jusqu'à l'ouverture"
   ru: "Симулировать до открытия"
   uk: "Симулювати до відкриття"
@@ -40900,6 +41182,7 @@ _version: 2
 "%{who} won the line for %{amount}.":
   nl: "%{who} won de lijn voor %{amount}."
   de: "%{who} hat die Linie für %{amount} gewonnen."
+  da: "%{who} vandt linjen for %{amount}."
   fr: "%{who} a remporté la ligne pour %{amount}."
   ru: "%{who} выиграл линию за %{amount}."
   uk: "%{who} виграв лінію за %{amount}."
@@ -40907,6 +41190,7 @@ _version: 2
 "The company runs the line from %{date}.":
   nl: "Het bedrijf rijdt de lijn vanaf %{date}."
   de: "Die Firma fährt die Linie ab %{date}."
+  da: "Selskabet kører linjen fra %{date}."
   fr: "L'entreprise exploite la ligne à partir du %{date}."
   ru: "Компания обслуживает линию с %{date}."
   uk: "Компанія обслуговує лінію з %{date}."
@@ -40914,6 +41198,7 @@ _version: 2
 "The concession runs until %{date}.":
   nl: "De concessie loopt tot %{date}."
   de: "Die Konzession läuft bis %{date}."
+  da: "Koncessionen løber til %{date}."
   fr: "La concession court jusqu'au %{date}."
   ru: "Концессия действует до %{date}."
   uk: "Концесія діє до %{date}."
@@ -40921,6 +41206,7 @@ _version: 2
 "aggressive":
   nl: "agressief"
   de: "aggressiv"
+  da: "aggressiv"
   fr: "agressif"
   ru: "агрессивный"
   uk: "агресивний"
@@ -40928,6 +41214,7 @@ _version: 2
 "cautious":
   nl: "voorzichtig"
   de: "vorsichtig"
+  da: "forsigtig"
   fr: "prudent"
   ru: "осторожный"
   uk: "обережний"
@@ -40935,6 +41222,7 @@ _version: 2
 "big":
   nl: "groot"
   de: "groß"
+  da: "stor"
   fr: "grand"
   ru: "крупный"
   uk: "великий"
@@ -40942,6 +41230,7 @@ _version: 2
 "small":
   nl: "klein"
   de: "klein"
+  da: "lille"
   fr: "petit"
   ru: "небольшой"
   uk: "невеликий"
@@ -40949,6 +41238,7 @@ _version: 2
 "%{n} timetables of the map are no lines of their own (depot and empty runs, specials): they go with the tours that need them.":
   nl: "%{n} dienstregelingen van de kaart zijn geen eigen lijnen (depotritten, leegritten, bijzondere): ze horen bij de omlopen die ze nodig hebben."
   de: "%{n} Fahrpläne der Karte sind keine eigenen Linien (Betriebs- und Leerfahrten, Sonderverkehre): sie gehören zu den Umläufen, die sie brauchen."
+  da: "%{n} køreplaner på kortet er ikke egne linjer (depot- og tomkørsler, specialture): de følger med de ture, der har brug for dem."
   fr: "%{n} horaires de la carte ne sont pas des lignes à part (haut-le-pied, dépôt, services spéciaux) : ils vont avec les services qui en ont besoin."
   ru: "%{n} расписаний карты не являются отдельными линиями (служебные и порожние рейсы, особые): они относятся к оборотам, которым нужны."
   uk: "%{n} розкладів мапи не є окремими лініями (службові та порожні рейси, особливі): вони належать до обертів, яким потрібні."
@@ -40956,6 +41246,7 @@ _version: 2
 "\"Simulate to tomorrow\" at the top runs the rest of the day and closes it at midnight: the tours are run, the money booked, and the next day begins. What you drove yourself on the company's lines counts as measured.":
   nl: "\"Simuleer tot morgen\" bovenaan speelt de rest van de dag af en sluit hem om middernacht: de omlopen worden gereden, het geld geboekt en de volgende dag begint. Wat je zelf op de lijnen van het bedrijf reed, telt als gemeten."
   de: "\"Bis morgen simulieren\" oben spielt den Rest des Tages ab und schließt ihn um Mitternacht: die Umläufe werden gefahren, das Geld gebucht, und der nächste Tag beginnt. Was du selbst auf den Linien der Firma gefahren bist, zählt als gemessen."
+  da: "\"Simulér til i morgen\" øverst kører resten af dagen og afslutter den ved midnat: turene køres, pengene bogføres, og den næste dag begynder. Det, du selv kørte på selskabets linjer, tæller som målt."
   fr: "« Simuler jusqu'à demain » en haut déroule le reste de la journée et la clôture à minuit : les services roulent, l'argent est comptabilisé et le jour suivant commence. Ce que vous avez conduit vous-même sur les lignes de l'entreprise compte comme mesuré."
   ru: "«Симулировать до завтра» вверху проигрывает остаток дня и закрывает его в полночь: обороты выполняются, деньги учитываются, начинается следующий день. То, что вы проехали сами на линиях компании, считается измеренным."
   uk: "«Симулювати до завтра» вгорі програє решту дня й закриває його опівночі: оберти виконуються, гроші обліковуються, починається наступний день. Те, що ви проїхали самі на лініях компанії, вважається виміряним."
@@ -40963,6 +41254,7 @@ _version: 2
 "Live: the company's time":
   nl: "Live: de tijd van het bedrijf"
   de: "Live: die Zeit der Firma"
+  da: "Live: selskabets tid"
   fr: "En direct : l'heure de l'entreprise"
   ru: "В реальном времени: время компании"
   uk: "Наживо: час компанії"
@@ -40970,6 +41262,7 @@ _version: 2
 "Simulating the company's time…":
   nl: "De tijd van het bedrijf wordt gesimuleerd…"
   de: "Die Zeit der Firma wird simuliert…"
+  da: "Simulerer selskabets tid…"
   fr: "Simulation du temps de l'entreprise…"
   ru: "Симуляция времени компании…"
   uk: "Симуляція часу компанії…"
@@ -40977,6 +41270,7 @@ _version: 2
 "This tender has not opened yet.":
   nl: "Deze aanbesteding is nog niet open."
   de: "Diese Ausschreibung ist noch nicht offen."
+  da: "Dette udbud er endnu ikke åbnet."
   fr: "Cet appel d'offres n'est pas encore ouvert."
   ru: "Эти торги ещё не открылись."
   uk: "Ці торги ще не відкрилися."
@@ -40984,6 +41278,7 @@ _version: 2
 "Another bid leads with more: bid at least the least shown.":
   nl: "Een ander bod staat voor met meer: bied minstens het getoonde minimum."
   de: "Ein anderes Gebot führt mit mehr: biete mindestens das angezeigte Minimum."
+  da: "Et andet bud fører med mere: byd mindst det viste laveste."
   fr: "Une autre offre mène avec plus : offrez au moins le minimum affiché."
   ru: "Лидирует другая ставка: поставьте не меньше показанного минимума."
   uk: "Лідирує інша ставка: поставте не менше показаного мінімуму."
@@ -40991,6 +41286,7 @@ _version: 2
 "That is the buy-out price: buy the line instead.":
   nl: "Dat is de koopprijs: koop de lijn dan direct."
   de: "Das ist der Sofortkaufpreis: kauf die Linie lieber gleich."
+  da: "Det er købsprisen: køb i stedet linjen."
   fr: "C'est le prix d'achat immédiat : achetez plutôt la ligne."
   ru: "Это цена выкупа: лучше выкупите линию."
   uk: "Це ціна викупу: краще викупіть лінію."
@@ -40998,6 +41294,7 @@ _version: 2
 "This is no line of its own: depot and empty runs go with the tours that need them.":
   nl: "Dit is geen eigen lijn: depot- en leegritten horen bij de omlopen die ze nodig hebben."
   de: "Das ist keine eigene Linie: Betriebs- und Leerfahrten gehören zu den Umläufen, die sie brauchen."
+  da: "Dette er ikke en egen linje: depot- og tomkørsler følger med de ture, der har brug for dem."
   fr: "Ce n'est pas une ligne à part : les trajets haut-le-pied vont avec les services qui en ont besoin."
   ru: "Это не отдельная линия: служебные и порожние рейсы относятся к оборотам, которым нужны."
   uk: "Це не окрема лінія: службові та порожні рейси належать до обертів, яким потрібні."
@@ -41005,6 +41302,7 @@ _version: 2
 "Bus %{bus} goes to its service today":
   nl: "Bus %{bus} gaat vandaag voor onderhoud"
   de: "Bus %{bus} geht heute zur Wartung"
+  da: "Bus %{bus} kommer til service i dag"
   fr: "Le bus %{bus} part en entretien aujourd'hui"
   ru: "Автобус %{bus} сегодня идёт на ТО"
   uk: "Автобус %{bus} сьогодні йде на ТО"
@@ -41012,6 +41310,7 @@ _version: 2
 "%{bus} %{name} went back":
   nl: "%{bus} %{name} is teruggegaan"
   de: "%{bus} %{name} ist zurückgegangen"
+  da: "%{bus} %{name} blev afleveret"
   fr: "%{bus} %{name} a été rendu"
   ru: "%{bus} %{name} возвращён"
   uk: "%{bus} %{name} повернуто"
@@ -41019,6 +41318,7 @@ _version: 2
 "The month %{month} was closed: %{amount}":
   nl: "De maand %{month} is afgesloten: %{amount}"
   de: "Der Monat %{month} wurde abgeschlossen: %{amount}"
+  da: "Måneden %{month} blev afsluttet: %{amount}"
   fr: "Le mois %{month} a été clôturé : %{amount}"
   ru: "Месяц %{month} закрыт: %{amount}"
   uk: "Місяць %{month} закрито: %{amount}"
@@ -41026,6 +41326,7 @@ _version: 2
 "Building work finished: %{area}":
   nl: "Bouwwerk klaar: %{area}"
   de: "Bauarbeiten fertig: %{area}"
+  da: "Byggearbejde færdigt: %{area}"
   fr: "Travaux terminés : %{area}"
   ru: "Строительство завершено: %{area}"
   uk: "Будівництво завершено: %{area}"
@@ -41033,6 +41334,7 @@ _version: 2
 "Bus %{bus} waits for a free workshop bay":
   nl: "Bus %{bus} wacht op een vrije werkplaatsplek"
   de: "Bus %{bus} wartet auf einen freien Werkstattplatz"
+  da: "Bus %{bus} venter på en ledig værkstedsplads"
   fr: "Le bus %{bus} attend une place libre à l'atelier"
   ru: "Автобус %{bus} ждёт свободного места в мастерской"
   uk: "Автобус %{bus} чекає вільного місця в майстерні"
@@ -41040,6 +41342,7 @@ _version: 2
 "The concession of line %{n} runs until %{date}":
   nl: "De concessie van lijn %{n} loopt tot %{date}"
   de: "Die Konzession der Linie %{n} läuft bis %{date}"
+  da: "Koncessionen på linje %{n} løber til %{date}"
   fr: "La concession de la ligne %{n} court jusqu'au %{date}"
   ru: "Концессия линии %{n} действует до %{date}"
   uk: "Концесія лінії %{n} діє до %{date}"
@@ -41047,6 +41350,7 @@ _version: 2
 "Line %{n} is no longer the company's: its concession ended":
   nl: "Lijn %{n} is niet meer van het bedrijf: de concessie is afgelopen"
   de: "Linie %{n} gehört nicht mehr der Firma: ihre Konzession ist abgelaufen"
+  da: "Linje %{n} er ikke længere selskabets: dens koncession udløb"
   fr: "La ligne %{n} n'est plus à l'entreprise : sa concession a pris fin"
   ru: "Линия %{n} больше не принадлежит компании: концессия закончилась"
   uk: "Лінія %{n} більше не належить компанії: концесія закінчилася"
@@ -41054,6 +41358,7 @@ _version: 2
 "%{name} called in sick, until %{date}":
   nl: "%{name} heeft zich ziek gemeld, tot %{date}"
   de: "%{name} hat sich krank gemeldet, bis %{date}"
+  da: "%{name} meldte sig syg til %{date}"
   fr: "%{name} s'est déclaré malade, jusqu'au %{date}"
   ru: "%{name} на больничном до %{date}"
   uk: "%{name} на лікарняному до %{date}"
@@ -41061,6 +41366,7 @@ _version: 2
 "%{name} is on holiday until %{date}":
   nl: "%{name} heeft vakantie tot %{date}"
   de: "%{name} hat Urlaub bis %{date}"
+  da: "%{name} har ferie til %{date}"
   fr: "%{name} est en congé jusqu'au %{date}"
   ru: "%{name} в отпуске до %{date}"
   uk: "%{name} у відпустці до %{date}"
@@ -41068,6 +41374,7 @@ _version: 2
 "%{name} handed in their notice: leaves on %{date}":
   nl: "%{name} heeft ontslag genomen: vertrekt op %{date}"
   de: "%{name} hat gekündigt: geht am %{date}"
+  da: "%{name} sagde op: forlader selskabet den %{date}"
   fr: "%{name} a donné sa démission : part le %{date}"
   ru: "%{name} подал(а) заявление: уходит %{date}"
   uk: "%{name} подав(ла) заяву: іде %{date}"
@@ -41075,6 +41382,7 @@ _version: 2
 "%{name} is unhappy":
   nl: "%{name} is ontevreden"
   de: "%{name} ist unzufrieden"
+  da: "%{name} er utilfreds"
   fr: "%{name} est mécontent(e)"
   ru: "%{name} недоволен(ьна)"
   uk: "%{name} незадоволений(а)"
@@ -41082,6 +41390,7 @@ _version: 2
 "%{name} left the company":
   nl: "%{name} heeft het bedrijf verlaten"
   de: "%{name} hat die Firma verlassen"
+  da: "%{name} forlod selskabet"
   fr: "%{name} a quitté l'entreprise"
   ru: "%{name} покинул(а) компанию"
   uk: "%{name} залишив(ла) компанію"
@@ -41089,6 +41398,7 @@ _version: 2
 "A rental bus takes over the trips of bus %{bus} on line %{n} from %{time}":
   nl: "Een huurbus neemt de ritten van bus %{bus} op lijn %{n} over vanaf %{time}"
   de: "Ein Mietbus übernimmt die Fahrten von Bus %{bus} auf Linie %{n} ab %{time}"
+  da: "En lejebus overtager bus %{bus}s rejser på linje %{n} fra kl. %{time}"
   fr: "Un bus de location reprend les courses du bus %{bus} sur la ligne %{n} à partir de %{time}"
   ru: "Арендный автобус берёт рейсы автобуса %{bus} на линии %{n} с %{time}"
   uk: "Орендований автобус бере рейси автобуса %{bus} на лінії %{n} з %{time}"
@@ -41096,6 +41406,7 @@ _version: 2
 "The trips of bus %{bus} on line %{n} are dropped for the rest of the day":
   nl: "De ritten van bus %{bus} op lijn %{n} vallen de rest van de dag uit"
   de: "Die Fahrten von Bus %{bus} auf Linie %{n} fallen für den Rest des Tages aus"
+  da: "Bus %{bus}s rejser på linje %{n} droppes resten af dagen"
   fr: "Les courses du bus %{bus} sur la ligne %{n} sont supprimées pour le reste de la journée"
   ru: "Рейсы автобуса %{bus} на линии %{n} отменены до конца дня"
   uk: "Рейси автобуса %{bus} на лінії %{n} скасовано до кінця дня"
@@ -41103,6 +41414,7 @@ _version: 2
 "Line %{n} tour %{tour} sets off with a rental bus":
   nl: "Lijn %{n} omloop %{tour} vertrekt met een huurbus"
   de: "Linie %{n} Umlauf %{tour} fährt mit einem Mietbus los"
+  da: "Linje %{n} tur %{tour} afgår med en lejebus"
   fr: "Ligne %{n} service %{tour} part avec un bus de location"
   ru: "Линия %{n}, оборот %{tour} выходит на арендном автобусе"
   uk: "Лінія %{n}, оберт %{tour} виходить на орендованому автобусі"
@@ -41110,6 +41422,7 @@ _version: 2
 "Line %{n} tour %{tour} sets off with bus %{bus} and an agency driver":
   nl: "Lijn %{n} omloop %{tour} vertrekt met bus %{bus} en een uitzendchauffeur"
   de: "Linie %{n} Umlauf %{tour} fährt mit Bus %{bus} und einem Leihfahrer los"
+  da: "Linje %{n} tur %{tour} afgår med bus %{bus} og en vikarchauffør"
   fr: "Ligne %{n} service %{tour} part avec le bus %{bus} et un conducteur intérimaire"
   ru: "Линия %{n}, оборот %{tour} выходит на автобусе %{bus} с водителем из агентства"
   uk: "Лінія %{n}, оберт %{tour} виходить на автобусі %{bus} з водієм з агентства"
@@ -41117,6 +41430,7 @@ _version: 2
 "Line %{n} tour %{tour} sets off with bus %{bus}: your duty":
   nl: "Lijn %{n} omloop %{tour} vertrekt met bus %{bus}: jouw dienst"
   de: "Linie %{n} Umlauf %{tour} fährt mit Bus %{bus} los: dein Dienst"
+  da: "Linje %{n} tur %{tour} afgår med bus %{bus}: din vagt"
   fr: "Ligne %{n} service %{tour} part avec le bus %{bus} : votre service"
   ru: "Линия %{n}, оборот %{tour} выходит на автобусе %{bus}: ваша смена"
   uk: "Лінія %{n}, оберт %{tour} виходить на автобусі %{bus}: ваша зміна"
@@ -41124,6 +41438,7 @@ _version: 2
 "Line %{n} tour %{tour} sets off with bus %{bus}, %{name}":
   nl: "Lijn %{n} omloop %{tour} vertrekt met bus %{bus}, %{name}"
   de: "Linie %{n} Umlauf %{tour} fährt mit Bus %{bus} los, %{name}"
+  da: "Linje %{n} tur %{tour} afgår med bus %{bus}, %{name}"
   fr: "Ligne %{n} service %{tour} part avec le bus %{bus}, %{name}"
   ru: "Линия %{n}, оборот %{tour} выходит на автобусе %{bus}, %{name}"
   uk: "Лінія %{n}, оберт %{tour} виходить на автобусі %{bus}, %{name}"
@@ -41131,6 +41446,7 @@ _version: 2
 "Line %{n} tour %{tour} is back in the depot":
   nl: "Lijn %{n} omloop %{tour} is terug in de remise"
   de: "Linie %{n} Umlauf %{tour} ist zurück im Betriebshof"
+  da: "Linje %{n} tur %{tour} er tilbage i depotet"
   fr: "Ligne %{n} service %{tour} est rentré au dépôt"
   ru: "Линия %{n}, оборот %{tour} вернулся в парк"
   uk: "Лінія %{n}, оберт %{tour} повернувся в парк"
@@ -41138,6 +41454,7 @@ _version: 2
 "Line %{n} tour %{tour} does not run: %{why}":
   nl: "Lijn %{n} omloop %{tour} rijdt niet: %{why}"
   de: "Linie %{n} Umlauf %{tour} fährt nicht: %{why}"
+  da: "Linje %{n} tur %{tour} kører ikke: %{why}"
   fr: "Ligne %{n} service %{tour} ne roule pas : %{why}"
   ru: "Линия %{n}, оборот %{tour} не выходит: %{why}"
   uk: "Лінія %{n}, оберт %{tour} не виходить: %{why}"
@@ -41145,6 +41462,7 @@ _version: 2
 "%{name} comes %{min} minutes late for line %{n} tour %{tour}":
   nl: "%{name} komt %{min} minuten te laat voor lijn %{n} omloop %{tour}"
   de: "%{name} kommt %{min} Minuten zu spät zu Linie %{n} Umlauf %{tour}"
+  da: "%{name} kommer %{min} minutter for sent til linje %{n} tur %{tour}"
   fr: "%{name} arrive avec %{min} minutes de retard pour la ligne %{n} service %{tour}"
   ru: "%{name} опаздывает на %{min} мин к линии %{n}, оборот %{tour}"
   uk: "%{name} запізнюється на %{min} хв до лінії %{n}, оберт %{tour}"
@@ -41152,6 +41470,7 @@ _version: 2
 "Bus %{bus} does not start this morning: towed, %{amount}":
   nl: "Bus %{bus} start vanochtend niet: weggesleept, %{amount}"
   de: "Bus %{bus} springt heute Morgen nicht an: abgeschleppt, %{amount}"
+  da: "Bus %{bus} starter ikke i morges: bugseret, %{amount}"
   fr: "Le bus %{bus} ne démarre pas ce matin : remorqué, %{amount}"
   ru: "Автобус %{bus} утром не завёлся: эвакуирован, %{amount}"
   uk: "Автобус %{bus} зранку не завівся: евакуйовано, %{amount}"
@@ -41159,6 +41478,7 @@ _version: 2
 "Bus %{bus} broke down on line %{n}":
   nl: "Bus %{bus} kreeg pech op lijn %{n}"
   de: "Bus %{bus} hatte eine Panne auf Linie %{n}"
+  da: "Bus %{bus} brød sammen på linje %{n}"
   fr: "Le bus %{bus} est tombé en panne sur la ligne %{n}"
   ru: "Автобус %{bus} сломался на линии %{n}"
   uk: "Автобус %{bus} зламався на лінії %{n}"
@@ -41166,6 +41486,7 @@ _version: 2
 "Bus %{bus}: %{job} done, back on the road tomorrow":
   nl: "Bus %{bus}: %{job} klaar, morgen weer op de weg"
   de: "Bus %{bus}: %{job} fertig, morgen wieder auf der Straße"
+  da: "Bus %{bus}: %{job} udført, tilbage på vejen i morgen"
   fr: "Bus %{bus} : %{job} terminé, de retour sur la route demain"
   ru: "Автобус %{bus}: %{job} выполнено, завтра снова на линии"
   uk: "Автобус %{bus}: %{job} виконано, завтра знову на лінії"
@@ -41173,6 +41494,7 @@ _version: 2
 "%{name} works their last day today":
   nl: "%{name} werkt vandaag de laatste dag"
   de: "%{name} hat heute den letzten Arbeitstag"
+  da: "%{name} arbejder sin sidste dag i dag"
   fr: "%{name} travaille aujourd'hui son dernier jour"
   ru: "У %{name} сегодня последний рабочий день"
   uk: "У %{name} сьогодні останній робочий день"
@@ -41180,6 +41502,7 @@ _version: 2
 "The renewal of line %{n} is out to tender: bids until %{time}":
   nl: "De verlenging van lijn %{n} wordt aanbesteed: bieden tot %{time}"
   de: "Die Verlängerung der Linie %{n} ist ausgeschrieben: Gebote bis %{time}"
+  da: "Fornyelsen af linje %{n} er i udbud: bud til kl. %{time}"
   fr: "Le renouvellement de la ligne %{n} est en appel d'offres : offres jusqu'à %{time}"
   ru: "Продление линии %{n} выставлено на торги: ставки до %{time}"
   uk: "Продовження лінії %{n} виставлено на торги: ставки до %{time}"
@@ -41187,6 +41510,7 @@ _version: 2
 "Line %{n} is out to tender: bids until %{time}":
   nl: "Lijn %{n} wordt aanbesteed: bieden tot %{time}"
   de: "Linie %{n} ist ausgeschrieben: Gebote bis %{time}"
+  da: "Linje %{n} er i udbud: bud til kl. %{time}"
   fr: "La ligne %{n} est en appel d'offres : offres jusqu'à %{time}"
   ru: "Линия %{n} выставлена на торги: ставки до %{time}"
   uk: "Лінію %{n} виставлено на торги: ставки до %{time}"
@@ -41194,6 +41518,7 @@ _version: 2
 "You bid %{amount} for line %{n}":
   nl: "Je biedt %{amount} op lijn %{n}"
   de: "Du bietest %{amount} für Linie %{n}"
+  da: "Du bød %{amount} på linje %{n}"
   fr: "Vous offrez %{amount} pour la ligne %{n}"
   ru: "Вы ставите %{amount} на линию %{n}"
   uk: "Ви ставите %{amount} на лінію %{n}"
@@ -41201,6 +41526,7 @@ _version: 2
 "%{who} bids %{amount} for line %{n}: your bid is beaten":
   nl: "%{who} biedt %{amount} op lijn %{n}: je bod is overboden"
   de: "%{who} bietet %{amount} für Linie %{n}: dein Gebot ist überboten"
+  da: "%{who} byder %{amount} på linje %{n}: dit bud er overbudt"
   fr: "%{who} offre %{amount} pour la ligne %{n} : votre offre est dépassée"
   ru: "%{who} ставит %{amount} на линию %{n}: вашу ставку перебили"
   uk: "%{who} ставить %{amount} на лінію %{n}: вашу ставку перебили"
@@ -41208,6 +41534,7 @@ _version: 2
 "%{who} bids %{amount} for line %{n}":
   nl: "%{who} biedt %{amount} op lijn %{n}"
   de: "%{who} bietet %{amount} für Linie %{n}"
+  da: "%{who} byder %{amount} på linje %{n}"
   fr: "%{who} offre %{amount} pour la ligne %{n}"
   ru: "%{who} ставит %{amount} на линию %{n}"
   uk: "%{who} ставить %{amount} на лінію %{n}"
@@ -41215,6 +41542,7 @@ _version: 2
 "Line %{n} won for %{amount}: the concession runs until %{date}":
   nl: "Lijn %{n} gewonnen voor %{amount}: de concessie loopt tot %{date}"
   de: "Linie %{n} für %{amount} gewonnen: die Konzession läuft bis %{date}"
+  da: "Linje %{n} vundet for %{amount}: koncessionen løber til %{date}"
   fr: "Ligne %{n} remportée pour %{amount} : la concession court jusqu'au %{date}"
   ru: "Линия %{n} выиграна за %{amount}: концессия до %{date}"
   uk: "Лінію %{n} виграно за %{amount}: концесія до %{date}"
@@ -41222,6 +41550,7 @@ _version: 2
 "Nobody bid for line %{n}":
   nl: "Niemand bood op lijn %{n}"
   de: "Niemand hat für Linie %{n} geboten"
+  da: "Ingen bød på linje %{n}"
   fr: "Personne n'a fait d'offre pour la ligne %{n}"
   ru: "Никто не поставил на линию %{n}"
   uk: "Ніхто не поставив на лінію %{n}"
@@ -41229,6 +41558,7 @@ _version: 2
 "Line %{n} went to %{who} for %{amount}: your concession ends with its term":
   nl: "Lijn %{n} ging naar %{who} voor %{amount}: je concessie eindigt met de looptijd"
   de: "Linie %{n} ging an %{who} für %{amount}: deine Konzession endet mit ihrer Laufzeit"
+  da: "Linje %{n} gik til %{who} for %{amount}: din koncession slutter med sin løbetid"
   fr: "La ligne %{n} est allée à %{who} pour %{amount} : votre concession prend fin à son terme"
   ru: "Линия %{n} досталась %{who} за %{amount}: ваша концессия закончится в срок"
   uk: "Лінія %{n} дісталася %{who} за %{amount}: ваша концесія закінчиться в строк"
@@ -41236,6 +41566,7 @@ _version: 2
 "Line %{n} went to %{who} for %{amount}":
   nl: "Lijn %{n} ging naar %{who} voor %{amount}"
   de: "Linie %{n} ging an %{who} für %{amount}"
+  da: "Linje %{n} gik til %{who} for %{amount}"
   fr: "La ligne %{n} est allée à %{who} pour %{amount}"
   ru: "Линия %{n} досталась %{who} за %{amount}"
   uk: "Лінія %{n} дісталася %{who} за %{amount}"
@@ -41243,6 +41574,7 @@ _version: 2
 "The day %{date} was closed: %{amount}":
   nl: "De dag %{date} is afgesloten: %{amount}"
   de: "Der Tag %{date} wurde abgeschlossen: %{amount}"
+  da: "Dagen %{date} blev afsluttet: %{amount}"
   fr: "La journée du %{date} a été clôturée : %{amount}"
   ru: "День %{date} закрыт: %{amount}"
   uk: "День %{date} закрито: %{amount}"
@@ -41250,6 +41582,7 @@ _version: 2
 "Line %{n} tour %{tour}: a trip run in the game, %{pax} passengers, %{late} min off the timetable":
   nl: "Lijn %{n} omloop %{tour}: een rit in het spel gereden, %{pax} reizigers, %{late} min naast de dienstregeling"
   de: "Linie %{n} Umlauf %{tour}: eine Fahrt im Spiel gefahren, %{pax} Fahrgäste, %{late} Min. neben dem Fahrplan"
+  da: "Linje %{n} tur %{tour}: en rejse kørt i spillet, %{pax} passagerer, %{late} min fra køreplanen"
   fr: "Ligne %{n} service %{tour} : une course faite dans le jeu, %{pax} voyageurs, %{late} min d'écart"
   ru: "Линия %{n}, оборот %{tour}: рейс в игре выполнен, %{pax} пассажиров, отклонение %{late} мин"
   uk: "Лінія %{n}, оберт %{tour}: рейс у грі виконано, %{pax} пасажирів, відхилення %{late} хв"
@@ -41257,6 +41590,7 @@ _version: 2
 "Line %{n} tour %{tour}: a trip broken off in the game":
   nl: "Lijn %{n} omloop %{tour}: een rit in het spel afgebroken"
   de: "Linie %{n} Umlauf %{tour}: eine Fahrt im Spiel abgebrochen"
+  da: "Linje %{n} tur %{tour}: en rejse afbrudt i spillet"
   fr: "Ligne %{n} service %{tour} : une course interrompue dans le jeu"
   ru: "Линия %{n}, оборот %{tour}: рейс в игре прерван"
   uk: "Лінія %{n}, оберт %{tour}: рейс у грі перервано"
@@ -41264,6 +41598,7 @@ _version: 2
 "Bus %{bus} broke down in the game":
   nl: "Bus %{bus} kreeg pech in het spel"
   de: "Bus %{bus} hatte im Spiel eine Panne"
+  da: "Bus %{bus} brød sammen i spillet"
   fr: "Le bus %{bus} est tombé en panne dans le jeu"
   ru: "Автобус %{bus} сломался в игре"
   uk: "Автобус %{bus} зламався в грі"
@@ -41271,6 +41606,7 @@ _version: 2
 "Your own transport company: buses, people and lines, in a time of its own.":
   nl: "Je eigen vervoersbedrijf: bussen, mensen en lijnen, in een eigen tijd."
   de: "Deine eigene Verkehrsfirma: Busse, Leute und Linien, in einer eigenen Zeit."
+  da: "Dit eget transportselskab: busser, mennesker og linjer, i en tid af sin egen."
   fr: "Votre propre entreprise de transport : bus, personnel et lignes, dans un temps à elle."
   ru: "Ваша транспортная компания: автобусы, люди и линии, в собственном времени."
   uk: "Ваша транспортна компанія: автобуси, люди й лінії, у власному часі."
@@ -41278,6 +41614,7 @@ _version: 2
 "Run your own transport company on a map: buy, lease or rent buses, hire drivers and run the map's lines or your own. The company has its own clock: simulate its time by the hour or by days, and what happens is told as it comes; what you drive yourself counts as it was driven.":
   nl: "Run je eigen vervoersbedrijf op een kaart: koop, lease of huur bussen, neem chauffeurs aan en rijd de lijnen van de kaart of je eigen. Het bedrijf heeft een eigen klok: simuleer de tijd per uur of per dag, en wat er gebeurt wordt verteld zodra het gebeurt; wat je zelf rijdt, telt zoals het gereden is."
   de: "Führe deine eigene Verkehrsfirma auf einer Karte: kaufe, lease oder miete Busse, stelle Fahrer ein und fahre die Linien der Karte oder deine eigenen. Die Firma hat ihre eigene Uhr: simuliere ihre Zeit stunden- oder tageweise, und was geschieht, wird erzählt, wie es kommt; was du selbst fährst, zählt, wie es gefahren wurde."
+  da: "Driv dit eget transportselskab på et kort: køb, lease eller lej busser, ansæt chauffører, og kør kortets linjer eller dine egne. Selskabet har sit eget ur: simulér dets tid pr. time eller pr. dag, og det, der sker, fortælles, som det kommer; det, du selv kører, tæller, som det blev kørt."
   fr: "Dirigez votre propre entreprise de transport sur une carte : achetez, louez en leasing ou en location des bus, embauchez des conducteurs et exploitez les lignes de la carte ou les vôtres. L'entreprise a sa propre horloge : simulez son temps à l'heure ou au jour, et ce qui arrive est raconté au fur et à mesure ; ce que vous conduisez vous-même compte tel que conduit."
   ru: "Управляйте своей транспортной компанией на карте: покупайте, берите в лизинг или аренду автобусы, нанимайте водителей и обслуживайте линии карты или свои. У компании свои часы: симулируйте её время по часам или по дням, а события рассказываются по мере того, как происходят; то, что вы проехали сами, считается как есть."
   uk: "Керуйте власною транспортною компанією на мапі: купуйте, беріть у лізинг чи оренду автобуси, наймайте водіїв і обслуговуйте лінії мапи або свої. У компанії власний годинник: симулюйте її час по годинах або по днях, а події розповідаються, щойно стаються; те, що ви проїхали самі, рахується як є."
@@ -41285,6 +41622,7 @@ _version: 2
 "The day runs as planned so far. \"All tours\" shows every tour leaving and coming back.":
   nl: "De dag loopt tot nu toe volgens plan. \"Alle omlopen\" toont elke omloop die vertrekt en terugkomt."
   de: "Der Tag läuft bisher nach Plan. \"Alle Umläufe\" zeigt jeden Umlauf, der ausfährt und zurückkommt."
+  da: "Dagen kører indtil videre som planlagt. \"Alle ture\" viser hver tur, der afgår og kommer tilbage."
   fr: "La journée se déroule comme prévu. « Tous les services » montre chaque service qui part et revient."
   ru: "День пока идёт по плану. «Все обороты» показывает каждый выход и возврат."
   uk: "День поки йде за планом. «Усі оберти» показує кожен вихід і повернення."
@@ -41292,6 +41630,7 @@ _version: 2
 "Diesel":
   nl: "Diesel"
   de: "Diesel"
+  da: "Diesel"
   fr: "Diesel"
   ru: "Дизель"
   uk: "Дизель"
@@ -41299,6 +41638,7 @@ _version: 2
 "New":
   nl: "Nieuw"
   de: "Neu"
+  da: "Ny"
   fr: "Neuf"
   ru: "Новый"
   uk: "Новий"
@@ -41306,6 +41646,7 @@ _version: 2
 "included":
   nl: "inbegrepen"
   de: "inklusive"
+  da: "inkluderet"
   fr: "inclus"
   ru: "включено"
   uk: "включено"
@@ -41313,6 +41654,7 @@ _version: 2
 "Second-hand only":
   nl: "Alleen tweedehands"
   de: "Nur gebraucht"
+  da: "Kun brugt"
   fr: "Occasion uniquement"
   ru: "Только подержанные"
   uk: "Лише вживані"
@@ -41320,6 +41662,7 @@ _version: 2
 "Contract %{no}: %{bus} delivered - fleet numbers %{numbers}.":
   nl: "Contract %{no}: %{bus} geleverd - wagennummers %{numbers}."
   de: "Vertrag %{no}: %{bus} geliefert - Wagennummern %{numbers}."
+  da: "Kontrakt %{no}: %{bus} leveret - vognnumre %{numbers}."
   fr: "Contrat %{no} : %{bus} livré - numéros de parc %{numbers}."
   ru: "Договор %{no}: %{bus} доставлен - бортовые номера %{numbers}."
   uk: "Договір %{no}: %{bus} доставлено - бортові номери %{numbers}."
@@ -41327,6 +41670,7 @@ _version: 2
 "since %{year}":
   nl: "sinds %{year}"
   de: "seit %{year}"
+  da: "siden %{year}"
   fr: "depuis %{year}"
   ru: "с %{year}"
   uk: "з %{year}"
@@ -41334,6 +41678,7 @@ _version: 2
 "%{seats} seats, %{standing} standing":
   nl: "%{seats} zitplaatsen, %{standing} staanplaatsen"
   de: "%{seats} Sitzplätze, %{standing} Stehplätze"
+  da: "%{seats} siddepladser, %{standing} ståpladser"
   fr: "%{seats} places assises, %{standing} debout"
   ru: "%{seats} сидячих, %{standing} стоячих"
   uk: "%{seats} сидячих, %{standing} стоячих"
@@ -41341,6 +41686,7 @@ _version: 2
 "New, from stock":
   nl: "Nieuw, uit voorraad"
   de: "Neu, ab Lager"
+  da: "Ny, fra lager"
   fr: "Neuf, en stock"
   ru: "Новый, со склада"
   uk: "Новий, зі складу"
@@ -41348,6 +41694,7 @@ _version: 2
 "Agreed: %{amount} a bus.":
   nl: "Afgesproken: %{amount} per bus."
   de: "Abgemacht: %{amount} pro Bus."
+  da: "Aftalt: %{amount} pr. bus."
   fr: "Marché conclu : %{amount} par bus."
   ru: "Договорились: %{amount} за автобус."
   uk: "Домовилися: %{amount} за автобус."
@@ -41355,6 +41702,7 @@ _version: 2
 "Let me see... I can do %{amount}.":
   nl: "Even kijken... Ik kan %{amount} doen."
   de: "Mal sehen... Ich kann %{amount} machen."
+  da: "Lad mig se... Jeg kan give %{amount}."
   fr: "Voyons voir... Je peux faire %{amount}."
   ru: "Посмотрим... Могу сделать %{amount}."
   uk: "Подивимося... Можу зробити %{amount}."
@@ -41362,6 +41710,7 @@ _version: 2
 "Not quite. Let us meet at %{amount}.":
   nl: "Niet helemaal. Laten we elkaar treffen bij %{amount}."
   de: "Nicht ganz. Treffen wir uns bei %{amount}."
+  da: "Ikke helt. Lad os mødes ved %{amount}."
   fr: "Pas tout à fait. Retrouvons-nous à %{amount}."
   ru: "Не совсем. Давайте сойдёмся на %{amount}."
   uk: "Не зовсім. Давайте зійдемося на %{amount}."
@@ -41369,6 +41718,7 @@ _version: 2
 "That is a fair price already. I cannot go lower.":
   nl: "Dat is al een eerlijke prijs. Lager kan ik niet."
   de: "Das ist schon ein fairer Preis. Tiefer kann ich nicht."
+  da: "Det er allerede en rimelig pris. Jeg kan ikke gå længere ned."
   fr: "C'est déjà un prix honnête. Je ne peux pas descendre plus."
   ru: "Это уже честная цена. Ниже не могу."
   uk: "Це вже чесна ціна. Нижче не можу."
@@ -41376,6 +41726,7 @@ _version: 2
 "That is no offer. I could do %{amount}, no less.":
   nl: "Dat is geen bod. Ik kan %{amount} doen, niet minder."
   de: "Das ist kein Angebot. Ich könnte %{amount} machen, nicht weniger."
+  da: "Det er intet tilbud. Jeg kunne give %{amount}, ikke mindre."
   fr: "Ce n'est pas une offre. Je peux faire %{amount}, pas moins."
   ru: "Это не предложение. Могу %{amount}, не меньше."
   uk: "Це не пропозиція. Можу %{amount}, не менше."
@@ -41383,6 +41734,7 @@ _version: 2
 "%{extra}: agreed.":
   nl: "%{extra}: akkoord."
   de: "%{extra}: einverstanden."
+  da: "%{extra}: aftalt."
   fr: "%{extra} : d'accord."
   ru: "%{extra}: согласен."
   uk: "%{extra}: згоден."
@@ -41390,6 +41742,7 @@ _version: 2
 "%{extra}? Not at this price.":
   nl: "%{extra}? Niet voor deze prijs."
   de: "%{extra}? Nicht zu diesem Preis."
+  da: "%{extra}? Ikke til den pris."
   fr: "%{extra} ? Pas à ce prix-là."
   ru: "%{extra}? Не за эту цену."
   uk: "%{extra}? Не за цю ціну."
@@ -41397,6 +41750,7 @@ _version: 2
 "My last word: %{amount}. Take it or leave it.":
   nl: "Mijn laatste woord: %{amount}. Graag of niet."
   de: "Mein letztes Wort: %{amount}. Nehmen Sie es oder lassen Sie es."
+  da: "Mit sidste ord: %{amount}. Tag det eller lad det være."
   fr: "Mon dernier mot : %{amount}. C'est à prendre ou à laisser."
   ru: "Моё последнее слово: %{amount}. Берите или нет."
   uk: "Моє останнє слово: %{amount}. Беріть або ні."
@@ -41404,6 +41758,7 @@ _version: 2
 "That is enough. Come back after %{date}.":
   nl: "Zo is het genoeg. Kom na %{date} maar terug."
   de: "Jetzt reicht es. Kommen Sie nach %{date} wieder."
+  da: "Det er nok. Kom igen efter %{date}."
   fr: "Ça suffit. Revenez après le %{date}."
   ru: "Хватит. Приходите после %{date}."
   uk: "Досить. Приходьте після %{date}."
@@ -41411,6 +41766,7 @@ _version: 2
 "Can you do something on the price?":
   nl: "Kunt u iets aan de prijs doen?"
   de: "Können Sie beim Preis etwas machen?"
+  da: "Kan du gøre noget ved prisen?"
   fr: "Pouvez-vous faire un geste sur le prix ?"
   ru: "Можете что-нибудь сделать с ценой?"
   uk: "Можете щось зробити з ціною?"
@@ -41418,6 +41774,7 @@ _version: 2
 "I offer %{amount} a bus.":
   nl: "Ik bied %{amount} per bus."
   de: "Ich biete %{amount} pro Bus."
+  da: "Jeg tilbyder %{amount} pr. bus."
   fr: "Je propose %{amount} par bus."
   ru: "Предлагаю %{amount} за автобус."
   uk: "Пропоную %{amount} за автобус."
@@ -41425,6 +41782,7 @@ _version: 2
 "Could you include this: %{extra}?":
   nl: "Kunt u dit erbij doen: %{extra}?"
   de: "Könnten Sie das dazugeben: %{extra}?"
+  da: "Kunne du tage dette med: %{extra}?"
   fr: "Pourriez-vous inclure ceci : %{extra} ?"
   ru: "Можете включить это: %{extra}?"
   uk: "Можете включити це: %{extra}?"
@@ -41432,6 +41790,7 @@ _version: 2
 "Agreed.":
   nl: "Akkoord."
   de: "Einverstanden."
+  da: "Aftalt."
   fr: "D'accord."
   ru: "Согласен."
   uk: "Згоден."
@@ -41439,6 +41798,7 @@ _version: 2
 "Showroom":
   nl: "Showroom"
   de: "Ausstellung"
+  da: "Udstillingslokale"
   fr: "Salle d'exposition"
   ru: "Автосалон"
   uk: "Автосалон"
@@ -41446,6 +41806,7 @@ _version: 2
 "Today's offers (%{n})":
   nl: "Aanbiedingen van vandaag (%{n})"
   de: "Angebote des Tages (%{n})"
+  da: "Dagens tilbud (%{n})"
   fr: "Offres du jour (%{n})"
   ru: "Предложения дня (%{n})"
   uk: "Пропозиції дня (%{n})"
@@ -41453,6 +41814,7 @@ _version: 2
 "Used (%{n})":
   nl: "Tweedehands (%{n})"
   de: "Gebraucht (%{n})"
+  da: "Brugte (%{n})"
   fr: "Occasions (%{n})"
   ru: "Подержанные (%{n})"
   uk: "Вживані (%{n})"
@@ -41460,6 +41822,7 @@ _version: 2
 "Orders (%{n})":
   nl: "Bestellingen (%{n})"
   de: "Bestellungen (%{n})"
+  da: "Ordrer (%{n})"
   fr: "Commandes (%{n})"
   ru: "Заказы (%{n})"
   uk: "Замовлення (%{n})"
@@ -41467,6 +41830,7 @@ _version: 2
 "Buying":
   nl: "Inkoop"
   de: "Einkauf"
+  da: "Køb"
   fr: "Achat"
   ru: "Покупка"
   uk: "Купівля"
@@ -41474,6 +41838,7 @@ _version: 2
 "Simple: buy at the list price in one click. Advanced: haggle with the dealer and sign a contract. Both stay at hand on every bus.":
   nl: "Eenvoudig: koop met één klik voor de catalogusprijs. Uitgebreid: onderhandel met de dealer en teken een contract. Beide blijven bij elke bus bereikbaar."
   de: "Einfach: zum Listenpreis mit einem Klick kaufen. Erweitert: mit dem Händler verhandeln und einen Vertrag unterschreiben. Beides bleibt bei jedem Bus erreichbar."
+  da: "Enkelt: køb til listepris med ét klik. Avanceret: prut med forhandleren, og underskriv en kontrakt. Begge forbliver ved hånden på hver bus."
   fr: "Simple : achetez au prix catalogue en un clic. Avancé : négociez avec le concessionnaire et signez un contrat. Les deux restent accessibles pour chaque bus."
   ru: "Просто: покупка по прайсу в один клик. Расширенно: торг с дилером и подписание договора. Оба способа доступны для каждого автобуса."
   uk: "Просто: купівля за прайсом в один клік. Розширено: торг із дилером і підписання договору. Обидва способи доступні для кожного автобуса."
@@ -41481,6 +41846,7 @@ _version: 2
 "The day's special offers: new buses from stock at a discount, demonstrators, and fleets other operators sell. New ones come every company day.":
   nl: "De aanbiedingen van de dag: nieuwe bussen uit voorraad met korting, demonstratiebussen en vloten die andere vervoerders verkopen. Elke bedrijfsdag komen er nieuwe."
   de: "Die Angebote des Tages: neue Busse ab Lager mit Rabatt, Vorführwagen und Flotten, die andere Betriebe verkaufen. Jeden Firmentag kommen neue."
+  da: "Dagens særlige tilbud: nye busser fra lager med rabat, demobusser og flåder, andre selskaber sælger. Nye kommer hver selskabsdag."
   fr: "Les offres du jour : des bus neufs en stock avec remise, des véhicules de démonstration et des flottes que d'autres exploitants vendent. De nouvelles arrivent chaque jour de l'entreprise."
   ru: "Предложения дня: новые автобусы со склада со скидкой, демонстрационные машины и парки, которые продают другие перевозчики. Каждый день компании появляются новые."
   uk: "Пропозиції дня: нові автобуси зі складу зі знижкою, демонстраційні машини та парки, які продають інші перевізники. Щодня компанії з'являються нові."
@@ -41488,6 +41854,7 @@ _version: 2
 "No special offers today. Come back tomorrow.":
   nl: "Vandaag geen aanbiedingen. Kom morgen terug."
   de: "Heute keine Angebote. Schauen Sie morgen wieder vorbei."
+  da: "Ingen særlige tilbud i dag. Kom tilbage i morgen."
   fr: "Pas d'offres aujourd'hui. Revenez demain."
   ru: "Сегодня предложений нет. Загляните завтра."
   uk: "Сьогодні пропозицій немає. Загляньте завтра."
@@ -41495,6 +41862,7 @@ _version: 2
 "The used market changes every day: each bus stays four days or until it is sold. Older models than the company's year allows new are found here.":
   nl: "De tweedehandsmarkt verandert elke dag: elke bus blijft vier dagen staan of tot hij verkocht is. Modellen die in het jaar van het bedrijf niet meer nieuw te koop zijn, vind je hier."
   de: "Der Gebrauchtmarkt ändert sich jeden Tag: Jeder Bus bleibt vier Tage oder bis er verkauft ist. Ältere Modelle, als das Jahr der Firma neu zulässt, finden sich hier."
+  da: "Det brugte marked ændrer sig hver dag: hver bus bliver fire dage eller til den er solgt. Ældre modeller, end selskabets år tillader nye, findes her."
   fr: "Le marché de l'occasion change chaque jour : chaque bus reste quatre jours ou jusqu'à sa vente. Les modèles plus anciens que l'année de l'entreprise ne permet en neuf se trouvent ici."
   ru: "Рынок подержанных меняется каждый день: автобус стоит четыре дня или до продажи. Модели старше, чем позволяет купить новыми год компании, ищите здесь."
   uk: "Ринок вживаних змінюється щодня: автобус стоїть чотири дні або до продажу. Моделі, старші ніж дозволяє купити новими рік компанії, шукайте тут."
@@ -41502,6 +41870,7 @@ _version: 2
 "Nothing on the used market today.":
   nl: "Vandaag niets op de tweedehandsmarkt."
   de: "Heute nichts auf dem Gebrauchtmarkt."
+  da: "Intet på det brugte marked i dag."
   fr: "Rien sur le marché de l'occasion aujourd'hui."
   ru: "Сегодня на рынке подержанных пусто."
   uk: "Сьогодні на ринку вживаних порожньо."
@@ -41509,6 +41878,7 @@ _version: 2
 "from %{amount}":
   nl: "vanaf %{amount}"
   de: "ab %{amount}"
+  da: "fra %{amount}"
   fr: "à partir de %{amount}"
   ru: "от %{amount}"
   uk: "від %{amount}"
@@ -41516,6 +41886,7 @@ _version: 2
 "All makers":
   nl: "Alle merken"
   de: "Alle Hersteller"
+  da: "Alle producenter"
   fr: "Toutes les marques"
   ru: "Все марки"
   uk: "Усі марки"
@@ -41525,6 +41896,7 @@ _version: 2
 "one model":
   nl: "één model"
   de: "ein Modell"
+  da: "én model"
   fr: "un modèle"
   ru: "одна модель"
   uk: "одна модель"
@@ -41532,6 +41904,7 @@ _version: 2
 "%{count} models":
   nl: "%{count} modellen"
   de: "%{count} Modelle"
+  da: "%{count} modeller"
   fr: "%{count} modèles"
   ru: "моделей: %{count}"
   uk: "моделей: %{count}"
@@ -41539,6 +41912,7 @@ _version: 2
 "Special offer":
   nl: "Aanbieding"
   de: "Angebot"
+  da: "Særligt tilbud"
   fr: "Offre spéciale"
   ru: "Спецпредложение"
   uk: "Спецпропозиція"
@@ -41546,6 +41920,7 @@ _version: 2
 "No longer built":
   nl: "Niet meer gebouwd"
   de: "Nicht mehr gebaut"
+  da: "Bygges ikke længere"
   fr: "Plus construit"
   ru: "Больше не выпускается"
   uk: "Більше не випускається"
@@ -41553,6 +41928,7 @@ _version: 2
 "one bus fits":
   nl: "één bus past"
   de: "ein Bus passt"
+  da: "én bus passer"
   fr: "un bus correspond"
   ru: "подходит один автобус"
   uk: "підходить один автобус"
@@ -41560,6 +41936,7 @@ _version: 2
 "%{count} buses fit":
   nl: "%{count} bussen passen"
   de: "%{count} Busse passen"
+  da: "%{count} busser passer"
   fr: "%{count} bus correspondent"
   ru: "подходит автобусов: %{count}"
   uk: "підходить автобусів: %{count}"
@@ -41567,6 +41944,7 @@ _version: 2
 "No bus fits: loosen the filters, or look at the used market.":
   nl: "Geen bus past: maak de filters ruimer of kijk op de tweedehandsmarkt."
   de: "Kein Bus passt: Lockern Sie die Filter oder schauen Sie auf den Gebrauchtmarkt."
+  da: "Ingen bus passer: løsn filtrene, eller se på det brugte marked."
   fr: "Aucun bus ne correspond : élargissez les filtres ou regardez le marché de l'occasion."
   ru: "Ничего не подходит: ослабьте фильтры или загляните на рынок подержанных."
   uk: "Нічого не підходить: послабте фільтри або загляньте на ринок вживаних."
@@ -41574,6 +41952,7 @@ _version: 2
 "To be had":
   nl: "Te koop"
   de: "Erhältlich"
+  da: "Kan fås"
   fr: "Disponible"
   ru: "Доступность"
   uk: "Доступність"
@@ -41581,6 +41960,7 @@ _version: 2
 "Price up to":
   nl: "Prijs tot"
   de: "Preis bis"
+  da: "Pris op til"
   fr: "Prix jusqu'à"
   ru: "Цена до"
   uk: "Ціна до"
@@ -41588,6 +41968,7 @@ _version: 2
 "Any":
   nl: "Alle"
   de: "Beliebig"
+  da: "Alle"
   fr: "Tous"
   ru: "Любая"
   uk: "Будь-яка"
@@ -41595,6 +41976,7 @@ _version: 2
 "Built in":
   nl: "Gebouwd in"
   de: "Gebaut im Jahr"
+  da: "Bygget i"
   fr: "Construit en"
   ru: "Год выпуска"
   uk: "Рік випуску"
@@ -41602,6 +41984,7 @@ _version: 2
 "The company's year is %{year}: models no longer built are sold second-hand only, models not built yet are not offered.":
   nl: "Het bedrijf leeft in %{year}: modellen die niet meer gebouwd worden zijn alleen tweedehands te koop, modellen die nog niet gebouwd worden worden niet aangeboden."
   de: "Die Firma lebt im Jahr %{year}: Nicht mehr gebaute Modelle gibt es nur gebraucht, noch nicht gebaute werden nicht angeboten."
+  da: "Selskabets år er %{year}: modeller, der ikke bygges længere, sælges kun brugt, modeller, der endnu ikke er bygget, tilbydes ikke."
   fr: "L'entreprise vit en %{year} : les modèles qui ne sont plus construits ne se vendent qu'en occasion, ceux pas encore construits ne sont pas proposés."
   ru: "Компания живёт в %{year} году: снятые с производства модели продаются только подержанными, ещё не выпущенные не предлагаются."
   uk: "Компанія живе в %{year} році: зняті з виробництва моделі продаються лише вживаними, ще не випущені не пропонуються."
@@ -41609,6 +41992,7 @@ _version: 2
 "Model years file":
   nl: "Bestand met bouwjaren"
   de: "Datei der Baujahre"
+  da: "Modelårsfil"
   fr: "Fichier des années"
   ru: "Файл годов выпуска"
   uk: "Файл років випуску"
@@ -41616,6 +42000,7 @@ _version: 2
 "Your own model years (bus-years.txt): they win over what openOMSI guesses.":
   nl: "Je eigen bouwjaren (bus-years.txt): die gaan voor wat openOMSI raadt."
   de: "Eigene Baujahre (bus-years.txt): Sie gehen vor, was openOMSI schätzt."
+  da: "Dine egne modelår (bus-years.txt): de vinder over det, openOMSI gætter."
   fr: "Vos propres années (bus-years.txt) : elles priment sur ce que devine openOMSI."
   ru: "Свои годы выпуска (bus-years.txt): они важнее догадок openOMSI."
   uk: "Власні роки випуску (bus-years.txt): вони важливіші за здогадки openOMSI."
@@ -41623,6 +42008,7 @@ _version: 2
 "On order":
   nl: "Besteld"
   de: "Bestellt"
+  da: "Bestilt"
   fr: "En commande"
   ru: "Заказано"
   uk: "Замовлено"
@@ -41630,6 +42016,7 @@ _version: 2
 "Nothing on order. A new bus that is not in stock comes some days after its contract is signed.":
   nl: "Niets besteld. Een nieuwe bus die niet op voorraad is, komt enkele dagen nadat het contract getekend is."
   de: "Nichts bestellt. Ein neuer Bus, der nicht auf Lager ist, kommt einige Tage nach der Vertragsunterzeichnung."
+  da: "Intet bestilt. En ny bus, der ikke er på lager, kommer nogle dage efter, at dens kontrakt er underskrevet."
   fr: "Rien en commande. Un bus neuf qui n'est pas en stock arrive quelques jours après la signature du contrat."
   ru: "Заказов нет. Новый автобус не со склада приходит через несколько дней после подписания договора."
   uk: "Замовлень немає. Новий автобус не зі складу приходить за кілька днів після підписання договору."
@@ -41637,6 +42024,7 @@ _version: 2
 "Contract %{no}":
   nl: "Contract %{no}"
   de: "Vertrag %{no}"
+  da: "Kontrakt %{no}"
   fr: "Contrat %{no}"
   ru: "Договор %{no}"
   uk: "Договір %{no}"
@@ -41644,6 +42032,7 @@ _version: 2
 "Arrives %{date} (in %{n} days)":
   nl: "Komt %{date} (over %{n} dagen)"
   de: "Kommt am %{date} (in %{n} Tagen)"
+  da: "Ankommer %{date} (om %{n} dage)"
   fr: "Arrive le %{date} (dans %{n} jours)"
   ru: "Прибудет %{date} (через %{n} дн.)"
   uk: "Прибуде %{date} (через %{n} дн.)"
@@ -41651,6 +42040,7 @@ _version: 2
 "Signed contracts":
   nl: "Getekende contracten"
   de: "Unterschriebene Verträge"
+  da: "Underskrevne kontrakter"
   fr: "Contrats signés"
   ru: "Подписанные договоры"
   uk: "Підписані договори"
@@ -41658,6 +42048,7 @@ _version: 2
 "No contracts signed yet.":
   nl: "Nog geen contracten getekend."
   de: "Noch keine Verträge unterschrieben."
+  da: "Ingen kontrakter underskrevet endnu."
   fr: "Aucun contrat signé pour l'instant."
   ru: "Договоров пока нет."
   uk: "Договорів поки немає."
@@ -41665,6 +42056,7 @@ _version: 2
 "Bank loan":
   nl: "Banklening"
   de: "Bankkredit"
+  da: "Banklån"
   fr: "Prêt bancaire"
   ru: "Банковский кредит"
   uk: "Банківський кредит"
@@ -41672,6 +42064,7 @@ _version: 2
 "A game is running: the test drive waits until it has ended.":
   nl: "Er draait een spel: de proefrit wacht tot het afgelopen is."
   de: "Ein Spiel läuft: Die Probefahrt wartet, bis es beendet ist."
+  da: "Et spil kører: prøvekørslen venter, til det er slut."
   fr: "Une partie est en cours : l'essai attend qu'elle soit terminée."
   ru: "Игра запущена: тест-драйв подождёт, пока она не закончится."
   uk: "Гра запущена: тест-драйв зачекає, поки вона не закінчиться."
@@ -41679,6 +42072,7 @@ _version: 2
 "Starting the test drive…":
   nl: "De proefrit start…"
   de: "Die Probefahrt startet…"
+  da: "Starter prøvekørslen…"
   fr: "Lancement de l'essai…"
   ru: "Запуск тест-драйва…"
   uk: "Запуск тест-драйву…"
@@ -41686,6 +42080,7 @@ _version: 2
 "Test drive":
   nl: "Proefrit"
   de: "Probefahrt"
+  da: "Prøvekørsel"
   fr: "Essai"
   ru: "Тест-драйв"
   uk: "Тест-драйв"
@@ -41693,6 +42088,7 @@ _version: 2
 "Drive it on your map from your depot: a free drive outside the company's time. Back here when the game ends.":
   nl: "Rijd hem op je kaart vanaf je remise: een vrije rit buiten de bedrijfstijd. Na afloop van het spel ben je weer hier."
   de: "Fahren Sie ihn auf Ihrer Karte ab Ihrem Betriebshof: eine freie Fahrt außerhalb der Firmenzeit. Nach dem Spiel sind Sie wieder hier."
+  da: "Kør den på dit kort fra dit depot: en fri kørsel uden for selskabets tid. Tilbage her, når spillet slutter."
   fr: "Conduisez-le sur votre carte depuis votre dépôt : une conduite libre hors du temps de l'entreprise. Retour ici à la fin de la partie."
   ru: "Прокатитесь на своей карте от своего депо: свободная поездка вне времени компании. После игры вы вернётесь сюда."
   uk: "Прокатіться на своїй карті від свого депо: вільна поїздка поза часом компанії. Після гри ви повернетеся сюди."
@@ -41700,6 +42096,7 @@ _version: 2
 "Maker":
   nl: "Merk"
   de: "Hersteller"
+  da: "Producent"
   fr: "Marque"
   ru: "Марка"
   uk: "Марка"
@@ -41707,6 +42104,7 @@ _version: 2
 "Model":
   nl: "Model"
   de: "Modell"
+  da: "Model"
   fr: "Modèle"
   ru: "Модель"
   uk: "Модель"
@@ -41714,6 +42112,7 @@ _version: 2
 "Kind":
   nl: "Soort"
   de: "Art"
+  da: "Slags"
   fr: "Type"
   ru: "Тип"
   uk: "Тип"
@@ -41721,6 +42120,7 @@ _version: 2
 "Places":
   nl: "Plaatsen"
   de: "Plätze"
+  da: "Pladser"
   fr: "Places"
   ru: "Места"
   uk: "Місця"
@@ -41728,6 +42128,7 @@ _version: 2
 "Not known: always to be had":
   nl: "Onbekend: altijd te koop"
   de: "Unbekannt: immer erhältlich"
+  da: "Ukendt: altid at få"
   fr: "Inconnue : toujours disponible"
   ru: "Неизвестно: доступен всегда"
   uk: "Невідомо: доступний завжди"
@@ -41735,6 +42136,7 @@ _version: 2
 "List price":
   nl: "Catalogusprijs"
   de: "Listenpreis"
+  da: "Listepris"
   fr: "Prix catalogue"
   ru: "Цена по прайсу"
   uk: "Ціна за прайсом"
@@ -41742,6 +42144,7 @@ _version: 2
 "Delivery":
   nl: "Levering"
   de: "Lieferung"
+  da: "Levering"
   fr: "Livraison"
   ru: "Доставка"
   uk: "Доставка"
@@ -41749,6 +42152,7 @@ _version: 2
 "about %{n} days after signing":
   nl: "zo'n %{n} dagen na ondertekening"
   de: "etwa %{n} Tage nach der Unterschrift"
+  da: "ca. %{n} dage efter underskrivelsen"
   fr: "environ %{n} jours après la signature"
   ru: "примерно через %{n} дн. после подписания"
   uk: "приблизно через %{n} дн. після підписання"
@@ -41756,6 +42160,7 @@ _version: 2
 "No longer built in %{year}: to be had second-hand only.":
   nl: "In %{year} niet meer gebouwd: alleen tweedehands te koop."
   de: "%{year} nicht mehr gebaut: nur gebraucht erhältlich."
+  da: "Bygges ikke længere i %{year}: kan kun fås brugt."
   fr: "Plus construit en %{year} : disponible en occasion uniquement."
   ru: "В %{year} году уже не выпускается: только подержанные."
   uk: "У %{year} році вже не випускається: лише вживані."
@@ -41763,6 +42168,7 @@ _version: 2
 "None of them is on offer today: the used market changes every day.":
   nl: "Vandaag wordt er geen aangeboden: de tweedehandsmarkt verandert elke dag."
   de: "Heute wird keiner angeboten: Der Gebrauchtmarkt ändert sich jeden Tag."
+  da: "Ingen af dem er til salg i dag: det brugte marked ændrer sig hver dag."
   fr: "Aucun n'est proposé aujourd'hui : le marché de l'occasion change chaque jour."
   ru: "Сегодня ни одного в продаже: рынок подержанных меняется каждый день."
   uk: "Сьогодні жодного в продажу: ринок вживаних змінюється щодня."
@@ -41770,6 +42176,7 @@ _version: 2
 "Rent one":
   nl: "Huur er een"
   de: "Einen mieten"
+  da: "Lej en"
   fr: "En louer un"
   ru: "Арендовать"
   uk: "Орендувати"
@@ -41777,6 +42184,7 @@ _version: 2
 "Painting in the livery chosen":
   nl: "Spuiten in de gekozen livery"
   de: "Lackierung im gewählten Design"
+  da: "Males i den valgte bemaling"
   fr: "Peinture dans la livrée choisie"
   ru: "Покраска в выбранную ливрею"
   uk: "Фарбування у вибрану ліврею"
@@ -41784,6 +42192,7 @@ _version: 2
 "Haggle instead":
   nl: "Liever onderhandelen"
   de: "Lieber verhandeln"
+  da: "Prut i stedet"
   fr: "Négocier plutôt"
   ru: "Лучше поторговаться"
   uk: "Краще поторгуватися"
@@ -41791,6 +42200,7 @@ _version: 2
 "Buy %{n} for %{amount}":
   nl: "Koop %{n} voor %{amount}"
   de: "%{n} kaufen für %{amount}"
+  da: "Køb %{n} for %{amount}"
   fr: "Acheter %{n} pour %{amount}"
   ru: "Купить %{n} за %{amount}"
   uk: "Купити %{n} за %{amount}"
@@ -41798,6 +42208,7 @@ _version: 2
 "The list price is where the talk begins: ask for a discount, make an offer, ask for extras. Nothing is booked until you sign the contract.":
   nl: "De catalogusprijs is het begin van het gesprek: vraag om korting, doe een bod, vraag om extra's. Er wordt niets geboekt tot je het contract tekent."
   de: "Der Listenpreis ist der Anfang des Gesprächs: um Rabatt bitten, ein Angebot machen, Extras verlangen. Gebucht wird erst, wenn Sie den Vertrag unterschreiben."
+  da: "Listeprisen er der, hvor snakken begynder: bed om rabat, giv et bud, bed om ekstraudstyr. Intet bogføres, før du underskriver kontrakten."
   fr: "Le prix catalogue n'est que le début de la discussion : demandez une remise, faites une offre, demandez des extras. Rien n'est comptabilisé avant la signature du contrat."
   ru: "Цена по прайсу - лишь начало разговора: попросите скидку, сделайте предложение, попросите дополнения. Ничего не проводится, пока вы не подпишете договор."
   uk: "Ціна за прайсом - лише початок розмови: попросіть знижку, зробіть пропозицію, попросіть доповнення. Нічого не проводиться, доки ви не підпишете договір."
@@ -41805,6 +42216,7 @@ _version: 2
 "The dealer does not want to talk to you until %{date}.":
   nl: "De dealer wil tot %{date} niet met je praten."
   de: "Der Händler will bis %{date} nicht mit Ihnen reden."
+  da: "Forhandleren vil ikke tale med dig før den %{date}."
   fr: "Le concessionnaire ne veut pas vous parler avant le %{date}."
   ru: "Дилер не хочет с вами говорить до %{date}."
   uk: "Дилер не хоче з вами говорити до %{date}."
@@ -41812,6 +42224,7 @@ _version: 2
 "Quick buy instead":
   nl: "Liever snel kopen"
   de: "Lieber schnell kaufen"
+  da: "Hurtigt køb i stedet"
   fr: "Achat rapide plutôt"
   ru: "Лучше быстрая покупка"
   uk: "Краще швидка купівля"
@@ -41819,6 +42232,7 @@ _version: 2
 "Talk to the dealer":
   nl: "Praat met de dealer"
   de: "Mit dem Händler reden"
+  da: "Tal med forhandleren"
   fr: "Parler au concessionnaire"
   ru: "Поговорить с дилером"
   uk: "Поговорити з дилером"
@@ -41826,6 +42240,7 @@ _version: 2
 "Lease or rent":
   nl: "Leasen of huren"
   de: "Leasen oder mieten"
+  da: "Lease eller leje"
   fr: "Leasing ou location"
   ru: "Лизинг или аренда"
   uk: "Лізинг або оренда"
@@ -41833,6 +42248,7 @@ _version: 2
 "Seller":
   nl: "Verkoper"
   de: "Verkäufer"
+  da: "Sælger"
   fr: "Vendeur"
   ru: "Продавец"
   uk: "Продавець"
@@ -41840,6 +42256,7 @@ _version: 2
 "from stock: two days after signing":
   nl: "uit voorraad: twee dagen na ondertekening"
   de: "ab Lager: zwei Tage nach der Unterschrift"
+  da: "fra lager: to dage efter underskrivelsen"
   fr: "en stock : deux jours après la signature"
   ru: "со склада: через два дня после подписания"
   uk: "зі складу: через два дні після підписання"
@@ -41847,6 +42264,7 @@ _version: 2
 "On offer":
   nl: "Te koop"
   de: "Im Angebot"
+  da: "Til salg"
   fr: "En vente"
   ru: "В продаже"
   uk: "У продажу"
@@ -41854,6 +42272,7 @@ _version: 2
 "one bus":
   nl: "één bus"
   de: "ein Bus"
+  da: "én bus"
   fr: "un bus"
   ru: "один автобус"
   uk: "один автобус"
@@ -41861,6 +42280,7 @@ _version: 2
 "%{count} buses":
   nl: "%{count} bussen"
   de: "%{count} Busse"
+  da: "%{count} busser"
   fr: "%{count} bus"
   ru: "автобусов: %{count}"
   uk: "автобусів: %{count}"
@@ -41868,6 +42288,7 @@ _version: 2
 "Book value":
   nl: "Boekwaarde"
   de: "Buchwert"
+  da: "Bogført værdi"
   fr: "Valeur comptable"
   ru: "Балансовая стоимость"
   uk: "Балансова вартість"
@@ -41875,6 +42296,7 @@ _version: 2
 "Price a bus":
   nl: "Prijs per bus"
   de: "Preis pro Bus"
+  da: "Prissæt en bus"
   fr: "Prix par bus"
   ru: "Цена за автобус"
   uk: "Ціна за автобус"
@@ -41882,6 +42304,7 @@ _version: 2
 "Offer ends":
   nl: "Aanbieding loopt af"
   de: "Angebot endet"
+  da: "Tilbuddet udløber"
   fr: "Fin de l'offre"
   ru: "Предложение до"
   uk: "Пропозиція до"
@@ -41889,6 +42312,7 @@ _version: 2
 "Talk to the seller":
   nl: "Praat met de verkoper"
   de: "Mit dem Verkäufer reden"
+  da: "Tal med sælgeren"
   fr: "Parler au vendeur"
   ru: "Поговорить с продавцом"
   uk: "Поговорити з продавцем"
@@ -41896,6 +42320,7 @@ _version: 2
 "Talking to %{who}":
   nl: "In gesprek met %{who}"
   de: "Im Gespräch mit %{who}"
+  da: "Taler med %{who}"
   fr: "En discussion avec %{who}"
   ru: "Разговор с %{who}"
   uk: "Розмова з %{who}"
@@ -41903,6 +42328,7 @@ _version: 2
 "Asked at first":
   nl: "Eerst gevraagd"
   de: "Zuerst verlangt"
+  da: "Bad først om"
   fr: "Demandé au départ"
   ru: "Сначала просили"
   uk: "Спочатку просили"
@@ -41910,6 +42336,7 @@ _version: 2
 "He asks now":
   nl: "Hij vraagt nu"
   de: "Er verlangt jetzt"
+  da: "Han beder nu om"
   fr: "Il demande maintenant"
   ru: "Сейчас просит"
   uk: "Зараз просить"
@@ -41917,6 +42344,7 @@ _version: 2
 "Rounds left: %{n} of %{max}":
   nl: "Rondes over: %{n} van %{max}"
   de: "Runden übrig: %{n} von %{max}"
+  da: "Runder tilbage: %{n} af %{max}"
   fr: "Tours restants : %{n} sur %{max}"
   ru: "Осталось раундов: %{n} из %{max}"
   uk: "Залишилось раундів: %{n} з %{max}"
@@ -41924,6 +42352,7 @@ _version: 2
 "The dealer's patience":
   nl: "Geduld van de dealer"
   de: "Geduld des Händlers"
+  da: "Forhandlerens tålmodighed"
   fr: "Patience du concessionnaire"
   ru: "Терпение дилера"
   uk: "Терпіння дилера"
@@ -41931,6 +42360,7 @@ _version: 2
 "Agreed extras":
   nl: "Afgesproken extra's"
   de: "Vereinbarte Extras"
+  da: "Aftalt ekstraudstyr"
   fr: "Extras convenus"
   ru: "Согласованные дополнения"
   uk: "Узгоджені доповнення"
@@ -41938,6 +42368,7 @@ _version: 2
 "Good day. This one is %{amount}. What can I do for you?":
   nl: "Goedendag. Deze kost %{amount}. Wat kan ik voor u doen?"
   de: "Guten Tag. Dieser kostet %{amount}. Was kann ich für Sie tun?"
+  da: "God dag. Denne koster %{amount}. Hvad kan jeg gøre for dig?"
   fr: "Bonjour. Celui-ci coûte %{amount}. Que puis-je faire pour vous ?"
   ru: "Добрый день. Этот стоит %{amount}. Чем могу помочь?"
   uk: "Добрий день. Цей коштує %{amount}. Чим можу допомогти?"
@@ -41945,6 +42376,7 @@ _version: 2
 "Ask for a discount":
   nl: "Vraag om korting"
   de: "Um Rabatt bitten"
+  da: "Bed om rabat"
   fr: "Demander une remise"
   ru: "Попросить скидку"
   uk: "Попросити знижку"
@@ -41952,6 +42384,7 @@ _version: 2
 "Make an offer":
   nl: "Doe een bod"
   de: "Angebot machen"
+  da: "Giv et bud"
   fr: "Faire une offre"
   ru: "Сделать предложение"
   uk: "Зробити пропозицію"
@@ -41959,6 +42392,7 @@ _version: 2
 "Type the price you offer for one bus.":
   nl: "Typ de prijs die je voor één bus biedt."
   de: "Geben Sie den Preis ein, den Sie für einen Bus bieten."
+  da: "Skriv den pris, du byder for én bus."
   fr: "Saisissez le prix que vous proposez pour un bus."
   ru: "Введите цену, которую вы предлагаете за один автобус."
   uk: "Введіть ціну, яку ви пропонуєте за один автобус."
@@ -41966,6 +42400,7 @@ _version: 2
 "Worth about %{amount} a bus to the dealer":
   nl: "Voor de dealer zo'n %{amount} per bus waard"
   de: "Für den Händler etwa %{amount} pro Bus wert"
+  da: "Værd ca. %{amount} pr. bus for forhandleren"
   fr: "Vaut environ %{amount} par bus pour le concessionnaire"
   ru: "Для дилера стоит около %{amount} за автобус"
   uk: "Для дилера коштує близько %{amount} за автобус"
@@ -41973,6 +42408,7 @@ _version: 2
 "The dealer broke the talk off. Come back another day - or buy at the list price.":
   nl: "De dealer heeft het gesprek afgebroken. Kom een andere dag terug - of koop voor de catalogusprijs."
   de: "Der Händler hat das Gespräch abgebrochen. Kommen Sie an einem anderen Tag wieder - oder kaufen Sie zum Listenpreis."
+  da: "Forhandleren afbrød samtalen. Kom igen en anden dag - eller køb til listeprisen."
   fr: "Le concessionnaire a rompu la discussion. Revenez un autre jour - ou achetez au prix catalogue."
   ru: "Дилер прервал разговор. Приходите в другой день - или покупайте по прайсу."
   uk: "Дилер перервав розмову. Приходьте іншого дня - або купуйте за прайсом."
@@ -41980,6 +42416,7 @@ _version: 2
 "You have a deal. The contract says what was agreed.":
   nl: "Je bent het eens. In het contract staat wat afgesproken is."
   de: "Sie sind sich einig. Im Vertrag steht, was vereinbart wurde."
+  da: "Du har en aftale. Kontrakten siger, hvad der blev aftalt."
   fr: "Marché conclu. Le contrat reprend ce qui a été convenu."
   ru: "Сделка заключена. В договоре всё, о чём договорились."
   uk: "Угоду укладено. У договорі все, про що домовилися."
@@ -41987,6 +42424,7 @@ _version: 2
 "That was his last word: take it, or leave it.":
   nl: "Dat was zijn laatste woord: graag of niet."
   de: "Das war sein letztes Wort: annehmen oder lassen."
+  da: "Det var hans sidste ord: tag det, eller lad det være."
   fr: "C'était son dernier mot : à prendre ou à laisser."
   ru: "Это было его последнее слово: берите или нет."
   uk: "Це було його останнє слово: беріть або ні."
@@ -41994,6 +42432,7 @@ _version: 2
 "Take %{amount} and draw up the contract":
   nl: "Neem %{amount} en stel het contract op"
   de: "%{amount} annehmen und den Vertrag aufsetzen"
+  da: "Tag %{amount}, og udfærdig kontrakten"
   fr: "Accepter %{amount} et rédiger le contrat"
   ru: "Принять %{amount} и составить договор"
   uk: "Прийняти %{amount} і скласти договір"
@@ -42001,6 +42440,7 @@ _version: 2
 "Purchase contract no. %{no}":
   nl: "Koopcontract nr. %{no}"
   de: "Kaufvertrag Nr. %{no}"
+  da: "Købskontrakt nr. %{no}"
   fr: "Contrat d'achat n° %{no}"
   ru: "Договор купли-продажи № %{no}"
   uk: "Договір купівлі-продажу № %{no}"
@@ -42008,6 +42448,7 @@ _version: 2
 "Purchase contract":
   nl: "Koopcontract"
   de: "Kaufvertrag"
+  da: "Købskontrakt"
   fr: "Contrat d'achat"
   ru: "Договор купли-продажи"
   uk: "Договір купівлі-продажу"
@@ -42015,6 +42456,7 @@ _version: 2
 "Dealer of new buses":
   nl: "Dealer van nieuwe bussen"
   de: "Händler für Neubusse"
+  da: "Forhandler af nye busser"
   fr: "Concessionnaire de bus neufs"
   ru: "Дилер новых автобусов"
   uk: "Дилер нових автобусів"
@@ -42022,6 +42464,7 @@ _version: 2
 "Seller of used buses":
   nl: "Verkoper van tweedehands bussen"
   de: "Verkäufer von Gebrauchtbussen"
+  da: "Sælger af brugte busser"
   fr: "Vendeur de bus d'occasion"
   ru: "Продавец подержанных автобусов"
   uk: "Продавець вживаних автобусів"
@@ -42029,6 +42472,7 @@ _version: 2
 "Buyer":
   nl: "Koper"
   de: "Käufer"
+  da: "Køber"
   fr: "Acheteur"
   ru: "Покупатель"
   uk: "Покупець"
@@ -42036,6 +42480,7 @@ _version: 2
 "At once, on signing":
   nl: "Direct, bij ondertekening"
   de: "Sofort, bei Unterschrift"
+  da: "Med det samme, ved underskrivelsen"
   fr: "Immédiatement, à la signature"
   ru: "Сразу, при подписании"
   uk: "Одразу, під час підписання"
@@ -42043,6 +42488,7 @@ _version: 2
 "Warranty":
   nl: "Garantie"
   de: "Garantie"
+  da: "Garanti"
   fr: "Garantie"
   ru: "Гарантия"
   uk: "Гарантія"
@@ -42050,6 +42496,7 @@ _version: 2
 "Extras":
   nl: "Extra's"
   de: "Extras"
+  da: "Ekstraudstyr"
   fr: "Extras"
   ru: "Дополнения"
   uk: "Доповнення"
@@ -42057,6 +42504,7 @@ _version: 2
 "List price a bus":
   nl: "Catalogusprijs per bus"
   de: "Listenpreis pro Bus"
+  da: "Listepris pr. bus"
   fr: "Prix catalogue par bus"
   ru: "Цена по прайсу за автобус"
   uk: "Ціна за прайсом за автобус"
@@ -42064,6 +42512,7 @@ _version: 2
 "Agreed price a bus":
   nl: "Afgesproken prijs per bus"
   de: "Vereinbarter Preis pro Bus"
+  da: "Aftalt pris pr. bus"
   fr: "Prix convenu par bus"
   ru: "Согласованная цена за автобус"
   uk: "Узгоджена ціна за автобус"
@@ -42071,6 +42520,7 @@ _version: 2
 "Painting a bus":
   nl: "Spuitwerk per bus"
   de: "Lackierung pro Bus"
+  da: "Bemaling pr. bus"
   fr: "Peinture par bus"
   ru: "Покраска за автобус"
   uk: "Фарбування за автобус"
