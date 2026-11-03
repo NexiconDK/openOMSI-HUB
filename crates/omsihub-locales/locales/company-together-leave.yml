@@ -3,6 +3,7 @@ _version: 2
 # the AI driving the rest of a duty its player left.
 "The host closed this session.":
   de: "Der Gastgeber hat diese Sitzung beendet."
+  da: "Værten lukkede denne session."
   fr: "L'hôte a fermé cette session."
   nl: "De host heeft deze sessie gesloten."
   pl: "Gospodarz zamknął tę sesję."
@@ -10,6 +11,7 @@ _version: 2
   uk: "Хост закрив цю сесію."
 "%{company} - the host closed this session":
   de: "%{company} – der Gastgeber hat diese Sitzung beendet"
+  da: "%{company} - værten lukkede denne session"
   fr: "%{company} – l'hôte a fermé cette session"
   nl: "%{company} – de host heeft deze sessie gesloten"
   pl: "%{company} – gospodarz zamknął tę sesję"
@@ -17,6 +19,7 @@ _version: 2
   uk: "%{company} – хост закрив цю сесію"
 "The host stopped sharing the company, closed it or quit Omsi-Hub.":
   de: "Der Gastgeber teilt den Betrieb nicht mehr, hat ihn geschlossen oder Omsi-Hub beendet."
+  da: "Værten holdt op med at dele selskabet, lukkede det eller afsluttede Omsi-Hub."
   fr: "L'hôte ne partage plus l'entreprise, l'a fermée ou a quitté Omsi-Hub."
   nl: "De host deelt het bedrijf niet meer, heeft het gesloten of Omsi-Hub afgesloten."
   pl: "Gospodarz przestał udostępniać firmę, zamknął ją lub wyszedł z Omsi-Hub."
@@ -24,6 +27,7 @@ _version: 2
   uk: "Хост припинив ділитися компанією, закрив її або вийшов з Omsi-Hub."
 "Lost the connection to the host":
   de: "Verbindung zum Gastgeber verloren"
+  da: "Forbindelsen til værten er tabt"
   fr: "Connexion à l'hôte perdue"
   nl: "Verbinding met de host verloren"
   pl: "Utracono połączenie z gospodarzem"
@@ -31,6 +35,7 @@ _version: 2
   uk: "Зв'язок із хостом втрачено"
 "The host's launcher has not answered for a while: it may have closed, or the network dropped.":
   de: "Der Launcher des Gastgebers antwortet seit einer Weile nicht: Er wurde vielleicht geschlossen, oder das Netzwerk ist weg."
+  da: "Værtens launcher har ikke svaret et stykke tid: den kan være lukket, eller netværket er faldet ud."
   fr: "Le lanceur de l'hôte ne répond plus depuis un moment : il a peut-être été fermé, ou le réseau est tombé."
   nl: "De launcher van de host antwoordt al een tijdje niet: misschien is hij gesloten, of is het netwerk weggevallen."
   pl: "Launcher gospodarza od dłuższej chwili nie odpowiada: mógł zostać zamknięty albo zerwała się sieć."
@@ -38,6 +43,7 @@ _version: 2
   uk: "Лаунчер хоста давно не відповідає: можливо, його закрито або зникла мережа."
 "The host removed you from this session":
   de: "Der Gastgeber hat dich aus dieser Sitzung entfernt"
+  da: "Værten fjernede dig fra denne session"
   fr: "L'hôte vous a retiré de cette session"
   nl: "De host heeft je uit deze sessie verwijderd"
   pl: "Gospodarz usunął cię z tej sesji"
@@ -45,6 +51,7 @@ _version: 2
   uk: "Хост видалив вас із цієї сесії"
 "Ask the host if you want to join again.":
   de: "Frag den Gastgeber, wenn du wieder beitreten möchtest."
+  da: "Spørg værten, hvis du vil deltage igen."
   fr: "Demandez à l'hôte si vous voulez rejoindre à nouveau."
   nl: "Vraag het de host als je weer mee wilt doen."
   pl: "Zapytaj gospodarza, jeśli chcesz dołączyć ponownie."
@@ -52,6 +59,7 @@ _version: 2
   uk: "Запитайте хоста, якщо хочете приєднатися знову."
 "Your game still drives %{duty}, but its results can no longer reach the host.":
   de: "Dein Spiel fährt %{duty} weiter, aber die Ergebnisse erreichen den Gastgeber nicht mehr."
+  da: "Dit spil kører stadig %{duty}, men dets resultater kan ikke længere nå værten."
   fr: "Votre jeu conduit toujours %{duty}, mais ses résultats ne peuvent plus parvenir à l'hôte."
   nl: "Je spel rijdt %{duty} nog, maar de resultaten kunnen de host niet meer bereiken."
   pl: "Twoja gra nadal prowadzi %{duty}, ale wyniki nie mogą już dotrzeć do gospodarza."
@@ -59,6 +67,7 @@ _version: 2
   uk: "Ваша гра все ще веде %{duty}, але результати більше не дійдуть до хоста."
 "Back to the menu":
   de: "Zurück zum Menü"
+  da: "Tilbage til menuen"
   fr: "Retour au menu"
   nl: "Terug naar het menu"
   pl: "Powrót do menu"
@@ -66,6 +75,7 @@ _version: 2
   uk: "Назад до меню"
 "Try again":
   de: "Erneut versuchen"
+  da: "Prøv igen"
   fr: "Réessayer"
   nl: "Opnieuw proberen"
   pl: "Spróbuj ponownie"
@@ -73,6 +83,7 @@ _version: 2
   uk: "Спробувати ще раз"
 "%{name} left duty %{k} of line %{n} (tour %{tour}): the AI drives the rest of it.":
   de: "%{name} hat Dienst %{k} der Linie %{n} (Umlauf %{tour}) verlassen: Die KI fährt den Rest."
+  da: "%{name} forlod vagt %{k} på linje %{n} (vognløb %{tour}): AI'en kører resten af den."
   fr: "%{name} a quitté le service %{k} de la ligne %{n} (tournée %{tour}) : l'IA conduit le reste."
   nl: "%{name} heeft dienst %{k} van lijn %{n} (omloop %{tour}) verlaten: de AI rijdt de rest."
   pl: "%{name} opuścił(a) służbę %{k} linii %{n} (obieg %{tour}): resztę prowadzi SI."
@@ -80,6 +91,7 @@ _version: 2
   uk: "%{name} покинув(ла) зміну %{k} лінії %{n} (оборот %{tour}): решту веде ШІ."
 "%{name} left duty %{k} of line %{n} (tour %{tour}) before its first trip: the AI drives all of it.":
   de: "%{name} hat Dienst %{k} der Linie %{n} (Umlauf %{tour}) vor der ersten Fahrt verlassen: Die KI fährt ihn ganz."
+  da: "%{name} forlod vagt %{k} på linje %{n} (vognløb %{tour}) før dens første tur: AI'en kører hele den."
   fr: "%{name} a quitté le service %{k} de la ligne %{n} (tournée %{tour}) avant son premier trajet : l'IA le conduit en entier."
   nl: "%{name} heeft dienst %{k} van lijn %{n} (omloop %{tour}) voor de eerste rit verlaten: de AI rijdt hem helemaal."
   pl: "%{name} opuścił(a) służbę %{k} linii %{n} (obieg %{tour}) przed pierwszym kursem: całą prowadzi SI."
@@ -87,6 +99,7 @@ _version: 2
   uk: "%{name} покинув(ла) зміну %{k} лінії %{n} (оборот %{tour}) до першого рейсу: її повністю веде ШІ."
 "%{name} left duty %{k} of line %{n} (tour %{tour}) before its first trip: it is open for another player.":
   de: "%{name} hat Dienst %{k} der Linie %{n} (Umlauf %{tour}) vor der ersten Fahrt verlassen: Er ist frei für einen anderen Spieler."
+  da: "%{name} forlod vagt %{k} på linje %{n} (vognløb %{tour}) før dens første tur: den er ledig for en anden spiller."
   fr: "%{name} a quitté le service %{k} de la ligne %{n} (tournée %{tour}) avant son premier trajet : il est libre pour un autre joueur."
   nl: "%{name} heeft dienst %{k} van lijn %{n} (omloop %{tour}) voor de eerste rit verlaten: hij is vrij voor een andere speler."
   pl: "%{name} opuścił(a) służbę %{k} linii %{n} (obieg %{tour}) przed pierwszym kursem: jest wolna dla innego gracza."
@@ -94,6 +107,7 @@ _version: 2
   uk: "%{name} покинув(ла) зміну %{k} лінії %{n} (оборот %{tour}) до першого рейсу: вона вільна для іншого гравця."
 "%{name} takes duty %{k} of line %{n} (tour %{tour}) back from the AI at its next trip.":
   de: "%{name} übernimmt Dienst %{k} der Linie %{n} (Umlauf %{tour}) ab der nächsten Fahrt wieder von der KI."
+  da: "%{name} overtager vagt %{k} på linje %{n} (vognløb %{tour}) fra AI'en ved dens næste tur."
   fr: "%{name} reprend le service %{k} de la ligne %{n} (tournée %{tour}) à l'IA dès son prochain trajet."
   nl: "%{name} neemt dienst %{k} van lijn %{n} (omloop %{tour}) vanaf de volgende rit terug van de AI."
   pl: "%{name} przejmuje służbę %{k} linii %{n} (obieg %{tour}) z powrotem od SI od następnego kursu."
@@ -101,6 +115,7 @@ _version: 2
   uk: "%{name} забирає зміну %{k} лінії %{n} (оборот %{tour}) у ШІ з наступного рейсу."
 "%{name} is back: duty %{k} of line %{n} (tour %{tour}) is his again.":
   de: "%{name} ist zurück: Dienst %{k} der Linie %{n} (Umlauf %{tour}) gehört wieder ihm/ihr."
+  da: "%{name} er tilbage: vagt %{k} på linje %{n} (vognløb %{tour}) er hans igen."
   fr: "%{name} est de retour : le service %{k} de la ligne %{n} (tournée %{tour}) est de nouveau à lui/elle."
   nl: "%{name} is terug: dienst %{k} van lijn %{n} (omloop %{tour}) is weer van hem/haar."
   pl: "%{name} wrócił(a): służba %{k} linii %{n} (obieg %{tour}) znów należy do niego/niej."
@@ -108,6 +123,7 @@ _version: 2
   uk: "%{name} повернувся(лася): зміна %{k} лінії %{n} (оборот %{tour}) знову його/її."
 "The AI drives the rest of this duty: take it back from the next trip.":
   de: "Die KI fährt den Rest dieses Dienstes: Übernimm ihn ab der nächsten Fahrt wieder."
+  da: "AI'en kører resten af denne vagt: tag den tilbage fra næste tur."
   fr: "L'IA conduit le reste de ce service : reprenez-le dès le prochain trajet."
   nl: "De AI rijdt de rest van deze dienst: neem hem terug vanaf de volgende rit."
   pl: "Resztę tej służby prowadzi SI: przejmij ją od następnego kursu."
@@ -115,6 +131,7 @@ _version: 2
   uk: "Решту цієї зміни веде ШІ: заберіть її з наступного рейсу."
 "The AI has finished this duty: no trip is left to take back.":
   de: "Die KI hat diesen Dienst beendet: Es ist keine Fahrt mehr übrig."
+  da: "AI'en har afsluttet denne vagt: ingen tur er tilbage at tage tilbage."
   fr: "L'IA a terminé ce service : il ne reste aucun trajet à reprendre."
   nl: "De AI heeft deze dienst afgemaakt: er is geen rit meer over om terug te nemen."
   pl: "SI zakończyła tę służbę: nie został żaden kurs do przejęcia."
@@ -122,6 +139,7 @@ _version: 2
   uk: "ШІ завершив цю зміну: рейсів, які можна забрати, не лишилося."
 "The AI does not drive this duty.":
   de: "Die KI fährt diesen Dienst nicht."
+  da: "AI'en kører ikke denne vagt."
   fr: "L'IA ne conduit pas ce service."
   nl: "De AI rijdt deze dienst niet."
   pl: "SI nie prowadzi tej służby."
@@ -129,6 +147,7 @@ _version: 2
   uk: "ШІ не веде цю зміну."
 "Left it: the AI drives the rest":
   de: "Verlassen: Die KI fährt den Rest"
+  da: "Forladt: AI'en kører resten"
   fr: "Quitté : l'IA conduit le reste"
   nl: "Verlaten: de AI rijdt de rest"
   pl: "Opuszczona: resztę prowadzi SI"
@@ -136,6 +155,7 @@ _version: 2
   uk: "Покинута: решту веде ШІ"
 "Open a duty its player left before its first trip":
   de: "Einen Dienst freigeben, den sein Spieler vor der ersten Fahrt verlassen hat"
+  da: "Åbn en vagt, som dens spiller forlod før første tur"
   fr: "Libérer un service que son joueur a quitté avant le premier trajet"
   nl: "Een dienst die de speler voor de eerste rit verliet weer vrijgeven"
   pl: "Zwolnij służbę, którą gracz opuścił przed pierwszym kursem"
@@ -143,6 +163,7 @@ _version: 2
   uk: "Звільняти зміну, яку гравець покинув до першого рейсу"
 "Off: the AI drives a duty its player left, all of it or from where they got to. The route carries on either way.":
   de: "Aus: Die KI fährt einen verlassenen Dienst, ganz oder ab dort, wo der Spieler war. Die Linie läuft so oder so weiter."
+  da: "Fra: AI'en kører en vagt, som dens spiller forlod, hele den eller fra dér, hvor de nåede til. Ruten fortsætter under alle omstændigheder."
   fr: "Désactivé : l'IA conduit un service quitté par son joueur, en entier ou depuis là où il s'est arrêté. La ligne continue dans tous les cas."
   nl: "Uit: de AI rijdt een verlaten dienst, helemaal of vanaf waar de speler was. De lijn rijdt hoe dan ook door."
   pl: "Wyłączone: SI prowadzi opuszczoną służbę, całą lub od miejsca, w którym gracz skończył. Linia i tak kursuje dalej."
@@ -150,6 +171,7 @@ _version: 2
   uk: "Вимк.: покинуту зміну веде ШІ – повністю або з місця, де зупинився гравець. Маршрут у будь-якому разі триває."
 "AI (%{name} left)":
   de: "KI (%{name} weg)"
+  da: "AI (%{name} gik)"
   fr: "IA (%{name} parti)"
   nl: "AI (%{name} weg)"
   pl: "SI (%{name} wyszedł)"
@@ -157,6 +179,7 @@ _version: 2
   uk: "ШІ (%{name} пішов)"
 "You handed it to the AI: it drives the rest, you are free":
   de: "Du hast ihn der KI übergeben: Sie fährt den Rest, du bist frei"
+  da: "Du gav den til AI'en: den kører resten, du er fri"
   fr: "Vous l'avez remis à l'IA : elle conduit le reste, vous êtes libre"
   nl: "Je hebt hem aan de AI overgedragen: die rijdt de rest, je bent vrij"
   pl: "Przekazałeś ją SI: resztę prowadzi SI, jesteś wolny"
@@ -164,6 +187,7 @@ _version: 2
   uk: "Ви передали її ШІ: решту веде ШІ, ви вільні"
 "AI (%{name} handed over)":
   de: "KI (%{name} übergeben)"
+  da: "AI (%{name} overdrog)"
   fr: "IA (%{name} a remis)"
   nl: "AI (%{name} overgedragen)"
   pl: "SI (%{name} przekazał)"
@@ -171,6 +195,7 @@ _version: 2
   uk: "ШІ (%{name} передав)"
 "You left it: the AI drives it":
   de: "Du hast ihn verlassen: Die KI fährt ihn"
+  da: "Du forlod den: AI'en kører den"
   fr: "Vous l'avez quitté : l'IA le conduit"
   nl: "Je hebt hem verlaten: de AI rijdt hem"
   pl: "Opuściłeś ją: prowadzi ją SI"
@@ -178,6 +203,7 @@ _version: 2
   uk: "Ви її покинули: її веде ШІ"
 "You left it: the AI drives the rest of it":
   de: "Du hast ihn verlassen: Die KI fährt den Rest"
+  da: "Du forlod den: AI'en kører resten af den"
   fr: "Vous l'avez quitté : l'IA conduit le reste"
   nl: "Je hebt hem verlaten: de AI rijdt de rest"
   pl: "Opuściłeś ją: resztę prowadzi SI"
@@ -185,6 +211,7 @@ _version: 2
   uk: "Ви її покинули: решту веде ШІ"
 "Take the duty back from the next trip":
   de: "Dienst ab der nächsten Fahrt zurücknehmen"
+  da: "Tag vagten tilbage fra næste tur"
   fr: "Reprendre le service au prochain trajet"
   nl: "Dienst terugnemen vanaf de volgende rit"
   pl: "Przejmij służbę od następnego kursu"
@@ -192,6 +219,7 @@ _version: 2
   uk: "Забрати зміну з наступного рейсу"
 "The AI drove the rest of it: %{n} trips":
   de: "Den Rest fuhr die KI: %{n} Fahrten"
+  da: "AI'en kørte resten af den: %{n} ture"
   fr: "L'IA a conduit le reste : %{n} trajets"
   nl: "De rest reed de AI: %{n} ritten"
   pl: "Resztę poprowadziła SI: %{n} kursów"

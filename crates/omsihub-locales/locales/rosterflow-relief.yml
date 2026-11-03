@@ -4,6 +4,7 @@ _version: 2
 # along a trip: the cut on the way, its issues and refusals.
 "Drivers change only at a relief point that allows it (Preferences › Relief Points).":
   de: "Fahrer wechseln nur an einem Ablösepunkt, der das erlaubt (Einstellungen › Ablösepunkte)."
+  da: "Chauffører skifter kun ved et afløsningspunkt, der tillader det (Indstillinger › Afløsningspunkter)."
   fr: "Les conducteurs ne se relaient qu'à un point de relève qui le permet (Préférences › Points de relève)."
   nl: "Chauffeurs wisselen alleen op een aflospunt dat dat toestaat (Voorkeuren › Aflospunten)."
   pl: "Kierowcy zmieniają się tylko w punkcie zmiany, który na to pozwala (Preferencje › Punkty zmiany)."
@@ -11,6 +12,7 @@ _version: 2
   uk: "Водії змінюються лише в пункті перезміни, де це дозволено (Вподобання › Пункти перезміни)."
 "That stop is not on the way between the trip's first and last stop.":
   de: "Diese Haltestelle liegt nicht zwischen der ersten und der letzten Haltestelle der Fahrt."
+  da: "Det stoppested ligger ikke på vejen mellem turens første og sidste stoppested."
   fr: "Cet arrêt n'est pas sur le parcours entre le premier et le dernier arrêt du trajet."
   nl: "Die halte ligt niet onderweg tussen de eerste en de laatste halte van de rit."
   pl: "Ten przystanek nie leży na trasie między pierwszym a ostatnim przystankiem kursu."
@@ -18,6 +20,7 @@ _version: 2
   uk: "Ця зупинка не лежить на шляху між першою та останньою зупинкою рейсу."
 "This trip has a relief on the way already.":
   de: "Diese Fahrt hat schon eine Ablösung unterwegs."
+  da: "Denne tur har allerede en afløsning undervejs."
   fr: "Ce trajet a déjà une relève en route."
   nl: "Deze rit heeft al een aflossing onderweg."
   pl: "Ten kurs ma już zmianę kierowcy na trasie."
@@ -25,6 +28,7 @@ _version: 2
   uk: "Цей рейс уже має перезміну в дорозі."
 "Signs on at %{stop}, where no duty may begin":
   de: "Dienstbeginn in %{stop}, wo kein Dienst beginnen darf"
+  da: "Møder ind ved %{stop}, hvor ingen vagt må begynde"
   fr: "Prise de service à %{stop}, où aucun service ne peut commencer"
   nl: "Meldt zich aan bij %{stop}, waar geen dienst mag beginnen"
   pl: "Rozpoczęcie w %{stop}, gdzie żadna służba nie może się zaczynać"
@@ -32,6 +36,7 @@ _version: 2
   uk: "Явка на %{stop}, де зміна починатися не може"
 "Signs off at %{stop}, where no duty may end":
   de: "Dienstende in %{stop}, wo kein Dienst enden darf"
+  da: "Har fyraften ved %{stop}, hvor ingen vagt må slutte"
   fr: "Fin de service à %{stop}, où aucun service ne peut finir"
   nl: "Meldt zich af bij %{stop}, waar geen dienst mag eindigen"
   pl: "Zakończenie w %{stop}, gdzie żadna służba nie może się kończyć"
@@ -39,6 +44,7 @@ _version: 2
   uk: "Здача на %{stop}, де зміна закінчуватися не може"
 "A split's break at %{stop}, where no break may be taken":
   de: "Die Pause eines geteilten Dienstes in %{stop}, wo keine Pause erlaubt ist"
+  da: "En delt vagts pause ved %{stop}, hvor ingen pause må holdes"
   fr: "La coupure d'un service en %{stop}, où aucune pause n'est permise"
   nl: "De pauze van een gebroken dienst bij %{stop}, waar geen pauze mag"
   pl: "Przerwa służby dzielonej w %{stop}, gdzie przerwa jest niedozwolona"
@@ -46,6 +52,7 @@ _version: 2
   uk: "Перерва розривної зміни на %{stop}, де перерва не дозволена"
 "Drivers change at %{stop}, where no relief is allowed":
   de: "Fahrerwechsel in %{stop}, wo keine Ablösung erlaubt ist"
+  da: "Chauffører skifter ved %{stop}, hvor ingen afløsning er tilladt"
   fr: "Relève à %{stop}, où aucune relève n'est permise"
   nl: "Chauffeurswissel bij %{stop}, waar geen aflossing mag"
   pl: "Zmiana kierowców w %{stop}, gdzie zmiana jest niedozwolona"
@@ -53,6 +60,7 @@ _version: 2
   uk: "Перезміна на %{stop}, де перезміна не дозволена"
 "Duties begin or end at a wrong place":
   de: "Dienste beginnen oder enden am falschen Ort"
+  da: "Vagter begynder eller slutter det forkerte sted"
   fr: "Services commencés ou finis au mauvais endroit"
   nl: "Diensten beginnen of eindigen op een verkeerde plek"
   pl: "Służby zaczynają się lub kończą w złym miejscu"
@@ -60,6 +68,7 @@ _version: 2
   uk: "Зміни починаються або закінчуються не там"
 "Breaks at a wrong place":
   de: "Pausen am falschen Ort"
+  da: "Pauser det forkerte sted"
   fr: "Pauses au mauvais endroit"
   nl: "Pauzes op een verkeerde plek"
   pl: "Przerwy w złym miejscu"
@@ -67,6 +76,7 @@ _version: 2
   uk: "Перерви не там"
 "Reliefs at a wrong place":
   de: "Ablösungen am falschen Ort"
+  da: "Afløsninger det forkerte sted"
   fr: "Relèves au mauvais endroit"
   nl: "Aflossingen op een verkeerde plek"
   pl: "Zmiany kierowców w złym miejscu"
@@ -74,6 +84,7 @@ _version: 2
   uk: "Перезміни не там"
 "Terminus":
   de: "Endhaltestelle"
+  da: "Endestation"
   fr: "Terminus"
   nl: "Eindpunt"
   pl: "Pętla"
@@ -81,6 +92,7 @@ _version: 2
   uk: "Кінцева"
 "On the way":
   de: "Unterwegs"
+  da: "Undervejs"
   fr: "En route"
   nl: "Onderweg"
   pl: "Na trasie"
@@ -88,6 +100,7 @@ _version: 2
   uk: "У дорозі"
 "Click to cut the duty here, on the way: a driver takes over at %{stop} (%{time}).":
   de: "Klicken, um den Dienst hier unterwegs zu teilen: ein Fahrer übernimmt in %{stop} (%{time})."
+  da: "Klik for at dele vagten her, undervejs: en chauffør overtager ved %{stop} (%{time})."
   fr: "Cliquez pour couper le service ici, en route : un conducteur prend la relève à %{stop} (%{time})."
   nl: "Klik om de dienst hier onderweg te knippen: een chauffeur neemt het over bij %{stop} (%{time})."
   pl: "Kliknij, aby podzielić tu służbę na trasie: kierowca przejmuje autobus w %{stop} (%{time})."
@@ -95,6 +108,7 @@ _version: 2
   uk: "Натисніть, щоб розрізати зміну тут, у дорозі: водій змінює на %{stop} (%{time})."
 "Duty cut on %{v} on the way, at %{stop} (%{time})":
   de: "Dienst auf %{v} unterwegs geteilt, in %{stop} (%{time})"
+  da: "Vagt delt på %{v} undervejs, ved %{stop} (%{time})"
   fr: "Service coupé sur %{v} en route, à %{stop} (%{time})"
   nl: "Dienst op %{v} onderweg geknipt, bij %{stop} (%{time})"
   pl: "Służba na %{v} podzielona na trasie, w %{stop} (%{time})"
@@ -102,6 +116,7 @@ _version: 2
   uk: "Зміну на %{v} розрізано в дорозі, на %{stop} (%{time})"
 "Relief Points":
   de: "Ablösepunkte"
+  da: "Afløsningspunkter"
   fr: "Points de relève"
   nl: "Aflospunten"
   pl: "Punkty zmiany"
@@ -109,6 +124,7 @@ _version: 2
   uk: "Пункти перезміни"
 "Where drivers may begin or end a duty, change on the bus and take a break: the depot and the lines' termini by themselves, and the stops on a line's way you add.":
   de: "Wo Fahrer einen Dienst beginnen oder beenden, im Bus wechseln und Pause machen dürfen: das Depot und die Endhaltestellen der Linien von selbst, und die Haltestellen unterwegs, die Sie hinzufügen."
+  da: "Hvor chauffører må begynde eller slutte en vagt, skifte på bussen og holde pause: garagen og linjernes endestationer af sig selv og de stoppesteder på en linjes vej, du tilføjer."
   fr: "Où les conducteurs peuvent commencer ou finir un service, se relayer dans le bus et prendre une pause : le dépôt et les terminus des lignes d'office, et les arrêts en route que vous ajoutez."
   nl: "Waar chauffeurs een dienst mogen beginnen of eindigen, in de bus wisselen en pauze nemen: de remise en de eindpunten van de lijnen vanzelf, en de haltes onderweg die u toevoegt."
   pl: "Gdzie kierowcy mogą zaczynać lub kończyć służbę, zmieniać się w autobusie i robić przerwę: zajezdnia i pętle linii same z siebie oraz przystanki na trasie, które dodasz."
@@ -116,6 +132,7 @@ _version: 2
   uk: "Де водії можуть починати й закінчувати зміну, змінюватися в автобусі та робити перерву: депо й кінцеві маршрутів самі собою, а також зупинки в дорозі, які ви додасте."
 "Relief point":
   de: "Ablösepunkt"
+  da: "Afløsningspunkt"
   fr: "Point de relève"
   nl: "Aflospunt"
   pl: "Punkt zmiany"
@@ -123,6 +140,7 @@ _version: 2
   uk: "Пункт перезміни"
 "Sign-on/off":
   de: "Dienstbeginn/-ende"
+  da: "Møde ind/fyraften"
   fr: "Prise/fin de service"
   nl: "Aan-/afmelden"
   pl: "Rozpoczęcie/zakończenie"
@@ -130,6 +148,7 @@ _version: 2
   uk: "Явка/здача"
 "Take this stop out of the relief points":
   de: "Diese Haltestelle aus den Ablösepunkten nehmen"
+  da: "Tag dette stoppested ud af afløsningspunkterne"
   fr: "Retirer cet arrêt des points de relève"
   nl: "Deze halte uit de aflospunten halen"
   pl: "Usuń ten przystanek z punktów zmiany"
@@ -137,6 +156,7 @@ _version: 2
   uk: "Прибрати цю зупинку з пунктів перезміни"
 "Add a stop on the way":
   de: "Haltestelle unterwegs hinzufügen"
+  da: "Tilføj et stoppested undervejs"
   fr: "Ajouter un arrêt en route"
   nl: "Halte onderweg toevoegen"
   pl: "Dodaj przystanek na trasie"
@@ -144,6 +164,7 @@ _version: 2
   uk: "Додати зупинку в дорозі"
 "The lines' stops show once the timetable is read.":
   de: "Die Haltestellen der Linien erscheinen, sobald der Fahrplan gelesen ist."
+  da: "Linjernes stoppesteder vises, når køreplanen er læst."
   fr: "Les arrêts des lignes s'affichent une fois l'horaire lu."
   nl: "De haltes van de lijnen verschijnen zodra de dienstregeling gelezen is."
   pl: "Przystanki linii pojawią się po wczytaniu rozkładu."
@@ -151,6 +172,7 @@ _version: 2
   uk: "Зупинки маршрутів з’являться, коли розклад буде прочитано."
 "Per relief point":
   de: "Je Ablösepunkt"
+  da: "Pr. afløsningspunkt"
   fr: "Par point de relève"
   nl: "Per aflospunt"
   pl: "Dla każdego punktu zmiany"
@@ -158,6 +180,7 @@ _version: 2
   uk: "За пунктами перезміни"
 "Way":
   de: "Weg"
+  da: "Vej"
   fr: "Moyen"
   nl: "Manier"
   pl: "Sposób"
@@ -165,6 +188,7 @@ _version: 2
   uk: "Спосіб"
 "Between two relief points":
   de: "Zwischen zwei Ablösepunkten"
+  da: "Mellem to afløsningspunkter"
   fr: "Entre deux points de relève"
   nl: "Tussen twee aflospunten"
   pl: "Między dwoma punktami zmiany"
@@ -172,6 +196,7 @@ _version: 2
   uk: "Між двома пунктами перезміни"
 "From → to":
   de: "Von → nach"
+  da: "Fra → til"
   fr: "De → à"
   nl: "Van → naar"
   pl: "Z → do"
@@ -179,6 +204,7 @@ _version: 2
   uk: "Звідки → куди"
 "An empty field takes the way back's time, else the relief point's own, else the default.":
   de: "Ein leeres Feld nimmt die Zeit des Rückwegs, sonst die des Ablösepunkts, sonst den Standard."
+  da: "Et tomt felt tager tilbagevejens tid, ellers afløsningspunktets egen, ellers standardværdien."
   fr: "Un champ vide prend le temps du retour, sinon celui du point de relève, sinon la valeur par défaut."
   nl: "Een leeg veld neemt de tijd van de terugweg, anders die van het aflospunt, anders de standaard."
   pl: "Puste pole bierze czas drogi powrotnej, inaczej czas punktu zmiany, inaczej domyślny."
@@ -186,6 +212,7 @@ _version: 2
   uk: "Порожнє поле бере час зворотного шляху, інакше час пункту перезміни, інакше типове значення."
 "Relief points are set in Relief Points: the depot, the lines' termini and the stops you add.":
   de: "Ablösepunkte werden unter Ablösepunkte festgelegt: das Depot, die Endhaltestellen der Linien und die Haltestellen, die Sie hinzufügen."
+  da: "Afløsningspunkter angives i Afløsningspunkter: garagen, linjernes endestationer og de stoppesteder, du tilføjer."
   fr: "Les points de relève se règlent dans Points de relève : le dépôt, les terminus des lignes et les arrêts que vous ajoutez."
   nl: "Aflospunten stelt u in bij Aflospunten: de remise, de eindpunten van de lijnen en de haltes die u toevoegt."
   pl: "Punkty zmiany ustawia się w Punktach zmiany: zajezdnia, pętle linii i przystanki, które dodasz."
@@ -193,6 +220,7 @@ _version: 2
   uk: "Пункти перезміни задаються в розділі «Пункти перезміни»: депо, кінцеві маршрутів і додані вами зупинки."
 "Relief on the way at %{stop} (%{time})":
   de: "Ablösung unterwegs in %{stop} (%{time})"
+  da: "Afløsning undervejs ved %{stop} (%{time})"
   fr: "Relève en route à %{stop} (%{time})"
   nl: "Aflossing onderweg bij %{stop} (%{time})"
   pl: "Zmiana kierowcy na trasie w %{stop} (%{time})"
@@ -200,6 +228,7 @@ _version: 2
   uk: "Перезміна в дорозі на %{stop} (%{time})"
 "Relief on the way":
   de: "Ablösung unterwegs"
+  da: "Afløsning undervejs"
   fr: "Relève en route"
   nl: "Aflossing onderweg"
   pl: "Zmiana na trasie"
@@ -207,6 +236,7 @@ _version: 2
   uk: "Перезміна в дорозі"
 "Join the two duties: one driver works the trip whole":
   de: "Die zwei Dienste verbinden: ein Fahrer fährt die ganze Fahrt"
+  da: "Slå de to vagter sammen: én chauffør kører hele turen"
   fr: "Joindre les deux services : un conducteur fait tout le trajet"
   nl: "De twee diensten samenvoegen: één chauffeur rijdt de hele rit"
   pl: "Połącz dwie służby: jeden kierowca jedzie cały kurs"
