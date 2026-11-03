@@ -86,6 +86,12 @@ pub struct Online {
     /// process, not kept: None elsewhere.
     #[serde(skip)]
     pub price_level: Option<String>,
+    /// (NexiconDK, 3 November 2026) The server's admin's corrections of the buses (`server_buses`:
+    /// floor, fuel, size, screens) and when their file was written, set by its process, not kept.
+    #[serde(skip)]
+    pub buses: Option<super::server_buses::Overrides>,
+    #[serde(skip)]
+    pub buses_at: u64,
     /// (Decided 25 October 2026) The buses of the lines changing company: offered, answered,
     /// sold, taken over (`takeover`).
     #[serde(default)]
@@ -143,7 +149,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
     }
 }
 
@@ -648,6 +654,10 @@ impl Host {
         // (and the server's price level: its companies' wages, fuel, buses and contracts - 3 November 2026)
         if c.online.on_server && c.online.price_level.is_none() {
             c.online.price_level = Some(super::server_fines::price_level_of(&self.data));
+        }
+        // (and the admin's corrections of the buses, read again when he changed them)
+        if super::server_buses::refresh(&self.data, c) {
+            self.dirty = true;
         }
         // (phase 6 step 3: a depot's big purchases, its head office's to approve)
         if c.online.on_server && c.online.big_purchase.is_none() {

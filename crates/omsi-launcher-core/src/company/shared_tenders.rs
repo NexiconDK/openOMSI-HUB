@@ -285,6 +285,10 @@ pub struct ServerAsk {
     /// (3 November 2026) The reserve buses' share the admin chose for it (0: the rules').
     #[serde(default, skip_serializing_if = "no_share")]
     pub reserve: f64,
+    /// (3 November 2026) What it asks of the buses, as the admin chose (None: the defaults, a
+    /// renewal the last term's).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub needs: Option<super::server_buses::Needs>,
 }
 
 fn no_share(x: &f64) -> bool {
@@ -671,6 +675,9 @@ fn add(m: &mut Market, c: &Company, l: &LineInfo, opens_at: i64, closes_at: i64,
 /// (3 November 2026) `add` for a package of lines `ls` named `name` (the first its tender's own
 /// line: `concessions::package_of`); one line: a tender of its own.
 fn add_lines(m: &mut Market, c: &Company, ls: &[&LineInfo], name: &str, opens_at: i64, closes_at: i64, holder: Option<(&str, &str)>, cfg: &TenderCfg) -> u32 {
+    // (3 November 2026: what it asks of the buses - its line's last tender's, a renewal keeps the
+    // term's; else the defaults; the admin's own over them when he puts it out: `offer`)
+    let needs = m.tenders.iter().rev().filter(|x| x.tender.line.eq_ignore_ascii_case(&ls[0].name)).find_map(|x| x.tender.market.as_ref().and_then(|s| s.needs)).unwrap_or_default();
     m.counter += 1;
     let id = m.counter;
     let pool: Vec<u32> = m.rivals.iter().map(|r| r.id).collect();
@@ -697,7 +704,7 @@ fn add_lines(m: &mut Market, c: &Company, ls: &[&LineInfo], name: &str, opens_at
     let bus_cap = super::sealed::cap_set(bus_cost, cfg.cap_bus_day, cfg.cap_factor);
     let hours_cost = (t.cost - cn::bus_year(&t, bus_cost)).max(t.cost * 3 / 10);
     t.reference = super::sealed::cap_set(hours_cost, cn::of_hour(&t, cfg.cap_hour as f64), cfg.cap_factor) + cn::bus_year(&t, bus_cap);
-    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), low_share: cfg.low_share, award: cfg.award, bus_cap, bus_cost, reserve: cn::reserve_of(cn::contract_buses(&t), cfg.reserve), ..Default::default() });
+    t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), low_share: cfg.low_share, award: cfg.award, bus_cap, bus_cost, reserve: cn::reserve_of(cn::contract_buses(&t), cfg.reserve), needs: Some(needs), ..Default::default() });
     m.tenders.push(MarketTender { tender: t, applied: Vec::new(), decided: None });
     id
 }
@@ -754,6 +761,9 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
                     if let Some(s) = t.tender.market.as_mut() {
                         s.reserve = r;
                     }
+                }
+                if let (Some(n), Some(s)) = (x.needs, t.tender.market.as_mut()) {
+                    s.needs = Some(n);
                 }
                 t.applied.push(a.company.clone());
             }
@@ -822,6 +832,10 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
                         if let Some(s) = t.tender.market.as_mut() {
                             s.reserve = r;
                         }
+                    }
+                    // (3 November 2026: what the admin asks of the buses)
+                    if let (Some(n), Some(s)) = (x.needs, t.tender.market.as_mut()) {
+                        s.needs = Some(n);
                     }
                 }
                 said.push(format!("{}: line {} out to tender from {} {} to {} {}, on the application of {}", m.map, l.name, clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes), clock::hhmm(closes), a.company));
@@ -1171,6 +1185,7 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
             t.reference = mt.tender.reference;
             if let (Some(x), Some(y)) = (t.market.as_mut(), mt.tender.market.as_ref()) {
                 (x.low_share, x.direct, x.direct_name, x.award) = (y.low_share, y.direct.clone(), y.direct_name.clone(), y.award);
+                x.needs = y.needs;
             }
             if mt.tender.week.is_some() {
                 t.week = mt.tender.week;
@@ -1365,6 +1380,10 @@ pub fn bid_parts(data: &Path, c: &mut Company, id: u32, amount: Cents, bus_day: 
     let bus_day = if cap > 0 { bus_day.max(0) } else { 0 };
     if bus_day > cap && cap > 0 {
         return Err(BUS_ABOVE_CAP);
+    }
+    // (3 November 2026: with buses of a fuel the tender allows)
+    if c.concessions.tenders.iter().find(|t| t.id == id).is_some_and(|t| t.market.as_ref().and_then(|m| m.needs).is_some_and(|n| !n.drive_ok(t.drive))) {
+        return Err(cn::DRIVE_NOT_ALLOWED);
     }
     cn::bid(c, id, amount)?;
     if let Some(t) = c.concessions.tenders.iter_mut().find(|t| t.id == id) {

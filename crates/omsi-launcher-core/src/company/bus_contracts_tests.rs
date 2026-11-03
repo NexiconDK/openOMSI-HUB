@@ -658,6 +658,43 @@ fn the_authoritys_fines_on_a_server_contract() {
     assert!(c.ledger.iter().any(|b| b.text == "Line 5: the authority's fine - 1 journeys not run (30 min)"));
 }
 
+/// (NexiconDK, 3 November 2026) A contract whose tender asked for CNG or electric buses and low
+/// floor fines each journey with a diesel bus and each with a high-floor one; a CNG bus on a
+/// contract won with electric buses is a fault like a diesel one.
+#[test]
+fn the_authority_fines_a_bus_of_the_wrong_fuel_or_floor() {
+    use crate::company::market::{self, MarketBus, Payment};
+    use crate::company::server_buses::{FloorRule, FuelRule, Needs};
+    use crate::company::server_fines::Fines;
+    let mut c = company(GameMode::Normal);
+    c.cash += 10_000_000_00;
+    c.online.on_server = true;
+    let solo = market::buy_new(&mut c, &MarketBus { name: "Citaro".into(), kind: BusKind { size: BusSize::Solo, drive: Drive::Diesel }, ..Default::default() }, Payment::Cash, "").unwrap();
+    let coach = market::buy_new(&mut c, &MarketBus { name: "Setra S 415 GT-HD".into(), kind: BusKind { size: BusSize::Solo, drive: Drive::Diesel }, ..Default::default() }, Payment::Cash, "").unwrap();
+    let today = c.date.clone();
+    let id = with_contract(&mut c, Kind::Gross, Period::Day, 300_000_00, &today);
+    c.concessions.contracts.iter_mut().find(|k| k.id == id).unwrap().needs = Some(Needs { floor: FloorRule::LowOnly, fuel: FuelRule::CngOrElectric, ..Default::default() });
+    let mut j = Journeys::default();
+    j.ran("Linie5", "1", 0, false, Some(solo), None, Some(BusSize::Solo));
+    j.ran("Linie5", "2", 0, false, Some(coach), None, Some(BusSize::Solo));
+    close(&mut c, &j);
+    let f = Fines::default();
+    let fines = -booked(&c, BookingKind::Penalty);
+    assert!(fines >= 2 * Fines::cents(f.wrong_fuel) + Fines::cents(f.wrong_floor), "{fines}");
+    assert!(c.ledger.iter().any(|b| b.text == "Line 5: the authority's fine - 2 journeys with a bus of a fuel the tender does not allow"));
+    assert!(c.ledger.iter().any(|b| b.text == "Line 5: the authority's fine - 1 journeys with a bus of a floor the tender does not allow"));
+    // (won with electric buses: a CNG bus is fined as a diesel one, once)
+    let k = c.concessions.contracts.iter_mut().find(|k| k.id == id).unwrap();
+    (k.electric, k.needs) = (true, None);
+    c.fleet.iter_mut().find(|v| v.id == solo).unwrap().kind.drive = Drive::Cng;
+    c.ledger.clear();
+    c.date = dates::add(&c.date, 1);
+    let mut j = Journeys::default();
+    j.ran("Linie5", "1", 0, false, Some(solo), None, Some(BusSize::Solo));
+    close(&mut c, &j);
+    assert!(c.ledger.iter().any(|b| b.text == "Line 5: the authority's fine - 1 journeys with a diesel bus on an electric tour"), "{:?}", c.ledger.iter().map(|b| &b.text).collect::<Vec<_>>());
+}
+
 /// (NexiconDK, decided 25 October 2026) A contract won by the timetable hour on the server is
 /// paid each day for the timetable hours run - a journey not run not paid, nothing else
 /// deducted -; departures more than a minute early are fined, and more than 15 minutes late

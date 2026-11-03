@@ -1621,6 +1621,9 @@ fn market_of(vehicles: &[core::VehicleInfo]) -> Vec<MarketBus> {
     let mut out: Vec<MarketBus> = par_map(&parts, |p| co::market::market_of(p)).concat();
     // (sorted as `market_of` sorts - a stable sort of the buses in their order - so the same list)
     out.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    // (NexiconDK, 3 November 2026: on a server, its admin's corrections of the buses' fuel and size
+    // - `server_buses`; a player's own computer has none)
+    co::server_buses::apply_market(&mut out, &co::server_buses::load(&data()));
     out
 }
 

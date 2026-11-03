@@ -77,8 +77,21 @@ pub fn guess_kind(texts: &[&str], parts: &[&str], trailer: bool, length: Option<
     } else {
         BusSize::Solo
     };
-    BusKind { size, drive: if electric { Drive::Electric } else { Drive::Diesel } }
+    // (NexiconDK, 3 November 2026: a gas bus says so - "Citaro CNG", "Lion's City CNG", "Urbino
+    // CNG", "NGT", "Erdgas", "Biogas", "Gas" as a word, or its scripts' and sounds' names)
+    let cng = !electric && (has("cng") || has("ngt") || has("gas") || has("lng") || all.contains("erdgas") || all.contains("biogas") || CNG_PARTS.iter().any(|k| parts.contains(k)));
+    let drive = if electric {
+        Drive::Electric
+    } else if cng {
+        Drive::Cng
+    } else {
+        Drive::Diesel
+    };
+    BusKind { size, drive }
 }
+
+/// (3 November 2026) The names of scripts and parts only a gas bus has.
+const CNG_PARTS: [&str; 4] = ["cng", "erdgas", "gasmotor", "gas_engine"];
 
 /// Whether what a bus file couples behind it makes it an articulated bus (or a bus with a
 /// passenger trailer): a bicycle or luggage trailer does not ("Fahrradanhaenger.bus").
@@ -555,6 +568,12 @@ pub(crate) mod tests {
         assert_eq!(k(&["Solaris Urbino 12 electric"]).drive, Drive::Electric);
         assert_eq!(guess_kind(&["Urbino"], &["main_elektromotor.osc"], false, None, None).drive, Drive::Electric);
         assert_eq!(k(&["Trolleybus Gelenk"]), BusKind { size: BusSize::Articulated, drive: Drive::Electric });
+        // (3 November 2026) a gas bus from its name or a script of its gas engine; a plain "NG" is MAN's model
+        assert_eq!(k(&["MAN Lion's City CNG"]).drive, Drive::Cng);
+        assert_eq!(k(&["Mercedes-Benz O530 Citaro NGT"]).drive, Drive::Cng);
+        assert_eq!(k(&["Citaro", "Vehicles/Citaro Erdgas/x.bus"]).drive, Drive::Cng);
+        assert_eq!(guess_kind(&["Urbino"], &["cng_tank.osc"], false, None, None).drive, Drive::Cng);
+        assert_eq!(k(&["MAN NG 313"]).drive, Drive::Diesel);
         // a solo diesel's scripts: its 24 V electrics, its battery, the articulation script it
         // shares with its articulated sister and its Euro 5 sound say nothing
         let citybus = guess_kind(&["Citybus by Kajosoft", "Vehicles/Citybus 628c 628g LF by Kajosoft/628c_LF_5hp500.bus"], &["elec.osc", "elektrik.osc", "batterie.osc", "articulation_varlist.txt", "Sound_926LA_E5_z.cfg", "engine.osc"], false, Some(11.95), Some(2.55));

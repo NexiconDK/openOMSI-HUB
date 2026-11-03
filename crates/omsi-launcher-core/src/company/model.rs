@@ -169,6 +169,16 @@ pub enum Drive {
     #[default]
     Diesel,
     Electric,
+    /// (NexiconDK, 3 November 2026) Compressed natural gas (CNG; biogas too): a combustion
+    /// engine on gas, filled at the depot like diesel - cleaner than diesel, not zero emission.
+    Cng,
+}
+
+impl Drive {
+    /// Whether the bus runs without a combustion engine (zero emission at the tailpipe).
+    pub fn zero_emission(self) -> bool {
+        self == Drive::Electric
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug, Default, Hash)]
@@ -188,6 +198,10 @@ impl BusKind {
             (BusSize::Articulated, Drive::Electric) => "Electric articulated bus",
             (BusSize::Double, Drive::Diesel) => "Double-decker",
             (BusSize::Double, Drive::Electric) => "Electric double-decker",
+            (BusSize::Midi, Drive::Cng) => "CNG midibus",
+            (BusSize::Solo, Drive::Cng) => "CNG solo bus",
+            (BusSize::Articulated, Drive::Cng) => "CNG articulated bus",
+            (BusSize::Double, Drive::Cng) => "CNG double-decker",
         }
     }
 }

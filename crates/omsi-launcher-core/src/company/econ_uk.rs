@@ -354,11 +354,18 @@ pub fn role_hour(role: Role) -> (f64, f64) {
 pub const DIESEL_PER_LITRE: f64 = 115.0;
 /// Electricity at the depot, pence per kWh (tender data, about £0.10).
 pub const POWER_PER_KWH: f64 = 10.0;
+/// (NexiconDK, 3 November 2026) Compressed natural gas at the depot's own station, pence per kg
+/// without VAT (an estimate: UK fleet gas of 2022 at about £0.80-0.90 a kg; a kg holds about the
+/// energy of 1.3 l of diesel, a gas engine runs some 30 % less efficiently - a CNG bus's fuel
+/// costs about a diesel bus's a km).
+pub const CNG_PER_KG: f64 = 85.0;
 
 /// Diesel (litres per 100 km) or electricity (kWh per 100 km) a bus of this kind uses in
 /// service. Diesel: a single-deck runs the data's fleet average in town (2.13 miles a litre, 29
 /// l/100 km; midibuses 11.6-12.6 mpg); articulated and double-deck are estimates. Electric:
-/// 1.2 kWh/km for a single-deck (vendor data), the others scaled by size (estimates).
+/// 1.2 kWh/km for a single-deck (vendor data), the others scaled by size (estimates). (3 November
+/// 2026) CNG (kg per 100 km): a 12 m city bus about 43 kg (makers' and operators' figures of 40
+/// to 50 kg in town), the others scaled as the diesel ones.
 pub fn consumption(kind: BusKind) -> f64 {
     match (kind.size, kind.drive) {
         (BusSize::Midi, Drive::Diesel) => 24.0,
@@ -369,6 +376,10 @@ pub fn consumption(kind: BusKind) -> f64 {
         (BusSize::Solo, Drive::Electric) => 120.0,
         (BusSize::Articulated, Drive::Electric) => 170.0,
         (BusSize::Double, Drive::Electric) => 150.0,
+        (BusSize::Midi, Drive::Cng) => 35.0,
+        (BusSize::Solo, Drive::Cng) => 43.0,
+        (BusSize::Articulated, Drive::Cng) => 60.0,
+        (BusSize::Double, Drive::Cng) => 52.0,
     }
 }
 
@@ -383,6 +394,9 @@ pub const WORKSHOP_AGE: f64 = 6.0;
 pub const WORKSHOP_PER_YEAR: f64 = 0.05;
 /// Electric buses need less workshop (20-30 % cheaper).
 pub const WORKSHOP_ELECTRIC: f64 = 0.75;
+/// (3 November 2026) A CNG bus's a little more than a diesel's: its gas system, tanks and their
+/// tests (an estimate).
+pub const WORKSHOP_CNG: f64 = 1.10;
 /// The data's workshop per km is all of it, breakdowns included; the game books a breakdown's
 /// repair on its own (`BREAKDOWN_REPAIR`), so the routine per km is this share of it. The two
 /// are estimates set so that a Realistic fleet's workshop - routine, breakdowns and the parts
@@ -418,6 +432,11 @@ pub fn new_price(kind: BusKind) -> f64 {
         (BusSize::Solo, Drive::Electric) => 38_000_000.0,
         (BusSize::Articulated, Drive::Electric) => 60_000_000.0,
         (BusSize::Double, Drive::Electric) => 50_000_000.0,
+        // (3 November 2026: a CNG bus about 15 % above its diesel sister, an estimate of the market)
+        (BusSize::Midi, Drive::Cng) => 20_500_000.0,
+        (BusSize::Solo, Drive::Cng) => 23_000_000.0,
+        (BusSize::Articulated, Drive::Cng) => 37_000_000.0,
+        (BusSize::Double, Drive::Cng) => 34_500_000.0,
     }
 }
 

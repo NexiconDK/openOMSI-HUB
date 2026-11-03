@@ -8,8 +8,9 @@
 //! Each part is 0 to 100 points, the weights make them the bid's points:
 //! * **the price**: the lowest valid ask gets them all, another the share the lowest is of it;
 //! * **the operating quality**: the company's track record (`bus_contracts::quality`);
-//! * **the vehicles**: its buses - their age (new 100, `OLD_YEARS` or older 0) and how clean
-//!   they run (electric 100, diesel 50);
+//! * **the vehicles**: its buses - their age (new 100, `OLD_YEARS` or older 0), how clean they
+//!   run (electric 100, CNG 80, diesel 50) and their floor (low floor 100, low entry 70, high
+//!   floor 30), 50 / 30 / 20 %;
 //! * **the implementation plan**: whether it is ready to start - room in its depot, buses and
 //!   drivers for the work;
 //! * **the working environment**: its staff's satisfaction, less those off sick.
@@ -31,6 +32,11 @@ pub const WORK: f64 = 5.0;
 
 /// A bus this old or older has no vehicle points for its age.
 pub const OLD_YEARS: f64 = 12.0;
+/// (3 November 2026) The vehicle points' parts: the buses' age, their drive and their floor.
+pub const AGE_SHARE: f64 = 0.5;
+pub const DRIVE_SHARE: f64 = 0.3;
+pub const FLOOR_SHARE: f64 = 0.2;
+
 /// The drivers a bus of the work needs (two shifts and the days off between them).
 pub const DRIVERS_PER_BUS: f64 = 2.2;
 
@@ -139,8 +145,9 @@ impl Parts {
 }
 
 /// The vehicle points of company `c`'s buses: each bus by its age (new 100, `OLD_YEARS` or older
-/// 0) and its drive (electric 100, diesel 50), age 60 % and drive 40 %; their average. No buses
-/// yet: 50.
+/// 0), its drive (electric 100, CNG 80, diesel 50) and its floor (low floor 100, low entry 70,
+/// high floor 30: `server_buses::Floor`), weighed `AGE_SHARE`, `DRIVE_SHARE` and `FLOOR_SHARE`;
+/// their average. No buses yet: 50.
 pub fn vehicles(c: &Company) -> f64 {
     let buses: Vec<f64> = c
         .fleet
@@ -149,9 +156,11 @@ pub fn vehicles(c: &Company) -> f64 {
             let age = (1.0 - v.age_years(&c.date) / OLD_YEARS).clamp(0.0, 1.0) * 100.0;
             let drive = match v.kind.drive {
                 Drive::Electric => 100.0,
+                Drive::Cng => 80.0,
                 Drive::Diesel => 50.0,
             };
-            0.6 * age + 0.4 * drive
+            let floor = super::server_buses::floor_of(c, v).points();
+            AGE_SHARE * age + DRIVE_SHARE * drive + FLOOR_SHARE * floor
         })
         .collect();
     if buses.is_empty() {
@@ -263,7 +272,14 @@ mod tests {
         };
         let new_electric = bus("2026-01-01", Drive::Electric);
         let old_diesel = bus("2010-01-01", Drive::Diesel);
-        assert!(new_electric > 95.0 && (old_diesel - 20.0).abs() < 1e-9, "{new_electric} {old_diesel}");
+        let old_cng = bus("2010-01-01", Drive::Cng);
+        // (old: no age points; diesel 50 and CNG 80 of the drive's 30 %, a city bus's low floor 20)
+        assert!(new_electric > 95.0 && (old_diesel - 35.0).abs() < 1e-9 && (old_cng - 44.0).abs() < 1e-9, "{new_electric} {old_diesel} {old_cng}");
+        // (a high-floor coach: 30 of the floor's 20 %)
+        c.fleet.clear();
+        let coach = MarketBus { file: "Vehicles/Setra/S415GT-HD.bus".into(), name: "Setra S 415 GT-HD".into(), kind: BusKind { size: BusSize::Solo, drive: Drive::Diesel }, ..Default::default() };
+        market::add_vehicle(&mut c, &coach, "2010-01-01".into(), 0.0, 1.0, Tenure::Owned { paid: 0, new_value: 0 }, "");
+        assert!((vehicles(&c) - 21.0).abs() < 1e-9, "{}", vehicles(&c));
         let ops = operator_parts(80.0, &["k", "op"], 3);
         assert_eq!(ops, operator_parts(80.0, &["k", "op"], 3), "the same draw");
         assert!(ops.operation == 80.0 && (72.0..=88.0).contains(&ops.vehicles));

@@ -71,6 +71,7 @@ pub mod online;
 pub mod server_api;
 // (1 November 2026: the main server's admin panel - web and the launcher's My server)
 pub mod server_admin;
+pub mod server_buses;
 pub mod server_depots;
 // (phase 7: a group's head office - the koncern-HQ, kept by the main server)
 pub mod server_hq;

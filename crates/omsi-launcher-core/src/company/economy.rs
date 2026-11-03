@@ -289,6 +289,12 @@ pub fn diesel_per_litre(lv: &Level) -> f64 {
     econ_uk::gbp(econ_uk::DIESEL_PER_LITRE) * lv.diesel * lv.price_index
 }
 
+/// (3 November 2026) Gas a kg, net, today (cents, fractional): the UK's at the company's level of
+/// fuel prices.
+pub fn cng_per_kg(lv: &Level) -> f64 {
+    econ_uk::gbp(econ_uk::CNG_PER_KG) * lv.diesel * lv.price_index
+}
+
 /// Electricity a kWh, net, today (cents, fractional).
 pub fn power_per_kwh(lv: &Level) -> f64 {
     econ_uk::gbp(econ_uk::POWER_PER_KWH) * lv.power * lv.price_index
@@ -296,7 +302,11 @@ pub fn power_per_kwh(lv: &Level) -> f64 {
 
 /// Fuel or electricity per km (cents, fractional).
 pub fn energy_per_km(kind: BusKind, lv: &Level) -> f64 {
-    let unit = if kind.drive == Drive::Electric { power_per_kwh(lv) } else { diesel_per_litre(lv) };
+    let unit = match kind.drive {
+        Drive::Electric => power_per_kwh(lv),
+        Drive::Cng => cng_per_kg(lv),
+        Drive::Diesel => diesel_per_litre(lv),
+    };
     consumption(kind) / 100.0 * unit
 }
 
@@ -305,7 +315,11 @@ pub fn energy_per_km(kind: BusKind, lv: &Level) -> f64 {
 /// take (`econ_uk::WORKSHOP_ROUTINE`, `breakdown_repair`), a quarter less electric, more for a
 /// bigger bus, 5 % more or less for every year older or younger.
 pub fn maintenance_per_km(kind: BusKind, age_years: f64, lv: &Level) -> f64 {
-    let drive = if kind.drive == Drive::Electric { econ_uk::WORKSHOP_ELECTRIC } else { 1.0 };
+    let drive = match kind.drive {
+        Drive::Electric => econ_uk::WORKSHOP_ELECTRIC,
+        Drive::Cng => econ_uk::WORKSHOP_CNG,
+        Drive::Diesel => 1.0,
+    };
     let age = (1.0 + econ_uk::WORKSHOP_PER_YEAR * (age_years.max(0.0) - econ_uk::WORKSHOP_AGE)).clamp(0.75, 1.6);
     econ_uk::gbp(econ_uk::WORKSHOP_PER_KM * econ_uk::WORKSHOP_ROUTINE) * drive * econ_uk::size_factor(kind.size) * age * lv.workshop * lv.price_index
 }

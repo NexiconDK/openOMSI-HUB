@@ -302,6 +302,14 @@ impl MainCfg {
             }
             text.push_str(super::server_fines::FINES_CFG);
         }
+        // (3 November 2026) the fines for a bus of the wrong fuel or floor
+        if !text.lines().any(|l| l.trim_start().starts_with("fine_wrong_fuel")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(super::server_fines::BUS_FINES_CFG.as_bytes());
+            }
+            text.push_str(super::server_fines::BUS_FINES_CFG);
+        }
         // (3 November 2026) the price level
         if !text.lines().any(|l| l.trim_start().starts_with("price_level")) {
             use std::io::Write;

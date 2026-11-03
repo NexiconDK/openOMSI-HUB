@@ -37,6 +37,12 @@ pub struct Fines {
     /// without the delay reported to the control room.
     pub early: f64,
     pub late: f64,
+    /// (3 November 2026) A journey run with a bus its tender's requirements do not allow
+    /// (`server_buses::Needs`): of a fuel (diesel on a CNG-or-electric contract, a bus that is not
+    /// electric on an electric-only one), of a floor (high floor where low floor or low entry is
+    /// asked, low entry where low floor only).
+    pub wrong_fuel: f64,
+    pub wrong_floor: f64,
 }
 
 /// A departure is early from more than this many seconds before its time, and late - unless
@@ -47,7 +53,7 @@ pub const LATE_MINUTES: i32 = 15;
 
 impl Default for Fines {
     fn default() -> Self {
-        Fines { dropped_minute: 20.83, wrong_bus: 2500.0, diesel_on_electric: 2500.0, driving: 2000.0, temperature: 1500.0, route: 2500.0, ticket: 2500.0, red_light: 2500.0, early: 2500.0, late: 2500.0 }
+        Fines { dropped_minute: 20.83, wrong_bus: 2500.0, diesel_on_electric: 2500.0, driving: 2000.0, temperature: 1500.0, route: 2500.0, ticket: 2500.0, red_light: 2500.0, early: 2500.0, late: 2500.0, wrong_fuel: 2500.0, wrong_floor: 2500.0 }
     }
 }
 
@@ -73,6 +79,8 @@ impl Fines {
             red_light: f("fine_red_light", d.red_light),
             early: f("fine_early", d.early),
             late: f("fine_late", d.late),
+            wrong_fuel: f("fine_wrong_fuel", d.wrong_fuel),
+            wrong_floor: f("fine_wrong_floor", d.wrong_floor),
         }
     }
 }
@@ -146,6 +154,16 @@ pub fn of_folder(data: &std::path::Path) -> Fines {
 pub fn price_level_of(data: &std::path::Path) -> String {
     settings(data).get("price_level").map(|v| v.trim().to_lowercase()).unwrap_or_default()
 }
+
+/// (3 November 2026) The fines for a bus of the wrong fuel or floor, added to a `company-server.cfg`
+/// written before them.
+pub const BUS_FINES_CFG: &str = "
+# a journey run with a bus the tender's requirements do not allow (kroner, by the journey): of a
+# fuel (diesel where CNG or electric is asked, any but electric where electric only), of a floor
+# (high floor where low floor or low entry is asked, low entry where low floor only)
+fine_wrong_fuel = 2500
+fine_wrong_floor = 2500
+";
 
 /// The price level's part of the settings, added to a `company-server.cfg` written before it.
 pub const PRICE_CFG: &str = "

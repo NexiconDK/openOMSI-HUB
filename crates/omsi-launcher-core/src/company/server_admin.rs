@@ -171,6 +171,12 @@ pub fn handle(api: &Api, auth: &Mutex<Auth>, r: &Request) -> Option<Answer> {
             Ok(text) => ok(json!({ "answer": text })),
             Err(e) => aw::error("400 Bad Request", &e),
         },
+        // (3 November 2026) the installed buses, and the admin's corrections of one
+        ("buses", _) => ok(buses(api)),
+        ("bus", true) => match bus_do(api, &asked) {
+            Ok(text) => ok(json!({ "answer": text })),
+            Err(e) => aw::error("400 Bad Request", &e),
+        },
         _ => aw::error("404 Not Found", "no such request"),
     })
 }
@@ -444,6 +450,8 @@ fn market(api: &Api) -> Value {
                         // (3 November 2026: a package's name and lines, and the work's reserve buses)
                         "package": t.package.as_ref().filter(|p| p.lines.len() > 1).map(|p| p.name.clone()).unwrap_or_default(),
                         "lines": t.lines(), "reserve": x.map_or(0, |x| x.reserve),
+                        // (3 November 2026: what it asks of the buses)
+                        "needs": x.and_then(|x| x.needs).map(|n| needs_json(&n)),
                     })
                 })
                 .collect();
@@ -548,6 +556,94 @@ fn player_do(api: &Api, id: &str, what: &str, reason: &str) -> Result<String, St
     Ok(said)
 }
 
+/// (3 November 2026) The installed buses as the market reads them: each bus file read once, on a
+/// thread of its own (the panel says it is reading meanwhile).
+type Catalogue = (bool, Option<Arc<Vec<super::market::MarketBus>>>);
+static CATALOGUE: Mutex<Catalogue> = Mutex::new((false, None));
+
+/// The installed buses for the panel's "Buses" (`server_buses::listed`): each with its floor,
+/// fuel and size as they hold on the server, the game's guess and the admin's correction.
+fn buses(api: &Api) -> Value {
+    use super::server_buses::{self as sb, Floor, FloorRule, FuelRule};
+    let data = server(api).data.clone();
+    let list = {
+        let mut g = CATALOGUE.lock().unwrap_or_else(|e| e.into_inner());
+        if g.1.is_none() && !g.0 {
+            g.0 = true;
+            std::thread::spawn(|| {
+                let list = crate::list_vehicles().map(|v| super::market::market_of(&v)).unwrap_or_default();
+                *CATALOGUE.lock().unwrap_or_else(|e| e.into_inner()) = (false, Some(Arc::new(list)));
+            });
+        }
+        g.1.clone()
+    };
+    let floors: Vec<Value> = Floor::ALL.iter().map(|f| json!([f.key(), f.label()])).collect();
+    let drives: Vec<Value> = [Drive::Diesel, Drive::Cng, Drive::Electric].iter().map(|d| json!([sb::drive_key(*d), sb::drive_label(*d)])).collect();
+    let floor_rules: Vec<Value> = FloorRule::ALL.iter().map(|f| json!([f.key(), f.label()])).collect();
+    let fuel_rules: Vec<Value> = FuelRule::ALL.iter().map(|f| json!([f.key(), f.label()])).collect();
+    let choices = json!({
+        "floors": floors, "drives": drives,
+        "sizes": [["midi", "Midibus"], ["solo", "Solo bus"], ["articulated", "Articulated bus"], ["double", "Double-decker"]],
+        "floor_rules": floor_rules, "fuel_rules": fuel_rules, "max_age": sb::MAX_AGE,
+    });
+    let Some(list) = list else { return json!({ "reading": true, "buses": [], "choices": choices }) };
+    let rows: Vec<Value> = sb::listed(&list, &sb::load(&data))
+        .into_iter()
+        .map(|b| {
+            json!({
+                "file": b.file, "name": b.name, "coach": b.coach, "screens": b.screens,
+                "floor": b.floor.key(), "drive": sb::drive_key(b.drive), "size": sb::size_key(b.size),
+                "guess": { "floor": b.guess_floor.key(), "drive": sb::drive_key(b.guess_drive), "size": sb::size_key(b.guess_size) },
+                "set": { "floor": b.set.floor.is_some(), "drive": b.set.drive.is_some(), "size": b.set.size.is_some(), "screens": b.set.screens.is_some() },
+            })
+        })
+        .collect();
+    json!({ "reading": false, "buses": rows, "choices": choices })
+}
+
+/// The admin corrects a bus (`file`): its `floor`, `drive`, `size` and `screens` - each a key, or
+/// empty for the game's guess (`server_buses::set`); the companies take it at their next step.
+fn bus_do(api: &Api, a: &Value) -> Result<String, String> {
+    use super::server_buses::{self as sb, BusSet, Floor};
+    let s = |k: &str| a.get(k).and_then(Value::as_str).unwrap_or("").trim().to_string();
+    let file = s("file");
+    if file.is_empty() {
+        return Err("which bus?".into());
+    }
+    let screens = match a.get("screens") {
+        Some(Value::Bool(b)) => Some(*b),
+        Some(Value::String(t)) if t == "1" || t == "true" => Some(true),
+        Some(Value::String(t)) if t == "0" || t == "false" => Some(false),
+        _ => None,
+    };
+    let set = BusSet { floor: Floor::of_key(&s("floor")), drive: sb::drive_of_key(&s("drive")), size: sb::size_of_key(&s("size")), screens };
+    let m = server(api);
+    sb::set(&m.data, &file, set).map_err(|e| format!("{e:#}"))?;
+    let said = format!("the bus {file}: {}", if set.is_empty() { "as the game guesses it".to_string() } else { format!("{:?}", set) });
+    m.say(&format!("admin panel: {said}"));
+    Ok(said)
+}
+
+/// (3 November 2026) What the admin asks of a tender's buses (`floor`, `fuel`, `max_age`,
+/// `screens` of the request; none of them: None, the defaults).
+fn needs_of(a: &Value) -> Option<super::server_buses::Needs> {
+    use super::server_buses::{FloorRule, FuelRule, Needs};
+    let s = |k: &str| a.get(k).and_then(Value::as_str).unwrap_or("").trim().to_string();
+    let given = ["floor", "fuel", "max_age", "screens"].iter().any(|k| a.get(*k).is_some_and(|v| !v.is_null() && v.as_str() != Some("")));
+    if !given {
+        return None;
+    }
+    let d = Needs::default();
+    let max_age = a.get("max_age").and_then(|v| v.as_f64().or_else(|| v.as_str().and_then(|t| t.trim().parse::<f64>().ok()))).map_or(d.max_age, |x| x.clamp(0.0, 40.0) as u32);
+    let screens = a.get("screens").is_some_and(|v| v.as_bool().unwrap_or(false) || v.as_str().is_some_and(|t| t == "1" || t == "true"));
+    Some(Needs { floor: FloorRule::of_key(&s("floor")).unwrap_or(d.floor), fuel: FuelRule::of_key(&s("fuel")).unwrap_or(d.fuel), max_age, screens })
+}
+
+/// A tender's requirements for the panel: their keys and the words.
+fn needs_json(n: &super::server_buses::Needs) -> Value {
+    json!({ "floor": n.floor.key(), "fuel": n.fuel.key(), "max_age": n.max_age, "screens": n.screens, "text": format!("{} · {} · ≤ {} y{}", n.floor.label(), n.fuel.label(), n.max_age, if n.screens { " · screens" } else { "" }) })
+}
+
 /// A tender of map `map` (its market's key) as the panel asks (`a`: `do` and its arguments): its
 /// close moved (`close`, `id`, `at` = `YYYY-MM-DD HH:MM`), called off (`cancel`, `id`), its cap set
 /// (`cap`, `id`, `cap` in kroner a timetable hour), or lines put out to tender (`open`, `line` or
@@ -591,7 +687,9 @@ fn tender_do(api: &Api, map: &str, a: &Value) -> Result<String, String> {
             }
             // (3 November 2026: the reserve buses' share for it, per cent; 0 or none: the rules')
             let reserve = num("reserve").filter(|x| *x > 0.0).map_or(0.0, |x| x.min(100.0) / 100.0);
-            let ask = ServerAsk { opens_at: opens, closes_at: closes, cap_hour: num("cap").map_or(0, Fines::cents), reserve, ..ServerAsk::default() };
+            // (3 November 2026: what it asks of the buses - floor, fuel, age, screens; none: the defaults)
+            let needs = needs_of(a);
+            let ask = ServerAsk { opens_at: opens, closes_at: closes, cap_hour: num("cap").map_or(0, Fines::cents), reserve, needs, ..ServerAsk::default() };
             // (3 November 2026: several lines with a package's name - one tender for them all)
             let package = s("package");
             if !package.is_empty() && lines.len() > 1 {
@@ -616,7 +714,7 @@ fn tender_do(api: &Api, map: &str, a: &Value) -> Result<String, String> {
             if line.is_empty() {
                 return Err("which line?".into());
             }
-            let drive = if s("drive") == "electric" { Drive::Electric } else { Drive::Diesel };
+            let drive = super::server_buses::drive_of_key(&s("drive")).unwrap_or(Drive::Diesel);
             let ask = ServerAsk { cap_hour: Fines::cents(cap), direct: c.id.clone(), direct_name: c.name.clone(), drive, ..ServerAsk::default() };
             shared_tenders::ask_as_server(&data, map, &line, ask).map_err(|e| format!("{e:#}"))?;
             format!("line {line} of {map}: awarded directly to {} at {cap:.2} kr. a timetable hour, at the next step", c.name)

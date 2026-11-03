@@ -19,7 +19,7 @@ use super::together::book::ClaimState;
 pub const RESERVE: f64 = 0.05;
 
 /// What a full tank (battery) of a bus of `kind` holds, in what `economy::consumption` counts:
-/// litres of diesel, kWh. About what the makers fit: a 12 m Citaro or Urbino 250-300 l, an
+/// litres of diesel, kWh, kg of gas. About what the makers fit: a 12 m Citaro or Urbino 250-300 l, an
 /// electric one 300-500 kWh.
 pub fn tank(kind: BusKind) -> f64 {
     match (kind.size, kind.drive) {
@@ -31,12 +31,21 @@ pub fn tank(kind: BusKind) -> f64 {
         (BusSize::Solo, Drive::Electric) => 400.0,
         (BusSize::Articulated, Drive::Electric) => 550.0,
         (BusSize::Double, Drive::Electric) => 470.0,
+        // (3 November 2026: CNG, kg - a 12 m bus's cylinders hold some 230 kg)
+        (BusSize::Midi, Drive::Cng) => 160.0,
+        (BusSize::Solo, Drive::Cng) => 230.0,
+        (BusSize::Articulated, Drive::Cng) => 320.0,
+        (BusSize::Double, Drive::Cng) => 300.0,
     }
 }
 
 /// A bus's fuel use as a page says it: "29 l / 100 km", "120 kWh / 100 km".
 pub fn use_text(kind: BusKind) -> String {
-    let unit = if kind.drive == Drive::Electric { "kWh" } else { "l" };
+    let unit = match kind.drive {
+        Drive::Electric => "kWh",
+        Drive::Cng => "kg",
+        Drive::Diesel => "l",
+    };
     format!("{:.0} {unit} / 100 km", economy::consumption(kind))
 }
 

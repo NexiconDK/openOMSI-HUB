@@ -409,7 +409,7 @@ impl WorkSize {
 
 /// (NexiconDK, decided 3 November 2026) The days of a contract on the server, by the size of its
 /// work and the buses it was bid with: the bigger the work, the longer, and the cleaner the
-/// buses, the longer - at most a month. A row a size: diesel (HVO), CNG (to come with its buses),
+/// buses, the longer - at most a month. A row a size: diesel (HVO), CNG,
 /// electric. (Before: two weeks with diesel buses, a month with electric ones.)
 pub const SERVER_DAYS: [(i64, i64, i64); 3] = [(14, 17, 21), (18, 21, 25), (21, 25, 30)];
 
@@ -417,6 +417,7 @@ pub fn server_days(drive: Drive, size: WorkSize) -> i64 {
     let (diesel, _cng, electric) = SERVER_DAYS[size as usize];
     match drive {
         Drive::Diesel => diesel,
+        Drive::Cng => _cng,
         Drive::Electric => electric,
     }
 }
@@ -547,6 +548,11 @@ pub struct Shared {
     /// shown, not paid as contract buses.
     #[serde(default, skip_serializing_if = "is_zero_u32")]
     pub reserve: u32,
+    /// (NexiconDK, 3 November 2026) What it asks of the buses that run it - their floor, fuel, age
+    /// and screens (`server_buses::Needs`: the admin's when he put it out, else the defaults; a
+    /// renewal the last term's). Its contract fines a bus that breaks them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub needs: Option<super::server_buses::Needs>,
     /// (NexiconDK, 3 November 2026) The bid in two parts: the cap of the amount a contract bus a
     /// day (euro cents; 0: a bid of the timetable hour alone, as before), and the authority's
     /// reckoning of a contract bus a day (`bus_contracts::bus_day_price`).
@@ -1526,13 +1532,18 @@ pub fn bid(c: &mut Company, id: u32, amount: Cents) -> Result<(), &'static str> 
 /// (NexiconDK, Bus Company Online) The buses the company bids with on tender `id` of the map's
 /// market: diesel (a contract of two weeks) or electric (a month: `server_term`) - its next bid
 /// carries them, and the winning bid's decide. Electric ones only where the company's level
-/// opens them.
+/// opens them. (3 November 2026) CNG too; only the fuel the tender's requirements allow
+/// (`server_buses::Needs`).
 pub const NO_ELECTRIC: &str = "Electric buses open at a higher company level.";
+pub const DRIVE_NOT_ALLOWED: &str = "The tender does not allow buses of that fuel: see its requirements.";
 pub fn set_drive(c: &mut Company, id: u32, drive: Drive) -> Result<(), &'static str> {
     if drive == Drive::Electric && !levels::unlocked(c, levels::Feature::ElectricBuses) {
         return Err(NO_ELECTRIC);
     }
     let t = c.concessions.tenders.iter_mut().find(|t| t.id == id && t.open() && t.market.is_some()).ok_or("There is no such tender.")?;
+    if t.market.as_ref().and_then(|m| m.needs).is_some_and(|n| !n.drive_ok(drive)) {
+        return Err(DRIVE_NOT_ALLOWED);
+    }
     t.drive = drive;
     Ok(())
 }
@@ -1697,6 +1708,7 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
         if t.market.is_some() {
             k.extensions_left = 0;
             k.electric = t.drive == Drive::Electric;
+            k.needs = t.market.as_ref().and_then(|m| m.needs);
             // (paid by the timetable hour run: the ask's price of an hour - 3 November 2026: and its
             // contract buses a day, a bid in two parts)
             k.per_hour = hour_part(t, amount, t.bus_day).round() as Cents;
@@ -1781,6 +1793,7 @@ fn take_package(c: &mut Company, t: &Tender, amount: Cents, p: &Package) -> Even
         let mut k = bc::make(c, &pl.line, &pl.number, t.kind, t.period, line_amount, &work, &from, &until);
         k.extensions_left = 0;
         k.electric = t.drive == Drive::Electric;
+        k.needs = t.market.as_ref().and_then(|m| m.needs);
         k.per_hour = hour.round() as Cents;
         if t.bus_day > 0 {
             k.per_bus_day = t.bus_day;

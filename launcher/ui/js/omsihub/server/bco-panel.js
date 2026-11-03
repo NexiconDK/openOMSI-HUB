@@ -70,6 +70,8 @@ export const BCO_FIELDS = [
   ['fine_dropped_minute', 'A journey not run, a minute', 'number'],
   ['fine_wrong_bus', 'A smaller bus than the timetable asks', 'number'],
   ['fine_diesel_on_electric', 'Diesel on an electric contract', 'number'],
+  ['fine_wrong_fuel', 'A bus of a fuel the tender does not allow', 'number'],
+  ['fine_wrong_floor', 'A bus of a floor the tender does not allow', 'number'],
   ['fine_early', 'Leaving a stop early', 'number'],
   ['fine_late', 'Late without telling the control room', 'number'],
   ['fine_driving', 'A complaint about the driving', 'number'],
@@ -88,9 +90,13 @@ export const BCO_DEFAULTS = {
   traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
   price_level: 'dk', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
   found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', tender_reserve: '10', fine_dropped_minute: '20.83',
-  fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
+  fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_wrong_fuel: '2500', fine_wrong_floor: '2500', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',
 };
+
+/** (3 November 2026) What a tender may ask of the buses (`server_buses::FloorRule`, `FuelRule`). */
+const FLOOR_RULES = [['low_or_entry', 'Low floor or low entry'], ['low_only', 'Low floor only'], ['any', 'High floor allowed']];
+const FUEL_RULES = [['any', 'Any fuel (diesel on HVO, CNG or electric)'], ['cng_or_electric', 'CNG or electric'], ['electric', 'Electric only (zero emission)']];
 
 export const BCO_FORM = { fields: BCO_FIELDS, defaults: BCO_DEFAULTS, title: 'Main server settings', reading: 'Reading company-server.cfg…', asText: 'Edit company-server.cfg as text' };
 
@@ -128,7 +134,7 @@ export function mountPanel(root, api, opts = {}) {
   const host = opts.host || (typeof location !== 'undefined' && location.hostname) || '127.0.0.1';
   const TABS = [
     ['overview', 'Overview'], ['worlds', 'Worlds'], ['companies', 'Companies'], ['players', 'Players'],
-    ['market', 'Tenders and market'], ['settings', 'Rules and economy'], ['log', 'Log'],
+    ['market', 'Tenders and market'], ['buses', 'Buses'], ['settings', 'Rules and economy'], ['log', 'Log'],
   ];
   let tab = 'overview';
   const data = {};
@@ -184,6 +190,9 @@ export function mountPanel(root, api, opts = {}) {
 
   const fact = (value, label, sub) => h('div', { class: 'sp-fact' }, h('b', {}, value), h('span', {}, label), sub ? h('div', { class: 'bco-sub' }, sub) : null);
   const tag = (text, kind = '') => h('span', { class: 'bco-tag ' + kind }, text);
+  // (3 November 2026) a tender's requirements of the buses in words
+  const ruleOf = (list, key) => tr((list.find((x) => x[0] === key) || [key, key])[1]);
+  const needsText = (n) => [ruleOf(FLOOR_RULES, n.floor), ruleOf(FUEL_RULES, n.fuel), n.max_age ? trf('buses at most %{n} years', { n: n.max_age }) : null, n.screens ? tr('screens') : null].filter(Boolean).join(' · ');
   const card = (title, ...kids) => h('div', { class: 'sp-card' }, title ? h('h3', {}, title) : null, ...kids);
   const empty = (text) => h('div', { class: 'sp-empty' }, text);
   const table = (heads, rows) => h('div', { style: 'overflow-x:auto' }, h('table', { class: 'sp-table' }, h('tr', {}, ...heads.map((x) => (Array.isArray(x) ? h('th', { class: x[1] }, x[0]) : h('th', {}, x)))), ...rows));
@@ -355,6 +364,47 @@ export function mountPanel(root, api, opts = {}) {
   const playerFilter = h('input', { class: 'sp-grow', placeholder: tr('Find a player…') });
   playerFilter.addEventListener('input', () => draw());
 
+  /** (3 November 2026) The installed buses by floor and fuel, each with its size: what holds on the
+   * server (the game's guess or the admin's correction), corrected here (`server_admin::bus_do`). */
+  function busesView() {
+    const d = data.buses;
+    if (!d || d.reading) return [card(tr('Buses'), h('div', { class: 'sp-dim' }, tr('Reading the installed buses - every bus file once…')))];
+    const ch = d.choices || {};
+    const label = (list, key) => tr(((list || []).find((x) => x[0] === key) || [key, key])[1]);
+    const intro = card(tr('Buses'), h('div', { class: 'sp-dim' }, tr("The floor, fuel and size of every installed bus as the server takes them: the game guesses them from the bus's files and name, you correct them here. The tenders' requirements, the vehicle points and the authority's fines go by them; the companies take a change at their next step.")));
+    const groups = [];
+    for (const [fk] of ch.floors || []) {
+      const ofFloor = d.buses.filter((b) => b.floor === fk);
+      if (!ofFloor.length) continue;
+      const parts = [];
+      for (const [dk] of ch.drives || []) {
+        const list = ofFloor.filter((b) => b.drive === dk).sort((a, b) => a.size.localeCompare(b.size) || a.name.localeCompare(b.name));
+        if (!list.length) continue;
+        const rows = list.map((b) => {
+          // (what is chosen is kept over the tab's redraws until it is saved)
+          const k = (x) => `bus:${b.file}:${x}`;
+          const sel = (choices, value, key) => keep(k(key), h('select', {}, ...choices.map(([v, l]) => h('option', { value: v, selected: v === value }, tr(l)))));
+          const floor = sel(ch.floors, b.floor, 'floor');
+          const drive = sel(ch.drives, b.drive, 'drive');
+          const size = sel(ch.sizes, b.size, 'size');
+          const screens = h('input', { type: 'checkbox', checked: kept[k('screens')] ?? !!b.screens, title: tr('Passenger information screens'), onChange: (e) => (kept[k('screens')] = e.target.checked) });
+          const forget = () => ['floor', 'drive', 'size', 'screens'].forEach((x) => delete kept[k(x)]);
+          const set = Object.values(b.set || {}).some(Boolean);
+          return h('tr', {},
+            h('td', {}, h('b', {}, b.name), b.coach ? tag(tr('Coach')) : null, set ? tag(tr('corrected'), 'ok') : null, h('div', { class: 'bco-sub' }, b.file),
+              set ? h('div', { class: 'bco-sub' }, trf('the game guesses: %{f} · %{d} · %{s}', { f: label(ch.floors, b.guess.floor), d: label(ch.drives, b.guess.drive), s: label(ch.sizes, b.guess.size) })) : null),
+            h('td', {}, h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, floor, drive, size, h('label', { class: 'sp-row' }, screens, tr('screens')))),
+            h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end' },
+              btn(tr('Save'), () => { post('bus', { file: b.file, floor: floor.value === b.guess.floor && !b.set.floor ? '' : floor.value, drive: drive.value === b.guess.drive && !b.set.drive ? '' : drive.value, size: size.value === b.guess.size && !b.set.size ? '' : size.value, screens: screens.checked || b.set.screens ? screens.checked : '' }); forget(); }, 'sp-btn small main'),
+              set ? btn(tr('As the game guesses'), () => { post('bus', { file: b.file }); forget(); }) : null)));
+        });
+        parts.push(h('h4', {}, `${label(ch.drives, dk)} · ${list.length}`), table([tr('Bus'), tr('Floor · fuel · size'), ''], rows));
+      }
+      groups.push(card(`${label(ch.floors, fk)} · ${ofFloor.length}`, ...parts));
+    }
+    return [intro, ...(groups.length ? groups : [card(null, empty(tr('No bus is installed.')))])];
+  }
+
   function players() {
     const d = data.players;
     if (!d) return [card(tr('Players'), empty(tr('Asking the main server…')))];
@@ -457,7 +507,8 @@ export function mountPanel(root, api, opts = {}) {
         const cap = number(Math.round(t.cap_hour), 90);
         const kind = [t.package ? tag(tr('Package')) : null, t.renewal && !t.event ? tag(tr('Renewal')) : null, t.event ? tag(t.event, 'warn') : null, t.applied.length ? tag(tr('Applied for')) : null, t.direct ? tag(trf('Direct: %{n}', { n: t.direct }), 'ok') : null];
         return h('tr', {},
-          h('td', {}, h('b', {}, t.number || t.line), ...kind, t.caption ? h('div', { class: 'bco-sub' }, t.caption) : null, t.event && t.from ? h('div', { class: 'bco-sub' }, `${t.from} – ${t.until}`) : null),
+          h('td', {}, h('b', {}, t.number || t.line), ...kind, t.caption ? h('div', { class: 'bco-sub' }, t.caption) : null, t.event && t.from ? h('div', { class: 'bco-sub' }, `${t.from} – ${t.until}`) : null,
+            t.needs ? h('div', { class: 'bco-sub' }, needsText(t.needs)) : null),
           h('td', { class: 'sp-hide' }, t.opens),
           h('td', {}, t.closes),
           h('td', {}, t.bidders ? trf('%{n} bidders', { n: t.bidders }) : h('span', { class: 'sp-dim' }, tr('no bid yet'))),
@@ -504,6 +555,12 @@ export function mountPanel(root, api, opts = {}) {
       // (3 November 2026: several lines as one package, and its reserve buses' share)
       const packIn = keep(m.key + ':package', h('input', { placeholder: tr('e.g. Ahlheim By'), style: 'width:190px' }));
       const reserveIn = keep(m.key + ':reserve', number('', 70, '10'));
+      // (3 November 2026: what it asks of the buses - floor, fuel, age, screens)
+      const opt = (v, l, on) => h('option', { value: v, selected: !!on }, tr(l));
+      const floorIn = keep(m.key + ':floor', h('select', {}, ...FLOOR_RULES.map(([v, l]) => opt(v, l, v === 'low_or_entry'))));
+      const fuelIn = keep(m.key + ':fuel', h('select', {}, ...FUEL_RULES.map(([v, l]) => opt(v, l, v === 'any'))));
+      const ageIn = keep(m.key + ':age', number('', 70, '12'));
+      const screensIn = keep(m.key + ':screens', h('input', { type: 'checkbox' }));
       const putOut = h('div', { class: 'sp-card', style: 'background:var(--sp-field)' },
         h('h3', {}, tr('Put out to tender')),
         h('div', { class: 'sp-row', style: 'align-items:flex-start;flex-wrap:wrap' }, pick,
@@ -513,19 +570,23 @@ export function mountPanel(root, api, opts = {}) {
             h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Cap a timetable hour')), capIn, h('span', { class: 'sp-dim' }, tr('empty: the rules\''))),
             h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('As one package, named')), packIn, h('span', { class: 'sp-dim' }, tr('empty: each line its own tender'))),
             h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Reserve buses (%)')), reserveIn, h('span', { class: 'sp-dim' }, tr('empty: the rules\''))),
+            h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Floor')), floorIn),
+            h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Fuel')), fuelIn),
+            h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Buses at most (years)')), ageIn, h('span', { class: 'sp-dim' }, tr('empty: 12, 0: any age'))),
+            h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim', style: 'width:150px' }, tr('Passenger information')), screensIn, h('span', { class: 'sp-dim' }, tr('screens in every bus (the Buses tab says which have them)'))),
             btn(tr('Open the tender'), () => {
               const lines = picked();
               if (!lines.length) return say(tr('Choose the lines'), true);
               const pkg = packIn.value.trim();
               if (pkg && lines.length < 2) return say(tr('A package has two lines or more'), true);
-              post('tender', { map: m.key, do: 'open', lines, package: pkg, reserve: reserveIn.value, opens: opensIn.value.replace('T', ' '), closes: closesIn.value.replace('T', ' '), days: daysIn.value, cap: capIn.value }, pkg ? trf('The package %{p} (%{l}) goes out to tender in a moment', { p: pkg, l: lines.join(', ') }) : trf('%{l} go out to tender in a moment', { l: lines.join(', ') }));
+              post('tender', { map: m.key, do: 'open', lines, package: pkg, reserve: reserveIn.value, opens: opensIn.value.replace('T', ' '), closes: closesIn.value.replace('T', ' '), days: daysIn.value, cap: capIn.value, floor: floorIn.value, fuel: fuelIn.value, max_age: ageIn.value, screens: screensIn.checked }, pkg ? trf('The package %{p} (%{l}) goes out to tender in a moment', { p: pkg, l: lines.join(', ') }) : trf('%{l} go out to tender in a moment', { l: lines.join(', ') }));
             }, 'sp-btn small main'))));
       // (a line awarded directly to a company of the map - no bids, at the admin's price)
       const directLines = (m.lines || []).filter((l) => !l.company && !l.event && !l.operator);
       const dLine = keep(m.key + ':d-line', h('select', {}, ...directLines.map((l) => h('option', { value: l.name }, l.name + (l.open ? ` (${tr('open tender')})` : '')))));
       const dCompany = keep(m.key + ':d-company', h('select', {}, ...(m.companies || []).map((c) => h('option', { value: c.id }, c.name))));
       const dPrice = keep(m.key + ':d-price', number('', 90, tr('kr.')));
-      const dDrive = keep(m.key + ':d-drive', h('select', {}, h('option', { value: 'diesel' }, tr('Diesel buses')), h('option', { value: 'electric' }, tr('Electric buses'))));
+      const dDrive = keep(m.key + ':d-drive', h('select', {}, h('option', { value: 'diesel' }, tr('Diesel buses')), h('option', { value: 'cng' }, tr('CNG buses')), h('option', { value: 'electric' }, tr('Electric buses'))));
       const direct = (m.companies || []).length && directLines.length ? h('div', { class: 'sp-card', style: 'background:var(--sp-field)' },
         h('h3', {}, tr('Award directly (emergency service)')),
         h('div', { class: 'sp-dim' }, tr('The line goes to the company without bidding, at your price a timetable hour; its open tender ends so. A line an operator runs: end its term first (below).')),
@@ -603,7 +664,7 @@ export function mountPanel(root, api, opts = {}) {
   function draw() {
     drawTabs();
     const view = {
-      overview, worlds: () => [worlds()], companies, players, market,
+      overview, worlds: () => [worlds()], companies, players, market, buses: busesView,
       settings: () => [settings], log: logView,
     }[tab]();
     body.replaceChildren(...view.flat().filter(Boolean));
@@ -619,6 +680,7 @@ export function mountPanel(root, api, opts = {}) {
       if (tab === 'companies' || tab === 'log') want.push('companies');
       if (tab === 'players' || tab === 'companies') want.push('players');
       if (tab === 'market') want.push('market');
+      if (tab === 'buses') want.push('buses');
       const got = await Promise.all(want.map((w) => api.get(w)));
       want.forEach((w, k) => (data[w] = got[k]));
       if (tab === 'companies' && picked.company) companyInfo = await api.get('company?id=' + encodeURIComponent(picked.company)).catch(() => null);

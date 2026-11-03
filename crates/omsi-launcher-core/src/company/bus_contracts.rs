@@ -232,6 +232,11 @@ pub struct Contract {
     /// buses (`concessions::Tender::drive`).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub electric: bool,
+    /// (NexiconDK, 3 November 2026) What its tender asked of the buses (`server_buses::Needs`): a
+    /// journey run with a bus of the wrong fuel or floor is fined (`authority_fines`). None: a
+    /// contract of before, or not the server's.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub needs: Option<super::server_buses::Needs>,
     /// (NexiconDK, Bus Company Online) Won by the timetable hour: what it pays a timetable hour
     /// run (euro cents at its contract index), each day for the hours run that day.
     #[serde(default, skip_serializing_if = "is_zero")]
@@ -667,6 +672,7 @@ pub fn make(c: &mut Company, line: &str, number: &str, kind: Kind, period: Perio
         agreed: None,
         offered: String::new(),
         electric: false,
+        needs: None,
         per_hour: 0,
         per_bus_day: 0,
         buses: 0,
@@ -1221,6 +1227,8 @@ fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, s
     let f = c.online.fines.unwrap_or_default();
     let mut rng = Rng::of(&[&c.id, "authority fines", &k.line], dates::parse(date).unwrap_or(0));
     let (mut dropped, mut minutes, mut wrong, mut diesel) = (0u32, 0i64, 0u32, 0u32);
+    // (3 November 2026: a bus of the wrong fuel or floor for its tender's requirements)
+    let (mut wrong_fuel, mut wrong_floor) = (0u32, 0u32);
     // (the driving, the temperature, the route, a ticket, a red light)
     let mut complaints = [0u32, 0, 0, 0, red];
     // (departures early and late: the players' own as their trips left their stops; a modelled
@@ -1237,8 +1245,14 @@ fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, s
             if j.wants.is_some_and(|w| super::ownline::capacity(v.kind.size) < super::ownline::capacity(w)) {
                 wrong += 1;
             }
-            if k.electric && v.kind.drive == Drive::Diesel {
+            // (3 November 2026: a CNG bus is no electric one either)
+            if k.electric && !v.kind.drive.zero_emission() {
                 diesel += 1;
+            } else if k.needs.is_some_and(|n| !n.fuel.allows(v.kind.drive)) {
+                wrong_fuel += 1;
+            }
+            if k.needs.is_some_and(|n| !n.floor.allows(super::server_buses::floor_of(c, v))) {
+                wrong_floor += 1;
             }
             if rng.chance(COMPLAINT_COLD * (1.3 - v.condition / 100.0).clamp(0.3, 1.3)) {
                 complaints[1] += 1;
@@ -1270,6 +1284,8 @@ fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, s
     fine(c, dropped, minutes as f64 * f.dropped_minute, format!("{dropped} journeys not run ({minutes} min)"));
     fine(c, wrong, wrong as f64 * f.wrong_bus, format!("{wrong} journeys with a smaller bus than the tour's"));
     fine(c, diesel, diesel as f64 * f.diesel_on_electric, format!("{diesel} journeys with a diesel bus on an electric tour"));
+    fine(c, wrong_fuel, wrong_fuel as f64 * f.wrong_fuel, format!("{wrong_fuel} journeys with a bus of a fuel the tender does not allow"));
+    fine(c, wrong_floor, wrong_floor as f64 * f.wrong_floor, format!("{wrong_floor} journeys with a bus of a floor the tender does not allow"));
     fine(c, early, early as f64 * f.early, format!("{early} departures more than a minute early"));
     fine(c, late, late as f64 * f.late, format!("{late} departures more than 15 minutes late, not reported"));
     for (n, kr, what) in [(complaints[0], f.driving, "the driving"), (complaints[1], f.temperature, "the temperature in the bus"), (complaints[2], f.route, "the route driven"), (complaints[3], f.ticket, "a ticket sold wrong"), (complaints[4], f.red_light, "a red light run")] {

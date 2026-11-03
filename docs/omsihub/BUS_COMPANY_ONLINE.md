@@ -1371,6 +1371,42 @@ Decided: the admin builds packages of lines, let as one tender, as Danish author
 Tested: `concessions::tests::a_package_of_lines_the_reserve_and_the_figures`,
 `shared_tenders::tests::a_package_of_lines_is_let_as_one_and_goes_out_again_as_one`.
 
+### The bus list, CNG and the buses' requirements (3 November 2026)
+
+Decided: the admin sets per tender what it asks of the buses, CNG is a third drive, and the admin
+panel lists every installed bus by floor, fuel and size, correctable.
+
+- **CNG** (`model::Drive::Cng`): fuel by its consumption (a 12 m city bus 43 kg per 100 km) at
+  `econ_uk::CNG_PER_KG` (85 p a kg, by the fuel prices' level), the workshop 10 % above diesel,
+  a new bus about 15 % above its diesel sister; its contract days the middle column of
+  `SERVER_DAYS` (17 / 21 / 25); the Viborg model's vehicle points give it 80 (electric 100, diesel
+  50). A bus is CNG when its name or file says "CNG", "NGT", "Gas", "Erdgas", "Biogas" or a script
+  of a gas engine (`market::guess_kind`). The tender page's buses choice offers it (only the fuels
+  the tender allows), and the admin's direct award.
+- **The bus list** (`server_buses`, the admin panel's tab "Buses"): every installed bus (the
+  market's list, read once on a thread of its own) grouped by floor and fuel, each with its size.
+  The floor is guessed from the words: a coach, "Reisebus", "Tourismo", "Travego", "GT", "HD", "UL",
+  "Überland" or an "Intercity" high floor; "LE" or "Low entry" low entry; every other bus low floor.
+  The admin corrects floor, fuel, size and the passenger information screens (only he says which
+  buses have them) in `<data>/buses.json`; a server company takes them as it is loaded and at its
+  next step when the file changed (`server_buses::refresh`: its fleet's drive and size, the
+  floors and screens kept with it), and the market's buses on the server too (`apply_market`).
+- **Requirements** (`server_buses::Needs`, kept with the tender's market part and its contract):
+  the floor (low floor only / low floor or low entry / high floor allowed), the fuel (any / CNG or
+  electric / electric only), the buses' age (12 years) and screens - set by the admin when he puts
+  a tender or package out (its form), the defaults otherwise, a renewal the last term's. The tender
+  page's "The buses" shows each against the company's own buses (✓ all, ! how many not); a bid with
+  buses of a fuel the tender does not allow is refused (`concessions::DRIVE_NOT_ALLOWED`).
+- **Vehicle points**: each bus by its age 50 %, its drive 30 % and its floor 20 % (low floor 100,
+  low entry 70, high floor 30).
+- **Fines** (`fine_wrong_fuel`, `fine_wrong_floor`, 2,500 kr. a journey): a journey run with a bus of
+  a fuel or a floor its contract's requirements do not allow; a CNG bus on a contract won with
+  electric buses is fined as a diesel one. The age and the screens are shown, not fined.
+
+Tested: `server_buses::tests`, `viborg::tests::a_companys_parts`,
+`bus_contracts::tests::the_authority_fines_a_bus_of_the_wrong_fuel_or_floor`,
+`market::tests` (the gas bus guess), the tender page's requirements test.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the
