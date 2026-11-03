@@ -53815,95 +53815,114 @@ _version: 2
   sv: "Mappen med Omsi.exe, maps och Vehicles. Om fältet lämnas tomt söks vanliga platser igenom (Steam-bibliotek, Wine-miljöer)."
 "Browse…":
   de: "Durchsuchen…"
+  da: "Gennemse…"
   ru: "Обзор…"
   zh-tw: "瀏覽……"
   sv: "Bläddra…"
 "Game program":
   de: "Spielprogramm"
+  da: "Spilprogram"
   ru: "Программа игры"
   zh-tw: "遊戲程式"
   sv: "Spelprogram"
 "The openomsi program the duties start. Left empty, the one beside the launcher.":
   de: "Das openomsi-Programm, das die Dienste startet. Leer gelassen, das neben dem Launcher."
+  da: "Det openomsi-program, vagterne starter. Hvis det lades tomt, bruges det ved siden af launcheren."
   ru: "Программа openomsi, которую запускают смены. Если пусто, то та, что рядом с лаунчером."
   zh-tw: "執勤時啟動的 openomsi 程式。留空時會使用啟動器旁的程式。"
   sv: "Programmet openomsi som tjänsterna startar. Om fältet lämnas tomt används det bredvid startprogrammet."
 "Choose the game program":
   de: "Spielprogramm wählen"
+  da: "Vælg spilprogrammet"
   ru: "Выберите программу игры"
   zh-tw: "選擇遊戲程式"
   sv: "Välj spelprogrammet"
 "Where things are":
   de: "Wo alles liegt"
+  da: "Hvor tingene er"
   ru: "Где что лежит"
   zh-tw: "檔案位置"
   sv: "Var saker finns"
 "Content folder (mods)":
   de: "Inhaltsordner (Mods)"
+  da: "Indholdsmappe (mods)"
   ru: "Папка контента (моды)"
   zh-tw: "內容資料夾（模組）"
   sv: "Innehållsmapp (moddar)"
 "Settings and logs":
   de: "Einstellungen und Protokolle"
+  da: "Indstillinger og logge"
   ru: "Настройки и журналы"
   zh-tw: "設定與記錄"
   sv: "Inställningar och loggar"
 "Open the content folder":
   de: "Inhaltsordner öffnen"
+  da: "Åbn indholdsmappen"
   ru: "Открыть папку контента"
   zh-tw: "開啟內容資料夾"
   sv: "Öppna innehållsmappen"
 "Open the settings folder":
   de: "Einstellungsordner öffnen"
+  da: "Åbn indstillingsmappen"
   ru: "Открыть папку настроек"
   zh-tw: "開啟設定資料夾"
   sv: "Öppna inställningsmappen"
 "OMSI 2's lessons: driving the bus, the stops, the ticket printer and the timetable.":
   de: "Die Lektionen von OMSI 2: Busfahren, Haltestellen, Fahrscheindrucker und Fahrplan."
+  da: "OMSI 2's lektioner: kørsel med bussen, stoppestederne, billetprinteren og køreplanen."
   ru: "Уроки OMSI 2: вождение автобуса, остановки, билетный принтер и расписание."
   zh-tw: "OMSI 2 教學：巴士駕駛、車站、售票機與時刻表。"
   sv: "OMSI 2:s lektioner: köra bussen, hållplatserna, biljettskrivaren och tidtabellen."
 "Reading the tutorials…":
   de: "Tutorials werden gelesen…"
+  da: "Læser tutorialerne…"
   ru: "Читаем обучение…"
   zh-tw: "正在讀取教學……"
   sv: "Läser in handledningarna…"
 "No tutorial found":
   de: "Kein Tutorial gefunden"
+  da: "Ingen tutorial fundet"
   ru: "Обучение не найдено"
   zh-tw: "找不到教學"
   sv: "Ingen handledning hittades"
 "The tutorials come with OMSI 2 (its Tutorials folder).":
   de: "Die Tutorials gehören zu OMSI 2 (sein Ordner Tutorials)."
+  da: "Tutorialerne følger med OMSI 2 (dets mappe Tutorials)."
   ru: "Обучение идёт вместе с OMSI 2 (её папка Tutorials)."
   zh-tw: "教學隨 OMSI 2 提供（位於 Tutorials 資料夾）。"
   sv: "Handledningar följer med OMSI 2 (dess Tutorials-mapp)."
 "Start the tutorial":
   de: "Tutorial starten"
+  da: "Start tutorialen"
   ru: "Начать обучение"
   zh-tw: "開始教學"
   sv: "Starta handledningen"
 "Reading the map…":
   de: "Karte wird gelesen…"
+  da: "Læser kortet…"
   ru: "Читаем карту…"
   zh-tw: "正在讀取地圖……"
   sv: "Läser in kartan…"
 "{roads} roads | {stops} stops | {entries} entry points":
   de: "{roads} Straßen | {stops} Haltestellen | {entries} Einstiegspunkte"
+  da: "{roads} veje | {stops} stoppesteder | {entries} indgangspunkter"
   ru: "Дорог: {roads} | остановок: {stops} | точек входа: {entries}"
   zh-tw: "{roads} 條道路 | {stops} 個車站 | {entries} 個入口點"
   sv: "{roads} vägar | {stops} hållplatser | {entries} startpunkter"
 "Copy the whole OMSI 2 folder (with Omsi.exe, maps and Vehicles) from a computer into openOMSI/OMSI 2 in the phone's internal storage; it is found there by itself.":
   de: "Kopiere den ganzen OMSI-2-Ordner (mit Omsi.exe, maps und Vehicles) vom Computer nach openOMSI/OMSI 2 im internen Speicher des Telefons; dort wird er von selbst gefunden."
+  da: "Kopiér hele OMSI 2-mappen (med Omsi.exe, maps og Vehicles) fra en computer over i openOMSI/OMSI 2 i telefonens interne lager; den findes dér af sig selv."
   ru: "Скопируйте всю папку OMSI 2 (с Omsi.exe, maps и Vehicles) с компьютера в openOMSI/OMSI 2 во внутренней памяти телефона: там она найдётся сама."
   sv: "Kopiera hela OMSI 2-mappen (med Omsi.exe, maps och Vehicles) från en dator till openOMSI/OMSI 2 i telefonens internminne; den hittas där automatiskt."
 "Time and date":
   de: "Zeit und Datum"
+  da: "Tid og dato"
   ru: "Время и дата"
   zh-tw: "時間與日期"
   sv: "Tid och datum"
 "{n} tours":
   de: "{n} Umläufe"
+  da: "{n} ture"
   ru: "Выходов: {n}"
   fr: "{n} services"
   uk: "Оборотів: {n}"
@@ -53932,6 +53951,7 @@ _version: 2
   sv: "{n} omlopp"
 "Driving hints":
   de: "Fahrhinweise"
+  da: "Kørselstips"
   ru: "Подсказки при вождении"
   uk: "Підказки під час руху"
   fr: "Conseils de conduite"
@@ -53944,6 +53964,7 @@ _version: 2
   sv: "Körtips"
 "Why the vehicle does not move, the change due, what a service did: as short notifications":
   de: "Warum das Fahrzeug nicht fährt, das fällige Wechselgeld, was ein Dienst getan hat: als kurze Benachrichtigungen"
+  da: "Hvorfor køretøjet ikke bevæger sig, den forestående ændring, hvad en service gjorde: som korte beskeder"
   ru: "Почему машина не едет, какую сдачу дать, что сделала служба: короткими уведомлениями"
   uk: "Чому машина не їде, яку решту дати, що зробила служба: короткими сповіщеннями"
   fr: "Pourquoi le véhicule n'avance pas, la monnaie à rendre, ce qu'un service a fait : en brèves notifications"
@@ -53954,6 +53975,7 @@ _version: 2
   sv: "Varför fordonet inte rör sig, växel att ge tillbaka och resultatet av service: som korta meddelanden"
 "Tips":
   de: "Tipps"
+  da: "Tips"
   ru: "Советы"
   uk: "Поради"
   fr: "Astuces"
@@ -53963,46 +53985,55 @@ _version: 2
   sv: "Tips"
 "Shift+U puts the bus into service: the electrics, the engine and the lights in one go":
   de: "Umschalt+U macht den Bus betriebsbereit: Elektrik, Motor und Licht in einem Zug"
+  da: "Shift+U sætter bussen i drift: elektrikken, motoren og lysene i ét hug"
   ru: "Shift+U готовит автобус к работе: электрика, двигатель и свет разом"
   uk: "Shift+U готує автобус до роботи: електрика, двигун і світло разом"
   sv: "Shift+U gör bussen körklar: elsystem, motor och belysning på en gång"
 "F1 is the driver's seat, F2 the passengers' view, F3 outside the bus and F4 the free camera":
   de: "F1 ist der Fahrerplatz, F2 die Sicht der Fahrgäste, F3 außen am Bus und F4 die freie Kamera"
+  da: "F1 er førersædet, F2 passagerernes visning, F3 udenfor bussen og F4 det frie kamera"
   ru: "F1: место водителя, F2: вид пассажира, F3: снаружи автобуса, F4: свободная камера"
   uk: "F1: місце водія, F2: вигляд пасажира, F3: ззовні автобуса, F4: вільна камера"
   sv: "F1 är förarplatsen, F2 passagerarvyn, F3 utsidan av bussen och F4 den fria kameran"
 "Esc opens the menu: the options, the line and tour, saving and the photo mode":
   de: "Esc öffnet das Menü: Optionen, Linie und Umlauf, Speichern und Fotomodus"
+  da: "Esc åbner menuen: valgene, linjen og turen, gemning og fototilstanden"
   ru: "Esc открывает меню: настройки, линия и рейс, сохранение и фоторежим"
   uk: "Esc відкриває меню: налаштування, лінія й рейс, збереження та фоторежим"
   sv: "Esc öppnar menyn: alternativ, linje och omlopp, sparande och fotoläge"
 "Shift+N switches the navigator between the map, the map with the next stops, and off":
   de: "Umschalt+N schaltet das Navi zwischen Karte, Karte mit den nächsten Haltestellen und aus"
+  da: "Shift+N skifter navigatoren mellem kortet, kortet med de næste stoppesteder og fra"
   ru: "Shift+N переключает навигатор: карта, карта со следующими остановками, выключен"
   uk: "Shift+N перемикає навігатор: мапа, мапа з наступними зупинками, вимкнено"
   sv: "Shift+N växlar navigatorn mellan karta, karta med nästa hållplatser och av"
 "Insert shows the timetable of your trip":
   de: "Einfg zeigt den Fahrplan deiner Fahrt"
+  da: "Insert viser din rejses køreplan"
   ru: "Insert показывает расписание вашего рейса"
   uk: "Insert показує розклад вашого рейсу"
   sv: "Insert visar tidtabellen för din tur"
 "Shift+M opens the city map":
   de: "Umschalt+M öffnet den Stadtplan"
+  da: "Shift+M åbner bykortet"
   ru: "Shift+M открывает карту города"
   uk: "Shift+M відкриває мапу міста"
   sv: "Shift+M öppnar stadskartan"
 "P pauses the game; Alt+S saves the situation":
   de: "P hält das Spiel an; Alt+S speichert die Situation"
+  da: "P sætter spillet på pause; Alt+S gemmer situationen"
   ru: "P ставит игру на паузу; Alt+S сохраняет ситуацию"
   uk: "P ставить гру на паузу; Alt+S зберігає ситуацію"
   sv: "P pausar spelet; Alt+S sparar situationen"
 "Shift+Y shows the information bar: the time, the speed, the temperatures and the next stop":
   de: "Umschalt+Y zeigt die Infoleiste: Uhrzeit, Tempo, Temperaturen und die nächste Haltestelle"
+  da: "Shift+Y viser informationslinjen: klokkeslæt, fart, temperaturer og næste stoppested"
   ru: "Shift+Y показывает информационную строку: время, скорость, температуру и следующую остановку"
   uk: "Shift+Y показує інформаційний рядок: час, швидкість, температуру й наступну зупинку"
   sv: "Shift+Y visar informationsfältet: tid, hastighet, temperaturer och nästa hållplats"
 "Next stop":
   de: "Nächste Haltestelle"
+  da: "Næste stoppested"
   ru: "Следующая остановка"
   uk: "Наступна зупинка"
   fr: "Prochain arrêt"
@@ -54011,6 +54042,7 @@ _version: 2
   nl: "Volgende halte"
   sv: "Nästa hållplats"
 "Best Weather":
+  da: "Bedste vejr"
   ru: "Лучшая погода"
   uk: "Найкраща погода"
   pl: "Najlepsza pogoda"
@@ -54022,6 +54054,7 @@ _version: 2
   tr: "En iyi hava"
   sv: "Bäst väder"
 "Ground Fog":
+  da: "Jordtåge"
   ru: "Приземный туман"
   uk: "Приземний туман"
   pl: "Mgła przyziemna"
@@ -54033,6 +54066,7 @@ _version: 2
   tr: "Yer sisi"
   sv: "Markdimma"
 "Twilight Fog":
+  da: "Tusmørketåge"
   ru: "Сумеречный туман"
   uk: "Сутінковий туман"
   pl: "Mgła o zmierzchu"
@@ -54044,6 +54078,7 @@ _version: 2
   tr: "Alacakaranlık sisi"
   sv: "Skymningsdimma"
 "Iciness":
+  da: "Isnende kulde"
   ru: "Ледяной холод"
   uk: "Крижаний холод"
   pl: "Lodowaty mróz"
@@ -54055,6 +54090,7 @@ _version: 2
   tr: "Dondurucu soğuk"
   sv: "Iskyla"
 "Rainy":
+  da: "Regnfuldt"
   ru: "Дождливо"
   uk: "Дощова погода"
   pl: "Deszczowo"
@@ -54066,6 +54102,7 @@ _version: 2
   tr: "Yağmurlu"
   sv: "Regnigt"
 "Summerlike":
+  da: "Sommerligt"
   ru: "По-летнему"
   uk: "По-літньому"
   pl: "Letnio"
@@ -54077,6 +54114,7 @@ _version: 2
   tr: "Yaz gibi"
   sv: "Somrigt"
 "Heavy Snowfall":
+  da: "Kraftigt snefald"
   ru: "Сильный снегопад"
   uk: "Сильний снігопад"
   pl: "Intensywne opady śniegu"
@@ -54088,6 +54126,7 @@ _version: 2
   tr: "Yoğun kar yağışı"
   sv: "Kraftigt snöfall"
 "Storm":
+  da: "Storm"
   ru: "Шторм"
   uk: "Шторм"
   pl: "Burza"
@@ -54099,6 +54138,7 @@ _version: 2
   tr: "Fırtına"
   sv: "Storm"
 "Freezing Wetness":
+  da: "Overfrysende væde"
   ru: "Гололедица"
   uk: "Ожеледиця"
   pl: "Gołoledź"
@@ -54111,32 +54151,42 @@ _version: 2
   sv: "Underkylt regn"
 "W A S D: move, Space: up, Ctrl: down, Shift: faster, drag or arrows: look":
   de: "W A S D: bewegen, Leertaste: hoch, Strg: runter, Umschalt: schneller, Ziehen oder Pfeile: umsehen"
+  da: "W A S D: flyt, mellemrum: op, Ctrl: ned, Shift: hurtigere, træk eller piletaster: se"
   ru: "W A S D: движение, Пробел: вверх, Ctrl: вниз, Shift: быстрее, мышь или стрелки: обзор"
   uk: "W A S D: рух, Пробіл: вгору, Ctrl: вниз, Shift: швидше, миша або стрілки: огляд"
   sv: "W A S D: flytta, mellanslag: uppåt, Ctrl: nedåt, Shift: snabbare, dra eller piltangenter: se dig omkring"
 "Move the clock.":
   de: "Die Uhr verstellen."
+  da: "Flyt uret."
   ru: "Перевести часы."
   uk: "Перевести годинник."
   zh-tw: "調整時間。"
   sv: "Flytta klockan."
 "Ambience volume":
+  da: "Lydstyrke for omgivelser"
   zh-tw: "環境音量"
 "Yaw sensitivity (left / right)":
+  da: "Følsomhed ved yaw (venstre / højre)"
   zh-tw: "水平旋轉靈敏度（左／右）"
 "Pitch sensitivity (up / down)":
+  da: "Følsomhed ved pitch (op / ned)"
   zh-tw: "俯仰靈敏度（上／下）"
 "Roll sensitivity":
+  da: "Følsomhed ved roll"
   zh-tw: "側傾靈敏度"
 "X sensitivity (left / right)":
+  da: "Følsomhed ved X (venstre / højre)"
   zh-tw: "X 軸靈敏度（左／右）"
 "Y sensitivity (up / down)":
+  da: "Følsomhed ved Y (op / ned)"
   zh-tw: "Y 軸靈敏度（上／下）"
 "Z sensitivity (forward / back)":
+  da: "Følsomhed ved Z (frem / tilbage)"
   zh-tw: "Z 軸靈敏度（前／後）"
 "Light theme":
   zh-tw: "淺色"
   de: "Hell"
+  da: "Lyst tema"
   ru: "Светлая"
   sv: "Ljust"
 "Pedal keys speed":
@@ -54147,6 +54197,7 @@ _version: 2
   pt-pt: "Velocidade das teclas dos pedais"
   zh: "踏板按键速度"
   de: "Tempo der Pedaltasten"
+  da: "Pedaltasternes hastighed"
   nl: "Snelheid van de pedaaltoetsen"
   sv: "Pedaltangenternas hastighet"
   ru: "Скорость клавиш педалей"
@@ -54175,6 +54226,7 @@ _version: 2
   pt-pt: "A rapidez com que as teclas de acelerador e travão carregam nos pedais; mais lento é mais preciso"
   zh: "油门与刹车按键踩下踏板的速度；越慢越精细"
   de: "Wie schnell die Gas- und Bremstasten ihre Pedale drücken; langsamer ist feiner"
+  da: "Hvor hurtigt speeder- og bremsetasterne trykker pedalerne ned; langsommere er finere"
   nl: "Hoe snel de gas- en remtoetsen hun pedalen indrukken; langzamer is fijner"
   sv: "Hur snabbt gas- och bromstangenterna trycker ned pedalerna; långsammare är finare"
   ru: "Как быстро клавиши газа и тормоза нажимают педали; медленнее — точнее"
@@ -54203,6 +54255,7 @@ _version: 2
   pt-pt: "O rato aciona os pedais"
   zh: "鼠标控制踏板"
   de: "Die Maus bedient die Pedale"
+  da: "Musen betjener pedalerne"
   nl: "De muis bedient de pedalen"
   sv: "Musen styr pedalerna"
   ru: "Мышь управляет педалями"
@@ -54231,6 +54284,7 @@ _version: 2
   pt-pt: "Para cima o acelerador, para baixo o travão, como no OMSI; desativado: o rato só dirige, os pedais ficam no teclado"
   zh: "向上为油门，向下为刹车，如同 OMSI；关闭：鼠标只控制转向，踏板仍由键盘控制"
   de: "Nach oben Gas, nach unten Bremse, wie in OMSI; aus: Die Maus lenkt nur, die Pedale bleiben auf der Tastatur"
+  da: "Op er speeder, ned er bremse, som i OMSI; fra: musen styrer kun, pedalerne forbliver på tasterne"
   nl: "Omhoog gas, omlaag remmen, zoals in OMSI; uit: de muis stuurt alleen, de pedalen blijven op het toetsenbord"
   sv: "Uppåt gas, nedåt broms, som i OMSI; av: musen styr bara, pedalerna ligger kvar på tangentbordet"
   ru: "Вверх — газ, вниз — тормоз, как в OMSI; выкл.: мышь только рулит, педали остаются на клавишах"
@@ -54253,6 +54307,7 @@ _version: 2
   tl: "Pataas ang silinyador, pababa ang preno, gaya sa OMSI; naka-off: pagmamaneho lang ang mouse, nasa mga key ang mga pedal"
 "Address":
   de: "Adresse"
+  da: "Adresse"
   fr: "Adresse"
   ru: "Адрес"
   uk: "Адреса"
@@ -54283,6 +54338,7 @@ _version: 2
   ca: "Natural (procedimental)"
   ru: "Естественная (процедурная)"
   de: "Natürlich (prozedural)"
+  da: "Naturlig (proceduremæssig)"
   fr: "Naturelle (procédurale)"
   uk: "Природна (процедурна)"
   be: "Натуральная (працэдурная)"
@@ -54309,6 +54365,7 @@ _version: 2
   sv: "Naturliga (procedurmässiga)"
 "Hold Shift, Ctrl or Alt for a combination, or press one alone to bind it. Escape cancels; Backspace or Delete clears the key.":
   de: "Halte Umschalt, Strg oder Alt für eine Kombination, oder drücke eine davon allein, um sie zu belegen. Esc bricht ab; Rücktaste oder Entf löscht die Taste."
+  da: "Hold Shift, Ctrl eller Alt nede for en kombination, eller tryk på en alene for at binde den. Escape annullerer; Backspace eller Delete rydder tasten."
   ru: "Удерживайте Shift, Ctrl или Alt для сочетания или нажмите одну из них отдельно, чтобы назначить её. Escape: отмена; Backspace или Delete очищают клавишу."
   fr: "Maintenez Maj, Ctrl ou Alt pour une combinaison, ou appuyez sur l'une d'elles seule pour l'attribuer. Échap annule ; Retour arrière ou Suppr efface la touche."
   uk: "Утримуйте Shift, Ctrl або Alt для поєднання або натисніть одну з них окремо, щоб призначити її. Escape: скасувати; Backspace або Delete очищають клавішу."
@@ -54336,47 +54393,61 @@ _version: 2
   ca: "Mantén Maj, Ctrl o Alt per a una combinació, o prem-ne una sola per assignar-la. Escape cancel·la; Retrocés o Supr esborra la tecla."
   sv: "Håll Shift, Ctrl eller Alt för en kombination, eller tryck en av dem ensam för att binda den. Escape avbryter; Backsteg eller Delete rensar tangenten."
 "End of the trip. Next: {} to {}, from {} at {} (it starts by itself a minute before)":
+  da: "Rejsens slutning. Næste: {} til {}, fra {} kl. {} (den starter af sig selv et minut før)"
   fr: "Fin de la course. Suivante : {} vers {}, depuis {} à {} (elle démarre d'elle-même une minute avant)"
   sv: "Turen är slut. Nästa: {} till {}, från {} kl. {} (startar automatiskt en minut före)"
 "line {}":
+  da: "linje {}"
   fr: "ligne {}"
   sv: "linje {}"
 "service trip":
+  da: "rejse i drift"
   fr: "haut-le-pied"
   sv: "servicetur"
 "Placed: {} ({how} to drive it)":
+  da: "Placeret: {} ({how} for at køre det)"
   fr: "Placé : {} ({how} pour le conduire)"
   sv: "Placerat: {} ({how} för att köra det)"
 "Weather: Custom weather":
+  da: "Vejr: Brugerdefineret vejr"
   fr: "Météo : météo personnalisée"
   sv: "Väder: Anpassat väder"
 "Turn METAR sync off before editing its current weather":
+  da: "Slå METAR-synkronisering fra, før du redigerer dens aktuelle vejr"
   fr: "Désactivez la synchro METAR avant de modifier la météo actuelle"
   sv: "Stäng av METAR-synkronisering innan du redigerar det aktuella vädret"
 "Weather: no METAR report could be loaded":
+  da: "Vejr: ingen METAR-rapport kunne indlæses"
   fr: "Météo : aucun bulletin METAR n'a pu être chargé"
   sv: "Väder: ingen METAR-rapport kunde hämtas"
 "Weather: METAR request failed":
+  da: "Vejr: METAR-forespørgslen mislykkedes"
   fr: "Météo : la requête METAR a échoué"
   sv: "Väder: METAR-förfrågan misslyckades"
 "ICAO must be exactly 4 letters":
+  da: "ICAO skal være præcis 4 bogstaver"
   fr: "Le code OACI doit faire exactement 4 lettres"
   sv: "ICAO måste bestå av exakt 4 bokstäver"
 "Situation saved (quicksave): the launcher continues from it":
+  da: "Situation gemt (hurtiggemning): launcheren fortsætter derfra"
   fr: "Situation enregistrée (sauvegarde rapide) : le launcher reprendra à partir d'elle"
   sv: "Situationen har sparats (snabbsparning): startprogrammet fortsätter därifrån"
 "A rail vehicle cannot be moved off its track":
+  da: "Et skinnekøretøj kan ikke flyttes væk fra sit spor"
   fr: "Un véhicule ferroviaire ne peut pas quitter sa voie"
   sv: "Ett spårfordon kan inte flyttas bort från sitt spår"
 "Ctrl+click on the ground to move the bus there":
+  da: "Ctrl+klik på jorden for at flytte bussen dertil"
   fr: "Ctrl+clic sur le sol pour y déplacer le bus"
   sv: "Ctrl+klicka på marken för att flytta bussen dit"
 "Refuelling: {now:.0} l":
+  da: "Tanker: {now:.0} l"
   fr: "Plein en cours : {now:.0} l"
   sv: "Tankar: {now:.0} l"
 "{n} versions":
   zh-tw: "{n} 個版本"
   de: "{n} Versionen"
+  da: "{n} versioner"
   fr: "{n} versions"
   es: "{n} versiones"
   it: "{n} versioni"
@@ -54388,6 +54459,7 @@ _version: 2
   ca: "Detalls de rendiment"
   ru: "Подробности производительности"
   de: "Leistungsdetails"
+  da: "Ydeevnedetaljer"
   fr: "Détails des performances"
   uk: "Подробиці продуктивності"
   be: "Падрабязнасці прадукцыйнасці"
@@ -54416,6 +54488,7 @@ _version: 2
   ca: "On va el temps de cada fotograma, com d'ocupat està el processador i què alenteix el joc, amb gràfics en directe"
   ru: "На что уходит время каждого кадра, насколько загружен процессор и что замедляет игру, с графиками в реальном времени"
   de: "Wohin die Zeit jedes Bildes geht, wie ausgelastet der Prozessor ist und was das Spiel bremst, mit Live-Diagrammen"
+  da: "Hvor hvert billedes tid går hen, hvor travlt processoren har det, og hvad der bremser spillet, med live-grafer"
   fr: "Où passe le temps de chaque image, la charge du processeur et ce qui ralentit le jeu, avec des graphiques en direct"
   uk: "На що йде час кожного кадру, наскільки завантажений процесор і що сповільнює гру, з графіками в реальному часі"
   be: "На што ідзе час кожнага кадра, наколькі загружаны працэсар і што запавольвае гульню, з графікамі ў рэальным часе"
@@ -54444,6 +54517,7 @@ _version: 2
   ca: "Càrrega del mapa"
   ru: "Загрузка карты"
   de: "Karte laden"
+  da: "Indlæsning af kort"
   fr: "Chargement de la carte"
   uk: "Завантаження карти"
   be: "Загрузка карты"
@@ -54472,6 +54546,7 @@ _version: 2
   ca: "Llums i decorat"
   ru: "Свет и окружение"
   de: "Licht und Szenerie"
+  da: "Lys og landskab"
   fr: "Lumières et décor"
   uk: "Світло й оточення"
   be: "Святло і наваколле"
@@ -54500,6 +54575,7 @@ _version: 2
   ca: "Renderització"
   ru: "Отрисовка"
   de: "Rendering"
+  da: "Tegning"
   fr: "Rendu"
   uk: "Рендеринг"
   be: "Рэндэрынг"
@@ -54528,6 +54604,7 @@ _version: 2
   ca: "Targeta gràfica"
   ru: "Видеокарта"
   de: "Grafikkarte"
+  da: "Grafikkort"
   fr: "Carte graphique"
   uk: "Відеокарта"
   be: "Відэакарта"
@@ -54556,6 +54633,7 @@ _version: 2
   ca: "Fotograma més lent del gràfic: {} ms"
   ru: "Самый медленный кадр на графике: {} мс"
   de: "Langsamstes Bild im Diagramm: {} ms"
+  da: "Grafens langsomste billede: {} ms"
   fr: "Image la plus lente du graphique : {} ms"
   uk: "Найповільніший кадр на графіку: {} мс"
   be: "Самы павольны кадр на графіку: {} мс"
@@ -54584,6 +54662,7 @@ _version: 2
   ca: "Limitat per: {} ({}% del fotograma)"
   ru: "Ограничивает: {} ({}% кадра)"
   de: "Begrenzt durch: {} ({} % des Bildes)"
+  da: "Begrænset af: {} ({} % af billedet)"
   fr: "Limité par : {} ({} % de l'image)"
   uk: "Обмежує: {} ({}% кадру)"
   be: "Абмяжоўвае: {} ({}% кадра)"
@@ -54612,6 +54691,7 @@ _version: 2
   ca: "Estrebades: {}, l'última de {} ms fa {} s ({})"
   ru: "Подтормаживания: {}, последнее — {} мс, {} с назад ({})"
   de: "Ruckler: {}, letzter {} ms, vor {} s ({})"
+  da: "Hak: {}, senest {} ms for {} s siden ({})"
   fr: "Saccades : {}, dernière de {} ms il y a {} s ({})"
   uk: "Підгальмовування: {}, останнє — {} мс, {} с тому ({})"
   be: "Падтармажванні: {}, апошняе — {} мс, {} с таму ({})"
@@ -54640,6 +54720,7 @@ _version: 2
   ca: "Encara cap estrebada"
   ru: "Подтормаживаний пока нет"
   de: "Noch kein Ruckler"
+  da: "Ingen hak endnu"
   fr: "Aucune saccade pour l'instant"
   uk: "Підгальмовувань поки немає"
   be: "Падтармажванняў пакуль няма"
@@ -54668,6 +54749,7 @@ _version: 2
   ca: "Fil principal ocupat al {}%, altres fils {} de {} nuclis"
   ru: "Основной поток занят на {}%, другие потоки — {} из {} ядер"
   de: "Hauptthread zu {} % ausgelastet, andere Threads {} von {} Kernen"
+  da: "Hovedtråden {} % optaget, andre tråde {} af {} kerner"
   fr: "Thread principal occupé à {} %, autres threads {} cœurs sur {}"
   uk: "Основний потік зайнятий на {}%, інші потоки — {} з {} ядер"
   be: "Асноўны паток заняты на {}%, іншыя патокі — {} з {} ядраў"
@@ -54696,6 +54778,7 @@ _version: 2
   ca: "Fil principal ocupat al {}%"
   ru: "Основной поток занят на {}%"
   de: "Hauptthread zu {} % ausgelastet"
+  da: "Hovedtråden {} % optaget"
   fr: "Thread principal occupé à {} %"
   uk: "Основний потік зайнятий на {}%"
   be: "Асноўны паток заняты на {}%"
@@ -54724,6 +54807,7 @@ _version: 2
   ca: "Imatge {}×{}, renderitzada al {}%, MSAA {}×"
   ru: "Разрешение {}×{}, рендер {}%, MSAA {}×"
   de: "Bild {}×{}, gerendert mit {} %, MSAA {}×"
+  da: "Billede {}×{}, tegnet ved {} %, MSAA {}×"
   fr: "Image {}×{}, rendu à {} %, MSAA {}×"
   uk: "Зображення {}×{}, рендеринг {}%, MSAA {}×"
   be: "Выява {}×{}, рэндэрынг {}%, MSAA {}×"
@@ -54752,6 +54836,7 @@ _version: 2
   ca: "Crides de dibuix {}, objectes visibles {}"
   ru: "Вызовов отрисовки {}, видимых объектов {}"
   de: "Draw Calls {}, sichtbare Objekte {}"
+  da: "Draw calls {}, synlige objekter {}"
   fr: "Draw calls {}, objets visibles {}"
   uk: "Викликів рендерингу {}, видимих об'єктів {}"
   be: "Выклікаў рэндэрынгу {}, бачных аб'ектаў {}"
@@ -54780,6 +54865,7 @@ _version: 2
   ca: "Memòria de textures {} MB, tessel·les del mapa {}"
   ru: "Память текстур {} МБ, тайлов карты {}"
   de: "Texturspeicher {} MB, Kartenkacheln {}"
+  da: "Teksturhukommelse {} MB, korttiles {}"
   fr: "Mémoire des textures {} Mo, tuiles de carte {}"
   uk: "Пам'ять текстур {} МБ, тайлів карти {}"
   be: "Памяць тэкстур {} МБ, тайлаў карты {}"
@@ -54808,6 +54894,7 @@ _version: 2
   ca: "Vehicles d'IA {}, persones {}"
   ru: "ИИ-транспорт {}, люди {}"
   de: "KI-Fahrzeuge {}, Personen {}"
+  da: "AI-køretøjer {}, mennesker {}"
   fr: "Véhicules IA {}, personnes {}"
   uk: "ШІ-транспорт {}, людей {}"
   be: "ШІ-транспарт {}, людзей {}"
@@ -54836,6 +54923,7 @@ _version: 2
   ca: "HUD i menús"
   ru: "HUD и меню"
   de: "HUD und Menüs"
+  da: "HUD og menuer"
   fr: "HUD et menus"
   uk: "HUD і меню"
   be: "HUD і меню"
@@ -54864,6 +54952,7 @@ _version: 2
   ca: "Resta del fotograma"
   ru: "Остальное в кадре"
   de: "Rest des Bildes"
+  da: "Resten af billedet"
   fr: "Reste de l'image"
   uk: "Решта кадру"
   be: "Астатняе ў кадры"
@@ -54892,6 +54981,7 @@ _version: 2
   ca: "Compacte"
   ru: "Компактно"
   de: "Kompakt"
+  da: "Kompakt"
   fr: "Compact"
   uk: "Компактно"
   be: "Кампактна"
@@ -54920,6 +55010,7 @@ _version: 2
   ca: "Detallat"
   ru: "Подробно"
   de: "Ausführlich"
+  da: "Detaljeret"
   fr: "Détaillé"
   uk: "Детально"
   be: "Падрабязна"
@@ -54946,6 +55037,7 @@ _version: 2
   sv: "Detaljerat"
 "Assign":
   de: "Zuweisen"
+  da: "Tildel"
   fr: "Attribuer"
   ru: "Назначить"
   uk: "Призначити"
@@ -54974,6 +55066,7 @@ _version: 2
   sv: "Tilldela"
 "By action":
   de: "Nach Aktion"
+  da: "Efter handling"
   fr: "Par action"
   ru: "По действиям"
   uk: "За діями"
@@ -55002,6 +55095,7 @@ _version: 2
   sv: "Efter åtgärd"
 "By button":
   de: "Nach Taste"
+  da: "Efter knap"
   fr: "Par bouton"
   ru: "По кнопкам"
   uk: "За кнопками"
@@ -55030,6 +55124,7 @@ _version: 2
   sv: "Efter knapp"
 "Progressive":
   de: "Progressiv"
+  da: "Progressiv"
   fr: "Progressive"
   ru: "Прогрессивная"
   uk: "Прогресивна"
@@ -55058,6 +55153,7 @@ _version: 2
   sv: "Progressiv"
 "Degressive":
   de: "Degressiv"
+  da: "Degressiv"
   fr: "Dégressive"
   ru: "Дегрессивная"
   uk: "Дегресивна"
@@ -55086,6 +55182,7 @@ _version: 2
   sv: "Degressiv"
 "Bi-progressive":
   de: "Bi-progressiv"
+  da: "Bi-progressiv"
   fr: "Bi-progressive"
   ru: "Двусторонняя прогрессивная"
   uk: "Двобічна прогресивна"
@@ -55114,6 +55211,7 @@ _version: 2
   sv: "Bi-progressiv"
 "Bi-degressive":
   de: "Bi-degressiv"
+  da: "Bi-degressiv"
   fr: "Bi-dégressive"
   ru: "Двусторонняя дегрессивная"
   uk: "Двобічна дегресивна"
@@ -55142,6 +55240,7 @@ _version: 2
   sv: "Bi-degressiv"
 "Change its buttons":
   de: "Tasten ändern"
+  da: "Skift dens knapper"
   fr: "Modifier ses boutons"
   ru: "Изменить кнопки"
   uk: "Змінити кнопки"
@@ -55170,6 +55269,7 @@ _version: 2
   sv: "Ändra dess knappar"
 "Not connected":
   de: "Nicht verbunden"
+  da: "Ikke forbundet"
   fr: "Non connecté"
   ru: "Не подключено"
   uk: "Не підключено"
@@ -55198,6 +55298,7 @@ _version: 2
   sv: "Inte ansluten"
 "Switched off":
   de: "Ausgeschaltet"
+  da: "Slået fra"
   fr: "Désactivé"
   ru: "Отключено"
   uk: "Вимкнено"
@@ -55226,6 +55327,7 @@ _version: 2
   sv: "Avstängd"
 "Not set up yet":
   de: "Noch nicht eingerichtet"
+  da: "Ikke sat op endnu"
   fr: "Pas encore configuré"
   ru: "Ещё не настроено"
   uk: "Ще не налаштовано"
@@ -55254,6 +55356,7 @@ _version: 2
   sv: "Inte konfigurerad ännu"
 "Ready to play":
   de: "Spielbereit"
+  da: "Klar til at spille"
   fr: "Prêt à jouer"
   ru: "Готово к игре"
   uk: "Готово до гри"
@@ -55282,6 +55385,7 @@ _version: 2
   sv: "Redo att spela"
 "Found: {axis}":
   de: "Gefunden: {axis}"
+  da: "Fundet: {axis}"
   fr: "Détecté : {axis}"
   ru: "Найдено: {axis}"
   uk: "Знайдено: {axis}"
@@ -55310,6 +55414,7 @@ _version: 2
   sv: "Hittad: {axis}"
 "Gamepad":
   de: "Gamepad"
+  da: "Gamepad"
   fr: "Manette"
   ru: "Геймпад"
   uk: "Геймпад"
@@ -55338,6 +55443,7 @@ _version: 2
   sv: "Handkontroll"
 "Gearbox":
   de: "Getriebe"
+  da: "Gearkasse"
   fr: "Boîte de vitesses"
   ru: "Коробка передач"
   uk: "Коробка передач"
@@ -55366,6 +55472,7 @@ _version: 2
   sv: "Växellåda"
 "Lights and indicators":
   de: "Licht und Blinker"
+  da: "Lys og blinklys"
   fr: "Feux et clignotants"
   ru: "Свет и поворотники"
   uk: "Світло й поворотники"
@@ -55394,6 +55501,7 @@ _version: 2
   sv: "Belysning och blinkers"
 "Doors and tickets":
   de: "Türen und Fahrscheine"
+  da: "Døre og billetter"
   fr: "Portes et tickets"
   ru: "Двери и билеты"
   uk: "Двері й квитки"
@@ -55422,6 +55530,7 @@ _version: 2
   sv: "Dörrar och biljetter"
 "Views":
   de: "Ansichten"
+  da: "Visninger"
   fr: "Vues"
   ru: "Виды"
   uk: "Види"
@@ -55450,6 +55559,7 @@ _version: 2
   sv: "Vyer"
 "Hat {n} up":
   de: "Hat {n} oben"
+  da: "Hat {n} op"
   fr: "Chapeau {n} haut"
   ru: "Hat {n} вверх"
   uk: "Hat {n} вгору"
@@ -55478,6 +55588,7 @@ _version: 2
   sv: "Styrkors {n} uppåt"
 "Hat {n} right":
   de: "Hat {n} rechts"
+  da: "Hat {n} til højre"
   fr: "Chapeau {n} droite"
   ru: "Hat {n} вправо"
   uk: "Hat {n} праворуч"
@@ -55506,6 +55617,7 @@ _version: 2
   sv: "Styrkors {n} höger"
 "Hat {n} down":
   de: "Hat {n} unten"
+  da: "Hat {n} ned"
   fr: "Chapeau {n} bas"
   ru: "Hat {n} вниз"
   uk: "Hat {n} вниз"
@@ -55534,6 +55646,7 @@ _version: 2
   sv: "Styrkors {n} nedåt"
 "Hat {n} left":
   de: "Hat {n} links"
+  da: "Hat {n} til venstre"
   fr: "Chapeau {n} gauche"
   ru: "Hat {n} влево"
   uk: "Hat {n} ліворуч"
@@ -55562,6 +55675,7 @@ _version: 2
   sv: "Styrkors {n} vänster"
 "Its axes and buttons are forgotten. While it is connected it can be set up again.":
   de: "Seine Achsen und Tasten werden vergessen. Solange es angeschlossen ist, kann es neu eingerichtet werden."
+  da: "Dens akser og knapper glemmes. Mens den er forbundet, kan den sættes op igen."
   fr: "Ses axes et ses boutons seront oubliés. Tant qu'il est connecté, il peut être reconfiguré."
   ru: "Его оси и кнопки будут забыты. Пока устройство подключено, его можно настроить заново."
   uk: "Його осі й кнопки буде забуто. Поки пристрій підключено, його можна налаштувати знову."
@@ -55590,6 +55704,7 @@ _version: 2
   sv: "Dess axlar och knappar tas bort ur konfigurationen. Den kan konfigureras igen medan den är ansluten."
 "Move a control: its line lights up.":
   de: "Bewege ein Bedienelement: Seine Zeile leuchtet auf."
+  da: "Bevæg en styring: dens linje lyser."
   fr: "Bougez une commande : sa ligne s'allume."
   ru: "Подвигайте орган управления: его строка подсветится."
   uk: "Порухайте елемент керування: його рядок підсвітиться."
@@ -55618,6 +55733,7 @@ _version: 2
   sv: "Rör ett reglage: dess rad lyser upp."
 "No axis steers yet.":
   de: "Noch lenkt keine Achse."
+  da: "Ingen akse styrer endnu."
   fr: "Aucun axe ne gère encore la direction."
   ru: "Ни одна ось ещё не управляет рулём."
   uk: "Жодна вісь ще не керує кермом."
@@ -55646,6 +55762,7 @@ _version: 2
   sv: "Ingen axel styr ännu."
 "Not connected: plug it in to see it answer. What it does is kept.":
   de: "Nicht verbunden: Schließe es an, um es reagieren zu sehen. Seine Belegung bleibt erhalten."
+  da: "Ikke forbundet: sæt den i for at se den svare. Det, den gør, bevares."
   fr: "Non connecté : branchez-le pour le voir réagir. Ses réglages sont conservés."
   ru: "Не подключено: подключите, чтобы увидеть отклик. Настройки сохраняются."
   uk: "Не підключено: підключіть, щоб побачити відгук. Налаштування зберігаються."
@@ -55674,6 +55791,7 @@ _version: 2
   sv: "Inte ansluten: koppla in den för att se dess respons. Dess tilldelningar behålls."
 "Not saved: {e}":
   de: "Nicht gespeichert: {e}"
+  da: "Ikke gemt: {e}"
   fr: "Non enregistré : {e}"
   ru: "Не сохранено: {e}"
   uk: "Не збережено: {e}"
@@ -55702,6 +55820,7 @@ _version: 2
   sv: "Inte sparat: {e}"
 "Not set up yet: give its buttons what they do.":
   de: "Noch nicht eingerichtet: Lege fest, was seine Tasten tun."
+  da: "Ikke sat op endnu: giv dens knapper, hvad de gør."
   fr: "Pas encore configuré : indiquez ce que font ses boutons."
   ru: "Ещё не настроено: назначьте действия его кнопкам."
   uk: "Ще не налаштовано: призначте дії його кнопкам."
@@ -55730,6 +55849,7 @@ _version: 2
   sv: "Inte konfigurerad ännu: tilldela åtgärder till knapparna."
 "Not set up yet: the assistant finds the wheel and the pedals in a few steps. Until then its X axis steers.":
   de: "Noch nicht eingerichtet: Der Assistent findet Lenkrad und Pedale in wenigen Schritten. Bis dahin lenkt seine X-Achse."
+  da: "Ikke sat op endnu: assistenten finder rattet og pedalerne i nogle få trin. Indtil da styrer dens X-akse."
   fr: "Pas encore configuré : l'assistant repère le volant et les pédales en quelques étapes. D'ici là, son axe X gère la direction."
   ru: "Ещё не настроено: мастер найдёт руль и педали за несколько шагов. А пока рулём управляет ось X."
   uk: "Ще не налаштовано: майстер знайде кермо й педалі за кілька кроків. А поки кермом керує вісь X."
@@ -55758,6 +55878,7 @@ _version: 2
   sv: "Inte konfigurerad ännu: guiden hittar ratten och pedalerna i några steg. Tills dess styr dess X-axel."
 "Not used":
   de: "Nicht verwendet"
+  da: "Ikke brugt"
   fr: "Non utilisé"
   ru: "Не используется"
   uk: "Не використовується"
@@ -55786,6 +55907,7 @@ _version: 2
   sv: "Används inte"
 "Nothing":
   de: "Nichts"
+  da: "Intet"
   fr: "Rien"
   ru: "Ничего"
   uk: "Нічого"
@@ -55814,6 +55936,7 @@ _version: 2
   sv: "Inget"
 "Press a button on the device: it lights up here.":
   de: "Drücke eine Taste am Gerät: Sie leuchtet hier auf."
+  da: "Tryk på en knap på enheden: den lyser her."
   fr: "Appuyez sur un bouton de l'appareil : il s'allume ici."
   ru: "Нажмите кнопку на устройстве: она подсветится здесь."
   uk: "Натисніть кнопку на пристрої: вона підсвітиться тут."
@@ -55842,6 +55965,7 @@ _version: 2
   sv: "Tryck på en knapp på enheten: den lyser upp här."
 "Ready to play: the left stick steers, the right trigger accelerates and the left one brakes.":
   de: "Spielbereit: Der linke Stick lenkt, der rechte Trigger gibt Gas und der linke bremst."
+  da: "Klar til at spille: venstre stik styrer, højre aftrækker speeder, og den venstre bremser."
   fr: "Prêt à jouer : le stick gauche dirige, la gâchette droite accélère et la gauche freine."
   ru: "Готово к игре: левый стик - руль, правый триггер - газ, левый - тормоз."
   uk: "Готово до гри: лівий стік - кермо, правий тригер - газ, лівий - гальмо."
@@ -55870,6 +55994,7 @@ _version: 2
   sv: "Redo att spela: vänster spak styr, höger avtryckare gasar och vänster bromsar."
 "Set up its buttons only":
   de: "Nur die Tasten einrichten"
+  da: "Sæt kun dens knapper op"
   fr: "Configurer uniquement ses boutons"
   ru: "Настроить только кнопки"
   uk: "Налаштувати лише кнопки"
@@ -55898,6 +56023,7 @@ _version: 2
   sv: "Konfigurera endast dess knappar"
 "Steering wheel":
   de: "Lenkrad"
+  da: "Rat"
   fr: "Volant"
   ru: "Руль"
   uk: "Кермо"
@@ -55926,6 +56052,7 @@ _version: 2
   sv: "Ratt"
 "Sticks":
   de: "Sticks"
+  da: "Stikker"
   fr: "Sticks"
   ru: "Стики"
   uk: "Стіки"
@@ -55954,6 +56081,7 @@ _version: 2
   sv: "Spakar"
 "Test the direction":
   de: "Richtung testen"
+  da: "Test retningen"
   fr: "Tester le sens"
   ru: "Проверить направление"
   uk: "Перевірити напрямок"
@@ -55982,6 +56110,7 @@ _version: 2
   sv: "Testa riktningen"
 "The test applies two short forces in opposite directions.":
   de: "Der Test erzeugt zwei kurze Kräfte in entgegengesetzte Richtungen."
+  da: "Testen anvender to korte kræfter i modsatte retninger."
   fr: "Le test applique deux courtes forces en sens opposés."
   ru: "Тест создаёт два коротких усилия в противоположные стороны."
   uk: "Тест створює два короткі зусилля в протилежні боки."
@@ -56010,6 +56139,7 @@ _version: 2
   sv: "Testet ger två korta krafter i motsatta riktningar."
 "Throttle and brake":
   de: "Gas und Bremse"
+  da: "Speeder og bremse"
   fr: "Accélérateur et frein"
   ru: "Газ и тормоз"
   uk: "Газ і гальмо"
@@ -56038,6 +56168,7 @@ _version: 2
   sv: "Gas och broms"
 "With no axis given here, the left stick steers and the triggers are the pedals.":
   de: "Ist hier keine Achse angegeben, lenkt der linke Stick und die Trigger sind die Pedale."
+  da: "Uden en akse angivet her styrer venstre stik, og aftrækkerne er pedalerne."
   fr: "Sans axe indiqué ici, le stick gauche dirige et les gâchettes servent de pédales."
   ru: "Если ось здесь не задана, левый стик - руль, а триггеры - педали."
   uk: "Якщо вісь тут не задано, лівий стік - кермо, а тригери - педалі."
@@ -56066,6 +56197,7 @@ _version: 2
   sv: "Om ingen axel tilldelas här styr vänster spak och avtryckarna fungerar som pedaler."
 "Your wheel, pedals, gamepad or button box: set them up, give their buttons what they do and check that they answer.":
   de: "Dein Lenkrad, deine Pedale, dein Gamepad oder deine Button-Box: Richte sie ein, lege fest, was ihre Tasten tun, und prüfe, ob sie reagieren."
+  da: "Dit rat, dine pedaler, din gamepad eller knapboks: sæt dem op, giv deres knapper, hvad de gør, og tjek, at de svarer."
   fr: "Votre volant, vos pédales, votre manette ou votre boîtier de boutons : configurez-les, indiquez ce que font leurs boutons et vérifiez qu'ils répondent."
   ru: "Руль, педали, геймпад или кнопочная панель: настройте их, назначьте действия кнопкам и проверьте отклик."
   uk: "Кермо, педалі, геймпад або кнопкова панель: налаштуйте їх, призначте дії кнопкам і перевірте відгук."
@@ -56094,6 +56226,7 @@ _version: 2
   sv: "Din ratt, pedaler, handkontroll eller knapppanel: konfigurera dem, tilldela åtgärder till knapparna och kontrollera att de reagerar."
 "{button} now does {action} instead of {old}":
   de: "{button}: jetzt {action} statt {old}"
+  da: "{button} gør nu {action} i stedet for {old}"
   fr: "{button} : désormais {action} au lieu de {old}"
   ru: "{button} теперь: {action} вместо {old}"
   uk: "{button} тепер: {action} замість {old}"
@@ -56122,6 +56255,7 @@ _version: 2
   sv: "{button} utför nu {action} i stället för {old}"
 "Wheel and pedals":
   de: "Lenkrad und Pedale"
+  da: "Rat og pedaler"
   fr: "Volant et pédalier"
   ru: "Руль и педали"
   uk: "Кермо й педалі"
@@ -56150,6 +56284,7 @@ _version: 2
   sv: "Ratt och pedaler"
 "Look left (hold)":
   de: "Nach links schauen (halten)"
+  da: "Se til venstre (hold)"
   fr: "Regarder à gauche (maintenir)"
   ru: "Взгляд влево (удерживать)"
   uk: "Погляд ліворуч (утримувати)"
@@ -56178,6 +56313,7 @@ _version: 2
   sv: "Se åt vänster (håll)"
 "Look right (hold)":
   de: "Nach rechts schauen (halten)"
+  da: "Se til højre (hold)"
   fr: "Regarder à droite (maintenir)"
   ru: "Взгляд вправо (удерживать)"
   uk: "Погляд праворуч (утримувати)"
@@ -56206,6 +56342,7 @@ _version: 2
   sv: "Se åt höger (håll)"
 "Look up (hold)":
   de: "Nach oben schauen (halten)"
+  da: "Se op (hold)"
   fr: "Regarder en haut (maintenir)"
   ru: "Взгляд вверх (удерживать)"
   uk: "Погляд угору (утримувати)"
@@ -56234,6 +56371,7 @@ _version: 2
   sv: "Se uppåt (håll)"
 "Look down (hold)":
   de: "Nach unten schauen (halten)"
+  da: "Se ned (hold)"
   fr: "Regarder en bas (maintenir)"
   ru: "Взгляд вниз (удерживать)"
   uk: "Погляд униз (утримувати)"
@@ -56262,6 +56400,7 @@ _version: 2
   sv: "Se nedåt (håll)"
 "Next interior camera":
   de: "Nächste Innenkamera"
+  da: "Næste førerrumskamera"
   fr: "Caméra intérieure suivante"
   ru: "Следующая внутренняя камера"
   uk: "Наступна внутрішня камера"
@@ -56290,6 +56429,7 @@ _version: 2
   sv: "Nästa inre kamera"
 "Previous interior camera":
   de: "Vorherige Innenkamera"
+  da: "Forrige førerrumskamera"
   fr: "Caméra intérieure précédente"
   ru: "Предыдущая внутренняя камера"
   uk: "Попередня внутрішня камера"
@@ -56318,6 +56458,7 @@ _version: 2
   sv: "Föregående inre kamera"
 "Reset the view direction":
   de: "Blickrichtung zurücksetzen"
+  da: "Nulstil udsynets retning"
   fr: "Recentrer la vue"
   ru: "Сбросить направление взгляда"
   uk: "Скинути напрямок погляду"
@@ -56346,6 +56487,7 @@ _version: 2
   sv: "Återställ vyriktningen"
 "Reset all view directions":
   de: "Alle Blickrichtungen zurücksetzen"
+  da: "Nulstil alle udsynets retninger"
   fr: "Recentrer toutes les vues"
   ru: "Сбросить все направления взгляда"
   uk: "Скинути всі напрямки погляду"
@@ -56374,6 +56516,7 @@ _version: 2
   sv: "Återställ alla vyriktningar"
 "Cross":
   de: "Kreuz"
+  da: "Kryds"
   fr: "Croix"
   ru: "Крестик"
   uk: "Хрестик"
@@ -56402,6 +56545,7 @@ _version: 2
   sv: "Kryss"
 "Square":
   de: "Quadrat"
+  da: "Firkant"
   fr: "Carré"
   ru: "Квадрат"
   uk: "Квадрат"
@@ -56430,6 +56574,7 @@ _version: 2
   sv: "Fyrkant"
 "D-pad up":
   de: "Steuerkreuz oben"
+  da: "D-pad op"
   fr: "Croix directionnelle haut"
   ru: "Крестовина вверх"
   uk: "Хрестовина вгору"
@@ -56458,6 +56603,7 @@ _version: 2
   sv: "Styrkors uppåt"
 "D-pad down":
   de: "Steuerkreuz unten"
+  da: "D-pad ned"
   fr: "Croix directionnelle bas"
   ru: "Крестовина вниз"
   uk: "Хрестовина вниз"
@@ -56486,6 +56632,7 @@ _version: 2
   sv: "Styrkors nedåt"
 "D-pad left":
   de: "Steuerkreuz links"
+  da: "D-pad venstre"
   fr: "Croix directionnelle gauche"
   ru: "Крестовина влево"
   uk: "Хрестовина ліворуч"
@@ -56514,6 +56661,7 @@ _version: 2
   sv: "Styrkors vänster"
 "D-pad right":
   de: "Steuerkreuz rechts"
+  da: "D-pad højre"
   fr: "Croix directionnelle droite"
   ru: "Крестовина вправо"
   uk: "Хрестовина праворуч"
@@ -56542,6 +56690,7 @@ _version: 2
   sv: "Styrkors höger"
 "Right stick click":
   de: "Rechter Stick (drücken)"
+  da: "Klik på højre stik"
   fr: "Clic du stick droit"
   ru: "Нажатие правого стика"
   uk: "Натискання правого стіка"
@@ -56570,6 +56719,7 @@ _version: 2
   sv: "Klick på höger spak"
 "View":
   de: "Ansicht"
+  da: "Visning"
   fr: "Affichage"
   ru: "Просмотр"
   uk: "Перегляд"
@@ -56598,6 +56748,7 @@ _version: 2
   sv: "Vy"
 "Share":
   de: "Share"
+  da: "Del"
   fr: "Share"
   ru: "Share"
   uk: "Share"
@@ -56626,6 +56777,7 @@ _version: 2
   sv: "Dela"
 "For every wheel":
   de: "Für alle Lenkräder"
+  da: "For hvert rat"
   fr: "Pour tous les volants"
   ru: "Для всех рулей"
   uk: "Для всіх кермів"
@@ -56656,9 +56808,11 @@ _version: 2
   zh-tw: "已自動設定 {name}（{what}）。請在下方檢查並修正不正確的設定。"
   ru: "{name} настроено автоматически ({what}). Проверьте ниже и измените, если что-то не так."
   de: "{name} wurde automatisch eingerichtet ({what}). Unten prüfen und ändern, was nicht stimmt."
+  da: "{name} blev sat op af sig selv ({what}). Tjek det nedenfor, og ret det, der er forkert."
   fr: "{name} a été configuré automatiquement ({what}). Vérifiez ci-dessous et corrigez ce qui ne va pas."
 "Not saved: {folder} is not a complete OMSI 2 installation, it lacks {what}":
   de: "Nicht gespeichert: {folder} ist keine vollständige OMSI-2-Installation, es fehlt {what}"
+  da: "Ikke gemt: {folder} er ikke en komplet OMSI 2-installation, der mangler {what}"
   fr: "Non enregistré : {folder} n'est pas une installation complète d'OMSI 2, il manque {what}"
   ru: "Не сохранено: {folder} не является полной установкой OMSI 2, отсутствует {what}"
   uk: "Не збережено: {folder} не є повною інсталяцією OMSI 2, бракує {what}"
@@ -56686,6 +56840,7 @@ _version: 2
   ca: "No desat: {folder} no és una instal·lació completa d'OMSI 2, hi falta {what}"
 "Saved, but the OMSI 2 folder used is {folder}":
   de: "Gespeichert, aber verwendet wird der OMSI-2-Ordner {folder}"
+  da: "Gemt, men den brugte OMSI 2-mappe er {folder}"
   fr: "Enregistré, mais le dossier OMSI 2 utilisé est {folder}"
   ru: "Сохранено, но используется папка OMSI 2 {folder}"
   uk: "Збережено, але використовується тека OMSI 2 {folder}"
@@ -56714,9 +56869,11 @@ _version: 2
 "Door release (passengers open), any bus":
   zh-tw: "車門釋放（乘客開門），適用所有巴士"
   de: "Türfreigabe (Fahrgäste öffnen), jeder Bus"
+  da: "Dørfrigivelse (passagerer åbner), enhver bus"
   fr: "Déverrouillage des portes (les voyageurs ouvrent), tous bus"
 "Connected to {host}":
   de: "Verbunden mit {host}"
+  da: "Forbundet til {host}"
   fr: "Connecté à {host}"
   ru: "Подключено к {host}"
   uk: "Підключено до {host}"
@@ -56744,6 +56901,7 @@ _version: 2
   ca: "Connectat a {host}"
 "Not connected: {why}":
   de: "Nicht verbunden: {why}"
+  da: "Ikke forbundet: {why}"
   fr: "Non connecté : {why}"
   ru: "Нет подключения: {why}"
   uk: "Не підключено: {why}"
@@ -56771,6 +56929,7 @@ _version: 2
   ca: "No connectat: {why}"
 "{n} passengers":
   de: "{n} Fahrgäste"
+  da: "{n} passagerer"
   fr: "{n} passagers"
   ru: "Пассажиров: {n}"
   uk: "Пасажирів: {n}"
@@ -56798,6 +56957,7 @@ _version: 2
   ca: "{n} passatgers"
 "Set by {server}":
   de: "Von {server} festgelegt"
+  da: "Indstillet af {server}"
   fr: "Fixé par {server}"
   ru: "Задано сервером {server}"
   uk: "Задано сервером {server}"
@@ -56825,6 +56985,7 @@ _version: 2
   ca: "Fixat per {server}"
 "No line matches.":
   de: "Keine Linie passt."
+  da: "Ingen linje passer."
   fr: "Aucune ligne ne correspond."
   ru: "Нет подходящих линий."
   uk: "Немає відповідних ліній."
@@ -56852,6 +57013,7 @@ _version: 2
   ca: "Cap línia coincideix."
 "runs {date}":
   de: "fährt am {date}"
+  da: "kører {date}"
   fr: "circule le {date}"
   ru: "ходит {date}"
   uk: "курсує {date}"
@@ -56879,6 +57041,7 @@ _version: 2
   ca: "circula el {date}"
 "never within a year":
   de: "innerhalb eines Jahres nie"
+  da: "aldrig inden for et år"
   fr: "jamais dans l'année"
   ru: "ни разу в течение года"
   uk: "жодного разу протягом року"
@@ -56906,6 +57069,7 @@ _version: 2
   ca: "mai en un any"
 "ended":
   de: "beendet"
+  da: "afsluttet"
   fr: "terminé"
   ru: "завершён"
   uk: "завершено"
@@ -56933,6 +57097,7 @@ _version: 2
   ca: "acabat"
 "{n} trips":
   de: "{n} Fahrten"
+  da: "{n} rejser"
   fr: "{n} trajets"
   ru: "Рейсов: {n}"
   uk: "Рейсів: {n}"
@@ -56960,6 +57125,7 @@ _version: 2
   ca: "{n} trajectes"
 "via {stop}":
   de: "über {stop}"
+  da: "via {stop}"
   fr: "par {stop}"
   ru: "через {stop}"
   uk: "через {stop}"
@@ -56987,6 +57153,7 @@ _version: 2
   ca: "per {stop}"
 "openOMSI {version} is available":
   de: "openOMSI {version} ist verfügbar"
+  da: "openOMSI {version} er tilgængelig"
   fr: "openOMSI {version} est disponible"
   ru: "Доступна openOMSI {version}"
   uk: "Доступна openOMSI {version}"
@@ -57014,6 +57181,7 @@ _version: 2
   ca: "openOMSI {version} ja és disponible"
 "Choose a version…":
   de: "Version wählen…"
+  da: "Vælg en version…"
   fr: "Choisir une version…"
   ru: "Выбрать версию…"
   uk: "Вибрати версію…"
@@ -57041,6 +57209,7 @@ _version: 2
   ca: "Tria una versió…"
 "Choose a version":
   de: "Version wählen"
+  da: "Vælg en version"
   fr: "Choisir une version"
   ru: "Выбрать версию"
   uk: "Вибрати версію"
@@ -57068,6 +57237,7 @@ _version: 2
   ca: "Tria una versió"
 "Asking GitHub for the releases…":
   de: "Die Releases werden bei GitHub abgefragt…"
+  da: "Spørger GitHub om udgivelserne…"
   fr: "Demande des versions publiées à GitHub…"
   ru: "Запрашиваем выпуски у GitHub…"
   uk: "Запитуємо випуски в GitHub…"
@@ -57095,6 +57265,7 @@ _version: 2
   ca: "S'estan demanant les versions a GitHub…"
 "Latest":
   de: "Neueste"
+  da: "Nyeste"
   fr: "La plus récente"
   ru: "Последняя"
   uk: "Остання"
@@ -57122,6 +57293,7 @@ _version: 2
   ca: "La més recent"
 "Installed":
   de: "Installiert"
+  da: "Installeret"
   fr: "Installée"
   ru: "Установлена"
   uk: "Встановлена"
@@ -57149,6 +57321,7 @@ _version: 2
   ca: "Instal|lada"
 "Did not start on this computer":
   de: "Auf diesem Computer nicht gestartet"
+  da: "Startede ikke på denne computer"
   fr: "N'a pas démarré sur cet ordinateur"
   ru: "Не запустилась на этом компьютере"
   uk: "Не запустилася на цьому комп'ютері"
@@ -57176,6 +57349,7 @@ _version: 2
   ca: "No es va iniciar en aquest ordinador"
 "Known to be broken":
   de: "Als fehlerhaft bekannt"
+  da: "Kendt for at være ødelagt"
   fr: "Signalée comme défectueuse"
   ru: "Отмечена как неисправная"
   uk: "Позначена як несправна"
@@ -57203,6 +57377,7 @@ _version: 2
   ca: "Se sap que falla"
 "Downloading openOMSI {version}":
   de: "openOMSI {version} wird heruntergeladen"
+  da: "Henter openOMSI {version}"
   fr: "Téléchargement d'openOMSI {version}"
   ru: "Загрузка openOMSI {version}"
   uk: "Завантаження openOMSI {version}"
@@ -57230,6 +57405,7 @@ _version: 2
   ca: "S'està baixant openOMSI {version}"
 "Installing openOMSI {version}":
   de: "openOMSI {version} wird installiert"
+  da: "Installerer openOMSI {version}"
   fr: "Installation d'openOMSI {version}"
   ru: "Установка openOMSI {version}"
   uk: "Встановлення openOMSI {version}"
@@ -57257,6 +57433,7 @@ _version: 2
   ca: "S'està instal·lant openOMSI {version}"
 "{done} of {total} from GitHub":
   de: "{done} von {total} von GitHub"
+  da: "{done} af {total} fra GitHub"
   fr: "{done} sur {total} depuis GitHub"
   ru: "{done} из {total} с GitHub"
   uk: "{done} з {total} з GitHub"
@@ -57284,6 +57461,7 @@ _version: 2
   ca: "{done} de {total} des de GitHub"
 "Looking for updates…":
   de: "Suche nach Updates…"
+  da: "Søger efter opdateringer…"
   fr: "Recherche de mises à jour…"
   ru: "Поиск обновлений…"
   uk: "Пошук оновлень…"
@@ -57311,6 +57489,7 @@ _version: 2
   ca: "S'estan cercant actualitzacions…"
 "openOMSI {version} is the latest version.":
   de: "openOMSI {version} ist die neueste Version."
+  da: "openOMSI {version} er den nyeste version."
   fr: "openOMSI {version} est la dernière version."
   ru: "openOMSI {version} — последняя версия."
   uk: "openOMSI {version} — остання версія."
@@ -57338,6 +57517,7 @@ _version: 2
   ca: "openOMSI {version} és la versió més recent."
 "Updated to openOMSI {version}":
   de: "Auf openOMSI {version} aktualisiert"
+  da: "Opdateret til openOMSI {version}"
   fr: "Mis à jour vers openOMSI {version}"
   ru: "Обновлено до openOMSI {version}"
   uk: "Оновлено до openOMSI {version}"
@@ -57365,6 +57545,7 @@ _version: 2
   ca: "Actualitzat a openOMSI {version}"
 "openOMSI {version} is installed: start it again yourself ({e}).":
   de: "openOMSI {version} ist installiert: Starte es selbst neu ({e})."
+  da: "openOMSI {version} er installeret: start det igen selv ({e})."
   fr: "openOMSI {version} est installé : relancez-le vous-même ({e})."
   ru: "openOMSI {version} установлена: запустите её снова сами ({e})."
   uk: "openOMSI {version} встановлено: запустіть її знову самі ({e})."
@@ -57392,6 +57573,7 @@ _version: 2
   ca: "openOMSI {version} està instal·lat: torna'l a obrir tu mateix ({e})."
 "You have {current}. The launcher downloads the new version ({size}) from GitHub and Android installs it; openOMSI then starts again. Your mods and settings stay as they are.":
   de: "Du hast {current}. Der Launcher lädt die neue Version ({size}) von GitHub herunter und Android installiert sie; danach startet openOMSI neu. Deine Mods und Einstellungen bleiben, wie sie sind."
+  da: "Du har {current}. Launcheren henter den nye version ({size}) fra GitHub, og Android installerer den; openOMSI starter derefter igen. Dine mods og indstillinger forbliver, som de er."
   fr: "Vous avez la {current}. Le launcher télécharge la nouvelle version ({size}) depuis GitHub et Android l'installe ; openOMSI redémarre ensuite. Vos mods et réglages restent tels quels."
   ru: "У вас {current}. Лаунчер загрузит новую версию ({size}) с GitHub, Android её установит, затем openOMSI запустится снова. Ваши моды и настройки останутся прежними."
   uk: "У вас {current}. Лаунчер завантажить нову версію ({size}) з GitHub, Android її встановить, потім openOMSI запуститься знову. Ваші моди й налаштування залишаться без змін."
@@ -57419,6 +57601,7 @@ _version: 2
   ca: "Tens la {current}. El launcher baixa la nova versió ({size}) de GitHub i Android la instal·la; després openOMSI torna a obrir-se. Els teus mods i ajustos es queden com estan."
 "You have {current}. The launcher downloads the new version ({size}) from GitHub, puts it in place of this one and starts again. Your mods and settings stay as they are.":
   de: "Du hast {current}. Der Launcher lädt die neue Version ({size}) von GitHub herunter, ersetzt diese und startet neu. Deine Mods und Einstellungen bleiben, wie sie sind."
+  da: "Du har {current}. Launcheren henter den nye version ({size}) fra GitHub, lægger den på denne versions plads og starter igen. Dine mods og indstillinger forbliver, som de er."
   fr: "Vous avez la {current}. Le launcher télécharge la nouvelle version ({size}) depuis GitHub, la met à la place de celle-ci et redémarre. Vos mods et réglages restent tels quels."
   ru: "У вас {current}. Лаунчер загрузит новую версию ({size}) с GitHub, заменит ею эту и перезапустится. Ваши моды и настройки останутся прежними."
   uk: "У вас {current}. Лаунчер завантажить нову версію ({size}) з GitHub, замінить нею цю й перезапуститься. Ваші моди й налаштування залишаться без змін."
@@ -57446,6 +57629,7 @@ _version: 2
   ca: "Tens la {current}. El launcher baixa la nova versió ({size}) de GitHub, la posa al lloc d'aquesta i torna a obrir-se. Els teus mods i ajustos es queden com estan."
 "openOMSI {version} was not installed":
   de: "openOMSI {version} wurde nicht installiert"
+  da: "openOMSI {version} blev ikke installeret"
   fr: "openOMSI {version} n'a pas été installé"
   ru: "Не удалось установить openOMSI {version}"
   uk: "Не вдалося встановити openOMSI {version}"
@@ -57473,6 +57657,7 @@ _version: 2
   ca: "No s'ha instal|lat openOMSI {version}"
 "openOMSI {version} is installed: start it again yourself.":
   de: "openOMSI {version} ist installiert: Starte es selbst neu."
+  da: "openOMSI {version} er installeret: start det igen selv."
   fr: "openOMSI {version} est installé : relancez-le vous-même."
   ru: "openOMSI {version} установлена: запустите её заново сами."
   uk: "openOMSI {version} встановлено: запустіть її знову самостійно."
@@ -57500,6 +57685,7 @@ _version: 2
   ca: "openOMSI {version} s'ha instal|lat: torna'l a obrir tu mateix."
 "The list of versions could not be read.":
   de: "Die Liste der Versionen konnte nicht gelesen werden."
+  da: "Listen over versioner kunne ikke læses."
   fr: "La liste des versions n'a pas pu être lue."
   ru: "Не удалось получить список версий."
   uk: "Не вдалося отримати список версій."
@@ -57527,6 +57713,7 @@ _version: 2
   ca: "No s'ha pogut llegir la llista de versions."
 "Versions cannot be installed here.":
   de: "Versionen können hier nicht installiert werden."
+  da: "Versioner kan ikke installeres her."
   fr: "Les versions ne peuvent pas être installées ici."
   ru: "Здесь нельзя устанавливать версии."
   uk: "Тут не можна встановлювати версії."
@@ -57554,6 +57741,7 @@ _version: 2
   ca: "Aquí no es poden instal|lar versions."
 "No release to choose from":
   de: "Keine Version zur Auswahl"
+  da: "Ingen udgivelse at vælge imellem"
   fr: "Aucune version à choisir"
   ru: "Нет версий для выбора"
   uk: "Немає версій для вибору"
@@ -57581,6 +57769,7 @@ _version: 2
   ca: "No hi ha cap versió per triar"
 "openOMSI {version} is downloaded from GitHub and takes the place of this version; the launcher then starts again. Your mods, settings and saves stay as they are.":
   de: "openOMSI {version} wird von GitHub heruntergeladen und ersetzt diese Version; danach startet der Launcher neu. Deine Mods, Einstellungen und Spielstände bleiben, wie sie sind."
+  da: "openOMSI {version} hentes fra GitHub og træder i denne versions sted; launcheren starter så igen. Dine mods, indstillinger og gemte spil forbliver, som de er."
   fr: "openOMSI {version} est téléchargé depuis GitHub et remplace cette version, puis le lanceur redémarre. Vos mods, réglages et sauvegardes restent tels quels."
   ru: "openOMSI {version} будет загружена с GitHub и заменит эту версию, после чего лаунчер перезапустится. Ваши моды, настройки и сохранения останутся без изменений."
   uk: "openOMSI {version} буде завантажено з GitHub, і вона замінить цю версію, після чого лаунчер перезапуститься. Ваші моди, налаштування та збереження залишаться без змін."
@@ -57608,6 +57797,7 @@ _version: 2
   ca: "openOMSI {version} es baixa de GitHub i ocupa el lloc d'aquesta versió; després el launcher es reinicia. Els teus mods, ajustos i partides desades es queden tal com són."
 "Update checks are turned off so that this version stays. To come back, choose the latest version in this list, or download it from GitHub if openOMSI {version} does not have this list yet.":
   de: "Die Suche nach Updates wird ausgeschaltet, damit diese Version bleibt. Um zurückzukehren, wähle in dieser Liste die neueste Version oder lade sie von GitHub herunter, falls openOMSI {version} diese Liste noch nicht hat."
+  da: "Opdateringstjek er slået fra, så denne version bliver. For at komme tilbage skal du vælge den nyeste version på denne liste eller hente den fra GitHub, hvis openOMSI {version} endnu ikke har denne liste."
   fr: "La recherche de mises à jour est désactivée pour que cette version reste en place. Pour revenir, choisissez la version la plus récente dans cette liste, ou téléchargez-la depuis GitHub si openOMSI {version} n'a pas encore cette liste."
   ru: "Проверка обновлений отключается, чтобы эта версия осталась. Чтобы вернуться, выберите последнюю версию в этом списке или скачайте её с GitHub, если в openOMSI {version} этого списка ещё нет."
   uk: "Перевірку оновлень вимкнено, щоб ця версія залишилася. Щоб повернутися, виберіть останню версію в цьому списку або завантажте її з GitHub, якщо в openOMSI {version} цього списку ще немає."
@@ -57635,6 +57825,7 @@ _version: 2
   ca: "La cerca d'actualitzacions es desactiva perquè aquesta versió es quedi. Per tornar, tria la versió més recent en aquesta llista, o baixa-la de GitHub si openOMSI {version} encara no té aquesta llista."
 "Install openOMSI {version}":
   de: "openOMSI {version} installieren"
+  da: "Installér openOMSI {version}"
   fr: "Installer openOMSI {version}"
   ru: "Установить openOMSI {version}"
   uk: "Встановити openOMSI {version}"
@@ -57662,6 +57853,7 @@ _version: 2
   ca: "Instal|la openOMSI {version}"
 "Install":
   de: "Installieren"
+  da: "Installér"
   fr: "Installer"
   ru: "Установить"
   uk: "Встановити"
@@ -57689,6 +57881,7 @@ _version: 2
   ca: "Instal|la"
 "openOMSI {version} is installed":
   de: "openOMSI {version} ist installiert"
+  da: "openOMSI {version} er installeret"
   fr: "openOMSI {version} est installé"
   ru: "openOMSI {version} установлена"
   uk: "openOMSI {version} встановлено"
@@ -57716,6 +57909,7 @@ _version: 2
   ca: "openOMSI {version} s'ha instal|lat"
 "Close the game first: openOMSI cannot be replaced while it runs.":
   de: "Beende zuerst das Spiel: openOMSI kann nicht ersetzt werden, solange es läuft."
+  da: "Luk først spillet: openOMSI kan ikke udskiftes, mens det kører."
   fr: "Fermez d'abord le jeu : openOMSI ne peut pas être remplacé pendant qu'il tourne."
   ru: "Сначала закройте игру: openOMSI нельзя заменить, пока она запущена."
   uk: "Спершу закрийте гру: openOMSI не можна замінити, поки вона працює."
@@ -57743,6 +57937,7 @@ _version: 2
   ca: "Tanca primer el joc: openOMSI no es pot substituir mentre s'executa."
 "Another version is being installed.":
   de: "Es wird bereits eine andere Version installiert."
+  da: "En anden version installeres."
   fr: "Une autre version est déjà en cours d'installation."
   ru: "Уже устанавливается другая версия."
   uk: "Уже встановлюється інша версія."
@@ -57770,6 +57965,7 @@ _version: 2
   ca: "Ja s'està instal|lant una altra versió."
 "Open the list of versions again.":
   de: "Öffne die Liste der Versionen erneut."
+  da: "Åbn listen over versioner igen."
   fr: "Rouvrez la liste des versions."
   ru: "Откройте список версий заново."
   uk: "Відкрийте список версій ще раз."
@@ -57797,6 +57993,7 @@ _version: 2
   ca: "Torna a obrir la llista de versions."
 "This version is installed already.":
   de: "Diese Version ist bereits installiert."
+  da: "Denne version er allerede installeret."
   fr: "Cette version est déjà installée."
   ru: "Эта версия уже установлена."
   uk: "Цю версію вже встановлено."
@@ -57824,6 +58021,7 @@ _version: 2
   ca: "Aquesta versió ja està instal|lada."
 "{n} mods, {on} on":
   de: "{n} Mods, {on} an"
+  da: "{n} mods, {on} til"
   fr: "{n} mods, {on} actifs"
   ru: "Модов: {n}, включено: {on}"
   uk: "Модів: {n}, увімкнено: {on}"
@@ -57851,6 +58049,7 @@ _version: 2
   ca: "{n} mods, {on} actius"
 "{name} installed":
   de: "{name} installiert"
+  da: "{name} installeret"
   fr: "{name} installé"
   ru: "{name} установлен"
   uk: "{name} встановлено"
@@ -57878,6 +58077,7 @@ _version: 2
   ca: "{name} instal·lat"
 "{size} archive, {files} files, {unpacked} unpacked":
   de: "{size} Archiv, {files} Dateien, {unpacked} entpackt"
+  da: "{size} arkiv, {files} filer, {unpacked} udpakket"
   fr: "Archive de {size}, {files} fichiers, {unpacked} décompressés"
   ru: "Архив {size}, файлов: {files}, распаковано {unpacked}"
   uk: "Архів {size}, файлів: {files}, розпаковано {unpacked}"
@@ -57905,6 +58105,7 @@ _version: 2
   ca: "Arxiu de {size}, {files} fitxers, {unpacked} descomprimit"
 "fits ({free} free)":
   de: "passt ({free} frei)"
+  da: "passer ({free} ledig)"
   fr: "ça tient ({free} libres)"
   ru: "помещается (свободно {free})"
   uk: "поміщається (вільно {free})"
@@ -57932,6 +58133,7 @@ _version: 2
   ca: "hi cap ({free} lliures)"
 "does not fit: needs {needed}, {free} free":
   de: "passt nicht: braucht {needed}, {free} frei"
+  da: "passer ikke: kræver {needed}, {free} ledig"
   fr: "ne tient pas : il faut {needed}, {free} libres"
   ru: "не помещается: нужно {needed}, свободно {free}"
   uk: "не поміщається: потрібно {needed}, вільно {free}"
@@ -57959,6 +58161,7 @@ _version: 2
   ca: "no hi cap: cal {needed}, {free} lliures"
 "{done} / {total} files":
   de: "{done} / {total} Dateien"
+  da: "{done} / {total} filer"
   fr: "{done} / {total} fichiers"
   ru: "{done} / {total} файлов"
   uk: "{done} / {total} файлів"
@@ -57986,6 +58189,7 @@ _version: 2
   ca: "{done} / {total} fitxers"
 "queued":
   de: "in der Warteschlange"
+  da: "i kø"
   fr: "en attente"
   ru: "в очереди"
   uk: "у черзі"
@@ -58013,6 +58217,7 @@ _version: 2
   ca: "a la cua"
 "planning":
   de: "wird geplant"
+  da: "planlægger"
   fr: "préparation"
   ru: "подготовка"
   uk: "підготовка"
@@ -58040,6 +58245,7 @@ _version: 2
   ca: "planificant"
 "checking":
   de: "wird geprüft"
+  da: "kontrollerer"
   fr: "vérification"
   ru: "проверка"
   uk: "перевірка"
@@ -58067,6 +58273,7 @@ _version: 2
   ca: "comprovant"
 "unpacking":
   de: "wird entpackt"
+  da: "pakker ud"
   fr: "décompression"
   ru: "распаковка"
   uk: "розпакування"
@@ -58094,6 +58301,7 @@ _version: 2
   ca: "descomprimint"
 "copying":
   de: "wird kopiert"
+  da: "kopierer"
   fr: "copie"
   ru: "копирование"
   uk: "копіювання"
@@ -58121,6 +58329,7 @@ _version: 2
   ca: "copiant"
 "moving":
   de: "wird verschoben"
+  da: "flytter"
   fr: "déplacement"
   ru: "перемещение"
   uk: "переміщення"
@@ -58148,6 +58357,7 @@ _version: 2
   ca: "movent"
 "done":
   de: "fertig"
+  da: "færdig"
   fr: "terminé"
   ru: "готово"
   uk: "готово"
@@ -58175,6 +58385,7 @@ _version: 2
   ca: "fet"
 "failed":
   de: "fehlgeschlagen"
+  da: "mislykkedes"
   fr: "échec"
   ru: "ошибка"
   uk: "помилка"
@@ -58202,6 +58413,7 @@ _version: 2
   ca: "ha fallat"
 "cancelled":
   de: "abgebrochen"
+  da: "annulleret"
   fr: "annulé"
   ru: "отменено"
   uk: "скасовано"
@@ -58229,6 +58441,7 @@ _version: 2
   ca: "cancel·lat"
 "Filter by bus folder or bus file (.bus)":
   de: "Nach Busordner oder Busdatei (.bus) filtern"
+  da: "Filtrér efter busmappe eller busfil (.bus)"
   fr: "Filtrer par dossier ou fichier de bus (.bus)"
   ru: "Фильтр по папке или файлу автобуса (.bus)"
   uk: "Фільтр за текою або файлом автобуса (.bus)"
@@ -58256,6 +58469,7 @@ _version: 2
   ca: "Filtra per carpeta o fitxer d'autobús (.bus)"
 "{n} buses read":
   de: "{n} Busse gelesen"
+  da: "{n} busser læst"
   fr: "{n} bus lus"
   ru: "Прочитано автобусов: {n}"
   uk: "Прочитано автобусів: {n}"
@@ -58283,6 +58497,7 @@ _version: 2
   ca: "{n} autobusos llegits"
 "Reading the buses' scripts: {done} / {total}":
   de: "Skripte der Busse werden gelesen: {done} / {total}"
+  da: "Læser busserne scripts: {done} / {total}"
   fr: "Lecture des scripts des bus : {done} / {total}"
   ru: "Чтение скриптов автобусов: {done} / {total}"
   uk: "Читання скриптів автобусів: {done} / {total}"
@@ -58310,6 +58525,7 @@ _version: 2
   ca: "Llegint els scripts dels autobusos: {done} / {total}"
 "Looking for the installed buses...":
   de: "Installierte Busse werden gesucht..."
+  da: "Leder efter de installerede busser..."
   fr: "Recherche des bus installés..."
   ru: "Поиск установленных автобусов..."
   uk: "Пошук встановлених автобусів..."
@@ -58337,6 +58553,7 @@ _version: 2
   ca: "Cercant els autobusos instal·lats..."
 "Used by {n} / {total} buses":
   de: "Von {n} / {total} Bussen genutzt"
+  da: "Brugt af {n} / {total} busser"
   fr: "Utilisé par {n} / {total} bus"
   ru: "Используется в {n} / {total} автобусах"
   uk: "Використовується в {n} / {total} автобусах"
@@ -58364,6 +58581,7 @@ _version: 2
   ca: "Usat per {n} / {total} autobusos"
 "Showing the first {shown} of {n}: search to narrow the list.":
   de: "Die ersten {shown} von {n} werden gezeigt: Suche, um die Liste einzugrenzen."
+  da: "Viser de første {shown} af {n}: søg for at indsnævre listen."
   fr: "Affichage des {shown} premiers sur {n} : cherchez pour réduire la liste."
   ru: "Показаны первые {shown} из {n}: воспользуйтесь поиском, чтобы сузить список."
   uk: "Показано перші {shown} з {n}: скористайтеся пошуком, щоб звузити список."
@@ -58391,6 +58609,7 @@ _version: 2
   ca: "Es mostren els primers {shown} de {n}: cerca per reduir la llista."
 "Show more":
   de: "Mehr zeigen"
+  da: "Vis flere"
   fr: "Afficher plus"
   ru: "Показать ещё"
   uk: "Показати ще"
@@ -58418,6 +58637,7 @@ _version: 2
   ca: "Mostra'n més"
 "The buses' scripts are read once the game is closed.":
   de: "Die Skripte der Busse werden gelesen, sobald das Spiel geschlossen ist."
+  da: "Busserne scripts læses, når spillet er lukket."
   fr: "Les scripts des bus seront lus une fois le jeu fermé."
   ru: "Скрипты автобусов будут прочитаны после закрытия игры."
   uk: "Скрипти автобусів буде прочитано після закриття гри."
@@ -58445,6 +58665,7 @@ _version: 2
   ca: "Els scripts dels autobusos es llegiran quan es tanqui el joc."
 "H-pattern gears are assigned. If your shifter has no neutral button, turn on return to neutral:":
   de: "H-Schaltungsgänge sind belegt. Hat dein Schalthebel keine Leerlauftaste, schalte die Rückkehr in den Leerlauf ein:"
+  da: "H-skiftets gear er tildelt. Hvis din gearstang ikke har en neutralknap, så slå tilbagevenden til neutral til:"
   fr: "Des rapports en H sont assignés. Si votre levier n'a pas de bouton de point mort, activez le retour au point mort :"
   ru: "Назначены передачи H-образной схемы. Если у вашего рычага нет кнопки нейтрали, включите возврат в нейтраль:"
   uk: "Призначено передачі H-подібної схеми. Якщо ваш важіль не має кнопки нейтралі, увімкніть повернення в нейтраль:"
@@ -58475,6 +58696,7 @@ _version: 2
   ca: "1 polzada (2,7x)"
   ru: "1 дюйм (2,7x)"
   de: "1 Zoll (2,7x)"
+  da: "1 tomme (2,7x)"
   fr: "1 pouce (2,7x)"
   uk: "1 дюйм (2,7x)"
   be: "1 цаля (2,7x)"
@@ -58503,6 +58725,7 @@ _version: 2
   ca: "16 bits per canal (per editar)"
   ru: "16 бит на канал (для обработки)"
   de: "16 Bit pro Kanal (zur Bearbeitung)"
+  da: "16 bit pr. kanal (til redigering)"
   fr: "16 bits par canal (pour la retouche)"
   uk: "16 біт на канал (для обробки)"
   be: "16 біт на канал (для апрацоўкі)"
@@ -58531,6 +58754,7 @@ _version: 2
   ca: "3 fotos"
   ru: "3 снимка"
   de: "3 Fotos"
+  da: "3 fotos"
   fr: "3 photos"
   uk: "3 знімки"
   be: "3 здымкі"
@@ -58559,6 +58783,7 @@ _version: 2
   ca: "5 fotos"
   ru: "5 снимков"
   de: "5 Fotos"
+  da: "5 fotos"
   fr: "5 photos"
   uk: "5 знімків"
   be: "5 здымкаў"
@@ -58587,6 +58812,7 @@ _version: 2
   ca: "APS-C (1,5x)"
   ru: "APS-C (1,5x)"
   de: "APS-C (1,5x)"
+  da: "APS-C (1,5x)"
   fr: "APS-C (1,5x)"
   uk: "APS-C (1,5x)"
   be: "APS-C (1,5x)"
@@ -58615,6 +58841,7 @@ _version: 2
   ca: "Avançat (per a fotògrafs)"
   ru: "Расширенный (для фотографов)"
   de: "Erweitert (für Fotografen)"
+  da: "Avanceret (til fotografer)"
   fr: "Avancé (pour photographes)"
   uk: "Розширений (для фотографів)"
   be: "Пашыраны (для фатографаў)"
@@ -58643,6 +58870,7 @@ _version: 2
   ca: "Fulles del diafragma"
   ru: "Лепестки диафрагмы"
   de: "Blendenlamellen"
+  da: "Blændelameller"
   fr: "Lamelles du diaphragme"
   uk: "Пелюстки діафрагми"
   be: "Пялёсткі дыяфрагмы"
@@ -58671,6 +58899,7 @@ _version: 2
   ca: "Prioritat d'obertura: tu tries l'obertura i la càmera, el temps."
   ru: "Приоритет диафрагмы: вы задаёте диафрагму, камера — выдержку."
   de: "Zeitautomatik: Sie wählen die Blende, die Kamera die Belichtungszeit."
+  da: "Blændeprioritet: du indstiller blænden, kameraet tiden."
   fr: "Priorité à l'ouverture : vous réglez l'ouverture, l'appareil la vitesse."
   uk: "Пріоритет діафрагми: ви задаєте діафрагму, камера — витримку."
   be: "Прыярытэт дыяфрагмы: вы задаяце дыяфрагму, камера — вытрымку."
@@ -58699,6 +58928,7 @@ _version: 2
   ca: "Tal com es renderitza"
   ru: "Как отрисовано"
   de: "Wie gerendert"
+  da: "Som gengivet"
   fr: "Tel que rendu"
   uk: "Як відрендерено"
   be: "Як адмалявана"
@@ -58727,6 +58957,7 @@ _version: 2
   ca: "ISO automàtic"
   ru: "Авто ISO"
   de: "ISO-Automatik"
+  da: "Auto-ISO"
   fr: "ISO auto"
   uk: "Авто ISO"
   be: "Аўта ISO"
@@ -58755,6 +58986,7 @@ _version: 2
   ca: "Equilibri"
   ru: "Баланс"
   de: "Abgleich"
+  da: "Balance"
   fr: "Équilibre"
   uk: "Баланс"
   be: "Баланс"
@@ -58783,6 +59015,7 @@ _version: 2
   ca: "Negre"
   ru: "Чёрный"
   de: "Schwarz"
+  da: "Sort"
   fr: "Noir"
   uk: "Чорний"
   be: "Чорны"
@@ -58811,6 +59044,7 @@ _version: 2
   ca: "Vora"
   ru: "Рамка"
   de: "Rahmen"
+  da: "Kant"
   fr: "Bordure"
   uk: "Рамка"
   be: "Рамка"
@@ -58839,6 +59073,7 @@ _version: 2
   ca: "Pas de l'horquillat"
   ru: "Шаг брекетинга"
   de: "Reihen-Schrittweite"
+  da: "Bracketing-trin"
   fr: "Pas du bracketing"
   uk: "Крок брекетингу"
   be: "Крок брэкетынгу"
@@ -58867,6 +59102,7 @@ _version: 2
   ca: "Bokeh brillant de les llums"
   ru: "Яркое боке огней"
   de: "Helles Bokeh von Lichtern"
+  da: "Lys bokeh af lys"
   fr: "Bokeh lumineux des éclairages"
   uk: "Яскраве боке вогнів"
   be: "Яркае бокэ агнёў"
@@ -58895,6 +59131,7 @@ _version: 2
   ca: "Obertura màxima"
   ru: "Светосила"
   de: "Lichtstärke"
+  da: "Lyseste blænde"
   fr: "Ouverture maximale"
   uk: "Світлосила"
   be: "Святласіла"
@@ -58923,6 +59160,7 @@ _version: 2
   ca: "Ponderada al centre"
   ru: "Центровзвешенный"
   de: "Mittenbetont"
+  da: "Centervægtet"
   fr: "Pondérée centrale"
   uk: "Центрозважений"
   be: "Цэнтральна-ўзважаны"
@@ -58951,6 +59189,7 @@ _version: 2
   ca: "Claredat"
   ru: "Чёткость"
   de: "Klarheit"
+  da: "Klarhed"
   fr: "Clarté"
   uk: "Чіткість"
   be: "Выразнасць"
@@ -58979,6 +59218,7 @@ _version: 2
   ca: "Fes clic a la imatge per enfocar el que hi ha."
   ru: "Щёлкните по кадру, чтобы навести резкость на это место."
   de: "Klicken Sie ins Bild, um auf diese Stelle scharfzustellen."
+  da: "Klik på billedet for at fokusere på det, der er dér."
   fr: "Cliquez sur l'image pour faire la mise au point à cet endroit."
   uk: "Клацніть по кадру, щоб навести різкість на це місце."
   be: "Пстрыкніце па кадры, каб навесці рэзкасць на гэтае месца."
@@ -59007,6 +59247,7 @@ _version: 2
   ca: "Avís de retall (zebra)"
   ru: "Предупреждение о пересветах (зебра)"
   de: "Überbelichtungswarnung (Zebra)"
+  da: "Advarsel om beskæring (zebra)"
   fr: "Alerte d'écrêtage (zébra)"
   uk: "Попередження про пересвіти (зебра)"
   be: "Папярэджанне пра перасветы (зебра)"
@@ -59035,6 +59276,7 @@ _version: 2
   ca: "Ennuvolat (6500 K)"
   ru: "Облачно (6500 K)"
   de: "Bewölkt (6500 K)"
+  da: "Overskyet (6500 K)"
   fr: "Nuageux (6500 K)"
   uk: "Хмарно (6500 K)"
   be: "Воблачна (6500 K)"
@@ -59063,6 +59305,7 @@ _version: 2
   ca: "Temperatura de color"
   ru: "Цветовая температура"
   de: "Farbtemperatur"
+  da: "Farvetemperatur"
   fr: "Température de couleur"
   uk: "Колірна температура"
   be: "Колеравая тэмпература"
@@ -59091,6 +59334,7 @@ _version: 2
   ca: "Llum de dia (5500 K)"
   ru: "Дневной свет (5500 K)"
   de: "Tageslicht (5500 K)"
+  da: "Dagslys (5500 K)"
   fr: "Lumière du jour (5500 K)"
   uk: "Денне світло (5500 K)"
   be: "Дзённае святло (5500 K)"
@@ -59119,6 +59363,7 @@ _version: 2
   ca: "Revelat"
   ru: "Проявка"
   de: "Entwickeln"
+  da: "Fremkald"
   fr: "Développement"
   uk: "Проявлення"
   be: "Праяўленне"
@@ -59147,6 +59392,7 @@ _version: 2
   ca: "Tot nítid (hiperfocal)"
   ru: "Всё резко (гиперфокал)"
   de: "Alles scharf (hyperfokal)"
+  da: "Alt skarpt (hyperfokal)"
   fr: "Tout net (hyperfocale)"
   uk: "Усе різко (гіперфокал)"
   be: "Усё рэзка (гіперфакал)"
@@ -59175,6 +59421,7 @@ _version: 2
   ca: "Exposició (laboratori)"
   ru: "Экспозиция (проявка)"
   de: "Belichtung (Dunkelkammer)"
+  da: "Eksponering (mørkekammer)"
   fr: "Exposition (chambre noire)"
   uk: "Експозиція (проявлення)"
   be: "Экспазіцыя (праяўленне)"
@@ -59203,6 +59450,7 @@ _version: 2
   ca: "Horquillat d'exposició"
   ru: "Брекетинг экспозиции"
   de: "Belichtungsreihe"
+  da: "Eksponerings-bracketing"
   fr: "Bracketing d'exposition"
   uk: "Брекетинг експозиції"
   be: "Брэкетынг экспазіцыі"
@@ -59231,6 +59479,7 @@ _version: 2
   ca: "Flaix (5900 K)"
   ru: "Вспышка (5900 K)"
   de: "Blitz (5900 K)"
+  da: "Blitz (5900 K)"
   fr: "Flash (5900 K)"
   uk: "Спалах (5900 K)"
   be: "Успышка (5900 K)"
@@ -59259,6 +59508,7 @@ _version: 2
   ca: "Pla (per a gradació)"
   ru: "Плоский (для грейдинга)"
   de: "Flach (für Grading)"
+  da: "Flad (til farvekorrektion)"
   fr: "Plat (pour l'étalonnage)"
   uk: "Плаский (для грейдингу)"
   be: "Плоскі (для грэйдынгу)"
@@ -59287,6 +59537,7 @@ _version: 2
   ca: "Fluorescent (4000 K)"
   ru: "Люминесцентная лампа (4000 K)"
   de: "Leuchtstofflampe (4000 K)"
+  da: "Lysstofrør (4000 K)"
   fr: "Fluorescent (4000 K)"
   uk: "Люмінесцентна лампа (4000 K)"
   be: "Люмінесцэнтная лямпа (4000 K)"
@@ -59315,6 +59566,7 @@ _version: 2
   ca: "Enfoca a la distància hiperfocal"
   ru: "Фокус на гиперфокальное расстояние"
   de: "Auf hyperfokale Distanz fokussieren"
+  da: "Fokusér på den hyperfokale afstand"
   fr: "Mise au point à l'hyperfocale"
   uk: "Фокус на гіперфокальну відстань"
   be: "Фокус на гіперфакальную адлегласць"
@@ -59343,6 +59595,7 @@ _version: 2
   ca: "Ressaltat del focus"
   ru: "Фокус-пикинг"
   de: "Fokus-Peaking"
+  da: "Fokus-peaking"
   fr: "Focus peaking"
   uk: "Фокус-пікінг"
   be: "Фокус-пікінг"
@@ -59371,6 +59624,7 @@ _version: 2
   ca: "Congelat"
   ru: "Заморозка"
   de: "Eingefroren"
+  da: "Frosset"
   fr: "Figé"
   uk: "Заморожено"
   be: "Замарожана"
@@ -59399,6 +59653,7 @@ _version: 2
   ca: "Format complet (36 x 24 mm)"
   ru: "Полный кадр (36 x 24 mm)"
   de: "Vollformat (36 x 24 mm)"
+  da: "Fuldformat (36 x 24 mm)"
   fr: "Plein format (36 x 24 mm)"
   uk: "Повний кадр (36 x 24 mm)"
   be: "Поўны кадр (36 x 24 mm)"
@@ -59427,6 +59682,7 @@ _version: 2
   ca: "Equivalent en format complet"
   ru: "Эквивалент полного кадра"
   de: "Kleinbildäquivalent"
+  da: "Fuldformat-ækvivalent"
   fr: "Équivalent plein format"
   uk: "Еквівалент повного кадру"
   be: "Эквівалент поўнага кадра"
@@ -59455,6 +59711,7 @@ _version: 2
   ca: "Passe-partout"
   ru: "Паспарту"
   de: "Passepartout"
+  da: "Galleripassepartout"
   fr: "Passe-partout"
   uk: "Паспарту"
   be: "Паспарту"
@@ -59483,6 +59740,7 @@ _version: 2
   ca: "To de les llums"
   ru: "Оттенок светов"
   de: "Farbton Lichter"
+  da: "Højlysets farvetone"
   fr: "Teinte des hautes lumières"
   uk: "Відтінок світлих тонів"
   be: "Адценне светлых тонаў"
@@ -59511,6 +59769,7 @@ _version: 2
   ca: "Histograma"
   ru: "Гистограмма"
   de: "Histogramm"
+  da: "Histogram"
   fr: "Histogramme"
   uk: "Гістограма"
   be: "Гістаграма"
@@ -59539,6 +59798,7 @@ _version: 2
   ca: "Mantén la càmera quieta un moment i fes clic per enfocar"
   ru: "Подержите камеру неподвижно, затем щёлкните для фокусировки"
   de: "Kamera kurz ruhig halten, dann zum Scharfstellen klicken"
+  da: "Hold kameraet stille et øjeblik, og klik så for at fokusere"
   fr: "Gardez l'appareil immobile un instant, puis cliquez pour faire la mise au point"
   uk: "Потримайте камеру нерухомо, потім клацніть для фокусування"
   be: "Патрымайце камеру нерухома, потым пстрыкніце для факусоўкі"
@@ -59567,6 +59827,7 @@ _version: 2
   ca: "Distància hiperfocal"
   ru: "Гиперфокальное расстояние"
   de: "Hyperfokale Distanz"
+  da: "Hyperfokal afstand"
   fr: "Distance hyperfocale"
   uk: "Гіперфокальна відстань"
   be: "Гіперфакальная адлегласць"
@@ -59595,6 +59856,7 @@ _version: 2
   ca: "Foto instantània"
   ru: "Моментальный снимок"
   de: "Sofortbild"
+  da: "Øjeblikkeligt print"
   fr: "Photo instantanée"
   uk: "Миттєве фото"
   be: "Імгненнае фота"
@@ -59623,6 +59885,7 @@ _version: 2
   ca: "Paisatge"
   ru: "Пейзаж"
   de: "Landschaft"
+  da: "Landskab"
   fr: "Paysage"
   uk: "Пейзаж"
   be: "Пейзаж"
@@ -59651,6 +59914,7 @@ _version: 2
   ca: "Objectiu i sensor"
   ru: "Объектив и матрица"
   de: "Objektiv und Sensor"
+  da: "Linse og sensor"
   fr: "Objectif et capteur"
   uk: "Об'єктив і матриця"
   be: "Аб'ектыў і матрыца"
@@ -59679,6 +59943,7 @@ _version: 2
   ca: "Correccions de l'objectiu (distorsió, vinyetatge)"
   ru: "Коррекция объектива (дисторсия, виньетирование)"
   de: "Objektivkorrekturen (Verzeichnung, Vignettierung)"
+  da: "Linsekorrektioner (forvrængning, vignettering)"
   fr: "Corrections de l'objectif (distorsion, vignetage)"
   uk: "Корекція об'єктива (дисторсія, віньєтування)"
   be: "Карэкцыя аб'ектыва (дысторсія, віньетаванне)"
@@ -59707,6 +59972,7 @@ _version: 2
   ca: "Visió directa"
   ru: "Live View"
   de: "Live View"
+  da: "Live-visning"
   fr: "Visée écran"
   uk: "Live View"
   be: "Live View"
@@ -59735,6 +60001,7 @@ _version: 2
   ca: "Manual: tu ho ajustes tot; l'exposímetre mostra quant se'n desvia."
   ru: "Ручной: всё задаёте вы; экспонометр показывает, насколько вы отклонились."
   de: "Manuell: Sie stellen alles ein; der Belichtungsmesser zeigt die Abweichung."
+  da: "Manuel: du indstiller alt; måleren viser, hvor langt ved siden af det er."
   fr: "Manuel : vous réglez tout ; la cellule indique l'écart."
   uk: "Ручний: усе задаєте ви; експонометр показує, наскільки ви відхилилися."
   be: "Ручны: усё задаяце вы; экспанометр паказвае, наколькі вы адхіліліся."
@@ -59763,6 +60030,7 @@ _version: 2
   ca: "Matricial"
   ru: "Матричный"
   de: "Matrixmessung"
+  da: "Matrix"
   fr: "Matricielle"
   uk: "Матричний"
   be: "Матрычны"
@@ -59791,6 +60059,7 @@ _version: 2
   ca: "Format mitjà (44 x 33 mm)"
   ru: "Средний формат (44 x 33 mm)"
   de: "Mittelformat (44 x 33 mm)"
+  da: "Mellemformat (44 x 33 mm)"
   fr: "Moyen format (44 x 33 mm)"
   uk: "Середній формат (44 x 33 mm)"
   be: "Сярэдні фармат (44 x 33 mm)"
@@ -59819,6 +60088,7 @@ _version: 2
   ca: "Exposímetre"
   ru: "Экспонометр"
   de: "Belichtungsmesser"
+  da: "Måler"
   fr: "Cellule"
   uk: "Експонометр"
   be: "Экспанометр"
@@ -59847,6 +60117,7 @@ _version: 2
   ca: "Mesura"
   ru: "Замер экспозиции"
   de: "Belichtungsmessung"
+  da: "Lysmåling"
   fr: "Mesure"
   uk: "Вимірювання експозиції"
   be: "Замер экспазіцыі"
@@ -59875,6 +60146,7 @@ _version: 2
   ca: "Micro Four Thirds (2x)"
   ru: "Micro 4/3 (2x)"
   de: "Micro Four Thirds (2x)"
+  da: "Micro Four Thirds (2x)"
   fr: "Micro Four Thirds (2x)"
   uk: "Micro 4/3 (2x)"
   be: "Micro 4/3 (2x)"
@@ -59903,6 +60175,7 @@ _version: 2
   ca: "Moviment"
   ru: "Движение"
   de: "Bewegung"
+  da: "Bevægelse"
   fr: "Mouvement"
   uk: "Рух"
   be: "Рух"
@@ -59931,6 +60204,7 @@ _version: 2
   ca: "Neutre"
   ru: "Нейтральный"
   de: "Neutral"
+  da: "Neutral"
   fr: "Neutre"
   uk: "Нейтральний"
   be: "Нейтральны"
@@ -59959,6 +60233,7 @@ _version: 2
   ca: "Escombrat"
   ru: "Проводка"
   de: "Mitzieher"
+  da: "Panorering"
   fr: "Filé"
   uk: "Проводка"
   be: "Праводка"
@@ -59987,6 +60262,7 @@ _version: 2
   ca: "Les fotos es desen com a PNG a la carpeta Screenshots del joc, amb els ajustos de la càmera (obertura, temps, ISO, distància focal) a les metadades."
   ru: "Снимки сохраняются в PNG в папку Screenshots игры, а настройки камеры (диафрагма, выдержка, ISO, фокусное расстояние) записываются в метаданные."
   de: "Fotos werden als PNG im Ordner Screenshots des Spiels gespeichert, mit den Kameraeinstellungen (Blende, Belichtungszeit, ISO, Brennweite) in den Metadaten."
+  da: "Fotos gemmes som PNG i spillets mappe Screenshots, med kameraets indstillinger (blænde, tid, ISO, brændvidde) i deres metadata."
   fr: "Les photos sont enregistrées en PNG dans le dossier Screenshots du jeu, avec les réglages de l'appareil (ouverture, vitesse, ISO, focale) dans leurs métadonnées."
   uk: "Знімки зберігаються у форматі PNG у теку Screenshots гри, а налаштування камери (діафрагма, витримка, ISO, фокусна відстань) записуються в метадані."
   be: "Здымкі захоўваюцца ў PNG у тэчку Screenshots гульні, а налады камеры (дыяфрагма, вытрымка, ISO, фокусная адлегласць) запісваюцца ў метаданыя."
@@ -60015,6 +60291,7 @@ _version: 2
   ca: "Estil d'imatge"
   ru: "Стиль изображения"
   de: "Bildstil"
+  da: "Billedprofil"
   fr: "Style d'image"
   uk: "Стиль зображення"
   be: "Стыль выявы"
@@ -60043,6 +60320,7 @@ _version: 2
   ca: "Retrat"
   ru: "Портрет"
   de: "Porträt"
+  da: "Portræt"
   fr: "Portrait"
   uk: "Портрет"
   be: "Партрэт"
@@ -60071,6 +60349,7 @@ _version: 2
   ca: "Programa: la càmera tria l'obertura i el temps."
   ru: "Программа: камера сама задаёт диафрагму и выдержку."
   de: "Programmautomatik: Die Kamera wählt Blende und Belichtungszeit."
+  da: "Program: kameraet indstiller blænde og tid."
   fr: "Programme : l'appareil règle l'ouverture et la vitesse."
   uk: "Програма: камера сама задає діафрагму і витримку."
   be: "Праграма: камера сама задае дыяфрагму і вытрымку."
@@ -60099,6 +60378,7 @@ _version: 2
   ca: "Renderitza la profunditat de camp"
   ru: "Отрисовывать глубину резкости"
   de: "Schärfentiefe rendern"
+  da: "Gengiv dybdeskarpheden"
   fr: "Rendre la profondeur de champ"
   uk: "Відмальовувати глибину різкості"
   be: "Адмалёўваць глыбіню рэзкасці"
@@ -60127,6 +60407,7 @@ _version: 2
   ca: "Sensor"
   ru: "Матрица"
   de: "Sensor"
+  da: "Sensor"
   fr: "Capteur"
   uk: "Матриця"
   be: "Матрыца"
@@ -60155,6 +60436,7 @@ _version: 2
   ca: "Soroll del sensor (augmenta amb l'ISO)"
   ru: "Шум матрицы (растёт с ISO)"
   de: "Sensorrauschen (steigt mit der ISO)"
+  da: "Sensorstøj (vokser med ISO)"
   fr: "Bruit du capteur (augmente avec l'ISO)"
   uk: "Шум матриці (зростає з ISO)"
   be: "Шум матрыцы (расце з ISO)"
@@ -60183,6 +60465,7 @@ _version: 2
   ca: "Ombra (7500 K)"
   ru: "Тень (7500 K)"
   de: "Schatten (7500 K)"
+  da: "Skygge (7500 K)"
   fr: "Ombre (7500 K)"
   uk: "Тінь (7500 K)"
   be: "Цень (7500 K)"
@@ -60211,6 +60494,7 @@ _version: 2
   ca: "To de les ombres"
   ru: "Оттенок теней"
   de: "Farbton Tiefen"
+  da: "Skyggernes farvetone"
   fr: "Teinte des ombres"
   uk: "Відтінок тіней"
   be: "Адценне ценяў"
@@ -60239,6 +60523,7 @@ _version: 2
   ca: "Nítid de - a"
   ru: "Резко от - до"
   de: "Scharf von - bis"
+  da: "Skarp fra - til"
   fr: "Net de - à"
   uk: "Різко від - до"
   be: "Рэзка ад - да"
@@ -60267,6 +60552,7 @@ _version: 2
   ca: "Descentrament dreta / esquerra"
   ru: "Сдвиг вправо / влево"
   de: "Shift rechts / links"
+  da: "Forskyd til højre / venstre"
   fr: "Décentrement droite / gauche"
   uk: "Зсув праворуч / ліворуч"
   be: "Зрух управа / улева"
@@ -60295,6 +60581,7 @@ _version: 2
   ca: "Descentrament amunt / avall"
   ru: "Сдвиг вверх / вниз"
   de: "Shift oben / unten"
+  da: "Forskyd op / ned"
   fr: "Décentrement haut / bas"
   uk: "Зсув вгору / вниз"
   be: "Зрух уверх / уніз"
@@ -60323,6 +60610,7 @@ _version: 2
   ca: "Prioritat d'obturació: tu tries el temps i la càmera, l'obertura."
   ru: "Приоритет выдержки: вы задаёте выдержку, камера — диафрагму."
   de: "Blendenautomatik: Sie wählen die Belichtungszeit, die Kamera die Blende."
+  da: "Lukkerprioritet: du indstiller tiden, kameraet blænden."
   fr: "Priorité à la vitesse : vous réglez la vitesse, l'appareil l'ouverture."
   uk: "Пріоритет витримки: ви задаєте витримку, камера — діафрагму."
   be: "Прыярытэт вытрымкі: вы задаяце вытрымку, камера — дыяфрагму."
@@ -60351,6 +60639,7 @@ _version: 2
   ca: "Simple: l'objectiu, l'aspecte i el marc. Avançat: un cos de càmera - mida del sensor, exposició P/A/S/M amb ISO i mesura, balanç de blancs en kelvin, basculament i descentrament, histograma, ressaltat del focus, horquillat i PNG de 16 bits."
   ru: "Простой: объектив, стиль и рамка. Расширенный: корпус камеры - размер матрицы, экспозиция P/A/S/M с ISO и замером, баланс белого в кельвинах, тилт-шифт, гистограмма, фокус-пикинг, брекетинг и 16-битный PNG."
   de: "Einfach: Objektiv, Look und Rahmen. Erweitert: ein Kameragehäuse - Sensorgröße, P/A/S/M-Belichtung mit ISO und Belichtungsmessung, Weißabgleich in Kelvin, Tilt-Shift, Histogramm, Fokus-Peaking, Belichtungsreihen und 16-Bit-PNG."
+  da: "Enkel: linsen, udseendet og billedrammen. Avanceret: et kamerahus - sensorstørrelse, P/A/S/M-eksponering med ISO og lysmåling, hvidbalance i kelvin, tilt-shift, histogram, fokus-peaking, bracketing og 16-bit PNG."
   fr: "Simple : l'objectif, le rendu et le cadre. Avancé : un boîtier - taille du capteur, exposition P/A/S/M avec ISO et mesure, balance des blancs en kelvins, bascule et décentrement, histogramme, focus peaking, bracketing et PNG 16 bits."
   uk: "Простий: об'єктив, стиль і рамка. Розширений: корпус камери - розмір матриці, експозиція P/A/S/M з ISO і вимірюванням, баланс білого в кельвінах, тілт-шифт, гістограма, фокус-пікінг, брекетинг і 16-бітний PNG."
   be: "Просты: аб'ектыў, стыль і рамка. Пашыраны: корпус камеры - памер матрыцы, экспазіцыя P/A/S/M з ISO і замерам, баланс белага ў кельвінах, тылт-шыфт, гістаграма, фокус-пікінг, брэкетынг і 16-бітны PNG."
@@ -60379,6 +60668,7 @@ _version: 2
   ca: "Nivell electrònic"
   ru: "Электронный уровень"
   de: "Wasserwaage"
+  da: "Vaterpas"
   fr: "Niveau électronique"
   uk: "Електронний рівень"
   be: "Электронны ўзровень"
@@ -60407,6 +60697,7 @@ _version: 2
   ca: "Virat partit"
   ru: "Раздельное тонирование"
   de: "Teiltonung"
+  da: "Delt toning"
   fr: "Virage partiel"
   uk: "Роздільне тонування"
   be: "Раздзельнае танаванне"
@@ -60435,6 +60726,7 @@ _version: 2
   ca: "Puntual"
   ru: "Точечный"
   de: "Spot"
+  da: "Spot"
   fr: "Spot"
   uk: "Точковий"
   be: "Кропкавы"
@@ -60463,6 +60755,7 @@ _version: 2
   ca: "Rotació"
   ru: "Свинг"
   de: "Swing"
+  da: "Sving"
   fr: "Rotation"
   uk: "Свінг"
   be: "Свінг"
@@ -60491,6 +60784,7 @@ _version: 2
   ca: "L'objectiu o l'obturador són al límit: la foto sortirà fora de la mesura."
   ru: "Объективу или затвору не хватает диапазона: снимок выйдет не по экспонометру."
   de: "Objektiv oder Verschluss am Anschlag: Das Foto weicht von der Messung ab."
+  da: "Linsen eller lukkeren løb tør for rækkevidde: fotoet kommer ud ved siden af måleren."
   fr: "L'objectif ou l'obturateur est en butée : la photo s'écartera de la mesure."
   uk: "Об'єктиву або затвору бракує діапазону: знімок вийде не за експонометром."
   be: "Аб'ектыву або затвору не хапае дыяпазону: здымак выйдзе не па экспанометры."
@@ -60519,6 +60813,7 @@ _version: 2
   ca: "Basculament"
   ru: "Наклон"
   de: "Tilt"
+  da: "Tilt"
   fr: "Bascule"
   uk: "Нахил"
   be: "Нахіл"
@@ -60547,6 +60842,7 @@ _version: 2
   ca: "Basculament i descentrament"
   ru: "Наклон и сдвиг"
   de: "Tilt und Shift"
+  da: "Tilt og shift"
   fr: "Bascule et décentrement"
   uk: "Нахил і зсув"
   be: "Нахіл і зрух"
@@ -60575,6 +60871,7 @@ _version: 2
   ca: "El basculament inclina el pla d'enfocament (efecte miniatura o tot el carrer nítid); el descentrament manté les verticals rectes."
   ru: "Наклон наклоняет плоскость резкости (эффект миниатюры или вся улица в резкости); сдвиг сохраняет вертикали прямыми."
   de: "Tilt neigt die Schärfeebene (Miniatur-Look oder die ganze Straße scharf); Shift hält die Senkrechten gerade."
+  da: "Tilt vipper fokusplanet (et miniaturelook, eller hele gaden skarp); shift holder lodrette linjer opretstående."
   fr: "La bascule incline le plan de netteté (effet miniature, ou toute la rue nette) ; le décentrement garde les verticales droites."
   uk: "Нахил нахиляє площину різкості (ефект мініатюри або вся вулиця різка); зсув тримає вертикалі рівними."
   be: "Нахіл нахіляе плоскасць рэзкасці (эфект мініяцюры або ўся вуліца рэзкая); зрух трымае вертыкалі роўнымі."
@@ -60603,6 +60900,7 @@ _version: 2
   ca: "To"
   ru: "Тон"
   de: "Tönung"
+  da: "Tone"
   fr: "Ton"
   uk: "Тон"
   be: "Тон"
@@ -60631,6 +60929,7 @@ _version: 2
   ca: "Trípode"
   ru: "Штатив"
   de: "Stativ"
+  da: "Stativ"
   fr: "Trépied"
   uk: "Штатив"
   be: "Штатыў"
@@ -60659,6 +60958,7 @@ _version: 2
   ca: "Tungstè (3200 K)"
   ru: "Лампа накаливания (3200 K)"
   de: "Kunstlicht (3200 K)"
+  da: "Glødelampe (3200 K)"
   fr: "Tungstène (3200 K)"
   uk: "Лампа розжарювання (3200 K)"
   be: "Лямпа напальвання (3200 K)"
@@ -60687,6 +60987,7 @@ _version: 2
   ca: "Blanc"
   ru: "Белый"
   de: "Weiß"
+  da: "Hvid"
   fr: "Blanc"
   uk: "Білий"
   be: "Белы"
@@ -60715,6 +61016,7 @@ _version: 2
   ca: "Balanç de blancs"
   ru: "Баланс белого"
   de: "Weißabgleich"
+  da: "Hvidbalance"
   fr: "Balance des blancs"
   uk: "Баланс білого"
   be: "Баланс белага"
@@ -60741,6 +61043,7 @@ _version: 2
   sv: "Vitbalans"
 "Route code":
   de: "Routennummer"
+  da: "Rutekode"
   fr: "Code d'itinéraire"
   ru: "Вариант маршрута"
   uk: "Варіант маршруту"
@@ -60769,6 +61072,7 @@ _version: 2
   sv: "Ruttkod"
 "Depot file {hof} has no entries for this line. Type line {line} and the terminus code by hand, or press Shift+U.":
   de: "Die Betriebshofdatei {hof} hat keine Einträge für diese Linie. Gib Linie {line} und den Zielcode von Hand ein oder drücke Shift+U."
+  da: "Depotfilen {hof} har ingen poster til denne linje. Skriv linje {line} og endestationskoden manuelt, eller tryk på Shift+U."
   fr: "Le fichier girouette {hof} n'a aucune entrée pour cette ligne. Saisissez la ligne {line} et le code du terminus à la main, ou appuyez sur Shift+U."
   ru: "В файле депо {hof} нет записей для этой линии. Введите линию {line} и код конечной вручную или нажмите Shift+U."
   uk: "У файлі депо {hof} немає записів для цієї лінії. Введіть лінію {line} і код кінцевої вручну або натисніть Shift+U."
@@ -60797,6 +61101,7 @@ _version: 2
   sv: "Depåfilen {hof} har inga poster för den här linjen. Skriv in linje {line} och ändhållplatsens kod för hand, eller tryck Shift+U."
 "Depot file {hof} | Shift+U in the game types it for you":
   de: "Betriebshofdatei {hof} | Shift+U im Spiel tippt es für dich ein"
+  da: "Depotfil {hof} | Shift+U i spillet skriver den ind for dig"
   fr: "Fichier girouette {hof} | Shift+U dans le jeu le saisit pour vous"
   ru: "Файл депо {hof} | Shift+U в игре введёт это за вас"
   uk: "Файл депо {hof} | Shift+U у грі введе це за вас"
@@ -60825,6 +61130,7 @@ _version: 2
   sv: "Depåfil {hof} | Shift+U i spelet skriver in det åt dig"
 "{} % | dew point {} °C":
   de: "{} % | Taupunkt {} °C"
+  da: "{} % | dugpunkt {} °C"
   fr: "{} % | point de rosée {} °C"
   ru: "{} % | точка росы {} °C"
   uk: "{} % | точка роси {} °C"
@@ -60853,6 +61159,7 @@ _version: 2
   sv: "{} % | daggpunkt {} °C"
 "{n} line(s) of {map_folder} put back as they were":
   de: "{n} Linie(n) von {map_folder} wiederhergestellt"
+  da: "{n} linje(r) fra {map_folder} sat tilbage, som de var"
   fr: "{n} ligne(s) de {map_folder} remise(s) comme avant"
   ru: "Линий {map_folder} восстановлено: {n}"
   uk: "Ліній {map_folder} відновлено: {n}"
@@ -60881,6 +61188,7 @@ _version: 2
   sv: "{n} linje(r) i {map_folder} återställda som de var"
 "{n} line(s) saved":
   de: "{n} Linie(n) gespeichert"
+  da: "{n} linje(r) gemt"
   fr: "{n} ligne(s) enregistrée(s)"
   ru: "Сохранено линий: {n}"
   uk: "Збережено ліній: {n}"
@@ -60909,6 +61217,7 @@ _version: 2
   sv: "{n} linje(r) sparade"
 "{made} tour(s) made, every {every} min up to {until}":
   de: "Umläufe erstellt: {made}, alle {every} min bis {until}"
+  da: "{made} tur(e) lavet, hver {every} min indtil {until}"
   fr: "{made} service(s) créé(s), toutes les {every} min jusqu'à {until}"
   ru: "Создано выходов: {made}, каждые {every} мин до {until}"
   uk: "Створено оборотів: {made}, кожні {every} хв до {until}"
@@ -60937,6 +61246,7 @@ _version: 2
   sv: "{made} omlopp skapade, var {every}:e min till {until}"
 "h:mm":
   de: "h:mm"
+  da: "t:mm"
   fr: "h:mm"
   ru: "ч:мм"
   uk: "г:хх"
@@ -60967,6 +61277,7 @@ _version: 2
   ca: "Models de personatges"
   ru: "Модели персонажей"
   de: "Figurenmodelle"
+  da: "Karaktermodeller"
   fr: "Modèles des personnages"
   uk: "Моделі персонажів"
   be: "Мадэлі персанажаў"
@@ -60995,6 +61306,7 @@ _version: 2
   ca: "Original"
   ru: "Оригинальные"
   de: "Original"
+  da: "Original"
   fr: "Originaux"
   uk: "Оригінальні"
   be: "Арыгінальныя"
@@ -61023,6 +61335,7 @@ _version: 2
   ca: "Alta qualitat (millorats)"
   ru: "Высокое качество (улучшенные)"
   de: "Hohe Qualität (verbessert)"
+  da: "Høj kvalitet (forbedret)"
   fr: "Haute qualité (améliorés)"
   uk: "Висока якість (покращені)"
   be: "Высокая якасць (палепшаныя)"
@@ -61051,6 +61364,7 @@ _version: 2
   ca: "Alta qualitat dibuixa les persones amb els avatars Microsoft Rocketbox i les seves cares vives, només en aquest ordinador: els servidors i els altres jugadors mantenen els seus. Es baixen una vegada (uns 310 MB)."
   ru: "Высокое качество рисует людей аватарами Microsoft Rocketbox с живой мимикой — только на этом компьютере: у серверов и других игроков остаются свои. Скачиваются один раз (около 310 МБ)."
   de: "Hohe Qualität zeichnet die Menschen mit den Microsoft-Rocketbox-Avataren und ihren lebendigen Gesichtern, nur auf diesem Computer: Server und andere Spieler behalten ihre eigenen. Sie werden einmal heruntergeladen (etwa 310 MB)."
+  da: "Høj kvalitet tegner menneskerne med Microsoft Rocketbox-avatarerne og deres levende ansigter, kun på denne computer: servere og andre spillere beholder deres egne. De hentes én gang (ca. 310 MB)."
   fr: "Haute qualité dessine les personnes avec les avatars Microsoft Rocketbox et leurs visages vivants, sur cet ordinateur seulement : les serveurs et les autres joueurs gardent les leurs. Ils sont téléchargés une fois (environ 310 Mo)."
   uk: "Висока якість малює людей аватарами Microsoft Rocketbox з живою мімікою — лише на цьому комп'ютері: сервери та інші гравці бачать своїх. Завантажуються один раз (близько 310 МБ)."
   be: "Высокая якасць малюе людзей аватарамі Microsoft Rocketbox з жывой мімікай — толькі на гэтым камп'ютары: серверы і іншыя гульцы бачаць сваіх. Спампоўваюцца адзін раз (каля 310 МБ)."
@@ -61079,6 +61393,7 @@ _version: 2
   ca: "Unitats"
   ru: "Единицы измерения"
   de: "Einheiten"
+  da: "Enheder"
   fr: "Unités"
   uk: "Одиниці виміру"
   be: "Адзінкі вымярэння"
@@ -61107,6 +61422,7 @@ _version: 2
   ca: "Velocitats, distàncies i temperatures als textos del joc"
   ru: "Скорость, расстояния и температура в текстах игры"
   de: "Geschwindigkeiten, Entfernungen und Temperaturen in den Texten des Spiels"
+  da: "Hastigheder, afstande og temperaturer i spillets egne tekster"
   fr: "Vitesses, distances et températures dans les textes du jeu"
   uk: "Швидкість, відстані й температура в текстах гри"
   be: "Хуткасць, адлегласці і тэмпература ў тэкстах гульні"
@@ -61135,6 +61451,7 @@ _version: 2
   ca: "Mètric (km/h, km, °C)"
   ru: "Метрические (км/ч, км, °C)"
   de: "Metrisch (km/h, km, °C)"
+  da: "Metrisk (km/t, km, °C)"
   fr: "Métrique (km/h, km, °C)"
   uk: "Метричні (км/год, км, °C)"
   be: "Метрычныя (км/г, км, °C)"
@@ -61163,6 +61480,7 @@ _version: 2
   ca: "Britànic (mph, milles, iardes, °C)"
   ru: "Британские (mph, мили, ярды, °C)"
   de: "Britisch (mph, Meilen, Yards, °C)"
+  da: "Britisk (mph, miles, yards, °C)"
   fr: "Britannique (mph, miles, yards, °C)"
   uk: "Британські (mph, милі, ярди, °C)"
   be: "Брытанскія (mph, мілі, ярды, °C)"
@@ -61191,6 +61509,7 @@ _version: 2
   ca: "Nord-americà (mph, milles, peus, °F)"
   ru: "Американские (mph, мили, футы, °F)"
   de: "Amerikanisch (mph, Meilen, Fuß, °F)"
+  da: "Amerikansk (mph, miles, fod, °F)"
   fr: "Américain (mph, miles, pieds, °F)"
   uk: "Американські (mph, милі, фути, °F)"
   be: "Амерыканскія (mph, мілі, футы, °F)"
@@ -61219,6 +61538,7 @@ _version: 2
   ca: "El dia que segueixen l'horari, l'estació i els canvis del mapa"
   ru: "День, по которому идут расписание, сезон и изменения карты"
   de: "Der Tag, nach dem sich Fahrplan, Jahreszeit und Kartenänderungen richten"
+  da: "Den dag, køreplanen, årstiden og kortets ændringer følger"
   fr: "Le jour que suivent l'horaire, la saison et les changements de la carte"
   uk: "День, за яким ідуть розклад, сезон і зміни мапи"
   be: "Дзень, па якім ідуць расклад, сезон і змены карты"
@@ -61247,6 +61567,7 @@ _version: 2
   ca: "Canvia la data."
   ru: "Сдвинуть дату."
   de: "Das Datum verschieben."
+  da: "Flyt datoen."
   fr: "Déplacer la date."
   uk: "Зсунути дату."
   be: "Зрушыць дату."
@@ -61275,6 +61596,7 @@ _version: 2
   ca: "Data -1 dia"
   ru: "Дата -1 день"
   de: "Datum -1 Tag"
+  da: "Dato -1 dag"
   fr: "Date -1 jour"
   uk: "Дата -1 день"
   be: "Дата -1 дзень"
@@ -61303,6 +61625,7 @@ _version: 2
   ca: "Data -1 setmana"
   ru: "Дата -1 неделя"
   de: "Datum -1 Woche"
+  da: "Dato -1 uge"
   fr: "Date -1 semaine"
   uk: "Дата -1 тиждень"
   be: "Дата -1 тыдзень"
@@ -61331,6 +61654,7 @@ _version: 2
   ca: "Data -1 mes"
   ru: "Дата -1 месяц"
   de: "Datum -1 Monat"
+  da: "Dato -1 måned"
   fr: "Date -1 mois"
   uk: "Дата -1 місяць"
   be: "Дата -1 месяц"
@@ -61359,6 +61683,7 @@ _version: 2
   ca: "Data +1 dia"
   ru: "Дата +1 день"
   de: "Datum +1 Tag"
+  da: "Dato +1 dag"
   fr: "Date +1 jour"
   uk: "Дата +1 день"
   be: "Дата +1 дзень"
@@ -61387,6 +61712,7 @@ _version: 2
   ca: "Data +1 setmana"
   ru: "Дата +1 неделя"
   de: "Datum +1 Woche"
+  da: "Dato +1 uge"
   fr: "Date +1 semaine"
   uk: "Дата +1 тиждень"
   be: "Дата +1 тыдзень"
@@ -61415,6 +61741,7 @@ _version: 2
   ca: "Data +1 mes"
   ru: "Дата +1 месяц"
   de: "Datum +1 Monat"
+  da: "Dato +1 måned"
   fr: "Date +1 mois"
   uk: "Дата +1 місяць"
   be: "Дата +1 месяц"
@@ -61440,163 +61767,242 @@ _version: 2
   tl: "Petsa +1 buwan"
   sv: "Datum +1 månad"
 "Mirror quality":
+  da: "Spejlkvalitet"
   zh-tw: "後視鏡品質"
 "As the picture (Enhanced)":
+  da: "Som billedet (Enhanced)"
   zh-tw: "與主畫面相同（增強）"
 "Every frame (smoothest)":
+  da: "Hvert billede (blødest)"
   zh-tw: "每幀更新（最流暢）"
 "Choose…":
+  da: "Vælg…"
   zh-tw: "選擇……"
 "Multiplayer: show / hide the chat":
+  da: "Multiplayer: vis / skjul chatten"
   zh-tw: "多人遊戲：顯示／隱藏聊天"
 "Open / close the main menu":
+  da: "Åbn / luk hovedmenuen"
   zh-tw: "開啟／關閉主選單"
 "no key bindings":
+  da: "ingen tastebindinger"
   zh-tw: "沒有按鍵綁定"
 "Controls...":
+  da: "Styringer..."
   zh-tw: "操作設定……"
 "Ambience":
+  da: "Omgivelser"
   zh-tw: "環境音效"
 "Draws the clouds":
+  da: "Tegner skyerne"
   zh-tw: "顯示雲層"
 "Enhanced graphics: how much brighter the night is shown":
+  da: "Enhanced grafik: hvor meget lysere natten vises"
   zh-tw: "增強畫面模式下夜間亮度的提升幅度"
 "How loud the ambience is":
+  da: "Hvor højt omgivelserne lyder"
   zh-tw: "環境音效的音量"
 "The place, the weather, the birds of the season and the town's life, from real recordings":
+  da: "Stedet, vejret, årstidens fugle og byens liv, fra rigtige optagelser"
   zh-tw: "以實際錄音呈現場所、天氣、季節鳥鳴與城鎮生活的聲音"
 "Hold the cursor while steering":
+  da: "Hold markøren fast under styring"
   zh-tw: "轉向時鎖定游標"
 "The wheel reaches its lock past the window's edges; off: the crosshair stays free and without delay, as in OMSI":
+  da: "Rattet når sit anslag forbi vinduets kanter; fra: trådkorset forbliver frit og uden forsinkelse, som i OMSI"
   zh-tw: "超出視窗邊緣時方向盤達到轉向極限；關閉時準星可自由移動且沒有延遲，如同 OMSI"
 "Steering and view":
+  da: "Styring og udsyn"
   zh-tw: "轉向與視角"
 "Stick smoothing":
+  da: "Udjævning af stikken"
   zh-tw: "搖桿平滑度"
 "Steering speed":
+  da: "Styrehastighed"
   zh-tw: "轉向速度"
 "Evens out the small shakes of the stick (off: the stick as it reads)":
+  da: "Jævner stikkets små rystelser ud (fra: stikken, som den læses)"
   zh-tw: "平滑搖桿的細微晃動（關閉時直接使用讀取值）"
 "Ignore movement round the stick's centre (raise it if the bus steers by itself)":
+  da: "Ignorér bevægelse omkring stikkets midte (hæv den, hvis bussen styrer af sig selv)"
   zh-tw: "忽略搖桿中心附近的移動（若巴士自行轉向，請提高此值）"
 "Seconds the stick takes to turn the wheel from the middle to the full lock - more is smoother":
+  da: "Sekunder, stikken bruger på at dreje rattet fra midten til fuldt udslag - mere er blødere"
   zh-tw: "搖桿將方向盤從中央轉至極限所需的秒數：越高越平滑"
 "Pedals":
+  da: "Pedaler"
   zh-tw: "踏板"
 "Wheel":
+  da: "Rat"
   zh-tw: "方向盤"
 "How often the mirrors are drawn: every frame, the street moves through them as smoothly as through the windscreen":
+  da: "Hvor ofte spejlene tegnes: hvert billede, gaden bevæger sig gennem dem lige så blødt som gennem forruden"
   zh-tw: "後視鏡的更新頻率：每幀更新時，鏡中的道路與擋風玻璃外一樣流暢"
 "In Enhanced and Enhanced+: the mirrors shaded as the picture is, with its light and its sky, instead of the plain light":
+  da: "I Enhanced og Enhanced+: spejlene skygges, som billedet er, med dets lys og dets himmel, i stedet for det almindelige lys"
   zh-tw: "在 Enhanced 與 Enhanced+ 模式下，後視鏡使用與主畫面相同的光照與天空"
 "The mirror panels in the cab (Ctrl+M) are drawn every frame, as in ETS2, instead of taking turns with the other mirrors":
+  da: "Spejlpanelerne i førerrummet (Ctrl+M) tegnes hvert billede, som i ETS2, i stedet for at skiftes med de andre spejle"
   zh-tw: "車內後視鏡面板（Ctrl+M）會如 ETS2 一樣每幀更新，不與其他後視鏡輪流更新"
 "Lower is faster: the drops on the glass painted less often, less spray and fewer streaks; Low shows OMSI 2's own rain on the glass (from the next bus loaded)":
+  da: "Lavere er hurtigere: dråberne på ruden males sjældnere, mindre stænk og færre striber; Lav viser OMSI 2's egen regn på ruden (fra næste indlæste bus)"
   zh-tw: "較低品質可提高效能：減少玻璃雨滴更新、水花與雨線；低品質會使用 OMSI 2 的玻璃雨效（下次載入巴士生效）"
 "Switch off to keep the camera still while you steer":
+  da: "Slå fra for at holde kameraet stille, mens du styrer"
   zh-tw: "關閉後，轉向時視角保持固定"
 "TrackIR yaw sensitivity":
+  da: "TrackIR yaw-følsomhed"
   zh-tw: "TrackIR 水平旋轉靈敏度"
 "TrackIR pitch sensitivity":
+  da: "TrackIR pitch-følsomhed"
   zh-tw: "TrackIR 俯仰靈敏度"
 "TrackIR roll sensitivity":
+  da: "TrackIR roll-følsomhed"
   zh-tw: "TrackIR 側傾靈敏度"
 "TrackIR X sensitivity":
+  da: "TrackIR X-følsomhed"
   zh-tw: "TrackIR X 軸靈敏度"
 "TrackIR Y sensitivity":
+  da: "TrackIR Y-følsomhed"
   zh-tw: "TrackIR Y 軸靈敏度"
 "TrackIR Z sensitivity":
+  da: "TrackIR Z-følsomhed"
   zh-tw: "TrackIR Z 軸靈敏度"
 "Invert TrackIR yaw":
+  da: "Vend TrackIR yaw"
   zh-tw: "反轉 TrackIR 水平旋轉"
 "Invert TrackIR pitch":
+  da: "Vend TrackIR pitch"
   zh-tw: "反轉 TrackIR 俯仰"
 "Invert TrackIR roll":
+  da: "Vend TrackIR roll"
   zh-tw: "反轉 TrackIR 側傾"
 "Invert TrackIR X":
+  da: "Vend TrackIR X"
   zh-tw: "反轉 TrackIR X 軸"
 "Invert TrackIR Y":
+  da: "Vend TrackIR Y"
   zh-tw: "反轉 TrackIR Y 軸"
 "Invert TrackIR Z":
+  da: "Vend TrackIR Z"
   zh-tw: "反轉 TrackIR Z 軸"
 "Use native TrackIR on Windows, or OpenTrack on UDP port {}":
+  da: "Brug native TrackIR på Windows, eller OpenTrack på UDP-port {}"
   zh-tw: "在 Windows 使用原生 TrackIR，或透過 UDP 連接埠 {} 使用 OpenTrack"
 "Head tilt. 100% is 1:1; the low end is deliberately finer.":
+  da: "Hovedhældning. 100 % er 1:1; den nedre ende er bevidst finere."
   zh-tw: "頭部側傾。100% 為 1:1；低值範圍提供更細緻的調整。"
 "Left / right head movement. 100% is 1:1; the low end is deliberately finer.":
+  da: "Hovedbevægelse venstre / højre. 100 % er 1:1; den nedre ende er bevidst finere."
   zh-tw: "頭部左右移動。100% 為 1:1；低值範圍提供更細緻的調整。"
 "Up / down head movement. 100% is 1:1; the low end is deliberately finer.":
+  da: "Hovedbevægelse op / ned. 100 % er 1:1; den nedre ende er bevidst finere."
   zh-tw: "頭部上下移動。100% 為 1:1；低值範圍提供更細緻的調整。"
 "Move your head forward / back. 100% is 1:1; the low end is deliberately finer.":
+  da: "Flyt dit hoved frem / tilbage. 100 % er 1:1; den nedre ende er bevidst finere."
   zh-tw: "頭部前後移動。100% 為 1:1；低值範圍提供更細緻的調整。"
 "Move your head left / right. 100% is 1:1; the low end is deliberately finer.":
+  da: "Flyt dit hoved til venstre / højre. 100 % er 1:1; den nedre ende er bevidst finere."
   zh-tw: "頭部左右移動。100% 為 1:1；低值範圍提供更細緻的調整。"
 "Move your head up / down. 100% is 1:1; the low end is deliberately finer.":
+  da: "Flyt dit hoved op / ned. 100 % er 1:1; den nedre ende er bevidst finere."
   zh-tw: "頭部上下移動。100% 為 1:1；低值範圍提供更細緻的調整。"
 "Reverse forward / back head movement":
+  da: "Vend hovedbevægelse frem / tilbage"
   zh-tw: "反轉頭部前後移動"
 "Reverse head tilt":
+  da: "Vend hovedhældning"
   zh-tw: "反轉頭部側傾"
 "Reverse left / right head movement":
+  da: "Vend hovedbevægelse venstre / højre"
   zh-tw: "反轉頭部左右移動"
 "Reverse left / right head rotation":
+  da: "Vend hoveddrejning venstre / højre"
   zh-tw: "反轉頭部水平旋轉"
 "Reverse up / down head movement":
+  da: "Vend hovedbevægelse op / ned"
   zh-tw: "反轉頭部上下移動"
 "Reverse up / down head rotation":
+  da: "Vend hoveddrejning op / ned"
   zh-tw: "反轉頭部俯仰"
 "Action: {value}":
+  da: "Handling: {value}"
   zh-tw: "動作：{value}"
 "Automatic ({})":
+  da: "Automatisk ({})"
   zh-tw: "自動（{}）"
 "Axis":
+  da: "Akse"
   zh-tw: "軸"
 "Button":
+  da: "Knap"
   zh-tw: "按鈕"
 "Button {}":
+  da: "Knap {}"
   zh-tw: "按鈕 {}"
 "Clear {}":
+  da: "Ryd {}"
   zh-tw: "清除 {}"
 "Connection":
+  da: "Forbindelse"
   zh-tw: "連線"
 "Controller":
+  da: "Controller"
   zh-tw: "控制器"
 "Controller configuration was not saved: {e}":
+  da: "Controllerkonfigurationen blev ikke gemt: {e}"
   zh-tw: "無法儲存控制器設定：{e}"
 "Controller mappings were not reloaded: {e}":
+  da: "Controllertildelingerne blev ikke genindlæst: {e}"
   zh-tw: "無法重新載入控制器對應設定：{e}"
 "Controller type":
+  da: "Controllertype"
   zh-tw: "控制器類型"
 "Device":
+  da: "Enhed"
   zh-tw: "裝置"
 "Disconnected":
+  da: "Frakoblet"
   zh-tw: "未連接"
 "Found by its name and USB ids":
+  da: "Fundet ved sit navn og USB-id'er"
   zh-tw: "依名稱與 USB 識別碼找到"
 "Function":
+  da: "Funktion"
   zh-tw: "功能"
 "Left/right adjusts in steps of 5 % (0-200 %)":
+  da: "Venstre/højre justerer i trin på 5 % (0-200 %)"
   zh-tw: "左右調整以 5% 為單位（0–200%）"
 "Unassigned":
+  da: "Utildelt"
   zh-tw: "未指定"
 "Default buttons":
+  da: "Standardknapper"
   zh-tw: "預設按鈕"
 "Left stick / triggers":
+  da: "Venstre stik / aftrækkere"
   zh-tw: "左搖桿／扳機"
 "Left stick steers, left trigger brakes, right trigger is the throttle":
+  da: "Venstre stik styrer, venstre aftrækker bremser, højre aftrækker er speederen"
   zh-tw: "左搖桿轉向、左扳機煞車、右扳機油門"
 "Steer / brake, throttle":
+  da: "Styr / bremse, speeder"
   zh-tw: "轉向／煞車、油門"
 "No Xbox or PlayStation pad found":
+  da: "Ingen Xbox- eller PlayStation-pad fundet"
   zh-tw: "找不到 Xbox 或 PlayStation 手把"
 "Connect a pad, or choose its type below to see the button names":
+  da: "Tilslut en pad, eller vælg dens type nedenfor for at se knappernes navne"
   zh-tw: "連接手把，或在下方選擇類型以查看按鈕名稱"
 "Names the buttons below for the pad you hold: Automatic, Xbox, PlayStation 4 or PlayStation 5":
+  da: "Navngiver knapperne nedenfor for den pad, du holder: Automatisk, Xbox, PlayStation 4 eller PlayStation 5"
   zh-tw: "依手把類型顯示下方按鈕名稱：自動、Xbox、PlayStation 4 或 PlayStation 5"
 "A gamepad with no buttons set up drives the cabin with these; set up its buttons under Devices to use your own":
+  da: "En gamepad uden opsatte knapper kører førerrummet med disse; sæt dens knapper op under Enheder for at bruge dine egne"
   zh-tw: "尚未設定按鈕的手把會以這些按鈕操作駕駛室；可在「裝置」中自訂按鈕"
 "Choose a date":
   de: "Datum wählen"
+  da: "Vælg en dato"
   ru: "Выбрать дату"
   fr: "Choisir une date"
   uk: "Вибрати дату"
@@ -61625,6 +62031,7 @@ _version: 2
   sv: "Välj ett datum"
 "Previous month":
   de: "Vorheriger Monat"
+  da: "Forrige måned"
   ru: "Предыдущий месяц"
   fr: "Mois précédent"
   uk: "Попередній місяць"
@@ -61653,6 +62060,7 @@ _version: 2
   sv: "Föregående månad"
 "Next month":
   de: "Nächster Monat"
+  da: "Næste måned"
   ru: "Следующий месяц"
   fr: "Mois suivant"
   uk: "Наступний місяць"
@@ -61681,6 +62089,7 @@ _version: 2
   sv: "Nästa månad"
 "The mouse wheel turns the hours (left) or the minutes (right)":
   de: "Das Mausrad stellt die Stunden (links) oder die Minuten (rechts)"
+  da: "Musehjulet drejer timerne (venstre) eller minutterne (højre)"
   ru: "Колесо мыши меняет часы (слева) или минуты (справа)"
   fr: "La molette de la souris règle les heures (à gauche) ou les minutes (à droite)"
   uk: "Коліщатко миші змінює години (ліворуч) або хвилини (праворуч)"
@@ -61709,6 +62118,7 @@ _version: 2
   sv: "Mushjulet ändrar timmarna (vänster) eller minuterna (höger)"
 "The launcher is resting":
   de: "Der Launcher ruht"
+  da: "Launcheren hviler"
   ru: "Лаунчер отдыхает"
   fr: "Le lanceur se repose"
   uk: "Лаунчер відпочиває"
@@ -61737,6 +62147,7 @@ _version: 2
   sv: "Startprogrammet vilar"
 "A game is running: the launcher leaves the graphics card to it and wakes up when the game ends.":
   de: "Ein Spiel läuft: Der Launcher überlässt ihm die Grafikkarte und wacht auf, wenn das Spiel endet."
+  da: "Et spil kører: launcheren overlader grafikkortet til det og vågner, når spillet slutter."
   ru: "Идёт игра: лаунчер отдаёт ей видеокарту и проснётся, когда игра закончится."
   fr: "Une partie est en cours : le lanceur lui laisse la carte graphique et se réveille à la fin de la partie."
   uk: "Триває гра: лаунчер віддає їй відеокарту й прокинеться, коли гра завершиться."
@@ -61765,6 +62176,7 @@ _version: 2
   sv: "Ett spel körs: startprogrammet lämnar grafikkortet åt det och vaknar när spelet slutar."
 "This can be turned off in Settings (The launcher rests while a game runs).":
   de: "Das lässt sich in den Einstellungen abschalten (Der Launcher ruht, während ein Spiel läuft)."
+  da: "Dette kan slås fra i Indstillinger (Launcheren hviler, mens et spil kører)."
   ru: "Это можно выключить в настройках («Лаунчер отдыхает, пока идёт игра»)."
   fr: "Cela se désactive dans les Paramètres (Le lanceur se repose pendant une partie)."
   uk: "Це можна вимкнути в налаштуваннях («Лаунчер відпочиває, поки триває гра»)."
@@ -61793,6 +62205,7 @@ _version: 2
   sv: "Detta kan stängas av i Inställningar (Startprogrammet vilar medan ett spel körs)."
 "Wake up":
   de: "Aufwecken"
+  da: "Væk op"
   ru: "Разбудить"
   fr: "Réveiller"
   uk: "Розбудити"
@@ -61821,6 +62234,7 @@ _version: 2
   sv: "Väck"
 "Open / close the quick menu (OMSI: Alt)":
   de: "Schnellmenü öffnen / schließen (OMSI: Alt)"
+  da: "Åbn / luk hurtigmenuen (OMSI: Alt)"
   ru: "Открыть / закрыть быстрое меню (OMSI: Alt)"
   fr: "Ouvrir / fermer le menu rapide (OMSI : Alt)"
   uk: "Відкрити / закрити швидке меню (OMSI: Alt)"
@@ -61849,6 +62263,7 @@ _version: 2
   sv: "Öppna / stäng snabbmenyn (OMSI: Alt)"
 "Speed limit":
   de: "Tempolimit"
+  da: "Hastighedsgrænse"
   ru: "Ограничение скорости"
   fr: "Limite de vitesse"
   uk: "Обмеження швидкості"
@@ -61877,6 +62292,7 @@ _version: 2
   sv: "Hastighetsgräns"
 "Stop requested":
   de: "Haltewunsch"
+  da: "Stop ønsket"
   ru: "Запрос остановки"
   fr: "Arrêt demandé"
   uk: "Запит на зупинку"
@@ -61905,6 +62321,7 @@ _version: 2
   sv: "Stoppsignal"
 "Drive it on that day":
   de: "An diesem Tag fahren"
+  da: "Kør den på den dag"
   ru: "Ехать в этот день"
   fr: "La conduire ce jour-là"
   uk: "Їхати в цей день"
@@ -61933,6 +62350,7 @@ _version: 2
   sv: "Kör den den dagen"
 "Choose from the depot file":
   de: "Aus der Hof-Datei wählen"
+  da: "Vælg fra depotfilen"
   ru: "Выбрать из файла депо"
   fr: "Choisir dans le fichier du dépôt"
   uk: "Вибрати з файлу депо"
@@ -61961,6 +62379,7 @@ _version: 2
   sv: "Välj ur depåfilen"
 "Announcement (Q)":
   de: "Ansage (Q)"
+  da: "Meddelelse (Q)"
   ru: "Объявление (Q)"
   fr: "Annonce (Q)"
   uk: "Оголошення (Q)"
@@ -61989,6 +62408,7 @@ _version: 2
   sv: "Utrop (Q)"
 "Drive another vehicle":
   de: "Ein anderes Fahrzeug fahren"
+  da: "Kør et andet køretøj"
   ru: "Сесть в другой автобус"
   fr: "Conduire un autre véhicule"
   uk: "Сісти в інший автобус"
@@ -62017,6 +62437,7 @@ _version: 2
   sv: "Kör ett annat fordon"
 "Drive another vehicle...":
   de: "Ein anderes Fahrzeug fahren..."
+  da: "Kør et andet køretøj..."
   ru: "Сесть в другой автобус..."
   fr: "Conduire un autre véhicule..."
   uk: "Сісти в інший автобус..."
@@ -62045,6 +62466,7 @@ _version: 2
   sv: "Kör ett annat fordon..."
 "Choose which of the vehicles standing in the world to drive":
   de: "Wähle, welches der Fahrzeuge in der Welt du fährst"
+  da: "Vælg, hvilket af køretøjerne i verdenen du vil køre"
   ru: "Выберите, каким из стоящих в мире автобусов управлять"
   fr: "Choisir lequel des véhicules présents dans le monde conduire"
   uk: "Виберіть, яким із автобусів у світі керувати"
@@ -62073,6 +62495,7 @@ _version: 2
   sv: "Välj vilket av fordonen i världen du kör"
 "Next departures from {time}":
   de: "Nächste Abfahrten ab {time}"
+  da: "Næste afgange fra kl. {time}"
   ru: "Ближайшие отправления с {time}"
   fr: "Prochains départs à partir de {time}"
   uk: "Найближчі відправлення з {time}"
@@ -62101,6 +62524,7 @@ _version: 2
   sv: "Nästa avgångar från {time}"
 "Buses the timetable gives this tour:":
   de: "Busse, die der Fahrplan diesem Umlauf gibt:"
+  da: "Busser, køreplanen giver denne tur:"
   ru: "Автобусы, которые расписание даёт этому выходу:"
   fr: "Bus que l'horaire donne à ce service :"
   uk: "Автобуси, які розклад дає цьому виходу:"
@@ -62129,6 +62553,7 @@ _version: 2
   sv: "Bussar som tidtabellen ger denna tur:"
 "Add a note":
   de: "Notiz hinzufügen"
+  da: "Tilføj en note"
   ru: "Добавить заметку"
   fr: "Ajouter une note"
   uk: "Додати нотатку"
@@ -62157,6 +62582,7 @@ _version: 2
   sv: "Lägg till en anteckning"
 "Your own note, kept on this computer":
   de: "Deine eigene Notiz, auf diesem Computer gespeichert"
+  da: "Din egen note, gemt på denne computer"
   ru: "Ваша заметка, хранится на этом компьютере"
   fr: "Votre note personnelle, gardée sur cet ordinateur"
   uk: "Ваша нотатка, зберігається на цьому комп'ютері"
@@ -62185,6 +62611,7 @@ _version: 2
   sv: "Din egen anteckning, sparad på den här datorn"
 "People at once":
   de: "Menschen gleichzeitig"
+  da: "Mennesker på én gang"
   ru: "Людей одновременно"
   fr: "Personnes à la fois"
   uk: "Людей одночасно"
@@ -62213,6 +62640,7 @@ _version: 2
   sv: "Människor samtidigt"
 "Pedal keys speed (100 % = OMSI)":
   de: "Tempo der Pedaltasten (100 % = OMSI)"
+  da: "Pedaltasternes hastighed (100 % = OMSI)"
   ru: "Скорость клавиш педалей (100 % = OMSI)"
   fr: "Vitesse des touches de pédales (100 % = OMSI)"
   uk: "Швидкість клавіш педалей (100 % = OMSI)"
@@ -62241,6 +62669,7 @@ _version: 2
   sv: "Pedaltangenternas hastighet (100 % = OMSI)"
 "Free camera keys on/off (off: they work the bus)":
   de: "Tasten der freien Kamera ein/aus (aus: sie bedienen den Bus)"
+  da: "Taster til frit kamera til/fra (fra: de betjener bussen)"
   ru: "Клавиши свободной камеры вкл/выкл (выкл: они управляют автобусом)"
   fr: "Touches de la caméra libre oui/non (non : elles commandent le bus)"
   uk: "Клавіші вільної камери увімк/вимк (вимк: вони керують автобусом)"
@@ -62269,6 +62698,7 @@ _version: 2
   sv: "Fri kamera-tangenter på/av (av: de styr bussen)"
 "Radio: next station":
   de: "Radio: nächster Sender"
+  da: "Radio: næste station"
   ru: "Радио: следующая станция"
   fr: "Radio : station suivante"
   uk: "Радіо: наступна станція"
@@ -62297,6 +62727,7 @@ _version: 2
   sv: "Radio: nästa station"
 "Radio: previous station":
   de: "Radio: vorheriger Sender"
+  da: "Radio: forrige station"
   ru: "Радио: предыдущая станция"
   fr: "Radio : station précédente"
   uk: "Радіо: попередня станція"
@@ -62325,6 +62756,7 @@ _version: 2
   sv: "Radio: föregående station"
 "Radio: louder":
   de: "Radio: lauter"
+  da: "Radio: højere"
   ru: "Радио: громче"
   fr: "Radio : plus fort"
   uk: "Радіо: гучніше"
@@ -62353,6 +62785,7 @@ _version: 2
   sv: "Radio: högre"
 "Radio: quieter":
   de: "Radio: leiser"
+  da: "Radio: lavere"
   ru: "Радио: тише"
   fr: "Radio : moins fort"
   uk: "Радіо: тихіше"
@@ -62381,6 +62814,7 @@ _version: 2
   sv: "Radio: lägre"
 "Gear N (automatic gearbox)":
   de: "Gang N (Automatikgetriebe)"
+  da: "Gear N (automatgear)"
   ru: "Передача N (автоматическая КПП)"
   fr: "Rapport N (boîte automatique)"
   uk: "Передача N (автоматична КПП)"
@@ -62409,6 +62843,7 @@ _version: 2
   sv: "Växel N (automatlåda)"
 "Gear N (manual gearbox)":
   de: "Gang N (Schaltgetriebe)"
+  da: "Gear N (manuel gearkasse)"
   ru: "Передача N (механическая КПП)"
   fr: "Rapport N (boîte manuelle)"
   uk: "Передача N (механічна КПП)"
@@ -62437,6 +62872,7 @@ _version: 2
   sv: "Växel N (manuell växellåda)"
 "Gear R (automatic gearbox)":
   de: "Gang R (Automatikgetriebe)"
+  da: "Gear R (automatgear)"
   ru: "Передача R (автоматическая КПП)"
   fr: "Rapport R (boîte automatique)"
   uk: "Передача R (автоматична КПП)"
@@ -62465,6 +62901,7 @@ _version: 2
   sv: "Växel R (automatlåda)"
 "Gear R (manual gearbox)":
   de: "Gang R (Schaltgetriebe)"
+  da: "Gear R (manuel gearkasse)"
   ru: "Передача R (механическая КПП)"
   fr: "Rapport R (boîte manuelle)"
   uk: "Передача R (механічна КПП)"
@@ -62492,38 +62929,54 @@ _version: 2
   ca: "Marxa R (canvi manual)"
   sv: "Växel R (manuell växellåda)"
 "Loaded without errors: {name}":
+  da: "Indlæst uden fejl: {name}"
   sr: "Učitano bez grešaka: {name}"
 "Model test":
+  da: "Modeltest"
   sr: "Test modela"
 "No game runs. Start one on the Drive page with the bus you work on; its warnings appear here as they happen.":
+  da: "Intet spil kører. Start et på siden Kør med den bus, du arbejder på; dens advarsler vises her, efterhånden som de opstår."
   sr: "Nijedna igra ne radi. Pokreni je na stranici Vožnja sa autobusom na kom radiš; upozorenja se pojavljuju ovde kako nastaju."
 "Nothing to report.":
+  da: "Intet at rapportere."
   sr: "Nema šta da se prijavi."
 "Nothing yet from the game ({pid}).":
+  da: "Endnu intet fra spillet ({pid})."
   sr: "Još ništa iz igre ({pid})."
 "The vehicle did not load cleanly: {n} errors, {w} warnings":
+  da: "Køretøjet blev ikke indlæst rent: {n} fejl, {w} advarsler"
   sr: "Vozilo nije učitano čisto: {n} grešaka, {w} upozorenja"
 "log lines":
+  da: "loglinjer"
   sr: "linija loga"
 "materials":
+  da: "materialer"
   sr: "materijali"
 "meshes":
+  da: "meshes"
   sr: "mreže"
 "missing":
+  da: "mangler"
   sr: "nedostaje"
 "paint schemes":
+  da: "malingsskemaer"
   sr: "šeme"
 "parts":
+  da: "dele"
   sr: "delovi"
 "script variables":
+  da: "scriptvariabler"
   sr: "promenljive skripti"
 "textures":
+  da: "teksturer"
   sr: "teksture"
 "warnings":
+  da: "advarsler"
   sr: "upozorenja"
 "Launcher layout":
   ca: "Disposició del launcher"
   de: "Aufbau des Launchers"
+  da: "Launcherlayout"
   fr: "Disposition du lanceur"
   ru: "Вид лаунчера"
   uk: "Вигляд лаунчера"
@@ -62552,6 +63005,7 @@ _version: 2
 "Classic: in steps, as before":
   ca: "Clàssica: per passos, com abans"
   de: "Klassisch: in Schritten, wie früher"
+  da: "Klassisk: i trin, som før"
   fr: "Classique : par étapes, comme avant"
   ru: "Классический: по шагам, как раньше"
   uk: "Класичний: покроково, як раніше"
@@ -62580,6 +63034,7 @@ _version: 2
 "Modern: everything on one page":
   ca: "Moderna: tot en una sola pàgina"
   de: "Modern: alles auf einer Seite"
+  da: "Moderne: alt på én side"
   fr: "Moderne : tout sur une seule page"
   ru: "Современный: всё на одной странице"
   uk: "Сучасний: усе на одній сторінці"
@@ -62608,6 +63063,7 @@ _version: 2
 "Grows with the window; this sets how big it is":
   ca: "Creix amb la finestra; aquí tries com de gran és"
   de: "Wächst mit dem Fenster mit; hier legst du fest, wie groß er ist"
+  da: "Vokser med vinduet; dette angiver, hvor stort det er"
   fr: "Grandit avec la fenêtre ; ceci règle sa taille"
   ru: "Растёт вместе с окном; здесь задаётся его размер"
   uk: "Зростає разом із вікном; тут задається його розмір"
@@ -62636,6 +63092,7 @@ _version: 2
 "Smaller":
   ca: "Més petit"
   de: "Kleiner"
+  da: "Mindre"
   fr: "Plus petit"
   ru: "Меньше"
   uk: "Менше"
@@ -62664,6 +63121,7 @@ _version: 2
 "Larger":
   ca: "Més gran"
   de: "Größer"
+  da: "Større"
   fr: "Plus grand"
   ru: "Больше"
   uk: "Більше"
@@ -62692,6 +63150,7 @@ _version: 2
 "Largest":
   ca: "Màxim"
   de: "Sehr groß"
+  da: "Størst"
   fr: "Très grand"
   ru: "Самое большое"
   uk: "Найбільше"
@@ -62721,6 +63180,7 @@ _version: 2
 # mode's key in the hints at its foot
 "This trip":
   de: "Diese Fahrt"
+  da: "Denne rejse"
   fr: "Ce trajet"
   ru: "Этот рейс"
   uk: "Цей рейс"
@@ -62749,6 +63209,7 @@ _version: 2
   sv: "Den här turen"
 "Photo":
   de: "Foto"
+  da: "Foto"
   fr: "Photo"
   ru: "Фото"
   uk: "Фото"
@@ -62779,6 +63240,7 @@ _version: 2
   ca: "Posant el vehicle en servei ... Un plugin et deixa teclejar l'IBIS a tu."
   ru: "Подготовка автобуса к работе ... Плагин оставляет ввод IBIS вам."
   de: "Fahrzeug wird in Betrieb genommen ... Ein Plugin überlässt dir das Eintippen ins IBIS."
+  da: "Sætter køretøjet i drift ... Et plugin overlader IBIS til dig at skrive."
   fr: "Mise en service du véhicule ... Un plugin vous laisse saisir l'IBIS vous-même."
   uk: "Виведення транспорту на маршрут ... Плагін залишає введення IBIS вам."
   be: "Вывядзенне транспарту на маршрут ... Плагін пакідае ўвод IBIS вам."
@@ -62807,6 +63269,7 @@ _version: 2
 
 "Start with a comfortable cabin temperature":
   de: "Mit angenehmer Innenraumtemperatur starten"
+  da: "Start med en behagelig førerrumstemperatur"
   fr: "Démarrer avec une température intérieure confortable"
   ru: "Начинать с комфортной температурой в салоне"
   sr: "Počni sa prijatnom temperaturom u kabini"
@@ -62838,6 +63301,7 @@ _version: 2
 
 "Sets the cabin to {temperature} when starting a drive.":
   de: "Setzt die Innenraumtemperatur zu Fahrtbeginn auf {temperature}."
+  da: "Indstiller førerrummet til {temperature}, når en kørsel starter."
   fr: "Règle la température intérieure à {temperature} au début de la conduite."
   ru: "Устанавливает в салоне {temperature} в начале поездки."
   sr: "Postavlja temperaturu u kabini na {temperature} na početku vožnje."
@@ -62874,6 +63338,7 @@ _version: 2
   ca: "Senyal visual opcional; només funciona amb animacions naturals compatibles"
   cs: "Volitelné vizuální znamení; funguje pouze s podporovanými přirozenými animacemi"
   de: "Optionales sichtbares Handzeichen; funktioniert nur mit unterstützten natürlichen Animationen"
+  da: "Valgfri visuel tilkaldelse; kun virksom med understøttede naturlige animationer"
   es: "Señal visual opcional; solo funciona con animaciones naturales compatibles"
   fr: "Signe visuel facultatif ; fonctionne uniquement avec les animations naturelles compatibles"
   hi: "वैकल्पिक दृश्य संकेत; केवल समर्थित प्राकृतिक एनिमेशन के साथ काम करता है"
@@ -62905,6 +63370,7 @@ _version: 2
   ca: "Els passatgers fan senyals als autobusos que s'acosten"
   cs: "Cestující dávají znamení přijíždějícím autobusům"
   de: "Fahrgäste geben herannahenden Bussen ein Handzeichen"
+  da: "Passagerer giver tegn til busser, der nærmer sig"
   es: "Los pasajeros hacen señas a los autobuses que se acercan"
   fr: "Les passagers font signe aux bus qui approchent"
   hi: "यात्री पास आती बसों को हाथ देकर रोकने का संकेत देते हैं"
@@ -62933,6 +63399,7 @@ _version: 2
   ca: "Mirada breu a un autobús compatible que arriba ple; abaixen el braç sense canviar l'embarcament"
   ru: "Краткий взгляд на приближающийся полный автобус нужного маршрута; рука опускается без изменения посадки"
   de: "Kurzer Blick auf ankommenden passenden vollen Bus; der Arm wird gesenkt, ohne das Einsteigen zu ändern"
+  da: "Valgfri visuel anerkendelse, når en nærmende kompatibel bus er fyldt til sin kapacitet"
   fr: "Bref regard vers un bus compatible plein qui approche ; le bras s'abaisse sans modifier l'embarquement"
   uk: "Короткий погляд на заповнений автобус потрібного маршруту; руку опускають без змін посадки"
   be: "Кароткі погляд на поўны аўтобус патрэбнага маршруту; рука апускаецца без змены пасадкі"
@@ -62964,6 +63431,7 @@ _version: 2
   ca: "Els passatgers reaccionen als autobusos plens"
   ru: "Пассажиры реагируют на полные автобусы"
   de: "Fahrgäste reagieren auf volle Busse"
+  da: "Passagerer reagerer på fulde busser"
   fr: "Les passagers réagissent aux bus complets"
   uk: "Пасажири реагують на переповнені автобуси"
   be: "Пасажыры рэагуюць на поўныя аўтобусы"
@@ -62999,6 +63467,7 @@ _version: 2
   sr: "Baterijska lampa uključena"
   ru: "Фонарик включён"
   de: "Taschenlampe an"
+  da: "Lommelygte tændt"
   pt-pt: "Lanterna ligada"
   ka: "ფანარი ჩართულია"
   sv: "Ficklampan på"
@@ -63019,6 +63488,7 @@ _version: 2
   sr: "Baterijska lampa isključena"
   ru: "Фонарик выключен"
   de: "Taschenlampe aus"
+  da: "Lommelygte slukket"
   pt-pt: "Lanterna desligada"
   ka: "ფანარი გამორთულია"
   sv: "Ficklampan av"
