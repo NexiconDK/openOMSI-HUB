@@ -110,7 +110,13 @@ pub fn load(data: &Path, id: &str) -> Result<Company> {
     let path = path_of(data, id);
     let text = std::fs::read_to_string(&path).with_context(|| format!("cannot read {}", path.display()))?;
     let c: Company = serde_json::from_str(&text).with_context(|| format!("{} is not a company", path.display()))?;
-    Ok(migrate(c))
+    let mut c = migrate(c);
+    // (a company of a server plays at the server's price level, wherever it is loaded - its pages,
+    // its process, the market's pricing: 3 November 2026)
+    if c.online.on_server {
+        c.online.price_level = Some(super::server_fines::price_level_of(data));
+    }
+    Ok(c)
 }
 
 /// The companies of a driver (all of them for an empty name), by name.

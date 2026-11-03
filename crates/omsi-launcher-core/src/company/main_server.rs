@@ -302,6 +302,14 @@ impl MainCfg {
             }
             text.push_str(super::server_fines::FINES_CFG);
         }
+        // (3 November 2026) the price level
+        if !text.lines().any(|l| l.trim_start().starts_with("price_level")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(super::server_fines::PRICE_CFG.as_bytes());
+            }
+            text.push_str(super::server_fines::PRICE_CFG);
+        }
         // (3 November 2026) the tenders' rules
         if !text.lines().any(|l| l.trim_start().starts_with("tender_low_share")) {
             use std::io::Write;
@@ -734,7 +742,9 @@ impl MainServer {
                     }
                 };
                 let companies: Vec<super::model::Company> = company_ids(&data).into_iter().filter_map(|id| store::load(&data, &id).ok()).filter(|c| super::shared_tenders::key_of(&c.map) == key).collect();
-                let template = super::shared_tenders::template(&map, &date, &companies);
+                let mut template = super::shared_tenders::template(&map, &date, &companies);
+                // (the authority prices the work at the server's price level - 3 November 2026)
+                template.online.price_level = Some(super::server_fines::price_level_of(&data));
                 // (1 November 2026: its chrono events - their own lines out to tender for their days)
                 let dir = map_dir_of(&root, &map);
                 let events = super::shared_tenders::map_events(&dir, &date, &mut |day: &str| crate::lines_in_map_dir(&dir, day).map_err(|e| warn!("{}: its timetable of {day} not read for an event's tenders: {e:#}", map_name(&map))).ok());

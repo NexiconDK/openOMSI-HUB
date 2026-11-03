@@ -141,6 +141,19 @@ pub fn of_folder(data: &std::path::Path) -> Fines {
     Fines::of(&settings(data))
 }
 
+/// (3 November 2026) The price level of the main server's folder `data` (`price_level`, a
+/// country's key: `econ_uk::price_level`), empty when its settings name none.
+pub fn price_level_of(data: &std::path::Path) -> String {
+    settings(data).get("price_level").map(|v| v.trim().to_lowercase()).unwrap_or_default()
+}
+
+/// The price level's part of the settings, added to a `company-server.cfg` written before it.
+pub const PRICE_CFG: &str = "
+# the price level of the companies and the tenders: dk (Denmark's, all in: a timetable hour at
+# about 1,000 kr.), another country's key (de, nl, gb, ...), or empty for each company's own
+price_level = dk
+";
+
 /// The fines' part of the settings, added to a `company-server.cfg` written before it.
 pub const FINES_CFG: &str = "
 # the authority's fines on a line of a contract won in the map's tenders (Danish kroner; each
@@ -180,6 +193,30 @@ mod tests {
         // (2 500 kr in the books' euro cents, and back)
         let c = Fines::cents(2500.0);
         assert!((Currency::Dkk.units(c as f64) - 2500.0).abs() < 0.5, "{c}");
+    }
+
+    /// (3 November 2026) The server's price level: read from its settings, given to each of its
+    /// companies as it is loaded - wherever, its pages too - and not kept in the company's file; a
+    /// company of a player's own computer keeps its country's.
+    #[test]
+    fn the_price_level_of_the_settings_reaches_the_server_companies() {
+        let data = std::env::temp_dir().join(format!("omsihub-price-level-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&data);
+        std::fs::create_dir_all(&data).unwrap();
+        assert_eq!(price_level_of(&data), "", "no settings: none");
+        std::fs::write(data.join(super::super::main_server::CFG_FILE), "name = X\nprice_level = DK\n").unwrap();
+        assert_eq!(price_level_of(&data), "dk");
+        let mut c = super::super::found(&super::super::Founding { name: "Level".into(), date: "2024-03-04".into(), ..Default::default() }, "x");
+        c.online.on_server = true;
+        super::super::store::save(&data, &c).unwrap();
+        let loaded = super::super::store::load(&data, &c.id).unwrap();
+        assert_eq!(loaded.online.price_level.as_deref(), Some("dk"));
+        assert_eq!(super::super::econ_uk::country_of(&loaded).wages, 2.8);
+        assert!(!std::fs::read_to_string(super::super::store::path_of(&data, &c.id)).unwrap().contains("price_level"), "not kept");
+        c.online.on_server = false;
+        super::super::store::save(&data, &c).unwrap();
+        assert_eq!(super::super::store::load(&data, &c.id).unwrap().online.price_level, None, "a player's own");
+        let _ = std::fs::remove_dir_all(&data);
     }
 
     /// A player's trip's departures: more than a minute early, more than 15 minutes late - not

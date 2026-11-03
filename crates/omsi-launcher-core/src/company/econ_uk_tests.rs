@@ -294,3 +294,40 @@ fn an_old_save_loads_with_its_wages_moved_to_the_new_market() {
     let r = day::close_day(&mut new, tours_of(&date), &[]);
     assert!(r.paid_hours > 0.0, "{} {} {} {:?}", r.tours, r.covered, r.short_drivers, r.drops.first());
 }
+
+/// (NexiconDK, 3 November 2026) A server's companies at Denmark's price level (`price_level`):
+/// the authority lets a diesel city line at 800 to 1,200 kr. a timetable hour as Danish tenders
+/// do - about twice the level of the factors of `COUNTRIES` -, a line whose buses stand more of the
+/// day dearer an hour; in Realistic the company's own cost price is about the authority's, in
+/// Normal below it. A company not of a server keeps its own country's, and an unknown key is none.
+#[test]
+fn the_danish_price_level_lets_a_timetable_hour_at_danish_prices() {
+    use crate::company::bus_contracts::{self as bc, Kind, Work};
+    let kr = |cents: f64, w: &Work| cents / 100.0 * Currency::Dkk.rate() / (w.hours * w.days as f64);
+    let at = |mode: GameMode, level: Option<&str>| {
+        let mut c = found(&Founding { name: "DK".into(), date: "2024-03-04".into(), game_mode: mode, map: "maps/Ahlheim/global.cfg".into(), ..Default::default() }, "x");
+        c.online.price_level = level.map(str::to_string);
+        c
+    };
+    // (ten buses, nine and five timetable hours each a day, 18 km an hour, 340 days)
+    let busy = Work { hours: 90.0, km: 1620.0, journeys: 200, buses: 10, days: 340 };
+    let standing = Work { hours: 50.0, km: 900.0, journeys: 120, buses: 10, days: 340 };
+    for mode in [GameMode::Realistic, GameMode::Normal] {
+        let c = at(mode, Some("dk"));
+        let (a, b) = (kr(bc::price_of(&c, &busy, Kind::Gross, 3.0), &busy), kr(bc::price_of(&c, &standing, Kind::Gross, 3.0), &standing));
+        assert!((800.0..=1200.0).contains(&a) && (800.0..=1200.0).contains(&b) && b > a, "{mode:?}: {a:.0} and {b:.0} kr. an hour");
+        let own = kr(bc::advice(&c, &busy, Kind::Gross, 3.0), &busy);
+        match mode {
+            GameMode::Realistic => assert!((own / a - 1.0).abs() < 0.05, "Realistic: {own:.0} against {a:.0}"),
+            _ => assert!(own < a * 0.85, "Normal: {own:.0} against {a:.0}"),
+        }
+        // (the map's own country's: about half of it)
+        let plain = kr(bc::price_of(&at(mode, None), &busy, Kind::Gross, 3.0), &busy);
+        assert!(plain < a * 0.6, "{mode:?}: {plain:.0} against {a:.0}");
+    }
+    assert_eq!(price_level("DK").map(|x| x.wages), Some(2.8));
+    assert_eq!(price_level("de").map(|x| x.key), Some("de"));
+    assert!(price_level("").is_none() && price_level("xx").is_none());
+    let unknown = at(GameMode::Realistic, Some("xx"));
+    assert_eq!(country_of(&unknown).key, country_of(&at(GameMode::Realistic, None)).key);
+}

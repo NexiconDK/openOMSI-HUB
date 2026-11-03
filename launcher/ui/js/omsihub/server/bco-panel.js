@@ -43,6 +43,7 @@ export const BCO_FIELDS = [
   ['tunnel', 'Cloudflare tunnel', BOOL, 'An https address for the door, the companies and the worlds: players anywhere'],
   ['logins', 'Ways to log in', [['account steam', 'Omsi-Hub account and Steam'], ['account', 'Omsi-Hub account only'], ['steam', 'Steam only']]],
   ['Money'],
+  ['price_level', 'Price level', [['dk', 'Denmark: a timetable hour about 1,000 kr.'], ['', "Each company's own country"], ['de', 'Germany'], ['nl', 'Netherlands'], ['se', 'Sweden'], ['no', 'Norway'], ['gb', 'United Kingdom']], "The companies' wages, fuel and buses, and the authority's estimate in the tenders"],
   ['start_money', 'A new player starts with', 'number', 'Whole units'],
   ['found_price', 'Founding a company costs', 'number', "Of the player's own money"],
   ['depot_price', 'A depot on another map', 'number', "Of the company's money"],
@@ -82,7 +83,7 @@ export const BCO_FIELDS = [
 export const BCO_DEFAULTS = {
   name: 'Bus Company Online', real_time: '1', time: '06:00', first_port: '27015', max_worlds: '4', world_idle: '10', keep_worlds: '1', max_memory: '85', max_cpu: '90',
   traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
-  start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
+  price_level: 'dk', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
   found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', fine_dropped_minute: '20.83',
   fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',

@@ -169,8 +169,35 @@ pub fn country(key: &str) -> &'static Country {
     COUNTRIES.iter().find(|x| x.key.eq_ignore_ascii_case(key.trim())).unwrap_or(&COUNTRIES[0])
 }
 
-/// The country a company plays in (a company of before the countries: its map's).
+/// (NexiconDK, Bus Company Online, 3 November 2026) The price levels a server's companies may play
+/// at (`price_level` of its `company-server.cfg`) where a country's own factors above fall short of
+/// what its operators really pay: Denmark's, all in. Danish tenders let a timetable hour at 900 to
+/// 1,200 kr. (Midttrafik's 71st tender about 917 kr. for town and local lines, its 72nd 1,200.51 kr.
+/// with electric buses); on the UK's ways of working the factors of `COUNTRIES` priced it at about
+/// 520 kr. What the Danish operator pays more: a driver costs about 340 kr. an hour paid (the
+/// wage, pension, holiday pay and the supplements for evenings and weekends: `wages` 2.8 against
+/// the UK's all-in hour), a diesel city bus about 2.5 million kr., the depot, the workshop and the
+/// office about 70 % more (`general` 1.7); diesel and electricity about the UK's. A diesel city
+/// line of nine timetable hours a bus a day is then let at about 830 kr. an hour (Normal: 950 kr.),
+/// one with its buses standing more of the day at about 1,000 kr.
+pub const PRICE_LEVELS: [Country; 1] = [land("dk", 2.80, 1.00, 0.95, 1.25, 1.70)];
+
+/// The price level of a server's settings by its key: Denmark's own (`PRICE_LEVELS`), or another
+/// country's factors; an unknown key or none: None (each company its own country's).
+pub fn price_level(key: &str) -> Option<&'static Country> {
+    let key = key.trim();
+    if key.is_empty() {
+        return None;
+    }
+    PRICE_LEVELS.iter().chain(COUNTRIES.iter()).find(|x| x.key.eq_ignore_ascii_case(key))
+}
+
+/// The country a company plays in (a company of before the countries: its map's); a company of a
+/// server at the server's price level, when its settings name one (`online::Online::price_level`).
 pub fn country_of(c: &Company) -> &'static Country {
+    if let Some(land) = c.online.price_level.as_deref().and_then(price_level) {
+        return land;
+    }
     country(super::names::country_of(c))
 }
 

@@ -81,6 +81,11 @@ pub struct Online {
     /// settings have them (`server_fines`; set by its process, not kept: None elsewhere).
     #[serde(skip)]
     pub fines: Option<super::server_fines::Fines>,
+    /// (NexiconDK, 3 November 2026) The price level of the server's settings (`price_level`, a
+    /// country's key - `econ_uk::price_level`; empty: the company's own country's), set by its
+    /// process, not kept: None elsewhere.
+    #[serde(skip)]
+    pub price_level: Option<String>,
     /// (Decided 25 October 2026) The buses of the lines changing company: offered, answered,
     /// sold, taken over (`takeover`).
     #[serde(default)]
@@ -138,7 +143,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
     }
 }
 
@@ -639,6 +644,10 @@ impl Host {
         // (the authority's fines of the server's settings: its contracts' - `server_fines`)
         if c.online.on_server && c.online.fines.is_none() {
             c.online.fines = Some(super::server_fines::of_folder(&self.data));
+        }
+        // (and the server's price level: its companies' wages, fuel, buses and contracts - 3 November 2026)
+        if c.online.on_server && c.online.price_level.is_none() {
+            c.online.price_level = Some(super::server_fines::price_level_of(&self.data));
         }
         // (phase 6 step 3: a depot's big purchases, its head office's to approve)
         if c.online.on_server && c.online.big_purchase.is_none() {

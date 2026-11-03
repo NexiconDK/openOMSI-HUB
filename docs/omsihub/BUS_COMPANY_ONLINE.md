@@ -1227,6 +1227,31 @@ can:
 Tested: `shared_tenders::tests::the_admins_rules_times_caps_direct_awards_and_contracts`,
 `server_admin::tests::a_tender_moved_called_off_and_opened`.
 
+### Danish prices (3 November 2026)
+
+Decided: the server plays at Danish price levels. The tenders let a timetable hour at about 350 to
+510 kr., where Danish tenders let it at 900 to 1,200 kr. (Midttrafik's 71st tender about 917 kr. for
+town and local lines, its 72nd 1,200.51 kr. with electric buses): the economy's country factors
+scale a UK operator's costs, and Denmark's (`dk`, wages 1.65) left out what a Danish operator pays
+more - the driver's pension, holiday pay and supplements, dearer depots and offices.
+
+- `company-server.cfg` has `price_level` (the admin panel's "Price level" under Money): `dk` by
+  default, another country's key, or empty for each company's own country.
+- `econ_uk::PRICE_LEVELS` holds Denmark's all-in level (wages 2.8, diesel 1.0, electricity 0.95,
+  fares 1.25, general 1.7); another key is that country's own factors (`econ_uk::price_level`).
+- Every company of the server plays at it (`online::Online::price_level`, set as the company is
+  loaded - `store::load` - and by its process, never kept in its file): its wages, fuel, workshop,
+  buses, insurance and overheads, and its own cost price on the tender page.
+- The market prices its tenders at it too (the main server's template company): the authority's
+  estimate, the cap by `tender_cap_factor` and the abnormally low line follow.
+
+A diesel city line of nine timetable hours a bus a day is let at about 840 kr. an hour in
+Realistic and 960 kr. in Normal (the company's own cost price about 860 and 740 kr.); a line whose
+buses stand more of the day dearer, about 1,030 and 1,180 kr. at five hours a bus.
+
+Tested: `econ_uk::reference::the_danish_price_level_lets_a_timetable_hour_at_danish_prices`,
+`server_fines::tests::the_price_level_of_the_settings_reaches_the_server_companies`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the
