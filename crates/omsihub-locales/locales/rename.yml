@@ -148,7 +148,7 @@ _version: 2
   uk: "додано Omsi-Hub"
 "For this drive Omsi-Hub borrows it from %{folder}, which carries it. Beside this bus it is the bus's own, in its list of depot files.":
   de: "Für diese Fahrt leiht Omsi-Hub sie von %{folder}, der sie hat. Neben diesem Bus gehört sie dem Bus selbst, in seiner Liste der Hofdateien."
-  da: "Til denne kørsel låner Omsi-Hub den fra %{folder}, som har den. Ved siden af denne bus er den busens egen, på dens liste over garagefiler."
+  da: "Til denne kørsel låner Omsi-Hub den fra %{folder}, som har den. Ved siden af denne bus er den busens egen, på dens liste over depotfiler."
   fr: "Pour ce trajet, Omsi-Hub l’emprunte à %{folder}, qui l’a. À côté de ce bus, il devient le sien, dans sa liste de fichiers de dépôt."
   nl: "Voor deze rit leent Omsi-Hub het van %{folder}, die het wel heeft. Naast deze bus wordt het van de bus zelf, in zijn lijst met hof-bestanden."
   pl: "Na tę jazdę Omsi-Hub pożycza go od %{folder}, który go ma. Obok tego autobusu stanie się jego własnym, na jego liście plików zajezdni."

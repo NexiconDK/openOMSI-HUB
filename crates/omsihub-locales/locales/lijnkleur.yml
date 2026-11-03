@@ -20,7 +20,7 @@ _version: 2
 "%{n} more texts, empty for this depot file":
   nl: "Nog %{n} teksten, leeg bij dit hofbestand"
   de: "%{n} weitere Texte, leer bei dieser Hofdatei"
-  da: "%{n} flere tekster, tomme for denne garagefil"
+  da: "%{n} flere tekster, tomme for denne depotfil"
   fr: "%{n} autres textes, vides pour ce fichier de dépôt"
   ru: "Ещё %{n} текстов, пустых в этом файле депо"
   uk: "Ще %{n} текстів, порожніх у цьому файлі депо"

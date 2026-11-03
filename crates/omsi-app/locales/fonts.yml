@@ -62,7 +62,7 @@ _version: 2
 "Destinations its depot file gives as pictures stay pictures.":
   nl: "Bestemmingen die het depotbestand als afbeelding geeft, blijven afbeeldingen."
   de: "Ziele, die seine Hof-Datei als Bild liefert, bleiben Bilder."
-  da: "Destinationer, dens garagefil giver som billeder, forbliver billeder."
+  da: "Destinationer, dens depotfil giver som billeder, forbliver billeder."
   fr: "Les destinations que son fichier de dépôt fournit en image restent des images."
   ru: "Направления, которые файл депо задаёт картинками, остаются картинками."
   uk: "Напрямки, які файл депо задає картинками, залишаються картинками."
