@@ -438,7 +438,13 @@ export function mountPanel(root, api, opts = {}) {
         fact(r.cap_hour ? kr(r.cap_hour) : trf('estimate × %{f}', { f: r.cap_factor }), tr('The cap a timetable hour'), r.cap_hour ? tr('for every new tender') : tr("the authority's estimate by the factor")),
         fact(`${r.low_share} %`, tr('Abnormally low under'), tr("of the authority's estimate")),
         fact(r.operators == null ? tr('as the rules draw them') : String(r.operators), tr('Operators in a tender')),
-        fact(trf('%{n} weeks', { n: r.round_weeks }), tr('A round of new lines'), r.per_round == null ? tr('the rules\' number of lines') : trf('%{n} lines', { n: r.per_round }))),
+        fact(trf('%{n} weeks', { n: r.round_weeks }), tr('A round of new lines'), r.per_round == null ? tr('the rules\' number of lines') : trf('%{n} lines', { n: r.per_round })),
+        // (3 November 2026: how they are awarded, their days, the contracts' and the option)
+        fact(tr(r.award === 'lowest' ? 'The lowest price wins' : 'The Viborg model: 50 % price + 50 % quality'), tr('Award')),
+        fact(trf('%{a} + %{b} + %{c} days', { a: r.prep, b: r.days, c: r.start }), tr('A tender'), tr('to prepare, to bid, to the start')),
+        fact(trf('%{a} / %{b} / %{c} days before', { a: (r.renew || [])[0], b: (r.renew || [])[1], c: (r.renew || [])[2] }), tr('A renewal'), tr('announced, opens, decided')),
+        fact((r.lengths || []).map((x) => `${x[0]}/${x[1]}`).join(' · '), tr('Contract days, diesel/electric'), tr('small · medium · large work: under 1,000, up to 3,000, over 3,000 timetable hours a week')),
+        fact(trf('%{n} × %{d} days', { n: r.options, d: r.option_days }), tr('Option'), tr('when run satisfactorily: not red, at most 2 % of the journeys dropped'))),
       h('div', { class: 'sp-dim' }, tr('Changed under Rules and economy: a new tender takes them; one open keeps its own (its cap can be set here).')));
     const number = (value, width = 90, placeholder = '') => h('input', { type: 'number', min: '0', step: '1', value: value ?? '', placeholder, style: `width:${width}px` });
     const dateIn = (value, min) => h('input', { type: 'date', value: value || '', min: min || '', style: 'width:150px' });

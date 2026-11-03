@@ -2476,7 +2476,7 @@ mod tests {
         let p = day_plan(&c, &c.date, vec![tour("1", 6 * 60, 3)], &[], &[], false);
         let tomorrow = super::super::dates::add(&c.date, 1);
         c.concessions.held.retain(|h| h.line != "Linie5");
-        c.concessions.held.push(super::super::concessions::Concession { line: "Linie5".into(), number: "5".into(), from: tomorrow.clone(), until: "2030-01-01".into(), price: 1.0, direct: false, after: String::new() });
+        c.concessions.held.push(super::super::concessions::Concession { line: "Linie5".into(), number: "5".into(), from: tomorrow.clone(), until: "2030-01-01".into(), price: 1.0, direct: false, after: String::new(), options: 0 });
         let lp = live_plan(&c, &p);
         assert_eq!((lp.lines.clone(), lp.tours.len()), (vec!["Linie5".to_string()], 1));
         c.concessions.held[0].after = "gocollective".into();

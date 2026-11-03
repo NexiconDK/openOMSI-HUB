@@ -44,12 +44,27 @@ use std::path::{Path, PathBuf};
 
 /// A tender is decided this many minutes after its last minute (every bid in by then).
 pub const CLOSE_AFTER: i64 = 1;
-/// (Decided 25 October 2026) A tender of the market runs three days; a concession put out again
-/// opens six days before its new term begins and is decided three days before it - the winner
-/// has three days to make ready.
+/// (Decided 3 November 2026) A new tender of the market is announced, opens a day later - the
+/// companies prepare (`PREP_DAYS`) -, takes bids three days (`TENDER_DAYS`) and is decided at the
+/// close; the service starts two days after it (`START_AFTER`, `concessions::server_start`). A
+/// running contract's next term goes out to tender: announced six days before it begins
+/// (`RENEW_ANNOUNCED`), open from five days before (`RENEW_OPENS`) to two days before
+/// (`RENEW_DECIDED`) - the winner has two days to make ready. (25 October 2026: a tender opened at
+/// once for three days; a renewal from six days before to three days before.)
+pub const PREP_DAYS: i64 = 1;
 pub const TENDER_DAYS: i64 = 3;
-pub const RENEW_OPENS: i64 = 6;
-pub const RENEW_DECIDED: i64 = 3;
+pub const START_AFTER: i64 = 2;
+pub const RENEW_ANNOUNCED: i64 = 6;
+pub const RENEW_OPENS: i64 = 5;
+pub const RENEW_DECIDED: i64 = 2;
+
+/// (Decided 3 November 2026) The authority's option on a company's contract: seven days more
+/// (`OPTION_DAYS`), at most twice a term (`OPTIONS`), when the running was satisfactory - the
+/// contract not red, and at most `OPTION_MOST_DROPPED` of its journeys of the term dropped
+/// (`satisfactory`).
+pub const OPTION_DAYS: i64 = 7;
+pub const OPTIONS: u32 = 2;
+pub const OPTION_MOST_DROPPED: f64 = 0.02;
 
 /// Decided tenders are kept this many days.
 pub const KEEP_DAYS: i64 = 56;
@@ -135,7 +150,7 @@ pub fn map_events(map_dir: &Path, date: &str, read: &mut dyn FnMut(&str) -> Opti
         }
         let own: Vec<String> = ttl_names(&folder).into_iter().filter(|n| !map_own.iter().any(|m| m.eq_ignore_ascii_case(n))).collect();
         let name = if cfg.name.is_empty() { folder.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default() } else { cfg.name.clone() };
-        let near = dates::between(date, &from) <= RENEW_OPENS + 1;
+        let near = dates::between(date, &from) <= RENEW_ANNOUNCED;
         let lines = if near && !own.is_empty() {
             read(&from).unwrap_or_default().into_iter().filter(|l| own.iter().any(|o| o.eq_ignore_ascii_case(&l.name))).collect()
         } else {
@@ -418,7 +433,7 @@ pub fn post_bid(data: &Path, key: &str, b: &MarketBid) -> Result<()> {
 
 /// Why an application is refused.
 pub const HELD: &str = "Another company of the map runs this line: it goes out to tender again towards the end of its concession.";
-pub const ASKED: &str = "The line goes out to tender in a moment: its auction is on the Concessions page.";
+pub const ASKED: &str = "The line goes out to tender: announced now, it takes bids from tomorrow for three days - on the Concessions page.";
 pub const OPERATOR_HELD: &str = "One of the map's operators runs this line on the contract it won: it goes out to tender again when that ends.";
 /// (1 November 2026) A company told that an event takes a line of its off (`sync`).
 pub const EVENT_OFF_DAY: &str = "%{event} takes your line %{n} off on %{date}: it does not run that day - nothing to drive, nothing paid, no fines.";
@@ -533,9 +548,9 @@ pub fn step(data: &Path, key: &str, map: &str, date: &str, now: i64, read: &mut 
             });
             // (an operator's: it holds the line for its term)
             if d.winner.is_empty() && !d.name.is_empty() {
-                let from = t.market.as_ref().map(|x| x.from.clone()).filter(|f| !f.is_empty()).unwrap_or_else(|| dates::add(&t.closes, 1));
+                let from = cn::server_start(t);
                 // (a special service: the event's days alone)
-                let until = t.market.as_ref().map(|x| x.until.clone()).filter(|u| dates::parse(u).is_some()).unwrap_or_else(|| cn::server_term(Drive::Diesel, &from));
+                let until = t.market.as_ref().map(|x| x.until.clone()).filter(|u| dates::parse(u).is_some()).unwrap_or_else(|| cn::server_term(Drive::Diesel, cn::week_hours(t), &from));
                 let days = dates::between(&from, &until) + 1;
                 // (a special service is run to its end: its days are few)
                 let event = t.market.as_ref().is_some_and(|x| !x.event.is_empty());
@@ -568,6 +583,8 @@ fn add(m: &mut Market, c: &Company, l: &LineInfo, opens_at: i64, closes_at: i64,
     // (3 November 2026: as many of the map's operators as the server's admin wants)
     let rivals = cfg.operators.map_or(cn::rules(GameMode::Normal).rivals, |n| (n, n));
     let mut t = cn::make_tender(c, l, id, opens_at, holder.is_some(), &m.key, &pool, rivals);
+    // (3 November 2026: a gross-cost contract paid by the day, as Danish authorities let them)
+    cn::as_server(c, &mut t);
     t.closes_at = closes_at.max(opens_at + 60);
     t.closes = clock::date_of(t.closes_at);
     // (the cap: the cost price by the settings' factor - `sealed::CAP_SHARE` - or, 3 November
@@ -638,7 +655,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
             Some(t) => t.tender.id,
             None => {
                 // (the admin's own times and cap, when he chose them)
-                let opens = if x.opens_at > 0 { x.opens_at.max(now) } else { now };
+                let opens = if x.opens_at > 0 { x.opens_at.max(now) } else { now + PREP_DAYS * clock::DAY };
                 let closes = if x.closes_at > opens { x.closes_at } else { opens + TENDER_DAYS * clock::DAY };
                 let id = add(m, template, l, opens, closes, None, cfg);
                 if x.cap_hour > 0 {
@@ -665,11 +682,11 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
         if !h.gives_up.is_empty() && dates::between(&h.gives_up, date) >= 0 {
             match lines.iter().find(|l| l.name.eq_ignore_ascii_case(&h.line)).filter(|_| open_of(m, &h.line).is_none()) {
                 Some(l) => {
-                    let id = add(m, template, l, now, now + TENDER_DAYS * clock::DAY, None, cfg);
+                    let id = add(m, template, l, now + PREP_DAYS * clock::DAY, now + (PREP_DAYS + TENDER_DAYS) * clock::DAY, None, cfg);
                     if let Some(x) = m.tenders.iter_mut().find(|t| t.tender.id == id).and_then(|t| t.tender.market.as_mut()) {
                         x.failed = h.name.clone();
                     }
-                    said.push(format!("{}: the operator {} gives line {} up (it bid below its own cost): out to tender at once", m.map, h.name, h.line));
+                    said.push(format!("{}: the operator {} gives line {} up (it bid below its own cost): out to tender, open from tomorrow", m.map, h.name, h.line));
                 }
                 None => said.push(format!("{}: the operator {} gives line {} up", m.map, h.name, h.line)),
             }
@@ -687,7 +704,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
         }
         let from = dates::add(&h.until, 1);
         let decided = m.tenders.iter().any(|t| t.tender.renewal && t.tender.line.eq_ignore_ascii_case(&h.line) && t.tender.market.as_ref().is_some_and(|x| x.from == from));
-        if dates::between(date, &from) <= RENEW_OPENS + 1 && !decided && open_of(m, &h.line).is_none() {
+        if dates::between(date, &from) <= RENEW_ANNOUNCED && !decided && open_of(m, &h.line).is_none() {
             if let Some(l) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&h.line)) {
                 let mut rng = Rng::of(&[&m.key, "renewal", &h.line], dates::parse(&from).unwrap_or(0));
                 let minute = 9 * 60 + rng.int(0, 24) * 15;
@@ -721,19 +738,22 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
             chosen.push(free.remove(k.min(free.len() - 1)).clone());
         }
         for (k, l) in chosen.into_iter().enumerate() {
-            // (one a day, in the office hours, half an hour from now at the soonest; three days each)
+            // (one a day, in the office hours, half an hour from now at the soonest: announced, open
+            // a day later for three days)
             let at = clock::moment(&dates::add(date, k as i64), 9 * 60 + rng.int(0, 24) * 15).max(now + 30);
-            add(m, template, &l, at, at + TENDER_DAYS * clock::DAY, None, cfg);
-            said.push(format!("{}: line {} out to tender from {} {}", m.map, l.name, clock::date_of(at), clock::hhmm(at)));
+            let opens = at + PREP_DAYS * clock::DAY;
+            add(m, template, &l, opens, opens + TENDER_DAYS * clock::DAY, None, cfg);
+            said.push(format!("{}: line {} out to tender from {} {}", m.map, l.name, clock::date_of(opens), clock::hhmm(opens)));
         }
     }
-    // the renewals: a company's concession whose new term begins within a week, open to every
-    // company of the map - from six days before it to three days before (`RENEW_OPENS`,
-    // `RENEW_DECIDED`), its last minutes that day's office hours
+    // the renewals: a company's concession whose new term begins within six days, open to every
+    // company of the map - announced six days before it, open from five days before to two days
+    // before (`RENEW_ANNOUNCED`, `RENEW_OPENS`, `RENEW_DECIDED`), its last minutes that day's office
+    // hours
     for c in companies {
         for h in &c.concessions.held {
             let from = dates::add(&h.until, 1);
-            if dates::between(date, &from) > RENEW_OPENS + 1 || open_of(m, &h.line).is_some() || of_event(&h.line) {
+            if dates::between(date, &from) > RENEW_ANNOUNCED || open_of(m, &h.line).is_some() || of_event(&h.line) {
                 continue;
             }
             // (decided already for this term)
@@ -753,7 +773,7 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
     // from six days before its first to three days before, as a renewal; too late for that (the
     // server saw it late), the map's operators run them
     for e in events {
-        if dates::between(date, &e.from) > RENEW_OPENS + 1 || dates::between(date, &e.from) < 0 {
+        if dates::between(date, &e.from) > RENEW_ANNOUNCED || dates::between(date, &e.from) < 0 {
             continue;
         }
         for l in e.lines.iter().filter(|l| cn::is_event_line(template, l)) {
@@ -859,8 +879,8 @@ pub fn decide(t: &Tender, all: &[MarketBid]) -> Decided {
 
 /// The server's admin moves the last day of a company's contract on a line (the admin panel's
 /// contracts): later (an extension), or earlier - its renewal then opens as any concession's does
-/// (`offer`, `RENEW_OPENS` days before the new term), so the panel never asks for a day sooner
-/// than that from the server's date. Taken by the company's process (`take_contract_orders`).
+/// (`offer`, announced `RENEW_ANNOUNCED` days before the new term), so the panel never asks for a
+/// day sooner than that from the server's date. Taken by the company's process (`take_contract_orders`).
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
 #[serde(default)]
 pub struct ContractOrder {
@@ -919,6 +939,9 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
     let before = c.concessions.clone();
     let mut run = Run::default();
     let at = clock::now(c);
+    // (3 November 2026: the authority's options on its contracts, a day before their next terms
+    // would be announced)
+    options(c, &mut run, at);
     // (its own tenders of before: withdrawn, their fees paid back)
     let own: Vec<Tender> = c.concessions.tenders.iter().filter(|t| t.open() && t.market.is_none()).cloned().collect();
     for t in &own {
@@ -1008,7 +1031,7 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
     // week before its first day at the soonest
     let today = c.date.clone();
     for e in &m.events {
-        if dates::between(&today, &e.from) > RENEW_OPENS + 1 || dates::between(&e.until, &today) > 0 {
+        if dates::between(&today, &e.from) > RENEW_ANNOUNCED || dates::between(&e.until, &today) > 0 {
             continue;
         }
         for off in &e.off {
@@ -1044,6 +1067,58 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
     // (the decided ones the market no longer keeps go)
     c.concessions.tenders.retain(|t| t.open() || t.market.as_ref().is_none_or(|x| x.key != key || m.tenders.iter().any(|mt| mt.tender.id == x.id)));
     (c.concessions != before || run.told > 0, won)
+}
+
+/// (Decided 3 November 2026) Whether the running of contract `k` was satisfactory to `today`, for
+/// the authority's option: not red, and at most `OPTION_MOST_DROPPED` of its journeys of the term
+/// dropped (its record's journeys not run, against its journeys a day by the days closed).
+pub fn satisfactory(k: &super::bus_contracts::Contract, today: &str) -> bool {
+    if k.rag(today) == super::bus_contracts::Rag::Red {
+        return false;
+    }
+    let days = dates::between(&k.from, today).max(1) as f64;
+    let journeys = k.journeys as f64 * days;
+    let missed: u32 = k.record.iter().filter(|d| dates::between(&k.from, &d.date) >= 0 && dates::between(&d.date, today) >= 0).map(|d| d.missed).sum();
+    journeys <= 0.0 || missed as f64 <= OPTION_MOST_DROPPED * journeys
+}
+
+/// The authority told a company it takes its option (`options`).
+pub const OPTION_TAKEN: &str = "The authority takes its option on your contract on line %{n}: satisfactory running, so it runs %{days} days more, to %{date} (option %{k} of %{most}).";
+
+/// (Decided 3 November 2026) The authority's options on company `c`'s contracts of the server: on
+/// the day before the main server would announce a contract's next term (`RENEW_ANNOUNCED`), a
+/// contract run satisfactorily (`satisfactory`) runs `OPTION_DAYS` days more - its concession's
+/// last day and its bus contract's -, at most `OPTIONS` times a term; its next term goes out to
+/// tender then. Not a line given without a tender, an event's special service, nor one whose next
+/// term was announced already. Told to the company. Whether any was taken.
+pub fn options(c: &mut Company, run: &mut Run, at: i64) -> bool {
+    let today = c.date.clone();
+    let mut taken = false;
+    for k in 0..c.concessions.held.len() {
+        let h = c.concessions.held[k].clone();
+        let from = dates::add(&h.until, 1);
+        if h.direct || h.options >= OPTIONS || dates::between(&today, &from) != RENEW_ANNOUNCED + 1 {
+            continue;
+        }
+        let event = c.concessions.tenders.iter().any(|t| t.line.eq_ignore_ascii_case(&h.line) && t.market.as_ref().is_some_and(|m| !m.event.is_empty()));
+        let announced = c.concessions.tenders.iter().any(|t| t.line.eq_ignore_ascii_case(&h.line) && t.market.as_ref().is_some_and(|m| m.from == from));
+        if event || announced {
+            continue;
+        }
+        let Some(ki) = c.concessions.contracts.iter().position(|x| x.line.eq_ignore_ascii_case(&h.line) && x.until == h.until && x.ended.is_none()) else { continue };
+        if !satisfactory(&c.concessions.contracts[ki], &today) {
+            continue;
+        }
+        let until = dates::add(&h.until, OPTION_DAYS);
+        c.concessions.contracts[ki].until = until.clone();
+        let x = &mut c.concessions.held[k];
+        x.until = until.clone();
+        x.options += 1;
+        let n = x.options;
+        clock::tell(c, run, at, OPTION_TAKEN, vec![clock::arg("n", &h.number), clock::arg("days", OPTION_DAYS), clock::arg("date", until), clock::arg("k", n), clock::arg("most", OPTIONS)], Level::Good);
+        taken = true;
+    }
+    taken
 }
 
 /// A company's bid on a tender (`concessions::bid`), into the market when it is one of the map's

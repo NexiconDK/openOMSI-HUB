@@ -2486,3 +2486,17 @@ _version: 2
   pl: "Organizator przesunął ostatni dzień twojej umowy na linii %{n} na %{date}."
   ru: "Организатор перенёс последний день вашего контракта на линии %{n} на %{date}."
   uk: "Організатор переніс останній день вашого контракту на лінії %{n} на %{date}."
+"The line goes out to tender: announced now, it takes bids from tomorrow for three days - on the Concessions page.":
+  de: "Die Linie wird ausgeschrieben: jetzt angekündigt, Gebote ab morgen drei Tage lang - auf der Seite Konzessionen."
+  fr: "La ligne est mise en appel d'offres : annoncée maintenant, elle reçoit des offres dès demain pendant trois jours - page Concessions."
+  nl: "De lijn wordt aanbesteed: nu aangekondigd, biedingen vanaf morgen drie dagen lang - op de pagina Concessies."
+  pl: "Linia trafia do przetargu: ogłoszona teraz, oferty od jutra przez trzy dni - na stronie Koncesje."
+  ru: "Линия выставлена на тендер: объявлена сейчас, ставки принимаются с завтрашнего дня три дня - на странице «Концессии»."
+  uk: "Лінію виставлено на тендер: оголошено зараз, ставки приймаються з завтра три дні - на сторінці «Концесії»."
+"The authority takes its option on your contract on line %{n}: satisfactory running, so it runs %{days} days more, to %{date} (option %{k} of %{most}).":
+  de: "Der Aufgabenträger zieht die Option auf deinen Vertrag für Linie %{n}: zufriedenstellender Betrieb, er läuft %{days} Tage länger, bis %{date} (Option %{k} von %{most})."
+  fr: "L'autorité lève son option sur votre contrat de la ligne %{n} : exploitation satisfaisante, il court %{days} jours de plus, jusqu'au %{date} (option %{k} sur %{most})."
+  nl: "De opdrachtgever lost de optie op je contract voor lijn %{n}: naar tevredenheid gereden, het loopt %{days} dagen langer, tot %{date} (optie %{k} van %{most})."
+  pl: "Organizator korzysta z opcji na twoją umowę na linii %{n}: zadowalająca eksploatacja, trwa %{days} dni dłużej, do %{date} (opcja %{k} z %{most})."
+  ru: "Заказчик использует опцион по вашему контракту на линии %{n}: работа удовлетворительна, он продлён на %{days} дней, до %{date} (опцион %{k} из %{most})."
+  uk: "Замовник використовує опціон за вашим контрактом на лінії %{n}: робота задовільна, його продовжено на %{days} днів, до %{date} (опціон %{k} з %{most})."

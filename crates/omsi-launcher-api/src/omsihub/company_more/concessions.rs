@@ -417,9 +417,10 @@ fn requirements(c: &Company, t: &Tender, week: Option<Week>) -> Value {
         row("Tours", tours),
         row("Bus types", if sizes.is_empty() { tr("Any bus") } else { sizes.join(" · ") }),
         row("The rule", tr("Each tour is run with the bus its timetable asks for, or a bigger one.")),
-        row("Diesel or electric", tr("Bid with diesel buses: the contract runs two weeks. Bid with electric buses: it runs a month, and every tour is run with an electric bus.")),
+        row("Diesel or electric", lengths_text(t)),
     ];
-    let from = t.market.as_ref().map(|m| m.from.clone()).filter(|f| !f.is_empty()).unwrap_or_else(|| dates::add(&ck::date_of(t.closes_at), 1));
+    // (NexiconDK, 3 November 2026: the service starts two days after the close - `server_start`)
+    let from = cn::server_start(t);
     // (NexiconDK, 3 November 2026: the term's last day and the next tender's days - by the buses
     // the contract is won with; a special service's: its event's last day, out again with its next)
     let event_until = t.market.as_ref().filter(|m| !m.event.is_empty()).map(|m| m.until.clone()).filter(|u| dates::parse(u).is_some());
@@ -428,7 +429,7 @@ fn requirements(c: &Company, t: &Tender, week: Option<Week>) -> Value {
         None => [(Drive::Diesel, "Ends with diesel buses"), (Drive::Electric, "Ends with electric buses")]
             .into_iter()
             .map(|(d, label)| {
-                let end = cn::server_term(d, &from);
+                let end = cn::server_term(d, cn::week_hours(t), &from);
                 let next = dates::add(&end, 1);
                 let (open, close) = (dates::add(&next, -co_tenders::RENEW_OPENS), dates::add(&next, -co_tenders::RENEW_DECIDED));
                 row(label, trf("%{end} · out to tender again from %{open} to %{close}", &[("end", &day_label(&end)), ("open", &day_label(&open)), ("close", &day_label(&close))]))
@@ -437,8 +438,8 @@ fn requirements(c: &Company, t: &Tender, week: Option<Week>) -> Value {
     };
     let mut tender = vec![
         row("Bidding", trf("Three days: from %{open} to %{close}", &[("open", &when(c, t.opens_at)), ("close", &when(c, t.closes_at))])),
-        row("The term", trf("From %{date}, without extension", &[("date", &day_label(&from))])),
-        row("Renewal", tr("Six days before the term ends the line goes out to tender again, decided three days before it: the winner has three days to make ready.")),
+        row("The term", trf("From %{date}. Option: %{d} days more, at most %{n} times, when run satisfactorily (not red, at most 2 % of its journeys dropped)", &[("date", &day_label(&from)), ("d", &co_tenders::OPTION_DAYS.to_string()), ("n", &co_tenders::OPTIONS.to_string())])),
+        row("Renewal", tr("The next term is announced six days before it begins, takes bids from five days before and is decided two days before it: the winner has two days to make ready.")),
         row("The buses", tr("The winner may take over the buses its last operator ran the line with, at their book value.")),
         row("The cap", trf("%{amount}: an ask above it does not count", &[("amount", &money(t, t.reference))])),
         row("Payment", tr("Asks are a price a timetable hour. The contract pays it each day for the timetable hours run: a journey not run is not paid.")),
@@ -663,10 +664,10 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         let amount = year_of(a).min(least.max(year_of(lo)));
         // (and what it comes to: a week, the contract's days by the buses bid with)
         let total = hourly.then(|| {
-            let from = t.market.as_ref().map(|m| m.from.clone()).filter(|f| !f.is_empty()).unwrap_or_else(|| dates::add(&ck::date_of(t.closes_at), 1));
+            let from = if t.market.is_some() { cn::server_start(t) } else { dates::add(&ck::date_of(t.closes_at), 1) };
             // (NexiconDK, 3 November 2026: a special service runs its event's days alone - it said
             // the contract's 14 days for a match day)
-            let until = t.market.as_ref().filter(|m| !m.event.is_empty()).map(|m| m.until.clone()).filter(|u| dates::parse(u).is_some()).unwrap_or_else(|| cn::server_term(t.drive, &from));
+            let until = t.market.as_ref().filter(|m| !m.event.is_empty()).map(|m| m.until.clone()).filter(|u| dates::parse(u).is_some()).unwrap_or_else(|| cn::server_term(t.drive, cn::week_hours(t), &from));
             let days = dates::between(&from, &until) + 1;
             let hours = cn::hours_year(t) / 365.0 * days as f64;
             let rate = cn::per_hour(t, amount);
@@ -792,6 +793,19 @@ fn viborg_score(c: &core::company::model::Company, t: &Tender, award: Award, sea
     })
 }
 
+/// (NexiconDK, 3 November 2026) How long a contract of tender `t` runs, by its work's size and the
+/// buses (`concessions::server_days`).
+fn lengths_text(t: &Tender) -> String {
+    let hours = cn::week_hours(t);
+    let size = cn::WorkSize::of_hours(hours);
+    let key = match size {
+        cn::WorkSize::Small => "Small work (%{h} timetable hours a week): with diesel buses the contract runs %{d} days, with electric buses %{e} days, every tour run with an electric bus.",
+        cn::WorkSize::Medium => "Medium work (%{h} timetable hours a week): with diesel buses the contract runs %{d} days, with electric buses %{e} days, every tour run with an electric bus.",
+        cn::WorkSize::Large => "Large work (%{h} timetable hours a week): with diesel buses the contract runs %{d} days, with electric buses %{e} days, every tour run with an electric bus.",
+    };
+    trf(key, &[("h", &grouped(hours.round())), ("d", &cn::server_days(Drive::Diesel, size).to_string()), ("e", &cn::server_days(Drive::Electric, size).to_string())])
+}
+
 pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {
     let id = u32_arg(args, "id");
     Some(match what {
@@ -881,8 +895,10 @@ mod tests {
     use super::*;
 
     /// (NexiconDK, 3 November 2026) A tender of the map's market says in its contract's
-    /// requirements when the term ends and when the line is out to tender again - with diesel
-    /// buses two weeks, with electric ones a month; a special service's, its event's last day.
+    /// requirements when the term ends and when the line is out to tender again - by the work's
+    /// size (3 November 2026: a small one 14 days with diesel buses, 21 with electric ones), the
+    /// next term open from five days before it to two days before; a special service's, its
+    /// event's last day.
     #[test]
     fn the_requirements_say_when_the_term_ends_and_the_next_tender() {
         let mut c = omsi_launcher_lib::company::found(&omsi_launcher_lib::company::Founding { name: "Umove".into(), date: "2024-03-04".into(), ..Default::default() }, "x");
@@ -899,12 +915,16 @@ mod tests {
         };
         let got = rows(&t);
         let of = |label: &str| got.iter().find(|(k, _)| k == label).map(|x| x.1.clone()).unwrap_or_default();
-        // diesel: 10 to 23 March, the next term from the 24th - out from the 18th, decided the 21st
+        // diesel: 10 to 23 March, the next term from the 24th - out from the 19th, decided the 22nd
         let diesel = of("Ends with diesel buses");
-        assert!(diesel.contains("23 Mar 2024") && diesel.contains("18 Mar 2024") && diesel.contains("21 Mar 2024"), "{diesel}");
-        // electric: 10 March to 9 April, the next from the 10th - out from the 4th, decided the 7th
+        assert!(diesel.contains("23 Mar 2024") && diesel.contains("19 Mar 2024") && diesel.contains("22 Mar 2024"), "{diesel}");
+        // electric: 10 to 30 March, the next from the 31st - out from the 26th, decided the 29th
         let electric = of("Ends with electric buses");
-        assert!(electric.contains("9 Apr 2024") && electric.contains("4 Apr 2024") && electric.contains("7 Apr 2024"), "{electric}");
+        assert!(electric.contains("30 Mar 2024") && electric.contains("26 Mar 2024") && electric.contains("29 Mar 2024"), "{electric}");
+        // (the work's size and its days)
+        let buses: Vec<(String, String)> = serde_json::from_value(requirements(&c, &t, None)["groups"][0]["rows"].clone()).unwrap();
+        let sizes = buses.iter().find(|(k, _)| k == "Diesel or electric").map(|x| x.1.clone()).unwrap_or_default();
+        assert!(sizes.contains("14 days") && sizes.contains("21 days"), "{sizes}");
         assert_eq!(got.iter().position(|(k, _)| k == "Ends with diesel buses"), Some(2), "after the term's first day");
         // a special service: its event's last day
         if let Some(m) = t.market.as_mut() {

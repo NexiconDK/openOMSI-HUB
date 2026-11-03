@@ -406,7 +406,12 @@ fn market(api: &Api) -> Value {
     // (3 November 2026: the tenders' rules as they stand, in kroner)
     let rules = json!({
         "cap_hour": kr(cfg.cap_hour), "cap_factor": cfg.cap_factor, "low_share": (cfg.low_share * 1000.0).round() / 10.0,
-        "operators": cfg.operators, "round_weeks": cfg.round_weeks, "per_round": cfg.per_round,
+        "operators": cfg.operators, "round_weeks": cfg.round_weeks, "per_round": cfg.per_round, "award": cfg.award.key(),
+        // (the timeline, the contracts' days by size - diesel, electric - and the option: 3 November 2026)
+        "prep": shared_tenders::PREP_DAYS, "days": shared_tenders::TENDER_DAYS, "start": shared_tenders::START_AFTER,
+        "renew": [shared_tenders::RENEW_ANNOUNCED, shared_tenders::RENEW_OPENS, shared_tenders::RENEW_DECIDED],
+        "lengths": cn::SERVER_DAYS.iter().map(|x| [x.0, x.2]).collect::<Vec<_>>(),
+        "options": shared_tenders::OPTIONS, "option_days": shared_tenders::OPTION_DAYS,
     });
     let maps: Vec<Value> = keys
         .iter()
@@ -477,7 +482,7 @@ fn market(api: &Api) -> Value {
             json!({ "key": mk.key, "map": folder_name(&mk.map), "open": open, "decided": decided, "held": held, "events": mk.events, "lines": lines, "contracts": contracts, "companies": companies, "operators": operators })
         })
         .collect();
-    json!({ "maps": maps, "rules": rules, "today": today, "earliest_end": dates::add(&today, shared_tenders::RENEW_OPENS) })
+    json!({ "maps": maps, "rules": rules, "today": today, "earliest_end": dates::add(&today, shared_tenders::RENEW_ANNOUNCED) })
 }
 
 /// The last `TAIL` lines of a file.
@@ -544,7 +549,7 @@ fn player_do(api: &Api, id: &str, what: &str, reason: &str) -> Result<String, St
 /// awarded directly to a company of the map (`direct`, `line`, `company`, `cap`, `drive`), an
 /// operator's term moved (`operator_until`, `line`, `until`) or ended with the line out to tender
 /// (`operator_end`, `line`), and a company's contract moved to end on another day
-/// (`contract_until`, `company`, `line`, `until`: not before `RENEW_OPENS` days from today).
+/// (`contract_until`, `company`, `line`, `until`: not before `RENEW_ANNOUNCED` days from today).
 fn tender_do(api: &Api, map: &str, a: &Value) -> Result<String, String> {
     use shared_tenders::ServerAsk;
     let s = |k: &str| a.get(k).and_then(Value::as_str).unwrap_or("").trim().to_string();
@@ -646,7 +651,7 @@ fn tender_do(api: &Api, map: &str, a: &Value) -> Result<String, String> {
         "contract_until" => {
             changed = false;
             let (company, line, until) = (s("company"), s("line"), s("until"));
-            let earliest = dates::add(&today, shared_tenders::RENEW_OPENS);
+            let earliest = dates::add(&today, shared_tenders::RENEW_ANNOUNCED);
             if dates::parse(&until).is_none() || dates::between(&earliest, &until) < 0 {
                 return Err(format!("the last day as YYYY-MM-DD, {earliest} or later: the line's next tender needs its days"));
             }

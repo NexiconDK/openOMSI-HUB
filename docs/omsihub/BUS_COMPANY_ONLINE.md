@@ -1270,6 +1270,37 @@ before. The admin may award by the lowest price alone (`tender_award = lowest`, 
 
 Tested: `viborg::tests`, `sealed::tests::the_viborg_model_and_the_lowest_price`.
 
+### Danish contract terms (3 November 2026)
+
+Decided: the server's tenders let contracts as a Danish authority does.
+
+- **Gross cost, paid by the day** (bruttokontrakt: the authority keeps the fares): every tender of
+  the market (`concessions::as_server`, called by `shared_tenders::add`); a company's own tenders
+  off the server as before.
+- **The term by the work and the buses** (`concessions::server_days`, `SERVER_DAYS`): by the
+  work's timetable hours a week (`week_hours`: its week's, else a day's work seven times) - small
+  under 1,000, medium to 3,000, large over 3,000 (`WorkSize`) -, diesel 14 / 18 / 21 days,
+  electric 21 / 25 / 30 days (CNG's 17 / 21 / 25 come with its buses). Before: two weeks with
+  diesel buses, a month with electric ones. A special service keeps its event's days.
+- **The timeline**: a new tender is announced, opens a day later (`PREP_DAYS`), takes bids three
+  days (`TENDER_DAYS`) and is decided at the close; the service starts two days after it
+  (`START_AFTER`, `concessions::server_start`; a direct award the next day). A running contract's
+  next term is announced six days before it begins (`RENEW_ANNOUNCED`), open from five days
+  before (`RENEW_OPENS`), decided two days before (`RENEW_DECIDED`). The admin moves a contract's
+  end no sooner than `RENEW_ANNOUNCED` days from the server's date.
+- **The option** (`shared_tenders::options`, in the company's process): the day before the next
+  term would be announced, a contract run satisfactorily - not red, at most 2 % of its journeys of
+  the term dropped (`satisfactory`) - runs 7 days more (`OPTION_DAYS`), its concession and its bus
+  contract, at most twice a term (`OPTIONS`, `Concession::options`); the company is told. Not a
+  line given without a tender, an event's special service, one whose next term was announced, nor
+  an operator's.
+- The tender page states the work's size and the days with diesel and electric buses, the start,
+  the option and the renewal's days; the admin panel's rules show the timeline, the days, the
+  option and the award.
+
+Tested: `shared_tenders::tests::the_danish_terms_of_a_tender`,
+`shared_tenders::tests::the_option_takes_a_contract_run_well_seven_days_on_twice_at_most`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

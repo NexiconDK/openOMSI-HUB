@@ -82,6 +82,14 @@ pub struct Concession {
     /// runs the line until `from` (`plan::live_plan`).
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub after: String,
+    /// (NexiconDK, 3 November 2026) The options the authority took on its term: seven days more
+    /// each, at most `shared_tenders::OPTIONS` (`shared_tenders::options`).
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub options: u32,
+}
+
+fn is_zero_u32(x: &u32) -> bool {
+    *x == 0
 }
 
 /// A line's week, from the timetable of its seven days.
@@ -284,18 +292,91 @@ impl Sizes {
     }
 }
 
-/// (NexiconDK, Bus Company Online) The term of a contract won on the server, by the buses it was
-/// bid with (decided 25 October 2026): a month with electric buses, two weeks with diesel ones -
-/// its last day, from `from`.
-pub fn server_term(drive: Drive, from: &str) -> String {
-    match drive {
-        Drive::Electric => dates::add(&dates::add_month(from), -1),
-        Drive::Diesel => dates::add(from, SERVER_DIESEL_DAYS - 1),
+/// (NexiconDK, Bus Company Online, decided 3 November 2026) The size of a contract's work on the
+/// server, by its timetable hours a week: small under `SMALL_HOURS`, large over `LARGE_HOURS`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum WorkSize {
+    Small,
+    Medium,
+    Large,
+}
+
+pub const SMALL_HOURS: f64 = 1000.0;
+pub const LARGE_HOURS: f64 = 3000.0;
+
+impl WorkSize {
+    pub fn of_hours(week_hours: f64) -> WorkSize {
+        if week_hours < SMALL_HOURS {
+            WorkSize::Small
+        } else if week_hours <= LARGE_HOURS {
+            WorkSize::Medium
+        } else {
+            WorkSize::Large
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            WorkSize::Small => "small",
+            WorkSize::Medium => "medium",
+            WorkSize::Large => "large",
+        }
     }
 }
 
-/// The days of a diesel contract on the server.
-pub const SERVER_DIESEL_DAYS: i64 = 14;
+/// (NexiconDK, decided 3 November 2026) The days of a contract on the server, by the size of its
+/// work and the buses it was bid with: the bigger the work, the longer, and the cleaner the
+/// buses, the longer - at most a month. A row a size: diesel (HVO), CNG (to come with its buses),
+/// electric. (Before: two weeks with diesel buses, a month with electric ones.)
+pub const SERVER_DAYS: [(i64, i64, i64); 3] = [(14, 17, 21), (18, 21, 25), (21, 25, 30)];
+
+pub fn server_days(drive: Drive, size: WorkSize) -> i64 {
+    let (diesel, _cng, electric) = SERVER_DAYS[size as usize];
+    match drive {
+        Drive::Diesel => diesel,
+        Drive::Electric => electric,
+    }
+}
+
+/// A tender's timetable hours a week: its week's, read from the timetable of seven days, else a
+/// day's work seven times.
+pub fn week_hours(t: &Tender) -> f64 {
+    t.week.map(|w| w.hours).filter(|h| *h > 0.0).unwrap_or(t.work.hours * 7.0)
+}
+
+/// (NexiconDK, Bus Company Online) The term of a contract won on the server, by the buses it was
+/// bid with and its work's timetable hours a week (`server_days`; decided 3 November 2026) - its
+/// last day, from `from`.
+pub fn server_term(drive: Drive, week_hours: f64, from: &str) -> String {
+    dates::add(from, server_days(drive, WorkSize::of_hours(week_hours)) - 1)
+}
+
+/// (NexiconDK, decided 3 November 2026) The first day of a contract won in tender `t` of the
+/// server: a renewal's and a special service's own (`Shared::from`), a direct award's (an
+/// emergency service) the day after, else `shared_tenders::START_AFTER` days after the close - the
+/// winner makes ready meanwhile.
+pub fn server_start(t: &Tender) -> String {
+    let m = t.market.as_ref();
+    if let Some(from) = m.map(|m| m.from.clone()).filter(|f| dates::parse(f).is_some()) {
+        return from;
+    }
+    let close = clock::date_of(t.closes_at);
+    if m.is_some_and(|m| !m.direct.is_empty()) {
+        return dates::add(&close, 1);
+    }
+    dates::add(&close, super::shared_tenders::START_AFTER)
+}
+
+/// (NexiconDK, decided 3 November 2026) A tender of the server's market lets a gross-cost contract
+/// paid by the day, as Danish authorities let their bus contracts (bruttokontrakt: the authority
+/// keeps the fares): priced so.
+pub fn as_server(c: &Company, t: &mut Tender) {
+    t.kind = Kind::Gross;
+    t.period = Period::Day;
+    t.years = bc::term(Kind::Gross).0;
+    t.weeks = t.years * 52;
+    price(c, t);
+}
 
 /// (NexiconDK, decided 25 October 2026) A tender's timetable hours a year (its work: a day's
 /// hours by its days a year): on the server the companies bid by the timetable hour - an ask a
@@ -714,7 +795,7 @@ pub fn ensure(c: &mut Company) -> bool {
     for l in lines.iter().filter(|l| !l.own) {
         if of_line(c, &l.name).is_none() {
             let until = dates::add(&c.date, r.term_weeks as i64 * 7 - 1);
-            c.concessions.held.push(Concession { line: l.name.clone(), number: l.number.clone(), from: c.date.clone(), until, price: 1.0, direct: true, after: String::new() });
+            c.concessions.held.push(Concession { line: l.name.clone(), number: l.number.clone(), from: c.date.clone(), until, price: 1.0, direct: true, after: String::new(), options: 0 });
             changed = true;
         }
     }
@@ -1361,7 +1442,7 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
     let work = if t.work == Work::default() { bc::rough_work(t.day_tours, t.day_km) } else { t.work };
     let days = t.term_years() as i64 * 365;
     // (NexiconDK: on the server its term is by the buses it was bid with, without extension years)
-    let until_of = |from: &str| if t.market.is_some() { server_term(t.drive, from) } else { dates::add(from, days - 1) };
+    let until_of = |from: &str| if t.market.is_some() { server_term(t.drive, week_hours(t), from) } else { dates::add(from, days - 1) };
     let server = |k: &mut bc::Contract| {
         if t.market.is_some() {
             k.extensions_left = 0;
@@ -1384,7 +1465,7 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
                 }
                 h.price = price;
             }
-            None => c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false, after: String::new() }),
+            None => c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false, after: String::new(), options: 0 }),
         }
         return Event::Won { number: t.number.clone(), until };
     }
@@ -1398,19 +1479,26 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
             h.until = until.clone();
             h.price = price;
             h.direct = false;
+            h.options = 0;
         }
         return Event::Won { number: t.number.clone(), until };
     }
     // (a concession of another company of the map put out again: the line is the winner's from
     // the day its new term begins - the other runs it until then)
-    let from = t.market.as_ref().map(|m| m.from.clone()).filter(|f| dates::parse(f).is_some() && dates::between(&tomorrow, f) > 0).unwrap_or(tomorrow);
+    // (NexiconDK, 3 November 2026: on the server from `server_start` - two days after the close)
+    let from = match t.market.as_ref() {
+        Some(_) => Some(server_start(t)),
+        None => None,
+    }
+    .filter(|f| dates::parse(f).is_some() && dates::between(&tomorrow, f) > 0)
+    .unwrap_or(tomorrow);
     let until = until_of(&from);
     let mut k = bc::make(c, &t.line, &t.number, t.kind, t.period, amount, &work, &from, &until);
     server(&mut k);
     c.concessions.contracts.push(k);
     // (won from another company of the map: it runs the line until then)
     let after = t.market.as_ref().map(|m| m.holder.clone()).filter(|h| *h != c.id).unwrap_or_default();
-    c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false, after });
+    c.concessions.held.push(Concession { line: t.line.clone(), number: t.number.clone(), from, until: until.clone(), price, direct: false, after, options: 0 });
     Event::Won { number: t.number.clone(), until }
 }
 

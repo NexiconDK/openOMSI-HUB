@@ -136,7 +136,9 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     assert_eq!(sync(&data, &mut b), (true, true));
     assert!(matches!(b.concessions.tenders.iter().find(|t| t.id == tb).unwrap().outcome, Some(cn::Outcome::Won { amount, .. }) if amount == low));
     let h = cn::of_line(&b, &first.line).expect("B holds the line");
-    assert_eq!(dates::between(&h.from, &h.until), cn::SERVER_DIESEL_DAYS - 1, "two weeks with diesel buses");
+    // (3 November 2026: from two days after the close, a small work's term with diesel buses)
+    assert_eq!(h.from, dates::add(&clock::date_of(first.closes_at), START_AFTER));
+    assert_eq!(dates::between(&h.from, &h.until), cn::server_days(Drive::Diesel, cn::WorkSize::of_hours(cn::week_hours(&first))) - 1, "two weeks with diesel buses");
     // (every bid opened: both companies' and the operators', best first)
     assert!(d.standings.len() >= 2 && d.standings[0].name == "GoCollective" && d.standings.iter().any(|s| s.name == "Umove"), "{:?}", d.standings);
     let k = b.concessions.contracts.iter().find(|k| k.line == first.line).unwrap();
@@ -181,7 +183,7 @@ fn a_concession_ending_goes_out_to_every_company() {
     network::add_line(&mut a, &lines[0], None).unwrap();
     let until = dates::add(DATE, 5);
     a.concessions.held.retain(|h| h.line != "Linie5");
-    a.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.clone(), price: 1.0, direct: false, after: String::new() });
+    a.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.clone(), price: 1.0, direct: false, after: String::new(), options: 0 });
     let key = key_of(MAP);
     let (ca, cb) = (a.clone(), b.clone());
     let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]), events: Vec::new() });
@@ -195,10 +197,10 @@ fn a_concession_ending_goes_out_to_every_company() {
     let renewal = m.tenders.iter().find(|t| t.tender.line == "Linie5").expect("the renewal").tender.clone();
     let x = renewal.market.as_ref().unwrap();
     assert!(renewal.renewal && x.holder == "umove" && x.from == dates::add(&until, 1));
-    assert_eq!(clock::date_of(renewal.closes_at), dates::add(&until, 1 - RENEW_DECIDED), "decided three days before the new term");
+    assert_eq!(clock::date_of(renewal.closes_at), dates::add(&until, 1 - RENEW_DECIDED), "decided two days before the new term");
     assert!(renewal.closes_at - renewal.opens_at > 2 * clock::DAY, "{renewal:?}");
     let applied = m.tenders.iter().find(|t| t.tender.line == "Linie9").unwrap();
-    assert_eq!((applied.tender.opens_at, applied.applied.clone()), (now, vec!["gocollective".to_string()]), "opens at once");
+    assert_eq!((applied.tender.opens_at, applied.applied.clone()), (now + PREP_DAYS * clock::DAY, vec!["gocollective".to_string()]), "announced at once, open a day later");
     // (asked once: the next step offers nothing more)
     let n = m.tenders.len();
     step(&data, &key, MAP, DATE, now + 1, &mut read);
@@ -224,7 +226,8 @@ fn a_concession_ending_goes_out_to_every_company() {
     assert_eq!(sync(&data, &mut b), (true, true));
     let h = cn::of_line(&b, "Linie5").unwrap();
     let from = dates::add(&until, 1);
-    assert_eq!((h.from.clone(), h.until.clone()), (from.clone(), dates::add(&dates::add_month(&from), -1)), "from the day A's term ends, a month");
+    // (3 November 2026: a small work with electric buses - 21 days)
+    assert_eq!((h.from.clone(), h.until.clone()), (from.clone(), dates::add(&from, cn::server_days(Drive::Electric, cn::WorkSize::Small) - 1)), "from the day A's term ends, three weeks");
     assert_eq!(h.after, "umove", "A runs it until then");
     let k = b.concessions.contracts.iter().find(|k| k.line == "Linie5").unwrap();
     assert!(k.electric && k.extensions_left == 0);
@@ -254,7 +257,9 @@ fn an_easy_company_applies_and_bids_itself() {
     at(&mut e, now + 2);
     sync(&data, &mut e);
     let t = e.concessions.tenders.iter().find(|t| t.line == "Linie7").unwrap().clone();
-    assert!(t.applied && t.running(now + 2) && t.offers.is_empty(), "{t:?}");
+    // (3 November 2026: announced at once, it takes bids from a day later)
+    assert!(t.applied && !t.running(now + 2) && t.running(t.opens_at + 2) && t.offers.is_empty(), "{t:?}");
+    at(&mut e, t.opens_at + 2);
     assert!(bids(&data, &key).is_empty(), "nothing bid by itself");
     let ask_e = cn::min_bid(&e, &t);
     bid(&data, &mut e, t.id, ask_e).unwrap();
@@ -284,8 +289,8 @@ fn an_operator_holds_a_line_it_won_and_may_give_it_up() {
     let d = m.tenders.iter().find(|x| x.tender.id == t.id).unwrap().decided.clone().unwrap();
     assert!(d.winner.is_empty() && !d.name.is_empty() && d.own_cost > 0, "{d:?}");
     let h = m.held.iter().find(|h| h.line == t.line).expect("the operator holds it").clone();
-    assert_eq!((h.from.clone(), h.name.clone()), (dates::add(&closed, 1), d.name.clone()));
-    assert_eq!(dates::between(&h.from, &h.until), cn::SERVER_DIESEL_DAYS - 1);
+    assert_eq!((h.from.clone(), h.name.clone()), (dates::add(&closed, START_AFTER), d.name.clone()));
+    assert_eq!(dates::between(&h.from, &h.until), cn::server_days(Drive::Diesel, cn::WorkSize::Small) - 1);
     // (an application for it: refused)
     let l = lines.iter().find(|l| l.name == t.line).unwrap();
     assert_eq!(ask(&data, &a, l), Err(OPERATOR_HELD));
@@ -296,7 +301,7 @@ fn an_operator_holds_a_line_it_won_and_may_give_it_up() {
     let day = dates::add(&h.from, 3);
     let said = step(&data, &key, MAP, &day, clock::moment(&day, 8 * 60), &mut read);
     let m = load(&data, &key).unwrap();
-    assert!(said.iter().any(|s| s.contains("gives line") && s.contains("out to tender at once")), "{said:?}");
+    assert!(said.iter().any(|s| s.contains("gives line") && s.contains("open from tomorrow")), "{said:?}");
     assert!(!m.held.iter().any(|x| x.line == t.line));
     let again = m.tenders.iter().find(|x| x.decided.is_none() && x.tender.line == t.line).expect("out again").tender.clone();
     assert_eq!(again.market.as_ref().unwrap().failed, h.name);
@@ -353,15 +358,15 @@ fn a_chrono_events_line_goes_out_to_tender_for_its_days() {
     assert_eq!(m.events.len(), 1);
     // (an application: refused)
     assert_eq!(ask(&data, &b, &shuttle), Err(EVENT_LINE));
-    // a week before: out to tender for its day
-    let day = "2024-03-05";
+    // six days before (3 November 2026; a week before until then): out to tender for its day
+    let day = "2024-03-06";
     let said = step(&data, &key, MAP, day, clock::moment(day, 8 * 60), &mut read);
     let m = load(&data, &key).unwrap();
     let t = m.tenders.iter().find(|t| t.tender.line == "Sonderverkehr").unwrap_or_else(|| panic!("{said:?}")).tender.clone();
     let x = t.market.as_ref().unwrap();
     assert_eq!((x.event.as_str(), x.from.as_str(), x.until.as_str()), ("FCA Heimspiel", "2024-03-12", "2024-03-12"));
     assert!(!t.renewal && x.holder.is_empty());
-    assert_eq!((clock::date_of(t.opens_at), clock::date_of(t.closes_at)), ("2024-03-06".to_string(), "2024-03-09".to_string()));
+    assert_eq!((clock::date_of(t.opens_at), clock::date_of(t.closes_at)), ("2024-03-07".to_string(), "2024-03-10".to_string()));
     assert!(t.week.is_some_and(|w| w.tours == 2), "{:?}", t.week);
     // (A told its line 5 does not run that day - once)
     at(&mut a, clock::moment(day, 9 * 60));
@@ -386,7 +391,7 @@ fn a_chrono_events_line_goes_out_to_tender_for_its_days() {
     // the days after: no renewal of it
     let (ca, cb) = (a.clone(), b.clone());
     let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone(), cb.clone()], template: template(MAP, DATE, &[]), events: vec![event.clone()] });
-    for day in ["2024-03-07", "2024-03-10", "2024-03-12"] {
+    for day in ["2024-03-08", "2024-03-11", "2024-03-12"] {
         step(&data, &key, MAP, day, clock::moment(day, 8 * 60), &mut read);
     }
     let m = load(&data, &key).unwrap();
@@ -428,7 +433,7 @@ fn the_maps_chrono_events_and_their_own_lines() {
     assert_eq!((e.name.as_str(), e.from.as_str(), e.until.as_str()), ("FCA Heimspiel", "2024-03-12", "2024-03-12"));
     assert_eq!((e.own.clone(), e.off.clone()), (vec!["Sonderverkehr".to_string()], vec!["Linie7".to_string()]));
     assert!(e.lines.is_empty() && asked.borrow().is_empty(), "not read eleven days before");
-    let near = map_events(&map, "2024-03-05", &mut read);
+    let near = map_events(&map, "2024-03-06", &mut read);
     assert_eq!(near[0].lines.iter().map(|l| l.name.as_str()).collect::<Vec<_>>(), ["Sonderverkehr"]);
     assert_eq!(*asked.borrow(), ["2024-03-12"]);
     let _ = std::fs::remove_dir_all(&map);
@@ -554,4 +559,84 @@ fn the_admins_rules_times_caps_direct_awards_and_contracts() {
     assert_eq!(b.concessions.contracts.iter().find(|k| k.line == "Linie9").unwrap().until, until);
     assert!(b.clock.feed.iter().any(|f| f.text == CONTRACT_MOVED), "told");
     let _ = std::fs::remove_dir_all(&data);
+}
+
+/// (Decided 3 November 2026) The Danish terms: a tender of the market lets a gross-cost contract
+/// paid by the day; an application is announced at once and takes bids from a day later for three
+/// days, the service starting two days after the close; the contract's days by its work's size and
+/// buses (14 to 30).
+#[test]
+fn the_danish_terms_of_a_tender() {
+    use crate::company::bus_contracts::{Kind, Period};
+    use cn::WorkSize::*;
+    assert_eq!((cn::WorkSize::of_hours(999.0), cn::WorkSize::of_hours(1000.0), cn::WorkSize::of_hours(3000.0), cn::WorkSize::of_hours(3000.5)), (Small, Medium, Medium, Large));
+    let days = |d: Drive, s: cn::WorkSize| cn::server_days(d, s);
+    assert_eq!((days(Drive::Diesel, Small), days(Drive::Diesel, Medium), days(Drive::Diesel, Large)), (14, 18, 21));
+    assert_eq!((days(Drive::Electric, Small), days(Drive::Electric, Medium), days(Drive::Electric, Large)), (21, 25, 30));
+    assert_eq!(cn::server_term(Drive::Electric, 2000.0, DATE), dates::add(DATE, 24));
+    let data = temp("danish");
+    let lines = lines();
+    let b = company("GoCollective", "gocollective");
+    let key = key_of(MAP);
+    let cb = b.clone();
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![cb.clone()], template: template(MAP, DATE, &[]), events: Vec::new() });
+    assert_eq!(ask(&data, &b, &lines[3]), Ok(ASKED));
+    let now = clock::moment(DATE, 8 * 60);
+    step(&data, &key, MAP, DATE, now, &mut read);
+    let t = load(&data, &key).unwrap().tenders.iter().find(|t| t.tender.line == "Linie9").expect("out to tender").tender.clone();
+    assert_eq!((t.kind, t.period), (Kind::Gross, Period::Day));
+    assert_eq!((t.opens_at, t.closes_at - t.opens_at), (now + PREP_DAYS * clock::DAY, TENDER_DAYS * clock::DAY));
+    assert_eq!(cn::server_start(&t), dates::add(&clock::date_of(t.closes_at), START_AFTER));
+    assert!(cn::week_hours(&t) > 0.0 && cn::week_hours(&t) < cn::SMALL_HOURS, "{}", cn::week_hours(&t));
+    let _ = std::fs::remove_dir_all(&data);
+}
+
+/// (Decided 3 November 2026) The authority's option: the day before a contract's next term would be
+/// announced, a contract run satisfactorily runs seven days more - its concession and its bus
+/// contract -, at most twice; not one run badly, nor one whose next term was announced already.
+#[test]
+fn the_option_takes_a_contract_run_well_seven_days_on_twice_at_most() {
+    use crate::company::bus_contracts::{self as bc, Kind, Period, PointsDay};
+    let mut c = company("Umove", "umove");
+    let l = lines()[0].clone();
+    network::add_line(&mut c, &l, None).unwrap();
+    let held = |c: &mut Company, until: &str| {
+        c.concessions.held.retain(|h| h.line != "Linie5");
+        c.concessions.contracts.clear();
+        c.concessions.held.push(cn::Concession { line: "Linie5".into(), number: "5".into(), from: DATE.into(), until: until.into(), price: 1.0, direct: false, after: String::new(), options: 0 });
+        let k = bc::make(c, "Linie5", "5", Kind::Gross, Period::Day, 1_000_000, &bc::work_of(&l), DATE, until);
+        c.concessions.contracts.push(k);
+    };
+    // (the next term would be announced tomorrow: its new term begins RENEW_ANNOUNCED + 1 days on)
+    let until = dates::add(DATE, RENEW_ANNOUNCED);
+    held(&mut c, &until);
+    let mut run = clock::Run::default();
+    assert!(options(&mut c, &mut run, 0));
+    let h = cn::of_line(&c, "Linie5").unwrap().clone();
+    let once = dates::add(&until, OPTION_DAYS);
+    assert_eq!((h.until.as_str(), h.options), (once.as_str(), 1));
+    assert_eq!(c.concessions.contracts[0].until, once);
+    assert!(!options(&mut c, &mut run, 0), "not again that day");
+    // (a week on: the second, then no more)
+    c.date = dates::add(DATE, OPTION_DAYS);
+    assert!(options(&mut c, &mut run, 0));
+    assert_eq!(cn::of_line(&c, "Linie5").unwrap().options, OPTIONS);
+    c.date = dates::add(DATE, 2 * OPTION_DAYS);
+    assert!(!options(&mut c, &mut run, 0), "twice at most");
+    // run badly: more than 2 % of its journeys dropped - no option
+    c.date = DATE.into();
+    held(&mut c, &until);
+    let journeys = c.concessions.contracts[0].journeys;
+    c.concessions.contracts[0].from = dates::add(DATE, -10);
+    c.concessions.contracts[0].record.push(PointsDay { date: dates::add(DATE, -1), missed: journeys, ..Default::default() });
+    assert!(!satisfactory(&c.concessions.contracts[0], DATE));
+    assert!(!options(&mut c, &mut run, 0));
+    c.concessions.contracts[0].record.clear();
+    assert!(satisfactory(&c.concessions.contracts[0], DATE));
+    // its next term announced already: no option
+    let mut t = cn::make_tender(&c, &l, 9, 0, true, "grundorf", &[], (0, 0));
+    t.market = Some(cn::Shared { key: "grundorf".into(), id: 9, from: dates::add(&until, 1), ..Default::default() });
+    c.concessions.tenders.push(t);
+    assert!(!options(&mut c, &mut run, 0));
+    assert_eq!(cn::of_line(&c, "Linie5").unwrap().until, until);
 }
