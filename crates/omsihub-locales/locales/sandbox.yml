@@ -3,6 +3,7 @@ _version: 2
 # its knobs, the founding's choice, the switch in the settings and the badge by the name.
 "Career":
   de: "Karriere"
+  da: "Karriere"
   fr: "Carrière"
   nl: "Carrière"
   pl: "Kariera"
@@ -10,6 +11,7 @@ _version: 2
   uk: "Кар'єра"
 "Sandbox":
   de: "Sandbox"
+  da: "Sandkasse"
   fr: "Bac à sable"
   nl: "Sandbox"
   pl: "Piaskownica"
@@ -17,6 +19,7 @@ _version: 2
   uk: "Пісочниця"
 "The game as it is: earn your money, climb the levels, research and win your tenders.":
   de: "Das Spiel, wie es ist: Geld verdienen, Stufen aufsteigen, forschen und Ausschreibungen gewinnen."
+  da: "Spillet, som det er: tjen dine penge, stig i niveau, forsk og vind dine udbud."
   fr: "Le jeu tel quel : gagnez votre argent, montez de niveau, faites de la recherche et remportez vos appels d'offres."
   nl: "Het spel zoals het is: verdien je geld, stijg in niveau, doe onderzoek en win je aanbestedingen."
   pl: "Gra taka, jaka jest: zarabiaj pieniądze, awansuj na kolejne poziomy, prowadź badania i wygrywaj przetargi."
@@ -24,6 +27,7 @@ _version: 2
   uk: "Гра як є: заробляйте гроші, підіймайтеся рівнями, ведіть дослідження й вигравайте тендери."
 "Set the rules yourself: money, unlocks, prices, wages, disruptions and staff, each on the Sandbox page.":
   de: "Lege die Regeln selbst fest: Geld, Freischaltungen, Preise, Löhne, Störungen und Personal, alles auf der Sandbox-Seite."
+  da: "Sæt reglerne selv: penge, oplåsninger, priser, lønninger, forstyrrelser og personale, hver på siden Sandkasse."
   fr: "Fixez vous-même les règles : argent, déblocages, prix, salaires, perturbations et personnel, chacun sur la page Bac à sable."
   nl: "Bepaal zelf de regels: geld, ontgrendelingen, prijzen, lonen, verstoringen en personeel, elk op de Sandbox-pagina."
   pl: "Ustal zasady sam: pieniądze, odblokowania, ceny, płace, zakłócenia i personel, każde na stronie Piaskownicy."
@@ -31,6 +35,7 @@ _version: 2
   uk: "Встановіть правила самі: гроші, відкриття, ціни, зарплати, збої та персонал — усе на сторінці «Пісочниця»."
 "Money":
   de: "Geld"
+  da: "Penge"
   fr: "Argent"
   nl: "Geld"
   pl: "Pieniądze"
@@ -38,6 +43,7 @@ _version: 2
   uk: "Гроші"
 "Unlocks":
   de: "Freischaltungen"
+  da: "Oplåsninger"
   fr: "Déblocages"
   nl: "Ontgrendelingen"
   pl: "Odblokowania"
@@ -45,6 +51,7 @@ _version: 2
   uk: "Відкриття"
 "Economy":
   de: "Wirtschaft"
+  da: "Økonomi"
   fr: "Économie"
   nl: "Economie"
   pl: "Ekonomia"
@@ -52,6 +59,7 @@ _version: 2
   uk: "Економіка"
 "Operations":
   de: "Betrieb"
+  da: "Drift"
   fr: "Exploitation"
   nl: "Bedrijfsvoering"
   pl: "Eksploatacja"
@@ -59,6 +67,7 @@ _version: 2
   uk: "Експлуатація"
 "Staff":
   de: "Personal"
+  da: "Personale"
   fr: "Personnel"
   nl: "Personeel"
   pl: "Personel"
@@ -66,6 +75,7 @@ _version: 2
   uk: "Персонал"
 "Unlimited money":
   de: "Unbegrenztes Geld"
+  da: "Ubegrænsede penge"
   fr: "Argent illimité"
   nl: "Onbeperkt geld"
   pl: "Nieograniczone pieniądze"
@@ -73,6 +83,7 @@ _version: 2
   uk: "Необмежені гроші"
 "Spending never fails and the balance shows ∞. The books still count every euro.":
   de: "Ausgaben scheitern nie, und der Kontostand zeigt ∞. Die Buchhaltung zählt trotzdem jeden Euro."
+  da: "Udgifter fejler aldrig, og saldoen viser ∞. Regnskabet tæller stadig hver euro."
   fr: "Les dépenses ne sont jamais refusées et le solde affiche ∞. Les comptes notent tout de même chaque euro."
   nl: "Uitgaven lukken altijd en het saldo toont ∞. De boekhouding telt nog steeds elke euro."
   pl: "Wydatki nigdy nie są odrzucane, a saldo pokazuje ∞. Księgi nadal liczą każde euro."
@@ -80,6 +91,7 @@ _version: 2
   uk: "Витрати завжди проходять, а баланс показує ∞. Бухгалтерія все одно враховує кожен євро."
 "Never go broke":
   de: "Nie pleite"
+  da: "Gå aldrig konkurs"
   fr: "Jamais en faillite"
   nl: "Nooit failliet"
   pl: "Nigdy nie zbankrutuj"
@@ -87,6 +99,7 @@ _version: 2
   uk: "Ніколи не збанкрутувати"
 "Spending may take the balance below zero, and nothing warns of the company being in the red.":
   de: "Ausgaben dürfen den Kontostand unter null bringen, und nichts warnt davor, dass das Unternehmen im Minus ist."
+  da: "Udgifter må tage saldoen under nul, og intet advarer om, at selskabet er i minus."
   fr: "Les dépenses peuvent faire passer le solde sous zéro, et rien n'avertit que l'entreprise est dans le rouge."
   nl: "Uitgaven mogen het saldo onder nul brengen, en niets waarschuwt dat het bedrijf rood staat."
   pl: "Wydatki mogą sprowadzić saldo poniżej zera i nic nie ostrzega, że firma jest na minusie."
@@ -94,6 +107,7 @@ _version: 2
   uk: "Витрати можуть опустити баланс нижче нуля, і ніщо не попереджає, що компанія в мінусі."
 "Loans without interest":
   de: "Kredite ohne Zinsen"
+  da: "Lån uden renter"
   fr: "Prêts sans intérêts"
   nl: "Leningen zonder rente"
   pl: "Kredyty bez odsetek"
@@ -101,6 +115,7 @@ _version: 2
   uk: "Кредити без відсотків"
 "The bank charges no interest and no fee for paying back early, on new loans and on those running.":
   de: "Die Bank verlangt keine Zinsen und keine Gebühr für vorzeitige Rückzahlung, bei neuen und bei laufenden Krediten."
+  da: "Banken tager ingen renter og intet gebyr for tidlig indfrielse, på nye lån og på dem, der løber."
   fr: "La banque ne prend ni intérêts ni frais de remboursement anticipé, sur les nouveaux prêts comme sur ceux en cours."
   nl: "De bank rekent geen rente en geen boete voor vervroegd aflossen, op nieuwe en op lopende leningen."
   pl: "Bank nie pobiera odsetek ani opłaty za wcześniejszą spłatę, ani od nowych, ani od bieżących kredytów."
@@ -108,6 +123,7 @@ _version: 2
   uk: "Банк не бере відсотків і плати за дострокове погашення — ні за новими, ні за поточними кредитами."
 "Everything unlocked":
   de: "Alles freigeschaltet"
+  da: "Alt låst op"
   fr: "Tout débloqué"
   nl: "Alles ontgrendeld"
   pl: "Wszystko odblokowane"
@@ -115,6 +131,7 @@ _version: 2
   uk: "Усе відкрито"
 "Every company level's features and courses, all research, every bus size at the dealers, as many concessions as you like, the map's lines without a tender, and every driver qualified for every bus.":
   de: "Alle Funktionen und Kurse jeder Unternehmensstufe, alle Forschung, jede Busgröße bei den Händlern, so viele Konzessionen wie gewünscht, die Linien der Karte ohne Ausschreibung, und jeder Fahrer darf jeden Bus fahren."
+  da: "Hvert selskabsniveaus funktioner og kurser, al forskning, hver busstørrelse hos forhandlerne, så mange koncessioner, du vil, kortets linjer uden udbud, og hver chauffør kvalificeret til hver bus."
   fr: "Toutes les fonctions et formations de chaque niveau, toute la recherche, toutes les tailles de bus chez les concessionnaires, autant de concessions que vous voulez, les lignes de la carte sans appel d'offres, et chaque conducteur qualifié pour chaque bus."
   nl: "Alle functies en cursussen van elk bedrijfsniveau, al het onderzoek, elke busgrootte bij de dealers, zoveel concessies als je wilt, de lijnen van de kaart zonder aanbesteding, en elke chauffeur bevoegd voor elke bus."
   pl: "Wszystkie funkcje i kursy każdego poziomu firmy, wszystkie badania, każdy rozmiar autobusu u dealerów, dowolnie wiele koncesji, linie mapy bez przetargu i każdy kierowca uprawniony do każdego autobusu."
@@ -122,6 +139,7 @@ _version: 2
   uk: "Усі функції та курси кожного рівня компанії, усі дослідження, автобуси будь-якого розміру в дилерів, скільки завгодно концесій, лінії мапи без тендеру й кожен водій допущений до будь-якого автобуса."
 "Fares and compensation":
   de: "Fahrgeld und Ausgleich"
+  da: "Billetpriser og kompensation"
   fr: "Recettes et compensation"
   nl: "Ritopbrengst en vergoeding"
   pl: "Opłaty za przejazd i rekompensata"
@@ -129,6 +147,7 @@ _version: 2
   uk: "Виручка та компенсація"
 "What the passengers pay, and what the authority pays per kilometre.":
   de: "Was die Fahrgäste zahlen und was der Aufgabenträger pro Kilometer zahlt."
+  da: "Hvad passagererne betaler, og hvad trafikselskabet betaler pr. kilometer."
   fr: "Ce que paient les voyageurs, et ce que l'autorité paie par kilomètre."
   nl: "Wat de reizigers betalen, en wat de opdrachtgever per kilometer betaalt."
   pl: "Co płacą pasażerowie i co organizator płaci za kilometr."
@@ -136,6 +155,7 @@ _version: 2
   uk: "Що платять пасажири і що платить замовник за кілометр."
 "Wages":
   de: "Löhne"
+  da: "Lønninger"
   fr: "Salaires"
   nl: "Lonen"
   pl: "Płace"
@@ -143,6 +163,7 @@ _version: 2
   uk: "Зарплати"
 "Every wage the company pays its people.":
   de: "Jeder Lohn, den das Unternehmen seinen Leuten zahlt."
+  da: "Hver løn, selskabet betaler sine folk."
   fr: "Chaque salaire que l'entreprise verse à son personnel."
   nl: "Elk loon dat het bedrijf zijn mensen betaalt."
   pl: "Każda płaca, którą firma wypłaca swoim ludziom."
@@ -150,6 +171,7 @@ _version: 2
   uk: "Кожна зарплата, яку компанія платить своїм людям."
 "Running costs":
   de: "Betriebskosten"
+  da: "Driftsomkostninger"
   fr: "Frais d'exploitation"
   nl: "Bedrijfskosten"
   pl: "Koszty eksploatacji"
@@ -157,6 +179,7 @@ _version: 2
   uk: "Експлуатаційні витрати"
 "Fuel and power, maintenance and repairs.":
   de: "Kraftstoff und Strom, Wartung und Reparaturen."
+  da: "Brændstof og strøm, vedligeholdelse og reparationer."
   fr: "Carburant et électricité, entretien et réparations."
   nl: "Brandstof en stroom, onderhoud en reparaties."
   pl: "Paliwo i energia, konserwacja i naprawy."
@@ -164,6 +187,7 @@ _version: 2
   uk: "Пальне й електроенергія, обслуговування та ремонт."
 "Bus prices":
   de: "Buspreise"
+  da: "Busspriser"
   fr: "Prix des bus"
   nl: "Busprijzen"
   pl: "Ceny autobusów"
@@ -171,6 +195,7 @@ _version: 2
   uk: "Ціни автобусів"
 "New and used buses at the dealers, and so their leasing rates.":
   de: "Neue und gebrauchte Busse bei den Händlern, und damit auch ihre Leasingraten."
+  da: "Nye og brugte busser hos forhandlerne og dermed deres leasingrater."
   fr: "Bus neufs et d'occasion chez les concessionnaires, et donc leurs loyers de leasing."
   nl: "Nieuwe en gebruikte bussen bij de dealers, en daarmee hun leasetermijnen."
   pl: "Nowe i używane autobusy u dealerów, a więc i ich raty leasingowe."
@@ -178,6 +203,7 @@ _version: 2
   uk: "Нові та вживані автобуси в дилерів, а отже, і їхні лізингові платежі."
 "Contract penalties":
   de: "Vertragsstrafen"
+  da: "Kontraktbøder"
   fr: "Pénalités contractuelles"
   nl: "Contractboetes"
   pl: "Kary umowne"
@@ -185,6 +211,7 @@ _version: 2
   uk: "Штрафи за контрактом"
 "What dropped and late trips cost under the contracts.":
   de: "Was ausgefallene und verspätete Fahrten nach den Verträgen kosten."
+  da: "Hvad droppede og forsinkede ture koster under kontrakterne."
   fr: "Ce que coûtent les trajets supprimés et en retard selon les contrats."
   nl: "Wat uitgevallen en te late ritten volgens de contracten kosten."
   pl: "Ile według umów kosztują odwołane i spóźnione kursy."
@@ -192,6 +219,7 @@ _version: 2
   uk: "Скільки за контрактами коштують скасовані та запізнілі рейси."
 "Inflation":
   de: "Inflation"
+  da: "Inflation"
   fr: "Inflation"
   nl: "Inflatie"
   pl: "Inflacja"
@@ -199,6 +227,7 @@ _version: 2
   uk: "Інфляція"
 "Prices rise over the years, and the contract's payment with them. Off: prices stand still.":
   de: "Die Preise steigen über die Jahre, und die Vertragszahlung mit ihnen. Aus: Die Preise bleiben stehen."
+  da: "Priserne stiger over årene, og kontraktens betaling med dem. Fra: priserne står stille."
   fr: "Les prix augmentent au fil des ans, et le paiement du contrat avec eux. Désactivé : les prix restent fixes."
   nl: "De prijzen stijgen door de jaren heen, en de contractbetaling mee. Uit: de prijzen staan stil."
   pl: "Ceny rosną z biegiem lat, a wraz z nimi płatność z umowy. Wyłączone: ceny stoją w miejscu."
@@ -206,6 +235,7 @@ _version: 2
   uk: "Ціни зростають з роками, а разом із ними й оплата за контрактом. Вимк.: ціни стоять на місці."
 "Breakdowns":
   de: "Pannen"
+  da: "Sammenbrud"
   fr: "Pannes"
   nl: "Pech"
   pl: "Awarie"
@@ -213,6 +243,7 @@ _version: 2
   uk: "Поломки"
 "How often buses break down on their way.":
   de: "Wie oft Busse unterwegs liegen bleiben."
+  da: "Hvor ofte busser bryder sammen undervejs."
   fr: "La fréquence des pannes des bus en route."
   nl: "Hoe vaak bussen onderweg pech krijgen."
   pl: "Jak często autobusy psują się w trasie."
@@ -220,6 +251,7 @@ _version: 2
   uk: "Як часто автобуси ламаються в дорозі."
 "Accidents":
   de: "Unfälle"
+  da: "Uheld"
   fr: "Accidents"
   nl: "Ongevallen"
   pl: "Wypadki"
@@ -227,6 +259,7 @@ _version: 2
   uk: "Аварії"
 "How often buses have accidents: the scrapes and the serious ones.":
   de: "Wie oft Busse Unfälle haben: die Kratzer und die schweren."
+  da: "Hvor ofte busser er ude for uheld: skrammerne og de alvorlige."
   fr: "La fréquence des accidents des bus : les accrochages et les graves."
   nl: "Hoe vaak bussen ongelukken hebben: de schrammen en de ernstige."
   pl: "Jak często autobusy mają wypadki: drobne otarcia i poważne."
@@ -234,6 +267,7 @@ _version: 2
   uk: "Як часто автобуси потрапляють в аварії: подряпини й серйозні."
 "Delays":
   de: "Verspätungen"
+  da: "Forsinkelser"
   fr: "Retards"
   nl: "Vertragingen"
   pl: "Opóźnienia"
@@ -241,6 +275,7 @@ _version: 2
   uk: "Затримки"
 "How late the buses run: the traffic, the drivers and the buses.":
   de: "Wie viel Verspätung die Busse haben: der Verkehr, die Fahrer und die Busse."
+  da: "Hvor forsinkede busserne kører: trafikken, chaufførerne og busserne."
   fr: "Le retard des bus : la circulation, les conducteurs et les bus."
   nl: "Hoeveel vertraging de bussen hebben: het verkeer, de chauffeurs en de bussen."
   pl: "Jak bardzo spóźniają się autobusy: ruch, kierowcy i autobusy."
@@ -248,6 +283,7 @@ _version: 2
   uk: "Наскільки запізнюються автобуси: рух, водії та самі автобуси."
 "Staff illness":
   de: "Krankheit des Personals"
+  da: "Sygdom blandt personalet"
   fr: "Maladie du personnel"
   nl: "Ziekte van personeel"
   pl: "Choroby personelu"
@@ -255,6 +291,7 @@ _version: 2
   uk: "Хвороби персоналу"
 "How often people fall ill.":
   de: "Wie oft die Leute krank werden."
+  da: "Hvor ofte folk bliver syge."
   fr: "La fréquence à laquelle les gens tombent malades."
   nl: "Hoe vaak mensen ziek worden."
   pl: "Jak często ludzie chorują."
@@ -262,6 +299,7 @@ _version: 2
   uk: "Як часто люди хворіють."
 "Reputation gained":
   de: "Gewonnener Ruf"
+  da: "Opnået omdømme"
   fr: "Réputation gagnée"
   nl: "Reputatie gewonnen"
   pl: "Zyskana reputacja"
@@ -269,6 +307,7 @@ _version: 2
   uk: "Здобута репутація"
 "What good service and the passengers' goodwill add to the reputation.":
   de: "Was guter Service und das Wohlwollen der Fahrgäste dem Ruf hinzufügen."
+  da: "Hvad god service og passagerernes velvilje lægger til omdømmet."
   fr: "Ce que le bon service et la bienveillance des voyageurs ajoutent à la réputation."
   nl: "Wat goede dienstverlening en de welwillendheid van reizigers aan de reputatie toevoegen."
   pl: "Ile dobra obsługa i życzliwość pasażerów dodają do reputacji."
@@ -276,6 +315,7 @@ _version: 2
   uk: "Що добре обслуговування й прихильність пасажирів додають до репутації."
 "Reputation lost":
   de: "Verlorener Ruf"
+  da: "Tabt omdømme"
   fr: "Réputation perdue"
   nl: "Reputatie verloren"
   pl: "Utracona reputacja"
@@ -283,6 +323,7 @@ _version: 2
   uk: "Втрачена репутація"
 "What delays, dropped trips, accidents and complaints take off the reputation.":
   de: "Was Verspätungen, ausgefallene Fahrten, Unfälle und Beschwerden vom Ruf abziehen."
+  da: "Hvad forsinkelser, droppede ture, uheld og klager tager af omdømmet."
   fr: "Ce que retards, trajets supprimés, accidents et plaintes retirent à la réputation."
   nl: "Wat vertragingen, uitgevallen ritten, ongevallen en klachten van de reputatie afhalen."
   pl: "Ile opóźnienia, odwołane kursy, wypadki i skargi odbierają z reputacji."
@@ -290,6 +331,7 @@ _version: 2
   uk: "Що затримки, скасовані рейси, аварії та скарги відбирають у репутації."
 "Passenger complaints":
   de: "Fahrgastbeschwerden"
+  da: "Passagerklager"
   fr: "Plaintes des voyageurs"
   nl: "Klachten van reizigers"
   pl: "Skargi pasażerów"
@@ -297,6 +339,7 @@ _version: 2
   uk: "Скарги пасажирів"
 "Passengers write in about what went wrong. Off: no complaints come.":
   de: "Fahrgäste schreiben über das, was schiefging. Aus: Es kommen keine Beschwerden."
+  da: "Passagerer skriver ind om, hvad der gik galt. Fra: ingen klager kommer."
   fr: "Les voyageurs écrivent sur ce qui n'a pas marché. Désactivé : aucune plainte n'arrive."
   nl: "Reizigers schrijven over wat er misging. Uit: er komen geen klachten."
   pl: "Pasażerowie piszą o tym, co poszło nie tak. Wyłączone: nie przychodzą żadne skargi."
@@ -304,6 +347,7 @@ _version: 2
   uk: "Пасажири пишуть про те, що пішло не так. Вимк.: скарг не буде."
 "Staff morale":
   de: "Stimmung des Personals"
+  da: "Personalets moral"
   fr: "Moral du personnel"
   nl: "Moreel van personeel"
   pl: "Morale personelu"
@@ -311,6 +355,7 @@ _version: 2
   uk: "Настрій персоналу"
 "Pay, hours, stress and refused holidays move how content people are, and the unhappy may resign. Off: everyone stays content and calm, and nobody resigns.":
   de: "Lohn, Arbeitszeit, Stress und abgelehnter Urlaub bestimmen, wie zufrieden die Leute sind, und Unzufriedene können kündigen. Aus: Alle bleiben zufrieden und ruhig, und niemand kündigt."
+  da: "Løn, timer, stress og afviste ferier flytter, hvor tilfredse folk er, og de utilfredse kan sige op. Fra: alle forbliver tilfredse og rolige, og ingen siger op."
   fr: "Le salaire, les horaires, le stress et les congés refusés font varier la satisfaction, et les mécontents peuvent démissionner. Désactivé : tout le monde reste satisfait et calme, et personne ne démissionne."
   nl: "Loon, uren, stress en geweigerde vakanties bepalen hoe tevreden mensen zijn, en ontevredenen kunnen ontslag nemen. Uit: iedereen blijft tevreden en rustig, en niemand neemt ontslag."
   pl: "Płaca, godziny, stres i odrzucone urlopy wpływają na zadowolenie ludzi, a niezadowoleni mogą odejść. Wyłączone: wszyscy pozostają zadowoleni i spokojni, nikt nie odchodzi."
@@ -318,6 +363,7 @@ _version: 2
   uk: "Зарплата, години, стрес і відмови у відпустці впливають на задоволеність людей, і незадоволені можуть звільнитися. Вимк.: усі лишаються задоволеними й спокійними, ніхто не звільняється."
 "Holiday requests":
   de: "Urlaubsanträge"
+  da: "Ferieanmodninger"
   fr: "Demandes de congés"
   nl: "Vakantieaanvragen"
   pl: "Wnioski urlopowe"
@@ -325,6 +371,7 @@ _version: 2
   uk: "Заяви на відпустку"
 "People ask for their holidays ahead. Off: nobody asks.":
   de: "Die Leute beantragen ihren Urlaub im Voraus. Aus: Niemand beantragt etwas."
+  da: "Folk beder om ferie i god tid. Fra: ingen beder om noget."
   fr: "Le personnel demande ses congés à l'avance. Désactivé : personne ne demande."
   nl: "Mensen vragen hun vakantie vooraf aan. Uit: niemand vraagt iets aan."
   pl: "Ludzie z wyprzedzeniem proszą o urlop. Wyłączone: nikt nie prosi."
@@ -332,6 +379,7 @@ _version: 2
   uk: "Люди заздалегідь просять відпустку. Вимк.: ніхто не просить."
 "Hire without limits":
   de: "Einstellen ohne Grenzen"
+  da: "Ansæt uden grænser"
   fr: "Embauche sans limites"
   nl: "Aannemen zonder grenzen"
   pl: "Zatrudnianie bez ograniczeń"
@@ -339,6 +387,7 @@ _version: 2
   uk: "Найм без обмежень"
 "Twice as many applicants, free job adverts, and a role whose applicants are all hired gets new ones at once.":
   de: "Doppelt so viele Bewerber, kostenlose Stellenanzeigen, und für eine Rolle, deren Bewerber alle eingestellt sind, kommen sofort neue."
+  da: "Dobbelt så mange ansøgere, gratis jobopslag, og en rolle, hvis ansøgere alle er ansat, får nye med det samme."
   fr: "Deux fois plus de candidats, des annonces gratuites, et un poste dont tous les candidats sont embauchés en reçoit aussitôt de nouveaux."
   nl: "Twee keer zoveel sollicitanten, gratis vacatures, en een functie waarvan alle sollicitanten zijn aangenomen krijgt meteen nieuwe."
   pl: "Dwa razy więcej kandydatów, darmowe ogłoszenia, a stanowisko, na które zatrudniono wszystkich kandydatów, od razu dostaje nowych."
@@ -346,6 +395,7 @@ _version: 2
   uk: "Удвічі більше кандидатів, безкоштовні оголошення, а на посаду, де всіх кандидатів уже найнято, одразу приходять нові."
 "A sandbox company: you set its rules on the Sandbox page.":
   de: "Ein Sandbox-Unternehmen: Seine Regeln legst du auf der Sandbox-Seite fest."
+  da: "Et sandkasseselskab: du fastsætter dets regler på siden Sandkasse."
   fr: "Une entreprise bac à sable : vous fixez ses règles sur la page Bac à sable."
   nl: "Een sandbox-bedrijf: je bepaalt de regels op de Sandbox-pagina."
   pl: "Firma w piaskownicy: jej zasady ustalasz na stronie Piaskownicy."
@@ -353,6 +403,7 @@ _version: 2
   uk: "Компанія-пісочниця: її правила задаються на сторінці «Пісочниця»."
 "On":
   de: "An"
+  da: "Til"
   fr: "Activé"
   nl: "Aan"
   pl: "Wł."
@@ -360,6 +411,7 @@ _version: 2
   uk: "Увімк."
 "Off":
   de: "Aus"
+  da: "Fra"
   fr: "Désactivé"
   nl: "Uit"
   pl: "Wył."
@@ -367,6 +419,7 @@ _version: 2
   uk: "Вимк."
 "Career: %{value}":
   de: "Karriere: %{value}"
+  da: "Karriere: %{value}"
   fr: "Carrière : %{value}"
   nl: "Carrière: %{value}"
   pl: "Kariera: %{value}"
@@ -374,6 +427,7 @@ _version: 2
   uk: "Кар'єра: %{value}"
 "Reset":
   de: "Zurücksetzen"
+  da: "Nulstil"
   fr: "Réinitialiser"
   nl: "Herstellen"
   pl: "Przywróć"
@@ -381,6 +435,7 @@ _version: 2
   uk: "Скинути"
 "This company is a career: turn it into a sandbox in the company's settings to set its rules.":
   de: "Dieses Unternehmen ist eine Karriere: Mach es in den Unternehmenseinstellungen zur Sandbox, um seine Regeln festzulegen."
+  da: "Dette selskab er en karriere: gør det til en sandkasse i selskabets indstillinger for at fastsætte dets regler."
   fr: "Cette entreprise est une carrière : transformez-la en bac à sable dans ses réglages pour fixer ses règles."
   nl: "Dit bedrijf is een carrière: maak er in de bedrijfsinstellingen een sandbox van om de regels te bepalen."
   pl: "Ta firma to kariera: zamień ją w piaskownicę w ustawieniach firmy, aby ustalać jej zasady."
@@ -388,6 +443,7 @@ _version: 2
   uk: "Ця компанія — кар'єра: перетворіть її на пісочницю в налаштуваннях компанії, щоб задавати правила."
 "The company's settings":
   de: "Die Einstellungen des Unternehmens"
+  da: "Selskabets indstillinger"
   fr: "Les réglages de l'entreprise"
   nl: "De instellingen van het bedrijf"
   pl: "Ustawienia firmy"
@@ -395,6 +451,7 @@ _version: 2
   uk: "Налаштування компанії"
 "Set the company's rules the way you like them. Every setting starts as a career company has it; change it here at any time.":
   de: "Lege die Regeln des Unternehmens so fest, wie du willst. Jede Einstellung beginnt wie bei einem Karriere-Unternehmen; ändere sie hier jederzeit."
+  da: "Fastsæt selskabets regler, som du vil have dem. Hver indstilling starter, som et karriereselskab har den; ændr den her når som helst."
   fr: "Fixez les règles de l'entreprise comme vous l'entendez. Chaque réglage commence comme dans une carrière ; modifiez-le ici à tout moment."
   nl: "Stel de regels van het bedrijf in zoals jij wilt. Elke instelling begint zoals bij een carrièrebedrijf; verander die hier wanneer je wilt."
   pl: "Ustal zasady firmy tak, jak chcesz. Każde ustawienie zaczyna się jak w firmie w trybie kariery; zmieniaj je tutaj w dowolnej chwili."
@@ -402,6 +459,7 @@ _version: 2
   uk: "Задайте правила компанії так, як вам подобається. Кожне налаштування починається як у кар'єрі; змінюйте його тут будь-коли."
 "Everything as in a career":
   de: "Alles wie in einer Karriere"
+  da: "Alt som i en karriere"
   fr: "Tout comme dans une carrière"
   nl: "Alles zoals in een carrière"
   pl: "Wszystko jak w karierze"
@@ -409,6 +467,7 @@ _version: 2
   uk: "Усе як у кар'єрі"
 "1 setting changed":
   de: "1 Einstellung geändert"
+  da: "1 indstilling ændret"
   fr: "1 réglage modifié"
   nl: "1 instelling gewijzigd"
   pl: "1 ustawienie zmienione"
@@ -416,6 +475,7 @@ _version: 2
   uk: "Змінено 1 налаштування"
 "%{n} settings changed":
   de: "%{n} Einstellungen geändert"
+  da: "%{n} indstillinger ændret"
   fr: "%{n} réglages modifiés"
   nl: "%{n} instellingen gewijzigd"
   pl: "Zmienione ustawienia: %{n}"
@@ -423,6 +483,7 @@ _version: 2
   uk: "Змінено налаштувань: %{n}"
 "Set by hand":
   de: "Von Hand festlegen"
+  da: "Sat i hånden"
   fr: "Régler à la main"
   nl: "Met de hand instellen"
   pl: "Ustaw ręcznie"
@@ -430,6 +491,7 @@ _version: 2
   uk: "Задати вручну"
 "Balance":
   de: "Kontostand"
+  da: "Saldo"
   fr: "Solde"
   nl: "Saldo"
   pl: "Saldo"
@@ -437,6 +499,7 @@ _version: 2
   uk: "Баланс"
 "With unlimited money the balance shows ∞; this is what the books count.":
   de: "Mit unbegrenztem Geld zeigt der Kontostand ∞; dies ist, was die Buchhaltung zählt."
+  da: "Med ubegrænsede penge viser saldoen ∞; dette er, hvad regnskabet tæller."
   fr: "Avec l'argent illimité, le solde affiche ∞ ; voici ce que comptent les livres."
   nl: "Met onbeperkt geld toont het saldo ∞; dit is wat de boekhouding telt."
   pl: "Przy nieograniczonych pieniądzach saldo pokazuje ∞; to jest stan według ksiąg."
@@ -444,6 +507,7 @@ _version: 2
   uk: "З необмеженими грошима баланс показує ∞; ось що враховує бухгалтерія."
 "The difference is booked as capital: it is not what running the lines earned.":
   de: "Die Differenz wird als Kapital gebucht: Sie zählt nicht als Ertrag aus dem Linienbetrieb."
+  da: "Forskellen bogføres som kapital: det er ikke, hvad driften af linjerne indtjente."
   fr: "La différence est comptabilisée en capital : ce n'est pas ce que l'exploitation des lignes a rapporté."
   nl: "Het verschil wordt als kapitaal geboekt: het is niet wat het rijden van de lijnen opbracht."
   pl: "Różnica jest księgowana jako kapitał: to nie jest zysk z obsługi linii."
@@ -451,6 +515,7 @@ _version: 2
   uk: "Різниця проводиться як капітал: це не дохід від роботи ліній."
 "Set the balance":
   de: "Kontostand festlegen"
+  da: "Sæt saldoen"
   fr: "Fixer le solde"
   nl: "Saldo instellen"
   pl: "Ustaw saldo"
@@ -458,6 +523,7 @@ _version: 2
   uk: "Задати баланс"
 "Reputation":
   de: "Ruf"
+  da: "Omdømme"
   fr: "Réputation"
   nl: "Reputatie"
   pl: "Reputacja"
@@ -465,6 +531,7 @@ _version: 2
   uk: "Репутація"
 "Set the reputation":
   de: "Ruf festlegen"
+  da: "Sæt omdømmet"
   fr: "Fixer la réputation"
   nl: "Reputatie instellen"
   pl: "Ustaw reputację"
@@ -472,6 +539,7 @@ _version: 2
   uk: "Задати репутацію"
 "Every setting back to the career's":
   de: "Alle Einstellungen zurück auf Karriere"
+  da: "Hver indstilling tilbage til karrierens"
   fr: "Tous les réglages comme en carrière"
   nl: "Alle instellingen terug naar carrière"
   pl: "Wszystkie ustawienia jak w karierze"
@@ -479,6 +547,7 @@ _version: 2
   uk: "Усі налаштування як у кар'єрі"
 "The balance is %{amount} now.":
   de: "Der Kontostand beträgt jetzt %{amount}."
+  da: "Saldoen er nu %{amount}."
   fr: "Le solde est maintenant de %{amount}."
   nl: "Het saldo is nu %{amount}."
   pl: "Saldo wynosi teraz %{amount}."
@@ -486,6 +555,7 @@ _version: 2
   uk: "Тепер баланс становить %{amount}."
 "Every setting is back to the career's.":
   de: "Alle Einstellungen sind wieder wie in der Karriere."
+  da: "Hver indstilling er tilbage til karrierens."
   fr: "Tous les réglages sont revenus à ceux de la carrière."
   nl: "Alle instellingen zijn weer zoals in de carrière."
   pl: "Wszystkie ustawienia wróciły do kariery."
@@ -493,6 +563,7 @@ _version: 2
   uk: "Усі налаштування знову як у кар'єрі."
 "Company mode":
   de: "Unternehmensmodus"
+  da: "Selskabstilstand"
   fr: "Mode de l'entreprise"
   nl: "Bedrijfsmodus"
   pl: "Tryb firmy"
@@ -500,6 +571,7 @@ _version: 2
   uk: "Режим компанії"
 "Turn into a sandbox":
   de: "In eine Sandbox verwandeln"
+  da: "Gør til en sandkasse"
   fr: "Transformer en bac à sable"
   nl: "Omzetten naar sandbox"
   pl: "Zamień w piaskownicę"
@@ -507,6 +579,7 @@ _version: 2
   uk: "Перетворити на пісочницю"
 "A sandbox cannot be turned back into a career.":
   de: "Eine Sandbox kann nicht wieder zur Karriere werden."
+  da: "En sandkasse kan ikke gøres tilbage til en karriere."
   fr: "Un bac à sable ne peut pas redevenir une carrière."
   nl: "Een sandbox kan niet terug naar een carrière."
   pl: "Piaskownicy nie można z powrotem zamienić w karierę."
@@ -514,6 +587,7 @@ _version: 2
   uk: "Пісочницю не можна знову перетворити на кар'єру."
 "Open the Sandbox page":
   de: "Sandbox-Seite öffnen"
+  da: "Åbn siden Sandkasse"
   fr: "Ouvrir la page Bac à sable"
   nl: "Sandbox-pagina openen"
   pl: "Otwórz stronę Piaskownicy"
@@ -521,6 +595,7 @@ _version: 2
   uk: "Відкрити сторінку «Пісочниця»"
 "Turn %{name} into a sandbox?":
   de: "%{name} in eine Sandbox verwandeln?"
+  da: "Gør %{name} til en sandkasse?"
   fr: "Transformer %{name} en bac à sable ?"
   nl: "%{name} omzetten naar een sandbox?"
   pl: "Zamienić %{name} w piaskownicę?"
@@ -528,6 +603,7 @@ _version: 2
   uk: "Перетворити %{name} на пісочницю?"
 "The company becomes a sandbox for good: you set its rules yourself on the Sandbox page - money, unlocks, prices, wages, disruptions and staff. Its buses, people, lines, money and history stay as they are, and every rule starts as it is now. A sandbox cannot be turned back into a career.":
   de: "Das Unternehmen wird dauerhaft zur Sandbox: Du legst seine Regeln selbst auf der Sandbox-Seite fest – Geld, Freischaltungen, Preise, Löhne, Störungen und Personal. Busse, Leute, Linien, Geld und Verlauf bleiben, wie sie sind, und jede Regel beginnt so, wie sie jetzt ist. Eine Sandbox kann nicht wieder zur Karriere werden."
+  da: "Selskabet bliver en sandkasse for altid: du fastsætter selv dets regler på siden Sandkasse - penge, oplåsninger, priser, lønninger, forstyrrelser og personale. Dets busser, folk, linjer, penge og historik forbliver, som de er, og hver regel starter, som den er nu. En sandkasse kan ikke gøres tilbage til en karriere."
   fr: "L'entreprise devient un bac à sable pour de bon : vous fixez vous-même ses règles sur la page Bac à sable – argent, déblocages, prix, salaires, perturbations et personnel. Ses bus, son personnel, ses lignes, son argent et son historique restent tels quels, et chaque règle commence comme elle est maintenant. Un bac à sable ne peut pas redevenir une carrière."
   nl: "Het bedrijf wordt voorgoed een sandbox: je bepaalt de regels zelf op de Sandbox-pagina – geld, ontgrendelingen, prijzen, lonen, verstoringen en personeel. Bussen, mensen, lijnen, geld en geschiedenis blijven zoals ze zijn, en elke regel begint zoals hij nu is. Een sandbox kan niet terug naar een carrière."
   pl: "Firma na stałe staje się piaskownicą: jej zasady ustalasz sam na stronie Piaskownicy – pieniądze, odblokowania, ceny, płace, zakłócenia i personel. Autobusy, ludzie, linie, pieniądze i historia pozostają bez zmian, a każda zasada zaczyna się taka, jaka jest teraz. Piaskownicy nie można z powrotem zamienić w karierę."
@@ -535,6 +611,7 @@ _version: 2
   uk: "Компанія назавжди стає пісочницею: ви самі задаєте її правила на сторінці «Пісочниця» — гроші, відкриття, ціни, зарплати, збої та персонал. Автобуси, люди, лінії, гроші та історія лишаються як є, і кожне правило починається таким, яким воно є зараз. Пісочницю не можна знову перетворити на кар'єру."
 "The company is a sandbox now: set its rules on the Sandbox page.":
   de: "Das Unternehmen ist jetzt eine Sandbox: Lege seine Regeln auf der Sandbox-Seite fest."
+  da: "Selskabet er nu en sandkasse: fastsæt dets regler på siden Sandkasse."
   fr: "L'entreprise est maintenant un bac à sable : fixez ses règles sur la page Bac à sable."
   nl: "Het bedrijf is nu een sandbox: bepaal de regels op de Sandbox-pagina."
   pl: "Firma jest teraz piaskownicą: ustal jej zasady na stronie Piaskownicy."
@@ -542,6 +619,7 @@ _version: 2
   uk: "Компанія тепер пісочниця: задайте її правила на сторінці «Пісочниця»."
 "Every rule starts as a career company has it: set them on the Sandbox page once the company is founded.":
   de: "Jede Regel beginnt wie bei einem Karriere-Unternehmen: Lege sie auf der Sandbox-Seite fest, sobald das Unternehmen gegründet ist."
+  da: "Hver regel starter, som et karriereselskab har den: fastsæt dem på siden Sandkasse, når selskabet er stiftet."
   fr: "Chaque règle commence comme dans une carrière : réglez-les sur la page Bac à sable une fois l'entreprise fondée."
   nl: "Elke regel begint zoals bij een carrièrebedrijf: stel ze in op de Sandbox-pagina zodra het bedrijf is opgericht."
   pl: "Każda zasada zaczyna się jak w karierze: ustal je na stronie Piaskownicy po założeniu firmy."
@@ -549,6 +627,7 @@ _version: 2
   uk: "Кожне правило починається як у кар'єрі: задайте їх на сторінці «Пісочниця», коли компанію буде засновано."
 "A career can be turned into a sandbox later in the company's settings, but not back.":
   de: "Eine Karriere kann später in den Unternehmenseinstellungen zur Sandbox werden, aber nicht zurück."
+  da: "En karriere kan senere gøres til en sandkasse i selskabets indstillinger, men ikke tilbage."
   fr: "Une carrière peut devenir un bac à sable plus tard dans les réglages de l'entreprise, mais pas l'inverse."
   nl: "Een carrière kan later in de bedrijfsinstellingen een sandbox worden, maar niet terug."
   pl: "Karierę można później zamienić w piaskownicę w ustawieniach firmy, ale nie odwrotnie."
@@ -556,6 +635,7 @@ _version: 2
   uk: "Кар'єру можна згодом перетворити на пісочницю в налаштуваннях компанії, але не навпаки."
 "Set the company's rules":
   de: "Die Regeln des Unternehmens festlegen"
+  da: "Fastsæt selskabets regler"
   fr: "Fixer les règles de l'entreprise"
   nl: "De regels van het bedrijf instellen"
   pl: "Ustal zasady firmy"
@@ -563,6 +643,7 @@ _version: 2
   uk: "Задати правила компанії"
 "%{name} is founded as a sandbox: set its rules on the Sandbox page.":
   de: "%{name} ist als Sandbox gegründet: Lege seine Regeln auf der Sandbox-Seite fest."
+  da: "%{name} er stiftet som en sandkasse: fastsæt dets regler på siden Sandkasse."
   fr: "%{name} est fondée en bac à sable : fixez ses règles sur la page Bac à sable."
   nl: "%{name} is opgericht als sandbox: bepaal de regels op de Sandbox-pagina."
   pl: "Firma %{name} została założona jako piaskownica: ustal jej zasady na stronie Piaskownicy."
@@ -570,6 +651,7 @@ _version: 2
   uk: "%{name} засновано як пісочницю: задайте її правила на сторінці «Пісочниця»."
 "Only a sandbox company has these settings.":
   de: "Nur ein Sandbox-Unternehmen hat diese Einstellungen."
+  da: "Kun et sandkasseselskab har disse indstillinger."
   fr: "Seule une entreprise bac à sable a ces réglages."
   nl: "Alleen een sandbox-bedrijf heeft deze instellingen."
   pl: "Tylko firma w piaskownicy ma te ustawienia."
@@ -577,6 +659,7 @@ _version: 2
   uk: "Ці налаштування є лише в компанії-пісочниці."
 "There is no such setting.":
   de: "Diese Einstellung gibt es nicht."
+  da: "Der er ingen sådan indstilling."
   fr: "Ce réglage n'existe pas."
   nl: "Die instelling bestaat niet."
   pl: "Nie ma takiego ustawienia."
@@ -584,6 +667,7 @@ _version: 2
   uk: "Такого налаштування немає."
 "Choose a number.":
   de: "Wähle eine Zahl."
+  da: "Vælg et tal."
   fr: "Choisissez un nombre."
   nl: "Kies een getal."
   pl: "Wybierz liczbę."
@@ -591,6 +675,7 @@ _version: 2
   uk: "Виберіть число."
 "The company is a sandbox already.":
   de: "Das Unternehmen ist bereits eine Sandbox."
+  da: "Selskabet er allerede en sandkasse."
   fr: "L'entreprise est déjà un bac à sable."
   nl: "Het bedrijf is al een sandbox."
   pl: "Firma jest już piaskownicą."

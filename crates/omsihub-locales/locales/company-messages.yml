@@ -5,6 +5,7 @@ _version: 2
 # (`lua/messages.lua`) and the add-on's features for it (`compat.rs`).
 "You are running %{min} min late":
   de: "Sie sind %{min} Min. verspätet"
+  da: "Du kører %{min} min for sent"
   fr: "Vous avez %{min} min de retard"
   nl: "Je rijdt %{min} min te laat"
   pl: "Masz %{min} min opóźnienia"
@@ -12,6 +13,7 @@ _version: 2
   uk: "Ви запізнюєтеся на %{min} хв"
 "Please make up time where you safely can":
   de: "Bitte holen Sie Zeit auf, wo es sicher geht"
+  da: "Indhent tid, hvor du sikkert kan"
   fr: "Rattrapez du temps là où c'est sans danger"
   nl: "Haal tijd in waar dat veilig kan"
   pl: "Nadrób czas tam, gdzie to bezpieczne"
@@ -19,6 +21,7 @@ _version: 2
   uk: "Надолужте час там, де це безпечно"
 "Well done: you are back on time":
   de: "Gut gemacht: Sie sind wieder pünktlich"
+  da: "Godt klaret: du er tilbage til tiden"
   fr: "Bravo : vous êtes de nouveau à l'heure"
   nl: "Goed gedaan: je rijdt weer op tijd"
   pl: "Brawo: znowu jedziesz punktualnie"
@@ -26,6 +29,7 @@ _version: 2
   uk: "Чудово: ви знову за розкладом"
 "Short-turn on the %{time} trip: turn back early, the next trip leaves on time":
   de: "Vorzeitig wenden bei der Fahrt um %{time}: die nächste Fahrt fährt pünktlich ab"
+  da: "Kort vending på turen kl. %{time}: vend tidligt, den næste tur kører til tiden"
   fr: "Demi-tour anticipé sur le trajet de %{time} : le trajet suivant part à l'heure"
   nl: "Eerder keren op de rit van %{time}: de volgende rit vertrekt op tijd"
   pl: "Wcześniejszy zawrót na kursie o %{time}: następny kurs odjedzie punktualnie"
@@ -33,6 +37,7 @@ _version: 2
   uk: "Ранній розворот на рейсі о %{time}: наступний рейс вирушить за розкладом"
 "Take a shorter layover before the %{time} trip":
   de: "Machen Sie vor der Fahrt um %{time} eine kürzere Wendezeit"
+  da: "Tag et kortere ophold før turen kl. %{time}"
   fr: "Raccourcissez votre battement avant le trajet de %{time}"
   nl: "Neem een kortere keertijd voor de rit van %{time}"
   pl: "Skróć postój przed kursem o %{time}"
@@ -40,6 +45,7 @@ _version: 2
   uk: "Скоротіть стоянку перед рейсом о %{time}"
 "Spare bus %{bus} takes over at the terminus for the %{time} trip: take your bus back to the depot":
   de: "Ersatzbus %{bus} übernimmt an der Endhaltestelle ab der Fahrt um %{time}: bringen Sie Ihren Bus ins Depot"
+  da: "Reservebus %{bus} overtager ved endestationen til turen kl. %{time}: kør din bus tilbage til garagen"
   fr: "Le bus de réserve %{bus} prend le relais au terminus pour le trajet de %{time} : ramenez votre bus au dépôt"
   nl: "Reservebus %{bus} neemt aan het eindpunt over voor de rit van %{time}: breng je bus terug naar de remise"
   pl: "Autobus rezerwowy %{bus} przejmuje na pętli kurs o %{time}: odprowadź swój autobus do zajezdni"
@@ -47,6 +53,7 @@ _version: 2
   uk: "Резервний автобус %{bus} змінить вас на кінцевій з рейсу о %{time}: відведіть свій автобус у парк"
 "Hold %{min} min at the next stop: a connection is coming":
   de: "Warten Sie %{min} Min. an der nächsten Haltestelle: ein Anschluss kommt"
+  da: "Hold %{min} min ved næste stoppested: en forbindelse er på vej"
   fr: "Attendez %{min} min au prochain arrêt : une correspondance arrive"
   nl: "Wacht %{min} min bij de volgende halte: er komt een aansluiting"
   pl: "Poczekaj %{min} min na następnym przystanku: nadjeżdża przesiadka"
@@ -54,6 +61,7 @@ _version: 2
   uk: "Затримайтеся на %{min} хв на наступній зупинці: підходить пересадка"
 "Hold %{min} min at the next stop to even out the headway":
   de: "Warten Sie %{min} Min. an der nächsten Haltestelle, um den Takt auszugleichen"
+  da: "Hold %{min} min ved næste stoppested for at udjævne intervallet"
   fr: "Attendez %{min} min au prochain arrêt pour régulariser l'intervalle"
   nl: "Wacht %{min} min bij de volgende halte om de interval gelijk te trekken"
   pl: "Poczekaj %{min} min na następnym przystanku, aby wyrównać odstęp"
@@ -61,6 +69,7 @@ _version: 2
   uk: "Затримайтеся на %{min} хв на наступній зупинці, щоб вирівняти інтервал"
 "A relief takes your bus over at %{stop} at %{time}":
   de: "Eine Ablösung übernimmt Ihren Bus um %{time} an %{stop}"
+  da: "En afløser overtager din bus ved %{stop} kl. %{time}"
   fr: "Une relève reprend votre bus à %{stop} à %{time}"
   nl: "Een aflossing neemt je bus over bij %{stop} om %{time}"
   pl: "Zmiennik przejmie twój autobus na przystanku %{stop} o %{time}"
@@ -68,6 +77,7 @@ _version: 2
   uk: "Змінник прийме ваш автобус на зупинці %{stop} о %{time}"
 "Spare bus %{bus} is on its way: it takes over at %{time}":
   de: "Ersatzbus %{bus} ist unterwegs: er übernimmt um %{time}"
+  da: "Reservebus %{bus} er på vej: den overtager kl. %{time}"
   fr: "Le bus de réserve %{bus} est en route : il prend le relais à %{time}"
   nl: "Reservebus %{bus} is onderweg: hij neemt om %{time} over"
   pl: "Autobus rezerwowy %{bus} jest w drodze: przejmie o %{time}"
@@ -75,6 +85,7 @@ _version: 2
   uk: "Резервний автобус %{bus} у дорозі: змінить вас о %{time}"
 "A spare bus is waiting at the depot":
   de: "Ein Ersatzbus wartet im Depot"
+  da: "En reservebus venter i garagen"
   fr: "Un bus de réserve attend au dépôt"
   nl: "Er staat een reservebus klaar in de remise"
   pl: "W zajezdni czeka autobus rezerwowy"
@@ -82,6 +93,7 @@ _version: 2
   uk: "У парку чекає резервний автобус"
 "Diversion ahead: follow the signs":
   de: "Umleitung voraus: folgen Sie der Beschilderung"
+  da: "Omkørsel forude: følg skiltene"
   fr: "Déviation à venir : suivez les panneaux"
   nl: "Omleiding verderop: volg de borden"
   pl: "Objazd przed tobą: jedź zgodnie ze znakami"
@@ -89,6 +101,7 @@ _version: 2
   uk: "Попереду об'їзд: дотримуйтеся вказівників"
 "Road closed ahead: expect delays":
   de: "Straße voraus gesperrt: mit Verspätungen rechnen"
+  da: "Vej lukket forude: forvent forsinkelser"
   fr: "Route fermée plus loin : attendez-vous à des retards"
   nl: "Weg verderop afgesloten: reken op vertraging"
   pl: "Droga przed tobą zamknięta: spodziewaj się opóźnień"
@@ -96,6 +109,7 @@ _version: 2
   uk: "Попереду дорогу перекрито: можливі затримки"
 "Return to the depot after this trip":
   de: "Nach dieser Fahrt ins Depot zurückkehren"
+  da: "Kør tilbage til garagen efter denne tur"
   fr: "Retournez au dépôt après ce trajet"
   nl: "Keer na deze rit terug naar de remise"
   pl: "Po tym kursie wróć do zajezdni"
@@ -103,6 +117,7 @@ _version: 2
   uk: "Після цього рейсу повертайтеся в парк"
 "Call control when it is safe":
   de: "Melden Sie sich bei der Leitstelle, sobald es sicher ist"
+  da: "Ring til trafikstyringen, når det er sikkert"
   fr: "Appelez la régulation quand c'est sans danger"
   nl: "Bel de verkeersleiding als het veilig kan"
   pl: "Zadzwoń do dyspozytora, gdy będzie to bezpieczne"
@@ -110,6 +125,7 @@ _version: 2
   uk: "Зв'яжіться з диспетчерською, коли це буде безпечно"
 "Thank you":
   de: "Danke"
+  da: "Tak"
   fr: "Merci"
   nl: "Bedankt"
   pl: "Dziękuję"
@@ -117,6 +133,7 @@ _version: 2
   uk: "Дякую"
 "Control: understood, we are on it":
   de: "Leitstelle: verstanden, wir kümmern uns darum"
+  da: "Trafikstyring: forstået, vi tager os af det"
   fr: "Régulation : compris, on s'en occupe"
   nl: "Verkeersleiding: begrepen, we zijn ermee bezig"
   pl: "Dyspozytor: zrozumiałem, zajmujemy się tym"
@@ -124,6 +141,7 @@ _version: 2
   uk: "Диспетчерська: зрозуміли, вже займаємося"
 "Not possible from where the bus is now":
   de: "Von dort, wo der Bus jetzt ist, nicht möglich"
+  da: "Ikke muligt, hvor bussen er nu"
   fr: "Impossible depuis l'endroit où se trouve le bus"
   nl: "Niet mogelijk vanaf waar de bus nu is"
   pl: "Niemożliwe z miejsca, w którym jest teraz autobus"
@@ -131,6 +149,7 @@ _version: 2
   uk: "Неможливо звідти, де зараз автобус"
 "The driver of line %{n} tour %{tour} holds %{min} min":
   de: "Der Fahrer von Linie %{n} Umlauf %{tour} wartet %{min} Min."
+  da: "Chaufføren på linje %{n} vognløb %{tour} holder %{min} min"
   fr: "Le conducteur de la ligne %{n} service %{tour} attend %{min} min"
   nl: "De chauffeur van lijn %{n} omloop %{tour} wacht %{min} min"
   pl: "Kierowca linii %{n} brygady %{tour} czeka %{min} min"
@@ -138,6 +157,7 @@ _version: 2
   uk: "Водій лінії %{n} випуску %{tour} стоїть %{min} хв"
 "The driver of line %{n} tour %{tour} is relieved at %{stop}":
   de: "Der Fahrer von Linie %{n} Umlauf %{tour} wird an %{stop} abgelöst"
+  da: "Chaufføren på linje %{n} vognløb %{tour} afløses ved %{stop}"
   fr: "Le conducteur de la ligne %{n} service %{tour} est relevé à %{stop}"
   nl: "De chauffeur van lijn %{n} omloop %{tour} wordt afgelost bij %{stop}"
   pl: "Kierowca linii %{n} brygady %{tour} zostaje zmieniony na przystanku %{stop}"
@@ -145,6 +165,7 @@ _version: 2
   uk: "Водія лінії %{n} випуску %{tour} змінюють на зупинці %{stop}"
 "The driver of line %{n} tour %{tour} declined: %{why}":
   de: "Der Fahrer von Linie %{n} Umlauf %{tour} hat abgelehnt: %{why}"
+  da: "Chaufføren på linje %{n} vognløb %{tour} afslog: %{why}"
   fr: "Le conducteur de la ligne %{n} service %{tour} a refusé : %{why}"
   nl: "De chauffeur van lijn %{n} omloop %{tour} weigerde: %{why}"
   pl: "Kierowca linii %{n} brygady %{tour} odmówił: %{why}"
@@ -152,6 +173,7 @@ _version: 2
   uk: "Водій лінії %{n} випуску %{tour} відмовився: %{why}"
 "Line %{n} tour %{tour}: the driver reports %{why}":
   de: "Linie %{n} Umlauf %{tour}: der Fahrer meldet %{why}"
+  da: "Linje %{n} vognløb %{tour}: chaufføren melder %{why}"
   fr: "Ligne %{n} service %{tour} : le conducteur signale %{why}"
   nl: "Lijn %{n} omloop %{tour}: de chauffeur meldt %{why}"
   pl: "Linia %{n} brygada %{tour}: kierowca zgłasza %{why}"
@@ -159,6 +181,7 @@ _version: 2
   uk: "Лінія %{n} випуск %{tour}: водій повідомляє: %{why}"
 "That message is not there any more.":
   de: "Diese Nachricht gibt es nicht mehr."
+  da: "Den besked findes ikke længere."
   fr: "Ce message n'existe plus."
   nl: "Dat bericht is er niet meer."
   pl: "Tej wiadomości już nie ma."
@@ -166,6 +189,7 @@ _version: 2
   uk: "Цього повідомлення більше немає."
 "That message was answered already.":
   de: "Diese Nachricht wurde schon beantwortet."
+  da: "Den besked er allerede besvaret."
   fr: "Ce message a déjà reçu une réponse."
   nl: "Op dat bericht is al geantwoord."
   pl: "Na tę wiadomość już odpowiedziano."
@@ -173,6 +197,7 @@ _version: 2
   uk: "На це повідомлення вже відповіли."
 "That message is not for you.":
   de: "Diese Nachricht ist nicht für Sie."
+  da: "Den besked er ikke til dig."
   fr: "Ce message ne vous est pas destiné."
   nl: "Dat bericht is niet voor jou."
   pl: "Ta wiadomość nie jest do ciebie."
@@ -180,6 +205,7 @@ _version: 2
   uk: "Це повідомлення не для вас."
 "Info":
   de: "Info"
+  da: "Info"
   fr: "Info"
   nl: "Info"
   pl: "Informacja"
@@ -187,6 +213,7 @@ _version: 2
   uk: "Інфо"
 "Instruction":
   de: "Anweisung"
+  da: "Instruktion"
   fr: "Consigne"
   nl: "Opdracht"
   pl: "Polecenie"
@@ -194,6 +221,7 @@ _version: 2
   uk: "Вказівка"
 "Urgent":
   de: "Dringend"
+  da: "Hastende"
   fr: "Urgent"
   nl: "Dringend"
   pl: "Pilne"
@@ -201,6 +229,7 @@ _version: 2
   uk: "Терміново"
 "Sent":
   de: "Gesendet"
+  da: "Sendt"
   fr: "Envoyé"
   nl: "Verzonden"
   pl: "Wysłane"
@@ -208,6 +237,7 @@ _version: 2
   uk: "Надіслано"
 "Delivered":
   de: "Zugestellt"
+  da: "Leveret"
   fr: "Remis"
   nl: "Afgeleverd"
   pl: "Doręczone"
@@ -215,6 +245,7 @@ _version: 2
   uk: "Доставлено"
 "Read":
   de: "Gelesen"
+  da: "Læst"
   fr: "Lu"
   nl: "Gelezen"
   pl: "Przeczytane"
@@ -222,6 +253,7 @@ _version: 2
   uk: "Прочитано"
 "Accepted":
   de: "Angenommen"
+  da: "Accepteret"
   fr: "Accepté"
   nl: "Aanvaard"
   pl: "Przyjęte"
@@ -229,6 +261,7 @@ _version: 2
   uk: "Прийнято"
 "Declined":
   de: "Abgelehnt"
+  da: "Afslået"
   fr: "Refusé"
   nl: "Geweigerd"
   pl: "Odrzucone"
@@ -236,6 +269,7 @@ _version: 2
   uk: "Відхилено"
 "Spare bus swapped in":
   de: "Ersatzbus eingesetzt"
+  da: "Reservebus sat ind"
   fr: "Bus de réserve mis en ligne"
   nl: "Reservebus ingezet"
   pl: "Wstawiony autobus rezerwowy"
@@ -243,6 +277,7 @@ _version: 2
   uk: "Замінено резервним автобусом"
 "Hold":
   de: "Warten"
+  da: "Hold"
   fr: "Attente"
   nl: "Wachten"
   pl: "Postój"
@@ -250,6 +285,7 @@ _version: 2
   uk: "Очікування"
 "Delay: traffic":
   de: "Verspätung: Verkehr"
+  da: "Forsinkelse: trafik"
   fr: "Retard : circulation"
   nl: "Vertraging: verkeer"
   pl: "Opóźnienie: ruch"
@@ -257,6 +293,7 @@ _version: 2
   uk: "Затримка: затори"
 "Aggressive passenger":
   de: "Aggressiver Fahrgast"
+  da: "Aggressiv passager"
   fr: "Passager agressif"
   nl: "Agressieve reiziger"
   pl: "Agresywny pasażer"
@@ -264,6 +301,7 @@ _version: 2
   uk: "Агресивний пасажир"
 "Road closed":
   de: "Straße gesperrt"
+  da: "Vej lukket"
   fr: "Route fermée"
   nl: "Weg afgesloten"
   pl: "Droga zamknięta"
@@ -271,6 +309,7 @@ _version: 2
   uk: "Дорогу перекрито"
 "Request relief":
   de: "Ablösung anfordern"
+  da: "Anmod om afløsning"
   fr: "Demander une relève"
   nl: "Aflossing vragen"
   pl: "Poproś o zmiennika"
@@ -278,6 +317,7 @@ _version: 2
   uk: "Запросити змінника"
 "Request to talk":
   de: "Sprechwunsch"
+  da: "Anmod om en samtale"
   fr: "Demande à parler"
   nl: "Verzoek om te spreken"
   pl: "Prośba o rozmowę"
@@ -285,6 +325,7 @@ _version: 2
   uk: "Прошу зв'язку"
 "Understood":
   de: "Verstanden"
+  da: "Forstået"
   fr: "Compris"
   nl: "Begrepen"
   pl: "Zrozumiałem"
@@ -292,6 +333,7 @@ _version: 2
   uk: "Зрозумів"
 "On my way":
   de: "Bin unterwegs"
+  da: "På vej"
   fr: "J'arrive"
   nl: "Onderweg"
   pl: "Już jadę"
@@ -299,6 +341,7 @@ _version: 2
   uk: "Вже їду"
 "Running late, doing my best":
   de: "Verspätet, ich tue mein Bestes"
+  da: "Kører for sent, gør mit bedste"
   fr: "En retard, je fais de mon mieux"
   nl: "Te laat, ik doe mijn best"
   pl: "Spóźniam się, robię co mogę"
@@ -306,6 +349,7 @@ _version: 2
   uk: "Запізнююся, роблю все можливе"
 "Please call me":
   de: "Bitte rufen Sie mich an"
+  da: "Ring til mig"
   fr: "Appelez-moi, s'il vous plaît"
   nl: "Bel me alsjeblieft"
   pl: "Proszę o telefon"
@@ -313,6 +357,7 @@ _version: 2
   uk: "Будь ласка, зв'яжіться зі мною"
 "Control":
   de: "Leitstelle"
+  da: "Trafikstyring"
   fr: "Régulation"
   nl: "Verkeersleiding"
   pl: "Dyspozytornia"
@@ -320,6 +365,7 @@ _version: 2
   uk: "Диспетчерська"
 "Dispatcher":
   de: "Disponent"
+  da: "Trafikleder"
   fr: "Régulateur"
   nl: "Dispatcher"
   pl: "Dyspozytor"
@@ -327,6 +373,7 @@ _version: 2
   uk: "Диспетчер"
 "Driver of line %{n} tour %{tour}":
   de: "Fahrer von Linie %{n} Umlauf %{tour}"
+  da: "Chauffør på linje %{n} vognløb %{tour}"
   fr: "Conducteur de la ligne %{n} service %{tour}"
   nl: "Chauffeur van lijn %{n} omloop %{tour}"
   pl: "Kierowca linii %{n} brygady %{tour}"
@@ -334,6 +381,7 @@ _version: 2
   uk: "Водій лінії %{n} випуску %{tour}"
 "Line %{n} tour %{tour}":
   de: "Linie %{n} Umlauf %{tour}"
+  da: "Linje %{n} vognløb %{tour}"
   fr: "Ligne %{n} service %{tour}"
   nl: "Lijn %{n} omloop %{tour}"
   pl: "Linia %{n} brygada %{tour}"
@@ -341,6 +389,7 @@ _version: 2
   uk: "Лінія %{n} випуск %{tour}"
 "Every driver of line %{n}":
   de: "Alle Fahrer der Linie %{n}"
+  da: "Alle chauffører på linje %{n}"
   fr: "Tous les conducteurs de la ligne %{n}"
   nl: "Alle chauffeurs van lijn %{n}"
   pl: "Wszyscy kierowcy linii %{n}"
@@ -348,6 +397,7 @@ _version: 2
   uk: "Усі водії лінії %{n}"
 "Every driver":
   de: "Alle Fahrer"
+  da: "Alle chauffører"
   fr: "Tous les conducteurs"
   nl: "Alle chauffeurs"
   pl: "Wszyscy kierowcy"
@@ -355,6 +405,7 @@ _version: 2
   uk: "Усі водії"
 "Message to the driver":
   de: "Nachricht an den Fahrer"
+  da: "Besked til chaufføren"
   fr: "Message au conducteur"
   nl: "Bericht aan de chauffeur"
   pl: "Wiadomość do kierowcy"
@@ -362,6 +413,7 @@ _version: 2
   uk: "Повідомлення водієві"
 "Canned message":
   de: "Vorlage"
+  da: "Færdig besked"
   fr: "Message type"
   nl: "Standaardbericht"
   pl: "Gotowa wiadomość"
@@ -369,6 +421,7 @@ _version: 2
   uk: "Шаблон"
 "Your own words":
   de: "Eigener Text"
+  da: "Dine egne ord"
   fr: "Votre texte"
   nl: "Eigen tekst"
   pl: "Własna treść"
@@ -376,6 +429,7 @@ _version: 2
   uk: "Свій текст"
 "Type a message…":
   de: "Nachricht eingeben…"
+  da: "Skriv en besked…"
   fr: "Tapez un message…"
   nl: "Typ een bericht…"
   pl: "Wpisz wiadomość…"
@@ -383,6 +437,7 @@ _version: 2
   uk: "Введіть повідомлення…"
 "Priority":
   de: "Priorität"
+  da: "Prioritet"
   fr: "Priorité"
   nl: "Prioriteit"
   pl: "Priorytet"
@@ -390,6 +445,7 @@ _version: 2
   uk: "Пріоритет"
 "No instruction":
   de: "Keine Anweisung"
+  da: "Ingen instruktion"
   fr: "Aucune consigne"
   nl: "Geen opdracht"
   pl: "Bez polecenia"
@@ -397,6 +453,7 @@ _version: 2
   uk: "Без вказівки"
 "Seen to: tell the driver":
   de: "Erledigt: dem Fahrer Bescheid geben"
+  da: "Taget hånd om: sig det til chaufføren"
   fr: "Pris en charge : prévenir le conducteur"
   nl: "Afgehandeld: laat het de chauffeur weten"
   pl: "Załatwione: powiadom kierowcę"
@@ -404,6 +461,7 @@ _version: 2
   uk: "Прийнято: повідомити водія"
 "Acknowledge":
   de: "Bestätigen"
+  da: "Kvittér"
   fr: "Accuser réception"
   nl: "Bevestigen"
   pl: "Potwierdź"
@@ -411,6 +469,7 @@ _version: 2
   uk: "Підтвердити"
 "Sent to %{to}: the driver carries it out.":
   de: "An %{to} gesendet: der Fahrer führt es aus."
+  da: "Sendt til %{to}: chaufføren udfører det."
   fr: "Envoyé à %{to} : le conducteur l'exécute."
   nl: "Verzonden naar %{to}: de chauffeur voert het uit."
   pl: "Wysłano do: %{to}: kierowca to wykonuje."
@@ -418,6 +477,7 @@ _version: 2
   uk: "Надіслано: %{to}: водій виконує."
 "Sent to %{to}: declined - %{why}":
   de: "An %{to} gesendet: abgelehnt - %{why}"
+  da: "Sendt til %{to}: afslået - %{why}"
   fr: "Envoyé à %{to} : refusé - %{why}"
   nl: "Verzonden naar %{to}: geweigerd - %{why}"
   pl: "Wysłano do: %{to}: odrzucone - %{why}"
@@ -425,6 +485,7 @@ _version: 2
   uk: "Надіслано: %{to}: відхилено - %{why}"
 "Sent to %{to}.":
   de: "An %{to} gesendet."
+  da: "Sendt til %{to}."
   fr: "Envoyé à %{to}."
   nl: "Verzonden naar %{to}."
   pl: "Wysłano do: %{to}."
@@ -432,6 +493,7 @@ _version: 2
   uk: "Надіслано: %{to}."
 "The driver is told that control is on it.":
   de: "Der Fahrer weiß jetzt, dass die Leitstelle sich kümmert."
+  da: "Chaufføren får at vide, at trafikstyringen tager sig af det."
   fr: "Le conducteur sait que la régulation s'en occupe."
   nl: "De chauffeur weet nu dat de verkeersleiding ermee bezig is."
   pl: "Kierowca wie, że dyspozytornia się tym zajmuje."
@@ -439,6 +501,7 @@ _version: 2
   uk: "Водій знає, що диспетчерська цим займається."
 "Choose a canned message, type your own or choose an instruction.":
   de: "Wählen Sie eine Vorlage, schreiben Sie selbst oder wählen Sie eine Anweisung."
+  da: "Vælg en færdig besked, skriv din egen, eller vælg en instruktion."
   fr: "Choisissez un message type, écrivez le vôtre ou choisissez une consigne."
   nl: "Kies een standaardbericht, typ er zelf een of kies een opdracht."
   pl: "Wybierz gotową wiadomość, wpisz własną albo wybierz polecenie."
@@ -446,6 +509,7 @@ _version: 2
   uk: "Виберіть шаблон, напишіть свій текст або виберіть вказівку."
 "Choose who the message goes to.":
   de: "Wählen Sie, an wen die Nachricht geht."
+  da: "Vælg, hvem beskeden går til."
   fr: "Choisissez le destinataire du message."
   nl: "Kies naar wie het bericht gaat."
   pl: "Wybierz, do kogo idzie wiadomość."
@@ -453,6 +517,7 @@ _version: 2
   uk: "Виберіть, кому надіслати повідомлення."
 "Messages":
   de: "Nachrichten"
+  da: "Beskeder"
   fr: "Messages"
   nl: "Berichten"
   pl: "Wiadomości"
@@ -460,6 +525,7 @@ _version: 2
   uk: "Повідомлення"
 "Report to control":
   de: "An die Leitstelle melden"
+  da: "Meld til trafikstyringen"
   fr: "Signaler à la régulation"
   nl: "Melden aan de verkeersleiding"
   pl: "Zgłoś dyspozytorowi"
@@ -467,6 +533,7 @@ _version: 2
   uk: "Повідомити диспетчерській"
 "No messages":
   de: "Keine Nachrichten"
+  da: "Ingen beskeder"
   fr: "Aucun message"
   nl: "Geen berichten"
   pl: "Brak wiadomości"
@@ -474,6 +541,7 @@ _version: 2
   uk: "Немає повідомлень"
 "Sent to control":
   de: "An die Leitstelle gesendet"
+  da: "Sendt til trafikstyringen"
   fr: "Envoyé à la régulation"
   nl: "Verzonden naar de verkeersleiding"
   pl: "Wysłano do dyspozytorni"
@@ -481,6 +549,7 @@ _version: 2
   uk: "Надіслано в диспетчерську"
 "No messages yet: the Message button of a row writes to its driver.":
   de: "Noch keine Nachrichten: die Schaltfläche Nachricht einer Zeile schreibt ihrem Fahrer."
+  da: "Ingen beskeder endnu: knappen Besked på en række skriver til dens chauffør."
   fr: "Aucun message pour l'instant : le bouton Message d'une ligne écrit à son conducteur."
   nl: "Nog geen berichten: de knop Bericht van een rij schrijft naar de chauffeur ervan."
   pl: "Brak wiadomości: przycisk Wiadomość w wierszu pisze do jego kierowcy."
@@ -488,6 +557,7 @@ _version: 2
   uk: "Повідомлень поки немає: кнопка «Повідомлення» в рядку пише його водієві."
 "Message every driver":
   de: "Nachricht an alle Fahrer"
+  da: "Besked til alle chauffører"
   fr: "Message à tous les conducteurs"
   nl: "Bericht aan alle chauffeurs"
   pl: "Wiadomość do wszystkich kierowców"
@@ -495,6 +565,7 @@ _version: 2
   uk: "Повідомлення всім водіям"
 "State":
   de: "Status"
+  da: "Tilstand"
   fr: "État"
   nl: "Status"
   pl: "Stan"
@@ -502,6 +573,7 @@ _version: 2
   uk: "Стан"
 "Turned back: the next trip goes on from %{stop}":
   de: "Gewendet: die nächste Fahrt geht ab %{stop} weiter"
+  da: "Vendt: den næste tur fortsætter fra %{stop}"
   fr: "Demi-tour : le trajet suivant repart de %{stop}"
   nl: "Gekeerd: de volgende rit gaat verder vanaf %{stop}"
   pl: "Zawrócono: następny kurs rusza z przystanku %{stop}"
@@ -509,6 +581,7 @@ _version: 2
   uk: "Розворот: наступний рейс продовжується від %{stop}"
 "Turn back at %{stop}":
   de: "Wenden an %{stop}"
+  da: "Vend ved %{stop}"
   fr: "Faites demi-tour à %{stop}"
   nl: "Keer bij %{stop}"
   pl: "Zawróć na przystanku %{stop}"
@@ -516,6 +589,7 @@ _version: 2
   uk: "Розворот на зупинці %{stop}"
 "Out of service to %{stop}: no more stops on this trip":
   de: "Ohne Fahrgäste bis %{stop}: auf dieser Fahrt keine Halte mehr"
+  da: "Ude af drift til %{stop}: ikke flere stoppesteder på denne tur"
   fr: "Hors service jusqu'à %{stop} : plus d'arrêts sur ce trajet"
   nl: "Buiten dienst naar %{stop}: geen haltes meer op deze rit"
   pl: "Bez pasażerów do %{stop}: na tym kursie bez dalszych przystanków"
@@ -523,6 +597,7 @@ _version: 2
   uk: "Без пасажирів до %{stop}: більше жодних зупинок на цьому рейсі"
 "A spare bus takes over: take your bus back to the depot":
   de: "Ein Ersatzbus übernimmt: bringen Sie Ihren Bus ins Depot"
+  da: "En reservebus overtager: kør din bus tilbage til garagen"
   fr: "Un bus de réserve prend le relais : ramenez votre bus au dépôt"
   nl: "Een reservebus neemt over: breng je bus terug naar de remise"
   pl: "Przejmuje autobus rezerwowy: odprowadź swój autobus do zajezdni"
@@ -530,6 +605,7 @@ _version: 2
   uk: "Вас змінює резервний автобус: відведіть свій автобус у парк"
 "Spare bus":
   de: "Ersatzbus"
+  da: "Reservebus"
   fr: "Bus de réserve"
   nl: "Reservebus"
   pl: "Autobus rezerwowy"
@@ -537,6 +613,7 @@ _version: 2
   uk: "Резервний автобус"
 "Hold here for %{m} min":
   de: "Hier %{m} Min. warten"
+  da: "Hold her i %{m} min"
   fr: "Attendez ici %{m} min"
   nl: "Wacht hier %{m} min"
   pl: "Poczekaj tu %{m} min"
@@ -544,6 +621,7 @@ _version: 2
   uk: "Чекайте тут %{m} хв"
 "Your relief takes over here: your duty ends":
   de: "Ihre Ablösung übernimmt hier: Ihr Dienst endet"
+  da: "Din afløser overtager her: din vagt slutter"
   fr: "Votre relève prend le relais ici : votre service se termine"
   nl: "Je aflossing neemt hier over: je dienst eindigt"
   pl: "Tu przejmuje zmiennik: twoja służba się kończy"
@@ -551,6 +629,7 @@ _version: 2
   uk: "Тут вас змінюють: ваша зміна закінчена"
 "Hold: %{time} left":
   de: "Warten: noch %{time}"
+  da: "Hold: %{time} tilbage"
   fr: "Attente : encore %{time}"
   nl: "Wachten: nog %{time}"
   pl: "Postój: zostało %{time}"
@@ -558,6 +637,7 @@ _version: 2
   uk: "Очікування: залишилось %{time}"
 "F9: messages · F10: use the panels with the mouse":
   de: "F9: Nachrichten · F10: Fenster mit der Maus bedienen"
+  da: "F9: beskeder · F10: brug panelerne med musen"
   fr: "F9 : messages · F10 : utiliser les panneaux à la souris"
   nl: "F9: berichten · F10: panelen met de muis bedienen"
   pl: "F9: wiadomości · F10: obsługa paneli myszą"
@@ -565,6 +645,7 @@ _version: 2
   uk: "F9: повідомлення · F10: керування панелями мишею"
 "Hold over: carry on":
   de: "Wartezeit vorbei: weiterfahren"
+  da: "Holdet er forbi: kør videre"
   fr: "Fin de l'attente : repartez"
   nl: "Wachttijd voorbij: rij verder"
   pl: "Koniec postoju: ruszaj dalej"
@@ -572,6 +653,7 @@ _version: 2
   uk: "Очікування закінчено: продовжуйте"
 "Messages from the control room, and your replies":
   de: "Nachrichten der Leitstelle und Ihre Antworten"
+  da: "Beskeder fra kontrolrummet og dine svar"
   fr: "Messages de la régulation et vos réponses"
   nl: "Berichten van de verkeersleiding en je antwoorden"
   pl: "Wiadomości z dyspozytorni i twoje odpowiedzi"
@@ -579,6 +661,7 @@ _version: 2
   uk: "Повідомлення диспетчерської та ваші відповіді"
 "Messages wait on the Operations page and the phone":
   de: "Nachrichten warten auf der Seite Fahrbetrieb und auf dem Telefon"
+  da: "Beskeder venter på siden Drift og i telefonen"
   fr: "Les messages attendent sur la page Exploitation et sur le téléphone"
   nl: "Berichten wachten op de pagina Exploitatie en op de telefoon"
   pl: "Wiadomości czekają na stronie Eksploatacja i w telefonie"
@@ -586,6 +669,7 @@ _version: 2
   uk: "Повідомлення чекають на сторінці «Перевезення» і в телефоні"
 "Instructions carried out in the game (short-turn, out of service, relief)":
   de: "Anweisungen im Spiel ausgeführt (vorzeitig wenden, ohne Fahrgäste, Ablösung)"
+  da: "Instruktioner udført i spillet (kort vending, ude af drift, afløsning)"
   fr: "Consignes exécutées dans le jeu (demi-tour anticipé, hors service, relève)"
   nl: "Opdrachten uitgevoerd in het spel (eerder keren, buiten dienst, aflossing)"
   pl: "Polecenia wykonywane w grze (wcześniejszy zawrót, bez pasażerów, zmiana)"
@@ -593,6 +677,7 @@ _version: 2
   uk: "Вказівки виконуються в грі (ранній розворот, без пасажирів, зміна)"
 "You carry instructions out yourself":
   de: "Sie führen Anweisungen selbst aus"
+  da: "Du udfører instruktioner selv"
   fr: "Vous exécutez les consignes vous-même"
   nl: "Je voert opdrachten zelf uit"
   pl: "Polecenia wykonujesz sam"
@@ -600,6 +685,7 @@ _version: 2
   uk: "Вказівки ви виконуєте самі"
 "A sound for each message":
   de: "Ein Ton für jede Nachricht"
+  da: "En lyd for hver besked"
   fr: "Un son pour chaque message"
   nl: "Een geluid bij elk bericht"
   pl: "Dźwięk przy każdej wiadomości"
@@ -607,6 +693,7 @@ _version: 2
   uk: "Звук для кожного повідомлення"
 "Messages come without a sound":
   de: "Nachrichten kommen ohne Ton"
+  da: "Beskeder kommer uden lyd"
   fr: "Les messages arrivent sans son"
   nl: "Berichten komen zonder geluid"
   pl: "Wiadomości przychodzą bez dźwięku"
@@ -614,6 +701,7 @@ _version: 2
   uk: "Повідомлення надходять без звуку"
 "You are not driving a duty of the company now.":
   de: "Sie fahren gerade keinen Dienst der Firma."
+  da: "Du kører ikke en af selskabets vagter nu."
   fr: "Vous ne conduisez pas de service de l'entreprise en ce moment."
   nl: "Je rijdt nu geen dienst van het bedrijf."
   pl: "Nie prowadzisz teraz służby firmy."
