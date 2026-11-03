@@ -170,3 +170,40 @@ fn a_query_value_undone() {
     assert_eq!(param("x=%zz%", "x"), "%zz%");
     assert_eq!(param("", "x"), "");
 }
+
+/// (3 November 2026) The admin's competitors: the maps' drawn operators shown and taken over by
+/// their characters, one added with its size, style and buses, changed and deleted; the view
+/// counts each one's contracts on the maps.
+#[test]
+fn the_admin_makes_takes_over_changes_and_deletes_competitors() {
+    let dir = temp("competitors");
+    let (api, _) = api(&dir);
+    let data = dir.join("bco");
+    let mut m = shared_tenders::Market { key: "lemmental".into(), map: "maps/Lemmental/global.cfg".into(), rivals: cn::make_rivals(super::super::rng::Rng::of(&["lemmental"], 0)), ..Default::default() };
+    let first = m.rivals[0].name.clone();
+    m.held.push(shared_tenders::OperatorHold { line: "Linie5".into(), name: first.clone(), ..Default::default() });
+    shared_tenders::save(&data, &m).unwrap();
+    let v = competitors_view(&api);
+    assert!(v["competitors"].as_array().unwrap().is_empty());
+    let drawn = &v["drawn"][0];
+    assert_eq!((drawn["map"].as_str(), drawn["operators"].as_array().unwrap().len()), (Some("Lemmental"), m.rivals.len()));
+    assert!(competitor_do(&api, &json!({ "do": "take_over" })).unwrap().starts_with(&format!("{} of the maps' operators", m.rivals.len())));
+    let v = competitors_view(&api);
+    let rows = v["competitors"].as_array().unwrap();
+    assert_eq!(rows.len(), m.rivals.len());
+    let row = rows.iter().find(|r| r["name"] == first.as_str()).unwrap();
+    assert_eq!((row["contracts"].as_u64(), row["fuels"][0].as_str()), (Some(1), Some("diesel")));
+    assert!(competitor_do(&api, &json!({ "do": "take_over" })).unwrap().starts_with("0 of"), "not twice");
+    // a new one, changed and deleted
+    competitor_do(&api, &json!({ "do": "put", "id": 0, "name": "Nordbus", "size": "large", "style": "aggressive", "fuels": ["cng", "electric"], "floors": "low_floor", "quality": "72" })).unwrap();
+    let list = super::super::competitors::load(&data);
+    let n = list.list.iter().find(|c| c.name == "Nordbus").unwrap().clone();
+    assert_eq!((n.made.size, n.made.style, n.made.fuels.clone(), n.quality), (super::super::competitors::Size::Large, super::super::competitors::Style::Aggressive, vec![Drive::Cng, Drive::Electric], 72.0));
+    assert!(competitor_do(&api, &json!({ "do": "put", "id": 0, "name": "nordbus" })).is_err(), "the name once");
+    competitor_do(&api, &json!({ "do": "put", "id": n.id, "name": "Nordbus", "size": "small", "style": "careful", "fuels": [], "floors": [], "quality": 50 })).unwrap();
+    assert_eq!(super::super::competitors::load(&data).list.iter().find(|c| c.id == n.id).unwrap().made.size, super::super::competitors::Size::Small);
+    assert!(competitor_do(&api, &json!({ "do": "delete", "id": n.id })).unwrap().contains("Nordbus deleted"));
+    assert!(competitor_do(&api, &json!({ "do": "delete", "id": n.id })).is_err());
+    assert!(competitor_do(&api, &json!({ "do": "fly" })).is_err());
+    let _ = std::fs::remove_dir_all(&dir);
+}

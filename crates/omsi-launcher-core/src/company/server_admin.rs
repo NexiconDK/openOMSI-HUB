@@ -177,6 +177,12 @@ pub fn handle(api: &Api, auth: &Mutex<Auth>, r: &Request) -> Option<Answer> {
             Err(e) => aw::error("400 Bad Request", &e),
         },
         ("buses", _) => ok(buses(api)),
+        // (3 November 2026) the server's competitors, and the admin's changes of them
+        ("competitors", _) => ok(competitors_view(api)),
+        ("competitor", true) => match competitor_do(api, &asked) {
+            Ok(text) => ok(json!({ "answer": text })),
+            Err(e) => aw::error("400 Bad Request", &e),
+        },
         ("bus", true) => match bus_do(api, &asked) {
             Ok(text) => ok(json!({ "answer": text })),
             Err(e) => aw::error("400 Bad Request", &e),
@@ -649,6 +655,118 @@ fn bus_do(api: &Api, a: &Value) -> Result<String, String> {
     let m = server(api);
     sb::set(&m.data, &file, set).map_err(|e| format!("{e:#}"))?;
     let said = format!("the bus {file}: {}", if set.is_empty() { "as the game guesses it".to_string() } else { format!("{:?}", set) });
+    m.say(&format!("admin panel: {said}"));
+    Ok(said)
+}
+
+/// (3 November 2026) The maps' markets as the main server keeps them (`<data>/market/<key>.json`).
+fn markets_of(data: &std::path::Path) -> Vec<shared_tenders::Market> {
+    let Ok(rd) = std::fs::read_dir(shared_tenders::dir(data)) else { return Vec::new() };
+    let mut keys: Vec<String> = rd.flatten().filter_map(|e| e.file_name().to_string_lossy().strip_suffix(".json").filter(|k| !k.contains('.')).map(str::to_string)).collect();
+    keys.sort();
+    keys.into_iter().filter_map(|k| shared_tenders::load(data, &k)).collect()
+}
+
+/// (3 November 2026) The server's competitors for the panel's "Competitors" (`competitors`): each
+/// with its size, style, buses, quality and the contracts it holds now (on every map; at most its
+/// size's on each); without a list the maps' drawn operators, to take over.
+fn competitors_view(api: &Api) -> Value {
+    use super::competitors::{self as cp, Size, Style};
+    use super::server_buses::{self as sb, Floor};
+    let data = server(api).data.clone();
+    let list = cp::load(&data);
+    let markets = markets_of(&data);
+    let rows: Vec<Value> = list
+        .list
+        .iter()
+        .map(|c| {
+            let now: usize = markets.iter().map(|m| cp::holds(m, &c.name)).sum();
+            json!({
+                "id": c.id, "name": c.name, "size": c.made.size.key(), "style": c.made.style.key(), "quality": c.quality.round(),
+                "fuels": c.made.fuels().iter().map(|d| sb::drive_key(*d)).collect::<Vec<_>>(),
+                "floors": c.made.floors().iter().map(|f| f.key()).collect::<Vec<_>>(),
+                "contracts": now, "most": c.made.size.most(), "maps": markets.len(),
+            })
+        })
+        .collect();
+    let drawn: Vec<Value> = markets
+        .iter()
+        .map(|m| json!({ "map": folder_name(&m.map), "key": m.key, "operators": m.rivals.iter().filter(|r| r.made.is_none()).map(|r| json!({ "name": r.name, "kind": r.character.label(), "quality": r.quality.round(), "contracts": cp::holds(m, &r.name) })).collect::<Vec<_>>() }))
+        .collect();
+    let drives: Vec<Value> = [Drive::Diesel, Drive::Cng, Drive::Electric].iter().map(|d| json!([sb::drive_key(*d), sb::drive_label(*d)])).collect();
+    json!({
+        "competitors": rows, "drawn": drawn,
+        "choices": {
+            "sizes": Size::ALL.iter().map(|s| json!([s.key(), s.label(), s.most()])).collect::<Vec<_>>(),
+            "styles": Style::ALL.iter().map(|s| { let (a, b) = s.margin(); json!([s.key(), s.label(), (a * 100.0).round(), (b * 100.0).round()]) }).collect::<Vec<_>>(),
+            "drives": drives,
+            "floors": Floor::ALL.iter().map(|f| json!([f.key(), f.label()])).collect::<Vec<_>>(),
+            "quality": cp::QUALITY,
+        },
+    })
+}
+
+/// (3 November 2026) The admin makes, changes or deletes a competitor (`do`: `put` - `id` 0 a new
+/// one, `name`, `size`, `style`, `fuels` and `floors` (keys, a list or comma between), `quality`;
+/// `delete` - `id`; `take_over` - every map's drawn operators into the list, by their characters).
+/// The maps' markets take the list at their next step.
+fn competitor_do(api: &Api, a: &Value) -> Result<String, String> {
+    use super::competitors::{self as cp, Competitor, Made, Size, Style};
+    use super::server_buses::{self as sb, Floor};
+    let s = |k: &str| a.get(k).map(|v| v.as_str().map(str::to_string).unwrap_or_else(|| v.to_string())).unwrap_or_default().trim().to_string();
+    let keys = |k: &str| -> Vec<String> {
+        match a.get(k) {
+            Some(Value::Array(xs)) => xs.iter().filter_map(Value::as_str).map(|x| x.trim().to_string()).collect(),
+            Some(Value::String(t)) => t.split(',').map(|x| x.trim().to_string()).filter(|x| !x.is_empty()).collect(),
+            _ => Vec::new(),
+        }
+    };
+    let m = server(api);
+    let mut list = cp::load(&m.data);
+    let said = match s("do").as_str() {
+        "put" => {
+            let id = s("id").parse::<u32>().unwrap_or(0);
+            let quality = s("quality").replace(',', ".").parse::<f64>().unwrap_or(cp::QUALITY);
+            let made = Made {
+                size: Size::of_key(&s("size")).unwrap_or_default(),
+                style: Style::of_key(&s("style")).unwrap_or_default(),
+                fuels: keys("fuels").iter().filter_map(|k| sb::drive_of_key(k)).collect(),
+                floors: keys("floors").iter().filter_map(|k| Floor::of_key(k)).collect(),
+            };
+            let c = Competitor { id, name: s("name"), quality, made };
+            let name = c.name.trim().to_string();
+            list.put(c).map_err(str::to_string)?;
+            format!("the competitor {name}: {}", if id == 0 { "made" } else { "changed" })
+        }
+        "delete" => {
+            let id = s("id").parse::<u32>().unwrap_or(0);
+            let name = list.delete(id).map_err(str::to_string)?;
+            format!("the competitor {name} deleted: its contracts run out")
+        }
+        "take_over" => {
+            let mut n = 0;
+            for mk in markets_of(&m.data) {
+                for r in mk.rivals.iter().filter(|r| r.made.is_none()) {
+                    if list.list.iter().any(|x| x.name.eq_ignore_ascii_case(&r.name)) {
+                        continue;
+                    }
+                    let (size, style) = match r.character {
+                        super::auction::Character::Big => (Size::Large, Style::Normal),
+                        super::auction::Character::Small => (Size::Small, Style::Normal),
+                        super::auction::Character::Aggressive => (Size::Medium, Style::Aggressive),
+                        super::auction::Character::Cautious => (Size::Medium, Style::Careful),
+                    };
+                    let made = Made { size, style, fuels: vec![Drive::Diesel], floors: vec![Floor::LowFloor, Floor::LowEntry] };
+                    if list.put(Competitor { id: 0, name: r.name.clone(), quality: r.quality, made }).is_ok() {
+                        n += 1;
+                    }
+                }
+            }
+            format!("{n} of the maps' operators taken over as competitors")
+        }
+        _ => return Err("put, delete or take_over".into()),
+    };
+    cp::save(&m.data, &list).map_err(|e| format!("{e:#}"))?;
     m.say(&format!("admin panel: {said}"));
     Ok(said)
 }

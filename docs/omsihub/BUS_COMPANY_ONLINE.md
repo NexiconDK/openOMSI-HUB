@@ -1596,6 +1596,40 @@ Decided: the plan's H9-H11, in `server_awards` (H9, H11) and `subcontracts` (H10
 Tested: `server_awards::tests` (`a_complaint_upheld_gives_the_contract_to_the_next_bidder`,
 `rail_replacement_only_where_the_map_has_it`), `subcontracts::tests`.
 
+### Competitors made by the admin (3 November 2026)
+
+Decided (A1): the admin makes the AI operators that bid in the server's tenders - one list for
+the whole server, used on every map (`competitors`, `<data>/competitors.json`, the admin panel's
+tab "Competitors").
+
+- **A competitor**: a name, a size, a style, its buses and a quality. The size - small bids on
+  small packages and holds at most 2 contracts a map, medium on small and medium ones and at most
+  4, large on every package and at most 8 (by the work's timetable hours a week,
+  `concessions::WorkSize`); a large one's own cost is 93 % of the authority's estimate, a medium
+  one's 97 %, a small one's all of it (`Size::own_share`). The style - careful puts 10 to 15 % on
+  its own cost, normal 5 to 10 %, aggressive 0 to 5 %, never under the abnormally low line. Its
+  buses - the fuels and floors it runs (none named: diesel, low floor): it bids only on a tender
+  whose requirements they meet, with the first of its fuels the tender allows - that drive is its
+  term's when it wins (`competitors::Made::drive_for`, `sealed::OperatorBid::drive`).
+- **Room**: at a tender's close a competitor holding as many contracts on the map as its size
+  allows (a package's lines one) is left out of its bidders (`competitors::with_room`). The
+  limit is counted on each map.
+- **Its quality**: its quality's parts in a bid lie around it (`viborg::operator_parts`); a point
+  up with each contract of its that ran its term, five down with each it gave up
+  (`shared_tenders::quality_moves`, the main server's step writes the list).
+- **The maps**: a map's market takes the list as its operators at each step (`bring_up`): the
+  market's own, and an open tender's copy - one the admin changed as it is now, one he deleted
+  out of the tender's bidders (its contracts run out). The admin's "Operators bidding in a
+  tender" (`tender_operators`) still says how many are drawn for a tender; without it every
+  competitor is. A server without a list keeps each map's operators as the game drew them; the
+  tab shows them and "Take them over as competitors" copies them into the list by their
+  character (big: large and normal, small: small and normal, aggressive: medium and aggressive,
+  cautious: medium and careful; diesel, low floor and low entry).
+- The opened bids and the tender page name a competitor's size and style (`Rival::kinds`).
+
+Tested: `competitors::tests`,
+`server_admin::tests::the_admin_makes_takes_over_changes_and_deletes_competitors`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

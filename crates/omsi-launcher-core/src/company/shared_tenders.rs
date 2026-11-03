@@ -625,12 +625,32 @@ pub fn step(data: &Path, key: &str, map: &str, date: &str, now: i64, read: &mut 
     let mut said = Vec::new();
     let mut m = load(data, key).unwrap_or_else(|| Market { key: key.to_string(), map: map.to_string(), round: -1, rivals: cn::make_rivals(Rng::of(&[key, "market rivals"], 0)), ..Default::default() });
     let before = m.clone();
+    // (3 November 2026: the competitors the server's admin made are the map's operators - its own
+    // drawn ones without them; an open tender's copy brought up to date)
+    let mut list = super::competitors::load(data);
+    super::competitors::bring_up(&mut m, &list);
     let (asks, asks_to): (Vec<MarketAsk>, u64) = lines_from(&asks_file(data, key), m.asks_read);
     if m.day != date || !asks.is_empty() {
         if let Some(now_map) = read() {
+            let held = m.held.clone();
             offer(&mut m, &now_map, &asks, date, now, &mut said, &TenderCfg::of(data));
             m.asks_read = asks_to;
             m.day = date.to_string();
+            // (a competitor's quality: a point up for each contract run to its term, five down for
+            // each given up)
+            let moves = quality_moves(&held, &m.held, date);
+            if !list.list.is_empty() && !moves.is_empty() {
+                let mut moved = false;
+                for (name, delta) in &moves {
+                    moved |= list.moved(name, *delta);
+                }
+                if moved {
+                    if let Err(e) = super::competitors::save(data, &list) {
+                        said.push(format!("{map}: the competitors not written: {e:#}"));
+                    }
+                    super::competitors::bring_up(&mut m, &list);
+                }
+            }
         }
     }
     // (the tenders whose last minute is over: decided, every bid in)
@@ -638,7 +658,10 @@ pub fn step(data: &Path, key: &str, map: &str, date: &str, now: i64, read: &mut 
     if !due.is_empty() {
         let all = bids(data, key);
         for i in due {
-            let d = decide(&m.tenders[i].tender, &all);
+            // (3 November 2026: a competitor of the admin's bids only with room for another contract)
+            let mut fit = m.tenders[i].tender.clone();
+            fit.bidders = super::competitors::with_room(&m, &fit);
+            let d = decide(&fit, &all);
             let t = &m.tenders[i].tender;
             let hour = |a: Cents| cn::per_hour(t, a) / 100.0;
             said.push(match (&d.name, d.winner.is_empty()) {
@@ -664,12 +687,33 @@ pub fn step(data: &Path, key: &str, map: &str, date: &str, now: i64, read: &mut 
     said
 }
 
+/// (3 November 2026) What the operators' contracts that ended at a step say of their quality
+/// (`competitors`): each that was given up (`OperatorHold::gives_up` reached) `GAVE_UP`, each that
+/// ran its term `ENDED_WELL` - a package's once, by its first line.
+pub(crate) fn quality_moves(before: &[OperatorHold], after: &[OperatorHold], date: &str) -> Vec<(String, f64)> {
+    let mut out = Vec::new();
+    for h in before {
+        if after.iter().any(|x| x.line.eq_ignore_ascii_case(&h.line) && x.name == h.name && x.from == h.from) {
+            continue;
+        }
+        if h.with.first().is_some_and(|w| !w.eq_ignore_ascii_case(&h.line)) {
+            continue;
+        }
+        if !h.gives_up.is_empty() && dates::between(&h.gives_up, date) >= 0 {
+            out.push((h.name.clone(), super::competitors::GAVE_UP));
+        } else if dates::between(&h.until, date) > 0 {
+            out.push((h.name.clone(), super::competitors::ENDED_WELL));
+        }
+    }
+    out
+}
+
 /// An operator won tender `t` (`d`): it holds every line of it for its term, a special service
 /// its days.
 pub(crate) fn hold_for(m: &mut Market, t: &Tender, d: &Decided, key: &str) {
     let from = cn::server_start(t);
     // (a special service: the event's days alone)
-    let until = t.market.as_ref().map(|x| x.until.clone()).filter(|u| dates::parse(u).is_some()).unwrap_or_else(|| cn::server_term(Drive::Diesel, cn::week_hours(t), &from));
+    let until = t.market.as_ref().map(|x| x.until.clone()).filter(|u| dates::parse(u).is_some()).unwrap_or_else(|| cn::server_term(d.drive, cn::week_hours(t), &from));
     let days = dates::between(&from, &until) + 1;
     // (a special service is run to its end: its days are few)
     let event = t.market.as_ref().is_some_and(|x| !x.event.is_empty());
@@ -718,8 +762,10 @@ fn add_lines(m: &mut Market, c: &Company, ls: &[&LineInfo], name: &str, opens_at
     m.counter += 1;
     let id = m.counter;
     let pool: Vec<u32> = m.rivals.iter().map(|r| r.id).collect();
-    // (3 November 2026: as many of the map's operators as the server's admin wants)
-    let rivals = cfg.operators.map_or(cn::rules(GameMode::Normal).rivals, |n| (n, n));
+    // (3 November 2026: as many of the map's operators as the server's admin wants; the
+    // competitors he made all of them when he did not say - `competitors`)
+    let made = m.rivals.iter().any(|r| r.made.is_some());
+    let rivals = cfg.operators.map_or(if made { (pool.len() as i64, pool.len() as i64) } else { cn::rules(GameMode::Normal).rivals }, |n| (n, n));
     let l = ls[0];
     let mut t = cn::make_tender(c, l, id, opens_at, holder.is_some(), &m.key, &pool, rivals);
     if ls.len() > 1 {
@@ -1146,7 +1192,7 @@ pub fn decide_without(t: &Tender, all: &[MarketBid], out: &[String]) -> Decided 
         },
         Some(w) => {
             let o = &ops[w - hs.len()];
-            Decided { winner: String::new(), name: o.name.clone(), amount: o.amount, standings, drive: Drive::Diesel, own_cost: o.own_cost, bus_day: 0, revision: 0, passed: Vec::new() }
+            Decided { winner: String::new(), name: o.name.clone(), amount: o.amount, standings, drive: o.drive, own_cost: o.own_cost, bus_day: 0, revision: 0, passed: Vec::new() }
         }
         None => Decided { standings, ..Decided::default() },
     }

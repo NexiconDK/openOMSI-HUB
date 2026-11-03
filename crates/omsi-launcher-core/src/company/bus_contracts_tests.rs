@@ -399,7 +399,7 @@ fn an_older_file_gets_its_contracts() {
     // a concession won at 90 % of the reference, and one taken on directly
     c.concessions.held.push(Concession { line: "Linie7".into(), number: "7".into(), from: "2024-01-01".into(), until: "2024-12-29".into(), price: 0.9, direct: false, after: String::new(), options: 0, package: String::new(), with: Vec::new() });
     c.concessions.held.push(Concession { line: "Linie5".into(), number: "5".into(), from: "2024-01-01".into(), until: "2024-12-29".into(), price: 1.0, direct: true, after: String::new(), options: 0, package: String::new(), with: Vec::new() });
-    c.concessions.rivals.push(cn::Rival { id: 1, name: "Talbus".into(), character: auction::Character::Small, quality: 40.0 });
+    c.concessions.rivals.push(cn::Rival { id: 1, name: "Talbus".into(), character: auction::Character::Small, quality: 40.0, made: None });
     c.version = 2;
     let mut json: serde_json::Value = serde_json::to_value(&c).unwrap();
     // (a file of before: no contracts kept)

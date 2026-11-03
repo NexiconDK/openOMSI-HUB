@@ -670,6 +670,21 @@ pub struct Rival {
     pub name: String,
     pub character: Character,
     pub quality: f64,
+    /// (NexiconDK, 3 November 2026) A competitor the server's admin made (`competitors`): its size,
+    /// style and buses (None: one of the map's operators as they were drawn).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub made: Option<super::competitors::Made>,
+}
+
+impl Rival {
+    /// What kind of operator it is, as the pages name it (words to translate, joined): a
+    /// competitor's size and style, else its character.
+    pub fn kinds(&self) -> Vec<&'static str> {
+        match &self.made {
+            Some(m) => vec![m.size.label(), m.style.label()],
+            None => vec![self.character.label()],
+        }
+    }
 }
 
 /// The company's concessions and the market of tenders.
@@ -784,7 +799,7 @@ pub fn make_rivals(mut rng: Rng) -> Vec<Rival> {
     for (k, ch) in chars.into_iter().enumerate() {
         let name = names.remove(rng.int(0, names.len() as i64 - 1) as usize);
         let (lo, hi) = ch.quality();
-        out.push(Rival { id: k as u32 + 1, name: name.to_string(), character: ch, quality: rng.range(lo, hi).round() });
+        out.push(Rival { id: k as u32 + 1, name: name.to_string(), character: ch, quality: rng.range(lo, hi).round(), made: None });
     }
     out
 }

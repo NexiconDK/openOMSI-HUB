@@ -139,7 +139,7 @@ export function mountPanel(root, api, opts = {}) {
   const host = opts.host || (typeof location !== 'undefined' && location.hostname) || '127.0.0.1';
   const TABS = [
     ['overview', 'Overview'], ['worlds', 'Worlds'], ['companies', 'Companies'], ['players', 'Players'],
-    ['market', 'Tenders and market'], ['buses', 'Buses'], ['settings', 'Rules and economy'], ['log', 'Log'],
+    ['market', 'Tenders and market'], ['buses', 'Buses'], ['competitors', 'Competitors'], ['settings', 'Rules and economy'], ['log', 'Log'],
   ];
   let tab = 'overview';
   const data = {};
@@ -408,6 +408,60 @@ export function mountPanel(root, api, opts = {}) {
       groups.push(card(`${label(ch.floors, fk)} · ${ofFloor.length}`, ...parts));
     }
     return [intro, ...(groups.length ? groups : [card(null, empty(tr('No bus is installed.')))])];
+  }
+
+  /** (3 November 2026) The server's competitors: the AI operators bidding on every map, each with
+   * its size, style, buses and quality (`server_admin::competitor_do`); without them the maps'
+   * drawn operators, to take over. */
+  let editing = null;
+  function competitorsView() {
+    const d = data.competitors;
+    if (!d) return [card(tr('Competitors'), empty(tr('Asking the main server…')))];
+    const ch = d.choices || {};
+    const label = (list, key) => tr(((list || []).find((x) => x[0] === key) || [key, key])[1]);
+    const intro = card(tr('Competitors'), h('div', { class: 'sp-dim' }, tr("The AI operators that bid in the server's tenders, on every map. The size says which packages one bids on and how many contracts it holds at once on a map; the style what it puts on its own cost, never under the abnormally low line. One bids only with buses that meet a tender's requirements. Its quality rises a point with each contract run to its term and falls five with each given up. Without a list every map keeps its own drawn operators.")));
+    // the form: a new one (id 0) or the one being changed
+    const form = (c) => {
+      const k = (x) => `comp:${c ? c.id : 0}:${x}`;
+      const name = keep(k('name'), h('input', { value: c ? c.name : '', placeholder: tr('Name') }));
+      const size = keep(k('size'), h('select', {}, ...(ch.sizes || []).map(([v, l, most]) => h('option', { value: v, selected: v === (c ? c.size : 'medium') }, trf('%{size}: at most %{n} contracts a map', { size: tr(l), n: most })))));
+      const style = keep(k('style'), h('select', {}, ...(ch.styles || []).map(([v, l, a, b]) => h('option', { value: v, selected: v === (c ? c.style : 'normal') }, trf('%{style}: +%{a} to %{b} % over its own cost', { style: tr(l), a, b })))));
+      const quality = keep(k('quality'), h('input', { type: 'number', min: 0, max: 100, value: c ? c.quality : ch.quality, style: 'width:70px' }));
+      const box = (list, chosen, key) => (list || []).map(([v, l]) => {
+        const id = k(key + ':' + v);
+        const input = h('input', { type: 'checkbox', checked: kept[id] ?? chosen.includes(v), onChange: (e) => (kept[id] = e.target.checked) });
+        return h('label', { class: 'sp-row' }, input, tr(l));
+      });
+      const fuels = box(ch.drives, c ? c.fuels : ['diesel'], 'fuel');
+      const floors = box(ch.floors, c ? c.floors : ['low_floor', 'low_entry'], 'floor');
+      const values = (list, els) => (list || []).map((x) => x[0]).filter((_, n) => els[n].querySelector('input').checked);
+      const forget = () => Object.keys(kept).filter((x) => x.startsWith(`comp:${c ? c.id : 0}:`)).forEach((x) => delete kept[x]);
+      const save = () => { post('competitor', { do: 'put', id: c ? c.id : 0, name: name.value, size: size.value, style: style.value, quality: quality.value, fuels: values(ch.drives, fuels), floors: values(ch.floors, floors) }); forget(); editing = null; };
+      return h('div', { class: 'sp-col', style: 'gap:8px' },
+        h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, name, size, style, h('label', { class: 'sp-row' }, h('span', { class: 'sp-dim' }, tr('Quality')), quality)),
+        h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, h('span', { class: 'sp-dim', style: 'width:70px' }, tr('Fuels')), ...fuels),
+        h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, h('span', { class: 'sp-dim', style: 'width:70px' }, tr('Floors')), ...floors),
+        h('div', { class: 'sp-row' }, btn(c ? tr('Save') : tr('Add a competitor'), save, 'sp-btn small main'), c ? btn(tr('Cancel'), () => { forget(); editing = null; draw(); }) : null));
+    };
+    const rows = (d.competitors || []).map((c) => h('tr', {},
+      h('td', {}, h('b', {}, c.name)),
+      h('td', {}, tag(label(ch.sizes, c.size)), ' ', tag(label(ch.styles, c.style), c.style === 'aggressive' ? 'warn' : c.style === 'careful' ? 'ok' : '')),
+      h('td', {}, c.fuels.map((f) => label(ch.drives, f)).join(', '), h('div', { class: 'bco-sub' }, c.floors.map((f) => label(ch.floors, f)).join(', '))),
+      h('td', {}, trf('%{n} of %{most} a map', { n: c.contracts, most: c.most })),
+      h('td', {}, String(c.quality)),
+      h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end' },
+        btn(tr('Change'), () => { editing = editing === c.id ? null : c.id; draw(); }),
+        sureButton(tr('Delete'), tr('Sure? Its contracts run out'), () => post('competitor', { do: 'delete', id: c.id }), 'sp-btn small danger')))));
+    const list = card(tr('The competitors'),
+      rows.length ? table([tr('Name'), tr('Size · style'), tr('Buses'), tr('Contracts'), tr('Quality'), ''], rows) : empty(tr('No competitor made yet: every map keeps its own drawn operators.')),
+      editing != null ? form((d.competitors || []).find((c) => c.id === editing)) : null);
+    const add = card(tr('Add a competitor'), form(null));
+    const drawn = (d.drawn || []).filter((m) => m.operators.length);
+    const old = drawn.length ? card(tr("The maps' drawn operators"),
+      h('div', { class: 'sp-dim' }, tr('As the game drew them for each map. Take them over to make them competitors you can change: by their character, with diesel buses of low floor and low entry.')),
+      ...drawn.map((m) => h('div', {}, h('h4', {}, m.map), table([tr('Name'), tr('Kind'), tr('Contracts'), tr('Quality')], m.operators.map((o) => h('tr', {}, h('td', {}, o.name), h('td', {}, tr(o.kind)), h('td', {}, String(o.contracts)), h('td', {}, String(o.quality))))))),
+      h('div', { class: 'sp-row' }, btn(tr('Take them over as competitors'), () => post('competitor', { do: 'take_over' }), 'sp-btn small main'))) : null;
+    return [intro, list, add, old];
   }
 
   function players() {
@@ -761,7 +815,7 @@ export function mountPanel(root, api, opts = {}) {
   function draw() {
     drawTabs();
     const view = {
-      overview, worlds: () => [worlds()], companies, players, market, buses: busesView,
+      overview, worlds: () => [worlds()], companies, players, market, buses: busesView, competitors: competitorsView,
       settings: () => [settings], log: logView,
     }[tab]();
     body.replaceChildren(...view.flat().filter(Boolean));
@@ -778,6 +832,7 @@ export function mountPanel(root, api, opts = {}) {
       if (tab === 'players' || tab === 'companies') want.push('players');
       if (tab === 'market') want.push('market');
       if (tab === 'buses') want.push('buses');
+      if (tab === 'competitors') want.push('competitors');
       const got = await Promise.all(want.map((w) => api.get(w)));
       want.forEach((w, k) => (data[w] = got[k]));
       if (tab === 'companies' && picked.company) companyInfo = await api.get('company?id=' + encodeURIComponent(picked.company)).catch(() => null);

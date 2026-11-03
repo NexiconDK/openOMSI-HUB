@@ -824,7 +824,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         .filter_map(|(i, id)| {
             let r = cn::rival_of(c, t, *id)?;
             let last = placed.iter().rev().find(|p| p.who == Who::Rival(i)).map(|p| p.amount);
-            let kind = points_of(&r.name).unwrap_or_else(|| format!("{}  ·  {}", tr(r.character.label()), trf("quality %{q}", &[("q", &format!("{:.0}", r.quality))])));
+            let kind = points_of(&r.name).unwrap_or_else(|| format!("{}  ·  {}", kind_of(r), trf("quality %{q}", &[("q", &format!("{:.0}", r.quality))])));
             Some(json!({ "name": r.name, "kind": kind, "value": last.map(|a| money(t, a)).unwrap_or_else(|| tr("no bid")), "has": last.is_some(), "leads": leader == Some(Who::Rival(i)) }))
         })
         .collect();
@@ -845,7 +845,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         bidders.clear();
     }
     let opened: Vec<Value> = if sealed && !t.open() {
-        let operator = |name: &str| t.market.as_ref().and_then(|m| m.rivals.iter().find(|r| r.name == name)).map(|r| tr(r.character.label()));
+        let operator = |name: &str| t.market.as_ref().and_then(|m| m.rivals.iter().find(|r| r.name == name)).map(|r| kind_of(r));
         t.standings
             .iter()
             .enumerate()
@@ -878,7 +878,7 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
                 None if now < t.opens_at => (tr("waits for the opening"), "dim"),
                 None => (tr("no bid"), "dim"),
             };
-            Some(json!({ "name": r.name, "kind": tr(r.character.label()), "quality": r.quality / 100.0, "quality_text": format!("{:.0}", r.quality), "bid": bid, "tone": tone, "leads": leads, "points": points_of(&r.name) }))
+            Some(json!({ "name": r.name, "kind": kind_of(r), "quality": r.quality / 100.0, "quality_text": format!("{:.0}", r.quality), "bid": bid, "tone": tone, "leads": leads, "points": points_of(&r.name) }))
         })
         .collect();
     // (the other companies of the map: theirs among the rivals, as a company of the server)
@@ -1110,6 +1110,12 @@ fn lengths_text(t: &Tender) -> String {
     };
     let days = |d: Drive| cn::server_days(d, size).to_string();
     trf(key, &[("h", &grouped(hours.round())), ("d", &days(Drive::Diesel)), ("g", &days(Drive::Cng)), ("e", &days(Drive::Electric))])
+}
+
+/// (NexiconDK, 3 November 2026) What kind of operator a rival is, as the pages name it: a
+/// competitor of the admin's its size and style (`competitors`), else its character.
+fn kind_of(r: &cn::Rival) -> String {
+    r.kinds().iter().map(|k| tr(k)).collect::<Vec<_>>().join(" · ")
 }
 
 pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {

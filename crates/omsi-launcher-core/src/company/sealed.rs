@@ -88,6 +88,9 @@ pub struct OperatorBid {
     pub parts: Parts,
     pub amount: Cents,
     pub own_cost: Cents,
+    /// (3 November 2026) The buses it bids with: a competitor of the admin's its first fuel the
+    /// tender allows (`competitors::Made::drive_for`), a drawn operator diesel.
+    pub drive: super::model::Drive,
 }
 
 /// The sealed bids of the operators taking part in a tender of the map's market: its own cost by
@@ -100,7 +103,20 @@ pub fn operator_bids(t: &Tender) -> Vec<OperatorBid> {
     for id in &t.bidders {
         let Some(rv) = m.rivals.iter().find(|r| r.id == *id) else { continue };
         let mut rng = Rng::of(&[&m.key, "sealed", &rv.name], m.id as i64);
-        let (share, lo, hi) = operator_terms(rv.character);
+        // (NexiconDK, 3 November 2026: a competitor the admin made bids only on the work of its size
+        // with buses that meet the tender's requirements, at its size's own cost and its style's
+        // margin - `competitors`)
+        let (share, lo, hi, drive) = match &rv.made {
+            Some(mk) => {
+                let Some(drive) = mk.bids_on(t) else { continue };
+                let (lo, hi) = mk.style.margin();
+                (mk.size.own_share(), lo, hi, drive)
+            }
+            None => {
+                let (share, lo, hi) = operator_terms(rv.character);
+                (share, lo, hi, super::model::Drive::Diesel)
+            }
+        };
         let own = t.cost.max(0) as f64 * share;
         let mut amount = round_up((own * (1.0 + rng.range(lo, hi))).max(low as f64 * 1.005));
         // (NexiconDK, 3 November 2026: a fixed price - a rail replacement - is bid by those whose
@@ -115,7 +131,7 @@ pub fn operator_bids(t: &Tender) -> Vec<OperatorBid> {
             continue;
         }
         let parts = viborg::operator_parts(rv.quality, &[&m.key, "parts", &rv.name], m.id as i64);
-        out.push(OperatorBid { rival: rv.id, name: rv.name.clone(), quality: rv.quality, parts, amount, own_cost: round_up(own) });
+        out.push(OperatorBid { rival: rv.id, name: rv.name.clone(), quality: rv.quality, parts, amount, own_cost: round_up(own), drive });
     }
     out
 }
@@ -191,7 +207,7 @@ mod tests {
         let mut t = crate::company::concessions::make_tender(&c, &l, 7, 0, false, "k", &[], (0, 0));
         t.cost = cost;
         t.reference = cap_of(cost, 0);
-        let rivals: Vec<Rival> = Character::ALL.iter().enumerate().map(|(k, ch)| Rival { id: k as u32 + 1, name: format!("Op {k}"), character: *ch, quality: 90.0 }).collect();
+        let rivals: Vec<Rival> = Character::ALL.iter().enumerate().map(|(k, ch)| Rival { id: k as u32 + 1, name: format!("Op {k}"), character: *ch, quality: 90.0, made: None }).collect();
         t.bidders = rivals.iter().map(|r| r.id).collect();
         t.market = Some(Shared { key: "grundorf".into(), id: 7, rivals, ..Default::default() });
         t
