@@ -666,6 +666,27 @@ export function mountPanel(root, api, opts = {}) {
         h('div', { class: 'sp-dim' }, tr('The line goes to the company without bidding, at your price a timetable hour; its open tender ends so. A line an operator runs: end its term first (below).')),
         h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, dLine, dCompany, dPrice, h('span', { class: 'sp-dim' }, tr('kr. a timetable hour')), dDrive,
           sureButton(tr('Award'), tr('Sure? No bids, no operators'), () => post('tender', { map: m.key, do: 'direct', line: dLine.value, company: dCompany.value, cap: dPrice.value, drive: dDrive.value })))) : null;
+      // (3 November 2026: rail replacement - only where the map has a timetable for it, H9)
+      const rlLine = keep(m.key + ':rl-line', h('select', {}, ...(m.rail_lines || []).map((l) => h('option', { value: l }, l))));
+      const rlFrom = keep(m.key + ':rl-from', dateIn(d.today, d.today));
+      const rlUntil = keep(m.key + ':rl-until', dateIn(d.today, d.today));
+      const rlPrice = keep(m.key + ':rl-price', number('', 90, tr('kr.')));
+      const rlCompany = keep(m.key + ':rl-company', h('select', {}, h('option', { value: '' }, tr('By a tender of a day')), ...(m.companies || []).map((c) => h('option', { value: c.id }, trf('Directly to %{c}', { c: c.name })))));
+      const rail = (m.rail_lines || []).length ? h('div', { class: 'sp-card', style: 'background:var(--sp-field)' },
+        h('h3', {}, tr('Rail replacement')),
+        h('div', { class: 'sp-dim' }, tr("A timetable of the map's for rail replacement, run on your days: bids for a day at your fixed price a timetable hour - the quality decides - or given to a company directly.")),
+        (m.rails || []).length ? table([tr('Line'), tr('Days'), tr('A timetable hour'), ''], m.rails.map((r) => h('tr', {}, h('td', {}, h('b', {}, r.line)), h('td', {}, `${r.from} – ${r.until}`),
+          h('td', {}, `${r.price} ${tr('kr.')}`), h('td', {}, r.direct ? trf('Directly to %{c}', { c: r.direct }) : r.offered ? tr('out to tender') : tr('at the next step')))))) : null,
+        h('div', { class: 'sp-row', style: 'flex-wrap:wrap' }, rlLine, rlFrom, rlUntil, rlPrice, h('span', { class: 'sp-dim' }, tr('kr. a timetable hour')), rlCompany,
+          btn(tr('Order rail replacement'), () => post('tender', { map: m.key, do: 'rail', line: rlLine.value, from: rlFrom.value, until: rlUntil.value, price: rlPrice.value, company: rlCompany.value }), 'sp-btn small main'))) : null;
+      // (3 November 2026: the losing companies' complaints about awards, with the bids - H11)
+      const complaints = (m.complaints || []).map((k) => h('div', { class: 'sp-card', style: 'background:var(--sp-field)' },
+        h('h3', {}, trf('Complaint about %{n}', { n: k.number })),
+        h('div', {}, h('b', {}, k.name), ' · ', trf('won by %{w}, starts %{d}', { w: k.winner, d: k.start })),
+        h('div', { class: 'sp-dim', style: 'white-space:pre-wrap' }, k.reason),
+        table([tr('Bidder'), tr('A timetable hour'), tr('Points')], k.bids.map((b) => h('tr', {}, h('td', {}, b.name), h('td', {}, b.rejected ? '–' : `${b.hour} ${tr('kr.')}`), h('td', {}, b.rejected ? tr('rejected') : String(b.total))))),
+        h('div', { class: 'sp-row' }, btn(tr('Let the award stand'), () => post('tender', { map: m.key, id: k.id, do: 'complaint', company: k.company, verdict: 'stand' })),
+          k.next ? sureButton(trf('Give it to %{n}', { n: k.next }), tr('Sure? The winner gives the contract back'), () => post('tender', { map: m.key, id: k.id, do: 'complaint', company: k.company, verdict: 'uphold' }), 'sp-btn small main') : h('span', { class: 'sp-dim' }, tr('No other valid bid')))));
       const events = (m.events || []).map((e) => h('div', { class: 'bco-alert' }, h('b'), h('div', {}, h('b', {}, e.name), ` · ${e.from} – ${e.until}`,
         e.lines?.length ? h('div', { class: 'bco-sub' }, trf('Its own lines: %{l}', { l: e.lines.join(', ') })) : null,
         e.off?.length ? h('div', { class: 'bco-sub' }, trf('Takes off: %{l}', { l: e.off.join(', ') })) : null)));
@@ -673,7 +694,9 @@ export function mountPanel(root, api, opts = {}) {
         h('h3', {}, trf('Open tenders - %{n}', { n: m.open.length })),
         open.length ? table([tr('Line'), [tr('Opens'), 'sp-hide'], tr('Closes'), tr('Bids'), tr('Cap a timetable hour'), ''], open) : h('div', { class: 'sp-dim' }, tr('No tender is open.')),
         h('div', { class: 'sp-dim' }, tr('The bids stay sealed until the close: only how many companies bid shows here.')),
-        putOut, direct, roadworks,
+        complaints.length ? h('h3', {}, trf('Complaints - %{n}', { n: complaints.length })) : null,
+        ...complaints,
+        putOut, direct, rail, roadworks,
         contracts.length ? h('h3', {}, tr("The companies' contracts")) : null,
         contracts.length ? h('div', { class: 'sp-dim' }, trf('A contract moved to end sooner goes out to tender as its end nears: not before %{d}.', { d: d.earliest_end })) : null,
         contracts.length ? table([tr('Line'), tr('Company'), tr('Term'), ''], contracts) : null,

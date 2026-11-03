@@ -102,7 +102,15 @@ pub fn operator_bids(t: &Tender) -> Vec<OperatorBid> {
         let mut rng = Rng::of(&[&m.key, "sealed", &rv.name], m.id as i64);
         let (share, lo, hi) = operator_terms(rv.character);
         let own = t.cost.max(0) as f64 * share;
-        let amount = round_up((own * (1.0 + rng.range(lo, hi))).max(low as f64 * 1.005));
+        let mut amount = round_up((own * (1.0 + rng.range(lo, hi))).max(low as f64 * 1.005));
+        // (NexiconDK, 3 November 2026: a fixed price - a rail replacement - is bid by those whose
+        // own cost it covers, at it)
+        if m.award == viborg::Award::Fixed {
+            if own > t.reference as f64 {
+                continue;
+            }
+            amount = t.reference;
+        }
         if amount > t.reference {
             continue;
         }
@@ -133,7 +141,8 @@ pub struct Opened {
 pub fn score(t: &Tender, bids: &[Opened]) -> (Option<usize>, Vec<(usize, Standing)>) {
     let low = low_line(t);
     let award = t.market.as_ref().map(|m| m.award).unwrap_or_default();
-    let valid = |b: &Opened| b.amount >= low && t.counts(b.amount);
+    // (3 November 2026: a fixed price is no ask of the bidder's - not too low by it)
+    let valid = |b: &Opened| (award == viborg::Award::Fixed || b.amount >= low) && t.counts(b.amount);
     let lowest = bids.iter().filter(|b| valid(b)).map(|b| b.amount).min();
     let mut rows: Vec<(usize, Standing)> = bids
         .iter()

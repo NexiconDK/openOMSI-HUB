@@ -726,6 +726,10 @@ pub struct Loan {
 pub struct CompanyLine {
     /// The timetable's line (its `.ttl` name): how the tours are found.
     pub name: String,
+    /// (NexiconDK, 3 November 2026) Run as the subcontractor of this company (its id) - its
+    /// contract is that one's (`subcontracts`); empty: the company's own.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub sub_for: String,
     /// The number shown (a plate), and every number its trips' displays show (a trip
     /// report names the line by these).
     pub number: String,

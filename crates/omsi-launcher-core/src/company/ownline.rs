@@ -1024,6 +1024,7 @@ pub fn confirm(c: &mut Company, l: &LineDesign, stem: &str, shape: &Shape) -> Re
     plan.paid = total;
     c.lines.push(CompanyLine {
         name: stem.to_string(),
+        sub_for: String::new(),
         number: number.clone(),
         numbers: vec![number],
         own: true,

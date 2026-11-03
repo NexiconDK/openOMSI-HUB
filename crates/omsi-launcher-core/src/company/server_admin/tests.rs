@@ -142,7 +142,7 @@ fn a_tender_moved_called_off_and_opened() {
     let mut t = cn::make_tender(&c, &crate::company::concessions::tests::line("Linie5", "5", 3, true), 3, opens, false, "lemmental", &[], (1, 2));
     t.closes_at = opens + 3 * clock::DAY;
     t.market = Some(cn::Shared { key: "lemmental".into(), id: 3, ..Default::default() });
-    let m = shared_tenders::Market { key: "lemmental".into(), map: "maps/Lemmental/global.cfg".into(), tenders: vec![shared_tenders::MarketTender { tender: t, applied: Vec::new(), decided: None }], ..Default::default() };
+    let m = shared_tenders::Market { key: "lemmental".into(), map: "maps/Lemmental/global.cfg".into(), tenders: vec![shared_tenders::MarketTender { tender: t, applied: Vec::new(), decided: None, complaints: Vec::new() }], ..Default::default() };
     shared_tenders::save(&data, &m).unwrap();
     assert!(tender_do(&api, "lemmental", &json!({ "id": 3, "do": "close", "at": "2024-03-09 12:30", "line": "" })).unwrap().contains("2024-03-09 12:30"));
     let m = shared_tenders::load(&data, "lemmental").unwrap();

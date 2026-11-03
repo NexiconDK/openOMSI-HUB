@@ -1164,6 +1164,9 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     // (the bus contracts: their payments, the journeys not paid, default points - a gross-cost
     // line's fares went to the authority with its takings, `income::book`; a commercial line has
     // none of it: `bus_contracts`)
+    // (NexiconDK, 3 November 2026: the days run as a subcontractor sent on, those run for it taken
+    // into its contracts - `subcontracts`)
+    super::subcontracts::close_day(c, &date, &mut journeys);
     super::bus_contracts::close_day(c, &date, &journeys, &mut lines, &mut report);
     // (NexiconDK, 3 November 2026: the doubling orders' runs paid, the full departures kept and
     // ordered - `doubling`)

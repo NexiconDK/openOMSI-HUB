@@ -502,7 +502,25 @@ fn market(api: &Api) -> Value {
                 .collect();
             // (3 November 2026: its roadworks - `contract_events`)
             let roadworks: Vec<super::contract_events::Roadwork> = super::contract_events::load_roadworks(&m.data).into_iter().filter(|r| r.map == mk.key).collect();
-            json!({ "key": mk.key, "map": folder_name(&mk.map), "open": open, "decided": decided, "held": held, "events": mk.events, "lines": lines, "contracts": contracts, "companies": companies, "operators": operators, "roadworks": roadworks })
+            // (3 November 2026: the rail replacements the map has and the admin ordered - H9 -, and
+            // the open complaints about awards with their tenders' bids - H11)
+            let rails: Vec<Value> = mk.rails.iter().map(|r| json!({ "line": r.line, "from": r.from, "until": r.until, "price": kr(r.hour), "direct": r.direct_name, "offered": r.offered })).collect();
+            let complaints: Vec<Value> = mk
+                .tenders
+                .iter()
+                .filter_map(|mt| mt.decided.as_ref().map(|d| (mt, d)))
+                .flat_map(|(mt, d)| {
+                    let t = &mt.tender;
+                    mt.complaints.iter().filter(|k| k.state == super::server_awards::ComplaintState::Open).map(move |k| {
+                        json!({
+                            "id": t.market.as_ref().map_or(t.id, |x| x.id), "number": t.number, "company": k.company, "name": k.name, "reason": k.reason,
+                            "winner": d.name, "next": super::server_awards::next_of(d), "start": cn::server_start(t),
+                            "bids": d.standings.iter().map(|s| json!({ "name": s.name, "hour": hour(t, s.amount - cn::bus_year(t, s.bus_day)), "total": (s.total * 10.0).round() / 10.0, "rejected": s.rejected })).collect::<Vec<_>>(),
+                        })
+                    })
+                })
+                .collect();
+            json!({ "key": mk.key, "map": folder_name(&mk.map), "open": open, "decided": decided, "held": held, "events": mk.events, "lines": lines, "contracts": contracts, "companies": companies, "operators": operators, "roadworks": roadworks, "rail_lines": mk.rail_lines, "rails": rails, "complaints": complaints })
         })
         .collect();
     // (3 November 2026: the server's calendar and the admin's holidays - `contract_events`)
@@ -808,7 +826,23 @@ fn tender_do(api: &Api, map: &str, a: &Value) -> Result<String, String> {
             super::doubling::order_by_admin(&data, &company, &super::doubling::AdminOrder { line: line.clone(), tour: tour.trim().to_string(), dep, from: from.clone(), until: until.clone() }).map_err(|e| format!("{e:#}"))?;
             format!("an extra bus behind the {at} of tour {} on line {line} of {}, {from} to {until} (taken at the company's next step)", tour.trim(), c.name)
         }
-        _ => return Err("open, direct, cap, close, cancel, operator_until, operator_end, contract_until or doubling".into()),
+        // (3 November 2026) a rail replacement of the map's ordered (H9), a complaint decided (H11)
+        "rail" => {
+            let price = num("price").ok_or("the fixed price a timetable hour, in kroner")?;
+            let direct = match s("company") {
+                x if x.is_empty() => None,
+                x => {
+                    let c = store::load(&data, &x).map_err(|_| "no such company".to_string())?;
+                    if shared_tenders::key_of(&c.map) != map {
+                        return Err("that company is not on this map".into());
+                    }
+                    Some((c.id.clone(), c.name.clone()))
+                }
+            };
+            super::server_awards::order_rail(&mut mk, &s("line"), &s("from"), &s("until"), Fines::cents(price), direct, &today)?
+        }
+        "complaint" => super::server_awards::rule(&data, &mut mk, id, &s("company"), s("verdict") == "uphold")?,
+        _ => return Err("open, direct, cap, close, cancel, operator_until, operator_end, contract_until, doubling, rail or complaint".into()),
     };
     if changed {
         shared_tenders::save(&data, &mk).map_err(|e| format!("{e:#}"))?;

@@ -360,6 +360,11 @@ pub fn of_line<'a>(c: &'a Company, line: &str) -> Option<&'a Contract> {
 /// books them as collected for it and paid over the same day (`income::book`) - the one place
 /// they leave the company -, and the BSOG on its miles is the authority's (not booked).
 pub fn fares_to_authority(c: &Company, line: &str) -> bool {
+    // (NexiconDK, 3 November 2026: a line run as another company's subcontractor - its gross
+    // contract's: `subcontracts`)
+    if c.lines.iter().any(|l| l.name.eq_ignore_ascii_case(line) && !l.sub_for.is_empty()) {
+        return true;
+    }
     on_line(c, line, &c.date).is_some_and(|k| k.kind == Kind::Gross)
 }
 
@@ -987,6 +992,40 @@ pub struct Journeys {
     accidents: Vec<String>,
 }
 
+/// (NexiconDK, 3 November 2026) A line's day as one company ran it for another's contract
+/// (`subcontracts`): its tours' timetabled minutes, its journeys, its players' departures early
+/// and late, and the red lights they ran.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct LineDayRun {
+    pub planned: Vec<i32>,
+    pub journeys: Vec<RunJourney>,
+    pub early: u32,
+    pub late: u32,
+    pub red: u32,
+}
+
+/// A journey of a `LineDayRun`.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct RunJourney {
+    pub tour: String,
+    pub minutes: i32,
+    pub run: bool,
+    pub part: bool,
+    pub length: i32,
+    pub excused: bool,
+}
+
+impl LineDayRun {
+    /// Its timetabled minutes run: the tours' less the journeys not run.
+    pub fn minutes_run(&self) -> i64 {
+        let planned: i64 = self.planned.iter().map(|m| *m as i64).sum();
+        let missed: i64 = self.journeys.iter().filter(|j| !j.run).map(|j| j.length.max(0) as i64).sum();
+        (planned - missed).max(0)
+    }
+}
+
 /// (NexiconDK, 3 November 2026) An extra tour of a doubling order of the day (`doubling`): its
 /// line and tour name, whether it ran, its timetabled minutes, and whether its bus ran the line's
 /// own tours that day (a contract bus standing free then: paid at the contract's price).
@@ -1064,6 +1103,32 @@ impl Journeys {
 
     pub fn len(&self) -> usize {
         self.list.len()
+    }
+
+    /// (NexiconDK, 3 November 2026) `line`'s day as it was run, for another company's contract
+    /// (`subcontracts`: a subcontractor's line).
+    pub fn export(&self, line: &str) -> LineDayRun {
+        let same = |l: &str| l.eq_ignore_ascii_case(line);
+        LineDayRun {
+            planned: self.planned.iter().filter(|p| same(&p.0)).map(|p| p.1).collect(),
+            journeys: self.list.iter().filter(|j| same(&j.line)).map(|j| RunJourney { tour: j.tour.clone(), minutes: j.minutes, run: j.run, part: j.part, length: j.length, excused: j.excused }).collect(),
+            early: self.stops.iter().filter(|s| same(&s.0)).map(|s| s.1).sum(),
+            late: self.stops.iter().filter(|s| same(&s.0)).map(|s| s.2).sum(),
+            red: self.red.iter().filter(|r| same(&r.0)).map(|r| r.1).sum(),
+        }
+    }
+
+    /// (3 November 2026) Another company's run of `line` taken in as this company's journeys (its
+    /// subcontractor's day: judged by this company's contract; no bus of its own to look at).
+    pub fn import(&mut self, line: &str, d: &LineDayRun) {
+        for m in &d.planned {
+            self.timetabled(line, *m);
+        }
+        for j in &d.journeys {
+            self.list.push(Journey { line: line.to_string(), tour: j.tour.clone(), minutes: j.minutes, run: j.run, part: j.part, bus: None, driver: None, wants: None, length: j.length, excused: j.excused });
+        }
+        self.departures(line, d.early, d.late);
+        self.red_lights(line, d.red);
     }
 
     pub fn is_empty(&self) -> bool {

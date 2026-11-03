@@ -97,6 +97,19 @@ pub struct Market {
     /// (1 November 2026) The map's lines with passengers of their own as the main server last read
     /// them (the admin panel's lines to put out to tender).
     pub lines: Vec<String>,
+    /// (NexiconDK, 3 November 2026) The map's rail replacement timetables (the admin panel's to
+    /// order: none, no option) and the rail replacements the admin ordered (`server_awards`, H9).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub rail_lines: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub rails: Vec<super::server_awards::RailOrder>,
+    /// (3 November 2026) How far the companies' complaints about awards were read (H11).
+    #[serde(skip_serializing_if = "is_zero_u64")]
+    pub complaints_read: u64,
+}
+
+fn is_zero_u64(x: &u64) -> bool {
+    *x == 0
 }
 
 /// (NexiconDK, 1 November 2026) A chrono event of the map as the market keeps it (`MapEvent`).
@@ -199,6 +212,10 @@ pub struct MarketTender {
     pub applied: Vec<String>,
     #[serde(default)]
     pub decided: Option<Decided>,
+    /// (NexiconDK, 3 November 2026) The losing companies' complaints about its award, and what
+    /// the admin made of them (`server_awards`, H11).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub complaints: Vec<super::server_awards::Complaint>,
 }
 
 /// How a tender of the market was decided: the winning company's id (empty: an operator, or
@@ -219,6 +236,17 @@ pub struct Decided {
     /// `amount` its timetable hours').
     #[serde(skip_serializing_if = "no_cents")]
     pub bus_day: Cents,
+    /// (NexiconDK, 3 November 2026) How often the admin gave it to another bidder upon a complaint
+    /// (`server_awards::uphold`): each company takes the award again when it changes.
+    #[serde(skip_serializing_if = "no_revision")]
+    pub revision: u32,
+    /// (3 November 2026) The bidders passed over upon complaints, by name (`server_awards::rule`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub passed: Vec<String>,
+}
+
+fn no_revision(x: &u32) -> bool {
+    *x == 0
 }
 
 fn no_cents(x: &Cents) -> bool {
@@ -620,36 +648,45 @@ pub fn step(data: &Path, key: &str, map: &str, date: &str, now: i64, read: &mut 
             });
             // (an operator's: it holds the line for its term)
             if d.winner.is_empty() && !d.name.is_empty() {
-                let from = cn::server_start(t);
-                // (a special service: the event's days alone)
-                let until = t.market.as_ref().map(|x| x.until.clone()).filter(|u| dates::parse(u).is_some()).unwrap_or_else(|| cn::server_term(Drive::Diesel, cn::week_hours(t), &from));
-                let days = dates::between(&from, &until) + 1;
-                // (a special service is run to its end: its days are few)
-                let event = t.market.as_ref().is_some_and(|x| !x.event.is_empty());
-                let gives = if event { String::new() } else { super::sealed::gives_up(d.amount, d.own_cost, days, &[key, "gives up", &t.line, &from]).map(|k| dates::add(&from, k)).unwrap_or_default() };
-                // (3 November 2026: a package's every line, the same term; it goes out again as the package)
-                let (package, with) = match t.package.as_ref().filter(|p| p.lines.len() > 1) {
-                    Some(p) => (p.name.clone(), p.lines.iter().map(|l| l.line.clone()).collect::<Vec<_>>()),
-                    None => (String::new(), Vec::new()),
-                };
-                let lines: Vec<(String, String)> = match t.package.as_ref().filter(|p| p.lines.len() > 1) {
-                    Some(p) => p.lines.iter().map(|l| (l.line.clone(), l.number.clone())).collect(),
-                    None => vec![(t.line.clone(), t.number.clone())],
-                };
-                for (line, number) in lines {
-                    m.held.retain(|h| !h.line.eq_ignore_ascii_case(&line));
-                    m.held.push(OperatorHold { line, number, name: d.name.clone(), from: from.clone(), until: until.clone(), amount: d.amount, own_cost: d.own_cost, gives_up: gives.clone(), package: package.clone(), with: with.clone() });
-                }
+                let t = t.clone();
+                hold_for(&mut m, &t, &d, key);
             }
             m.tenders[i].decided = Some(d);
         }
     }
+    // (3 November 2026: the companies' complaints about awards - H11)
+    super::server_awards::read_complaints(data, &mut m);
     if m != before {
         if let Err(e) = save(data, &m) {
             said.push(format!("{map}: its tenders not written: {e:#}"));
         }
     }
     said
+}
+
+/// An operator won tender `t` (`d`): it holds every line of it for its term, a special service
+/// its days.
+pub(crate) fn hold_for(m: &mut Market, t: &Tender, d: &Decided, key: &str) {
+    let from = cn::server_start(t);
+    // (a special service: the event's days alone)
+    let until = t.market.as_ref().map(|x| x.until.clone()).filter(|u| dates::parse(u).is_some()).unwrap_or_else(|| cn::server_term(Drive::Diesel, cn::week_hours(t), &from));
+    let days = dates::between(&from, &until) + 1;
+    // (a special service is run to its end: its days are few)
+    let event = t.market.as_ref().is_some_and(|x| !x.event.is_empty());
+    let gives = if event { String::new() } else { super::sealed::gives_up(d.amount, d.own_cost, days, &[key, "gives up", &t.line, &from]).map(|k| dates::add(&from, k)).unwrap_or_default() };
+    // (3 November 2026: a package's every line, the same term; it goes out again as the package)
+    let (package, with) = match t.package.as_ref().filter(|p| p.lines.len() > 1) {
+        Some(p) => (p.name.clone(), p.lines.iter().map(|l| l.line.clone()).collect::<Vec<_>>()),
+        None => (String::new(), Vec::new()),
+    };
+    let lines: Vec<(String, String)> = match t.package.as_ref().filter(|p| p.lines.len() > 1) {
+        Some(p) => p.lines.iter().map(|l| (l.line.clone(), l.number.clone())).collect(),
+        None => vec![(t.line.clone(), t.number.clone())],
+    };
+    for (line, number) in lines {
+        m.held.retain(|h| !h.line.eq_ignore_ascii_case(&line));
+        m.held.push(OperatorHold { line, number, name: d.name.clone(), from: from.clone(), until: until.clone(), amount: d.amount, own_cost: d.own_cost, gives_up: gives.clone(), package: package.clone(), with: with.clone() });
+    }
 }
 
 /// (3 November 2026) The map's lines of a concession or an operator's line to put out again: its
@@ -705,7 +742,7 @@ fn add_lines(m: &mut Market, c: &Company, ls: &[&LineInfo], name: &str, opens_at
     let hours_cost = (t.cost - cn::bus_year(&t, bus_cost)).max(t.cost * 3 / 10);
     t.reference = super::sealed::cap_set(hours_cost, cn::of_hour(&t, cfg.cap_hour as f64), cfg.cap_factor) + cn::bus_year(&t, bus_cap);
     t.market = Some(Shared { key: m.key.clone(), id, rivals: m.rivals.clone(), others: Vec::new(), holder: holder.map(|h| h.0.to_string()).unwrap_or_default(), from: holder.map(|h| h.1.to_string()).unwrap_or_default(), low_share: cfg.low_share, award: cfg.award, bus_cap, bus_cost, reserve: cn::reserve_of(cn::contract_buses(&t), cfg.reserve), needs: Some(needs), ..Default::default() });
-    m.tenders.push(MarketTender { tender: t, applied: Vec::new(), decided: None });
+    m.tenders.push(MarketTender { tender: t, applied: Vec::new(), decided: None, complaints: Vec::new() });
     id
 }
 
@@ -993,6 +1030,45 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
             said.push(format!("{}: the event '{}' ({} to {}): its line {} out to tender from {} {} to {}", m.map, e.name, e.from, e.until, l.name, clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes)));
         }
     }
+    // (NexiconDK, 3 November 2026) the rail replacements (H9): the map's timetables for it - the
+    // admin's to order (none: no option) - and those he ordered, out to tender for a day at his
+    // fixed price a timetable hour, the quality deciding, or given to his company directly; the
+    // winner runs it on its days alone, as an event's special service
+    m.rail_lines = lines.iter().filter(|l| super::specials::line_kind(l, &[&template.depot]) == super::specials::Kind::RailReplacement).map(|l| l.name.clone()).collect();
+    for k in 0..m.rails.len() {
+        if m.rails[k].offered {
+            continue;
+        }
+        m.rails[k].offered = true;
+        let r = m.rails[k].clone();
+        let Some(l) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&r.line)) else {
+            said.push(format!("{}: the rail replacement {} not put out - the map's timetable has no such line today", m.map, r.line));
+            continue;
+        };
+        let opens = now + 1;
+        let closes = (opens + super::server_awards::RAIL_BID_DAYS * clock::DAY).min(clock::moment(&dates::add(&r.from, -1), 12 * 60));
+        if closes < opens + 6 * 60 && r.direct.is_empty() {
+            said.push(format!("{}: the rail replacement {} from {} too near for a tender: the map's operators run it", m.map, r.line, r.from));
+            continue;
+        }
+        let id = add(m, template, l, opens, closes, None, cfg);
+        if let Some(t) = m.tenders.iter_mut().find(|t| t.tender.id == id) {
+            if let Some(x) = t.tender.market.as_mut() {
+                (x.from, x.until, x.event) = (r.from.clone(), r.until.clone(), super::server_awards::RAIL_EVENT.to_string());
+                x.award = super::viborg::Award::Fixed;
+                (x.bus_cap, x.bus_cost) = (0, 0);
+                if !r.direct.is_empty() {
+                    (x.direct, x.direct_name) = (r.direct.clone(), r.direct_name.clone());
+                }
+            }
+            t.tender.reference = cn::of_hour(&t.tender, r.hour as f64);
+            if !r.direct.is_empty() {
+                t.tender.closes_at = opens + 1;
+                t.tender.closes = clock::date_of(t.tender.closes_at);
+            }
+        }
+        said.push(format!("{}: rail replacement {} from {} to {} at {:.2} a timetable hour: {}", m.map, r.line, r.from, r.until, r.hour as f64 / 100.0, if r.direct.is_empty() { format!("bids until {} {}", clock::date_of(closes), clock::hhmm(closes)) } else { format!("given to {}", r.direct_name) }));
+    }
 }
 
 /// The companies' bids of a tender of the market in their one order (by their ids): (id, name,
@@ -1028,13 +1104,20 @@ fn humans_with(t: &Tender, all: &[MarketBid]) -> Vec<Human> {
 /// (`sealed`) - each company's last bid before the close and each operator's, opened together and
 /// scored; the best valid total wins.
 pub fn decide(t: &Tender, all: &[MarketBid]) -> Decided {
+    decide_without(t, all, &[])
+}
+
+/// (NexiconDK, 3 November 2026) `decide` without the bidders named in `out` (the winner a
+/// complaint's upholding passes over: `server_awards::uphold`); a direct award stands.
+pub fn decide_without(t: &Tender, all: &[MarketBid], out: &[String]) -> Decided {
     // (3 November 2026: awarded directly by the server's admin - no bids opened)
-    if let Some(x) = t.market.as_ref().filter(|x| !x.direct.is_empty()) {
+    if let Some(x) = t.market.as_ref().filter(|x| !x.direct.is_empty() && out.is_empty()) {
         let name = if x.direct_name.is_empty() { x.direct.clone() } else { x.direct_name.clone() };
         return Decided { winner: x.direct.clone(), name, amount: t.reference, drive: t.drive, bus_day: x.bus_cap, ..Decided::default() };
     }
-    let hs = humans_with(t, all);
-    let ops = super::sealed::operator_bids(t);
+    let passed = |name: &str| out.iter().any(|o| o == name);
+    let hs: Vec<Human> = humans_with(t, all).into_iter().filter(|h| !passed(&h.1)).collect();
+    let ops: Vec<super::sealed::OperatorBid> = super::sealed::operator_bids(t).into_iter().filter(|o| !passed(&o.name)).collect();
     // (the companies' first, then the operators': an index into both)
     let mut opened: Vec<super::sealed::Opened> = Vec::new();
     let mut last: Vec<(usize, Cents, Drive, Cents)> = Vec::new();
@@ -1059,10 +1142,11 @@ pub fn decide(t: &Tender, all: &[MarketBid]) -> Decided {
             drive: last.iter().find(|l| l.0 == w).map_or(Drive::Diesel, |l| l.2),
             own_cost: 0,
             bus_day: last.iter().find(|l| l.0 == w).map_or(0, |l| l.3),
+            ..Decided::default()
         },
         Some(w) => {
             let o = &ops[w - hs.len()];
-            Decided { winner: String::new(), name: o.name.clone(), amount: o.amount, standings, drive: Drive::Diesel, own_cost: o.own_cost, bus_day: 0 }
+            Decided { winner: String::new(), name: o.name.clone(), amount: o.amount, standings, drive: Drive::Diesel, own_cost: o.own_cost, bus_day: 0, revision: 0, passed: Vec::new() }
         }
         None => Decided { standings, ..Decided::default() },
     }
@@ -1208,6 +1292,16 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
             t.offers = mine;
         }
         t.applied |= mt.applied.contains(&c.id);
+        // (NexiconDK, 3 November 2026: the admin gave it to another bidder upon a complaint - every
+        // company takes the award again, H11)
+        if !t.open() {
+            let lid = t.id;
+            let seen = t.market.as_ref().map_or(0, |x| x.revision);
+            if let Some(d) = mt.decided.clone().filter(|d| d.revision > seen) {
+                super::server_awards::take_revision(c, lid, &d, &mut run, at);
+            }
+            continue;
+        }
         // (decided by the main server for every company)
         let Some(d) = mt.decided.clone().filter(|_| t.open()) else { continue };
         let (lid, number, renewal, mine_bid) = (t.id, t.number.clone(), t.renewal, !t.offers.is_empty());
@@ -1253,6 +1347,8 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
             cn::Event::Ended { .. } => {}
         }
     }
+    // (3 November 2026) what came of its complaints about awards (H11)
+    super::server_awards::tell_complaints(c, &m, &mut run, at);
     // (1 November 2026) an event of the map that takes a line of the company's off: told once, a
     // week before its first day at the soonest
     let today = c.date.clone();
@@ -1390,6 +1486,10 @@ pub const BUS_ABOVE_CAP: &str = "A contract bus a day may ask at most the tender
 /// (3 November 2026) `bid` in two parts: `amount` the whole ask a year, `bus_day` of it a
 /// contract bus a day (at most the tender's cap for it; the rest the timetable hours').
 pub fn bid_parts(data: &Path, c: &mut Company, id: u32, amount: Cents, bus_day: Cents) -> Result<(), &'static str> {
+    // (NexiconDK, 3 November 2026: a fixed price - a rail replacement the admin ordered - is every
+    // bid's: the quality decides)
+    let fixed = c.concessions.tenders.iter().find(|t| t.id == id).and_then(|t| t.market.as_ref().filter(|m| m.award == super::viborg::Award::Fixed).map(|_| t.reference));
+    let (amount, bus_day) = fixed.map_or((amount, bus_day), |r| (r, 0));
     let cap = c.concessions.tenders.iter().find(|t| t.id == id).and_then(|t| t.market.as_ref()).map_or(0, |m| m.bus_cap);
     let bus_day = if cap > 0 { bus_day.max(0) } else { 0 };
     if bus_day > cap && cap > 0 {

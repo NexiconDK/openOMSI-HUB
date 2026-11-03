@@ -194,6 +194,7 @@ pub fn add_line(c: &mut Company, line: &LineInfo, own: Option<&OwnLine>) -> Resu
     let runs: Vec<_> = line.tours.iter().filter(|t| t.runs).collect();
     c.lines.push(CompanyLine {
         name: line.name.clone(),
+        sub_for: String::new(),
         number,
         numbers,
         own: own.is_some(),
@@ -325,6 +326,8 @@ fn finish_tours(c: &Company, mut out: Vec<TourOfDay>, date: &str, cuts: Vec<(usi
     super::ownline::add_depot_runs(c, &mut out);
     // (NexiconDK, 3 November 2026: the extra buses of doubling orders said yes to - `doubling`)
     super::doubling::add_tours(c, date, &mut out);
+    // (3 November 2026: its lines a subcontractor runs that day - `subcontracts`)
+    super::subcontracts::drop_lent(c, date, &mut out);
     super::studio::resolve_cuts(&mut out, &cuts);
     for t in out.iter_mut() {
         let begins = super::clock::moment(date, t.from() as i64);

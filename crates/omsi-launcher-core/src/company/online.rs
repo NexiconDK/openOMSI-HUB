@@ -86,6 +86,17 @@ pub struct Online {
     /// process, not kept: None elsewhere.
     #[serde(skip)]
     pub price_level: Option<String>,
+    /// (NexiconDK, 3 November 2026) Its subcontracts as the main server keeps them, given or run
+    /// (`subcontracts`; read by its process, not kept), the days it ran for others still to send,
+    /// those run for it not yet taken into its contracts, and how far their file was read.
+    #[serde(skip)]
+    pub subs: Vec<super::subcontracts::Subcontract>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sub_out: Vec<super::subcontracts::SubDay>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sub_in: Vec<super::subcontracts::SubDay>,
+    #[serde(default)]
+    pub sub_read: u64,
     /// (NexiconDK, 3 November 2026) The authority's changes of its running contracts
     /// (`contract_events::ContractChange`): waiting for their day, applied or declined.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -172,7 +183,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, changes: Vec::new(), roadworks: Vec::new(), roadworks_at: 0, majeure: Vec::new(), majeure_at: 0, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, subs: Vec::new(), sub_out: Vec::new(), sub_in: Vec::new(), sub_read: 0, changes: Vec::new(), roadworks: Vec::new(), roadworks_at: 0, majeure: Vec::new(), majeure_at: 0, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
     }
 }
 
@@ -808,6 +819,22 @@ impl Host {
             let lines = w.lines(c, &date).map_err(anyhow::Error::msg)?;
             super::concessions::take_on(c, &lines);
             self.planned = None;
+        }
+        // (NexiconDK, 3 November 2026) its subcontracts as the main server keeps them: told, its days
+        // run for others sent and those run for it read, the lines it runs for others taken on or
+        // given up (`subcontracts`)
+        if c.online.on_server {
+            let before = (c.online.subs.clone(), c.online.sub_in.len(), c.online.sub_out.len());
+            if super::subcontracts::refresh(&self.data, c) {
+                let date = c.date.clone();
+                let lines = w.lines(c, &date).map_err(anyhow::Error::msg)?;
+                super::subcontracts::take_on(c, &lines);
+                self.planned = None;
+                self.dirty = true;
+            }
+            if before != (c.online.subs.clone(), c.online.sub_in.len(), c.online.sub_out.len()) {
+                self.dirty = true;
+            }
         }
         // (a question left waiting - by a step taken on a page before 25 October 2026: nobody
         // answers it on a server, the dispatcher decides it)

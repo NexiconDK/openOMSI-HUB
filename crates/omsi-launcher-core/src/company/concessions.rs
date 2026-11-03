@@ -573,6 +573,10 @@ pub struct Shared {
     pub bus_cap: Cents,
     #[serde(default, skip_serializing_if = "is_zero_cents")]
     pub bus_cost: Cents,
+    /// (NexiconDK, 3 November 2026) The award's revision the company took (`shared_tenders::
+    /// Decided::revision`: the admin upheld a complaint - `server_awards`).
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub revision: u32,
 }
 
 fn is_zero(x: &f64) -> bool {
@@ -974,7 +978,8 @@ pub fn ensure(c: &mut Company) -> bool {
     c.concessions.held.retain(|h| lines.iter().any(|l| !l.own && l.name.eq_ignore_ascii_case(&h.line)) || dates::between(&today, &h.from) > 0);
     changed |= n != c.concessions.held.len();
     changed |= bc::ensure_hires(c);
-    for l in lines.iter().filter(|l| !l.own) {
+    // (NexiconDK, 3 November 2026: a line run as another's subcontractor has no concession of its own)
+    for l in lines.iter().filter(|l| !l.own && l.sub_for.is_empty()) {
         if of_line(c, &l.name).is_none() {
             let until = dates::add(&c.date, r.term_weeks as i64 * 7 - 1);
             c.concessions.held.push(Concession { line: l.name.clone(), number: l.number.clone(), from: c.date.clone(), until, price: 1.0, direct: true, after: String::new(), options: 0, package: String::new(), with: Vec::new() });

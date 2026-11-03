@@ -1545,6 +1545,57 @@ Tested: `contract_events::tests` (`a_breakdown_has_twenty_minutes_and_its_live_d
 `bus_contracts::tests::excused_journeys_force_majeure_and_a_day_nothing_ran`,
 `bus_contracts::tests::a_contract_warned_then_ended_for_journeys_dropped`.
 
+### Contract events: rail replacement, subcontractors and joint bids, complaints (3 November 2026)
+
+Decided: the plan's H9-H11, in `server_awards` (H9, H11) and `subcontracts` (H10).
+
+- **H9 rail replacement, only where a map has it.** The market keeps the map's timetables for
+  rail replacement (`Market::rail_lines`: `specials::Kind::RailReplacement`, "SEV" and the like,
+  never a concession of their own); with none the admin panel shows no "Rail replacement". The
+  admin orders one (`order_rail`, the market tab's card): the timetable, its days (the day after
+  tomorrow at the soonest, at most `RAIL_MOST_DAYS` 31), his fixed price a timetable hour, and a
+  company to give it to directly or none. The main server puts it out at its next step (`offer`):
+  bids for `RAIL_BID_DAYS` (1), at the fixed price (`viborg::Award::Fixed`: every bid is at it -
+  `shared_tenders::bid_parts` -, every valid one gets the 50 price points, the quality parts
+  decide; an operator bids when its own cost is covered), no bus part; given directly, decided at
+  once. The winner runs it on its days alone, as an event's special service (`RAIL_EVENT`).
+- **H10 a subcontractor.** A company holding a contract proposes lines of it to another
+  company of the map - a player's company of the server - at a price a timetable hour from a day
+  (the Concessions page's "Subcontracts"); the other accepts or declines there (unanswered within
+  `ANSWER_DAYS` 3 it lapses). The main server keeps them (`<data>/subcontracts.json`, from the
+  companies' asks `subcontract-asks.jsonl`, `subcontracts::step`); each company's process reads
+  them (`refresh`). From its first day the subcontractor runs the lines - its own lines then,
+  `CompanyLine::sub_for` the main company, no concession of its own, their fares the authority's -,
+  the main company none of them (`drop_lent`: its tours of them gone). At its day's close the
+  subcontractor is paid its timetable hours run at the price and sends its day of each line
+  (`bus_contracts::LineDayRun`: the tours' timetabled minutes, the journeys run and not, the
+  players' departures and red lights; `<data>/subcontracts/<main>.jsonl`); the main company takes
+  it into its contract's journeys at its next close (a day later at the latest) and pays the
+  hours: the authority pays the main company as ever, its fines, its bonus and its watch are its
+  own. The subcontractor's buses are not looked at by the main company's contract (no size or
+  fuel fines for them); the main company is still paid its contract buses a day. Either ends it
+  with `NOTICE_DAYS` (2) notice; it ends with the contract's term at the latest.
+- **H10 a joint bid, in its least form.** On a tender of the market the bidder invites a partner
+  for some of its lines at a price a timetable hour (the tender page's "Bid together with another
+  company"); accepted by the partner before the award, it runs as a subcontract from the
+  contract's first day when the bidder wins (`State::Accepted` → `Running`), and falls away when it
+  loses. The bid is scored on the bidder's quality alone; the contracts are the bidder's. Left
+  for later: the partner's quality in the score, the partner's own contracts and concessions.
+- **H11 a complaint about an award.** A company that bid and lost may complain once, with its
+  reason, until the day before the contract's start (the tender page's "Complain about the
+  award": `server_awards::complain`, the market's `<key>.complaints.jsonl`, read by the main
+  server into the tender's `complaints`). The admin panel's market tab shows each open one with
+  the opened bids and their points: "Let the award stand", or "Give it to" the next valid bidder
+  (`rule`: the bids opened again without the winner and those passed over before -
+  `shared_tenders::decide_without` -, `Decided::revision` one up, an operator's hold moved with
+  it). Every company takes a changed award at its next step (`take_revision`): the old winner
+  gives the contract back (before its start its contracts and concessions of it go - a renewal's
+  back to the term before -; after it they end that day), the new one wins it (from the tender's
+  start when that is still ahead, else tomorrow); a complaint let stand is told so.
+
+Tested: `server_awards::tests` (`a_complaint_upheld_gives_the_contract_to_the_next_bidder`,
+`rail_replacement_only_where_the_map_has_it`), `subcontracts::tests`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

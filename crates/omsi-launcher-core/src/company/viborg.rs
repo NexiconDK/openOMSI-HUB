@@ -49,6 +49,9 @@ pub enum Award {
     Viborg,
     /// The lowest valid price alone.
     Lowest,
+    /// (NexiconDK, 3 November 2026) A price the authority fixed (a rail replacement it orders:
+    /// `rail`): every valid bid gets the price points, the quality decides.
+    Fixed,
 }
 
 impl Award {
@@ -64,13 +67,14 @@ impl Award {
         match self {
             Award::Viborg => "viborg",
             Award::Lowest => "lowest",
+            Award::Fixed => "fixed",
         }
     }
 
     /// The most points the price gives, and the quality.
     pub fn price_most(self) -> f64 {
         match self {
-            Award::Viborg => PRICE,
+            Award::Viborg | Award::Fixed => PRICE,
             Award::Lowest => 100.0,
         }
     }
@@ -87,7 +91,7 @@ impl Award {
 
 /// The price points of an ask against the lowest valid one.
 pub fn price_points(amount: i64, lowest: i64, award: Award) -> f64 {
-    if amount <= 0 {
+    if amount <= 0 || award == Award::Fixed {
         return award.price_most();
     }
     award.price_most() * (lowest.max(1) as f64 / amount as f64).min(1.0)
@@ -124,7 +128,7 @@ impl Parts {
     pub fn split(&self, award: Award) -> [f64; 4] {
         match award {
             Award::Lowest => [0.0; 4],
-            Award::Viborg => [
+            Award::Viborg | Award::Fixed => [
                 OPERATION * self.operation.clamp(0.0, 100.0) / 100.0,
                 VEHICLES * self.vehicles.clamp(0.0, 100.0) / 100.0,
                 PLAN * self.plan.clamp(0.0, 100.0) / 100.0,

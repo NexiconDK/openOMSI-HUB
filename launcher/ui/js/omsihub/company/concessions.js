@@ -34,6 +34,7 @@ export function ConcessionsPage() {
       ${v.offers && html`<${Offers} o=${v.offers} />`}
       ${v.doubling && html`<${Doublings} o=${v.doubling} />`}
       ${v.changes && html`<${Changes} o=${v.changes} />`}
+      ${v.subs && html`<${Subs} o=${v.subs} st=${st} />`}
       ${v.results && html`<${Results} r=${v.results} />`}
       <${Held} h=${v.held} />
     </div>
@@ -87,6 +88,36 @@ function Changes({ o }) {
         ${r.ask && html`<div class="co-pg-line"><${Btn} icon="close" label=${o.decline} onClick=${() => actMore('change_decline', { change: r.id })} /></div>`}
       </div>`,
     )}</div>
+  </${Card}>`;
+}
+
+/** (NexiconDK, 3 November 2026) The company's subcontracts (`concessions::subs`): proposed to it,
+ * given, run - and a proposal of its own lines to another company of the map. */
+function Subs({ o, st }) {
+  const pick = (k, d) => (st['sub_' + k] ?? d);
+  const set = (k) => (e) => setUi('concessions', { ['sub_' + k]: e.currentTarget.type === 'select-multiple' ? [...e.currentTarget.selectedOptions].map((x) => x.value) : e.currentTarget.value });
+  const lines = pick('lines', []);
+  return html`<${Card} title=${o.title} icon="handshake">
+    <p class="co-pg-note" style="margin:0 0 8px">${o.hint}</p>
+    ${o.rows.length > 0 && html`<div class="co-pg-list">${o.rows.map(
+      (r) => html`<div class="co-pg-tender" style="cursor:default">
+        <div class="co-pg-line"><${Plate} p=${{ number: r.number }} h=${24} /><b class="co-pg-itemtitle grow co-pg-cut">${r.title}</b></div>
+        <p class="co-pg-note" style="margin:0">${r.say}</p>
+        <div class="co-pg-chips"><${Chip} text=${r.state} tone=${r.answer ? 'accent' : 'dim'} icon="handshake" /></div>
+        <div class="co-pg-line">
+          ${r.answer && html`<${Btn} kind="primary" icon="check" label=${o.accept} onClick=${() => actMore('sub_answer', { sub_id: r.id, yes: true })} /><${Btn} icon="close" label=${o.decline} onClick=${() => actMore('sub_answer', { sub_id: r.id, yes: false })} />`}
+          ${r.withdraw && html`<${Btn} icon="close" label=${o.withdraw} onClick=${() => actMore('sub_answer', { sub_id: r.id, yes: false })} />`}
+          ${r.end && html`<${Btn} kind="ghost" icon="event_busy" label=${o.end_label} onClick=${() => actMore('sub_end', { sub_id: r.id })} />`}
+        </div>
+      </div>`,
+    )}</div>`}
+    ${o.held.length > 0 && o.others.length > 0 && html`<div class="co-pg-line" style="flex-wrap:wrap;gap:8px;margin-top:8px">
+      <label class="co-pg-small">${o.lines_label}<select multiple size=${Math.min(4, o.held.length)} onChange=${set('lines')}>${o.held.map((h) => html`<option value=${h.line} selected=${lines.includes(h.line)}>${h.number} (${h.until})</option>`)}</select></label>
+      <label class="co-pg-small">${o.who_label}<select onChange=${set('who')}>${o.others.map((x) => html`<option value=${x.id} selected=${pick('who', o.others[0].id) === x.id}>${x.name}</option>`)}</select></label>
+      <label class="co-pg-small">${o.price_label}<input type="number" min="0" step="1" style="width:90px" value=${pick('price', '')} onInput=${set('price')} /></label>
+      <label class="co-pg-small">${o.from_label}<input type="date" min=${o.tomorrow} value=${pick('from', o.tomorrow)} onInput=${set('from')} /></label>
+      <${Btn} kind="primary" icon="send" label=${o.propose} onClick=${() => actMore('sub_propose', { sub: pick('who', o.others[0].id), lines, hour: Math.round(cents(pick('price', 0))), from: pick('from', o.tomorrow) })} />
+    </div>`}
   </${Card}>`;
 }
 
@@ -184,6 +215,25 @@ function Auction({ a, st }) {
       ${act.kind === 'wait' && act.label && html`<${Btn} kind="primary" icon="schedule" label=${act.label} onClick=${() => actMore('tender_step', { id: act.id, to: 'open' })} />`}
       ${act.kind === 'said' && act.text && html`<p class=${'co-pg-small t-' + act.tone} style="margin:0;font-weight:700">${act.text}</p>`}
     </div>
+    ${a.joint &&
+    html`<div class="co-pg-score">
+      <div class="co-pg-line"><${Icon} name="handshake" size=${16} class="t-accent" /><b class="grow">${a.joint.title}</b></div>
+      <p class="co-pg-note" style="margin:0">${a.joint.hint}</p>
+      <div class="co-pg-line" style="flex-wrap:wrap;gap:8px">
+        <select onChange=${(e) => setUi('concessions', { joint_who: e.currentTarget.value })}>${a.joint.partners.map((x) => html`<option value=${x.id} selected=${(st.joint_who ?? a.joint.partners[0].id) === x.id}>${x.name}</option>`)}</select>
+        <select multiple size=${Math.min(4, a.joint.lines.length)} onChange=${(e) => setUi('concessions', { joint_lines: [...e.currentTarget.selectedOptions].map((x) => x.value) })}>${a.joint.lines.map((l) => html`<option value=${l.line} selected=${(st.joint_lines || []).includes(l.line)}>${l.number}</option>`)}</select>
+        <label class="co-pg-small">${a.joint.price_label}<input type="number" min="0" step="1" style="width:90px" value=${st.joint_price ?? ''} onInput=${(e) => setUi('concessions', { joint_price: e.currentTarget.value })} /></label>
+        <${Btn} icon="send" label=${a.joint.button} onClick=${() => actMore('joint_propose', { id: a.id, sub: st.joint_who ?? a.joint.partners[0].id, lines: st.joint_lines || [], hour: Math.round(cents(st.joint_price || 0)) })} />
+      </div>
+    </div>`}
+    ${a.complain &&
+    html`<div class="co-pg-score">
+      <div class="co-pg-line"><${Icon} name="gavel" size=${16} class="t-accent" /><b class="grow">${a.complain.title}</b></div>
+      <p class="co-pg-note" style="margin:0">${a.complain.hint}</p>
+      <textarea class="co-pg-bidin" style="width:100%;min-height:64px;box-sizing:border-box" placeholder=${a.complain.placeholder}
+        value=${st.complaint_for === a.id ? st.complaint || '' : ''} onInput=${(e) => setUi('concessions', { complaint: e.currentTarget.value, complaint_for: a.id })}></textarea>
+      <div class="co-pg-actions"><${Btn} icon="gavel" label=${a.complain.button} onClick=${() => actMore('tender_complain', { id: a.id, reason: st.complaint_for === a.id ? st.complaint || '' : '' })} /></div>
+    </div>`}
     <details class="co-pg-log"><summary>${a.log_title} (${a.log.length})</summary>
       ${a.log.length
         ? a.log.map((l) => html`<div class="co-pg-line"><span class="co-pg-muted" style="width:48px">${l.at}</span><span class=${'grow co-pg-cut' + (l.me ? ' t-accent' : '')}>${l.who}</span><b>${l.amount}</b></div>`)

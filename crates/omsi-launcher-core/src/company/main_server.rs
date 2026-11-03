@@ -826,6 +826,10 @@ impl MainServer {
             };
             super::shared_tenders::fill_weeks(&self.data, &key, &date, &mut read_day);
         }
+        // (3 November 2026: the companies' subcontracts and joint bids - `subcontracts`, H10)
+        for line in super::subcontracts::step(&self.data, &date) {
+            info!("subcontracts: {line}");
+        }
     }
 
     /// (Phase 7) Every group's head office a step on (`server_hq::step`): what its depots sent and

@@ -220,7 +220,59 @@ pub fn view(s: &mut Session, args: &Value) -> Value {
         "offers": offers(&c),
         "doubling": doubling_orders(&c),
         "changes": changes(&c),
+        "subs": subs(&c),
         "results": results(&c),
+    })
+}
+
+/// (NexiconDK, 3 November 2026) The company's subcontracts (`subcontracts`, H10): given or run,
+/// proposed to it (accept, decline), running (end with notice); and, holding contracts, a
+/// proposal to another company of the map. Not on a server: none.
+fn subs(c: &Company) -> Value {
+    use omsi_launcher_lib::company::subcontracts::{State, NOTICE_DAYS};
+    if !c.online.on_server {
+        return Value::Null;
+    }
+    let others: Vec<Value> = omsi_launcher_lib::company::store::list(&super::super::data(), "")
+        .into_iter()
+        .filter(|o| o.online.on_server && o.id != c.id && co_tenders::key_of(&o.map) == co_tenders::key_of(&c.map))
+        .map(|o| json!({ "id": o.id, "name": o.name }))
+        .collect();
+    let held: Vec<Value> = c.concessions.held.iter().filter(|h| dates::between(&c.date, &h.until) > 0).map(|h| json!({ "line": h.line, "number": h.number, "until": day_label(&h.until) })).collect();
+    let rows: Vec<Value> = c
+        .online
+        .subs
+        .iter()
+        .rev()
+        .map(|x| {
+            let main = x.main == c.id;
+            let other = if main { &x.sub_name } else { &x.main_name };
+            let title = if main { trf("%{lines}: run by %{who} for you", &[("lines", &x.numbers.join(", ")), ("who", other)]) } else { trf("%{lines}: you run them for %{who}", &[("lines", &x.numbers.join(", ")), ("who", other)]) };
+            let say = trf("From %{from} to %{until}, at %{price} a timetable hour.", &[("from", &day_label(&x.from)), ("until", &day_label(x.end())), ("price", &eur(x.hour))]);
+            let state = match x.state {
+                State::Proposed => tr("Proposed"),
+                State::Accepted => tr("Accepted: runs when the joint bid wins"),
+                State::Running if !x.last.is_empty() => trf("Ends with notice on %{d}", &[("d", &day_label(&x.last))]),
+                State::Running => tr("Running"),
+                State::Declined => tr("Declined"),
+                State::Ended => tr("Ended"),
+            };
+            json!({
+                "id": x.id, "number": x.numbers.first().cloned().unwrap_or_default(), "title": title, "say": say, "state": state,
+                "answer": x.state == State::Proposed && !main, "withdraw": x.state == State::Proposed && main,
+                "end": matches!(x.state, State::Running | State::Accepted) && x.last.is_empty(),
+            })
+        })
+        .collect();
+    if rows.is_empty() && (held.is_empty() || others.is_empty()) {
+        return Value::Null;
+    }
+    json!({
+        "title": tr("Subcontracts"), "rows": rows, "others": others, "held": held,
+        "hint": trf("Give lines of your contracts to another company of the map for a price a timetable hour: it runs them, you are paid by the authority and pay it its hours. Either may end it with %{n} days' notice.", &[("n", &NOTICE_DAYS.to_string())]),
+        "accept": tr("Accept"), "decline": tr("Decline"), "withdraw": tr("Withdraw"), "end_label": tr("End with notice"),
+        "propose": tr("Propose"), "lines_label": tr("Lines"), "who_label": tr("Company"), "price_label": tr("A timetable hour"), "from_label": tr("From"),
+        "tomorrow": dates::add(&c.date, 1),
     })
 }
 
@@ -988,6 +1040,27 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         "figures": figures, "terms": terms, "frac": frac, "times": times, "bidders": bidders, "drive": drive,
         "log_title": tr("Bids").to_uppercase(), "log": log, "no_log": tr("No bid yet."),
         "actions": actions,
+        // (NexiconDK, 3 November 2026: a joint bid - a partner of the map for some of its lines,
+        // H10 - while the bids are taken)
+        "joint": (t.market.is_some() && t.open() && c.online.on_server).then(|| {
+            let lines: Vec<Value> = match t.package.as_ref().filter(|p| p.lines.len() > 1) {
+                Some(p) => p.lines.iter().map(|l| json!({ "line": l.line, "number": l.number })).collect(),
+                None => vec![json!({ "line": t.line, "number": t.number })],
+            };
+            let partners: Vec<Value> = omsi_launcher_lib::company::store::list(&super::super::data(), "").into_iter().filter(|o| o.online.on_server && o.id != c.id && co_tenders::key_of(&o.map) == co_tenders::key_of(&c.map)).map(|o| json!({ "id": o.id, "name": o.name })).collect();
+            json!({
+                "title": tr("Bid together with another company"),
+                "hint": tr("Your partner runs the lines you give it as your subcontractor from the contract's first day, at its price a timetable hour, if your bid wins: it accepts on its Concessions page before the award. Your bid is scored on your quality."),
+                "lines": lines, "partners": partners, "button": tr("Invite"), "price_label": tr("A timetable hour"),
+            })
+        }).filter(|j| j["partners"].as_array().is_some_and(|a| !a.is_empty())),
+        // (NexiconDK, 3 November 2026: a lost award complained of until the start - H11)
+        "complain": omsi_launcher_lib::company::server_awards::may_complain(c, t).ok().map(|_| json!({
+            "title": tr("Complain about the award"),
+            "hint": trf("You may complain until the day before the start, %{d}: the authority looks at the bids and either lets the award stand or gives the contract to the next valid bidder.", &[("d", &day_label(&omsi_launcher_lib::company::server_awards::start_of(t)))]),
+            "placeholder": tr("Why the award is wrong"),
+            "button": tr("Send the complaint"),
+        })),
     })
 }
 
@@ -1001,8 +1074,13 @@ fn viborg_score(c: &core::company::model::Company, t: &Tender, award: Award, sea
     let (pm, qm) = (award.price_most(), award.quality_most());
     let f = |x: f64| format!("{x:.0}");
     let g = |x: f64| format!("{x:.1}");
-    let mut lines = vec![trf("Price %{w} %: the lowest valid ask gets all %{w} points, every other ask lowest ÷ ask of them.", &[("w", &f(pm))])];
-    if award == Award::Viborg {
+    // (3 November 2026: a fixed price - a rail replacement the admin ordered: every bid's)
+    let mut lines = if award == Award::Fixed {
+        vec![trf("The authority pays a fixed %{p} a timetable hour: every valid bid gets the %{w} price points, the quality decides.", &[("p", &eur((cn::per_hour(t, t.reference)).round() as i64)), ("w", &f(pm))])]
+    } else {
+        vec![trf("Price %{w} %: the lowest valid ask gets all %{w} points, every other ask lowest ÷ ask of them.", &[("w", &f(pm))])]
+    };
+    if award != Award::Lowest {
         lines.push(trf("Operating quality %{w} %: your track record, %{v} of 100 - %{p} points.", &[("w", &f(viborg::OPERATION)), ("v", &f(parts.operation)), ("p", &g(split[0]))]));
         lines.push(trf("Vehicles %{w} %: your buses' age and drive, %{v} of 100 - %{p} points.", &[("w", &f(viborg::VEHICLES)), ("v", &f(parts.vehicles)), ("p", &g(split[1]))]));
         lines.push(trf("Implementation plan %{w} %: room, buses and drivers for the work, %{v} of 100 - %{p} points.", &[("w", &f(viborg::PLAN)), ("v", &f(parts.plan)), ("p", &g(split[2]))]));
@@ -1011,7 +1089,7 @@ fn viborg_score(c: &core::company::model::Company, t: &Tender, award: Award, sea
     lines.push(tr("Sealed bids: opened together at the close. Under 85 % of the authority's cost price a bid is rejected as abnormally low; above the cap it does not count."));
     json!({
         "title": tr("How bids are scored"),
-        "head": tr(match award { Award::Viborg => "The Viborg model: 50 % price + 50 % quality", Award::Lowest => "The lowest price wins" }),
+        "head": tr(match award { Award::Viborg => "The Viborg model: 50 % price + 50 % quality", Award::Lowest => "The lowest price wins", Award::Fixed => "A fixed price: the quality decides" }),
         "price": 0.0, "quality": quality, "has": false,
         "price_label": trf("Price up to %{p}", &[("p", &f(pm))]),
         "quality_label": trf("Quality %{q} of %{m}", &[("q", &g(quality)), ("m", &f(qm))]),
@@ -1063,6 +1141,44 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {
             match apply(s, |c| if c.online.on_server { co_tenders::bid_parts(&data, c, id, amount, bus_day) } else { cn::bid(c, id, amount) }) {
                 Ok(_) => {
                     s.say(tr("Your bid is in. The rivals answer as the clock goes on."), false);
+                    Ok(json!({}))
+                }
+                Err(p) => Ok(json!({ "popup": p })),
+            }
+        }
+        // (NexiconDK, 3 November 2026: subcontracts and joint bids - H10)
+        "sub_propose" | "sub_answer" | "sub_end" | "joint_propose" => {
+            use omsi_launcher_lib::company::subcontracts::{self as sc, Ask, AskKind, Joint};
+            let s_ = |k: &str| args.get(k).and_then(Value::as_str).unwrap_or("").trim().to_string();
+            let lines: Vec<String> = args.get("lines").and_then(Value::as_array).map(|a| a.iter().filter_map(|v| v.as_str().map(str::to_string)).collect()).unwrap_or_default();
+            let hour = args.get("hour").and_then(Value::as_i64).unwrap_or(0);
+            let yes = args.get("yes").and_then(Value::as_bool).unwrap_or(false);
+            let sid = args.get("sub_id").and_then(Value::as_u64).unwrap_or(0) as u32;
+            let data = super::super::data();
+            let joint = (what == "joint_propose").then(|| s.company.as_ref().and_then(|c| c.concessions.tenders.iter().find(|t| t.id == id)).and_then(|t| t.market.as_ref().map(|m| Joint { key: m.key.clone(), tender: m.id, number: t.number.clone() }))).flatten();
+            if what == "joint_propose" && joint.is_none() {
+                return Some(Ok(json!({ "popup": super::super::kit::Popup::new("error", "This cannot be done", tr("Only a tender of the server's market takes a joint bid."), "", None).json(false) })));
+            }
+            let a = match what {
+                "sub_propose" | "joint_propose" => Ask { kind: AskKind::Propose, sub: s_("sub"), lines, hour, from: s_("from"), joint, ..Ask::default() },
+                "sub_answer" => Ask { kind: if yes { AskKind::Accept } else { AskKind::Decline }, id: sid, ..Ask::default() },
+                _ => Ask { kind: AskKind::End, id: sid, ..Ask::default() },
+            };
+            match apply(s, |c| sc::ask(&data, c, &a)) {
+                Ok(_) => {
+                    s.say(tr("Sent to the server: it is taken at its next step."), false);
+                    Ok(json!({}))
+                }
+                Err(p) => Ok(json!({ "popup": p })),
+            }
+        }
+        // (NexiconDK, 3 November 2026: a complaint about a lost award - H11)
+        "tender_complain" => {
+            let reason = args.get("reason").and_then(Value::as_str).unwrap_or("").to_string();
+            let data = super::super::data();
+            match apply(s, |c| omsi_launcher_lib::company::server_awards::complain(&data, c, id, &reason)) {
+                Ok(_) => {
+                    s.say(tr("Your complaint is with the authority."), false);
                     Ok(json!({}))
                 }
                 Err(p) => Ok(json!({ "popup": p })),
