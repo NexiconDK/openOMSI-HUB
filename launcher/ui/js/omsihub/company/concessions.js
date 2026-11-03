@@ -16,8 +16,8 @@ import { VaryDialog, openVary } from './variations.js';
 export const Badge = ({ b }) => b && html`<${Chip} text=${b.text} tone=${b.tone} />`;
 
 export function ConcessionsPage() {
-  const st = ui('concessions', { amount: null, amount_for: null });
-  const v = useMore('concessions', { amount: st.amount, amount_for: st.amount_for });
+  const st = ui('concessions', { amount: null, amount_for: null, bus: null, bus_for: null });
+  const v = useMore('concessions', { amount: st.amount, amount_for: st.amount_for, bus: st.bus, bus_for: st.bus_for });
   if (!v?.tenders) return html`<div class="co-pg"></div>`;
   const t = v.tenders;
   return html`<div class="co-pg co-pg-tenders">
@@ -96,6 +96,9 @@ function Auction({ a, st }) {
   const running = act.kind === 'running';
   const amount = running ? (st.amount_for === act.id && st.amount != null ? Math.min(act.hi, Math.max(act.lo, st.amount)) : act.amount) : null;
   const setAmount = (x) => setUi('concessions', { amount: Math.min(act.hi, Math.max(act.lo, x)), amount_for: act.id });
+  // (NexiconDK, 3 November 2026: a bid in two parts - a contract bus a day besides the hour)
+  const bus = running && act.bus ? act.bus.value : null;
+  const setBus = (x) => setUi('concessions', { bus: Math.min(act.bus.max, Math.max(0, x)), bus_for: act.id });
   const shown = running ? a.figures.slice(0, a.running_tiles || 2) : a.figures;
   return html`<${Card} class="co-pg-auction">
     <div class="co-pg-line co-pg-auctionhead">
@@ -115,6 +118,10 @@ function Auction({ a, st }) {
       html`<div class="co-pg-tile bid"><span>${act.label}</span>
         <input class="co-pg-bidin" type="number" step=${act.per_hour ? 1 : 100} value=${act.per_hour ? Math.round(units(amount * 100) * 100) / 100 : Math.round(units(amount * 100))} onChange=${(e) => setAmount(cents(e.currentTarget.value) / 100)} />
         <${Slider} value=${amount} min=${act.lo} max=${act.hi} step=${act.per_hour ? Math.max(0.01, cents(1) / 100) : 100} format=${(x) => eur(Math.round(x * 100))} onChange=${setAmount} /></div>`}
+      ${running && act.bus &&
+      html`<div class="co-pg-tile bid"><span>${act.bus.label}</span>
+        <input class="co-pg-bidin" type="number" step="1" value=${Math.round(units(bus * 100))} onChange=${(e) => setBus(cents(e.currentTarget.value) / 100)} />
+        <${Slider} value=${bus} min=${0} max=${act.bus.max} step=${Math.max(0.01, cents(1) / 100)} format=${(x) => eur(Math.round(x * 100))} onChange=${setBus} /></div>`}
     </div>
     ${running && html`<p class=${'co-pg-small t-' + act.chance_tone} style="margin:0;font-weight:700">${act.chance}</p>`}
     ${running && act.total && html`<p class="co-pg-small" style="margin:0;font-weight:700">${act.total}</p>`}
@@ -133,7 +140,7 @@ function Auction({ a, st }) {
       </table></div>`}
     <div class="co-pg-actions">
       ${running &&
-      html`<${Btn} kind="primary" icon="payments" label=${act.bid} onClick=${() => actMore('tender_bid', { id: act.id, amount: Math.round(amount * 100), per_hour: !!act.per_hour })} />
+      html`<${Btn} kind="primary" icon="payments" label=${act.bid} onClick=${() => actMore('tender_bid', { id: act.id, amount: Math.round(amount * 100), per_hour: !!act.per_hour, bus_day: bus != null ? Math.round(bus * 100) : 0 })} />
         ${act.buy && html`<${Btn} icon="check_circle" label=${act.buy} title=${act.buy_tip} onClick=${() => actMore('tender_buy', { id: act.id })} />`}
         ${act.plus15 && html`<${Btn} kind="ghost" icon="timer" label=${act.plus15} onClick=${() => actMore('tender_step', { id: act.id, to: '15' })} />`}
         ${act.to_close && html`<${Btn} kind="ghost" icon="sports_score" label=${act.to_close} onClick=${() => actMore('tender_step', { id: act.id, to: 'close' })} />`}`}

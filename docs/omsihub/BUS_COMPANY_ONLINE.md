@@ -1301,6 +1301,40 @@ Decided: the server's tenders let contracts as a Danish authority does.
 Tested: `shared_tenders::tests::the_danish_terms_of_a_tender`,
 `shared_tenders::tests::the_option_takes_a_contract_run_well_seven_days_on_twice_at_most`.
 
+### The bid in two parts, the daily payment and the quality bonus (3 November 2026)
+
+Decided: as Danish authorities let their contracts, a bid on the server is a price a timetable
+hour and an amount a contract bus a day; the contract pays both every day, and a quality bonus at
+its end.
+
+- **The caps.** A tender's contract buses are its work's buses at its peak
+  (`concessions::contract_buses`; the reserve is not paid as contract buses). The authority's
+  reckoning of a contract bus a day is the bus's part of its estimate - its capital, insurance,
+  tax, ticket machine and overhead a year, its share of a day (`bus_contracts::bus_day_price`;
+  about 1,900-2,200 kr. at the Danish level). Its cap is that by `tender_cap_factor`, or the
+  admin's own `cap_per_bus_day` (kroner; the admin panel's "The cap a contract bus a day"). The
+  timetable hour keeps its cap (`cap_per_hour`, or the hours' part of the estimate by the factor).
+  The cap of the whole ask a year is the two together (`Shared::bus_cap`, `bus_cost`).
+- **The bid.** The tender page has the timetable hour's slider and a contract bus a day (at most
+  its cap, at first the authority's reckoning and 5 %); the ask a year is the hours at their price
+  and the buses every day of the year (`concessions::ask_of`, `bus_year`). Bids are compared, and
+  the abnormally low line and the cap are kept, on that whole ask. The bids' file keeps the bus
+  part (`MarketBid::bus_day`), the opened bids and the admin panel show both parts; an old bid
+  without one is all timetable hours.
+- **The daily payment.** A contract won so pays every day of its term the timetable hours run that
+  day at its hour price and its contract buses at their amount (`Contract::per_bus_day`, `buses`)
+  - a day without journeys its buses alone; journeys not run are not paid and fined as before.
+- **The quality bonus.** 5 % of what the contract pays goes into its pool (`Contract::bonus`);
+  each timetable hour of its journeys not run takes 1 % of the pool and each of the authority's
+  complaints about it 0.5 % (`BONUS_PER_LOST_HOUR`, `BONUS_PER_COMPLAINT`), never below none. What
+  is left is paid when its term has ended (after its options: at the last end,
+  `bus_contracts::pay_bonuses`, the day's report and the inbox say it); a contract handed back or
+  ended for default loses it. The contracts' page shows the pool and what took off it.
+- A direct award pays the admin's price a timetable hour and its contract buses at their cap.
+
+Tested: `bus_contracts::tests::a_two_part_contract_is_paid_by_the_hour_and_the_bus_and_earns_its_bonus`,
+`shared_tenders::tests::a_bid_in_two_parts_a_timetable_hour_and_a_bus_a_day`.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

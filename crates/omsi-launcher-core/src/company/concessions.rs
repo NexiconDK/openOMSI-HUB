@@ -92,6 +92,10 @@ fn is_zero_u32(x: &u32) -> bool {
     *x == 0
 }
 
+fn is_zero_cents(x: &Cents) -> bool {
+    *x == 0
+}
+
 /// A line's week, from the timetable of its seven days.
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, Default, PartialEq)]
 pub struct Week {
@@ -148,6 +152,10 @@ pub struct Standing {
     /// 70/30 score's one quality).
     #[serde(default, skip_serializing_if = "no_parts")]
     pub parts: [f64; 4],
+    /// (NexiconDK, 3 November 2026) A bid in two parts: its amount a contract bus a day (the rest
+    /// of `amount` its timetable hours').
+    #[serde(default, skip_serializing_if = "is_zero_cents")]
+    pub bus_day: Cents,
 }
 
 fn no_parts(p: &[f64; 4]) -> bool {
@@ -257,6 +265,11 @@ pub struct Tender {
     /// contract runs `server_term` - two weeks with diesel buses, a month with electric ones.
     #[serde(default)]
     pub drive: Drive,
+    /// (NexiconDK, 3 November 2026) A bid in two parts on the server: the amount a contract bus a
+    /// day of the company's last bid (euro cents; in its ask a year: `bus_year`) - the rest of the
+    /// ask is its timetable hours'. The winner's, once decided.
+    #[serde(default, skip_serializing_if = "is_zero_cents")]
+    pub bus_day: Cents,
     /// (NexiconDK) The tours of the day it was offered by the bus their timetable asks for: each
     /// tour of the contract is run with a bus of that size (`network::wants_size`).
     #[serde(default)]
@@ -394,6 +407,34 @@ pub fn of_hour(t: &Tender, hour: f64) -> Cents {
     (hour * hours_year(t)).round() as Cents
 }
 
+/// (NexiconDK, 3 November 2026) A tender's contract buses: its work's buses at its peak (its
+/// reserve not paid as contract buses).
+pub fn contract_buses(t: &Tender) -> u32 {
+    t.work.buses.max(t.day_tours).max(1)
+}
+
+/// The part of an ask a year that is `bus_day` a contract bus a day (every day of the year).
+pub fn bus_year(t: &Tender, bus_day: Cents) -> Cents {
+    bus_day.max(0) * contract_buses(t) as Cents * 365
+}
+
+/// An ask a year of a bid in two parts: `hour` a timetable hour (cents) and `bus_day` a contract
+/// bus a day.
+pub fn ask_of(t: &Tender, hour: f64, bus_day: Cents) -> Cents {
+    of_hour(t, hour) + bus_year(t, bus_day)
+}
+
+/// The cap of a tender's whole ask a year when its timetable hour's is `hour` (cents): with its
+/// contract buses at their own cap (`Shared::bus_cap`).
+pub fn cap_of_hour(t: &Tender, hour: f64) -> Cents {
+    of_hour(t, hour) + bus_year(t, t.market.as_ref().map_or(0, |m| m.bus_cap))
+}
+
+/// The price a timetable hour (cents) of an ask a year whose bus part is `bus_day`.
+pub fn hour_part(t: &Tender, amount: Cents, bus_day: Cents) -> f64 {
+    per_hour(t, (amount - bus_year(t, bus_day)).max(0))
+}
+
 /// (NexiconDK, Bus Company Online) What a company keeps of a tender of its map's market
 /// (`shared_tenders`, decided 25 October 2026: every company of a map bids in the same tenders,
 /// live against each other and against the map's other operators): the market and the tender's
@@ -431,6 +472,13 @@ pub struct Shared {
     /// made: the Viborg model's price 50 % and quality 50 %, or the lowest price (`viborg`).
     #[serde(default, skip_serializing_if = "super::viborg::Award::is_default")]
     pub award: super::viborg::Award,
+    /// (NexiconDK, 3 November 2026) The bid in two parts: the cap of the amount a contract bus a
+    /// day (euro cents; 0: a bid of the timetable hour alone, as before), and the authority's
+    /// reckoning of a contract bus a day (`bus_contracts::bus_day_price`).
+    #[serde(default, skip_serializing_if = "is_zero_cents")]
+    pub bus_cap: Cents,
+    #[serde(default, skip_serializing_if = "is_zero_cents")]
+    pub bus_cost: Cents,
 }
 
 fn is_zero(x: &f64) -> bool {
@@ -904,6 +952,7 @@ pub fn make_tender(c: &Company, l: &LineInfo, id: u32, opens_at: i64, renewal: b
         cost: 0,
         market: None,
         drive: Drive::Diesel,
+        bus_day: 0,
         sizes: Sizes::of(l),
     };
     price(c, &mut t);
@@ -1418,7 +1467,7 @@ pub fn take_line(c: &mut Company, l: &LineInfo) -> Result<(Event, Cents), &'stat
 pub fn standings(c: &Company, t: &Tender, placed: &[Placed]) -> Vec<Standing> {
     let (all, me) = humans_of(c, t);
     let hq: Vec<f64> = all.iter().map(|h| h.2).collect();
-    auction::points_many(placed, &bidders(c, t), &hq, Some(me)).into_iter().map(|p| Standing { name: bidder_name(c, t, p.who), amount: p.amount, price: p.price, quality: p.quality, total: p.total, rejected: false, parts: [0.0; 4] }).collect()
+    auction::points_many(placed, &bidders(c, t), &hq, Some(me)).into_iter().map(|p| Standing { name: bidder_name(c, t, p.who), amount: p.amount, price: p.price, quality: p.quality, total: p.total, rejected: false, parts: [0.0; 4], bus_day: 0 }).collect()
 }
 
 /// The rivals' last bids, best first.
@@ -1447,8 +1496,13 @@ fn take(c: &mut Company, t: &Tender, amount: Cents) -> Event {
         if t.market.is_some() {
             k.extensions_left = 0;
             k.electric = t.drive == Drive::Electric;
-            // (paid by the timetable hour run: the ask's price of an hour)
-            k.per_hour = per_hour(t, amount).round() as Cents;
+            // (paid by the timetable hour run: the ask's price of an hour - 3 November 2026: and its
+            // contract buses a day, a bid in two parts)
+            k.per_hour = hour_part(t, amount, t.bus_day).round() as Cents;
+            if t.bus_day > 0 {
+                k.per_bus_day = t.bus_day;
+                k.buses = contract_buses(t);
+            }
         }
     };
     // (NexiconDK, 1 November 2026: a special service runs the event's days alone)

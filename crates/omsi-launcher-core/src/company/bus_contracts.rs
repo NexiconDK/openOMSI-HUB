@@ -236,6 +236,17 @@ pub struct Contract {
     /// run (euro cents at its contract index), each day for the hours run that day.
     #[serde(default, skip_serializing_if = "is_zero")]
     pub per_hour: Cents,
+    /// (NexiconDK, 3 November 2026) Won with a bid in two parts: what it pays a contract bus a
+    /// day (euro cents at its contract index), each day of its term for its `buses` - the work's
+    /// buses at its peak, not its reserve.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub per_bus_day: Cents,
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub buses: u32,
+    /// (NexiconDK, 3 November 2026) A contract of the server's: its quality bonus (`Bonus`), paid
+    /// at its end.
+    #[serde(default, skip_serializing_if = "Bonus::is_none")]
+    pub bonus: Bonus,
     /// The work it was agreed for: the tender's, changed by its variations (None: an older
     /// file's, `variations::work_of`).
     #[serde(default)]
@@ -657,11 +668,92 @@ pub fn make(c: &mut Company, line: &str, number: &str, kind: Kind, period: Perio
         offered: String::new(),
         electric: false,
         per_hour: 0,
+        per_bus_day: 0,
+        buses: 0,
+        bonus: Bonus::default(),
     }
 }
 
 fn is_zero(x: &Cents) -> bool {
     *x == 0
+}
+
+fn is_zero_u32(x: &u32) -> bool {
+    *x == 0
+}
+
+/// (NexiconDK, decided 3 November 2026) A contract of the server's earns a quality bonus, as the
+/// Danish authorities' contracts have one: a pool of `BONUS_SHARE` of what it pays (the timetable
+/// hours and the contract buses), day by day; each timetable hour of its journeys not run takes
+/// `BONUS_PER_LOST_HOUR` of the pool and each of the authority's complaints about it
+/// `BONUS_PER_COMPLAINT`, never below none; what is left is paid when its term ends (after its
+/// options: at the last end). A contract handed back or ended for default loses it.
+pub const BONUS_SHARE: f64 = 0.05;
+pub const BONUS_PER_LOST_HOUR: f64 = 0.01;
+pub const BONUS_PER_COMPLAINT: f64 = 0.005;
+
+/// A contract's quality bonus so far.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct Bonus {
+    /// `BONUS_SHARE` of what the contract paid (cents).
+    pub pool: Cents,
+    /// The timetabled minutes of its journeys not run, and the authority's complaints about them.
+    pub lost_minutes: i64,
+    pub complaints: u32,
+    /// What it paid at the end, and the day (empty: not yet).
+    pub paid: Cents,
+    pub paid_on: String,
+}
+
+impl Bonus {
+    pub fn is_none(&self) -> bool {
+        *self == Bonus::default()
+    }
+
+    pub fn lost_hours(&self) -> f64 {
+        self.lost_minutes.max(0) as f64 / 60.0
+    }
+
+    /// The share of the pool it keeps (0 to 1).
+    pub fn kept(&self) -> f64 {
+        (1.0 - BONUS_PER_LOST_HOUR * self.lost_hours() - BONUS_PER_COMPLAINT * self.complaints as f64).clamp(0.0, 1.0)
+    }
+
+    /// What it would pay now (cents).
+    pub fn due(&self) -> Cents {
+        (self.pool.max(0) as f64 * self.kept()).round() as Cents
+    }
+}
+
+/// (NexiconDK, 3 November 2026) The quality bonuses of the contracts whose term ended (expired,
+/// on `date` or before) and that are not paid yet: each booked as the contract's payment and told.
+pub fn pay_bonuses(c: &mut Company, date: &str) -> Vec<Note> {
+    let due: Vec<u32> = c.concessions.contracts.iter().filter(|k| k.end == Some(End::Expired) && k.bonus.pool > 0 && k.bonus.paid_on.is_empty()).map(|k| k.id).collect();
+    let mut notes = Vec::new();
+    for id in due {
+        let Some(k) = c.concessions.contracts.iter_mut().find(|k| k.id == id) else { continue };
+        let (amount, kept, hours, complaints, number) = (k.bonus.due(), k.bonus.kept(), k.bonus.lost_hours(), k.bonus.complaints, k.number.clone());
+        k.bonus.paid = amount;
+        k.bonus.paid_on = date.to_string();
+        if amount > 0 {
+            c.book(BookingKind::Contract, amount, format!("Line {number}: the authority's quality bonus ({:.0} % of the pool)", kept * 100.0), false);
+        }
+        notes.push(Note::Bonus { number, amount, kept: (kept * 100.0).round() as u32, hours: format!("{hours:.1}"), complaints });
+    }
+    notes
+}
+
+/// (NexiconDK, 3 November 2026) The authority's reckoning of a contract bus a day (cents): the
+/// bus's part of `price_of` - its capital, insurance, tax, ticket machine and overhead a year -
+/// by the same factors, its year's share of a day. A bid in two parts asks it apart from the
+/// timetable hours.
+pub fn bus_day_price(c: &Company, years: f64) -> f64 {
+    let b = Basis::uk(super::economy::rules_for(c).inflation);
+    let lv = &b.level;
+    let year = econ_uk::BID_VEHICLE_YEAR * lv.vehicles + (econ_uk::INSURANCE_PER_YEAR + econ_uk::TAX_PER_YEAR + 12.0 * econ_uk::TICKET_MACHINE_PER_MONTH) * lv.insurance + econ_uk::OVERHEAD_PER_BUS_YEAR * lv.overheads;
+    let year = year * (1.0 + b.inflation.max(0.0)).powf(years.max(0.0) / 2.0) * (1.0 + econ_uk::BID_MARGIN);
+    econ_uk::gbp(year) * econ_uk::factor(c, Item::Contracts) * c.price_index / 365.0
 }
 
 /// A school contract's price a coach and school day now (cents): the data's day price, by the
@@ -942,6 +1034,9 @@ pub fn bad_weather(c: &Company, date: &str) -> bool {
 pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [LineDay], report: &mut DayReport) {
     ensure_hires(c);
     tidy(c);
+    // (3 November 2026: the quality bonuses of the terms that ended)
+    let bonuses = pay_bonuses(c, date);
+    report.notes.extend(bonuses);
     let strict = strictness(c);
     let weather = bad_weather(c, date);
     let month = dates::month_of(date);
@@ -1012,14 +1107,16 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         let timing = pd.slight as f64 * econ_uk::POINTS_SLIGHT + pd.far as f64 * econ_uk::POINTS_FAR + pd.missed as f64 * econ_uk::POINTS_MISSED;
         let raw = timing * observed(n) + pd.vehicle as f64 * econ_uk::POINTS_MISSED + pd.serious as f64 * econ_uk::POINTS_SERIOUS;
         pd.default = raw * strict;
-        // (what it pays today by its period - on the server by the timetable hours run today)
+        // (what it pays today by its period - on the server by the timetable hours run today, and
+        // - a bid in two parts, 3 November 2026 - its contract buses a day, every day of its term)
         let hourly = c.online.on_server && k.per_hour > 0;
+        let missed_minutes: i64 = mine.iter().filter(|j| !j.run).map(|j| j.length.max(0) as i64).sum();
         let pay = match k.period {
             _ if hourly => {
                 let planned: i32 = journeys.planned.iter().filter(|p| p.0.eq_ignore_ascii_case(&k.line)).map(|p| p.1).sum();
-                let missed: i32 = mine.iter().filter(|j| !j.run).map(|j| j.length.max(0)).sum();
-                let hours = (planned - missed).max(0) as f64 / 60.0;
-                (hours * k.per_hour as f64 * c.contract_index / k.index.max(0.01)).round() as Cents
+                let hours = (planned as i64 - missed_minutes).max(0) as f64 / 60.0;
+                let index = c.contract_index / k.index.max(0.01);
+                (hours * k.per_hour as f64 * index + k.buses as f64 * k.per_bus_day as f64 * index).round() as Cents
             }
             Period::Day if n > 0 => payment(c, &k),
             Period::Week if sunday => {
@@ -1044,7 +1141,7 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         // (NexiconDK, Bus Company Online: the authority's fines - `server_fines`)
         let red: u32 = journeys.red.iter().filter(|r| r.0.eq_ignore_ascii_case(&k.line)).map(|r| r.1).sum();
         let stops = journeys.stops.iter().filter(|s| s.0.eq_ignore_ascii_case(&k.line)).fold((0, 0), |a, s| (a.0 + s.1, a.1 + s.2));
-        let fined = if c.online.on_server { authority_fines(c, &k, &mine, red, stops, date) } else { 0 };
+        let (fined, complaints) = if c.online.on_server { authority_fines(c, &k, &mine, red, stops, date) } else { (0, 0) };
         let deducted = deducted + fined;
         pd.deducted = deducted;
         let label = Kind::label(k.kind).to_lowercase();
@@ -1074,6 +1171,12 @@ pub fn close_day(c: &mut Company, date: &str, journeys: &Journeys, lines: &mut [
         x.month.unpaid += pd.unpaid;
         x.month.serious += pd.serious;
         x.month.paid += pay - deducted;
+        // (3 November 2026: the quality bonus's pool and what takes off it)
+        if hourly {
+            x.bonus.pool += (pay.max(0) as f64 * BONUS_SHARE).round() as Cents;
+            x.bonus.lost_minutes += missed_minutes;
+            x.bonus.complaints += complaints;
+        }
         let today_points = pd.default;
         if pd.default > 0.0 || pd.unpaid > 0 {
             x.record.push(pd.clone());
@@ -1112,8 +1215,8 @@ pub const COMPLAINT_COLD: f64 = 0.003;
 /// of a journey not run, each journey run with a smaller bus than its tour asks for or - a
 /// contract won with electric buses - with a diesel bus, and each complaint (drawn by the
 /// journey from its driver's skills and its bus's condition; a player's red lights as he ran
-/// them). What they came to.
-fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, stops: (u32, u32), date: &str) -> Cents {
+/// them). What they came to, and the complaints (3 November 2026: they take off the bonus).
+fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, stops: (u32, u32), date: &str) -> (Cents, u32) {
     use super::server_fines::Fines;
     let f = c.online.fines.unwrap_or_default();
     let mut rng = Rng::of(&[&c.id, "authority fines", &k.line], dates::parse(date).unwrap_or(0));
@@ -1172,7 +1275,7 @@ fn authority_fines(c: &mut Company, k: &Contract, mine: &[&Journey], red: u32, s
     for (n, kr, what) in [(complaints[0], f.driving, "the driving"), (complaints[1], f.temperature, "the temperature in the bus"), (complaints[2], f.route, "the route driven"), (complaints[3], f.ticket, "a ticket sold wrong"), (complaints[4], f.red_light, "a red light run")] {
         fine(c, n, n as f64 * kr, format!("{n} complaints about {what}"));
     }
-    total
+    (total, complaints.iter().sum())
 }
 
 /// A contract's event as the day's report notes it.

@@ -607,6 +607,7 @@ pub fn bridge(c: &mut Company, date: &str, report: &DayReport) {
             Note::Extended { number, until } => add(Kind::Contract, Level::Good, "", EXTENDED, vec![arg("n", number), arg("date", until)]),
             Note::NotExtended { number, until } => add(Kind::Contract, Level::Warn, "", NOT_EXTENDED, vec![arg("n", number), arg("date", until)]),
             Note::Terminated { number, cost } => add(Kind::Contract, Level::Bad, "", TERMINATED, vec![arg("n", number), arg("amount", cost)]),
+            Note::Bonus { number, amount, kept, hours, complaints } => add(Kind::Contract, if *kept >= 50 { Level::Good } else { Level::Warn }, "", BONUS, vec![arg("n", number), arg("amount", amount), arg("kept", kept), arg("hours", hours), arg("complaints", complaints)]),
         }
     }
     for s in &report.staff {
@@ -680,6 +681,8 @@ const ACCIDENT: (&str, &str) = ("Accident", "Bus %{n} had an accident on its tou
 const EXTENDED: (&str, &str) = ("Contract extended", "The contract for line %{n} is green: it earned an extension year and runs until %{date}.");
 const NOT_EXTENDED: (&str, &str) = ("No extension", "The contract for line %{n} was not green when its extension was decided: it ends on %{date}, and the line is put out to tender again.");
 const TERMINATED: (&str, &str) = ("Contract ended for default", "The authority ended the contract for line %{n}: it was red. The company pays the replacement's extra cost, %{amount}.");
+/// (NexiconDK, 3 November 2026) A server contract's quality bonus at its end.
+const BONUS: (&str, &str) = ("Quality bonus paid", "The contract on line %{n} has ended: the authority pays its quality bonus, %{amount} - %{kept} % of the pool after %{hours} timetable hours lost and %{complaints} complaints.");
 /// (#96: the day ran the saved planning, not RosterFlow's draft)
 pub const UNSAVED: (&str, &str) = ("RosterFlow not saved", "RosterFlow had changes of this day that were not saved: the day ran the saved blocks and duties. Save them in RosterFlow (or discard them) so the day runs what it shows.");
 const ILL: (&str, &str) = ("Ill", "%{name} is ill until %{date}.");
@@ -702,7 +705,7 @@ pub fn texts() -> Vec<&'static str> {
     out.extend(Kind::ALL.iter().map(|k| k.label()));
     out.extend(["It is today.", "It begins today and lasts until %{until}.", "It is over: everything is as usual again."]);
     for (a, b) in [
-        WELCOME, BREAKDOWN, BREAKDOWN_ON, SERVICE, RETURNED, LOAN_PAID, MONTH, BUILT, BAY_WAIT, WON, LOST, ENDED, NOT_STARTED, ACCIDENT, EXTENDED, NOT_EXTENDED, TERMINATED, UNSAVED, ILL, HOLIDAY, RESIGNED, UNHAPPY, LEFT, RATES, UNCOVERED, PENALTIES, FINES, COMPLAINTS, CROWDED, IN_THE_RED, LOW_CASH,
+        WELCOME, BREAKDOWN, BREAKDOWN_ON, SERVICE, RETURNED, LOAN_PAID, MONTH, BUILT, BAY_WAIT, WON, LOST, ENDED, NOT_STARTED, ACCIDENT, EXTENDED, NOT_EXTENDED, TERMINATED, BONUS, UNSAVED, ILL, HOLIDAY, RESIGNED, UNHAPPY, LEFT, RATES, UNCOVERED, PENALTIES, FINES, COMPLAINTS, CROWDED, IN_THE_RED, LOW_CASH,
     ] {
         out.extend([a, b]);
     }

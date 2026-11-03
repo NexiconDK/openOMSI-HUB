@@ -694,3 +694,56 @@ fn a_server_contract_is_paid_by_the_hour_and_its_departures_fined() {
     close(&mut c, &j);
     assert!(c.ledger.iter().any(|b| b.date == c.date && b.text.ends_with("2 departures more than 15 minutes late, not reported")));
 }
+
+/// (NexiconDK, 3 November 2026) A contract won with a bid in two parts is paid each day for its
+/// timetable hours run and its contract buses - the buses on a day without journeys too -; 5 % of
+/// what it pays goes into its quality bonus, less 1 % a timetable hour lost and 0.5 % a complaint,
+/// paid once when its term ends; a contract handed back loses it.
+#[test]
+fn a_two_part_contract_is_paid_by_the_hour_and_the_bus_and_earns_its_bonus() {
+    let mut c = company(GameMode::Normal);
+    c.online.on_server = true;
+    let today = c.date.clone();
+    let id = with_contract(&mut c, Kind::Gross, Period::Day, 300_000_00, &today);
+    let k = c.concessions.contracts.iter_mut().find(|k| k.id == id).unwrap();
+    (k.per_hour, k.per_bus_day, k.buses) = (100_00, 1_500_00, 2);
+    let index = k.index;
+    let mut j = Journeys::default();
+    j.timetabled("Linie5", 600);
+    j.missed("Linie5", "1", 30);
+    close(&mut c, &j);
+    let f = c.contract_index / index;
+    let want = (570.0 / 60.0 * 100_00.0 * f + 2.0 * 1_500_00.0 * f).round() as Cents;
+    assert_eq!(booked(&c, BookingKind::Contract), want, "9.5 hours run and two buses");
+    let k = c.concessions.contracts.iter().find(|k| k.id == id).unwrap();
+    assert_eq!((k.bonus.pool, k.bonus.lost_minutes), ((want as f64 * BONUS_SHARE).round() as Cents, 30));
+    // (a day without journeys: the buses alone)
+    c.date = dates::add(&c.date, 1);
+    close(&mut c, &Journeys::default());
+    assert_eq!(booked(&c, BookingKind::Contract), (2.0 * 1_500_00.0 * c.contract_index / index).round() as Cents);
+    // (its term ends: the bonus paid - half an hour lost, two complaints: 98.5 % of the pool)
+    let k = c.concessions.contracts.iter_mut().find(|k| k.id == id).unwrap();
+    k.bonus.complaints = 2;
+    let (pool, kept) = (k.bonus.pool, k.bonus.kept());
+    assert!((kept - 0.985).abs() < 1e-9, "{kept}");
+    k.until = c.date.clone();
+    c.date = dates::add(&c.date, 1);
+    let (r, _) = close(&mut c, &Journeys::default());
+    let k = c.concessions.contracts.iter().find(|k| k.id == id).unwrap();
+    assert_eq!((k.bonus.paid, k.bonus.paid_on.as_str()), ((pool as f64 * kept).round() as Cents, c.date.as_str()));
+    assert!(r.notes.iter().any(|n| matches!(n, Note::Bonus { complaints: 2, .. })), "{:?}", r.notes);
+    assert_eq!(booked(&c, BookingKind::Contract), k.bonus.paid);
+    c.date = dates::add(&c.date, 1);
+    close(&mut c, &Journeys::default());
+    assert_eq!(c.ledger.iter().filter(|b| b.text.starts_with("Line 5: the authority's quality bonus")).count(), 1, "once");
+    // (handed back: no bonus)
+    let today = c.date.clone();
+    let id = with_contract(&mut c, Kind::Gross, Period::Day, 300_000_00, &today);
+    let k = c.concessions.contracts.iter_mut().find(|k| k.id == id).unwrap();
+    (k.per_hour, k.bonus.pool) = (100_00, 50_000_00);
+    hand_back(&mut c, "Linie5");
+    c.date = dates::add(&c.date, 1);
+    let (r, _) = close(&mut c, &Journeys::default());
+    assert!(!r.notes.iter().any(|n| matches!(n, Note::Bonus { .. })));
+    assert_eq!(c.concessions.contracts.iter().find(|k| k.id == id).unwrap().bonus.paid_on, "");
+}

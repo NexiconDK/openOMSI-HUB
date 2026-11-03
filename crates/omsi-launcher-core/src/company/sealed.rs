@@ -121,6 +121,8 @@ pub struct Opened {
     pub amount: Cents,
     /// Its quality's parts (`viborg`; a bid of before them: its one quality in each).
     pub parts: Parts,
+    /// (3 November 2026) A bid in two parts: its amount a contract bus a day (shown with it).
+    pub bus_day: Cents,
 }
 
 /// The bids of tender `t` opened and scored by its award (`viborg`: the price points against the
@@ -142,7 +144,7 @@ pub fn score(t: &Tender, bids: &[Opened]) -> (Option<usize>, Vec<(usize, Standin
                 Some(l) if ok => (viborg::price_points(b.amount, l, award), parts.points(award), parts.split(award)),
                 _ => (0.0, 0.0, [0.0; 4]),
             };
-            (b.who, Standing { name: b.name.clone(), amount: b.amount, price, quality, total: price + quality, rejected: !ok, parts: split })
+            (b.who, Standing { name: b.name.clone(), amount: b.amount, price, quality, total: price + quality, rejected: !ok, parts: split, bus_day: b.bus_day })
         })
         .collect();
     rows.sort_by(|a, b| {
@@ -192,7 +194,7 @@ mod tests {
     #[test]
     fn the_bids_are_opened_and_scored_and_the_abnormally_low_rejected() {
         let t = tender(100_000_00);
-        let bid = |who: usize, amount: Cents, quality: f64| Opened { who, name: format!("B{who}"), quality, amount, parts: Parts::default() };
+        let bid = |who: usize, amount: Cents, quality: f64| Opened { who, name: format!("B{who}"), quality, amount, parts: Parts::default(), bus_day: 0 };
         let (w, rows) = score(&t, &[bid(0, 80_000_00, 100.0), bid(1, 95_000_00, 90.0), bid(2, 110_000_00, 100.0), bid(3, 160_000_00, 100.0)]);
         assert_eq!(w, Some(1), "{rows:?}");
         assert!((rows[0].1.price - viborg::PRICE).abs() < 1e-9 && rows[0].1.total > rows[1].1.total);
@@ -211,8 +213,8 @@ mod tests {
     #[test]
     fn the_viborg_model_and_the_lowest_price() {
         let mut t = tender(100_000_00);
-        let a = Opened { who: 0, name: "A".into(), quality: 0.0, amount: 100_000_00, parts: Parts { operation: 50.0, vehicles: 50.0, plan: 60.0, work: 50.0 } };
-        let b = Opened { who: 1, name: "B".into(), quality: 0.0, amount: 108_000_00, parts: Parts { operation: 90.0, vehicles: 80.0, plan: 90.0, work: 80.0 } };
+        let a = Opened { who: 0, name: "A".into(), quality: 0.0, amount: 100_000_00, parts: Parts { operation: 50.0, vehicles: 50.0, plan: 60.0, work: 50.0 }, bus_day: 0 };
+        let b = Opened { who: 1, name: "B".into(), quality: 0.0, amount: 108_000_00, parts: Parts { operation: 90.0, vehicles: 80.0, plan: 90.0, work: 80.0 }, bus_day: 0 };
         let (w, rows) = score(&t, &[a.clone(), b.clone()]);
         assert_eq!(w, Some(1), "{rows:?}");
         assert!((rows[0].1.total - 89.8).abs() < 0.05 && (rows[1].1.total - 76.0).abs() < 0.01, "{rows:?}");
@@ -223,7 +225,7 @@ mod tests {
         assert!((rows[0].1.total - 100.0).abs() < 1e-9 && rows[0].1.quality == 0.0);
         // (a bid of before: its one quality)
         t.market.as_mut().unwrap().award = viborg::Award::Viborg;
-        let old = Opened { who: 2, name: "Old".into(), quality: 80.0, amount: 100_000_00, parts: Parts::default() };
+        let old = Opened { who: 2, name: "Old".into(), quality: 80.0, amount: 100_000_00, parts: Parts::default(), bus_day: 0 };
         let (_, rows) = score(&t, &[old]);
         assert!((rows[0].1.quality - 40.0).abs() < 1e-9, "{rows:?}");
         for o in operator_bids(&t) {

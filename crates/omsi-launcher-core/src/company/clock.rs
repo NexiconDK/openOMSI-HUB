@@ -530,6 +530,7 @@ fn told_notes(c: &Company, date: &str) -> Vec<(i64, String, Vec<(String, String)
             Note::Extended { number, until } => (0, "The contract of line %{n} was extended until %{date}", vec![arg("n", number), arg("date", until)], Level::Good),
             Note::NotExtended { number, until } => (0, "The contract of line %{n} is not extended: it ends on %{date}", vec![arg("n", number), arg("date", until)], Level::Warn),
             Note::Terminated { number, cost } => (0, "The authority ended the contract of line %{n}: %{amount}", vec![arg("n", number), arg("amount", cost)], Level::Bad),
+            Note::Bonus { number, amount, kept, .. } => (0, "The quality bonus of line %{n}'s contract: %{amount}, %{kept} % of its pool", vec![arg("n", number), arg("amount", amount), arg("kept", kept)], if *kept >= 50 { Level::Good } else { Level::Warn }),
             Note::Breakdown { .. } | Note::LoanPaid { .. } | Note::Lost { .. } | Note::Unsaved => continue,
         };
         out.push((x.0, x.1.to_string(), x.2, x.3));

@@ -58,6 +58,7 @@ export const BCO_FIELDS = [
   ['found_test', 'A driving test passed', BOOL],
   ['The tenders'],
   ['cap_per_hour', 'The cap a timetable hour (kroner)', 'number', "0: the authority's estimate by the factor below. Another number: the cap of every new tender, whatever the estimate"],
+  ['cap_per_bus_day', 'The cap a contract bus a day (kroner)', 'number', "A bid is a price a timetable hour and an amount a contract bus a day. 0: the authority's estimate of a bus a day by the factor below"],
   ['tender_cap_factor', 'The cap: the estimate by', 'number', 'When the cap above is 0 (1.5: half again the estimate)'],
   ['tender_low_share', 'Abnormally low under (%)', 'number', "Of the authority's estimate: a bid below it is rejected"],
   ['tender_operators', 'Operators bidding in a tender', 'number', "Empty: as the rules draw them; 0: none - the map's companies alone"],
@@ -85,7 +86,7 @@ export const BCO_DEFAULTS = {
   name: 'Bus Company Online', real_time: '1', time: '06:00', first_port: '27015', max_worlds: '4', world_idle: '10', keep_worlds: '1', max_memory: '85', max_cpu: '90',
   traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
   price_level: 'dk', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
-  found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', fine_dropped_minute: '20.83',
+  found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', fine_dropped_minute: '20.83',
   fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',
 };
@@ -436,6 +437,7 @@ export function mountPanel(root, api, opts = {}) {
     const rules = card(tr('The tenders\' rules'),
       h('div', { class: 'sp-facts' },
         fact(r.cap_hour ? kr(r.cap_hour) : trf('estimate × %{f}', { f: r.cap_factor }), tr('The cap a timetable hour'), r.cap_hour ? tr('for every new tender') : tr("the authority's estimate by the factor")),
+        fact(r.cap_bus_day ? kr(r.cap_bus_day) : trf('estimate × %{f}', { f: r.cap_factor }), tr('The cap a contract bus a day'), r.cap_bus_day ? tr('for every new tender') : tr("the authority's estimate by the factor")),
         fact(`${r.low_share} %`, tr('Abnormally low under'), tr("of the authority's estimate")),
         fact(r.operators == null ? tr('as the rules draw them') : String(r.operators), tr('Operators in a tender')),
         fact(trf('%{n} weeks', { n: r.round_weeks }), tr('A round of new lines'), r.per_round == null ? tr('the rules\' number of lines') : trf('%{n} lines', { n: r.per_round })),
@@ -459,7 +461,8 @@ export function mountPanel(root, api, opts = {}) {
           h('td', {}, t.closes),
           h('td', {}, t.bidders ? trf('%{n} bidders', { n: t.bidders }) : h('span', { class: 'sp-dim' }, tr('no bid yet'))),
           h('td', {}, h('div', { class: 'sp-row' }, cap, btn(tr('Set'), () => post('tender', { map: m.key, id: t.id, do: 'cap', cap: cap.value }))),
-            h('div', { class: 'bco-sub' }, trf('estimate %{e} · low under %{l}', { e: kr(t.cost_hour), l: kr(t.low_hour) }))),
+            h('div', { class: 'bco-sub' }, trf('estimate %{e} · low under %{l}', { e: kr(t.cost_hour), l: kr(t.low_hour) })),
+            t.bus_cap ? h('div', { class: 'bco-sub' }, trf('%{n} contract buses: at most %{cap} a day (estimate %{e})', { n: t.buses, cap: kr(t.bus_cap), e: kr(t.bus_cost) })) : null),
           h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end' }, at,
             btn(tr('Move the close'), () => post('tender', { map: m.key, id: t.id, do: 'close', at: at.value.replace('T', ' ') })),
             sureButton(tr('Call off'), tr('Sure? Fees are paid back'), () => post('tender', { map: m.key, id: t.id, do: 'cancel' })))),
@@ -469,8 +472,8 @@ export function mountPanel(root, api, opts = {}) {
         h('td', {}, h('b', {}, t.number || t.line)),
         h('td', { class: 'sp-hide' }, t.closed),
         h('td', {}, t.winner ? [t.winner, tag(t.company ? tr('Company') : tr('Operator'), t.company ? 'ok' : '')] : h('span', { class: 'sp-dim' }, tr('nobody'))),
-        h('td', {}, t.winner ? kr(t.hour) : '-',
-          t.bids.length ? h('ol', { class: 'bco-bids' }, t.bids.map((b) => h('li', {}, `${b.name}: ${kr(b.hour)} · ${b.total} ${tr('points')}`, b.rejected ? tag(tr('rejected'), 'bad') : null))) : null),
+        h('td', {}, t.winner ? (t.bus_day ? trf('%{h} + %{b} a bus a day', { h: kr(t.hour), b: kr(t.bus_day) }) : kr(t.hour)) : '-',
+          t.bids.length ? h('ol', { class: 'bco-bids' }, t.bids.map((b) => h('li', {}, `${b.name}: ${b.bus_day ? trf('%{h} + %{b} a bus a day', { h: kr(b.hour), b: kr(b.bus_day) }) : kr(b.hour)} · ${b.total} ${tr('points')}`, b.rejected ? tag(tr('rejected'), 'bad') : null))) : null),
       ));
       // (the operators' lines: their last day moved, or ended and out to tender at once)
       const held = m.held.map((x) => {

@@ -100,10 +100,20 @@ pub fn money(t: &Tender, amount: Cents) -> String {
     }
 }
 
+/// (NexiconDK, 3 November 2026) An ask of a tender of the server's in its two parts - the
+/// timetable hour's price and a contract bus a day - when it has a bus part (`money` without).
+pub fn money_parts(t: &Tender, amount: Cents, bus_day: Cents) -> String {
+    if t.market.is_some() && bus_day > 0 {
+        trf("%{hour} an hour + %{bus} a bus a day", &[("hour", &eur_cents(cn::hour_part(t, amount, bus_day))), ("bus", &eur(bus_day))])
+    } else {
+        money(t, amount)
+    }
+}
+
 /// The company's own bid on a tender in words and its tone (`concessions::my_bid_text`).
 pub fn my_bid_text(c: &Company, t: &Tender) -> Option<(String, &'static str)> {
     let b = cn::my_bid(c, t, ck::now(c))?;
-    let bid = trf("Your bid: %{amount} at %{when}", &[("amount", &money(t, b.amount)), ("when", &when(c, b.at))]);
+    let bid = trf("Your bid: %{amount} at %{when}", &[("amount", &money_parts(t, b.amount, t.bus_day)), ("when", &when(c, b.at))]);
     let bid = if b.count > 1 { format!("{bid} ({})", trf("%{n} bids placed", &[("n", &b.count.to_string())])) } else { bid };
     // (NexiconDK, 31 October 2026: the map's tenders take sealed bids - nobody leads till they
     // are opened at the close)
@@ -591,7 +601,8 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
                 let name = if s.name.is_empty() { tr("You") } else { s.name.clone() };
                 let kind = if s.name.is_empty() { tr("your company") } else { operator(&s.name).unwrap_or_else(|| tr("a company of the server")) };
                 let q = cn::quality_share(t, s.quality);
-                let (bid, tone) = if s.rejected { (trf("%{amount}, rejected", &[("amount", &money(t, s.amount))]), "danger") } else if k == 0 { (trf("%{amount}, won", &[("amount", &money(t, s.amount))]), "ok") } else { (money(t, s.amount), "text") };
+                let shown = money_parts(t, s.amount, s.bus_day);
+                let (bid, tone) = if s.rejected { (trf("%{amount}, rejected", &[("amount", &shown)]), "danger") } else if k == 0 { (trf("%{amount}, won", &[("amount", &shown)]), "ok") } else { (shown.clone(), "text") };
                 let points = if s.rejected { tr("rejected: abnormally low or above the cap") } else { trf("%{p} price + %{q} quality = %{t} points", &[("p", &format!("{:.1}", s.price)), ("q", &format!("{:.1}", s.quality)), ("t", &format!("{:.1}", s.total))]) };
                 json!({ "name": name, "kind": kind, "quality": q, "quality_text": if s.rejected { "–".to_string() } else { format!("{:.0}", q * 100.0) }, "bid": bid, "tone": tone, "leads": k == 0 && !s.rejected, "points": points })
             })
@@ -638,8 +649,15 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         // (an ask: from half the reference up to the most that leads now - NexiconDK: on the
         // server by the timetable hour, `cn::per_hour`: from half the cap or half the cost price,
         // whichever is less, to the cent)
-        let unit = |year: f64| if hourly { cn::per_hour(t, year.round() as Cents) / 100.0 } else { year / 100.0 };
-        let year_of = |a: f64| if hourly { cn::of_hour(t, a * 100.0) } else { (a * 100.0).round() as Cents };
+        // (3 November 2026: a bid in two parts - the bus part a contract bus a day, at most its
+        // cap; the slider is the timetable hour's, the rest of the ask)
+        let bus_cap = t.market.as_ref().map_or(0, |m| m.bus_cap);
+        let bus_default = t.market.as_ref().map_or(0, |m| ((m.bus_cost as f64 * 1.05).round() as Cents).min(m.bus_cap));
+        let bus_mine = args.get("bus_for").and_then(Value::as_u64) == Some(t.id as u64);
+        let bus = if bus_cap > 0 { args.get("bus").and_then(Value::as_f64).filter(|_| bus_mine).map_or(bus_default, |b| (b * 100.0).round() as Cents).clamp(0, bus_cap) } else { 0 };
+        let bus_year = cn::bus_year(t, bus);
+        let unit = |year: f64| if hourly { cn::per_hour(t, (year.round() as Cents - bus_year).max(0)) / 100.0 } else { year / 100.0 };
+        let year_of = |a: f64| if hourly { cn::of_hour(t, a * 100.0) + bus_year } else { (a * 100.0).round() as Cents };
         let (lo, hi) = if sealed {
             // (sealed: from the lowest valid ask to the cap)
             let hi = ((unit(t.reference as f64) * 100.0).floor() / 100.0).max(0.01);
@@ -670,8 +688,15 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
             let until = t.market.as_ref().filter(|m| !m.event.is_empty()).map(|m| m.until.clone()).filter(|u| dates::parse(u).is_some()).unwrap_or_else(|| cn::server_term(t.drive, cn::week_hours(t), &from));
             let days = dates::between(&from, &until) + 1;
             let hours = cn::hours_year(t) / 365.0 * days as f64;
-            let rate = cn::per_hour(t, amount);
-            trf("About %{week} a week and %{term} for the contract's %{days} days: %{hours} timetable hours at %{rate}", &[("week", &eur((rate * cn::hours_year(t) / 52.0).round() as Cents)), ("term", &eur((rate * hours).round() as Cents)), ("days", &days.to_string()), ("hours", &format!("{hours:.0}")), ("rate", &money(t, amount))])
+            let rate = cn::hour_part(t, amount, bus);
+            let buses = cn::contract_buses(t);
+            let week = rate * cn::hours_year(t) / 52.0 + (bus * buses as Cents * 7) as f64;
+            let term = rate * hours + (bus * buses as Cents) as f64 * days as f64;
+            if bus > 0 {
+                trf("About %{week} a week and %{term} for the contract's %{days} days: %{hours} timetable hours at %{rate} and %{buses} contract buses at %{bus} a day", &[("week", &eur(week.round() as Cents)), ("term", &eur(term.round() as Cents)), ("days", &days.to_string()), ("hours", &format!("{hours:.0}")), ("rate", &eur_cents(rate)), ("buses", &buses.to_string()), ("bus", &eur(bus))])
+            } else {
+                trf("About %{week} a week and %{term} for the contract's %{days} days: %{hours} timetable hours at %{rate}", &[("week", &eur(week.round() as Cents)), ("term", &eur(term.round() as Cents)), ("days", &days.to_string()), ("hours", &format!("{hours:.0}")), ("rate", &money(t, amount))])
+            }
         });
         let chance = cn::chance(c, t, amount);
         let ctone = if sealed { "soft" } else if chance >= 0.7 { "ok" } else if chance >= 0.35 { "warn" } else { "danger" };
@@ -686,10 +711,11 @@ fn auction(c: &Company, selected: Option<u32>, args: &Value) -> Value {
         json!({
             "kind": "running", "id": t.id, "lo": lo, "hi": hi, "amount": a, "label": tr(if hourly { "Your ask a timetable hour" } else { "Your ask" }),
             "per_hour": hourly, "total": total,
+            "bus": (bus_cap > 0).then(|| json!({ "label": trf("A contract bus a day (at most %{cap})", &[("cap", &eur(bus_cap))]), "value": bus as f64 / 100.0, "max": bus_cap as f64 / 100.0, "buses": cn::contract_buses(t) })),
             "chance": said, "chance_tone": ctone,
-            "recommend": if sealed && advice < rec { Some(trf("Your cost price with a 5 % margin is %{own}: under the abnormally low line, so ask at least %{amount}", &[("own", &money(t, advice)), ("amount", &money(t, rec))])) } else if sealed { Some(trf("Your cost price with a 5 % margin: %{amount}", &[("amount", &money(t, rec))])) } else { normal.then(|| trf("Recommended: %{amount} (%{s} % of the cap), about %{p} % to win", &[("amount", &money(t, rec)), ("s", &format!("{:.0}", t.share(rec) * 100.0)), ("p", &format!("{:.0}", rec_chance * 100.0))])) },
+            "recommend": if sealed && advice < rec { Some(trf("Your cost price with a 5 % margin is %{own}: under the abnormally low line, so ask at least %{amount}", &[("own", &money_parts(t, advice, bus)), ("amount", &money_parts(t, rec, bus))])) } else if sealed { Some(trf("Your cost price with a 5 % margin: %{amount}", &[("amount", &money_parts(t, rec, bus))])) } else { normal.then(|| trf("Recommended: %{amount} (%{s} % of the cap), about %{p} % to win", &[("amount", &money(t, rec)), ("s", &format!("{:.0}", t.share(rec) * 100.0)), ("p", &format!("{:.0}", rec_chance * 100.0))])) },
             "recommend_amount": unit(rec as f64),
-            "bid": if sealed && !t.offers.is_empty() { trf("Change your bid to %{amount}", &[("amount", &money(t, amount))]) } else { trf("Ask %{amount}", &[("amount", &money(t, amount))]) },
+            "bid": if sealed && !t.offers.is_empty() { trf("Change your bid to %{amount}", &[("amount", &money_parts(t, amount, bus))]) } else { trf("Ask %{amount}", &[("amount", &money_parts(t, amount, bus))]) },
             "buy": (!c.online.on_server).then(|| trf("Buy outright, %{amount}", &[("amount", &eur(t.buy_out()))])), "buy_tip": tr("Certain: the auction ends at once in your favour"),
             // (NexiconDK: on Bus Company Online's server its clock runs for everybody: no step)
             "plus15": (!c.online.on_server).then(|| tr("+15 min")), "to_close": (!c.online.on_server).then(|| tr("To its close")),
@@ -818,9 +844,11 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {
                 return Some(Ok(json!({ "popup": busy(s) })));
             }
             let amount = args.get("amount").and_then(Value::as_i64).unwrap_or(0);
+            // (3 November 2026: and a contract bus a day - a bid in two parts)
+            let bus_day = args.get("bus_day").and_then(Value::as_i64).unwrap_or(0).max(0);
             // (NexiconDK: an ask by the timetable hour on the server - a year's of the tender's hours)
             let amount = match s.company.as_ref().and_then(|c| c.concessions.tenders.iter().find(|t| t.id == id)).filter(|t| t.market.is_some() && args.get("per_hour").and_then(Value::as_bool) == Some(true)) {
-                Some(t) => cn::of_hour(t, amount as f64),
+                Some(t) => cn::ask_of(t, amount as f64, if t.market.as_ref().is_some_and(|m| m.bus_cap > 0) { bus_day } else { 0 }),
                 None => amount,
             };
             // (the least bid in the company's currency: the rules' own words say euros)
@@ -830,7 +858,7 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {
             }
             // (NexiconDK: a tender of the map's market on the server - the bid goes to every company)
             let data = super::super::data();
-            match apply(s, |c| if c.online.on_server { co_tenders::bid(&data, c, id, amount) } else { cn::bid(c, id, amount) }) {
+            match apply(s, |c| if c.online.on_server { co_tenders::bid_parts(&data, c, id, amount, bus_day) } else { cn::bid(c, id, amount) }) {
                 Ok(_) => {
                     s.say(tr("Your bid is in. The rivals answer as the clock goes on."), false);
                     Ok(json!({}))

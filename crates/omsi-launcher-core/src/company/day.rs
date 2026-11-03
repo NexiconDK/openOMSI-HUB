@@ -337,6 +337,10 @@ pub enum Note {
     NotExtended { number: String, until: String },
     /// The authority ended a red contract for default; the company paid `cost`.
     Terminated { number: String, cost: Cents },
+    /// (NexiconDK, 3 November 2026) A server contract's term ended: its quality bonus paid
+    /// (`bus_contracts::Bonus`) - the share of its pool kept (per cent) after the timetable hours
+    /// lost and the complaints.
+    Bonus { number: String, amount: Cents, kept: u32, hours: String, complaints: u32 },
 }
 
 /// Why trips of the day were dropped (#96: the report says why each was).

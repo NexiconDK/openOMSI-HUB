@@ -302,8 +302,23 @@ pub fn kind_text(k: &Contract) -> String {
 pub fn pay_text(c: &Company, k: &Contract) -> String {
     // (NexiconDK: won by the timetable hour on the server - paid by the hours run)
     if c.online.on_server && k.per_hour > 0 {
-        let hour = k.per_hour as f64 * c.contract_index / k.index.max(0.01);
-        return trf("%{amount} a timetable hour run", &[("amount", &super::super::words::eur_cents(hour))]);
+        let index = c.contract_index / k.index.max(0.01);
+        let hour = k.per_hour as f64 * index;
+        let mut out = trf("%{amount} a timetable hour run", &[("amount", &super::super::words::eur_cents(hour))]);
+        // (3 November 2026: a bid in two parts - its contract buses a day - and its quality bonus)
+        if k.per_bus_day > 0 && k.buses > 0 {
+            out = format!("{out}  ·  {}", trf("%{n} contract buses at %{amount} a day", &[("n", &k.buses.to_string()), ("amount", &eur((k.per_bus_day as f64 * index).round() as i64))]));
+        }
+        if k.bonus.pool > 0 {
+            let b = &k.bonus;
+            let bonus = if b.paid_on.is_empty() {
+                trf("quality bonus so far %{amount} (%{kept} % of a pool of %{pool}: %{hours} timetable hours lost, %{n} complaints)", &[("amount", &eur(b.due())), ("kept", &format!("{:.0}", b.kept() * 100.0)), ("pool", &eur(b.pool)), ("hours", &format!("{:.1}", b.lost_hours())), ("n", &b.complaints.to_string())])
+            } else {
+                trf("quality bonus paid: %{amount}", &[("amount", &eur(b.paid))])
+            };
+            out = format!("{out}  ·  {bonus}");
+        }
+        return out;
     }
     let each = eur(bc::payment(c, k));
     let year = eur(k.year_now(c.contract_index).round() as i64);

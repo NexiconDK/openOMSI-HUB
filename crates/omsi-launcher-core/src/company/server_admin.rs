@@ -405,7 +405,7 @@ fn market(api: &Api) -> Value {
     let cfg = shared_tenders::TenderCfg::of(&m.data);
     // (3 November 2026: the tenders' rules as they stand, in kroner)
     let rules = json!({
-        "cap_hour": kr(cfg.cap_hour), "cap_factor": cfg.cap_factor, "low_share": (cfg.low_share * 1000.0).round() / 10.0,
+        "cap_hour": kr(cfg.cap_hour), "cap_bus_day": kr(cfg.cap_bus_day), "cap_factor": cfg.cap_factor, "low_share": (cfg.low_share * 1000.0).round() / 10.0,
         "operators": cfg.operators, "round_weeks": cfg.round_weeks, "per_round": cfg.per_round, "award": cfg.award.key(),
         // (the timeline, the contracts' days by size - diesel, electric - and the option: 3 November 2026)
         "prep": shared_tenders::PREP_DAYS, "days": shared_tenders::TENDER_DAYS, "start": shared_tenders::START_AFTER,
@@ -425,6 +425,7 @@ fn market(api: &Api) -> Value {
                 .map(|mt| {
                     let t = &mt.tender;
                     let x = t.market.as_ref();
+                    let (bus_cap, bus_cost) = x.map_or((0, 0), |x| (x.bus_cap, x.bus_cost));
                     let id = x.map_or(t.id, |x| x.id);
                     let mut who: Vec<&str> = bids.iter().filter(|b| b.tender == id).map(|b| b.company.as_str()).collect();
                     who.sort();
@@ -434,9 +435,11 @@ fn market(api: &Api) -> Value {
                         "opens": at(t.opens_at), "closes": at(t.closes_at),
                         "renewal": t.renewal, "event": x.map(|x| x.event.clone()).unwrap_or_default(),
                         "from": x.map(|x| x.from.clone()).unwrap_or_default(), "until": x.map(|x| x.until.clone()).unwrap_or_default(),
-                        "cap_hour": hour(t, t.reference), "bidders": who.len(), "applied": mt.applied,
-                        // (3 November 2026: the authority's estimate and the abnormally low line, in kroner)
-                        "cost_hour": hour(t, t.cost), "low_hour": hour(t, super::sealed::low_line(t)),
+                        "cap_hour": hour(t, (t.reference - cn::bus_year(t, bus_cap)).max(0)), "bidders": who.len(), "applied": mt.applied,
+                        // (3 November 2026: the authority's estimate and the abnormally low line, in kroner -
+                        // a bid in two parts: the timetable hour's, and a contract bus a day's)
+                        "cost_hour": hour(t, (t.cost - cn::bus_year(t, bus_cost)).max(0)), "low_hour": hour(t, super::sealed::low_line(t)),
+                        "bus_cap": kr(bus_cap), "bus_cost": kr(bus_cost), "buses": cn::contract_buses(t),
                         "direct": x.map(|x| x.direct_name.clone()).unwrap_or_default(),
                     })
                 })
@@ -451,8 +454,8 @@ fn market(api: &Api) -> Value {
                     let d = mt.decided.as_ref().expect("decided");
                     json!({
                         "id": t.market.as_ref().map_or(t.id, |x| x.id), "line": t.line, "number": t.number, "closed": at(t.closes_at),
-                        "winner": d.name, "company": !d.winner.is_empty(), "hour": hour(t, d.amount),
-                        "bids": d.standings.iter().map(|s| json!({ "name": s.name, "hour": hour(t, s.amount), "total": (s.total * 10.0).round() / 10.0, "rejected": s.rejected })).collect::<Vec<_>>(),
+                        "winner": d.name, "company": !d.winner.is_empty(), "hour": hour(t, d.amount - cn::bus_year(t, d.bus_day)), "bus_day": kr(d.bus_day),
+                        "bids": d.standings.iter().map(|s| json!({ "name": s.name, "hour": hour(t, s.amount - cn::bus_year(t, s.bus_day)), "bus_day": kr(s.bus_day), "total": (s.total * 10.0).round() / 10.0, "rejected": s.rejected })).collect::<Vec<_>>(),
                     })
                 })
                 .collect();
@@ -609,7 +612,7 @@ fn tender_do(api: &Api, map: &str, a: &Value) -> Result<String, String> {
             let k = open_at(&mk)?;
             let cap = num("cap").ok_or("the cap a timetable hour, in kroner")?;
             let t = &mut mk.tenders[k].tender;
-            t.reference = cn::of_hour(t, Fines::cents(cap) as f64);
+            t.reference = cn::cap_of_hour(t, Fines::cents(cap) as f64);
             format!("the tender of line {} of {map}: its cap is {cap:.2} kr. a timetable hour now", t.number)
         }
         "close" | "cancel" => {

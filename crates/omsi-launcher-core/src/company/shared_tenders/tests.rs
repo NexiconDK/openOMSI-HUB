@@ -100,8 +100,13 @@ fn two_companies_bid_against_each_other_in_the_maps_tenders() {
     let m = load(&data, &key).unwrap();
     let first = m.tenders.iter().min_by_key(|t| t.tender.opens_at).unwrap().tender.clone();
     // (the cap: the cost price by half again, at most the server's 1 500 kr an hour)
-    let most = cn::of_hour(&first, crate::company::server_fines::Fines::cents(1500.0) as f64);
-    assert_eq!(first.reference, crate::company::sealed::cap_of(first.cost, most));
+    // (3 November 2026: a bid in two parts - the timetable hours' part of the cost price by half
+    // again, and the contract buses a day at the authority's reckoning by half again)
+    let x = first.market.as_ref().unwrap();
+    let hours_cost = (first.cost - cn::bus_year(&first, x.bus_cost)).max(first.cost * 3 / 10);
+    let cap_set = crate::company::sealed::cap_set;
+    assert_eq!(x.bus_cap, cap_set(x.bus_cost, 0, crate::company::sealed::CAP_SHARE));
+    assert_eq!(first.reference, cap_set(hours_cost, 0, crate::company::sealed::CAP_SHARE) + cn::bus_year(&first, x.bus_cap));
     // sealed: A bids, B does not see it
     let mid = first.opens_at + 10;
     at(&mut a, mid);
@@ -484,6 +489,50 @@ fn the_servers_admin_opens_a_tender_and_calls_one_off() {
     let _ = std::fs::remove_dir_all(&data);
 }
 
+/// (3 November 2026) A bid in two parts: a price a timetable hour and an amount a contract bus a
+/// day - the bus part at most its cap (the authority's reckoning of a bus a day by half again); the
+/// whole ask a year counts in the scoring; the winner's contract is paid both.
+#[test]
+fn a_bid_in_two_parts_a_timetable_hour_and_a_bus_a_day() {
+    let data = temp("two-parts");
+    std::fs::create_dir_all(&data).unwrap();
+    std::fs::write(data.join(super::super::main_server::CFG_FILE), "tender_operators = 0\ncap_per_bus_day = 0\n").unwrap();
+    assert_eq!(TenderCfg::of(&data).cap_bus_day, 0);
+    let lines = lines();
+    let key = key_of(MAP);
+    let now = clock::moment(DATE, 8 * 60);
+    let mut a = company("Umove", "umove");
+    let ca = a.clone();
+    let mut read = || Some(MapNow { lines: lines.clone(), companies: vec![ca.clone()], template: template(MAP, DATE, &[]), events: Vec::new() });
+    ask_as_server(&data, &key, "Linie7", ServerAsk::default()).unwrap();
+    step(&data, &key, MAP, DATE, now, &mut read);
+    let t = load(&data, &key).unwrap().tenders.iter().find(|t| t.tender.line == "Linie7").unwrap().tender.clone();
+    let x = t.market.clone().unwrap();
+    assert!(x.bus_cost > 0 && x.bus_cap > x.bus_cost && t.reference > cn::bus_year(&t, x.bus_cap), "{} {} {}", x.bus_cost, x.bus_cap, t.reference);
+    // (A bids while it runs: its bus part above the cap refused; then at the estimate)
+    at(&mut a, t.opens_at + 1);
+    sync(&data, &mut a);
+    let mine = a.concessions.tenders.iter().find(|y| y.market.as_ref().is_some_and(|m| m.id == x.id)).unwrap().id;
+    let hour = cn::hour_part(&t, t.cost, x.bus_cost);
+    let amount = cn::ask_of(&t, hour, x.bus_cost);
+    assert_eq!(bid_parts(&data, &mut a, mine, amount, x.bus_cap + 1), Err(BUS_ABOVE_CAP));
+    bid_parts(&data, &mut a, mine, amount, x.bus_cost).unwrap();
+    assert_eq!(a.concessions.tenders.iter().find(|y| y.id == mine).unwrap().bus_day, x.bus_cost);
+    assert!(bids(&data, &key).iter().any(|b| b.company == "umove" && b.bus_day == x.bus_cost && b.amount == amount));
+    // (decided at the close: A wins, its contract paid a timetable hour and its contract buses a day)
+    step(&data, &key, MAP, DATE, t.closes_at + CLOSE_AFTER, &mut read);
+    let d = load(&data, &key).unwrap().tenders.iter().find(|y| y.tender.line == "Linie7").unwrap().decided.clone().unwrap();
+    assert_eq!((d.winner.as_str(), d.amount, d.bus_day), ("umove", amount, x.bus_cost));
+    assert_eq!(d.standings[0].bus_day, x.bus_cost);
+    at(&mut a, t.closes_at + 5);
+    let (_, won) = sync(&data, &mut a);
+    assert!(won);
+    let k = a.concessions.contracts.iter().find(|k| k.line == "Linie7").unwrap();
+    assert_eq!((k.per_bus_day, k.buses), (x.bus_cost, cn::contract_buses(&t)));
+    assert!((k.per_hour as f64 - hour).abs() < 1.0, "{} {hour}", k.per_hour);
+    let _ = std::fs::remove_dir_all(&data);
+}
+
 /// (3 November 2026, the admin panel) The tenders' rules of the server's settings: a cap of its own
 /// a timetable hour counts as it stands (before, it was only a ceiling over the cost price by 1.5
 /// and changed nothing), the abnormally low share is kept with each tender, and no operator bids
@@ -518,13 +567,16 @@ fn the_admins_rules_times_caps_direct_awards_and_contracts() {
     let m = load(&data, &key).unwrap();
     let t7 = m.tenders.iter().find(|t| t.tender.line == "Linie7").unwrap().tender.clone();
     assert_eq!((t7.opens_at, t7.closes_at), (opens, closes));
-    assert!((cn::per_hour(&t7, t7.reference) - fines(1800.0) as f64).abs() < 2.0, "the admin's cap");
+    // (3 November 2026: the admin's cap is the timetable hour's - the contract buses have their own)
+    let bus_cap = |t: &Tender| t.market.as_ref().map_or(0, |m| m.bus_cap);
+    assert!((cn::hour_part(&t7, t7.reference, bus_cap(&t7)) - fines(1800.0) as f64).abs() < 2.0, "the admin's cap");
+    assert!(bus_cap(&t7) > 0 && t7.reference == cn::cap_of_hour(&t7, fines(1800.0) as f64));
     assert!(t7.bidders.is_empty() && super::super::sealed::operator_bids(&t7).is_empty(), "no operators");
     let r = super::super::auction::ROUND;
     assert_eq!(super::super::sealed::low_line(&t7), (t7.cost as f64 * 0.80 / r as f64).ceil() as Cents * r, "80 % of the cost price");
     // (a tender of the round: the server's own cap, not the cost price by 1.5)
     if let Some(r) = m.tenders.iter().find(|t| t.tender.line != "Linie7" && t.tender.line != "Linie9") {
-        assert!((cn::per_hour(&r.tender, r.tender.reference) - fines(2500.0) as f64).abs() < 2.0);
+        assert!((cn::hour_part(&r.tender, r.tender.reference, bus_cap(&r.tender)) - fines(2500.0) as f64).abs() < 2.0);
     }
     // the direct award decided a minute later, for B at the admin's price
     let said = step(&data, &key, MAP, DATE, now + 4, &mut read);
@@ -538,6 +590,8 @@ fn the_admins_rules_times_caps_direct_awards_and_contracts() {
     assert!(won && b.concessions.held.iter().any(|h| h.line == "Linie9"), "B takes the line it never saw open");
     let k = b.concessions.contracts.iter().find(|k| k.line == "Linie9").unwrap();
     assert!(k.electric && (k.per_hour as f64 - fines(1100.0) as f64).abs() < 2.0);
+    // (and its contract buses at their cap - 3 November 2026)
+    assert!(k.per_bus_day > 0 && k.per_bus_day == d.bus_day && k.buses > 0, "{} {} {}", k.per_bus_day, d.bus_day, k.buses);
     // a cap the admin changes reaches A's copy of the open tender
     at(&mut a, now + 5);
     sync(&data, &mut a);

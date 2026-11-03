@@ -537,6 +537,7 @@ fn note_text(n: &Note, easy: bool) -> (String, &'static str, Option<Go>) {
         Note::Extended { number, until } => (trf("The contract for line %{n} is green: it earned an extension year and runs until %{date}.", &[("n", number), ("date", &day_label(until))]), "ok", None),
         Note::NotExtended { number, until } => (trf("The contract for line %{n} was not green when its extension was decided: it ends on %{date}, and the line is put out to tender again.", &[("n", number), ("date", &day_label(until))]), "warn", None),
         Note::Terminated { number, cost } => (trf("The authority ended the contract for line %{n}: it was red. The company pays the replacement's extra cost, %{amount}.", &[("n", number), ("amount", &eur(*cost))]), "danger", None),
+        Note::Bonus { number, amount, kept, hours, complaints } => (trf("The contract on line %{n} has ended: the authority pays its quality bonus, %{amount} - %{kept} % of the pool after %{hours} timetable hours lost and %{complaints} complaints.", &[("n", number), ("amount", &eur(*amount)), ("kept", &kept.to_string()), ("hours", hours), ("complaints", &complaints.to_string())]), if *kept >= 50 { "ok" } else { "warn" }, None),
     }
 }
 
