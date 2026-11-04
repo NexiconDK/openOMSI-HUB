@@ -250,6 +250,15 @@ fn rf_tp_need(act: &str) -> Need {
     }
 }
 
+/// What an action of RosterFlow Pro's Turnus tab (`rf_turnus_act`) needs: a rota is the
+/// planning's.
+fn rf_turnus_need(act: &str) -> Need {
+    match act {
+        "new" | "remove" | "rename" | "hours" | "from" | "add_row" | "remove_row" | "cell" | "driver" | "auto" | "exception" => PLANS,
+        _ => Never,
+    }
+}
+
 /// What a view of RosterFlow's (`rf_view`) needs.
 fn rf_view_need(view: &str) -> Need {
     match view {
@@ -262,13 +271,14 @@ fn rf_view_need(view: &str) -> Need {
 fn rf_need(cmd: &str, args: &Value) -> Need {
     let s = |k: &str| args.get(k).and_then(Value::as_str).unwrap_or("").to_string();
     match cmd {
-        "rf_on" | "rf_board" | "rf_here" | "rf_print" | "rf_roster" | "rf_roster_service" | "rf_tp" | "rf_tp_guide" | "rf_tp_route" => RF_VIEW,
+        "rf_on" | "rf_board" | "rf_here" | "rf_print" | "rf_roster" | "rf_roster_service" | "rf_tp" | "rf_tp_guide" | "rf_tp_route" | "rf_turnus" => RF_VIEW,
         // (the Routes strip's run times are the Timeplan's: set by who may edit the timetables)
         "rf_tp_route_act" => LINES,
         "rf_view" => rf_view_need(&s("view")),
         "rf_act" => rf_act_need(&s("act")),
         "rf_roster_act" => rf_roster_need(&s("act"), args),
         "rf_tp_act" => rf_tp_need(&s("act")),
+        "rf_turnus_act" => rf_turnus_need(&s("act")),
         // (the tutorial is the player's launcher's own; its lessons put the boss's company back)
         _ => Never,
     }
@@ -503,19 +513,22 @@ mod tests {
         let roster = include_str!("../rosterflow/roster.rs");
         let timeplan = include_str!("../rosterflow/timeplan.rs");
         let tutorial = include_str!("../rosterflow/tutorial.rs");
+        let turnus = include_str!("../rosterflow/turnus.rs");
         let mut missing = Vec::new();
         let mut cmds = arms_in(main, "fn run(");
         cmds.extend(arms_in(roster, "pub(super) fn run("));
+        cmds.extend(arms_in(turnus, "pub(super) fn run("));
         cmds.extend(arms_in(timeplan, "pub(super) fn run("));
         // (the print, which `call` takes first)
         cmds.push("rf_print".into());
         assert!(cmds.len() >= 12, "the commands are read: {cmds:?}");
         for c in &cmds {
-            if need(c, &json!({})) == Never && !["rf_view", "rf_act", "rf_roster_act", "rf_tp_act"].contains(&c.as_str()) {
+            if need(c, &json!({})) == Never && !["rf_view", "rf_act", "rf_roster_act", "rf_tp_act", "rf_turnus_act"].contains(&c.as_str()) {
                 missing.push(format!("command {c}"));
             }
         }
-        let checks: [(&str, &str, &str, &str); 5] = [
+        let checks: [(&str, &str, &str, &str); 6] = [
+            ("rf_turnus_act", "act", turnus, "fn act("),
             ("rf_act", "act", main, "fn act("),
             ("rf_view", "view", main, "fn view("),
             ("rf_roster_act", "act", roster, "fn act_on("),

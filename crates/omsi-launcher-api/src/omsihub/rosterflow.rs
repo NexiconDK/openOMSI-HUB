@@ -40,6 +40,8 @@ mod breaks;
 mod relief;
 /// (NexiconDK, 4 November 2026) RosterFlow Pro's tabs Vognløb and Vagter (`co::pro_duties`).
 mod pro;
+/// (NexiconDK, 4 November 2026) RosterFlow Pro's tab Turnus (`co::pro_turnus`).
+mod turnus;
 
 /// Several planners at once (company multiplayer): who changed what, who is in RosterFlow, each
 /// one's undo kept clear of the others' changes.
@@ -114,6 +116,9 @@ pub(crate) struct Rf {
     roster_redo: Vec<roster::Kept>,
     /// What this editor knows of the others' changes (`live`).
     live: live::Mine,
+    /// (RosterFlow Pro's Turnus tab) The duties of the company's week, of the company's
+    /// generation they were made for (`turnus`).
+    pub(crate) turnus_week: Option<(u64, Arc<co::pro_turnus::Week>)>,
 }
 
 fn state() -> &'static Mutex<Rf> {
@@ -210,6 +215,8 @@ fn run(s: &mut Session, r: &mut Rf, by: live::Editor, cmd: &str, args: &Value) -
         "rf_here" => Ok(live::here(s, r, by, args)),
         c if c.starts_with("rf_tp") => return timeplan::run(s, r, c, args),
         c if c.starts_with("rf_roster") => return roster::run(s, r, c, args),
+        // (RosterFlow Pro's Turnus tab: `turnus`)
+        c if c.starts_with("rf_turnus") => return turnus::run(s, r, c, args),
         _ => return None,
     })
 }
@@ -226,6 +233,7 @@ fn change_of(cmd: &str, args: &Value) -> Option<live::Kind> {
             _ => Some(live::Kind::Blocks),
         },
         "rf_roster_act" if !what.starts_with("fold") => Some(live::Kind::Roster),
+        "rf_turnus_act" => Some(live::Kind::Roster),
         "rf_tp_act" => Some(live::Kind::Timetable),
         _ => None,
     }
@@ -2127,6 +2135,8 @@ mod tests {
         core.extend(co::unassign::texts());
         core.extend(co::pro_duties::texts());
         core.extend(pro::texts());
+        core.extend(co::pro_turnus::texts());
+        core.extend(turnus::texts());
         let mut missing = Vec::new();
         for lang in ["nl", "de", "fr", "ru", "uk", "pl"] {
             let table = crate::i18n::table(lang);

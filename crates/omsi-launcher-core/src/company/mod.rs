@@ -100,6 +100,8 @@ pub mod pay;
 pub mod plan;
 pub mod plandays;
 pub mod pro_duties;
+/// (NexiconDK, 4 November 2026) RosterFlow Pro's rota (step 3, "Turnus").
+pub mod pro_turnus;
 pub mod rankings;
 pub mod registrations;
 pub mod remote;

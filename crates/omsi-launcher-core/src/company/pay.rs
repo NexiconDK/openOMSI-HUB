@@ -167,10 +167,22 @@ pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
     let mut out = Paid::default();
     let mut cost = 0.0;
     let mut drivers = 0;
+    // (RosterFlow Pro's step 3: the frame a driver's rota gives him that day - `pro_turnus`)
+    let framed: Vec<(u32, Option<Frame>)> = c.staff.iter().filter_map(|e| super::pro_turnus::decides_frame(c, e.id, date).map(|f| (e.id, f))).collect();
     for e in c.staff.iter_mut().filter(|e| staff::drives(e) && e.employed_on(date)) {
         let mine: Vec<(i32, i32)> = pieces.iter().filter(|x| x.0 == e.id).map(|x| (x.1, x.2)).collect();
         // (NexiconDK, 4 November 2026: by their employment - `day_minutes`)
-        let (paid, due, contract) = day_minutes(&p, e, weekday, full, away_paid_otherwise(e, date), &mine);
+        let away = away_paid_otherwise(e, date);
+        let (mut paid, due, contract) = day_minutes(&p, e, weekday, full, away, &mine);
+        if let Some((_, f)) = framed.iter().find(|x| x.0 == e.id) {
+            paid = match f {
+                // (a frame of his rota: paid whether used or not, the work outside it on top)
+                Some(f) if !away => (f.minutes() + outside_frame(&p, f, &mine)).max(paid_minutes(&p, &mine)) as f64,
+                // (a reserve whose rota has no frame that day: the duties he drives)
+                _ if matches!(e.employment, Employment::Reserve(_)) => paid_minutes(&p, &mine) as f64,
+                _ => paid,
+            };
+        }
         e.week_due += due;
         if paid <= 0.0 {
             continue;

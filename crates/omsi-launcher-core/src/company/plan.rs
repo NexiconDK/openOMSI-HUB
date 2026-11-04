@@ -231,11 +231,15 @@ pub struct Planning {
     /// before 12:00 the day before (`tell_reserves`: day|duty key|driver).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub reserve_told: Vec<String>,
+    /// (NexiconDK, 4 November 2026) RosterFlow Pro's rotas and the exceptions of their drivers
+    /// (`pro_turnus`). Kept at once, not in RosterFlow's draft.
+    #[serde(default, skip_serializing_if = "super::pro_turnus::Rotas::is_empty")]
+    pub rotas: super::pro_turnus::Rotas,
 }
 
 impl Default for Planning {
     fn default() -> Self {
-        Planning { week: Vec::new(), auto: false, auto_only: None, auto_keys: None, date: String::new(), fills: Vec::new(), collapsed: Vec::new(), layouts: Vec::new(), joined: Vec::new(), flow: Default::default(), arrivals: Vec::new(), agency: Vec::new(), reserve_told: Vec::new() }
+        Planning { week: Vec::new(), auto: false, auto_only: None, auto_keys: None, date: String::new(), fills: Vec::new(), collapsed: Vec::new(), layouts: Vec::new(), joined: Vec::new(), flow: Default::default(), arrivals: Vec::new(), agency: Vec::new(), reserve_told: Vec::new(), rotas: Default::default() }
     }
 }
 
@@ -1455,12 +1459,16 @@ pub const TIER_BOOKED: u8 = 3;
 
 /// (NexiconDK, 4 November 2026) Where a driver comes in the order a piece of work `b` of `date`
 /// is filled in (`TIER_RESERVE` … `TIER_BOOKED`). A reserve outside their frame is a colleague.
-pub fn fill_tier(e: &Employee, date: &str, b: &Block) -> u8 {
+/// (Step 3: a driver whose rota gives him a frame that day stands in it as a reserve -
+/// `pro_turnus::frame_on`.)
+pub fn fill_tier(c: &Company, e: &Employee, date: &str, b: &Block) -> u8 {
     if super::agency::is_booked(e.id) {
         return TIER_BOOKED;
     }
+    if super::pro_turnus::frame_on(c, e, date).is_some_and(|f| f.holds(b.from, b.to)) {
+        return TIER_RESERVE;
+    }
     match e.employment {
-        Employment::Reserve(f) if f.on(weekday_of(date)) && f.holds(b.from, b.to) => TIER_RESERVE,
         Employment::Hourly => TIER_HOURLY,
         _ => TIER_COLLEAGUE,
     }
@@ -1468,9 +1476,9 @@ pub fn fill_tier(e: &Employee, date: &str, b: &Block) -> u8 {
 
 /// (NexiconDK, 4 November 2026) The reserve drivers whose frame holds on `date`: who, and the
 /// frame (the planning's day panel).
+/// (Step 3: and the drivers whose rota gives them a frame that day - `pro_turnus::frame_on`.)
 pub fn frames_on<'a>(c: &'a Company, date: &str) -> Vec<(&'a Employee, super::model::Frame)> {
-    let wd = weekday_of(date);
-    c.staff.iter().filter(|e| staff::drives(e) && e.employed_on(date)).filter_map(|e| e.employment.frame().filter(|f| f.on(wd)).map(|f| (e, f))).collect()
+    c.staff.iter().filter(|e| staff::drives(e) && e.employed_on(date)).filter_map(|e| super::pro_turnus::frame_on(c, e, date).map(|f| (e, f))).collect()
 }
 
 /// A driver's work on the plan's day without one duty (to see whether it fits).
@@ -1502,7 +1510,7 @@ pub fn candidates(c: &Company, dp: &DayPlan, ti: usize, k: usize) -> Vec<Candida
             let work = work_without(dp, e.id, (ti, k));
             let fit = can_take(e, &dp.date, dp.today, &bus, &work, &block);
             let name = if super::agency::is_booked(e.id) { format!("{:06}", super::agency::number_of(e)) } else { e.name.clone() };
-            (name, Candidate { id: e.id, standby: work.is_empty(), fit, tier: fill_tier(e, &dp.date, &block) })
+            (name, Candidate { id: e.id, standby: work.is_empty(), fit, tier: fill_tier(c, e, &dp.date, &block) })
         })
         .collect();
     // (NexiconDK, 4 November 2026: in the order an open duty is filled in - `fill_tier`)
@@ -1536,7 +1544,7 @@ pub fn late_covers(c: &Company, dp: &DayPlan, ti: usize, k: usize) -> Vec<(u32, 
         .filter(|e| !super::agency::is_booked(e.id) || super::agency::within(c, e.id, &piece))
         .filter_map(|e| {
             let work = work_without(dp, e.id, (usize::MAX, 0));
-            fits_bus(e, &bus, &work, &piece, dp.today).ok().map(|_| (fill_tier(e, &dp.date, &piece), !work.is_empty(), e.id))
+            fits_bus(e, &bus, &work, &piece, dp.today).ok().map(|_| (fill_tier(c, e, &dp.date, &piece), !work.is_empty(), e.id))
         })
         .collect();
     out.sort();
@@ -1648,6 +1656,10 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
     let auto = |line: &str| c.planning.auto && c.planning.auto_only.as_deref().is_none_or(|l| l.eq_ignore_ascii_case(line));
     // (and only the repair's places, `repair_day`)
     let auto_key = |key: &str| c.planning.auto_keys.as_ref().is_none_or(|k| k.iter().any(|x| x == key));
+    // (NexiconDK, 4 November 2026: RosterFlow Pro's rotas - a driver on a row drives his row's
+    // duty that day, or his exception's, and nothing else of the roster; a duty no row has runs
+    // as the roster has it: `pro_turnus::on_day`, of the blocks as the Vagter tab numbers them)
+    let rota = super::pro_turnus::on_day(c, date, &tours);
     let mut tours = tours;
     tours.sort_by_key(|t| t.from());
     let mut out: Vec<DayTour> = tours
@@ -1793,11 +1805,26 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
             }
         }
     }
+    // (the rotas' first, where a row decides: `rota`)
     for &(i, k) in &order {
         if out[i].duties[k].who.is_some() {
             continue;
         }
-        let Some(who) = roster(c, wd, &out[i].tour.line, &out[i].tour.tour).and_then(|r| r.duties.get(k).copied().flatten()) else { continue };
+        let rostered = roster(c, wd, &out[i].tour.line, &out[i].tour.tour).and_then(|r| r.duties.get(k).copied().flatten());
+        let who = match rota.as_ref() {
+            Some(rd) => match rd.driver_of(&out[i].tour.line, &out[i].tour.tour, k) {
+                Some(id) => Some(Who::Staff(id)),
+                None => {
+                    if let Some(p) = rd.absent_of(&out[i].tour.line, &out[i].tour.tour, k) {
+                        out[i].duties[k].problem = Some(p);
+                        continue;
+                    }
+                    rostered.filter(|w| !matches!(w, Who::Staff(id) if rd.decides(*id)))
+                }
+            },
+            None => rostered,
+        };
+        let Some(who) = who else { continue };
         // (a swap the player agreed with a colleague: for that day only, `crew::swapped`)
         let who = super::crew::swapped(c, date, &out[i].tour.line, &out[i].tour.tour, k, who);
         let bus = out[i].bus_of(c);
@@ -1858,7 +1885,7 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
             let worked = staff::work_minutes(work.of(e.id));
             let fills = worked > 0 && !w.iter().any(|x| matches!(x, Warn::Overtime(_)));
             let first = if open { worked == 0 } else { fills };
-            let score = (TIER_BOOKED - fill_tier(e, date, block), staff::qualified(e, bus.0.size), first, -worked, WEEK_DAYS.saturating_sub(e.week_days), (e.experience * 10.0) as i64);
+            let score = (TIER_BOOKED - fill_tier(c, e, date, block), staff::qualified(e, bus.0.size), first, -worked, WEEK_DAYS.saturating_sub(e.week_days), (e.experience * 10.0) as i64);
             if best.as_ref().is_none_or(|b| score > b.0) {
                 best = Some((score, e.id, w));
             }
@@ -2003,7 +2030,7 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
                 // reserves as before)
                 None => {
                     let best = pick(&work, &bus, &piece, true).filter(|x| x.0 != employee);
-                    let reserve = best.as_ref().map(|x| x.0).filter(|id| c.employee(*id).is_some_and(|e| fill_tier(e, date, &piece) == TIER_RESERVE));
+                    let reserve = best.as_ref().map(|x| x.0).filter(|id| c.employee(*id).is_some_and(|e| fill_tier(c, e, date, &piece) == TIER_RESERVE));
                     match (reserve, spare_free(None, &spare_busy), best) {
                         (Some(id), _, _) => (Some(id), Source::Central),
                         (None, Some(id), _) => (Some(SPARE_COVER + id), Source::Central),

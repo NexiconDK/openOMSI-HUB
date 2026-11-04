@@ -120,6 +120,10 @@ fn made(s: &mut Session, r: &mut Rf, date: &str, bus: bool) -> Result<(String, V
 pub(crate) fn print(args: &Value) -> Answer {
     let bus = args.get("bus").and_then(Value::as_bool).unwrap_or(true);
     let made = with_rf(|s, r| {
+        // (RosterFlow Pro: a rota - `turnus`)
+        if args.get("turnus").is_some() {
+            return Ok::<_, String>(super::turnus::made(s, r, args));
+        }
         let date = date_of(s, args).ok_or("no day")?;
         Ok::<_, String>(made(s, r, &date, bus))
     })?;
@@ -134,7 +138,8 @@ pub(crate) fn print(args: &Value) -> Answer {
 pub(super) fn for_afar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     let bus = args.get("bus").and_then(Value::as_bool).unwrap_or(true);
     let date = date_of(s, args).ok_or("no day")?;
-    Ok(match made(s, r, &date, bus) {
+    let made = if args.get("turnus").is_some() { super::turnus::made(s, r, args) } else { made(s, r, &date, bus) };
+    Ok(match made {
         Ok((name, bytes)) => json!({ "pdf": crate::base64(&bytes), "name": name }),
         Err(said) => said,
     })

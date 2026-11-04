@@ -22,12 +22,14 @@ import { Icon, RfButton, Stepper } from './ui.js';
 /** The views of the Pro tabs (beside `state.js`'s ROSTER, VEHICLES, DRIVERS, TIMEPLAN, ROUTES). */
 export const PRO_BLOCKS = 10;
 export const PRO_DUTIES = 11;
+/** (Step 3) The Turnus tab (`turnus.js`). */
+export const PRO_ROTA = 12;
 
-/** The Pro tabs of the title bar: the two built, and those of the steps to come. */
+/** The Pro tabs of the title bar: those built, and those of the steps to come. */
 export const PRO_TABS = [
   { view: PRO_BLOCKS, n: 1, icon: 'airport_shuttle', label: 'Blocks', anchor: 'rf-tab-pro-blocks' },
   { view: PRO_DUTIES, n: 2, icon: 'badge', label: 'Duties', anchor: 'rf-tab-pro-duties' },
-  { view: null, n: 3, icon: 'autorenew', label: 'Rota' },
+  { view: PRO_ROTA, n: 3, icon: 'autorenew', label: 'Rota', anchor: 'rf-tab-pro-rota' },
   { view: null, n: 4, icon: 'today', label: 'Daily operations' },
   { view: null, n: 5, icon: 'event', label: 'Calendar' },
 ];

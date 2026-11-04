@@ -239,9 +239,9 @@ fn an_open_duty_is_filled_by_a_reserve_a_colleague_the_hourly_paid_then_the_agen
     let b = Block { key: "x".into(), from: 6 * 60, to: 9 * 60, ..Default::default() };
     let mut e = c.staff[0].clone();
     e.employment = Employment::Reserve(Frame::new(5 * 60, 13 * 60, 0b110_0000));
-    assert_eq!(plan::fill_tier(&e, &tomorrow, &b), plan::TIER_COLLEAGUE);
+    assert_eq!(plan::fill_tier(&c, &e, &tomorrow, &b), plan::TIER_COLLEAGUE);
     e.employment = Employment::Reserve(early());
-    assert_eq!(plan::fill_tier(&e, &tomorrow, &b), plan::TIER_RESERVE);
+    assert_eq!(plan::fill_tier(&c, &e, &tomorrow, &b), plan::TIER_RESERVE);
 }
 
 #[test]

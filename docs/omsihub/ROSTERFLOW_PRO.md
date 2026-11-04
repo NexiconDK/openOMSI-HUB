@@ -173,5 +173,114 @@ Pro nothing of this applies: the numbers are RosterFlow's 1001 on.
 
 ## Not in step 2
 
-The rota (Turnus), the daily operations, the calendar and asking drivers for a duty come in the
-next steps.
+The daily operations, the calendar and asking drivers for a duty come in the next steps (the
+rota came in step 3).
+
+# Step 3: the tab Turnus (4 November 2026)
+
+With RosterFlow Pro chosen, "3 Turnus" (Rota) is the third Pro tab of RosterFlow's title bar.
+A rota is who drives the duties of the Vagter tab week after week, as a Danish bus company hangs
+it up: rows of a week each, a driver on every row, every driver a row down each week. Code:
+`co::pro_turnus` (the core), `omsihub/rosterflow/turnus.rs` (the commands `rf_turnus` and
+`rf_turnus_act`, and the print), `launcher/ui/js/omsihub/rosterflow/turnus.js` (the page).
+
+## A rota
+
+A company has as many rotas as it likes ("Nord fuldtid", "Nord deltid", "Reserve"), kept in its
+planning (`Planning::rotas`) and saved at once - not in RosterFlow's draft, and so without its
+Undo: a rota is not a day's blocks but the drivers' weeks.
+
+- **A row is a week, Sunday to Saturday** (the bus company's week begins on Sunday, as the pay's
+  week of step 1). Each of its days is a duty of the Vagter tab by its number (1001 on a weekday,
+  2001 on a Saturday, 3001 on a Sunday), a day off ("Off"), or a frame ("Reserve 05:00-13:00": at
+  the company's disposal within it, `pro_turnus::Cell`).
+- **A driver is put on a row**, and every week he moves a row down - from the last row to the
+  first again. The cycle is as many weeks as the rota has rows. The rota begins on a Sunday (the
+  company's week when it is made; "Begin it in the week shown" moves it): the driver on row 1 is on
+  row 1 that week (`row_on`, `driver_on`). Before it begins it decides nothing.
+- **Full- and part-time drivers** go in a rota, **reserves** (`Employment::Reserve`) in a reserve
+  rota, **the hourly paid** in none - they are called in. A driver is on one row of one rota.
+- A duty is on one row a day among all the rotas: a day of a row takes only a duty that runs that
+  weekday (`set_cell`).
+
+## Made by hand or automatically
+
+A day clicked shows that weekday's duties - those no rota has first, those in another row greyed
+with their place on hover -, a day off and the reserve frames. A driver's place clicked shows the
+drivers who can go on the row. "New row" and "Delete row" add and remove rows.
+
+"Make the rota automatically" (`pro_turnus::auto`) spreads the duties of the week no other rota
+has over as many rows as they need: the cycle's average near the hours aimed at, at most 5 days of
+work a row, and as many rows as the busiest day has duties. Each row has two days off together,
+begun at most a day after the row before's ended - so that there are never more than 6 days of
+work in a row, round the cycle -, where the week has the most rows to spare (the weekend, mostly),
+found by a search (`search`; a row at a time where it finds none); when no such days off leave
+every day enough rows at work, it takes a row more. A day with more rows at work than duties gives
+the rows with the most hours so far a day off more. Monday to Saturday each day's duties go to the
+rows by their times - the row that finished early the day before takes an early one -, Sunday last
+between the row before's Saturday and the row's own Monday; then duties of a day, or of two or
+three days running, are swapped between two rows where that keeps the rest and evens the hours. A reserve rota gets a row for each reserve driver, five days a week in his own frame (early
+05:00-13:00 and late 13:00-21:00 else). The drivers stay on their rows.
+
+## The rules over the whole cycle
+
+`pro_turnus::check` checks the rota round its whole cycle - a row's Saturday is followed by the
+next row's Sunday, the last row's by the first's. The marks show (red or yellow), they do not
+refuse:
+
+| Rule | Mark |
+|---|---|
+| 11 hours of rest between two duties | red, on the day after the short rest |
+| At most 6 days of work in a row | red, on the 7th |
+| Two days off together in each row (its Saturday and the next row's Sunday count) | yellow |
+| A row's week within 20 % of the hours aimed at (the contract week - 37 h at the Danish price level, else 39 - or the rota's own, "Hours a row aims at"): a week may be a day longer or shorter | yellow |
+| The cycle's average within 5 % of the hours aimed at - what counts over the cycle | yellow |
+| A driver's contract within 5 % of the rota's average | yellow |
+| A weekend day off somewhere in the cycle | yellow |
+| A duty that runs that day, on one row only | red |
+
+## A driver's next weeks and the exceptions
+
+A driver clicked shows his next four weeks as the rota has them. A day of them clicked can be
+changed for that date only, the rota as it is (`Exception`, `set_exception`): a day off, on
+holiday, ill, or another duty of that weekday ("Swapped" - the swap's other driver is changed the
+same way). "As in the rota" takes it back. Exceptions of days gone are dropped.
+
+## The day runs it
+
+With RosterFlow Pro chosen, the day's plan (`plan::day_plan`, `pro_turnus::on_day`) gives a driver
+on a row of a rota begun by then the duty of his row that day - or of his exception -, and nothing
+else of the weekly roster: his day off is off. An exception "ill" or "on holiday" leaves his row's
+duty open as ill or on holiday, for the central and the dispatcher's order of step 1. A driver
+without a row, and a duty no row has, run as the weekly roster has them (the fall-back). Without
+RosterFlow Pro no rota decides anything.
+
+A frame of a driver's row makes him a reserve within it that day (`pro_turnus::frame_on`): the
+first to cover an open duty in it (`plan::fill_tier`), listed in the day panel's "Frames this day"
+(`plan::frames_on`), and paid the frame whether used or not, the work outside it on top
+(`pay::day`). A reserve whose rota gives him no frame that day is paid the duties he drives.
+
+## On the page
+
+- **Left:** the rotas (name, rows, drivers, hours a week), "New rota" and "New reserve rota"; the
+  rules the chosen rota keeps over its whole cycle; its name, the hours a row aims at, when it
+  begins, its average and cycle, "Delete the rota"; the duties' colours.
+- **The rota:** a row a week - its number, each day's duty with its times (early before 09:00
+  yellow, day blue, late purple, split teal, reserve green), its hours, its marks (✓ or !, the
+  reasons on hover) and the driver on it in the week shown. The week shown is chosen in the
+  toolbar (‹ Week 46 ›).
+- **Under it:** a driver's next weeks and their exceptions; the coverage - how many of the week's
+  duties are in a rota, and those that are not, by day.
+- **"Print rota"** (`rf_print` with `turnus`): the rota as a PDF file on A4 across - the rows, each
+  day's duty and times, the hours and the driver of the week shown -, saved where the player
+  chooses, as RosterFlow's graphs are.
+- A rota is of the saved duties, as the days run them: when RosterFlow has changes not saved, the
+  tab says so.
+- A player of "Play together" with "Edit the planning" may edit the rotas (`rf_turnus_act`), who
+  may look at the planning may look at them (`rf_turnus`).
+
+## Not in step 3
+
+The daily operations, the calendar of every driver's days and asking drivers for a duty (their
+answers, the cost of overtime) come in the next steps. An exception "ill" or "on holiday" is the
+rota's: it does not make the driver ill or give him a holiday in the staff's records.

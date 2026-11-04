@@ -1423,6 +1423,8 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     c.date = tomorrow.clone();
     // (NexiconDK, 4 November 2026: a change of employment given notice applies from its day)
     staff::employment_due(c);
+    // (RosterFlow Pro's rotas: the exceptions of days gone, and drivers who left, dropped)
+    super::pro_turnus::tidy(c);
     if dates::parse(&tomorrow).map(dates::weekday) == Some(0) {
         for e in c.staff.iter_mut() {
             e.week_days = 0;

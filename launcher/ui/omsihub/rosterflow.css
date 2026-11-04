@@ -991,3 +991,76 @@ button.tp-cell:hover { background: var(--tp-cell-hover); }
 .pro-types div { line-height: 1.55; color: var(--rf-soft); }
 .pro-rule { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 30px; }
 .pro-rule span:first-child { color: var(--rf-soft); }
+
+/* --- RosterFlow Pro, step 3 (NexiconDK, 4 November 2026): the Turnus tab (`turnus.js`) ----------- */
+.tu-page .pro-content { gap: 8px; }
+.tu-week { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--rf-dim); white-space: nowrap; }
+.tu-week b { color: var(--rf-text); font-size: 11.5px; }
+.tu-note { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--rf-warn); }
+.tu-empty { color: var(--rf-soft); }
+.tu-rota { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 7px 10px; margin-bottom: 6px; border-radius: 5px; border: 1px solid var(--rf-line); background: var(--rf-grid); text-align: left; font-size: 10.5px; }
+.tu-rota b { font-size: 11.5px; }
+.tu-rota span { color: var(--rf-dim); font-size: 10px; }
+.tu-rota.on { border: 2px solid var(--rf-accent); padding: 6px 9px; background: rgba(var(--rf-accent-rgb), 0.10); }
+.tu-new { display: flex; flex-wrap: wrap; gap: 6px; }
+.tu-rule { display: flex; align-items: center; gap: 6px; min-height: 20px; color: var(--rf-soft); }
+.tu-rule .hub-icon { color: var(--rf-ok); flex: none; }
+.tu-rule.no .hub-icon { color: var(--rf-warn); }
+.tu-rule.no span { color: var(--rf-text); }
+.tu-name { width: 120px; height: 24px; padding: 0 6px; border-radius: 3px; border: 1px solid var(--rf-line); background: var(--rf-field); color: var(--rf-text); font: inherit; }
+.tu-small { font-size: 10px; margin: 0 0 6px; }
+.tu-del { margin-top: 10px; color: var(--rf-err); }
+.tu-legend { display: flex; flex-wrap: wrap; gap: 5px; }
+.tu-chip { padding: 2px 7px; border-radius: 3px; font-size: 10px; font-weight: 700; }
+.tu-table { flex: none; overflow-x: auto; }
+.tu-grid { display: grid; grid-template-columns: 38px repeat(7, minmax(78px, 1fr)) 50px 44px minmax(120px, 1.3fr); gap: 3px; align-items: stretch; padding: 3px 6px; }
+.tu-head { background: var(--rf-axis); font-size: 8.6px; font-weight: 700; text-transform: uppercase; color: var(--rf-dim); padding-top: 7px; padding-bottom: 7px; position: sticky; top: 0; z-index: 1; }
+.tu-head span { text-align: center; }
+.tu-head span:first-child, .tu-head span:last-child { text-align: left; }
+.tu-row { border-top: 1px solid var(--rf-line); }
+.tu-row.on { background: rgba(var(--rf-accent-rgb), 0.08); }
+.tu-no { display: flex; align-items: center; font-weight: 700; font-size: 11.5px; padding-left: 4px; }
+.tu-hours { display: flex; align-items: center; justify-content: flex-end; font-variant-numeric: tabular-nums; font-size: 11px; }
+.tu-ok { display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.tu-driver { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 0 8px; border-radius: 4px; text-align: left; font-size: 10.5px; min-width: 0; }
+.tu-driver b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.tu-driver span { color: var(--rf-dim); font-size: 9.5px; }
+.tu-driver:hover, .tu-driver.on { background: var(--rf-hover); }
+.tu-cell { --k: var(--rf-grey); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 38px; padding: 3px 4px; border-radius: 4px; background: color-mix(in srgb, var(--k) 20%, var(--rf-grid)); color: color-mix(in srgb, var(--k) 65%, var(--rf-text)); font-size: 9.6px; line-height: 1.25; cursor: pointer; }
+.tu-cell b { font-size: 11.5px; }
+.tu-cell span { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tu-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, transparent); }
+.tu-cell.on { outline: 2px solid var(--rf-accent); outline-offset: 1px; z-index: 1; }
+.tu-cell.off, .tu-chip.off { --k: var(--rf-grey); background: color-mix(in srgb, var(--rf-text) 5%, var(--rf-grid)); color: var(--rf-dim); }
+.tu-cell.none { opacity: 0.4; cursor: default; }
+.tu-cell.early, .tu-chip.early { --k: #e0b23c; }
+.tu-cell.day, .tu-chip.day { --k: #4f8fd8; }
+.tu-cell.late, .tu-chip.late { --k: #9a72e0; }
+.tu-cell.split, .tu-chip.split { --k: #2fb0b8; }
+.tu-cell.reserve, .tu-chip.reserve { --k: #3fae6a; }
+.tu-cell.missing { --k: var(--rf-err); }
+.tu-chip { background: color-mix(in srgb, var(--k) 22%, var(--rf-grid)); color: color-mix(in srgb, var(--k) 70%, var(--rf-text)); }
+.tu-cell.taken { opacity: 0.38; cursor: default; }
+.tu-cell.ex { box-shadow: inset 0 0 0 1.5px var(--rf-warn); }
+.tu-cell .tu-ex { color: var(--rf-warn); font-weight: 700; font-size: 9px; }
+.tu-mark { position: absolute; top: 2px; right: 4px; font-style: normal; font-weight: 800; font-size: 11px; }
+.tu-mark.bad { color: var(--rf-err); }
+.tu-mark.warn { color: var(--rf-warn); }
+.tu-none { padding: 10px 12px; }
+.tu-pick .tu-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.tu-pick .tu-cell, .tu-exc .tu-cell { min-width: 78px; }
+.tu-person-chip { display: flex; flex-direction: column; align-items: flex-start; padding: 5px 9px; border-radius: 4px; border: 1px solid var(--rf-line); background: var(--rf-grid); font-size: 10.5px; text-align: left; }
+.tu-person-chip span { color: var(--rf-dim); font-size: 9.5px; }
+.tu-person-chip.on { border-color: var(--rf-accent); background: rgba(var(--rf-accent-rgb), 0.12); }
+.tu-below { display: flex; gap: 10px; align-items: flex-start; }
+.tu-person { flex: 1; min-width: 0; }
+.tu-person .pro-caps { display: flex; align-items: center; gap: 6px; }
+.tu-x { margin-left: auto; font-size: 15px; line-height: 1; }
+.tu-weeks { grid-template-columns: 64px repeat(7, minmax(70px, 1fr)); padding-left: 0; padding-right: 0; }
+.tu-wk { display: flex; align-items: center; color: var(--rf-dim); font-size: 10px; }
+.tu-exc { margin-top: 8px; }
+.tu-exc .tu-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.tu-cover { width: 260px; flex: none; }
+.tu-big { font-size: 26px; font-weight: 700; line-height: 1.2; }
+.tu-open { font-size: 10.5px; line-height: 1.6; margin-bottom: 4px; }
+.tu-open b { color: var(--rf-soft); margin-right: 4px; }
