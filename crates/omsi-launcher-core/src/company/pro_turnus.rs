@@ -74,6 +74,42 @@ pub struct Row {
     pub driver: Option<u32>,
 }
 
+/// What a rota holds (NexiconDK, 4 November 2026, after the player's comments): an ordinary
+/// rota of whole and short duties all week - its drivers at work every other weekend -, a rota
+/// of split duties Monday to Friday - its weekends always off -, or a reserve rota of frames.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RotaKind {
+    Normal,
+    Split,
+    Reserve,
+}
+
+impl RotaKind {
+    pub const ALL: [RotaKind; 3] = [RotaKind::Normal, RotaKind::Split, RotaKind::Reserve];
+    pub const LABELS: [&'static str; 3] = ["Ordinary", "Split duties", "Reserve"];
+
+    pub fn key(self) -> &'static str {
+        match self {
+            RotaKind::Normal => "normal",
+            RotaKind::Split => "split",
+            RotaKind::Reserve => "reserve",
+        }
+    }
+
+    /// The kind of a key ("normal", "split", "reserve"; anything else ordinary).
+    pub fn of_key(k: &str) -> RotaKind {
+        Self::ALL.into_iter().find(|x| x.key() == k).unwrap_or(RotaKind::Normal)
+    }
+
+    pub fn label(self) -> &'static str {
+        Self::LABELS[Self::ALL.iter().position(|x| *x == self).unwrap_or(0)]
+    }
+}
+
+fn is_false(b: &bool) -> bool {
+    !*b
+}
+
 /// A rota.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct Turnus {
@@ -82,12 +118,52 @@ pub struct Turnus {
     /// A rota of reserve drivers (`Employment::Reserve`): its rows' days are frames.
     #[serde(default)]
     pub reserve: bool,
+    /// A rota of split duties, Monday to Friday, its weekends off (an older file has none).
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub split: bool,
     /// The Sunday its first week begins (the driver of row 1 on row 1 then).
     pub from: String,
     /// The hours a week a row aims at (None: the contract week, `econ_uk::contract_week_hours`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hours: Option<f64>,
     pub rows: Vec<Row>,
+}
+
+impl Turnus {
+    pub fn kind(&self) -> RotaKind {
+        if self.reserve {
+            RotaKind::Reserve
+        } else if self.split {
+            RotaKind::Split
+        } else {
+            RotaKind::Normal
+        }
+    }
+}
+
+/// A weekend of a rota: the Saturday of one week and the Sunday of the next (the bus company's
+/// week begins on Sunday) - both off, both at work, or one of each.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Weekend {
+    Off,
+    Work,
+    Half,
+}
+
+/// The weekend after week `k` of rota `t` (0 its first): week `k`'s Saturday and week `k + 1`'s
+/// Sunday - the last week's Saturday with the first week's Sunday, round the cycle.
+pub fn weekend(t: &Turnus, k: usize) -> Option<Weekend> {
+    let n = t.rows.len();
+    if k >= n {
+        return None;
+    }
+    let sat = t.rows[k].days[DAYS - 1].works();
+    let sun = t.rows[(k + 1) % n].days[0].works();
+    Some(match (sat, sun) {
+        (false, false) => Weekend::Off,
+        (true, true) => Weekend::Work,
+        _ => Weekend::Half,
+    })
 }
 
 /// What a driver's day is on one date instead of his row's.
@@ -300,11 +376,15 @@ pub enum Rule {
     Hours,
     Weekend,
     Duty,
+    /// (An ordinary rota) every other weekend off.
+    EveryOther,
+    /// (A split-duty rota) split duties only, its weekends off; (an ordinary rota) no split duty.
+    Split,
 }
 
 pub const M_REST: &str = "%{have} rest before this day, at least %{min}";
 pub const M_IN_A_ROW: &str = "%{n} days of work in a row, at most %{max}";
-pub const M_TWO_OFF: &str = "No two days off together in this row";
+pub const M_TWO_OFF: &str = "No two days off together in this week - a Saturday and the next week's Sunday count as two together";
 pub const M_OVER: &str = "%{h} h a week, %{d} h more than the %{t} h aimed at";
 pub const M_UNDER: &str = "%{h} h a week, %{d} h less than the %{t} h aimed at";
 pub const M_CONTRACT: &str = "%{name} has a contract of %{c} h a week, the rota averages %{avg} h";
@@ -312,6 +392,13 @@ pub const M_AVERAGE: &str = "The rota averages %{avg} h a week over its cycle, %
 pub const M_WEEKEND: &str = "No weekend day off in the whole cycle";
 pub const M_MISSING: &str = "Duty %{n} does not run on this day";
 pub const M_TWICE: &str = "Duty %{n} is in another row on this day too";
+pub const M_HALF_WEEKEND: &str = "Half a weekend: the Saturday of week %{a} and the Sunday of week %{b} should both be off or both at work";
+pub const M_TWO_FREE: &str = "Two weekends off in a row: the drivers should work every other weekend";
+pub const M_TWO_WORKED: &str = "Two weekends at work in a row: the drivers should have every other weekend off";
+pub const M_ODD_WEEKS: &str = "%{n} weeks: with an odd number of weeks the weekends cannot take turns - add a week";
+pub const M_SPLIT_HERE: &str = "Duty %{n} is a split duty: it belongs in a split-duty rota";
+pub const M_NOT_SPLIT: &str = "Duty %{n} is not a split duty: a split-duty rota holds split duties only";
+pub const M_SPLIT_WEEKEND: &str = "A split-duty rota is off at the weekend";
 
 /// A mark of a rota: its row and day (None: the rota's), red (`hard`) or yellow.
 #[derive(Clone, Debug, PartialEq)]
@@ -401,17 +488,66 @@ pub fn check(c: &Company, k: usize, week: &Week) -> Checked {
             }
         }
     }
-    // two days off together in a row (its Saturday and the next row's Sunday count)
+    // two days off together in each week: two days running of which one at least is the week's -
+    // the Saturday before it and its Sunday count, its Saturday and the next week's Sunday too (a
+    // weekend off is the two days off together of both weeks it touches)
     for r in 0..n {
         let base = r * DAYS;
-        let together = (0..DAYS).any(|d| !cell(base + d).works() && !cell((base + d + 1) % len).works());
+        let together = (0..=DAYS).any(|i| {
+            let p = (base + len + i - 1) % len;
+            !cell(p).works() && !cell((p + 1) % len).works()
+        });
         if !together {
             out.marks.push(Mark { row: Some(r), day: None, rule: Rule::TwoOff, hard: false, text: M_TWO_OFF, args: Vec::new() });
         }
     }
-    // a weekend day off somewhere in the cycle
-    if !t.rows.iter().any(|row| !row.days[0].works() || !row.days[6].works()) {
-        out.marks.push(Mark { row: None, day: None, rule: Rule::Weekend, hard: false, text: M_WEEKEND, args: Vec::new() });
+    let kind = t.kind();
+    // the duties' kinds: a split-duty rota has split duties only and its weekends off, an
+    // ordinary rota no split duty
+    for (r, row) in t.rows.iter().enumerate() {
+        for (d, x) in row.days.iter().enumerate() {
+            if kind == RotaKind::Split && (d == 0 || d == DAYS - 1) && x.works() {
+                out.marks.push(Mark { row: Some(r), day: Some(d), rule: Rule::Split, hard: true, text: M_SPLIT_WEEKEND, args: Vec::new() });
+                continue;
+            }
+            let Cell::Duty { n: num } = *x else { continue };
+            let Some(dk) = duty(week, d, num).map(|x| x.kind) else { continue };
+            match kind {
+                RotaKind::Split if dk != pd::Kind::Split => out.marks.push(Mark { row: Some(r), day: Some(d), rule: Rule::Split, hard: false, text: M_NOT_SPLIT, args: vec![("n", num.to_string())] }),
+                RotaKind::Normal if dk == pd::Kind::Split => out.marks.push(Mark { row: Some(r), day: Some(d), rule: Rule::Split, hard: false, text: M_SPLIT_HERE, args: vec![("n", num.to_string())] }),
+                _ => {}
+            }
+        }
+    }
+    match kind {
+        // every other weekend off, round the cycle: no half weekend, and off and at work by turns
+        RotaKind::Normal => {
+            let ws: Vec<Weekend> = (0..n).filter_map(|k| weekend(t, k)).collect();
+            for (k, w) in ws.iter().enumerate() {
+                if *w == Weekend::Half {
+                    out.marks.push(Mark { row: Some(k), day: Some(DAYS - 1), rule: Rule::EveryOther, hard: true, text: M_HALF_WEEKEND, args: vec![("a", (k + 1).to_string()), ("b", ((k + 1) % n + 1).to_string())] });
+                }
+            }
+            if n % 2 == 1 {
+                out.marks.push(Mark { row: None, day: None, rule: Rule::EveryOther, hard: false, text: M_ODD_WEEKS, args: vec![("n", n.to_string())] });
+            } else {
+                for k in 0..n {
+                    let j = (k + 1) % n;
+                    if ws[k] == ws[j] && ws[k] != Weekend::Half {
+                        let text = if ws[k] == Weekend::Off { M_TWO_FREE } else { M_TWO_WORKED };
+                        out.marks.push(Mark { row: Some(j), day: Some(DAYS - 1), rule: Rule::EveryOther, hard: true, text, args: Vec::new() });
+                    }
+                }
+            }
+        }
+        // (a split-duty rota's weekends are off: its marks above)
+        RotaKind::Split => {}
+        // a weekend day off somewhere in the cycle
+        RotaKind::Reserve => {
+            if !t.rows.iter().any(|row| !row.days[0].works() || !row.days[6].works()) {
+                out.marks.push(Mark { row: None, day: None, rule: Rule::Weekend, hard: false, text: M_WEEKEND, args: Vec::new() });
+            }
+        }
     }
     // the hours: each row's against the hours aimed at, the drivers' contracts against the average
     out.minutes = t.rows.iter().map(|row| row_minutes(week, row)).collect();
@@ -458,6 +594,10 @@ pub const NO_HOURLY: &str = "An hourly-paid driver has no rota: he is called in 
 pub const RESERVES_ONLY: &str = "A reserve rota is for the reserve drivers.";
 pub const NO_RESERVES: &str = "A reserve driver goes in a reserve rota.";
 pub const NOTHING_TO_PLACE: &str = "Every duty of the week is in a rota already.";
+pub const WEEKEND_OFF: &str = "A split-duty rota is off on Saturday and Sunday.";
+pub const ONLY_SPLIT: &str = "A split-duty rota holds split duties only.";
+pub const SPLIT_ELSEWHERE: &str = "A split duty goes in a split-duty rota.";
+pub const NO_SPLIT: &str = "The week has no split duty from Monday to Friday that no rota has.";
 
 fn rota_mut(c: &mut Company, id: u32) -> Result<&mut Turnus, &'static str> {
     c.planning.rotas.list.iter_mut().find(|t| t.id == id).ok_or(NO_ROTA)
@@ -466,9 +606,24 @@ fn rota_mut(c: &mut Company, id: u32) -> Result<&mut Turnus, &'static str> {
 /// A new rota (`reserve`: of reserve drivers), beginning the Sunday of the company's week:
 /// its id.
 pub fn add(c: &mut Company, name: &str, reserve: bool) -> u32 {
+    add_kind(c, name, if reserve { RotaKind::Reserve } else { RotaKind::Normal }, 0)
+}
+
+/// The most weeks a rota is made with.
+pub const MAX_WEEKS: usize = 104;
+
+/// A new rota of `kind` and `weeks` weeks (days off all week), beginning the Sunday of the
+/// company's week: its id.
+pub fn add_kind(c: &mut Company, name: &str, kind: RotaKind, weeks: usize) -> u32 {
     let id = c.planning.rotas.list.iter().map(|t| t.id).max().unwrap_or(0) + 1;
-    let name = if name.trim().is_empty() { format!("{} {id}", if reserve { "Reserve" } else { "Rota" }) } else { name.trim().to_string() };
-    c.planning.rotas.list.push(Turnus { id, name, reserve, from: sunday_of(&c.date), hours: None, rows: Vec::new() });
+    let fallback = match kind {
+        RotaKind::Normal => "Rota",
+        RotaKind::Split => "Split duties",
+        RotaKind::Reserve => "Reserve",
+    };
+    let name = if name.trim().is_empty() { format!("{fallback} {id}") } else { name.trim().chars().take(40).collect() };
+    let rows = vec![Row::default(); weeks.min(MAX_WEEKS)];
+    c.planning.rotas.list.push(Turnus { id, name, reserve: kind == RotaKind::Reserve, split: kind == RotaKind::Split, from: sunday_of(&c.date), hours: None, rows });
     id
 }
 
@@ -524,9 +679,17 @@ pub fn set_cell(c: &mut Company, id: u32, row: usize, day: usize, cell: Cell, we
     if day >= DAYS {
         return Err(NO_ROW);
     }
+    // (a split-duty rota: split duties only, Monday to Friday; an ordinary one: no split duty)
+    let kind = c.planning.rotas.list.iter().find(|t| t.id == id).ok_or(NO_ROTA)?.kind();
+    if kind == RotaKind::Split && (day == 0 || day == DAYS - 1) && cell.works() {
+        return Err(WEEKEND_OFF);
+    }
     if let Cell::Duty { n } = cell {
-        if duty(week, day, n).is_none() {
-            return Err(NOT_THAT_DAY);
+        let Some(dk) = duty(week, day, n).map(|x| x.kind) else { return Err(NOT_THAT_DAY) };
+        match kind {
+            RotaKind::Split if dk != pd::Kind::Split => return Err(ONLY_SPLIT),
+            RotaKind::Normal if dk == pd::Kind::Split => return Err(SPLIT_ELSEWHERE),
+            _ => {}
         }
         let mine = c.planning.rotas.list.iter().find(|t| t.id == id).and_then(|t| t.rows.get(row)).is_some_and(|r| r.days[day] == cell);
         if !mine && placed_count(c, day, n) > 0 {
@@ -752,18 +915,32 @@ fn days_off_greedy(work: &[usize], need: &[usize; DAYS]) -> Vec<[bool; DAYS]> {
     out
 }
 
-/// Rota `id` made automatically from the duties of `week` no other rota has: as many rows as
-/// they need (every duty a row, a row's week near the hours aimed at, at most 5 days of work, two
-/// days off together), each day's duties given to the rows by their times - the row that
-/// finished early yesterday takes an early one today - and then swapped between rows where that
-/// keeps the rest and evens the hours. A reserve rota gets a row for each reserve driver (one at
-/// least), 5 days a week in its driver's frame (early and late else). The drivers stay on their
-/// rows (as far as there are rows). Returns how many rows it has.
+/// Rota `id` made automatically from the duties of `week` no other rota has, in as many weeks as
+/// they need - and at least the weeks it has:
+///
+/// * An ordinary rota (`auto_normal`): the whole and short duties of the week, an even number of
+///   weeks, the drivers at work every other weekend - a weekend off is a week's Saturday and the
+///   next week's Sunday -, a weekday off besides in each week, so that each week has five days
+///   of work and never more than six days of work come in a row; enough weeks that the weekend's
+///   duties are driven by half the drivers. A weekend with more drivers at work than duties gives
+///   the others a reserve's frame, so that their weekend stays whole.
+/// * A split-duty rota (`auto_split`): the split duties of Monday to Friday, its weekends off.
+/// * A reserve rota: a row for each reserve driver (one at least), 5 days a week in its driver's
+///   frame (early and late else).
+///
+/// Each day's duties go to the weeks by their times - the week that finished early yesterday
+/// takes an early one today -, then are swapped between weeks where that keeps the rest and evens
+/// the hours. The drivers stay on their rows (as far as there are rows). Returns how many weeks
+/// it has.
 pub fn auto(c: &mut Company, id: u32, week: &Week) -> Result<usize, &'static str> {
     let k = c.planning.rotas.list.iter().position(|t| t.id == id).ok_or(NO_ROTA)?;
     let t = c.planning.rotas.list[k].clone();
     let drivers: Vec<Option<u32>> = t.rows.iter().map(|r| r.driver).collect();
-    let rows = if t.reserve { auto_reserve(c, &t) } else { auto_duties(c, k, &t, week)? };
+    let rows = match t.kind() {
+        RotaKind::Reserve => auto_reserve(c, &t),
+        RotaKind::Normal => auto_normal(c, k, &t, week)?,
+        RotaKind::Split => auto_split(c, k, &t, week)?,
+    };
     let rota = &mut c.planning.rotas.list[k];
     rota.rows = rows;
     for (r, d) in drivers.into_iter().enumerate() {
@@ -792,84 +969,270 @@ fn auto_reserve(c: &Company, t: &Turnus) -> Vec<Row> {
         .collect()
 }
 
-fn auto_duties(c: &Company, k: usize, t: &Turnus, week: &Week) -> Result<Vec<Row>, &'static str> {
-    // the duties of each day no other rota has
-    let others = |d: usize, num: u32| c.planning.rotas.list.iter().enumerate().any(|(j, o)| j != k && o.rows.iter().any(|r| r.days[d] == Cell::Duty { n: num }));
-    let mut todo: Vec<Vec<&ProDuty>> = (0..DAYS).map(|d| week.get(d).map(|ds| ds.iter().filter(|x| !others(d, x.number)).collect()).unwrap_or_default()).collect();
-    for ds in todo.iter_mut() {
-        ds.sort_by_key(|x| (x.start, x.number));
+/// The duties of each day of `week` no rota but the `k`th has (None: no rota at all) that `keep`
+/// keeps, each day's by their times.
+fn todo_of<'a>(c: &Company, k: Option<usize>, week: &'a Week, keep: impl Fn(&ProDuty) -> bool) -> Vec<Vec<&'a ProDuty>> {
+    let others = |d: usize, num: u32| c.planning.rotas.list.iter().enumerate().any(|(j, o)| Some(j) != k && o.rows.iter().any(|r| r.days[d] == Cell::Duty { n: num }));
+    (0..DAYS)
+        .map(|d| {
+            let mut ds: Vec<&ProDuty> = week.get(d).map(|ds| ds.iter().filter(|x| keep(x) && !others(d, x.number)).collect()).unwrap_or_default();
+            ds.sort_by_key(|x| (x.start, x.number));
+            ds
+        })
+        .collect()
+}
+
+/// Whether a duty goes in an ordinary rota (not a split duty).
+fn ordinary(x: &ProDuty) -> bool {
+    x.kind != pd::Kind::Split
+}
+
+/// Whether a duty goes in a split-duty rota (a split duty).
+fn split_duty(x: &ProDuty) -> bool {
+    x.kind == pd::Kind::Split
+}
+
+/// The weeks an ordinary rota needs for `todo` (the duties of each day, Sunday first), at least
+/// `least`: an even number; half of them at work each weekend, every weekend duty a week; a
+/// weekday off in every week, as many weeks as leave each weekday a week at work for each of its
+/// duties; the hours aimed at (`target` minutes a week) over the cycle; two at least.
+fn normal_weeks(todo: &[Vec<&ProDuty>], target: i32, least: usize) -> usize {
+    let weekend = todo[0].len().max(todo[DAYS - 1].len());
+    let weekdays: usize = (1..DAYS - 1).map(|d| todo[d].len()).sum();
+    let busiest = (1..DAYS - 1).map(|d| todo[d].len()).max().unwrap_or(0);
+    let paid: i64 = todo.iter().flatten().map(|x| x.paid as i64).sum();
+    let by_hours = (paid as f64 / target.max(60) as f64).round() as usize;
+    let mut n = (2 * weekend).max(weekdays.div_ceil(4)).max(busiest).max(by_hours).max(least).max(2);
+    n += n % 2;
+    // (each week a weekday off: the weekdays' room for them must hold one a week)
+    while (1..DAYS - 1).map(|d| n.saturating_sub(todo[d].len())).sum::<usize>() < n && n < MAX_WEEKS {
+        n += 2;
     }
-    let count: usize = todo.iter().map(Vec::len).sum();
-    if count == 0 {
+    n.min(MAX_WEEKS)
+}
+
+/// The weeks a split-duty rota needs for `todo`: as many as the busiest weekday has split duties,
+/// at least `least`, one at least.
+fn split_weeks(todo: &[Vec<&ProDuty>], least: usize) -> usize {
+    (1..DAYS - 1).map(|d| todo[d].len()).max().unwrap_or(0).max(least).max(1).min(MAX_WEEKS)
+}
+
+/// How many weeks "Make the rota automatically" would make a new rota of `kind` with: the duties
+/// of the week no rota has, the reserve drivers on no row.
+pub fn suggest_weeks(c: &Company, kind: RotaKind, week: &Week) -> usize {
+    match kind {
+        RotaKind::Normal => {
+            let todo = todo_of(c, None, week, ordinary);
+            if todo.iter().all(Vec::is_empty) {
+                return 0;
+            }
+            normal_weeks(&todo, (econ_uk::contract_week_hours(c) * 60.0).round() as i32, 0)
+        }
+        RotaKind::Split => {
+            let todo = todo_of(c, None, week, split_duty);
+            if (1..DAYS - 1).all(|d| todo[d].is_empty()) {
+                return 0;
+            }
+            split_weeks(&todo, 0)
+        }
+        RotaKind::Reserve => c.staff.iter().filter(|e| staff::drives(e) && matches!(e.employment, Employment::Reserve(_)) && place_of(c, e.id).is_none()).count().max(1),
+    }
+}
+
+/// The duties of the week no rota has that a rota of `kind` takes: an ordinary rota's whole and
+/// short duties, a split-duty rota's split duties of Monday to Friday (a reserve rota none).
+pub fn left_over(c: &Company, kind: RotaKind, week: &Week) -> usize {
+    match kind {
+        RotaKind::Normal => todo_of(c, None, week, ordinary).iter().map(Vec::len).sum(),
+        RotaKind::Split => split_open(c, week),
+        RotaKind::Reserve => 0,
+    }
+}
+
+/// The split duties of Monday to Friday no rota has: they belong in a split-duty rota.
+pub fn split_open(c: &Company, week: &Week) -> usize {
+    let todo = todo_of(c, None, week, split_duty);
+    (1..DAYS - 1).map(|d| todo[d].len()).sum()
+}
+
+/// The weekday off of each of `n` weeks (1 Monday … 5 Friday) of an ordinary rota: as many on a
+/// weekday as it has weeks to spare (`n` less its duties), spread; of each two weeks - one whose
+/// weekend begins at work, the next whose weekend begins off - the second's on or before the
+/// first's, so that from the first's weekday off over the weekend at work to the second's are at
+/// most six days of work.
+fn weekdays_off(todo: &[Vec<&ProDuty>], n: usize) -> Vec<usize> {
+    let mut off = [0usize; DAYS];
+    let mut picks: Vec<usize> = Vec::with_capacity(n);
+    for _ in 0..n {
+        // (the weekday with the most room left, the later on a tie: a long weekend off)
+        let d = (1..DAYS - 1).max_by_key(|&d| (n as i64 - todo[d].len() as i64 - off[d] as i64, d as i64)).unwrap_or(1);
+        off[d] += 1;
+        picks.push(d);
+    }
+    picks.sort_unstable();
+    let mut out = vec![1usize; n];
+    for j in 0..n / 2 {
+        out[2 * j] = picks[2 * j + 1];
+        out[2 * j + 1] = picks[2 * j];
+    }
+    out
+}
+
+/// The duties of a weekend day given to the weeks `at` at work that day, and a reserve's frame
+/// (`RESERVE_FRAMES`) to each week more than there are duties - so that its weekend stays whole:
+/// the weeks bound on both sides first (a Sunday: by the week before's Saturday and its own
+/// Monday), the latest bound first; each takes the duty that keeps 11 hours of rest on both sides
+/// best, the earliest on a tie - or a frame, when a frame is left and keeps it better.
+fn give_weekend(rows: &mut [Row], minutes: &mut [i32], week: &Week, day: usize, at: &[usize], duties: &[&ProDuty]) {
+    let n = rows.len();
+    let lo_of = |r: usize, rows: &[Row]| -> Option<i32> {
+        let (pr, pd) = if day == 0 { ((r + n - 1) % n, DAYS - 1) } else { (r, day - 1) };
+        times(week, pd, rows[pr].days[pd]).map(|x| x.1 + MIN_REST - 1440)
+    };
+    let hi_of = |r: usize, rows: &[Row]| -> Option<i32> { if day == 0 { times(week, 1, rows[r].days[1]).map(|x| x.0 + 1440 - MIN_REST) } else { None } };
+    let short = |lo: Option<i32>, hi: Option<i32>, from: i32, to: i32| lo.map_or(0, |lo| (lo - from).max(0)) + hi.map_or(0, |hi| (to - hi).max(0));
+    let mut left: Vec<&ProDuty> = duties.to_vec();
+    let mut frames = at.len().saturating_sub(duties.len());
+    let mut order: Vec<usize> = at.to_vec();
+    order.sort_by_key(|&r| {
+        let (lo, hi) = (lo_of(r, rows), hi_of(r, rows));
+        (std::cmp::Reverse(lo.is_some() as u8 + hi.is_some() as u8), std::cmp::Reverse(lo.unwrap_or(i32::MIN / 2)), r)
+    });
+    for r in order {
+        let (lo, hi) = (lo_of(r, rows), hi_of(r, rows));
+        let best = (0..left.len()).min_by_key(|&k| (short(lo, hi, left[k].start, left[k].end), left[k].start, left[k].number));
+        let frame = (frames > 0).then(|| RESERVE_FRAMES.iter().copied().min_by_key(|f| short(lo, hi, f.0, f.1)).unwrap_or(RESERVE_FRAMES[0]));
+        let frame_better = match (best, frame) {
+            (Some(k), Some(f)) => short(lo, hi, f.0, f.1) < short(lo, hi, left[k].start, left[k].end),
+            (None, Some(_)) => true,
+            _ => false,
+        };
+        if let (true, Some((from, to))) = (frame_better, frame) {
+            rows[r].days[day] = Cell::Frame { from, to };
+            minutes[r] += to - from;
+            frames -= 1;
+        } else if let Some(k) = best {
+            let x = left.remove(k);
+            rows[r].days[day] = Cell::Duty { n: x.number };
+            minutes[r] += x.paid;
+        }
+    }
+}
+
+/// The duties of `day` given to the weeks `at` (those at work that day): the week that finished
+/// earliest the day before the earliest duty; on a Sunday each week the duty that keeps the rest
+/// on both sides, the weeks bound on both first. The minutes paid of each week go up by its duty.
+fn give_day(rows: &mut [Row], minutes: &mut [i32], week: &Week, day: usize, at: &[usize], given: &[&ProDuty]) {
+    let n = rows.len();
+    let prev_end = |r: usize, rows: &[Row]| -> Option<i32> {
+        let (pr, pd) = if day == 0 { ((r + n - 1) % n, DAYS - 1) } else { (r, day - 1) };
+        times(week, pd, rows[pr].days[pd]).map(|x| x.1)
+    };
+    let next_start = |r: usize, rows: &[Row]| -> Option<i32> { if day == 0 { times(week, 1, rows[r].days[1]).map(|x| x.0) } else { None } };
+    let mut given: Vec<&ProDuty> = given.to_vec();
+    given.sort_by_key(|x| (x.start, x.number));
+    let mut at: Vec<usize> = at.to_vec();
+    if day != 0 {
+        at.sort_by_key(|&r| (prev_end(r, rows).unwrap_or(i32::MIN / 2), r));
+        for (&r, x) in at.iter().zip(given.iter()) {
+            rows[r].days[day] = Cell::Duty { n: x.number };
+            minutes[r] += x.paid;
+        }
+    } else {
+        at.sort_by_key(|&r| (prev_end(r, rows).is_none() as u8 + next_start(r, rows).is_none() as u8, r));
+        for r in at {
+            let lo = prev_end(r, rows).map(|e| e + MIN_REST - 1440);
+            let hi = next_start(r, rows).map(|s| s + 1440 - MIN_REST);
+            let short = |x: &ProDuty| lo.map_or(0, |lo| (lo - x.start).max(0)) + hi.map_or(0, |hi| (x.end - hi).max(0));
+            let Some(k) = (0..given.len()).min_by_key(|&k| (short(given[k]), k)) else { break };
+            let x = given.remove(k);
+            rows[r].days[day] = Cell::Duty { n: x.number };
+            minutes[r] += x.paid;
+        }
+    }
+}
+
+/// The weeks at work on `day` cut to its duties: more weeks than duties, those with the most hours
+/// so far have the day off too; more duties than weeks, the longest are given, the rest stay "not
+/// in a rota".
+fn fit_day<'a>(at: &mut Vec<usize>, duties: &[&'a ProDuty], minutes: &[i32]) -> Vec<&'a ProDuty> {
+    if at.len() > duties.len() {
+        at.sort_by_key(|&r| (std::cmp::Reverse(minutes[r]), r));
+        at.drain(..at.len() - duties.len());
+    }
+    let mut given: Vec<&ProDuty> = duties.to_vec();
+    if given.len() > at.len() {
+        given.sort_by_key(|x| std::cmp::Reverse(x.paid));
+        given.truncate(at.len());
+    }
+    given
+}
+
+fn auto_normal(c: &Company, k: usize, t: &Turnus, week: &Week) -> Result<Vec<Row>, &'static str> {
+    let todo = todo_of(c, Some(k), week, ordinary);
+    if todo.iter().all(Vec::is_empty) {
         return Err(NOTHING_TO_PLACE);
     }
     let target = (target_hours(c, t) * 60.0).round() as i32;
-    let paid: i64 = todo.iter().flatten().map(|x| x.paid as i64).sum();
-    // (as many rows as the hours need over the cycle - the cycle's average is what counts, a
-    // row's week may be a day shorter -, at most 5 days of work a row with two days off
-    // together, and a row at work for each duty of the busiest day; a day with more rows at work
-    // than duties gives the extra rows a day off more)
-    let busiest = todo.iter().map(Vec::len).max().unwrap_or(0);
-    let least = busiest.max(count.div_ceil(5)).max((paid as f64 / target.max(60) as f64).round() as usize).max(1);
-    // (a row more while the days off leave a day fewer rows at work than it has duties: runs of
-    // days off together do not always fit the fewest rows)
-    let (mut n, mut off) = (least, Vec::new());
-    for rows in least..least + DAYS {
-        let need: [usize; DAYS] = std::array::from_fn(|d| todo[d].len().min(rows));
-        let o = days_off(&vec![5; rows], &need);
-        let fits = (0..DAYS).all(|d| o.iter().filter(|r| !r[d]).count() >= todo[d].len());
-        (n, off) = (rows, o);
-        if fits {
-            break;
+    let n = normal_weeks(&todo, target, t.rows.len());
+    // the days off: week 1, 3, 5 ... begin their weekend at work (their Saturday and the next
+    // week's Sunday), week 2, 4, 6 ... off - so each week has one weekend day off -, and a weekday
+    // off besides
+    let x = weekdays_off(&todo, n);
+    let mut rows: Vec<Row> = vec![Row::default(); n];
+    let mut off = vec![[false; DAYS]; n];
+    for r in 0..n {
+        off[r][0] = r % 2 == 0;
+        off[r][DAYS - 1] = r % 2 == 1;
+        off[r][x[r]] = true;
+    }
+    let mut minutes = vec![0i32; n];
+    // Monday to Saturday first, each by the day before; Sunday last, between the week before's
+    // Saturday and its own Monday
+    for d in (1..DAYS).chain([0]) {
+        let mut at: Vec<usize> = (0..n).filter(|&r| !off[r][d]).collect();
+        if d == 0 || d == DAYS - 1 {
+            // (a weekend: every week at work keeps it - a duty, or a reserve's frame)
+            let mut duties = todo[d].clone();
+            if duties.len() > at.len() {
+                duties.sort_by_key(|x| std::cmp::Reverse(x.paid));
+                duties.truncate(at.len());
+            }
+            give_weekend(&mut rows, &mut minutes, week, d, &at, &duties);
+        } else {
+            let given = fit_day(&mut at, &todo[d], &minutes);
+            give_day(&mut rows, &mut minutes, week, d, &at, &given);
         }
     }
+    even_out(&mut rows, week, target);
+    Ok(rows)
+}
+
+fn auto_split(c: &Company, k: usize, t: &Turnus, week: &Week) -> Result<Vec<Row>, &'static str> {
+    let mut todo = todo_of(c, Some(k), week, split_duty);
+    // (split duties do not run at the weekend: a split-duty rota's weekends are off)
+    todo[0].clear();
+    todo[DAYS - 1].clear();
+    if todo.iter().all(Vec::is_empty) {
+        return Err(NO_SPLIT);
+    }
+    let target = (target_hours(c, t) * 60.0).round() as i32;
+    let n = split_weeks(&todo, t.rows.len());
     let mut rows: Vec<Row> = vec![Row::default(); n];
     let mut minutes = vec![0i32; n];
-    // (Monday to Saturday first, each by the day before; Sunday last, between the row before's
-    // Saturday and its own Monday)
-    for d in (1..DAYS).chain([0]) {
-        // when a row finished the day before (none: early), and when it begins the day after
-        let prev_end = |r: usize, rows: &[Row]| -> Option<i32> {
-            let (pr, pd) = if d == 0 { ((r + n - 1) % n, DAYS - 1) } else { (r, d - 1) };
-            times(week, pd, rows[pr].days[pd]).map(|x| x.1)
-        };
-        let next_start = |r: usize, rows: &[Row]| -> Option<i32> { if d == 0 { times(week, 1, rows[r].days[1]).map(|x| x.0) } else { None } };
-        let mut at: Vec<usize> = (0..n).filter(|&r| !off[r][d]).collect();
-        let duties = &todo[d];
-        // (more rows than duties: those with the most hours so far have the day off too)
-        if at.len() > duties.len() {
-            at.sort_by_key(|&r| (std::cmp::Reverse(minutes[r]), r));
-            at.drain(..at.len() - duties.len());
-        }
-        // (more duties than rows: the longest are given, the rest stay "not in a rota")
-        let mut given: Vec<&ProDuty> = duties.clone();
-        if given.len() > at.len() {
-            given.sort_by_key(|x| std::cmp::Reverse(x.paid));
-            given.truncate(at.len());
-        }
-        given.sort_by_key(|x| (x.start, x.number));
-        if d != 0 {
-            at.sort_by_key(|&r| (prev_end(r, &rows).unwrap_or(i32::MIN / 2), r));
-            for (&r, x) in at.iter().zip(given.iter()) {
-                rows[r].days[d] = Cell::Duty { n: x.number };
-                minutes[r] += x.paid;
-            }
-        } else {
-            // each row the duty that keeps the rest on both sides, the rows bound on both first
-            at.sort_by_key(|&r| (prev_end(r, &rows).is_none() as u8 + next_start(r, &rows).is_none() as u8, r));
-            for r in at {
-                let lo = prev_end(r, &rows).map(|e| e + MIN_REST - 1440);
-                let hi = next_start(r, &rows).map(|s| s + 1440 - MIN_REST);
-                let short = |x: &ProDuty| lo.map_or(0, |lo| (lo - x.start).max(0)) + hi.map_or(0, |hi| (x.end - hi).max(0));
-                let Some(k) = (0..given.len()).min_by_key(|&k| (short(given[k]), k)) else { break };
-                let x = given.remove(k);
-                rows[r].days[d] = Cell::Duty { n: x.number };
-                minutes[r] += x.paid;
-            }
-        }
+    for d in 1..DAYS - 1 {
+        let mut at: Vec<usize> = (0..n).collect();
+        let given = fit_day(&mut at, &todo[d], &minutes);
+        give_day(&mut rows, &mut minutes, week, d, &at, &given);
     }
-    // swaps between two rows of a day - or of two or three days running, both rows at work on
-    // the same of them - where the rota costs less so
+    even_out(&mut rows, week, target);
+    Ok(rows)
+}
+
+/// Swaps between two weeks of a day - or of two or three days running, both weeks at work on the
+/// same of them - where the rota costs less so (`local_cost`: the rest, the hours).
+fn even_out(rows: &mut [Row], week: &Week, target: i32) {
+    let n = rows.len();
     for _ in 0..6 {
         let mut better = false;
         for k in 1..=3usize {
@@ -880,13 +1243,13 @@ fn auto_duties(c: &Company, k: usize, t: &Turnus, week: &Week) -> Result<Vec<Row
                         if block.clone().any(|x| rows[a].days[x].works() != rows[b].days[x].works()) || block.clone().all(|x| rows[a].days[x] == rows[b].days[x]) || !block.clone().any(|x| rows[a].days[x].works()) {
                             continue;
                         }
-                        let before = local_cost(&rows, week, target, block.clone(), a, b);
+                        let before = local_cost(rows, week, target, block.clone(), a, b);
                         for x in block.clone() {
                             let (p, q) = (rows[a].days[x], rows[b].days[x]);
                             rows[a].days[x] = q;
                             rows[b].days[x] = p;
                         }
-                        if local_cost(&rows, week, target, block.clone(), a, b) < before {
+                        if local_cost(rows, week, target, block.clone(), a, b) < before {
                             better = true;
                         } else {
                             for x in block {
@@ -903,7 +1266,6 @@ fn auto_duties(c: &Company, k: usize, t: &Turnus, week: &Week) -> Result<Vec<Row
             break;
         }
     }
-    Ok(rows)
 }
 
 /// The cost of the rests about days `days` of rows `a` and `b` and of the two rows' hours: each
@@ -1110,6 +1472,9 @@ pub struct PrintWords {
 /// Every English text of the rota's core (for the translations' check).
 pub fn texts() -> Vec<&'static str> {
     let mut v = vec![M_REST, M_IN_A_ROW, M_TWO_OFF, M_OVER, M_UNDER, M_CONTRACT, M_AVERAGE, M_WEEKEND, M_MISSING, M_TWICE, NO_ROTA, NO_ROW, NOT_THAT_DAY, TAKEN, NOT_A_DRIVER, NO_HOURLY, RESERVES_ONLY, NO_RESERVES, NOTHING_TO_PLACE];
+    // (after the player's comments: the weekends, the split duties)
+    v.extend([M_HALF_WEEKEND, M_TWO_FREE, M_TWO_WORKED, M_ODD_WEEKS, M_SPLIT_HERE, M_NOT_SPLIT, M_SPLIT_WEEKEND, WEEKEND_OFF, ONLY_SPLIT, SPLIT_ELSEWHERE, NO_SPLIT]);
+    v.extend(RotaKind::LABELS);
     v.extend(NOTES.iter().map(|n| n.1));
     v
 }

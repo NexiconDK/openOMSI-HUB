@@ -365,6 +365,14 @@ impl MainCfg {
             }
             text.push_str(super::live_pay::MORE_LIVE_CFG);
         }
+        // (4 November 2026) the notice of a change of a driver's employment
+        if !text.lines().any(|l| l.trim_start().starts_with("employment_notice_days")) {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).open(&path) {
+                let _ = f.write_all(super::live_pay::NOTICE_CFG.as_bytes());
+            }
+            text.push_str(super::live_pay::NOTICE_CFG);
+        }
         // (3 November 2026) the tenders' rules
         if !text.lines().any(|l| l.trim_start().starts_with("tender_low_share")) {
             use std::io::Write;

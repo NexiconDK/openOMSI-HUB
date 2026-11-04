@@ -169,7 +169,8 @@ function HireDialog({ h, a, onClose }) {
   </${Dialog}>`;
 }
 
-/** A driver's employment changed (`employment`): after a month's notice. */
+/** A driver's employment changed (`employment`): from the day the page's note says (the next
+ * Sunday, the server's notice, the next day from hourly paid up). */
 function EmploymentDialog({ p, onClose }) {
   const x = p.employment;
   const [value, setValue] = useState(() => kindValue(x.picker));

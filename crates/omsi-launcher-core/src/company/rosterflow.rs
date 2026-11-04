@@ -2701,6 +2701,13 @@ pub fn uncuttable(c: &Company, b: &Board) -> usize {
 
 /// Optimise with the vehicles (`vehicles`) and the duties (`duties`) made anew or kept.
 pub fn optimise_with(c: &Company, lines: &[LineInfo], date: &str, vehicles: bool, duties: bool) -> (Vec<LineLayout>, Vec<JoinedDuty>) {
+    optimise_splits(c, lines, date, vehicles, duties, true)
+}
+
+/// `optimise_with`, `splits` false: no duty made with a split's gap between two of its pieces
+/// (RosterFlow Pro's split duty, `pro_duties::SPLIT_GAP`) - split duties do not run at the
+/// weekend (NexiconDK, 4 November 2026).
+pub fn optimise_splits(c: &Company, lines: &[LineInfo], date: &str, vehicles: bool, duties: bool, splits: bool) -> (Vec<LineLayout>, Vec<JoinedDuty>) {
     let wd = super::plandays::slot_of(c, date);
     let mut p = c.planning.flow.prefs.clone();
     p.optimise_vehicles = vehicles;
@@ -2789,7 +2796,7 @@ pub fn optimise_with(c: &Company, lines: &[LineInfo], date: &str, vehicles: bool
             let gap = x.from - last.to;
             // (the way as the relief points have it)
             let travel = travel_between(c, &tours, &last.till, &x.at, None).1;
-            if gap < travel + staff::REST {
+            if gap < travel + staff::REST || (!splits && gap >= super::pro_duties::SPLIT_GAP) {
                 continue;
             }
             let mut ps: Vec<&Cut> = g.iter().map(|&k| &cuts[k]).collect();

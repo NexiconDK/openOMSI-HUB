@@ -1725,6 +1725,18 @@ Tested: `live_more::tests` (`urgent_tasks_for_players_only`, `the_driver_of_the_
 `a_fixed_duty`, `supplements_for_unsocial_hours`, `the_boss_drives`, `the_live_dispatcher`,
 `the_agency_fallback_by_the_server_and_by_the_company`).
 
+### The notice of a change of employment (4 November 2026, RosterFlow Pro)
+
+`employment_notice_days` (under "Driving yourself" in the admin panel; default 2, 0: from the next
+company day) is how many days a change of a driver's employment takes on the server - full time,
+part time, reserve with a frame, hourly paid (`live_pay::LiveCfg::notice_days`,
+`staff::notice_day`; added to an older `company-server.cfg` by `live_pay::NOTICE_CFG`). From
+hourly paid up to part or full time is always the next company day. Off the server a change applies
+from the next Sunday. The Staff page's hiring window starts on "Hourly paid" everywhere
+(`staff::HIRED_AS`; the game's own hiring stays full time). Tested:
+`employment_tests::on_the_server_the_admin_sets_the_notice`. The rest is in
+[ROSTERFLOW_PRO.md](ROSTERFLOW_PRO.md).
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

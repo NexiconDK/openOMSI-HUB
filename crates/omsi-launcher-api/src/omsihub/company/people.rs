@@ -139,10 +139,11 @@ fn employment_of(args: &Value) -> Option<Employment> {
 }
 
 /// The choice of employment as the hire and a change show it (`KindPicker`): the four kinds
-/// with what each means, the one now (`now`), a part-time week and a frame to start from.
+/// with what each means, the one now (`now`; a hire: hourly paid - `staff::HIRED_AS`), a
+/// part-time week and a frame to start from.
 fn kinds_json(c: &Company, now: Option<&Employment>) -> Value {
     let full = co::econ_uk::contract_week_hours(c);
-    let cur = now.copied().unwrap_or_default();
+    let cur = now.copied().unwrap_or(staff::HIRED_AS);
     let f = cur.frame().unwrap_or_default();
     let hours = match cur {
         Employment::PartTime { hours } => hours,
@@ -340,8 +341,23 @@ fn person(c: &Company, plan: Option<&Plan>, e: &Employee) -> Value {
     // (NexiconDK, 4 November 2026: how a driver is employed, and a change given notice)
     let employment = staff::drives(e).then(|| {
         let next = e.employment_next.as_ref().map(|x| trf("From %{date}: %{what}", &[("date", &day_label(&x.from)), ("what", &employment_text(c, &x.to))]));
+        // (after the player's comments: the server's notice, the next Sunday elsewhere - and from
+        // hourly paid to part or full time the next day: `staff::employment_from`)
         let at_once = e.hired == c.date;
-        let notice = if at_once { tr("Hired today: a change applies at once.") } else { trf("A change takes a month's notice: it applies from %{date}.", &[("date", &day_label(&co::dates::add(&c.date, staff::EMPLOYMENT_NOTICE_DAYS)))]) };
+        let notice = if at_once {
+            tr("Hired today: a change applies at once.")
+        } else {
+            let date = day_label(&staff::notice_day(c));
+            let mut t = if c.online.on_server {
+                trf("A change takes %{n} days' notice on this server: it applies from %{date}.", &[("n", &staff::server_notice_days(c).to_string()), ("date", &date)])
+            } else {
+                trf("A change applies from the next Sunday, when the bus company's week begins: from %{date}.", &[("date", &date)])
+            };
+            if matches!(e.employment, Employment::Hourly) {
+                t = format!("{t} {}", trf("From hourly paid to part or full time: from %{date}.", &[("date", &day_label(&co::dates::add(&c.date, 1)))]));
+            }
+            t
+        };
         json!({ "text": employment_text(c, &e.employment), "next": next, "change": e.notice_until.is_none().then(|| tr("Change the employment")), "title": trf("The employment of %{name}", &[("name", &e.name)]), "notice": notice, "picker": kinds_json(c, Some(e.employment_next.as_ref().map_or(&e.employment, |x| &x.to))), "ok": tr("Change"), "cancel": tr("Cancel") })
     });
     if staff::drives(e) {
@@ -686,8 +702,9 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
         "hire" => {
             let no = args.get("no").and_then(Value::as_u64).unwrap_or(0) as u32;
             let Some(a) = staff::market(&c).into_iter().find(|a| a.no == no) else { return Some(Ok(json!({}))) };
-            // (NexiconDK, 4 November 2026: a driver as the kind chosen - full time when none)
-            let employment = employment_of(args).unwrap_or_default();
+            // (NexiconDK, 4 November 2026: a driver as the kind chosen - hourly paid when none,
+            // `staff::HIRED_AS`)
+            let employment = employment_of(args).unwrap_or(staff::HIRED_AS);
             match apply(s, |c| staff::hire_as(c, &a, employment)) {
                 Ok(_) => {
                     let t = trf("%{name} works for %{company} from today.", &[("name", &a.name), ("company", &c.name)]);
@@ -697,8 +714,9 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
                 Err(p) => Ok(json!({ "popup": p })),
             }
         }
-        // (NexiconDK, 4 November 2026) A driver's employment changed: after a month's notice (at
-        // once on the day they were hired) - `staff::change_employment`.
+        // (NexiconDK, 4 November 2026) A driver's employment changed: from the next Sunday, after
+        // the server's notice on Bus Company Online, the next day from hourly paid up (at once on
+        // the day they were hired) - `staff::change_employment`.
         "employment" => {
             let Some(to) = employment_of(args) else { return Some(Ok(json!({}))) };
             let name = c.employee(id).map(|e| e.name.clone()).unwrap_or_default();
@@ -848,5 +866,33 @@ mod tests {
         super::super::words::set_language("en");
         assert_eq!(doing(&c, None, &c.staff[0]).0, "Free today");
         assert_eq!(span(4 * 60 + 35, 12 * 60 + 40), "04:35 - 12:40");
+    }
+
+    #[test]
+    fn the_hiring_window_begins_on_hourly_paid_and_a_driver_s_page_says_when_a_change_applies() {
+        super::super::words::set_language("en");
+        // (4 March 2024 is a Monday)
+        let mut c = found(&Founding { name: "Ansat".into(), game_mode: GameMode::Normal, date: "2024-03-04".into(), ..Default::default() }, "Luc");
+        // the hiring window: hourly paid chosen to start from
+        let k = kinds_json(&c, None);
+        assert_eq!(k["kind"], json!(Employment::Hourly.index()));
+        assert_eq!(k["kinds"][Employment::Hourly.index()], "Hourly paid", "{k}");
+        // a driver's page: a change from the next Sunday (on Friday 8 March: Sunday 10 March)
+        let a = staff::applicants_of(&c, Role::Driver)[0].clone();
+        let id = staff::hire(&mut c, &a).unwrap();
+        c.date = "2024-03-08".into();
+        let e = c.employee(id).unwrap().clone();
+        let p = person(&c, None, &e);
+        let notice = p["employment"]["notice"].as_str().unwrap().to_string();
+        assert!(notice.contains("next Sunday") && notice.contains(&day_label("2024-03-10")), "{notice}");
+        // hourly paid: up to part or full time the next day
+        c.staff.iter_mut().find(|x| x.id == id).unwrap().employment = Employment::Hourly;
+        let e = c.employee(id).unwrap().clone();
+        let notice = person(&c, None, &e)["employment"]["notice"].as_str().unwrap().to_string();
+        assert!(notice.contains(&day_label("2024-03-09")), "{notice}");
+        // on the server: the admin's days
+        c.online.on_server = true;
+        let notice = person(&c, None, &e)["employment"]["notice"].as_str().unwrap().to_string();
+        assert!(notice.contains("2 days") && notice.contains(&day_label("2024-03-10")), "{notice}");
     }
 }

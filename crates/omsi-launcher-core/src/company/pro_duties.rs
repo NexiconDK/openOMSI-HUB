@@ -443,10 +443,13 @@ pub fn tidy_pool(c: &mut Company, wd: u8, tours: &[TourOfDay]) {
 }
 
 /// "Make duties automatically": RosterFlow's Optimise of the duties alone (the blocks kept), the
-/// pool emptied. Returns how many duties the day has.
+/// pool emptied - on a Saturday or a Sunday without split duties. Returns how many duties the
+/// day has.
 pub fn auto(c: &mut Company, lines: &[LineInfo], date: &str) -> usize {
     let wd = super::plandays::slot_of(c, date);
-    let (layouts, joined) = rf::optimise_with(c, lines, date, false, true);
+    // (split duties do not run at the weekend: a Saturday's and a Sunday's made without, NexiconDK
+    // 4 November 2026)
+    let (layouts, joined) = rf::optimise_splits(c, lines, date, false, true, day_type(c, wd) == 0);
     rf::apply(c, wd, layouts, joined);
     clear_pool(c, wd);
     rf::board(c, lines, date).shaped.iter().filter(|s| s.spare.is_none()).count()
@@ -457,6 +460,7 @@ pub fn auto(c: &mut Company, lines: &[LineInfo], date: &str) -> usize {
 pub const M_SPREAD: &str = "A split duty spread over %{time}, at most %{max}";
 pub const M_CHANGE: &str = "%{have} to change from %{from} to %{to}, %{need} needed";
 pub const M_CHANGE_SAME: &str = "%{have} to change buses at %{stop}, %{need} needed";
+pub const M_WEEKEND_SPLIT: &str = "Split duties do not run at the weekend";
 
 /// A mark of a duty: what it breaks, red (`hard`) or yellow.
 #[derive(Clone, Debug, PartialEq)]
@@ -474,12 +478,17 @@ fn span_trips<'a>(tours: &'a [TourOfDay], sp: &rf::Span) -> &'a [PlannedTrip] {
 }
 
 /// What RosterFlow Pro marks on duty `row` of the board besides RosterFlow's own issues: a split
-/// duty spread over `SPLIT_SPREAD`, and too little time to change between two of its pieces.
+/// duty spread over `SPLIT_SPREAD`, a split duty at the weekend (yellow), and too little time to
+/// change between two of its pieces.
 pub fn marks(c: &Company, board: &Board, row: usize) -> Vec<Mark> {
     let Some(s) = board.shaped.get(row) else { return Vec::new() };
     let mut out = Vec::new();
     if kind_of(s) == Kind::Split && s.spread() > SPLIT_SPREAD {
         out.push(Mark { hard: true, text: M_SPREAD, args: vec![("time", rf::hm(s.spread())), ("max", rf::hm(SPLIT_SPREAD))] });
+    }
+    // (a split duty on a Saturday or a Sunday: they run Monday to Friday, in a split-duty rota)
+    if kind_of(s) == Kind::Split && day_type(c, board.weekday) != 0 {
+        out.push(Mark { hard: false, text: M_WEEKEND_SPLIT, args: Vec::new() });
     }
     let change = c.planning.flow.prefs.change;
     let mut spans = s.spans.clone();
@@ -509,7 +518,7 @@ pub fn marks(c: &Company, board: &Board, row: usize) -> Vec<Mark> {
 
 /// Every English text of RosterFlow Pro's duties (for the translations' check).
 pub fn texts() -> Vec<&'static str> {
-    let mut v = vec![IN_POOL, NOT_IN_POOL, OVERLAP, NO_PIECE, M_SPREAD, M_CHANGE, M_CHANGE_SAME];
+    let mut v = vec![IN_POOL, NOT_IN_POOL, OVERLAP, NO_PIECE, M_SPREAD, M_CHANGE, M_CHANGE_SAME, M_WEEKEND_SPLIT];
     v.extend(Kind::LABELS);
     v
 }

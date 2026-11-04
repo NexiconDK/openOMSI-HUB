@@ -38,7 +38,12 @@ fn back_and_forth(tours: &[(&str, i32, i32)]) -> LineInfo {
 
 /// A company on 4 March 2024 (a Monday) planning with RosterFlow Pro.
 fn company() -> Company {
-    let mut c = found(&Founding { name: "Pro".into(), date: "2024-03-04".into(), ..Default::default() }, "Luc");
+    company_on("2024-03-04")
+}
+
+/// The company of `company` on `date`.
+fn company_on(date: &str) -> Company {
+    let mut c = found(&Founding { name: "Pro".into(), date: date.into(), ..Default::default() }, "Luc");
     c.game_mode = super::super::GameMode::Normal;
     c.lines.push(CompanyLine { name: "Linie5".into(), number: "5".into(), numbers: vec!["5".into()], added: c.date.clone(), service_from: Some(0), ..Default::default() });
     assert_eq!(autopilot::set_planner(&mut c, Planner::Pro), Planner::Pro);
@@ -272,6 +277,36 @@ fn an_older_file_loads_as_it_was() {
     let b = board(&c, &l, &c.date.clone());
     assert!(b.shaped.iter().all(|s| s.number.is_none()));
     assert!(!on(&c));
+}
+
+#[test]
+fn split_duties_are_not_made_at_the_weekend_and_one_made_there_is_marked() {
+    // a bus in the morning and one in the afternoon: on a weekday "Make duties automatically" may
+    // join them into one split duty; on a Saturday it never does
+    let l = vec![back_and_forth(&[("1", 360, 4), ("2", 840, 4)])];
+    let mut mon = company();
+    auto(&mut mon, &l, "2024-03-04");
+    let b = board(&mon, &l, "2024-03-04");
+    assert!(b.shaped.iter().any(|s| kind_of(s) == Kind::Split), "a weekday: the two halves are one split duty");
+    let mut sat = company_on("2024-03-09");
+    assert_eq!(day_type(&sat, super::super::plandays::slot_of(&sat, "2024-03-09")), 1);
+    auto(&mut sat, &l, "2024-03-09");
+    let b = board(&sat, &l, "2024-03-09");
+    assert!(!b.shaped.is_empty());
+    assert!(b.shaped.iter().all(|s| kind_of(s) != Kind::Split), "a Saturday: no split duty");
+    // a split duty made by hand on a Saturday: marked yellow; on a Monday not
+    for (date, weekend) in [("2024-03-09", true), ("2024-03-04", false)] {
+        let mut c = company_on(date);
+        let b = board(&c, &lines(), date);
+        let (one, two) = (block(&b, "1"), block(&b, "2"));
+        edit(&mut c, |c, wd, tours| cut_to_pool(c, wd, tours, one, 4)).unwrap();
+        edit(&mut c, |c, wd, tours| cut_to_pool(c, wd, tours, two, 2)).unwrap();
+        let b = edit(&mut c, |c, wd, tours| add_to_duty(c, wd, tours, (one, 1), (two, 0))).unwrap();
+        let row = row_of(&b, two, 0);
+        assert_eq!(kind_of(&b.shaped[row]), Kind::Split);
+        let m = marks(&c, &b, row);
+        assert_eq!(m.iter().any(|x| x.text == M_WEEKEND_SPLIT && !x.hard), weekend, "{date}: {m:?}");
+    }
 }
 
 #[test]

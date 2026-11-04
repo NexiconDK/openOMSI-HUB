@@ -320,27 +320,49 @@ fn a_reserve_given_a_duty_from_noon_the_day_before_is_told() {
 }
 
 #[test]
-fn a_change_of_employment_takes_a_months_notice() {
+fn a_change_of_employment_applies_from_the_next_sunday() {
+    // (4 March 2024 is a Monday)
     let mut c = company("2024-03-04", 0, 2);
     let id = c.staff[0].id;
     // hired today: at once
     assert_eq!(staff::change_employment(&mut c, id, Employment::Hourly), Ok(None));
     assert_eq!(c.staff[0].employment, Employment::Hourly);
-    // later: a month's notice, the old one until then
+    // later, from hourly paid up to part or full time: from the next company day
     c.date = dates::add(&c.date, 3);
-    let from = staff::change_employment(&mut c, id, Employment::Reserve(early())).unwrap().unwrap();
-    assert_eq!(from, dates::add(&c.date, staff::EMPLOYMENT_NOTICE_DAYS));
+    let from = staff::change_employment(&mut c, id, Employment::FullTime).unwrap().unwrap();
+    assert_eq!(from, dates::add(&c.date, 1));
     assert_eq!(c.staff[0].employment, Employment::Hourly);
+    c.date = from.clone();
+    assert_eq!(staff::employment_due(&mut c), 1);
+    assert_eq!(c.staff[0].employment, Employment::FullTime);
+    // any other change: from the next Sunday - the old one until then (Friday 8 March: Sunday 10)
+    assert_eq!(c.date, "2024-03-08");
+    let from = staff::change_employment(&mut c, id, Employment::Reserve(early())).unwrap().unwrap();
+    assert_eq!(from, "2024-03-10");
+    assert_eq!(c.staff[0].employment, Employment::FullTime);
     c.date = dates::add(&from, -1);
     assert_eq!(staff::employment_due(&mut c), 0);
     c.date = from.clone();
     assert_eq!(staff::employment_due(&mut c), 1);
     assert_eq!((c.staff[0].employment, c.staff[0].employment_next.clone()), (Employment::Reserve(early()), None));
+    // made on a Sunday: the Sunday after; on a Saturday: the next day, a Sunday
+    let from = staff::change_employment(&mut c, id, Employment::PartTime { hours: 25.0 }).unwrap().unwrap();
+    assert_eq!(from, "2024-03-17");
+    c.date = "2024-03-16".into();
+    assert_eq!(staff::change_employment(&mut c, id, Employment::PartTime { hours: 25.0 }), Ok(Some("2024-03-17".into())));
+    // down from full time to hourly paid is no upgrade: the next Sunday too
+    assert!(!staff::is_upgrade(&Employment::FullTime, &Employment::Hourly) && staff::is_upgrade(&Employment::Hourly, &Employment::PartTime { hours: 20.0 }));
+    assert!(!staff::is_upgrade(&Employment::Hourly, &Employment::Reserve(early())));
     // the one they have takes a change back
     staff::change_employment(&mut c, id, Employment::FullTime).unwrap();
     assert!(c.staff[0].employment_next.is_some());
     assert_eq!(staff::change_employment(&mut c, id, Employment::Reserve(early())), Ok(None));
     assert!(c.staff[0].employment_next.is_none());
+    // a change given a month's notice in an older file still applies on its day
+    c.staff[0].employment_next = Some(EmploymentChange { to: Employment::Hourly, from: dates::add(&c.date, staff::EMPLOYMENT_NOTICE_DAYS) });
+    c.date = dates::add(&c.date, staff::EMPLOYMENT_NOTICE_DAYS);
+    assert_eq!(staff::employment_due(&mut c), 1);
+    assert_eq!(c.staff[0].employment, Employment::Hourly);
     // only a driver's
     c.staff[1].role = Role::Mechanic;
     let mechanic = c.staff[1].id;
@@ -349,4 +371,53 @@ fn a_change_of_employment_takes_a_months_notice() {
     let a = applicants(&c).into_iter().next().unwrap();
     let new = staff::hire_as(&mut c, &a, Employment::PartTime { hours: 20.0 }).unwrap();
     assert_eq!(c.employee(new).unwrap().employment, Employment::PartTime { hours: 20.0 });
+}
+
+#[test]
+fn on_the_server_the_admin_sets_the_notice() {
+    let mut c = company("2024-03-04", 0, 1);
+    let id = c.staff[0].id;
+    c.date = dates::add(&c.date, 1);
+    c.online.on_server = true;
+    // none read: the default, 2 days
+    assert_eq!(staff::change_employment(&mut c, id, Employment::Hourly), Ok(Some(dates::add(&c.date, staff::SERVER_NOTICE_DAYS))));
+    // the admin's: 5 days; 0: the next company day
+    let mut kv = std::collections::HashMap::new();
+    kv.insert("employment_notice_days".to_string(), "5".to_string());
+    c.online.live = Some(crate::company::live_pay::LiveCfg::of_keys(&kv));
+    assert_eq!(staff::change_employment(&mut c, id, Employment::Hourly), Ok(Some(dates::add(&c.date, 5))));
+    kv.insert("employment_notice_days".to_string(), "0".to_string());
+    c.online.live = Some(crate::company::live_pay::LiveCfg::of_keys(&kv));
+    assert_eq!(staff::change_employment(&mut c, id, Employment::Hourly), Ok(Some(dates::add(&c.date, 1))));
+    assert_eq!(staff::server_notice_days(&c), 0);
+    // from hourly paid up: the next day, whatever the admin set
+    kv.insert("employment_notice_days".to_string(), "9".to_string());
+    c.online.live = Some(crate::company::live_pay::LiveCfg::of_keys(&kv));
+    c.staff[0].employment = Employment::Hourly;
+    c.staff[0].employment_next = None;
+    assert_eq!(staff::change_employment(&mut c, id, Employment::PartTime { hours: 30.0 }), Ok(Some(dates::add(&c.date, 1))));
+    assert_eq!(staff::change_employment(&mut c, id, Employment::Reserve(early())), Ok(Some(dates::add(&c.date, 9))));
+    // the server's settings: the key, and the part added to an older file
+    assert!(crate::company::live_pay::NOTICE_CFG.contains("employment_notice_days = 2"));
+    assert_eq!(crate::company::live_pay::LiveCfg::default().notice_days, staff::SERVER_NOTICE_DAYS);
+}
+
+#[test]
+fn the_player_hires_hourly_paid_and_the_game_full_time() {
+    // the hiring window's choice to start from: hourly paid
+    assert_eq!(staff::HIRED_AS, Employment::Hourly);
+    let mut c = company("2024-03-04", 0, 0);
+    let a = applicants(&c).into_iter().find(|a| a.role == Role::Driver).unwrap();
+    let id = staff::hire_as(&mut c, &a, staff::HIRED_AS).unwrap();
+    assert_eq!(c.employee(id).unwrap().employment, Employment::Hourly);
+    // the game's own hiring (the autopilot, an AI company): full time as before
+    let b = applicants(&c).into_iter().find(|b| b.role == Role::Driver && b.no != a.no).unwrap();
+    let id = hire(&mut c, &b).unwrap();
+    assert_eq!(c.employee(id).unwrap().employment, Employment::FullTime);
+    c.cash += 1_000_000_00;
+    c.taken = Default::default();
+    if let Some(name) = staff::hire_best(&mut c, Role::Driver) {
+        let e = c.staff.iter().find(|e| e.name == name).unwrap();
+        assert_eq!(e.employment, Employment::FullTime);
+    }
 }

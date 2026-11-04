@@ -1602,9 +1602,61 @@ pub fn contract_hours(c: &Company, e: &Employee) -> Option<f64> {
     e.employment.week_hours(econ_uk::contract_week_hours(c))
 }
 
-/// (NexiconDK, 4 November 2026) A change of a driver's employment takes a month's notice
-/// (`change_employment`): this many days.
+/// (NexiconDK, 4 November 2026) A change of a driver's employment once took a month's notice:
+/// this many days. A change given notice then, in an older file, still applies on its day. Now
+/// the notice is `employment_from`'s.
 pub const EMPLOYMENT_NOTICE_DAYS: i64 = 30;
+
+/// (NexiconDK, 4 November 2026, after the player's comments) The kind a driver the player hires
+/// is employed as unless he chooses another in the hiring window: hourly paid. The game's own
+/// hiring (`hire`, `hire_best`: the autopilot, an AI company) stays full time.
+pub const HIRED_AS: Employment = Employment::Hourly;
+
+/// (NexiconDK, 4 November 2026) The notice of a change of employment on a server of Bus Company
+/// Online when its settings name none (`employment_notice_days`, `live_pay::LiveCfg`).
+pub const SERVER_NOTICE_DAYS: i64 = 2;
+
+/// Whether a change from `from` to `to` is a better contract the driver gets at once: from
+/// hourly paid to part or full time.
+pub fn is_upgrade(from: &Employment, to: &Employment) -> bool {
+    matches!(from, Employment::Hourly) && matches!(to, Employment::PartTime { .. } | Employment::FullTime)
+}
+
+/// (NexiconDK, 4 November 2026, after the player's comments) The day a change of driver `e`'s
+/// employment to `to` made today applies from (None: at once - the day they were hired):
+///
+/// * from hourly paid to part or full time: from the next company day, everywhere;
+/// * on a server of Bus Company Online: after the notice its admin set (`employment_notice_days`
+///   of its settings, `SERVER_NOTICE_DAYS` when none; 0: from the next company day);
+/// * anywhere else: from the next Sunday, the start of the bus company's week (a change made on a
+///   Sunday: the Sunday after).
+pub fn employment_from(c: &Company, e: &Employee, to: &Employment) -> Option<String> {
+    let today = c.date.as_str();
+    if e.hired == today {
+        return None;
+    }
+    if is_upgrade(&e.employment, to) {
+        return Some(dates::add(today, 1));
+    }
+    Some(notice_day(c))
+}
+
+/// The day a change of employment made today that is not an upgrade applies from
+/// (`employment_from`).
+pub fn notice_day(c: &Company) -> String {
+    let today = c.date.as_str();
+    if c.online.on_server {
+        // (0: from the next company day - a change applies as a day begins)
+        let days = server_notice_days(c);
+        return dates::add(today, days.max(1));
+    }
+    dates::add(&super::pro_turnus::sunday_of(today), 7)
+}
+
+/// The notice in days a server of Bus Company Online's admin set (`employment_notice_days`).
+pub fn server_notice_days(c: &Company) -> i64 {
+    c.online.live.as_ref().map_or(SERVER_NOTICE_DAYS, |l| l.notice_days).max(0)
+}
 
 /// The fewest hours of a part-time week.
 pub const PART_TIME_MIN: f64 = 8.0;
@@ -1622,14 +1674,13 @@ pub fn sound_employment(c: &Company, e: Employment) -> Employment {
     }
 }
 
-/// (NexiconDK, 4 November 2026) Change a driver's employment. It takes a month's notice
-/// (`EMPLOYMENT_NOTICE_DAYS`): the new one applies from that day (`employment_due`), the old one
-/// until then - on the day they were hired it applies at once. The one they have already takes
-/// back a change given notice. Returns the day it applies from (None: at once, or nothing to
-/// change).
+/// (NexiconDK, 4 November 2026) Change a driver's employment. The new one applies from the day
+/// `employment_from` says (`employment_due`), the old one until then - on the day they were hired
+/// it applies at once. The one they have already takes back a change given notice. Returns the
+/// day it applies from (None: at once, or nothing to change).
 pub fn change_employment(c: &mut Company, id: u32, to: Employment) -> Result<Option<String>, &'static str> {
     let to = sound_employment(c, to);
-    let today = c.date.clone();
+    let from = c.staff.iter().find(|e| e.id == id).and_then(|e| employment_from(c, e, &to));
     let Some(e) = c.staff.iter_mut().find(|e| e.id == id) else { return Err("They do not work here.") };
     if !drives(e) {
         return Err("Only a driver's employment can be changed.");
@@ -1641,12 +1692,11 @@ pub fn change_employment(c: &mut Company, id: u32, to: Employment) -> Result<Opt
         e.employment_next = None;
         return Ok(None);
     }
-    if e.hired == today {
+    let Some(from) = from else {
         e.employment = to;
         e.employment_next = None;
         return Ok(None);
-    }
-    let from = dates::add(&today, EMPLOYMENT_NOTICE_DAYS);
+    };
     e.employment_next = Some(EmploymentChange { to, from: from.clone() });
     Ok(Some(from))
 }

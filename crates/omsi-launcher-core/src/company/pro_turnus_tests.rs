@@ -97,9 +97,13 @@ fn the_checks_go_round_the_whole_cycle() {
     assert!(ch.of(0, None).any(|m| m.text == M_OVER), "{:?}", ch.marks);
     assert!(!ch.of(1, None).any(|m| m.rule == Rule::Hours));
     assert!(ch.marks.iter().any(|m| m.row.is_none() && m.text == M_AVERAGE));
-    // two days off together: row 2 has its Saturday and row 1's Sunday; row 1 none
-    assert!(ch.of(0, None).any(|m| m.rule == Rule::TwoOff));
-    assert!(!ch.of(1, None).any(|m| m.rule == Rule::TwoOff));
+    // two days off together: row 2's Saturday and row 1's Sunday, round again - the weekend off
+    // is both weeks' two days off together
+    assert!(ch.kept(Rule::TwoOff), "{:?}", ch.marks);
+    // the weekends: row 1's Saturday and row 2's Sunday at work, row 2's Saturday and row 1's
+    // Sunday off - every other weekend off
+    assert_eq!((weekend(&c.planning.rotas.list[0], 0), weekend(&c.planning.rotas.list[0], 1)), (Some(Weekend::Work), Some(Weekend::Off)));
+    assert!(ch.kept(Rule::EveryOther), "{:?}", ch.marks);
     assert!(ch.kept(Rule::Weekend));
     // seven days of work in a row: row 1's Thursday to Saturday and row 2's Sunday to Wednesday
     c.planning.rotas.list[0].rows[1].days[1] = n(1002);
@@ -112,10 +116,11 @@ fn the_checks_go_round_the_whole_cycle() {
     let ch = check(&c, k, &w);
     assert!(ch.of(1, Some(4)).any(|m| m.text == M_MISSING));
     assert!(ch.of(0, Some(1)).any(|m| m.text == M_TWICE) && ch.of(1, Some(1)).any(|m| m.text == M_TWICE));
-    // no weekend day off in the whole cycle
+    // no weekend off in the whole cycle: two weekends at work in a row
     c.planning.rotas.list[0].rows[0].days[0] = n(3002);
     c.planning.rotas.list[0].rows[1].days[6] = n(2001);
-    assert!(!check(&c, k, &w).kept(Rule::Weekend));
+    let ch = check(&c, k, &w);
+    assert!(ch.marks.iter().any(|m| m.rule == Rule::EveryOther && m.hard && m.text == M_TWO_WORKED), "{:?}", ch.marks);
     let _ = id;
 }
 
@@ -140,7 +145,7 @@ fn a_rota_made_automatically_places_every_duty_once_and_keeps_the_rules() {
     assert!(ch.kept(Rule::InARow), "{:?}", ch.marks);
     assert!(ch.kept(Rule::Duty), "{:?}", ch.marks);
     assert!(ch.kept(Rule::TwoOff), "{:?}\n{:?}", ch.marks, t.rows);
-    assert!(ch.kept(Rule::Weekend));
+    assert!(ch.kept(Rule::EveryOther), "{:?}\n{:?}", ch.marks, t.rows);
     for r in &t.rows {
         assert!(r.days.iter().filter(|x| x.works()).count() <= 5, "{:?}", r.days);
     }
@@ -152,6 +157,177 @@ fn a_rota_made_automatically_places_every_duty_once_and_keeps_the_rules() {
     c2.planning.rotas.list[0].rows[0].driver = Some(42);
     auto(&mut c2, id, &w).unwrap();
     assert_eq!(c2.planning.rotas.list[0].rows[0].driver, Some(42));
+}
+
+/// Monday to Friday six duties (three early, three late) and two split duties, Saturday four,
+/// Sunday three.
+fn busy_week() -> Week {
+    let split = |number: u32| ProDuty { kind: pd::Kind::Split, ..d(number, 6 * 60, 18 * 60) };
+    let weekday = || vec![d(1001, 300, 780), d(1002, 330, 810), d(1003, 360, 840), d(1004, 780, 1260), d(1005, 810, 1290), d(1006, 840, 1320), split(1007), split(1008)];
+    let mut w: Week = vec![vec![d(3001, 360, 840), d(3002, 420, 900), d(3003, 840, 1320)]];
+    for _ in 0..5 {
+        w.push(weekday());
+    }
+    w.push(vec![d(2001, 330, 810), d(2002, 360, 840), d(2003, 810, 1290), d(2004, 840, 1320)]);
+    w
+}
+
+#[test]
+fn every_other_weekend_off_round_the_cycle() {
+    let mut c = bare();
+    let w = week();
+    let id = add(&mut c, "Nord", false);
+    let off_sun = [F, n(1001), n(1001), n(1001), n(1001), F, n(2001)];
+    let off_sat = [n(3001), F, n(1002), n(1002), n(1002), n(1002), F];
+    // two weeks: the weekend after week 1 at work (its Saturday, week 2's Sunday), after week 2 off
+    // (its Saturday, week 1's Sunday round again)
+    c.planning.rotas.list[0].rows = vec![row(off_sun), row(off_sat)];
+    let ch = check(&c, 0, &w);
+    assert!(ch.kept(Rule::EveryOther), "{:?}", ch.marks);
+    assert!(ch.kept(Rule::TwoOff), "{:?}", ch.marks);
+    // three weeks: the weekends cannot take turns - yellow, add a week
+    c.planning.rotas.list[0].rows.push(row(off_sun));
+    let ch = check(&c, 0, &w);
+    let m: Vec<&Mark> = ch.marks.iter().filter(|m| m.rule == Rule::EveryOther).collect();
+    assert!(m.iter().any(|m| m.text == M_ODD_WEEKS && !m.hard && m.row.is_none()), "{m:?}");
+    // four weeks, two weekends off running: the second marked red, round the wrap too
+    c.planning.rotas.list[0].rows = vec![row(off_sun), row(off_sat), row(off_sat), row(off_sun)];
+    let ch = check(&c, 0, &w);
+    let free: Vec<(Option<usize>, &str)> = ch.marks.iter().filter(|m| m.rule == Rule::EveryOther).map(|m| (m.row, m.text)).collect();
+    // (weekends: after week 1 at work, 2 off, 3 at work? - week 3's Saturday off, week 4's Sunday off: off;
+    // after week 4: its Saturday at work, week 1's Sunday off: half)
+    let t = &c.planning.rotas.list[0];
+    assert_eq!((0..4).map(|k| weekend(t, k).unwrap()).collect::<Vec<_>>(), [Weekend::Work, Weekend::Half, Weekend::Off, Weekend::Half]);
+    assert!(free.contains(&(Some(1), M_HALF_WEEKEND)) && free.contains(&(Some(3), M_HALF_WEEKEND)), "{free:?}");
+    assert!(ch.marks.iter().any(|m| m.rule == Rule::EveryOther && m.hard && m.row == Some(1) && m.day == Some(DAYS - 1)));
+    // two weekends off in a row: weeks of a Saturday off and the next week's Sunday off, twice
+    c.planning.rotas.list[0].rows = vec![row([F, n(1001), n(1001), n(1001), n(1001), n(1001), F]), row([F, n(1002), n(1002), n(1002), n(1002), n(1002), F])];
+    let ch = check(&c, 0, &w);
+    assert!(ch.marks.iter().any(|m| m.text == M_TWO_FREE && m.hard), "{:?}", ch.marks);
+    // a reserve rota keeps its own rule: a weekend day off somewhere
+    let res = add(&mut c, "Reserve", true);
+    let k = c.planning.rotas.list.iter().position(|t| t.id == res).unwrap();
+    c.planning.rotas.list[k].rows = vec![row([Cell::Frame { from: 300, to: 780 }; DAYS])];
+    let ch = check(&c, k, &w);
+    assert!(!ch.kept(Rule::Weekend) && ch.kept(Rule::EveryOther));
+    let _ = id;
+}
+
+#[test]
+fn a_rota_made_automatically_works_every_other_weekend_and_covers_the_weekend() {
+    let mut c = bare();
+    let w = busy_week();
+    let id = add_kind(&mut c, "Nord fuldtid", RotaKind::Normal, 0);
+    let n_weeks = auto(&mut c, id, &w).unwrap();
+    // four Saturday duties, half the drivers at work each weekend: 8 weeks at least, an even number
+    assert!(n_weeks >= 8 && n_weeks % 2 == 0, "{n_weeks}");
+    let t = c.planning.rotas.list[0].clone();
+    // the weekends by turns: at work, off, at work ... round the cycle
+    let ws: Vec<Weekend> = (0..n_weeks).map(|k| weekend(&t, k).unwrap()).collect();
+    for k in 0..n_weeks {
+        assert_eq!(ws[k], if k % 2 == 0 { Weekend::Work } else { Weekend::Off }, "{ws:?}");
+    }
+    // every weekend duty placed; the split duties left for a split-duty rota
+    for dd in [0, DAYS - 1] {
+        for x in &w[dd] {
+            assert_eq!(placed_count(&c, dd, x.number), 1, "duty {} on day {dd}", x.number);
+        }
+    }
+    for dd in 1..DAYS - 1 {
+        for x in &w[dd] {
+            assert_eq!(placed_count(&c, dd, x.number), (x.kind != pd::Kind::Split) as usize, "duty {} on day {dd}", x.number);
+        }
+    }
+    let ch = check(&c, 0, &w);
+    for rule in [Rule::EveryOther, Rule::InARow, Rule::TwoOff, Rule::Duty, Rule::Split, Rule::Rest] {
+        assert!(ch.kept(rule), "{rule:?}: {:?}\n{:?}", ch.marks, t.rows);
+    }
+    for r in &t.rows {
+        assert!(r.days.iter().filter(|x| x.works()).count() <= 5, "{:?}", r.days);
+    }
+    // the weekend's spare weeks at work have a reserve's frame, their weekend whole
+    assert!(t.rows.iter().any(|r| matches!(r.days[0], Cell::Frame { .. }) || matches!(r.days[DAYS - 1], Cell::Frame { .. })));
+    // the weeks it had at least: made again from 12 weeks, 12 weeks
+    let mut c2 = c.clone();
+    c2.planning.rotas.list[0].rows.resize(12, Row::default());
+    assert_eq!(auto(&mut c2, id, &w), Ok(12.max(n_weeks)));
+    // from an odd number of weeks: one more, the weekends by turns
+    let mut c3 = c.clone();
+    c3.planning.rotas.list[0].rows.resize(n_weeks + 1, Row::default());
+    assert_eq!(auto(&mut c3, id, &w), Ok(n_weeks + 2));
+    // the split duties are what a split-duty rota would take; the weeks suggested
+    assert_eq!(split_open(&c, &w), 10);
+    assert_eq!(suggest_weeks(&c, RotaKind::Split, &w), 2);
+    assert_eq!(suggest_weeks(&c, RotaKind::Normal, &w), 0, "every ordinary duty is in a rota");
+    assert_eq!(suggest_weeks(&bare(), RotaKind::Normal, &w), n_weeks);
+}
+
+#[test]
+fn a_split_duty_rota_is_off_at_the_weekend() {
+    let mut c = bare();
+    let w = busy_week();
+    let id = add_kind(&mut c, "Delte vagter", RotaKind::Split, 1);
+    assert_eq!(c.planning.rotas.list[0].kind(), RotaKind::Split);
+    assert_eq!(c.planning.rotas.list[0].rows.len(), 1);
+    // only split duties, Monday to Friday; the weekend stays off
+    assert_eq!(set_cell(&mut c, id, 0, 0, n(3001), &w), Err(WEEKEND_OFF));
+    assert_eq!(set_cell(&mut c, id, 0, DAYS - 1, Cell::Frame { from: 300, to: 780 }, &w), Err(WEEKEND_OFF));
+    assert_eq!(set_cell(&mut c, id, 0, 0, F, &w), Ok(()));
+    assert_eq!(set_cell(&mut c, id, 0, 1, n(1001), &w), Err(ONLY_SPLIT));
+    assert_eq!(set_cell(&mut c, id, 0, 1, n(1007), &w), Ok(()));
+    // an ordinary rota takes no split duty
+    let normal = add(&mut c, "Nord", false);
+    add_row(&mut c, normal).unwrap();
+    assert_eq!(set_cell(&mut c, normal, 0, 2, n(1008), &w), Err(SPLIT_ELSEWHERE));
+    assert_eq!(set_cell(&mut c, normal, 0, 2, n(1001), &w), Ok(()));
+    // made automatically: every weekday split duty, two weeks, the weekends off
+    assert_eq!(auto(&mut c, id, &w), Ok(2));
+    let t = &c.planning.rotas.list[0];
+    for dd in 1..DAYS - 1 {
+        for x in w[dd].iter().filter(|x| x.kind == pd::Kind::Split) {
+            assert_eq!(placed_count(&c, dd, x.number), 1);
+        }
+    }
+    assert!(t.rows.iter().all(|r| r.days[0] == F && r.days[DAYS - 1] == F));
+    assert!(t.rows.iter().all(|r| r.days.iter().filter(|x| x.works()).count() == 5));
+    let ch = check(&c, 0, &w);
+    for rule in [Rule::Split, Rule::TwoOff, Rule::InARow, Rule::Duty, Rule::Rest] {
+        assert!(ch.kept(rule), "{rule:?}: {:?}", ch.marks);
+    }
+    assert_eq!(split_open(&c, &w), 0);
+    // nothing more to put in another
+    let other = add_kind(&mut c, "", RotaKind::Split, 0);
+    assert_eq!(c.planning.rotas.list.last().unwrap().name, "Split duties 3");
+    assert_eq!(auto(&mut c, other, &w), Err(NO_SPLIT));
+    // a split duty or a weekend at work in an older file: marked
+    c.planning.rotas.list[0].rows[0].days[0] = n(3001);
+    c.planning.rotas.list[1].rows[0].days[3] = n(1007);
+    c.planning.rotas.list[0].rows[0].days[3] = F;
+    let ch = check(&c, 0, &w);
+    assert!(ch.of(0, Some(0)).any(|m| m.text == M_SPLIT_WEEKEND && m.hard));
+    let ch = check(&c, 1, &w);
+    assert!(ch.of(0, Some(3)).any(|m| m.text == M_SPLIT_HERE && !m.hard), "{:?}", ch.marks);
+}
+
+#[test]
+fn an_older_rota_is_ordinary_and_the_kind_is_kept() {
+    let old: Turnus = serde_json::from_str(r#"{"id":1,"name":"Nord","from":"2024-03-03","rows":[]}"#).unwrap();
+    assert_eq!(old.kind(), RotaKind::Normal);
+    let res: Turnus = serde_json::from_str(r#"{"id":2,"name":"R","reserve":true,"from":"2024-03-03","rows":[]}"#).unwrap();
+    assert_eq!(res.kind(), RotaKind::Reserve);
+    let mut c = bare();
+    add_kind(&mut c, "Delt", RotaKind::Split, 3);
+    let text = serde_json::to_string(&c.planning.rotas).unwrap();
+    assert!(text.contains("\"split\":true"));
+    let back: Rotas = serde_json::from_str(&text).unwrap();
+    assert_eq!(back.list[0].kind(), RotaKind::Split);
+    assert_eq!(back.list[0].rows.len(), 3);
+    // an ordinary rota leaves the field out
+    let mut c = bare();
+    add(&mut c, "Nord", false);
+    assert!(!serde_json::to_string(&c.planning.rotas).unwrap().contains("split"));
+    assert_eq!(RotaKind::of_key("split"), RotaKind::Split);
+    assert_eq!(RotaKind::of_key("nonsense"), RotaKind::Normal);
 }
 
 #[test]

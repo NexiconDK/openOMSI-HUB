@@ -47,10 +47,30 @@ on Saturday night (`pay::week_ends`). The drivers' five working days (`staff::WE
 count from Monday. In the first week after updating, a save's pay week runs Monday to Saturday
 once.
 
-**Changing a driver's kind takes a month's notice** (30 days, `staff::change_employment`). The
-old kind holds until the new one applies as the company's day begins
+**When a change of a driver's kind applies** (`staff::change_employment`, `employment_from`;
+it was a month's notice first, changed after the player's comments the same day - a month is
+longer than most contracts of Bus Company Online):
+
+- **From hourly paid up to part or full time:** from the next company day, everywhere (a better
+  contract for the driver).
+- **On a server of Bus Company Online:** after the notice its admin sets,
+  `employment_notice_days` in `company-server.cfg` (the admin panel's "Driving yourself" part;
+  default 2 days, 0: from the next company day - `live_pay::LiveCfg::notice_days`; the setting is
+  added to an older file, `live_pay::NOTICE_CFG`).
+- **Anywhere else** (offline, Play together): from the next Sunday, when the bus company's week
+  begins - a change made on a Sunday from the Sunday after (`staff::notice_day`).
+
+The old kind holds until the new one applies as the company's day begins
 (`staff::employment_due`). On the day a driver was hired, a change applies at once. Choosing
-the kind the driver already has takes back a change given notice.
+the kind the driver already has takes back a change given notice. A change given a month's notice
+in an older file still applies on its day. The driver's page says when a change made now would
+apply, e.g. "A change applies from the next Sunday ...: from Sun 8 Nov".
+
+**The player hires hourly paid** (`staff::HIRED_AS`): the Staff page's hiring window starts on
+"Hourly paid", and the player picks Full time, Part time or Reserve himself. A hire without a
+kind is hourly paid. The game's own hiring - the autopilot, an AI company, Casual's quick hire
+(`staff::hire`, `hire_best`) - stays full time, so AI companies run as before. Hiring and a change
+of employment stay on the Staff page; RosterFlow Pro's tabs have none of it.
 
 ## The order an open duty is filled in
 
@@ -374,3 +394,63 @@ of the company's day. Asked, a player is told (`crew::notify`) and answers on hi
 
 Asking, giving and taking back need "Edit the planning" for a player of "Play together"
 (`rf_ops_act`); who may look at the planning sees both tabs.
+
+# After the player's comments (4 November 2026)
+
+The player tried the four steps and found them confusing. Changed:
+
+## Only the five tabs
+
+With RosterFlow Pro chosen, RosterFlow's title bar has only "1 Vognløb", "2 Vagter", "3 Turnus",
+"4 Daglig drift" and "5 Kalender" - no Routes, Timeplan, Vehicles, Drivers or Roster, and no
+"Go to" search or Optimise settings (they lead to the hidden tabs). RosterFlow Pro always opens on
+one of its tabs (a hand-over to an old one goes to Vognløb, the duty launcher's to Vagter); a line's
+timetable is not taken by RosterFlow then - it opens in the line editor (`index.js` `rfTakes`).
+RosterFlow's tutorial walks the hidden tabs, so RosterFlow Pro's "?" opens its own short intro,
+"How RosterFlow Pro works" (`pro_intro.js`): the five tabs in order, with what is done in each,
+and that hiring and employment are on the Staff page. It opens by itself the first time RosterFlow
+Pro is opened on a machine and when the planner was just chosen. Plain RosterFlow is unchanged.
+
+## A rota is several weeks
+
+The page says so: a row is a **rota week** ("Turnusuge" 1 ... N), "Add week" and "Remove week",
+"12 weeks · 12 drivers", and a line over the rota: "A rota is several weeks in a row. Every week each
+driver moves a week down, and after the last week he begins again at week 1." **"New rota"** opens a
+window: the name, the kind and the weeks - suggested from the week's duties no rota has
+(`pro_turnus::suggest_weeks`) -, made empty or made and filled at once (`rf_turnus_act` `new` with
+`kind`, `weeks`, `fill`).
+
+**The weekend.** The week begins on Sunday, so a weekend is the Saturday of one rota week and the
+Sunday of the next - the last week's Saturday with the first week's Sunday, round the cycle
+(`pro_turnus::weekend`). The Saturday and Sunday cells are marked as weekend, and a column after
+Saturday, "Weekend", says "Off duty" (Fri), "Working" (Arbejde) or "Half" for the weekend after
+each week. "Two days off together" says that a Saturday and the next week's Sunday count.
+
+## Three kinds of rota (`pro_turnus::RotaKind`)
+
+| Kind | Holds | Its weekends |
+|---|---|---|
+| Ordinary (Almindelig) | the whole and short duties of the week - no split duty | every other weekend off |
+| Split duties (Delte vagter) | the split duties of Monday to Friday only | always off: Saturday and Sunday cannot be set |
+| Reserve | reserve drivers' frames | as before |
+
+An older rota is ordinary (or reserve); a split-duty rota is kept as `"split": true`.
+
+**Every other weekend** (an ordinary rota, `Rule::EveryOther`): round the whole cycle the weekends
+take turns, off and at work. A free weekend is both days off (the week's two days off together); a
+worked weekend both days at work. A half weekend, or two weekends off or at work in a row, is red;
+an odd number of weeks, where they cannot take turns, is yellow with "add a week". "Make the rota
+automatically" makes this: an even number of weeks, enough that half the drivers cover the
+weekend's duties (`normal_weeks`), a weekday off besides in each week - placed so that there are
+never more than six days of work in a row -, the weekend duties first to the weeks bound on both
+sides; a weekend with more drivers at work than duties gives the others a reserve's frame, so
+their weekend stays whole. The duties it cannot place are listed under "Not in a rota".
+
+**Split duties** have a rota of their own (the player's choice): a split-duty rota takes split
+duties only, Monday to Friday, its weekends off; made automatically it fills as many weeks as the
+busiest weekday has split duties, five days each. An ordinary rota does not offer split duties and
+its automatic making leaves them out; the coverage card says how many split duties belong in a
+split-duty rota, with "Make a split-duty rota" when there is none. **Split duties do not run at the
+weekend:** "Make duties automatically" on a Saturday or a Sunday makes none
+(`rosterflow::optimise_splits`), and one made by hand there gets a yellow mark "Split duties do not
+run at the weekend" (`pro_duties::marks`).

@@ -53,11 +53,14 @@ pub struct LiveCfg {
     /// (K12) The duties a week the owner or a co-owner drives live for the working environment's
     /// points (`live_more::BOSS_POINTS`; 0: never).
     pub boss_duties: u32,
+    /// (NexiconDK, 4 November 2026) The days of notice a change of a driver's employment takes on
+    /// the server (`employment_notice_days`; 0: from the next company day - `staff::notice_day`).
+    pub notice_days: i64,
 }
 
 impl Default for LiveCfg {
     fn default() -> LiveCfg {
-        LiveCfg { pay_share: 0.9, ai_cap: 70.0, surcharge: 0.05, pool: 0, agency: true, urgent: 0.5, loyalty: 0.05, boss_duties: 2 }
+        LiveCfg { pay_share: 0.9, ai_cap: 70.0, surcharge: 0.05, pool: 0, agency: true, urgent: 0.5, loyalty: 0.05, boss_duties: 2, notice_days: super::staff::SERVER_NOTICE_DAYS }
     }
 }
 
@@ -76,6 +79,7 @@ impl LiveCfg {
             urgent: num("urgent_bonus").map_or(d.urgent, |x| x.min(500.0) / 100.0),
             loyalty: num("loyalty_bonus").map_or(d.loyalty, |x| x.min(100.0) / 100.0),
             boss_duties: num("boss_duties").map_or(d.boss_duties, |x| x.round().min(100.0) as u32),
+            notice_days: num("employment_notice_days").map_or(d.notice_days, |x| x.round().min(365.0) as i64),
         }
     }
 
@@ -96,6 +100,14 @@ agency_fallback = 1
 urgent_bonus = 50
 loyalty_bonus = 5
 boss_duties = 2
+";
+
+/// (NexiconDK, 4 November 2026) The notice of a change of a driver's employment, added to a
+/// `company-server.cfg` written before it.
+pub const NOTICE_CFG: &str = "
+# the days of notice a change of a driver's employment takes (full time, part time, reserve,
+# hourly paid; 0: from the next day) - from hourly paid to part or full time is always the next day
+employment_notice_days = 2
 ";
 
 /// The rules' part of the settings, added to a `company-server.cfg` written before it.

@@ -12,7 +12,7 @@ use super::{str_arg, usize_arg, Rf};
 use crate::Answer;
 use omsi_launcher_lib::company::model::Employment;
 use omsi_launcher_lib::company::pro_duties as pd;
-use omsi_launcher_lib::company::pro_turnus::{self as pt, Cell, Checked, ProDuty, Rule, Week};
+use omsi_launcher_lib::company::pro_turnus::{self as pt, Cell, Checked, ProDuty, RotaKind, Rule, Week, Weekend};
 use omsi_launcher_lib::company::{self as co, rosterflow as rf, Company};
 use serde_json::{json, Value};
 use std::sync::Arc;
@@ -20,15 +20,55 @@ use std::sync::Arc;
 /// The days of a row, Sunday first (translated when shown).
 const DAYS: [&str; 7] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-/// The rules the side panel lists, in its order, and their words.
-const RULES: [(Rule, &str); 6] = [
+/// The rules the side panel lists, in its order, and their words: an ordinary rota's, a
+/// split-duty rota's, a reserve rota's (NexiconDK, 4 November 2026: the weekends by turns, the
+/// split duties in a rota of their own).
+const RULES_NORMAL: [(Rule, &str); 7] = [
     (Rule::Rest, "11 hours of rest between duties"),
     (Rule::InARow, "At most 6 days of work in a row"),
-    (Rule::TwoOff, "Two days off together"),
+    (Rule::TwoOff, "Two days off together - a Saturday and the next week's Sunday count"),
+    (Rule::EveryOther, "Every other weekend off"),
+    (Rule::Hours, "Hours a week as aimed at"),
+    (Rule::Split, "No split duties: they have a rota of their own"),
+    (Rule::Duty, "Every duty on its day, in one row"),
+];
+const RULES_SPLIT: [(Rule, &str); 6] = [
+    (Rule::Rest, "11 hours of rest between duties"),
+    (Rule::InARow, "At most 6 days of work in a row"),
+    (Rule::TwoOff, "Two days off together - a Saturday and the next week's Sunday count"),
+    (Rule::Split, "Split duties only, Monday to Friday; the weekend off"),
+    (Rule::Hours, "Hours a week as aimed at"),
+    (Rule::Duty, "Every duty on its day, in one row"),
+];
+const RULES_RESERVE: [(Rule, &str); 6] = [
+    (Rule::Rest, "11 hours of rest between duties"),
+    (Rule::InARow, "At most 6 days of work in a row"),
+    (Rule::TwoOff, "Two days off together - a Saturday and the next week's Sunday count"),
     (Rule::Hours, "Hours a week as aimed at"),
     (Rule::Weekend, "A weekend day off in the cycle"),
     (Rule::Duty, "Every duty on its day, in one row"),
 ];
+
+fn rules_of(kind: RotaKind) -> &'static [(Rule, &'static str)] {
+    match kind {
+        RotaKind::Normal => &RULES_NORMAL,
+        RotaKind::Split => &RULES_SPLIT,
+        RotaKind::Reserve => &RULES_RESERVE,
+    }
+}
+
+/// What a kind of rota is, in a line.
+const KIND_NOTES: [&str; 3] = ["Whole and short duties all week. The drivers work every other weekend.", "Split duties only, Monday to Friday. Saturday and Sunday are always off.", "Reserve drivers in their frames."];
+
+/// A weekend's words: off, at work, half - its key, its words, and the cell's word under
+/// "Weekend".
+fn weekend_words(w: Weekend) -> (&'static str, &'static str, &'static str) {
+    match w {
+        Weekend::Off => ("off", "Weekend off", "Off duty"),
+        Weekend::Work => ("work", "Weekend at work", "Working"),
+        Weekend::Half => ("half", "Half weekend", "Half"),
+    }
+}
 
 /// A duty's colour on the rota (its signature): early, day, late, split.
 fn kind_of(d: &ProDuty) -> &'static str {
@@ -110,10 +150,15 @@ fn person(c: &Company, id: u32) -> Value {
     }
 }
 
-/// Where a driver is in the rotas, in words: "Nord fuldtid · row 3".
+/// "rota week 3": a week of a rota (a row of it).
+fn week_words(row: usize) -> String {
+    trf("rota week %{n}", &[("n", &(row + 1).to_string())])
+}
+
+/// Where a driver is in the rotas, in words: "Nord fuldtid · rota week 3".
 fn place_words(c: &Company, id: u32) -> Option<String> {
     let (k, row) = pt::place_of(c, id)?;
-    Some(format!("{} · {}", c.planning.rotas.list[k].name, trf("row %{n}", &[("n", &(row + 1).to_string())])))
+    Some(format!("{} · {}", c.planning.rotas.list[k].name, week_words(row)))
 }
 
 /// A cell as the page draws it.
@@ -165,11 +210,25 @@ fn rota_json(c: &Company, k: usize, week: &Week, sunday: &str, checked: &Checked
             })
         })
         .collect();
-    let rules: Vec<Value> = RULES.iter().map(|(rule, words)| json!({ "text": tr(words), "ok": checked.kept(*rule) })).collect();
+    let kind = t.kind();
+    let rules: Vec<Value> = rules_of(kind).iter().map(|(rule, words)| json!({ "text": tr(words), "ok": checked.kept(*rule) })).collect();
     let general: Vec<String> = checked.marks.iter().filter(|m| m.row.is_none()).map(mark_words).collect();
     let started = pt::week_of(t, sunday).is_some();
+    // the weekend after each week: its Saturday and the next week's Sunday
+    let n = t.rows.len();
+    let weekends: Vec<Value> = (0..n)
+        .filter_map(|k| pt::weekend(t, k).map(|w| (k, w)))
+        .map(|(k, w)| {
+            let (key, words, short) = weekend_words(w);
+            let level = checked.of(k, Some(pt::DAYS - 1)).filter(|m| m.rule == Rule::EveryOther).map(|m| if m.hard { "bad" } else { "warn" }).next();
+            let tip = trf("The Saturday of week %{a} and the Sunday of week %{b}", &[("a", &(k + 1).to_string()), ("b", &((k + 1) % n + 1).to_string())]);
+            json!({ "state": key, "label": tr(words), "short": tr(short), "tip": tip, "level": level })
+        })
+        .collect();
     json!({
         "id": t.id, "name": t.name, "reserve": t.reserve,
+        "kind": kind.key(), "kind_label": tr(kind.label()), "locked_weekend": kind == RotaKind::Split,
+        "weekends": weekends,
         "hours": t.hours, "target": format!("{:.1}", checked.target), "average": format!("{:.1}", checked.average),
         "from": t.from, "from_label": week_label(&t.from), "from_day": day_label(&t.from),
         "started": started,
@@ -214,6 +273,7 @@ fn view(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
         .iter()
         .map(|t| json!({
             "id": t.id, "name": t.name, "reserve": t.reserve, "rows": t.rows.len(),
+            "kind": t.kind().key(), "kind_label": tr(t.kind().label()),
             "drivers": t.rows.iter().filter(|r| r.driver.is_some()).count(),
             "hours": format!("{:.1}", pt::target_hours(&c, t)),
         }))
@@ -228,8 +288,8 @@ fn view(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                 .iter()
                 .map(|x| {
                     let at = placed_in(d, x.number);
-                    let name = at.and_then(|(id, row)| list.iter().find(|t| t.id == id).map(|t| format!("{} · {}", t.name, trf("row %{n}", &[("n", &(row + 1).to_string())]))));
-                    json!({ "n": x.number, "time": span(x.start, x.end), "cls": kind_of(x), "hours": h1(x.paid), "rota": at.map(|a| a.0), "row": at.map(|a| a.1), "where": name })
+                    let name = at.and_then(|(id, row)| list.iter().find(|t| t.id == id).map(|t| format!("{} · {}", t.name, week_words(row))));
+                    json!({ "n": x.number, "time": span(x.start, x.end), "cls": kind_of(x), "split": x.kind == pd::Kind::Split, "hours": h1(x.paid), "rota": at.map(|a| a.0), "row": at.map(|a| a.1), "where": name })
                 })
                 .collect::<Vec<_>>())
         })
@@ -238,7 +298,25 @@ fn view(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     let unplaced = pt::unplaced(&c, &week);
     let total: usize = week.iter().map(Vec::len).sum();
     let open: usize = unplaced.iter().map(Vec::len).sum();
-    out["coverage"] = json!({ "placed": total - open, "total": total, "open": unplaced });
+    // (the split duties of Monday to Friday no rota has: a split-duty rota's)
+    let split_open = pt::split_open(&c, &week);
+    out["coverage"] = json!({ "placed": total - open, "total": total, "open": unplaced, "split_open": split_open, "split_rota": list.iter().any(|t| t.kind() == RotaKind::Split) });
+    // "New rota": the kinds, what each is, the weeks suggested and the drivers without a rota
+    let free = |reserve: bool| c.staff.iter().filter(|e| co::staff::drives(e) && pt::place_of(&c, e.id).is_none() && matches!(e.employment, Employment::Reserve(_)) == reserve && !matches!(e.employment, Employment::Hourly)).count();
+    let names = [("Rota %{n}", RotaKind::Normal), ("Split duties %{n}", RotaKind::Split), ("Reserve %{n}", RotaKind::Reserve)];
+    out["kinds"] = json!(RotaKind::ALL
+        .iter()
+        .enumerate()
+        .map(|(i, k)| {
+            let count = list.iter().filter(|t| t.kind() == *k).count() + 1;
+            json!({
+                "key": k.key(), "label": tr(k.label()), "note": tr(KIND_NOTES[i]),
+                "weeks": pt::suggest_weeks(&c, *k, &week),
+                "drivers": free(*k == RotaKind::Reserve),
+                "name": trf(names[i].0, &[("n", &count.to_string())]),
+            })
+        })
+        .collect::<Vec<_>>());
     // the drivers, and who can go on a row of the rota chosen
     let reserve = sel.and_then(|id| list.iter().find(|t| t.id == id)).is_some_and(|t| t.reserve);
     out["drivers"] = json!(c
@@ -337,8 +415,42 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     let name_of = |s: &Session| s.company.as_ref().and_then(|c| c.planning.rotas.list.iter().find(|t| t.id == id).map(|t| t.name.clone())).unwrap_or_default();
     Ok(match what.as_str() {
         "new" => {
-            let (name, reserve) = (str_arg(args, "name"), args.get("reserve").and_then(Value::as_bool).unwrap_or(false));
-            let mut out = edit(s, |id: &u32| trf("Rota %{id} made: give it rows, or make it automatically.", &[("id", &id.to_string())]), |c| Ok(pt::add(c, &name, reserve)));
+            // (a kind - "normal", "split", "reserve" - and a number of weeks; filled at once with
+            // the week's duties when asked: "Make the rota automatically")
+            let name = str_arg(args, "name");
+            let kind = match args.get("kind").and_then(Value::as_str) {
+                Some(k) => RotaKind::of_key(k),
+                None if args.get("reserve").and_then(Value::as_bool).unwrap_or(false) => RotaKind::Reserve,
+                None => RotaKind::Normal,
+            };
+            let weeks = usize_arg(args, "weeks").min(pt::MAX_WEEKS);
+            let fill = args.get("fill").and_then(Value::as_bool).unwrap_or(false);
+            let week = if fill {
+                match week_duties(s, r) {
+                    Some(Ok(w)) => Some(w),
+                    Some(Err(e)) => return Ok(said(e, true)),
+                    None => return Ok(said(tr("Reading the timetable…"), false)),
+                }
+            } else {
+                None
+            };
+            let mut out = edit(
+                s,
+                |x: &(u32, String, usize, Option<&'static str>)| match x.3 {
+                    Some(why) => format!("{} {}", trf("Rota %{name} made with %{n} weeks.", &[("name", &x.1), ("n", &x.2.to_string())]), tr(why)),
+                    None if fill => trf("Rota %{name} made: a cycle of %{n} weeks, filled with the week's duties.", &[("name", &x.1), ("n", &x.2.to_string())]),
+                    None => trf("Rota %{name} made with %{n} weeks: fill its days, or make it automatically.", &[("name", &x.1), ("n", &x.2.to_string())]),
+                },
+                |c| {
+                    let id = pt::add_kind(c, &name, kind, weeks);
+                    let why = match &week {
+                        Some(w) => pt::auto(c, id, w).err(),
+                        None => None,
+                    };
+                    let t = c.planning.rotas.list.iter().find(|t| t.id == id).ok_or(pt::NO_ROTA)?;
+                    Ok((id, t.name.clone(), t.rows.len(), why))
+                },
+            );
             if let Some(new) = s.company.as_ref().and_then(|c| c.planning.rotas.list.last()) {
                 out["sel"] = json!(new.id);
             }
@@ -360,10 +472,10 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             let Some(c) = s.company.as_ref() else { return Ok(json!({})) };
             let date = shown_sunday(c, args);
             let label = week_label(&date);
-            edit(s, |_| trf("The rota begins in %{week}: its first row's driver is on row 1 then.", &[("week", &label)]), |c| pt::set_from(c, id, &date))
+            edit(s, |_| trf("The rota begins in %{week}: the driver of rota week 1 is in rota week 1 then.", &[("week", &label)]), |c| pt::set_from(c, id, &date))
         }
-        "add_row" => edit(s, |n: &usize| trf("Row %{n} added.", &[("n", &n.to_string())]), |c| pt::add_row(c, id)),
-        "remove_row" => edit(s, |_| trf("Row %{n} deleted.", &[("n", &(row + 1).to_string())]), |c| pt::remove_row(c, id, row)),
+        "add_row" => edit(s, |n: &usize| trf("Rota week %{n} added.", &[("n", &n.to_string())]), |c| pt::add_row(c, id)),
+        "remove_row" => edit(s, |_| trf("Rota week %{n} removed.", &[("n", &(row + 1).to_string())]), |c| pt::remove_row(c, id, row)),
         "cell" => {
             let week = match week_duties(s, r) {
                 Some(Ok(w)) => w,
@@ -379,8 +491,8 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             edit(
                 s,
                 |_| match &name {
-                    Some(n) => trf("%{name} is on row %{n}: a row down every week.", &[("name", n), ("n", &(row + 1).to_string())]),
-                    None => trf("Row %{n} has no driver now.", &[("n", &(row + 1).to_string())]),
+                    Some(n) => trf("%{name} begins in rota week %{n}: a week further down every week.", &[("name", n), ("n", &(row + 1).to_string())]),
+                    None => trf("Rota week %{n} has no driver now.", &[("n", &(row + 1).to_string())]),
                 },
                 |c| pt::set_driver(c, id, row, who),
             )
@@ -391,7 +503,22 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                 Some(Err(e)) => return Ok(said(e, true)),
                 None => return Ok(said(tr("Reading the timetable…"), false)),
             };
-            edit(s, |n: &usize| trf("The rota made automatically: %{n} rows, a cycle of %{n} weeks.", &[("n", &n.to_string())]), |c| pt::auto(c, id, &week))
+            edit(
+                s,
+                |x: &(usize, usize)| {
+                    let made = trf("The rota made automatically: a cycle of %{n} weeks.", &[("n", &x.0.to_string())]);
+                    if x.1 > 0 {
+                        format!("{made} {}", trf("%{n} duties could not be placed: they are under Not in a rota.", &[("n", &x.1.to_string())]))
+                    } else {
+                        made
+                    }
+                },
+                |c| {
+                    let n = pt::auto(c, id, &week)?;
+                    let kind = c.planning.rotas.list.iter().find(|t| t.id == id).map(|t| t.kind()).unwrap_or(RotaKind::Normal);
+                    Ok((n, pt::left_over(c, kind, &week)))
+                },
+            )
         }
         "exception" => {
             let driver = args.get("driver").and_then(Value::as_u64).unwrap_or(0) as u32;
@@ -437,18 +564,18 @@ pub(super) fn made(s: &mut Session, r: &mut Rf, args: &Value) -> Result<(String,
         title: tr("Rota"),
         info: format!(
             "{}  ·  {}  ·  {}  ·  {}",
-            trf("%{n} rows, a cycle of %{n} weeks", &[("n", &t.rows.len().to_string())]),
+            trf("A cycle of %{n} weeks", &[("n", &t.rows.len().to_string())]),
             trf("aims at %{h} h a week, averages %{a} h", &[("h", &format!("{:.1}", checked.target).replace('.', ",")), ("a", &format!("{:.1}", checked.average).replace('.', ","))]),
             trf("the drivers of %{week}", &[("week", &week_label(&sunday))]),
             c.name
         ),
         days: std::array::from_fn(|d| tr(DAYS[d])),
-        row: tr("Row"),
+        row: tr("Rota week"),
         hours: tr("Hours"),
         driver: week_label(&sunday),
         off: tr("Day off"),
         page: tr("Page"),
-        foot: tr("Every week each driver moves a row down; from the last row to the first."),
+        foot: tr("Every week each driver moves a week down; after the last week he begins again at week 1."),
     };
     let name = format!("rota-{}.pdf", t.name.chars().map(|ch| if ch.is_alphanumeric() { ch } else { '-' }).collect::<String>());
     Ok((name, pt::pdf(c, k, &week, &sunday, &words)))
@@ -458,7 +585,12 @@ pub(super) fn made(s: &mut Session, r: &mut Rf, args: &Value) -> Result<(String,
 #[cfg(test)]
 pub(super) fn texts() -> Vec<&'static str> {
     let mut v: Vec<&'static str> = DAYS.to_vec();
-    v.extend(RULES.iter().map(|r| r.1));
+    for k in RotaKind::ALL {
+        v.extend(rules_of(k).iter().map(|r| r.1));
+    }
+    v.extend(KIND_NOTES);
+    v.extend([Weekend::Off, Weekend::Work, Weekend::Half].map(|w| weekend_words(w).1));
+    v.extend([Weekend::Off, Weekend::Work, Weekend::Half].map(|w| weekend_words(w).2));
     v
 }
 
@@ -503,18 +635,38 @@ mod tests {
         assert!(v["duties"][1].as_array().is_some_and(|d| d[0]["n"] == 1001));
         assert!(v["duties"][0].as_array().is_some_and(|d| d[0]["n"] == 3001));
         // a rota, made automatically: every duty of the week in it
-        let out = act(&mut s, &mut r, &json!({ "act": "new", "name": "Nord" })).unwrap();
+        // "New rota": the three kinds, the weeks suggested
+        let kinds = v["kinds"].as_array().unwrap();
+        assert_eq!(kinds.iter().map(|k| k["key"].as_str().unwrap()).collect::<Vec<_>>(), ["normal", "split", "reserve"]);
+        assert!(kinds[0]["weeks"].as_u64().unwrap() >= 2, "{kinds:?}");
+        assert_eq!(kinds[0]["name"], "Rota 1");
+        let out = act(&mut s, &mut r, &json!({ "act": "new", "name": "Nord", "kind": "normal", "weeks": 1 })).unwrap();
         let id = out["sel"].as_u64().unwrap();
+        assert_eq!(s.company.as_ref().unwrap().planning.rotas.list[0].rows.len(), 1, "one week, as asked");
         let out = act(&mut s, &mut r, &json!({ "act": "auto", "id": id })).unwrap();
         assert_eq!(out["edited"], true, "{out}");
         let v = view(&mut s, &mut r, &json!({ "sel": id })).unwrap();
-        assert_eq!(v["coverage"]["placed"], json!(total), "{}", v["coverage"]);
+        let split = v["coverage"]["split_open"].as_u64().unwrap();
+        assert_eq!(v["coverage"]["placed"].as_u64().unwrap() + split, total, "{}", v["coverage"]);
+        // a rota made and filled at once: a split-duty rota takes the split duties, if any
+        let out = act(&mut s, &mut r, &json!({ "act": "new", "name": "Delt", "kind": "split", "weeks": 0, "fill": true })).unwrap();
+        assert_eq!(out["say"]["error"], false, "{out}");
+        assert_eq!(s.company.as_ref().unwrap().planning.rotas.list[1].kind(), RotaKind::Split);
+        if split == 0 {
+            assert!(out["say"]["text"].as_str().unwrap().contains(pt::NO_SPLIT), "{out}");
+        }
         let rota = &v["rota"];
         assert_eq!(rota["name"], "Nord");
         let rows = rota["rows"].as_array().unwrap();
         assert!(!rows.is_empty());
         assert_eq!(rows[0]["cells"].as_array().map(Vec::len), Some(7));
-        assert!(rota["rules"].as_array().is_some_and(|r| r.len() == 6));
+        assert!(rota["rules"].as_array().is_some_and(|r| r.len() == 7));
+        assert_eq!(rota["kind"], "normal");
+        // the weekends: one after each week, by turns
+        let ws = rota["weekends"].as_array().unwrap();
+        assert_eq!(ws.len(), rows.len());
+        assert!(rows.len() % 2 == 0, "an even number of weeks");
+        assert_eq!((ws[0]["state"].as_str(), ws[1]["state"].as_str()), (Some("work"), Some("off")), "{ws:?}");
         // a driver on row 1, his next weeks: a row down each week
         let driver = s.company.as_ref().unwrap().staff.iter().find(|e| co::staff::drives(e)).map(|e| e.id);
         assert!(driver.is_some());
@@ -536,6 +688,7 @@ mod tests {
         let n = v["duties"][1][0]["n"].as_u64().unwrap();
         act(&mut s, &mut r, &json!({ "act": "add_row", "id": id })).unwrap();
         let last = s.company.as_ref().unwrap().planning.rotas.list[0].rows.len() - 1;
+        let id = s.company.as_ref().unwrap().planning.rotas.list[0].id as u64;
         let out = act(&mut s, &mut r, &json!({ "act": "cell", "id": id, "row": last, "day": 1, "cell": { "kind": "duty", "n": n } })).unwrap();
         assert_eq!(out["say"]["error"], true, "{out}");
         assert_eq!(out["say"]["text"], pt::TAKEN);

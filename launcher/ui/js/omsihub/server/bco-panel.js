@@ -76,6 +76,7 @@ export const BCO_FIELDS = [
   ['live_surcharge', 'Live surcharge (%)', 'number', "The authority's extra on the hour price for the hours driven live and passed; 0: none"],
   ['driver_pool', 'AI drivers a map', 'number', "Empty or 0: as many as the companies like. None left: agency drivers run their open duties at the agency's price"],
   ['agency_fallback', 'Agency drivers run the duties nobody covers', BOOL, "Off: such a duty is dropped. Each company's owner may choose otherwise in its settings"],
+  ['employment_notice_days', "Notice of a change of a driver's employment (days)", 'number', 'Full time, part time, reserve or hourly paid. 0: from the next day. From hourly paid to part or full time is always the next day'],
   ['urgent_bonus', 'Urgent tasks pay more (%)', 'number', 'A short-notice doubling the admin ordered (players only) or rail replacement: a player who drives it is paid this much more'],
   ['loyalty_bonus', 'A fixed duty pays more (%)', 'number', 'A duty a company gives a player for good on its weekday'],
   ['boss_duties', "The boss's duties a week", 'number', 'The owner or a co-owner driving this many duties live in a week raises the working environment by 10 points; 0: never'],
@@ -102,7 +103,7 @@ export const BCO_FIELDS = [
 export const BCO_DEFAULTS = {
   name: 'Bus Company Online', real_time: '1', time: '06:00', first_port: '27015', max_worlds: '4', world_idle: '10', keep_worlds: '1', max_memory: '85', max_cpu: '90',
   traffic: '30', passengers: '1', max_players: '16', share_positions: '1', api_port: '27040', first_company_port: '27045', tunnel: '0', logins: 'account steam',
-  price_level: 'dk', player_pay_share: '90', ai_quality_cap: '70', live_surcharge: '5', agency_fallback: '1', urgent_bonus: '50', loyalty_bonus: '5', boss_duties: '2', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
+  price_level: 'dk', player_pay_share: '90', ai_quality_cap: '70', live_surcharge: '5', agency_fallback: '1', employment_notice_days: '2', urgent_bonus: '50', loyalty_bonus: '5', boss_duties: '2', start_money: '20000', found_price: '10000', depot_price: '250000', bus_move_price: '5000', bus_move_days: '2', big_purchase: '500000',
   found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', calendar: 'map', doubling_price: '650', doubling_full: '100', tender_reserve: '10', fine_dropped_minute: '20.83',
   fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_wrong_fuel: '2500', fine_wrong_floor: '2500', fine_inspection: '1000', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',

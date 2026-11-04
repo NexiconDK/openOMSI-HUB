@@ -31,8 +31,10 @@ import { RoutesTab, rtEscape, holdChanges, ROUTES } from './routes.js';
 import { Tutorial, tutEscape, tutMenu } from './tutorial.js';
 // (NexiconDK, 4 November 2026: RosterFlow Pro's tabs Vognløb and Vagter)
 import { ProTab, PRO_BLOCKS, PRO_DUTIES, PRO_ROTA, PRO_DAILY, PRO_CALENDAR, PRO_TABS } from './pro.js';
+// (after the player's comments: RosterFlow Pro has its five tabs only, and its own short intro)
+import { ProIntro, proIntroEscape, proIntroToggle, proIntroFirst } from './pro_intro.js';
 // (step 3: the Turnus tab)
-import { TurnusTab } from './turnus.js';
+import { TurnusTab, turnusEscape } from './turnus.js';
 // (step 4: the Daglig drift and Kalender tabs)
 import { DailyTab, CalendarTab } from './ops.js';
 
@@ -52,6 +54,9 @@ export { ROSTER, VEHICLES, DRIVERS, TIMEPLAN, rfOpen };
  * Roster tab, `reveal` a row of the Vehicles or Drivers tab shown (the day's report's trips
  * dropped), `line` a line for the Timeplan (`hint`: what its status bar says first), `offer`
  * its tutorial's menu (switched on just now). */
+/** Whether `v` is one of RosterFlow Pro's five tabs. */
+const isProView = (v) => v === PRO_BLOCKS || v === PRO_DUTIES || v === PRO_ROTA || v === PRO_DAILY || v === PRO_CALENDAR;
+
 export async function openRosterFlow(o = {}) {
   const on = await rfCmd('rf_on').catch(() => null);
   if (!on?.on) return false;
@@ -62,16 +67,19 @@ export async function openRosterFlow(o = {}) {
   // (another company: begun anew)
   if (r.company && r.company !== on.company) Object.assign(patch, fresh({ ...patch }));
   if (!r.shown || r.company !== on.company) Object.assign(patch, { shown: true, intro: animate ? performance.now() : null });
-  // (RosterFlow Pro opens on its own first tab; without it, its tabs are not there)
+  // (RosterFlow Pro opens on its own first tab and has its five tabs only - after the player's
+  // comments, 4 November 2026; without it, its tabs are not there)
   const was = patch.view ?? r.view;
-  if (on.pro && !r.shown && o.view == null && (was === VEHICLES || was === DRIVERS)) patch.view = PRO_BLOCKS;
-  if (!on.pro && (was === PRO_BLOCKS || was === PRO_DUTIES || was === PRO_ROTA || was === PRO_DAILY || was === PRO_CALENDAR)) patch.view = VEHICLES;
-  if (o.view != null) Object.assign(patch, { view: o.view, hand: null, zones: null, sel: [], card: null, menu: null, panel: null });
+  if (on.pro && !isProView(was)) patch.view = PRO_BLOCKS;
+  if (!on.pro && isProView(was)) patch.view = VEHICLES;
+  if (o.view != null) Object.assign(patch, { view: on.pro && !isProView(o.view) ? (o.view === ROSTER ? PRO_DUTIES : PRO_BLOCKS) : o.view, hand: null, zones: null, sel: [], card: null, menu: null, panel: null });
   if (o.day != null) patch.day = o.day;
-  if (o.line) Object.assign(patch, { view: TIMEPLAN, tpLine: o.line, tpHint: o.hint || null });
-  if (o.sel) patch.roster = { ...r.roster, sel: o.sel, arm: null };
-  if (o.reveal) Object.assign(patch, { reveal: o.reveal, selRow: o.reveal });
-  if (o.offer) patch.tut = { ...r.tut, offer: true };
+  if (o.line && !on.pro) Object.assign(patch, { view: TIMEPLAN, tpLine: o.line, tpHint: o.hint || null });
+  if (o.sel && !on.pro) patch.roster = { ...r.roster, sel: o.sel, arm: null };
+  if (o.reveal && !on.pro) Object.assign(patch, { reveal: o.reveal, selRow: o.reveal });
+  // (switched on just now: RosterFlow's tutorial offered - RosterFlow Pro's intro instead)
+  if (o.offer && !on.pro) patch.tut = { ...r.tut, offer: true };
+  if (on.pro && (o.offer || proIntroFirst())) patch.proIntro = true;
   // (a state of its own for a picture: no opening)
   if (o.shot) patch.intro = null;
   setRf(patch);
@@ -95,6 +103,12 @@ async function rfTakes(page, more) {
   const p = String(page);
   // (Omsi-Hub 6/6: the planning's "plan-line=<line>|<date>|<tour>" too, as
   // `planning::open_timetable` opens the Timeplan with the add-on on)
+  // (RosterFlow Pro has no Timeplan: a line's timetable is the line editor's then - after the
+  // player's comments, 4 November 2026)
+  if (p.startsWith('plan-line=') || p.startsWith('timetable=')) {
+    const on = await rfCmd('rf_on').catch(() => null);
+    if (on?.pro) return false;
+  }
   if (p.startsWith('plan-line=')) return openRosterFlow({ line: p.slice('plan-line='.length).split('|')[0] });
   if (p !== '5' && !p.startsWith('timetable=')) return false;
   if (p === '5') {
@@ -182,6 +196,12 @@ export function RosterFlowPage() {
   useHere();
   useOutsideClose();
   const [ref, size] = useSize();
+  const pro = r.data?.head?.pro ?? r.pro;
+  // (RosterFlow Pro chosen or left while RosterFlow is open: its own tabs, or RosterFlow's)
+  useEffect(() => {
+    if (pro && !isProView(r.view)) setRf({ view: PRO_BLOCKS, panel: null, menu: null, card: null });
+    else if (!pro && isProView(r.view)) setRf({ view: VEHICLES, proIntro: false });
+  }, [pro, r.view]);
   // Escape: the tutorial's menu or sheet, what is in hand, then back to the company's start
   useEffect(() => {
     const k = (e) => {
@@ -189,6 +209,8 @@ export function RosterFlowPage() {
       if (S.co.popup || S.co.dialog) return;
       const el = document.activeElement;
       if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+      if (proIntroEscape()) return;
+      if (turnusEscape()) return;
       if (tutEscape()) return;
       const x = S.rf;
       if (x.intro) return setRf({ intro: null });
@@ -217,7 +239,7 @@ export function RosterFlowPage() {
       ${!studio && html`<div class="rf-layer">${r.data?.board && html`<${TitleWindows} data=${r.data} drivers=${false} size=${{ w: size.w, h: size.h - 48 }} />`}${r.prefs && html`<${PrefsWindow} />`}</div>`}
     </div>
     ${r.intro && html`<${Opening} p=${p} since=${r.intro} onDone=${() => setRf({ intro: null })} />`}
-    <${Tutorial} p=${p} size=${size} />
+    ${pro ? html`<${ProIntro} />` : html`<${Tutorial} p=${p} size=${size} />`}
   </div>`;
 }
 
@@ -310,10 +332,12 @@ function TitleBar() {
     <span class="rf-icons" data-rf="rf-menu">
       <${IconBtn} icon="tune" title="Preferences: the rules the duties are checked against and Optimise works to" onClick=${() => setRf({ prefs: { item: 'signing', search: '', inUse: false } })} />
       <${IconBtn} icon="description" title="Print the bus graph or the duty graph as a PDF file" onClick=${() => toggle('print')} />
-      <${IconBtn} icon="search" title="Go to a vehicle or a duty by its ID (G)" onClick=${() => toggle({ kind: 'goto', text: '' })} />
-      <${IconBtn} icon="settings" title="Optimisation settings" onClick=${() => toggle('optimise')} />
+      ${!pro && html`<${IconBtn} icon="search" title="Go to a vehicle or a duty by its ID (G)" onClick=${() => toggle({ kind: 'goto', text: '' })} />`}
+      ${!pro && html`<${IconBtn} icon="settings" title="Optimisation settings" onClick=${() => toggle('optimise')} />`}
       <${IconBtn} icon="groups" disabled=${!togetherOn() || !!remote} title=${remote ? 'Only the boss can do this, on his own launcher.' : togetherOn() ? 'Play together: friends drive duties of your company in your world' : blockedLabel()} onClick=${() => setCo({ dialog: { kind: 'together' } })} />
-      <${IconBtn} icon="help" data="rf-help" title="Tutorial: a guided tour, lessons to try yourself and a help sheet" on=${r.tut.menu} onClick=${tutMenu} />
+      ${pro
+        ? html`<${IconBtn} icon="help" data="rf-help" title="How RosterFlow Pro works: its five tabs in order" on=${!!r.proIntro} onClick=${proIntroToggle} />`
+        : html`<${IconBtn} icon="help" data="rf-help" title="Tutorial: a guided tour, lessons to try yourself and a help sheet" on=${r.tut.menu} onClick=${tutMenu} />`}
       <span class="rf-name" title=${full}>
         ${fit < 2 && html`<b class="cut">${fit === 0 ? full : company}</b>`}
         <i class=${'dot' + (head?.draft ? ' draft' : '')} title=${tr(head?.draft ? 'Changes not saved yet: SAVE makes them the company\'s planning, DISCARD forgets them' : 'Saved: the company runs this planning')}></i>
@@ -331,12 +355,13 @@ function TitleBar() {
       <${Icon} name="calendar_month" size=${18} /><b>${head?.day_words || ''}</b><${Icon} name="expand_more" size=${18} />
     </button>
     <span class="rf-tabs">
-      ${tab(ROUTES, 'route', 'Routes', 'rf-tab-routes')}
-      ${tab(TIMEPLAN, 'departure_board', 'Timeplan', 'rf-tab-timeplan')}
-      ${pro && PRO_TABS.map((t) => (t.view != null ? proTab(t) : html`<span class="rf-tab soon" title=${tr('Comes in a later step of RosterFlow Pro')}><${Icon} name=${t.icon} size=${18} /><span>${t.n} ${tr(t.label)}</span></span>`))}
-      ${tab(VEHICLES, 'directions_bus', 'Vehicles', 'rf-tab-vehicles')}
-      ${tab(DRIVERS, 'person', 'Drivers', 'rf-tab-drivers')}
-      ${tab(ROSTER, 'group', 'Roster', 'rf-tab-roster')}
+      ${pro
+        ? PRO_TABS.map(proTab)
+        : html`${tab(ROUTES, 'route', 'Routes', 'rf-tab-routes')}
+          ${tab(TIMEPLAN, 'departure_board', 'Timeplan', 'rf-tab-timeplan')}
+          ${tab(VEHICLES, 'directions_bus', 'Vehicles', 'rf-tab-vehicles')}
+          ${tab(DRIVERS, 'person', 'Drivers', 'rf-tab-drivers')}
+          ${tab(ROSTER, 'group', 'Roster', 'rf-tab-roster')}`}
     </span>
   </header>`;
 }
