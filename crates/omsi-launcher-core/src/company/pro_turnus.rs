@@ -587,6 +587,8 @@ pub fn set_exception(c: &mut Company, driver: u32, date: &str, cell: Option<(Cel
 
 /// The exceptions of days gone (before `today`) dropped.
 pub fn tidy(c: &mut Company) {
+    // (step 4: the daily operations' days gone too)
+    super::pro_ops::tidy(c);
     let today = c.date.clone();
     let drivers: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
     c.planning.rotas.exceptions.retain(|x| dates::between(&today, &x.date) >= 0 && drivers.contains(&x.driver));
@@ -974,16 +976,26 @@ pub fn on_day(c: &Company, date: &str, tours: &[TourOfDay]) -> Option<RotaDay> {
         return None;
     }
     let mine: Vec<(u32, Decided)> = c.staff.iter().filter_map(|e| decided(c, e.id, date).map(|d| (e.id, d))).collect();
-    if mine.is_empty() {
+    // (step 4: the duties the daily operations gave for the date - `pro_ops::give`)
+    let calls: Vec<(u32, u32)> = super::pro_ops::calls_on(c, date).filter(|x| c.employee(x.driver).is_some()).map(|x| (x.n, x.driver)).collect();
+    if mine.is_empty() && calls.is_empty() {
         return None;
     }
     let mut out = RotaDay { decided: mine.iter().map(|m| m.0).collect(), ..Default::default() };
-    let wants = mine.iter().any(|(_, d)| matches!(d.cell, Cell::Duty { .. }) || matches!(d.planned, Cell::Duty { .. }));
+    let wants = !calls.is_empty() || mine.iter().any(|(_, d)| matches!(d.cell, Cell::Duty { .. }) || matches!(d.planned, Cell::Duty { .. }));
     if !wants {
         return Some(out);
     }
     let duties = day_duties(c, date, tours.to_vec());
     let pieces = |n: u32| duties.iter().find(|x| x.number == n).map(|x| x.pieces.clone()).unwrap_or_default();
+    // (a duty given for the day first: its driver's, whoever's row has it)
+    for (n, id) in &calls {
+        for (line, tour, k) in pieces(*n) {
+            if !out.given.iter().any(|g| g.0 == line && g.1 == tour && g.2 == k) {
+                out.given.push((line, tour, k, *id));
+            }
+        }
+    }
     // (a duty given by an exception first: it is the swapper's, the row's driver is not on it)
     let mut ordered: Vec<&(u32, Decided)> = mine.iter().collect();
     ordered.sort_by_key(|(_, d)| d.note.is_none());

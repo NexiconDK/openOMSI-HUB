@@ -235,11 +235,15 @@ pub struct Planning {
     /// (`pro_turnus`). Kept at once, not in RosterFlow's draft.
     #[serde(default, skip_serializing_if = "super::pro_turnus::Rotas::is_empty")]
     pub rotas: super::pro_turnus::Rotas,
+    /// (NexiconDK, 4 November 2026) RosterFlow Pro's daily operations: the duties given for a
+    /// date and the drivers asked for them (`pro_ops`). Kept at once.
+    #[serde(default, skip_serializing_if = "super::pro_ops::Ops::is_empty")]
+    pub ops: super::pro_ops::Ops,
 }
 
 impl Default for Planning {
     fn default() -> Self {
-        Planning { week: Vec::new(), auto: false, auto_only: None, auto_keys: None, date: String::new(), fills: Vec::new(), collapsed: Vec::new(), layouts: Vec::new(), joined: Vec::new(), flow: Default::default(), arrivals: Vec::new(), agency: Vec::new(), reserve_told: Vec::new(), rotas: Default::default() }
+        Planning { week: Vec::new(), auto: false, auto_only: None, auto_keys: None, date: String::new(), fills: Vec::new(), collapsed: Vec::new(), layouts: Vec::new(), joined: Vec::new(), flow: Default::default(), arrivals: Vec::new(), agency: Vec::new(), reserve_told: Vec::new(), rotas: Default::default(), ops: Default::default() }
     }
 }
 

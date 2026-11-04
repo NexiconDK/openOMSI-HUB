@@ -59,7 +59,7 @@ fn mark_words(m: &pt::Mark) -> String {
 
 /// The duties of a week of the company (its seven days: each weekday once), Sunday first, as the
 /// saved planning runs them; None while a day's timetable is being read.
-fn week_duties(s: &mut Session, r: &mut Rf) -> Option<Result<Arc<Week>, String>> {
+pub(super) fn week_duties(s: &mut Session, r: &mut Rf) -> Option<Result<Arc<Week>, String>> {
     let generation = s.generation;
     if let Some((_, w)) = r.turnus_week.as_ref().filter(|x| x.0 == generation) {
         return Some(Ok(w.clone()));

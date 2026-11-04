@@ -24,14 +24,17 @@ export const PRO_BLOCKS = 10;
 export const PRO_DUTIES = 11;
 /** (Step 3) The Turnus tab (`turnus.js`). */
 export const PRO_ROTA = 12;
+/** (Step 4) The Daglig drift and Kalender tabs (`ops.js`). */
+export const PRO_DAILY = 13;
+export const PRO_CALENDAR = 14;
 
 /** The Pro tabs of the title bar: those built, and those of the steps to come. */
 export const PRO_TABS = [
   { view: PRO_BLOCKS, n: 1, icon: 'airport_shuttle', label: 'Blocks', anchor: 'rf-tab-pro-blocks' },
   { view: PRO_DUTIES, n: 2, icon: 'badge', label: 'Duties', anchor: 'rf-tab-pro-duties' },
   { view: PRO_ROTA, n: 3, icon: 'autorenew', label: 'Rota', anchor: 'rf-tab-pro-rota' },
-  { view: null, n: 4, icon: 'today', label: 'Daily operations' },
-  { view: null, n: 5, icon: 'event', label: 'Calendar' },
+  { view: PRO_DAILY, n: 4, icon: 'today', label: 'Daily operations', anchor: 'rf-tab-pro-daily' },
+  { view: PRO_CALENDAR, n: 5, icon: 'event', label: 'Calendar', anchor: 'rf-tab-pro-calendar' },
 ];
 
 /** "07:05" on the clock (minutes of the service day). */

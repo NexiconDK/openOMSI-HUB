@@ -133,6 +133,40 @@ pub fn day_minutes(p: &Prefs, e: &Employee, weekday: u8, full: f64, away: bool, 
     }
 }
 
+/// A day's paid minutes (`paid`, by the employment) as a frame of the driver's rota changes them
+/// (`framed`: what his rota decides of the day's frame, None when no rota decides it).
+fn framed_paid(p: &Prefs, e: &Employee, away: bool, framed: Option<Option<Frame>>, mine: &[(i32, i32)], paid: f64) -> f64 {
+    match framed {
+        None => paid,
+        // (a frame of his rota: paid whether used or not, the work outside it on top)
+        Some(Some(f)) if !away => (f.minutes() + outside_frame(p, &f, mine)).max(paid_minutes(p, mine)) as f64,
+        // (a reserve whose rota has no frame that day: the duties he drives)
+        Some(_) if matches!(e.employment, Employment::Reserve(_)) => paid_minutes(p, mine) as f64,
+        Some(_) => paid,
+    }
+}
+
+/// (NexiconDK, 4 November 2026: RosterFlow Pro's calendar, step 4) The minutes driver `e`'s day
+/// of `date` is paid with the pieces of work `pieces` (minutes of the day), as `day` pays it: by
+/// his employment, a frame of his rota, nothing for a day ill or on holiday (the allowances pay
+/// it) - the hours of his week the calendar adds up.
+pub fn planned_minutes(c: &Company, e: &Employee, date: &str, pieces: &[(i32, i32)]) -> f64 {
+    let p = &c.planning.flow.prefs;
+    let weekday = dates::parse(date).map(|d| dates::weekday(d) as u8).unwrap_or(0);
+    let away = away_paid_otherwise(e, date);
+    if away {
+        return 0.0;
+    }
+    let (paid, _, _) = day_minutes(p, e, weekday, contract_week_minutes(c), away, pieces);
+    framed_paid(p, e, away, super::pro_turnus::decides_frame(c, e.id, date), pieces, paid)
+}
+
+/// What an hour of driver `e` costs in wages (cents, without the on-costs): his wage's hour, the
+/// hourly paid's premium on it (`rate_of`).
+pub fn hour_wage(e: &Employee) -> f64 {
+    staff::hourly(e.wage) * rate_of(e)
+}
+
 /// Away so that the day is paid through the allowances (ill or on holiday), not by the guarantee.
 fn away_paid_otherwise(e: &Employee, date: &str) -> bool {
     e.sick_until.as_deref().is_some_and(|u| dates::between(date, u) >= 0) || e.on_holiday(date).is_some()
@@ -173,16 +207,8 @@ pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
         let mine: Vec<(i32, i32)> = pieces.iter().filter(|x| x.0 == e.id).map(|x| (x.1, x.2)).collect();
         // (NexiconDK, 4 November 2026: by their employment - `day_minutes`)
         let away = away_paid_otherwise(e, date);
-        let (mut paid, due, contract) = day_minutes(&p, e, weekday, full, away, &mine);
-        if let Some((_, f)) = framed.iter().find(|x| x.0 == e.id) {
-            paid = match f {
-                // (a frame of his rota: paid whether used or not, the work outside it on top)
-                Some(f) if !away => (f.minutes() + outside_frame(&p, f, &mine)).max(paid_minutes(&p, &mine)) as f64,
-                // (a reserve whose rota has no frame that day: the duties he drives)
-                _ if matches!(e.employment, Employment::Reserve(_)) => paid_minutes(&p, &mine) as f64,
-                _ => paid,
-            };
-        }
+        let (paid, due, contract) = day_minutes(&p, e, weekday, full, away, &mine);
+        let paid = framed_paid(&p, e, away, framed.iter().find(|x| x.0 == e.id).map(|x| x.1), &mine, paid);
         e.week_due += due;
         if paid <= 0.0 {
             continue;

@@ -42,6 +42,8 @@ mod relief;
 mod pro;
 /// (NexiconDK, 4 November 2026) RosterFlow Pro's tab Turnus (`co::pro_turnus`).
 mod turnus;
+/// (NexiconDK, 4 November 2026) RosterFlow Pro's tabs Daglig drift and Kalender (`co::pro_ops`).
+mod ops;
 
 /// Several planners at once (company multiplayer): who changed what, who is in RosterFlow, each
 /// one's undo kept clear of the others' changes.
@@ -119,6 +121,9 @@ pub(crate) struct Rf {
     /// (RosterFlow Pro's Turnus tab) The duties of the company's week, of the company's
     /// generation they were made for (`turnus`).
     pub(crate) turnus_week: Option<(u64, Arc<co::pro_turnus::Week>)>,
+    /// (RosterFlow Pro's Daglig drift and Kalender) The plans of dates outside the company's week,
+    /// of the company's and the plans' generations they were made for (`ops`).
+    pub(crate) ops_plans: Vec<((u64, u64), String, co::plan::DayPlan)>,
 }
 
 fn state() -> &'static Mutex<Rf> {
@@ -217,6 +222,8 @@ fn run(s: &mut Session, r: &mut Rf, by: live::Editor, cmd: &str, args: &Value) -
         c if c.starts_with("rf_roster") => return roster::run(s, r, c, args),
         // (RosterFlow Pro's Turnus tab: `turnus`)
         c if c.starts_with("rf_turnus") => return turnus::run(s, r, c, args),
+        // (RosterFlow Pro's Daglig drift and Kalender: `ops`)
+        c if c.starts_with("rf_cal") || c.starts_with("rf_ops") => return ops::run(s, r, c, args),
         _ => return None,
     })
 }
@@ -234,6 +241,7 @@ fn change_of(cmd: &str, args: &Value) -> Option<live::Kind> {
         },
         "rf_roster_act" if !what.starts_with("fold") => Some(live::Kind::Roster),
         "rf_turnus_act" => Some(live::Kind::Roster),
+        "rf_ops_act" => Some(live::Kind::Roster),
         "rf_tp_act" => Some(live::Kind::Timetable),
         _ => None,
     }
@@ -2137,6 +2145,8 @@ mod tests {
         core.extend(pro::texts());
         core.extend(co::pro_turnus::texts());
         core.extend(turnus::texts());
+        core.extend(co::pro_ops::texts());
+        core.extend(ops::texts());
         let mut missing = Vec::new();
         for lang in ["nl", "de", "fr", "ru", "uk", "pl"] {
             let table = crate::i18n::table(lang);

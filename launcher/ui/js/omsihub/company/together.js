@@ -330,7 +330,7 @@ function MyWork({ v, ask }) {
  * defect of the bus he drives - each on his own duty and bus only. */
 function MyCrew({ mine }) {
   const [c, again] = usePoll('tg_relay', 4000, { cmd: 'co_crew', args: { act: 'view' } });
-  const [f, setF] = useState({ duty: null, with: '', tpl: '', note: '', kind: 'doors', defect: '' });
+  const [f, setF] = useState({ duty: null, with: '', tpl: '', note: '', kind: 'doors', defect: '', ans: null, time: '', words: '' });
   if (!c || c.error || !c.words) return null;
   const w = c.words;
   const put = (patch) => setF({ ...f, ...patch });
@@ -341,7 +341,19 @@ function MyCrew({ mine }) {
   };
   const name = (x) => (x.theirs ? x.theirs.line + ' ' + x.theirs.tour : '');
   const bus = c.buses[0];
+  // (NexiconDK, 4 November 2026: RosterFlow Pro's daily operations ask him for a duty - he answers
+  // yes, no, too early from a time, too late until one, or in his own words)
+  const answer = (a, kind, extra = {}) => (crew({ act: 'pro_answer', id: a.id, kind, ...extra }), put({ ans: null, time: '', words: '' }));
   return html`<section class="co-section tg-crew"><div class="co-caps">${w.caps}</div>
+    ${(c.asks || []).length > 0 && html`<div class="tg-crew-h">${w.asked_caps}</div>
+      ${c.asks.map((a) => html`<div class="tg-crew-row"><span class="cut">${w.asked.replace('%{n}', a.n).replace('%{day}', a.day).replace('%{time}', a.time)}</span>
+        <${Btn} kind="primary" label=${w.yes} onClick=${() => answer(a, 'yes')} /><${Btn} label=${w.no} onClick=${() => answer(a, 'no')} />
+        <${Btn} label=${w.early} onClick=${() => put({ ans: { id: a.id, kind: 'early' }, time: '' })} /><${Btn} label=${w.late} onClick=${() => put({ ans: { id: a.id, kind: 'late' }, time: '' })} /></div>
+        ${f.ans?.id === a.id && html`<div class="tg-crew-row"><span class="dim">${f.ans.kind === 'early' ? w.from : w.until}</span>
+          <input class="tg-crew-in" type="time" value=${f.time} onInput=${(e) => put({ time: e.currentTarget.value })} />
+          <${Btn} kind="primary" label=${w.send} disabled=${!f.time} onClick=${() => answer(a, f.ans.kind, { time: f.time })} /></div>`}
+        <div class="tg-crew-row"><input class="tg-crew-in" maxlength="140" placeholder=${w.own} value=${f.ans?.id === a.id && f.ans.kind === 'text' ? f.words : ''} onFocus=${() => f.ans?.id !== a.id || f.ans.kind !== 'text' ? put({ ans: { id: a.id, kind: 'text' }, words: '' }) : null} onInput=${(e) => put({ words: e.currentTarget.value })} />
+          <${Btn} label=${w.send} disabled=${!(f.ans?.id === a.id && f.ans.kind === 'text' && f.words.trim())} onClick=${() => answer(a, 'text', { text: f.words.trim() })} /></div>`)}`}
     ${c.swaps.length > 0 && html`<div class="tg-crew-h">${w.swaps}</div>
       ${c.swaps.map((x) => html`<div class="tg-crew-row"><span class="cut">${x.asked_of_me ? w.asked_of_me.replace('%{name}', x.from).replace('%{mine}', x.mine.line + ' ' + x.mine.tour) : x.mine.line + ' ' + x.mine.tour + (name(x) ? ' ⇄ ' + name(x) : '')}</span>
         ${x.asked_of_me

@@ -11,7 +11,9 @@ use omsi_launcher_lib::company::crew::{self, DefectKind, NoteTemplate, SwapState
 use omsi_launcher_lib::company::duty_launch::DutyRef;
 use omsi_launcher_lib::company::holidays::Reason;
 use omsi_launcher_lib::company::plan::{BusOf, DayPlan, Who};
+use omsi_launcher_lib::company::pro_ops::{NoWhy, Reply};
 use omsi_launcher_lib::company::together::book::ClaimState;
+use omsi_launcher_lib::company as co;
 use serde_json::{json, Value};
 
 /// Why a player's crew action is refused (English: keys of the translations).
@@ -60,13 +62,20 @@ pub fn view(s: &mut Session, guest: u32) -> Value {
         .map(|x| json!({ "no": x.no, "mine": x.mine, "theirs": x.theirs, "state": x.state, "why": tr(&x.why), "asked_of_me": x.with == me && x.state == SwapState::Asked, "from": x.from.map(|w| if let Who::Guest(g) = w { c.together.name_of(g) } else { String::new() }) }))
         .collect();
     let players: Vec<Value> = c.together.guests.iter().filter(|g| g.no != guest && !g.banned).map(|g| json!({ "no": g.no, "name": g.name })).collect();
+    // (NexiconDK, 4 November 2026: RosterFlow Pro's daily operations ask him for a duty -
+    // `pro_ops::ask`; he answers for himself)
+    let clock = |m: i32| format!("{:02}:{:02}", m.rem_euclid(1440) / 60, m.rem_euclid(60));
+    let asks: Vec<Value> = co::pro_ops::asked_of(c, guest)
+        .iter()
+        .map(|a| json!({ "id": a.id, "n": a.n, "day": super::words::day_label(&a.date), "time": format!("{}–{}", clock(a.start), clock(a.end)), "start": a.start, "end": a.end }))
+        .collect();
     let buses: Vec<Value> = buses
         .iter()
         .filter_map(|id| c.vehicle(*id))
         .map(|v| json!({ "id": v.id, "number": v.number, "notes": crew::notes_for(c, v.id).iter().map(|n| super::launch::note_words(n)).collect::<Vec<_>>() }))
         .collect();
     json!({
-        "swaps": swaps, "players": players, "buses": buses,
+        "swaps": swaps, "players": players, "buses": buses, "asks": asks,
         "templates": NoteTemplate::ALL.iter().map(|t| json!([t.key(), tr(t.text())])).collect::<Vec<_>>(),
         "checks": DefectKind::ALL.iter().map(|k| json!([k.key(), tr(k.label())])).collect::<Vec<_>>(),
         "reasons": Reason::ALL.iter().map(|r| json!([r, tr(r.label())])).collect::<Vec<_>>(),
@@ -78,6 +87,9 @@ pub fn view(s: &mut Session, guest: u32) -> Value {
             "bus": tr("Bus %{bus} today"), "notes": tr("Handover notes"), "no_notes": tr("No notes for today."), "note": tr("Leave a note"), "note_ph": tr("Or type a note"), "none": tr("None"),
             "defect": tr("Report a defect"), "defect_ph": tr("What is wrong (optional)"), "report": tr("Report"), "no_bus": tr("No duty with a bus today."),
             "sent": tr("Sent: the boss's launcher carries it out."),
+            "asked_caps": tr("The control room asks"), "asked": tr("Can you drive duty %{n} on %{day}, %{time}?"),
+            "yes": tr("Yes"), "no": tr("No"), "early": tr("Too early"), "late": tr("Too late"), "from": tr("I can from"), "until": tr("I can until"),
+            "own": tr("Or say it in your own words"), "send": tr("Send"),
             // (NexiconDK, Bus Company Online: a delay reported to the control room - its late
             // departures not fined, `server_fines::report_late`)
             "late": c.online.on_server.then(|| tr("Report a delay")),
@@ -124,6 +136,29 @@ pub fn act(s: &mut Session, guest: u32, args: &Value) -> Answer {
             week_work(s);
             let Some(Ok(p)) = plan_of(s, &date) else { return Err(tr(crew::NO_SWAP)) };
             super::act(s, |c| crew::answer_swap(c, &p, no, me, yes)).map(|x| json!({ "ok": true, "state": x })).map_err(refused)
+        }
+        // (NexiconDK, 4 November 2026: his answer to RosterFlow Pro's daily operations, asked for
+        // a duty - `pro_ops::answer`: yes, no, too early from a time, too late until one, his own
+        // words)
+        "pro_answer" => {
+            let id = args.get("id").and_then(Value::as_u64).unwrap_or(0) as u32;
+            let time = |k: &str| -> i32 {
+                let t = s_arg(args, k);
+                let mut it = t.split(':').map(|x| x.trim().parse::<i32>().unwrap_or(0));
+                let (h, m) = (it.next().unwrap_or(0), it.next().unwrap_or(0));
+                (h.clamp(0, 24) * 60 + m.clamp(0, 59)).min(1440)
+            };
+            let text = s_arg(args, "text").trim().to_string();
+            let reply = match s_arg(args, "kind") {
+                "yes" => Reply::Yes { say: 0 },
+                "no" => Reply::No { why: NoWhy::Plans, say: 0 },
+                "early" => Reply::Early { from: time("time"), say: 0 },
+                "late" => Reply::Late { until: time("time"), say: 0 },
+                _ if !text.is_empty() => Reply::Text { text, yes: args.get("yes").and_then(Value::as_bool).unwrap_or(false) },
+                _ => return Err(tr("Say yes, no, or in your own words.")),
+            };
+            let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs());
+            super::act(s, |c| co::pro_ops::answer(c, id, guest, reply, now)).map(|_| json!({ "ok": true })).map_err(refused)
         }
         // (NexiconDK: his delay reported to the control room - Bus Company Online's server)
         "late" => super::act(s, |c| omsi_launcher_lib::company::server_fines::report_late(c, guest)).map(|_| json!({ "ok": true, "said": tr(omsi_launcher_lib::company::server_fines::REPORTED) })).map_err(refused),

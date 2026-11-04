@@ -30,9 +30,11 @@ import { TimeplanTab, tpEscape } from './timeplan.js';
 import { RoutesTab, rtEscape, holdChanges, ROUTES } from './routes.js';
 import { Tutorial, tutEscape, tutMenu } from './tutorial.js';
 // (NexiconDK, 4 November 2026: RosterFlow Pro's tabs Vognløb and Vagter)
-import { ProTab, PRO_BLOCKS, PRO_DUTIES, PRO_ROTA, PRO_TABS } from './pro.js';
+import { ProTab, PRO_BLOCKS, PRO_DUTIES, PRO_ROTA, PRO_DAILY, PRO_CALENDAR, PRO_TABS } from './pro.js';
 // (step 3: the Turnus tab)
 import { TurnusTab } from './turnus.js';
+// (step 4: the Daglig drift and Kalender tabs)
+import { DailyTab, CalendarTab } from './ops.js';
 
 // (RosterFlow's own look, loaded with it)
 if (!document.querySelector('link[data-rf-css]')) {
@@ -63,7 +65,7 @@ export async function openRosterFlow(o = {}) {
   // (RosterFlow Pro opens on its own first tab; without it, its tabs are not there)
   const was = patch.view ?? r.view;
   if (on.pro && !r.shown && o.view == null && (was === VEHICLES || was === DRIVERS)) patch.view = PRO_BLOCKS;
-  if (!on.pro && (was === PRO_BLOCKS || was === PRO_DUTIES || was === PRO_ROTA)) patch.view = VEHICLES;
+  if (!on.pro && (was === PRO_BLOCKS || was === PRO_DUTIES || was === PRO_ROTA || was === PRO_DAILY || was === PRO_CALENDAR)) patch.view = VEHICLES;
   if (o.view != null) Object.assign(patch, { view: o.view, hand: null, zones: null, sel: [], card: null, menu: null, panel: null });
   if (o.day != null) patch.day = o.day;
   if (o.line) Object.assign(patch, { view: TIMEPLAN, tpLine: o.line, tpHint: o.hint || null });
@@ -204,6 +206,8 @@ export function RosterFlowPage() {
   if (studio) body = html`<${Studio} p=${p} drivers=${r.view === DRIVERS} />`;
   else if (r.view === PRO_BLOCKS || r.view === PRO_DUTIES) body = html`<${ProTab} duties=${r.view === PRO_DUTIES} />`;
   else if (r.view === PRO_ROTA) body = html`<${TurnusTab} />`;
+  else if (r.view === PRO_DAILY) body = html`<${DailyTab} onCalendar=${() => setRf({ view: PRO_CALENDAR })} />`;
+  else if (r.view === PRO_CALENDAR) body = html`<${CalendarTab} />`;
   else if (r.view === ROSTER) body = html`<${RosterTab} p=${p} />`;
   else if (r.view === ROUTES) body = html`<${RoutesTab} p=${p} />`;
   else body = html`<${TimeplanTab} p=${p} />`;
