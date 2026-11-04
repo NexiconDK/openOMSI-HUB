@@ -99,6 +99,7 @@ pub mod parts;
 pub mod pay;
 pub mod plan;
 pub mod plandays;
+pub mod pro_duties;
 pub mod rankings;
 pub mod registrations;
 pub mod remote;

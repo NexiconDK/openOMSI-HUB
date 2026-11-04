@@ -38,6 +38,8 @@ mod driver_drag;
 mod breaks;
 /// The relief points (Preferences) and the reliefs on the way (the board).
 mod relief;
+/// (NexiconDK, 4 November 2026) RosterFlow Pro's tabs Vognløb and Vagter (`co::pro_duties`).
+mod pro;
 
 /// Several planners at once (company multiplayer): who changed what, who is in RosterFlow, each
 /// one's undo kept clear of the others' changes.
@@ -284,6 +286,8 @@ fn on_json(s: &mut Session) -> Value {
         "days": days,
         "casual": c.game_mode.casual(),
         "trips_to_duties": TRIPS_TO_DUTIES,
+        // (RosterFlow Pro: its own tabs - `pro`)
+        "pro": co::pro_duties::on(c),
     })
 }
 
@@ -478,12 +482,14 @@ fn board_json(c: &Company, board: &Board) -> Value {
         .collect();
     let (t0, t1) = day_span(board);
     let f = &board.figures;
+    // (RosterFlow Pro's tabs: the blocks' pieces, the pool, the duties as it numbers them)
+    let pro = co::pro_duties::on(c).then(|| pro::pro_json(c, board));
     let open = |scope: Scope| {
         let list = board.open(c, scope, false);
         let hard = list.iter().any(|&i| board.issues[i].hard);
         json!({ "n": list.len(), "hard": hard })
     };
-    json!({
+    let mut out = json!({
         "weekday": wd,
         "span": [t0, t1],
         "blocks": blocks,
@@ -498,7 +504,11 @@ fn board_json(c: &Company, board: &Board) -> Value {
             "blocks": f.blocks, "duties": f.duties, "locked": board.shaped.iter().filter(|x| x.locked).count(),
             "issues": board.issues.iter().filter(|i| !rf::dismissed(c, wd, &i.key)).count(),
         },
-    })
+    });
+    if let Some(p) = pro {
+        out["pro"] = p;
+    }
+    out
 }
 
 /// A difference in words and whether it is good (lower is better unless `up`).
@@ -636,6 +646,8 @@ fn board_answer(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
         "day_words": format!("{} {}", tr(DAY_NAMES[wd as usize % 7]).to_uppercase(), day_label(&date).split_whitespace().skip(1).take(2).collect::<Vec<_>>().join(" ").to_uppercase()),
         "service": tr(DAY_NAMES[wd as usize % 7]),
         "draft": rf::has_draft(&c),
+        // (RosterFlow Pro: its own tabs)
+        "pro": co::pro_duties::on(&c),
         "undo": r.undo.iter().map(|u| u.1.clone()).collect::<Vec<_>>(),
         "redo": r.redo.len(),
         "edits": r.edits,
@@ -1080,6 +1092,13 @@ fn edit_rows(s: &mut Session, r: &mut Rf, label: String, rows: Rows, f: impl FnO
                     Rows::Keep(moved) => rf::keep_rows(&mut v, k.board.weekday, &tours, &was, moved),
                     Rows::Anew => rf::pin_rows(&mut v, k.board.weekday, &tours, &was),
                 }
+                // (RosterFlow Pro, NexiconDK 4 November 2026: what is no longer a piece without a
+                // duty leaves the pool, and every duty keeps its number - `co::pro_duties`)
+                if co::pro_duties::on(&v) {
+                    co::pro_duties::tidy_pool(&mut v, k.board.weekday, &tours);
+                    let after = rf::board_of(&v, k.board.weekday, tours.clone(), Vec::new());
+                    co::pro_duties::renumber(&mut v, k.board.weekday, &k.board, &after);
+                }
             }
             let _ = company::act(s, |c| {
                 rf::keep_draft(c, &v);
@@ -1458,6 +1477,8 @@ fn act(s: &mut Session, r: &mut Rf, by: live::Editor, args: &Value) -> Answer {
     let trips = usizes(args, "trips");
     let label_of = |i: usize| tours.get(i).map(block_label).unwrap_or_default();
     Ok(match what.as_str() {
+        // (RosterFlow Pro's tabs Vognløb and Vagter: `pro`)
+        "pro_cut" | "pro_pool" | "pro_dissolve" | "pro_new" | "pro_add" | "pro_auto" | "pro_rules" => pro::act(s, r, &k, &what, args),
         "optimise" => optimise(r, &k),
         "accept" => match r.proposal.take() {
             // (nothing better was found: the day as it is, nothing to accept)
@@ -2104,6 +2125,8 @@ mod tests {
         let mut core: Vec<&str> = rf::texts();
         core.extend(st::texts());
         core.extend(co::unassign::texts());
+        core.extend(co::pro_duties::texts());
+        core.extend(pro::texts());
         let mut missing = Vec::new();
         for lang in ["nl", "de", "fr", "ru", "uk", "pl"] {
             let table = crate::i18n::table(lang);

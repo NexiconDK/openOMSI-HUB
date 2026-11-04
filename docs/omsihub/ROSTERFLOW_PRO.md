@@ -3,8 +3,8 @@
 RosterFlow Pro is the third planning tool of a bus company, next to the standard planning and
 RosterFlow. The approved plan ("Rosteren – plan") gives it five tabs: rosters, a calendar of
 what every driver does, duties, asking drivers, and frames. It is built in steps. This page
-describes step 1, "Ansættelse og rammer" (employment and frames), done on 4 November 2026
-(NexiconDK).
+describes step 1, "Ansættelse og rammer" (employment and frames), and step 2, the tabs Vognløb
+and Vagter, both done on 4 November 2026 (NexiconDK).
 
 ## The planning tool
 
@@ -89,8 +89,89 @@ room's message link checks today's and tomorrow's plans every two seconds.
 - **Planning, the day panel:** "Frames this day" lists the reserves whose frame holds that day,
   with what of it is used, and "Free all day" lists who has no duty.
 
-## Not in this step
+## Not in step 1
 
 Players of "Play together" as reserves, the drivers' answers ("too early", "too late"), sign-on
 times and driver numbers in the calendar, and the cost of overtime when asking a full-time
 driver come in later steps.
+
+# Step 2: the tabs Vognløb and Vagter (4 November 2026)
+
+With RosterFlow Pro chosen, RosterFlow's title bar has the Pro tabs after Routes and Timeplan:
+"1 Vognløb" (Blocks) and "2 Vagter" (Duties), and "3 Turnus", "4 Daglig drift" and
+"5 Kalender" greyed out until their steps come. Vehicles, Drivers and Roster stay. RosterFlow
+opens on "1 Vognløb" when Pro is chosen. Underneath it is RosterFlow's own day: the studio's
+blocks and pieces, joined duties for duties of several pieces, the draft, Undo, Redo, Save and
+Discard. Code: `co::pro_duties` (the core), `omsihub/rosterflow/pro.rs` (what the page gets and
+the acts `pro_*`), `launcher/ui/js/omsihub/rosterflow/pro.js` (the page).
+
+## 1 Vognløb (Blocks)
+
+A read-only view of the day's buses, one row per block: its line, its name, when it pulls out
+and pulls in, and its trips on a time axis in the line's colour (an arrow for the direction; a
+run without passengers hatched). A red mark is a relief point where the driver may be changed
+(`studio::can_cut`: the depot, the termini and the relief points of Preferences › Relief Points),
+a red line is a change already made. On the left: the lines with their number of blocks, and the
+relief points with the lines that stop there. A block clicked says its times, trips, kilometres,
+pieces and how often and where a relief is possible. "Cut into duties" opens Vagter, "Move
+trips" RosterFlow's Vehicles tab.
+
+## 2 Vagter (Duties)
+
+Top: every block cut into its pieces (A, B, C ...), each with its duty's number or dashed as
+"no duty". A red mark clicked cuts the block there (`pro_duties::cut_to_pool`): the piece after
+the cut goes to the pool. A red line clicked joins the two pieces again (`studio::uncut`).
+
+Left: **the pool**, the pieces without a duty. A piece is dragged onto a duty, or chosen and then
+"Put in duty" (`add_to_duty`): next to a piece of the duty on the same bus the cut goes, else the
+duty gets a piece of another bus - often another line (a line change). Only pieces at the same
+time are refused; everything else the rules say is marked on the duty, not refused. "New duty"
+makes the piece a duty of its own (`new_duty`). A piece in the pool still runs: the day's roster
+has it as a short duty of its own, numbered from 1501 (2501, 3501), so no trip is dropped
+because a duty is not built yet.
+
+Bottom: **the duties**, one row each: number, type, sign-on, sign-off, work and paid time, the
+pieces on the time axis with the breaks (P) and walks (→) between them, and a mark: ✓ all rules
+kept, a yellow ! a warning, a red ! a rule broken (the reasons on hover and on the card of the
+duty chosen). The card says the duty in words: "Signs on 05:30 · line 7 vehicle 7/02 piece A to
+Hospital 08:55 · walks 10 min to Station · off duty 7:05 · line 5 vehicle 5/01 piece C to Bytorvet
+16:50 · signs off 16:55 at Bytorvet". "Take piece out" puts the piece chosen back in the pool
+(`to_pool`), "Take duty apart" every piece of the duty (`dissolve`). "Make duties automatically"
+is RosterFlow's Optimise of the duties alone, the buses' blocks kept (`auto`): every piece in a
+duty, the pool emptied.
+
+| Type | When |
+|---|---|
+| Hel (whole) | One stretch, or pieces with breaks under 1 h 30 between |
+| Delt (split) | A gap of 1 h 30 or more between two pieces (unpaid) |
+| Kort (short) | Under 4 hours of work; paid 4 hours (`staff::MIN_PAID`) |
+
+The marks are RosterFlow's issues of the duty (the working-time rules: driving without a break,
+the meal break, the spread, rest, the duty types) and Pro's own (`pro_duties::marks`): a split
+duty spread over 12 h 30, and too little time to change from one piece to the next - 5 minutes
+at the same stop, 10 minutes to walk to another stop (a relief point's own travel time when it
+is longer). The four times on the left - signing on (10 min), signing off (5 min), changing at
+the same stop and walking to another - are the company's preferences (`Prefs::change`, the act
+`pro_rules`).
+
+## The duty numbers
+
+A duty keeps its number while the day is edited (`Sheet::numbers`, `pro_duties::renumber` after
+every edit of RosterFlow's with Pro chosen): the duty with the same first piece keeps it, else
+the duty its first piece was in, else one it shares a piece with; a new duty takes the lowest
+number free. Monday to Friday count from 1001, Saturday from 2001, Sunday from 3001 (a plan of
+single dates by its first date's weekday). A plan copied to another day is numbered anew there.
+The roster, the duty card and the PDF show the same numbers.
+
+## The fall-back
+
+A day nothing was built on with Pro runs RosterFlow's own duties (`studio::duties`: every piece
+a duty, the joined ones together), numbered in their rows from the day type's first number -
+the same duties as before Pro. An older save loads as it was: the pool, the numbers and the
+change times are new fields with defaults, left out of the file when empty. Without RosterFlow
+Pro nothing of this applies: the numbers are RosterFlow's 1001 on.
+
+## Not in step 2
+
+The rota (Turnus), the daily operations, the calendar and asking drivers for a duty come in the
+next steps.

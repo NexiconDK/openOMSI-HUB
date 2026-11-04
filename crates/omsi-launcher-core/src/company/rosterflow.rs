@@ -290,6 +290,9 @@ pub struct Prefs {
     // the optimiser's settings
     pub optimise_vehicles: bool,
     pub optimise_duties: bool,
+    /// (NexiconDK, 4 November 2026: RosterFlow Pro) The least time to change from one piece of a
+    /// duty to the next, at the same stop and between two stops (`pro_duties::Change`).
+    pub change: super::pro_duties::Change,
 }
 
 impl Default for Prefs {
@@ -331,6 +334,7 @@ impl Default for Prefs {
             per_km: None,
             optimise_vehicles: true,
             optimise_duties: true,
+            change: super::pro_duties::Change::default(),
         }
     }
 }
@@ -766,11 +770,18 @@ pub struct Sheet {
     /// (`RowOrder`, `keep_rows`).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub rows: Vec<RowOrder>,
+    /// (NexiconDK, 4 November 2026: RosterFlow Pro) The pieces no duty has yet, a weekday at a
+    /// time (`pro_duties::Pooled`), and the duties' numbers kept by their keys
+    /// (`pro_duties::DutyNumber`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub pool: Vec<super::pro_duties::Pooled>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub numbers: Vec<super::pro_duties::DutyNumber>,
 }
 
 impl Sheet {
     pub fn is_empty(&self) -> bool {
-        self.locks.is_empty() && self.links.is_empty() && self.notes.is_empty() && self.spares.is_empty() && self.dismissed.is_empty() && self.rows.is_empty()
+        self.locks.is_empty() && self.links.is_empty() && self.notes.is_empty() && self.spares.is_empty() && self.dismissed.is_empty() && self.rows.is_empty() && self.pool.is_empty() && self.numbers.is_empty()
     }
 }
 
@@ -1194,6 +1205,10 @@ fn rename_in_sheet(s: &mut Sheet, old: &str, new: &str) {
     for k in s.rows.iter_mut().flat_map(|r| r.keys.iter_mut()).filter(|k| same(&k.line, old)) {
         k.line = new.to_string();
     }
+    // (RosterFlow Pro's pool and numbers)
+    for k in s.pool.iter_mut().map(|x| &mut x.piece).chain(s.numbers.iter_mut().map(|x| &mut x.key)).filter(|k| same(&k.line, old)) {
+        k.line = new.to_string();
+    }
 }
 
 // --- the rows of the Drivers tab ---------------------------------------------------------------------
@@ -1427,6 +1442,9 @@ pub struct Shaped {
     pub no_rest: Vec<(i32, i32)>,
     /// Where it signs on and off and takes its breaks elsewhere than where the bus is (`signing`).
     pub points: signing::Points,
+    /// (NexiconDK, 4 November 2026) Its number with RosterFlow Pro (`pro_duties::number_rows`):
+    /// kept across edits, from 1001, 2001 or 3001 by the day type. None: by its row.
+    pub number: Option<u32>,
 }
 
 impl Shaped {
@@ -1443,11 +1461,13 @@ impl Shaped {
         self.kind.and_then(|k| p.duty_types.get(k)).map(|t| t.name.as_str()).unwrap_or(OTHER)
     }
 
-    /// Its number as the studio shows it: 1001 on, in order, a spare from 9001.
+    /// Its number as the studio shows it: 1001 on, in order, a spare from 9001 (with RosterFlow
+    /// Pro the number it keeps: `number`).
     pub fn label(&self, row: usize) -> String {
-        match self.spare {
-            Some(id) => format!("{}", 9000 + id),
-            None => format!("{}", 1001 + row),
+        match (self.spare, self.number) {
+            (Some(id), _) => format!("{}", 9000 + id),
+            (None, Some(n)) => format!("{n}"),
+            (None, None) => format!("{}", 1001 + row),
         }
     }
 }
@@ -1773,6 +1793,8 @@ pub fn board_of(c: &Company, wd: u8, tours: Vec<TourOfDay>, stack: Vec<(String, 
     }
     shaped.sort_by_key(|s| (s.spare.is_some(), s.start));
     in_rows(c, wd, &mut shaped);
+    // (RosterFlow Pro: the numbers the duties keep, by the day type)
+    super::pro_duties::number_rows(c, wd, &tours, &mut shaped);
     // the duties' issues
     for (row, s) in shaped.iter_mut().enumerate() {
         let rk = match (&s.key, s.spare) {
@@ -2021,7 +2043,7 @@ fn shape(c: &Company, tours: &[TourOfDay], d: &Duty, di: Option<usize>, key: Opt
         Some(k) => (k, true),
         None => (p.duty_types.iter().position(|t| t.fits(start, end, split)), false),
     };
-    let mut s = Shaped { duty: di, spare: None, key, spans, events, custom: n.custom.clone(), start, end, work, paid, driving, platform, splits, changeovers, kind, kind_set, locked: n.locked, issues: Vec::new(), plan: BreakPlan::default(), no_rest, points };
+    let mut s = Shaped { duty: di, spare: None, key, spans, events, custom: n.custom.clone(), start, end, work, paid, driving, platform, splits, changeovers, kind, kind_set, locked: n.locked, issues: Vec::new(), plan: BreakPlan::default(), no_rest, points, number: None };
     s.plan = break_plan(p, tours, &s);
     s
 }

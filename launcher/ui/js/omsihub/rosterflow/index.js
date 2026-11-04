@@ -29,6 +29,8 @@ import { RosterTab, rosterEscape, rosterUndo } from './roster.js';
 import { TimeplanTab, tpEscape } from './timeplan.js';
 import { RoutesTab, rtEscape, holdChanges, ROUTES } from './routes.js';
 import { Tutorial, tutEscape, tutMenu } from './tutorial.js';
+// (NexiconDK, 4 November 2026: RosterFlow Pro's tabs Vognløb and Vagter)
+import { ProTab, PRO_BLOCKS, PRO_DUTIES, PRO_TABS } from './pro.js';
 
 // (RosterFlow's own look, loaded with it)
 if (!document.querySelector('link[data-rf-css]')) {
@@ -52,10 +54,14 @@ export async function openRosterFlow(o = {}) {
   const r = S.rf;
   const animate = S.settings?.animations !== false && !S.boot?.selftest;
   // (company multiplayer: what the player's role lets him do on the boss's company)
-  const patch = { open: true, days: on.days, tripsToDuties: !!on.trips_to_duties, company: on.company, remote: on.remote || null };
+  const patch = { open: true, days: on.days, tripsToDuties: !!on.trips_to_duties, company: on.company, remote: on.remote || null, pro: !!on.pro };
   // (another company: begun anew)
   if (r.company && r.company !== on.company) Object.assign(patch, fresh({ ...patch }));
   if (!r.shown || r.company !== on.company) Object.assign(patch, { shown: true, intro: animate ? performance.now() : null });
+  // (RosterFlow Pro opens on its own first tab; without it, its tabs are not there)
+  const was = patch.view ?? r.view;
+  if (on.pro && !r.shown && o.view == null && (was === VEHICLES || was === DRIVERS)) patch.view = PRO_BLOCKS;
+  if (!on.pro && (was === PRO_BLOCKS || was === PRO_DUTIES)) patch.view = VEHICLES;
   if (o.view != null) Object.assign(patch, { view: o.view, hand: null, zones: null, sel: [], card: null, menu: null, panel: null });
   if (o.day != null) patch.day = o.day;
   if (o.line) Object.assign(patch, { view: TIMEPLAN, tpLine: o.line, tpHint: o.hint || null });
@@ -194,6 +200,7 @@ export function RosterFlowPage() {
   const studio = r.view === VEHICLES || r.view === DRIVERS;
   let body;
   if (studio) body = html`<${Studio} p=${p} drivers=${r.view === DRIVERS} />`;
+  else if (r.view === PRO_BLOCKS || r.view === PRO_DUTIES) body = html`<${ProTab} duties=${r.view === PRO_DUTIES} />`;
   else if (r.view === ROSTER) body = html`<${RosterTab} p=${p} />`;
   else if (r.view === ROUTES) body = html`<${RoutesTab} p=${p} />`;
   else body = html`<${TimeplanTab} p=${p} />`;
@@ -275,6 +282,9 @@ function TitleBar() {
   const r = S.rf;
   const head = r.data?.head;
   const studio = r.view === VEHICLES || r.view === DRIVERS;
+  // (RosterFlow Pro: its tabs edit the draft as the studio does - Undo and Redo work there too)
+  const pro = head?.pro ?? r.pro;
+  const proView = r.view === PRO_BLOCKS || r.view === PRO_DUTIES;
   const undo = head?.undo?.length || 0;
   // (on the Roster tab the arrows are the roster's own: `roster.js`)
   const roster = r.view === ROSTER;
@@ -283,6 +293,7 @@ function TitleBar() {
   const company = head?.company ?? full;
   const [ref, fit] = useTitleFit([full, company, r.view, language(), (r.here || []).length, !!rfRemote()]);
   const remote = rfRemote();
+  const proTab = (t) => html`<button type="button" class=${'rf-tab pro-tab' + (r.view === t.view ? ' on' : '')} data-rf=${t.anchor} title=${fit >= 3 ? `${t.n} ${tr(t.label)}` : undefined} onClick=${() => r.view !== t.view && !holdChanges() && setRf({ view: t.view, hand: null, zones: null, sel: [], card: null, menu: null, panel: null, press: null, dragging: false, selRow: null, proSel: {} })}><${Icon} name=${t.icon} size=${18} /><span>${t.n} ${tr(t.label)}</span></button>`;
   const tab = (v, icon, label, anchor) => html`<button type="button" class=${'rf-tab' + (r.view === v ? ' on' : '')} data-rf=${anchor} title=${fit >= 3 ? tr(label) : undefined} onClick=${() => r.view !== v && !holdChanges() && setRf({ view: v, hand: null, zones: null, sel: [], card: null, menu: null, panel: null, press: null, dragging: false, selRow: null })}><${Icon} name=${icon} size=${18} /><span>${tr(label)}</span></button>`;
   return html`<header class=${`rf-title fit${fit}`} ref=${ref}>
     <${IconBtn} icon="chevron_left" title="Back to the company's start screen (Esc)" onClick=${() => !holdChanges() && leaveRosterFlow()} />
@@ -305,8 +316,8 @@ function TitleBar() {
     ${remote && !remote.plans && html`<span class="rf-readonly" title=${remote.why || ''}><${Icon} name="lock" size=${15} /><span>${tr('Read-only')}</span></span>`}
     <${HereNow} />
     <span class="undo" data-rf="rf-undo">
-      <${IconBtn} icon="livery_undo" title="Undo (Ctrl+Z)" disabled=${roster ? !ru.n : !undo || !studio} onClick=${() => (roster ? rosterUndo(true) : rfAct('undo'))} />
-      <${IconBtn} icon="livery_redo" title="Redo (Ctrl+Y)" disabled=${roster ? !ru.redo : !head?.redo || !studio} onClick=${() => (roster ? rosterUndo(false) : rfAct('redo'))} />
+      <${IconBtn} icon="livery_undo" title="Undo (Ctrl+Z)" disabled=${roster ? !ru.n : !undo || !(studio || proView)} onClick=${() => (roster ? rosterUndo(true) : rfAct('undo').then(() => setRf({ proSel: {} })))} />
+      <${IconBtn} icon="livery_redo" title="Redo (Ctrl+Y)" disabled=${roster ? !ru.redo : !head?.redo || !(studio || proView)} onClick=${() => (roster ? rosterUndo(false) : rfAct('redo').then(() => setRf({ proSel: {} })))} />
       <${IconBtn} icon="history" title="Schedule history: every change, to go back to" disabled=${!undo} on=${panelIs('history')} onClick=${() => toggle('history')} />
     </span>
     <button type="button" class="rf-day" data-rf="rf-day" title=${tr('The day shown: the planning of a weekday holds for that weekday every week')} onClick=${() => toggle('day')}>
@@ -315,6 +326,7 @@ function TitleBar() {
     <span class="rf-tabs">
       ${tab(ROUTES, 'route', 'Routes', 'rf-tab-routes')}
       ${tab(TIMEPLAN, 'departure_board', 'Timeplan', 'rf-tab-timeplan')}
+      ${pro && PRO_TABS.map((t) => (t.view != null ? proTab(t) : html`<span class="rf-tab soon" title=${tr('Comes in a later step of RosterFlow Pro')}><${Icon} name=${t.icon} size=${18} /><span>${t.n} ${tr(t.label)}</span></span>`))}
       ${tab(VEHICLES, 'directions_bus', 'Vehicles', 'rf-tab-vehicles')}
       ${tab(DRIVERS, 'person', 'Drivers', 'rf-tab-drivers')}
       ${tab(ROSTER, 'group', 'Roster', 'rf-tab-roster')}
