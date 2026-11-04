@@ -99,6 +99,8 @@ pub mod parts;
 pub mod pay;
 pub mod plan;
 pub mod plandays;
+/// (NexiconDK, 4 November 2026) RosterFlow Pro: an open duty cut for its date ("Klip vagten").
+pub mod pro_cut;
 pub mod pro_duties;
 /// (NexiconDK, 4 November 2026) RosterFlow Pro's daily operations, calendar and asking drivers
 /// (step 4, "Daglig drift" and "Kalender").

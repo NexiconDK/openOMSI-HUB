@@ -173,26 +173,31 @@ fn the_live_dispatcher() {
     assert_eq!(crate::company::clock::spare_minutes(&c, &date, 600), normal);
 }
 
-/// K4 (3 November 2026): the agency drivers run the duties nobody covers as the server's rules
-/// say, unless the company's owner or a co-owner chose otherwise; a driver may not choose.
+/// K4: on the server only its admin decides whether agency drivers run the duties nobody covers
+/// (NexiconDK, 4 November 2026); off the server the company's owner, none chosen: dropped.
 #[test]
-fn the_agency_fallback_by_the_server_and_by_the_company() {
-    use crate::company::live_pay::{agency_runs_open, set_agency, LiveCfg, NOT_OWNER_AGENCY};
+fn the_agency_fallback_by_the_server_admin_and_off_the_server_by_the_owner() {
+    use crate::company::live_pay::{agency_runs_open, set_agency, LiveCfg, ADMIN_DECIDES};
     let mut c = server();
     assert!(agency_runs_open(&c), "the server's default");
     let mut kv = std::collections::HashMap::new();
     kv.insert("agency_fallback".to_string(), "0".to_string());
     c.online.live = Some(LiveCfg::of_keys(&kv));
-    assert!(!agency_runs_open(&c), "the server's rule: dropped");
-    assert_eq!(set_agency(&mut c, 3, Some(true)), Err(NOT_OWNER_AGENCY));
-    set_agency(&mut c, 2, Some(true)).unwrap();
-    assert!(agency_runs_open(&c), "the company's choice");
-    set_agency(&mut c, 1, Some(false)).unwrap();
+    assert!(!agency_runs_open(&c), "the admin: dropped");
+    // (the owner cannot change it on the server; an older choice of his no longer counts)
+    assert_eq!(set_agency(&mut c, 2, Some(true)), Err(ADMIN_DECIDES));
+    c.online.agency = Some(true);
+    assert!(!agency_runs_open(&c), "admin off beats the owner's on");
     c.online.live = None;
-    assert!(!agency_runs_open(&c));
-    set_agency(&mut c, 1, None).unwrap();
-    assert!(agency_runs_open(&c), "as the server");
+    c.online.agency = Some(false);
+    assert!(agency_runs_open(&c), "admin on beats the owner's off");
+    // off the server: the owner's, none chosen dropped
     c.online.on_server = false;
+    c.online.agency = None;
+    assert!(!agency_runs_open(&c));
+    set_agency(&mut c, 0, Some(true)).unwrap();
+    assert!(agency_runs_open(&c));
+    set_agency(&mut c, 0, Some(false)).unwrap();
     assert!(!agency_runs_open(&c));
     let r = LiveCfg::of_keys(&std::collections::HashMap::new());
     assert!(r.agency && r.urgent == 0.5 && r.loyalty == 0.05 && r.boss_duties == 2);

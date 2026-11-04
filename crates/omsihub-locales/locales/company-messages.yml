@@ -715,3 +715,11 @@ _version: 2
   pl: "Rezerwa: twoja służba %{date} to linia %{n} brygada %{tour}, zgłoszenie o %{time}"
   ru: "Резерв: ваша смена %{date} - линия %{n} выход %{tour}, явка в %{time}"
   uk: "Резерв: ваша зміна %{date} - лінія %{n} випуск %{tour}, явка о %{time}"
+"Thanks - duty %{n} on %{date} has been given to a colleague":
+  de: "Danke - Dienst %{n} am %{date} hat ein Kollege übernommen"
+  da: "Tak - vagt %{n} den %{date} er givet til en kollega"
+  fr: "Merci - le service %{n} du %{date} a été donné à un collègue"
+  nl: "Bedankt - dienst %{n} op %{date} is aan een collega gegeven"
+  pl: "Dziękujemy - służbę %{n} w dniu %{date} dostał kolega"
+  ru: "Спасибо - смену %{n} на %{date} отдали коллеге"
+  uk: "Дякуємо - зміну %{n} на %{date} віддали колезі"

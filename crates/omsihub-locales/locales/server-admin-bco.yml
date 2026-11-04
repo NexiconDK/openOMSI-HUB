@@ -3056,3 +3056,11 @@ _version: 2
   pl: "Pełny etat, część etatu, rezerwa lub stawka godzinowa. 0: od następnego dnia. Ze stawki godzinowej na część lub pełny etat zawsze od następnego dnia"
   ru: "Полная ставка, неполная, резерв или почасовая. 0: со следующего дня. С почасовой на неполную или полную ставку - всегда со следующего дня"
   uk: "Повна ставка, неповна, резерв або погодинна. 0: з наступного дня. З погодинної на неповну чи повну ставку - завжди з наступного дня"
+"Off: such a duty is dropped. Only the admin decides this: the companies cannot choose otherwise":
+  de: "Aus: ein solcher Dienst fällt aus. Das bestimmt nur der Admin: die Firmen können nicht anders wählen"
+  da: "Fra: sådan en vagt udgår. Det bestemmer kun admin: firmaerne kan ikke vælge andet"
+  fr: "Désactivé : un tel service est supprimé. Seul l'admin en décide : les entreprises ne peuvent pas choisir autrement"
+  nl: "Uit: zo'n dienst vervalt. Alleen de admin beslist dit: de bedrijven kunnen niet anders kiezen"
+  pl: "Wyłączone: taka służba przepada. Decyduje o tym tylko admin: firmy nie mogą wybrać inaczej"
+  ru: "Выкл.: такая смена отменяется. Это решает только админ: компании не могут выбрать иначе"
+  uk: "Вимк.: така зміна скасовується. Це вирішує лише адмін: компанії не можуть вибрати інакше"

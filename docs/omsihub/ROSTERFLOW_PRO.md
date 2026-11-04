@@ -454,3 +454,105 @@ split-duty rota, with "Make a split-duty rota" when there is none. **Split dutie
 weekend:** "Make duties automatically" on a Saturday or a Sunday makes none
 (`rosterflow::optimise_splits`), and one made by hand there gets a yellow mark "Split duties do not
 run at the weekend" (`pro_duties::marks`).
+
+# The calendar made clearer, and the rules of asking (4 November 2026)
+
+The player found the calendar and the box beside it cluttered, and drew how it should be
+(sketches h13-h21 of the plan "Rosteren – plan"). Changed:
+
+## The calendar
+Big cells: the duty's number and under it its working time ("04:45–12:55"; a split duty when its
+halves begin, "06:15 / 14:30"); a reserve driving a duty given him for another shows it ("05:00 ·
+for Ahmed"). A day off is an empty cell with "–"; ill or on holiday is **one bar across the days
+in a row** ("Ferie mandag – torsdag"). The colours mean the kind of duty only - early, day, late,
+split, frame, ill, holiday - with a legend under the grid. The drivers are grouped under
+"Permanent drivers · N", "Reserves with a frame · N" and "Hourly paid · N"; under the name "chf.
+N · fuldtid 37 t" (no column of its own). Today's heading is in the accent colour; the hours of
+the week have a bar against the contract, orange over it. A search field finds a driver. The row
+**"Mangler en chauffør"** above the grid says per day how many duties have no driver ("3 vagter
+mangler", "1 vagt mangler") or "✓ alle besat"; a day clicked is outlined and opens the box.
+
+## The box, one step at a time
+Beside the calendar (and as the page of "4 Daglig drift"), one step at a time in the same place:
+
+1. **The day's duties without a driver** - "1002  05:45–13:55", under it "Linje 2 · Ole Friis
+   har ferie" - each with "Find chauffør ›". A duty cut for the date is one of them ("klippet i
+   2 dele").
+2. **Who can drive the duty:** "‹ Tilbage", "Vagt 1002", "Torsdag 05:45–13:55 · linje 2", then one
+   list: **the permanent drivers first, then the reserves, then the hourly paid** (small labels
+   FASTE, RAMME, TIMELØNNEDE), the cheapest first in each - only the order on screen; the
+   dispatcher's own fill order (`plan::fill_tier`) is unchanged. A row is the name, under it the
+   kind and the price ("Fast · overtid 2 t 40 = 1.070 kr.", "Ramme · ingen ekstra", "Timeløn ·
+   871 kr."), and **one** thing on the right: "Sæt på", "Spørg", "Venter på svar …" with "Træk
+   tilbage", or "Giv vagten" after a yes (gender-neutral: "Giv vagten, med byttet" for a swap).
+   The driver's answer is a **box of its own** under his row: green "Ja" with his words, red
+   "Nej", "For tidligt", "For sent" with the time he can, grey "Intet svar". Those who cannot
+   are folded: "▸ 5 andre kan ikke køre den".
+
+## The rules of asking (`pro_ops::Rule`, `rule_of`)
+
+| Driver | How |
+|---|---|
+| A reserve whose frame holds the duty, before 12:00 the day before (company clock) | "Sæt på": no question, he is told (`plan::tell_reserves`). At 12:00 exactly or later he must be asked. |
+| An hourly-paid driver | Always asked; several may be asked at once. The duty goes to one who said yes; the others' questions are closed and they get the message "Tak - vagt %{n} den %{date} er givet til en kollega" (`messages::DUTY_TAKEN`). |
+| A permanent driver (a day off or overtime), or a reserve from 12:00 the day before | Always asked, **one at a time**: while his question is open the other permanent and reserve "Spørg" buttons are greyed (the reason as a tooltip); "Træk tilbage" closes it (`withdraw_ask`). |
+
+"Giv vagten" works only after a yes (`give_asked`, `NEEDS_YES`), or for a reserve put on.
+
+## The answer comes in game time (`pro_ops::answer_time`)
+Normally 5-30 minutes on the company's clock; 2-10 when the duty begins within 3 hours. Nobody
+answers between 23:00 and 06:00: asked at night he answers after 06:00 (within 20 minutes), or
+cannot be reached when the duty begins first. An hourly-paid driver short of hours (under half a
+full week) answers quicker (× 0.6), a tired or stressed one (stress over 60, contentment under 35,
+or over his contract) slower (× 1.6) and sometimes not at all (15 %; others 3 %): after 2 hours
+the box says "Intet svar" (`Reply::Silent`, `NO_ANSWER_AFTER`). The same question always gets the
+same answer and time (`Rng` of the company, the day, the duty and the driver). A player answers
+himself. Questions keep their time in the save (`Ask::due`); an older question by the launcher's
+seconds.
+
+## "Klip vagten": cutting a duty for its date (`co::pro_cut`)
+When nobody can or will take the whole duty (nobody left to ask, all said no, too early, too late
+or did not answer), the box shows a yellow note "Ingen kan køre hele vagten. Klip den i stykker,
+så så meget som muligt bliver kørt." and **"Klip vagten ›"**. It cuts the duty at its relief
+points (inside a piece where the Vagter tab could cut it, `studio::can_cut`, and between its
+pieces) into **at most 4 parts** (`MAX_PARTS`; at most 12 places tried), choosing the cut that
+covers most, then the fewest parts, then the cheapest (`propose`). Each part gets one suggestion
+(`suggest`, one driver a part), best first:
+
+1. a driver whose own duty **ends** at or just before it (at most 45 minutes) at the same or a
+   **nearby** stop - named alike or with the same first word ("Bytorvet" and "Bytorvet Nord"; the
+   map has no places to measure) - who goes on with a little overtime ("fortsætter efter 1001 ·
+   overtid 1 t = 335 kr.", "1001 slutter 12:55 på Bytorvet"), or one whose own duty
+   **begins** just after it and who begins earlier;
+2. one who answered "for tidligt" / "for sent" with a time that fits the part ("Sagde: kan til
+   09:30");
+3. a reserve within his frame; 4. an hourly-paid driver; 5. a free colleague.
+
+Rest, overlap, the longest day (`plan::can_take`) and the time to change from step 2
+(`pro_duties::Change`) hold for each. The cut view shows "Klip vagt 1002", "05:45–13:55 · klippet
+ved Station 09:20 og Bytorvet 12:55", a bar of the parts (green with a driver, red without), each
+part with its suggestion and the same one-thing button, "Kører 4 t 35 af 8 t 10" and **"Saml vagten
+igen"** (`uncut`, which also drops the parts given and their questions).
+
+The cut lives only for its date (`Split` in `Ops::splits`, its tour cuts `Split::inner` applied
+when the date's tours are laid out - `network::finish_tours` -, so each part is whole pieces of the
+date's plan; the Vagter and Turnus tabs keep their week). A part cut off inside a piece is a duty
+of its own that day; a part is given by its pieces (`Call::part`, `Call::pieces`) and the calendar
+names it by the duty and its letter: "1001 + 1002C" (`pro_cut::label_of`, `DayIs::Duties::labels`).
+Days gone are dropped every night. An older file has none.
+
+## Agency drivers only when the setting is on
+"Vikar" is hardly used in Denmark. The box offers **"Vikar <pris>"** (today the dispatcher's
+agency driver, `plan::Fill::Agency`; a later day one booked, `agency::book`) only when the
+effective setting is on; off, it says "Uden en chauffør udgår N ture". **On Bus Company Online only
+the server's admin decides** (`agency_fallback`): the company's settings show "Bestemmes af
+serverens admin" and the owner can no longer change it (`live_pay::set_agency` refuses,
+`ADMIN_DECIDES`; an older choice of his no longer counts). Off the server, where there is no
+admin, the owner chooses in the company's settings ("Duties nobody covers"), and none chosen means
+**dropped** - before, a company off the server never sent duties to the agency, so only an owner
+who now picks agency drivers sees a change.
+
+Tested: `pro_ops::tests` (`the_rules_of_asking_a_reserve_the_hourly_paid_and_a_permanent_driver`,
+`an_ai_driver_answers_in_game_time_and_not_at_night`), `pro_cut::tests`, `live_more::tests`
+(`the_agency_fallback_by_the_server_admin_and_off_the_server_by_the_owner`) and the API's
+`the_calendar_and_the_box_show_ask_and_give_a_duty`.

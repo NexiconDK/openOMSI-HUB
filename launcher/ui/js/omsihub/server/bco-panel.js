@@ -75,7 +75,7 @@ export const BCO_FIELDS = [
   ['ai_quality_cap', 'An AI trip counts at most', 'number', 'In the operating quality of the tenders (0-100); a live trip that passes counts its judgement'],
   ['live_surcharge', 'Live surcharge (%)', 'number', "The authority's extra on the hour price for the hours driven live and passed; 0: none"],
   ['driver_pool', 'AI drivers a map', 'number', "Empty or 0: as many as the companies like. None left: agency drivers run their open duties at the agency's price"],
-  ['agency_fallback', 'Agency drivers run the duties nobody covers', BOOL, "Off: such a duty is dropped. Each company's owner may choose otherwise in its settings"],
+  ['agency_fallback', 'Agency drivers run the duties nobody covers', BOOL, 'Off: such a duty is dropped. Only the admin decides this: the companies cannot choose otherwise'],
   ['employment_notice_days', "Notice of a change of a driver's employment (days)", 'number', 'Full time, part time, reserve or hourly paid. 0: from the next day. From hourly paid to part or full time is always the next day'],
   ['urgent_bonus', 'Urgent tasks pay more (%)', 'number', 'A short-notice doubling the admin ordered (players only) or rail replacement: a player who drives it is paid this much more'],
   ['loyalty_bonus', 'A fixed duty pays more (%)', 'number', 'A duty a company gives a player for good on its weekday'],

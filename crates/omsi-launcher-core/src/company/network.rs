@@ -329,6 +329,8 @@ fn finish_tours(c: &Company, mut out: Vec<TourOfDay>, date: &str, cuts: Vec<(usi
     // (3 November 2026: its lines a subcontractor runs that day - `subcontracts`)
     super::subcontracts::drop_lent(c, date, &mut out);
     super::studio::resolve_cuts(&mut out, &cuts);
+    // (NexiconDK, 4 November 2026: RosterFlow Pro's duties cut for this date only - `pro_cut`)
+    super::pro_cut::tour_cuts(c, date, &mut out);
     for t in out.iter_mut() {
         let begins = super::clock::moment(date, t.from() as i64);
         t.unplanned = !c.lines.iter().find(|l| l.name.eq_ignore_ascii_case(&t.line)).is_some_and(|l| in_service(l, begins));

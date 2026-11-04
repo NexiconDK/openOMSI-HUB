@@ -90,19 +90,14 @@ fn online_part(c: &co::Company, viewer: Option<u32>) -> Value {
             "say": tr(if free { "You drive for the company for nothing: what an AI driver would cost stays in the company." } else { "You are paid for your trips as every player is, into your own money on the server." }),
         })
     });
-    // (3 November 2026: what happens to a duty nobody covers - the server's rule, or the owner's
-    // choice: `live_pay::agency_runs_open`)
-    let agency = viewer.filter(|g| co::live_pay::may_drive_free(c, *g)).map(|_| {
-        let server = co::live_pay::cfg(c).agency;
+    // (what happens to a duty nobody covers: on the server only its admin decides - NexiconDK,
+    // 4 November 2026; `live_pay::agency_runs_open`)
+    let agency = Some(()).map(|_| {
+        let runs = co::live_pay::agency_runs_open(c);
         json!({
             "caps": tr("Duties nobody covers").to_uppercase(),
-            "value": match c.online.agency { None => "server", Some(true) => "agency", Some(false) => "drop" },
-            "options": [
-                { "value": "server", "label": tr(if server { "As the server: agency drivers" } else { "As the server: dropped" }) },
-                { "value": "agency", "label": tr("Agency drivers run them") },
-                { "value": "drop", "label": tr("They are dropped") },
-            ],
-            "say": tr(if co::live_pay::agency_runs_open(c) { "A duty with a bus and no driver is run by a free colleague or an agency driver at the agency's price." } else { "A duty with a bus and no driver is not run: its journeys are dropped, fined and count against the bonus." }),
+            "locked": tr("Decided by the server's admin"),
+            "say": tr(if runs { "A duty with a bus and no driver is run by a free colleague or an agency driver at the agency's price." } else { "A duty with a bus and no driver is not run: its journeys are dropped, fined and count against the bonus." }),
         })
     });
     json!({
@@ -267,10 +262,23 @@ const TRIPS_CLOSED: &str = "Players take whole duties only: a duty planned for t
 /// {left: "ai" | "dropped"}`: `together::Together::left_dropped`, at once) - a company on Bus
 /// Company Online's server only.
 pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, String>> {
-    if what != "online_share" && what != "online_left" && what != "online_trips" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" && what != "approval_ask" && what != "approval_answer" && what != "drive_free" && what != "agency_fallback" {
+    if what != "online_share" && what != "online_left" && what != "online_trips" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" && what != "approval_ask" && what != "approval_answer" && what != "drive_free" && what != "agency_fallback" && what != "agency_local" {
         return None;
     }
     let guest = s.sender_guest;
+    // (off the server: the owner's choice for the duties nobody covers)
+    if what == "agency_local" {
+        let value = args.get("value").and_then(Value::as_str) == Some("agency");
+        let Some(c) = s.company.as_mut() else { return Some(Ok(json!({}))) };
+        return Some(Ok(match co::live_pay::set_agency(c, 0, Some(value)) {
+            Ok(()) => {
+                super::changed(s);
+                s.say(tr(if value { "Duties nobody covers are run by agency drivers." } else { "Duties nobody covers are dropped." }), false);
+                json!({})
+            }
+            Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
+        }));
+    }
     let Some(c) = s.company.as_mut().filter(|c| c.online.on_server) else { return Some(Ok(json!({}))) };
     // (NexiconDK, 3 November 2026: the owner or a co-owner chooses whether his own driving pays
     // him - `live_pay`, K5)
@@ -285,7 +293,7 @@ pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Va
             Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
         }));
     }
-    // (3 November 2026, K4: the owner's choice for the duties nobody covers)
+    // (K4: on the server the admin decides the duties nobody covers - refused, `ADMIN_DECIDES`)
     if what == "agency_fallback" {
         let value = match args.get("value").and_then(Value::as_str).unwrap_or("server") {
             "agency" => Some(true),
@@ -458,6 +466,17 @@ fn settings(s: &mut Session, args: &Value) -> Value {
         "country": super::country::settings_part(&c),
         // (NexiconDK: a company on Bus Company Online's server - its share of its players' trips)
         "online": online_part(&c, s.sender_guest),
+        // (off the server the owner chooses what happens to a duty nobody covers: none chosen,
+        // dropped - `live_pay::agency_runs_open`)
+        "agency_local": (!c.online.on_server && c.game_mode.rules().rosterflow).then(|| {
+            let runs = co::live_pay::agency_runs_open(&c);
+            json!({
+                "caps": tr("Duties nobody covers").to_uppercase(),
+                "value": if runs { "agency" } else { "drop" },
+                "options": [{ "value": "drop", "label": tr("They are dropped") }, { "value": "agency", "label": tr("Agency drivers run them") }],
+                "say": tr(if runs { "A duty with a bus and no driver is run by a free colleague or an agency driver at the agency's price." } else { "A duty with a bus and no driver is not run: its journeys are dropped, fined and count against the bonus." }),
+            })
+        }),
         "currency": super::currency::settings_part(&c),
         "buying": (!easy).then(|| {
             let mode = BuyingMode::ALL.iter().position(|m| *m == c.dealer.mode).unwrap_or(1);

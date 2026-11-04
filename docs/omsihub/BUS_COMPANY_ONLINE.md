@@ -1676,10 +1676,13 @@ More of what makes a player worth more than an AI driver (`live_more`, settings 
 
 - **The agency fallback is a choice**: K4's "a duty with a bus and no driver is run by a free
   colleague or an agency driver" is `agency_fallback` (1, today's behaviour; 0: such a duty is
-  dropped, fined and counts against the bonus as before). Each company's owner and co-owners may
-  choose otherwise in its settings - "As the server", "Agency drivers run them", "They are
-  dropped" (`Online::agency`, `None` as the server; the command `agency_fallback`, the role check
-  of `drive_free`; `live_pay::agency_runs_open`). Casual's autopilot is untouched.
+  dropped, fined and counts against the bonus as before). **Only the server's admin decides it**
+  (NexiconDK, 4 November 2026: "it is the server's admin, not the company's owner"): the company's
+  settings show "Decided by the server's admin" and the owner cannot change it
+  (`live_pay::set_agency` refuses with `ADMIN_DECIDES`; an older `Online::agency` no longer counts
+  on the server; `live_pay::agency_runs_open`). Off the server the owner chooses, none chosen
+  dropped. RosterFlow Pro's box offers "Vikar <price>" only when it is on
+  (`docs/omsihub/ROSTERFLOW_PRO.md`). Casual's autopilot is untouched.
 - **K6, urgent tasks**: a doubling the admin ordered (`doubling::order_of`, by `admin`) and the
   duties of a rail replacement line (`rail_line`) are urgent. A player who drives one is paid
   `urgent_bonus` (50 %) more (`pay_factor`). The admin's doubling is for players only: the
@@ -1723,7 +1726,7 @@ CNG (17 days), 964 with electric (21 days)".
 
 Tested: `live_more::tests` (`urgent_tasks_for_players_only`, `the_driver_of_the_month`,
 `a_fixed_duty`, `supplements_for_unsocial_hours`, `the_boss_drives`, `the_live_dispatcher`,
-`the_agency_fallback_by_the_server_and_by_the_company`).
+`the_agency_fallback_by_the_server_admin_and_off_the_server_by_the_owner`).
 
 ### The notice of a change of employment (4 November 2026, RosterFlow Pro)
 

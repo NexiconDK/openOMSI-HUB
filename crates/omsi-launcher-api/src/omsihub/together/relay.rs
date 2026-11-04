@@ -260,10 +260,11 @@ fn rf_turnus_need(act: &str) -> Need {
 }
 
 /// What an action of RosterFlow Pro's Daglig drift (`rf_ops_act`) needs: asking drivers and giving
-/// them a duty is the planning's.
+/// them a duty, taking a question back, cutting a duty for its date (and joining it again) and an
+/// agency driver for it are the planning's.
 fn rf_ops_need(act: &str) -> Need {
     match act {
-        "ask" | "give" | "withdraw" => PLANS,
+        "ask" | "give" | "withdraw" | "withdraw_ask" | "cut" | "uncut" | "agency" => PLANS,
         // (a duty given to a player: the assigner's, as the roster's)
         "give_guest" => ASSIGN,
         _ => Never,

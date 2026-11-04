@@ -317,22 +317,30 @@ pub fn took_driver(c: &mut Company) {
     }
 }
 
-/// K4: the open duties of a company on the server are run by agency drivers (or a free
-/// colleague) when nobody drives them - the AI drives what no player does -, unless the server's
-/// rules (`agency_fallback`) or the company's owner (`Online::agency`) say they are dropped.
+/// K4: the open duties of a company are run by agency drivers (or a free colleague) when nobody
+/// drives them, or dropped. On the server only its admin decides (`agency_fallback`, the server's
+/// rules - NexiconDK, 4 November 2026: "it is the server's admin, not the company's owner");
+/// off the server, where there is no admin, the company's owner (`Online::agency`; none chosen:
+/// dropped - agency drivers are hardly ever used in Denmark).
 pub fn agency_runs_open(c: &Company) -> bool {
-    c.online.on_server && c.online.agency.unwrap_or(cfg(c).agency)
+    if c.online.on_server {
+        cfg(c).agency
+    } else {
+        c.online.agency.unwrap_or(false)
+    }
 }
 
-/// Why a player may not choose for the company.
+/// Why a player may not choose.
 pub const NOT_OWNER_AGENCY: &str = "Only the owner and the co-owners of the company choose what happens to the duties nobody covers.";
+/// Why nobody of the company chooses it on the server.
+pub const ADMIN_DECIDES: &str = "On the server the admin decides whether agency drivers run the duties nobody covers.";
 
-/// K4 (3 November 2026): the owner or a co-owner (`guest`) chooses for the company what happens to
-/// a duty nobody covers: as the server's rules say (None), run by agency drivers (true), dropped
-/// (false).
-pub fn set_agency(c: &mut Company, guest: u32, agency: Option<bool>) -> Result<(), &'static str> {
-    if !may_drive_free(c, guest) {
-        return Err(NOT_OWNER_AGENCY);
+/// K4: what happens to a duty nobody covers, chosen for the company: run by agency drivers
+/// (true), dropped (false or None). Off the server only (`guest` ignored): on the server the
+/// admin decides (`ADMIN_DECIDES`).
+pub fn set_agency(c: &mut Company, _guest: u32, agency: Option<bool>) -> Result<(), &'static str> {
+    if c.online.on_server {
+        return Err(ADMIN_DECIDES);
     }
     c.online.agency = agency;
     Ok(())

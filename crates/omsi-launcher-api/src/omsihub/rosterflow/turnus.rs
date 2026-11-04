@@ -105,7 +105,9 @@ pub(super) fn week_duties(s: &mut Session, r: &mut Rf) -> Option<Result<Arc<Week
         return Some(Ok(w.clone()));
     }
     company::week_work(s);
-    let c = s.company.clone()?;
+    let mut c = s.company.clone()?;
+    // (the week as the Vagter tab has it: a duty cut for one date only is not - `pro_cut`)
+    c.planning.ops.splits.clear();
     let mut week: Week = vec![Vec::new(); pt::DAYS];
     for k in 0..pt::DAYS as i64 {
         let date = co::dates::add(&c.date, k);

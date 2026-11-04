@@ -327,7 +327,31 @@ pub fn duties_of_board(b: &Board) -> Vec<ProDuty> {
 /// The duties of `date` (`tours` its blocks, as `network::tours_of_day` gives them).
 pub fn day_duties(c: &Company, date: &str, tours: Vec<TourOfDay>) -> Vec<ProDuty> {
     let slot = plandays::slot_of(c, date);
-    duties_of_board(&rf::board_of(c, slot, tours, Vec::new()))
+    if super::pro_cut::splits_on(c, date).next().is_none() {
+        return duties_of_board(&rf::board_of(c, slot, tours, Vec::new()));
+    }
+    // (a duty cut for the date, `pro_cut`: the day's duties keep the numbers they have uncut -
+    // the rotas and the duties given name them so -, each part cut off its own number above
+    // them, its duty's number and its letter: 1002's part C is 10022)
+    let uncut = super::pro_cut::uncut_tours(c, date, &tours);
+    let first = |ts: &[TourOfDay], d: &ProDuty| -> Option<(String, String, i32, String)> {
+        let (line, tour, k) = d.pieces.first()?;
+        let t = ts.iter().find(|t| t.line.trim().eq_ignore_ascii_case(line.trim()) && t.tour.trim() == tour.trim())?;
+        let r = super::network::duties_of(t).get(*k)?.clone();
+        Some((t.line.clone(), t.tour.clone(), t.trips[r.start].dep, t.trips[r.start].name.clone()))
+    };
+    let was: Vec<((String, String, i32, String), u32)> = duties_of_board(&rf::board_of(c, slot, uncut.clone(), Vec::new())).iter().filter_map(|d| Some((first(&uncut, d)?, d.number))).collect();
+    let mut v = duties_of_board(&rf::board_of(c, slot, tours.clone(), Vec::new()));
+    for (i, d) in v.iter_mut().enumerate() {
+        let Some(key) = first(&tours, d) else { continue };
+        if let Some((_, n)) = was.iter().find(|w| w.0 == key) {
+            d.number = *n;
+            continue;
+        }
+        let part = super::pro_cut::splits_on(c, date).find_map(|s| s.parts.iter().position(|p| p.pieces.first().is_some_and(|k| (&k.line, &k.tour, k.dep, &k.name) == (&key.0, &key.1, key.2, &key.3))).map(|j| s.n * 10 + j as u32));
+        d.number = part.unwrap_or(99_000 + i as u32);
+    }
+    v
 }
 
 /// The duties of a week, Sunday first (`week[day]`).
@@ -1339,7 +1363,7 @@ pub fn on_day(c: &Company, date: &str, tours: &[TourOfDay]) -> Option<RotaDay> {
     }
     let mine: Vec<(u32, Decided)> = c.staff.iter().filter_map(|e| decided(c, e.id, date).map(|d| (e.id, d))).collect();
     // (step 4: the duties the daily operations gave for the date - `pro_ops::give`)
-    let calls: Vec<(u32, u32)> = super::pro_ops::calls_on(c, date).filter(|x| c.employee(x.driver).is_some()).map(|x| (x.n, x.driver)).collect();
+    let calls: Vec<&super::pro_ops::Call> = super::pro_ops::calls_on(c, date).filter(|x| c.employee(x.driver).is_some()).collect();
     if mine.is_empty() && calls.is_empty() {
         return None;
     }
@@ -1350,11 +1374,15 @@ pub fn on_day(c: &Company, date: &str, tours: &[TourOfDay]) -> Option<RotaDay> {
     }
     let duties = day_duties(c, date, tours.to_vec());
     let pieces = |n: u32| duties.iter().find(|x| x.number == n).map(|x| x.pieces.clone()).unwrap_or_default();
-    // (a duty given for the day first: its driver's, whoever's row has it)
-    for (n, id) in &calls {
-        for (line, tour, k) in pieces(*n) {
+    // (a duty given for the day first: its driver's, whoever's row has it - a part of a cut duty
+    // before the rest of it: `pro_cut`)
+    let mut ordered_calls = calls.clone();
+    ordered_calls.sort_by_key(|x| x.pieces.is_empty());
+    for x in ordered_calls {
+        let ps: Vec<(String, String, usize)> = if x.pieces.is_empty() { pieces(x.n) } else { x.pieces.iter().filter_map(|k| k.resolve(tours)).collect() };
+        for (line, tour, k) in ps {
             if !out.given.iter().any(|g| g.0 == line && g.1 == tour && g.2 == k) {
-                out.given.push((line, tour, k, *id));
+                out.given.push((line, tour, k, x.driver));
             }
         }
     }

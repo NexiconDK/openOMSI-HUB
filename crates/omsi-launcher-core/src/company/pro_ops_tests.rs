@@ -131,7 +131,7 @@ fn a_drivers_day_and_the_missing_duties_of_a_day() {
     let a = c.employee(ids[0]).unwrap().clone();
     let dd = driver_day(&c, &a, &p, &ds);
     let d1001 = ds.iter().find(|d| d.number == 1001).unwrap();
-    assert_eq!(dd.is, DayIs::Duties { numbers: vec![1001], start: d1001.start, end: d1001.end, frame: None });
+    assert_eq!(dd.is, DayIs::Duties { numbers: vec![1001], start: d1001.start, end: d1001.end, frame: None, labels: vec!["1001".into()] });
     assert!(d1001.start < 360 && d1001.end > 650, "{d1001:?}");
     assert!((dd.minutes - d1001.paid as f64).abs() < 1.0, "{dd:?} {d1001:?}");
     // a driver without a duty: a day off; nothing missing
@@ -306,11 +306,14 @@ fn a_duty_given_for_a_day_and_a_swap_run_in_the_days_plan() {
     let date = "2024-03-05";
     pt::set_exception(&mut c, ids[0], date, Some((Cell::Off, "sick".into())));
     assert_eq!(driver_of(&c, &day(&c, date), 1001), None);
-    // asked: x says yes (an AI driver's answer shows after his seconds)
+    // asked: x says yes (an AI driver's answer comes on the company's clock)
     let x = ids[2];
+    c.clock.minute = 9 * 60;
     let asked = ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: x }, Some(Reply::Yes { say: 0 }))], 1000).unwrap();
     let a = c.planning.ops.asks.iter().find(|a| a.id == asked[0]).unwrap().clone();
-    assert!(a.wait >= 3 && a.shown(1000).is_none() && a.shown(1000 + a.wait).is_some(), "{a:?}");
+    let game = crate::company::clock::now(&c);
+    let due = a.due.unwrap();
+    assert!(due > game && a.shown_at(game, 1000).is_none() && a.shown_at(due, 1000).is_some(), "{a:?}");
     assert_eq!(asks_of(&c, date, 1001).count(), 1);
     // given: his that day, the question closed - the rest of the week as the rota has it
     give(&mut c, date, 1001, x, None).unwrap();
@@ -390,4 +393,112 @@ fn an_older_file_has_no_daily_operations_and_they_are_kept() {
     let s = serde_json::to_string(&c.planning).unwrap();
     let back: plan::Planning = serde_json::from_str(&s).unwrap();
     assert_eq!(back.ops, c.planning.ops);
+}
+
+/// The player's rules of asking (4 November 2026): a reserve within his frame is put on without a
+/// question before 12:00 the day before (at 12:00 exactly he must be asked); the hourly paid are
+/// asked several at once, a permanent driver one at a time; the duty is given only after a yes
+/// (or so put on), and the others asked are told it is taken.
+#[test]
+fn the_rules_of_asking_a_reserve_the_hourly_paid_and_a_permanent_driver() {
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    let tomorrow = dates::add(&c.date, 1);
+    c.staff[0].employment = Employment::Reserve(Frame::new(300, 780, 0x7f));
+    c.staff[3].employment = Employment::Hourly;
+    c.staff[4].employment = Employment::Hourly;
+    let r = c.staff[0].clone();
+    // the day before: 11:59 still without a question, 12:00 asked
+    c.clock.minute = 11 * 60 + 59;
+    assert!(before_noon(&c, &tomorrow));
+    assert_eq!(rule_of(&c, &r, &tomorrow, plan::TIER_RESERVE), Rule::Set);
+    c.clock.minute = 12 * 60;
+    assert!(!before_noon(&c, &tomorrow));
+    assert_eq!(rule_of(&c, &r, &tomorrow, plan::TIER_RESERVE), Rule::One);
+    assert_eq!(rule_of(&c, &c.staff[3].clone(), &tomorrow, plan::TIER_HOURLY), Rule::Many);
+    assert_eq!(rule_of(&c, &c.staff[1].clone(), &tomorrow, plan::TIER_COLLEAGUE), Rule::One);
+    // a permanent driver one at a time; two at once refused too
+    let yes = || Some(Reply::Yes { say: 0 });
+    let date = tomorrow.as_str();
+    ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[1] }, yes())], 10).unwrap();
+    assert_eq!(ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[2] }, yes())], 10), Err(ONE_AT_A_TIME));
+    // the hourly paid alongside, several at once
+    ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[3] }, yes()), (Asked::Staff { id: ids[4] }, yes())], 10).unwrap();
+    // given before his yes: refused; put on (a reserve's `set`): fine
+    assert_eq!(give_asked(&mut c, date, 1001, None, ids[3], None, false, 10), Err(NEEDS_YES));
+    // the first permanent driver's question taken back: the next may be asked
+    let first = c.planning.ops.asks.iter().find(|a| a.of_staff() == Some(ids[1])).unwrap().id;
+    assert!(withdraw_ask(&mut c, first));
+    assert!(!withdraw_ask(&mut c, first), "closed already");
+    ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[2] }, yes())], 10).unwrap();
+    // the answers come: given to an hourly driver who said yes, the others told it is taken
+    let latest = c.planning.ops.asks.iter().filter_map(|a| a.due).max().unwrap();
+    c.clock.minute = (latest - crate::company::clock::moment(&c.date, 0)) as u32 + 1;
+    let said_yes = c.planning.ops.asks.iter().find(|a| a.of_staff() == Some(ids[3])).unwrap().reply.clone().unwrap();
+    if said_yes.yes() {
+        let before = c.messages.list.len();
+        give_asked(&mut c, date, 1001, None, ids[3], None, false, 10).unwrap();
+        assert_eq!(c.messages.list.len(), before + 2, "ids[4] and ids[2] told");
+        assert!(c.messages.list.iter().rev().take(2).all(|m| m.text == super::super::messages::DUTY_TAKEN));
+        assert_eq!(asks_of(&c, date, 1001).count(), 0);
+    }
+    // the reserve put on without a question
+    give_asked(&mut c, date, 1002, None, ids[0], None, true, 10).unwrap();
+    assert!(c.planning.ops.calls.iter().any(|x| x.n == 1002 && x.driver == ids[0]));
+}
+
+/// An AI driver answers on the company's clock: 5-30 minutes, 2-10 when the duty begins within 3
+/// hours; never between 23:00 and 06:00 (after 06:00, or not reachable when the duty begins
+/// first); a tired driver slower, sometimes not at all ("no answer" after 2 hours); the same
+/// every time.
+#[test]
+fn an_ai_driver_answers_in_game_time_and_not_at_night() {
+    use crate::company::clock::{moment, DAY};
+    let mut c = company();
+    let e = c.staff[1].clone();
+    let date = "2024-03-06";
+    let yes = Reply::Yes { say: 0 };
+    let at = |h: i64| moment("2024-03-05", h);
+    let (r, due) = answer_time(&c, &e, date, 1001, 14 * 60, yes.clone(), at(10 * 60), 0.0);
+    assert_eq!(answer_time(&c, &e, date, 1001, 14 * 60, yes.clone(), at(10 * 60), 0.0), (r.clone(), due), "the same every time");
+    let mut normal = Vec::new();
+    let mut urgent = Vec::new();
+    for n in 1001..1101 {
+        let (r, d) = answer_time(&c, &e, date, n, 14 * 60, yes.clone(), at(10 * 60), 0.0);
+        if r != Reply::Silent {
+            normal.push(d - at(10 * 60));
+        }
+        // (the duty at 08:00 the next day, asked at 06:00: within 3 hours)
+        let (r, d) = answer_time(&c, &e, date, n, 8 * 60, yes.clone(), moment(date, 6 * 60), 0.0);
+        if r != Reply::Silent {
+            urgent.push(d - moment(date, 6 * 60));
+        }
+    }
+    assert!(normal.iter().all(|m| (5..=30).contains(m)), "{normal:?}");
+    assert!(urgent.iter().all(|m| (2..=10).contains(m)), "{urgent:?}");
+    assert!(normal.len() > 85, "a rested driver mostly answers: {}", normal.len());
+    // asked at 23:30 for the afternoon: answered between 06:00 and 06:20
+    for n in 1001..1041 {
+        let (r, d) = answer_time(&c, &e, date, n, 14 * 60, yes.clone(), at(23 * 60 + 30), 0.0);
+        if r != Reply::Silent {
+            assert!((moment(date, 6 * 60)..=moment(date, 6 * 60 + 20)).contains(&d), "{}", d.rem_euclid(DAY));
+        }
+    }
+    // asked at 23:30 for a duty at 05:00: not reachable - no answer
+    let (r, d) = answer_time(&c, &e, date, 1001, 5 * 60, yes.clone(), at(23 * 60 + 30), 0.0);
+    assert_eq!((r, d), (Reply::Silent, at(23 * 60 + 30) + NO_ANSWER_AFTER));
+    // tired: slower, and more often no answer
+    c.staff[1].stress = 85.0;
+    let t = c.staff[1].clone();
+    let slow: Vec<(Reply, i64)> = (1001..1201).map(|n| answer_time(&c, &t, date, n, 14 * 60, yes.clone(), at(10 * 60), 0.0)).collect();
+    assert!(slow.iter().filter(|x| x.0 != Reply::Silent).any(|x| x.1 - at(10 * 60) > 30), "slower");
+    let silent = slow.iter().filter(|x| x.0 == Reply::Silent).count();
+    assert!(silent > 10 && silent < 60, "{silent} of 200 no answer");
+    // an hourly driver short of hours: quicker
+    c.staff[2].employment = Employment::Hourly;
+    let h = c.staff[2].clone();
+    assert!((1001..1101).map(|n| answer_time(&c, &h, date, n, 14 * 60, yes.clone(), at(10 * 60), 0.0)).filter(|x| x.0 != Reply::Silent).all(|x| x.1 - at(10 * 60) <= 18));
+    // "no answer" is no answer
+    assert!(!Reply::Silent.yes());
+    assert_eq!(words(&Reply::Silent, &|_| String::new()).0, SAY_SILENT);
 }

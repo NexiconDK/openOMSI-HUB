@@ -206,14 +206,16 @@ function SettingsDialog({ d }) {
       ${v.country && html`<div class="co-caps">${v.country.caps}</div>
         <div class="pair"><${CountryPick} c=${v.country} value=${v.country.key} onChange=${(k) => act('country', { key: k })} style="width:320px;flex:none" />
           <p class="co-note">${v.country.note}</p></div>`}
+      ${v.agency_local && html`<div class="co-caps">${v.agency_local.caps}</div>
+        <div class="pair"><${Seg} value=${v.agency_local.value} options=${v.agency_local.options.map((o) => [o.value, o.label])} onChange=${(k) => act('agency_local', { value: k })} style="width:420px;height:40px" />
+          <p class="co-note">${v.agency_local.say}</p></div>`}
       ${v.online && html`<div class="co-caps">${v.online.caps}</div>
         <p class="co-note">${v.online.say}</p>
         ${v.online.own && html`<div class="co-caps">${v.online.own.caps}</div>
           <div class="pair"><${Seg} value=${v.online.own.value} options=${v.online.own.options.map((o) => [o.value, o.label])} onChange=${(k) => act('drive_free', { free: k === 'free' })} style="width:320px;height:40px" />
             <p class="co-note">${v.online.own.say}</p></div>`}
         ${v.online.agency && html`<div class="co-caps">${v.online.agency.caps}</div>
-          <div class="pair"><${Seg} value=${v.online.agency.value} options=${v.online.agency.options.map((o) => [o.value, o.label])} onChange=${(k) => act('agency_fallback', { value: k })} style="width:420px;height:40px" />
-            <p class="co-note">${v.online.agency.say}</p></div>`}
+          <div class="pair"><p class="co-note"><b>${v.online.agency.locked}</b> · ${v.online.agency.say}</p></div>`}
         <div class="co-caps">${v.online.left_caps}</div>
         <div class="pair"><${Seg} value=${v.online.left} options=${v.online.left_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_left', { left: k })} style="width:320px;height:40px" />
           <p class="co-note">${v.online.left_say}</p></div>

@@ -26,6 +26,7 @@
 //! Kept in the company's planning (`Planning::ops`), at once; an older file has none.
 
 use super::model::{Cents, Company, Employee, Employment};
+use super::pro_cut::PieceKey;
 use super::plan::{self, Cannot, DayPlan, Problem, Who};
 use super::pro_turnus::{self as pt, ProDuty};
 use super::rng::Rng;
@@ -36,12 +37,17 @@ use serde::{Deserialize, Serialize};
 // --- what is kept --------------------------------------------------------------------------------
 
 /// A duty given to a driver for one date (`give`): his that day, whoever's row or roster had it.
+/// (A part of a cut duty: `part` its index in the duty's split, `pieces` its pieces - `pro_cut`.)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct Call {
     pub date: String,
     /// The duty's number (the Vagter tab's).
     pub n: u32,
     pub driver: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub part: Option<u8>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub pieces: Vec<PieceKey>,
 }
 
 /// Who is asked.
@@ -89,6 +95,8 @@ pub enum Reply {
     Swap { with: u32, theirs: u32, say: u8 },
     /// A player's own words (`yes`: he says he can).
     Text { text: String, yes: bool },
+    /// No answer: he did not pick up (shown as "no answer" after `NO_ANSWER_AFTER`).
+    Silent,
 }
 
 impl Reply {
@@ -106,6 +114,7 @@ impl Reply {
             Reply::Late { .. } => "late",
             Reply::Swap { .. } => "swap",
             Reply::Text { .. } => "text",
+            Reply::Silent => "silent",
         }
     }
 }
@@ -132,12 +141,36 @@ pub struct Ask {
     /// The duty was given (to him or to another), or the question taken back.
     #[serde(default)]
     pub closed: bool,
+    /// The part of a cut duty he is asked for (`pro_cut`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub part: Option<u8>,
+    /// When his answer comes, on the company's clock (`clock::now`; None: an older question, by
+    /// the launcher's seconds `at` + `wait`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub due: Option<i64>,
 }
 
 impl Ask {
     /// His answer as it is known at `now` (seconds since 1970): an AI driver's after his seconds.
     pub fn shown(&self, now: u64) -> Option<&Reply> {
-        self.reply.as_ref().filter(|_| now >= self.at.saturating_add(self.wait))
+        self.reply.as_ref().filter(|_| self.due.is_none() && now >= self.at.saturating_add(self.wait))
+    }
+
+    /// His answer as it is known at the company's minute `game` (`clock::now`) and the launcher's
+    /// second `now`.
+    pub fn shown_at(&self, game: i64, now: u64) -> Option<&Reply> {
+        match self.due {
+            Some(d) => self.reply.as_ref().filter(|_| game >= d),
+            None => self.shown(now),
+        }
+    }
+
+    /// Asked of staff driver `id`.
+    pub fn of_staff(&self) -> Option<u32> {
+        match self.who {
+            Asked::Staff { id } => Some(id),
+            Asked::Guest { .. } => None,
+        }
     }
 }
 
@@ -151,11 +184,14 @@ pub struct Ops {
     pub asks: Vec<Ask>,
     /// The last number given to a question.
     pub last: u32,
+    /// The duties cut for their date (`pro_cut`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub splits: Vec<super::pro_cut::Split>,
 }
 
 impl Ops {
     pub fn is_empty(&self) -> bool {
-        self.calls.is_empty() && self.asks.is_empty()
+        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty()
     }
 }
 
@@ -164,6 +200,11 @@ pub const NO_SUCH_ASK: &str = "That question is no longer open.";
 pub const NOT_ASKED: &str = "You were not asked for that duty.";
 pub const NOT_A_DRIVER: &str = "That is not a driver of the company.";
 pub const NOBODY: &str = "Tick the drivers to ask first.";
+pub const ONE_AT_A_TIME: &str = "A permanent driver is asked one at a time: wait for his answer, or take the question back.";
+pub const NEEDS_YES: &str = "Ask him first: the duty can be given only to a driver who said yes.";
+/// How long an unanswered question waits before it shows "no answer" (minutes of the company's
+/// clock).
+pub const NO_ANSWER_AFTER: i64 = 120;
 
 // --- a day: its duties, who drives them ----------------------------------------------------------
 
@@ -225,8 +266,9 @@ pub fn open_duties(dp: &DayPlan, duties: &[ProDuty]) -> Vec<OpenDuty> {
 #[derive(Clone, Debug, PartialEq)]
 pub enum DayIs {
     /// He drives these duties (their numbers; 0 a piece of no duty of the Vagter tab), signing on
-    /// and off; `frame` his frame that day besides.
-    Duties { numbers: Vec<u32>, start: i32, end: i32, frame: Option<(i32, i32)> },
+    /// and off; `frame` his frame that day besides. `labels`: how the calendar names them - a part
+    /// of a duty cut for the date by its letter ("1002C", `pro_cut`).
+    Duties { numbers: Vec<u32>, start: i32, end: i32, frame: Option<(i32, i32)>, labels: Vec<String> },
     /// A reserve's frame, no duty in it (yet).
     Frame { from: i32, to: i32 },
     Off,
@@ -280,11 +322,16 @@ pub fn driver_day(c: &Company, e: &Employee, dp: &DayPlan, duties: &[ProDuty]) -
         return DriverDay { is, minutes };
     }
     let mut numbers: Vec<u32> = Vec::new();
+    let mut labels: Vec<String> = Vec::new();
     for &(ti, k) in &mine {
         let t = &dp.tours[ti].tour;
         let n = duties.iter().find(|d| d.pieces.iter().any(|(l, tt, kk)| *kk == k && l.trim().eq_ignore_ascii_case(t.line.trim()) && tt.trim() == t.tour.trim())).map_or(0, |d| d.number);
         if !numbers.contains(&n) {
             numbers.push(n);
+        }
+        let label = super::pro_cut::label_of(c, dp, ti, k).unwrap_or_else(|| if n == 0 { "+".to_string() } else { n.to_string() });
+        if !labels.contains(&label) {
+            labels.push(label);
         }
     }
     let p = &c.planning.flow.prefs;
@@ -294,7 +341,7 @@ pub fn driver_day(c: &Company, e: &Employee, dp: &DayPlan, duties: &[ProDuty]) -
         ([_], Some(d)) => (d.start, d.end),
         _ => (pieces.iter().map(|x| x.0).min().unwrap_or(0) - p.sign_on, pieces.iter().map(|x| x.1).max().unwrap_or(0) + p.sign_off),
     };
-    DriverDay { is: DayIs::Duties { numbers, start, end, frame }, minutes }
+    DriverDay { is: DayIs::Duties { numbers, start, end, frame, labels }, minutes }
 }
 
 /// The seven dates of the bus company's week `date` is in, Sunday to Saturday (`pay::WEEK_BEGINS`).
@@ -540,8 +587,12 @@ pub fn words(r: &Reply, name: &dyn Fn(u32) -> String) -> (String, Vec<(&'static 
         Reply::Late { until, say } => (pick(&SAY_LATE, *say), vec![("time", time(*until))]),
         Reply::Swap { with, theirs, say } => (pick(&SAY_SWAP, *say), vec![("name", name(*with)), ("own", theirs.to_string())]),
         Reply::Text { text, .. } => (text.clone(), Vec::new()),
+        Reply::Silent => (SAY_SILENT.into(), Vec::new()),
     }
 }
+
+/// What "no answer" says.
+pub const SAY_SILENT: &str = "No answer.";
 
 /// An AI driver's answer to being asked for duty `n` of `date` (signing on `start`, off `end`),
 /// in a human way: the same for the same company, day, duty and driver (`Rng`), from his
@@ -622,12 +673,107 @@ pub fn asks_of<'a>(c: &'a Company, date: &'a str, n: u32) -> impl Iterator<Item 
 /// The template of the notice to a player asked for a duty.
 pub const ASKED_NOTICE: &str = "The control room asks: can you drive duty %{n} on %{date}, signing on %{time}? Answer on your page.";
 
-/// Ask the drivers `who` for duty `n` of `date` (signing on `start`, off `end`) at `now` (seconds
-/// since 1970): each with his answer (an AI driver's, decided now and shown after a few seconds;
-/// None a player's, to come - he is told). A driver asked already is asked again. Their numbers.
+// --- the rules of asking (the player's: NexiconDK, 4 November 2026) -------------------------------
+
+/// How a driver is given a duty.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Rule {
+    /// A reserve whose frame holds it, before 12:00 the day before: put on without a question,
+    /// he is told (`plan::tell_reserves`).
+    Set,
+    /// Asked first, one at a time (a permanent driver on a day off or into overtime, a reserve
+    /// from 12:00 the day before on).
+    One,
+    /// Asked first, several at once (the hourly paid).
+    Many,
+}
+
+/// Whether it is still before 12:00 the day before `date` on the company's clock.
+pub fn before_noon(c: &Company, date: &str) -> bool {
+    super::clock::now(c) < super::clock::moment(date, 0) - super::clock::DAY + plan::RESERVE_TELL_FROM
+}
+
+/// How driver `e` is given a duty of `date` (`tier`: where he comes in its fill order).
+pub fn rule_of(c: &Company, e: &Employee, date: &str, tier: u8) -> Rule {
+    if tier == plan::TIER_RESERVE && before_noon(c, date) {
+        Rule::Set
+    } else if e.employment == Employment::Hourly {
+        Rule::Many
+    } else {
+        Rule::One
+    }
+}
+
+/// The open question (asked, not answered at the company's minute `game`, not closed) for duty
+/// `n` (`part`) of `date` to a driver asked one at a time, if any.
+pub fn open_one<'a>(c: &'a Company, date: &str, n: u32, part: Option<u8>, game: i64, now: u64) -> Option<&'a Ask> {
+    c.planning.ops.asks.iter().find(|a| {
+        a.date == date && a.n == n && a.part == part && !a.closed && a.shown_at(game, now).is_none() && a.of_staff().and_then(|id| c.employee(id)).is_some_and(|e| e.employment != Employment::Hourly)
+    })
+}
+
+/// When an AI driver's answer `reply` to duty `n` of `date` (signing on `start`) comes, asked at
+/// the company's minute `game`: in game time - normally 5-30 minutes, 2-10 when the duty begins
+/// within 3 hours; quicker for an hourly-paid driver short of hours, slower for a tired or
+/// stressed one; never between 23:00 and 06:00 (he sleeps: he answers after 06:00, or cannot be
+/// reached when the duty begins first); and sometimes no answer at all (`Reply::Silent`, shown
+/// after `NO_ANSWER_AFTER`). The same for the same company, day, duty and driver.
+pub fn answer_time(c: &Company, e: &Employee, date: &str, n: u32, start: i32, reply: Reply, game: i64, week: f64) -> (Reply, i64) {
+    use super::clock::{moment, DAY};
+    let mut rng = Rng::of(&[&c.id, date, "pro-answer"], ((n as i64) << 24) | e.id as i64);
+    if reply == Reply::Frame {
+        return (reply, game + rng.int(1, 3));
+    }
+    let begins = moment(date, start as i64);
+    let soon = begins - game < 180;
+    let mut wait = (if soon { rng.int(2, 10) } else { rng.int(5, 30) }) as f64;
+    let contract = contract_minutes(c, e);
+    let over = contract.is_some_and(|k| week > k);
+    let tired = e.stress > 60.0 || e.satisfaction < 35.0 || over;
+    if e.employment == Employment::Hourly && week < pay::contract_week_minutes(c) * 0.5 {
+        wait *= 0.6;
+    }
+    if tired {
+        wait *= 1.6;
+    }
+    let silent_chance = if tired { 0.15 } else { 0.03 };
+    if rng.chance(silent_chance) {
+        return (Reply::Silent, game + NO_ANSWER_AFTER);
+    }
+    let mut due = game + wait.round().max(1.0) as i64;
+    // (the night: he sleeps from 23:00 to 06:00)
+    let m = due.rem_euclid(DAY);
+    if !(6 * 60..23 * 60).contains(&m) {
+        let morning = if m >= 23 * 60 { due - m + DAY + 6 * 60 } else { due - m + 6 * 60 };
+        if begins <= morning {
+            return (Reply::Silent, game + NO_ANSWER_AFTER);
+        }
+        due = morning + rng.int(0, 20);
+    }
+    (reply, due)
+}
+
+/// Ask the drivers `who` for duty `n` (`part`: a part of it cut, `pro_cut`) of `date` (signing on
+/// `start`, off `end`) at `now` (seconds since 1970): each with his answer (an AI driver's,
+/// decided now and come on the company's clock - `answer_time`, `week(id)` the minutes of his
+/// week; None a player's, to come - he is told). A driver asked already is asked again. A
+/// permanent driver is asked one at a time (`ONE_AT_A_TIME`); the hourly paid several at once.
+/// Their numbers.
 pub fn ask(c: &mut Company, date: &str, n: u32, start: i32, end: i32, who: Vec<(Asked, Option<Reply>)>, now: u64) -> Result<Vec<u32>, &'static str> {
+    ask_part(c, date, n, None, start, end, who, now, &|_| 0.0)
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i32, end: i32, who: Vec<(Asked, Option<Reply>)>, now: u64, week: &dyn Fn(u32) -> f64) -> Result<Vec<u32>, &'static str> {
     if who.is_empty() {
         return Err(NOBODY);
+    }
+    let game = super::clock::now(c);
+    // (one at a time: a permanent driver - or a reserve from noon the day before - while another
+    // such question is open, or two of them at once)
+    let ones: Vec<u32> = who.iter().filter_map(|(w, _)| if let Asked::Staff { id } = w { Some(*id) } else { None }).filter(|id| c.employee(*id).is_some_and(|e| e.employment != Employment::Hourly)).collect();
+    if ones.len() > 1 || (!ones.is_empty() && open_one(c, date, n, part, game, now).is_some_and(|a| a.of_staff() != ones.first().copied())) {
+        return Err(ONE_AT_A_TIME);
     }
     let mut ids = Vec::new();
     for (w, reply) in who {
@@ -636,22 +782,36 @@ pub fn ask(c: &mut Company, date: &str, n: u32, start: i32, end: i32, who: Vec<(
                 return Err(NOT_A_DRIVER);
             }
         }
-        c.planning.ops.asks.retain(|a| !(a.date == date && a.n == n && a.who == w));
+        c.planning.ops.asks.retain(|a| !(a.date == date && a.n == n && a.part == part && a.who == w));
         c.planning.ops.last += 1;
         let id = c.planning.ops.last;
-        let wait = match &reply {
-            Some(Reply::Frame) => 1,
-            Some(_) => Rng::of(&[&c.id, date, "pro-wait"], ((n as i64) << 24) | id as i64).int(3, 14) as u64,
-            None => 0,
+        let (reply, due) = match (w, reply) {
+            (Asked::Staff { id: e }, Some(r)) => {
+                let Some(emp) = c.employee(e).cloned() else { return Err(NOT_A_DRIVER) };
+                let (r, due) = answer_time(c, &emp, date, n, start, r, game, week(e));
+                (Some(r), Some(due))
+            }
+            (_, r) => (r, None),
         };
         if let Asked::Guest { no } = w {
             let time = format!("{:02}:{:02}", start.rem_euclid(1440) / 60, start.rem_euclid(60));
             super::crew::notify(c, Some(Who::Guest(no)), super::crew::Priority::High, ASKED_NOTICE, &[("n", n.to_string()), ("date", date.to_string()), ("time", time)], Some("phone"));
         }
-        c.planning.ops.asks.push(Ask { id, date: date.to_string(), n, start, end, who: w, at: now, wait, reply, closed: false });
+        c.planning.ops.asks.push(Ask { id, date: date.to_string(), n, start, end, who: w, at: now, wait: 0, reply, closed: false, part, due });
         ids.push(id);
     }
     Ok(ids)
+}
+
+/// Question `id` taken back (closed). Whether it was open.
+pub fn withdraw_ask(c: &mut Company, id: u32) -> bool {
+    match c.planning.ops.asks.iter_mut().find(|a| a.id == id && !a.closed) {
+        Some(a) => {
+            a.closed = true;
+            true
+        }
+        None => false,
+    }
 }
 
 /// Player `no` answers question `id` (`reply`: what he says), at `now`.
@@ -667,6 +827,9 @@ pub fn answer(c: &mut Company, id: u32, no: u32, reply: Reply, now: u64) -> Resu
     a.at = a.at.min(now);
     a.wait = 0;
     a.reply = Some(reply);
+    if a.due.is_some() {
+        a.due = Some(i64::MIN);
+    }
     Ok(())
 }
 
@@ -679,22 +842,49 @@ pub fn asked_of(c: &Company, no: u32) -> Vec<&Ask> {
 /// day's plan runs it. `swap`: and his own duty `theirs` that day to colleague `with` (a swap he
 /// asked for). The questions for it closed.
 pub fn give(c: &mut Company, date: &str, n: u32, driver: u32, swap: Option<(u32, u32)>) -> Result<(), &'static str> {
+    give_part(c, date, n, None, driver, swap)
+}
+
+/// `give` for a part of a cut duty (`part`: its index in the duty's split, `pro_cut`).
+pub fn give_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver: u32, swap: Option<(u32, u32)>) -> Result<(), &'static str> {
     if c.employee(driver).is_none_or(|e| !staff::drives(e)) {
         return Err(NOT_A_DRIVER);
     }
-    let set = |c: &mut Company, n: u32, driver: u32| {
-        c.planning.ops.calls.retain(|x| !(x.date == date && x.n == n));
-        c.planning.ops.calls.push(Call { date: date.to_string(), n, driver });
-        for a in c.planning.ops.asks.iter_mut().filter(|a| a.date == date && a.n == n) {
+    let pieces = match part {
+        Some(i) => super::pro_cut::split_of(c, date, n).and_then(|s| s.parts.get(i as usize)).map(|p| p.pieces.clone()).ok_or(super::pro_cut::NO_SUCH_PART)?,
+        None => Vec::new(),
+    };
+    let set = |c: &mut Company, n: u32, part: Option<u8>, pieces: Vec<PieceKey>, driver: u32| {
+        c.planning.ops.calls.retain(|x| !(x.date == date && x.n == n && x.part == part));
+        c.planning.ops.calls.push(Call { date: date.to_string(), n, driver, part, pieces });
+        for a in c.planning.ops.asks.iter_mut().filter(|a| a.date == date && a.n == n && a.part == part) {
             a.closed = true;
         }
     };
-    set(c, n, driver);
+    set(c, n, part, pieces, driver);
     if let Some((with, theirs)) = swap {
         if c.employee(with).is_none_or(|e| !staff::drives(e)) {
             return Err(NOT_A_DRIVER);
         }
-        set(c, theirs, with);
+        set(c, theirs, None, Vec::new(), with);
+    }
+    Ok(())
+}
+
+/// `give_part` by the rules of asking (the page's): to a driver who said yes - or, `set`, to a
+/// reserve put on within his frame before noon the day before (`Rule::Set`, the page decides it).
+/// The others asked for it are told it is taken.
+pub fn give_asked(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver: u32, swap: Option<(u32, u32)>, set: bool, now: u64) -> Result<(), &'static str> {
+    let game = super::clock::now(c);
+    let yes = c.planning.ops.asks.iter().any(|a| a.date == date && a.n == n && a.part == part && !a.closed && a.of_staff() == Some(driver) && a.shown_at(game, now).is_some_and(Reply::yes));
+    if !set && !yes {
+        return Err(NEEDS_YES);
+    }
+    let others: Vec<u32> = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == n && a.part == part && !a.closed).filter_map(Ask::of_staff).filter(|id| *id != driver).collect();
+    give_part(c, date, n, part, driver, swap)?;
+    for id in others {
+        let args = vec![("n".to_string(), n.to_string()), ("date".to_string(), date.to_string())];
+        super::messages::post(c, super::messages::To::Driver { employee: id }, super::messages::Priority::Info, super::messages::DUTY_TAKEN, args, None);
     }
     Ok(())
 }
@@ -729,12 +919,14 @@ pub fn tidy(c: &mut Company) {
     let today = c.date.clone();
     let drivers: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
     c.planning.ops.calls.retain(|x| dates::between(&today, &x.date) >= 0 && drivers.contains(&x.driver));
+    c.planning.ops.splits.retain(|x| dates::between(&today, &x.date) >= 0);
     c.planning.ops.asks.retain(|a| dates::between(&today, &a.date) >= 0 && !matches!(a.who, Asked::Staff { id } if !drivers.contains(&id)));
 }
 
 /// Every English text this module hands the pages besides its literals.
 pub fn texts() -> Vec<&'static str> {
-    let mut v: Vec<&'static str> = vec![SAY_FRAME, SAY_ILL, SAY_HOLIDAY, SAY_LICENCE, SAY_LONG, NO_SUCH_ASK, NOT_ASKED, NOT_A_DRIVER, NOBODY, ASKED_NOTICE];
+    let mut v: Vec<&'static str> = vec![SAY_FRAME, SAY_ILL, SAY_HOLIDAY, SAY_LICENCE, SAY_LONG, NO_SUCH_ASK, NOT_ASKED, NOT_A_DRIVER, NOBODY, ASKED_NOTICE, ONE_AT_A_TIME, NEEDS_YES, SAY_SILENT];
+    v.extend(super::pro_cut::texts());
     for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP] {
         v.extend(list.iter().copied());
     }
