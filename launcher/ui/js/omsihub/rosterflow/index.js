@@ -36,7 +36,7 @@ import { ProIntro, proIntroEscape, proIntroToggle, proIntroFirst } from './pro_i
 // (step 3: the Turnus tab)
 import { TurnusTab, turnusEscape } from './turnus.js';
 // (step 4: the Daglig drift and Kalender tabs)
-import { DailyTab, CalendarTab } from './ops.js';
+import { DailyTab, CalendarTab, opsEscape } from './ops.js';
 
 // (RosterFlow's own look, loaded with it)
 if (!document.querySelector('link[data-rf-css]')) {
@@ -211,6 +211,7 @@ export function RosterFlowPage() {
       if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
       if (proIntroEscape()) return;
       if (turnusEscape()) return;
+      if (opsEscape()) return;
       if (tutEscape()) return;
       const x = S.rf;
       if (x.intro) return setRf({ intro: null });

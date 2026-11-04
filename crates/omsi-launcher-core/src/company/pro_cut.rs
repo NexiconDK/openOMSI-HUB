@@ -515,9 +515,10 @@ pub fn cut(c: &mut Company, dp: &DayPlan, d: &OpenDuty, p: &Proposal) -> Result<
 pub fn uncut(c: &mut Company, date: &str, n: u32) -> bool {
     let before = c.planning.ops.splits.len();
     c.planning.ops.splits.retain(|s| !(s.date == date && s.n == n));
+    let game = super::clock::now(c);
     c.planning.ops.calls.retain(|x| !(x.date == date && x.n == n && x.part.is_some()));
     for a in c.planning.ops.asks.iter_mut().filter(|a| a.date == date && a.n == n && a.part.is_some()) {
-        a.closed = true;
+        a.shut(game);
     }
     before != c.planning.ops.splits.len()
 }

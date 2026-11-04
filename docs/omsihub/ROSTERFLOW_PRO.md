@@ -556,3 +556,48 @@ Tested: `pro_ops::tests` (`the_rules_of_asking_a_reserve_the_hourly_paid_and_a_p
 `an_ai_driver_answers_in_game_time_and_not_at_night`), `pro_cut::tests`, `live_more::tests`
 (`the_agency_fallback_by_the_server_admin_and_off_the_server_by_the_owner`) and the API's
 `the_calendar_and_the_box_show_ask_and_give_a_duty`.
+
+# The box in a popup, and drivers asked again after a no (4 November 2026)
+
+## The popup
+The player wanted the box as a popup rather than a column beside the calendar. The calendar has
+its whole width again; a day clicked - its "Mangler en chauffør" cell, its heading or any cell of
+it - opens a **popup** over the dimmed calendar (`ops.js`: `Pop`, RosterFlow's sheet style). Its
+title is the day ("Torsdag 7 Mar", how many duties are missing), the duty ("Vagt 1002",
+"Torsdag 05:15–13:30 · linje 5 · Ingen chauffør planlagt") or its cut, and inside are the box's
+steps as before: the day's duties without a driver, who can drive one (Faste, Ramme, Timelønnede,
+the answers in their boxes, "▸ N andre kan ikke køre den"), "Klip vagten" and its parts, the agency
+driver when the setting is on. The popup stays open while answers come in (asked again every two
+seconds) and closes with ✕, Escape or a click beside it. A duty given (Sæt på, Giv vagten) brings
+the day's list back with a green line "Vagt 1002 er givet til Nina Bach"; when nothing is left,
+"✓ Alle vagter er besat" and a "Luk" button. Daglig drift lists the day's missing duties on its
+page; "Find chauffør ›" opens the same popup.
+
+## Asked again the same day after a no (`pro_ops::Mood`)
+A driver who said no today does not like being asked again. His **real refusals** of the day
+(`refusals`, `Ask::refused_at`) count: an AI driver's no - tired, plans of his own, irritated,
+angry - come before the question was closed. "Too early", "too late", "no answer", a no for what he
+cannot (ill, on holiday, his licence, another duty, a day too long), an answer still to come, and
+a question taken back or given another before he answered do not count; a no taken back after it
+came does. A question asked again replaces the old one, and its no is kept (`Ops::noes`).
+
+- **One no today - "😒 Irriteret · sagde nej kl. 09:12":** asked again for any duty, his yes is
+  much less likely (`IRRITATED_YES`, ×0.4; a reserve within his frame from 12:00 the day before
+  too) and grudging ("Okay da… men så er det også sidste gang i dag."), his no irritated ("Igen?
+  Nej.", "Jeg har allerede sagt nej i dag."); each such question costs 2 points of contentment
+  (`IRRITATED_COST`).
+- **Two - "😠 Sur":** asked again he says no, angry ("Nej! Lad mig nu være i dag."), 5 points
+  (`ANGRY_COST`).
+- **Three (his angry no among them):** he answers no more questions today - "Svarer ikke mere i
+  dag" in his row instead of "Spørg", and the command refuses (`ANSWERS_NO_MORE`).
+
+The popup shows the tag beside his name before he is asked, and "Spørg" says why on hover ("Har
+allerede sagt nej i dag"). Each of several hourly-paid drivers asked at once counts for himself.
+A new day - the date of the company's clock changing at midnight (no driver answers between 23:00
+and 06:00 anyway) - starts calm; the day's noes are dropped with the days gone (`tidy`).
+Contentment stays between 0 and 100, and nobody leaves for this alone. The same every time
+(`Rng`: "pro-mood").
+
+Tested: `pro_ops::tests` (`an_irritated_driver_says_yes_much_less_and_grudgingly`,
+`an_angry_driver_always_says_no_and_then_answers_no_more_today`,
+`only_real_refusals_of_the_day_count_and_a_new_day_starts_calm`).

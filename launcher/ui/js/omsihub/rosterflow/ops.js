@@ -5,13 +5,16 @@
 // * Kalender: the drivers grouped - permanent, reserves with a frame, hourly paid -, each day of
 //   the week from Sunday his duty and its working time (a day off "–", ill or on holiday one bar
 //   across the days), the colours the kind of duty, and the hours of his week against his
-//   contract. Above them "Mangler en chauffør": a day clicked opens the box beside the calendar.
+//   contract. Above them "Mangler en chauffør": a day clicked opens the box in a popup over the
+//   calendar (the player's wish, NexiconDK 4 November 2026: the calendar keeps its whole width).
 // * The box, one step at a time: 1. the day's duties without a driver, each "Find a driver ›";
 //   2. who can drive the duty - permanent drivers, reserves, the hourly paid, the cheapest first -
 //   each with one thing to do (put on, ask, waiting for the answer, give it after a yes) and his
 //   answer in a box of its own (green yes, red no); when nobody can or will: cut the duty, its
 //   parts each with one driver suggested.
-// * Daglig drift: the same box for a date, with the day's frames and who is free.
+//   A driver who said no today already wears it: irritated, angry (`pro_ops::Mood`).
+// * Daglig drift: the day's duties without a driver, with the day's frames and who is free; "Find a
+//   driver ›" opens the same popup.
 //
 // Saved at once (`rf_ops_act`), not in RosterFlow's draft.
 
@@ -23,9 +26,19 @@ import { setRf, rfCmd, after, bump, say } from './state.js';
 import { Icon, RfButton } from './ui.js';
 
 /** What the tabs keep: the calendar's week, span, filter and search; the date and the duty the
- * box shows. */
+ * box shows, whether its popup is open (`pop`) and the duty just given (`given`). */
 const st = () => S.rf.ops || {};
 const setO = (patch) => setRf((r) => ({ ops: { ...(r.ops || {}), ...(typeof patch === 'function' ? patch(r.ops || {}) : patch) } }));
+
+/** The popup closed. */
+const closePop = () => setO({ pop: false, n: null, given: null });
+
+/** Escape: the popup closed first. */
+export function opsEscape() {
+  if (!st().pop) return false;
+  closePop();
+  return true;
+}
 
 /** A command's answer, asked again when what it shows or the company changed. */
 function useView(cmd, args, keys) {
@@ -74,7 +87,9 @@ function Action({ x, onAsk, onGive, onSet, onBack }) {
     case 'set':
       return html`<button type="button" class="bx-btn green" onClick=${onSet}>${tr('Put on')}</button>`;
     case 'ask':
-      return html`<button type="button" class="bx-btn line" onClick=${onAsk}>${tr('Ask the driver')}</button>`;
+      return html`<button type="button" class="bx-btn line" title=${x.hint || ''} onClick=${onAsk}>${tr('Ask the driver')}</button>`;
+    case 'done':
+      return html`<span class="bx-done">${x.hint}</span>`;
     case 'ask_off':
       return html`<button type="button" class="bx-btn line" disabled title=${x.hint || ''}>${tr('Ask the driver')}</button>`;
     case 'waiting':
@@ -86,12 +101,19 @@ function Action({ x, onAsk, onGive, onSet, onBack }) {
   }
 }
 
-/** A driver's row of the box: his name, kind and price, a note, his answer, and the one thing. */
+/** Given: a whole duty back to the day's list, with a line saying so (a part: the cut view stays). */
+async function giveIt(n, part, name, args) {
+  const r = await oAct('give', args);
+  if (r?.edited && part == null) setO({ n: null, given: tr('Duty %{n} is given to %{name}', { n, name }) });
+}
+
+/** A driver's row of the box: his name (and his mood, said no today already), kind and price, a
+ * note, his answer, and the one thing. */
 function Row({ v, n, part, x }) {
   const base = { date: v.date, n, part };
   return html`<div class="bx-row">
     <div class="bx-grow">
-      <div class="bx-name">${x.name}</div>
+      <div class="bx-name">${x.name}${x.mood && html` <span class=${'bx-mood ' + x.mood.key}>${x.mood.text}</span>`}</div>
       <div class=${'bx-sub' + (x.over ? ' op-over' : '')}>${x.sub}</div>
       ${x.note && html`<div class="bx-sub">${x.note}</div>`}
       <${Answer} a=${x.answer} />
@@ -99,8 +121,8 @@ function Row({ v, n, part, x }) {
     <${Action}
       x=${x}
       onAsk=${() => oAct('ask', { ...base, drivers: [x.id] })}
-      onSet=${() => oAct('give', { ...base, driver: x.id })}
-      onGive=${() => oAct('give', { ...base, driver: x.id, swap: x.answer?.swap || null })}
+      onSet=${() => giveIt(n, part, x.name, { ...base, driver: x.id })}
+      onGive=${() => giveIt(n, part, x.name, { ...base, driver: x.id, swap: x.answer?.swap || null })}
       onBack=${x.ask != null ? () => oAct('withdraw_ask', { ...base, ask: x.ask }) : null}
     />
   </div>`;
@@ -113,28 +135,33 @@ function Uncovered({ v, n, part, d }) {
   return null;
 }
 
-/** Step 1: the day's duties without a driver. */
-function Missing({ v }) {
+/** Step 1: the day's duties without a driver (in the popup: the duty just given, and a way out
+ * when all are filled). */
+function Missing({ v, pop }) {
+  const given = st().given;
   return html`<div class="bx">
-    <div class="bx-head"><b>${v.heading}</b><span class=${v.open.length ? 'bad' : 'ok'}>${v.count.text}</span></div>
-    ${v.open.length === 0 && html`<div class="bx-allok"><${Icon} name="check" size=${16} /> ${tr('Nothing to fill on this day: every duty has a driver.')}</div>`}
+    ${!pop && html`<div class="bx-head"><b>${v.heading}</b><span class=${v.open.length ? 'bad' : 'ok'}>${v.count.text}</span></div>`}
+    ${pop && given && html`<div class="bx-givenok"><${Icon} name="check" size=${16} /> ${given}</div>`}
+    ${v.open.length === 0 &&
+    (pop
+      ? html`<div class="bx-allfull"><b><${Icon} name="check" size=${22} /> ${tr('All duties are filled')}</b><span>${tr('Nothing to fill on this day: every duty has a driver.')}</span>
+          <button type="button" class="bx-btn blue" onClick=${closePop}>${tr('Close')}</button></div>`
+      : html`<div class="bx-allok"><${Icon} name="check" size=${16} /> ${tr('Nothing to fill on this day: every duty has a driver.')}</div>`)}
     ${v.open.map((d) => html`<div class="bx-row">
       <div class="bx-grow">
         <div class="bx-name">${d.label} <span class="bx-time">${d.time}</span></div>
         <div class="bx-sub">${d.why}</div>
       </div>
-      <button type="button" class="bx-btn blue" onClick=${() => setO({ date: v.date, n: d.n })}>${tr('Find a driver ›')}</button>
+      <button type="button" class="bx-btn blue" onClick=${() => setO({ date: v.date, n: d.n, pop: true, given: null })}>${tr('Find a driver ›')}</button>
     </div>`)}
   </div>`;
 }
 
 /** Step 2: who can drive the duty. */
 function Who({ v, d }) {
-  const back = () => setO({ n: null });
+  const back = () => setO({ n: null, given: null });
   return html`<div class="bx">
     <button type="button" class="rf-link bx-back" onClick=${back}><${Icon} name="chevron_left" size=${16} /><span>${tr('Back')}</span></button>
-    <div class="bx-title">${d.title}</div>
-    <div class="bx-sub">${d.sub} · ${d.why}</div>
     ${d.given && html`<div class="bx-given"><span>${tr('given to %{name}', { name: d.given })}</span><button type="button" class="rf-link" onClick=${() => oAct('withdraw', { date: v.date, n: d.n })}>${tr('Take it back')}</button></div>`}
     ${d.groups.map((g) => html`<div class="bx-group">${g.label}</div>${g.rows.map((x) => html`<${Row} v=${v} n=${d.n} x=${x} />`)}`)}
     ${d.players.length > 0 && html`<div class="bx-group">${tr('Players')}</div>
@@ -142,7 +169,7 @@ function Who({ v, d }) {
         <div class="bx-grow"><div class="bx-name">${p.name}</div><div class="bx-sub">${tr('a player: answers himself')}</div><${Answer} a=${p.answer} /></div>
         ${p.action === 'ask' && html`<button type="button" class="bx-btn line" onClick=${() => oAct('ask', { date: v.date, n: d.n, guests: [p.no] })}>${tr('Ask the driver')}</button>`}
         ${p.action === 'waiting' && html`<span class="bx-wait"><span>${tr('Waiting for an answer…')}</span></span>`}
-        ${p.action === 'give' && html`<button type="button" class="bx-btn green" onClick=${() => oAct('give_guest', { date: v.date, n: d.n, guest: p.no })}>${tr('Give him the duty')}</button>`}
+        ${p.action === 'give' && html`<button type="button" class="bx-btn green" onClick=${() => oAct('give_guest', { date: v.date, n: d.n, guest: p.no }).then((r) => r?.edited && setO({ n: null, given: tr('Duty %{n} is given to %{name}', { n: d.n, name: p.name }) }))}>${tr('Give him the duty')}</button>`}
       </div>`)}`}
     ${d.nobody &&
     html`<div class="bx-note"><b>${tr('Nobody can drive all of the duty.')}</b><span>${tr('Cut it in pieces, so that as much as possible is driven.')}</span></div>
@@ -158,9 +185,7 @@ function Cut({ v, k }) {
   const ticks = [k.first, ...k.parts.slice(1).map((p) => p.from), k.last];
   const clock = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
   return html`<div class="bx">
-    <button type="button" class="rf-link bx-back" onClick=${() => setO({ n: null })}><${Icon} name="chevron_left" size=${16} /><span>${tr('Back')}</span></button>
-    <div class="bx-title">${k.title}</div>
-    <div class="bx-sub">${k.sub}</div>
+    <button type="button" class="rf-link bx-back" onClick=${() => setO({ n: null, given: null })}><${Icon} name="chevron_left" size=${16} /><span>${tr('Back')}</span></button>
     <div class="bx-bar">${k.parts.map((p) => html`<span class=${p.given || p.row ? 'ok' : 'bad'} style=${`flex:${Math.max(1, p.to - p.from)}`}>${p.letter}</span>`)}</div>
     <div class="bx-ticks">${ticks.map((t) => html`<span style=${`left:${((t - k.first) / span) * 100}%`}>${clock(t)}</span>`)}</div>
     ${k.parts.map((p) => html`<div class="bx-part">
@@ -174,21 +199,48 @@ function Cut({ v, k }) {
   </div>`;
 }
 
-/** The box beside the calendar and in the daily operations: one step at a time. */
-function Box({ date }) {
-  const o = st();
-  const [v, again] = useView('rf_ops', { date: date || null, n: o.n ?? null }, [date, o.n]);
-  // (answers on their way: asked again every two seconds)
+/** The box's view (`rf_ops`) for a date and the duty chosen (none: the day's list), asked again
+ * every two seconds while answers are on their way. */
+function useBox(date, n) {
+  const [v, again] = useView('rf_ops', { date: date || null, n }, [date, n]);
   useEffect(() => {
     if (!v?.waiting) return;
     const t = setTimeout(again, 2000);
     return () => clearTimeout(t);
   }, [v]);
+  return v;
+}
+
+/** The box's step shown: the day's list, who can drive the duty, or its cut. */
+function Step({ v, pop }) {
   if (!v) return html`<div class="bx"><div class="rf-reading" style="position:static">${tr('Reading the timetable…')}</div></div>`;
   if (v.reading || v.off) return html`<div class="bx"><div class="pro-dim">${v.reading}</div></div>`;
   if (v.cut) return html`<${Cut} v=${v} k=${v.cut} />`;
   if (v.duty) return html`<${Who} v=${v} d=${v.duty} />`;
-  return html`<${Missing} v=${v} />`;
+  return html`<${Missing} v=${v} pop=${pop} />`;
+}
+
+/** The daily operations' list of the day's duties without a driver ("Find a driver ›": the popup). */
+function DayList({ date }) {
+  return html`<${Step} v=${useBox(date, null)} />`;
+}
+
+/** The popup over the calendar or the daily operations, one step at a time: its title (the day,
+ * the duty or its cut), the box inside; closed with ✕, Escape or a click beside it, open while
+ * the answers come in. */
+function Pop({ date }) {
+  const v = useBox(date, st().n ?? null);
+  const ok = v && !v.reading && !v.off;
+  const head = !v ? [tr('Reading the timetable…'), ''] : v.cut ? [v.cut.title, v.cut.sub] : v.duty ? [v.duty.title, `${v.duty.sub} · ${v.duty.why}`] : ok ? [v.heading, v.count?.text] : [v.reading || '', ''];
+  const bad = ok && !v.cut && !v.duty && v.open?.length > 0;
+  return html`<div class="rf-sheetdim op-popdim" onMouseDown=${(e) => e.target === e.currentTarget && closePop()}>
+    <div class="rf-help op-pop" role="dialog" aria-modal="true">
+      <div class="head"><div class="pro-intro-mark"><${Icon} name=${v?.duty || v?.cut ? 'groups' : 'event'} size=${20} /></div>
+        <div><b>${head[0]}</b><span class=${bad ? 'op-popbad' : ''}>${head[1]}</span></div>
+        <button type="button" title=${tr('Close')} onClick=${closePop}><${Icon} name="close" size=${20} /></button></div>
+      <div class="op-popbody"><${Step} v=${v} pop /></div>
+    </div>
+  </div>`;
 }
 
 // --- 5 Kalender --------------------------------------------------------------------------------------
@@ -213,7 +265,7 @@ function Days({ v, x, o }) {
       out.push(html`<div class=${'cl-cell off' + past}>–</div>`);
       continue;
     }
-    out.push(html`<button type="button" class=${'cl-cell ' + c.cls + past} title=${c.tip || ''} onClick=${() => setO({ date: v.days[i].date, n: null })}>
+    out.push(html`<button type="button" class=${'cl-cell ' + c.cls + past} title=${c.tip || ''} onClick=${() => setO({ date: v.days[i].date, n: null, pop: true, given: null })}>
       <b>${c.label}</b>${c.sub && html`<span>${c.sub}</span>`}
     </button>`);
   }
@@ -249,10 +301,10 @@ export function CalendarTab() {
       <div class="cl-cal">
         <div class="cl-grid" style=${'grid-template-columns:' + cols}>
           <div class="cl-h left">${tr('Driver')}</div>
-          ${v.days.map((d) => html`<button type="button" class=${'cl-h day' + (d.today ? ' today' : '') + (d.past ? ' past' : '')} title=${d.label} onClick=${() => setO({ date: d.date, n: null })}>${d.wd}<br /><span>${d.day}${d.today ? ` · ${tr('today')}` : ''}</span></button>`)}
+          ${v.days.map((d) => html`<button type="button" class=${'cl-h day' + (d.today ? ' today' : '') + (d.past ? ' past' : '')} title=${d.label} onClick=${() => setO({ date: d.date, n: null, pop: true, given: null })}>${d.wd}<br /><span>${d.day}${d.today ? ` · ${tr('today')}` : ''}</span></button>`)}
           <div class="cl-h left">${weeks > 1 ? tr('Hours a week') : tr('Hours this week')}</div>
           <div class="cl-name miss"><b>${tr('Missing a driver')}</b><span>${tr('click to fill')}</span></div>
-          ${v.days.map((d) => html`<button type="button" class=${'cl-miss' + (d.missing ? ' bad' : ' ok') + (d.date === day ? ' sel' : '')} onClick=${() => setO({ date: d.date, n: null })}>
+          ${v.days.map((d) => html`<button type="button" class=${'cl-miss' + (d.missing ? ' bad' : ' ok') + (d.date === day ? ' sel' : '')} onClick=${() => setO({ date: d.date, n: null, pop: true, given: null })}>
             ${d.missing ? html`<b>${d.missing}</b><span>${d.missing_text}</span>` : html`<${Icon} name="check" size=${16} /><span>${d.missing_text}</span>`}
           </button>`)}
           <div></div>
@@ -265,8 +317,8 @@ export function CalendarTab() {
         </div>
         <div class="cl-legend">${v.legend.map(([k, l]) => html`<span><i class=${'cl-cell ' + k}></i>${l}</span>`)}</div>
       </div>
-      <aside class="cl-box"><${Box} date=${day} /></aside>
     </div>
+    ${o.pop && html`<${Pop} date=${day} />`}
   </div>`;
 }
 
@@ -277,7 +329,7 @@ export function DailyTab({ onCalendar }) {
   const [v] = useView('rf_ops', { date: o.date || null }, [o.date]);
   if (!v) return html`<div class="rf-reading">${tr('Reading the timetable…')}</div>`;
   if (v.reading || v.off) return html`<div class="rf-reading">${v.reading}</div>`;
-  const go = (date) => setO({ date, n: null });
+  const go = (date) => setO({ date, n: null, pop: false });
   return html`<div class="pro-page op-page">
     <div class="rf-toolbar pro-tools">
       <button type="button" class="rf-link" onClick=${onCalendar}><${Icon} name="chevron_left" size=${17} /><span>${tr('Back to the calendar')}</span></button>
@@ -299,7 +351,8 @@ export function DailyTab({ onCalendar }) {
         <div class="pro-caps" style="margin-top:14px">${tr('Reserve frame')}</div>
         <div class="pro-dim">${tr('A reserve given a duty from 12:00 the day before is told at once.')}</div>
       </aside>
-      <div class="pro-content op-daily"><${Box} date=${v.date} /></div>
+      <div class="pro-content op-daily"><${DayList} date=${v.date} /></div>
     </div>
+    ${o.pop && html`<${Pop} date=${v.date} />`}
   </div>`;
 }

@@ -1217,7 +1217,6 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .cl-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; font-size: 10px; color: var(--rf-dim); }
 .cl-legend span { display: inline-flex; align-items: center; gap: 5px; }
 .cl-legend .cl-cell { display: inline-block; width: 12px; min-height: 12px; height: 12px; padding: 0; border-radius: 3px; }
-.cl-box { width: 360px; flex: none; overflow: auto; }
 .op-daily { align-items: flex-start; }
 .op-daily .bx { width: 460px; }
 .bx { border-radius: 8px; padding: 14px 14px 12px; background: var(--rf-sheet); border: 1px solid var(--rf-line); font-size: 11px; line-height: 1.4; }
@@ -1264,3 +1263,20 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .bx-ticks span:first-child { transform: none; }
 .bx-part { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--rf-band); }
 .bx-part .bx-row { border-bottom: 0; padding: 4px 0 0; }
+
+/* RosterFlow Pro: the box in a popup over the calendar and the daily operations (NexiconDK, 4 November 2026) */
+.op-popdim { padding: 40px 16px 16px; }
+.rf-help.op-pop { width: 640px; max-height: calc(100% - 8px); }
+.op-pop > .head span.op-popbad { color: var(--rf-err); font-weight: 700; }
+.op-popbody { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 18px 16px; }
+.op-popbody > .bx { border: 0; background: none; padding: 6px 0 0; }
+.op-daily .bx { width: 520px; max-width: 100%; }
+.bx-givenok { display: flex; align-items: center; gap: 6px; margin: 4px 0 6px; padding: 8px 11px; border-radius: 6px; border: 1px solid var(--rf-ok); background: color-mix(in srgb, var(--rf-ok) 18%, var(--rf-grid)); color: color-mix(in srgb, var(--rf-ok) 35%, var(--rf-text)); font-weight: 700; }
+.bx-allfull { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 0 10px; text-align: center; }
+.bx-allfull b { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--rf-ok); }
+.bx-allfull span { color: var(--rf-dim); margin-bottom: 8px; }
+.bx-allfull .bx-btn { padding: 8px 26px; }
+.bx-mood { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 10px; font-size: 9.6px; font-weight: 700; vertical-align: 1px; white-space: nowrap; }
+.bx-mood.irritated { background: color-mix(in srgb, #e8912d 22%, var(--rf-grid)); color: color-mix(in srgb, #e8912d 70%, var(--rf-text)); border: 1px solid #e8912d; }
+.bx-mood.angry { background: color-mix(in srgb, var(--rf-err) 22%, var(--rf-grid)); color: color-mix(in srgb, var(--rf-err) 55%, var(--rf-text)); border: 1px solid var(--rf-err); }
+.bx-done { color: var(--rf-err); font-weight: 700; font-size: 10.5px; white-space: nowrap; }

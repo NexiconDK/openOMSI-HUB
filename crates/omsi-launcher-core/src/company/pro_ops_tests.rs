@@ -502,3 +502,109 @@ fn an_ai_driver_answers_in_game_time_and_not_at_night() {
     assert!(!Reply::Silent.yes());
     assert_eq!(words(&Reply::Silent, &|_| String::new()).0, SAY_SILENT);
 }
+
+// --- asked again the same day after a no (NexiconDK, 4 November 2026) -------------------------------
+
+/// A question to driver `id` for duty `n` of the company's day, answered `reply` at the company's
+/// minute `due`.
+fn said(c: &mut Company, id: u32, n: u32, reply: Reply, due: i64) {
+    c.planning.ops.last += 1;
+    let k = c.planning.ops.last;
+    c.planning.ops.asks.push(Ask { id: k, date: c.date.clone(), n, start: 600, end: 900, who: Asked::Staff { id }, at: 0, wait: 0, reply: Some(reply), closed: false, part: None, due: Some(due), closed_at: None });
+}
+
+fn calm() -> Situation {
+    Situation { fit: Ok(()), in_frame: false, week: 0.0, contract: Some(39.0 * 60.0), own: None, swap_with: None, can_from: None, can_until: None }
+}
+
+#[test]
+fn an_irritated_driver_says_yes_much_less_and_grudgingly() {
+    let mut c = company();
+    c.clock.minute = 10 * 60;
+    let game = crate::company::clock::now(&c);
+    let e = c.staff[0].clone();
+    let yeses = |c: &Company| (2001..2401).filter(|n| ai_reply(c, &e, &c.date.clone(), *n, 600, 900, &calm()).yes()).count();
+    let before = yeses(&c);
+    assert_eq!(mood_of(&c, e.id, game), Mood::Calm);
+    said(&mut c, e.id, 1001, Reply::No { why: NoWhy::Plans, say: 0 }, game - 18);
+    assert_eq!(mood_of(&c, e.id, game), Mood::Irritated { at: game - 18 });
+    let after = yeses(&c);
+    assert!(before > 150 && (after as f64) < before as f64 * 0.6, "{before} -> {after}");
+    let answers: Vec<Reply> = (2001..2101).map(|n| ai_reply(&c, &e, &c.date.clone(), n, 600, 900, &calm())).collect();
+    assert!(answers.iter().all(|r| matches!(r, Reply::Grudging { .. } | Reply::No { why: NoWhy::Annoyed, .. })), "{answers:?}");
+    assert!(answers.iter().any(|r| matches!(r, Reply::Grudging { .. })));
+    // (a reserve within his frame, asked after noon: irritated too)
+    let frame = Situation { in_frame: true, ..calm() };
+    assert!((2001..2101).all(|n| matches!(ai_reply(&c, &e, &c.date.clone(), n, 600, 900, &frame), Reply::Grudging { .. } | Reply::No { why: NoWhy::Annoyed, .. })));
+    // (the same every time; still what he cannot comes first: ill is ill)
+    assert_eq!(ai_reply(&c, &e, &c.date.clone(), 2002, 600, 900, &calm()), ai_reply(&c, &e, &c.date.clone(), 2002, 600, 900, &calm()));
+    let ill = Situation { fit: Err(Cannot::Ill { until: "2024-03-06".into() }), ..calm() };
+    assert!(matches!(ai_reply(&c, &e, &c.date.clone(), 2002, 600, 900, &ill), Reply::No { why: NoWhy::Ill, .. }));
+    // (asked again: a little less content)
+    let s0 = c.employee(e.id).unwrap().satisfaction;
+    let date = c.date.clone();
+    ask_part(&mut c, &date, 1002, None, 600, 900, vec![(Asked::Staff { id: e.id }, Some(Reply::No { why: NoWhy::Annoyed, say: 1 }))], 0, &|_| 0.0).unwrap();
+    assert_eq!(c.employee(e.id).unwrap().satisfaction, s0 - IRRITATED_COST);
+    let (words, _) = words(&Reply::No { why: NoWhy::Annoyed, say: 1 }, &|_| String::new());
+    assert_eq!(words, "Again? No.");
+}
+
+#[test]
+fn an_angry_driver_always_says_no_and_then_answers_no_more_today() {
+    let mut c = company();
+    c.clock.minute = 11 * 60;
+    let game = crate::company::clock::now(&c);
+    let id = c.staff[1].id;
+    let e = c.staff[1].clone();
+    said(&mut c, id, 1001, Reply::No { why: NoWhy::Plans, say: 0 }, game - 60);
+    said(&mut c, id, 1002, Reply::No { why: NoWhy::Annoyed, say: 0 }, game - 20);
+    assert_eq!(mood_of(&c, id, game), Mood::Angry { at: game - 20 });
+    assert!((2001..2101).all(|n| matches!(ai_reply(&c, &e, &c.date.clone(), n, 600, 900, &calm()), Reply::No { why: NoWhy::Angry, .. })));
+    let s0 = c.employee(id).unwrap().satisfaction;
+    let date = c.date.clone();
+    ask_part(&mut c, &date, 1003, None, 600, 900, vec![(Asked::Staff { id }, Some(Reply::No { why: NoWhy::Angry, say: 0 }))], 0, &|_| 0.0).unwrap();
+    assert_eq!(c.employee(id).unwrap().satisfaction, s0 - ANGRY_COST);
+    // (his angry no come: no more questions today)
+    c.clock.minute += 120;
+    let later = crate::company::clock::now(&c);
+    assert!(matches!(mood_of(&c, id, later), Mood::Done { .. }), "{:?}", mood_of(&c, id, later));
+    assert_eq!(ask_part(&mut c, &date, 1004, None, 600, 900, vec![(Asked::Staff { id }, Some(Reply::Yes { say: 0 }))], 0, &|_| 0.0), Err(ANSWERS_NO_MORE));
+    // (never below nothing, and never gone for it)
+    c.staff.iter_mut().find(|e| e.id == id).unwrap().satisfaction = 1.0;
+    c.planning.ops.asks.retain(|a| a.n != 1003);
+    ask_part(&mut c, &date, 1005, None, 600, 900, vec![(Asked::Staff { id }, Some(Reply::No { why: NoWhy::Angry, say: 0 }))], 0, &|_| 0.0).unwrap();
+    assert_eq!(c.employee(id).unwrap().satisfaction, 0.0);
+    assert!(c.employee(id).is_some());
+}
+
+#[test]
+fn only_real_refusals_of_the_day_count_and_a_new_day_starts_calm() {
+    let mut c = company();
+    c.clock.minute = 12 * 60;
+    let game = crate::company::clock::now(&c);
+    let id = c.staff[2].id;
+    said(&mut c, id, 1001, Reply::Early { from: 700, say: 0 }, game - 50);
+    said(&mut c, id, 1002, Reply::Late { until: 700, say: 0 }, game - 40);
+    said(&mut c, id, 1003, Reply::Silent, game - 30);
+    said(&mut c, id, 1004, Reply::No { why: NoWhy::Ill, say: 0 }, game - 25);
+    said(&mut c, id, 1005, Reply::No { why: NoWhy::Plans, say: 0 }, game + 30);
+    said(&mut c, id, 1006, Reply::No { why: NoWhy::Plans, say: 0 }, game - 10);
+    c.planning.ops.asks.last_mut().unwrap().closed_at = Some(game - 15);
+    assert_eq!(mood_of(&c, id, game), Mood::Calm, "too early, too late, no answer, ill, not come yet, taken back first");
+    // (taken back after his no: it counts)
+    said(&mut c, id, 1007, Reply::No { why: NoWhy::Tired, say: 0 }, game - 5);
+    let k = c.planning.ops.last;
+    assert!(withdraw_ask(&mut c, k));
+    assert_eq!(mood_of(&c, id, game), Mood::Irritated { at: game - 5 });
+    // (asked the same duty again: the old no kept)
+    let date = c.date.clone();
+    ask_part(&mut c, &date, 1007, None, 600, 900, vec![(Asked::Staff { id }, Some(Reply::Yes { say: 0 }))], 0, &|_| 0.0).unwrap();
+    assert_eq!(c.planning.ops.noes, vec![Refusal { driver: id, at: game - 5 }]);
+    assert_eq!(mood_of(&c, id, game), Mood::Irritated { at: game - 5 });
+    // (the next day: calm again; the day after the company's, the old noes dropped)
+    use crate::company::clock::DAY;
+    assert_eq!(mood_of(&c, id, game + DAY), Mood::Calm);
+    c.date = dates::add(&c.date, 1);
+    tidy(&mut c);
+    assert!(c.planning.ops.noes.is_empty());
+}

@@ -76,6 +76,10 @@ pub enum NoWhy {
     Licence,
     /// His day would be too long.
     Long,
+    /// Irritated: he said no once today already (`Mood::Irritated`).
+    Annoyed,
+    /// Angry: he said no twice today already (`Mood::Angry`).
+    Angry,
 }
 
 /// A driver's answer.
@@ -97,18 +101,20 @@ pub enum Reply {
     Text { text: String, yes: bool },
     /// No answer: he did not pick up (shown as "no answer" after `NO_ANSWER_AFTER`).
     Silent,
+    /// Yes, grudgingly: irritated, he said no once today already (`Mood::Irritated`).
+    Grudging { say: u8 },
 }
 
 impl Reply {
     /// The answer says he takes it (and the duty can be given him).
     pub fn yes(&self) -> bool {
-        matches!(self, Reply::Yes { .. } | Reply::Frame | Reply::Swap { .. } | Reply::Text { yes: true, .. })
+        matches!(self, Reply::Yes { .. } | Reply::Grudging { .. } | Reply::Frame | Reply::Swap { .. } | Reply::Text { yes: true, .. })
     }
 
     /// Its kind: "yes", "no", "early", "late", "swap", "text" (the page's chip).
     pub fn key(&self) -> &'static str {
         match self {
-            Reply::Yes { .. } | Reply::Frame => "yes",
+            Reply::Yes { .. } | Reply::Grudging { .. } | Reply::Frame => "yes",
             Reply::No { .. } => "no",
             Reply::Early { .. } => "early",
             Reply::Late { .. } => "late",
@@ -148,6 +154,10 @@ pub struct Ask {
     /// the launcher's seconds `at` + `wait`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub due: Option<i64>,
+    /// When it was closed, on the company's clock (`clock::now`): an answer due after it was never
+    /// given (the duty given another, the question taken back).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub closed_at: Option<i64>,
 }
 
 impl Ask {
@@ -163,6 +173,24 @@ impl Ask {
             Some(d) => self.reply.as_ref().filter(|_| game >= d),
             None => self.shown(now),
         }
+    }
+
+    /// Closed at the company's minute `game` (the first time: an answer due after it never came).
+    pub fn shut(&mut self, game: i64) {
+        if !self.closed {
+            self.closed = true;
+            self.closed_at = Some(game);
+        }
+    }
+
+    /// A real refusal known at the company's minute `game`: an AI driver's no - tired, plans of
+    /// his own, irritated, angry (not "too early", "too late", "no answer", nor a no for what he
+    /// cannot: ill, on holiday, his licence, busy, a day too long) - come before the question was
+    /// closed. When he said it.
+    pub fn refused_at(&self, game: i64) -> Option<i64> {
+        let due = self.due?;
+        let real = matches!(self.reply, Some(Reply::No { why: NoWhy::Tired | NoWhy::Plans | NoWhy::Annoyed | NoWhy::Angry, .. }));
+        (real && due <= game && self.closed_at.is_none_or(|x| due <= x) && self.of_staff().is_some()).then_some(due)
     }
 
     /// Asked of staff driver `id`.
@@ -187,12 +215,23 @@ pub struct Ops {
     /// The duties cut for their date (`pro_cut`).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub splits: Vec<super::pro_cut::Split>,
+    /// The refusals of questions asked again since (their question replaced): `refusals`.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub noes: Vec<Refusal>,
 }
 
 impl Ops {
     pub fn is_empty(&self) -> bool {
-        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty()
+        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty()
     }
+}
+
+/// A driver's no, kept when his question was asked again (`ask_part`): `at` when he said it, on
+/// the company's clock.
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Refusal {
+    pub driver: u32,
+    pub at: i64,
 }
 
 /// Refusals (English: keys of the translations).
@@ -582,7 +621,10 @@ pub fn words(r: &Reply, name: &dyn Fn(u32) -> String) -> (String, Vec<(&'static 
             NoWhy::Holiday => (SAY_HOLIDAY.into(), Vec::new()),
             NoWhy::Licence => (SAY_LICENCE.into(), Vec::new()),
             NoWhy::Long => (SAY_LONG.into(), Vec::new()),
+            NoWhy::Annoyed => (pick(&SAY_ANNOYED, *say), Vec::new()),
+            NoWhy::Angry => (pick(&SAY_ANGRY, *say), Vec::new()),
         },
+        Reply::Grudging { say } => (pick(&SAY_GRUDGING, *say), Vec::new()),
         Reply::Early { from, say } => (pick(&SAY_EARLY, *say), vec![("time", time(*from))]),
         Reply::Late { until, say } => (pick(&SAY_LATE, *say), vec![("time", time(*until))]),
         Reply::Swap { with, theirs, say } => (pick(&SAY_SWAP, *say), vec![("name", name(*with)), ("own", theirs.to_string())]),
@@ -605,8 +647,18 @@ pub const SAY_SILENT: &str = "No answer.";
 pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: i32, s: &Situation) -> Reply {
     let mut rng = Rng::of(&[&c.id, date, "pro-ask"], ((n as i64) << 24) | e.id as i64);
     let say = rng.int(0, 11) as u8;
+    // (asked again the same day after a no: angry, he says no; irritated, rather no - `Mood`)
+    let mood = mood_of(c, e.id, super::clock::now(c));
+    if matches!(mood, Mood::Angry { .. } | Mood::Done { .. }) {
+        return Reply::No { why: NoWhy::Angry, say };
+    }
+    let irritated = matches!(mood, Mood::Irritated { .. });
+    let mut moody = Rng::of(&[&c.id, date, "pro-mood"], ((n as i64) << 24) | e.id as i64);
     if s.in_frame && s.fit.is_ok() {
-        return Reply::Frame;
+        if irritated && !moody.chance(IRRITATED_YES) {
+            return Reply::No { why: NoWhy::Annoyed, say };
+        }
+        return if irritated { Reply::Grudging { say } } else { Reply::Frame };
     }
     let no = |why: NoWhy| Reply::No { why, say };
     match &s.fit {
@@ -656,6 +708,9 @@ pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: 
     if e.employment == Employment::Hourly {
         p += 0.25 * (1.0 - (s.week / pay::contract_week_minutes(c)).min(1.0));
     }
+    if irritated {
+        return if moody.chance(p.clamp(0.08, 0.95) * IRRITATED_YES) { Reply::Grudging { say } } else { no(NoWhy::Annoyed) };
+    }
     if rng.chance(p.clamp(0.08, 0.95)) {
         Reply::Yes { say }
     } else if over || e.stress > 60.0 {
@@ -664,6 +719,56 @@ pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: 
         no(NoWhy::Plans)
     }
 }
+
+// --- asked again after a no (the player's: NexiconDK, 4 November 2026) ----------------------------
+
+/// How a driver takes being asked again the same day after a no: from his real refusals of the
+/// company's day (`refusals`; a new day - the date changing at midnight - starts calm).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Mood {
+    Calm,
+    /// One no today (`at`: when he said it): a yes much less likely (`IRRITATED_YES`), grudging;
+    /// a no in irritated words; asked again he is a little less content (`IRRITATED_COST`).
+    Irritated { at: i64 },
+    /// Two: asked again he says no, angry, and is less content (`ANGRY_COST`).
+    Angry { at: i64 },
+    /// Three or more (the angry no among them): he answers no more questions today.
+    Done { at: i64 },
+}
+
+/// How much less likely an irritated driver says yes.
+pub const IRRITATED_YES: f64 = 0.4;
+/// How much less content an irritated driver asked again is, and an angry one.
+pub const IRRITATED_COST: f64 = 2.0;
+pub const ANGRY_COST: f64 = 5.0;
+
+/// When driver `id` said a real no (`Ask::refused_at`) on the company's day of the minute `game`,
+/// known then, the earliest first.
+pub fn refusals(c: &Company, id: u32, game: i64) -> Vec<i64> {
+    use super::clock::DAY;
+    let today = game.div_euclid(DAY);
+    let mut v: Vec<i64> = c.planning.ops.asks.iter().filter(|a| a.of_staff() == Some(id)).filter_map(|a| a.refused_at(game)).chain(c.planning.ops.noes.iter().filter(|x| x.driver == id && x.at <= game).map(|x| x.at)).filter(|at| at.div_euclid(DAY) == today).collect();
+    v.sort_unstable();
+    v
+}
+
+/// Driver `id`'s mood at the company's minute `game`.
+pub fn mood_of(c: &Company, id: u32, game: i64) -> Mood {
+    let r = refusals(c, id, game);
+    match (r.len(), r.last()) {
+        (1, Some(&at)) => Mood::Irritated { at },
+        (2, Some(&at)) => Mood::Angry { at },
+        (_, Some(&at)) => Mood::Done { at },
+        _ => Mood::Calm,
+    }
+}
+
+/// What an irritated, an angry driver says, and a grudging yes.
+pub const SAY_ANNOYED: [&str; 3] = ["I told you no earlier today…", "Again? No.", "I've already said no today."];
+pub const SAY_ANGRY: [&str; 2] = ["No! Leave me alone today.", "Come on - the answer is still no!"];
+pub const SAY_GRUDGING: [&str; 2] = ["Fine… but that's the last time today.", "Okay then. But don't call me again today."];
+/// Refusal: he answers no more questions today.
+pub const ANSWERS_NO_MORE: &str = "The driver answers no more questions today.";
 
 /// The open questions for duty `n` of `date`.
 pub fn asks_of<'a>(c: &'a Company, date: &'a str, n: u32) -> impl Iterator<Item = &'a Ask> + 'a {
@@ -781,7 +886,20 @@ pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i3
             if c.employee(id).is_none_or(|e| !staff::drives(e)) {
                 return Err(NOT_A_DRIVER);
             }
+            // (asked again the same day after a no: no more after the angry no; less content)
+            let cost = match mood_of(c, id, game) {
+                Mood::Done { .. } => return Err(ANSWERS_NO_MORE),
+                Mood::Angry { .. } => ANGRY_COST,
+                Mood::Irritated { .. } => IRRITATED_COST,
+                Mood::Calm => 0.0,
+            };
+            if let Some(e) = c.staff.iter_mut().find(|e| e.id == id) {
+                e.satisfaction = (e.satisfaction - cost).clamp(0.0, 100.0);
+            }
         }
+        // (the question asked again replaces the old one: its no kept)
+        let kept: Vec<Refusal> = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == n && a.part == part && a.who == w).filter_map(|a| Some(Refusal { driver: a.of_staff()?, at: a.refused_at(game)? })).collect();
+        c.planning.ops.noes.extend(kept);
         c.planning.ops.asks.retain(|a| !(a.date == date && a.n == n && a.part == part && a.who == w));
         c.planning.ops.last += 1;
         let id = c.planning.ops.last;
@@ -797,7 +915,7 @@ pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i3
             let time = format!("{:02}:{:02}", start.rem_euclid(1440) / 60, start.rem_euclid(60));
             super::crew::notify(c, Some(Who::Guest(no)), super::crew::Priority::High, ASKED_NOTICE, &[("n", n.to_string()), ("date", date.to_string()), ("time", time)], Some("phone"));
         }
-        c.planning.ops.asks.push(Ask { id, date: date.to_string(), n, start, end, who: w, at: now, wait: 0, reply, closed: false, part, due });
+        c.planning.ops.asks.push(Ask { id, date: date.to_string(), n, start, end, who: w, at: now, wait: 0, reply, closed: false, part, due, closed_at: None });
         ids.push(id);
     }
     Ok(ids)
@@ -805,9 +923,10 @@ pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i3
 
 /// Question `id` taken back (closed). Whether it was open.
 pub fn withdraw_ask(c: &mut Company, id: u32) -> bool {
+    let game = super::clock::now(c);
     match c.planning.ops.asks.iter_mut().find(|a| a.id == id && !a.closed) {
         Some(a) => {
-            a.closed = true;
+            a.shut(game);
             true
         }
         None => false,
@@ -855,10 +974,11 @@ pub fn give_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver: 
         None => Vec::new(),
     };
     let set = |c: &mut Company, n: u32, part: Option<u8>, pieces: Vec<PieceKey>, driver: u32| {
+        let game = super::clock::now(c);
         c.planning.ops.calls.retain(|x| !(x.date == date && x.n == n && x.part == part));
         c.planning.ops.calls.push(Call { date: date.to_string(), n, driver, part, pieces });
         for a in c.planning.ops.asks.iter_mut().filter(|a| a.date == date && a.n == n && a.part == part) {
-            a.closed = true;
+            a.shut(game);
         }
     };
     set(c, n, part, pieces, driver);
@@ -892,8 +1012,9 @@ pub fn give_asked(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver:
 /// The questions for duty `n` of `date` closed (the duty given another way: to a player of "Play
 /// together", `together::book::give`).
 pub fn close(c: &mut Company, date: &str, n: u32) {
+    let game = super::clock::now(c);
     for a in c.planning.ops.asks.iter_mut().filter(|a| a.date == date && a.n == n) {
-        a.closed = true;
+        a.shut(game);
     }
 }
 
@@ -901,9 +1022,10 @@ pub fn close(c: &mut Company, date: &str, n: u32) {
 /// (it runs as the row or the roster has it again). Whether anything changed.
 pub fn withdraw(c: &mut Company, date: &str, n: u32) -> bool {
     let before = c.planning.ops.clone();
+    let game = super::clock::now(c);
     c.planning.ops.calls.retain(|x| !(x.date == date && x.n == n));
     for a in c.planning.ops.asks.iter_mut().filter(|a| a.date == date && a.n == n) {
-        a.closed = true;
+        a.shut(game);
     }
     before != c.planning.ops
 }
@@ -920,14 +1042,16 @@ pub fn tidy(c: &mut Company) {
     let drivers: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
     c.planning.ops.calls.retain(|x| dates::between(&today, &x.date) >= 0 && drivers.contains(&x.driver));
     c.planning.ops.splits.retain(|x| dates::between(&today, &x.date) >= 0);
+    let day = super::clock::moment(&today, 0);
+    c.planning.ops.noes.retain(|x| x.at >= day && drivers.contains(&x.driver));
     c.planning.ops.asks.retain(|a| dates::between(&today, &a.date) >= 0 && !matches!(a.who, Asked::Staff { id } if !drivers.contains(&id)));
 }
 
 /// Every English text this module hands the pages besides its literals.
 pub fn texts() -> Vec<&'static str> {
-    let mut v: Vec<&'static str> = vec![SAY_FRAME, SAY_ILL, SAY_HOLIDAY, SAY_LICENCE, SAY_LONG, NO_SUCH_ASK, NOT_ASKED, NOT_A_DRIVER, NOBODY, ASKED_NOTICE, ONE_AT_A_TIME, NEEDS_YES, SAY_SILENT];
+    let mut v: Vec<&'static str> = vec![SAY_FRAME, SAY_ILL, SAY_HOLIDAY, SAY_LICENCE, SAY_LONG, NO_SUCH_ASK, NOT_ASKED, NOT_A_DRIVER, NOBODY, ASKED_NOTICE, ONE_AT_A_TIME, NEEDS_YES, SAY_SILENT, ANSWERS_NO_MORE];
     v.extend(super::pro_cut::texts());
-    for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP] {
+    for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP, &SAY_ANNOYED, &SAY_ANGRY, &SAY_GRUDGING] {
         v.extend(list.iter().copied());
     }
     v.extend(["can weekdays before 14:00", "can mostly in the afternoon", "can mostly in the evening"]);

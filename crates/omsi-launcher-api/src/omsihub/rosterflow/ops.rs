@@ -473,6 +473,10 @@ fn row_json(c: &Company, p: &DayPlan, n: u32, part: Option<u8>, e: &Employee, ti
             v["answer"] = reply_json(c, r);
             v["action"] = json!(if r.yes() { "give" } else { "none" });
         }
+        (None, _) if matches!(po::mood_of(c, e.id, game), po::Mood::Done { .. }) => {
+            v["action"] = json!("done");
+            v["hint"] = json!(tr("Answers no more questions today"));
+        }
         (None, _) => match rule {
             Rule::Set => v["action"] = json!("set"),
             Rule::Many => v["action"] = json!("ask"),
@@ -484,6 +488,22 @@ fn row_json(c: &Company, p: &DayPlan, n: u32, part: Option<u8>, e: &Employee, ti
                 None => v["action"] = json!("ask"),
             },
         },
+    }
+    // (said no today already: irritated, angry - shown before he is asked again)
+    match po::mood_of(c, e.id, game) {
+        po::Mood::Calm => {}
+        po::Mood::Irritated { at } => {
+            v["mood"] = json!({ "key": "irritated", "text": trf("😒 Irritated · said no at %{time}", &[("time", &clock(at.rem_euclid(co::clock::DAY) as i32))]) });
+            if v["action"] == "ask" {
+                v["hint"] = json!(tr("Has already said no today"));
+            }
+        }
+        po::Mood::Angry { .. } | po::Mood::Done { .. } => {
+            v["mood"] = json!({ "key": "angry", "text": tr("😠 Angry") });
+            if v["action"] == "ask" {
+                v["hint"] = json!(tr("Has already said no twice today"));
+            }
+        }
     }
     v
 }
