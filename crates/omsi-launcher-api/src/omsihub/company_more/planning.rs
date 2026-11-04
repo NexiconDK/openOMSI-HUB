@@ -227,12 +227,15 @@ fn cannot_text(c: &Company, p: &DayPlan, x: &pl::Cannot) -> String {
 /// A way to cover an open duty in words (`planning::cover_text`).
 fn cover_text(c: &Company, x: &pl::Cover) -> (String, String) {
     match x {
-        pl::Cover::Colleague { id, standby, warn } => {
+        pl::Cover::Colleague { id, standby, warn, tier } => {
             let name = c.employee(*id).map(|e| e.name.clone()).unwrap_or_default();
             let note = match warn.first() {
                 Some(Warn::Overtime(m)) => trf("Overtime %{t}", &[("t", &length(*m))]),
                 Some(Warn::Transfer(m)) => trf("%{n} min to change stops", &[("n", &m.to_string())]),
                 Some(Warn::Experience) => tr("Little experience for this bus"),
+                // (NexiconDK, 4 November 2026: the order an open duty is filled in - `plan::fill_tier`)
+                None if *tier == pl::TIER_RESERVE => tr("Reserve: within their frame"),
+                None if *tier == pl::TIER_HOURLY => tr("Hourly paid: at least 3 hours"),
                 None if *standby => tr("Standby: free all day"),
                 None => tr("Can take it"),
             };
@@ -405,6 +408,9 @@ fn tools(s: &Session, c: &Company, date: &str, clear_armed: bool) -> Value {
     };
     json!({
         "text": text, "tone": tone, "icon": icon,
+        // (NexiconDK, 4 November 2026: the planner chosen on top of the planning - Standard,
+        // RosterFlow, RosterFlow Pro; none in Casual)
+        "planner": super::super::dialogs::planner_json(c),
         "fill": { "label": tr("Fill the roster").to_uppercase(), "tip": tr("Fix in the roster what the dispatcher would take: free buses, and free drivers by the working-time rules. Only what is planned runs.") },
         "clear": { "label": tr(if clear_armed { "Press again" } else { "Clear the day" }).to_uppercase(), "widest": [tr("Clear the day").to_uppercase(), tr("Press again").to_uppercase()], "armed": clear_armed, "tip": tr("Take every bus and driver of this weekday out of the roster") },
         "repeat": { "label": tr(repeat).to_uppercase(), "tip": tr("This weekday's roster on the other days too (theirs is replaced)") },
@@ -666,6 +672,26 @@ fn day_panel(c: &Company, p: &DayPlan, arm: Option<Arm>) -> Value {
             json!({ "ti": o.tour, "duty": o.duty, "line": t.tour.line, "tour": t.tour.tour, "title": format!("{}  ·  {}", line_title(t, o.duty), what), "fill": format!("→ {fill}"), "tone": if o.filled { "text82" } else { problem_tone(o.problem) }, "hard": hard })
         })
         .collect();
+    // (NexiconDK, 4 November 2026) The day's frames - the reserve drivers whose frame holds that
+    // day, with what of it is used - and who is free all day.
+    let frames: Vec<Value> = pl::frames_on(c, &p.date)
+        .into_iter()
+        .map(|(e, f)| {
+            let mins: i32 = p.duties_of(Who::Staff(e.id)).iter().map(|&(i, k)| p.tours[i].duties[k].to - p.tours[i].duties[k].from).sum();
+            let (state, tone) = match pl::day_unavailable(e, &p.date, p.today) {
+                Some(x) => (cannot_text(c, p, &x), "dim"),
+                None if mins == 0 => (tr("Free in the frame"), "ok"),
+                None => (trf("%{t} given", &[("t", &length(mins))]), "text82"),
+            };
+            json!({ "name": e.name, "frame": super::super::people::frame_text(&f), "state": state, "tone": tone, "colour": driver_colour(c, e.id) })
+        })
+        .collect();
+    let free: Vec<String> = c
+        .staff
+        .iter()
+        .filter(|e| co::staff::drives(e) && pl::day_unavailable(e, &p.date, p.today).is_none() && p.duties_of(Who::Staff(e.id)).is_empty())
+        .map(|e| e.name.clone())
+        .collect();
     let late_dropped = rows.iter().filter(|o| o.late && !o.filled).count();
     let covered_today = rows.iter().filter(|o| !o.late && o.filled && o.problem.is_some_and(|x| x != Problem::Unassigned)).count();
     let mut gaps = if open + no_bus == 0 { tr("Nothing open.") } else { trf("%{d} duties without a driver, %{b} tours without a bus.", &[("d", &open.to_string()), ("b", &no_bus.to_string())]) };
@@ -680,8 +706,9 @@ fn day_panel(c: &Company, p: &DayPlan, arm: Option<Arm>) -> Value {
         "title": tr(if p.today { "The company's day" } else { "This day" }).to_uppercase(),
         "summary": trf("%{c} of %{t} tours covered", &[("c", &covered.to_string()), ("t", &tours.to_string())]),
         "ok": open + no_bus + late_dropped == 0, "gaps": gaps,
-        "heads": { "morning": tr("This morning").to_uppercase(), "open": tr("Open duties").to_uppercase(), "drivers": tr("Drivers").to_uppercase(), "buses": tr("Buses").to_uppercase() },
+        "heads": { "morning": tr("This morning").to_uppercase(), "open": tr("Open duties").to_uppercase(), "drivers": tr("Drivers").to_uppercase(), "buses": tr("Buses").to_uppercase(), "frames": tr("Frames this day").to_uppercase(), "free": tr("Free all day").to_uppercase() },
         "morning": morning, "open": open_rows,
+        "frames": frames, "free": if free.is_empty() { tr("Nobody: every driver has a duty or is away.") } else { format!("{}  ·  {}", free.len(), free.join(", ")) },
         "hint": tr("Tap one, then a duty - or drag it there; or drag a duty here."),
         // (NexiconDK: on Bus Company Online's server nobody plays as the company itself - its
         // players drive the duties given to them by name)

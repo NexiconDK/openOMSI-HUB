@@ -16,7 +16,7 @@ use omsi_launcher_lib::company::clock::{self as ck, Run};
 use omsi_launcher_lib::company::control::Act;
 use omsi_launcher_lib::company::messages::{self as msg, Action, Answer, Canned, From, Msg, Priority, Quick, To, What};
 use omsi_launcher_lib::company::plan::{BusOf, DayPlan};
-use omsi_launcher_lib::company::Company;
+use omsi_launcher_lib::company::{self as co, Company};
 use omsihub_plugin::bridge::{self, Choice, Inbox, InboxAction, InboxMsg, Reply, Status};
 use serde_json::{json, Value};
 use std::time::Instant;
@@ -194,8 +194,14 @@ pub fn tick(s: &mut Session) {
     let game = link.is_some() && s.in_game();
     super::week_work(s);
     let dp = super::plan_of(s, &date).and_then(Result::ok);
+    // (NexiconDK, 4 November 2026: tomorrow's plan too - a reserve driver given a duty from noon
+    // the day before on is told: `plan::tell_reserves`)
+    let next = super::plan_of(s, &co::dates::add(&date, 1)).and_then(Result::ok);
     let Some(c) = s.company.as_mut() else { return };
     let before = c.messages.clone();
+    for p in dp.iter().chain(next.iter()) {
+        co::plan::tell_reserves(c, p);
+    }
     let feed = c.clock.feed.len();
     let breaks = c.clock.today.as_ref().map_or(0, |x| x.breaks.len());
     c.messages.driving = link.as_ref().filter(|_| game).map(|(_, a)| (a.line.clone(), a.tour.clone()));

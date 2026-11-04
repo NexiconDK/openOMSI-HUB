@@ -8,14 +8,14 @@ pub mod agencies;
 pub mod holidays;
 
 use super::kit::{self, Go, Popup};
-use super::words::{day_label, eur, eur_cents, grade, num, tr, trf};
+use super::words::{day_label, eur, eur_cents, grade, num, tr, trf, WEEKDAYS};
 use super::{act as apply, Session, RESEARCH_TAB};
 use omsi_launcher_lib::company::day::Plan;
 use omsi_launcher_lib::company::licences::{self, Endorsement, Lack};
 use omsi_launcher_lib::company::research::keys;
 use omsi_launcher_lib::company::staff::{self, Applicant, Grade, Hours};
 use omsi_launcher_lib::company::training::{self, CourseKind};
-use omsi_launcher_lib::company::{self as co, Company, Employee, Licence, Role};
+use omsi_launcher_lib::company::{self as co, Company, Employee, Employment, Frame, Licence, Role};
 use serde_json::{json, Value};
 
 pub const TABS: [&str; 7] = ["My employees", "Hire employees", "Licences & training", "Work schedule", "Holidays", "Agencies", "Settings"];
@@ -81,6 +81,87 @@ fn shift_text(s: &staff::Shift) -> String {
 
 fn per_hour(wage: co::Cents) -> String {
     trf("%{amount} / hour", &[("amount", &eur_cents(staff::hourly(wage)))])
+}
+
+// --- employment (NexiconDK, 4 November 2026: RosterFlow Pro's plan, step 1) -----------------
+
+fn hm(m: i32) -> String {
+    format!("{:02}:{:02}", m.rem_euclid(1440) / 60, m.rem_euclid(60))
+}
+
+/// A frame's weekdays in words: "Mon–Fri" (three or more in a row), else "Mon, Thu".
+fn frame_days(days: u8) -> String {
+    let on: Vec<usize> = (0..7).filter(|d| days & (1 << d) != 0).collect();
+    let in_row = on.windows(2).all(|w| w[1] == w[0] + 1);
+    match on.as_slice() {
+        [a, .., b] if on.len() >= 3 && in_row => format!("{}–{}", tr(WEEKDAYS[*a]), tr(WEEKDAYS[*b])),
+        _ => on.iter().map(|d| tr(WEEKDAYS[*d])).collect::<Vec<_>>().join(", "),
+    }
+}
+
+/// A reserve's frame in words: "05:00–13:00 Mon–Fri".
+pub fn frame_text(f: &Frame) -> String {
+    format!("{}–{} {}", hm(f.from), hm(f.to), frame_days(f.days))
+}
+
+/// A driver's employment in words: its kind, and its week or frame.
+pub fn employment_text(c: &Company, x: &Employment) -> String {
+    match x {
+        Employment::FullTime => trf("Full time · %{h} h a week", &[("h", &num(co::econ_uk::contract_week_hours(c), 0))]),
+        Employment::PartTime { hours } => trf("Part time · %{h} h a week", &[("h", &num(*hours, if hours.fract() == 0.0 { 0 } else { 1 }))]),
+        Employment::Reserve(f) => trf("Reserve · %{frame}", &[("frame", &frame_text(f))]),
+        Employment::Hourly => tr("Hourly paid · no guarantee"),
+    }
+}
+
+/// A driver's hours this week (the bus company's week, Sunday to Saturday: `pay::WEEK_BEGINS`).
+fn week_text(c: &Company, e: &Employee) -> String {
+    let paid = num(e.week_paid / 60.0, 1);
+    match staff::contract_hours(c, e) {
+        Some(h) => trf("%{paid} of %{contract} hours this week", &[("paid", &paid), ("contract", &num(h, if h.fract() == 0.0 { 0 } else { 1 }))]),
+        None => trf("%{paid} hours this week", &[("paid", &paid)]),
+    }
+}
+
+/// The page's choice of employment (`employment` of the hire and of a change): `kind` its index
+/// in `Employment::KINDS`, `hours` a part-time week, `from`, `to` (minutes) and `days` (bit 0
+/// Monday) a reserve's frame.
+fn employment_of(args: &Value) -> Option<Employment> {
+    let e = args.get("employment")?;
+    let n = |k: &str| e.get(k).and_then(Value::as_f64);
+    let d = Frame::default();
+    Some(match e.get("kind").and_then(Value::as_u64)? {
+        1 => Employment::PartTime { hours: n("hours").unwrap_or(25.0) },
+        2 => Employment::Reserve(Frame::new(n("from").map_or(d.from, |x| x as i32), n("to").map_or(d.to, |x| x as i32), n("days").map_or(d.days, |x| x as u8))),
+        3 => Employment::Hourly,
+        _ => Employment::FullTime,
+    })
+}
+
+/// The choice of employment as the hire and a change show it (`KindPicker`): the four kinds
+/// with what each means, the one now (`now`), a part-time week and a frame to start from.
+fn kinds_json(c: &Company, now: Option<&Employment>) -> Value {
+    let full = co::econ_uk::contract_week_hours(c);
+    let cur = now.copied().unwrap_or_default();
+    let f = cur.frame().unwrap_or_default();
+    let hours = match cur {
+        Employment::PartTime { hours } => hours,
+        _ => 25.0_f64.min(full - 1.0),
+    };
+    json!({
+        "caps": tr("Employment").to_uppercase(),
+        "kinds": Employment::KINDS.iter().map(|k| tr(k)).collect::<Vec<_>>(),
+        "notes": [
+            trf("Full time: %{h} hours a week guaranteed, overtime above them.", &[("h", &num(full, 0))]),
+            tr("Part time: fewer hours a week, guaranteed pro rata; overtime above them."),
+            tr("Reserve: a frame on its weekdays, paid whether used or not. First to cover an open duty within it, without being asked; told of a duty given from noon the day before."),
+            tr("Hourly paid: no guarantee, only the hours worked - at least 3 a day called in - at 10 % more an hour. Called in after the reserves and colleagues."),
+        ],
+        "kind": cur.index(),
+        "hours_label": tr("Hours a week"), "hours": hours, "hours_min": staff::PART_TIME_MIN, "hours_max": full - 0.5,
+        "frame_label": tr("Daily frame"), "from": f.from, "to": f.to.rem_euclid(1440), "days": f.days,
+        "weekdays": WEEKDAYS.iter().map(|d| tr(d)).collect::<Vec<_>>(),
+    })
 }
 
 /// What someone is doing now: two lines and their tone (`people::list::doing`).
@@ -195,12 +276,33 @@ fn list_part(c: &Company, plan: Option<&Plan>, ui: &Value) -> Value {
             } else {
                 None
             };
-            json!({ "id": e.id, "portrait": e.portrait(), "name": e.name, "role": tr(e.role.label()), "icon": staff::icon(e.role), "wage": per_hour(e.wage), "tag": tag, "doing": [a, b, tone], "needs": needs(e) })
+            // (NexiconDK, 4 November 2026: a driver's employment and hours this week)
+            let contract = staff::drives(e).then(|| format!("{}  ·  {}", employment_text(c, &e.employment), week_text(c, e)));
+            json!({ "id": e.id, "portrait": e.portrait(), "name": e.name, "role": tr(e.role.label()), "icon": staff::icon(e.role), "wage": per_hour((e.wage as f64 * co::pay::rate_of(e)).round() as co::Cents), "tag": tag, "doing": [a, b, tone], "needs": needs(e), "contract": contract })
         })
         .collect();
+    // (NexiconDK, 4 November 2026) The drivers apart by how they are employed - the permanent
+    // ones (full and part time), the reserves with a frame, the hourly paid -, each group with
+    // its count; the rest of the staff after them. Only when there are reserves or hourly paid.
+    let group = |e: &Employee| match (staff::drives(e), e.employment) {
+        (false, _) => 3,
+        (true, Employment::Reserve(_)) => 1,
+        (true, Employment::Hourly) => 2,
+        _ => 0,
+    };
+    let grouped = list.iter().any(|e| matches!(group(e), 1 | 2));
+    let sections: Option<Vec<Value>> = grouped.then(|| {
+        const GROUPS: [&str; 4] = ["Permanent drivers", "Reserves (frame)", "Hourly paid", "Other staff"];
+        (0..4)
+            .filter_map(|g| {
+                let mine: Vec<Value> = list.iter().zip(cards.iter()).filter(|(e, _)| group(e) == g).map(|(_, v)| v.clone()).collect();
+                (!mine.is_empty()).then(|| json!({ "title": format!("{}  {}", tr(GROUPS[g]).to_uppercase(), mine.len()), "cards": mine }))
+            })
+            .collect()
+    });
     json!({
         "kind": "list", "chips": chips, "filter": filter, "sort_label": tr("Sort by"), "sorts": SORTS.iter().map(|x| tr(x)).collect::<Vec<_>>(), "sort": by, "descending": desc,
-        "dir_tip": tr(if desc { "Descending" } else { "Ascending" }), "cards": cards,
+        "dir_tip": tr(if desc { "Descending" } else { "Ascending" }), "cards": cards, "sections": sections,
     })
 }
 
@@ -214,11 +316,15 @@ fn person(c: &Company, plan: Option<&Plan>, e: &Employee) -> Value {
         json!({ "label": tr("Friendliness"), "value": num(e.friendliness, 0), "frac": e.friendliness / 100.0, "tone": grade(e.friendliness), "note": tr("Grows with experience and the customer service course, falls with stress. The passengers feel it.") }),
     ];
     let market = staff::market_wage(e.role, e.experience, &co::econ_uk::Level::of(c));
-    let mut pay = vec![json!([tr("A month"), eur(e.wage)]), json!([tr("By the hour"), per_hour(e.wage)]), json!([tr("The market pays"), eur(market)]), json!([tr("Costs a month"), eur(staff::monthly_cost(e))])];
-    // (a driver is paid the hours of duty, the week's contract at least: `pay`)
+    // (NexiconDK, 4 November 2026: a driver's month at their contract's hours - the hourly paid
+    // have none -, their hour with the hourly paid's premium: `staff::contract_month`)
+    let hourly_paid = staff::drives(e) && e.employment == Employment::Hourly;
+    let month = if hourly_paid { tr("No guarantee") } else { eur(staff::contract_month(c, e)) };
+    let mut pay = vec![json!([tr("A month"), month]), json!([tr("By the hour"), per_hour((e.wage as f64 * co::pay::rate_of(e)).round() as co::Cents)]), json!([tr("The market pays"), eur(market)]), json!([tr("Costs a month"), eur(staff::monthly_cost(c, e))])];
+    // (a driver is paid the hours of duty, the week's contract at least: `pay`; the week runs
+    // Sunday to Saturday)
     if staff::drives(e) {
-        let contract = co::econ_uk::CONTRACT_WEEK_HOURS;
-        pay.push(json!([tr("This week"), trf("%{paid} of %{contract} hours paid", &[("paid", &num(e.week_paid / 60.0, 1)), ("contract", &num(contract, 0))])]));
+        pay.push(json!([tr("This week"), week_text(c, e)]));
     }
     let ask = c.staff_rules.ask_of(e.id).cloned().map(|ask| trf("Asks for %{n} % more, until %{date}", &[("n", &format!("{:.0}", ask.share * 100.0)), ("date", &day_label(&ask.until))]));
     let mut facts: Vec<Value> = vec![json!([tr("Reliable"), format!("{:.0} %", e.reliability * 100.0)]), json!([tr("Days worked"), e.days_worked.to_string()]), json!([tr("Holiday days left"), e.holiday_left.to_string()])];
@@ -231,6 +337,13 @@ fn person(c: &Company, plan: Option<&Plan>, e: &Employee) -> Value {
     if refused > 0 {
         facts.push(json!([tr("Holidays rejected this year"), refused.to_string()]));
     }
+    // (NexiconDK, 4 November 2026: how a driver is employed, and a change given notice)
+    let employment = staff::drives(e).then(|| {
+        let next = e.employment_next.as_ref().map(|x| trf("From %{date}: %{what}", &[("date", &day_label(&x.from)), ("what", &employment_text(c, &x.to))]));
+        let at_once = e.hired == c.date;
+        let notice = if at_once { tr("Hired today: a change applies at once.") } else { trf("A change takes a month's notice: it applies from %{date}.", &[("date", &day_label(&co::dates::add(&c.date, staff::EMPLOYMENT_NOTICE_DAYS)))]) };
+        json!({ "text": employment_text(c, &e.employment), "next": next, "change": e.notice_until.is_none().then(|| tr("Change the employment")), "title": trf("The employment of %{name}", &[("name", &e.name)]), "notice": notice, "picker": kinds_json(c, Some(e.employment_next.as_ref().map_or(&e.employment, |x| &x.to))), "ok": tr("Change"), "cancel": tr("Cancel") })
+    });
     if staff::drives(e) {
         facts.insert(0, json!([tr("Licence"), licence_line(e.licence, &e.endorsements)]));
         facts.insert(1, json!([tr("Driving · punctuality · service"), format!("{:.0} · {:.0} · {:.0}", e.skills.driving, e.skills.punctuality, e.skills.service)]));
@@ -265,7 +378,7 @@ fn person(c: &Company, plan: Option<&Plan>, e: &Employee) -> Value {
         "pay_title": tr("Pay").to_uppercase(), "pay": pay, "hourly_note": (!staff::drives(e)).then(|| tr("Paid by the hour: the night 50 % more, at least four hours a day worked.")),
         "ask": ask, "grant": tr("Grant the raise"), "refuse": tr("Refuse"), "raise": tr("A raise of 5 %"),
         "keep": (e.notice_until.is_some() && !e.resigned).then(|| tr("Take the dismissal back")), "dismiss": e.notice_until.is_none().then(|| tr("Dismiss")),
-        "work_title": tr("Work").to_uppercase(), "facts": facts,
+        "work_title": tr("Work").to_uppercase(), "facts": facts, "employment": employment,
         "courses_title": tr("Courses").to_uppercase(), "courses": courses, "licences_note": staff::drives(e).then(|| tr("Licences and bus types: the Licences & training tab.")),
     })
 }
@@ -315,6 +428,12 @@ fn hire_part(c: &Company, ui: &Value) -> Value {
     out["cards"] = json!(cards);
     out["none"] = json!(tr("Nobody else applies for this work this week."));
     out["hire"] = json!(tr("Hire"));
+    // (NexiconDK, 4 November 2026: a driver is hired as one of the four kinds - `KindPicker`)
+    if role == Role::Driver {
+        out["kinds"] = kinds_json(c, None);
+        out["kinds_title"] = json!(tr("Hire a driver"));
+        out["cancel"] = json!(tr("Cancel"));
+    }
     out
 }
 
@@ -537,7 +656,7 @@ pub fn view(s: &mut Session, ui: &Value) -> Value {
     let tab = ui.get("tab").and_then(Value::as_u64).unwrap_or(0).min(TABS.len() as u64 - 1) as usize;
     let shown = if co::autopilot::on(&c) && tab < 2 { 2 } else { TABS.len() };
     let tabs: Vec<String> = TABS.iter().enumerate().take(shown).map(|(k, t)| if k == 0 { format!("{} ({})", tr(t), c.staff.len()) } else { tr(t) }).collect();
-    let wages: i64 = c.staff.iter().map(staff::monthly_cost).sum();
+    let wages: i64 = c.staff.iter().map(|e| staff::monthly_cost(&c, e)).sum();
     let duties: usize = s.plan.as_ref().map(|p| p.tours.iter().filter(|t| !t.by_player && !t.live && !t.tour.unplanned).map(|t| t.duties.len()).sum()).unwrap_or(0);
     let plan = s.plan.clone();
     // (the Agencies tab's day picked: its open duties, when its timetable is read)
@@ -567,9 +686,29 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
         "hire" => {
             let no = args.get("no").and_then(Value::as_u64).unwrap_or(0) as u32;
             let Some(a) = staff::market(&c).into_iter().find(|a| a.no == no) else { return Some(Ok(json!({}))) };
-            match apply(s, |c| staff::hire(c, &a)) {
+            // (NexiconDK, 4 November 2026: a driver as the kind chosen - full time when none)
+            let employment = employment_of(args).unwrap_or_default();
+            match apply(s, |c| staff::hire_as(c, &a, employment)) {
                 Ok(_) => {
                     let t = trf("%{name} works for %{company} from today.", &[("name", &a.name), ("company", &c.name)]);
+                    s.say(t, false);
+                    Ok(json!({}))
+                }
+                Err(p) => Ok(json!({ "popup": p })),
+            }
+        }
+        // (NexiconDK, 4 November 2026) A driver's employment changed: after a month's notice (at
+        // once on the day they were hired) - `staff::change_employment`.
+        "employment" => {
+            let Some(to) = employment_of(args) else { return Some(Ok(json!({}))) };
+            let name = c.employee(id).map(|e| e.name.clone()).unwrap_or_default();
+            match apply(s, |c| staff::change_employment(c, id, to)) {
+                Ok(from) => {
+                    let what = s.company.as_ref().and_then(|c| c.employee(id).map(|e| employment_text(c, e.employment_next.as_ref().map_or(&e.employment, |x| &x.to)))).unwrap_or_default();
+                    let t = match from {
+                        Some(d) => trf("%{name}: %{what} from %{date}.", &[("name", &name), ("what", &what), ("date", &day_label(&d))]),
+                        None => trf("%{name}: %{what}.", &[("name", &name), ("what", &what)]),
+                    };
                     s.say(t, false);
                     Ok(json!({}))
                 }

@@ -506,10 +506,13 @@ pub const HOLD_TOLD: &str = "The driver of line %{n} tour %{tour} holds %{min} m
 pub const RELIEF_TOLD: &str = "The driver of line %{n} tour %{tour} is relieved at %{stop}";
 pub const DECLINED_TOLD: &str = "The driver of line %{n} tour %{tour} declined: %{why}";
 pub const DRIVER_TOLD: &str = "Line %{n} tour %{tour}: the driver reports %{why}";
+/// (NexiconDK, 4 November 2026) A reserve driver given a duty from noon the day before on
+/// (`plan::tell_reserves`): the duty, its day and when he signs on.
+pub const RESERVE_DUTY: &str = "Reserve: your duty on %{date} is line %{n} tour %{tour}, sign on at %{time}";
 
 /// Every English text of this module (for their translations).
 pub fn texts() -> Vec<&'static str> {
-    let mut out = vec![LATE, MAKE_UP, BACK_ON_TIME, SHORT_TURN, OUT_OF_SERVICE, LAYOVER, SWAP, HOLD_CONNECTION, HOLD_HEADWAY, RELIEF, SPARE_COMING, SPARE_WAITING, DIVERSION, ROAD_CLOSED, BACK_TO_DEPOT, CALL_CONTROL, THANKS, ACKNOWLEDGED, NOT_POSSIBLE, HOLD_TOLD, RELIEF_TOLD, DECLINED_TOLD, DRIVER_TOLD];
+    let mut out = vec![LATE, MAKE_UP, BACK_ON_TIME, SHORT_TURN, OUT_OF_SERVICE, LAYOVER, SWAP, HOLD_CONNECTION, HOLD_HEADWAY, RELIEF, SPARE_COMING, SPARE_WAITING, DIVERSION, ROAD_CLOSED, BACK_TO_DEPOT, CALL_CONTROL, THANKS, ACKNOWLEDGED, NOT_POSSIBLE, HOLD_TOLD, RELIEF_TOLD, DECLINED_TOLD, DRIVER_TOLD, RESERVE_DUTY];
     out.extend(Priority::ALL.map(Priority::label));
     out.extend([State::Sent, State::Delivered, State::Read, State::Accepted, State::Declined].map(State::label));
     out.extend(Quick::ALL.map(Quick::label));

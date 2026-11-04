@@ -28,7 +28,7 @@ use super::econ_uk::{self, Level};
 use super::economy;
 use super::inbox::{self, Kind, Message};
 use super::licences::Endorsement;
-use super::model::{BookingKind, BusSize, Cents, Company, Employee, Licence, Role, Skills, Taken, PORTRAITS};
+use super::model::{BookingKind, BusSize, Cents, Company, Employee, Employment, EmploymentChange, Frame, Licence, Role, Skills, Taken, PORTRAITS};
 use super::names;
 use super::rng::Rng;
 use super::training::CourseKind;
@@ -1419,7 +1419,14 @@ fn role_market(c: &Company, role: Role, used: &mut HashSet<String>) -> Vec<Appli
 
 /// Hire an applicant of the week. Returns their id.
 pub fn hire(c: &mut Company, a: &Applicant) -> Result<u32, &'static str> {
+    hire_as(c, a, Employment::FullTime)
+}
+
+/// (NexiconDK, 4 November 2026) Hire an applicant employed as `employment` (a driver: full time,
+/// part time, a reserve with a frame or hourly paid - `Employment`; anyone else full time).
+pub fn hire_as(c: &mut Company, a: &Applicant, employment: Employment) -> Result<u32, &'static str> {
     hireable(c, a.role)?;
+    let employment = if a.role == Role::Driver { sound_employment(c, employment) } else { Employment::FullTime };
     let week = dates::week_of(&c.date);
     if c.taken.week == week && c.taken.applicants.contains(&a.no) {
         return Err("They have found work elsewhere.");
@@ -1476,6 +1483,8 @@ pub fn hire(c: &mut Company, a: &Applicant) -> Result<u32, &'static str> {
         week_due: 0.0,
         lent: None,
         lend: None,
+        employment,
+        employment_next: None,
     });
     // (the induction: the fleet's models)
     if a.role == Role::Driver {
@@ -1566,9 +1575,96 @@ pub fn bonus(c: &mut Company, id: u32) -> Result<Cents, &'static str> {
 }
 
 /// What someone costs a month at their contracted hours (gross and the employer's share; a
-/// driver's overtime comes on top, `pay`).
-pub fn monthly_cost(e: &Employee) -> Cents {
-    economy::employer_cost(e.wage)
+/// driver's overtime comes on top, `pay`). (NexiconDK, 4 November 2026) A driver's by their
+/// employment: their contract week (`contract_hours`), a reserve's frame, an hourly-paid
+/// driver's reckoned at a full week with the premium - the most they would cost.
+pub fn monthly_cost(c: &Company, e: &Employee) -> Cents {
+    economy::employer_cost(contract_month(c, e))
+}
+
+/// (NexiconDK, 4 November 2026) A month's gross wage at someone's contract hours: the wage
+/// itself (the reference week's, `econ_uk::CONTRACT_WEEK_HOURS`) for all but the drivers; a
+/// driver's by the hours of their contract week (`contract_hours`; the hourly paid a full week
+/// at their premium).
+pub fn contract_month(c: &Company, e: &Employee) -> Cents {
+    if !drives(e) {
+        return e.wage;
+    }
+    let full = econ_uk::contract_week_hours(c);
+    let hours = contract_hours(c, e).unwrap_or(full);
+    (e.wage as f64 * hours / econ_uk::CONTRACT_WEEK_HOURS * super::pay::rate_of(e)).round() as Cents
+}
+
+/// (NexiconDK, 4 November 2026) The hours of a driver's contract week: a full week of the
+/// company's country (`econ_uk::contract_week_hours`), a part-time driver's own, a reserve's
+/// frame; None for the hourly paid (no guarantee).
+pub fn contract_hours(c: &Company, e: &Employee) -> Option<f64> {
+    e.employment.week_hours(econ_uk::contract_week_hours(c))
+}
+
+/// (NexiconDK, 4 November 2026) A change of a driver's employment takes a month's notice
+/// (`change_employment`): this many days.
+pub const EMPLOYMENT_NOTICE_DAYS: i64 = 30;
+
+/// The fewest hours of a part-time week.
+pub const PART_TIME_MIN: f64 = 8.0;
+
+/// (NexiconDK, 4 November 2026) An employment made sound for the company: a part-time week of
+/// at least `PART_TIME_MIN` hours and under a full week (a full week's is full time), a frame
+/// within the day (`Frame::new`).
+pub fn sound_employment(c: &Company, e: Employment) -> Employment {
+    let full = econ_uk::contract_week_hours(c);
+    match e {
+        Employment::PartTime { hours } if !hours.is_finite() || hours >= full => Employment::FullTime,
+        Employment::PartTime { hours } => Employment::PartTime { hours: (hours.max(PART_TIME_MIN) * 2.0).round() / 2.0 },
+        Employment::Reserve(f) => Employment::Reserve(Frame::new(f.from, f.to, f.days)),
+        x => x,
+    }
+}
+
+/// (NexiconDK, 4 November 2026) Change a driver's employment. It takes a month's notice
+/// (`EMPLOYMENT_NOTICE_DAYS`): the new one applies from that day (`employment_due`), the old one
+/// until then - on the day they were hired it applies at once. The one they have already takes
+/// back a change given notice. Returns the day it applies from (None: at once, or nothing to
+/// change).
+pub fn change_employment(c: &mut Company, id: u32, to: Employment) -> Result<Option<String>, &'static str> {
+    let to = sound_employment(c, to);
+    let today = c.date.clone();
+    let Some(e) = c.staff.iter_mut().find(|e| e.id == id) else { return Err("They do not work here.") };
+    if !drives(e) {
+        return Err("Only a driver's employment can be changed.");
+    }
+    if e.notice_until.is_some() {
+        return Err("They are leaving already.");
+    }
+    if e.employment == to {
+        e.employment_next = None;
+        return Ok(None);
+    }
+    if e.hired == today {
+        e.employment = to;
+        e.employment_next = None;
+        return Ok(None);
+    }
+    let from = dates::add(&today, EMPLOYMENT_NOTICE_DAYS);
+    e.employment_next = Some(EmploymentChange { to, from: from.clone() });
+    Ok(Some(from))
+}
+
+/// (NexiconDK, 4 November 2026) The changes of employment whose day has come (`day::close_day`,
+/// as the company's day begins): applied. Returns how many.
+pub fn employment_due(c: &mut Company) -> usize {
+    let today = c.date.clone();
+    let mut n = 0;
+    for e in c.staff.iter_mut() {
+        if e.employment_next.as_ref().is_some_and(|x| dates::between(&x.from, &today) >= 0) {
+            if let Some(x) = e.employment_next.take() {
+                e.employment = x.to;
+                n += 1;
+            }
+        }
+    }
+    n
 }
 
 /// What happened to someone tonight (for the day's report).
@@ -1838,7 +1934,7 @@ mod tests {
         let e = c.employee(id).unwrap().clone();
         // a month at the contracted hours costs the wage and the employer's share (the hours of
         // duty are paid with the days: `pay`)
-        assert_eq!(monthly_cost(&e), economy::employer_cost(e.wage));
+        assert_eq!(monthly_cost(&c, &e), economy::employer_cost(e.wage));
         assert!((hourly(e.wage) * month_hours() - e.wage as f64).abs() < 1e-6);
         // dismissed: four weeks' notice on Realistic
         let until = dismiss(&mut c, id).unwrap();

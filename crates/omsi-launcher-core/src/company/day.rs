@@ -1421,6 +1421,8 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
         c.history.drain(..extra);
     }
     c.date = tomorrow.clone();
+    // (NexiconDK, 4 November 2026: a change of employment given notice applies from its day)
+    staff::employment_due(c);
     if dates::parse(&tomorrow).map(dates::weekday) == Some(0) {
         for e in c.staff.iter_mut() {
             e.week_days = 0;
@@ -1743,11 +1745,13 @@ mod tests {
     #[test]
     fn a_month_end_books_the_wages_and_the_fixed_costs() {
         let mut c = company(GameMode::Normal, 1, 2);
-        c.date = "2024-03-31".into();
+        // (NexiconDK, 4 November 2026: the bus company's week ends on Saturday - `pay::week_ends`)
+        c.date = "2024-03-30".into();
+        close_day(&mut c, vec![], &[]);
         let r = close_day(&mut c, vec![], &[]);
         let m = c.month("2024-03");
-        // (a Sunday: the week's guarantee pays the drivers who drove nothing; the bus its
-        // depreciation, insurance and tax, the overhead and the ticket machine)
+        // (Saturday: the week's guarantee pays the drivers who drove nothing; the month's last
+        // day the bus its depreciation, insurance and tax, the overhead and the ticket machine)
         assert!(m.get(BookingKind::Wages) < 0 && m.get(BookingKind::Insurance) < 0 && m.get(BookingKind::Overheads) < 0 && m.get(BookingKind::Depreciation) < 0);
         assert!(c.ledger.iter().any(|b| b.kind == BookingKind::Wages && b.text.starts_with("Drivers: guaranteed hours of the week")));
         assert!(r.notes.iter().any(|n| matches!(n, Note::Month { .. })));

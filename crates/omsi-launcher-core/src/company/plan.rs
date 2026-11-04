@@ -24,7 +24,7 @@ use super::dates;
 use super::day::{DutyPlan, LiveEvent, Note, Plan, TourPlan};
 use super::economy;
 use super::market::{self, MarketBus};
-use super::model::{BookingKind, BusKind, BusSize, Cents, Company, GameMode, Drive, Employee, Licence, Skills};
+use super::model::{BookingKind, BusKind, BusSize, Cents, Company, GameMode, Drive, Employee, Employment, Licence, Skills};
 use super::network::{self, TourOfDay};
 use super::rng::Rng;
 use super::staff::{self, Block, BUS_MARGIN, WEEK_DAYS};
@@ -227,12 +227,64 @@ pub struct Planning {
     /// The agency drivers booked ahead for a day (`agency`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub agency: Vec<super::agency::Booking>,
+    /// (NexiconDK, 4 November 2026) The reserve drivers' duties already told them, or known
+    /// before 12:00 the day before (`tell_reserves`: day|duty key|driver).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub reserve_told: Vec<String>,
 }
 
 impl Default for Planning {
     fn default() -> Self {
-        Planning { week: Vec::new(), auto: false, auto_only: None, auto_keys: None, date: String::new(), fills: Vec::new(), collapsed: Vec::new(), layouts: Vec::new(), joined: Vec::new(), flow: Default::default(), arrivals: Vec::new(), agency: Vec::new() }
+        Planning { week: Vec::new(), auto: false, auto_only: None, auto_keys: None, date: String::new(), fills: Vec::new(), collapsed: Vec::new(), layouts: Vec::new(), joined: Vec::new(), flow: Default::default(), arrivals: Vec::new(), agency: Vec::new(), reserve_told: Vec::new() }
     }
+}
+
+/// (NexiconDK, 4 November 2026) From when on the day before a reserve driver given a duty is
+/// told of it (minutes of the day before): noon.
+pub const RESERVE_TELL_FROM: i64 = 12 * 60;
+
+/// (NexiconDK, 4 November 2026) A reserve driver (`Employment::Reserve`) given a duty of `dp`'s
+/// day from 12:00 the day before on is told: a message to him (`messages::post`,
+/// `To::Driver`) with the duty, its day and when he signs on - once each
+/// (`Planning::reserve_told`). A duty he had before noon the day before is his frame's as
+/// planned: known, not told (told all the same when the planning was not seen before then -
+/// harmless). A duty taken from him and given again is told again. Returns how many were told.
+pub fn tell_reserves(c: &mut Company, dp: &DayPlan) -> usize {
+    let now = super::clock::now(c);
+    let start = super::clock::moment(&dp.date, 0);
+    // (a day gone, or more than a day and a half ahead: nothing yet)
+    if now >= start + super::clock::DAY || now < start - super::clock::DAY {
+        return 0;
+    }
+    let tell = now >= start - super::clock::DAY + RESERVE_TELL_FROM;
+    let sign_on = c.planning.flow.prefs.sign_on;
+    let reserve = |id: u32| c.employee(id).is_some_and(|e| matches!(e.employment, Employment::Reserve(_)));
+    let mut now_on: Vec<(String, u32, String, String, i32)> = Vec::new();
+    for t in &dp.tours {
+        for (k, d) in t.duties.iter().enumerate() {
+            if let Some(Who::Staff(id)) = d.who.filter(|w| matches!(w, Who::Staff(id) if reserve(*id))) {
+                let key = format!("{}|{}|{id}", dp.date, duty_key(&t.tour.line, &t.tour.tour, k));
+                now_on.push((key, id, t.tour.number.clone(), t.tour.tour.clone(), d.from - sign_on));
+            }
+        }
+    }
+    // (a duty no longer his is forgotten: given again, it is told again; days gone too)
+    let prefix = format!("{}|", dp.date);
+    let today = c.date.clone();
+    c.planning.reserve_told.retain(|x| if x.starts_with(&prefix) { now_on.iter().any(|n| &n.0 == x) } else { x.split('|').next().is_some_and(|d| dates::between(&today, d) >= 0) });
+    let mut told = 0;
+    for (key, id, n, tour, at) in now_on {
+        if c.planning.reserve_told.contains(&key) {
+            continue;
+        }
+        if tell {
+            let args = vec![("date".to_string(), dp.date.clone()), ("n".to_string(), n), ("tour".to_string(), tour), ("time".to_string(), format!("{:02}:{:02}", at.rem_euclid(1440) / 60, at.rem_euclid(60)))];
+            super::messages::post(c, super::messages::To::Driver { employee: id }, super::messages::Priority::Instruction, super::messages::RESERVE_DUTY, args, None);
+            told += 1;
+        }
+        c.planning.reserve_told.push(key);
+    }
+    told
 }
 
 /// When a driver who comes late (`Disruption::Late`) arrives on a day: the sign-on of the first
@@ -1386,6 +1438,39 @@ pub struct Candidate {
     /// No other duty that day: a standby driver.
     pub standby: bool,
     pub fit: Result<Vec<Warn>, Cannot>,
+    /// (NexiconDK, 4 November 2026) Where they come in the order the duty is filled in
+    /// (`fill_tier`).
+    pub tier: u8,
+}
+
+/// (NexiconDK, 4 November 2026) The order an open duty is filled in (RosterFlow Pro's plan,
+/// step 1 "Ansættelse og rammer"): a reserve whose frame holds it - not asked, the frame is the
+/// company's -, a free colleague (the standby drivers first), an hourly-paid driver, an agency
+/// driver booked for the day; after them all one the agency sends on the day itself
+/// (`Cover::Agency`). The working-time rules hold for each (`can_take`, `fits_bus`).
+pub const TIER_RESERVE: u8 = 0;
+pub const TIER_COLLEAGUE: u8 = 1;
+pub const TIER_HOURLY: u8 = 2;
+pub const TIER_BOOKED: u8 = 3;
+
+/// (NexiconDK, 4 November 2026) Where a driver comes in the order a piece of work `b` of `date`
+/// is filled in (`TIER_RESERVE` … `TIER_BOOKED`). A reserve outside their frame is a colleague.
+pub fn fill_tier(e: &Employee, date: &str, b: &Block) -> u8 {
+    if super::agency::is_booked(e.id) {
+        return TIER_BOOKED;
+    }
+    match e.employment {
+        Employment::Reserve(f) if f.on(weekday_of(date)) && f.holds(b.from, b.to) => TIER_RESERVE,
+        Employment::Hourly => TIER_HOURLY,
+        _ => TIER_COLLEAGUE,
+    }
+}
+
+/// (NexiconDK, 4 November 2026) The reserve drivers whose frame holds on `date`: who, and the
+/// frame (the planning's day panel).
+pub fn frames_on<'a>(c: &'a Company, date: &str) -> Vec<(&'a Employee, super::model::Frame)> {
+    let wd = weekday_of(date);
+    c.staff.iter().filter(|e| staff::drives(e) && e.employed_on(date)).filter_map(|e| e.employment.frame().filter(|f| f.on(wd)).map(|f| (e, f))).collect()
 }
 
 /// A driver's work on the plan's day without one duty (to see whether it fits).
@@ -1400,8 +1485,9 @@ pub fn work_without(dp: &DayPlan, id: u32, skip: (usize, usize)) -> Vec<Block> {
         .collect()
 }
 
-/// Every driver for duty `k` of tour `ti`: those who can take it first (the standby drivers,
-/// then those with the fewest warnings), then those who cannot, each with the reason.
+/// Every driver for duty `k` of tour `ti`: those who can take it first (in the order an open
+/// duty is filled in - `fill_tier` -, the standby drivers first, then those with the fewest
+/// warnings), then those who cannot, each with the reason.
 pub fn candidates(c: &Company, dp: &DayPlan, ti: usize, k: usize) -> Vec<Candidate> {
     let t = &dp.tours[ti];
     let bus = t.bus_of(c);
@@ -1416,13 +1502,14 @@ pub fn candidates(c: &Company, dp: &DayPlan, ti: usize, k: usize) -> Vec<Candida
             let work = work_without(dp, e.id, (ti, k));
             let fit = can_take(e, &dp.date, dp.today, &bus, &work, &block);
             let name = if super::agency::is_booked(e.id) { format!("{:06}", super::agency::number_of(e)) } else { e.name.clone() };
-            (name, Candidate { id: e.id, standby: work.is_empty(), fit })
+            (name, Candidate { id: e.id, standby: work.is_empty(), fit, tier: fill_tier(e, &dp.date, &block) })
         })
         .collect();
+    // (NexiconDK, 4 November 2026: in the order an open duty is filled in - `fill_tier`)
     out.sort_by(|a, b| {
         let rank = |x: &Candidate| match &x.fit {
-            Ok(w) => (0, !super::agency::is_booked(x.id), !x.standby, w.len()),
-            Err(_) => (1, false, false, 0),
+            Ok(w) => (0, x.tier, !x.standby, w.len()),
+            Err(_) => (1, 0, false, 0),
         };
         rank(&a.1).cmp(&rank(&b.1)).then(a.0.cmp(&b.0))
     });
@@ -1431,15 +1518,17 @@ pub fn candidates(c: &Company, dp: &DayPlan, ti: usize, k: usize) -> Vec<Candida
 
 /// Who can drive the first trips of duty `k` of tour `ti` before its late driver comes
 /// (`DayDuty::late`: service control's cover): the company's drivers and the agency drivers
-/// booked for the day free then and fit for the bus, the booked ones first, then the standby
-/// drivers (no other duty that day). (id, standby)
+/// booked for the day free then and fit for the bus, in the order an open duty is filled in
+/// (`fill_tier`), the standby drivers (no other duty that day) first within it. (id, standby)
 pub fn late_covers(c: &Company, dp: &DayPlan, ti: usize, k: usize) -> Vec<(u32, bool)> {
     let Some(t) = dp.tours.get(ti) else { return Vec::new() };
     let Some(d) = t.duties.get(k) else { return Vec::new() };
     let (Some(l), Some(Who::Staff(late))) = (d.late, d.who) else { return Vec::new() };
     let piece = Block { key: late_key(&t.tour.line, &t.tour.tour, k), from: d.from, to: l.until.min(d.to), from_stop: t.tour.trips.get(d.start).map(|x| x.from.clone()).unwrap_or_default(), to_stop: String::new() };
     let bus = t.bus_of(c);
-    let mut out: Vec<(bool, bool, u32)> = c
+    // (NexiconDK, 4 November 2026: in the order an open duty is filled in - a reserve within
+    // their frame first, the booked agency drivers after the company's own: `fill_tier`)
+    let mut out: Vec<(u8, bool, u32)> = c
         .staff
         .iter()
         .chain(super::agency::drivers_on(c, &dp.date))
@@ -1447,7 +1536,7 @@ pub fn late_covers(c: &Company, dp: &DayPlan, ti: usize, k: usize) -> Vec<(u32, 
         .filter(|e| !super::agency::is_booked(e.id) || super::agency::within(c, e.id, &piece))
         .filter_map(|e| {
             let work = work_without(dp, e.id, (usize::MAX, 0));
-            fits_bus(e, &bus, &work, &piece, dp.today).ok().map(|_| (!super::agency::is_booked(e.id), !work.is_empty(), e.id))
+            fits_bus(e, &bus, &work, &piece, dp.today).ok().map(|_| (fill_tier(e, &dp.date, &piece), !work.is_empty(), e.id))
         })
         .collect();
     out.sort();
@@ -1466,8 +1555,9 @@ pub fn drop_penalty(c: &Company, t: &TourOfDay, start: usize, end: usize) -> Cen
 /// drivers go sick, instead of dropping the shift give me the option to cover it").
 #[derive(Clone, Debug, PartialEq)]
 pub enum Cover {
-    /// A colleague who may drive it (`standby`: free all day).
-    Colleague { id: u32, standby: bool, warn: Vec<Warn> },
+    /// A colleague who may drive it (`standby`: free all day; `tier`: a reserve within their
+    /// frame, an hourly-paid driver... - `fill_tier`).
+    Colleague { id: u32, standby: bool, warn: Vec<Warn>, tier: u8 },
     /// An agency driver (`used` sent today already: as many as are asked for).
     Agency { used: usize },
     /// The player drives it himself.
@@ -1488,14 +1578,16 @@ impl Cover {
     }
 }
 
-/// The ways to cover duty `k` of tour `ti` on the company's day, in the order to offer them:
-/// each free colleague who may drive it (standby drivers first), an agency driver from the
-/// agency (as many as are asked for), the player himself, dropping its trips. Those who cannot
-/// take it are `candidates` with their reasons.
+/// The ways to cover duty `k` of tour `ti` on the company's day, in the order to offer them
+/// (NexiconDK, 4 November 2026: the order an open duty is filled in - `fill_tier`): a reserve
+/// whose frame holds it, each free colleague who may drive it (standby drivers first), an
+/// hourly-paid driver, an agency driver booked for the day, one the agency sends now (as many as
+/// are asked for), the player himself, dropping its trips. Those who cannot take it are
+/// `candidates` with their reasons.
 pub fn covers_of_duty(c: &Company, dp: &DayPlan, ti: usize, k: usize) -> Vec<Cover> {
     let t = &dp.tours[ti];
     let d = &t.duties[k];
-    let mut out: Vec<Cover> = candidates(c, dp, ti, k).into_iter().filter_map(|x| x.fit.ok().map(|warn| Cover::Colleague { id: x.id, standby: x.standby, warn })).collect();
+    let mut out: Vec<Cover> = candidates(c, dp, ti, k).into_iter().filter_map(|x| x.fit.ok().map(|warn| Cover::Colleague { id: x.id, standby: x.standby, warn, tier: x.tier })).collect();
     // (one agency driver for the whole duty, its joined pieces too)
     if agency_room(c, dp, ti, k) {
         out.push(Cover::Agency { used: agency_sent(c, dp) });
@@ -1748,12 +1840,15 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
             }
         }
     }
-    // the dispatcher's own for what the roster left free (tours with a bus, or reported live): the
-    // agency drivers booked for the day first (they are paid for the day all the same), within
-    // the hours they come for
+    // the dispatcher's own for what the roster left free (tours with a bus, or reported live),
+    // in the order an open duty is filled in (NexiconDK, 4 November 2026: `fill_tier` - a reserve
+    // within their frame, a colleague, an hourly-paid driver, an agency driver booked for the day
+    // within the hours they come for); `open`: a duty that fell out or is open today (the standby
+    // drivers first among the colleagues), else one the plan fills (those already at work first,
+    // their day filled without overtime)
     let people: Vec<&Employee> = c.staff.iter().filter(|e| unavailable(e, date, today).is_none()).chain(booked.iter().copied()).collect();
-    let pick = |work: &Work, bus: &(BusKind, Option<String>), block: &Block| -> Option<(u32, Vec<Warn>)> {
-        let mut best: Option<((bool, bool, bool, i32, u32, i64), u32, Vec<Warn>)> = None;
+    let pick = |work: &Work, bus: &(BusKind, Option<String>), block: &Block, open: bool| -> Option<(u32, Vec<Warn>)> {
+        let mut best: Option<((u8, bool, bool, i32, u32, i64), u32, Vec<Warn>)> = None;
         for e in &people {
             let is_booked = super::agency::is_booked(e.id);
             if is_booked && !super::agency::within(c, e.id, block) {
@@ -1762,7 +1857,8 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
             let Ok(w) = fits_bus(e, bus, work.of(e.id), block, today) else { continue };
             let worked = staff::work_minutes(work.of(e.id));
             let fills = worked > 0 && !w.iter().any(|x| matches!(x, Warn::Overtime(_)));
-            let score = (is_booked, staff::qualified(e, bus.0.size), fills, -worked, WEEK_DAYS.saturating_sub(e.week_days), (e.experience * 10.0) as i64);
+            let first = if open { worked == 0 } else { fills };
+            let score = (TIER_BOOKED - fill_tier(e, date, block), staff::qualified(e, bus.0.size), first, -worked, WEEK_DAYS.saturating_sub(e.week_days), (e.experience * 10.0) as i64);
             if best.as_ref().is_none_or(|b| score > b.0) {
                 best = Some((score, e.id, w));
             }
@@ -1785,7 +1881,7 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
             let e = c.employee(id).filter(|e| unavailable(e, date, today).is_none())?;
             fits_bus(e, &bus, work.of(id), &block, today).ok().map(|w| (id, w))
         });
-        match partner.or_else(|| pick(&work, &bus, &block)) {
+        match partner.or_else(|| pick(&work, &bus, &block, false)) {
             Some((id, w)) => {
                 work.push(id, block);
                 let d = &mut out[i].duties[k];
@@ -1810,7 +1906,7 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
         }
         let bus = t.bus_of(c);
         let block = block_of(&t.tour, d, key);
-        if let Some((id, w)) = pick(&work, &bus, &block) {
+        if let Some((id, w)) = pick(&work, &bus, &block, true) {
             work.push(id, block);
             let d = &mut out[i].duties[k];
             d.who = Some(Who::Staff(id));
@@ -1860,7 +1956,7 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
                 // (the central: a free colleague - the agency drivers booked for the day first -,
                 // else one sent by the agency; NexiconDK, 3 November 2026: on the server not a duty
                 // the roster gives a player - his claim puts him on it as the day begins)
-                _ if central(problem) && !(problem == Some(Problem::Unassigned) && for_player(&out[i].tour.line, &out[i].tour.tour, k)) => match pick(&work, &bus, &block) {
+                _ if central(problem) && !(problem == Some(Problem::Unassigned) && for_player(&out[i].tour.line, &out[i].tour.tour, k)) => match pick(&work, &bus, &block, true) {
                     Some((id, _)) => (Some(Who::Staff(id)), Source::Central),
                     None => (Some(Who::Agency), Source::Central),
                 },
@@ -1902,11 +1998,19 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
                 // (an agency driver sent for the late driver's first trips: service control)
                 Some(Fill::Agency) => (Some(AGENCY), Source::Dispatcher),
                 Some(_) => (None, Source::Dispatcher),
-                None => match (spare_free(None, &spare_busy), pick(&work, &bus, &piece)) {
-                    (Some(id), _) => (Some(SPARE_COVER + id), Source::Central),
-                    (None, Some((id, _))) if id != employee => (Some(id), Source::Central),
-                    _ => (None, Source::None),
-                },
+                // (NexiconDK, 4 November 2026: a reserve within their frame before the spare
+                // lines, the spare lines before the rest - `fill_tier`; a company without
+                // reserves as before)
+                None => {
+                    let best = pick(&work, &bus, &piece, true).filter(|x| x.0 != employee);
+                    let reserve = best.as_ref().map(|x| x.0).filter(|id| c.employee(*id).is_some_and(|e| fill_tier(e, date, &piece) == TIER_RESERVE));
+                    match (reserve, spare_free(None, &spare_busy), best) {
+                        (Some(id), _, _) => (Some(id), Source::Central),
+                        (None, Some(id), _) => (Some(SPARE_COVER + id), Source::Central),
+                        (None, None, Some((id, _))) => (Some(id), Source::Central),
+                        _ => (None, Source::None),
+                    }
+                }
             };
             match cover.and_then(spare_of_cover) {
                 Some(id) => spare_busy.push((id, start, end)),
@@ -2027,6 +2131,8 @@ pub fn agency_driver() -> Employee {
         week_due: 0.0,
         lent: None,
         lend: None,
+        employment: Default::default(),
+        employment_next: None,
     }
 }
 
@@ -3023,7 +3129,7 @@ mod tests {
         let p = day_plan(&c, &c.date, tours.clone(), &[], &[], false);
         assert_eq!(p.tours[0].duties[0].problem, Some(Problem::Sick));
         let covers = covers_of_duty(&c, &p, 0, 0);
-        assert_eq!(covers[0], Cover::Colleague { id: ids[1], standby: true, warn: Vec::new() });
+        assert_eq!(covers[0], Cover::Colleague { id: ids[1], standby: true, warn: Vec::new(), tier: TIER_COLLEAGUE });
         assert!(!covers.iter().any(|x| matches!(x, Cover::Colleague { id, .. } if *id == ids[2] || *id == ids[0])));
         assert!(covers.contains(&Cover::Agency { used: 0 }));
         assert_eq!(&covers[covers.len() - 2..], &[Cover::Player, Cover::Drop { penalty: drop_penalty(&c, &p.tours[0].tour, 0, 4) }]);

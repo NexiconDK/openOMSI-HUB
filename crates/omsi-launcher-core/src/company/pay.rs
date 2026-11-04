@@ -11,11 +11,19 @@
 //!
 //! The day's hours are booked with the day (`Wages`), the week's guarantee on its last day, with
 //! the on-costs and allowances (`economy::employer_cost`'s share) on both.
+//!
+//! (NexiconDK, 4 November 2026) Each driver by their employment (`model::Employment`): a full
+//! week is 37 hours at the Danish price level, else 39 (`econ_uk::contract_week_hours`); a
+//! part-time driver's guarantee and overtime follow their own week (pro rata); a reserve is paid
+//! their frame on its days whether used or not, and the work outside it on top; the hourly paid
+//! have no guarantee, only the hours worked - at least three a day called in, without the duty's
+//! floor - at 10 % more an hour, overtime above a full week. The bus company's week begins on
+//! Sunday: the guarantee is settled on Saturday night (`week_ends`).
 
 use super::dates;
 use super::econ_uk;
 use super::economy::{self, EMPLOYER_SHARE};
-use super::model::{BookingKind, Cents, Company, Employee};
+use super::model::{BookingKind, Cents, Company, Employee, Employment, Frame};
 use super::rosterflow::{self, Prefs};
 use super::staff;
 
@@ -25,6 +33,15 @@ use super::staff;
 /// sign-off and sign-on paid), a shorter one paid, and at least the paid floor
 /// (`rosterflow::paid_floor`). Nothing without a piece.
 pub fn paid_minutes(p: &Prefs, pieces: &[(i32, i32)]) -> i32 {
+    match span_minutes(p, pieces) {
+        0 => 0,
+        m => m.max(rosterflow::paid_floor(p)),
+    }
+}
+
+/// (NexiconDK, 4 November 2026) The minutes of a day's pieces from signing on to signing off,
+/// a split unpaid (`paid_minutes` without the duty's floor). Nothing without a piece.
+pub fn span_minutes(p: &Prefs, pieces: &[(i32, i32)]) -> i32 {
     let mut ps: Vec<(i32, i32)> = pieces.iter().copied().filter(|x| x.1 >= x.0).collect();
     if ps.is_empty() {
         return 0;
@@ -41,12 +58,79 @@ pub fn paid_minutes(p: &Prefs, pieces: &[(i32, i32)]) -> i32 {
     let start = merged[0].0 - p.sign_on;
     let end = merged[merged.len() - 1].1 + p.sign_off;
     let unpaid: i32 = merged.windows(2).map(|w| w[1].0 - w[0].1).filter(|g| *g >= p.split_min).map(|g| (g - p.sign_off_split - p.sign_on_split).max(0)).sum();
-    (end - start - unpaid).max(rosterflow::paid_floor(p))
+    (end - start - unpaid).max(1)
 }
 
-/// The contracted minutes of a week.
-pub fn contract_week_minutes() -> f64 {
-    econ_uk::CONTRACT_WEEK_HOURS * 60.0
+/// The contracted minutes of a full week in a company (37 hours at the Danish price level, else
+/// 39: `econ_uk::contract_week_hours`).
+pub fn contract_week_minutes(c: &Company) -> f64 {
+    econ_uk::contract_week_hours(c) * 60.0
+}
+
+/// (NexiconDK, 4 November 2026) The bus company's week begins on Sunday (`dates::weekday`'s 6):
+/// the contract week - its guarantee, its overtime, the hours "this week" - runs Sunday to
+/// Saturday, for every company (the drivers' five working days, `staff::WEEK_DAYS`, still count
+/// from Monday).
+pub const WEEK_BEGINS: u32 = 6;
+
+/// Whether the contract week ends with `date` (a Saturday).
+pub fn week_ends(date: &str) -> bool {
+    dates::parse(&dates::add(date, 1)).map(dates::weekday) == Some(WEEK_BEGINS)
+}
+
+/// (NexiconDK, 4 November 2026) What the hourly paid earn more an hour (no guarantee in return).
+pub const HOURLY_PREMIUM: f64 = 0.10;
+/// The least a day an hourly-paid driver is called in for pays (minutes).
+pub const HOURLY_MIN_CALL: i32 = 180;
+
+/// A driver's hour against their wage's (`staff::hourly`): the hourly paid's premium.
+pub fn rate_of(e: &Employee) -> f64 {
+    if e.employment == Employment::Hourly {
+        1.0 + HOURLY_PREMIUM
+    } else {
+        1.0
+    }
+}
+
+/// The minutes of a reserve's pieces of work outside their frame, their signing on before it
+/// and off after it with them.
+fn outside_frame(p: &Prefs, f: &Frame, pieces: &[(i32, i32)]) -> i32 {
+    let ps: Vec<(i32, i32)> = pieces.iter().copied().filter(|x| x.1 >= x.0).collect();
+    let (Some(first), Some(last)) = (ps.iter().map(|x| x.0).min(), ps.iter().map(|x| x.1).max()) else { return 0 };
+    let mut m: i32 = ps.iter().map(|&(a, b)| (b.min(f.from) - a).max(0) + (b - a.max(f.to)).max(0)).sum();
+    if first < f.from {
+        m += p.sign_on;
+    }
+    if last > f.to {
+        m += p.sign_off;
+    }
+    m
+}
+
+/// (NexiconDK, 4 November 2026) A driver's day by their employment: the minutes paid, the
+/// minutes their week's guarantee owes for the day, and the minutes of their contract week
+/// (overtime above them). `full`: a full week's minutes; `away`: ill or on holiday (paid through
+/// the allowances).
+pub fn day_minutes(p: &Prefs, e: &Employee, weekday: u8, full: f64, away: bool, pieces: &[(i32, i32)]) -> (f64, f64, f64) {
+    match e.employment {
+        Employment::FullTime => (paid_minutes(p, pieces) as f64, if away { 0.0 } else { full / 7.0 }, full),
+        Employment::PartTime { hours } => {
+            let week = (hours * 60.0).clamp(60.0, full);
+            (paid_minutes(p, pieces) as f64, if away { 0.0 } else { week / 7.0 }, week)
+        }
+        Employment::Reserve(f) => {
+            let week = f.week_minutes() as f64;
+            let paid = if f.on(weekday) && !away { f.minutes() + outside_frame(p, &f, pieces) } else { paid_minutes(p, pieces) };
+            (paid as f64, 0.0, week)
+        }
+        Employment::Hourly => {
+            let paid = match span_minutes(p, pieces) {
+                0 => 0,
+                m => m.max(HOURLY_MIN_CALL),
+            };
+            (paid as f64, 0.0, full)
+        }
+    }
 }
 
 /// Away so that the day is paid through the allowances (ill or on holiday), not by the guarantee.
@@ -67,7 +151,7 @@ pub struct Paid {
 
 /// What a driver's minutes cost with the on-costs and allowances (`over`: of them overtime).
 fn cost_of(e: &Employee, minutes: f64, over: f64) -> f64 {
-    staff::hourly(e.wage) * (minutes - over + over * econ_uk::OVERTIME_RATE) / 60.0 * (1.0 + EMPLOYER_SHARE)
+    staff::hourly(e.wage) * rate_of(e) * (minutes - over + over * econ_uk::OVERTIME_RATE) / 60.0 * (1.0 + EMPLOYER_SHARE)
 }
 
 /// The drivers' day (`day::close_day`, before the night): `pieces` are the pieces of work each
@@ -78,16 +162,16 @@ fn cost_of(e: &Employee, minutes: f64, over: f64) -> f64 {
 pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
     let p = c.planning.flow.prefs.clone();
     let overtime = econ_uk::mode(c.game_mode).overtime;
-    let contract = contract_week_minutes();
+    let full = contract_week_minutes(c);
+    let weekday = dates::parse(date).map(|d| dates::weekday(d) as u8).unwrap_or(0);
     let mut out = Paid::default();
     let mut cost = 0.0;
     let mut drivers = 0;
     for e in c.staff.iter_mut().filter(|e| staff::drives(e) && e.employed_on(date)) {
-        if !away_paid_otherwise(e, date) {
-            e.week_due += contract / 7.0;
-        }
         let mine: Vec<(i32, i32)> = pieces.iter().filter(|x| x.0 == e.id).map(|x| (x.1, x.2)).collect();
-        let paid = paid_minutes(&p, &mine) as f64;
+        // (NexiconDK, 4 November 2026: by their employment - `day_minutes`)
+        let (paid, due, contract) = day_minutes(&p, e, weekday, full, away_paid_otherwise(e, date), &mine);
+        e.week_due += due;
         if paid <= 0.0 {
             continue;
         }
@@ -105,9 +189,8 @@ pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
         c.book(BookingKind::Wages, -booked, format!("Drivers: paid hours of the day ({drivers}, {:.0} h)", out.hours), false);
     }
     out.cost += booked;
-    // (the week ends tonight: its guarantee)
-    let tomorrow = dates::add(date, 1);
-    if dates::parse(&tomorrow).map(dates::weekday) == Some(0) {
+    // (the week ends tonight - a Saturday: `week_ends` -: its guarantee)
+    if week_ends(date) {
         let w = week(c);
         out.guaranteed += w.guaranteed;
         out.cost += w.cost;
@@ -165,6 +248,10 @@ pub fn driver_hour(c: &Company) -> f64 {
 pub fn agency_hour(c: &Company, ahead: bool) -> f64 {
     driver_hour(c) * if ahead { econ_uk::AGENCY_AHEAD } else { econ_uk::AGENCY_SAME_DAY }
 }
+
+#[cfg(test)]
+#[path = "employment_tests.rs"]
+mod employment_tests;
 
 #[cfg(test)]
 mod tests {

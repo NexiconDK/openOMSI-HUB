@@ -307,7 +307,7 @@ pub fn alerts(c: &Company, plan: Option<&day::Plan>) -> Vec<Alert> {
             out.push(Alert::Uncovered { tours: n, buses, duties });
         }
     }
-    let wages: Cents = c.staff.iter().map(staff::monthly_cost).sum();
+    let wages: Cents = c.staff.iter().map(|e| staff::monthly_cost(c, e)).sum();
     // (a sandbox with unlimited money, or that never goes broke, is not warned)
     if !sandbox::quiet_cash(c) && (c.cash < wages || c.cash < 0) {
         out.push(Alert::LowCash);

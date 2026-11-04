@@ -125,12 +125,15 @@ fn cannot_text(c: &Company, p: &DayPlan, x: &pl::Cannot) -> String {
 /// A way to cover an open duty in words (`planning::cover_text`).
 fn cover_text(c: &Company, x: &pl::Cover) -> (String, String) {
     match x {
-        pl::Cover::Colleague { id, standby, warn } => {
+        pl::Cover::Colleague { id, standby, warn, tier } => {
             let name = name_of(c, *id);
             let note = match warn.first() {
                 Some(Warn::Overtime(m)) => trf("Overtime %{t}", &[("t", &length(*m))]),
                 Some(Warn::Transfer(m)) => trf("%{n} min to change stops", &[("n", &m.to_string())]),
                 Some(Warn::Experience) => tr("Little experience for this bus"),
+                // (NexiconDK, 4 November 2026: the order an open duty is filled in - `plan::fill_tier`)
+                None if *tier == pl::TIER_RESERVE => tr("Reserve: within their frame"),
+                None if *tier == pl::TIER_HOURLY => tr("Hourly paid: at least 3 hours"),
                 None if *standby => tr("Standby: free all day"),
                 None => tr("Can take it"),
             };

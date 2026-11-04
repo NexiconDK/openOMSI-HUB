@@ -310,6 +310,20 @@ pub const ALLOWANCES: f64 = 0.12;
 /// The hours of a driver's contract a week: paid at least (the weekly guarantee, for the days
 /// the driver is there) and overtime above them.
 pub const CONTRACT_WEEK_HOURS: f64 = 39.0;
+/// (NexiconDK, 4 November 2026) The Danish contract week: the collective agreements' 37 hours.
+pub const CONTRACT_WEEK_HOURS_DK: f64 = 37.0;
+
+/// (NexiconDK, 4 November 2026) The hours of a full-time driver's contract week in a company: 37
+/// at the Danish price level (a server's settings naming it, or a company in Denmark:
+/// `country_of`), else `CONTRACT_WEEK_HOURS`. A wage stays the reference week's
+/// (`contract_month_hours`): an hour costs the same, the week guarantees fewer of them.
+pub fn contract_week_hours(c: &Company) -> f64 {
+    if country_of(c).key.eq_ignore_ascii_case("dk") {
+        CONTRACT_WEEK_HOURS_DK
+    } else {
+        CONTRACT_WEEK_HOURS
+    }
+}
 /// Overtime: above the contracted hours of the week, half as much again.
 pub const OVERTIME_RATE: f64 = 1.5;
 /// An agency driver's hour against a driver's all-in hour: booked ahead (typically +30 %), and

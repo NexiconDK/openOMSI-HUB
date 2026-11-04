@@ -191,7 +191,7 @@ function SettingsDialog({ d }) {
     <span class="rest"></span>
     <${Btn} kind=${v.move ? '' : 'primary'} label=${v.close} onClick=${close} />
     ${v.move && html`<${Btn} kind="primary" icon="calendar_month" label=${v.move} onClick=${moveTo} />`}`;
-  const h = (v.buying ? 786 : 722) + (v.addons ? 40 : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0) + (v.online ? 180 + (v.online.depots ? 130 + 48 * (v.online.depots.rows?.length || 0) + movesHeight(v.online.depots.moves) + (v.online.depots.approval ? 130 + 26 * v.online.depots.approval.waiting.length : 0) + (v.online.depots.asks?.length ? 30 + 48 * v.online.depots.asks.length : 0) : 0) : 0);
+  const h = (v.buying ? 786 : 722) + (v.addons ? (v.addons.planner ? 92 : 40) : 0) + (v.vehicles ? 132 : 0) + (v.company_mode ? 112 : 0) + (v.country ? 96 : 0) + (v.currency ? 84 : 0) + (v.online ? 180 + (v.online.depots ? 130 + 48 * (v.online.depots.rows?.length || 0) + movesHeight(v.online.depots.moves) + (v.online.depots.approval ? 130 + 26 * v.online.depots.approval.waiting.length : 0) + (v.online.depots.asks?.length ? 30 + 48 * v.online.depots.asks.length : 0) : 0) : 0);
   // (Beta 61: a career or a sandbox - turned into a sandbox once, after a confirmation)
   const cm = v.company_mode;
   const vh = v.vehicles;
@@ -237,8 +237,12 @@ function SettingsDialog({ d }) {
             : html`<${Btn} kind="primary" icon="sports_esports" label=${cm.open} onClick=${() => goTab(cm.tab)} />`}</div>`}
       ${v.addons && html`<div class="co-caps">${v.addons.caps}</div>
         <div class="addon"><${Icon} name="extension" size=${18} class="t-accent2" />
-          <div style="flex:1;min-width:0;max-width:530px"><${Switch} checked=${v.addons.on} label=${v.addons.label} onChange=${(on) => act('rosterflow', { on }).then((r) => r?.rosterflow && (close(), handOver('5', { switched: true })))} />
-            <p class="co-note">${v.addons.note}</p></div></div>`}
+          ${v.addons.planner
+            ? html`<div style="flex:1;min-width:0;max-width:560px"><b style="font-size:var(--co-rows)">${v.addons.planner.caps}</b>
+                <${Seg} value=${v.addons.planner.value} options=${v.addons.planner.options.map((t, k) => [k, t])} onChange=${(k) => act('planner', { planner: k }).then((r) => r?.switched && r?.rosterflow && (close(), handOver('5', { switched: true })))} style="width:100%;height:38px;margin-top:8px" />
+                <p class="co-note">${v.addons.planner.note}</p><p class="co-note t-dim">${v.addons.label} · ${v.addons.note}</p></div>`
+            : html`<div style="flex:1;min-width:0;max-width:530px"><${Switch} checked=${v.addons.on} label=${v.addons.label} onChange=${(on) => act('rosterflow', { on }).then((r) => r?.rosterflow && (close(), handOver('5', { switched: true })))} />
+                <p class="co-note">${v.addons.note}</p></div>`}</div>`}
       ${v.buying && html`<div class="co-caps">${v.buying.caps}</div>
         <div class="pair"><${Seg} value=${v.buying.mode} options=${v.buying.modes.map((m, i) => [i, m])} onChange=${(i) => act('buying_mode', { mode: i })} style="width:320px;height:40px" />
           <p class="co-note">${v.buying.say}</p></div>`}

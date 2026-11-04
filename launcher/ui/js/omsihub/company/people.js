@@ -4,7 +4,7 @@
 // matrix; the working hours of the staff who do not drive; the holidays asked for and planned
 // (Beta 57: `people/holidays.rs`); and the hiring rules.
 
-import { html, useEffect, useState, setCo, setUi, ui, act, useView, useSize, goKey, Icon, Btn, Seg, Chips, Select, Section, Meter, Switch, IconBtn, Slider, Tag, fill } from './kit.js';
+import { html, useEffect, useState, setCo, setUi, ui, act, useView, useSize, goKey, Icon, Btn, Seg, Chips, Select, Section, Meter, Switch, IconBtn, Slider, Tag, Dialog, fill } from './kit.js';
 
 // --- the portraits -------------------------------------------------------------------------
 
@@ -101,26 +101,92 @@ function List({ l, st }) {
         <${IconBtn} icon=${l.descending ? 'arrow_downward' : 'arrow_upward'} title=${l.dir_tip} onClick=${() => setUi('people', { descending: !l.descending })} /></span>
     </div>
     <div class="co-scroll" ref=${ref} style="flex:1;min-height:0;margin-top:16px">
-      <div class="co-staffcards" style=${`grid-template-columns:repeat(${cols}, minmax(0,1fr))`}>
-        ${l.cards.map(
-          (e) => html`<button type="button" class="co-staffcard" data-person=${e.id} onClick=${() => setUi('people', { open: e.id })}>
-            <${Portrait} n=${e.portrait} name=${e.name} size=${88} />
-            <div class="who"><div class="role"><${Icon} name=${e.icon} size=${16} class="t-accent2" /><b class="cut">${e.role}</b></div>
-              <span class="name cut">${e.name}</span>
-              <div class="wage"><b>${e.wage}</b>${e.tag && html`<${Tag} text=${e.tag[0]} tone=${e.tag[1]} />`}</div></div>
-            <div class="now"><b class=${'t-' + e.doing[2]}>${e.doing[0]}</b>${e.doing[1] && html`<span>${e.doing[1]}</span>`}</div>
-            <${Needs} needs=${e.needs} />
-          </button>`,
-        )}
-      </div>
+      ${l.sections
+        ? l.sections.map((g) => html`<div class="co-caps co-staffgroup">${g.title}</div><${StaffCards} cards=${g.cards} cols=${cols} />`)
+        : html`<${StaffCards} cards=${l.cards} cols=${cols} />`}
     </div>
   </div>`;
+}
+
+/** The employees' cards; a driver's with their employment and hours this week (NexiconDK,
+ * 4 November 2026: `list::contract`). */
+function StaffCards({ cards, cols }) {
+  return html`<div class="co-staffcards" style=${`grid-template-columns:repeat(${cols}, minmax(0,1fr))`}>
+    ${cards.map(
+      (e) => html`<button type="button" class="co-staffcard" data-person=${e.id} onClick=${() => setUi('people', { open: e.id })}>
+        <${Portrait} n=${e.portrait} name=${e.name} size=${88} />
+        <div class="who"><div class="role"><${Icon} name=${e.icon} size=${16} class="t-accent2" /><b class="cut">${e.role}</b></div>
+          <span class="name cut">${e.name}</span>
+          <div class="wage"><b>${e.wage}</b>${e.tag && html`<${Tag} text=${e.tag[0]} tone=${e.tag[1]} />`}</div></div>
+        <div class="now"><b class=${'t-' + e.doing[2]}>${e.doing[0]}</b>${e.doing[1] && html`<span>${e.doing[1]}</span>`}
+          ${e.contract && html`<span class="contract cut" title=${e.contract}>${e.contract}</span>`}</div>
+        <${Needs} needs=${e.needs} />
+      </button>`,
+    )}
+  </div>`;
+}
+
+// --- employment (NexiconDK, 4 November 2026: RosterFlow Pro's plan, step 1) -------------------
+
+const hhmmOf = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+const minutesOf = (t) => {
+  const [h, m] = String(t || '').split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
+
+/** The choice of a driver's employment (`people::kinds_json`): full time, part time with its
+ * hours, a reserve with its frame (from, to, weekdays), hourly paid - and what each means. */
+function KindPicker({ k, value, onChange }) {
+  const set = (patch) => onChange({ ...value, ...patch });
+  return html`<div class="co-kindpick">
+    <${Seg} value=${value.kind} options=${k.kinds.map((t, i) => [i, t])} onChange=${(i) => set({ kind: i })} style="width:100%;height:38px" />
+    <p class="co-note" style="margin-top:10px;min-height:42px">${k.notes[value.kind]}</p>
+    ${value.kind === 1 &&
+    html`<div class="pair"><span class="co-note" style="width:140px">${k.hours_label}</span>
+      <input class="co-field" type="number" min=${k.hours_min} max=${k.hours_max} step="0.5" value=${value.hours} onChange=${(e) => set({ hours: Number(e.currentTarget.value) || k.hours })} style="width:110px;height:36px" /></div>`}
+    ${value.kind === 2 &&
+    html`<div class="pair"><span class="co-note" style="width:140px">${k.frame_label}</span>
+        <input class="co-field" type="time" value=${hhmmOf(value.from)} onChange=${(e) => set({ from: minutesOf(e.currentTarget.value) })} style="width:110px;height:36px" />
+        <span class="co-note">–</span>
+        <input class="co-field" type="time" value=${hhmmOf(value.to)} onChange=${(e) => set({ to: minutesOf(e.currentTarget.value) })} style="width:110px;height:36px" /></div>
+      <div class="co-kinddays">${k.weekdays.map(
+        (d, i) => html`<button type="button" class=${value.days & (1 << i) ? 'on' : ''} onClick=${() => set({ days: value.days ^ (1 << i) || value.days })}>${d}</button>`,
+      )}</div>`}
+  </div>`;
+}
+
+/** The choice's starting value from what the page says. */
+const kindValue = (k) => ({ kind: k.kind, hours: k.hours, from: k.from, to: k.to, days: k.days });
+
+/** Hiring a driver: as which kind (`KindPicker`), then hired. */
+function HireDialog({ h, a, onClose }) {
+  const [value, setValue] = useState(() => kindValue(h.kinds));
+  const hire = () => act('hire', { no: a.no, employment: value }).then(onClose);
+  const foot = html`<span class="rest"></span><${Btn} label=${h.cancel} onClick=${onClose} /><${Btn} kind="primary" icon="person_add" label=${h.hire} onClick=${hire} />`;
+  return html`<${Dialog} icon="person_add" title=${`${h.kinds_title}: ${a.name}`} w=${620} h=${value.kind === 2 ? 430 : 370} onClose=${onClose} foot=${foot}>
+    <div class="co-caps" style="margin-bottom:10px">${h.kinds.caps}</div>
+    <${KindPicker} k=${h.kinds} value=${value} onChange=${setValue} />
+  </${Dialog}>`;
+}
+
+/** A driver's employment changed (`employment`): after a month's notice. */
+function EmploymentDialog({ p, onClose }) {
+  const x = p.employment;
+  const [value, setValue] = useState(() => kindValue(x.picker));
+  const change = () => act('employment', { id: p.id, employment: value }).then(onClose);
+  const foot = html`<span class="rest"></span><${Btn} label=${x.cancel} onClick=${onClose} /><${Btn} kind="primary" icon="badge" label=${x.ok} onClick=${change} />`;
+  return html`<${Dialog} icon="badge" title=${x.title} w=${620} h=${value.kind === 2 ? 460 : 400} onClose=${onClose} foot=${foot}>
+    <div class="co-caps" style="margin-bottom:10px">${x.picker.caps}</div>
+    <${KindPicker} k=${x.picker} value=${value} onChange=${setValue} />
+    <p class="co-note t-dim" style="margin-top:10px">${x.notice}</p>
+  </${Dialog}>`;
 }
 
 /** Someone's own page (`list::person`): who they are, their needs, their pay, their work and
  * their courses. */
 function Person({ p }) {
   const back = () => setUi('people', { open: null });
+  const [changing, setChanging] = useState(false);
   useEffect(() => {
     const k = (e) => e.key === 'Escape' && (e.stopImmediatePropagation(), back());
     addEventListener('keydown', k, true);
@@ -153,7 +219,11 @@ function Person({ p }) {
               ${p.dismiss && html`<${Btn} kind="danger" icon="logout" label=${p.dismiss} onClick=${() => setCo({ dialog: { kind: 'confirm', what: 'dismiss', id: p.id } })} />`}</div>`}
         </${Section}>
         <${Section} title=${p.work_title}>
+          ${p.employment &&
+          html`<div class="co-payrow"><span class="cut">${p.employment.picker.caps}</span><b class="cut" title=${p.employment.text}>${p.employment.text}</b></div>
+            ${p.employment.next && html`<div class="co-payrow"><span></span><b class="cut t-accent2" title=${p.employment.next}>${p.employment.next}</b></div>`}`}
           ${p.facts.map(([a, b]) => html`<div class="co-payrow"><span class="cut">${a}</span><b class="cut">${b}</b></div>`)}
+          ${p.employment?.change && html`<div class="pair" style="margin-top:8px"><${Btn} icon="badge" label=${p.employment.change} onClick=${() => setChanging(true)} /></div>`}
         </${Section}>
         <${Section} title=${p.courses_title}>
           ${p.courses.map(
@@ -170,12 +240,15 @@ function Person({ p }) {
         </${Section}>
       </div>
     </div>
+    ${changing && p.employment && html`<${EmploymentDialog} p=${p} onClose=${() => setChanging(false)} />`}
   </div>`;
 }
 
 /** The week's applicants for a role (`hire::draw`). */
 function Hire({ h }) {
   const [ref, size] = useSize();
+  // (NexiconDK, 4 November 2026: a driver is hired as a kind - `HireDialog`)
+  const [hiring, setHiring] = useState(null);
   const cols = Math.max(1, Math.min(4, Math.floor(size.w / 440)));
   // (a job advert for the role shown: new applicants at once - Beta 54; prominent when nobody is
   // left to hire)
@@ -203,11 +276,12 @@ function Hire({ h }) {
                     : html`<span>${a.bring.friendliness}</span><b class=${'t-' + a.bring.tone}>${a.bring.value}</b>`}
                 </div>
                 <span class="reliable" title=${a.reliable_tip}>${a.reliable}</span>
-                <${Btn} kind="primary" icon="person_add" label=${h.hire} style="position:absolute;right:16px;bottom:14px;width:120px;height:38px" onClick=${() => act('hire', { no: a.no })} />
+                <${Btn} kind="primary" icon="person_add" label=${h.hire} style="position:absolute;right:16px;bottom:14px;width:120px;height:38px" onClick=${() => (h.kinds ? setHiring(a) : act('hire', { no: a.no }))} />
               </div>`,
             )}</div>`}
     </div>
     <div class="co-note cut" style="flex:none;height:30px;line-height:30px;margin-top:10px">${ad?.round ? `${ad.round}  ·  ` : ''}${h.foot}</div>
+    ${hiring && h.kinds && html`<${HireDialog} h=${h} a=${hiring} onClose=${() => setHiring(null)} />`}
   </div>`;
 }
 

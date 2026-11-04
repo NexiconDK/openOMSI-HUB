@@ -423,6 +423,21 @@ pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Va
     Some(Ok(json!({})))
 }
 
+/// (NexiconDK, 4 November 2026) The choice of planner (`co::Planner`): its options, the one in
+/// use, and what each is - for the settings and the planning's toolbar (None in Casual, which
+/// has the standard planning alone).
+pub fn planner_json(c: &Company) -> Option<Value> {
+    c.game_mode.rules().rosterflow.then(|| {
+        let now = co::autopilot::planner(c);
+        let note = match now {
+            co::Planner::Standard => "Standard: the day's roster, filled by tapping or dragging.",
+            co::Planner::RosterFlow => "RosterFlow: the scheduling studio, timeplan and roster of professional software.",
+            co::Planner::Pro => "RosterFlow Pro: RosterFlow with rosters, a calendar and asking drivers - plans as RosterFlow for now.",
+        };
+        json!({ "caps": tr("Planning tool").to_uppercase(), "options": co::Planner::ALL.iter().map(|p| tr(p.label())).collect::<Vec<_>>(), "value": now.index(), "note": tr(note) })
+    })
+}
+
 fn settings(s: &mut Session, args: &Value) -> Value {
     let Some(c) = s.company.clone() else { return Value::Null };
     let easy = co::autopilot::on(&c);
@@ -436,7 +451,9 @@ fn settings(s: &mut Session, args: &Value) -> Value {
         "mark_caps": tr("The company's mark").to_uppercase(), "mark": mark_json(&c), "logo_text": logo_text,
         "choose_logo": tr("Choose a logo picture"), "remove_logo": c.logo.is_some().then(|| tr("Remove the picture")),
         "mode_caps": tr("Game mode").to_uppercase(), "modes": GameMode::ALL.iter().map(|m| mode_json(*m)).collect::<Vec<_>>(), "mode": super::mode_key(c.game_mode), "mode_info": tr(c.game_mode.info()),
-        "addons": c.game_mode.rules().rosterflow.then(|| json!({ "caps": tr("Add-ons").to_uppercase(), "label": tr(ROSTERFLOW), "note": tr(ROSTERFLOW_NOTE), "on": co::autopilot::rosterflow(&c) })),
+        // (NexiconDK, 4 November 2026: the planner - Standard, RosterFlow or RosterFlow Pro -
+        // as a choice of three: `planner_json`)
+        "addons": c.game_mode.rules().rosterflow.then(|| json!({ "caps": tr("Add-ons").to_uppercase(), "label": tr(ROSTERFLOW), "note": tr(ROSTERFLOW_NOTE), "on": co::autopilot::rosterflow(&c), "planner": planner_json(&c) })),
         "company_mode": super::sandbox::settings_part(&c),
         "country": super::country::settings_part(&c),
         // (NexiconDK: a company on Bus Company Online's server - its share of its players' trips)
@@ -1014,12 +1031,15 @@ fn cannot_text(c: &Company, p: &DayPlan, x: &pl::Cannot) -> String {
 /// A way to cover an open duty in words (`planning::cover_text`).
 fn cover_text(c: &Company, x: &pl::Cover) -> (String, String) {
     match x {
-        pl::Cover::Colleague { id, standby, warn } => {
+        pl::Cover::Colleague { id, standby, warn, tier } => {
             let name = c.employee(*id).map(|e| e.name.clone()).unwrap_or_default();
             let note = match warn.first() {
                 Some(Warn::Overtime(m)) => trf("Overtime %{t}", &[("t", &length(*m))]),
                 Some(Warn::Transfer(m)) => trf("%{n} min to change stops", &[("n", &m.to_string())]),
                 Some(Warn::Experience) => tr("Little experience for this bus"),
+                // (NexiconDK, 4 November 2026: the order an open duty is filled in - `plan::fill_tier`)
+                None if *tier == pl::TIER_RESERVE => tr("Reserve: within their frame"),
+                None if *tier == pl::TIER_HOURLY => tr("Hourly paid: at least 3 hours"),
                 None if *standby => tr("Standby: free all day"),
                 None => tr("Can take it"),
             };
@@ -1288,6 +1308,22 @@ pub fn act(s: &mut Session, what: &str, args: &Value, _p: &dyn crate::Platform) 
             c.logo = None;
             Ok(())
         })),
+        // (NexiconDK, 4 November 2026) The planner chosen: Standard, RosterFlow or RosterFlow Pro
+        // (its index in `Planner::ALL`); RosterFlow Pro plans as RosterFlow for now.
+        "planner" => {
+            let want = co::Planner::of_index(args.get("planner").and_then(Value::as_u64).unwrap_or(0) as usize);
+            let was = co::autopilot::planner(&c);
+            match apply(s, |c| Ok(co::autopilot::set_planner(c, want))) {
+                Ok(now) => {
+                    if now != was {
+                        let t = trf("The planner is %{name} now.", &[("name", &tr(now.label()))]);
+                        s.say(t, false);
+                    }
+                    Ok(json!({ "planner": now.index(), "rosterflow": now != co::Planner::Standard, "switched": (was == co::Planner::Standard) != (now == co::Planner::Standard) }))
+                }
+                Err(p) => Ok(json!({ "popup": p })),
+            }
+        }
         "rosterflow" => {
             let on = args.get("on").and_then(Value::as_bool).unwrap_or(false);
             match apply(s, |c| Ok(co::autopilot::set_rosterflow(c, on))) {

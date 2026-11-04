@@ -233,8 +233,9 @@ fn drivers_are_paid_their_duties_and_overtime() {
     assert!((r.driver_wages as f64 - want).abs() < 2.0, "{} {want}", r.driver_wages);
     assert_eq!(r.overtime_hours, 0.0);
     // the week: five such duties are more than the contract's 39 hours - the rest is overtime
+    // (to Saturday night: the bus company's week runs Sunday to Saturday, `pay::week_ends`)
     let mut week = 0.0;
-    for _ in 1..7 {
+    for _ in 1..6 {
         let date = c.date.clone();
         week += day::close_day(&mut c, tours_of(&date), &[]).overtime_hours;
     }
@@ -259,7 +260,7 @@ fn casual_pays_no_overtime() {
 #[test]
 fn a_driver_without_duties_is_paid_the_weeks_guarantee() {
     let mut c = reference(GameMode::Realistic, "gb");
-    // a week without tours: every driver there all week is paid 39 hours on the Sunday
+    // a week without tours: every driver there all week is paid its 39 hours on Saturday night (Monday to Saturday here)
     let mut guaranteed = 0.0;
     for _ in 0..7 {
         guaranteed += day::close_day(&mut c, Vec::new(), &[]).guaranteed_hours;

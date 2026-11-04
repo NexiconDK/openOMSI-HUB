@@ -707,3 +707,11 @@ _version: 2
   pl: "Nie prowadzisz teraz służby firmy."
   ru: "Сейчас вы не ведёте смену компании."
   uk: "Зараз ви не ведете зміну компанії."
+"Reserve: your duty on %{date} is line %{n} tour %{tour}, sign on at %{time}":
+  de: "Reserve: dein Dienst am %{date} ist Linie %{n} Umlauf %{tour}, Dienstbeginn um %{time}"
+  da: "Reserve: din vagt den %{date} er linje %{n} vognløb %{tour}, mødetid kl. %{time}"
+  fr: "Réserve : votre service du %{date} est la ligne %{n} service %{tour}, prise de service à %{time}"
+  nl: "Reserve: je dienst op %{date} is lijn %{n} omloop %{tour}, aanmelden om %{time}"
+  pl: "Rezerwa: twoja służba %{date} to linia %{n} brygada %{tour}, zgłoszenie o %{time}"
+  ru: "Резерв: ваша смена %{date} - линия %{n} выход %{tour}, явка в %{time}"
+  uk: "Резерв: ваша зміна %{date} - лінія %{n} випуск %{tour}, явка о %{time}"

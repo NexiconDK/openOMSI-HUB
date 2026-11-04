@@ -477,9 +477,15 @@ mod tests {
         let first = drivers_on(&c, &tomorrow)[0].id;
         assert_eq!((p.tours[0].duties[0].who, p.tours[0].duties[0].from_), (Some(Who::Staff(first)), Source::Dispatcher));
         assert_eq!(p.tours[2].duties[0].who, Some(Who::Staff(first)));
-        // "Fill the roster" that day: the other booked driver first, before the staff
+        // "Fill the roster" that day: the company's own driver first, the booked ones after him
+        // (NexiconDK, 4 November 2026: the order an open duty is filled in - `plan::fill_tier`);
+        // with him away, the other booked driver
         let second = drivers_on(&c, &tomorrow)[1].id;
+        let own = c.staff[0].id;
+        assert_eq!(plan::candidates(&c, &p, 1, 0).into_iter().find(|x| x.fit.is_ok()).map(|x| x.id), Some(own));
+        c.staff[0].sick_until = Some(tomorrow.clone());
         fill_day(&mut c, &tomorrow, tours.clone());
+        c.staff[0].sick_until = None;
         let p = day_plan(&c, &tomorrow, tours.clone(), &[], &[], false);
         assert_eq!(p.tours[1].duties[0].who, Some(Who::Staff(second)));
         assert_eq!(duties_of(&c, second).len(), 1, "given for that day, not in the weekday's roster");

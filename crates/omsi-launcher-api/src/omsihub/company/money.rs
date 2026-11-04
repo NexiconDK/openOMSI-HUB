@@ -305,7 +305,7 @@ mod tests {
     fn every_cost_line_is_translated() {
         let mut texts: Vec<String> = BookingKind::ALL.iter().map(|k| k.label().to_string()).collect();
         let src = [include_str!("dialogs.rs"), include_str!("people.rs")].concat();
-        for t in ["Drivers' wages %{amount}", "%{month} is closed: leases", "%{paid} of %{contract} hours paid", "This week"] {
+        for t in ["Drivers' wages %{amount}", "%{month} is closed: leases", "%{paid} of %{contract} hours this week", "%{paid} hours this week", "This week"] {
             let start = src.find(t).expect(t);
             texts.push(src[start..].chars().take_while(|c| *c != '"').collect());
         }

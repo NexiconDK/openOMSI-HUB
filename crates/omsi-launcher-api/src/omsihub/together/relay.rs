@@ -148,7 +148,7 @@ fn act_need(act: &str, what: &str) -> Need {
             "game_mode" | "sandbox" => SETTINGS,
             _ => Never,
         },
-        "logo_remove" | "rosterflow" | "realtime" | "game_mode" | "sandbox" | "currency" => SETTINGS,
+        "logo_remove" | "rosterflow" | "planner" | "realtime" | "game_mode" | "sandbox" | "currency" => SETTINGS,
         // (NexiconDK: a picture sent from afar, kept beside the company)
         "logo_data" => SETTINGS,
         "sell" => SPEND,
@@ -169,7 +169,7 @@ fn act_need(act: &str, what: &str) -> Need {
         "buying_mode" | "open_model" | "open_offer" | "open_contract" | "open_loan" | "open_repay" | "open_loan_contract" | "open_advert" => SPEND,
         a if a.starts_with("sheet_") => SPEND,
         // the staff
-        "hire" | "raise" | "advertise" | "keep" | "grant_raise" | "refuse_raise" | "course_lock" | "book_course" | "train" | "set_hours" | "staff_rule" | "auto" | "follow" | "holiday_answer" | "holiday_limit" | "agency_book" | "agency_cancel" | "staff_minimum" => STAFF,
+        "hire" | "employment" | "raise" | "advertise" | "keep" | "grant_raise" | "refuse_raise" | "course_lock" | "book_course" | "train" | "set_hours" | "staff_rule" | "auto" | "follow" | "holiday_answer" | "holiday_limit" | "agency_book" | "agency_cancel" | "staff_minimum" => STAFF,
         // the lines, their fares
         "line_title" | "line_type" | "line_hof" | "line_colour" | "line_connections" | "add_line" | "remove_line" => LINES,
         "set_fare" | "set_cap" => Any(&[Perm::Lines, Perm::Spend]),

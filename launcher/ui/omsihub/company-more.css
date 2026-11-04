@@ -208,6 +208,14 @@
 .pl-gaps { position: relative; margin-bottom: 14px; min-height: 20px; }
 .pl-morning { position: relative; padding-left: 14px; margin-bottom: 6px; min-height: 18px; }
 .pl-morning > i { position: absolute; left: 1px; top: 5px; width: 6px; height: 6px; border-radius: 50%; }
+/* (NexiconDK, 4 November 2026) The day's frames of the reserve drivers, and the planner chosen. */
+.pl-frame { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; padding-left: 14px; margin-bottom: 6px; font-size: 9.6px; line-height: 16px; }
+.pl-frame > i { position: absolute; left: 1px; top: 5px; width: 6px; height: 6px; border-radius: 2px; background: var(--c); }
+.pl-frame > b { font-weight: 700; }
+.pl-frame > span { text-align: right; }
+.pl-frame > em { grid-column: 1 / -1; font-style: normal; }
+.pl-planner { display: flex; }
+.pl-planner .co-seg button { font-size: 9.2px; }
 .pl-open { position: relative; display: block; width: 100%; height: 46px; margin-bottom: 2px; border-radius: 3px; cursor: grab; }
 .pl-open:hover { background: var(--h); }
 .pl-openbar { position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; background: var(--c); }

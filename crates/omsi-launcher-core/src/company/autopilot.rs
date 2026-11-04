@@ -28,7 +28,7 @@ use super::dates;
 use super::dealer::BuyingMode;
 use super::depot::{self, Area, JobKind};
 use super::licences::{self, Endorsement};
-use super::model::{Cents, Company, GameMode, Licence, Role};
+use super::model::{Cents, Company, GameMode, Licence, Planner, Role};
 use super::network;
 use super::plan::{self, Who};
 use super::research;
@@ -168,6 +168,7 @@ pub fn set_game_mode(c: &mut Company, mode: GameMode) {
     }
     if !mode.rules().rosterflow {
         c.addons.rosterflow = false;
+        c.addons.pro = false;
     }
     c.game_mode = mode;
 }
@@ -176,12 +177,34 @@ pub fn set_game_mode(c: &mut Company, mode: GameMode) {
 /// be switched on in a mode that has none (Casual). Returns whether it is on now.
 pub fn set_rosterflow(c: &mut Company, on: bool) -> bool {
     c.addons.rosterflow = on && c.game_mode.rules().rosterflow;
+    if !c.addons.rosterflow {
+        c.addons.pro = false;
+    }
     c.addons.rosterflow
 }
 
-/// Whether RosterFlow is on: switched on, in a mode that has it.
+/// Whether RosterFlow is on: switched on, in a mode that has it (RosterFlow Pro too).
 pub fn rosterflow(c: &Company) -> bool {
     c.addons.rosterflow && c.game_mode.rules().rosterflow
+}
+
+/// (NexiconDK, 4 November 2026) The planner the company plans with (`Planner`): the standard
+/// planning, RosterFlow, or RosterFlow Pro - which for now plans as RosterFlow.
+pub fn planner(c: &Company) -> Planner {
+    match (rosterflow(c), c.addons.pro) {
+        (false, _) => Planner::Standard,
+        (true, false) => Planner::RosterFlow,
+        (true, true) => Planner::Pro,
+    }
+}
+
+/// (NexiconDK, 4 November 2026) Choose the planner: RosterFlow and RosterFlow Pro only in a mode
+/// that has RosterFlow (not in Casual), their data kept either way. Returns the planner now.
+pub fn set_planner(c: &mut Company, p: Planner) -> Planner {
+    let on = p != Planner::Standard && c.game_mode.rules().rosterflow;
+    c.addons.rosterflow = on;
+    c.addons.pro = on && p == Planner::Pro;
+    planner(c)
 }
 
 /// What the company did by itself on `date` (the newest last).
@@ -205,7 +228,7 @@ fn note(c: &mut Company, date: &str, text: &str, args: Vec<(&str, String)>) {
 
 /// What the company keeps back: a month of its people's wages and €5,000 (at today's prices).
 pub fn cushion(c: &Company) -> Cents {
-    c.staff.iter().filter(|e| e.notice_until.is_none()).map(staff::monthly_cost).sum::<Cents>() + (5_000_00.0 * c.price_index.max(1.0)).round() as Cents
+    c.staff.iter().filter(|e| e.notice_until.is_none()).map(|e| staff::monthly_cost(c, e)).sum::<Cents>() + (5_000_00.0 * c.price_index.max(1.0)).round() as Cents
 }
 
 /// Whether the company can spend `cost` and keep its cushion (with a sandbox's unlimited money,

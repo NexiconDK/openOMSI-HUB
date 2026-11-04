@@ -12,7 +12,7 @@
 // With the RosterFlow add-on on, the planning is RosterFlow's (phase 4): handed to our game-drawn
 // launcher until then, or drawn by `window.omsiHubRosterFlow` when that is there.
 
-import { html, useEffect, useRef, useState, ui, setUi, setCo, useSize, textW, Icon, Btn, Seg, Switch, Dialog, HOME, handOver, tr } from './kit.js';
+import { html, useEffect, useRef, useState, ui, setUi, setCo, useSize, textW, Icon, Btn, Seg, Switch, Dialog, HOME, handOver, tr, act } from './kit.js';
 import { useMore, actMore, TextIn, box, rosterFlowPage } from './more.js';
 import { dark } from '../theme.js';
 import { PlanEdit } from './planedit.js';
@@ -290,6 +290,11 @@ function Tools({ v, st, W }) {
   x -= rw + 6;
   const repeatR = { x, y: DAY_H + 4, w: rw, h: TOOL_H - 8 };
   const colour = ink(q, t.tone);
+  // (NexiconDK, 4 November 2026: the planner chosen - Standard, RosterFlow, RosterFlow Pro - on the
+  // left of the toolbar; the other two hand the page over to RosterFlow)
+  const pl = t.planner;
+  const segW = pl ? Math.min(380, Math.max(250, W * 0.25)) : 0;
+  const tx = pl ? segW + 18 : 0;
   const clear = () => {
     if (st.clear_armed) {
       setUi('planning', { clear_armed: false });
@@ -297,8 +302,9 @@ function Tools({ v, st, W }) {
     } else setUi('planning', { clear_armed: true });
   };
   return html`<div style=${box(0, DAY_H, W, TOOL_H) + `;background:${rgba(q.tool)}`}></div>
-    <span class="cm-icon" style=${`left:10px;top:${DAY_H + 12}px;color:${colour}`}><${Icon} name=${t.icon} size=${16} /></span>
-    <${TextIn} x=${34} y=${DAY_H} w=${Math.max(0, x - 46)} h=${TOOL_H} px=${13} weight=${500} color=${colour} title=${t.text}>${t.text}</${TextIn}>
+    ${pl && html`<div class="pl-planner" title=${pl.note} style=${box(6, DAY_H + 4, segW, TOOL_H - 8)}><${Seg} value=${pl.value} options=${pl.options.map((o, k) => [k, o])} onChange=${(k) => act('planner', { planner: k })} style="width:100%;height:100%" /></div>`}
+    <span class="cm-icon" style=${`left:${10 + tx}px;top:${DAY_H + 12}px;color:${colour}`}><${Icon} name=${t.icon} size=${16} /></span>
+    <${TextIn} x=${34 + tx} y=${DAY_H} w=${Math.max(0, x - 46 - tx)} h=${TOOL_H} px=${13} weight=${500} color=${colour} title=${t.text}>${t.text}</${TextIn}>
     <${RfButton} r=${repeatR} label=${t.repeat.label} title=${t.repeat.tip} onClick=${() => actMore('plan_repeat', { date: v.date })} />
     <${RfButton} r=${clearR} label=${t.clear.label} title=${t.clear.tip} armed=${t.clear.armed} onClick=${clear} />
     <${RfButton} r=${fillR} label=${t.fill.label} solid title=${t.fill.tip} onClick=${() => actMore('plan_fill', { date: v.date })} />`;
@@ -607,6 +613,13 @@ function DayPanel({ s, v, st, inner, drag }) {
           </button>`;
         })}
         <div style="height:8px"></div>`}
+      ${s.frames?.length > 0 &&
+      html`<${Head}>${s.heads.frames}</${Head}>
+        ${s.frames.map((f) => html`<div class="pl-frame" style=${`--c:${f.colour}`}><i></i><b class="cut" style=${`color:${rgba(q.text)}`}>${f.name}</b><span style=${`color:${rgba(q.dim)}`}>${f.frame}</span><em style=${`color:${ink(q, f.tone)}`}>${f.state}</em></div>`)}
+        <div style="height:8px"></div>`}
+      ${s.free &&
+      html`<${Head}>${s.heads.free}</${Head}>
+        <${Para} px=${12.5} color=${rgba(q.text, 0.82)} style="margin-bottom:8px">${s.free}</${Para}>`}
       <div class="pl-caps" style=${`color:${rgba(q.dim)};margin-bottom:4px`}>${s.heads.drivers}</div>
       <div style=${`position:relative;height:24px`}><${TextIn} x=${0} y=${0} w=${w} h=${18} px=${12} color=${rgba(q.dim)}>${s.hint}</${TextIn}></div>
       ${[s.me, ...s.staff].filter(Boolean).map((e) => {

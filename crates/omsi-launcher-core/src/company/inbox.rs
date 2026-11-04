@@ -658,7 +658,7 @@ pub fn bridge(c: &mut Company, date: &str, report: &DayReport) {
         add(Kind::Lines, Level::Warn, "crowded", CROWDED, vec![arg("n", report.crowded), arg("p", report.left_behind)]);
     }
     // (the cash: under a month's wages, or gone - not a sandbox's that never goes broke)
-    let wages: i64 = c.staff.iter().map(super::staff::monthly_cost).sum();
+    let wages: i64 = c.staff.iter().map(|e| super::staff::monthly_cost(c, e)).sum();
     let quiet = super::sandbox::quiet_cash(c);
     if !quiet && c.cash < 0 {
         add(Kind::Finance, Level::Bad, "cash", IN_THE_RED, vec![arg("amount", c.cash)]);

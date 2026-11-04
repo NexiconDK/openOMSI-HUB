@@ -147,6 +147,43 @@ pub struct Addons {
     /// RosterFlow – Bus Scheduling & Crew Rostering: the planning's studio, timeplan and
     /// tutorial. Off, the planning is the day's roster alone. Not in Casual.
     pub rosterflow: bool,
+    /// (NexiconDK, 4 November 2026) With `rosterflow` on, the planner is RosterFlow Pro
+    /// (`Planner`; off on an older file, which plans as it did).
+    pub pro: bool,
+}
+
+/// (NexiconDK, 4 November 2026) The planner a company plans with (RosterFlow Pro's plan, step
+/// 1): the standard planning (the day's roster), RosterFlow, or RosterFlow Pro - for now
+/// RosterFlow itself, its own tabs to come. Kept as the add-ons' switches (`Addons`), so an
+/// older file plans as it did; Casual has the standard planning alone
+/// (`autopilot::set_planner`).
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+pub enum Planner {
+    Standard,
+    RosterFlow,
+    Pro,
+}
+
+impl Planner {
+    pub const ALL: [Planner; 3] = [Planner::Standard, Planner::RosterFlow, Planner::Pro];
+
+    /// Its name (English, translated when shown).
+    pub fn label(self) -> &'static str {
+        match self {
+            Planner::Standard => "Standard",
+            Planner::RosterFlow => "RosterFlow",
+            Planner::Pro => "RosterFlow Pro",
+        }
+    }
+
+    /// Its place in `ALL` (the choice's index), and back.
+    pub fn index(self) -> usize {
+        Planner::ALL.iter().position(|x| *x == self).unwrap_or(0)
+    }
+
+    pub fn of_index(k: usize) -> Planner {
+        Planner::ALL.get(k).copied().unwrap_or(Planner::Standard)
+    }
 }
 
 /// A bus's length class: what it costs, what it carries and who may drive it.
@@ -632,6 +669,136 @@ pub struct Employee {
     /// To be lent to another company of the owner's: he goes at the company's next day.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lend: Option<super::server_depots::LendOut>,
+    /// (NexiconDK, 4 November 2026) How a driver is employed: full time, part time, a reserve
+    /// with a frame, or hourly paid (`Employment`; an older file's drivers: full time).
+    #[serde(default)]
+    pub employment: Employment,
+    /// A change of it given notice: the new one and the day it applies from
+    /// (`staff::change_employment`, `staff::employment_due`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub employment_next: Option<EmploymentChange>,
+}
+
+/// (NexiconDK, 4 November 2026) How a driver is employed (RosterFlow Pro's plan, step 1
+/// "Ansættelse og rammer"): the hours their week guarantees and how a day is paid (`pay`), and
+/// where they come in the order an open duty is filled (`plan::fill_tier`).
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Default)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum Employment {
+    /// The country's contract week (`econ_uk::contract_week_hours`: 37 hours at the Danish
+    /// price level, else 39), guaranteed for the days they are there.
+    #[default]
+    FullTime,
+    /// Fewer hours a week (`hours`), guaranteed pro rata.
+    PartTime { hours: f64 },
+    /// A reserve driver: at the company's disposal within a frame (a daily window on given
+    /// weekdays), paid the frame on its days whether used or not; the first to cover an open
+    /// duty within it, without being asked.
+    Reserve(Frame),
+    /// Hourly paid: no guarantee, only the hours worked - at least `pay::HOURLY_MIN_CALL` a day
+    /// called in -, at `pay::HOURLY_PREMIUM` more an hour.
+    Hourly,
+}
+
+/// A reserve driver's frame ("ramme"): from and to (minutes of the day; `to` after `from`, at
+/// most a day later), and the weekdays it holds (bit 0 Monday … bit 6 Sunday).
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Frame {
+    pub from: i32,
+    pub to: i32,
+    pub days: u8,
+}
+
+impl Frame {
+    /// A frame from its parts, made sound: within the day, at least an hour, a day at least.
+    pub fn new(from: i32, to: i32, days: u8) -> Frame {
+        let from = from.clamp(0, 1439);
+        let mut to = to.rem_euclid(1440);
+        if to <= from {
+            to += 1440;
+        }
+        let to = to.max(from + 60).min(from + 1440);
+        let days = if days & 0x7f == 0 { 0x1f } else { days & 0x7f };
+        Frame { from, to, days }
+    }
+
+    /// Its minutes a day.
+    pub fn minutes(&self) -> i32 {
+        (self.to - self.from).max(0)
+    }
+
+    /// Whether it holds on a weekday (0 Monday … 6 Sunday).
+    pub fn on(&self, weekday: u8) -> bool {
+        weekday < 7 && self.days & (1 << weekday) != 0
+    }
+
+    /// How many weekdays it holds.
+    pub fn day_count(&self) -> u32 {
+        (self.days & 0x7f).count_ones()
+    }
+
+    /// Its minutes a week.
+    pub fn week_minutes(&self) -> i32 {
+        self.minutes() * self.day_count() as i32
+    }
+
+    /// Whether a piece of work `from..to` (minutes of its day) lies within it.
+    pub fn holds(&self, from: i32, to: i32) -> bool {
+        from >= self.from && to <= self.to && to >= from
+    }
+}
+
+impl Default for Frame {
+    /// The plan's example: 05:00 to 13:00, Monday to Friday.
+    fn default() -> Frame {
+        Frame { from: 5 * 60, to: 13 * 60, days: 0x1f }
+    }
+}
+
+impl Employment {
+    /// The four, in the order the choices show them.
+    pub const KINDS: [&'static str; 4] = ["Full time", "Part time", "Reserve", "Hourly paid"];
+
+    /// Its place in `KINDS`.
+    pub fn index(&self) -> usize {
+        match self {
+            Employment::FullTime => 0,
+            Employment::PartTime { .. } => 1,
+            Employment::Reserve(_) => 2,
+            Employment::Hourly => 3,
+        }
+    }
+
+    /// Its name (English, translated when shown).
+    pub fn label(&self) -> &'static str {
+        Employment::KINDS[self.index()]
+    }
+
+    /// The hours of their contract week, `full` being a full-time week's: None for the hourly
+    /// paid (no guarantee).
+    pub fn week_hours(&self, full: f64) -> Option<f64> {
+        match self {
+            Employment::FullTime => Some(full),
+            Employment::PartTime { hours } => Some(hours.clamp(1.0, full)),
+            Employment::Reserve(f) => Some(f.week_minutes() as f64 / 60.0),
+            Employment::Hourly => None,
+        }
+    }
+
+    /// The frame of a reserve driver.
+    pub fn frame(&self) -> Option<Frame> {
+        match self {
+            Employment::Reserve(f) => Some(*f),
+            _ => None,
+        }
+    }
+}
+
+/// A change of employment given notice: the new one, and the first day it applies.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct EmploymentChange {
+    pub to: Employment,
+    pub from: String,
 }
 
 /// What an employee does.
