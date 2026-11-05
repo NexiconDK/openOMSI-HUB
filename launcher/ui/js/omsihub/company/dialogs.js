@@ -212,6 +212,9 @@ function SettingsDialog({ d }) {
       ${v.rest_local && html`<div class="co-caps">${v.rest_local.caps}</div>
         <div class="pair"><${Seg} value=${v.rest_local.value} options=${v.rest_local.options.map((o) => [o.value, o.label])} onChange=${(k) => act('rest_local', { value: k })} style="width:420px;height:40px" />
           <p class="co-note">${v.rest_local.say}</p></div>`}
+      ${v.toil_local && html`<div class="co-caps">${v.toil_local.caps}</div>
+        <div class="pair"><${Seg} value=${v.toil_local.value} options=${v.toil_local.options.map((o) => [o.value, o.label])} onChange=${(k) => act('toil_local', { value: k })} style="width:420px;height:40px" />
+          <p class="co-note">${v.toil_local.say}</p></div>`}
       ${v.online && html`<div class="co-caps">${v.online.caps}</div>
         <p class="co-note">${v.online.say}</p>
         ${v.online.own && html`<div class="co-caps">${v.online.own.caps}</div>

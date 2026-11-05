@@ -161,8 +161,11 @@ function Side({ v, rota }) {
 /** A cell of the rota or of a driver's weeks. */
 function CellBox({ c, on, onClick, title, we }) {
   const mark = c.level ? html`<i class=${'tu-mark ' + c.level}>!</i>` : null;
-  return html`<button type="button" class=${'tu-cell ' + (c.cls || 'off') + (on ? ' on' : '') + (c.exception ? ' ex' : '') + (we ? ' we' : '')} title=${title ?? (c.tip || undefined)} onClick=${onClick}>
-    <b>${c.label}</b>${c.time && html`<span>${c.time}</span>`}${c.note && html`<span class="tu-ex">${c.note}</span>`}${mark}
+  // (round B: the driver's wish for the day off - ★)
+  const star = c.wish ? html`<i class="tu-star" title=${c.wish}>★</i>` : null;
+  const tip = [title ?? c.tip, c.wish].filter(Boolean).join(' · ') || undefined;
+  return html`<button type="button" class=${'tu-cell ' + (c.cls || 'off') + (on ? ' on' : '') + (c.exception ? ' ex' : '') + (we ? ' we' : '')} title=${tip} onClick=${onClick}>
+    <b>${c.label}</b>${c.time && html`<span>${c.time}</span>`}${c.note && html`<span class="tu-ex">${c.note}</span>`}${mark}${star}
   </button>`;
 }
 

@@ -201,6 +201,16 @@ fn rota_json(c: &Company, k: usize, week: &Week, sunday: &str, checked: &Checked
                     v
                 })
                 .collect();
+            // (round B: the week's driver's wishes for a day off - ★ on the day)
+            let mut cells = cells;
+            if let Some(id) = pt::driver_on(t, r, sunday) {
+                for (d, v) in cells.iter_mut().enumerate() {
+                    let date = co::dates::add(sunday, d as i64);
+                    if let Some(w) = co::pro_wish::marked(c, id, &date) {
+                        v["wish"] = json!(if w.state == co::pro_wish::WishState::Granted { tr("Wish granted: the day off") } else { tr("Wants the day off: not decided yet") });
+                    }
+                }
+            }
             let (level, tip) = level_of(checked.of(r, None));
             let minutes = checked.minutes.get(r).copied().unwrap_or(0);
             json!({
@@ -250,7 +260,8 @@ fn view(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     let mut out = json!({
         "days": DAYS.iter().map(|d| tr(d)).collect::<Vec<_>>(),
         "week": { "label": week_label(&sunday), "from": day_label(&sunday), "offset": usize_arg(args, "week").min(104) },
-        "notes": pt::NOTES.iter().map(|(k, w)| json!({ "key": k, "label": tr(w) })).collect::<Vec<_>>(),
+        // (round B: time off in lieu and a wish granted are given elsewhere - the calendar's)
+        "notes": pt::NOTES.iter().filter(|(k, _)| *k != "toil" && *k != "wish").map(|(k, w)| json!({ "key": k, "label": tr(w) })).collect::<Vec<_>>(),
         "frames": pt::RESERVE_FRAMES.iter().map(|(a, b)| json!({ "from": a, "to": b, "time": span(*a, *b) })).collect::<Vec<_>>(),
     });
     let week = match week_duties(s, r) {
@@ -358,6 +369,10 @@ fn view(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                                     let words = pt::NOTES.iter().find(|w| w.0 == n).map(|w| tr(w.1)).unwrap_or_default();
                                     v["note"] = json!(words);
                                     v["note_key"] = json!(n);
+                                }
+                                // (round B: his wish for the day off, open - ★)
+                                if co::pro_wish::marked(&c, id, &date).is_some_and(|w| w.state == co::pro_wish::WishState::Open) {
+                                    v["wish"] = json!(tr("Wants the day off: not decided yet"));
                                 }
                                 v
                             }

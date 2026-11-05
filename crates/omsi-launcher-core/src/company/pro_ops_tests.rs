@@ -805,3 +805,266 @@ fn a_late_duty_gets_its_sick_call_in_the_afternoon_shortly_before_it() {
     assert_eq!(text, ps::CALLED);
     assert_eq!(args.iter().find(|a| a.0 == "min").map(|a| a.1.clone()), Some((start - at).to_string()));
 }
+
+// --- round B (NexiconDK, 5 November 2026): the drivers' wishes, time off in lieu, the week's cost --
+
+#[test]
+fn drivers_send_wishes_now_and_then_the_same_every_time_and_unanswered_they_lapse() {
+    use super::super::pro_wish::{self as pw, WishKind, WishState};
+    let mut c = company();
+    for e in c.staff.iter_mut() {
+        e.satisfaction = 30.0;
+    }
+    // (less content: more often; friendlier: less)
+    let e = c.staff[0].clone();
+    let mut glad = e.clone();
+    (glad.satisfaction, glad.friendliness) = (90.0, 100.0);
+    assert!(pw::chance(&e) > pw::chance(&glad) * 1.5, "{} {}", pw::chance(&e), pw::chance(&glad));
+    let base = c.id.clone();
+    let mut sent = Vec::new();
+    for k in 0..300 {
+        c.id = format!("{base}w{k}");
+        c.planning.ops.wished.clear();
+        let mut again = c.clone();
+        let got = pw::daily(&mut c);
+        assert_eq!(got, pw::daily(&mut again), "the same every time");
+        assert!(pw::daily(&mut c).is_empty(), "once a day");
+        sent.extend(got);
+        if sent.len() >= 3 {
+            break;
+        }
+    }
+    assert!(sent.len() >= 3, "wishes are sent");
+    let w = c.planning.ops.wishes.iter().find(|w| w.id == sent[0]).unwrap().clone();
+    assert_eq!(w.state, WishState::Open);
+    assert!(c.messages.list.iter().any(|m| m.to == super::super::messages::To::Control && pw::texts().contains(&m.text.as_str())));
+    if let WishKind::DayOff { date } = &w.wish {
+        let ahead = dates::between(&c.date, date);
+        assert!((4..=14).contains(&ahead), "{ahead}");
+    }
+    // left open: a day off lapses on its day, the others after a week - less content
+    let s0 = c.employee(w.driver).unwrap().satisfaction;
+    c.date = dates::add(&c.date, 15);
+    pw::lapse(&mut c);
+    let w2 = c.planning.ops.wishes.iter().find(|x| x.id == w.id).unwrap();
+    assert_eq!(w2.state, WishState::Lapsed);
+    assert!(c.employee(w.driver).unwrap().satisfaction < s0);
+    // (an older file: none)
+    let old: Ops = serde_json::from_str("{}").unwrap();
+    assert!(old.wishes.is_empty() && !old.toil_default && old.is_empty());
+}
+
+/// A wish of driver `id` put in the company's list.
+fn wish(c: &mut Company, id: u32, w: super::super::pro_wish::WishKind) -> u32 {
+    c.planning.ops.last_wish += 1;
+    let k = c.planning.ops.last_wish;
+    let sent = c.date.clone();
+    c.planning.ops.wishes.push(super::super::pro_wish::Wish { id: k, driver: id, wish: w, sent, state: Default::default(), decided: None });
+    k
+}
+
+#[test]
+fn a_day_off_granted_frees_the_driver_and_leaves_his_duty_open() {
+    use super::super::pro_wish::{self as pw, WishKind};
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    rota(&mut c, ids[0], ids[1]);
+    let date = "2024-03-06".to_string();
+    let k = wish(&mut c, ids[0], WishKind::DayOff { date: date.clone() });
+    // (marked on his day, and in the popup by his name)
+    assert!(pw::marked(&c, ids[0], &date).is_some());
+    assert_eq!(pw::notes(&c, ids[0], &date, 360, 650), vec![pw::NOTE_DAY_OFF]);
+    let s0 = c.employee(ids[0]).unwrap().satisfaction;
+    assert_eq!(pw::grant(&mut c, k), Ok(Some(date.clone())));
+    assert_eq!(c.employee(ids[0]).unwrap().satisfaction, s0 + pw::GRANTED);
+    assert_eq!(pw::grant(&mut c, k), Err(pw::NO_SUCH_WISH));
+    // free that day: absent, his rota's 1001 open, his day off; he cannot take a duty
+    let e = c.employee(ids[0]).unwrap().clone();
+    assert!(e.absent(&date));
+    let p = day(&c, &date);
+    let ds = duties(&c, &date);
+    assert!(open_duties(&p, &ds).iter().any(|o| o.n == 1001));
+    assert_eq!(driver_day(&c, &e, &p, &ds).is, DayIs::Off);
+    assert_eq!(pt::decided(&c, ids[0], &date).and_then(|d| d.note).as_deref(), Some("wish"));
+    let d = open_duties(&p, &ds).into_iter().find(|o| o.n == 1001).unwrap();
+    let cand = candidates(&c, &p, &d, &|_| 0.0).into_iter().find(|x| x.id == ids[0]).unwrap();
+    assert_eq!(cand.fit, Err(Cannot::DayOff { toil: false }));
+    let sit = Situation { fit: cand.fit.clone(), ..calm() };
+    assert!(matches!(ai_reply(&c, &e, &date, 1001, 360, 650, &sit), Reply::No { why: NoWhy::DayOff, .. }));
+    // (the next day as planned)
+    assert_eq!(driver_of(&c, &day(&c, "2024-03-07"), 1001), Some(Who::Staff(ids[0])));
+    // refused three times in a row: more so
+    let other = ids[2];
+    let mut costs = Vec::new();
+    for _ in 0..3 {
+        let k = wish(&mut c, other, WishKind::Early);
+        let before = c.employee(other).unwrap().satisfaction;
+        pw::refuse(&mut c, k).unwrap();
+        costs.push(before - c.employee(other).unwrap().satisfaction);
+    }
+    assert_eq!(costs, vec![pw::REFUSED, pw::REFUSED, pw::REFUSED + pw::IN_A_ROW]);
+    assert_eq!(pw::refused_in_a_row(&c, other), 3);
+}
+
+#[test]
+fn a_drivers_wishes_change_his_answer_and_being_asked_anyway_annoys_him() {
+    use super::super::pro_wish::{self as pw, WishKind};
+    let mut c = company();
+    let e = c.staff[0].clone();
+    let date = "2024-03-06".to_string();
+    assert_eq!(pw::bias(&c, e.id, &date, 360, 650), 1.0);
+    wish(&mut c, e.id, WishKind::DayOff { date: date.clone() });
+    assert!(pw::bias(&c, e.id, &date, 360, 650) < 0.5);
+    let yes = |c: &Company, d: &str| (3001..3301).filter(|n| ai_reply(c, &e, d, *n, 600, 900, &calm()).yes()).count();
+    assert!(yes(&c, &date) * 2 < yes(&c, "2024-03-07"), "{} {}", yes(&c, &date), yes(&c, "2024-03-07"));
+    // early duties wished: glad of an early one, rather not of a late one
+    let x = c.staff[1].id;
+    wish(&mut c, x, WishKind::Early);
+    assert!(pw::bias(&c, x, &date, 300, 700) > 1.0 && pw::bias(&c, x, &date, 800, 1300) < 1.0);
+    let y = c.staff[2].id;
+    wish(&mut c, y, WishKind::NoSplit);
+    assert!(pw::bias(&c, y, &date, 300, 1100) < 1.0 && pw::bias(&c, y, &date, 300, 700) == 1.0);
+    // asked on the day he wished off: a little less content
+    let s0 = c.employee(e.id).unwrap().satisfaction;
+    ask_part(&mut c, &date, 1001, None, 360, 650, vec![(Asked::Staff { id: e.id }, Some(Reply::No { why: NoWhy::Plans, say: 0 }))], 0, &|_| 0.0).unwrap();
+    assert_eq!(c.employee(e.id).unwrap().satisfaction, s0 - pw::ASKED_ANYWAY);
+}
+
+#[test]
+fn overtime_saved_as_time_off_in_lieu_is_not_paid_and_a_day_of_it_is() {
+    use super::super::pro_toil as ptl;
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    rota(&mut c, ids[0], ids[1]);
+    let date = c.date.clone();
+    let contract = pay::contract_week_minutes(&c);
+    // his week full already: the day's duty is all overtime
+    for e in c.staff.iter_mut() {
+        e.week_paid = contract;
+    }
+    let pieces = [(ids[0], 360, 650)];
+    let mut paid = c.clone();
+    let p1 = pay::day(&mut paid, &date, &pieces);
+    assert!(p1.overtime > 0.0 && p1.saved == 0.0);
+    give(&mut c, &date, 1001, ids[0], None).unwrap();
+    assert!(set_toil(&mut c, &date, 1001, None, ids[0], true));
+    assert!(c.planning.ops.calls[0].toil);
+    let mut saved = c.clone();
+    let p2 = pay::day(&mut saved, &date, &pieces);
+    assert!(p2.cost < p1.cost, "{} {}", p2.cost, p1.cost);
+    assert!((p2.saved - p1.overtime).abs() < 1e-9);
+    let toil = saved.employee(ids[0]).unwrap().toil;
+    assert!((toil - p1.overtime * 60.0).abs() < 1e-6, "{toil}");
+    // (an hourly-paid driver saves none)
+    c.staff.iter_mut().find(|e| e.id == ids[3]).unwrap().employment = Employment::Hourly;
+    assert!(!ptl::can_save(c.employee(ids[3]).unwrap()));
+    assert!(!set_toil(&mut c, &date, 1001, None, ids[3], true));
+    // a day of it: the hours taken, off that day, paid at the normal rate
+    let mut c = saved;
+    c.staff.iter_mut().find(|e| e.id == ids[0]).unwrap().toil = 10.0 * 60.0;
+    let day_m = ptl::day_of(&c, c.employee(ids[0]).unwrap());
+    assert_eq!(day_m, (contract / 5.0).round());
+    let off = "2024-03-06";
+    assert_eq!(ptl::give_day(&mut c, ids[0], off), Ok(day_m));
+    assert_eq!(ptl::give_day(&mut c, ids[0], off), Err(ptl::OFF_ALREADY));
+    let e = c.employee(ids[0]).unwrap().clone();
+    assert!((e.toil - (600.0 - day_m)).abs() < 1e-9 && e.absent(off));
+    let p = day(&c, off);
+    let ds = duties(&c, off);
+    assert_eq!(driver_day(&c, &e, &p, &ds).is, DayIs::Toil);
+    assert!(open_duties(&p, &ds).iter().any(|o| o.n == 1001));
+    for e in c.staff.iter_mut() {
+        (e.week_paid, e.week_due) = (0.0, 0.0);
+    }
+    let mut a = c.clone();
+    let with = pay::day(&mut a, off, &[]).cost;
+    assert!(with > 0, "the day of it is paid");
+    assert_eq!(a.employee(ids[0]).unwrap().week_due, 0.0, "no guarantee for it");
+    // taken back: the hours his again
+    assert!(ptl::take_back(&mut c, ids[0], off));
+    assert!((c.employee(ids[0]).unwrap().toil - 600.0).abs() < 1e-9 && !c.employee(ids[0]).unwrap().absent(off));
+    assert_eq!(ptl::give_day(&mut c, ids[0], "2024-03-01"), Err(ptl::GONE));
+    c.staff.iter_mut().find(|e| e.id == ids[0]).unwrap().toil = 30.0;
+    assert_eq!(ptl::give_day(&mut c, ids[0], off), Err(ptl::TOO_FEW));
+}
+
+#[test]
+fn too_many_hours_of_time_off_in_lieu_make_a_driver_ask_for_them() {
+    use super::super::pro_toil as ptl;
+    let mut c = company();
+    let id = c.staff[0].id;
+    c.staff[0].toil = 40.0 * 60.0;
+    let base = c.id.clone();
+    let mut asked = false;
+    for k in 0..60 {
+        c.id = format!("{base}t{k}");
+        let s0 = c.employee(id).unwrap().satisfaction;
+        let got = ptl::daily(&mut c);
+        assert_eq!(c.employee(id).unwrap().satisfaction, s0 - ptl::TOO_MANY_COST, "too many: less content");
+        if let Some((who, h)) = got.first() {
+            assert_eq!((*who, h.as_str()), (id, "40"));
+            asked = true;
+            break;
+        }
+    }
+    assert!(asked);
+    assert!(c.messages.list.iter().any(|m| m.text == ptl::ASKS));
+    // (at most once a week)
+    for k in 0..30 {
+        c.id = format!("{base}u{k}");
+        assert!(ptl::daily(&mut c).is_empty());
+    }
+}
+
+#[test]
+fn the_evening_the_night_and_the_weekend_pay_a_supplement_with_rosterflow_pro() {
+    // (dates::weekday: 0 Monday ... 5 Saturday, 6 Sunday)
+    assert_eq!(pay::supplement_rate(0, 10 * 60), 0.0);
+    assert_eq!(pay::supplement_rate(0, 19 * 60), pay::EVENING);
+    assert_eq!(pay::supplement_rate(0, 23 * 60 + 30), pay::NIGHT);
+    assert_eq!(pay::supplement_rate(0, 5 * 60), pay::NIGHT);
+    assert_eq!(pay::supplement_rate(5, 13 * 60), 0.0);
+    assert_eq!(pay::supplement_rate(5, 15 * 60), pay::SATURDAY);
+    assert_eq!(pay::supplement_rate(6, 10 * 60), pay::SUNDAY);
+    // (past midnight: the next day's - Saturday night into Sunday)
+    assert_eq!(pay::supplement_rate(5, 24 * 60 + 60), pay::SUNDAY);
+    // an hour of the evening is 9 minutes more; overlapping pieces once
+    assert!((pay::supplement_minutes(0, &[(18 * 60, 19 * 60)]) - 9.0).abs() < 1e-9);
+    assert!((pay::supplement_minutes(0, &[(18 * 60, 19 * 60), (18 * 60 + 30, 19 * 60)]) - 9.0).abs() < 1e-9);
+    // paid with RosterFlow Pro only
+    let c = company();
+    let id = c.staff[0].id;
+    let mut pro = c.clone();
+    let evening = pay::day(&mut pro, "2024-03-04", &[(id, 15 * 60, 21 * 60)]).cost;
+    let mut day_only = c.clone();
+    let morning = pay::day(&mut day_only, "2024-03-04", &[(id, 8 * 60, 14 * 60)]).cost;
+    assert!(evening > morning, "{evening} {morning}");
+    let mut std = c.clone();
+    autopilot::set_planner(&mut std, Planner::RosterFlow);
+    assert!(!super::super::pro_duties::on(&std));
+    let a = pay::day(&mut std.clone(), "2024-03-04", &[(id, 15 * 60, 21 * 60)]).cost;
+    let b = pay::day(&mut std, "2024-03-04", &[(id, 8 * 60, 14 * 60)]).cost;
+    assert_eq!(a, b, "no supplement without RosterFlow Pro");
+}
+
+#[test]
+fn what_a_week_costs_as_planned() {
+    use super::super::pro_cost::{self as pcost, WeekCost};
+    let c = company();
+    let e = c.staff[0].clone();
+    let hour = pay::hour_wage(&e);
+    let k = contract_minutes(&c, &e).unwrap();
+    // under his contract: the guarantee pays the week
+    let w = pcost::week(&c, &e, k - 120.0, &[], 0.0, 0.0);
+    assert_eq!(w, WeekCost { wages: (hour * k / 60.0).round() as Cents, overtime: 0, supplements: 0, saved: 0.0 });
+    // two hours over it: overtime at its rate; saved as time off in lieu: not paid
+    let o = pcost::week(&c, &e, k + 120.0, &[], 0.0, 0.0);
+    assert_eq!(o.overtime, (hour * 120.0 * econ_uk::OVERTIME_RATE / 60.0).round() as Cents);
+    let s = pcost::week(&c, &e, k + 120.0, &[], 0.0, 480.0);
+    assert_eq!((s.overtime, s.saved), (0, 120.0));
+    assert!(s.wages < o.wages);
+    // a Sunday's pieces: supplements
+    let sun = pcost::week(&c, &e, k, &[(6, vec![(8 * 60, 14 * 60)])], 0.0, 0.0);
+    assert_eq!(sun.supplements, (hour * 360.0 * pay::SUNDAY / 60.0).round() as Cents);
+    assert_eq!(sun.wages, w.wages + sun.supplements);
+}

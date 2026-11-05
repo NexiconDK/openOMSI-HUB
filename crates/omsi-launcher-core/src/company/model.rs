@@ -677,6 +677,39 @@ pub struct Employee {
     /// (`staff::change_employment`, `staff::employment_due`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub employment_next: Option<EmploymentChange>,
+    /// (NexiconDK, 5 November 2026: RosterFlow Pro, round B) The days they are free besides their
+    /// rota's: a wish of theirs granted, a day of time off in lieu (`pro_wish`, `pro_toil`) - kept
+    /// off duty then (`absent`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub free_days: Vec<FreeDay>,
+    /// The overtime saved as time off in lieu ("afspadsering"), in minutes (`pro_toil`).
+    #[serde(default, skip_serializing_if = "is_nothing")]
+    pub toil: f64,
+}
+
+fn is_nothing(x: &f64) -> bool {
+    *x == 0.0
+}
+
+/// (NexiconDK, 5 November 2026) A day a driver is free besides their rota's (`Employee::free_days`).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct FreeDay {
+    pub date: String,
+    pub why: FreeWhy,
+    /// A day of time off in lieu: the minutes of it taken from the saved hours (paid as normal
+    /// hours that day: `pay::day`).
+    #[serde(default, skip_serializing_if = "is_nothing")]
+    pub minutes: f64,
+}
+
+/// Why a driver is free on a `FreeDay`.
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum FreeWhy {
+    /// Their wish for the day off granted (`pro_wish`).
+    Wish,
+    /// Time off in lieu of overtime saved (`pro_toil`).
+    Toil,
 }
 
 /// (NexiconDK, 4 November 2026) How a driver is employed (RosterFlow Pro's plan, step 1
@@ -857,7 +890,13 @@ impl Employee {
 
     pub fn absent(&self, today: &str) -> bool {
         let until = |u: &Option<String>| u.as_deref().is_some_and(|u| dates::between(today, u) >= 0);
-        until(&self.sick_until) || self.on_holiday(today).is_some() || until(&self.training_until)
+        until(&self.sick_until) || self.on_holiday(today).is_some() || until(&self.training_until) || self.free_on(today).is_some()
+    }
+
+    /// (NexiconDK, 5 November 2026) Their free day of `date` besides their rota's: a wish granted,
+    /// time off in lieu (`free_days`).
+    pub fn free_on(&self, date: &str) -> Option<&FreeDay> {
+        self.free_days.iter().find(|f| f.date == date)
     }
 
     /// The last day of the holiday they are on at `date`: one begun before the requests

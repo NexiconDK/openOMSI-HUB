@@ -178,7 +178,9 @@ pub struct Exception {
 }
 
 /// The reasons of an exception, and their words.
-pub const NOTES: [(&str, &str); 4] = [("", "Day off"), ("holiday", "On holiday"), ("sick", "Ill"), ("swap", "Swapped")];
+/// (round B: "toil" a day of time off in lieu, "wish" a wish's day off granted - both kept on the
+/// driver, `model::FreeDay`, and shown as exceptions: `decided`)
+pub const NOTES: [(&str, &str); 6] = [("", "Day off"), ("holiday", "On holiday"), ("sick", "Ill"), ("swap", "Swapped"), ("toil", "Time off in lieu"), ("wish", "Wish granted")];
 
 /// The company's rotas and the exceptions of their drivers.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
@@ -267,6 +269,13 @@ pub fn decided(c: &Company, id: u32, date: &str) -> Option<Decided> {
     let row = row_on(t, start, date)?;
     let planned = t.rows[row].days[day_of(date)];
     let ex = c.planning.rotas.exceptions.iter().find(|x| x.driver == id && x.date == date);
+    // (round B: a free day of his - time off in lieu, a wish granted - as an exception: off)
+    if ex.is_none() {
+        if let Some(f) = c.employee(id).and_then(|e| e.free_on(date)) {
+            let note = if f.why == super::model::FreeWhy::Toil { "toil" } else { "wish" };
+            return Some(Decided { turnus: t.id, row, cell: Cell::Off, planned, note: Some(note.to_string()) });
+        }
+    }
     Some(Decided { turnus: t.id, row, cell: ex.map_or(planned, |x| x.cell), planned, note: ex.map(|x| x.note.clone()) })
 }
 
@@ -766,7 +775,8 @@ pub fn set_exception(c: &mut Company, driver: u32, date: &str, cell: Option<(Cel
     let ex = &mut c.planning.rotas.exceptions;
     ex.retain(|x| !(x.driver == driver && x.date == date));
     if let Some((cell, note)) = cell {
-        let note = if NOTES.iter().any(|n| n.0 == note) { note } else { String::new() };
+        // (time off in lieu and a wish granted are the driver's own: `model::FreeDay`)
+        let note = if NOTES[..4].iter().any(|n| n.0 == note) { note } else { String::new() };
         ex.push(Exception { driver, date: date.to_string(), cell, note });
         ex.sort_by(|a, b| (a.date.as_str(), a.driver).cmp(&(b.date.as_str(), b.driver)));
     }

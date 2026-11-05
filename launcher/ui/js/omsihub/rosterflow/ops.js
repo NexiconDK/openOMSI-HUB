@@ -13,6 +13,11 @@
 //   answer in a box of its own (green yes, red no); when nobody can or will: cut the duty, its
 //   parts each with one driver suggested.
 //   A driver who said no today already wears it: irritated, angry (`pro_ops::Mood`).
+// * Round B (NexiconDK, 5 November 2026): the drivers' wishes - "Ønsker (N)" in the toolbar, ★ on
+//   their days, a note by their name in the popup -, time off in lieu - overtime paid or saved
+//   when given, a day of it from the day's list, "afsp." under a name -, and what the week costs
+//   above the calendar and what each driver costs extra for a duty (`pro_wish`, `pro_toil`,
+//   `pro_cost`).
 // * Daglig drift: the day's duties without a driver, with the day's frames and who is free; "Find a
 //   driver ›" opens the same popup.
 //
@@ -33,11 +38,20 @@ const setO = (patch) => setRf((r) => ({ ops: { ...(r.ops || {}), ...(typeof patc
 /** The popup closed. */
 const closePop = () => setO({ pop: false, n: null, given: null });
 
-/** Escape: the popup closed first. */
+/** Escape: the popup closed first (the wishes' or the day's). */
 export function opsEscape() {
+  if (st().wishes) {
+    setO({ wishes: false });
+    return true;
+  }
   if (!st().pop) return false;
   closePop();
   return true;
+}
+
+/** An act that left a duty open (a day off given): its who-can-drive opened in the popup. */
+function openFreed(r) {
+  if (r?.open) setO({ wishes: false, pop: true, date: r.open.date, n: r.open.n, given: null });
 }
 
 /** A command's answer, asked again when what it shows or the company changed. */
@@ -108,6 +122,7 @@ function Action({ x, onAsk, onGive, onSet, onBack, onAnyway }) {
 
 /** Given: a whole duty back to the day's list, with a line saying so (a part: the cut view stays). */
 async function giveIt(n, part, name, args) {
+  // (round B: a driver's overtime paid or saved as time off in lieu - `args.toil`)
   const r = await oAct('give', args);
   if (r?.edited && part == null) setO({ n: null, given: tr('Duty %{n} is given to %{name}', { n, name }) });
 }
@@ -117,11 +132,17 @@ async function giveIt(n, part, name, args) {
 function Row({ v, n, part, x }) {
   const base = { date: v.date, n, part };
   const [sure, setSure] = useState(false);
-  const give = (anyway) => giveIt(n, part, x.name, { ...base, driver: x.id, swap: x.answer?.swap || null, anyway });
+  const [save, setSave] = useState(null);
+  const toil = x.toil ? (save ?? x.toil.on) : null;
+  const give = (anyway) => giveIt(n, part, x.name, { ...base, driver: x.id, swap: x.answer?.swap || null, anyway, toil });
+  const sub = x.toil ? (toil ? x.toil.save : x.toil.pay) : x.sub;
+  const giving = ['set', 'give', 'set_anyway', 'give_anyway'].includes(x.action);
   return html`<div class=${'bx-row' + (x.breach ? ' breach' : '')}>
     <div class="bx-grow">
       <div class="bx-name">${x.name}${x.mood && html` <span class=${'bx-mood ' + x.mood.key}>${x.mood.text}</span>`}${x.extra && html` <span class="bx-extra">${x.extra}</span>`}</div>
-      <div class=${'bx-sub' + (x.over ? ' op-over' : '')}>${x.sub}</div>
+      <div class=${'bx-sub' + (x.over && !toil ? ' op-over' : '') + (toil ? ' bx-saved' : '')}>${sub}</div>
+      ${x.wish && x.wish.map((w) => html`<div class="bx-wish">${w}</div>`)}
+      ${x.toil && giving && html`<span class="cl-seg bx-toil">${x.toil.options.map(([k, l]) => html`<button type="button" class=${(k === 'save') === !!toil ? 'on' : ''} onClick=${() => setSave(k === 'save')}>${l}</button>`)}</span>`}
       ${x.note && html`<div class="bx-sub">${x.note}</div>`}
       ${x.breach && x.breach.map((b) => html`<div class="bx-breach">${b}</div>`)}
       <${Answer} a=${x.answer} />
@@ -166,6 +187,13 @@ function Missing({ v, pop }) {
       </div>
       <button type="button" class="bx-btn blue" onClick=${() => setO({ date: v.date, n: d.n, pop: true, given: null })}>${tr('Find a driver ›')}</button>
     </div>`)}
+    ${v.toil?.length > 0 && html`<div class="bx-group">${v.toil_caps}</div>
+      ${v.toil.map((t) => html`<div class="bx-row">
+        <div class="bx-grow"><div class="bx-name">${t.name} <span class="bx-time">chf. ${t.nr}</span></div><div class=${'bx-sub' + (t.on ? ' bx-saved' : '')}>${t.what}</div></div>
+        ${t.on
+          ? html`<button type="button" class="rf-link" onClick=${() => oAct('toil_back', { date: v.date, driver: t.id })}>${tr('Take it back')}</button>`
+          : html`<button type="button" class="bx-btn line" onClick=${() => oAct('toil_day', { date: v.date, driver: t.id }).then(openFreed)}>${t.take}</button>`}
+      </div>`)}`}
   </div>`;
 }
 
@@ -257,6 +285,46 @@ function Pop({ date }) {
   </div>`;
 }
 
+/** The drivers' wishes in a popup (round B): each "Grant" or "Refuse"; a day off granted that
+ * leaves the driver's duty open opens who can drive it. */
+function Wishes() {
+  const [v] = useView('rf_wishes', {}, []);
+  const close = () => setO({ wishes: false });
+  const decide = async (act, w) => {
+    let r;
+    try {
+      r = await rfCmd('rf_wish_act', { act, wish: w.id });
+    } catch (e) {
+      say(e.message, true);
+      return;
+    }
+    after(r);
+    bump();
+    openFreed(r);
+  };
+  return html`<div class="rf-sheetdim op-popdim" onMouseDown=${(e) => e.target === e.currentTarget && close()}>
+    <div class="rf-help op-pop" role="dialog" aria-modal="true">
+      <div class="head"><div class="pro-intro-mark"><${Icon} name="star" size=${20} /></div>
+        <div><b>${v?.title || tr('Reading the timetable…')}</b><span>${v?.sub || ''}</span></div>
+        <button type="button" title=${tr('Close')} onClick=${close}><${Icon} name="close" size=${20} /></button></div>
+      <div class="op-popbody"><div class="bx">
+        ${v?.list?.length === 0 && html`<div class="bx-allok"><${Icon} name="check" size=${16} /> ${v.sub}</div>`}
+        ${(v?.list || []).map((w) => html`<div class="bx-row">
+          <div class="bx-grow">
+            <div class="bx-name">${w.name} <span class="bx-time">chf. ${w.nr} · ${w.chip}</span></div>
+            <div class="bx-wish big">${w.text}</div>
+            ${w.leaves && html`<div class="bx-breach">${w.leaves}</div>`}
+            <div class="bx-sub">${w.sent}</div>
+          </div>
+          <span class="bx-surebtns"><button type="button" class="bx-btn line" onClick=${() => decide('refuse', w)}>${tr('Refuse')}</button>
+          <button type="button" class="bx-btn green" onClick=${() => decide('grant', w)}>${tr('Grant')}</button></span>
+        </div>`)}
+        ${v?.note && html`<div class="bx-sub" style="margin-top:10px">${v.note}</div>`}
+      </div></div>
+    </div>
+  </div>`;
+}
+
 // --- 5 Kalender --------------------------------------------------------------------------------------
 
 const SPANS = ['week', 'two', 'month'];
@@ -266,7 +334,7 @@ function Days({ v, x, o }) {
   const out = [];
   for (let i = 0; i < x.cells.length; i++) {
     const c = x.cells[i];
-    if (c.kind === 'ill' || c.kind === 'holiday') {
+    if (c.kind === 'ill' || c.kind === 'holiday' || c.kind === 'toil') {
       let j = i;
       while (j + 1 < x.cells.length && x.cells[j + 1].kind === c.kind) j++;
       const label = j > i ? `${c.label} ${v.days[i].name} – ${v.days[j].name}` : c.label;
@@ -275,12 +343,13 @@ function Days({ v, x, o }) {
       continue;
     }
     const past = v.days[i].past ? ' past' : '';
+    const star = c.wish && html`<i class="cl-star" title=${c.wish}>★</i>`;
     if (c.kind === 'off' || c.kind === 'away') {
-      out.push(html`<div class=${'cl-cell off' + past}>–</div>`);
+      out.push(html`<div class=${'cl-cell off' + past + (c.wish ? ' wish' : '')} title=${c.wish || ''}>${c.label === '–' ? '–' : html`<b>${c.label}</b>`}${star}</div>`);
       continue;
     }
-    out.push(html`<button type="button" class=${'cl-cell ' + c.cls + past} title=${c.tip || ''} onClick=${() => setO({ date: v.days[i].date, n: null, pop: true, given: null })}>
-      <b>${c.label}</b>${c.sub && html`<span>${c.sub}</span>`}
+    out.push(html`<button type="button" class=${'cl-cell ' + c.cls + past + (c.wish ? ' wish' : '')} title=${c.wish || c.tip || ''} onClick=${() => setO({ date: v.days[i].date, n: null, pop: true, given: null })}>
+      <b>${c.label}</b>${c.sub && html`<span>${c.sub}</span>`}${star}
     </button>`);
   }
   return out;
@@ -309,8 +378,10 @@ export function CalendarTab() {
       <span class="cl-seg">${['Week', '14 days', 'Month'].map((l, k) => html`<button type="button" class=${(o.span || 'week') === SPANS[k] ? 'on' : ''} onClick=${() => setO({ span: SPANS[k] })}>${tr(l)}</button>`)}</span>
       <span class="cl-seg">${v.kinds.map(([k, label]) => html`<button type="button" class=${(o.kind || 'all') === k ? 'on' : ''} onClick=${() => setO({ kind: k })}>${label}</button>`)}</span>
       <span class="grow"></span>
+      ${v.wishes && html`<button type="button" class=${'rf-btn cl-wishes' + (v.wishes.open ? ' has' : '')} onClick=${() => setO({ wishes: true })}><${Icon} name="star" size=${16} /><span>${v.wishes.label}</span></button>`}
       <label class="cl-search"><${Icon} name="search" size=${16} /><input type="text" value=${o.q || ''} placeholder=${tr('Search a driver')} onInput=${(e) => setO({ q: e.currentTarget.value })} /></label>
     </div>
+    ${v.cost && html`<div class="cl-cost" title=${v.cost.tip}><${Icon} name="payments" size=${16} /><b>${v.cost.parts[0]}</b>${v.cost.parts.slice(1).map((x) => html`<span>· ${x}</span>`)}</div>`}
     <div class="cl-main">
       <div class="cl-cal">
         <div class="cl-grid" style=${'grid-template-columns:' + cols}>
@@ -323,7 +394,7 @@ export function CalendarTab() {
           </button>`)}
           <div></div>
           ${groups.map(([g, xs]) => html`<div class="cl-group" style=${`grid-column:1 / span ${v.days.length + 2}`}>${v.groups[g]} · ${xs.length}</div>
-            ${xs.map((x) => html`<div class="cl-name"><b>${x.name}</b><span>chf. ${x.nr} · ${x.what}</span></div>
+            ${xs.map((x) => html`<div class="cl-name"><b>${x.name}</b><span>chf. ${x.nr} · ${x.what}</span>${x.toil && html`<span class="cl-toil">${x.toil}</span>`}</div>
               <${Days} v=${v} x=${x} o=${o} />
               <div class="cl-hours">${x.hours.map((h) => html`<div title=${h.label}><b class=${h.over ? 't-warn' : ''}>${tr('%{h} h', { h: h.h })}</b>${h.of ? html` <i>${tr('of %{h}', { h: h.of })}</i>` : null}
                 ${h.pct != null && html`<span class="cl-pct"><i class=${h.over ? 'over' : ''} style=${`width:${h.pct}%`}></i></span>`}</div>`)}</div>`)}`)}
@@ -332,7 +403,8 @@ export function CalendarTab() {
         <div class="cl-legend">${v.legend.map(([k, l]) => html`<span><i class=${'cl-cell ' + k}></i>${l}</span>`)}</div>
       </div>
     </div>
-    ${o.pop && html`<${Pop} date=${day} />`}
+    ${o.pop && html`<${Pop} date=${o.date || day} />`}
+    ${o.wishes && html`<${Wishes} />`}
   </div>`;
 }
 

@@ -19,6 +19,15 @@
 //! have no guarantee, only the hours worked - at least three a day called in, without the duty's
 //! floor - at 10 % more an hour, overtime above a full week. The bus company's week begins on
 //! Sunday: the guarantee is settled on Saturday night (`week_ends`).
+//!
+//! (NexiconDK, 5 November 2026: RosterFlow Pro, round B) With RosterFlow Pro the planner the hours
+//! of the evening, the night and the weekend pay a supplement (`supplement_rate`: Danish-style -
+//! evening 18-23 15 %, night 23-06 25 %, Saturday from 14:00 25 %, Sunday all day 35 %, the highest
+//! for each minute; a public holiday is not known to the game and pays as its weekday); the
+//! overtime of a duty given as time off in lieu (`pro_ops::Call::toil`) is not paid but saved
+//! (`Employee::toil`, hour for hour), and a day of time off in lieu (`model::FreeDay`) pays its
+//! hours at the normal rate from the saved ones (`pro_toil`). A company planning otherwise keeps
+//! the pay above.
 
 use super::dates;
 use super::econ_uk;
@@ -172,6 +181,71 @@ fn away_paid_otherwise(e: &Employee, date: &str) -> bool {
     e.sick_until.as_deref().is_some_and(|u| dates::between(date, u) >= 0) || e.on_holiday(date).is_some()
 }
 
+// --- RosterFlow Pro: supplements, time off in lieu (round B) ------------------------------------
+
+/// The supplements on an hour's pay (shares of it), by when it is worked.
+pub const EVENING: f64 = 0.15;
+pub const NIGHT: f64 = 0.25;
+pub const SATURDAY: f64 = 0.25;
+pub const SUNDAY: f64 = 0.35;
+
+/// The supplement on minute `m` of a day (0 = midnight; past 24:00 the next day's) of weekday
+/// `weekday` (`dates::weekday`: 0 Monday ... 6 Sunday): the highest of evening (18-23), night
+/// (23-06), Saturday from 14:00, Sunday all day.
+pub fn supplement_rate(weekday: u32, m: i32) -> f64 {
+    let wd = (weekday as i32 + m.div_euclid(1440)).rem_euclid(7);
+    let m = m.rem_euclid(1440);
+    let mut r: f64 = 0.0;
+    if (18 * 60..23 * 60).contains(&m) {
+        r = r.max(EVENING);
+    }
+    if !(6 * 60..23 * 60).contains(&m) {
+        r = r.max(NIGHT);
+    }
+    if wd == 5 && m >= 14 * 60 {
+        r = r.max(SATURDAY);
+    }
+    if wd == 6 {
+        r = r.max(SUNDAY);
+    }
+    r
+}
+
+/// The supplements of a day's pieces of work (minutes of the day) on weekday `weekday`: the
+/// minutes worked, each by its supplement (`supplement_rate`) - an hour of 15 % is 9 minutes.
+pub fn supplement_minutes(weekday: u32, pieces: &[(i32, i32)]) -> f64 {
+    let mut ps: Vec<(i32, i32)> = pieces.iter().copied().filter(|x| x.1 > x.0).collect();
+    ps.sort_unstable();
+    let mut done = i32::MIN;
+    let mut out = 0.0;
+    for (a, b) in ps {
+        // (pieces that overlap counted once; by quarters of an hour is near enough and quick)
+        let mut m = a.max(done);
+        while m < b {
+            let step = (b - m).min(15);
+            out += supplement_rate(weekday, m) * step as f64;
+            m += step;
+        }
+        done = done.max(b);
+    }
+    out
+}
+
+/// The supplements of a day (`date`) of pieces `pieces`, in cents of driver `e`'s wages (without
+/// the on-costs): none when RosterFlow Pro does not plan the company.
+pub fn supplement_cost(c: &Company, e: &Employee, date: &str, pieces: &[(i32, i32)]) -> f64 {
+    if !super::pro_duties::on(c) {
+        return 0.0;
+    }
+    let wd = dates::parse(date).map(dates::weekday).unwrap_or(0);
+    hour_wage(e) * supplement_minutes(wd, pieces) / 60.0
+}
+
+/// Driver `e`'s day of time off in lieu on `date`: its minutes (paid from the saved hours).
+pub fn toil_day(e: &Employee, date: &str) -> Option<f64> {
+    e.free_on(date).filter(|f| f.why == super::model::FreeWhy::Toil).map(|f| f.minutes)
+}
+
 /// What the drivers' pay of a day came to (the day's report shows it).
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Paid {
@@ -181,6 +255,8 @@ pub struct Paid {
     pub guaranteed: f64,
     /// What it cost, with the on-costs and allowances.
     pub cost: Cents,
+    /// (RosterFlow Pro) Hours of overtime saved as time off in lieu, not paid (`Call::toil`).
+    pub saved: f64,
 }
 
 /// What a driver's minutes cost with the on-costs and allowances (`over`: of them overtime).
@@ -203,10 +279,20 @@ pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
     let mut drivers = 0;
     // (RosterFlow Pro's step 3: the frame a driver's rota gives him that day - `pro_turnus`)
     let framed: Vec<(u32, Option<Frame>)> = c.staff.iter().filter_map(|e| super::pro_turnus::decides_frame(c, e.id, date).map(|f| (e.id, f))).collect();
+    // (RosterFlow Pro, round B: the supplements, the overtime of a duty given as time off in lieu
+    // saved, a day of time off in lieu paid from the saved hours)
+    let pro = super::pro_duties::on(c);
+    let saving: Vec<u32> = if pro { c.planning.ops.calls.iter().filter(|x| x.date == date && x.toil).map(|x| x.driver).collect() } else { Vec::new() };
+    let wd = dates::parse(date).map(dates::weekday).unwrap_or(0);
     for e in c.staff.iter_mut().filter(|e| staff::drives(e) && e.employed_on(date)) {
         let mine: Vec<(i32, i32)> = pieces.iter().filter(|x| x.0 == e.id).map(|x| (x.1, x.2)).collect();
         // (NexiconDK, 4 November 2026: by their employment - `day_minutes`)
-        let away = away_paid_otherwise(e, date);
+        let toil = if pro { toil_day(e, date) } else { None };
+        let away = away_paid_otherwise(e, date) || toil.is_some();
+        if let Some(m) = toil.filter(|m| *m > 0.0) {
+            cost += cost_of(e, m, 0.0);
+            out.hours += m / 60.0;
+        }
         let (paid, due, contract) = day_minutes(&p, e, weekday, full, away, &mine);
         let paid = framed_paid(&p, e, away, framed.iter().find(|x| x.0 == e.id).map(|x| x.1), &mine, paid);
         e.week_due += due;
@@ -216,7 +302,17 @@ pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
         let before = e.week_paid;
         let after = before + paid;
         let over = if overtime { (after - contract).max(0.0) - (before - contract).max(0.0) } else { 0.0 };
-        cost += cost_of(e, paid, over);
+        if pro {
+            cost += staff::hourly(e.wage) * rate_of(e) * supplement_minutes(wd, &mine) / 60.0 * (1.0 + EMPLOYER_SHARE);
+        }
+        if over > 0.0 && saving.contains(&e.id) && matches!(e.employment, Employment::FullTime | Employment::PartTime { .. }) {
+            // (saved: the overtime's hours not paid now, his to take off later)
+            cost += cost_of(e, paid - over, 0.0);
+            e.toil += over;
+            out.saved += over / 60.0;
+        } else {
+            cost += cost_of(e, paid, over);
+        }
         e.week_paid = after;
         out.hours += paid / 60.0;
         out.overtime += over / 60.0;

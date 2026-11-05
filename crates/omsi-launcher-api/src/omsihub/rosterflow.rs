@@ -241,7 +241,7 @@ fn change_of(cmd: &str, args: &Value) -> Option<live::Kind> {
         },
         "rf_roster_act" if !what.starts_with("fold") => Some(live::Kind::Roster),
         "rf_turnus_act" => Some(live::Kind::Roster),
-        "rf_ops_act" => Some(live::Kind::Roster),
+        "rf_ops_act" | "rf_wish_act" => Some(live::Kind::Roster),
         "rf_tp_act" => Some(live::Kind::Timetable),
         _ => None,
     }

@@ -48,6 +48,14 @@ pub struct Call {
     pub part: Option<u8>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub pieces: Vec<PieceKey>,
+    /// (NexiconDK, 5 November 2026: round B) Its overtime saved as time off in lieu, not paid
+    /// (`set_toil`, `pay::day`).
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub toil: bool,
+}
+
+fn is_false(x: &bool) -> bool {
+    !*x
 }
 
 /// Who is asked.
@@ -80,6 +88,8 @@ pub enum NoWhy {
     Annoyed,
     /// Angry: he said no twice today already (`Mood::Angry`).
     Angry,
+    /// (round B) His day off: a wish granted, time off in lieu (`model::FreeDay`).
+    DayOff,
 }
 
 /// A driver's answer.
@@ -230,6 +240,24 @@ pub struct Ops {
     /// The owner's fine for a breach of the rest rules off the server (cents; `pro_rest::fine`).
     #[serde(skip_serializing_if = "is_zero")]
     pub rest_fine: Cents,
+    /// (NexiconDK, 5 November 2026: round B) The drivers' wishes (`pro_wish`), the last number
+    /// given one, and the company's day they were last drawn for.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub wishes: Vec<super::pro_wish::Wish>,
+    #[serde(skip_serializing_if = "is_none_u32")]
+    pub last_wish: u32,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub wished: String,
+    /// Who asked for their time off in lieu lately (`pro_toil::daily`), and whether overtime is
+    /// saved as time off in lieu unless the player chooses otherwise (the company's setting).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub toil_asked: Vec<super::pro_rest::Extra>,
+    #[serde(skip_serializing_if = "is_false")]
+    pub toil_default: bool,
+}
+
+fn is_none_u32(x: &u32) -> bool {
+    *x == 0
 }
 
 fn is_zero(x: &Cents) -> bool {
@@ -238,7 +266,7 @@ fn is_zero(x: &Cents) -> bool {
 
 impl Ops {
     pub fn is_empty(&self) -> bool {
-        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty() && self.sick.is_empty() && self.extras.is_empty() && self.grumbled.is_empty() && self.rest_fine == 0
+        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty() && self.sick.is_empty() && self.extras.is_empty() && self.grumbled.is_empty() && self.rest_fine == 0 && self.wishes.is_empty() && self.last_wish == 0 && self.wished.is_empty() && self.toil_asked.is_empty() && !self.toil_default
     }
 }
 
@@ -329,6 +357,8 @@ pub enum DayIs {
     Off,
     Ill,
     Holiday,
+    /// (round B) A day of time off in lieu (`model::FreeDay`; a wish's day off granted is `Off`).
+    Toil,
     /// Not employed that day (not yet, or gone).
     Away,
 }
@@ -369,6 +399,10 @@ pub fn driver_day(c: &Company, e: &Employee, dp: &DayPlan, duties: &[ProDuty]) -
             DayIs::Ill
         } else if holiday || note.as_deref() == Some("holiday") {
             DayIs::Holiday
+        } else if pay::toil_day(e, date).is_some() {
+            DayIs::Toil
+        } else if e.free_on(date).is_some() {
+            DayIs::Off
         } else if let Some((from, to)) = frame {
             DayIs::Frame { from, to }
         } else {
@@ -639,6 +673,7 @@ pub fn words(r: &Reply, name: &dyn Fn(u32) -> String) -> (String, Vec<(&'static 
             NoWhy::Long => (SAY_LONG.into(), Vec::new()),
             NoWhy::Annoyed => (pick(&SAY_ANNOYED, *say), Vec::new()),
             NoWhy::Angry => (pick(&SAY_ANGRY, *say), Vec::new()),
+            NoWhy::DayOff => (SAY_DAY_OFF.into(), Vec::new()),
         },
         Reply::Grudging { say } => (pick(&SAY_GRUDGING, *say), Vec::new()),
         Reply::Early { from, say } => (pick(&SAY_EARLY, *say), vec![("time", time(*from))]),
@@ -651,6 +686,8 @@ pub fn words(r: &Reply, name: &dyn Fn(u32) -> String) -> (String, Vec<(&'static 
 
 /// What "no answer" says.
 pub const SAY_SILENT: &str = "No answer.";
+/// (round B) A driver on his day off (a wish granted, time off in lieu).
+pub const SAY_DAY_OFF: &str = "That's my day off - I'm not coming in.";
 
 /// An AI driver's answer to being asked for duty `n` of `date` (signing on `start`, off `end`),
 /// in a human way: the same for the same company, day, duty and driver (`Rng`), from his
@@ -680,6 +717,7 @@ pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: 
     match &s.fit {
         Err(Cannot::Ill { .. }) => return no(NoWhy::Ill),
         Err(Cannot::Holiday { .. }) => return no(NoWhy::Holiday),
+        Err(Cannot::DayOff { .. }) => return no(NoWhy::DayOff),
         Err(Cannot::NotDriver | Cannot::NotEmployed) => return no(NoWhy::Plans),
         Err(Cannot::WeekDone { .. }) => return no(NoWhy::Tired),
         Err(Cannot::Lacks(_)) => return no(NoWhy::Licence),
@@ -724,6 +762,8 @@ pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: 
     if e.employment == Employment::Hourly {
         p += 0.25 * (1.0 - (s.week / pay::contract_week_minutes(c)).min(1.0));
     }
+    // (round B: his wishes - the day off he asked for, early duties, no split duty, more hours)
+    p *= super::pro_wish::bias(c, e.id, date, start, end);
     if irritated {
         return if moody.chance(p.clamp(0.08, 0.95) * IRRITATED_YES) { Reply::Grudging { say } } else { no(NoWhy::Annoyed) };
     }
@@ -909,6 +949,8 @@ pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i3
                 Mood::Irritated { .. } => IRRITATED_COST,
                 Mood::Calm => 0.0,
             };
+            // (round B: asked on the day he wished to have off - it annoys him a little)
+            let cost = cost + if super::pro_wish::day_off_wished(c, id, date).is_some() { super::pro_wish::ASKED_ANYWAY } else { 0.0 };
             if let Some(e) = c.staff.iter_mut().find(|e| e.id == id) {
                 e.satisfaction = (e.satisfaction - cost).clamp(0.0, 100.0);
             }
@@ -992,7 +1034,7 @@ pub fn give_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver: 
     let set = |c: &mut Company, n: u32, part: Option<u8>, pieces: Vec<PieceKey>, driver: u32| {
         let game = super::clock::now(c);
         c.planning.ops.calls.retain(|x| !(x.date == date && x.n == n && x.part == part));
-        c.planning.ops.calls.push(Call { date: date.to_string(), n, driver, part, pieces });
+        c.planning.ops.calls.push(Call { date: date.to_string(), n, driver, part, pieces, toil: false });
         for a in c.planning.ops.asks.iter_mut().filter(|a| a.date == date && a.n == n && a.part == part) {
             a.shut(game);
         }
@@ -1028,6 +1070,19 @@ pub fn give_asked(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver:
         super::messages::post(c, super::messages::To::Driver { employee: id }, super::messages::Priority::Info, super::messages::DUTY_TAKEN, args, None);
     }
     Ok(())
+}
+
+/// (round B) The overtime of duty `n` of `date` (`part`) given driver `driver` saved as time off
+/// in lieu (`toil`) or paid: only a permanent driver's (full or part time). Whether it holds.
+pub fn set_toil(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver: u32, toil: bool) -> bool {
+    let can = c.employee(driver).is_some_and(super::pro_toil::can_save);
+    match c.planning.ops.calls.iter_mut().find(|x| x.date == date && x.n == n && x.part == part && x.driver == driver) {
+        Some(x) => {
+            x.toil = toil && can;
+            x.toil == toil
+        }
+        None => false,
+    }
 }
 
 /// The questions for duty `n` of `date` closed (the duty given another way: to a player of "Play
@@ -1073,14 +1128,18 @@ pub fn tidy(c: &mut Company) {
     c.planning.ops.asks.retain(|a| dates::between(&today, &a.date) >= 0 && !matches!(a.who, Asked::Staff { id } if !drivers.contains(&id)));
     c.planning.ops.sick.retain(|x| x.date == today && drivers.contains(&x.driver));
     super::pro_rest::tidy(c);
+    super::pro_wish::tidy(c);
+    super::pro_toil::tidy(c);
 }
 
 /// Every English text this module hands the pages besides its literals.
 pub fn texts() -> Vec<&'static str> {
-    let mut v: Vec<&'static str> = vec![SAY_FRAME, SAY_ILL, SAY_HOLIDAY, SAY_LICENCE, SAY_LONG, NO_SUCH_ASK, NOT_ASKED, NOT_A_DRIVER, NOBODY, ASKED_NOTICE, ONE_AT_A_TIME, NEEDS_YES, SAY_SILENT, ANSWERS_NO_MORE];
+    let mut v: Vec<&'static str> = vec![SAY_FRAME, SAY_ILL, SAY_HOLIDAY, SAY_DAY_OFF, SAY_LICENCE, SAY_LONG, NO_SUCH_ASK, NOT_ASKED, NOT_A_DRIVER, NOBODY, ASKED_NOTICE, ONE_AT_A_TIME, NEEDS_YES, SAY_SILENT, ANSWERS_NO_MORE];
     v.extend(super::pro_cut::texts());
     v.extend(super::pro_sick::texts());
     v.extend(super::pro_rest::texts());
+    v.extend(super::pro_wish::texts());
+    v.extend(super::pro_toil::texts());
     for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP, &SAY_ANNOYED, &SAY_ANGRY, &SAY_GRUDGING] {
         v.extend(list.iter().copied());
     }

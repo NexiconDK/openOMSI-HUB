@@ -1176,6 +1176,19 @@ pub fn on_minute(c: &mut Company, now: i64) -> Vec<FeedItem> {
             out.push(FeedItem { at: now, text: "%{name}: I never get asked about extra duties.".into(), args: vec![("name".into(), name)], level: Level::Info });
         }
     }
+    // (RosterFlow Pro, round B: from 09:00 once a day the drivers' wishes - `pro_wish::daily` - and
+    // their time off in lieu, asked for when many hours are saved - `pro_toil::daily`)
+    if now.rem_euclid(DAY) >= 9 * 60 && super::pro_duties::on(c) && c.planning.ops.wished != c.date {
+        for id in super::pro_wish::daily(c) {
+            let Some(w) = c.planning.ops.wishes.iter().find(|w| w.id == id) else { continue };
+            let name = c.employee(w.driver).map(|e| e.name.clone()).unwrap_or_default();
+            out.push(FeedItem { at: now, text: super::pro_wish::SENT_FEED.into(), args: vec![("name".into(), name)], level: Level::Info });
+        }
+        for (id, h) in super::pro_toil::daily(c) {
+            let name = c.employee(id).map(|e| e.name.clone()).unwrap_or_default();
+            out.push(FeedItem { at: now, text: super::pro_toil::ASKED_FEED.into(), args: vec![("name".into(), name), ("h".into(), h)], level: Level::Info });
+        }
+    }
     out
 }
 

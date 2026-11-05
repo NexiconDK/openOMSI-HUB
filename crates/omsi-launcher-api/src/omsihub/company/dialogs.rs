@@ -275,10 +275,19 @@ const TRIPS_CLOSED: &str = "Players take whole duties only: a duty planned for t
 /// {left: "ai" | "dropped"}`: `together::Together::left_dropped`, at once) - a company on Bus
 /// Company Online's server only.
 pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, String>> {
-    if what != "online_share" && what != "online_left" && what != "online_trips" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" && what != "approval_ask" && what != "approval_answer" && what != "drive_free" && what != "agency_fallback" && what != "agency_local" && what != "rest_local" {
+    if what != "online_share" && what != "online_left" && what != "online_trips" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" && what != "approval_ask" && what != "approval_answer" && what != "drive_free" && what != "agency_fallback" && what != "agency_local" && what != "rest_local" && what != "toil_local" {
         return None;
     }
     let guest = s.sender_guest;
+    // (RosterFlow Pro, round B: overtime given in the calendar paid or saved as time off in lieu
+    // first - the company's own choice, on the server too)
+    if what == "toil_local" {
+        let on = args.get("value").and_then(Value::as_str) == Some("save");
+        let Some(c) = s.company.as_mut() else { return Some(Ok(json!({}))) };
+        co::pro_toil::set_default(c, on);
+        super::changed(s);
+        return Some(Ok(json!({})));
+    }
     // (off the server: the owner's fine for breaking the rest rules)
     if what == "rest_local" {
         let k = args.get("value").and_then(Value::as_str).and_then(|x| x.parse::<usize>().ok()).unwrap_or(0);
@@ -511,6 +520,15 @@ fn settings(s: &mut Session, args: &Value) -> Value {
                 "value": REST_FINES.iter().position(|x| *x == fine).unwrap_or(0).to_string(),
                 "options": REST_FINES.iter().enumerate().map(|(i, x)| json!({ "value": i.to_string(), "label": if *x == 0 { tr("No fine") } else { eur(*x) } })).collect::<Vec<_>>(),
                 "say": tr("When a duty is given breaking the rest rules anyway (11 hours' rest, a day of at most 13 hours, a week of at most 48): the driver is less content and more stressed, and the company pays this fine."),
+            })
+        }),
+        // (RosterFlow Pro, round B: overtime paid or saved as time off in lieu, first)
+        "toil_local": co::pro_duties::on(&c).then(|| {
+            json!({
+                "caps": tr("Overtime given in the calendar").to_uppercase(),
+                "value": if co::pro_toil::default_on(&c) { "save" } else { "pay" },
+                "options": [{ "value": "pay", "label": tr("Paid out") }, { "value": "save", "label": tr("Time off in lieu") }],
+                "say": tr("What the calendar's popup offers first when a permanent driver is given a duty of overtime: paid with the overtime rate, or saved hour for hour as time off in lieu - cheaper now, but the hours are paid later, and too many saved make the driver unhappy."),
             })
         }),
         "currency": super::currency::settings_part(&c),
@@ -1069,6 +1087,8 @@ fn cannot_text(c: &Company, p: &DayPlan, x: &pl::Cannot) -> String {
         N::NotEmployed => tr("Not employed then"),
         N::Ill { until } => trf("Ill until %{date}", &[("date", &day_label(until))]),
         N::Holiday { until } => trf("On holiday until %{date}", &[("date", &day_label(until))]),
+        N::DayOff { toil: true } => tr("Time off in lieu"),
+        N::DayOff { toil: false } => tr("Day off (wish granted)"),
         N::WeekDone { days } => trf("Worked %{n} days this week already", &[("n", &days.to_string())]),
         N::Lacks(l) => super::people::lack_text(c, l),
         N::OnDuty { key, from, to } => {

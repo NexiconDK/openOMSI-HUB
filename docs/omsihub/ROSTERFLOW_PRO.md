@@ -668,3 +668,87 @@ Tested: `pro_ops::tests` (`a_driver_calls_in_sick_before_his_first_duty_and_the_
 `rosterflow::ops::tests::the_box_warns_of_the_rest_rules_asks_first_and_counts_the_extra_duties`
 and `company::dialogs::tests::a_drivers_sick_call_waits_as_a_notice_with_its_duty_even_while_the_clock_runs`.
 
+# The drivers' wishes, time off in lieu and what the week costs (round B, 5 November 2026)
+
+## The drivers' wishes (`co::pro_wish`)
+
+The drivers send wishes of their own. Once a company day from 09:00 (`clock::on_minute` →
+`pro_wish::daily`, `Ops::wished` the day drawn) each driver may send one - the same for the same
+company, day and driver (`Rng`), by `CHANCE` (6 %) more often when less content and less when
+friendlier (`chance`), at most `OPEN_MOST` (2) open at once; a handful a week in ten drivers:
+
+- **a day off** on a date 4 to 14 days on ("I'd like the day off on 9/3, if possible."),
+- **early duties**, **no split duty** (permanent drivers),
+- **more hours** (mostly the hourly paid and part-timers).
+
+Each comes as his message to the control room (the feed says "Mette Krogh has sent a wish.") and is
+listed in the calendar's "Wishes (N)" (`rf_wishes`: the open ones, the earliest first, each "Grant"
+or "Refuse" - `rf_wish_act`; a day off says which duty is left open). A day off wished is marked ★
+on his day in the calendar and on his day in the Turnus tab (the row's week driver, and his next
+weeks).
+
+- **Granted** (`grant`): he is more content (`GRANTED`, 4). A day off becomes his free day
+  (`model::FreeDay`, `FreeWhy::Wish`; `Employee::absent`, `plan::day_unavailable` →
+  `Cannot::DayOff`): the plan keeps him off, his rota's duty that day is open (`pro_turnus::decided`
+  shows the free day as an exception "wish", off), the calendar shows "Off (wish)" ★, and the page
+  opens who can drive the duty left open. The others hold for `HOLDS_DAYS` (28).
+- **Refused** (`refuse`, `REFUSED` 3) or **left open** until its day (a day off) or a week
+  (`lapse`, `LAPSED` 4): less content; three in a row refused or lapsed (`refused_in_a_row`) cost
+  `IN_A_ROW` (3) more each.
+- **Asked anyway** (`bias`, `notes`): asked for a duty on the day he wished off he says yes far
+  less (×0.35) and is a little less content (`ASKED_ANYWAY`, `pro_ops::ask_part`); the popup says
+  "★ Wished the day off this day" by his name. One who wished early duties is glad of one signing on
+  by 09:00 (×1.3) and rather not of one from 12:00 (×0.7); one who wished no split duty rather not of
+  a duty spanning more than 11 hours (`SPLIT_SPAN`, ×0.5); one who wants hours glad of any (×1.4).
+
+## Time off in lieu ("afspadsering", `co::pro_toil`)
+
+- **Saved, not paid**: when a permanent driver (full or part time) is given a duty of overtime, the
+  row has "Pay out" / "Time off in lieu" (the company's setting decides which is first:
+  `Ops::toil_default`, "Overtime given in the calendar" in the company's settings, on the server
+  too). Saved (`rf_ops_act` give with `toil`, `pro_ops::set_toil`, `Call::toil`): that day's
+  overtime is not paid but added to his `Employee::toil`, hour for hour (`pay::day`, `Paid::saved`)
+  - the row says "Time off in lieu 2 h 40" instead of its overtime's price.
+- **Shown**: on the staff card ("Time off in lieu: 6,5 h") and under the name in the calendar
+  ("toil 6,5 h").
+- **A day of it** (`give_day`, from the day's popup: "Give time off in lieu (7,4 h)", `rf_ops_act`
+  `toil_day`): a working day's hours (his contract week's fifth, fewer when fewer are saved, at least
+  `LEAST` - an hour) taken from them; he is off (`FreeWhy::Toil`: the calendar's own colour, legend
+  "Time off in lieu"), his duty that day open (the popup offers who can drive it), the day's hours
+  paid at the normal rate, no guarantee owed for it (`pay::toil_day`). Taken back before the day
+  (`take_back`, `toil_back`): the hours his again.
+- **Too many**: above a full week saved (`TOO_MANY`, 37 h) he is less content every day
+  (`TOO_MANY_COST`); with `ASKS_FROM` (12 h) saved he asks the control room now and then (`daily`, a
+  quarter of the days, at most once a week): "Can I have my 12 hours of time off in lieu soon?".
+
+## What the week costs (`co::pro_cost`) and the supplements (`pay::supplement_rate`)
+
+With RosterFlow Pro the planner the drivers' hours of the evening, the night and the weekend pay a
+supplement - the pay model had none (the server's admin's K11 supplements, `live_more`, are a
+player's live pay): evening 18-23 15 % (`EVENING`), night 23-06 25 % (`NIGHT`), Saturday from 14:00
+25 % (`SATURDAY`), Sunday all day 35 % (`SUNDAY`), the highest for each minute; a public holiday is
+not known to the game and pays as its weekday. They are booked with the day's wages (`pay::day`); a
+company planning otherwise is paid as before.
+
+Above the calendar (`rf_cal` `cost`): the first week shown as planned - "Wages of the week 48.210
+kr. · of it overtime 3.120 kr. · supplements 2.450 kr." (and the hours saved as time off in lieu):
+each driver's week (`pro_cost::week`) by his employment - a permanent driver his contract week at
+least, the hours above it as overtime, a reserve his frames and the rest, the hourly paid their
+hours -, the supplements on the pieces of the days to come, the days of time off in lieu at the
+normal rate; the overtime of duties given as time off in lieu saved. The wages without the
+on-costs, as the popup's prices.
+
+In the popup each row says what the duty costs that driver extra (`price_words`): "+0 kr. – within
+the contract", "+0 kr. – within the frame", "+1.240 kr. overtime (2 h 40)", "+2.441 kr. for 7 h 30"
+(the hourly paid), "+X kr. outside the frame", "+X kr. agency", with its supplements on top
+("· +180 kr. supplements", `pro_cost::duty_supplement`) - or, saved, "Time off in lieu 2 h 40".
+
+Tested: `pro_ops::tests` (`drivers_send_wishes_now_and_then_the_same_every_time_and_unanswered_they_lapse`,
+`a_day_off_granted_frees_the_driver_and_leaves_his_duty_open`,
+`a_drivers_wishes_change_his_answer_and_being_asked_anyway_annoys_him`,
+`overtime_saved_as_time_off_in_lieu_is_not_paid_and_a_day_of_it_is`,
+`too_many_hours_of_time_off_in_lieu_make_a_driver_ask_for_them`,
+`the_evening_the_night_and_the_weekend_pay_a_supplement_with_rosterflow_pro`,
+`what_a_week_costs_as_planned`), the API's
+`rosterflow::ops::tests::the_wishes_time_off_in_lieu_and_what_the_week_costs` and
+`company::people::tests::a_drivers_page_shows_the_time_off_in_lieu_saved_with_rosterflow_pro`.

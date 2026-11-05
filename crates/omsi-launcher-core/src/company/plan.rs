@@ -1371,6 +1371,9 @@ pub enum Cannot {
     NotEmployed,
     Ill { until: String },
     Holiday { until: String },
+    /// (NexiconDK, 5 November 2026) A free day besides the rota's: a wish granted, or time off in
+    /// lieu (`toil`) - `Employee::free_days`.
+    DayOff { toil: bool },
     /// Worked the week's days already (`WEEK_DAYS`).
     WeekDone { days: u32 },
     /// The licence, an endorsement or the type training for the bus.
@@ -1396,6 +1399,8 @@ pub fn day_unavailable(e: &Employee, date: &str, today: bool) -> Option<Cannot> 
         Some(Cannot::Ill { until: e.sick_until.clone().unwrap_or_default() })
     } else if let Some(until) = e.on_holiday(date) {
         Some(Cannot::Holiday { until: until.to_string() })
+    } else if let Some(f) = e.free_on(date) {
+        Some(Cannot::DayOff { toil: f.why == super::model::FreeWhy::Toil })
     } else if today && e.week_days >= WEEK_DAYS {
         Some(Cannot::WeekDone { days: e.week_days })
     } else {
@@ -2164,6 +2169,8 @@ pub fn agency_driver() -> Employee {
         lend: None,
         employment: Default::default(),
         employment_next: None,
+        free_days: Vec::new(),
+        toil: 0.0,
     }
 }
 

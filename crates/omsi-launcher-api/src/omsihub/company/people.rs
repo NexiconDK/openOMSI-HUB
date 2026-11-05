@@ -338,6 +338,11 @@ fn person(c: &Company, plan: Option<&Plan>, e: &Employee) -> Value {
     if refused > 0 {
         facts.push(json!([tr("Holidays rejected this year"), refused.to_string()]));
     }
+    // (NexiconDK, 5 November 2026: RosterFlow Pro's time off in lieu saved - `pro_toil`)
+    if co::pro_toil::can_save(e) && (co::pro_duties::on(c) || e.toil > 0.0) {
+        let h = e.toil / 60.0;
+        facts.push(json!([tr("Time off in lieu"), trf("%{h} h", &[("h", &num(h, if (h * 10.0).round() % 10.0 == 0.0 { 0 } else { 1 }))])]));
+    }
     // (NexiconDK, 4 November 2026: how a driver is employed, and a change given notice)
     let employment = staff::drives(e).then(|| {
         let next = e.employment_next.as_ref().map(|x| trf("From %{date}: %{what}", &[("date", &day_label(&x.from)), ("what", &employment_text(c, &x.to))]));
@@ -852,6 +857,22 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
 mod tests {
     use super::*;
     use omsi_launcher_lib::company::{found, Founding, GameMode};
+
+    #[test]
+    fn a_drivers_page_shows_the_time_off_in_lieu_saved_with_rosterflow_pro() {
+        super::super::words::set_language("en");
+        let mut c = found(&Founding { name: "Afspadsering".into(), game_mode: GameMode::Normal, date: "2024-03-04".into(), ..Default::default() }, "Luc");
+        let a = staff::applicants_of(&c, Role::Driver)[0].clone();
+        let id = staff::hire(&mut c, &a).unwrap();
+        c.staff.iter_mut().find(|e| e.id == id).unwrap().employment = Employment::FullTime;
+        let fact = |c: &Company| person(c, None, c.employee(id).unwrap())["facts"].as_array().unwrap().iter().find(|f| f[0] == "Time off in lieu").map(|f| f[1].clone());
+        // (not planned with RosterFlow Pro, none saved: not shown)
+        assert_eq!(fact(&c), None);
+        assert_eq!(co::autopilot::set_planner(&mut c, co::model::Planner::Pro), co::model::Planner::Pro);
+        assert_eq!(fact(&c), Some(json!("0 h")));
+        c.staff.iter_mut().find(|e| e.id == id).unwrap().toil = 390.0;
+        assert_eq!(fact(&c), Some(json!("6.5 h")));
+    }
 
     #[test]
     fn the_list_is_sorted_by_role_and_wage() {
