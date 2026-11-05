@@ -313,6 +313,14 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                     let mine = p.duties_of(plan::Who::Staff(e.id));
                     let mut v = cell_json(&day, ds, halves(p, &mine, sign_on), for_whom(&c, e.id, d));
                     v["date"] = json!(d);
+                    // (round F: his named frame that day - "RAM2", its times beneath)
+                    if let Some(f) = pt::named_on(&c, e.id, d) {
+                        if matches!(day.is, DayIs::Frame { .. }) {
+                            v["label"] = json!(f.name);
+                        } else {
+                            v["ram"] = json!(f.name);
+                        }
+                    }
                     // (round D: tired that day - 😮‍💨, and why)
                     if matches!(day.is, DayIs::Duties { .. }) {
                         let t = tired_of(&c, &week, &plans, e, d, None);
@@ -713,7 +721,7 @@ fn breaches_of(c: &Company, week: &Week, plans: &HashMap<String, DayPlan>, e: &E
     let p = plans.get(date);
     let from = p.and_then(|p| d.pieces.iter().map(|&(ti, k)| p.tours[ti].duties[k].from).min()).unwrap_or(d.start);
     let to = p.and_then(|p| d.pieces.iter().map(|&(ti, k)| p.tours[ti].duties[k].to).max()).unwrap_or(d.end);
-    let in_frame = pt::frame_on(c, e, date).is_some_and(|f| f.holds(from, to));
+    let in_frame = pt::frame_holds(c, e, date, from, to);
     let paid = if in_frame { 0 } else { d.paid };
     let week_now = if in_frame { 0.0 } else { weekly.get(&e.id).copied().unwrap_or(0.0) };
     pr::breaches(d.start, d.end, prev, next, own, pr::reduced_in(&days), week_now, paid)
@@ -820,9 +828,19 @@ fn row_json(c: &Company, p: &DayPlan, d: &OpenDuty, part: Option<u8>, e: &Employ
     let supp = pcost::duty_supplement(c, e, date, &pieces);
     let (words, over) = price_words_on(price.0, price.1, supp, ph::is(c, date));
     let rule = po::rule_of(c, e, date, tier);
+    // (round F: his frame holds it, but after noon the day before - short notice: asked first)
+    let late = tier == plan::TIER_RESERVE && rule != Rule::Set;
     let ask = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == n && a.part == part && !a.closed && a.of_staff() == Some(e.id)).max_by_key(|a| a.id);
     let shown = ask.and_then(|a| a.shown_at(game, now));
+    // (round F: a named frame by its name - "RAM2" - instead of the kind's chip)
+    let chip = match pt::named_on(c, e.id, date).filter(|_| tier == plan::TIER_RESERVE) {
+        Some(f) => f.name,
+        None => chip,
+    };
     let mut v = json!({ "id": e.id, "nr": e.id, "name": e.name, "kind": kind_of(c, e).0, "sub": format!("{chip} · {words}"), "over": over });
+    if late {
+        v["late"] = json!(tr("⏰ Short notice – must be asked"));
+    }
     // (round B: overtime of a permanent driver paid or saved as time off in lieu - the company's
     // setting first; his wishes for the day by his name)
     if let Price::Overtime { minutes, .. } = price.0 {
@@ -844,9 +862,9 @@ fn row_json(c: &Company, p: &DayPlan, d: &OpenDuty, part: Option<u8>, e: &Employ
             v["answer"] = reply_json(c, r);
             v["action"] = json!(if r.yes() { "give" } else { "none" });
         }
-        (None, _) if matches!(po::mood_of(c, e.id, game), po::Mood::Done { .. }) => {
+        (None, _) if matches!(po::mood_of(c, e.id, date, game), po::Mood::Done { .. }) => {
             v["action"] = json!("done");
-            v["hint"] = json!(tr("Answers no more questions today"));
+            v["hint"] = json!(tr("Answers no more questions about this day today"));
         }
         (None, _) => match rule {
             Rule::Set => v["action"] = json!("set"),
@@ -860,8 +878,9 @@ fn row_json(c: &Company, p: &DayPlan, d: &OpenDuty, part: Option<u8>, e: &Employ
             },
         },
     }
-    // (said no today already: irritated, angry - shown before he is asked again)
-    match po::mood_of(c, e.id, game) {
+    // (said no today already to a duty of this date: irritated, angry - shown before he is asked
+    // again; round F: another date's no leaves him calm)
+    match po::mood_of(c, e.id, date, game) {
         po::Mood::Calm => {}
         po::Mood::Irritated { at } => {
             v["mood"] = json!({ "key": "irritated", "text": trf("😒 Irritated · said no at %{time}", &[("time", &clock(at.rem_euclid(co::clock::DAY) as i32))]) });
@@ -1187,7 +1206,12 @@ fn daily(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
         .map(|(e, f)| {
             let day = po::driver_day(&c, e, p, &ds);
             let used = matches!(day.is, DayIs::Duties { .. });
-            json!({ "id": e.id, "nr": e.id, "name": e.name, "time": format!("{}–{}", clock(f.from), clock(f.to)), "used": used, "what": cell_json(&day, &ds, None, None)["label"] })
+            // (round F: a named frame by its name)
+            let time = match pt::named_on(&c, e.id, &date) {
+                Some(n) => format!("{} {}–{}", n.name, clock(f.from), clock(f.to)),
+                None => format!("{}–{}", clock(f.from), clock(f.to)),
+            };
+            json!({ "id": e.id, "nr": e.id, "name": e.name, "time": time, "used": used, "what": cell_json(&day, &ds, None, None)["label"] })
         })
         .collect::<Vec<_>>());
     out["free"] = json!(drivers(&c)
@@ -1844,6 +1868,8 @@ mod tests {
         // put on: the reserve's that day, the duty no longer open
         let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": ids[1] })).unwrap();
         assert_eq!(out["edited"], true, "{out}");
+        // (round F: not asked, but told)
+        assert!(s.company.as_ref().unwrap().messages.list.iter().any(|m| m.text == co::messages::RESERVE_SET), "the reserve told");
         let v = daily(&mut s, &mut r, &json!({ "date": date })).unwrap();
         assert!(!v["open"].as_array().unwrap().iter().any(|o| o["n"] == n), "{}", v["open"]);
         let v = calendar(&mut s, &mut r, &json!({})).unwrap();

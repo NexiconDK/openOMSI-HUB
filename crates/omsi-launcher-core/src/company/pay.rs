@@ -144,11 +144,14 @@ pub fn day_minutes(p: &Prefs, e: &Employee, weekday: u8, full: f64, away: bool, 
 
 /// A day's paid minutes (`paid`, by the employment) as a frame of the driver's rota changes them
 /// (`framed`: what his rota decides of the day's frame, None when no rota decides it).
-fn framed_paid(p: &Prefs, e: &Employee, away: bool, framed: Option<Option<Frame>>, mine: &[(i32, i32)], paid: f64) -> f64 {
+fn framed_paid(p: &Prefs, e: &Employee, away: bool, framed: Option<Option<(Frame, bool)>>, mine: &[(i32, i32)], paid: f64) -> f64 {
     match framed {
         None => paid,
+        // (round F: a named frame of his rota - RAM1 ... - pays the hours driven, at least 7.4:
+        // its window is not work)
+        Some(Some((_, true))) if !away => paid_minutes(p, mine).max(super::pro_turnus::NAMED_LEAST) as f64,
         // (a frame of his rota: paid whether used or not, the work outside it on top)
-        Some(Some(f)) if !away => (f.minutes() + outside_frame(p, &f, mine)).max(paid_minutes(p, mine)) as f64,
+        Some(Some((f, false))) if !away => (f.minutes() + outside_frame(p, &f, mine)).max(paid_minutes(p, mine)) as f64,
         // (a reserve whose rota has no frame that day: the duties he drives)
         Some(_) if matches!(e.employment, Employment::Reserve(_)) => paid_minutes(p, mine) as f64,
         Some(_) => paid,
@@ -167,7 +170,7 @@ pub fn planned_minutes(c: &Company, e: &Employee, date: &str, pieces: &[(i32, i3
         return 0.0;
     }
     let (paid, _, _) = day_minutes(p, e, weekday, contract_week_minutes(c), away, pieces);
-    framed_paid(p, e, away, super::pro_turnus::decides_frame(c, e.id, date), pieces, paid)
+    framed_paid(p, e, away, super::pro_turnus::decides_frame_named(c, e.id, date), pieces, paid)
 }
 
 /// What an hour of driver `e` costs in wages (cents, without the on-costs): his wage's hour, the
@@ -295,7 +298,7 @@ pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
     let (mut supp, mut over_cost) = (0.0, 0.0);
     let mut drivers = 0;
     // (RosterFlow Pro's step 3: the frame a driver's rota gives him that day - `pro_turnus`)
-    let framed: Vec<(u32, Option<Frame>)> = c.staff.iter().filter_map(|e| super::pro_turnus::decides_frame(c, e.id, date).map(|f| (e.id, f))).collect();
+    let framed: Vec<(u32, Option<(Frame, bool)>)> = c.staff.iter().filter_map(|e| super::pro_turnus::decides_frame_named(c, e.id, date).map(|f| (e.id, f))).collect();
     // (RosterFlow Pro, round B: the supplements, the overtime of a duty given as time off in lieu
     // saved, a day of time off in lieu paid from the saved hours)
     let pro = super::pro_duties::on(c);

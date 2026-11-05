@@ -50,16 +50,34 @@ const RULES_RESERVE: [(Rule, &str); 6] = [
     (Rule::Duty, "Every duty on its day, in one row"),
 ];
 
+/// (Round F) A mixed team's: an ordinary rota's, and a week of not too many nights.
+const RULES_MIXED: [(Rule, &str); 8] = [
+    (Rule::Rest, "11 hours of rest between duties"),
+    (Rule::InARow, "At most 6 days of work in a row"),
+    (Rule::TwoOff, "Two days off together - a Saturday and the next week's Sunday count"),
+    (Rule::EveryOther, "Every other weekend off"),
+    (Rule::Nights, "At most 4 night duties a week"),
+    (Rule::Hours, "Hours a week as aimed at"),
+    (Rule::Split, "No split duties: they have a rota of their own"),
+    (Rule::Duty, "Every duty on its day, in one row"),
+];
+
 fn rules_of(kind: RotaKind) -> &'static [(Rule, &'static str)] {
     match kind {
         RotaKind::Normal => &RULES_NORMAL,
         RotaKind::Split => &RULES_SPLIT,
         RotaKind::Reserve => &RULES_RESERVE,
+        RotaKind::Mixed => &RULES_MIXED,
     }
 }
 
-/// What a kind of rota is, in a line.
-const KIND_NOTES: [&str; 3] = ["Whole and short duties all week. The drivers work every other weekend.", "Split duties only, Monday to Friday. Saturday and Sunday are always off.", "Reserve drivers in their frames."];
+/// What a kind of rota is, in a line (`RotaKind::ALL`'s order).
+const KIND_NOTES: [&str; 4] = [
+    "Whole and short duties all week. The drivers work every other weekend.",
+    "Early, middle, late and night duties by turns: two weeks of each kind, forward from early to night, two days off after the nights. Every other weekend off.",
+    "Split duties only, Monday to Friday. Saturday and Sunday are always off.",
+    "Reserve drivers in their frames: the named frames RAM1, RAM2 ... week by week.",
+];
 
 /// A weekend's words: off, at work, half - its key, its words, and the cell's word under
 /// "Weekend".
@@ -75,6 +93,9 @@ fn weekend_words(w: Weekend) -> (&'static str, &'static str, &'static str) {
 fn kind_of(d: &ProDuty) -> &'static str {
     if d.kind == pd::Kind::Split {
         "split"
+    } else if pt::shift_of(d.start, d.end) == pt::Shift::Night {
+        // (round F: a night duty its own colour)
+        "night"
     } else if d.start < 9 * 60 {
         "early"
     } else if d.start < 12 * 60 {
@@ -165,14 +186,18 @@ fn place_words(c: &Company, id: u32) -> Option<String> {
 }
 
 /// A cell as the page draws it.
-fn cell_json(week: &Week, day: usize, cell: Cell) -> Value {
+fn cell_json(c: &Company, week: &Week, day: usize, cell: Cell) -> Value {
     match cell {
         Cell::Off => json!({ "kind": "off", "label": tr("Day off"), "cls": "off" }),
         Cell::Duty { n } => match week.get(day).and_then(|ds| ds.iter().find(|x| x.number == n)) {
             Some(d) => json!({ "kind": "duty", "n": n, "label": n.to_string(), "time": span(d.start, d.end), "cls": kind_of(d), "paid": d.paid }),
             None => json!({ "kind": "duty", "n": n, "label": n.to_string(), "time": "?", "cls": "missing" }),
         },
-        Cell::Frame { from, to } => json!({ "kind": "frame", "from": from, "to": to, "label": tr("Reserve"), "time": span(from, to), "cls": "reserve" }),
+        // (round F: a named frame by its name - "RAM2" -, its window's times beneath)
+        Cell::Frame { from, to, ram } => match pt::named(c, ram) {
+            Some(f) => json!({ "kind": "frame", "from": from, "to": to, "ram": ram, "label": f.name, "time": span(from, to), "cls": "reserve" }),
+            None => json!({ "kind": "frame", "from": from, "to": to, "label": tr("Reserve"), "time": span(from, to), "cls": "reserve" }),
+        },
     }
 }
 
@@ -195,7 +220,7 @@ fn rota_json(c: &Company, k: usize, week: &Week, sunday: &str, checked: &Checked
         .map(|(r, row)| {
             let cells: Vec<Value> = (0..pt::DAYS)
                 .map(|d| {
-                    let mut v = cell_json(week, d, row.days[d]);
+                    let mut v = cell_json(c, week, d, row.days[d]);
                     let (level, tip) = level_of(checked.of(r, Some(d)));
                     v["level"] = json!(level);
                     v["tip"] = json!(tip);
@@ -214,7 +239,15 @@ fn rota_json(c: &Company, k: usize, week: &Week, sunday: &str, checked: &Checked
             }
             let (level, tip) = level_of(checked.of(r, None));
             let minutes = checked.minutes.get(r).copied().unwrap_or(0);
+            // (round F: a mixed team's week by its kinds of duty - early, middle, late, night)
+            let shifts: Vec<Value> = if t.kind() == RotaKind::Mixed {
+                let n = pt::row_shifts(week, row);
+                pt::Shift::ALL.iter().zip(n).filter(|(_, k)| *k > 0).map(|(x, k)| json!({ "key": x.key(), "n": k, "tip": trf("%{n} × %{kind}", &[("n", &k.to_string()), ("kind", &tr(x.label()))]) })).collect()
+            } else {
+                Vec::new()
+            };
             json!({
+                "shifts": shifts,
                 "cells": cells,
                 "hours": h1(minutes),
                 "level": level, "tip": tip,
@@ -264,6 +297,9 @@ fn view(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
         // (round B: time off in lieu and a wish granted are given elsewhere - the calendar's)
         "notes": pt::NOTES.iter().filter(|(k, _)| *k != "toil" && *k != "wish").map(|(k, w)| json!({ "key": k, "label": tr(w) })).collect::<Vec<_>>(),
         "frames": pt::RESERVE_FRAMES.iter().map(|(a, b)| json!({ "from": a, "to": b, "time": span(*a, *b) })).collect::<Vec<_>>(),
+        // (round F: the company's named frames - RAM1 ... -, put in a day as a duty is)
+        "named": pt::named_frames(&c).iter().map(|f| json!({ "id": f.id, "name": f.name, "from": f.from, "to": f.to, "time": span(f.from, f.to), "night": f.to > 1440 })).collect::<Vec<_>>(),
+        "shift_labels": pt::Shift::ALL.iter().map(|x| json!({ "key": x.key(), "label": tr(x.label()) })).collect::<Vec<_>>(),
     });
     let week = match week_duties(s, r) {
         None => {
@@ -317,7 +353,7 @@ fn view(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     out["coverage"] = json!({ "placed": total - open, "total": total, "open": unplaced, "split_open": split_open, "split_rota": list.iter().any(|t| t.kind() == RotaKind::Split) });
     // "New rota": the kinds, what each is, the weeks suggested and the drivers without a rota
     let free = |reserve: bool| c.staff.iter().filter(|e| co::staff::drives(e) && pt::place_of(&c, e.id).is_none() && matches!(e.employment, Employment::Reserve(_)) == reserve && !matches!(e.employment, Employment::Hourly)).count();
-    let names = [("Rota %{n}", RotaKind::Normal), ("Split duties %{n}", RotaKind::Split), ("Reserve %{n}", RotaKind::Reserve)];
+    let names = [("Rota %{n}", RotaKind::Normal), ("Mixed team %{n}", RotaKind::Mixed), ("Split duties %{n}", RotaKind::Split), ("Reserve %{n}", RotaKind::Reserve)];
     out["kinds"] = json!(RotaKind::ALL
         .iter()
         .enumerate()
@@ -361,7 +397,7 @@ fn view(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                         let dd = pt::day_of(&date);
                         match pt::decided(&c, id, &date) {
                             Some(x) => {
-                                let mut v = cell_json(&week, dd, x.cell);
+                                let mut v = cell_json(&c, &week, dd, x.cell);
                                 v["date"] = json!(date);
                                 v["short"] = json!(short(&date));
                                 v["day"] = json!(dd);
@@ -395,7 +431,7 @@ fn cell_arg(args: &Value) -> Cell {
     let num = |k: &str| c.get(k).and_then(Value::as_i64).unwrap_or(0);
     match c.get("kind").and_then(Value::as_str).unwrap_or("off") {
         "duty" => Cell::Duty { n: num("n").max(0) as u32 },
-        "frame" => Cell::Frame { from: num("from") as i32, to: num("to") as i32 },
+        "frame" => Cell::Frame { from: num("from") as i32, to: num("to") as i32, ram: num("ram").max(0) as u32 },
         _ => Cell::Off,
     }
 }
@@ -506,11 +542,12 @@ fn undo_json(r: &Rf) -> Value {
 }
 
 /// A day of a row in words, for the undo: "duty 1002 taken out of rota week 2, Wednesday".
-fn cell_words(was: Option<Cell>, now: Cell, row: usize, day: usize) -> String {
+fn cell_words(was: Option<Cell>, now: Cell, row: usize, day: usize, frame: Option<String>) -> String {
     let at = format!("{}, {}", week_words(row), tr(FULL_DAYS[day.min(6)]));
     match (was, now) {
         (Some(Cell::Duty { n }), Cell::Off) => trf("duty %{n} taken out of %{at}", &[("n", &n.to_string()), ("at", &at)]),
         (_, Cell::Duty { n }) => trf("duty %{n} put in %{at}", &[("n", &n.to_string()), ("at", &at)]),
+        (_, Cell::Frame { .. }) if frame.is_some() => trf("frame %{name} in %{at}", &[("name", frame.as_deref().unwrap_or_default()), ("at", &at)]),
         (_, Cell::Frame { .. }) => trf("a reserve frame in %{at}", &[("at", &at)]),
         (_, Cell::Off) => trf("a day off in %{at}", &[("at", &at)]),
     }
@@ -552,7 +589,7 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
         if let (Some(before), Some(after)) = (before, s.company.as_ref().map(snap)) {
             if before != after {
                 let words = match what.as_str() {
-                    "cell" => cell_words(was, cell_arg(args), usize_arg(args, "row"), usize_arg(args, "day")),
+                    "cell" => cell_words(was, cell_arg(args), usize_arg(args, "row"), usize_arg(args, "day"), s.company.as_ref().and_then(|c| pt::frame_name(c, cell_arg(args)))),
                     _ => out["undo_words"].as_str().map(str::to_string).unwrap_or_else(|| out["say"]["text"].as_str().unwrap_or_default().to_string()),
                 };
                 r.turnus_undo.push(Step { before, after, words });
@@ -635,6 +672,21 @@ fn act_one(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             let date = shown_sunday(c, args);
             let label = week_label(&date);
             edit(s, |_| trf("The rota begins in %{week}: the driver of rota week 1 is in rota week 1 then.", &[("week", &label)]), |c| pt::set_from(c, id, &date))
+        }
+        // (round F: the named frames - made, changed, deleted)
+        "frame_put" => {
+            let name = str_arg(args, "name");
+            let (from, to) = (args.get("from").and_then(Value::as_i64).unwrap_or(0) as i32, args.get("to").and_then(Value::as_i64).unwrap_or(0) as i32);
+            let words = trf("The frame %{name} %{time} is saved: the rotas' days with it take its times.", &[("name", name.trim()), ("time", &span(from, if to <= from { to + 1440 } else { to }))]);
+            let mut out = edit(s, |_| words.clone(), |c| pt::put_frame(c, id, &name, from, to));
+            out["undo_words"] = json!(trf("the frame %{name}", &[("name", name.trim())]));
+            out
+        }
+        "frame_remove" => {
+            let name = s.company.as_ref().and_then(|c| pt::named(c, id)).map(|f| f.name).unwrap_or_default();
+            let mut out = edit(s, |_| trf("The frame %{name} is deleted: its days keep their times as frames of their own.", &[("name", &name)]), |c| pt::remove_frame(c, id));
+            out["undo_words"] = json!(trf("the frame %{name} deleted", &[("name", &name)]));
+            out
         }
         "add_row" => edit(s, |n: &usize| trf("Rota week %{n} added.", &[("n", &n.to_string())]), |c| pt::add_row(c, id)),
         "remove_row" => edit(s, |_| trf("Rota week %{n} removed.", &[("n", &(row + 1).to_string())]), |c| pt::remove_row(c, id, row)),
@@ -847,7 +899,7 @@ mod tests {
         // a rota, made automatically: every duty of the week in it
         // "New rota": the three kinds, the weeks suggested
         let kinds = v["kinds"].as_array().unwrap();
-        assert_eq!(kinds.iter().map(|k| k["key"].as_str().unwrap()).collect::<Vec<_>>(), ["normal", "split", "reserve"]);
+        assert_eq!(kinds.iter().map(|k| k["key"].as_str().unwrap()).collect::<Vec<_>>(), ["normal", "mixed", "split", "reserve"]);
         assert!(kinds[0]["weeks"].as_u64().unwrap() >= 2, "{kinds:?}");
         assert_eq!(kinds[0]["name"], "Rota 1");
         let out = act(&mut s, &mut r, &json!({ "act": "new", "name": "Nord", "kind": "normal", "weeks": 1 })).unwrap();

@@ -14,6 +14,10 @@ use crate::{LineInfo, StopInfo, TourInfo, TripInfo};
 
 // --- a week of duties made up ---------------------------------------------------------------------
 
+fn d_(number: u32, start: i32, end: i32) -> ProDuty {
+    d(number, start, end)
+}
+
 fn d(number: u32, start: i32, end: i32) -> ProDuty {
     ProDuty { number, start, end, work: end - start, paid: end - start, kind: pd::Kind::Whole, pieces: Vec::new() }
 }
@@ -207,7 +211,7 @@ fn every_other_weekend_off_round_the_cycle() {
     // a reserve rota keeps its own rule: a weekend day off somewhere
     let res = add(&mut c, "Reserve", true);
     let k = c.planning.rotas.list.iter().position(|t| t.id == res).unwrap();
-    c.planning.rotas.list[k].rows = vec![row([Cell::Frame { from: 300, to: 780 }; DAYS])];
+    c.planning.rotas.list[k].rows = vec![row([Cell::frame(300, 780); DAYS])];
     let ch = check(&c, k, &w);
     assert!(!ch.kept(Rule::Weekend) && ch.kept(Rule::EveryOther));
     let _ = id;
@@ -271,7 +275,7 @@ fn a_split_duty_rota_is_off_at_the_weekend() {
     assert_eq!(c.planning.rotas.list[0].rows.len(), 1);
     // only split duties, Monday to Friday; the weekend stays off
     assert_eq!(set_cell(&mut c, id, 0, 0, n(3001), &w), Err(WEEKEND_OFF));
-    assert_eq!(set_cell(&mut c, id, 0, DAYS - 1, Cell::Frame { from: 300, to: 780 }, &w), Err(WEEKEND_OFF));
+    assert_eq!(set_cell(&mut c, id, 0, DAYS - 1, Cell::frame(300, 780), &w), Err(WEEKEND_OFF));
     assert_eq!(set_cell(&mut c, id, 0, 0, F, &w), Ok(()));
     assert_eq!(set_cell(&mut c, id, 0, 1, n(1001), &w), Err(ONLY_SPLIT));
     assert_eq!(set_cell(&mut c, id, 0, 1, n(1007), &w), Ok(()));
@@ -339,8 +343,118 @@ fn a_reserve_rota_is_made_of_frames() {
     assert_eq!(auto(&mut c, id, &week()), Ok(2));
     let t = &c.planning.rotas.list[0];
     assert!(t.rows.iter().all(|r| r.days.iter().filter(|x| x.works()).count() == 5));
-    assert_eq!(t.rows[0].days.iter().find(|x| x.works()), Some(&Cell::Frame { from: 300, to: 780 }));
-    assert_eq!(t.rows[1].days.iter().find(|x| x.works()), Some(&Cell::Frame { from: 780, to: 1260 }));
+    // (round F: the named frames forward, week by week - RAM1, then RAM2)
+    assert_eq!(t.rows[0].days.iter().find(|x| x.works()), Some(&Cell::Frame { from: 240, to: 840, ram: 1 }));
+    assert_eq!(t.rows[1].days.iter().find(|x| x.works()), Some(&Cell::Frame { from: 420, to: 1080, ram: 2 }));
+    // without named frames: the early and late frames of before
+    for f in named_frames(&c) {
+        remove_frame(&mut c, f.id).unwrap();
+    }
+    assert_eq!(auto(&mut c, id, &week()), Ok(2));
+    let t = &c.planning.rotas.list[0];
+    assert_eq!(t.rows[0].days.iter().find(|x| x.works()), Some(&Cell::frame(300, 780)));
+    assert_eq!(t.rows[1].days.iter().find(|x| x.works()), Some(&Cell::frame(780, 1260)));
+}
+
+/// (Round F) The named frames: RAM1-RAM4 to begin with, made, changed - the days with one take its
+/// times - and deleted - its days keep them as frames of their own -, put in a day by their id;
+/// a reserve rota of them rotates forward with the days off between, an overlap marked red, a
+/// short gap between two frames yellow; and a day in one pays the hours driven, at least 7,4.
+#[test]
+fn named_frames_ram1_to_ram4() {
+    let mut c = bare();
+    let names: Vec<String> = named_frames(&c).iter().map(|f| f.name.clone()).collect();
+    assert_eq!(names, ["RAM1", "RAM2", "RAM3", "RAM4"]);
+    assert_eq!(named(&c, 4).map(|f| (f.from, f.to)), Some((900, 1800)), "RAM4 15:00-06:00: past midnight");
+    assert!(c.planning.rotas.frames.is_none(), "nothing saved while untouched");
+    assert_eq!(put_frame(&mut c, 0, "ram2", 100, 200), Err(FRAME_TAKEN));
+    assert_eq!(put_frame(&mut c, 0, "  ", 100, 200), Err(FRAME_NO_NAME));
+    let id = add(&mut c, "Reserve", true);
+    for _ in 0..4 {
+        add_row(&mut c, id).unwrap();
+    }
+    let w = week();
+    assert_eq!(auto(&mut c, id, &w), Ok(4));
+    let t = c.planning.rotas.list[0].clone();
+    // the weeks: RAM1 off Sunday and Monday, each next a day later - RAM4 Wednesday and Thursday
+    let rams: Vec<u32> = t.rows.iter().map(|r| r.days.iter().find_map(|x| if let Cell::Frame { ram, .. } = x { Some(*ram) } else { None }).unwrap()).collect();
+    assert_eq!(rams, [1, 2, 3, 4]);
+    assert!(!t.rows[0].days[0].works() && !t.rows[0].days[1].works());
+    assert!(!t.rows[3].days[3].works() && !t.rows[3].days[4].works());
+    let k = 0;
+    let checked = check(&c, k, &w);
+    assert!(checked.kept(Rule::Rest) && checked.kept(Rule::InARow) && checked.kept(Rule::Hours), "forward: no overlap, 37 h {:?}", checked.marks);
+    // a day a named frame pays 7,4 h, not its window
+    assert_eq!(checked.minutes[0], 5 * NAMED_LEAST);
+    // RAM4 and then RAM1 the next day: they overlap - red
+    set_cell(&mut c, id, 3, 5, Cell::Frame { from: 0, to: 0, ram: 4 }, &w).unwrap();
+    set_cell(&mut c, id, 3, 6, Cell::Frame { from: 0, to: 0, ram: 1 }, &w).unwrap();
+    assert_eq!(c.planning.rotas.list[0].rows[3].days[6], Cell::Frame { from: 240, to: 840, ram: 1 }, "its times from the list");
+    let checked = check(&c, k, &w);
+    assert!(checked.marks.iter().any(|m| m.text == M_OVERLAP && m.hard && m.row == Some(3) && m.day == Some(6)), "{:?}", checked.marks);
+    // RAM2 and then RAM1: 10 h between the windows - yellow
+    set_cell(&mut c, id, 3, 5, Cell::Frame { from: 0, to: 0, ram: 2 }, &w).unwrap();
+    let checked = check(&c, k, &w);
+    assert!(checked.marks.iter().any(|m| m.text == M_FRAME_REST && !m.hard), "{:?}", checked.marks);
+    // changed: the days with it take its times; deleted: they keep them, no longer named
+    put_frame(&mut c, 1, "RAM1", 5 * 60, 15 * 60).unwrap();
+    assert_eq!(c.planning.rotas.list[0].rows[3].days[6], Cell::Frame { from: 300, to: 900, ram: 1 });
+    assert_eq!(c.planning.rotas.frames.as_ref().map(Vec::len), Some(4));
+    remove_frame(&mut c, 1).unwrap();
+    assert_eq!(c.planning.rotas.list[0].rows[3].days[6], Cell::frame(300, 900));
+    assert_eq!(remove_frame(&mut c, 1), Err(NO_FRAME));
+    let new = put_frame(&mut c, 0, "RAM5", 22 * 60, 6 * 60).unwrap();
+    assert_eq!(named(&c, new).map(|f| (f.from, f.to)), Some((1320, 1800)), "until the next morning");
+    // kept in the file, read back
+    let text = serde_json::to_string(&c.planning.rotas).unwrap();
+    let back: Rotas = serde_json::from_str(&text).unwrap();
+    assert_eq!(back.frames.unwrap().iter().map(|f| f.name.as_str()).collect::<Vec<_>>(), ["RAM2", "RAM3", "RAM4", "RAM5"]);
+}
+
+/// (Round F) A mixed team: its weeks two by two early, middle, late, night - forward - the second
+/// night week's Saturday and the next week's Sunday off; the kinds counted a week, a week of many nights
+/// marked.
+#[test]
+fn a_mixed_team_takes_turns() {
+    assert_eq!(shift_of(5 * 60, 13 * 60), Shift::Early);
+    assert_eq!(shift_of(9 * 60, 17 * 60), Shift::Middle);
+    assert_eq!(shift_of(14 * 60, 22 * 60), Shift::Late);
+    assert_eq!(shift_of(21 * 60, 29 * 60), Shift::Night);
+    assert_eq!(shift_of(18 * 60, 26 * 60), Shift::Night, "ending after 01:00");
+    let mut c = bare();
+    let id = add_kind(&mut c, "Blandet", RotaKind::Mixed, 0);
+    assert_eq!(c.planning.rotas.list[0].kind(), RotaKind::Mixed);
+    // a week of each kind: two early, two middle, two late, two night duties every day
+    let mut w: Week = vec![Vec::new(); DAYS];
+    for d in 0..DAYS {
+        for (k, (a, b)) in [(5, 13), (6, 14), (9, 17), (10, 18), (14, 22), (15, 23), (22, 30), (21, 29)].iter().enumerate() {
+            let n = 1000 * (if d == 0 { 3 } else if d == 6 { 2 } else { 1 }) + k as u32 + 1;
+            w[d].push(d_(n, a * 60, b * 60));
+        }
+    }
+    let n = auto(&mut c, id, &w).unwrap();
+    assert_eq!(n % 8, 0, "two weeks of each kind by turns: {n}");
+    let t = c.planning.rotas.list[0].clone();
+    for (r, row) in t.rows.iter().enumerate() {
+        let s = row_shifts(&w, row);
+        let most = s.iter().enumerate().max_by_key(|x| *x.1).map(|x| x.0).unwrap();
+        assert_eq!(most, (r / 2) % 4, "week {r} mostly its kind: {s:?}");
+    }
+    // after the night weeks: the second's Saturday off, the next week's Sunday off
+    assert!(!t.rows[7].days[6].works() && !t.rows[8 % n].days[0].works());
+    let checked = check(&c, 0, &w);
+    assert!(checked.kept(Rule::Rest), "{:?}", checked.marks.iter().filter(|m| m.rule == Rule::Rest).collect::<Vec<_>>());
+    // a week of six nights: marked
+    let nights: Vec<u32> = w.iter().map(|ds| ds.iter().find(|x| shift_of(x.start, x.end) == Shift::Night).unwrap().number).collect();
+    for d in 0..6 {
+        c.planning.rotas.list[0].rows[0].days[d] = Cell::Duty { n: nights[d] };
+    }
+    let checked = check(&c, 0, &w);
+    assert!(checked.marks.iter().any(|m| m.rule == Rule::Nights && m.row == Some(0)), "{:?}", checked.marks);
+    // the kind kept in the file
+    let text = serde_json::to_string(&c.planning.rotas).unwrap();
+    assert!(text.contains("\"mixed\":true"));
+    assert_eq!(RotaKind::of_key("mixed"), RotaKind::Mixed);
 }
 
 #[test]
@@ -358,8 +472,8 @@ fn editing_a_rota_keeps_a_duty_to_its_day_and_to_one_row() {
     assert_eq!(set_cell(&mut c, id, 1, 0, n(1001), &w), Err(NOT_THAT_DAY), "a weekday's duty on a Sunday");
     assert_eq!(set_cell(&mut c, id, 1, 0, n(3001), &w), Ok(()));
     assert_eq!(set_cell(&mut c, id, 5, 0, n(3002), &w), Err(NO_ROW));
-    assert_eq!(set_cell(&mut c, id, 1, 6, Cell::Frame { from: 300, to: 200 }, &w), Ok(()));
-    assert_eq!(c.planning.rotas.list[0].rows[1].days[6], Cell::Frame { from: 300, to: 1640 }, "a frame made sound: past midnight");
+    assert_eq!(set_cell(&mut c, id, 1, 6, Cell::frame(300, 200), &w), Ok(()));
+    assert_eq!(c.planning.rotas.list[0].rows[1].days[6], Cell::frame(300, 1640), "a frame made sound: past midnight");
     set_hours(&mut c, id, Some(25.2)).unwrap();
     assert_eq!(c.planning.rotas.list[0].hours, Some(25.0));
     set_from(&mut c, id, "2024-03-14").unwrap();
@@ -570,7 +684,7 @@ fn a_frame_of_a_rota_makes_its_driver_a_reserve_that_day() {
     let a = c.staff[0].id;
     let id = add(&mut c, "Nord", false);
     add_row(&mut c, id).unwrap();
-    set_cell(&mut c, id, 0, 1, Cell::Frame { from: 5 * 60, to: 13 * 60 }, &w).unwrap();
+    set_cell(&mut c, id, 0, 1, Cell::frame(5 * 60, 13 * 60), &w).unwrap();
     set_driver(&mut c, id, 0, Some(a)).unwrap();
     let e = c.staff[0].clone();
     assert_eq!(frame_on(&c, &e, "2024-03-04"), Some(Frame::new(300, 780, 0x7f)));
@@ -593,6 +707,34 @@ fn a_frame_of_a_rota_makes_its_driver_a_reserve_that_day() {
     assert!((paid.hours - 8.0).abs() < 0.01, "{paid:?}");
 }
 
+/// (Round F) A named frame holds the duties in its window - RAM4's past midnight the next
+/// morning's - and its day pays the hours driven, at least 7,4: not the window.
+#[test]
+fn a_named_frame_pays_the_hours_driven_and_holds_the_night() {
+    let mut c = company();
+    let w = real_week(&c, "2024-03-03");
+    let a = c.staff[0].id;
+    let id = add(&mut c, "Nord", false);
+    add_row(&mut c, id).unwrap();
+    // Monday RAM4 15:00-06:00, Tuesday RAM2
+    set_cell(&mut c, id, 0, 1, Cell::Frame { from: 0, to: 0, ram: 4 }, &w).unwrap();
+    set_cell(&mut c, id, 0, 2, Cell::Frame { from: 0, to: 0, ram: 2 }, &w).unwrap();
+    set_driver(&mut c, id, 0, Some(a)).unwrap();
+    let e = c.staff[0].clone();
+    assert_eq!(named_on(&c, a, "2024-03-04").map(|f| f.name), Some("RAM4".into()));
+    assert!(frame_holds(&c, &e, "2024-03-04", 16 * 60, 23 * 60));
+    assert!(frame_holds(&c, &e, "2024-03-05", 60, 5 * 60), "01:00-05:00 the next morning: RAM4's");
+    assert!(!frame_holds(&c, &e, "2024-03-05", 5 * 60, 6 * 60 + 30), "past 06:00 and before RAM2");
+    let b = staff::Block { key: "x".into(), from: 60, to: 4 * 60, ..Default::default() };
+    assert_eq!(plan::fill_tier(&c, &e, "2024-03-05", &b), plan::TIER_RESERVE);
+    // a day with nothing driven: 7,4 h; with 9 h driven: 9 h - not the 15 h window
+    assert!((super::super::pay::planned_minutes(&c, &e, "2024-03-04", &[]) - NAMED_LEAST as f64).abs() < 0.5);
+    let nine = super::super::pay::planned_minutes(&c, &e, "2024-03-04", &[(15 * 60, 24 * 60)]);
+    assert!(nine > 8.9 * 60.0 && nine < 9.6 * 60.0, "{nine}");
+    let paid = super::super::pay::day(&mut c, "2024-03-04", &[]);
+    assert!((paid.hours - 7.4).abs() < 0.01, "{paid:?}");
+}
+
 #[test]
 fn an_older_file_has_no_rotas_and_the_rotas_are_kept() {
     let c = bare();
@@ -601,7 +743,7 @@ fn an_older_file_has_no_rotas_and_the_rotas_are_kept() {
     let mut c = c;
     let id = add(&mut c, "Nord", false);
     add_row(&mut c, id).unwrap();
-    set_exception(&mut c, 3, "2024-03-05", Some((Cell::Frame { from: 300, to: 780 }, "nonsense".into())));
+    set_exception(&mut c, 3, "2024-03-05", Some((Cell::frame(300, 780), "nonsense".into())));
     assert_eq!(c.planning.rotas.exceptions[0].note, "", "a reason not known: none");
     let s = serde_json::to_string(&c.planning).unwrap();
     let back: plan::Planning = serde_json::from_str(&s).unwrap();

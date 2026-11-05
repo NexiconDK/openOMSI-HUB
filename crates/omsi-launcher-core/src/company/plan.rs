@@ -1470,7 +1470,8 @@ pub fn fill_tier(c: &Company, e: &Employee, date: &str, b: &Block) -> u8 {
     if super::agency::is_booked(e.id) {
         return TIER_BOOKED;
     }
-    if super::pro_turnus::frame_on(c, e, date).is_some_and(|f| f.holds(b.from, b.to)) {
+    // (round F: or the night of the day before's frame past midnight - `frame_holds`)
+    if super::pro_turnus::frame_holds(c, e, date, b.from, b.to) {
         return TIER_RESERVE;
     }
     match e.employment {

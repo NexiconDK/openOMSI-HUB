@@ -21,6 +21,9 @@
 // November 2026: "↶ Fortryd" / "↷ Gentag" and Ctrl+Z / Ctrl+Y undo and redo the tab's edits, step
 // by step - the planner's own, kept beside the company's session; a driver's day "Ill" or "On
 // holiday" is his illness or holiday of the staff card; a duty swapped changes both drivers.)
+// (Round F, NexiconDK 5 November 2026: the company's named frames - "Rammer": RAM1 04-14, RAM2
+// 07-18, RAM3 11-22, RAM4 15-06 - made, changed and deleted on the left and put in a day as a
+// duty is; a mixed team's weeks by their kinds of duty: early, middle, late, night.)
 
 import { html, useEffect, useState } from '../../../vendor/preact-htm.js';
 import { S } from '../../store.js';
@@ -80,6 +83,7 @@ const KINDS = [
   ['day', 'Middle shift'],
   ['late', 'Late shift'],
   ['split', 'Split shift'],
+  ['night', 'Night shift'],
   ['reserve', 'Reserve'],
 ];
 
@@ -141,7 +145,7 @@ function Toolbar({ v, rota }) {
     </span>
     <i class="pro-sep"></i>
     <span class="pair">
-      <${RfButton} label="Make the rota automatically" solid disabled=${!rota} title=${!rota ? undefined : rota.kind === 'split' ? 'Spread the split duties of Monday to Friday no other rota has over enough weeks: the weekends off' : rota.kind === 'reserve' ? "A week for each reserve driver, five days in his frame" : "Spread the week's duties no other rota has over enough weeks: every other weekend off, two days off together, the rest kept, the hours evened"} onClick=${() => tAct('auto', { id: rota.id })} />
+      <${RfButton} label="Make the rota automatically" solid disabled=${!rota} title=${!rota ? undefined : rota.kind === 'split' ? 'Spread the split duties of Monday to Friday no other rota has over enough weeks: the weekends off' : rota.kind === 'reserve' ? 'A week for each reserve driver, five days in a frame: the named frames forward week by week - RAM1, RAM2, RAM3, RAM4 - two days off together' : rota.kind === 'mixed' ? 'The week\'s duties no other rota has by turns: two weeks of early duties, then middle, late and night, two days off after the nights' : "Spread the week's duties no other rota has over enough weeks: every other weekend off, two days off together, the rest kept, the hours evened"} onClick=${() => tAct('auto', { id: rota.id })} />
       <${RfButton} label="Add week" disabled=${!rota} title="A week more at the end of the rota: days off to fill" onClick=${() => tAct('add_row', { id: rota.id })} />
       <${RfButton} label="Remove week" disabled=${!rota || row == null} title="The week chosen taken out of the rota" onClick=${() => tAct('remove_row', { id: rota.id, row }).then(() => setT({ cell: null, place: null }))} />
     </span>
@@ -182,9 +186,46 @@ function Side({ v, rota }) {
       <div class="pro-dim">${tr('Average %{a} h a week · a cycle of %{n} weeks', { a: rota.average.replace('.', ','), n: rota.cycle })}</div>
       <button type="button" class="rf-link tu-small tu-del" onClick=${() => tAct('remove', { id: rota.id }).then(() => setT({ sel: null, cell: null, place: null, driver: null }))}><${Icon} name="delete" size=${15} /><span>${tr('Delete the rota')}</span></button>
     `}
+    <${Frames} v=${v} />
     <div class="pro-caps" style="margin-top:14px">${tr('Colours')}</div>
     <div class="tu-legend">${KINDS.map(([k, label]) => html`<span class=${'tu-chip ' + k}>${tr(label)}</span>`)}</div>
   </aside>`;
+}
+
+/** (Round F) The company's named frames ("Rammer"): their names and times changed where they
+ * are, a new one added, one deleted - the rotas' days with one take its times. */
+function Frames({ v }) {
+  const [edit, setEdit] = useState({});
+  const hm = (m) => `${String(Math.floor((m % 1440) / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+  const mins = (t) => {
+    const m = /^(\d{1,2})[:.]?(\d{2})?$/.exec(String(t).trim());
+    return m ? (+m[1] % 24) * 60 + (+(m[2] || 0)) : null;
+  };
+  const save = (f, patch) => {
+    const x = { ...f, ...patch };
+    const from = mins(x.fromT ?? hm(x.from));
+    const to = mins(x.toT ?? hm(x.to));
+    if (from == null || to == null || !String(x.name).trim()) return;
+    tAct('frame_put', { id: f.id, name: x.name, from, to }).then(() => setEdit((e) => ({ ...e, [f.id]: undefined })));
+  };
+  const row = (f) => {
+    const e = edit[f.id] || {};
+    const put = (k) => (ev) => setEdit((x) => ({ ...x, [f.id]: { ...(x[f.id] || {}), [k]: ev.target.value } }));
+    const blur = () => e && Object.keys(e).length && save(f, { name: e.name ?? f.name, fromT: e.fromT, toT: e.toT });
+    const key = (ev) => ev.key === 'Enter' && ev.target.blur();
+    return html`<div class="tu-frame">
+      <input class="nm" value=${e.name ?? f.name} title=${tr('Its name')} onInput=${put('name')} onBlur=${blur} onKeyDown=${key} />
+      <input value=${e.fromT ?? hm(f.from)} title=${tr('From')} onInput=${put('fromT')} onBlur=${blur} onKeyDown=${key} />
+      <input value=${e.toT ?? hm(f.to)} title=${tr('Until (before the start: the next morning)')} onInput=${put('toT')} onBlur=${blur} onKeyDown=${key} />
+      <button type="button" title=${tr('Delete the frame: its days keep their times')} onClick=${() => tAct('frame_remove', { id: f.id })}><${Icon} name="close" size=${13} /></button>
+      ${f.night && html`<span class="night">${tr('until the next morning')}</span>`}
+    </div>`;
+  };
+  const next = `RAM${(v.named || []).length + 1}`;
+  return html`<div class="pro-caps" style="margin-top:14px">${tr('Frames')}</div>
+    <div class="tu-frames">${(v.named || []).map(row)}</div>
+    <button type="button" class="rf-link tu-small" onClick=${() => tAct('frame_put', { id: 0, name: next, from: 6 * 60, to: 16 * 60 })}><${Icon} name="add" size=${15} /><span>${tr('New frame')}</span></button>
+    <div class="pro-dim">${tr('A reserve in a frame takes the open duties in it. A day in a named frame pays the hours driven, at least 7,4 h.')}</div>`;
 }
 
 /** A cell of the rota or of a driver's weeks. */
@@ -205,12 +246,12 @@ function Rota({ v, rota }) {
   const weekend = (d) => d === 0 || d === 6;
   const locked = (d) => rota.locked_weekend && weekend(d);
   return html`<div class="pro-caps head">${head}${!rota.started ? ` · ${tr('begins %{w}', { w: rota.from_label })}` : ''}</div>
-    <div class="tu-explain"><${Icon} name="autorenew" size=${16} /><span>${tr('A rota is several weeks in a row. Every week each driver moves a week down, and after the last week he begins again at week 1.')} ${rota.kind === 'split' ? tr('Split duties Monday to Friday: Saturday and Sunday are always off.') : rota.kind === 'normal' ? tr('A weekend is the Saturday of one week and the Sunday of the next: the drivers work every other weekend.') : ''}</span></div>
+    <div class="tu-explain"><${Icon} name="autorenew" size=${16} /><span>${tr('A rota is several weeks in a row. Every week each driver moves a week down, and after the last week he begins again at week 1.')} ${rota.kind === 'split' ? tr('Split duties Monday to Friday: Saturday and Sunday are always off.') : rota.kind === 'normal' ? tr('A weekend is the Saturday of one week and the Sunday of the next: the drivers work every other weekend.') : rota.kind === 'mixed' ? tr('A mixed team: two weeks of early duties, then middle, late and night - forward, so the rest holds - with two days off after the nights. The numbers by the week count its kinds of duty.') : rota.kind === 'reserve' ? tr('The named frames take turns week by week: RAM1, RAM2, RAM3, RAM4. A frame is a window, not work: a day in it pays the hours driven, at least 7,4 h.') : ''}</span></div>
     <div class="pro-table tu-table">
       <div class="tu-grid tu-head"><span>${tr('Rota week')}</span>${v.days.map((d, k) => html`<span class=${weekend(k) ? 'tu-we' : ''}>${d}</span>`)}<span title=${tr("The weekend after the week: its Saturday and the next week's Sunday")}>${tr('Weekend')}</span><span>${tr('Hours')}</span><span>${tr('Rules')}</span><span>${v.week.label}</span></div>
       ${n === 0 && html`<div class="pro-dim tu-none">${tr('No weeks yet: "Make the rota automatically" makes them, or add a week and fill its days.')}</div>`}
       ${rota.rows.map((row, r) => html`<div class=${'tu-grid tu-row' + (t.cell?.row === r || t.place === r ? ' on' : '')}>
-        <span class="tu-no">${r + 1}</span>
+        <span class="tu-no">${r + 1}${row.shifts?.length ? html`<span class="tu-shifts">${row.shifts.map((x) => html`<i class=${x.key} title=${x.tip}>${x.n}</i>`)}</span>` : null}</span>
         ${row.cells.map((c, d) =>
           locked(d)
             ? html`<span class="tu-cell off tu-lock" title=${tr('A split-duty rota is off on Saturday and Sunday.')}><b>${c.label}</b><${Icon} name="lock" size=${12} /></span>`
@@ -234,9 +275,9 @@ function CellCard({ v, rota, at }) {
   const now = rota.rows[at.row].cells[at.day];
   // (an ordinary rota takes no split duty, a split-duty rota only split duties)
   const all = v.duties[at.day] || [];
-  const fits = (d) => (rota.kind === 'split' ? d.split : rota.kind === 'normal' ? !d.split : true);
+  const fits = (d) => (rota.kind === 'split' ? d.split : rota.kind === 'normal' || rota.kind === 'mixed' ? !d.split : true);
   const duties = all.filter(fits).sort((a, b) => (a.rota == null ? 0 : 1) - (b.rota == null ? 0 : 1) || a.n - b.n);
-  const splits = rota.kind === 'normal' ? all.filter((d) => d.split).length : 0;
+  const splits = rota.kind === 'normal' || rota.kind === 'mixed' ? all.filter((d) => d.split).length : 0;
   return html`<div class="pro-card tu-pick">
     <div class="pro-caps">${tr('Rota week %{r} · %{day}', { r: at.row + 1, day: v.days[at.day] })} · ${now.label} ${now.time || ''}</div>
     ${now.tip && html`<div class="t-err" style="white-space:pre-line;margin-bottom:6px">${now.tip}</div>`}
@@ -247,7 +288,8 @@ function CellCard({ v, rota, at }) {
         const taken = d.rota != null && !here;
         return html`<button type="button" class=${'tu-cell ' + d.cls + (taken ? ' taken' : '') + (here ? ' on' : '')} title=${taken ? tr('In %{where}', { where: d.where }) : tr('%{h} h paid', { h: d.hours.replace('.', ',') })} onClick=${() => !taken && set({ kind: 'duty', n: d.n })}><b>${d.n}</b><span>${d.time}</span></button>`;
       })}
-      ${v.frames.map((f) => html`<button type="button" class="tu-cell reserve" title=${tr('At the company\'s disposal in these hours: the first to cover an open duty in them')} onClick=${() => set({ kind: 'frame', from: f.from, to: f.to })}><b>${tr('Reserve')}</b><span>${f.time}</span></button>`)}
+      ${(v.named || []).map((f) => html`<button type="button" class=${'tu-cell reserve' + (now.ram === f.id ? ' on' : '')} title=${tr('A named frame: the first to cover an open duty in it; the day pays the hours driven, at least 7,4 h')} onClick=${() => set({ kind: 'frame', from: f.from, to: f.to, ram: f.id })}><b>${f.name}</b><span>${f.time}</span></button>`)}
+      ${rota.kind !== 'reserve' && v.frames.map((f) => html`<button type="button" class="tu-cell reserve" title=${tr('At the company\'s disposal in these hours: the first to cover an open duty in them')} onClick=${() => set({ kind: 'frame', from: f.from, to: f.to })}><b>${tr('Reserve')}</b><span>${f.time}</span></button>`)}
     </div>
     <div class="pro-dim" style="margin-top:6px">${tr('The duties no rota has come first; a duty in another week that day is greyed (its place on hover).')}${splits ? ` ${tr('%{n} split duties of the day go in a split-duty rota.', { n: splits })}` : ''}</div>
   </div>`;
@@ -257,7 +299,7 @@ function CellCard({ v, rota, at }) {
 function WeekendBox({ w, kind }) {
   if (!w) return html`<span></span>`;
   const mark = w.level ? html`<i class=${'tu-mark ' + w.level}>!</i>` : null;
-  return html`<span class=${'tu-wkend ' + w.state + (kind === 'normal' ? '' : ' quiet')} title=${`${w.label} · ${w.tip}`}><b>${w.short}</b>${mark}</span>`;
+  return html`<span class=${'tu-wkend ' + w.state + (kind === 'normal' || kind === 'mixed' ? '' : ' quiet')} title=${`${w.label} · ${w.tip}`}><b>${w.short}</b>${mark}</span>`;
 }
 
 /** Who can go on a row: the rota's kind of drivers. */

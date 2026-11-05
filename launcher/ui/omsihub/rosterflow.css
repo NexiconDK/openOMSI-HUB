@@ -1037,6 +1037,19 @@ button.tp-cell:hover { background: var(--tp-cell-hover); }
 .tu-cell.day, .tu-chip.day { --k: #4f8fd8; }
 .tu-cell.late, .tu-chip.late { --k: #9a72e0; }
 .tu-cell.split, .tu-chip.split { --k: #2fb0b8; }
+/* (round F) a night duty, the named frames, a mixed team's week by its kinds of duty */
+.tu-cell.night, .tu-chip.night { --k: #4a5bb8; }
+.tu-no { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; }
+.tu-shifts { display: flex; flex-wrap: wrap; gap: 2px; }
+.tu-shifts i { font-style: normal; font-size: 9.5px; font-weight: 700; line-height: 1; padding: 2px 4px; border-radius: 4px; color: #fff; background: var(--k, var(--rf-grey)); }
+.tu-shifts i.early { --k: #c99a22; } .tu-shifts i.middle { --k: #4f8fd8; } .tu-shifts i.late { --k: #9a72e0; } .tu-shifts i.night { --k: #4a5bb8; }
+.tu-frames { display: flex; flex-direction: column; gap: 4px; }
+.tu-frame { display: grid; grid-template-columns: 58px 1fr 1fr 22px; gap: 4px; align-items: center; }
+.tu-frame input { min-width: 0; height: 24px; font-size: 11.5px; padding: 0 5px; border-radius: 5px; border: 1px solid var(--rf-line); background: var(--rf-field, transparent); color: var(--rf-text); }
+.tu-frame input.nm { font-weight: 700; }
+.tu-frame button { height: 22px; width: 22px; display: grid; place-items: center; border: 0; background: none; color: var(--rf-dim); cursor: pointer; border-radius: 4px; }
+.tu-frame button:hover { color: var(--rf-err); background: color-mix(in srgb, var(--rf-err) 12%, transparent); }
+.tu-frame .night { grid-column: 2 / 4; font-size: 9.5px; color: var(--rf-dim); margin-top: -2px; }
 .tu-cell.reserve, .tu-chip.reserve { --k: #3fae6a; }
 .tu-cell.missing { --k: var(--rf-err); }
 .tu-chip { background: color-mix(in srgb, var(--k) 22%, var(--rf-grid)); color: color-mix(in srgb, var(--k) 70%, var(--rf-text)); }
@@ -1332,6 +1345,9 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .bx-pref { margin-top: 3px; font-size: 10.5px; font-weight: 700; color: color-mix(in srgb, var(--rf-text) 70%, transparent); }
 .bx-pref.fits { color: #5cc98a; }
 .bx-pref.nofit { color: #f0a04b; }
+/* (round F) short notice for a reserve's frame; a duty in a named frame on the calendar */
+.bx-late { margin-top: 3px; font-size: 10.5px; font-weight: 700; color: #f0a04b; }
+.cl-ram { position: absolute; left: 4px; top: 3px; font-style: normal; font-size: 8.5px; font-weight: 800; letter-spacing: 0.02em; padding: 1px 3px; border-radius: 3px; background: color-mix(in srgb, #3fae6a 70%, transparent); color: #fff; }
 .bx-tired { margin-top: 3px; font-size: 10.5px; font-weight: 800; color: #f0a04b; }
 .bx-tired.worn { color: #ff6b6b; }
 

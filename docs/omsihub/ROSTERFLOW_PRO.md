@@ -347,7 +347,10 @@ The daily operations of a date (the company's day, or a day chosen in the calend
   booked for the day; then those who cannot, greyed with why (ill, on holiday, another duty then,
   too little rest to his other duty, his night's rest, his day too long, no licence). For each
   who can: where he comes in the order, whether he is free all day or only then, his hours this
-  week, an hourly-paid driver's own hours ("kan oftest om eftermiddagen"), and **what he costs**
+  week, an hourly-paid driver's own hours ("kan oftest om eftermiddagen"; round F: drawn for the
+  company, the driver and the date - `pro_ops::own_hours`, `OWN_DAYS`: all day 05-24 35 %, the
+  morning 05-14 20 %, the afternoon 11-20 20 %, the evening 14-24 15 %, not that day 10 % - "Jeg kan
+  ikke den dag, desværre." - until the drivers say themselves when they can), and **what he costs**
   (`pro_ops::price_of`, the wages without the on-costs):
 
 | Driver | Costs |
@@ -574,22 +577,25 @@ the day's list back with a green line "Vagt 1002 er givet til Nina Bach"; when n
 page; "Find chauffør ›" opens the same popup.
 
 ## Asked again the same day after a no (`pro_ops::Mood`)
-A driver who said no today does not like being asked again. His **real refusals** of the day
-(`refusals`, `Ask::refused_at`) count: an AI driver's no - tired, plans of his own, irritated,
+A driver who said no today does not like being asked again **for the same day**. His **real
+refusals** today of duties of that date (`refusals`, `Ask::refused_at`) count - round F, after the
+player's report from beta: a no for a duty on the 15th leaves him calm when asked about the 16th;
+the kept noes carry their duty's date (`Refusal::date`; an older file's without one do not count): an AI driver's no - tired, plans of his own, irritated,
 angry - come before the question was closed. "Too early", "too late", "no answer", a no for what he
 cannot (ill, on holiday, his licence, another duty, a day too long), an answer still to come, and
 a question taken back or given another before he answered do not count; a no taken back after it
 came does. A question asked again replaces the old one, and its no is kept (`Ops::noes`).
 
-- **One no today - "😒 Irriteret · sagde nej kl. 09:12":** asked again for any duty, his yes is
+- **One no today - "😒 Irriteret · sagde nej kl. 09:12":** asked again for a duty of that day, his yes is
   much less likely (`IRRITATED_YES`, ×0.4; a reserve within his frame from 12:00 the day before
   too) and grudging ("Okay da… men så er det også sidste gang i dag."), his no irritated ("Igen?
   Nej.", "Jeg har allerede sagt nej i dag."); each such question costs 2 points of contentment
   (`IRRITATED_COST`).
 - **Two - "😠 Sur":** asked again he says no, angry ("Nej! Lad mig nu være i dag."), 5 points
   (`ANGRY_COST`).
-- **Three (his angry no among them):** he answers no more questions today - "Svarer ikke mere i
-  dag" in his row instead of "Spørg", and the command refuses (`ANSWERS_NO_MORE`).
+- **Three (his angry no among them):** he answers no more questions about that day today -
+  "Svarer ikke mere om den dag i dag" in his row instead of "Spørg", and the command refuses
+  (`ANSWERS_NO_MORE`); a duty of another day he is asked about calmly.
 
 The popup shows the tag beside his name before he is asked, and "Spørg" says why on hover ("Har
 allerede sagt nej i dag"). Each of several hourly-paid drivers asked at once counts for himself.
@@ -982,3 +988,72 @@ Tested: `pro_ops::tests`
 `winter_brings_more_sick_calls_and_the_summer_more_holiday_requests_and_dearer_refusals`,
 `the_monday_report_counts_the_week_before_and_is_made_once_on_monday_morning`), and the page's
 `rosterflow::ops::tests::the_drivers_swap_proposals_the_season_and_the_monday_reports`.
+
+## Round F (5 November 2026): named frames RAM1-RAM4, the noon notice, a mixed team
+
+### Named frames ("rammer", `pro_turnus::NamedFrame`)
+
+- **The list**: the company's named frames, kept in `Rotas::frames` (None in a file never changed:
+  `DEFAULT_FRAMES`) - RAM1 04:00-14:00, RAM2 07:00-18:00, RAM3 11:00-22:00, RAM4 15:00-06:00 (`to`
+  30 * 60: past midnight, into the next morning). The Turnus tab's "Frames" on the left changes a
+  name or its times where they are, adds one ("New frame") and deletes one (`rf_turnus_act`
+  `frame_put` / `frame_remove`, planning permission in "Play together"; undone like the tab's other
+  edits). A changed frame brings every rota day and exception with it to its new times; a deleted
+  one leaves them as frames of their own times (`ram` 0).
+- **In a day**: a rota's day can be a named frame as it can be a duty (`Cell::Frame { from, to, ram
+  }`, `ram` the frame's id; its times taken from the list). The rota shows "RAM2 07:00–18:00", the
+  calendar "RAM2" on the driver's day (a small "RAM2" tag on a duty driven in it), the day panel and
+  the who-can-drive box the frame's name for the reserve.
+- **It holds** the duties in its window - and RAM4's past midnight: a duty at 01:00 is the frame's
+  of the day before (`pro_turnus::frame_holds`, used by `plan::fill_tier` and the box's prices).
+- **Pay**: a day in a named frame pays the hours driven, at least 7,4 (`NAMED_LEAST` = 444
+  minutes, a fifth of a 37-hour week) - not the window (`pay::framed_paid`). A frame of its own
+  times is paid whole as before. The rota's hours count a named frame's day as 7,4 h, and a reserve
+  rota of named frames aims at five such days, 37 h. A 15-hour frame is a window, not work: only what
+  is driven counts for the day's length and the rest (round A's rules, when a duty is given).
+- **"Make the rota automatically"** for a reserve rota: the named frames forward week by week -
+  week 1 RAM1, week 2 RAM2, week 3 RAM3, week 4 RAM4, week 5 RAM1 ... -, five days a week, the two
+  days off together a day later each week (RAM1 Sunday and Monday, RAM2 Monday and Tuesday, RAM3
+  Tuesday and Wednesday, RAM4 Wednesday and Thursday, `named_off`), so at most 6 days run into the
+  next week and the cycle comes back to RAM1 after a Sunday off. With no named frames left (all
+  deleted) the reserves' own frames and the early and late frames of before.
+- **The rules** between two named frames: windows overlapping (RAM4 to 06:00, then RAM1 from 04:00
+  the next day) are red ("The frame the day before runs until 06:00, this one begins at 04:00: they
+  overlap"); a gap under 11 hours between two different ones yellow (RAM2 then RAM1: "10:00 between
+  the two frames: the duties in them must leave at least 11:00"); the same frame day after day is
+  not marked (the duties in it are checked when given).
+
+### The noon notice (`pro_ops::rule_of`, `before_noon`)
+
+- A reserve whose frame holds the duty, put on before 12:00 the day before (`plan::RESERVE_TELL_FROM`,
+  12 * 60): no question - "Sæt på" - and told: a message to the driver "You drive duty %{n} on
+  %{date} in your %{frame}" ("Du kører vagt 1004 den 2024-03-05 i din RAM2"; without a named frame
+  "… in your frame", `messages::RESERVE_SET_NAMED` / `RESERVE_SET`).
+- From 12:00 the day before on (or the same day): asked first, the row saying "⏰ Short notice – must
+  be asked" ("⏰ Sent varslet – skal spørges"). The reserve says yes 85 % of the time
+  (`LATE_NOTICE_YES`), else no - plans of their own - and a no counts for the moods of round 1
+  (irritated, angry) as any other.
+
+### A mixed team ("Blandet hold", `RotaKind::Mixed`)
+
+- A kind of rota next to Ordinary, Split duties and Reserve (`Turnus::mixed`, saved only when set).
+  Its duties are early, middle, late or night by their times (`pro_turnus::shift_of`): night when
+  signing on at 21:00 or later or off after 01:00 (`NIGHT_FROM`, `NIGHT_AFTER`), else early before
+  08:00, late from 13:00 (`pro_pref`'s), middle between.
+- **"Make the rota automatically"** (`auto_mixed`): as many weeks as an ordinary rota of the same
+  duties, rounded up to two weeks for each kind the week has - weeks 1-2 early, 3-4 middle, 5-6
+  late, 7-8 night, then early again. A driver moves a row down a week: forward from early to night,
+  so the rest holds. Of each two weeks one works the Saturday and the other the Sunday (every other
+  weekend off; each kind on both weekend days), and the second night week's Saturday and the next
+  early week's Sunday are off: two days off after the nights. Each day its weeks take the duties of
+  their kind (else the nearest kind, the rest kept as far as it can); a weekday with fewer duties
+  than weeks gives the day off where a kind has more weeks than duties.
+- **Shown**: each week's kinds counted in coloured chips by its number (early, middle, late, night -
+  "2 × Night"); night duties have their own colour. The rules: an ordinary rota's, and at most 4
+  night duties a week (`MOST_NIGHTS`; more: yellow, "6 night duties in one week: at most 4 is easier
+  on the drivers"). Over the cycle every driver has every week, so the same of each kind.
+
+Tested: `pro_turnus::tests` (`named_frames_ram1_to_ram4`, `a_mixed_team_takes_turns`,
+`a_named_frame_pays_the_hours_driven_and_holds_the_night`, `a_reserve_rota_is_made_of_frames`),
+`pro_ops::tests::an_ai_drivers_answer_is_human_and_the_same_every_time` (short notice), and the
+page's `rosterflow::ops::tests` (the reserve told when put on).

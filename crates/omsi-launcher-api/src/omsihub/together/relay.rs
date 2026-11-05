@@ -257,7 +257,7 @@ fn rf_tp_need(act: &str) -> Need {
 /// planning's.
 fn rf_turnus_need(act: &str) -> Need {
     match act {
-        "new" | "remove" | "rename" | "hours" | "from" | "add_row" | "remove_row" | "cell" | "driver" | "auto" | "exception" | "undo" | "redo" => PLANS,
+        "new" | "remove" | "rename" | "hours" | "from" | "add_row" | "remove_row" | "cell" | "driver" | "auto" | "exception" | "undo" | "redo" | "frame_put" | "frame_remove" => PLANS,
         _ => Never,
     }
 }

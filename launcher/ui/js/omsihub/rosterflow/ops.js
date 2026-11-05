@@ -150,6 +150,7 @@ function Row({ v, n, part, x }) {
       ${x.wish && x.wish.map((w) => html`<div class="bx-wish">${w}</div>`)}
       ${x.pref && html`<div class=${'bx-pref' + (x.pref.fits > 0 ? ' fits' : x.pref.fits < 0 ? ' nofit' : '')}>${x.pref.text}</div>`}
       ${x.tired && html`<div class=${'bx-tired ' + x.tired.key}>${x.tired.text}</div>`}
+      ${x.late && html`<div class="bx-late">${x.late}</div>`}
       ${x.toil && giving && html`<span class="cl-seg bx-toil">${x.toil.options.map(([k, l]) => html`<button type="button" class=${(k === 'save') === !!toil ? 'on' : ''} onClick=${() => setSave(k === 'save')}>${l}</button>`)}</span>`}
       ${x.note && html`<div class="bx-sub">${x.note}</div>`}
       ${x.offer && html`<div class="bx-swapoffer">${x.offer}</div>`}
@@ -435,7 +436,7 @@ function Days({ v, x, o }) {
       continue;
     }
     out.push(html`<button type="button" class=${'cl-cell ' + c.cls + past + (c.wish ? ' wish' : '') + (c.swap ? ' swapped' : '')} title=${tip} onClick=${() => setO({ date: v.days[i].date, n: null, pop: true, given: null })}>
-      <b>${c.label}</b>${c.sub && html`<span>${c.sub}</span>`}${star}${swap}${tired}
+      <b>${c.label}</b>${c.sub && html`<span>${c.sub}</span>`}${star}${swap}${tired}${c.ram && html`<i class="cl-ram" title=${tr('In the frame %{name}', { name: c.ram })}>${c.ram}</i>`}
     </button>`);
   }
   return out;

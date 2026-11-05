@@ -56,8 +56,26 @@ pub enum Cell {
     Off,
     /// A duty of the Vagter tab, by its number.
     Duty { n: u32 },
-    /// At the company's disposal from `from` to `to` (minutes of the day): a reserve's day.
-    Frame { from: i32, to: i32 },
+    /// At the company's disposal from `from` to `to` (minutes of the day; `to` past 24:00 into the
+    /// next morning): a reserve's day. (Round F) `ram`: one of the company's named frames
+    /// (`NamedFrame`, "RAM2") - 0 a frame of its own times.
+    Frame {
+        from: i32,
+        to: i32,
+        #[serde(default, skip_serializing_if = "is_zero")]
+        ram: u32,
+    },
+}
+
+fn is_zero(x: &u32) -> bool {
+    *x == 0
+}
+
+impl Cell {
+    /// A frame of its own times (no named frame).
+    pub fn frame(from: i32, to: i32) -> Cell {
+        Cell::Frame { from, to, ram: 0 }
+    }
 }
 
 impl Cell {
@@ -82,17 +100,20 @@ pub enum RotaKind {
     Normal,
     Split,
     Reserve,
+    /// (Round F) A mixed team: its weeks take turns at early, middle, late and night duties.
+    Mixed,
 }
 
 impl RotaKind {
-    pub const ALL: [RotaKind; 3] = [RotaKind::Normal, RotaKind::Split, RotaKind::Reserve];
-    pub const LABELS: [&'static str; 3] = ["Ordinary", "Split duties", "Reserve"];
+    pub const ALL: [RotaKind; 4] = [RotaKind::Normal, RotaKind::Mixed, RotaKind::Split, RotaKind::Reserve];
+    pub const LABELS: [&'static str; 4] = ["Ordinary", "Mixed team", "Split duties", "Reserve"];
 
     pub fn key(self) -> &'static str {
         match self {
             RotaKind::Normal => "normal",
             RotaKind::Split => "split",
             RotaKind::Reserve => "reserve",
+            RotaKind::Mixed => "mixed",
         }
     }
 
@@ -121,6 +142,10 @@ pub struct Turnus {
     /// A rota of split duties, Monday to Friday, its weekends off (an older file has none).
     #[serde(default, skip_serializing_if = "is_false")]
     pub split: bool,
+    /// (Round F) A mixed team: early, middle, late and night duties by turns (an older file has
+    /// none).
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub mixed: bool,
     /// The Sunday its first week begins (the driver of row 1 on row 1 then).
     pub from: String,
     /// The hours a week a row aims at (None: the contract week, `econ_uk::contract_week_hours`).
@@ -135,6 +160,8 @@ impl Turnus {
             RotaKind::Reserve
         } else if self.split {
             RotaKind::Split
+        } else if self.mixed {
+            RotaKind::Mixed
         } else {
             RotaKind::Normal
         }
@@ -189,13 +216,194 @@ pub struct Rotas {
     pub list: Vec<Turnus>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub exceptions: Vec<Exception>,
+    /// (Round F) The company's named frames (None: never changed - `DEFAULT_FRAMES`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub frames: Option<Vec<NamedFrame>>,
 }
 
 impl Rotas {
     pub fn is_empty(&self) -> bool {
-        self.list.is_empty() && self.exceptions.is_empty()
+        self.list.is_empty() && self.exceptions.is_empty() && self.frames.is_none()
     }
 }
+
+// --- (round F) the named frames ------------------------------------------------------------------
+
+/// (Round F, NexiconDK, 5 November 2026) A frame the company names ("RAM2 07:00-18:00"): a window
+/// a reserve is at the company's disposal in, put in a rota's day as a duty is. Its day is paid
+/// the hours driven, at least `NAMED_LEAST` - not the whole window (a frame of its own times,
+/// `ram` 0, is paid whole as before). `to` past 24:00 runs into the next morning (RAM4 15:00-06:00:
+/// `to` 30 * 60); a duty after midnight is then that frame's (`frame_holds`).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct NamedFrame {
+    pub id: u32,
+    pub name: String,
+    pub from: i32,
+    pub to: i32,
+}
+
+/// The named frames a company has before it changes them: RAM1 04-14, RAM2 07-18, RAM3 11-22,
+/// RAM4 15-06 (the next morning).
+pub const DEFAULT_FRAMES: [(&str, i32, i32); 4] = [("RAM1", 4 * 60, 14 * 60), ("RAM2", 7 * 60, 18 * 60), ("RAM3", 11 * 60, 22 * 60), ("RAM4", 15 * 60, 30 * 60)];
+
+/// The least a day in a named frame pays (minutes): 7.4 hours, a fifth of a 37-hour week.
+pub const NAMED_LEAST: i32 = 444;
+
+pub const NO_FRAME: &str = "There is no such frame.";
+pub const FRAME_NO_NAME: &str = "A frame needs a name.";
+pub const FRAME_TAKEN: &str = "Another frame has that name.";
+
+/// The company's named frames, in their order.
+pub fn named_frames(c: &Company) -> Vec<NamedFrame> {
+    c.planning.rotas.frames.clone().unwrap_or_else(|| DEFAULT_FRAMES.iter().enumerate().map(|(k, (n, f, t))| NamedFrame { id: k as u32 + 1, name: n.to_string(), from: *f, to: *t }).collect())
+}
+
+/// Named frame `ram` (0, or one deleted: None).
+pub fn named(c: &Company, ram: u32) -> Option<NamedFrame> {
+    (ram != 0).then(|| named_frames(c).into_iter().find(|f| f.id == ram)).flatten()
+}
+
+/// The cells and exceptions of named frame `ram` brought to its times (None: deleted - they keep
+/// their times as frames of their own).
+fn bring_frames(c: &mut Company, ram: u32, now: Option<(i32, i32)>) {
+    let fix = |x: &mut Cell| {
+        if let Cell::Frame { from, to, ram: r } = x {
+            if *r == ram {
+                match now {
+                    Some((f, t)) => {
+                        *from = f;
+                        *to = t;
+                    }
+                    None => *r = 0,
+                }
+            }
+        }
+    };
+    for t in c.planning.rotas.list.iter_mut() {
+        for row in t.rows.iter_mut() {
+            row.days.iter_mut().for_each(fix);
+        }
+    }
+    c.planning.rotas.exceptions.iter_mut().for_each(|e| fix(&mut e.cell));
+}
+
+/// A named frame made (`id` 0) or changed: its name, from and to (minutes; `to` at or before
+/// `from` runs past midnight). Its id.
+pub fn put_frame(c: &mut Company, id: u32, name: &str, from: i32, to: i32) -> Result<u32, &'static str> {
+    let name: String = name.trim().chars().take(16).collect();
+    if name.is_empty() {
+        return Err(FRAME_NO_NAME);
+    }
+    let mut list = named_frames(c);
+    if list.iter().any(|f| f.id != id && f.name.eq_ignore_ascii_case(&name)) {
+        return Err(FRAME_TAKEN);
+    }
+    let f = Frame::new(from, to, 0x7f);
+    let id = if id == 0 {
+        let id = list.iter().map(|f| f.id).max().unwrap_or(0) + 1;
+        list.push(NamedFrame { id, name, from: f.from, to: f.to });
+        id
+    } else {
+        let x = list.iter_mut().find(|x| x.id == id).ok_or(NO_FRAME)?;
+        *x = NamedFrame { id, name, from: f.from, to: f.to };
+        id
+    };
+    c.planning.rotas.frames = Some(list);
+    bring_frames(c, id, Some((f.from, f.to)));
+    Ok(id)
+}
+
+/// Named frame `id` deleted: the days it was in keep its times, as frames of their own.
+pub fn remove_frame(c: &mut Company, id: u32) -> Result<(), &'static str> {
+    let mut list = named_frames(c);
+    let before = list.len();
+    list.retain(|f| f.id != id);
+    if list.len() == before {
+        return Err(NO_FRAME);
+    }
+    c.planning.rotas.frames = Some(list);
+    bring_frames(c, id, None);
+    Ok(())
+}
+
+/// The named frame a cell is (its name), when it is one.
+pub fn frame_name(c: &Company, cell: Cell) -> Option<String> {
+    match cell {
+        Cell::Frame { ram, .. } => named(c, ram).map(|f| f.name),
+        _ => None,
+    }
+}
+
+// --- (round F) a mixed team's duties ---------------------------------------------------------------
+
+/// What a duty is in a mixed team, by its times.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Shift {
+    Early,
+    Middle,
+    Late,
+    Night,
+}
+
+impl Shift {
+    pub const ALL: [Shift; 4] = [Shift::Early, Shift::Middle, Shift::Late, Shift::Night];
+
+    pub fn key(self) -> &'static str {
+        match self {
+            Shift::Early => "early",
+            Shift::Middle => "middle",
+            Shift::Late => "late",
+            Shift::Night => "night",
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Shift::Early => "Early",
+            Shift::Middle => "Middle",
+            Shift::Late => "Late",
+            Shift::Night => "Night",
+        }
+    }
+
+    fn index(self) -> usize {
+        Shift::ALL.iter().position(|x| *x == self).unwrap_or(0)
+    }
+}
+
+/// A night duty: beginning at 21:00 or later, or ending after 01:00.
+pub const NIGHT_FROM: i32 = 21 * 60;
+pub const NIGHT_AFTER: i32 = 25 * 60;
+
+/// A duty signing on at `start` and off at `end` (minutes; past 24:00 the next morning): night,
+/// else early (before 08:00), late (13:00 or later) or middle - `pro_pref`'s early and late.
+pub fn shift_of(start: i32, end: i32) -> Shift {
+    if start >= NIGHT_FROM || end > NIGHT_AFTER {
+        Shift::Night
+    } else if start < super::pro_pref::EARLY_BEFORE {
+        Shift::Early
+    } else if start >= super::pro_pref::LATE_FROM {
+        Shift::Late
+    } else {
+        Shift::Middle
+    }
+}
+
+/// A row's duties by what they are: early, middle, late, night.
+pub fn row_shifts(week: &Week, row: &Row) -> [u32; 4] {
+    let mut out = [0u32; 4];
+    for d in 0..DAYS {
+        if let Cell::Duty { n } = row.days[d] {
+            if let Some(x) = duty(week, d, n) {
+                out[shift_of(x.start, x.end).index()] += 1;
+            }
+        }
+    }
+    out
+}
+
+/// The most night duties a week of a mixed team without a mark.
+pub const MOST_NIGHTS: u32 = 4;
 
 // --- the calendar --------------------------------------------------------------------------------
 
@@ -297,7 +505,7 @@ pub fn decided(c: &Company, id: u32, date: &str) -> Option<Decided> {
 pub fn frame_on(c: &Company, e: &Employee, date: &str) -> Option<Frame> {
     match decided(c, e.id, date) {
         Some(d) => match d.cell {
-            Cell::Frame { from, to } => Some(Frame::new(from, to, 0x7f)),
+            Cell::Frame { from, to, .. } => Some(Frame::new(from, to, 0x7f)),
             _ => None,
         },
         None => e.employment.frame().filter(|f| f.on(plan::weekday_of(date))),
@@ -307,9 +515,36 @@ pub fn frame_on(c: &Company, e: &Employee, date: &str) -> Option<Frame> {
 /// When the rota decides driver `id`'s day on `date`: the frame it gives him (None: none).
 pub fn decides_frame(c: &Company, id: u32, date: &str) -> Option<Option<Frame>> {
     decided(c, id, date).map(|d| match d.cell {
-        Cell::Frame { from, to } => Some(Frame::new(from, to, 0x7f)),
+        Cell::Frame { from, to, .. } => Some(Frame::new(from, to, 0x7f)),
         _ => None,
     })
+}
+
+/// (Round F) As `decides_frame`, and whether the frame is a named one (paid the hours driven, at
+/// least `NAMED_LEAST`).
+pub fn decides_frame_named(c: &Company, id: u32, date: &str) -> Option<Option<(Frame, bool)>> {
+    decided(c, id, date).map(|d| match d.cell {
+        Cell::Frame { from, to, ram } => Some((Frame::new(from, to, 0x7f), named(c, ram).is_some())),
+        _ => None,
+    })
+}
+
+/// (Round F) The named frame driver `id`'s rota gives him on `date`, if one.
+pub fn named_on(c: &Company, id: u32, date: &str) -> Option<NamedFrame> {
+    decided(c, id, date).and_then(|d| match d.cell {
+        Cell::Frame { ram, .. } => named(c, ram),
+        _ => None,
+    })
+}
+
+/// (Round F) Whether driver `e`'s frame holds a piece of work `from..to` of `date`: his frame of
+/// that day, or the night of the day before's frame running past midnight (RAM4 15:00-06:00 holds
+/// a duty at 01:00 the next morning).
+pub fn frame_holds(c: &Company, e: &Employee, date: &str, from: i32, to: i32) -> bool {
+    if frame_on(c, e, date).is_some_and(|f| f.holds(from, to)) {
+        return true;
+    }
+    frame_on(c, e, &dates::add(date, -1)).is_some_and(|f| f.to > 1440 && f.holds(from + 1440, to + 1440))
 }
 
 // --- the duties of a day -------------------------------------------------------------------------
@@ -389,7 +624,10 @@ pub fn times(week: &Week, day: usize, cell: Cell) -> Option<(i32, i32, i32)> {
     match cell {
         Cell::Off => None,
         Cell::Duty { n } => duty(week, day, n).map(|d| (d.start, d.end, d.paid)),
-        Cell::Frame { from, to } => Some((from, to, (to - from).max(0))),
+        // (round F: a named frame pays the hours driven, at least `NAMED_LEAST` - its window is
+        // not work)
+        Cell::Frame { from, to, ram } if ram != 0 => Some((from, to, NAMED_LEAST.min((to - from).max(0)))),
+        Cell::Frame { from, to, .. } => Some((from, to, (to - from).max(0))),
     }
 }
 
@@ -405,6 +643,12 @@ pub fn target_hours(c: &Company, t: &Turnus) -> f64 {
         return h;
     }
     let frames: Vec<f64> = t.rows.iter().filter_map(|r| r.driver).filter_map(|id| c.employee(id)).filter_map(|e| e.employment.frame()).map(|f| f.week_minutes() as f64 / 60.0).collect();
+    // (round F: a reserve rota of named frames aims at five days of `NAMED_LEAST` - 37 hours: their
+    // days pay that at least, not the window)
+    let named = t.rows.iter().any(|r| r.days.iter().any(|x| matches!(x, Cell::Frame { ram, .. } if *ram != 0)));
+    if t.reserve && named {
+        return (5 * NAMED_LEAST) as f64 / 60.0;
+    }
     if t.reserve && !frames.is_empty() {
         return frames.iter().sum::<f64>() / frames.len() as f64;
     }
@@ -426,6 +670,8 @@ pub enum Rule {
     EveryOther,
     /// (A split-duty rota) split duties only, its weekends off; (an ordinary rota) no split duty.
     Split,
+    /// (Round F, a mixed team) a week of many nights.
+    Nights,
 }
 
 pub const M_REST: &str = "%{have} rest before this day, at least %{min}";
@@ -445,6 +691,11 @@ pub const M_ODD_WEEKS: &str = "%{n} weeks: with an odd number of weeks the weeke
 pub const M_SPLIT_HERE: &str = "Duty %{n} is a split duty: it belongs in a split-duty rota";
 pub const M_NOT_SPLIT: &str = "Duty %{n} is not a split duty: a split-duty rota holds split duties only";
 pub const M_SPLIT_WEEKEND: &str = "A split-duty rota is off at the weekend";
+/// (Round F) Named frames: one running into the next.
+pub const M_OVERLAP: &str = "The frame the day before runs until %{end}, this one begins at %{start}: they overlap";
+pub const M_FRAME_REST: &str = "%{have} between the two frames: the duties in them must leave at least %{min}";
+/// (Round F) A mixed team's week with many nights.
+pub const M_NIGHTS: &str = "%{n} night duties in one week: at most %{max} is easier on the drivers";
 
 /// A mark of a rota: its row and day (None: the rota's), red (`hard`) or yellow.
 #[derive(Clone, Debug, PartialEq)]
@@ -512,7 +763,17 @@ pub fn check(c: &Company, k: usize, week: &Week) -> Checked {
         let q = (p + 1) % len;
         let (Some(a), Some(b)) = (times(week, p % DAYS, cell(p)), times(week, q % DAYS, cell(q))) else { continue };
         let rest = b.0 + 1440 - a.1;
-        if rest < MIN_REST {
+        // (round F: between two named frames - windows, not work - an overlap is red, a short
+        // gap yellow: the duties in them must keep the 11 hours)
+        let named = |x: Cell| matches!(x, Cell::Frame { ram, .. } if ram != 0);
+        let windows = named(cell(p)) || named(cell(q));
+        if windows && rest < 0 {
+            out.marks.push(Mark { row: Some(q / DAYS), day: Some(q % DAYS), rule: Rule::Rest, hard: true, text: M_OVERLAP, args: vec![("end", rf::clock(a.1.rem_euclid(1440))), ("start", rf::clock(b.0))] });
+        } else if windows && rest < MIN_REST && cell(p) != cell(q) {
+            out.marks.push(Mark { row: Some(q / DAYS), day: Some(q % DAYS), rule: Rule::Rest, hard: false, text: M_FRAME_REST, args: vec![("have", rf::hm(rest)), ("min", rf::hm(MIN_REST))] });
+        } else if windows {
+            // (the same named frame day after day: a window again, its duties checked when given)
+        } else if rest < MIN_REST {
             out.marks.push(Mark { row: Some(q / DAYS), day: Some(q % DAYS), rule: Rule::Rest, hard: true, text: M_REST, args: vec![("have", rf::hm(rest.max(0))), ("min", rf::hm(MIN_REST))] });
         }
     }
@@ -560,14 +821,23 @@ pub fn check(c: &Company, k: usize, week: &Week) -> Checked {
             let Some(dk) = duty(week, d, num).map(|x| x.kind) else { continue };
             match kind {
                 RotaKind::Split if dk != pd::Kind::Split => out.marks.push(Mark { row: Some(r), day: Some(d), rule: Rule::Split, hard: false, text: M_NOT_SPLIT, args: vec![("n", num.to_string())] }),
-                RotaKind::Normal if dk == pd::Kind::Split => out.marks.push(Mark { row: Some(r), day: Some(d), rule: Rule::Split, hard: false, text: M_SPLIT_HERE, args: vec![("n", num.to_string())] }),
+                RotaKind::Normal | RotaKind::Mixed if dk == pd::Kind::Split => out.marks.push(Mark { row: Some(r), day: Some(d), rule: Rule::Split, hard: false, text: M_SPLIT_HERE, args: vec![("n", num.to_string())] }),
                 _ => {}
             }
         }
     }
     match kind {
         // every other weekend off, round the cycle: no half weekend, and off and at work by turns
-        RotaKind::Normal => {
+        RotaKind::Normal | RotaKind::Mixed => {
+            // (round F: a mixed team's week of many nights)
+            if kind == RotaKind::Mixed {
+                for (r, row) in t.rows.iter().enumerate() {
+                    let nights = row_shifts(week, row)[3];
+                    if nights > MOST_NIGHTS {
+                        out.marks.push(Mark { row: Some(r), day: None, rule: Rule::Nights, hard: false, text: M_NIGHTS, args: vec![("n", nights.to_string()), ("max", MOST_NIGHTS.to_string())] });
+                    }
+                }
+            }
             let ws: Vec<Weekend> = (0..n).filter_map(|k| weekend(t, k)).collect();
             for (k, w) in ws.iter().enumerate() {
                 if *w == Weekend::Half {
@@ -666,10 +936,11 @@ pub fn add_kind(c: &mut Company, name: &str, kind: RotaKind, weeks: usize) -> u3
         RotaKind::Normal => "Rota",
         RotaKind::Split => "Split duties",
         RotaKind::Reserve => "Reserve",
+        RotaKind::Mixed => "Mixed team",
     };
     let name = if name.trim().is_empty() { format!("{fallback} {id}") } else { name.trim().chars().take(40).collect() };
     let rows = vec![Row::default(); weeks.min(MAX_WEEKS)];
-    c.planning.rotas.list.push(Turnus { id, name, reserve: kind == RotaKind::Reserve, split: kind == RotaKind::Split, from: sunday_of(&c.date), hours: None, rows });
+    c.planning.rotas.list.push(Turnus { id, name, reserve: kind == RotaKind::Reserve, split: kind == RotaKind::Split, mixed: kind == RotaKind::Mixed, from: sunday_of(&c.date), hours: None, rows });
     id
 }
 
@@ -734,7 +1005,7 @@ pub fn set_cell(c: &mut Company, id: u32, row: usize, day: usize, cell: Cell, we
         let Some(dk) = duty(week, day, n).map(|x| x.kind) else { return Err(NOT_THAT_DAY) };
         match kind {
             RotaKind::Split if dk != pd::Kind::Split => return Err(ONLY_SPLIT),
-            RotaKind::Normal if dk == pd::Kind::Split => return Err(SPLIT_ELSEWHERE),
+            RotaKind::Normal | RotaKind::Mixed if dk == pd::Kind::Split => return Err(SPLIT_ELSEWHERE),
             _ => {}
         }
         let mine = c.planning.rotas.list.iter().find(|t| t.id == id).and_then(|t| t.rows.get(row)).is_some_and(|r| r.days[day] == cell);
@@ -743,9 +1014,14 @@ pub fn set_cell(c: &mut Company, id: u32, row: usize, day: usize, cell: Cell, we
         }
     }
     let cell = match cell {
-        Cell::Frame { from, to } => {
+        // (round F: a named frame takes its times from the company's list)
+        Cell::Frame { ram, .. } if ram != 0 => {
+            let f = named(c, ram).ok_or(NO_FRAME)?;
+            Cell::Frame { from: f.from, to: f.to, ram }
+        }
+        Cell::Frame { from, to, .. } => {
             let f = Frame::new(from, to, 0x7f);
-            Cell::Frame { from: f.from, to: f.to }
+            Cell::frame(f.from, f.to)
         }
         x => x,
     };
@@ -1013,6 +1289,7 @@ pub fn auto(c: &mut Company, id: u32, week: &Week) -> Result<usize, &'static str
         RotaKind::Reserve => auto_reserve(c, &t),
         RotaKind::Normal => auto_normal(c, k, &t, week)?,
         RotaKind::Split => auto_split(c, k, &t, week)?,
+        RotaKind::Mixed => auto_mixed(c, k, &t, week)?,
     };
     let rota = &mut c.planning.rotas.list[k];
     rota.rows = rows;
@@ -1024,9 +1301,35 @@ pub fn auto(c: &mut Company, id: u32, week: &Week) -> Result<usize, &'static str
     Ok(rota.rows.len())
 }
 
+/// (Round F) The first of the two days off together of the week of named frame `i` (Sunday 0):
+/// the first frame's week off on Sunday and Monday, each next one's a day later (RAM2 Monday and
+/// Tuesday, RAM3 Tuesday and Wednesday, RAM4 Wednesday and Thursday) - so no more than 6 days of
+/// work run into the next week, and the cycle comes back to the first frame after a Sunday off.
+fn named_off(i: usize, _k: usize) -> usize {
+    i % 6
+}
+
 fn auto_reserve(c: &Company, t: &Turnus) -> Vec<Row> {
     let reserves: Vec<&Employee> = c.staff.iter().filter(|e| staff::drives(e) && matches!(e.employment, Employment::Reserve(_))).collect();
     let n = t.rows.len().max(reserves.len()).max(1);
+    // (round F: the company's named frames, forward week by week - RAM1, RAM2, RAM3, RAM4, RAM1 ...:
+    // a driver moves a row down each week, so from early frames to late ones; none left: the
+    // drivers' own frames as before)
+    let named = named_frames(c);
+    if !named.is_empty() {
+        let k = named.len();
+        return (0..n)
+            .map(|r| {
+                let f = &named[r % k];
+                let off = named_off(r % k, k);
+                let mut row = Row::default();
+                for d in 0..DAYS {
+                    row.days[d] = if d == off || d == off + 1 { Cell::Off } else { Cell::Frame { from: f.from, to: f.to, ram: f.id } };
+                }
+                row
+            })
+            .collect();
+    }
     let need = [n * 5 / DAYS; DAYS];
     let off = days_off(&vec![5; n], &need);
     (0..n)
@@ -1035,7 +1338,7 @@ fn auto_reserve(c: &Company, t: &Turnus) -> Vec<Row> {
             let (from, to) = own.map(|f| (f.from, f.to)).unwrap_or(RESERVE_FRAMES[r % RESERVE_FRAMES.len()]);
             let mut row = Row::default();
             for d in 0..DAYS {
-                row.days[d] = if off[r][d] { Cell::Off } else { Cell::Frame { from, to } };
+                row.days[d] = if off[r][d] { Cell::Off } else { Cell::frame(from, to) };
             }
             row
         })
@@ -1109,6 +1412,16 @@ pub fn suggest_weeks(c: &Company, kind: RotaKind, week: &Week) -> usize {
             split_weeks(&todo, 0)
         }
         RotaKind::Reserve => c.staff.iter().filter(|e| staff::drives(e) && matches!(e.employment, Employment::Reserve(_)) && place_of(c, e.id).is_none()).count().max(1),
+        RotaKind::Mixed => {
+            let todo = todo_of(c, None, week, ordinary);
+            if todo.iter().all(Vec::is_empty) {
+                return 0;
+            }
+            let kk = Shift::ALL.into_iter().filter(|s| todo.iter().flatten().any(|x| shift_of(x.start, x.end) == *s)).count().max(1);
+            let step = 2 * kk;
+            let n = normal_weeks(&todo, (econ_uk::contract_week_hours(c) * 60.0).round() as i32, 0);
+            (n.div_ceil(step) * step).min(MAX_WEEKS / step * step).max(step)
+        }
     }
 }
 
@@ -1116,7 +1429,7 @@ pub fn suggest_weeks(c: &Company, kind: RotaKind, week: &Week) -> usize {
 /// short duties, a split-duty rota's split duties of Monday to Friday (a reserve rota none).
 pub fn left_over(c: &Company, kind: RotaKind, week: &Week) -> usize {
     match kind {
-        RotaKind::Normal => todo_of(c, None, week, ordinary).iter().map(Vec::len).sum(),
+        RotaKind::Normal | RotaKind::Mixed => todo_of(c, None, week, ordinary).iter().map(Vec::len).sum(),
         RotaKind::Split => split_open(c, week),
         RotaKind::Reserve => 0,
     }
@@ -1181,7 +1494,7 @@ fn give_weekend(rows: &mut [Row], minutes: &mut [i32], week: &Week, day: usize, 
             _ => false,
         };
         if let (true, Some((from, to))) = (frame_better, frame) {
-            rows[r].days[day] = Cell::Frame { from, to };
+            rows[r].days[day] = Cell::frame(from, to);
             minutes[r] += to - from;
             frames -= 1;
         } else if let Some(k) = best {
@@ -1299,6 +1612,77 @@ fn auto_split(c: &Company, k: usize, t: &Turnus, week: &Week) -> Result<Vec<Row>
         give_day(&mut rows, &mut minutes, week, d, &at, &given);
     }
     even_out(&mut rows, week, target);
+    Ok(rows)
+}
+
+/// (Round F) A mixed team made: as many weeks as an ordinary rota of the same duties, rounded up
+/// so that each kind of duty the week has (early, middle, late, night - `shift_of`) has two weeks
+/// by turns: weeks 1-2 early, 3-4 middle, 5-6 late, 7-8 night, 9-10 early again ... A driver
+/// moves a row down a week, so forward from early to night; of each two weeks one works the
+/// Saturday, the other the Sunday (every other weekend off, each kind on both weekend days), the
+/// second night week's Saturday and the next (early) week's Sunday off - two days off after the
+/// nights. Each day its weeks at work take the duties of their kind, else the nearest kind, the
+/// rest kept as well as it can; a weekday with fewer duties than weeks gives the day off where
+/// a kind has more weeks than duties.
+fn auto_mixed(c: &Company, k: usize, t: &Turnus, week: &Week) -> Result<Vec<Row>, &'static str> {
+    let todo = todo_of(c, Some(k), week, ordinary);
+    if todo.iter().all(Vec::is_empty) {
+        return Err(NOTHING_TO_PLACE);
+    }
+    let target = (target_hours(c, t) * 60.0).round() as i32;
+    let kinds: Vec<Shift> = Shift::ALL.into_iter().filter(|s| todo.iter().flatten().any(|x| shift_of(x.start, x.end) == *s)).collect();
+    let kk = kinds.len().max(1);
+    let step = 2 * kk;
+    let base = normal_weeks(&todo, target, t.rows.len());
+    let n = (base.div_ceil(step) * step).min(MAX_WEEKS / step * step).max(step);
+    let kind_of = |r: usize| kinds.get((r / 2) % kk).copied().unwrap_or(Shift::Middle);
+    let x = weekdays_off(&todo, n);
+    let mut off = vec![[false; DAYS]; n];
+    for r in 0..n {
+        off[r][0] = r % 2 == 0;
+        off[r][DAYS - 1] = r % 2 == 1;
+        off[r][x[r]] = true;
+    }
+    let mut rows: Vec<Row> = vec![Row::default(); n];
+    let mut minutes = vec![0i32; n];
+    for d in (1..DAYS).chain([0]) {
+        let mut at: Vec<usize> = (0..n).filter(|&r| !off[r][d]).collect();
+        // (more weeks than duties: the day off where a kind has more weeks than duties, the week
+        // with the most hours so far)
+        while d != 0 && d != DAYS - 1 && at.len() > todo[d].len() {
+            let surplus = |k: Shift, at: &[usize]| at.iter().filter(|&&r| kind_of(r) == k).count() as i64 - todo[d].iter().filter(|x| shift_of(x.start, x.end) == k).count() as i64;
+            let Some(k) = Shift::ALL.into_iter().filter(|k| at.iter().any(|&r| kind_of(r) == *k)).max_by_key(|k| (surplus(*k, &at), std::cmp::Reverse(k.index()))) else { break };
+            let Some(pos) = at.iter().enumerate().filter(|(_, &r)| kind_of(r) == k).max_by_key(|(_, &r)| (minutes[r], r)).map(|x| x.0) else { break };
+            at.remove(pos);
+        }
+        at.sort_by_key(|&r| (kind_of(r).index(), r));
+        let mut left: Vec<&ProDuty> = todo[d].clone();
+        for r in at {
+            let (pr, pd) = if d == 0 { ((r + n - 1) % n, DAYS - 1) } else { (r, d - 1) };
+            let lo = times(week, pd, rows[pr].days[pd]).map(|x| x.1 + MIN_REST - 1440);
+            let hi = if d == 0 { times(week, 1, rows[r].days[1]).map(|x| x.0 + 1440 - MIN_REST) } else { None };
+            let short = |from: i32, to: i32| lo.map_or(0, |lo| (lo - from).max(0)) + hi.map_or(0, |hi| (to - hi).max(0));
+            let want = kind_of(r).index() as i32;
+            let best = (0..left.len()).min_by_key(|&j| {
+                let y = left[j];
+                (short(y.start, y.end), (shift_of(y.start, y.end).index() as i32 - want).abs(), std::cmp::Reverse(y.paid), y.number)
+            });
+            match best {
+                Some(j) => {
+                    let y = left.remove(j);
+                    rows[r].days[d] = Cell::Duty { n: y.number };
+                    minutes[r] += y.paid;
+                }
+                // (a weekend day with no duty left: a reserve's frame keeps it whole)
+                None if d == 0 || d == DAYS - 1 => {
+                    let f = RESERVE_FRAMES.iter().copied().min_by_key(|f| short(f.0, f.1)).unwrap_or(RESERVE_FRAMES[0]);
+                    rows[r].days[d] = Cell::frame(f.0, f.1);
+                    minutes[r] += f.1 - f.0;
+                }
+                None => {}
+            }
+        }
+    }
     Ok(rows)
 }
 
@@ -1515,7 +1899,7 @@ pub fn pdf(c: &Company, k: usize, week: &Week, date: &str, words: &PrintWords) -
                     let tm = times(week, d, row.days[d]).map(|(a, b, _)| format!("{}-{}", rf::clock(a), rf::clock(b))).unwrap_or_else(|| "?".into());
                     pdf.text(x, y + 17.0, 7.5, false, &tm, grey, 0);
                 }
-                Cell::Frame { from, to } => {
+                Cell::Frame { from, to, .. } => {
                     pdf.text(x, y + 6.0, 9.5, true, "R", [31, 122, 69], 0);
                     pdf.text(x, y + 17.0, 7.5, false, &format!("{}-{}", rf::clock(from), rf::clock(to)), grey, 0);
                 }
@@ -1553,6 +1937,9 @@ pub fn texts() -> Vec<&'static str> {
     v.extend([M_HALF_WEEKEND, M_TWO_FREE, M_TWO_WORKED, M_ODD_WEEKS, M_SPLIT_HERE, M_NOT_SPLIT, M_SPLIT_WEEKEND, WEEKEND_OFF, ONLY_SPLIT, SPLIT_ELSEWHERE, NO_SPLIT]);
     v.extend(RotaKind::LABELS);
     v.extend(NOTES.iter().map(|n| n.1));
+    // (round F: the named frames, a mixed team)
+    v.extend([M_OVERLAP, M_FRAME_REST, M_NIGHTS, NO_FRAME, FRAME_NO_NAME, FRAME_TAKEN]);
+    v.extend(Shift::ALL.map(Shift::label));
     v
 }
 
