@@ -260,6 +260,19 @@ pub struct Ops {
     pub swaps: Vec<super::pro_swap::Swap>,
     #[serde(skip_serializing_if = "is_none_u32")]
     pub last_swap: u32,
+    /// (NexiconDK, 5 November 2026: round E) The swaps the drivers propose themselves
+    /// (`pro_trade`), the last number given one, and the company's day they were last drawn for.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub trades: Vec<super::pro_trade::Trade>,
+    #[serde(skip_serializing_if = "is_none_u32")]
+    pub last_trade: u32,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub traded: String,
+    /// The weeks counted for the Monday report, and the reports made (`pro_report`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub tallies: Vec<super::pro_report::Tally>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub reports: Vec<super::pro_report::Report>,
 }
 
 fn is_none_u32(x: &u32) -> bool {
@@ -272,7 +285,7 @@ fn is_zero(x: &Cents) -> bool {
 
 impl Ops {
     pub fn is_empty(&self) -> bool {
-        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty() && self.sick.is_empty() && self.extras.is_empty() && self.grumbled.is_empty() && self.rest_fine == 0 && self.wishes.is_empty() && self.last_wish == 0 && self.wished.is_empty() && self.toil_asked.is_empty() && !self.toil_default
+        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty() && self.sick.is_empty() && self.extras.is_empty() && self.grumbled.is_empty() && self.rest_fine == 0 && self.wishes.is_empty() && self.last_wish == 0 && self.wished.is_empty() && self.toil_asked.is_empty() && !self.toil_default && self.swaps.is_empty() && self.last_swap == 0 && self.trades.is_empty() && self.last_trade == 0 && self.traded.is_empty() && self.tallies.is_empty() && self.reports.is_empty()
     }
 }
 
@@ -1141,6 +1154,7 @@ pub fn tidy(c: &mut Company) {
     super::pro_rest::tidy(c);
     super::pro_wish::tidy(c);
     super::pro_toil::tidy(c);
+    super::pro_trade::tidy(c);
 }
 
 /// Every English text this module hands the pages besides its literals.
@@ -1156,6 +1170,9 @@ pub fn texts() -> Vec<&'static str> {
     v.extend(super::pro_holiday::texts());
     v.extend(super::pro_pref::texts());
     v.extend(super::pro_tired::texts());
+    v.extend(super::pro_trade::texts());
+    v.extend(super::pro_season::texts());
+    v.extend(super::pro_report::texts());
     for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP, &SAY_ANNOYED, &SAY_ANGRY, &SAY_GRUDGING] {
         v.extend(list.iter().copied());
     }

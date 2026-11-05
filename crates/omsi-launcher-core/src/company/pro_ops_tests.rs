@@ -1396,3 +1396,227 @@ fn a_tired_driver_or_a_duty_not_liked_gets_fewer_yeses() {
     let disliked = yes(&c, &late, Level::Fresh, 14 * 60);
     assert!(disliked + 30 < liked, "{disliked} {liked}");
 }
+
+// --- round E: the drivers' swap proposals, the seasons, the Monday report -------------------------
+
+fn emp(c: &mut Company, id: u32) -> &mut super::super::model::Employee {
+    c.staff.iter_mut().find(|e| e.id == id).unwrap()
+}
+
+/// A rota of three rows: `a` the mornings (1001) Monday to Friday, `b` the afternoons (1002),
+/// `f` every day off - each keeps his row for the test's week.
+fn rota3(c: &mut Company, a: u32, b: u32, f: u32) {
+    let w = week(c, "2024-03-03");
+    let id = pt::add(c, "Nord", false);
+    for _ in 0..3 {
+        pt::add_row(c, id).unwrap();
+    }
+    for dd in 1..=5 {
+        pt::set_cell(c, id, 0, dd, Cell::Duty { n: 1001 }, &w).unwrap();
+        pt::set_cell(c, id, 1, dd, Cell::Duty { n: 1002 }, &w).unwrap();
+    }
+    pt::set_driver(c, id, 0, Some(a)).unwrap();
+    pt::set_driver(c, id, 1, Some(b)).unwrap();
+    pt::set_driver(c, id, 2, Some(f)).unwrap();
+}
+
+/// The company's proposal of the day, drawn again with another company id until `ok` takes one.
+fn proposal(c: &mut Company, w: &pt::Week, ok: &dyn Fn(&super::super::pro_trade::Trade) -> bool) -> super::super::pro_trade::Trade {
+    use super::super::pro_trade as tr;
+    let id = c.id.clone();
+    for n in 0..400 {
+        c.id = format!("{id}-t{n}");
+        c.planning.ops.traded.clear();
+        c.planning.ops.trades.clear();
+        if let Some(k) = tr::daily(c, w) {
+            let t = c.planning.ops.trades.iter().find(|t| t.id == k).unwrap().clone();
+            if ok(&t) {
+                return t;
+            }
+        }
+    }
+    panic!("no proposal");
+}
+
+#[test]
+fn a_tired_driver_proposes_to_give_a_duty_to_a_fresh_colleague_and_approved_it_is_a_swap() {
+    use super::super::pro_swap as ps;
+    use super::super::pro_tired::Worked;
+    use super::super::pro_trade::{self as tr, Offer, TradeState, Why};
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    let (a, b, f) = (ids[0], ids[1], ids[2]);
+    rota3(&mut c, a, b, f);
+    for e in c.staff.iter_mut() {
+        e.shift_pref = Some(super::super::pro_pref::ShiftPref::Neither);
+    }
+    // a worked the six days before: tired from Tuesday on
+    emp(&mut c, a).worked = (1..=6).map(|k| Worked { date: dates::add("2024-03-04", -k), from: 360, to: 660 }).collect();
+    let w = week(&c, "2024-03-03");
+    let t = proposal(&mut c, &w, &|t| t.why == Why::Tired);
+    // a gives his morning to f, who is off that day and fresh
+    assert_eq!((t.a, t.b), (a, f));
+    let Offer::Give { a_n } = t.offer else { panic!("{t:?}") };
+    assert_eq!(a_n, 1001);
+    assert!(t.date > c.date && t.state == TradeState::Open);
+    // his message to the control room
+    assert!(c.messages.list.iter().any(|m| m.text == tr::SAYS_GIVE), "{:?}", c.messages.list.iter().map(|m| &m.text).collect::<Vec<_>>());
+    assert_eq!(tr::open(&c).len(), 1);
+    // approved: the swap of round C - f drives 1001, a has the day off, ⇄ for both
+    let before = (c.employee(a).unwrap().satisfaction, c.employee(f).unwrap().satisfaction);
+    let made = tr::approve(&mut c, t.id, &w).unwrap();
+    assert!(made.swap.is_some());
+    assert_eq!(pt::decided(&c, f, &t.date).unwrap().cell, Cell::Duty { n: 1001 });
+    assert_eq!(pt::decided(&c, a, &t.date).unwrap().cell, Cell::Off);
+    assert_eq!(ps::of_driver(&c, a, &t.date).map(|x| x.1), Some(f));
+    assert_eq!(c.employee(a).unwrap().satisfaction, before.0 + tr::APPROVED);
+    assert_eq!(c.employee(f).unwrap().satisfaction, before.1 + tr::APPROVED);
+    assert!(tr::open(&c).is_empty());
+    assert_eq!(tr::approve(&mut c, t.id, &w).map(|_| ()), Err(tr::NO_SUCH_TRADE));
+    // "Fortryd bytte" of round C undoes it
+    let no = c.planning.ops.trades.iter().find(|x| x.id == t.id).unwrap().swap.unwrap();
+    ps::undo(&mut c, no).unwrap();
+    assert_eq!(pt::decided(&c, a, &t.date).unwrap().cell, Cell::Duty { n: 1001 });
+}
+
+#[test]
+fn early_and_late_people_propose_to_swap_and_refused_or_left_they_are_less_content() {
+    use super::super::pro_pref::ShiftPref;
+    use super::super::pro_trade::{self as tr, Offer, TradeState, Why};
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    let (a, b) = (ids[0], ids[1]);
+    rota(&mut c, a, b);
+    // a has the mornings and likes the late ones, b the other way round
+    emp(&mut c, a).shift_pref = Some(ShiftPref::Late);
+    emp(&mut c, b).shift_pref = Some(ShiftPref::Early);
+    let w = week(&c, "2024-03-03");
+    let t = proposal(&mut c, &w, &|t| t.why != Why::Errand);
+    assert_eq!(t.offer, if t.a == a { Offer::Swap { a_n: 1001, b_n: 1002 } } else { Offer::Swap { a_n: 1002, b_n: 1001 } });
+    assert!(t.both, "{t:?}");
+    assert_eq!(t.why, if t.a == a { Why::Late } else { Why::Early });
+    // legal for both under the rest rules (a reduced rest of 9 hours is allowed three times a week)
+    let (x, y) = tr::breaches(&c, &t, &w);
+    assert!(x.is_empty() && y.is_empty(), "{x:?} {y:?}");
+    // refused: both less content
+    let before = c.employee(a).unwrap().satisfaction;
+    tr::refuse(&mut c, t.id).unwrap();
+    assert_eq!(c.employee(a).unwrap().satisfaction, before - tr::REFUSED);
+    assert_eq!(tr::refuse(&mut c, t.id), Err(tr::NO_SUCH_TRADE));
+    assert_eq!(tr::decided_in(&c, &c.date.clone(), &dates::add(&c.date, 6)), (0, 1));
+    // one left open three days lapses on the night's tidy
+    let t = proposal(&mut c, &w, &|_| true);
+    let before = c.employee(t.a).unwrap().satisfaction;
+    c.date = dates::add(&c.date, tr::LAPSE_DAYS);
+    tr::tidy(&mut c);
+    let x = c.planning.ops.trades.iter().find(|x| x.id == t.id).unwrap();
+    assert_eq!(x.state, TradeState::Lapsed);
+    assert_eq!(c.employee(t.a).unwrap().satisfaction, before - tr::LAPSED);
+}
+
+#[test]
+fn a_proposal_no_longer_as_made_lapses_when_approved() {
+    use super::super::pro_trade::{self as tr, TradeState};
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    rota(&mut c, ids[0], ids[1]);
+    let w = week(&c, "2024-03-03");
+    let t = proposal(&mut c, &w, &|_| true);
+    // the first driver given the day off in the Turnus tab since
+    pt::put_exception(&mut c, t.a, &t.date, Some((Cell::Off, String::new())));
+    assert!(tr::open(&c).is_empty());
+    assert_eq!(tr::approve(&mut c, t.id, &w).map(|_| ()), Err(tr::CHANGED));
+    assert!(c.planning.ops.swaps.is_empty());
+    // the night's tidy: lapsed
+    tr::tidy(&mut c);
+    assert_eq!(c.planning.ops.trades.iter().find(|x| x.id == t.id).unwrap().state, TradeState::Lapsed);
+}
+
+#[test]
+fn winter_brings_more_sick_calls_and_the_summer_more_holiday_requests_and_dearer_refusals() {
+    use super::super::holidays::{self as hd, By, Reason, Request};
+    use super::super::pro_season::{self as se, Season};
+    let mut c = company();
+    assert_eq!(se::of("2024-01-15"), Season::Winter);
+    assert_eq!(se::of("2024-12-01"), Season::Winter);
+    assert_eq!(se::of("2024-03-01"), Season::Spring);
+    assert_eq!(se::of("2024-06-19"), Season::Spring);
+    assert_eq!(se::of("2024-06-20"), Season::Summer);
+    assert_eq!(se::of("2024-08-15"), Season::Summer);
+    assert_eq!(se::of("2024-08-16"), Season::Other);
+    assert_eq!(se::sick(&c, "2024-02-10"), se::WINTER_SICK);
+    assert_eq!(se::sick(&c, "2024-07-10"), 1.0);
+    assert_eq!(se::asks(&c, "2024-07-10"), se::SUMMER_ASKS);
+    assert_eq!(se::hint(&c, "2024-07-10").map(|h| h.0), Some("summer"));
+    assert_eq!(se::hint(&c, "2024-10-10"), None);
+    // a summer holiday refused costs half as much more; another the usual
+    let id = c.staff[0].id;
+    let ask = |c: &mut Company, from: &str, until: &str, reason: Reason| {
+        c.staff_rules.holidays.last += 1;
+        let no = c.staff_rules.holidays.last;
+        let r = Request { no, from: from.into(), until: until.into(), reason, asked: c.date.clone(), due: dates::add(&c.date, 7), ..Default::default() };
+        emp(c, id).leave.requests.push(r);
+        no
+    };
+    let no = ask(&mut c, "2024-07-08", "2024-07-12", Reason::Summer);
+    emp(&mut c, id).satisfaction = 80.0;
+    hd::answer(&mut c, no, false, By::Player).unwrap();
+    let summer = 80.0 - c.employee(id).unwrap().satisfaction;
+    assert_eq!(summer, hd::refusal_cost(1) * se::SUMMER_REFUSAL);
+    let no = ask(&mut c, "2024-10-08", "2024-10-09", Reason::Break);
+    emp(&mut c, id).satisfaction = 80.0;
+    hd::answer(&mut c, no, false, By::Player).unwrap();
+    assert_eq!(80.0 - c.employee(id).unwrap().satisfaction, hd::refusal_cost(2));
+    // without RosterFlow Pro the year is as it was
+    let mut o = c.clone();
+    autopilot::set_planner(&mut o, Planner::RosterFlow);
+    assert_eq!(se::sick(&o, "2024-02-10"), 1.0);
+    assert_eq!(se::hint(&o, "2024-07-10"), None);
+}
+
+#[test]
+fn the_monday_report_counts_the_week_before_and_is_made_once_on_monday_morning() {
+    use super::super::pay::Paid;
+    use super::super::pro_report as rp;
+    use super::super::pro_tired::Worked;
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    // the nights of the week from Sunday 3 March: paid, one ill two days, a duty uncovered
+    emp(&mut c, ids[1]).sick_until = Some("2024-03-06".into());
+    for k in 0..7 {
+        let date = dates::add("2024-03-03", k);
+        let paid = Paid { cost: 1_000_00, overtime: 1.5, overtime_cost: 120_00, supplements: 80_00, ..Default::default() };
+        c.date = date.clone();
+        rp::after_day(&mut c, &date, &paid, if k == 2 { 1 } else { 0 });
+    }
+    // (two grumbles on the Saturday - `pro_rest::grumbles`)
+    rp::complained(&mut c, 2);
+    // a driver worn out by the Saturday, another the least content
+    emp(&mut c, ids[2]).worked = (0..8).map(|k| Worked { date: dates::add("2024-03-09", -k), from: 300, to: 900 }).collect();
+    emp(&mut c, ids[3]).satisfaction = 31.4;
+    // Sunday: nothing; Monday before 06:00: nothing
+    c.date = "2024-03-10".into();
+    assert_eq!(rp::monday(&mut c, 9 * 60), None);
+    c.date = "2024-03-11".into();
+    assert_eq!(rp::monday(&mut c, 5 * 60), None);
+    let n = rp::monday(&mut c, 6 * 60).unwrap();
+    assert_eq!(n, pt::week_number("2024-03-04"));
+    let r = c.planning.ops.reports.last().unwrap().clone();
+    assert_eq!(r.sunday, "2024-03-03");
+    assert_eq!((r.tally.pay, r.tally.overtime_cost, r.tally.supplements, r.tally.days), (7_000_00, 840_00, 560_00, 7));
+    assert!((r.tally.overtime_h - 10.5).abs() < 1e-9);
+    // ill Sunday 3 (the sick_until from before) to Wednesday 6
+    assert_eq!(r.tally.sick_days, 4);
+    assert_eq!((r.tally.uncovered, r.tally.complaints), (1, 2));
+    assert_eq!(r.tired.as_ref().map(|t| (t.id, t.key.as_str())), Some((ids[2], "worn")));
+    assert_eq!(r.unhappy.as_ref().map(|u| (u.id, u.value)), Some((ids[3], 31.0)));
+    // told: the inbox has it, a notice waits until seen; made once
+    assert!(c.inbox.messages.iter().any(|m| m.title == rp::READY));
+    assert_eq!(rp::unseen(&c).map(|r| r.sunday.as_str()), Some("2024-03-03"));
+    rp::seen(&mut c);
+    assert!(rp::unseen(&c).is_none());
+    assert_eq!(rp::monday(&mut c, 7 * 60), None);
+    // a week with nothing counted has no report
+    c.date = "2024-03-25".into();
+    assert_eq!(rp::monday(&mut c, 6 * 60), None);
+}

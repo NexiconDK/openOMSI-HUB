@@ -113,9 +113,12 @@ pub mod pro_cost;
 pub mod pro_holiday;
 pub mod pro_pref;
 pub mod pro_tired;
+pub mod pro_report;
 pub mod pro_rest;
+pub mod pro_season;
 pub mod pro_sick;
 pub mod pro_toil;
+pub mod pro_trade;
 pub mod pro_wish;
 /// (NexiconDK, 4 November 2026) RosterFlow Pro's rota (step 3, "Turnus").
 pub mod pro_turnus;

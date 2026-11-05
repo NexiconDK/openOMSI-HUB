@@ -30,6 +30,7 @@ use omsi_launcher_lib::company::pro_cut::{self as pc, How};
 use omsi_launcher_lib::company::pro_ops::{self as po, Asked, DayIs, OpenDuty, Price, Reply, Rule};
 use omsi_launcher_lib::company::pro_rest::{self as pr, Breach};
 use omsi_launcher_lib::company::{pro_cost as pcost, pro_holiday as ph, pro_pref as pp, pro_swap as psw, pro_tired as ptd, pro_toil as ptl, pro_wish as pw};
+use omsi_launcher_lib::company::{pro_report as prp, pro_season as pse, pro_trade as ptr};
 use omsi_launcher_lib::company::pro_turnus::{self as pt, ProDuty, Week};
 use omsi_launcher_lib::company::{self as co, Company};
 use serde_json::{json, Value};
@@ -364,7 +365,160 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     // (round B: what the first week shown costs in wages, and the drivers' wishes not decided)
     out["cost"] = week_cost(&c, &week, &plans, &first);
     out["wishes"] = json!({ "open": pw::open(&c).len(), "label": trf("Wishes (%{n})", &[("n", &pw::open(&c).len().to_string())]) });
+    // (round E: the drivers' own swap proposals, the Monday reports, the season of the week shown)
+    let trades = ptr::open(&c).len();
+    out["trades"] = json!({ "open": trades, "label": trf("Swap proposals (%{n})", &[("n", &trades.to_string())]) });
+    out["reports"] = json!({ "label": tr("Reports"), "count": c.planning.ops.reports.len(), "new": prp::unseen(&c).is_some() });
+    if let Some((key, text, tip)) = pse::hint(&c, &first) {
+        out["season"] = json!({ "key": key, "text": tr(text), "tip": tr(tip) });
+    }
     Ok(out)
+}
+
+/// A date as the lists say it: "lørdag 9. mar".
+fn long_day(d: &str) -> String {
+    format!("{} {}", tr(FULL_DAYS[pt::day_of(d)]).to_lowercase(), short_date(d))
+}
+
+fn filled(t: &(&'static str, Vec<(&'static str, String)>)) -> String {
+    let a: Vec<(&str, &str)> = t.1.iter().map(|(k, v)| (*k, v.as_str())).collect();
+    trf(t.0, &a)
+}
+
+/// (round E) The drivers' own swap proposals (`rf_trades`): those open, the earliest date first -
+/// what they propose and why, the rest rules either would break, by when to answer.
+fn trades(s: &mut Session, r: &mut Rf, _args: &Value) -> Answer {
+    let Some(c) = s.company.clone() else { return Ok(json!({ "none": true })) };
+    if let Some(v) = off(&c) {
+        return Ok(v);
+    }
+    let week = match super::turnus::week_duties(s, r) {
+        Some(Ok(w)) => w,
+        Some(Err(e)) => return Ok(json!({ "reading": e })),
+        None => return Ok(json!({ "reading": tr("Reading the timetable…") })),
+    };
+    let name = name_in(&c);
+    let list: Vec<Value> = ptr::open(&c)
+        .into_iter()
+        .map(|t| {
+            let (what, why) = ptr::words(&c, t, &long_day);
+            let (ba, bb) = ptr::breaches(&c, t, &week);
+            let breach: Vec<String> = [(t.a, ba), (t.b, bb)].iter().flat_map(|(id, bs)| bs.iter().map(|b| format!("{}: {}", name(*id), breach_words(b))).collect::<Vec<_>>()).collect();
+            // (it lapses when its first duty begins, or three days after it was sent)
+            let lapse = co::dates::add(&t.sent, ptr::LAPSE_DAYS - 1);
+            let until = if lapse.as_str() < t.date.as_str() {
+                trf("Answer by %{day}", &[("day", &day_label(&lapse))])
+            } else {
+                trf("Answer before %{time} on %{day}", &[("time", &clock(t.starts)), ("day", &day_label(&t.date))])
+            };
+            let kind = |id: u32| c.employee(id).map(|e| kind_of(&c, e).1).unwrap_or_default();
+            json!({ "id": t.id, "date": t.date, "a": name(t.a), "b": name(t.b), "a_nr": t.a, "b_nr": t.b, "a_kind": kind(t.a), "b_kind": kind(t.b),
+                "text": format!("⇄ {}", filled(&what)), "why": filled(&why), "breach": breach, "sent": trf("sent %{day}", &[("day", &day_label(&t.sent))]), "until": until })
+        })
+        .collect();
+    Ok(json!({
+        "title": tr("The drivers' swap proposals"),
+        "sub": match list.len() { 0 => tr("No swap proposals to decide."), 1 => tr("1 swap proposal to decide"), n => trf("%{n} swap proposals to decide", &[("n", &n.to_string())]) },
+        "list": list,
+        "note": tr("Approved, the swap is made at once for both drivers - ⇄ in the calendar, the day's box undoes it until its first duty begins - and both are a little more content; refused or left open, a little less."),
+    }))
+}
+
+/// (round E) A swap proposal decided (`rf_trade_act`: `act` "approve" | "refuse", `trade` its
+/// number).
+fn trade_act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
+    let Some(c) = s.company.clone() else { return Ok(json!({})) };
+    if let Some(v) = off(&c) {
+        return Ok(v);
+    }
+    let id = args.get("trade").and_then(Value::as_u64).unwrap_or(0) as u32;
+    let Some(t) = c.planning.ops.trades.iter().find(|t| t.id == id).cloned() else { return Ok(said(tr(ptr::NO_SUCH_TRADE), true)) };
+    let name = name_in(&c);
+    let (a, b) = (name(t.a), name(t.b));
+    let mut refused = None;
+    let approve = str_arg(args, "act") == "approve";
+    let week = if approve {
+        match super::turnus::week_duties(s, r) {
+            Some(Ok(w)) => Some(w),
+            Some(Err(e)) => return Ok(said(e, true)),
+            None => return Ok(said(tr("Reading the timetable…"), false)),
+        }
+    } else {
+        None
+    };
+    let res = company::act(s, |c| {
+        let out = match &week {
+            Some(w) => ptr::approve(c, id, w).map(|_| ()),
+            None => ptr::refuse(c, id),
+        };
+        out.map_err(|e| {
+            refused = Some(e);
+            e
+        })
+    });
+    Ok(match res {
+        Ok(()) => {
+            s.plan_gen += 1;
+            let text = if approve { trf("Approved: %{a} and %{b} swap on %{day}.", &[("a", &a), ("b", &b), ("day", &day_label(&t.date))]) } else { trf("Refused: %{a} and %{b} are less content.", &[("a", &a), ("b", &b)]) };
+            json!({ "edited": true, "say": { "text": text, "error": false } })
+        }
+        Err(_) => refused.map_or(json!({}), |e| said(tr(e), true)),
+    })
+}
+
+/// (round E) A Monday report's tiles: its words and how it reads (good, warn, bad).
+fn tile(label: &str, value: String, sub: String, tone: &str) -> Value {
+    json!({ "label": tr(label), "value": value, "sub": sub, "tone": tone })
+}
+
+/// (round E) The Monday reports (`rf_reports`: `k` how many back from the newest): the report as
+/// tiles, and whether there are older and newer ones. Seen when opened.
+fn reports(s: &mut Session, _r: &mut Rf, args: &Value) -> Answer {
+    let Some(c) = s.company.clone() else { return Ok(json!({ "none": true })) };
+    if let Some(v) = off(&c) {
+        return Ok(v);
+    }
+    let all = &c.planning.ops.reports;
+    if all.is_empty() {
+        return Ok(json!({ "title": tr("Monday reports"), "sub": "", "empty": tr("No report yet: the first comes on Monday morning, of the week before."), "tiles": [] }));
+    }
+    let back = usize_arg(args, "k").min(all.len() - 1);
+    let rp = &all[all.len() - 1 - back];
+    let t = &rp.tally;
+    let saturday = co::dates::add(&rp.sunday, 6);
+    let mut tiles = vec![
+        tile("Wages paid", eur(t.pay), trf("of them supplements %{cost}", &[("cost", &eur(t.supplements))]), "neutral"),
+        tile("Overtime", trf("%{h} h", &[("h", &num(t.overtime_h, 1))]), eur(t.overtime_cost), if t.overtime_h > 0.05 { "warn" } else { "good" }),
+        tile("Days ill", t.sick_days.to_string(), trf("%{n} called in sick on the day", &[("n", &t.sick_calls.to_string())]), if t.sick_days > 0 { "bad" } else { "good" }),
+        tile("Without a driver", t.uncovered.to_string(), tr("duties left without a driver"), if t.uncovered > 0 { "bad" } else { "good" }),
+        tile("Wishes", trf("%{a} granted · %{b} refused", &[("a", &rp.wishes_granted.to_string()), ("b", &rp.wishes_refused.to_string())]), tr("refused includes those left until their day"), if rp.wishes_refused > rp.wishes_granted { "bad" } else { "good" }),
+        tile("Swap proposals", trf("%{a} approved · %{b} refused", &[("a", &rp.trades_approved.to_string()), ("b", &rp.trades_refused.to_string())]), tr("the drivers' own"), if rp.trades_refused > rp.trades_approved { "warn" } else { "good" }),
+        tile("Complaints", t.complaints.to_string(), tr("of never being asked about extra duties"), if t.complaints > 0 { "bad" } else { "good" }),
+    ];
+    tiles.push(match &rp.tired {
+        Some(x) => {
+            let level = if x.key == "worn" { ptd::WORN } else { ptd::TIRED };
+            let why = if x.why.is_empty() { String::new() } else { trf(&x.why, &[("n", &x.n.to_string())]) };
+            tile("Most tired", x.name.clone(), if why.is_empty() { tr(level) } else { format!("{} – {why}", tr(level)) }, if x.key == "worn" { "bad" } else { "warn" })
+        }
+        None => tile("Most tired", tr("Nobody"), tr("every driver is rested"), "good"),
+    });
+    if let Some(x) = &rp.unhappy {
+        tiles.push(tile("Least content", x.name.clone(), trf("content %{n} of 100", &[("n", &num(x.value, 0))]), if x.value < 35.0 { "bad" } else if x.value < 55.0 { "warn" } else { "good" }));
+    }
+    let sub = trf("%{from} – %{to}", &[("from", &format!("{} {}", day_name(&rp.sunday), short_date(&rp.sunday))), ("to", &format!("{} {}", day_name(&saturday), short_date(&saturday)))]);
+    // (opened: seen - its notice no longer waits)
+    if prp::unseen(&c).is_some() {
+        let _ = company::act(s, |c| {
+            prp::seen(c);
+            Ok::<(), &'static str>(())
+        });
+    }
+    Ok(json!({
+        "title": trf("Monday report for week %{n}", &[("n", &rp.week.to_string())]), "sub": sub, "tiles": tiles,
+        "k": back, "older": back + 1 < all.len(), "newer": back > 0, "count": all.len(),
+        "made": trf("made %{day}", &[("day", &day_label(&rp.made))]),
+    }))
 }
 
 /// (round B) What the week beginning on Sunday `sunday` costs in wages as planned
@@ -1557,6 +1711,9 @@ pub(super) fn run(s: &mut Session, r: &mut Rf, cmd: &str, args: &Value) -> Optio
         "rf_ops_act" => act(s, r, args),
         "rf_wishes" => wishes(s, r, args),
         "rf_wish_act" => wish_act(s, r, args),
+        "rf_trades" => trades(s, r, args),
+        "rf_trade_act" => trade_act(s, r, args),
+        "rf_reports" => reports(s, r, args),
         _ => return None,
     })
 }
@@ -1776,6 +1933,82 @@ mod tests {
         // (a day off of his: an extra duty, counted for the month and shown)
         assert_eq!(pr::extras_in_month(s.company.as_ref().unwrap(), ids[0], date), 1);
     }
+    #[test]
+    fn the_drivers_swap_proposals_the_season_and_the_monday_reports() {
+        company::words::set_language("en");
+        company::test_dry();
+        let mut s = session();
+        let mut r = Rf::default();
+        let ids: Vec<u32> = s.company.as_ref().unwrap().staff.iter().filter(|e| co::staff::drives(e)).map(|e| e.id).collect();
+        let week = super::super::turnus::week_duties(&mut s, &mut r).unwrap().unwrap();
+        let morning = week[2][0].number;
+        let tuesday = "2024-03-05";
+        {
+            // a the mornings Monday to Friday, b on a row of days off
+            let c = s.company.as_mut().unwrap();
+            let id = pt::add(c, "Nord", false);
+            pt::add_row(c, id).unwrap();
+            pt::add_row(c, id).unwrap();
+            for d in 1..=5 {
+                pt::set_cell(c, id, 0, d, Cell::Duty { n: week[d][0].number }, &week).unwrap();
+            }
+            pt::set_driver(c, id, 0, Some(ids[0])).unwrap();
+            pt::set_driver(c, id, 1, Some(ids[1])).unwrap();
+            c.planning.ops.last_trade = 1;
+            c.planning.ops.trades.push(ptr::Trade { id: 1, date: tuesday.into(), a: ids[0], b: ids[1], offer: ptr::Offer::Give { a_n: morning }, why: ptr::Why::Tired, both: false, sent: c.date.clone(), state: Default::default(), decided: None, starts: week[2][0].start, swap: None });
+        }
+        changed(&mut s);
+        let name = |s: &Session, id: u32| s.company.as_ref().unwrap().employee(id).unwrap().name.clone();
+        let (na, nb) = (name(&s, ids[0]), name(&s, ids[1]));
+        // the calendar: the proposals, the reports, the season of March (the summer holiday planned)
+        let cal = calendar(&mut s, &mut r, &json!({})).unwrap();
+        assert_eq!(cal["trades"]["label"], "Swap proposals (1)", "{}", cal["trades"]);
+        assert_eq!(cal["reports"]["new"], false);
+        assert_eq!(cal["season"]["key"], "spring");
+        assert!(cal["season"]["tip"].as_str().unwrap().contains("50 %"));
+        let v = trades(&mut s, &mut r, &json!({})).unwrap();
+        assert_eq!(v["list"].as_array().map(Vec::len), Some(1), "{v}");
+        assert_eq!(v["list"][0]["text"], format!("⇄ {na} wants to give duty {morning} on tuesday 5 Mar to {nb}"));
+        assert_eq!(v["list"][0]["why"], format!("{na} is tired and would like the day off"));
+        assert_eq!(v["sub"], "1 swap proposal to decide");
+        assert!(v["list"][0]["until"].as_str().unwrap().starts_with("Answer before "), "{v}");
+        // approved: the swap of round C - b drives the morning, a is off; ⇄ for both
+        let out = trade_act(&mut s, &mut r, &json!({ "act": "approve", "trade": 1 })).unwrap();
+        assert_eq!(out["edited"], true, "{out}");
+        assert!(out["say"]["text"].as_str().unwrap().starts_with("Approved: "), "{out}");
+        let c = s.company.as_ref().unwrap();
+        assert_eq!(pt::decided(c, ids[1], tuesday).unwrap().cell, Cell::Duty { n: morning });
+        assert_eq!(pt::decided(c, ids[0], tuesday).unwrap().cell, Cell::Off);
+        let cal = calendar(&mut s, &mut r, &json!({})).unwrap();
+        assert_eq!(cal["trades"]["label"], "Swap proposals (0)");
+        assert!(cal["drivers"][1]["cells"][2]["swap"].as_str().unwrap().contains(&na), "{}", cal["drivers"][1]["cells"][2]);
+        // gone: refused no more
+        let out = trade_act(&mut s, &mut r, &json!({ "act": "refuse", "trade": 1 })).unwrap();
+        assert_eq!(out["say"]["error"], true, "{out}");
+        // no report yet; one made: tiles in red and green, seen when opened
+        let v = reports(&mut s, &mut r, &json!({})).unwrap();
+        assert!(v["empty"].is_string(), "{v}");
+        {
+            let c = s.company.as_mut().unwrap();
+            let tally = prp::Tally { sunday: "2024-02-25".into(), pay: 12_345_00, overtime_h: 3.5, overtime_cost: 410_00, supplements: 230_00, sick_days: 2, sick_calls: 1, uncovered: 0, complaints: 1, days: 7 };
+            let tired = prp::Named { id: ids[2], name: "X".into(), key: "worn".into(), why: ptd::DAYS_IN_ROW.into(), n: 8, value: 0.0 };
+            c.planning.ops.reports.push(prp::Report { week: 9, sunday: "2024-02-25".into(), made: "2024-03-04".into(), tally, wishes_granted: 1, wishes_refused: 2, trades_approved: 1, trades_refused: 0, tired: Some(tired), unhappy: None, seen: false });
+        }
+        changed(&mut s);
+        assert_eq!(calendar(&mut s, &mut r, &json!({})).unwrap()["reports"]["new"], true);
+        let v = reports(&mut s, &mut r, &json!({ "k": 0 })).unwrap();
+        assert_eq!(v["title"], "Monday report for week 9", "{v}");
+        let tiles = v["tiles"].as_array().unwrap();
+        let of = |label: &str| tiles.iter().find(|t| t["label"] == label).cloned().unwrap_or_else(|| panic!("{label} {v}"));
+        assert_eq!(of("Days ill")["tone"], "bad");
+        assert_eq!(of("Without a driver")["tone"], "good");
+        assert_eq!(of("Wishes")["value"], "1 granted · 2 refused");
+        assert_eq!(of("Wishes")["tone"], "bad");
+        assert_eq!(of("Most tired")["sub"], "🥱 Worn out – 8 working days in a row");
+        assert_eq!(v["older"], false);
+        assert!(s.company.as_ref().unwrap().planning.ops.reports[0].seen);
+    }
+
     #[test]
     fn the_wishes_time_off_in_lieu_and_what_the_week_costs() {
         company::words::set_language("en");

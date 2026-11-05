@@ -66,7 +66,8 @@ pub fn draws(c: &Company, dp: &DayPlan, duties: &[super::pro_turnus::ProDuty]) -
         let mut rng = Rng::of(&[&c.id, &dp.date, "pro-sick"], e.id as i64);
         // (round D: a tired driver calls more often - `pro_tired`)
         let tired = super::pro_tired::today(e, &dp.date, Some((start, end))).level;
-        if !rng.chance((chance(c, e) * super::pro_tired::sick(tired)).min(0.6)) {
+        // (round E: more in winter - `pro_season`)
+        if !rng.chance((chance(c, e) * super::pro_tired::sick(tired) * super::pro_season::sick(c, &dp.date)).min(0.6)) {
             continue;
         }
         // (spread before each kind of duty: an early one's driver calls shortly before it; a day

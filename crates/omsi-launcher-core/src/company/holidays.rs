@@ -370,6 +370,8 @@ pub fn answer(c: &mut Company, no: u32, approve: bool, by: By) -> Result<(), &'s
         return Err("They have not enough holiday days left for it.");
     }
     let knobs = *super::sandbox::of(c);
+    // (RosterFlow Pro, round E: a summer holiday refused costs more - `pro_season`)
+    let season = super::pro_season::refusal(c, &r);
     let Some(e) = c.staff.iter_mut().find(|e| e.id == id) else { return Err("That request is no longer there.") };
     let before = e.leave.refused(&today);
     if let Some(q) = e.leave.requests.iter_mut().find(|x| x.no == no) {
@@ -381,7 +383,7 @@ pub fn answer(c: &mut Company, no: u32, approve: bool, by: By) -> Result<(), &'s
         e.satisfaction = (e.satisfaction + APPROVED + if before > 0 { 2.0 } else { 0.0 }).min(100.0);
     } else {
         let n = before + 1;
-        e.satisfaction = (e.satisfaction - refusal_cost(n)).max(0.0);
+        e.satisfaction = (e.satisfaction - refusal_cost(n) * season).max(0.0);
         e.stress = (e.stress + 3.0 * n.min(4) as f64).min(100.0);
     }
     // (a sandbox without staff morale: a refusal costs nothing)
@@ -521,6 +523,9 @@ fn draw(rng: &mut Rng, today: i64, free: u32) -> Option<(i64, i64, Reason)> {
 fn ask(c: &mut Company, today: &str) {
     let Some(day) = dates::parse(today) else { return };
     let (_, month, _) = dates::civil_from_days(day);
+    // (RosterFlow Pro, round E: the spring and the summer holidays bring more requests -
+    // `pro_season`)
+    let season = super::pro_season::asks(c, today);
     let mut new: Vec<(u32, String, Request)> = Vec::new();
     for e in c.staff.iter().filter(|e| e.notice_until.is_none() && e.employed_on(today) && dates::between(&e.hired, today) >= SETTLE) {
         if e.leave.pending().is_some() {
@@ -532,7 +537,7 @@ fn ask(c: &mut Company, today: &str) {
         }
         let mut rng = Rng::of(&[&c.id, "holiday", &e.id.to_string()], day);
         let rush = if month >= 9 && free >= 12 { 1.6 } else { 1.0 };
-        if !rng.chance(CHANCE * (free as f64 / HOLIDAYS as f64).clamp(0.2, 1.0) * rush) {
+        if !rng.chance(CHANCE * (free as f64 / HOLIDAYS as f64).clamp(0.2, 1.0) * rush * season) {
             continue;
         }
         let Some((from, until, reason)) = draw(&mut rng, day, free) else { continue };

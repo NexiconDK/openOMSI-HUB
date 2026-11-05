@@ -269,6 +269,10 @@ pub struct Paid {
     pub cost: Cents,
     /// (RosterFlow Pro) Hours of overtime saved as time off in lieu, not paid (`Call::toil`).
     pub saved: f64,
+    /// (RosterFlow Pro, round E: the Monday report) Of the cost, the supplements and the hours of
+    /// overtime paid (cents, rounded).
+    pub supplements: Cents,
+    pub overtime_cost: Cents,
 }
 
 /// What a driver's minutes cost with the on-costs and allowances (`over`: of them overtime).
@@ -288,6 +292,7 @@ pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
     let weekday = dates::parse(date).map(|d| dates::weekday(d) as u8).unwrap_or(0);
     let mut out = Paid::default();
     let mut cost = 0.0;
+    let (mut supp, mut over_cost) = (0.0, 0.0);
     let mut drivers = 0;
     // (RosterFlow Pro's step 3: the frame a driver's rota gives him that day - `pro_turnus`)
     let framed: Vec<(u32, Option<Frame>)> = c.staff.iter().filter_map(|e| super::pro_turnus::decides_frame(c, e.id, date).map(|f| (e.id, f))).collect();
@@ -317,7 +322,9 @@ pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
         let after = before + paid;
         let over = if overtime { (after - contract).max(0.0) - (before - contract).max(0.0) } else { 0.0 };
         if pro {
-            cost += staff::hourly(e.wage) * rate_of(e) * supplement_minutes_on(wd, hol, &mine) / 60.0 * (1.0 + EMPLOYER_SHARE);
+            let x = staff::hourly(e.wage) * rate_of(e) * supplement_minutes_on(wd, hol, &mine) / 60.0 * (1.0 + EMPLOYER_SHARE);
+            cost += x;
+            supp += x;
         }
         if over > 0.0 && saving.contains(&e.id) && matches!(e.employment, Employment::FullTime | Employment::PartTime { .. }) {
             // (saved: the overtime's hours not paid now, his to take off later)
@@ -326,6 +333,7 @@ pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
             out.saved += over / 60.0;
         } else {
             cost += cost_of(e, paid, over);
+            over_cost += cost_of(e, over, over);
         }
         e.week_paid = after;
         out.hours += paid / 60.0;
@@ -337,6 +345,7 @@ pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
         c.book(BookingKind::Wages, -booked, format!("Drivers: paid hours of the day ({drivers}, {:.0} h)", out.hours), false);
     }
     out.cost += booked;
+    (out.supplements, out.overtime_cost) = (supp.round() as Cents, over_cost.round() as Cents);
     // (the week ends tonight - a Saturday: `week_ends` -: its guarantee)
     if week_ends(date) {
         let w = week(c);

@@ -170,6 +170,9 @@ export const STROKED = {
   livery_undo: ['M9 14L4 9l5-5', 'M4 9h10a6 6 0 0 1 0 12h-3'],
   livery_redo: ['M15 14l5-5-5-5', 'M20 9H10a6 6 0 0 0 0 12h3'],
   livery_unlock: ['M7 11h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z', 'M8 11V7.5a4 4 0 0 1 7.6-1.8'],
+  // (round E: the drivers' swap proposals, the Monday report)
+  rf_swap: ['M4 8h14', 'M14 4l4 4-4 4', 'M20 16H6', 'M10 12l-4 4 4 4'],
+  rf_report: ['M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z', 'M14 3v5h5', 'M9 17v-3', 'M12 17v-5', 'M15 17v-2'],
 };
 
 const paths = new Map();

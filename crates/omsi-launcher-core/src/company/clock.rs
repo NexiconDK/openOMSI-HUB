@@ -1171,6 +1171,8 @@ pub fn on_minute(c: &mut Company, now: i64) -> Vec<FeedItem> {
     // so - `pro_rest::grumbles`)
     if now.rem_euclid(DAY) >= 10 * 60 && c.planning.ops.grumbled.iter().all(|g| g.date != c.date) {
         let who = super::pro_rest::grumbles(c);
+        // (round E: counted for the Monday report - `pro_report`)
+        super::pro_report::complained(c, who.len());
         for id in who {
             let name = c.employee(id).map(|e| e.name.clone()).unwrap_or_default();
             out.push(FeedItem { at: now, text: "%{name}: I never get asked about extra duties.".into(), args: vec![("name".into(), name)], level: Level::Info });
@@ -1189,7 +1191,37 @@ pub fn on_minute(c: &mut Company, now: i64) -> Vec<FeedItem> {
             out.push(FeedItem { at: now, text: super::pro_toil::ASKED_FEED.into(), args: vec![("name".into(), name), ("h".into(), h)], level: Level::Info });
         }
     }
+    // (RosterFlow Pro, round E: on Monday from 06:00 the report of the week before - `pro_report`)
+    if let Some(n) = super::pro_report::monday(c, now.rem_euclid(DAY) as i32) {
+        out.push(FeedItem { at: now, text: super::pro_report::READY.into(), args: vec![("n".into(), n.to_string())], level: Level::Info });
+    }
     out
+}
+
+/// (RosterFlow Pro, round E) From 10:00 once a company day the drivers' own swap proposals
+/// (`pro_trade::daily`): the duties of the days ahead read from the world for it. The feed's line
+/// when one comes.
+fn trades(c: &mut Company, now: i64, w: &mut dyn World) -> Option<FeedItem> {
+    if now.rem_euclid(DAY) < 10 * 60 || !super::pro_duties::on(c) || c.planning.ops.traded == c.date || c.planning.rotas.is_empty() {
+        return None;
+    }
+    // (the week ahead as the Vagter tab has it: Sunday first, a duty cut for one date only is not)
+    let mut x = c.clone();
+    x.planning.ops.splits.clear();
+    let mut week: super::pro_turnus::Week = vec![Vec::new(); super::pro_turnus::DAYS];
+    for k in 1..=super::pro_turnus::DAYS as i64 {
+        let date = super::dates::add(&c.date, k);
+        let Ok(lines) = w.lines(c, &date) else {
+            c.planning.ops.traded = c.date.clone();
+            return None;
+        };
+        let tours = super::network::tours_of_day(&x, &lines, &date);
+        week[super::pro_turnus::day_of(&date)] = super::pro_turnus::day_duties(&x, &date, tours);
+    }
+    let id = super::pro_trade::daily(c, &week)?;
+    let t = c.planning.ops.trades.iter().find(|t| t.id == id)?;
+    let name = |id: u32| c.employee(id).map(|e| e.name.clone()).unwrap_or_default();
+    Some(FeedItem { at: now, text: super::pro_trade::SENT_FEED.into(), args: vec![("a".into(), name(t.a)), ("b".into(), name(t.b))], level: Level::Info })
 }
 
 fn hook(c: &mut Company, at: i64, quick: bool, run: &mut Run) {
@@ -1257,6 +1289,9 @@ pub fn advance(c: &mut Company, to: i64, w: &mut dyn World, quick: bool) -> Resu
         }
         c.clock.minute = (limit - day0) as u32;
         hook(c, limit, quick, &mut run);
+        if let Some(item) = trades(c, limit, w) {
+            tell(c, &mut run, limit, &item.text, item.args, item.level);
+        }
         // (service control: the buses running late told, Casual's controller acting)
         super::control::watch_day(c, w, quick, &mut run)?;
         if c.clock.ask.is_some() {

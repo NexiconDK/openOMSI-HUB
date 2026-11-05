@@ -1284,6 +1284,8 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     super::pro_tired::after_day(c, &date, &pieces);
     super::pro_pref::after_day(c, &pieces);
     super::pro_holiday::after_day(c, &date, &pieces);
+    // (round E: the night's counts for the Monday report - `pro_report`)
+    super::pro_report::after_day(c, &date, &paid, report.uncovered);
     (report.paid_hours, report.overtime_hours, report.guaranteed_hours, report.driver_wages) = (paid.hours, paid.overtime, paid.guaranteed, paid.cost);
     report.staff = staff::after_day(c, &worked, &mut rng);
     // (the day's handover notes go, what the crew asked for that is over: `crew::night`)

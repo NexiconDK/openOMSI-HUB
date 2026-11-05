@@ -24,7 +24,10 @@
 // Saved at once (`rf_ops_act`), not in RosterFlow's draft. (Round C, NexiconDK 5 November 2026:
 // a driver on another duty then who could hand it to a free colleague can be asked - "⇄"; a swap
 // changes both drivers at once, shows in both their cells and is undone in the day's box -
-// "Fortryd bytte" - until its first duty begins.)
+// "Fortryd bytte" - until its first duty begins.) Round E (NexiconDK, 5 November 2026): the drivers
+// propose swaps themselves - "Bytteforslag (N)", each approved or refused -, the season of the week
+// in the head ("❄ Vinter – flere syge"), and the Monday reports - "Rapporter", tiles of the week
+// before (`pro_trade`, `pro_season`, `pro_report`).
 
 import { html, useEffect, useState } from '../../../vendor/preact-htm.js';
 import { S } from '../../store.js';
@@ -41,10 +44,10 @@ const setO = (patch) => setRf((r) => ({ ops: { ...(r.ops || {}), ...(typeof patc
 /** The popup closed. */
 const closePop = () => setO({ pop: false, n: null, given: null });
 
-/** Escape: the popup closed first (the wishes' or the day's). */
+/** Escape: the popup closed first (the wishes', the swap proposals', the reports' or the day's). */
 export function opsEscape() {
-  if (st().wishes) {
-    setO({ wishes: false });
+  if (st().wishes || st().trades || st().reports) {
+    setO({ wishes: false, trades: false, reports: false });
     return true;
   }
   if (!st().pop) return false;
@@ -339,6 +342,70 @@ function Wishes() {
   </div>`;
 }
 
+/** The drivers' own swap proposals in a popup (round E): each "Approve" or "Refuse"; approved, the
+ * swap of round C is made for both at once. */
+function Trades() {
+  const [v] = useView('rf_trades', {}, []);
+  const close = () => setO({ trades: false });
+  const decide = async (act, t) => {
+    let r;
+    try {
+      r = await rfCmd('rf_trade_act', { act, trade: t.id });
+    } catch (e) {
+      say(e.message, true);
+      return;
+    }
+    after(r);
+    bump();
+  };
+  return html`<div class="rf-sheetdim op-popdim" onMouseDown=${(e) => e.target === e.currentTarget && close()}>
+    <div class="rf-help op-pop" role="dialog" aria-modal="true">
+      <div class="head"><div class="pro-intro-mark"><${Icon} name="rf_swap" size=${20} /></div>
+        <div><b>${v?.title || tr('Reading the timetable…')}</b><span>${v?.sub || v?.reading || ''}</span></div>
+        <button type="button" title=${tr('Close')} onClick=${close}><${Icon} name="close" size=${20} /></button></div>
+      <div class="op-popbody"><div class="bx">
+        ${v?.list?.length === 0 && html`<div class="bx-allok"><${Icon} name="check" size=${16} /> ${v.sub}</div>`}
+        ${(v?.list || []).map((t) => html`<div class="bx-row">
+          <div class="bx-grow">
+            <div class="bx-name">${t.a} <span class="bx-time">chf. ${t.a_nr} · ${t.a_kind}</span> ⇄ ${t.b} <span class="bx-time">chf. ${t.b_nr} · ${t.b_kind}</span></div>
+            <div class="bx-trade">${t.text}</div>
+            <div class="bx-why">${t.why}</div>
+            ${t.breach.map((b) => html`<div class="bx-breach">${b}</div>`)}
+            <div class="bx-sub">${t.sent} · ${t.until}</div>
+          </div>
+          <span class="bx-surebtns"><button type="button" class="bx-btn line" onClick=${() => decide('refuse', t)}>${tr('Refuse')}</button>
+          <button type="button" class=${'bx-btn ' + (t.breach.length ? 'warn' : 'green')} onClick=${() => decide('approve', t)}>${tr('Approve')}</button></span>
+        </div>`)}
+        ${v?.note && html`<div class="bx-sub" style="margin-top:10px">${v.note}</div>`}
+      </div></div>
+    </div>
+  </div>`;
+}
+
+/** The Monday reports in a popup (round E): the newest first, as tiles - red what went badly,
+ * green what went well -, arrows to the older ones. */
+function Reports() {
+  const k = st().rk || 0;
+  const [v] = useView('rf_reports', { k }, [k]);
+  const close = () => setO({ reports: false, rk: 0 });
+  return html`<div class="rf-sheetdim op-popdim" onMouseDown=${(e) => e.target === e.currentTarget && close()}>
+    <div class="rf-help op-pop op-report" role="dialog" aria-modal="true">
+      <div class="head"><div class="pro-intro-mark"><${Icon} name="rf_report" size=${20} /></div>
+        <div><b>${v?.title || tr('Reading the timetable…')}</b><span>${v?.sub || ''}</span></div>
+        <button type="button" title=${tr('Close')} onClick=${close}><${Icon} name="close" size=${20} /></button></div>
+      <div class="op-popbody"><div class="bx">
+        ${v?.empty && html`<div class="bx-allok">${v.empty}</div>`}
+        ${v?.count > 1 && html`<div class="rp-nav">
+          <button type="button" class="rf-ibtn" disabled=${!v.older} title=${tr('The week before')} onClick=${() => setO({ rk: k + 1 })}><${Icon} name="chevron_left" size=${17} /></button>
+          <span>${v.made}</span>
+          <button type="button" class="rf-ibtn" disabled=${!v.newer} title=${tr('The week after')} onClick=${() => setO({ rk: Math.max(0, k - 1) })}><${Icon} name="chevron_right" size=${17} /></button>
+        </div>`}
+        <div class="rp-tiles">${(v?.tiles || []).map((t) => html`<div class=${'rp-tile ' + t.tone}><span>${t.label}</span><b>${t.value}</b><i>${t.sub}</i></div>`)}</div>
+      </div></div>
+    </div>
+  </div>`;
+}
+
 // --- 5 Kalender --------------------------------------------------------------------------------------
 
 const SPANS = ['week', 'two', 'month'];
@@ -398,9 +465,12 @@ export function CalendarTab() {
       <span class="cl-seg">${v.kinds.map(([k, label]) => html`<button type="button" class=${(o.kind || 'all') === k ? 'on' : ''} onClick=${() => setO({ kind: k })}>${label}</button>`)}</span>
       <span class="grow"></span>
       ${v.wishes && html`<button type="button" class=${'rf-btn cl-wishes' + (v.wishes.open ? ' has' : '')} onClick=${() => setO({ wishes: true })}><${Icon} name="star" size=${16} /><span>${v.wishes.label}</span></button>`}
+      ${v.trades && html`<button type="button" class=${'rf-btn cl-wishes cl-trades' + (v.trades.open ? ' has' : '')} onClick=${() => setO({ trades: true })}><${Icon} name="rf_swap" size=${16} /><span>${v.trades.label}</span></button>`}
+      ${v.reports && html`<button type="button" class=${'rf-btn cl-wishes cl-reports' + (v.reports.new ? ' has' : '')} onClick=${() => setO({ reports: true, rk: 0 })}><${Icon} name="rf_report" size=${16} /><span>${v.reports.label}</span>${v.reports.new && html`<i class="cl-dot"></i>`}</button>`}
       <label class="cl-search"><${Icon} name="search" size=${16} /><input type="text" value=${o.q || ''} placeholder=${tr('Search a driver')} onInput=${(e) => setO({ q: e.currentTarget.value })} /></label>
     </div>
-    ${v.cost && html`<div class="cl-cost" title=${v.cost.tip}><${Icon} name="payments" size=${16} /><b>${v.cost.parts[0]}</b>${v.cost.parts.slice(1).map((x) => html`<span>· ${x}</span>`)}</div>`}
+    ${(v.cost || v.season) && html`<div class="cl-cost" title=${v.cost?.tip || ''}>${v.cost && html`<${Icon} name="payments" size=${16} /><b>${v.cost.parts[0]}</b>${v.cost.parts.slice(1).map((x) => html`<span>· ${x}</span>`)}`}
+      ${v.season && html`<span class=${'cl-season ' + v.season.key} title=${v.season.tip}>${v.season.text}</span>`}</div>`}
     <div class="cl-main">
       <div class="cl-cal">
         <div class="cl-grid" style=${'grid-template-columns:' + cols}>
@@ -424,6 +494,8 @@ export function CalendarTab() {
     </div>
     ${o.pop && html`<${Pop} date=${o.date || day} />`}
     ${o.wishes && html`<${Wishes} />`}
+    ${o.trades && html`<${Trades} />`}
+    ${o.reports && html`<${Reports} />`}
   </div>`;
 }
 

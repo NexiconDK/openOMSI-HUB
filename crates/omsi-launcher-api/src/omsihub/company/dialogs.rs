@@ -1250,7 +1250,17 @@ fn ask(s: &mut Session) -> Value {
     // (RosterFlow Pro: a driver's sick call not seen yet - also while the game's clock leads and
     // nothing stops)
     let unseen = co::pro_sick::unseen(&c).map(|x| Ask::SickCall { driver: x.driver });
-    let Some(question) = c.clock.ask.clone().or(unseen) else { return Value::Null };
+    let Some(question) = c.clock.ask.clone().or(unseen) else {
+        // (RosterFlow Pro, round E: the Monday report not seen yet - "Open ›" to it)
+        return co::pro_report::unseen(&c).map_or(Value::Null, |r| {
+            let t = &r.tally;
+            json!({
+                "kind": "report", "icon": "receipt_long", "closable": true, "title": trf("Monday report for week %{n} is ready", &[("n", &r.week.to_string())]),
+                "text": trf("Last week: wages %{amount} (of them overtime %{over}), days ill: %{sick}, duties without a driver: %{uncovered}. The report also has the wishes, the swaps, the complaints, and who is most tired and least content.", &[("amount", &eur(t.pay)), ("over", &eur(t.overtime_cost)), ("sick", &t.sick_days.to_string()), ("uncovered", &t.uncovered.to_string())]),
+                "open": tr("Open ›"), "on": tr("Later"),
+            })
+        });
+    };
     let when = ck::hhmm(ck::now(&c));
     match &question {
         Ask::Breakdown { index } => {
@@ -1500,6 +1510,14 @@ pub fn act(s: &mut Session, what: &str, args: &Value, _p: &dyn crate::Platform) 
             } else {
                 super::changed(s);
             }
+            Ok(json!({}))
+        }
+        // (RosterFlow Pro, round E: the Monday report's notice seen - opened, or later)
+        "report_seen" => {
+            if let Some(c) = s.company.as_mut() {
+                co::pro_report::seen(c);
+            }
+            super::changed(s);
             Ok(json!({}))
         }
         "ask_dispatcher" => {

@@ -897,3 +897,88 @@ Tested: `pro_ops::tests` (`the_public_holidays_have_their_names_and_are_paid_as_
 `working_many_holidays_makes_a_driver_less_content`, `early_and_late_people_like_their_duties`,
 `many_long_days_make_a_driver_tired_and_days_off_rest_him`,
 `a_tired_driver_or_a_duty_not_liked_gets_fewer_yeses`).
+
+## Round E (5 November 2026): drivers propose swaps, the seasons, a Monday report
+
+### The drivers propose swaps themselves (`co::pro_trade`)
+
+- **When** (`daily`): once a company day from 10:00 (`clock::advance`, which reads the duties of the
+  seven days ahead from the world for it, as the Vagter tab numbers them), at most one new
+  proposal: a chance of 12 % (`CHANCE`), 10 % more for each driver with a reason in the days ahead
+  (`PER_REASON`), 60 % at most (`MOST_CHANCE`) - two to four a week in a company of ten. At most
+  three open at once (`OPEN_MOST`). The same for the same company and day (`Rng`).
+- **What** (`Offer`): two drivers on their rotas swap their duties of a day one to six days ahead
+  (`Swap`), or one gives a duty to a colleague whose rota has the day off (`Give`; not a free day
+  of a wish or time off in lieu, not ill or away). Drivers already in a swap or a proposal that day
+  are left out.
+- **Why** (`Why`), as round D's drivers are: a tired or worn-out driver (`pro_tired`, the days gone as
+  worked, those ahead as the rota has them) gives a duty to a colleague off that day who is fresh and
+  stays so ("Lone Berg is tired and would like the day off", weight 3, worn out 5); an early person
+  with a late duty swaps with a colleague whose early duty they like more, the other not worse off
+  ("Ahmed Ali would rather drive early, Nina Bach late" when both gain, weight 3, else 2); and now
+  and then, without a reason, an appointment ("… has an appointment that day", `REASONED`: 80 % of
+  the days with a reason take one). Of the drawn order the first legal for both under the rest
+  rules (`pro_swap::breaches`: rest before and after, the day's span) is proposed; when none is, the
+  first, and the popup shows the ⚠ by the driver's name.
+- **Told**: the first driver's message to the control room ("Nina Bach and I would like to swap
+  duties on 9/3: I drive 2002, Nina Bach drives 3003. Is that all right?", or "… has offered to take
+  my duty 1004 on 9/3"), the feed ("… and … propose a swap.").
+- **Decided** in the calendar's "Swap proposals (N)" (`rf_trades`, `rf_trade_act`; the planning's
+  permission in multiplayer): each its two drivers, what ("⇄ Mette Krogh and Ahmed Ali want to swap
+  on saturday 9 Mar: 2002 ⇄ 3003", "⇄ Lone Berg wants to give duty 1003 on thursday 7 Mar to Peter
+  Sand"), why, the rest rules broken, when it was sent and by when to answer.
+  * **Approve** (`approve`): the swap of round C (`pro_swap::swap_rota` - both told, ⇄ in both cells,
+    "Undo the swap" in the day's box until its first duty begins); both drivers +2 satisfaction
+    (`APPROVED`). A proposal whose days changed since (a duty given another way, a day off set) is no
+    longer listed and cannot be approved ("The duties have changed since …"); it lapses.
+  * **Refuse** (`refuse`): both −2 (`REFUSED`).
+  * **Left open** until its first duty begins or three days (`LAPSE_DAYS`, `lapse` on the day's draw
+    and the night's tidy): both −1 (`LAPSED`).
+- Kept 45 days after they are decided (for the Monday report), dropped with a driver who leaves.
+
+### The seasons (`co::pro_season`)
+
+- **Winter** (1 December to the end of February): 40 % more sick calls on the day
+  (`WINTER_SICK`, in `pro_sick::draws` with the round D tiredness).
+- **Spring** (1 March to 19 June): the drivers ask for their summer holiday - 50 % more holiday
+  requests (`SPRING_ASKS`, in `holidays::ask`).
+- **Summer holidays** (20 June to 15 August): 80 % more holiday requests (`SUMMER_ASKS`), and a
+  request for the summer (its reason, or one of its days in the summer holidays) refused costs 50 %
+  more satisfaction (`SUMMER_REFUSAL`, on `holidays::refusal_cost` in `holidays::answer`).
+- **Shown**: a chip in the calendar's head by the week ("❄ Winter – more call in sick", "🌷 The
+  summer holiday is planned – more holiday requests", "☀ Summer holidays – many want time off",
+  `rf_cal`'s `season`, by the first day shown), its tooltip the effect in numbers.
+- RosterFlow Pro only: the other planners keep the year as it was.
+
+### The Monday report (`co::pro_report`)
+
+- **Counted** night by night (`after_day`, from `day::close_day` after the pay): the wages paid
+  (`pay::Paid::cost`), of them the overtime (hours, and its cost: `Paid::overtime_cost`) and the
+  supplements (`Paid::supplements`), the drivers' days ill, their calls in sick on the day, the duties
+  left without a driver (`DayReport::uncovered`); in the day the drivers who grumbled of no extra
+  duties (`complained`, from `clock::on_minute`). Per week from Sunday (`Ops::tallies`, this week's
+  and the one before).
+- **Made** (`monday`, `clock::on_minute`): on Monday from 06:00 - or the first full hour after, later
+  in the week, if the clock jumped Monday - the week before's report (`make`): the tally, the
+  wishes granted and refused or left that week (`pro_wish`), the swap proposals approved and refused
+  (`pro_trade::decided_in`), the most tired driver by the Saturday as worked (the more tired, then
+  the larger number of its reason) and the least content driver now. A week nothing was counted has
+  none (a company new to RosterFlow Pro). The last eight are kept (`Ops::reports`).
+- **Told**: the feed ("📋 Monday report for week 12 is ready"), the inbox (Staff: the week's wages,
+  overtime, supplements, days ill, duties without a driver), and a notice that waits until seen
+  (`unseen`; the company's dialog "report": "Open ›" opens the calendar with the report, "Later" -
+  `report_seen`).
+- **The report** (`rf_reports`, the calendar's "Reports" - a red dot while one is unseen; opened, it
+  is seen): tiles - Wages paid (of them supplements), Overtime (hours, cost: orange when any), Days
+  ill (red when any; how many called in sick on the day), Without a driver (red when any), Wishes
+  ("1 granted · 2 refused", red when more refused), Swap proposals, Complaints (red when any), Most
+  tired (red worn out, orange tired, green "Nobody"), Least content (red under 35, orange under 55) -
+  and arrows to the older ones.
+
+Tested: `pro_ops::tests`
+(`a_tired_driver_proposes_to_give_a_duty_to_a_fresh_colleague_and_approved_it_is_a_swap`,
+`early_and_late_people_propose_to_swap_and_refused_or_left_they_are_less_content`,
+`a_proposal_no_longer_as_made_lapses_when_approved`,
+`winter_brings_more_sick_calls_and_the_summer_more_holiday_requests_and_dearer_refusals`,
+`the_monday_report_counts_the_week_before_and_is_made_once_on_monday_morning`), and the page's
+`rosterflow::ops::tests::the_drivers_swap_proposals_the_season_and_the_monday_reports`.

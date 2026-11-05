@@ -458,6 +458,20 @@ function AskDialog() {
       <${Btn} kind="primary" icon="groups" label=${v.find} onClick=${find} />`;
     return html`<${Dialog} icon=${v.icon} title=${v.title} w=${600} onClose=${later} foot=${foot}><p class="co-para">${v.text}</p></${Dialog}>`;
   }
+  if (v.kind === 'report') {
+    // (RosterFlow Pro, round E: the Monday report - "Open ›" opens it over the calendar,
+    // `pro_report`)
+    const later = () => act('report_seen');
+    const open = () =>
+      act('report_seen')
+        .then(() => import('../rosterflow/index.js'))
+        .then((m) => m.openRosterFlow({ view: 14 }))
+        .then(() => import('../rosterflow/state.js'))
+        .then((m) => m.setRf({ ops: { ...(S.rf.ops || {}), reports: true, rk: 0, pop: false } }));
+    const foot = html`<span class="rest"></span><${Btn} label=${v.on} onClick=${later} />
+      <${Btn} kind="primary" icon="receipt_long" label=${v.open} onClick=${open} />`;
+    return html`<${Dialog} icon=${v.icon} title=${v.title} w=${600} onClose=${later} foot=${foot}><p class="co-para">${v.text}</p></${Dialog}>`;
+  }
   const foot = html`<span class="rest"></span><${Btn} kind="primary" label=${v.on} onClick=${() => act('ask_on', { on: true })} />`;
   return html`<${Dialog} icon=${v.icon} title=${v.title} w=${600} onClose=${() => act('ask_on', { on: true })} foot=${foot}><p class="co-para">${v.text}</p></${Dialog}>`;
 }
