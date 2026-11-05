@@ -414,9 +414,9 @@ fn an_older_file_has_no_daily_operations_and_they_are_kept() {
 }
 
 /// The player's rules of asking (4 November 2026): a reserve within his frame is put on without a
-/// question before 12:00 the day before (at 12:00 exactly he must be asked); the hourly paid are
-/// asked several at once, a permanent driver one at a time; the duty is given only after a yes
-/// (or so put on), and the others asked are told it is taken.
+/// question before 12:00 the day before (at 12:00 exactly he must be asked); everyone else is
+/// asked, several at once - round G: the permanent drivers too; the duty is given only after a
+/// yes (or so put on), and the others who said yes or have not answered are told it is taken.
 #[test]
 fn the_rules_of_asking_a_reserve_the_hourly_paid_and_a_permanent_driver() {
     let mut c = company();
@@ -432,32 +432,36 @@ fn the_rules_of_asking_a_reserve_the_hourly_paid_and_a_permanent_driver() {
     assert_eq!(rule_of(&c, &r, &tomorrow, plan::TIER_RESERVE), Rule::Set);
     c.clock.minute = 12 * 60;
     assert!(!before_noon(&c, &tomorrow));
-    assert_eq!(rule_of(&c, &r, &tomorrow, plan::TIER_RESERVE), Rule::One);
-    assert_eq!(rule_of(&c, &c.staff[3].clone(), &tomorrow, plan::TIER_HOURLY), Rule::Many);
-    assert_eq!(rule_of(&c, &c.staff[1].clone(), &tomorrow, plan::TIER_COLLEAGUE), Rule::One);
-    // a permanent driver one at a time; two at once refused too
+    assert_eq!(rule_of(&c, &r, &tomorrow, plan::TIER_RESERVE), Rule::Ask);
+    assert_eq!(rule_of(&c, &c.staff[3].clone(), &tomorrow, plan::TIER_HOURLY), Rule::Ask);
+    assert_eq!(rule_of(&c, &c.staff[1].clone(), &tomorrow, plan::TIER_COLLEAGUE), Rule::Ask);
+    // round G: two permanent drivers at once, and the hourly paid alongside
     let yes = || Some(Reply::Yes { say: 0 });
     let date = tomorrow.as_str();
-    ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[1] }, yes())], 10).unwrap();
-    assert_eq!(ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[2] }, yes())], 10), Err(ONE_AT_A_TIME));
-    // the hourly paid alongside, several at once
+    ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[1] }, yes()), (Asked::Staff { id: ids[0] }, Some(Reply::No { why: NoWhy::Plans, say: 0 }))], 10).unwrap();
     ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[3] }, yes()), (Asked::Staff { id: ids[4] }, yes())], 10).unwrap();
     // given before his yes: refused; put on (a reserve's `set`): fine
     assert_eq!(give_asked(&mut c, date, 1001, None, ids[3], None, false, true, 10), Err(NEEDS_YES));
-    // the first permanent driver's question taken back: the next may be asked
+    // a question taken back, another permanent driver asked beside the first
     let first = c.planning.ops.asks.iter().find(|a| a.of_staff() == Some(ids[1])).unwrap().id;
     assert!(withdraw_ask(&mut c, first));
     assert!(!withdraw_ask(&mut c, first), "closed already");
     ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[2] }, yes())], 10).unwrap();
+    ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[1] }, yes())], 10).unwrap();
     // the answers come: given to an hourly driver who said yes, the others told it is taken
     let latest = c.planning.ops.asks.iter().filter_map(|a| a.due).max().unwrap();
     c.clock.minute = (latest - crate::company::clock::moment(&c.date, 0)) as u32 + 1;
     let said_yes = c.planning.ops.asks.iter().find(|a| a.of_staff() == Some(ids[3])).unwrap().reply.clone().unwrap();
     if said_yes.yes() {
         let before = c.messages.list.len();
+        let game = crate::company::clock::now(&c);
+        // (those who said yes - ids[4], ids[2], ids[1], unless one of them did not answer - are
+        // told; ids[0]'s no needs no word)
+        let told = asks_of(&c, date, 1001).filter(|a| a.of_staff() != Some(ids[3]) && a.shown_at(game, 10).is_none_or(Reply::yes)).count();
+        assert!(asks_of(&c, date, 1001).any(|a| a.of_staff() == Some(ids[0])) && told <= 3 && told >= 2);
         give_asked(&mut c, date, 1001, None, ids[3], None, false, true, 10).unwrap();
-        assert_eq!(c.messages.list.len(), before + 2, "ids[4] and ids[2] told");
-        assert!(c.messages.list.iter().rev().take(2).all(|m| m.text == super::super::messages::DUTY_TAKEN));
+        assert_eq!(c.messages.list.len(), before + told);
+        assert!(c.messages.list.iter().rev().take(told).all(|m| m.text == super::super::messages::DUTY_TAKEN));
         assert_eq!(asks_of(&c, date, 1001).count(), 0);
     }
     // the reserve put on without a question
@@ -528,7 +532,7 @@ fn an_ai_driver_answers_in_game_time_and_not_at_night() {
 fn said(c: &mut Company, id: u32, n: u32, reply: Reply, due: i64) {
     c.planning.ops.last += 1;
     let k = c.planning.ops.last;
-    c.planning.ops.asks.push(Ask { id: k, date: c.date.clone(), n, start: 600, end: 900, who: Asked::Staff { id }, at: 0, wait: 0, reply: Some(reply), closed: false, part: None, due: Some(due), closed_at: None });
+    c.planning.ops.asks.push(Ask { id: k, date: c.date.clone(), n, start: 600, end: 900, who: Asked::Staff { id }, at: 0, wait: 0, reply: Some(reply), closed: false, part: None, due: Some(due), closed_at: None, seen: false });
 }
 
 fn calm() -> Situation {
@@ -642,7 +646,7 @@ fn a_mood_is_about_the_duties_day_not_the_day_of_asking() {
     let no_for = |c: &mut Company, date: &str, n: u32, at: i64| {
         c.planning.ops.last += 1;
         let k = c.planning.ops.last;
-        c.planning.ops.asks.push(Ask { id: k, date: date.to_string(), n, start: 600, end: 900, who: Asked::Staff { id }, at: 0, wait: 0, reply: Some(Reply::No { why: NoWhy::Plans, say: 0 }), closed: false, part: None, due: Some(at), closed_at: None });
+        c.planning.ops.asks.push(Ask { id: k, date: date.to_string(), n, start: 600, end: 900, who: Asked::Staff { id }, at: 0, wait: 0, reply: Some(Reply::No { why: NoWhy::Plans, say: 0 }), closed: false, part: None, due: Some(at), closed_at: None, seen: false });
     };
     no_for(&mut c, &d15, 1001, game - 30);
     assert_eq!(mood_of(&c, id, &d15, game), Mood::Irritated { at: game - 30 });
@@ -1672,4 +1676,40 @@ fn the_monday_report_counts_the_week_before_and_is_made_once_on_monday_morning()
     // a week with nothing counted has no report
     c.date = "2024-03-25".into();
     assert_eq!(rp::monday(&mut c, 6 * 60), None);
+}
+
+/// (Round G) The mark on a day's missing cell: grey while questions wait, green for a yes not
+/// seen, red when every answer is a no; the planner opening the duty's box sees them.
+#[test]
+fn the_mark_on_the_missing_cell_grey_green_red_and_seen() {
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    let date = dates::add(&c.date, 1);
+    let d = date.as_str();
+    assert_eq!(mark_of(&c, d, crate::company::clock::now(&c), 10).key(), None);
+    let no = || Some(Reply::No { why: NoWhy::Plans, say: 0 });
+    ask(&mut c, d, 1001, 350, 660, vec![(Asked::Staff { id: ids[1] }, no()), (Asked::Staff { id: ids[2] }, no())], 10).unwrap();
+    let now = crate::company::clock::now(&c);
+    let m = mark_of(&c, d, now, 10);
+    assert_eq!((m.key(), m.waiting), (Some("waiting"), 2));
+    // the answers come: both no - red
+    let latest = c.planning.ops.asks.iter().filter_map(|a| a.due).max().unwrap();
+    let m = mark_of(&c, d, latest, 10);
+    assert_eq!((m.key(), m.duties.clone()), (Some("no"), vec![1001]));
+    // a yes for another duty that day: green wins
+    ask(&mut c, d, 1002, 700, 900, vec![(Asked::Staff { id: ids[3] }, Some(Reply::Yes { say: 0 }))], 10).unwrap();
+    let later = c.planning.ops.asks.iter().filter_map(|a| a.due).max().unwrap();
+    let m = mark_of(&c, d, later, 10);
+    assert_eq!((m.key(), m.yes), (Some("yes"), 1));
+    assert_eq!(m.duties, vec![1001, 1002]);
+    // the planner opens 1002's box: its yes seen - the noes of 1001 still red? no: a yes is open
+    assert!(mark_seen(&mut c, d, 1002, later, 10));
+    assert!(!mark_seen(&mut c, d, 1002, later, 10), "seen already");
+    let m = mark_of(&c, d, later, 10);
+    assert_eq!((m.key(), m.duties.clone()), (None, vec![1001]), "a yes still open: not all no; 1001's noes not seen");
+    assert!(mark_seen(&mut c, d, 1001, later, 10));
+    assert_eq!(mark_of(&c, d, later, 10).key(), None);
+    // kept through a save
+    let back: Ops = serde_json::from_str(&serde_json::to_string(&c.planning.ops).unwrap()).unwrap();
+    assert!(back.asks.iter().filter(|a| a.n == 1001).all(|a| a.seen));
 }

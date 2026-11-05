@@ -27,7 +27,11 @@
 // "Fortryd bytte" - until its first duty begins.) Round E (NexiconDK, 5 November 2026): the drivers
 // propose swaps themselves - "Bytteforslag (N)", each approved or refused -, the season of the week
 // in the head ("❄ Vinter – flere syge"), and the Monday reports - "Rapporter", tiles of the week
-// before (`pro_trade`, `pro_season`, `pro_report`).
+// before (`pro_trade`, `pro_season`, `pro_report`). Round G (NexiconDK, 5 November 2026): who can
+// drive on one line a driver - a tick box, the name and its signs, the price, the answer beside it
+// -, those ticked asked at once ("Spørg de valgte", the permanent drivers too); a mark on the day's
+// "missing" cell for the answers come and not seen ("✓ 1 ja", "🕒 venter på 3", "✗ alle sagde nej"),
+// and a yes said at the bottom wherever RosterFlow Pro is open (`AnswerWatch`).
 
 import { html, useEffect, useState } from '../../../vendor/preact-htm.js';
 import { S } from '../../store.js';
@@ -115,8 +119,6 @@ function Action({ x, onAsk, onGive, onSet, onBack, onAnyway }) {
       return html`<button type="button" class="bx-btn line" title=${x.hint || ''} onClick=${onAsk}>${tr('Ask the driver')}</button>`;
     case 'done':
       return html`<span class="bx-done">${x.hint}</span>`;
-    case 'ask_off':
-      return html`<button type="button" class="bx-btn line" disabled title=${x.hint || ''}>${tr('Ask the driver')}</button>`;
     case 'waiting':
       return html`<span class="bx-wait"><span>${tr('Waiting for an answer…')}</span>${onBack && html`<button type="button" class="rf-link" onClick=${onBack}>${tr('Take back')}</button>`}</span>`;
     case 'give':
@@ -215,26 +217,116 @@ function Missing({ v, pop }) {
   </div>`;
 }
 
-/** Step 2: who can drive the duty. */
+/** The first sign of a text ("🌅 Foretrækker tidlige vagter" → 🌅) - its icon in a row. */
+const sign = (t) => (t ? Array.from(t.trim())[0] : '');
+
+/** (Round G) A driver's answer in the row's own column: what he said in a word (his words on
+ * hover), or how long until it comes, or "–" not asked. */
+function AnswerCell({ x }) {
+  const a = x.answer;
+  if (x.action === 'waiting')
+    return html`<span class="wl-wait">🕒 ${x.eta || tr('Waiting for an answer…')}</span>`;
+  if (x.action === 'done') return html`<span class="wl-dim" title=${x.hint || ''}>${tr('Answers no more today')}</span>`;
+  if (!a) return x.action === 'ask' ? html`<span class="wl-dim">–</span>` : null;
+  const cls = a.swap ? 'swap' : a.yes ? 'yes' : a.key === 'silent' ? 'silent' : 'no';
+  const label = a.swap ? tr('⇄ Swap') : a.chip;
+  const tip = [a.words, x.swap?.text].filter(Boolean).join(' · ');
+  return html`<span class=${'wl-ans ' + cls} title=${tip}>${label}</span>`;
+}
+
+/** (Round G) One driver of the who-can-drive list on one line: a tick box (to ask with the
+ * others ticked), the name with its signs (mood, wish, early/late, tired, short notice, a swap
+ * possible, the rest rules - the words on hover), the price, his answer, and the one thing. */
+function Line({ v, n, x, picked, onPick }) {
+  const base = { date: v.date, n };
+  const [sure, setSure] = useState(false);
+  const [save, setSave] = useState(null);
+  const toil = x.toil ? (save ?? x.toil.on) : null;
+  const give = (anyway) => giveIt(n, null, x.name, { ...base, driver: x.id, swap: x.answer?.swap || null, anyway, toil });
+  const price = x.toil ? (toil ? x.toil.save_price : x.toil.pay_price) : x.price;
+  const giving = ['give', 'give_anyway', 'set', 'set_anyway'].includes(x.action);
+  const signs = [
+    x.mood && [x.mood.key === 'angry' ? '😠' : '😒', [x.mood.text, x.hint].filter(Boolean).join(' · '), 'mood'],
+    x.wish?.length && ['★', x.wish.join(' · '), 'wish'],
+    x.pref && [sign(x.pref.text), x.pref.text, x.pref.fits > 0 ? 'fits' : x.pref.fits < 0 ? 'nofit' : ''],
+    x.tired && [sign(x.tired.text), x.tired.text, 'tired ' + x.tired.key],
+    x.late && ['⏰', x.late, 'late'],
+    x.offer && ['⇄', x.offer, 'offer'],
+    x.breach && ['⚠', x.breach.join(' · '), 'breach'],
+    x.note && ['ⓘ', x.note, ''],
+  ].filter(Boolean);
+  const button = () => {
+    switch (x.action) {
+      case 'set':
+        return html`<button type="button" class="bx-btn green sm" onClick=${() => give(false)}>${tr('Put on')}</button>`;
+      case 'set_anyway':
+        return html`<button type="button" class="bx-btn warn sm" title=${x.anyway || ''} onClick=${() => setSure(true)}>${tr('Put on anyway')}</button>`;
+      case 'give':
+        return html`<button type="button" class="bx-btn green sm" onClick=${() => give(false)}>${x.answer?.swap ? tr('Give with the swap') : tr('Give')}</button>`;
+      case 'give_anyway':
+        return html`<button type="button" class="bx-btn warn sm" title=${x.anyway || ''} onClick=${() => setSure(true)}>${tr('Give anyway')}</button>`;
+      case 'waiting':
+        return x.ask != null && html`<button type="button" class="wl-x" title=${tr('Take back')} onClick=${() => oAct('withdraw_ask', { ...base, ask: x.ask })}>✕</button>`;
+      default:
+        return null;
+    }
+  };
+  return html`<div class=${'wl-row' + (x.breach ? ' breach' : '') + (picked ? ' picked' : '')}>
+    <span class="wl-tick">${x.action === 'ask' && html`<input type="checkbox" checked=${picked} title=${tr('Tick to ask')} onChange=${(e) => onPick(e.currentTarget.checked)} />`}</span>
+    <span class="wl-who" title=${x.sub}><b>${x.name}</b><i class="wl-chip">${x.chip}</i>${x.extra && html`<i class="wl-extra">${x.extra}</i>`}${signs.map(([g, t, k]) => html`<i class=${'wl-sign ' + k} title=${t}>${g}</i>`)}</span>
+    <span class=${'wl-price' + (x.over && !toil ? ' op-over' : '') + (toil ? ' bx-saved' : '')} title=${x.sub}>${price}</span>
+    <span class="wl-answer"><${AnswerCell} x=${x} />
+      ${x.toil && giving && html`<span class="cl-seg wl-toil">${x.toil.options.map(([k, l]) => html`<button type="button" class=${(k === 'save') === !!toil ? 'on' : ''} onClick=${() => setSave(k === 'save')}>${l}</button>`)}</span>`}
+      ${!sure && button()}</span>
+    ${sure && html`<div class="wl-sure"><span>${x.anyway}</span>
+      <span class="bx-surebtns"><button type="button" class="bx-btn line sm" onClick=${() => setSure(false)}>${tr('Cancel')}</button>
+      <button type="button" class="bx-btn warn sm" onClick=${() => (setSure(false), give(true))}>${tr('Yes, do it')}</button></span></div>`}
+  </div>`;
+}
+
+/** Step 2: who can drive the duty - round G (NexiconDK, 5 November 2026): one line a driver,
+ * those to ask ticked and asked at once ("Spørg de valgte"), their answers beside them as they
+ * come. The box opened, its answers are seen (the day's mark off them). */
 function Who({ v, d }) {
   const back = () => setO({ n: null, given: null });
-  return html`<div class="bx">
+  const [picked, setPicked] = useState({});
+  useEffect(() => setPicked({}), [v.date, d.n]);
+  useEffect(() => {
+    if (!d.unseen) return;
+    rfCmd('rf_ops_act', { act: 'seen', date: v.date, n: d.n })
+      .then((r) => r?.seen && bump())
+      .catch(() => {});
+  }, [v.date, d.n, d.unseen]);
+  const pick = (key, on) => setPicked((p) => ({ ...p, [key]: on }));
+  const rows = d.groups.flatMap((g) => g.rows);
+  const drivers = rows.filter((x) => x.action === 'ask' && picked['d' + x.id]).map((x) => x.id);
+  const guests = d.players.filter((p) => p.action === 'ask' && picked['g' + p.no]).map((p) => p.no);
+  const count = drivers.length + guests.length;
+  const askable = rows.some((x) => x.action === 'ask') || d.players.some((p) => p.action === 'ask');
+  const askAll = async () => {
+    const r = await oAct('ask', { date: v.date, n: d.n, drivers, guests });
+    if (r?.edited) setPicked({});
+  };
+  return html`<div class="bx wl">
     <div class="bx-top"><button type="button" class="rf-link bx-back" onClick=${back}><${Icon} name="chevron_left" size=${16} /><span>${tr('Back')}</span></button>
       ${d.sort && html`<span class="cl-seg bx-sort">${d.sort.options.map(([k, l]) => html`<button type="button" class=${d.sort.value === k ? 'on' : ''} onClick=${() => setO({ sort: k })}>${l}</button>`)}</span>`}</div>
     ${d.given && html`<div class="bx-given"><span>${tr('given to %{name}', { name: d.given })}</span><button type="button" class="rf-link" onClick=${() => oAct('withdraw', { date: v.date, n: d.n })}>${tr('Take it back')}</button></div>`}
-    ${d.groups.map((g) => html`<div class="bx-group">${g.label}</div>${g.rows.map((x) => html`<${Row} v=${v} n=${d.n} x=${x} />`)}`)}
-    ${d.players.length > 0 && html`<div class="bx-group">${tr('Players')}</div>
-      ${d.players.map((p) => html`<div class="bx-row">
-        <div class="bx-grow"><div class="bx-name">${p.name}</div><div class="bx-sub">${tr('a player: answers himself')}</div><${Answer} a=${p.answer} /></div>
-        ${p.action === 'ask' && html`<button type="button" class="bx-btn line" onClick=${() => oAct('ask', { date: v.date, n: d.n, guests: [p.no] })}>${tr('Ask the driver')}</button>`}
-        ${p.action === 'waiting' && html`<span class="bx-wait"><span>${tr('Waiting for an answer…')}</span></span>`}
-        ${p.action === 'give' && html`<button type="button" class="bx-btn green" onClick=${() => oAct('give_guest', { date: v.date, n: d.n, guest: p.no }).then((r) => r?.edited && setO({ n: null, given: tr('Duty %{n} is given to %{name}', { n: d.n, name: p.name }) }))}>${tr('Give him the duty')}</button>`}
+    ${d.groups.map((g) => html`<div class="wl-group">${g.label}</div>${g.rows.map((x) => html`<${Line} v=${v} n=${d.n} x=${x} picked=${!!picked['d' + x.id]} onPick=${(on) => pick('d' + x.id, on)} />`)}`)}
+    ${d.players.length > 0 && html`<div class="wl-group">${tr('Players')}</div>
+      ${d.players.map((p) => html`<div class="wl-row">
+        <span class="wl-tick">${p.action === 'ask' && html`<input type="checkbox" checked=${!!picked['g' + p.no]} onChange=${(e) => pick('g' + p.no, e.currentTarget.checked)} />`}</span>
+        <span class="wl-who"><b>${p.name}</b><i class="wl-chip">${tr('a player: answers himself')}</i></span>
+        <span class="wl-price"></span>
+        <span class="wl-answer">${p.action === 'waiting' ? html`<span class="wl-wait">🕒 ${tr('Waiting for an answer…')}</span>` : p.answer ? html`<span class=${'wl-ans ' + (p.answer.yes ? 'yes' : 'no')} title=${p.answer.words || ''}>${p.answer.chip}</span>` : html`<span class="wl-dim">–</span>`}
+          ${p.action === 'give' && html`<button type="button" class="bx-btn green sm" onClick=${() => oAct('give_guest', { date: v.date, n: d.n, guest: p.no }).then((r) => r?.edited && setO({ n: null, given: tr('Duty %{n} is given to %{name}', { n: d.n, name: p.name }) }))}>${tr('Give')}</button>`}</span>
       </div>`)}`}
     ${d.nobody &&
     html`<div class="bx-note"><b>${tr('Nobody can drive all of the duty.')}</b><span>${tr('Cut it in pieces, so that as much as possible is driven.')}</span></div>
       ${d.can_cut && html`<button type="button" class="bx-btn blue wide" onClick=${() => oAct('cut', { date: v.date, n: d.n })}>${tr('Cut the duty ›')}</button>`}
       <div style="margin-top:8px"><${Uncovered} v=${v} n=${d.n} d=${d} /></div>`}
     ${d.cant.length > 0 && html`<details class="bx-cant"><summary>${d.cant_label}</summary>${d.cant.map((x) => html`<div class="bx-row dim"><div class="bx-grow"><div class="bx-name">${x.name}</div><div class="bx-sub">${x.why}</div></div></div>`)}</details>`}
+    ${askable && html`<div class="wl-bar"><span>${tr('%{n} ticked', { n: count })}${d.cant.length > 0 ? ` · ${d.cant_label}` : ''}</span>
+      <button type="button" class="bx-btn blue" disabled=${count === 0} title=${count === 0 ? tr('Tick the drivers to ask first.') : ''} onClick=${askAll}>${tr('Ask those ticked')}</button></div>`}
   </div>`;
 }
 
@@ -481,6 +573,7 @@ export function CalendarTab() {
           <div class="cl-name miss"><b>${tr('Missing a driver')}</b><span>${tr('click to fill')}</span></div>
           ${v.days.map((d) => html`<button type="button" class=${'cl-miss' + (d.missing ? ' bad' : ' ok') + (d.date === day ? ' sel' : '')} onClick=${() => setO({ date: d.date, n: null, pop: true, given: null })}>
             ${d.missing ? html`<b>${d.missing}</b><span>${d.missing_text}</span>` : html`<${Icon} name="check" size=${16} /><span>${d.missing_text}</span>`}
+            ${d.mark && html`<i class=${'cl-mark ' + d.mark.key} title=${d.mark.text} onClick=${(e) => (e.stopPropagation(), setO({ date: d.date, n: d.mark.n ?? null, pop: true, given: null }))}>${d.mark.text}</i>`}
           </button>`)}
           <div></div>
           ${groups.map(([g, xs]) => html`<div class="cl-group" style=${`grid-column:1 / span ${v.days.length + 2}`}>${v.groups[g]} · ${xs.length}</div>
@@ -498,6 +591,48 @@ export function CalendarTab() {
     ${o.trades && html`<${Trades} />`}
     ${o.reports && html`<${Reports} />`}
   </div>`;
+}
+
+// --- the answers watched (round G) -----------------------------------------------------------------
+
+/** How often the answers are asked for wherever RosterFlow Pro is open (ms). */
+const WATCH_EVERY = 4000;
+
+/** (Round G, NexiconDK 5 November 2026) The answers to the company's questions, watched wherever
+ * RosterFlow Pro is open (`rf_answers`): a yes come meanwhile said at the bottom once - "Nina Bach
+ * sagde ja til vagt 1004" - unless its duty's box is open; any answer come: the views asked
+ * again (the day's mark). The yes answers there when it begins are not said. */
+export function AnswerWatch() {
+  useEffect(() => {
+    let gone = false;
+    let known = null;
+    let shown = -1;
+    const look = () =>
+      rfCmd('rf_answers', {})
+        .then((r) => {
+          if (gone || !r) return;
+          const yes = r.yes || [];
+          if (known) {
+            const o = st();
+            for (const y of yes) {
+              if (known.has(y.id)) continue;
+              const open = o.pop && o.n === y.n && o.date === y.date;
+              if (!open) say(y.text);
+            }
+          }
+          known = new Set(yes.map((y) => y.id));
+          if (shown >= 0 && r.shown !== shown) bump();
+          shown = r.shown ?? 0;
+        })
+        .catch(() => {});
+    look();
+    const t = setInterval(look, WATCH_EVERY);
+    return () => {
+      gone = true;
+      clearInterval(t);
+    };
+  }, []);
+  return null;
 }
 
 // --- 4 Daglig drift ----------------------------------------------------------------------------------

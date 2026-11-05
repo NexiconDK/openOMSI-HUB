@@ -170,6 +170,10 @@ pub struct Ask {
     /// given (the duty given another, the question taken back).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub closed_at: Option<i64>,
+    /// (Round G) The planner has seen his answer: opened the duty's box after it came. The mark
+    /// on the day's "missing" cell counts only answers not seen (`mark_of`).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub seen: bool,
 }
 
 impl Ask {
@@ -306,7 +310,6 @@ pub const NO_SUCH_ASK: &str = "That question is no longer open.";
 pub const NOT_ASKED: &str = "You were not asked for that duty.";
 pub const NOT_A_DRIVER: &str = "That is not a driver of the company.";
 pub const NOBODY: &str = "Tick the drivers to ask first.";
-pub const ONE_AT_A_TIME: &str = "A permanent driver is asked one at a time: wait for his answer, or take the question back.";
 pub const NEEDS_YES: &str = "Ask him first: the duty can be given only to a driver who said yes.";
 /// How long an unanswered question waits before it shows "no answer" (minutes of the company's
 /// clock).
@@ -902,6 +905,74 @@ pub fn asks_of<'a>(c: &'a Company, date: &'a str, n: u32) -> impl Iterator<Item 
     c.planning.ops.asks.iter().filter(move |a| a.date == date && a.n == n && !a.closed)
 }
 
+/// (Round G, NexiconDK 5 November 2026) What the answers for a day's duties say on its "N
+/// vagter mangler" cell: yes answers not seen yet (green - the planner can give a duty), every
+/// answer a no (red - ask others), questions still waiting (grey). The duties with answers not
+/// seen, for a click straight to one of them.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Mark {
+    pub yes: usize,
+    pub waiting: usize,
+    /// Every question answered, none of them a yes - and some of those noes not seen yet.
+    pub all_no: bool,
+    pub duties: Vec<u32>,
+}
+
+impl Mark {
+    /// Which it shows (green over red over grey): "yes", "no", "waiting" - None: nothing.
+    pub fn key(&self) -> Option<&'static str> {
+        if self.yes > 0 {
+            Some("yes")
+        } else if self.all_no {
+            Some("no")
+        } else if self.waiting > 0 {
+            Some("waiting")
+        } else {
+            None
+        }
+    }
+}
+
+/// The mark of `date`'s missing cell at the company's minute `game` (the launcher's second `now`):
+/// its open questions (not closed: the duty not given, the question not taken back).
+pub fn mark_of(c: &Company, date: &str, game: i64, now: u64) -> Mark {
+    let mut m = Mark::default();
+    let (mut yes_any, mut no_new) = (false, false);
+    for a in c.planning.ops.asks.iter().filter(|a| a.date == date && !a.closed) {
+        match a.shown_at(game, now) {
+            None => m.waiting += 1,
+            Some(r) => {
+                if r.yes() {
+                    yes_any = true;
+                    if !a.seen {
+                        m.yes += 1;
+                    }
+                } else if !a.seen {
+                    no_new = true;
+                }
+                if !a.seen && !m.duties.contains(&a.n) {
+                    m.duties.push(a.n);
+                }
+            }
+        }
+    }
+    m.all_no = no_new && !yes_any && m.waiting == 0;
+    m
+}
+
+/// The planner opened duty `n` of `date`'s box: the answers come so far are seen. Whether any was
+/// new.
+pub fn mark_seen(c: &mut Company, date: &str, n: u32, game: i64, now: u64) -> bool {
+    let mut any = false;
+    for a in c.planning.ops.asks.iter_mut().filter(|a| a.date == date && a.n == n && !a.seen) {
+        if a.shown_at(game, now).is_some() {
+            a.seen = true;
+            any = true;
+        }
+    }
+    any
+}
+
 /// The template of the notice to a player asked for a duty.
 pub const ASKED_NOTICE: &str = "The control room asks: can you drive duty %{n} on %{date}, signing on %{time}? Answer on your page.";
 
@@ -913,11 +984,9 @@ pub enum Rule {
     /// A reserve whose frame holds it, before 12:00 the day before: put on without a question,
     /// he is told (`plan::tell_reserves`).
     Set,
-    /// Asked first, one at a time (a permanent driver on a day off or into overtime, a reserve
+    /// Asked first (round G: anyone else, several at once - the permanent drivers too; a reserve
     /// from 12:00 the day before on).
-    One,
-    /// Asked first, several at once (the hourly paid).
-    Many,
+    Ask,
 }
 
 /// (Round F) A reserve asked for a duty in his frame after 12:00 the day before (short notice:
@@ -931,21 +1000,12 @@ pub fn before_noon(c: &Company, date: &str) -> bool {
 
 /// How driver `e` is given a duty of `date` (`tier`: where he comes in its fill order).
 pub fn rule_of(c: &Company, e: &Employee, date: &str, tier: u8) -> Rule {
+    let _ = e;
     if tier == plan::TIER_RESERVE && before_noon(c, date) {
         Rule::Set
-    } else if e.employment == Employment::Hourly {
-        Rule::Many
     } else {
-        Rule::One
+        Rule::Ask
     }
-}
-
-/// The open question (asked, not answered at the company's minute `game`, not closed) for duty
-/// `n` (`part`) of `date` to a driver asked one at a time, if any.
-pub fn open_one<'a>(c: &'a Company, date: &str, n: u32, part: Option<u8>, game: i64, now: u64) -> Option<&'a Ask> {
-    c.planning.ops.asks.iter().find(|a| {
-        a.date == date && a.n == n && a.part == part && !a.closed && a.shown_at(game, now).is_none() && a.of_staff().and_then(|id| c.employee(id)).is_some_and(|e| e.employment != Employment::Hourly)
-    })
 }
 
 /// When an AI driver's answer `reply` to duty `n` of `date` (signing on `start`) comes, asked at
@@ -992,9 +1052,9 @@ pub fn answer_time(c: &Company, e: &Employee, date: &str, n: u32, start: i32, re
 /// Ask the drivers `who` for duty `n` (`part`: a part of it cut, `pro_cut`) of `date` (signing on
 /// `start`, off `end`) at `now` (seconds since 1970): each with his answer (an AI driver's,
 /// decided now and come on the company's clock - `answer_time`, `week(id)` the minutes of his
-/// week; None a player's, to come - he is told). A driver asked already is asked again. A
-/// permanent driver is asked one at a time (`ONE_AT_A_TIME`); the hourly paid several at once.
-/// Their numbers.
+/// week; None a player's, to come - he is told). A driver asked already is asked again. Round G
+/// (NexiconDK, 5 November 2026): any number at once, the permanent drivers too - the rule of one
+/// permanent driver at a time is gone. Their numbers.
 pub fn ask(c: &mut Company, date: &str, n: u32, start: i32, end: i32, who: Vec<(Asked, Option<Reply>)>, now: u64) -> Result<Vec<u32>, &'static str> {
     ask_part(c, date, n, None, start, end, who, now, &|_| 0.0)
 }
@@ -1005,12 +1065,6 @@ pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i3
         return Err(NOBODY);
     }
     let game = super::clock::now(c);
-    // (one at a time: a permanent driver - or a reserve from noon the day before - while another
-    // such question is open, or two of them at once)
-    let ones: Vec<u32> = who.iter().filter_map(|(w, _)| if let Asked::Staff { id } = w { Some(*id) } else { None }).filter(|id| c.employee(*id).is_some_and(|e| e.employment != Employment::Hourly)).collect();
-    if ones.len() > 1 || (!ones.is_empty() && open_one(c, date, n, part, game, now).is_some_and(|a| a.of_staff() != ones.first().copied())) {
-        return Err(ONE_AT_A_TIME);
-    }
     let mut ids = Vec::new();
     for (w, reply) in who {
         if let Asked::Staff { id } = w {
@@ -1048,7 +1102,7 @@ pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i3
             let time = format!("{:02}:{:02}", start.rem_euclid(1440) / 60, start.rem_euclid(60));
             super::crew::notify(c, Some(Who::Guest(no)), super::crew::Priority::High, ASKED_NOTICE, &[("n", n.to_string()), ("date", date.to_string()), ("time", time)], Some("phone"));
         }
-        c.planning.ops.asks.push(Ask { id, date: date.to_string(), n, start, end, who: w, at: now, wait: 0, reply, closed: false, part, due, closed_at: None });
+        c.planning.ops.asks.push(Ask { id, date: date.to_string(), n, start, end, who: w, at: now, wait: 0, reply, closed: false, part, due, closed_at: None, seen: false });
         ids.push(id);
     }
     Ok(ids)
@@ -1135,7 +1189,9 @@ pub fn give_asked(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver:
     if !set && !yes {
         return Err(NEEDS_YES);
     }
-    let others: Vec<u32> = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == n && a.part == part && !a.closed).filter_map(Ask::of_staff).filter(|id| *id != driver).collect();
+    // (round G: those who said yes, or have not answered yet, are told it is taken - with thanks,
+    // nothing off their content; a no needs no word)
+    let others: Vec<u32> = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == n && a.part == part && !a.closed).filter(|a| a.shown_at(game, now).is_none_or(Reply::yes)).filter_map(Ask::of_staff).filter(|id| *id != driver).collect();
     give_part(c, date, n, part, driver, swap)?;
     if extra {
         super::pro_rest::count_extra(c, driver, date);
@@ -1224,7 +1280,7 @@ pub fn tidy(c: &mut Company) {
 
 /// Every English text this module hands the pages besides its literals.
 pub fn texts() -> Vec<&'static str> {
-    let mut v: Vec<&'static str> = vec![SAY_FRAME, SAY_ILL, SAY_HOLIDAY, SAY_DAY_OFF, SAY_NOT_THAT_DAY, SAY_LICENCE, SAY_LONG, NO_SUCH_ASK, NOT_ASKED, NOT_A_DRIVER, NOBODY, ASKED_NOTICE, ONE_AT_A_TIME, NEEDS_YES, SAY_SILENT, ANSWERS_NO_MORE];
+    let mut v: Vec<&'static str> = vec![SAY_FRAME, SAY_ILL, SAY_HOLIDAY, SAY_DAY_OFF, SAY_NOT_THAT_DAY, SAY_LICENCE, SAY_LONG, NO_SUCH_ASK, NOT_ASKED, NOT_A_DRIVER, NOBODY, ASKED_NOTICE, NEEDS_YES, SAY_SILENT, ANSWERS_NO_MORE];
     v.extend(super::pro_cut::texts());
     v.extend(super::pro_sick::texts());
     v.extend(super::pro_rest::texts());

@@ -497,8 +497,7 @@ Beside the calendar (and as the page of "4 Daglig drift"), one step at a time in
 | Driver | How |
 |---|---|
 | A reserve whose frame holds the duty, before 12:00 the day before (company clock) | "Sæt på": no question, he is told (`plan::tell_reserves`). At 12:00 exactly or later he must be asked. |
-| An hourly-paid driver | Always asked; several may be asked at once. The duty goes to one who said yes; the others' questions are closed and they get the message "Tak - vagt %{n} den %{date} er givet til en kollega" (`messages::DUTY_TAKEN`). |
-| A permanent driver (a day off or overtime), or a reserve from 12:00 the day before | Always asked, **one at a time**: while his question is open the other permanent and reserve "Spørg" buttons are greyed (the reason as a tooltip); "Træk tilbage" closes it (`withdraw_ask`). |
+| Anyone else: the hourly paid, a permanent driver (a day off or overtime), a reserve from 12:00 the day before | Always asked (`Rule::Ask`); **several at once**, ticked and asked with "Spørg de valgte" - round G took away the old rule of one permanent driver at a time. The duty goes to one who said yes; the others who said yes or have not answered yet get the message "Tak - vagt %{n} den %{date} er givet til en kollega" (`messages::DUTY_TAKEN`), nothing off their content; a no needs no word. "✕" (Træk tilbage) closes a question (`withdraw_ask`). |
 
 "Giv vagten" works only after a yes (`give_asked`, `NEEDS_YES`), or for a reserve put on.
 
@@ -1057,3 +1056,42 @@ Tested: `pro_turnus::tests` (`named_frames_ram1_to_ram4`, `a_mixed_team_takes_tu
 `a_named_frame_pays_the_hours_driven_and_holds_the_night`, `a_reserve_rota_is_made_of_frames`),
 `pro_ops::tests::an_ai_drivers_answer_is_human_and_the_same_every_time` (short notice), and the
 page's `rosterflow::ops::tests` (the reserve told when put on).
+
+## Round G (5 November 2026): tick and ask many, the answers beside them, a mark on the missing cell
+
+**The who-can-drive popup, one line a driver** (`ops.js` `Who`/`Line`, the API's `row_json`
+gives `chip` and `price` apart). Each line: a tick box (only for a driver to ask), the name with
+its kind ("Fast", "RAM3", "Timeløn"), "N ekstra denne måned" and its signs - 😒/😠 the mood, ★
+a wish, 🌅/🌙 early or late (green fits, orange not), 😮‍💨/🥱 tired, ⏰ short notice, ⇄ a swap
+possible, ⚠ the rest rules, each with its words on hover -, the price (paid out or saved as
+time off in lieu as the toggle says) and the answer column:
+
+| State | The column |
+|---|---|
+| Not asked | "–" (tick it) |
+| Waiting | "🕒 Venter… ca. N min" (from the answer's due on the company's clock) and "✕" to take it back |
+| Yes | "Ja" (his words on hover) and "Giv" - "Giv alligevel" (red, confirmed first) when the rest rules break; the Udbetal/Afspadsering toggle beside it when it applies |
+| A swap | "⇄ Bytte" (who takes his own duty on hover) and "Giv med byttet" |
+| No | "Nej", "For tidligt", "For sent" (his words on hover) |
+| No answer | "Intet svar" |
+| A reserve in the frame before noon the day before | no tick box: "Sæt på" (round F) |
+
+The groups (Fast, Ramme, Timeløn) are thin headings; those who cannot drive it stay folded. The
+bar below: "N valgt · M andre kan ikke køre den" and "Spørg de valgte" - everyone ticked asked at
+once (`rf_ops_act` `ask` with `drivers`/`guests`; one ticked who is asked already is left out:
+"De valgte er allerede spurgt."). The popup is 780 px wide and fits about 12 drivers without
+scrolling. The players of "Play together" are lines of their own, ticked the same way.
+
+**A mark on "N vagter mangler"** (`pro_ops::mark_of`, `Mark`, the calendar's `days[].mark`): a
+badge on the cell's corner - green "✓ N ja" for yes answers not seen yet, red "✗ alle sagde nej"
+when every question of the day is answered and none said yes (some of those noes not seen yet),
+grey "🕒 venter på N" while questions wait; green over red over grey. A click opens the day's box,
+or the duty itself when the answers not seen are all for one. An answer is seen when the planner
+opens its duty's box (`Ask::seen`, the act `seen` - the planning's permission; no word said, the
+plans not made anew).
+
+**A toast for a yes** (`AnswerWatch`, mounted wherever RosterFlow Pro is open; `rf_answers` every
+4 seconds - RF_VIEW): "Nina Bach sagde ja til vagt 1004" once a yes, unless that duty's box is
+open; the yes answers there when RosterFlow opens are not said. Any answer come makes the views
+ask again (the marks).
+

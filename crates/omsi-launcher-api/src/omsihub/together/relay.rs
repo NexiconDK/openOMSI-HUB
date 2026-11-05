@@ -268,6 +268,8 @@ fn rf_turnus_need(act: &str) -> Need {
 fn rf_ops_need(act: &str) -> Need {
     match act {
         "ask" | "give" | "withdraw" | "withdraw_ask" | "cut" | "uncut" | "agency" | "toil_day" | "toil_back" | "unswap" => PLANS,
+        // (round G: the answers to a duty seen - the planner's, who opened its box)
+        "seen" => PLANS,
         // (a duty given to a player: the assigner's, as the roster's)
         "give_guest" => ASSIGN,
         _ => Never,
@@ -286,7 +288,7 @@ fn rf_view_need(view: &str) -> Need {
 fn rf_need(cmd: &str, args: &Value) -> Need {
     let s = |k: &str| args.get(k).and_then(Value::as_str).unwrap_or("").to_string();
     match cmd {
-        "rf_on" | "rf_board" | "rf_here" | "rf_print" | "rf_roster" | "rf_roster_service" | "rf_tp" | "rf_tp_guide" | "rf_tp_route" | "rf_turnus" | "rf_cal" | "rf_ops" | "rf_wishes" | "rf_trades" | "rf_reports" => RF_VIEW,
+        "rf_on" | "rf_board" | "rf_here" | "rf_print" | "rf_roster" | "rf_roster_service" | "rf_tp" | "rf_tp_guide" | "rf_tp_route" | "rf_turnus" | "rf_cal" | "rf_ops" | "rf_wishes" | "rf_trades" | "rf_reports" | "rf_answers" => RF_VIEW,
         // (round B: a driver's wish granted or refused - the planning's; round E: the drivers' own
         // swap proposals approved or refused too)
         "rf_wish_act" | "rf_trade_act" => PLANS,

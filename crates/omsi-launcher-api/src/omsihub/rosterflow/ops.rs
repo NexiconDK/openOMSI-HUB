@@ -287,6 +287,8 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             let missing = plans.get(d).map_or(0, |p| open_items(&c, p, &duties[d.as_str()]).len());
             json!({ "date": d, "wd": tr(DAYS[pt::day_of(d)]), "name": day_name(d), "day": short_date(d), "today": *d == c.date, "past": co::dates::between(&c.date, d) < 0, "missing": missing, "label": day_label(d),
                 "missing_text": match missing { 0 => tr("all filled"), 1 => tr("duty missing"), _ => tr("duties missing") },
+                // (round G: what the answers say - a yes to give, every answer a no, still waiting)
+                "mark": mark_json(&po::mark_of(&c, d, co::clock::now(&c), now())),
                 // (round D: a public holiday - its name, paid as a Sunday)
                 "holiday": ph::name(&c, d).map(tr), "holiday_tip": ph::name(&c, d).map(|n| trf("%{name}: a public holiday - paid as a Sunday (35 %)", &[("name", &tr(n))])) })
         })
@@ -837,7 +839,8 @@ fn row_json(c: &Company, p: &DayPlan, d: &OpenDuty, part: Option<u8>, e: &Employ
         Some(f) => f.name,
         None => chip,
     };
-    let mut v = json!({ "id": e.id, "nr": e.id, "name": e.name, "kind": kind_of(c, e).0, "sub": format!("{chip} · {words}"), "over": over });
+    // (round G: the kind and the price apart too - one line each driver, the price its column)
+    let mut v = json!({ "id": e.id, "nr": e.id, "name": e.name, "kind": kind_of(c, e).0, "sub": format!("{chip} · {words}"), "chip": chip, "price": words, "over": over });
     if late {
         v["late"] = json!(tr("⏰ Short notice – must be asked"));
     }
@@ -846,7 +849,7 @@ fn row_json(c: &Company, p: &DayPlan, d: &OpenDuty, part: Option<u8>, e: &Employ
     if let Price::Overtime { minutes, .. } = price.0 {
         if ptl::can_save(e) {
             let save = trf("Time off in lieu %{t}", &[("t", &length(*minutes))]);
-            v["toil"] = json!({ "on": ptl::default_on(c), "pay": format!("{chip} · {words}"), "save": format!("{chip} · {save}"), "options": [["pay", tr("Pay out")], ["save", tr("Time off in lieu")]] });
+            v["toil"] = json!({ "on": ptl::default_on(c), "pay": format!("{chip} · {words}"), "save": format!("{chip} · {save}"), "pay_price": words, "save_price": save, "options": [["pay", tr("Pay out")], ["save", tr("Time off in lieu")]] });
         }
     }
     let notes: Vec<String> = pw::notes(c, e.id, date, d.start, d.end).into_iter().map(tr).collect();
@@ -857,6 +860,10 @@ fn row_json(c: &Company, p: &DayPlan, d: &OpenDuty, part: Option<u8>, e: &Employ
         (Some(a), None) => {
             v["action"] = json!("waiting");
             v["ask"] = json!(a.id);
+            // (round G: about how long until the answer - the company's minutes)
+            if let Some(due) = a.due.filter(|d| *d > game) {
+                v["eta"] = json!(trf("Waiting… about %{n} min", &[("n", &((due - game).max(1)).to_string())]));
+            }
         }
         (Some(_), Some(r)) => {
             v["answer"] = reply_json(c, r);
@@ -866,16 +873,10 @@ fn row_json(c: &Company, p: &DayPlan, d: &OpenDuty, part: Option<u8>, e: &Employ
             v["action"] = json!("done");
             v["hint"] = json!(tr("Answers no more questions about this day today"));
         }
+        // (round G: everyone else asked, several at once - one permanent driver at a time no more)
         (None, _) => match rule {
             Rule::Set => v["action"] = json!("set"),
-            Rule::Many => v["action"] = json!("ask"),
-            Rule::One => match po::open_one(c, date, n, part, game, now).and_then(|a| a.of_staff()) {
-                Some(other) => {
-                    v["action"] = json!("ask_off");
-                    v["hint"] = json!(trf("ask him when %{name} has answered", &[("name", &first_name(c, other))]));
-                }
-                None => v["action"] = json!("ask"),
-            },
+            Rule::Ask => v["action"] = json!("ask"),
         },
     }
     // (said no today already to a duty of this date: irritated, angry - shown before he is asked
@@ -896,6 +897,43 @@ fn row_json(c: &Company, p: &DayPlan, d: &OpenDuty, part: Option<u8>, e: &Employ
         }
     }
     v
+}
+
+/// (Round G) A day's mark on its missing cell: "✓ 1 yes", "🕒 waiting for 3", "✗ all said no"
+/// (null: none), and the duty a click opens when the answers not seen are all for one.
+fn mark_json(m: &po::Mark) -> Value {
+    let Some(key) = m.key() else { return Value::Null };
+    let text = match key {
+        "yes" => trf("✓ %{n} yes", &[("n", &m.yes.to_string())]),
+        "no" => tr("✗ all said no"),
+        _ => trf("🕒 waiting for %{n}", &[("n", &m.waiting.to_string())]),
+    };
+    json!({ "key": key, "text": text, "n": if m.duties.len() == 1 { json!(m.duties[0]) } else { Value::Null } })
+}
+
+/// (Round G) The answers come in to the company's open questions (`rf_answers`, asked by the page
+/// every few seconds wherever RosterFlow is open): the yes answers - "Nina Bach sagde ja til vagt
+/// 1004" - for a toast each, and a count of every answer come, for the views to be asked again.
+fn answers(s: &mut Session, _r: &mut Rf, _args: &Value) -> Answer {
+    let Some(c) = s.company.as_ref() else { return Ok(json!({ "yes": [], "shown": 0, "waiting": 0 })) };
+    if off(c).is_some() {
+        return Ok(json!({ "yes": [], "shown": 0, "waiting": 0 }));
+    }
+    let (game, at) = (co::clock::now(c), now());
+    let open: Vec<&po::Ask> = c.planning.ops.asks.iter().filter(|a| !a.closed).collect();
+    let yes: Vec<Value> = open
+        .iter()
+        .filter(|a| a.shown_at(game, at).is_some_and(Reply::yes))
+        .map(|a| {
+            let name = match a.who {
+                Asked::Staff { id } => name_in(c)(id),
+                Asked::Guest { no } => c.together.guest(no).map(|g| g.name.clone()).unwrap_or_default(),
+            };
+            json!({ "id": a.id, "date": a.date, "n": a.n, "text": trf("%{name} said yes to duty %{n}", &[("name", &name), ("n", &a.n.to_string())]) })
+        })
+        .collect();
+    let shown = open.iter().filter(|a| a.shown_at(game, at).is_some()).count();
+    Ok(json!({ "yes": yes, "shown": shown, "waiting": open.len() - shown }))
 }
 
 /// "Thursday 05:30–13:45 · line 2".
@@ -1007,10 +1045,13 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
     };
     let nobody = !live && !players.iter().any(|p| p["action"] != "none");
     let given = c.planning.ops.calls.iter().find(|x| x.date == date && x.n == d.n && x.part.is_none()).and_then(|x| c.employee(x.driver)).map(|e| e.name.clone());
+    // (round G: answers come the planner has not seen here yet - the page marks them seen)
+    let unseen = c.planning.ops.asks.iter().any(|a| a.date == date && a.n == d.n && !a.seen && a.shown_at(game, now).is_some());
     let mut v = json!({
         "n": d.n, "title": trf("Duty %{n}", &[("n", &d.n.to_string())]), "sub": duty_sub(d, date), "why": why_words(d.why), "kind": tr(d.kind.label()),
         "groups": groups, "cant": cant, "cant_label": trf("%{n} others cannot drive it", &[("n", &cant.len().to_string())]),
-        "players": players, "given": given, "nobody": nobody, "can_cut": nobody && pc::can_cut_duty(c, p, d),
+        "players": players, "given": given, "nobody": nobody, "can_cut": nobody && pc::can_cut_duty(c, p, d), "unseen": unseen,
+        "picked_label": tr("%{n} ticked"), "ask_label": tr("Ask those ticked"),
         "sort": { "value": if fair { "fair" } else { "cheap" }, "options": [["cheap", tr("Cheapest first")], ["fair", tr("Fewest extra first")]] },
     });
     if let Value::Object(m) = uncovered(c, p, d) {
@@ -1392,6 +1433,13 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             let ids: Vec<u32> = args.get("drivers").and_then(Value::as_array).map(|a| a.iter().filter_map(Value::as_u64).map(|x| x as u32).collect()).unwrap_or_default();
             let guests: Vec<u32> = args.get("guests").and_then(Value::as_array).map(|a| a.iter().filter_map(Value::as_u64).map(|x| x as u32).collect()).unwrap_or_default();
             let mut who: Vec<(Asked, Option<Reply>)> = Vec::new();
+            // (round G: one ticked who is asked already - waiting, or answered - is not asked twice)
+            let open = |w: Asked| c.planning.ops.asks.iter().any(|a| a.date == date && a.n == d.n && a.part == part && !a.closed && a.who == w);
+            let ids: Vec<u32> = ids.into_iter().filter(|id| !open(Asked::Staff { id: *id })).collect();
+            let guests: Vec<u32> = guests.into_iter().filter(|g| !open(Asked::Guest { no: *g })).collect();
+            if ids.is_empty() && guests.is_empty() {
+                return Ok(said(tr("Those ticked are asked already."), false));
+            }
             for id in &ids {
                 let Some(e) = c.employee(*id) else { continue };
                 let sit = situation(&c, &p, &ds, &d, e, cands.iter().find(|x| x.id == *id), tired.get(id).copied().unwrap_or_default());
@@ -1495,6 +1543,17 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                 po::close(c, &date, n);
                 Ok(())
             })
+        }
+        // (round G: the planner opened the duty's box - its answers seen, the day's mark off them;
+        // no word said, the plans not made anew)
+        "seen" => {
+            let (game, at) = (co::clock::now(&c), now());
+            let mut changed = false;
+            let _ = company::act(s, |c| {
+                changed = po::mark_seen(c, &date, n, game, at);
+                Ok::<(), &'static str>(())
+            });
+            json!({ "seen": changed })
         }
         "withdraw_ask" => {
             let id = args.get("ask").and_then(Value::as_u64).unwrap_or(0) as u32;
@@ -1738,6 +1797,7 @@ pub(super) fn run(s: &mut Session, r: &mut Rf, cmd: &str, args: &Value) -> Optio
         "rf_trades" => trades(s, r, args),
         "rf_trade_act" => trade_act(s, r, args),
         "rf_reports" => reports(s, r, args),
+        "rf_answers" => answers(s, r, args),
         _ => return None,
     })
 }
@@ -1863,8 +1923,36 @@ mod tests {
         let v = daily(&mut s, &mut r, &json!({ "date": date, "n": n })).unwrap();
         assert_eq!(v["duty"]["groups"][2]["rows"][0]["action"], "waiting");
         assert_eq!(v["waiting"], true);
-        let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": ids[2] })).unwrap();
-        assert_eq!(out["say"]["error"], true, "{out}");
+        // (round G: ticked again while asked - not asked twice; the day's cell marked grey, the
+        // answers watched say one waiting)
+        let again = act(&mut s, &mut r, &json!({ "act": "ask", "date": date, "n": n, "drivers": [ids[2]] })).unwrap();
+        assert_eq!(again["say"]["text"], "Those ticked are asked already.", "{again}");
+        let cal = calendar(&mut s, &mut r, &json!({})).unwrap();
+        assert_eq!(cal["days"][2]["mark"]["key"], "waiting", "{}", cal["days"][2]);
+        assert_eq!(cal["days"][2]["mark"]["text"], "🕒 waiting for 1");
+        assert_eq!(answers(&mut s, &mut r, &json!({})).unwrap()["waiting"], 1);
+        // his answer come: green for a yes (or red for a no) until the box is opened and seen
+        {
+            let c = s.company.as_mut().unwrap();
+            let due = c.planning.ops.asks.iter().filter_map(|a| a.due).max().unwrap();
+            c.clock.minute = (due - co::clock::moment(&c.date, 0) + 1) as u32;
+        }
+        let yes = s.company.as_ref().unwrap().planning.ops.asks.iter().any(|a| a.reply.as_ref().is_some_and(Reply::yes));
+        let cal = calendar(&mut s, &mut r, &json!({})).unwrap();
+        let mark = &cal["days"][2]["mark"];
+        assert_eq!(mark["key"], if yes { "yes" } else { "no" }, "{mark}");
+        assert_eq!(mark["n"], n, "one duty answered: the click opens it");
+        let w = answers(&mut s, &mut r, &json!({})).unwrap();
+        assert_eq!((w["shown"].as_u64(), w["yes"].as_array().map(Vec::len)), (Some(1), Some(yes as usize)), "{w}");
+        let v = daily(&mut s, &mut r, &json!({ "date": date, "n": n })).unwrap();
+        assert_eq!(v["duty"]["unseen"], true);
+        assert_eq!(act(&mut s, &mut r, &json!({ "act": "seen", "date": date, "n": n })).unwrap()["seen"], true);
+        assert_eq!(daily(&mut s, &mut r, &json!({ "date": date, "n": n })).unwrap()["duty"]["unseen"], false);
+        assert!(calendar(&mut s, &mut r, &json!({})).unwrap()["days"][2]["mark"].is_null(), "seen: no mark");
+        if !yes {
+            let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": ids[2] })).unwrap();
+            assert_eq!(out["say"]["error"], true, "{out}");
+        }
         // put on: the reserve's that day, the duty no longer open
         let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": ids[1] })).unwrap();
         assert_eq!(out["edited"], true, "{out}");

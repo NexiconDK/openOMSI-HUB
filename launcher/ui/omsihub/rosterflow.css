@@ -1382,3 +1382,43 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .rp-tile.bad { border-left-color: #ff6b6b; }
 .rp-tile.bad b { color: #ff6b6b; }
 .rp-tile.neutral { border-left-color: var(--rf-accent); }
+
+/* RosterFlow Pro, round G (NexiconDK, 5 November 2026): who can drive on one line a driver - a tick
+   box, the name and its signs, the price, the answer beside it -, those ticked asked at once from
+   the bar below; a mark on the day's "missing" cell for the answers come */
+.rf-help.op-pop:has(.wl) { width: 780px; }
+.wl-group { margin: 10px 0 2px; padding-bottom: 3px; font-size: 9.6px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--rf-dim); border-bottom: 1px solid var(--rf-line); }
+.wl-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) 168px 236px; align-items: center; gap: 8px; min-height: 34px; padding: 3px 0; border-bottom: 1px solid color-mix(in srgb, var(--rf-line) 60%, transparent); font-size: 11px; }
+.wl-row.picked { background: color-mix(in srgb, var(--rf-accent) 9%, transparent); }
+.wl-row.breach .wl-who b { color: color-mix(in srgb, var(--rf-err) 45%, var(--rf-text)); }
+.wl-tick input { margin: 0; width: 15px; height: 15px; accent-color: var(--rf-accent); cursor: pointer; }
+.wl-who { display: flex; align-items: center; gap: 5px; min-width: 0; white-space: nowrap; overflow: hidden; }
+.wl-who b { font-size: 12px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; }
+.wl-chip { font-style: normal; font-size: 9.6px; font-weight: 700; color: var(--rf-dim); }
+.wl-extra { font-style: normal; flex: none; padding: 0 6px; border-radius: 9px; font-size: 9.2px; font-weight: 600; color: var(--rf-dim); border: 1px solid var(--rf-line); background: var(--rf-grid); }
+.wl-sign { font-style: normal; flex: none; font-size: 12px; line-height: 1; cursor: help; }
+.wl-sign.breach { color: #ff6b6b; font-weight: 800; }
+.wl-sign.wish { color: #e0b23c; }
+.wl-sign.offer { color: var(--rf-accent); font-weight: 800; }
+.wl-sign.nofit { filter: grayscale(0.4); opacity: 0.8; }
+.wl-price { font-size: 10.5px; color: var(--rf-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wl-answer { display: flex; align-items: center; justify-content: flex-end; gap: 6px; white-space: nowrap; }
+.wl-ans { padding: 3px 9px; border-radius: 6px; border: 1px solid; font-size: 10.5px; font-weight: 800; cursor: help; }
+.wl-ans.yes { background: color-mix(in srgb, var(--rf-ok) 22%, var(--rf-grid)); border-color: var(--rf-ok); color: color-mix(in srgb, var(--rf-ok) 35%, var(--rf-text)); }
+.wl-ans.no { background: color-mix(in srgb, var(--rf-err) 20%, var(--rf-grid)); border-color: var(--rf-err); color: color-mix(in srgb, var(--rf-err) 30%, var(--rf-text)); }
+.wl-ans.swap { background: color-mix(in srgb, var(--rf-accent) 20%, var(--rf-grid)); border-color: var(--rf-accent); color: color-mix(in srgb, var(--rf-accent) 35%, var(--rf-text)); }
+.wl-ans.silent { background: var(--rf-hover2); border-color: var(--rf-line); color: var(--rf-dim); }
+.wl-wait { color: var(--rf-dim); font-weight: 600; font-size: 10.5px; }
+.wl-dim { color: var(--rf-dim); font-size: 10.5px; }
+.wl-x { padding: 2px 6px; border-radius: 5px; color: var(--rf-dim); font-size: 11px; }
+.wl-x:hover { background: var(--rf-hover2); color: var(--rf-err); }
+.wl-toil button { padding: 2px 6px; font-size: 9.6px; }
+.bx-btn.sm { padding: 4px 10px; font-size: 10.5px; }
+.wl-sure { grid-column: 2 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 2px 0 4px; padding: 6px 9px; border-radius: 7px; border: 1px solid var(--rf-err); background: color-mix(in srgb, var(--rf-err) 14%, var(--rf-grid)); font-size: 10.5px; white-space: normal; }
+.wl-bar { position: sticky; bottom: -16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px -18px -16px; padding: 10px 18px; border-top: 1px solid var(--rf-line); background: var(--rf-sheet); color: var(--rf-dim); font-size: 10.75px; }
+.wl .bx-cant { margin-top: 8px; }
+.cl-miss { position: relative; }
+.cl-mark { position: absolute; top: -7px; right: -4px; z-index: 2; padding: 1px 6px; border-radius: 9px; font-style: normal; font-size: 9.2px; font-weight: 800; white-space: nowrap; cursor: pointer; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
+.cl-mark.yes { background: var(--rf-ok); color: #fff; }
+.cl-mark.no { background: color-mix(in srgb, var(--rf-err) 85%, #000); color: #fff; }
+.cl-mark.waiting { background: var(--rf-sheet); color: var(--rf-dim); border: 1px solid var(--rf-line); }
