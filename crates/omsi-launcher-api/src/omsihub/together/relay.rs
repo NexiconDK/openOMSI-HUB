@@ -164,7 +164,7 @@ fn act_need(act: &str, what: &str) -> Need {
         "ask_spare" | "ask_rental" | "ask_drop" | "ask_on" | "ask_dispatcher" => SERVICE,
         "morning_fill" => PLANS,
         // (RosterFlow Pro: a driver's sick call seen, the owner's fine for the rest rules)
-        "sick_seen" | "report_seen" => PLANS,
+        "sick_seen" | "report_seen" | "bus_down_seen" => PLANS,
         "rest_local" | "toil_local" => SETTINGS,
         // the fleet
         "bus_livery" | "bus_service" | "new_take" | "bus_age" | "advert_end" => SPEND,
@@ -288,13 +288,15 @@ fn rf_view_need(view: &str) -> Need {
 fn rf_need(cmd: &str, args: &Value) -> Need {
     let s = |k: &str| args.get(k).and_then(Value::as_str).unwrap_or("").to_string();
     match cmd {
-        "rf_on" | "rf_board" | "rf_here" | "rf_print" | "rf_roster" | "rf_roster_service" | "rf_tp" | "rf_tp_guide" | "rf_tp_route" | "rf_turnus" | "rf_cal" | "rf_ops" | "rf_wishes" | "rf_trades" | "rf_reports" | "rf_answers" | "rf_avail" => RF_VIEW,
+        "rf_on" | "rf_board" | "rf_here" | "rf_print" | "rf_roster" | "rf_roster_service" | "rf_tp" | "rf_tp_guide" | "rf_tp_route" | "rf_turnus" | "rf_cal" | "rf_ops" | "rf_wishes" | "rf_trades" | "rf_reports" | "rf_answers" | "rf_avail" | "rf_buses" | "rf_bus_pick" => RF_VIEW,
         // (round B: a driver's wish granted or refused - the planning's; round E: the drivers' own
         // swap proposals approved or refused too)
         "rf_wish_act" | "rf_trade_act" => PLANS,
         // (round H: a day of "Kan arbejde" - the planner's any, a player's who drives his own:
         // `rosterflow::avail` checks whose)
         "rf_avail_act" => Any(&[Perm::Plans, Perm::Drive]),
+        // (round I: a bus for a block - the planning's)
+        "rf_bus_act" => PLANS,
         // (the Routes strip's run times are the Timeplan's: set by who may edit the timetables)
         "rf_tp_route_act" => LINES,
         "rf_view" => rf_view_need(&s("view")),
@@ -540,12 +542,14 @@ mod tests {
         let turnus = include_str!("../rosterflow/turnus.rs");
         let ops = include_str!("../rosterflow/ops.rs");
         let avail = include_str!("../rosterflow/avail.rs");
+        let buses = include_str!("../rosterflow/buses.rs");
         let mut missing = Vec::new();
         let mut cmds = arms_in(main, "fn run(");
         cmds.extend(arms_in(roster, "pub(super) fn run("));
         cmds.extend(arms_in(turnus, "pub(super) fn run("));
         cmds.extend(arms_in(ops, "pub(super) fn run("));
         cmds.extend(arms_in(avail, "pub(super) fn run("));
+        cmds.extend(arms_in(buses, "pub(super) fn run("));
         cmds.extend(arms_in(timeplan, "pub(super) fn run("));
         // (the print, which `call` takes first)
         cmds.push("rf_print".into());

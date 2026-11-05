@@ -109,6 +109,7 @@ pub mod pro_ops;
 /// are the staff card's own; a swap that changes both drivers at once.
 pub mod pro_absence;
 pub mod pro_avail;
+pub mod pro_buses;
 pub mod pro_swap;
 pub mod pro_cost;
 pub mod pro_holiday;

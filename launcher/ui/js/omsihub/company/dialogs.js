@@ -458,6 +458,20 @@ function AskDialog() {
       <${Btn} kind="primary" icon="groups" label=${v.find} onClick=${find} />`;
     return html`<${Dialog} icon=${v.icon} title=${v.title} w=${600} onClose=${later} foot=${foot}><p class="co-para">${v.text}</p></${Dialog}>`;
   }
+  if (v.kind === 'bus_down') {
+    // (RosterFlow Pro, round I: a bus fell out of the day - "Find bus ›" opens the bus dispatch on
+    // its first block, `pro_buses`)
+    const later = () => act('bus_down_seen', { bus: v.bus, find: false });
+    const find = () =>
+      act('bus_down_seen', { bus: v.bus, find: true })
+        .then(() => import('../rosterflow/index.js'))
+        .then((m) => m.openRosterFlow({ view: 16 }))
+        .then(() => import('../rosterflow/state.js'))
+        .then((m) => m.setRf({ buses: { ...(S.rf.buses || {}), date: v.date, mode: 'day', pick: { line: v.line, tour: v.tour } } }));
+    const foot = html`<span class="rest"></span><${Btn} label=${v.on} onClick=${later} />
+      <${Btn} kind="primary" icon="departure_board" label=${v.find} onClick=${find} />`;
+    return html`<${Dialog} icon=${v.icon} title=${v.title} w=${600} onClose=${later} foot=${foot}><p class="co-para">${v.text}</p></${Dialog}>`;
+  }
   if (v.kind === 'report') {
     // (RosterFlow Pro, round E: the Monday report - "Open ›" opens it over the calendar,
     // `pro_report`)

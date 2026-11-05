@@ -101,7 +101,7 @@ fn plan_on(s: &mut Session, r: &mut Rf, date: &str) -> Option<Result<DayPlan, St
 }
 
 /// The plans of `dates`, or what to say while they are being read.
-fn plans_of(s: &mut Session, r: &mut Rf, dates: &[String]) -> Result<HashMap<String, DayPlan>, String> {
+pub(super) fn plans_of(s: &mut Session, r: &mut Rf, dates: &[String]) -> Result<HashMap<String, DayPlan>, String> {
     company::week_work(s);
     let mut out = HashMap::new();
     for d in dates {
@@ -165,7 +165,7 @@ fn cls_of(start: i32, split: bool) -> &'static str {
 
 /// The name of `date`'s weekday in a sentence ("Monday"; lower case in the languages that write
 /// it so: "mandag").
-fn day_name(date: &str) -> String {
+pub(super) fn day_name(date: &str) -> String {
     let n = tr(FULL_DAYS[pt::day_of(date)]);
     if ["", "en", "de"].contains(&company::words::language().as_str()) {
         n

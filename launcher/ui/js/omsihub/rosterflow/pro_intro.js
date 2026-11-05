@@ -11,7 +11,7 @@ import { setRf } from './state.js';
 import { Icon, RfButton } from './ui.js';
 import { PRO_BLOCKS } from './pro.js';
 
-/** The six tabs in their order (`PRO_TABS`' names): icon, number, name, what is done there. */
+/** The seven tabs in their order (`PRO_TABS`' names): icon, number, name, what is done there. */
 export const STEPS = [
   ['airport_shuttle', 1, 'Blocks', "The buses' day from the timetables: every bus a row of its trips, a red mark where a driver can change. Read only: the timetables are the lines'."],
   ['badge', 2, 'Duties', 'Cut the blocks at the red marks and put the pieces together as duties - a change of line or bus with its walk between - or let "Make duties automatically" do it. Save.'],
@@ -19,11 +19,12 @@ export const STEPS = [
   ['today', 4, 'Daily operations', 'A day: the duties without a driver and why, who could take each and what he costs. Ask the drivers - they answer as people do - and give the duty to one who says yes.'],
   ['event', 5, 'Calendar', "Every driver's week from Sunday: his sign-on times, driver number, employment and hours this week, and how many duties are missing a driver each day."],
   ['rf_can', 6, 'Can work', 'The hourly paid say a day at a time when they can work - all day, from-to or not that day - and remember it when they are asked. Change a day by clicking it.'],
+  ['departure_board', 7, 'Bus dispatch', 'Which bus runs which block: every bus a row of its blocks of the day, those without a bus in red on top. Click a block to choose a bus that can take it, or let "Assign buses automatically" do it.'],
 ];
 
 /** The other words of the intro. */
 const TITLE = 'How RosterFlow Pro works';
-const LEAD = 'Six tabs, used in this order. Hiring and employment are on the Staff page.';
+const LEAD = 'Seven tabs, used in this order. Hiring and employment are on the Staff page.';
 
 /** The machine's note that the intro was shown once (`localStorage`; none there: shown again). */
 const SEEN = 'omsihub.rfpro.intro';

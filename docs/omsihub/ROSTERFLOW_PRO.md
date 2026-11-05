@@ -1165,3 +1165,75 @@ command checks whose row). A player's own day is `By::Driver`, the planner's `By
 and `rf_answers` (rounds B, E and G) were answered by `ops::run` but never routed to it from
 `rosterflow::run` - the Ønsker, Bytteforslag and Rapporter popups and the answers' toast got no
 answer in the launcher. They are routed now, with `rf_avail*`.
+
+
+# Round I: the bus dispatch (5 November 2026)
+
+Code: `co::pro_buses` (the core), `omsihub/rosterflow/buses.rs` (the commands `rf_buses`,
+`rf_bus_pick`, `rf_bus_act`), `launcher/ui/js/omsihub/rosterflow/buses.js` (the tab "7
+Busdisponering").
+
+**One truth.** The dispatch's choice of a bus for a block on a date (`Ops::buses`, a
+`BusPick`: a bus, or none at all) is what the day plan runs: `plan::day_plan` takes the choices
+of the date first, then the weekly roster's bus (`RosterTour::bus`) for the blocks the dispatch
+did not touch - with the same checks (in the fleet, not in the workshop, fit to run, one of the
+line's buses, free then; else the block has no bus and says why). So the world drives the bus
+chosen, the pages and the day's close see it. A choice holds for its date only and is dropped a
+week after it (`KEEP_DAYS`).
+
+**Who can take a block** (`pro_buses::fit`, `check`): still the company's; not in the workshop
+that day; not one that did not start this morning; condition 20 or more; one of the line's buses
+(`ownline::line_allows`); as big as the tour asks for (`ownline::wanted`, a bigger one warns); what
+the line's contract asks of its buses (`bus_contracts::on_line`: zero emission, its `Needs`' fuel,
+floor and age); free then, with ten minutes between two blocks (`staff::BUS_MARGIN`); and enough in
+the tank or battery for the block's kilometres and a tenth more (`RANGE_MARGIN`). The level: full
+from the depot in the morning (today: as last known, `Vehicle::fuel` at `fuel_at`), less the bus's
+blocks before it that day at its fuel use (`economy::consumption`, `fuel::tank`); an electric bus
+charges at the depot in a gap of 30 minutes or more (`CHARGE_GAP`) at 150 kW (`CHARGE_KW`).
+Warnings, not refusals: a service due within 500 km after the block (`SERVICE_SOON_KM`), dirty
+inside (under 40, `DIRTY_BELOW`), three breakdowns or more (`MANY_BREAKDOWNS`), bigger than asked.
+
+**The day** (`rf_buses`): a row for every bus of the fleet in number order - "Bus 104", "12 m ·
+diesel · 92 %" (an electric one "12 m · el · 64 % · ca. 180 km"; a day to come: full), "service om
+240 km" (orange, under 500 km), "værksted til fre" (red; the row a yellow "På værksted"), "Brudt ned
+kl. 10:42" (a bus that broke down on its way today) - and its blocks of the day on a time axis in
+the line's colour ("5/01 06:00–13:50"; one chosen by hand underlined), an electric bus's charging
+gaps dashed "Lader", the day's kilometres. On top in red "Mangler en bus · N vognløb": the blocks
+without a bus, dashed, with why on hover ("Ikke planlagt", "Bus 104 er på værksted", "Bus 104
+startede ikke", "Ingen bus, som valgt"). Filters Alle / Diesel / El / På værksted; ‹ dag ›, "I dag".
+
+**The week** (Dag / Uge): the buses against Sunday to Saturday, a cell the blocks of that bus that
+day ("5/01, 7/02"), "Værksted" or "–"; on top "Mangler en bus" with the count a day (a day clicked
+opens it).
+
+**A block clicked** (`rf_bus_pick`): "Vognløb 7/03 · 06:30–12:45 · linje 7" with its kilometres,
+the size it wants and its bus now; the buses that can take it ("på linjen i dag" first, their
+warnings in orange) with "Sæt på"; a bus busy then whose block this bus could take in turn with
+"Byt med 5/02" (both blocks' buses swapped); "Fjern" (no bus at all) and "Tilbage til
+vagtplanens" (the dispatch's choice dropped); folded under "N busser kan ikke tage den" the others
+with why ("Kører vognløb 5/01 da", "På værksted til 8. mar", "For lidt på tanken: 54 km af 100
+km", "For lille: vognløbet vil have 18 m", "Kontrakten kræver en nulemissionsbus" ...).
+
+**"Fordel automatisk"** (`pro_buses::auto`; the day, or the week in the week's view): every block
+without a bus gets the best bus that can take it, the blocks in the order they begin - one already
+on the line that day first, then the size asked for, an electric bus for a short block (at most
+60 % of its range, `SHORT_SHARE`) and a diesel one for a long one, no service due, the fewest
+kilometres that day so far. A block the planner left without a bus on purpose ("Fjern") is not
+filled. "Fordel alt igen" (asked first) does every block again, the hand's choices too.
+
+**Undo:** every act answers with the blocks' choices before it (`undo`), and the tab's note at the
+bottom ("Bus 211 på vognløb 7/03." with "Fortryd") puts them back (`act: "restore"`).
+
+**A bus that falls out** (`downs_of`, `tell`, `clock::What::BusDown`): a bus that did not start this
+morning (`plan::disruptions`) or is in the workshop (a repair; its service, which the day's close
+sends) leaves its blocks without a bus - the central still covers one that came suddenly with a
+free bus, as before. With the morning (half an hour before the first block) the player is told
+once a day for each such bus: "Bus 104 startede ikke i morges – vognløb 5/01 mangler en bus",
+"Bus 104 er på værksted – vognløb 5/01 mangler en bus", or "… – centralen satte bus 211 på
+vognløb 5/01", in the feed and as a notice like a sick call (`Ask::BusDown`, waiting while the
+game's clock leads) with "Senere" and "Find bus ›" (the dispatch opens on that block's popup).
+A bus that breaks down on its way keeps the existing choice of a spare or a rental bus for its
+trips (`clock::Broken`); the dispatch shows it on the bus's row.
+
+**Multiplayer:** `rf_buses` and `rf_bus_pick` need RF_VIEW, `rf_bus_act` the planning (PLANS);
+the commands are routed in `rosterflow::run` (tested through it).

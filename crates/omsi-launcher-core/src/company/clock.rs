@@ -260,6 +260,9 @@ pub enum What {
     Told { text: String, args: Vec<(String, String)>, level: Level },
     /// (RosterFlow Pro) A driver calls in sick before his first duty of the day (`pro_sick`).
     SickCall { driver: u32, n: u32, start: i32 },
+    /// (RosterFlow Pro, round I) A bus fell out of the day - did not start, in the workshop - and
+    /// left its blocks (`pro_buses`): `label` its first block's.
+    BusDown { bus: u32, line: String, tour: String, label: String, why: super::pro_buses::DownWhy, covered: Option<u32>, blocks: u32 },
 }
 
 /// A bus that breaks down on its tour, and what was decided for its trips.
@@ -366,6 +369,8 @@ pub enum Ask {
     Notice { text: String, args: Vec<(String, String)> },
     /// (RosterFlow Pro) A driver called in sick: his duty to fill (`pro_sick`).
     SickCall { driver: u32 },
+    /// (RosterFlow Pro, round I) A bus fell out of the day: its blocks to give a bus (`pro_buses`).
+    BusDown { bus: u32 },
 }
 
 /// What a simulation came to.
@@ -607,6 +612,13 @@ pub fn script(c: &Company, dp: &DayPlan) -> DayScript {
         let duties = super::pro_turnus::day_duties(c, &date, dp.tours.iter().map(|t| t.tour.clone()).collect());
         for (at, driver, n, start) in super::pro_sick::draws(c, dp, &duties) {
             push(at as i64, What::SickCall { driver, n, start });
+        }
+        // (round I: the buses that fell out of the day - did not start, in the workshop - told
+        // with the morning, `pro_buses`)
+        let at = (first - 30).max(4 * 60);
+        for (bus, ti, why, covered, blocks) in super::pro_buses::downs_of(c, dp) {
+            let t = &dp.tours[ti].tour;
+            push(at, What::BusDown { bus, line: t.line.clone(), tour: t.tour.clone(), label: super::pro_buses::label(t), why, covered, blocks });
         }
     }
     // the tours
@@ -1067,6 +1079,17 @@ fn apply(c: &mut Company, due: Due, quick: bool, run: &mut Run) {
                 What::JobDone { bus, job } => tell(c, run, when, "Bus %{bus}: %{job} done, back on the road tomorrow", vec![arg("bus", bus), arg("job", job)], Level::Info),
                 What::LastDay { name } => tell(c, run, when, "%{name} works their last day today", vec![arg("name", name)], Level::Info),
                 What::Told { text, args, level } => tell(c, run, when, &text, args, level),
+                What::BusDown { bus, line, tour, label, why, covered, blocks } => {
+                    if super::pro_buses::tell(c, bus, &line, &tour, &label, why, covered, blocks, when) {
+                        if let Some(x) = c.planning.ops.downs.last().cloned() {
+                            let (text, args) = super::pro_buses::words(c, &x);
+                            tell(c, run, when, text, args, Level::Bad);
+                        }
+                        if asks && c.clock.ask.is_none() {
+                            c.clock.ask = Some(Ask::BusDown { bus });
+                        }
+                    }
+                }
                 What::SickCall { driver, n, start } => {
                     if super::pro_sick::call(c, driver, n, start, when) {
                         if let Some(x) = c.planning.ops.sick.last().cloned() {

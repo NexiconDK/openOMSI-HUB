@@ -29,6 +29,8 @@ export const PRO_DAILY = 13;
 export const PRO_CALENDAR = 14;
 /** (Round H) The Kan arbejde tab (`avail.js`). */
 export const PRO_AVAIL = 15;
+/** (Round I) The Busdisponering tab (`buses.js`). */
+export const PRO_BUSES = 16;
 
 /** The Pro tabs of the title bar: those built, and those of the steps to come. */
 export const PRO_TABS = [
@@ -38,6 +40,7 @@ export const PRO_TABS = [
   { view: PRO_DAILY, n: 4, icon: 'today', label: 'Daily operations', anchor: 'rf-tab-pro-daily' },
   { view: PRO_CALENDAR, n: 5, icon: 'event', label: 'Calendar', anchor: 'rf-tab-pro-calendar' },
   { view: PRO_AVAIL, n: 6, icon: 'rf_can', label: 'Can work', anchor: 'rf-tab-pro-avail' },
+  { view: PRO_BUSES, n: 7, icon: 'departure_board', label: 'Bus dispatch', anchor: 'rf-tab-pro-buses' },
 ];
 
 /** "07:05" on the clock (minutes of the service day). */

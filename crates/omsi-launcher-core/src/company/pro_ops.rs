@@ -285,6 +285,12 @@ pub struct Ops {
     pub avail: Vec<super::pro_avail::Avail>,
     #[serde(skip_serializing_if = "String::is_empty")]
     pub avail_day: String,
+    /// (NexiconDK, 5 November 2026: round I) The bus dispatch's choices of a bus for a block on a
+    /// date (`pro_buses`), and the buses that fell out of the day (no start, the workshop) told.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub buses: Vec<super::pro_buses::BusPick>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub downs: Vec<super::pro_buses::BusDown>,
 }
 
 fn is_none_u32(x: &u32) -> bool {
@@ -297,7 +303,7 @@ fn is_zero(x: &Cents) -> bool {
 
 impl Ops {
     pub fn is_empty(&self) -> bool {
-        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty() && self.sick.is_empty() && self.extras.is_empty() && self.grumbled.is_empty() && self.rest_fine == 0 && self.wishes.is_empty() && self.last_wish == 0 && self.wished.is_empty() && self.toil_asked.is_empty() && !self.toil_default && self.swaps.is_empty() && self.last_swap == 0 && self.trades.is_empty() && self.last_trade == 0 && self.traded.is_empty() && self.tallies.is_empty() && self.reports.is_empty() && self.avail.is_empty() && self.avail_day.is_empty()
+        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty() && self.sick.is_empty() && self.extras.is_empty() && self.grumbled.is_empty() && self.rest_fine == 0 && self.wishes.is_empty() && self.last_wish == 0 && self.wished.is_empty() && self.toil_asked.is_empty() && !self.toil_default && self.swaps.is_empty() && self.last_swap == 0 && self.trades.is_empty() && self.last_trade == 0 && self.traded.is_empty() && self.tallies.is_empty() && self.reports.is_empty() && self.avail.is_empty() && self.avail_day.is_empty() && self.buses.is_empty() && self.downs.is_empty()
     }
 }
 

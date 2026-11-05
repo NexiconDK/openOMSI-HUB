@@ -1307,7 +1307,7 @@ fn unavailable(e: &Employee, date: &str, today: bool) -> Option<Problem> {
 
 /// How well a bus of `size` fits a tour asking for `wants`: the size asked for (or none
 /// asked), a bigger bus (it carries the load), a smaller one.
-fn size_fit(wants: Option<BusSize>, size: BusSize) -> u8 {
+pub(crate) fn size_fit(wants: Option<BusSize>, size: BusSize) -> u8 {
     match wants {
         None => 2,
         Some(w) if w == size => 2,
@@ -1683,7 +1683,42 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
 
     // 1. the buses: the roster's, then the dispatcher's own, then what fell out
     let mut buses = Buses::default();
-    for t in out.iter_mut().filter(|t| !t.by_player) {
+    // (RosterFlow Pro, round I: the bus dispatch's choice for the block on this date first - a bus,
+    // or none at all - then the roster's for the rest: `pro_buses`)
+    let pro = super::pro_duties::on(c);
+    let mut picked = vec![false; out.len()];
+    if pro {
+        for (i, t) in out.iter_mut().enumerate().filter(|(_, t)| !t.by_player) {
+            let Some(p) = super::pro_buses::pick_of(c, date, &t.tour.line, &t.tour.tour) else { continue };
+            picked[i] = true;
+            let Some(id) = p.bus else {
+                t.bus_problem = Some(Problem::Unassigned);
+                continue;
+            };
+            let (from, to) = (t.tour.from(), t.tour.to());
+            let problem = match c.vehicle(id) {
+                None => Some(Problem::Gone),
+                Some(v) if !v.held_on(date) => Some(Problem::Gone),
+                Some(_) if broken.contains(&id) => Some(Problem::Breakdown),
+                Some(v) if v.in_workshop(date) || v.condition < 20.0 => Some(Problem::Workshop),
+                Some(v) if !super::ownline::line_allows(c, &t.tour.line, v) => Some(Problem::NotLineBus),
+                Some(_) if !buses.free(id, from, to) => Some(Problem::BusBusy),
+                Some(_) => None,
+            };
+            match problem {
+                None => {
+                    buses.take(id, from, to);
+                    t.bus = Some(BusOf::Own(id));
+                    t.bus_from = Source::Dispatcher;
+                }
+                p => t.bus_problem = p,
+            }
+        }
+    }
+    for (i, t) in out.iter_mut().enumerate().filter(|(_, t)| !t.by_player) {
+        if picked[i] {
+            continue;
+        }
         let Some(id) = roster(c, wd, &t.tour.line, &t.tour.tour).and_then(|r| r.bus) else { continue };
         let (from, to) = (t.tour.from(), t.tour.to());
         let problem = match c.vehicle(id) {

@@ -1249,7 +1249,7 @@ fn ask(s: &mut Session) -> Value {
     let Some(c) = s.company.clone() else { return Value::Null };
     // (RosterFlow Pro: a driver's sick call not seen yet - also while the game's clock leads and
     // nothing stops)
-    let unseen = co::pro_sick::unseen(&c).map(|x| Ask::SickCall { driver: x.driver });
+    let unseen = co::pro_sick::unseen(&c).map(|x| Ask::SickCall { driver: x.driver }).or_else(|| co::pro_buses::unseen(&c).map(|x| Ask::BusDown { bus: x.bus }));
     let Some(question) = c.clock.ask.clone().or(unseen) else {
         // (RosterFlow Pro, round E: the Monday report not seen yet - "Open ›" to it)
         return co::pro_report::unseen(&c).map_or(Value::Null, |r| {
@@ -1336,6 +1336,24 @@ fn ask(s: &mut Session) -> Value {
                 "kind": "sick_call", "icon": "warning", "closable": true, "title": trf(text, &a),
                 "text": trf("%{name} called at %{time}: ill and cannot come in today. Duty %{n} signs on at %{start} and has no driver now. Find a driver for it, or cut it.", &[("name", &c.employee(x.driver).map(|e| e.name.clone()).unwrap_or_default()), ("time", &called), ("n", &x.n.to_string()), ("start", &begins)]),
                 "find": tr("Find a driver ›"), "on": tr("Later"), "date": x.date, "n": x.n, "driver": x.driver,
+            })
+        }
+        // (RosterFlow Pro, round I: a bus fell out of the day - "Find bus ›" opens the bus
+        // dispatch on its block, `pro_buses`)
+        Ask::BusDown { bus } => {
+            let Some(x) = c.planning.ops.downs.iter().rev().find(|x| x.bus == *bus && x.date == c.date).cloned() else { return json!({ "kind": "gone" }) };
+            let (text, args) = co::pro_buses::words(&c, &x);
+            let a: Vec<(&str, &str)> = args.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+            let more = if x.blocks > 1 { trf("It had %{n} blocks today.", &[("n", &x.blocks.to_string())]) } else { String::new() };
+            let body = match (x.why, x.covered) {
+                (co::pro_buses::DownWhy::NoStart, Some(_)) => tr("The central covered its first block with a free bus. Change it in the bus dispatch if another suits better."),
+                (co::pro_buses::DownWhy::NoStart, None) => tr("Its blocks have no bus now. Give each another bus in the bus dispatch, or let \"Assign buses automatically\" do it."),
+                (co::pro_buses::DownWhy::Workshop, _) => trf("It is in the workshop until %{date}. Its blocks have no bus now: give each another in the bus dispatch.", &[("date", &c.vehicle(x.bus).and_then(|v| v.workshop_until.clone()).unwrap_or_default())]),
+            };
+            json!({
+                "kind": "bus_down", "icon": "warning", "closable": true, "title": trf(text, &a),
+                "text": format!("{body} {more}").trim().to_string(),
+                "find": tr("Find bus ›"), "on": tr("Later"), "date": x.date, "bus": x.bus, "line": x.line, "tour": x.tour,
             })
         }
     }
@@ -1505,6 +1523,21 @@ pub fn act(s: &mut Session, what: &str, args: &Value, _p: &dyn crate::Platform) 
                 co::pro_sick::seen(c, driver);
             }
             let asked = s.company.as_ref().is_some_and(|c| matches!(c.clock.ask, Some(Ask::SickCall { .. })));
+            if asked {
+                finish(s, None, !find);
+            } else {
+                super::changed(s);
+            }
+            Ok(json!({}))
+        }
+        // (RosterFlow Pro, round I: a bus's fall seen - to the bus dispatch, or later)
+        "bus_down_seen" => {
+            let find = args.get("find").and_then(Value::as_bool).unwrap_or(false);
+            let bus = args.get("bus").and_then(Value::as_u64).map(|x| x as u32);
+            if let Some(c) = s.company.as_mut() {
+                co::pro_buses::seen(c, bus);
+            }
+            let asked = s.company.as_ref().is_some_and(|c| matches!(c.clock.ask, Some(Ask::BusDown { .. })));
             if asked {
                 finish(s, None, !find);
             } else {
