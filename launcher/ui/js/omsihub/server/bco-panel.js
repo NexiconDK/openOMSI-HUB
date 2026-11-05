@@ -666,6 +666,8 @@ export function mountPanel(root, api, opts = {}) {
             btn(tr('Move the end'), () => post('tender', { map: m.key, do: 'operator_until', line: x.line, until: until.value })),
             sureButton(tr('End and tender'), tr('Sure? The line goes out to tender at once'), () => post('tender', { map: m.key, do: 'operator_end', line: x.line })))));
       });
+      // (the map's free lines - for a contract's change below too: before it, 5 November 2026)
+      const free = (m.lines || []).filter((l) => !l.company && !l.operator && !l.open && !l.event);
       // (3 November 2026: the companies' contracts - a contract's last day moved)
       const contracts = (m.contracts || []).map((x) => {
         const until = dateIn(x.until, d.earliest_end);
@@ -681,7 +683,6 @@ export function mountPanel(root, api, opts = {}) {
               btn(tr('Order a doubling'), () => post('tender', { map: m.key, do: 'doubling', company: x.company, line: x.line, tour: dTour.value, at: dAt.value, from: dFrom.value, until: dUntil.value }, trf('An extra bus behind the %{t} of tour %{n}: on the duty board from %{d}', { t: dAt.value, n: dTour.value, d: dFrom.value })))),
             changeRow(x)));
       });
-      const free = (m.lines || []).filter((l) => !l.company && !l.operator && !l.open && !l.event);
       // (3 November 2026: a contract changed - the map's new timetable, a line added or taken out)
       function changeRow(x) {
         const kind = h('select', {}, h('option', { value: 'timetable' }, tr("The map's new timetable")), h('option', { value: 'add' }, tr('Add a line')), h('option', { value: 'remove' }, tr('Take a line out')));
