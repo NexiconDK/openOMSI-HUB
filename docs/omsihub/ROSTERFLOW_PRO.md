@@ -601,3 +601,70 @@ Contentment stays between 0 and 100, and nobody leaves for this alone. The same 
 Tested: `pro_ops::tests` (`an_irritated_driver_says_yes_much_less_and_grudgingly`,
 `an_angry_driver_always_says_no_and_then_answers_no_more_today`,
 `only_real_refusals_of_the_day_count_and_a_new_day_starts_calm`).
+
+## A driver calls in sick on the day (`co::pro_sick`, 4 November 2026)
+
+Besides the night's illnesses (`staff::after_day`, known in the morning), a driver planned for the
+company's day can call in sick before his first duty of it. The day's calls are drawn when the
+clock writes the day (`clock::script` → `pro_sick::draws`, `What::SickCall`; `Rng`: "pro-sick" -
+the same for the same company, day and driver). The chance (`pro_sick::chance`) is `CHANCE` (2.5 %
+a planned day) by the game mode's share of illness, more for a stressed, an unhappy and an
+unreliable driver: a few a week in a company of ten drivers. When the call comes, spread before
+each kind of duty:
+
+- an early duty (from 08:00 or before): 20-75 minutes before it, never before 04:00;
+- a day duty (before 12:00): half in the morning (05:00-07:30), half 30-120 minutes before it;
+- a late duty (from 12:00): mostly 30 minutes to 3 hours before it (a 16:00 duty: 13:00-15:30),
+  now and then in the morning (06:00-09:00).
+
+A call (`pro_sick::call`): the driver is ill from today for 1-3 days (`Employee::sick_until`, the
+same illness the staff card and the calendar show: his duties are open "Ill"), his message to the
+control room, and the call is kept (`Ops::sick`) until the player has seen it. The feed and the
+notice say "Sofie Juul has called in sick – duty 1006 is missing in 40 min" ("… is missing now"
+once it has begun); "Find a driver ›" opens the calendar's popup on the duty, "Later" closes it.
+While the player simulates the clock stops (`Ask::SickCall`); while the game's clock leads it goes
+on and the notice shows all the same (`pro_sick::unseen`, the shell's `asking`). Nobody calls once
+his first duty has begun, nor when ill or away already.
+
+## The rest rules (`co::pro_rest`, 4 November 2026)
+
+When a duty is put on, asked for or given (a part of a cut duty too), the box checks the Danish and
+EU drivers' rules against the driver's other days (`pro_rest::breaches`, the API's `breaches_of`):
+
+- 11 hours' rest between two working days (`DAILY_REST`), reduced to 9 (`REDUCED_REST`) at most 3
+  times a week (`REDUCED_TIMES`, `reduced_in` counting the week's reduced rests); on the company's
+  day the night's rest since his last duty stays the game's own hard rule (`plan::can_take`);
+- a working day of at most 13 hours from its first sign-on to its last sign-off (`SPREAD_MAX`);
+- at most 48 hours a week (`WEEK_MAX`; a duty within a reserve's frame adds nothing - the frame is
+  paid).
+
+The game's hard rules keep a driver out as before ("N others cannot drive it"). These are the
+planner's to keep or to break: the row says it in red ("⚠ Only 9 h rest after duty 1005", "⚠ Over
+13 h on the day", "⚠ Over 48 h in the week"), comes after the others of its group, and its button
+is "Put on anyway" / "Give anyway" - asked first in the popup with what it costs. Given anyway
+(`rf_ops_act` give with `anyway`; refused without it): the driver is less content (`BREAK_COST`)
+and more stressed (`BREAK_STRESS`), and the company pays the fine when one is set
+(`pro_rest::fine`, booked as a fine): on Bus Company Online the server's admin's `rest_fine`
+(kroner, default 0; `live_pay::LiveCfg::rest_fine`, `REST_CFG`), off the server the owner's in the
+company's settings ("Breaking the rest rules": none, 500, 1,000 or 2,500).
+
+## The fair share of the extra duties (`co::pro_rest`, 4 November 2026)
+
+Every duty given a driver beyond his own work - overtime, a day off, an hourly-paid driver's extra
+hours; not a reserve within his frame - is counted for its month (`Ops::extras`, `count_extra`;
+taken back, no longer: `uncount_extra`). The popup shows it by the name ("3 extra this month") and
+sorts the rows "Cheapest first" or "Fewest extra first" (`rf_ops` `sort`: "fair"). A driver given
+more than `TIRED_FROM` (4) in a month is a little more stressed with each one more. From the
+month's second week, from 10:00 of the company's day (`clock::on_minute` → `pro_rest::grumbles`), a
+driver who wants hours (hourly paid or part time) and was given none while another was given
+`OTHERS_MANY` (3) or more tells the control room "I never get asked about extra duties." - once a
+week at most - and is a little less content (`GRUMBLE_COST`).
+
+Tested: `pro_ops::tests` (`a_driver_calls_in_sick_before_his_first_duty_and_the_player_is_told`,
+`a_late_duty_gets_its_sick_call_in_the_afternoon_shortly_before_it`,
+`the_rest_rules_eleven_hours_a_day_of_thirteen_a_week_of_forty_eight`,
+`breaking_the_rest_rules_anyway_costs_content_and_the_fine`,
+`the_extra_duties_of_the_month_are_counted_and_the_forgotten_grumble`), the API's
+`rosterflow::ops::tests::the_box_warns_of_the_rest_rules_asks_first_and_counts_the_extra_duties`
+and `company::dialogs::tests::a_drivers_sick_call_waits_as_a_notice_with_its_duty_even_while_the_clock_runs`.
+

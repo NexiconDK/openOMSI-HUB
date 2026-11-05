@@ -56,11 +56,15 @@ pub struct LiveCfg {
     /// (NexiconDK, 4 November 2026) The days of notice a change of a driver's employment takes on
     /// the server (`employment_notice_days`; 0: from the next company day - `staff::notice_day`).
     pub notice_days: i64,
+    /// (NexiconDK, 4 November 2026) The fine a company pays when its planner breaks the rest rules
+    /// (`rest_fine`, kroner; 0: none - `pro_rest::fine`). Cents.
+    #[serde(default)]
+    pub rest_fine: super::model::Cents,
 }
 
 impl Default for LiveCfg {
     fn default() -> LiveCfg {
-        LiveCfg { pay_share: 0.9, ai_cap: 70.0, surcharge: 0.05, pool: 0, agency: true, urgent: 0.5, loyalty: 0.05, boss_duties: 2, notice_days: super::staff::SERVER_NOTICE_DAYS }
+        LiveCfg { pay_share: 0.9, ai_cap: 70.0, surcharge: 0.05, pool: 0, agency: true, urgent: 0.5, loyalty: 0.05, boss_duties: 2, notice_days: super::staff::SERVER_NOTICE_DAYS, rest_fine: 0 }
     }
 }
 
@@ -80,6 +84,7 @@ impl LiveCfg {
             loyalty: num("loyalty_bonus").map_or(d.loyalty, |x| x.min(100.0) / 100.0),
             boss_duties: num("boss_duties").map_or(d.boss_duties, |x| x.round().min(100.0) as u32),
             notice_days: num("employment_notice_days").map_or(d.notice_days, |x| x.round().min(365.0) as i64),
+            rest_fine: num("rest_fine").map_or(d.rest_fine, |x| (x.min(1_000_000.0) * 100.0).round() as super::model::Cents),
         }
     }
 
@@ -108,6 +113,14 @@ pub const NOTICE_CFG: &str = "
 # the days of notice a change of a driver's employment takes (full time, part time, reserve,
 # hourly paid; 0: from the next day) - from hourly paid to part or full time is always the next day
 employment_notice_days = 2
+";
+
+/// (NexiconDK, 4 November 2026) The fine for a breach of the rest rules, added to a
+/// `company-server.cfg` written before it.
+pub const REST_CFG: &str = "
+# the fine a company pays when its planner breaks the rest rules anyway (11 hours' rest, a day of
+# at most 13 hours, a week of at most 48; kroner, 0: none)
+rest_fine = 0
 ";
 
 /// The rules' part of the settings, added to a `company-server.cfg` written before it.

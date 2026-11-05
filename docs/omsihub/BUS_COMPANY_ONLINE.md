@@ -1728,6 +1728,15 @@ Tested: `live_more::tests` (`urgent_tasks_for_players_only`, `the_driver_of_the_
 `a_fixed_duty`, `supplements_for_unsocial_hours`, `the_boss_drives`, `the_live_dispatcher`,
 `the_agency_fallback_by_the_server_admin_and_off_the_server_by_the_owner`).
 
+### The fine for breaking the rest rules (4 November 2026, RosterFlow Pro)
+
+`rest_fine` (under "Driving yourself" in the admin panel; kroner, default 0: none) is what a company
+pays when its planner gives a duty breaking the rest rules anyway - 11 hours' rest, a day of 13
+hours, a week of 48 (`live_pay::LiveCfg::rest_fine`, `pro_rest::fine`; added to an older
+`company-server.cfg` by `live_pay::REST_CFG`). Only the admin decides it on the server: the
+company's settings say "Decided by the server's admin". Off the server the owner chooses. See
+ROSTERFLOW_PRO.md, "The rest rules".
+
 ### The notice of a change of employment (4 November 2026, RosterFlow Pro)
 
 `employment_notice_days` (under "Driving yourself" in the admin panel; default 2, 0: from the next

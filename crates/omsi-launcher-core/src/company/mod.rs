@@ -105,6 +105,8 @@ pub mod pro_duties;
 /// (NexiconDK, 4 November 2026) RosterFlow Pro's daily operations, calendar and asking drivers
 /// (step 4, "Daglig drift" and "Kalender").
 pub mod pro_ops;
+pub mod pro_rest;
+pub mod pro_sick;
 /// (NexiconDK, 4 November 2026) RosterFlow Pro's rota (step 3, "Turnus").
 pub mod pro_turnus;
 pub mod rankings;

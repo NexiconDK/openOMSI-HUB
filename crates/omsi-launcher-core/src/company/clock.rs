@@ -258,6 +258,8 @@ pub enum What {
     LastDay { name: String },
     /// The night's notes, told in the morning.
     Told { text: String, args: Vec<(String, String)>, level: Level },
+    /// (RosterFlow Pro) A driver calls in sick before his first duty of the day (`pro_sick`).
+    SickCall { driver: u32, n: u32, start: i32 },
 }
 
 /// A bus that breaks down on its tour, and what was decided for its trips.
@@ -362,6 +364,8 @@ pub enum Ask {
     Morning { count: usize },
     /// Something another part of the company tells (`on_minute`).
     Notice { text: String, args: Vec<(String, String)> },
+    /// (RosterFlow Pro) A driver called in sick: his duty to fill (`pro_sick`).
+    SickCall { driver: u32 },
 }
 
 /// What a simulation came to.
@@ -597,6 +601,13 @@ pub fn script(c: &Company, dp: &DayPlan) -> DayScript {
     }
     if let Some(at) = morning {
         push(at, What::Morning { count });
+    }
+    // (RosterFlow Pro: the drivers who call in sick on the day itself - `pro_sick`)
+    if super::pro_duties::on(c) {
+        let duties = super::pro_turnus::day_duties(c, &date, dp.tours.iter().map(|t| t.tour.clone()).collect());
+        for (at, driver, n, start) in super::pro_sick::draws(c, dp, &duties) {
+            push(at as i64, What::SickCall { driver, n, start });
+        }
     }
     // the tours
     for t in dp.tours.iter().filter(|t| !t.by_player) {
@@ -1056,6 +1067,19 @@ fn apply(c: &mut Company, due: Due, quick: bool, run: &mut Run) {
                 What::JobDone { bus, job } => tell(c, run, when, "Bus %{bus}: %{job} done, back on the road tomorrow", vec![arg("bus", bus), arg("job", job)], Level::Info),
                 What::LastDay { name } => tell(c, run, when, "%{name} works their last day today", vec![arg("name", name)], Level::Info),
                 What::Told { text, args, level } => tell(c, run, when, &text, args, level),
+                What::SickCall { driver, n, start } => {
+                    if super::pro_sick::call(c, driver, n, start, when) {
+                        if let Some(x) = c.planning.ops.sick.last().cloned() {
+                            let (text, args) = super::pro_sick::words(c, &x);
+                            tell(c, run, when, text, args, Level::Bad);
+                        }
+                        // (the clock stops for the player; while the game's clock leads it goes on,
+                        // the notice waits all the same - `pro_sick::unseen`)
+                        if asks && c.clock.ask.is_none() {
+                            c.clock.ask = Some(Ask::SickCall { driver });
+                        }
+                    }
+                }
             }
         }
         Due::Open(id) => {
@@ -1143,6 +1167,15 @@ pub fn on_minute(c: &mut Company, now: i64) -> Vec<FeedItem> {
     }
     // the spare parts ordered for 16:00 (`parts`)
     out.extend(super::parts::on_minute(c, now));
+    // (RosterFlow Pro: from 10:00 a driver given no extra duty while others were given many says
+    // so - `pro_rest::grumbles`)
+    if now.rem_euclid(DAY) >= 10 * 60 && c.planning.ops.grumbled.iter().all(|g| g.date != c.date) {
+        let who = super::pro_rest::grumbles(c);
+        for id in who {
+            let name = c.employee(id).map(|e| e.name.clone()).unwrap_or_default();
+            out.push(FeedItem { at: now, text: "%{name}: I never get asked about extra duties.".into(), args: vec![("name".into(), name)], level: Level::Info });
+        }
+    }
     out
 }
 

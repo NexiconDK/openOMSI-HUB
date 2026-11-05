@@ -425,7 +425,7 @@ fn the_rules_of_asking_a_reserve_the_hourly_paid_and_a_permanent_driver() {
     // the hourly paid alongside, several at once
     ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[3] }, yes()), (Asked::Staff { id: ids[4] }, yes())], 10).unwrap();
     // given before his yes: refused; put on (a reserve's `set`): fine
-    assert_eq!(give_asked(&mut c, date, 1001, None, ids[3], None, false, 10), Err(NEEDS_YES));
+    assert_eq!(give_asked(&mut c, date, 1001, None, ids[3], None, false, true, 10), Err(NEEDS_YES));
     // the first permanent driver's question taken back: the next may be asked
     let first = c.planning.ops.asks.iter().find(|a| a.of_staff() == Some(ids[1])).unwrap().id;
     assert!(withdraw_ask(&mut c, first));
@@ -437,13 +437,13 @@ fn the_rules_of_asking_a_reserve_the_hourly_paid_and_a_permanent_driver() {
     let said_yes = c.planning.ops.asks.iter().find(|a| a.of_staff() == Some(ids[3])).unwrap().reply.clone().unwrap();
     if said_yes.yes() {
         let before = c.messages.list.len();
-        give_asked(&mut c, date, 1001, None, ids[3], None, false, 10).unwrap();
+        give_asked(&mut c, date, 1001, None, ids[3], None, false, true, 10).unwrap();
         assert_eq!(c.messages.list.len(), before + 2, "ids[4] and ids[2] told");
         assert!(c.messages.list.iter().rev().take(2).all(|m| m.text == super::super::messages::DUTY_TAKEN));
         assert_eq!(asks_of(&c, date, 1001).count(), 0);
     }
     // the reserve put on without a question
-    give_asked(&mut c, date, 1002, None, ids[0], None, true, 10).unwrap();
+    give_asked(&mut c, date, 1002, None, ids[0], None, true, false, 10).unwrap();
     assert!(c.planning.ops.calls.iter().any(|x| x.n == 1002 && x.driver == ids[0]));
 }
 
@@ -607,4 +607,201 @@ fn only_real_refusals_of_the_day_count_and_a_new_day_starts_calm() {
     c.date = dates::add(&c.date, 1);
     tidy(&mut c);
     assert!(c.planning.ops.noes.is_empty());
+}
+
+// --- round A (NexiconDK, 4 November 2026): the sick call, the rest rules, the fair share --------
+
+#[test]
+fn a_driver_calls_in_sick_before_his_first_duty_and_the_player_is_told() {
+    use super::super::pro_sick::{self as ps, SickCall};
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    rota(&mut c, ids[0], ids[1]);
+    // (a worn-out, unhappy, unreliable driver calls more often: the day's draws the same each time)
+    let mut worn = c.employee(ids[0]).unwrap().clone();
+    let calm = ps::chance(&c, &worn);
+    (worn.stress, worn.satisfaction, worn.reliability) = (90.0, 20.0, 0.3);
+    assert!(ps::chance(&c, &worn) > calm * 3.0, "{calm} {}", ps::chance(&c, &worn));
+    for e in c.staff.iter_mut() {
+        (e.stress, e.satisfaction, e.reliability) = (100.0, 0.0, 0.0);
+    }
+    let base = c.id.clone();
+    let mut found = None;
+    for k in 0..400 {
+        c.id = format!("{base}s{k}");
+        let p = day(&c, &c.date.clone());
+        let ds = duties(&c, &c.date.clone());
+        let d = ps::draws(&c, &p, &ds);
+        assert_eq!(d, ps::draws(&c, &p, &ds), "the same every time");
+        if let Some(x) = d.first().copied() {
+            found = Some((x, p));
+            break;
+        }
+    }
+    let ((at, driver, n, start), p) = found.expect("a call in 400 companies");
+    assert!(ids[..2].contains(&driver));
+    assert!(at >= ps::EARLIEST && at < start, "{at} {start}");
+    // (the day's script has it at its time)
+    let s = super::super::clock::script(&c, &p);
+    assert!(s.events.iter().any(|e| e.at == at as i64 && e.what == super::super::clock::What::SickCall { driver, n, start }));
+    // the call: ill from today, his message to the control room, the player's notice waiting
+    let moment = super::super::clock::moment(&c.date, at as i64);
+    assert!(ps::call(&mut c, driver, n, start, moment));
+    let today = c.date.clone();
+    assert!(c.employee(driver).unwrap().absent(&today));
+    assert!(c.messages.list.iter().any(|m| m.text == ps::SAYS && m.to == super::super::messages::To::Control));
+    assert_eq!(ps::unseen(&c).map(|x| (x.driver, x.n)), Some((driver, n)));
+    c.clock.minute = at as u32;
+    let x = ps::unseen(&c).unwrap().clone();
+    let (text, args) = ps::words(&c, &x);
+    assert_eq!(text, ps::CALLED);
+    assert_eq!(args.iter().find(|a| a.0 == "min").map(|a| a.1.clone()), Some((start - at).to_string()));
+    // (his duty is open now - for his illness; the calendar shows him ill)
+    let p = day(&c, &today);
+    let ds = duties(&c, &today);
+    let open = open_duties(&p, &ds);
+    assert!(open.iter().any(|o| o.n == n && o.why == Some(Problem::Sick)), "{open:?}");
+    assert_eq!(driver_day(&c, c.employee(driver).unwrap(), &p, &ds).is, DayIs::Ill);
+    // seen: no longer shown; called again (ill already): nothing
+    ps::seen(&mut c, Some(driver));
+    assert!(ps::unseen(&c).is_none());
+    assert!(!ps::call(&mut c, driver, n, start, moment));
+    // (a duty begun: no call)
+    let other = if driver == ids[0] { ids[1] } else { ids[0] };
+    assert!(!ps::call(&mut c, other, 1002, 300, super::super::clock::moment(&today, 400)));
+    // (an older file: no calls; a call of another day tidied away)
+    let old: Ops = serde_json::from_str("{}").unwrap();
+    assert!(old.sick.is_empty() && old.extras.is_empty() && old.rest_fine == 0);
+    c.planning.ops.sick.push(SickCall { date: "2024-03-01".into(), driver, n, start, at: 0, seen: false });
+    tidy(&mut c);
+    assert!(c.planning.ops.sick.iter().all(|x| x.date == today));
+}
+
+#[test]
+fn the_rest_rules_eleven_hours_a_day_of_thirteen_a_week_of_forty_eight() {
+    use super::super::pro_rest::{breaches, reduced_in, Breach};
+    // 11 hours after yesterday's 1005 (ends 22:00) and before tomorrow's: nothing broken
+    assert!(breaches(9 * 60, 17 * 60, Some((14 * 60, 22 * 60, 1005)), Some((6 * 60, 14 * 60, 1001)), None, 0, 0.0, 480).is_empty());
+    // 9 hours: allowed while fewer than three reduced rests this week, broken after
+    assert!(breaches(7 * 60, 15 * 60, Some((14 * 60, 22 * 60, 1005)), None, None, 0, 0.0, 480).is_empty());
+    assert_eq!(breaches(7 * 60, 15 * 60, Some((14 * 60, 22 * 60, 1005)), None, None, 3, 0.0, 480), vec![Breach::RestAfter { minutes: 9 * 60, n: 1005 }]);
+    // 8 hours: always (14 hours before the day after: fine); before the day after too
+    assert_eq!(breaches(6 * 60, 15 * 60, Some((14 * 60, 22 * 60, 1005)), Some((5 * 60, 12 * 60, 2001)), None, 0, 0.0, 540), vec![Breach::RestAfter { minutes: 8 * 60, n: 1005 }]);
+    assert_eq!(breaches(14 * 60, 23 * 60, None, Some((6 * 60, 12 * 60, 2001)), None, 3, 0.0, 540), vec![Breach::RestBefore { minutes: 7 * 60, n: 2001 }]);
+    // a day of more than 13 hours with his own morning duty
+    assert_eq!(breaches(15 * 60, 20 * 60, None, None, Some((5 * 60, 11 * 60, 1001)), 0, 0.0, 300), vec![Breach::LongDay { minutes: 15 * 60 }]);
+    // a week over 48 hours
+    assert_eq!(breaches(6 * 60, 14 * 60, None, None, None, 0, 42.0 * 60.0, 480), vec![Breach::LongWeek { minutes: 50 * 60 }]);
+    // the reduced rests of a week
+    assert_eq!(reduced_in(&[Some((6 * 60, 22 * 60, 1)), Some((7 * 60, 15 * 60, 2)), None, Some((14 * 60, 23 * 60, 3)), Some((8 * 60, 16 * 60, 4))]), 2);
+}
+
+#[test]
+fn breaking_the_rest_rules_anyway_costs_content_and_the_fine() {
+    use super::super::pro_rest as pr;
+    let mut c = company();
+    let id = c.staff[0].id;
+    let (s0, t0) = (c.staff[0].satisfaction, c.staff[0].stress);
+    let cash = c.cash;
+    pr::broke(&mut c, id);
+    assert_eq!((c.staff[0].satisfaction, c.staff[0].stress, c.cash), (s0 - pr::BREAK_COST, t0 + pr::BREAK_STRESS, cash));
+    // the owner's fine off the server; on the server only its admin's
+    pr::set_fine(&mut c, 1_000_00).unwrap();
+    assert_eq!(pr::fine(&c), 1_000_00);
+    pr::broke(&mut c, id);
+    assert!(c.cash < cash, "{} {cash}", c.cash);
+    c.online.on_server = true;
+    assert_eq!(pr::set_fine(&mut c, 0), Err(pr::SERVER_DECIDES));
+    assert_eq!(pr::fine(&c), 0);
+    c.online.live = Some(super::super::live_pay::LiveCfg { rest_fine: 2_500_00, ..Default::default() });
+    assert_eq!(pr::fine(&c), 2_500_00);
+    let kv: std::collections::HashMap<String, String> = [("rest_fine".to_string(), "750".to_string())].into_iter().collect();
+    assert_eq!(super::super::live_pay::LiveCfg::of_keys(&kv).rest_fine, 750_00);
+}
+
+#[test]
+fn the_extra_duties_of_the_month_are_counted_and_the_forgotten_grumble() {
+    use super::super::pro_rest as pr;
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    c.staff.iter_mut().find(|e| e.id == ids[4]).unwrap().employment = Employment::Hourly;
+    c.date = "2024-03-11".into();
+    let date = c.date.clone();
+    // given many: counted for the month, more stressed beyond `TIRED_FROM`
+    let stress = c.employee(ids[0]).unwrap().stress;
+    for _ in 0..pr::TIRED_FROM {
+        pr::count_extra(&mut c, ids[0], &date);
+    }
+    assert_eq!(pr::extras_in_month(&c, ids[0], &date), pr::TIRED_FROM);
+    assert_eq!(c.employee(ids[0]).unwrap().stress, stress);
+    pr::count_extra(&mut c, ids[0], &date);
+    assert_eq!(c.employee(ids[0]).unwrap().stress, stress + pr::TIRED_STRESS);
+    assert_eq!(pr::extras_in_month(&c, ids[0], "2024-04-02"), 0, "another month");
+    // the hourly-paid driver given none grumbles - once a week; the permanent ones do not
+    let content = c.employee(ids[4]).unwrap().satisfaction;
+    assert_eq!(pr::grumbles(&mut c), vec![ids[4]]);
+    assert_eq!(c.employee(ids[4]).unwrap().satisfaction, content - pr::GRUMBLE_COST);
+    assert!(c.messages.list.iter().any(|m| m.text == pr::NEVER_ASKED && matches!(&m.from, super::super::messages::From::Driver { name, .. } if *name == c.employee(ids[4]).unwrap().name)));
+    assert!(pr::grumbles(&mut c).is_empty());
+    c.date = "2024-03-18".into();
+    assert_eq!(pr::grumbles(&mut c), vec![ids[4]], "a week on");
+    // (given one, he no longer grumbles; the first week of a month nobody does)
+    c.date = "2024-03-25".into();
+    pr::count_extra(&mut c, ids[4], "2024-03-25");
+    assert!(pr::grumbles(&mut c).is_empty());
+    c.date = "2024-04-03".into();
+    assert!(pr::grumbles(&mut c).is_empty());
+    // a duty given and taken back: no longer counted
+    c.date = date.clone();
+    give_asked(&mut c, &date, 1001, None, ids[1], None, true, true, 10).unwrap();
+    assert_eq!(pr::extras_in_month(&c, ids[1], &date), 1);
+    assert!(withdraw(&mut c, &date, 1001));
+    assert_eq!(pr::extras_in_month(&c, ids[1], &date), 0);
+    // (a reserve put on within his frame is no extra duty)
+    give_asked(&mut c, &date, 1001, None, ids[1], None, true, false, 10).unwrap();
+    assert_eq!(pr::extras_in_month(&c, ids[1], &date), 0);
+}
+
+#[test]
+fn a_late_duty_gets_its_sick_call_in_the_afternoon_shortly_before_it() {
+    use super::super::pro_sick as ps;
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    rota(&mut c, ids[0], ids[1]);
+    for e in c.staff.iter_mut() {
+        (e.stress, e.satisfaction, e.reliability) = (100.0, 0.0, 0.0);
+    }
+    let base = c.id.clone();
+    let date = c.date.clone();
+    let mut late = None;
+    let mut early = None;
+    for k in 0..2000 {
+        c.id = format!("{base}l{k}");
+        let p = day(&c, &date);
+        let ds = duties(&c, &date);
+        for (at, driver, n, start) in ps::draws(&c, &p, &ds) {
+            assert!(at < start && at >= ps::EARLIEST);
+            if start >= 12 * 60 && at >= start - 180 && at >= 11 * 60 {
+                late.get_or_insert((at, driver, n, start));
+            }
+            if start <= 8 * 60 {
+                assert!(at >= start - 75, "an early duty's call shortly before it: {at} {start}");
+                early.get_or_insert(at);
+            }
+        }
+        if late.is_some() && early.is_some() {
+            break;
+        }
+    }
+    let (at, driver, n, start) = late.expect("an afternoon call for the late duty");
+    assert_eq!(driver, ids[1], "the afternoon's driver");
+    assert!(early.is_some());
+    // its notice: the minutes left until it signs on
+    let moment = super::super::clock::moment(&date, at as i64);
+    c.clock.minute = at as u32;
+    assert!(ps::call(&mut c, driver, n, start, moment));
+    let x = ps::unseen(&c).unwrap().clone();
+    let (text, args) = ps::words(&c, &x);
+    assert_eq!(text, ps::CALLED);
+    assert_eq!(args.iter().find(|a| a.0 == "min").map(|a| a.1.clone()), Some((start - at).to_string()));
 }

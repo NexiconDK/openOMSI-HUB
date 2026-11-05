@@ -209,6 +209,9 @@ function SettingsDialog({ d }) {
       ${v.agency_local && html`<div class="co-caps">${v.agency_local.caps}</div>
         <div class="pair"><${Seg} value=${v.agency_local.value} options=${v.agency_local.options.map((o) => [o.value, o.label])} onChange=${(k) => act('agency_local', { value: k })} style="width:420px;height:40px" />
           <p class="co-note">${v.agency_local.say}</p></div>`}
+      ${v.rest_local && html`<div class="co-caps">${v.rest_local.caps}</div>
+        <div class="pair"><${Seg} value=${v.rest_local.value} options=${v.rest_local.options.map((o) => [o.value, o.label])} onChange=${(k) => act('rest_local', { value: k })} style="width:420px;height:40px" />
+          <p class="co-note">${v.rest_local.say}</p></div>`}
       ${v.online && html`<div class="co-caps">${v.online.caps}</div>
         <p class="co-note">${v.online.say}</p>
         ${v.online.own && html`<div class="co-caps">${v.online.own.caps}</div>
@@ -216,6 +219,8 @@ function SettingsDialog({ d }) {
             <p class="co-note">${v.online.own.say}</p></div>`}
         ${v.online.agency && html`<div class="co-caps">${v.online.agency.caps}</div>
           <div class="pair"><p class="co-note"><b>${v.online.agency.locked}</b> · ${v.online.agency.say}</p></div>`}
+        ${v.online.rest && html`<div class="co-caps">${v.online.rest.caps}</div>
+          <div class="pair"><p class="co-note"><b>${v.online.rest.locked}</b> · ${v.online.rest.say}</p></div>`}
         <div class="co-caps">${v.online.left_caps}</div>
         <div class="pair"><${Seg} value=${v.online.left} options=${v.online.left_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_left', { left: k })} style="width:320px;height:40px" />
           <p class="co-note">${v.online.left_say}</p></div>
@@ -435,6 +440,20 @@ function AskDialog() {
       ${v.rows.map((r) => html`<div class="co-morning"><b class="cut">${r.title}</b>
         <${Select} value=${r.at} h=${30} options=${r.options.map(([l]) => l)} onChange=${(k) => act('morning_fill', { key: r.key, fill: r.options[k][1] })} /></div>`)}
     </${Dialog}>`;
+  }
+  if (v.kind === 'sick_call') {
+    // (RosterFlow Pro: a driver called in sick - "Find a driver ›" opens the calendar's popup on
+    // his duty, `pro_sick`)
+    const later = () => act('sick_seen', { driver: v.driver, find: false });
+    const find = () =>
+      act('sick_seen', { driver: v.driver, find: true })
+        .then(() => import('../rosterflow/index.js'))
+        .then((m) => m.openRosterFlow({ view: 14 }))
+        .then(() => import('../rosterflow/state.js'))
+        .then((m) => m.setRf({ ops: { ...(S.rf.ops || {}), date: v.date, n: v.n, pop: true, given: null } }));
+    const foot = html`<span class="rest"></span><${Btn} label=${v.on} onClick=${later} />
+      <${Btn} kind="primary" icon="groups" label=${v.find} onClick=${find} />`;
+    return html`<${Dialog} icon=${v.icon} title=${v.title} w=${600} onClose=${later} foot=${foot}><p class="co-para">${v.text}</p></${Dialog}>`;
   }
   const foot = html`<span class="rest"></span><${Btn} kind="primary" label=${v.on} onClick=${() => act('ask_on', { on: true })} />`;
   return html`<${Dialog} icon=${v.icon} title=${v.title} w=${600} onClose=${() => act('ask_on', { on: true })} foot=${foot}><p class="co-para">${v.text}</p></${Dialog}>`;

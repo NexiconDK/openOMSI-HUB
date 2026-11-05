@@ -81,11 +81,16 @@ function Answer({ a }) {
   return html`<div class=${'bx-ans ' + cls}><b>${a.chip}</b>${a.words && html`<span>${a.words}</span>`}</div>`;
 }
 
-/** The one thing to do with a driver, by the rules of asking. */
-function Action({ x, onAsk, onGive, onSet, onBack }) {
+/** The one thing to do with a driver, by the rules of asking (breaking the rest rules: "anyway",
+ * asked first - `onAnyway`). */
+function Action({ x, onAsk, onGive, onSet, onBack, onAnyway }) {
   switch (x.action) {
     case 'set':
       return html`<button type="button" class="bx-btn green" onClick=${onSet}>${tr('Put on')}</button>`;
+    case 'set_anyway':
+      return html`<button type="button" class="bx-btn warn" onClick=${onAnyway}>${tr('Put on anyway')}</button>`;
+    case 'give_anyway':
+      return html`<button type="button" class="bx-btn warn" onClick=${onAnyway}>${tr('Give anyway')}</button>`;
     case 'ask':
       return html`<button type="button" class="bx-btn line" title=${x.hint || ''} onClick=${onAsk}>${tr('Ask the driver')}</button>`;
     case 'done':
@@ -111,20 +116,27 @@ async function giveIt(n, part, name, args) {
  * note, his answer, and the one thing. */
 function Row({ v, n, part, x }) {
   const base = { date: v.date, n, part };
-  return html`<div class="bx-row">
+  const [sure, setSure] = useState(false);
+  const give = (anyway) => giveIt(n, part, x.name, { ...base, driver: x.id, swap: x.answer?.swap || null, anyway });
+  return html`<div class=${'bx-row' + (x.breach ? ' breach' : '')}>
     <div class="bx-grow">
-      <div class="bx-name">${x.name}${x.mood && html` <span class=${'bx-mood ' + x.mood.key}>${x.mood.text}</span>`}</div>
+      <div class="bx-name">${x.name}${x.mood && html` <span class=${'bx-mood ' + x.mood.key}>${x.mood.text}</span>`}${x.extra && html` <span class="bx-extra">${x.extra}</span>`}</div>
       <div class=${'bx-sub' + (x.over ? ' op-over' : '')}>${x.sub}</div>
       ${x.note && html`<div class="bx-sub">${x.note}</div>`}
+      ${x.breach && x.breach.map((b) => html`<div class="bx-breach">${b}</div>`)}
       <${Answer} a=${x.answer} />
+      ${sure && html`<div class="bx-sure"><span>${x.anyway}</span>
+        <span class="bx-surebtns"><button type="button" class="bx-btn line" onClick=${() => setSure(false)}>${tr('Cancel')}</button>
+        <button type="button" class="bx-btn warn" onClick=${() => (setSure(false), give(true))}>${tr('Yes, do it')}</button></span></div>`}
     </div>
-    <${Action}
+    ${!sure && html`<${Action}
       x=${x}
       onAsk=${() => oAct('ask', { ...base, drivers: [x.id] })}
-      onSet=${() => giveIt(n, part, x.name, { ...base, driver: x.id })}
-      onGive=${() => giveIt(n, part, x.name, { ...base, driver: x.id, swap: x.answer?.swap || null })}
+      onSet=${() => give(false)}
+      onGive=${() => give(false)}
+      onAnyway=${() => setSure(true)}
       onBack=${x.ask != null ? () => oAct('withdraw_ask', { ...base, ask: x.ask }) : null}
-    />
+    />`}
   </div>`;
 }
 
@@ -161,7 +173,8 @@ function Missing({ v, pop }) {
 function Who({ v, d }) {
   const back = () => setO({ n: null, given: null });
   return html`<div class="bx">
-    <button type="button" class="rf-link bx-back" onClick=${back}><${Icon} name="chevron_left" size=${16} /><span>${tr('Back')}</span></button>
+    <div class="bx-top"><button type="button" class="rf-link bx-back" onClick=${back}><${Icon} name="chevron_left" size=${16} /><span>${tr('Back')}</span></button>
+      ${d.sort && html`<span class="cl-seg bx-sort">${d.sort.options.map(([k, l]) => html`<button type="button" class=${d.sort.value === k ? 'on' : ''} onClick=${() => setO({ sort: k })}>${l}</button>`)}</span>`}</div>
     ${d.given && html`<div class="bx-given"><span>${tr('given to %{name}', { name: d.given })}</span><button type="button" class="rf-link" onClick=${() => oAct('withdraw', { date: v.date, n: d.n })}>${tr('Take it back')}</button></div>`}
     ${d.groups.map((g) => html`<div class="bx-group">${g.label}</div>${g.rows.map((x) => html`<${Row} v=${v} n=${d.n} x=${x} />`)}`)}
     ${d.players.length > 0 && html`<div class="bx-group">${tr('Players')}</div>
@@ -202,7 +215,8 @@ function Cut({ v, k }) {
 /** The box's view (`rf_ops`) for a date and the duty chosen (none: the day's list), asked again
  * every two seconds while answers are on their way. */
 function useBox(date, n) {
-  const [v, again] = useView('rf_ops', { date: date || null, n }, [date, n]);
+  const sort = st().sort || 'cheap';
+  const [v, again] = useView('rf_ops', { date: date || null, n, sort }, [date, n, sort]);
   useEffect(() => {
     if (!v?.waiting) return;
     const t = setTimeout(again, 2000);

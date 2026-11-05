@@ -1280,3 +1280,15 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .bx-mood.irritated { background: color-mix(in srgb, #e8912d 22%, var(--rf-grid)); color: color-mix(in srgb, #e8912d 70%, var(--rf-text)); border: 1px solid #e8912d; }
 .bx-mood.angry { background: color-mix(in srgb, var(--rf-err) 22%, var(--rf-grid)); color: color-mix(in srgb, var(--rf-err) 55%, var(--rf-text)); border: 1px solid var(--rf-err); }
 .bx-done { color: var(--rf-err); font-weight: 700; font-size: 10.5px; white-space: nowrap; }
+
+/* RosterFlow Pro, round A (NexiconDK, 4 November 2026): the rest rules broken in red, "anyway" asked
+   first, the extra duties of the month, the sort of the list */
+.bx-btn.warn { background: color-mix(in srgb, var(--rf-err) 78%, #000); color: #fff; }
+.bx-breach { margin-top: 4px; font-size: 10.5px; font-weight: 700; color: color-mix(in srgb, var(--rf-err) 70%, var(--rf-text)); }
+.bx-row.breach .bx-name { opacity: 0.92; }
+.bx-extra { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 10px; font-size: 9.6px; font-weight: 600; vertical-align: 1px; white-space: nowrap; color: var(--rf-dim); border: 1px solid var(--rf-line); background: var(--rf-grid); }
+.bx-sure { margin-top: 8px; padding: 8px 10px; border-radius: 7px; border: 1px solid var(--rf-err); background: color-mix(in srgb, var(--rf-err) 14%, var(--rf-grid)); font-size: 10.75px; display: flex; flex-direction: column; gap: 8px; }
+.bx-surebtns { display: flex; gap: 8px; justify-content: flex-end; }
+.bx-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bx-top .bx-sort { margin-left: auto; }
+.bx-sort button { font-size: 10.5px; padding: 3px 9px; }

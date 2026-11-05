@@ -34,6 +34,9 @@ pub fn view(s: &mut Session, what: &str, args: &Value) -> Value {
 
 // --- the company's settings ------------------------------------------------------------------------
 
+/// The fines the owner can set off the server for breaking the rest rules (cents).
+const REST_FINES: [co::model::Cents; 4] = [0, 500_00, 1_000_00, 2_500_00];
+
 /// The add-on's name and its note (Trello "Game modes 2/4").
 pub const ROSTERFLOW: &str = "RosterFlow – Bus Scheduling & Crew Rostering";
 pub const ROSTERFLOW_NOTE: &str = "Advanced: modelled on professional scheduling software that real transport operators use.";
@@ -100,11 +103,21 @@ fn online_part(c: &co::Company, viewer: Option<u32>) -> Value {
             "say": tr(if runs { "A duty with a bus and no driver is run by a free colleague or an agency driver at the agency's price." } else { "A duty with a bus and no driver is not run: its journeys are dropped, fined and count against the bonus." }),
         })
     });
+    // (NexiconDK, 4 November 2026: the fine for breaking the rest rules - the server's admin's)
+    let rest = co::pro_duties::on(c).then(|| {
+        let fine = co::pro_rest::fine(c);
+        json!({
+            "caps": tr("Breaking the rest rules").to_uppercase(),
+            "locked": tr("Decided by the server's admin"),
+            "say": if fine > 0 { trf("A duty given breaking the rest rules anyway costs a fine of %{amount}, and the driver is less content.", &[("amount", &eur(fine))]) } else { tr("No fine for breaking the rest rules: the driver is less content and more stressed.") },
+        })
+    });
     json!({
         "caps": tr("Pay for the players").to_uppercase(),
         "say": pay_say,
         "own": own,
         "agency": agency,
+        "rest": rest,
         // (phase 3 step 3: what a player leaves of his duty - its owner's choice)
         "left_caps": tr("When a player leaves his duty halfway").to_uppercase(),
         "left": if c.together.left_dropped { "dropped" } else { "ai" },
@@ -262,10 +275,23 @@ const TRIPS_CLOSED: &str = "Players take whole duties only: a duty planned for t
 /// {left: "ai" | "dropped"}`: `together::Together::left_dropped`, at once) - a company on Bus
 /// Company Online's server only.
 pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, String>> {
-    if what != "online_share" && what != "online_left" && what != "online_trips" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" && what != "approval_ask" && what != "approval_answer" && what != "drive_free" && what != "agency_fallback" && what != "agency_local" {
+    if what != "online_share" && what != "online_left" && what != "online_trips" && what != "depot_found" && what != "depot_money" && what != "bus_move" && what != "staff_lend" && what != "approval_ask" && what != "approval_answer" && what != "drive_free" && what != "agency_fallback" && what != "agency_local" && what != "rest_local" {
         return None;
     }
     let guest = s.sender_guest;
+    // (off the server: the owner's fine for breaking the rest rules)
+    if what == "rest_local" {
+        let k = args.get("value").and_then(Value::as_str).and_then(|x| x.parse::<usize>().ok()).unwrap_or(0);
+        let fine = REST_FINES.get(k).copied().unwrap_or(0);
+        let Some(c) = s.company.as_mut() else { return Some(Ok(json!({}))) };
+        return Some(Ok(match co::pro_rest::set_fine(c, fine) {
+            Ok(()) => {
+                super::changed(s);
+                json!({})
+            }
+            Err(e) => json!({ "popup": super::kit::Popup::new("error", "This cannot be done", tr(e), "", None).json(false) }),
+        }));
+    }
     // (off the server: the owner's choice for the duties nobody covers)
     if what == "agency_local" {
         let value = args.get("value").and_then(Value::as_str) == Some("agency");
@@ -475,6 +501,16 @@ fn settings(s: &mut Session, args: &Value) -> Value {
                 "value": if runs { "agency" } else { "drop" },
                 "options": [{ "value": "drop", "label": tr("They are dropped") }, { "value": "agency", "label": tr("Agency drivers run them") }],
                 "say": tr(if runs { "A duty with a bus and no driver is run by a free colleague or an agency driver at the agency's price." } else { "A duty with a bus and no driver is not run: its journeys are dropped, fined and count against the bonus." }),
+            })
+        }),
+        // (off the server the owner sets the fine for breaking the rest rules - RosterFlow Pro)
+        "rest_local": (!c.online.on_server && co::pro_duties::on(&c)).then(|| {
+            let fine = co::pro_rest::fine(&c);
+            json!({
+                "caps": tr("Breaking the rest rules").to_uppercase(),
+                "value": REST_FINES.iter().position(|x| *x == fine).unwrap_or(0).to_string(),
+                "options": REST_FINES.iter().enumerate().map(|(i, x)| json!({ "value": i.to_string(), "label": if *x == 0 { tr("No fine") } else { eur(*x) } })).collect::<Vec<_>>(),
+                "say": tr("When a duty is given breaking the rest rules anyway (11 hours' rest, a day of at most 13 hours, a week of at most 48): the driver is less content and more stressed, and the company pays this fine."),
             })
         }),
         "currency": super::currency::settings_part(&c),
@@ -1191,7 +1227,10 @@ pub fn spare_label(bus: &str, from: &str, until: Option<i32>) -> String {
 /// The question the clock waits for (`clock::ask_dialog`).
 fn ask(s: &mut Session) -> Value {
     let Some(c) = s.company.clone() else { return Value::Null };
-    let Some(question) = c.clock.ask.clone() else { return Value::Null };
+    // (RosterFlow Pro: a driver's sick call not seen yet - also while the game's clock leads and
+    // nothing stops)
+    let unseen = co::pro_sick::unseen(&c).map(|x| Ask::SickCall { driver: x.driver });
+    let Some(question) = c.clock.ask.clone().or(unseen) else { return Value::Null };
     let when = ck::hhmm(ck::now(&c));
     match &question {
         Ask::Breakdown { index } => {
@@ -1256,6 +1295,18 @@ fn ask(s: &mut Session) -> Value {
         Ask::Notice { text, args } => {
             let item = FeedItem { at: ck::now(&c), text: text.clone(), args: args.clone(), level: Level::Bad };
             json!({ "kind": "notice", "icon": "info", "closable": true, "title": when, "text": feed_text(&item), "on": tr("Go on") })
+        }
+        Ask::SickCall { driver } => {
+            let Some(x) = c.planning.ops.sick.iter().rev().find(|x| x.driver == *driver && x.date == c.date).cloned() else { return json!({ "kind": "gone" }) };
+            let (text, args) = co::pro_sick::words(&c, &x);
+            let a: Vec<(&str, &str)> = args.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+            let called = ck::hhmm(x.at);
+            let begins = format!("{:02}:{:02}", x.start.rem_euclid(1440) / 60, x.start.rem_euclid(60));
+            json!({
+                "kind": "sick_call", "icon": "warning", "closable": true, "title": trf(text, &a),
+                "text": trf("%{name} called at %{time}: ill and cannot come in today. Duty %{n} signs on at %{start} and has no driver now. Find a driver for it, or cut it.", &[("name", &c.employee(x.driver).map(|e| e.name.clone()).unwrap_or_default()), ("time", &called), ("n", &x.n.to_string()), ("start", &begins)]),
+                "find": tr("Find a driver ›"), "on": tr("Later"), "date": x.date, "n": x.n, "driver": x.driver,
+            })
         }
     }
 }
@@ -1416,6 +1467,21 @@ pub fn act(s: &mut Session, what: &str, args: &Value, _p: &dyn crate::Platform) 
             finish(s, None, args.get("on").and_then(Value::as_bool).unwrap_or(true));
             Ok(json!({}))
         }
+        // (a driver's sick call seen: `find` - to the calendar's popup on his duty -, or later)
+        "sick_seen" => {
+            let find = args.get("find").and_then(Value::as_bool).unwrap_or(false);
+            let driver = args.get("driver").and_then(Value::as_u64).map(|x| x as u32);
+            if let Some(c) = s.company.as_mut() {
+                co::pro_sick::seen(c, driver);
+            }
+            let asked = s.company.as_ref().is_some_and(|c| matches!(c.clock.ask, Some(Ask::SickCall { .. })));
+            if asked {
+                finish(s, None, !find);
+            } else {
+                super::changed(s);
+            }
+            Ok(json!({}))
+        }
         "ask_dispatcher" => {
             let on = args.get("on").and_then(Value::as_bool).unwrap_or(false);
             if let Some(c) = s.company.as_mut() {
@@ -1437,4 +1503,48 @@ pub fn act(s: &mut Session, what: &str, args: &Value, _p: &dyn crate::Platform) 
             return None;
         }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct NoPlatform;
+    impl crate::Platform for NoPlatform {
+        fn renderer(&self, _req: Value, _wait: std::time::Duration) -> Result<(Value, Vec<u8>), String> {
+            Err(String::new())
+        }
+    }
+
+    #[test]
+    fn a_drivers_sick_call_waits_as_a_notice_with_its_duty_even_while_the_clock_runs() {
+        super::super::words::set_language("en");
+        let mut c = co::found(&co::Founding { name: "Syg".into(), game_mode: GameMode::Normal, date: "2024-03-04".into(), ..Default::default() }, "Luc");
+        while c.staff.iter().filter(|e| co::staff::drives(e)).count() < 1 {
+            for a in co::staff::applicants(&c) {
+                if a.role == co::model::Role::Driver && c.staff.iter().filter(|e| co::staff::drives(e)).count() < 1 {
+                    let _ = co::staff::hire(&mut c, &a);
+                }
+            }
+            c.id.push('x');
+            c.taken = Default::default();
+        }
+        let id = c.staff.iter().find(|e| co::staff::drives(e)).unwrap().id;
+        for e in c.staff.iter_mut() {
+            (e.sick_until, e.holiday_until, e.hired) = (None, None, "2024-01-01".into());
+        }
+        c.clock.minute = 5 * 60;
+        let now = ck::now(&c);
+        assert!(co::pro_sick::call(&mut c, id, 1003, 5 * 60 + 25, now));
+        let mut s = Session::default();
+        s.company = Some(c);
+        // no question of the clock's (it runs on): the call shows all the same
+        let v = ask(&mut s);
+        assert_eq!(v["kind"], "sick_call", "{v}");
+        assert!(v["title"].as_str().unwrap().ends_with("has called in sick – duty 1003 is missing in 25 min"), "{v}");
+        assert_eq!((v["n"].as_u64(), v["date"].as_str()), (Some(1003), Some("2024-03-04")));
+        // seen: gone
+        act(&mut s, "sick_seen", &json!({ "driver": id, "find": true }), &NoPlatform).unwrap().unwrap();
+        assert!(ask(&mut s).is_null());
+    }
 }

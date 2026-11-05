@@ -218,11 +218,27 @@ pub struct Ops {
     /// The refusals of questions asked again since (their question replaced): `refusals`.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub noes: Vec<Refusal>,
+    /// The drivers who called in sick on the company's day (`pro_sick`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub sick: Vec<super::pro_sick::SickCall>,
+    /// The extra duties given this month and the last (`pro_rest`: the fair share), and who
+    /// grumbled of none lately.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub extras: Vec<super::pro_rest::Extra>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub grumbled: Vec<super::pro_rest::Extra>,
+    /// The owner's fine for a breach of the rest rules off the server (cents; `pro_rest::fine`).
+    #[serde(skip_serializing_if = "is_zero")]
+    pub rest_fine: Cents,
+}
+
+fn is_zero(x: &Cents) -> bool {
+    *x == 0
 }
 
 impl Ops {
     pub fn is_empty(&self) -> bool {
-        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty()
+        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty() && self.sick.is_empty() && self.extras.is_empty() && self.grumbled.is_empty() && self.rest_fine == 0
     }
 }
 
@@ -993,8 +1009,10 @@ pub fn give_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver: 
 
 /// `give_part` by the rules of asking (the page's): to a driver who said yes - or, `set`, to a
 /// reserve put on within his frame before noon the day before (`Rule::Set`, the page decides it).
-/// The others asked for it are told it is taken.
-pub fn give_asked(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver: u32, swap: Option<(u32, u32)>, set: bool, now: u64) -> Result<(), &'static str> {
+/// The others asked for it are told it is taken. `extra`: a duty beyond his own work - counted
+/// for the fair share (`pro_rest::count_extra`).
+#[allow(clippy::too_many_arguments)]
+pub fn give_asked(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver: u32, swap: Option<(u32, u32)>, set: bool, extra: bool, now: u64) -> Result<(), &'static str> {
     let game = super::clock::now(c);
     let yes = c.planning.ops.asks.iter().any(|a| a.date == date && a.n == n && a.part == part && !a.closed && a.of_staff() == Some(driver) && a.shown_at(game, now).is_some_and(Reply::yes));
     if !set && !yes {
@@ -1002,6 +1020,9 @@ pub fn give_asked(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver:
     }
     let others: Vec<u32> = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == n && a.part == part && !a.closed).filter_map(Ask::of_staff).filter(|id| *id != driver).collect();
     give_part(c, date, n, part, driver, swap)?;
+    if extra {
+        super::pro_rest::count_extra(c, driver, date);
+    }
     for id in others {
         let args = vec![("n".to_string(), n.to_string()), ("date".to_string(), date.to_string())];
         super::messages::post(c, super::messages::To::Driver { employee: id }, super::messages::Priority::Info, super::messages::DUTY_TAKEN, args, None);
@@ -1023,6 +1044,11 @@ pub fn close(c: &mut Company, date: &str, n: u32) {
 pub fn withdraw(c: &mut Company, date: &str, n: u32) -> bool {
     let before = c.planning.ops.clone();
     let game = super::clock::now(c);
+    // (taken back: no longer an extra duty of the driver's - `pro_rest`)
+    let gone: Vec<u32> = c.planning.ops.calls.iter().filter(|x| x.date == date && x.n == n).map(|x| x.driver).collect();
+    for d in gone {
+        super::pro_rest::uncount_extra(c, d, date);
+    }
     c.planning.ops.calls.retain(|x| !(x.date == date && x.n == n));
     for a in c.planning.ops.asks.iter_mut().filter(|a| a.date == date && a.n == n) {
         a.shut(game);
@@ -1045,12 +1071,16 @@ pub fn tidy(c: &mut Company) {
     let day = super::clock::moment(&today, 0);
     c.planning.ops.noes.retain(|x| x.at >= day && drivers.contains(&x.driver));
     c.planning.ops.asks.retain(|a| dates::between(&today, &a.date) >= 0 && !matches!(a.who, Asked::Staff { id } if !drivers.contains(&id)));
+    c.planning.ops.sick.retain(|x| x.date == today && drivers.contains(&x.driver));
+    super::pro_rest::tidy(c);
 }
 
 /// Every English text this module hands the pages besides its literals.
 pub fn texts() -> Vec<&'static str> {
     let mut v: Vec<&'static str> = vec![SAY_FRAME, SAY_ILL, SAY_HOLIDAY, SAY_LICENCE, SAY_LONG, NO_SUCH_ASK, NOT_ASKED, NOT_A_DRIVER, NOBODY, ASKED_NOTICE, ONE_AT_A_TIME, NEEDS_YES, SAY_SILENT, ANSWERS_NO_MORE];
     v.extend(super::pro_cut::texts());
+    v.extend(super::pro_sick::texts());
+    v.extend(super::pro_rest::texts());
     for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP, &SAY_ANNOYED, &SAY_ANGRY, &SAY_GRUDGING] {
         v.extend(list.iter().copied());
     }

@@ -1371,7 +1371,7 @@ fn shell(s: &mut Session) -> Value {
         "status": status, "clock": head, "rail": rail, "pages": pages, "together": super::together::gate(), "bell": bell,
         "names": TABS.iter().map(|t| tr(t)).collect::<Vec<_>>(),
         "casual": casual, "cover": cover,
-        "asking": c.clock.ask.is_some(),
+        "asking": c.clock.ask.is_some() || co::pro_sick::unseen(&c).is_some(),
         "reports": s.reports.is_some(), "away": s.clock.away.is_some(),
         "launch": s.launch.is_some(),
         "sheet": s.dealer.sheet.is_some(),

@@ -163,6 +163,9 @@ fn act_need(act: &str, what: &str) -> Need {
         "dismiss" | "holiday" => STAFF,
         "ask_spare" | "ask_rental" | "ask_drop" | "ask_on" | "ask_dispatcher" => SERVICE,
         "morning_fill" => PLANS,
+        // (RosterFlow Pro: a driver's sick call seen, the owner's fine for the rest rules)
+        "sick_seen" => PLANS,
+        "rest_local" => SETTINGS,
         // the fleet
         "bus_livery" | "bus_service" | "new_take" | "bus_age" | "advert_end" => SPEND,
         // the dealer
