@@ -27,6 +27,8 @@ export const PRO_ROTA = 12;
 /** (Step 4) The Daglig drift and Kalender tabs (`ops.js`). */
 export const PRO_DAILY = 13;
 export const PRO_CALENDAR = 14;
+/** (Round H) The Kan arbejde tab (`avail.js`). */
+export const PRO_AVAIL = 15;
 
 /** The Pro tabs of the title bar: those built, and those of the steps to come. */
 export const PRO_TABS = [
@@ -35,6 +37,7 @@ export const PRO_TABS = [
   { view: PRO_ROTA, n: 3, icon: 'autorenew', label: 'Rota', anchor: 'rf-tab-pro-rota' },
   { view: PRO_DAILY, n: 4, icon: 'today', label: 'Daily operations', anchor: 'rf-tab-pro-daily' },
   { view: PRO_CALENDAR, n: 5, icon: 'event', label: 'Calendar', anchor: 'rf-tab-pro-calendar' },
+  { view: PRO_AVAIL, n: 6, icon: 'rf_can', label: 'Can work', anchor: 'rf-tab-pro-avail' },
 ];
 
 /** "07:05" on the clock (minutes of the service day). */

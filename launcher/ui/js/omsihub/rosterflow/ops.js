@@ -271,9 +271,9 @@ function Line({ v, n, x, picked, onPick }) {
         return null;
     }
   };
-  return html`<div class=${'wl-row' + (x.breach ? ' breach' : '') + (picked ? ' picked' : '')}>
+  return html`<div class=${'wl-row' + (x.breach ? ' breach' : '') + (picked ? ' picked' : '') + (x.action === 'cannot' ? ' cannot' : '')}>
     <span class="wl-tick">${x.action === 'ask' && html`<input type="checkbox" checked=${picked} title=${tr('Tick to ask')} onChange=${(e) => onPick(e.currentTarget.checked)} />`}</span>
-    <span class="wl-who" title=${x.sub}><b>${x.name}</b><i class="wl-chip">${x.chip}</i>${x.extra && html`<i class="wl-extra">${x.extra}</i>`}${signs.map(([g, t, k]) => html`<i class=${'wl-sign ' + k} title=${t}>${g}</i>`)}</span>
+    <span class="wl-who" title=${x.sub}><b>${x.name}</b><i class="wl-chip">${x.chip}</i>${x.avail && html`<i class=${'wl-avail ' + x.avail.key}>${x.avail.text}</i>`}${x.extra && html`<i class="wl-extra">${x.extra}</i>`}${signs.map(([g, t, k]) => html`<i class=${'wl-sign ' + k} title=${t}>${g}</i>`)}</span>
     <span class=${'wl-price' + (x.over && !toil ? ' op-over' : '') + (toil ? ' bx-saved' : '')} title=${x.sub}>${price}</span>
     <span class="wl-answer"><${AnswerCell} x=${x} />
       ${x.toil && giving && html`<span class="cl-seg wl-toil">${x.toil.options.map(([k, l]) => html`<button type="button" class=${(k === 'save') === !!toil ? 'on' : ''} onClick=${() => setSave(k === 'save')}>${l}</button>`)}</span>`}
@@ -315,7 +315,7 @@ function Who({ v, d }) {
     ${d.players.length > 0 && html`<div class="wl-group">${tr('Players')}</div>
       ${d.players.map((p) => html`<div class="wl-row">
         <span class="wl-tick">${p.action === 'ask' && html`<input type="checkbox" checked=${!!picked['g' + p.no]} onChange=${(e) => pick('g' + p.no, e.currentTarget.checked)} />`}</span>
-        <span class="wl-who"><b>${p.name}</b><i class="wl-chip">${tr('a player: answers himself')}</i></span>
+        <span class="wl-who"><b>${p.name}</b><i class="wl-chip">${tr('a player: answers himself')}</i>${p.avail && html`<i class=${'wl-avail ' + p.avail.key}>${p.avail.text}</i>`}</span>
         <span class="wl-price"></span>
         <span class="wl-answer">${p.action === 'waiting' ? html`<span class="wl-wait">🕒 ${tr('Waiting for an answer…')}</span>` : p.answer ? html`<span class=${'wl-ans ' + (p.answer.yes ? 'yes' : 'no')} title=${p.answer.words || ''}>${p.answer.chip}</span>` : html`<span class="wl-dim">–</span>`}
           ${p.action === 'give' && html`<button type="button" class="bx-btn green sm" onClick=${() => oAct('give_guest', { date: v.date, n: d.n, guest: p.no }).then((r) => r?.edited && setO({ n: null, given: tr('Duty %{n} is given to %{name}', { n: d.n, name: p.name }) }))}>${tr('Give')}</button>`}</span>
@@ -524,7 +524,9 @@ function Days({ v, x, o }) {
     const tired = c.tired && html`<i class=${'cl-tired ' + c.tired.key} title=${c.tired.text}>${c.tired.key === 'worn' ? '🥱' : '😮‍💨'}</i>`;
     const tip = [c.tired?.text, c.swap, c.wish || c.tip].filter(Boolean).join(' · ');
     if (c.kind === 'off' || c.kind === 'away') {
-      out.push(html`<div class=${'cl-cell off' + past + (c.wish ? ' wish' : '') + (c.swap ? ' swapped' : '')} title=${tip}>${c.label === '–' ? '–' : html`<b>${c.label}</b>`}${star}${swap}</div>`);
+      // (round H: an hourly-paid driver's empty day he said he can work - a faint mark, its times)
+      const avail = c.avail && html`<i class="cl-avail">${c.avail_t}</i>`;
+      out.push(html`<div class=${'cl-cell off' + past + (c.wish ? ' wish' : '') + (c.swap ? ' swapped' : '') + (c.avail ? ' can' : '')} title=${[c.avail, tip].filter(Boolean).join(' · ')}>${c.label === '–' ? '–' : html`<b>${c.label}</b>`}${star}${swap}${avail}</div>`);
       continue;
     }
     out.push(html`<button type="button" class=${'cl-cell ' + c.cls + past + (c.wish ? ' wish' : '') + (c.swap ? ' swapped' : '')} title=${tip} onClick=${() => setO({ date: v.days[i].date, n: null, pop: true, given: null })}>

@@ -90,7 +90,7 @@ pub enum NoWhy {
     Angry,
     /// (round B) His day off: a wish granted, time off in lieu (`model::FreeDay`).
     DayOff,
-    /// (Round F) An hourly-paid driver who cannot that day at all (`own_hours`).
+    /// (Round F) An hourly-paid driver who cannot that day at all (round H: as he said, `pro_avail`).
     NotThatDay,
 }
 
@@ -279,6 +279,12 @@ pub struct Ops {
     pub tallies: Vec<super::pro_report::Tally>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub reports: Vec<super::pro_report::Report>,
+    /// (NexiconDK, 5 November 2026: round H) When the hourly paid can work, a day at a time
+    /// (`pro_avail`), and the company's day the AI drivers last filled theirs in.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub avail: Vec<super::pro_avail::Avail>,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub avail_day: String,
 }
 
 fn is_none_u32(x: &u32) -> bool {
@@ -291,7 +297,7 @@ fn is_zero(x: &Cents) -> bool {
 
 impl Ops {
     pub fn is_empty(&self) -> bool {
-        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty() && self.sick.is_empty() && self.extras.is_empty() && self.grumbled.is_empty() && self.rest_fine == 0 && self.wishes.is_empty() && self.last_wish == 0 && self.wished.is_empty() && self.toil_asked.is_empty() && !self.toil_default && self.swaps.is_empty() && self.last_swap == 0 && self.trades.is_empty() && self.last_trade == 0 && self.traded.is_empty() && self.tallies.is_empty() && self.reports.is_empty()
+        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty() && self.sick.is_empty() && self.extras.is_empty() && self.grumbled.is_empty() && self.rest_fine == 0 && self.wishes.is_empty() && self.last_wish == 0 && self.wished.is_empty() && self.toil_asked.is_empty() && !self.toil_default && self.swaps.is_empty() && self.last_swap == 0 && self.trades.is_empty() && self.last_trade == 0 && self.traded.is_empty() && self.tallies.is_empty() && self.reports.is_empty() && self.avail.is_empty() && self.avail_day.is_empty()
     }
 }
 
@@ -645,43 +651,6 @@ pub struct Situation {
     pub tired: super::pro_tired::Level,
 }
 
-/// An hourly-paid driver's own hours of a day: a window (from, to: minutes of the day, and how he
-/// says it), or not at all that day.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum OwnHours {
-    Window(i32, i32, &'static str),
-    NotThatDay,
-}
-
-/// The windows an hourly-paid driver's day is drawn from, and their weights (of 100): all day 35,
-/// the morning 20, the afternoon 20, the evening 15, not that day 10 - nine days of ten he can.
-pub const OWN_DAYS: [(OwnHours, u32); 5] = [
-    (OwnHours::Window(5 * 60, 24 * 60, "can all day"), 35),
-    (OwnHours::Window(5 * 60, 14 * 60, "can weekdays before 14:00"), 20),
-    (OwnHours::Window(11 * 60, 20 * 60, "can mostly in the afternoon"), 20),
-    (OwnHours::Window(14 * 60, 24 * 60, "can mostly in the evening"), 15),
-    (OwnHours::NotThatDay, 10),
-];
-
-/// An hourly-paid driver's own hours of `date`, as he says them ("mostly in the afternoon"): drawn
-/// for the company, the driver and the date (`OWN_DAYS`) - another day, maybe other hours - until
-/// the drivers say themselves when they can.
-pub fn own_hours(c: &Company, e: &Employee, date: &str) -> Option<OwnHours> {
-    if e.employment != Employment::Hourly {
-        return None;
-    }
-    let mut rng = Rng::of(&[&c.id, date, "pro-own-hours"], e.id as i64);
-    let total: u32 = OWN_DAYS.iter().map(|x| x.1).sum();
-    let mut k = rng.int(0, total as i64 - 1) as u32;
-    for (h, w) in OWN_DAYS {
-        if k < w {
-            return Some(h);
-        }
-        k -= w;
-    }
-    Some(OWN_DAYS[0].0)
-}
-
 /// When `e` could work around his other pieces of the day `dp` (the rest, `staff::REST`, to the
 /// one before and the one after the duty `from..to`): from when, until when.
 pub fn could(dp: &DayPlan, e: &Employee, skip: &[(usize, usize)], from: i32, to: i32) -> (Option<i32>, Option<i32>) {
@@ -800,24 +769,27 @@ pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: 
         }
         Ok(()) => {}
     }
-    // (an hourly-paid driver's own hours of the day - drawn for the date)
-    match own_hours(c, e, date) {
-        Some(OwnHours::NotThatDay) => return no(NoWhy::NotThatDay),
-        Some(OwnHours::Window(from, until, _)) => {
+    // (round H: an hourly-paid driver remembers what he said he can that day - `pro_avail`)
+    let mut inside = false;
+    match super::pro_avail::can_of(c, e, date) {
+        Some(super::pro_avail::Can::Not) => return no(NoWhy::NotThatDay),
+        Some(can) => {
+            let (from, until) = can.span().unwrap_or((0, 30 * 60));
             if start < from {
                 return Reply::Early { from, say };
             }
             if end > until {
                 return Reply::Late { until, say };
             }
+            inside = true;
         }
         None => {}
     }
-    // (very early or very late: too early or too late for some)
-    if start < 5 * 60 + 30 && rng.chance(0.25) {
+    // (very early or very late: too early or too late for some - not for one who said he can)
+    if !inside && start < 5 * 60 + 30 && rng.chance(0.25) {
         return Reply::Early { from: start + 30 * rng.int(2, 5) as i32, say };
     }
-    if end > 23 * 60 && rng.chance(0.25) {
+    if !inside && end > 23 * 60 && rng.chance(0.25) {
         return Reply::Late { until: end - 30 * rng.int(2, 4) as i32, say };
     }
     let paid = (end - start).max(0) as f64;
@@ -834,10 +806,12 @@ pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: 
     // (round D: early or late as he likes it, a public holiday, tired - `pro_pref`, `pro_holiday`,
     // `pro_tired`)
     p *= super::pro_pref::bias(c, e, start) * super::pro_holiday::bias(c, date) * super::pro_tired::yes(s.tired);
+    // (round H: within what he said he can - glad of it)
+    let p = if inside { (p.clamp(0.08, 0.95) * super::pro_avail::INSIDE_YES).min(super::pro_avail::INSIDE_MOST) } else { p.clamp(0.08, 0.95) };
     if irritated {
-        return if moody.chance(p.clamp(0.08, 0.95) * IRRITATED_YES) { Reply::Grudging { say } } else { no(NoWhy::Annoyed) };
+        return if moody.chance(p * IRRITATED_YES) { Reply::Grudging { say } } else { no(NoWhy::Annoyed) };
     }
-    if rng.chance(p.clamp(0.08, 0.95)) {
+    if rng.chance(p) {
         Reply::Yes { say }
     } else if over || e.stress > 60.0 {
         no(NoWhy::Tired)
@@ -1014,7 +988,8 @@ pub fn rule_of(c: &Company, e: &Employee, date: &str, tier: u8) -> Rule {
 /// stressed one; never between 23:00 and 06:00 (he sleeps: he answers after 06:00, or cannot be
 /// reached when the duty begins first); and sometimes no answer at all (`Reply::Silent`, shown
 /// after `NO_ANSWER_AFTER`). The same for the same company, day, duty and driver.
-pub fn answer_time(c: &Company, e: &Employee, date: &str, n: u32, start: i32, reply: Reply, game: i64, week: f64) -> (Reply, i64) {
+#[allow(clippy::too_many_arguments)]
+pub fn answer_time(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: i32, reply: Reply, game: i64, week: f64) -> (Reply, i64) {
     use super::clock::{moment, DAY};
     let mut rng = Rng::of(&[&c.id, date, "pro-answer"], ((n as i64) << 24) | e.id as i64);
     if reply == Reply::Frame {
@@ -1031,6 +1006,10 @@ pub fn answer_time(c: &Company, e: &Employee, date: &str, n: u32, start: i32, re
     }
     if tired {
         wait *= 1.6;
+    }
+    // (round H: asked within what he said he can - he answers sooner)
+    if super::pro_avail::inside(c, e, date, start, end) {
+        wait *= super::pro_avail::INSIDE_WAIT;
     }
     let silent_chance = if tired { 0.15 } else { 0.03 };
     if rng.chance(silent_chance) {
@@ -1093,7 +1072,7 @@ pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i3
         let (reply, due) = match (w, reply) {
             (Asked::Staff { id: e }, Some(r)) => {
                 let Some(emp) = c.employee(e).cloned() else { return Err(NOT_A_DRIVER) };
-                let (r, due) = answer_time(c, &emp, date, n, start, r, game, week(e));
+                let (r, due) = answer_time(c, &emp, date, n, start, end, r, game, week(e));
                 (Some(r), Some(due))
             }
             (_, r) => (r, None),
@@ -1276,6 +1255,7 @@ pub fn tidy(c: &mut Company) {
     super::pro_wish::tidy(c);
     super::pro_toil::tidy(c);
     super::pro_trade::tidy(c);
+    super::pro_avail::tidy(c);
 }
 
 /// Every English text this module hands the pages besides its literals.
@@ -1293,11 +1273,11 @@ pub fn texts() -> Vec<&'static str> {
     v.extend(super::pro_tired::texts());
     v.extend(super::pro_trade::texts());
     v.extend(super::pro_season::texts());
+    v.extend(super::pro_avail::texts());
     v.extend(super::pro_report::texts());
     for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP, &SAY_ANNOYED, &SAY_ANGRY, &SAY_GRUDGING] {
         v.extend(list.iter().copied());
     }
-    v.extend(["can all day", "can weekdays before 14:00", "can mostly in the afternoon", "can mostly in the evening"]);
     v
 }
 

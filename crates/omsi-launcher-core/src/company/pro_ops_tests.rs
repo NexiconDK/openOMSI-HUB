@@ -278,25 +278,27 @@ fn an_ai_drivers_answer_is_human_and_the_same_every_time() {
     let lonely = Situation { swap_with: None, ..busy.clone() };
     assert!(matches!(ai_reply(&c, &e, "2024-03-05", 1001, 350, 660, &lonely), Reply::No { why: NoWhy::Busy, .. }));
     // an hourly-paid driver's own hours of the day: before them too early, after them too late
-    // (round F: drawn for the date - a day with a window that begins after 05:00 tried)
+    // (round F: drawn for the date; round H: as he says them - `pro_avail` - a day with a window
+    // that begins after 05:00 tried)
+    use super::super::pro_avail::{self as pa, Can};
     c.staff[2].employment = Employment::Hourly;
     let h = c.staff[2].clone();
-    let day = (0..60).map(|k| dates::add("2024-03-05", k)).find(|d| matches!(own_hours(&c, &h, d), Some(OwnHours::Window(f, _, _)) if f > 5 * 60)).unwrap();
-    let Some(OwnHours::Window(from, until, _)) = own_hours(&c, &h, &day) else { unreachable!() };
+    let day = (0..60).map(|k| dates::add("2024-03-05", k)).find(|d| matches!(pa::can_of(&c, &h, d), Some(Can::Window { from, .. }) if from > 5 * 60)).unwrap();
+    let Some(Can::Window { from, to: until }) = pa::can_of(&c, &h, &day) else { unreachable!() };
     let r = ai_reply(&c, &h, &day, 1001, from - 60, from + 120, &free);
     assert!(matches!(r, Reply::Early { from: f, .. } if f == from), "{r:?}");
     if until < 1440 {
         assert!(matches!(ai_reply(&c, &h, &day, 1001, until - 60, until + 30, &free), Reply::Late { .. }));
     }
     // other days, other hours - most days some, now and then none ("I can't that day")
-    let days: Vec<Option<OwnHours>> = (0..200).map(|k| own_hours(&c, &h, &dates::add("2024-03-05", k))).collect();
-    let none = days.iter().filter(|d| **d == Some(OwnHours::NotThatDay)).count();
+    let days: Vec<Option<Can>> = (0..200).map(|k| pa::can_of(&c, &h, &dates::add("2024-03-05", k))).collect();
+    let none = days.iter().filter(|d| **d == Some(Can::Not)).count();
     let kinds: std::collections::HashSet<String> = days.iter().map(|d| format!("{d:?}")).collect();
     assert!(kinds.len() == 5 && none > 5 && none < 40, "{none} days off of 200, {} kinds", kinds.len());
-    assert_eq!(own_hours(&c, &h, "2024-03-09"), own_hours(&c, &h, "2024-03-09"), "the same for the same day");
-    let off = (0..200).map(|k| dates::add("2024-03-05", k)).find(|d| own_hours(&c, &h, d) == Some(OwnHours::NotThatDay)).unwrap();
+    assert_eq!(pa::can_of(&c, &h, "2024-03-09"), pa::can_of(&c, &h, "2024-03-09"), "the same for the same day");
+    let off = (0..200).map(|k| dates::add("2024-03-05", k)).find(|d| pa::can_of(&c, &h, d) == Some(Can::Not)).unwrap();
     assert!(matches!(ai_reply(&c, &h, &off, 1001, 600, 900, &free), Reply::No { why: NoWhy::NotThatDay, .. }));
-    assert!(own_hours(&c, &c.staff[3].clone(), "2024-03-05").is_none(), "only the hourly paid");
+    assert!(pa::can_of(&c, &c.staff[3].clone(), "2024-03-05").is_none(), "only the hourly paid");
     // content and rested: mostly yes; over his week and stressed: mostly no, tired
     let full = c.staff[3].clone();
     let yes = (1001..1061).filter(|n| ai_reply(&c, &full, "2024-03-05", *n, 600, 900, &free).yes()).count();
@@ -481,17 +483,17 @@ fn an_ai_driver_answers_in_game_time_and_not_at_night() {
     let date = "2024-03-06";
     let yes = Reply::Yes { say: 0 };
     let at = |h: i64| moment("2024-03-05", h);
-    let (r, due) = answer_time(&c, &e, date, 1001, 14 * 60, yes.clone(), at(10 * 60), 0.0);
-    assert_eq!(answer_time(&c, &e, date, 1001, 14 * 60, yes.clone(), at(10 * 60), 0.0), (r.clone(), due), "the same every time");
+    let (r, due) = answer_time(&c, &e, date, 1001, 14 * 60, 22 * 60, yes.clone(), at(10 * 60), 0.0);
+    assert_eq!(answer_time(&c, &e, date, 1001, 14 * 60, 22 * 60, yes.clone(), at(10 * 60), 0.0), (r.clone(), due), "the same every time");
     let mut normal = Vec::new();
     let mut urgent = Vec::new();
     for n in 1001..1101 {
-        let (r, d) = answer_time(&c, &e, date, n, 14 * 60, yes.clone(), at(10 * 60), 0.0);
+        let (r, d) = answer_time(&c, &e, date, n, 14 * 60, 22 * 60, yes.clone(), at(10 * 60), 0.0);
         if r != Reply::Silent {
             normal.push(d - at(10 * 60));
         }
         // (the duty at 08:00 the next day, asked at 06:00: within 3 hours)
-        let (r, d) = answer_time(&c, &e, date, n, 8 * 60, yes.clone(), moment(date, 6 * 60), 0.0);
+        let (r, d) = answer_time(&c, &e, date, n, 8 * 60, 16 * 60, yes.clone(), moment(date, 6 * 60), 0.0);
         if r != Reply::Silent {
             urgent.push(d - moment(date, 6 * 60));
         }
@@ -501,25 +503,25 @@ fn an_ai_driver_answers_in_game_time_and_not_at_night() {
     assert!(normal.len() > 85, "a rested driver mostly answers: {}", normal.len());
     // asked at 23:30 for the afternoon: answered between 06:00 and 06:20
     for n in 1001..1041 {
-        let (r, d) = answer_time(&c, &e, date, n, 14 * 60, yes.clone(), at(23 * 60 + 30), 0.0);
+        let (r, d) = answer_time(&c, &e, date, n, 14 * 60, 22 * 60, yes.clone(), at(23 * 60 + 30), 0.0);
         if r != Reply::Silent {
             assert!((moment(date, 6 * 60)..=moment(date, 6 * 60 + 20)).contains(&d), "{}", d.rem_euclid(DAY));
         }
     }
     // asked at 23:30 for a duty at 05:00: not reachable - no answer
-    let (r, d) = answer_time(&c, &e, date, 1001, 5 * 60, yes.clone(), at(23 * 60 + 30), 0.0);
+    let (r, d) = answer_time(&c, &e, date, 1001, 5 * 60, 13 * 60, yes.clone(), at(23 * 60 + 30), 0.0);
     assert_eq!((r, d), (Reply::Silent, at(23 * 60 + 30) + NO_ANSWER_AFTER));
     // tired: slower, and more often no answer
     c.staff[1].stress = 85.0;
     let t = c.staff[1].clone();
-    let slow: Vec<(Reply, i64)> = (1001..1201).map(|n| answer_time(&c, &t, date, n, 14 * 60, yes.clone(), at(10 * 60), 0.0)).collect();
+    let slow: Vec<(Reply, i64)> = (1001..1201).map(|n| answer_time(&c, &t, date, n, 14 * 60, 22 * 60, yes.clone(), at(10 * 60), 0.0)).collect();
     assert!(slow.iter().filter(|x| x.0 != Reply::Silent).any(|x| x.1 - at(10 * 60) > 30), "slower");
     let silent = slow.iter().filter(|x| x.0 == Reply::Silent).count();
     assert!(silent > 10 && silent < 60, "{silent} of 200 no answer");
     // an hourly driver short of hours: quicker
     c.staff[2].employment = Employment::Hourly;
     let h = c.staff[2].clone();
-    assert!((1001..1101).map(|n| answer_time(&c, &h, date, n, 14 * 60, yes.clone(), at(10 * 60), 0.0)).filter(|x| x.0 != Reply::Silent).all(|x| x.1 - at(10 * 60) <= 18));
+    assert!((1001..1101).map(|n| answer_time(&c, &h, date, n, 14 * 60, 22 * 60, yes.clone(), at(10 * 60), 0.0)).filter(|x| x.0 != Reply::Silent).all(|x| x.1 - at(10 * 60) <= 18));
     // "no answer" is no answer
     assert!(!Reply::Silent.yes());
     assert_eq!(words(&Reply::Silent, &|_| String::new()).0, SAY_SILENT);
@@ -1712,4 +1714,90 @@ fn the_mark_on_the_missing_cell_grey_green_red_and_seen() {
     // kept through a save
     let back: Ops = serde_json::from_str(&serde_json::to_string(&c.planning.ops).unwrap()).unwrap();
     assert!(back.asks.iter().filter(|a| a.n == 1001).all(|a| a.seen));
+}
+
+// --- round H: the hourly paid say when they can work (NexiconDK, 5 November 2026) ---------------------
+
+/// The night fills in the hourly paid's days ahead as they would say them, once a day; the planner
+/// sets, clears and is refused a day; asked within what he said a driver says yes far more often
+/// and sooner, outside it too early or too late, a day he cannot a gentle no; the days long gone
+/// and a driver no longer hourly paid dropped; one who wished for more hours offers more days; a
+/// player's own day; an older file.
+#[test]
+fn the_hourly_paid_say_when_they_can_work_and_remember_it_when_asked() {
+    use super::super::pro_avail::{self as pa, By, Can};
+    let mut c = company();
+    c.staff[2].employment = Employment::Hourly;
+    (c.staff[2].satisfaction, c.staff[2].stress) = (40.0, 40.0);
+    let id = c.staff[2].id;
+    let h = c.staff[2].clone();
+    let free = Situation { fit: Ok(()), in_frame: false, week: 0.0, contract: None, own: None, swap_with: None, can_from: None, can_until: None, tired: Default::default() };
+    // the night: his next 14 days, as drawn; once a company day; only the hourly paid
+    assert!(c.planning.ops.avail.is_empty());
+    assert_eq!(pa::daily(&mut c), pa::AHEAD as usize);
+    assert_eq!(pa::daily(&mut c), 0, "once a day");
+    for k in 0..pa::AHEAD {
+        let d = dates::add(&c.date, k);
+        let a = pa::record(&c, id, false, &d).unwrap();
+        assert_eq!((a.can, a.by), (Some(pa::drawn(&c, &h, &d)), By::Driver));
+    }
+    assert!(c.staff.iter().filter(|e| e.id != id).all(|e| pa::record(&c, e.id, false, &c.date).is_none()));
+    // the planner: 05-15 tomorrow - within it far more yes than a day cleared ("–")
+    let day = dates::add(&c.date, 1);
+    pa::set(&mut c, id, false, &day, Some(Can::Window { from: 300, to: 900 }), By::Planner).unwrap();
+    assert_eq!(pa::record(&c, id, false, &day).unwrap().by, By::Planner);
+    let yes_in = (1001..1101).filter(|n| ai_reply(&c, &h, &day, *n, 360, 840, &free).yes()).count();
+    // sooner too
+    let game = super::super::clock::moment(&c.date, 10 * 60);
+    let quick: Vec<(Reply, i64)> = (1001..1101).map(|n| answer_time(&c, &h, &day, n, 360, 840, Reply::Yes { say: 0 }, game, 0.0)).collect();
+    // outside it: too early, too late
+    assert!(matches!(ai_reply(&c, &h, &day, 1001, 200, 500, &free), Reply::Early { from: 300, .. }));
+    assert!(matches!(ai_reply(&c, &h, &day, 1001, 600, 1000, &free), Reply::Late { until: 900, .. }));
+    pa::set(&mut c, id, false, &day, None, By::Planner).unwrap();
+    assert_eq!(pa::can_of(&c, &h, &day), None, "cleared: not drawn again");
+    let yes_none = (1001..1101).filter(|n| ai_reply(&c, &h, &day, *n, 360, 840, &free).yes()).count();
+    let slow: Vec<(Reply, i64)> = (1001..1101).map(|n| answer_time(&c, &h, &day, n, 360, 840, Reply::Yes { say: 0 }, game, 0.0)).collect();
+    assert!(yes_in >= 85 && yes_in > yes_none + 15, "{yes_in} within, {yes_none} with nothing said");
+    let mean = |v: &[(Reply, i64)]| v.iter().filter(|x| x.0 != Reply::Silent).map(|x| x.1 - game).sum::<i64>() as f64 / v.len() as f64;
+    assert!(mean(&quick) < mean(&slow) * 0.7, "{} {}", mean(&quick), mean(&slow));
+    // a day he cannot: a gentle no; all day: not "too early" for a very early duty
+    pa::set(&mut c, id, false, &day, Some(Can::Not), By::Planner).unwrap();
+    assert!(matches!(ai_reply(&c, &h, &day, 1001, 600, 900, &free), Reply::No { why: NoWhy::NotThatDay, .. }));
+    pa::set(&mut c, id, false, &day, Some(Can::AllDay), By::Driver).unwrap();
+    assert!((1001..1101).all(|n| !matches!(ai_reply(&c, &h, &day, n, 240, 600, &free), Reply::Early { .. } | Reply::Late { .. })));
+    // refused: too short, not hourly paid, a day gone or too far ahead; the times read
+    assert_eq!(pa::set(&mut c, id, false, &day, Some(Can::Window { from: 300, to: 330 }), By::Planner), Err(pa::BAD_TIMES));
+    let permanent = c.staff[3].id;
+    assert_eq!(pa::set(&mut c, permanent, false, &day, Some(Can::AllDay), By::Planner), Err(pa::NOT_HOURLY));
+    assert_eq!(pa::set(&mut c, id, false, "2024-03-01", Some(Can::AllDay), By::Planner), Err(pa::BAD_DAY));
+    let far = dates::add(&c.date, 61);
+    assert_eq!(pa::set(&mut c, id, false, &far, Some(Can::AllDay), By::Planner), Err(pa::BAD_DAY));
+    assert_eq!((pa::minutes("05:00"), pa::minutes("24:00"), pa::minutes("25:00"), pa::minutes("5")), (Some(300), Some(1440), None, None));
+    assert_eq!((pa::times(300, 900), pa::times(330, 900)), ("05–15".to_string(), "05:30–15:00".to_string()));
+    // a player of Play together: his own day
+    assert_eq!(pa::set(&mut c, 7, true, &day, Some(Can::AllDay), By::Driver), Err(pa::NOT_HOURLY));
+    c.together.guests.push(super::super::together::book::Guest { no: 7, name: "Ida".into(), ..Default::default() });
+    pa::set(&mut c, 7, true, &day, Some(Can::Window { from: 600, to: 1200 }), By::Driver).unwrap();
+    assert_eq!(pa::guest_can(&c, 7, &day), Some(Can::Window { from: 600, to: 1200 }));
+    // kept through a save; an older file has none
+    let back: Ops = serde_json::from_str(&serde_json::to_string(&c.planning.ops).unwrap()).unwrap();
+    assert_eq!(back.avail, c.planning.ops.avail);
+    let old: Ops = serde_json::from_str("{}").unwrap();
+    assert!(old.avail.is_empty() && old.avail_day.is_empty() && old.is_empty());
+    // the days long gone dropped; a driver no longer hourly paid
+    c.date = dates::add(&c.date, 10);
+    pa::tidy(&mut c);
+    assert!(c.planning.ops.avail.iter().all(|a| dates::between(&a.date, &c.date) <= pa::KEEP_DAYS));
+    assert!(pa::record(&c, id, false, "2024-03-04").is_none() && pa::record(&c, id, false, "2024-03-08").is_some());
+    c.staff[2].employment = c.staff[3].employment.clone();
+    pa::tidy(&mut c);
+    assert!(c.planning.ops.avail.iter().all(|a| a.guest));
+    // one who wished for more hours offers more days
+    c.staff[2].employment = Employment::Hourly;
+    let h = c.staff[2].clone();
+    let off = |c: &Company| (0..400).filter(|k| pa::drawn(c, &h, &dates::add("2024-03-05", *k)) == Can::Not).count();
+    let before = off(&c);
+    wish(&mut c, id, super::super::pro_wish::WishKind::MoreHours);
+    let after = off(&c);
+    assert!(after * 2 < before, "{after} days off of 400 with the wish, {before} without");
 }

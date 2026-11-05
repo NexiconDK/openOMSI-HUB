@@ -173,6 +173,8 @@ export const STROKED = {
   // (round E: the drivers' swap proposals, the Monday report)
   rf_swap: ['M4 8h14', 'M14 4l4 4-4 4', 'M20 16H6', 'M10 12l-4 4 4 4'],
   rf_report: ['M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z', 'M14 3v5h5', 'M9 17v-3', 'M12 17v-5', 'M15 17v-2'],
+  // (round H: the Kan arbejde tab - a calendar day ticked)
+  rf_can: ['M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'M4 10h16', 'M8 3v4', 'M16 3v4', 'M9 15l2 2 4-4'],
 };
 
 const paths = new Map();

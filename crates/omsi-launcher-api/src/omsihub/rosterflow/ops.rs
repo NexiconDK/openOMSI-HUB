@@ -31,6 +31,7 @@ use omsi_launcher_lib::company::pro_ops::{self as po, Asked, DayIs, OpenDuty, Pr
 use omsi_launcher_lib::company::pro_rest::{self as pr, Breach};
 use omsi_launcher_lib::company::{pro_cost as pcost, pro_holiday as ph, pro_pref as pp, pro_swap as psw, pro_tired as ptd, pro_toil as ptl, pro_wish as pw};
 use omsi_launcher_lib::company::{pro_report as prp, pro_season as pse, pro_trade as ptr};
+use omsi_launcher_lib::company::pro_avail::{self as pa, Can};
 use omsi_launcher_lib::company::pro_turnus::{self as pt, ProDuty, Week};
 use omsi_launcher_lib::company::{self as co, Company};
 use serde_json::{json, Value};
@@ -333,6 +334,14 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                     // (round C: a swap he is in that day - ⇄, and with whom)
                     if let Some((_, other)) = psw::of_driver(&c, e.id, d) {
                         v["swap"] = json!(trf("⇄ Swapped with %{name}", &[("name", &name_in(&c)(other))]));
+                    }
+                    // (round H: an hourly-paid driver's empty day he said he can work - a faint mark)
+                    if pa::says(e) && v["kind"] == "off" && co::dates::between(&c.date, d) >= 0 {
+                        match pa::can_of(&c, e, d) {
+                            Some(Can::AllDay) => (v["avail"], v["avail_t"]) = (json!(tr(pa::MARK_ALL)), json!(tr("all day"))),
+                            Some(Can::Window { from, to }) => (v["avail"], v["avail_t"]) = (json!(trf(pa::MARK, &[("t", &pa::times(from, to))])), json!(pa::times(from, to))),
+                            _ => {}
+                        }
                     }
                     // (round B: his wish for the day off - ★, granted or open)
                     if let Some(w) = pw::marked(&c, e.id, d) {
@@ -972,7 +981,7 @@ fn swaps_json(c: &Company, date: &str) -> Value {
 fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &HashMap<u32, f64>, rest: &dyn Fn(&Employee, &OpenDuty) -> Vec<Breach>, fair: bool) -> Value {
     let date = p.date.as_str();
     let cands = po::candidates(c, p, d, &|id| weekly.get(&id).copied().unwrap_or(0.0));
-    let mut groups: Vec<(&str, String, Vec<((bool, usize, Cents), Value)>)> = vec![("permanent", tr("Permanent"), Vec::new()), ("reserve", tr("Reserve frame"), Vec::new()), ("hourly", tr("Hourly paid"), Vec::new())];
+    let mut groups: Vec<(&str, String, Vec<((u8, bool, usize, Cents), Value)>)> = vec![("permanent", tr("Permanent"), Vec::new()), ("reserve", tr("Reserve frame"), Vec::new()), ("hourly", tr("Hourly paid"), Vec::new())];
     let mut cant = Vec::new();
     for x in &cands {
         let Some(e) = c.employee(x.id) else { continue };
@@ -1011,9 +1020,11 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
                 }
                 let (extras, words) = extra_words(c, e.id, date);
                 row["extra"] = json!(words);
+                // (round H: what an hourly-paid driver said he can that day - within it first)
+                let rank = avail_of(c, e, date, d.start, d.end, &mut row);
                 // (those who would break the rest rules after the others; the fewest extra duties
                 // first when the player sorts so)
-                groups[g].2.push(((!breaks.is_empty(), if fair { extras } else { 0 }, x.cost), row));
+                groups[g].2.push(((rank, !breaks.is_empty(), if fair { extras } else { 0 }, x.cost), row));
             }
             Err(why) => cant.push(json!({ "name": e.name, "nr": e.id, "why": cannot_words(why) })),
         }
@@ -1037,7 +1048,12 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
             .map(|g| {
                 let a = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == d.n && a.part.is_none() && !a.closed && a.who == (Asked::Guest { no: g.no })).max_by_key(|a| a.id);
                 let r = a.and_then(|a| a.shown_at(game, now));
-                json!({ "no": g.no, "name": g.name, "action": match (a, r) { (None, _) => "ask", (Some(_), None) => "waiting", (Some(_), Some(r)) if r.yes() || r.key() == "text" => "give", _ => "none" }, "ask": a.map(|a| a.id), "answer": r.map(|r| reply_json(c, r)) })
+                let mut v = json!({ "no": g.no, "name": g.name, "action": match (a, r) { (None, _) => "ask", (Some(_), None) => "waiting", (Some(_), Some(r)) if r.yes() || r.key() == "text" => "give", _ => "none" }, "ask": a.map(|a| a.id), "answer": r.map(|r| reply_json(c, r)) });
+                // (round H: what the player said he can that day, in the tab)
+                if let Some(can) = pa::guest_can(c, g.no, date) {
+                    v["avail"] = avail_json(can, d.start, d.end);
+                }
+                v
             })
             .collect()
     } else {
@@ -1060,6 +1076,39 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
         }
     }
     v
+}
+
+/// (Round H) What `can` says by a name for a duty from `start` to `end`: within it ("✓ Can
+/// 05–15"), outside it ("Can only 05–15"), not that day.
+fn avail_json(can: Can, start: i32, end: i32) -> Value {
+    let t = match can {
+        Can::Window { from, to } => pa::times(from, to),
+        _ => String::new(),
+    };
+    match can {
+        Can::Not => json!({ "key": "not", "text": tr(pa::CAN_NOT) }),
+        Can::AllDay => json!({ "key": "in", "text": tr(pa::CAN_ALL) }),
+        _ if can.holds(start, end) => json!({ "key": "in", "text": trf(pa::CAN_IN, &[("t", &t)]) }),
+        _ => json!({ "key": "out", "text": trf(pa::CAN_ONLY, &[("t", &t)]) }),
+    }
+}
+
+/// (Round H) An hourly-paid driver's day as he said it, on his row of the who-can-drive list - a
+/// day he cannot not to be ticked; his place in the list: within it 0, nothing said 1, outside it
+/// 2, not that day 3 (the others 1).
+fn avail_of(c: &Company, e: &Employee, date: &str, start: i32, end: i32, row: &mut Value) -> u8 {
+    let Some(can) = pa::can_of(c, e, date) else { return 1 };
+    row["avail"] = avail_json(can, start, end);
+    match can {
+        Can::Not => {
+            if row["action"] == "ask" {
+                row["action"] = json!("cannot");
+            }
+            3
+        }
+        _ if can.holds(start, end) => 0,
+        _ => 2,
+    }
 }
 
 /// How a driver comes to a part, in words, and the note under it.

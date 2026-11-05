@@ -117,6 +117,12 @@ fn holding<'a>(c: &'a Company, id: u32) -> impl Iterator<Item = &'a Wish> + 'a {
     })
 }
 
+/// (Round H) Whether driver `id` wished for more hours, and the wish holds (`pro_avail`: he
+/// offers more days).
+pub fn wants_more(c: &Company, id: u32) -> bool {
+    holding(c, id).any(|w| w.wish == WishKind::MoreHours)
+}
+
 /// How his wishes change a driver's yes to a duty of `date` signing on `start`, off `end` (a
 /// factor on its chance: `pro_ops::ai_reply`).
 pub fn bias(c: &Company, id: u32, date: &str, start: i32, end: i32) -> f64 {

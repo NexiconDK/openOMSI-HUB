@@ -1422,3 +1422,45 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .cl-mark.yes { background: var(--rf-ok); color: #fff; }
 .cl-mark.no { background: color-mix(in srgb, var(--rf-err) 85%, #000); color: #fff; }
 .cl-mark.waiting { background: var(--rf-sheet); color: var(--rf-dim); border: 1px solid var(--rf-line); }
+
+/* (round H) "Kan arbejde": the hourly paid say when they can work - the chip by a name in the
+   who-can-drive list, a faint mark on an empty day of the calendar, and the tab itself */
+.wl-avail { font-style: normal; flex: none; padding: 0 6px; border-radius: 9px; font-size: 9.4px; font-weight: 700; white-space: nowrap; }
+.wl-avail.in { color: var(--rf-ok); background: color-mix(in srgb, var(--rf-ok) 14%, transparent); }
+.wl-avail.out { color: var(--rf-warn); background: color-mix(in srgb, var(--rf-warn) 14%, transparent); }
+.wl-avail.not { color: var(--rf-dim); background: var(--rf-grid); border: 1px solid var(--rf-line); }
+.wl-row.cannot { opacity: 0.55; }
+.cl-cell.off.can { background: color-mix(in srgb, var(--rf-ok) 9%, var(--rf-grid)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rf-ok) 28%, transparent); }
+.cl-avail { font-style: normal; font-size: 8.8px; font-weight: 600; color: color-mix(in srgb, var(--rf-ok) 70%, var(--rf-faint)); }
+.av-page { display: flex; flex-direction: column; min-height: 0; height: 100%; }
+.av-lead { padding: 8px 14px 0; font-size: 10.5px; color: var(--rf-dim); max-width: 980px; line-height: 1.45; }
+.av-main { position: relative; flex: 1; min-height: 0; overflow: auto; padding: 10px 12px 12px; }
+.av-grid { display: grid; gap: 3px; align-items: stretch; min-width: max-content; }
+.av-grid .cl-h.weekend { color: color-mix(in srgb, var(--rf-accent) 70%, var(--rf-dim)); }
+.av-grid .cl-name.mine { box-shadow: inset 3px 0 0 var(--rf-accent); }
+.av-count { font-size: 9.4px; color: var(--rf-faint); }
+.av-cell { min-height: 40px; padding: 3px 4px; border-radius: 5px; border: 1px solid transparent; font: inherit; font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer;
+  background: color-mix(in srgb, var(--rf-text) 4%, var(--rf-grid)); color: var(--rf-faint); }
+.av-cell:hover { border-color: var(--rf-line); }
+.av-cell.all { background: color-mix(in srgb, var(--rf-ok) 30%, var(--rf-grid)); color: color-mix(in srgb, var(--rf-ok) 55%, var(--rf-text)); }
+.av-cell.window { background: color-mix(in srgb, var(--rf-ok) 16%, var(--rf-grid)); color: color-mix(in srgb, var(--rf-ok) 45%, var(--rf-text)); }
+.av-cell.not { background: color-mix(in srgb, var(--rf-err) 14%, var(--rf-grid)); color: color-mix(in srgb, var(--rf-err) 55%, var(--rf-text)); }
+.av-cell.planner { border-style: dashed; border-color: color-mix(in srgb, var(--rf-accent) 55%, transparent); }
+.av-cell.ro { cursor: default; }
+.av-cell.sel { border: 2px solid var(--rf-accent); }
+.av-legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 10px; color: var(--rf-dim); }
+.av-legend span { display: flex; align-items: center; gap: 5px; }
+.av-legend .av-cell { display: inline-block; min-height: 0; width: 14px; height: 12px; padding: 0; cursor: default; }
+.av-empty { padding: 14px; }
+.av-edit { position: absolute; z-index: 5; width: 280px; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 8px; background: var(--rf-sheet); border: 1px solid var(--rf-line); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35); font-size: 10.5px; }
+.av-edit-head { display: flex; align-items: center; gap: 8px; }
+.av-edit-head b { font-size: 12px; }
+.av-edit-head span { flex: 1; color: var(--rf-dim); }
+.av-by { color: var(--rf-dim); font-size: 10px; }
+.av-edit-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.av-edit-row label { display: flex; align-items: center; gap: 4px; color: var(--rf-dim); }
+.av-edit-row input { width: 62px; text-align: center; font-variant-numeric: tabular-nums; padding: 3px 4px; border-radius: 4px; border: 1px solid var(--rf-line); background: var(--rf-grid); color: var(--rf-text); font: inherit; }
+.av-edit-foot { display: flex; justify-content: space-between; }
+/* (round H: with the chip by it a name keeps its width - "N ekstra" gives way first) */
+.wl-who b { flex: none; }
+.wl-who .wl-extra { flex: 0 1 auto; min-width: 24px; overflow: hidden; text-overflow: ellipsis; }

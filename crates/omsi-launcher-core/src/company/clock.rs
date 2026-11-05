@@ -1167,6 +1167,11 @@ pub fn on_minute(c: &mut Company, now: i64) -> Vec<FeedItem> {
     }
     // the spare parts ordered for 16:00 (`parts`)
     out.extend(super::parts::on_minute(c, now));
+    // (RosterFlow Pro, round H: in the company's night the hourly paid fill in when they can work
+    // the days ahead - `pro_avail::daily`)
+    if super::pro_duties::on(c) && c.planning.ops.avail_day != c.date {
+        super::pro_avail::daily(c);
+    }
     // (RosterFlow Pro: from 10:00 a driver given no extra duty while others were given many says
     // so - `pro_rest::grumbles`)
     if now.rem_euclid(DAY) >= 10 * 60 && c.planning.ops.grumbled.iter().all(|g| g.date != c.date) {

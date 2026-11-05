@@ -30,13 +30,15 @@ import { TimeplanTab, tpEscape } from './timeplan.js';
 import { RoutesTab, rtEscape, holdChanges, ROUTES } from './routes.js';
 import { Tutorial, tutEscape, tutMenu } from './tutorial.js';
 // (NexiconDK, 4 November 2026: RosterFlow Pro's tabs Vognløb and Vagter)
-import { ProTab, PRO_BLOCKS, PRO_DUTIES, PRO_ROTA, PRO_DAILY, PRO_CALENDAR, PRO_TABS } from './pro.js';
+import { ProTab, PRO_BLOCKS, PRO_DUTIES, PRO_ROTA, PRO_DAILY, PRO_CALENDAR, PRO_AVAIL, PRO_TABS } from './pro.js';
 // (after the player's comments: RosterFlow Pro has its five tabs only, and its own short intro)
 import { ProIntro, proIntroEscape, proIntroToggle, proIntroFirst } from './pro_intro.js';
 // (step 3: the Turnus tab)
 import { TurnusTab, turnusEscape } from './turnus.js';
 // (step 4: the Daglig drift and Kalender tabs)
 import { DailyTab, CalendarTab, opsEscape, AnswerWatch } from './ops.js';
+// (round H: the Kan arbejde tab)
+import { AvailTab } from './avail.js';
 
 // (RosterFlow's own look, loaded with it)
 if (!document.querySelector('link[data-rf-css]')) {
@@ -54,8 +56,8 @@ export { ROSTER, VEHICLES, DRIVERS, TIMEPLAN, rfOpen };
  * Roster tab, `reveal` a row of the Vehicles or Drivers tab shown (the day's report's trips
  * dropped), `line` a line for the Timeplan (`hint`: what its status bar says first), `offer`
  * its tutorial's menu (switched on just now). */
-/** Whether `v` is one of RosterFlow Pro's five tabs. */
-const isProView = (v) => v === PRO_BLOCKS || v === PRO_DUTIES || v === PRO_ROTA || v === PRO_DAILY || v === PRO_CALENDAR;
+/** Whether `v` is one of RosterFlow Pro's tabs (round H: six). */
+const isProView = (v) => v === PRO_BLOCKS || v === PRO_DUTIES || v === PRO_ROTA || v === PRO_DAILY || v === PRO_CALENDAR || v === PRO_AVAIL;
 
 export async function openRosterFlow(o = {}) {
   const on = await rfCmd('rf_on').catch(() => null);
@@ -231,6 +233,7 @@ export function RosterFlowPage() {
   else if (r.view === PRO_ROTA) body = html`<${TurnusTab} />`;
   else if (r.view === PRO_DAILY) body = html`<${DailyTab} onCalendar=${() => setRf({ view: PRO_CALENDAR })} />`;
   else if (r.view === PRO_CALENDAR) body = html`<${CalendarTab} />`;
+  else if (r.view === PRO_AVAIL) body = html`<${AvailTab} />`;
   else if (r.view === ROSTER) body = html`<${RosterTab} p=${p} />`;
   else if (r.view === ROUTES) body = html`<${RoutesTab} p=${p} />`;
   else body = html`<${TimeplanTab} p=${p} />`;
@@ -338,7 +341,7 @@ function TitleBar() {
       ${!pro && html`<${IconBtn} icon="settings" title="Optimisation settings" onClick=${() => toggle('optimise')} />`}
       <${IconBtn} icon="groups" disabled=${!togetherOn() || !!remote} title=${remote ? 'Only the boss can do this, on his own launcher.' : togetherOn() ? 'Play together: friends drive duties of your company in your world' : blockedLabel()} onClick=${() => setCo({ dialog: { kind: 'together' } })} />
       ${pro
-        ? html`<${IconBtn} icon="help" data="rf-help" title="How RosterFlow Pro works: its five tabs in order" on=${!!r.proIntro} onClick=${proIntroToggle} />`
+        ? html`<${IconBtn} icon="help" data="rf-help" title="How RosterFlow Pro works: its six tabs in order" on=${!!r.proIntro} onClick=${proIntroToggle} />`
         : html`<${IconBtn} icon="help" data="rf-help" title="Tutorial: a guided tour, lessons to try yourself and a help sheet" on=${r.tut.menu} onClick=${tutMenu} />`}
       <span class="rf-name" title=${full}>
         ${fit < 2 && html`<b class="cut">${fit === 0 ? full : company}</b>`}

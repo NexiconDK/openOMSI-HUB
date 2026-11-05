@@ -1095,3 +1095,73 @@ plans not made anew).
 open; the yes answers there when RosterFlow opens are not said. Any answer come makes the views
 ask again (the marks).
 
+
+## Round H (5 November 2026): the hourly paid say when they can work
+
+The player's wish: "a tab where the hourly paid can wish for work - Per can work Tuesday 5 to
+15, or all day - and the system must remember it when you ask him". Code: `co::pro_avail` (the
+core), `omsihub/rosterflow/avail.rs` (the tab's commands `rf_avail`, `rf_avail_act`),
+`launcher/ui/js/omsihub/rosterflow/avail.js` (the tab).
+
+**A day** (`pro_avail::Can`, kept in `Ops::avail`, one record a driver a date):
+
+| Says | Holds |
+|---|---|
+| All day ("Hele dagen") | any duty of the day |
+| A window ("05–15", "05:30–15:00") | from-to within the day, 00:00 to 24:00, an hour at least |
+| Not that day ("Kan ikke") | nothing |
+| Nothing ("–") | the planner cleared the day: not filled in again |
+
+Each record says who said it (`By::Driver` - the AI driver or the player himself - or
+`By::Planner`) and when, on the company's clock.
+
+**Filled in.** In the company's night (`pro_avail::daily`, from the company day's first minute,
+`clock::on_minute`) every AI hourly-paid driver fills in the next 14 days (`AHEAD`) he has not
+said yet, each day drawn for the company, the driver and the date (`drawn`, the same seed as round
+F's interim draw, so an older company's drivers keep saying what they said):
+
+| Day | Weight | With the wish "more hours" (round B) |
+|---|---|---|
+| All day | 35 | 50 |
+| 05–14 | 20 | 16 |
+| 11–20 | 20 | 16 |
+| 14–24 | 15 | 14 |
+| Not that day | 10 | 4 |
+
+A day past the 14 (asked for a duty further ahead) answers by the same draw. Kept a week after its
+day (`KEEP_DAYS`), dropped with the drivers gone or no longer hourly paid and the players gone
+(`tidy`). Round F's `pro_ops::own_hours` is gone: the records are what the answers use.
+
+**Remembered when asked** (`pro_ops::ai_reply`, `answer_time`):
+
+- a duty all within what he said: his yes ×1.6 (`INSIDE_YES`), at most 0.97 (`INSIDE_MOST`), and
+  he answers in half the time (`INSIDE_WAIT`); the "too early / too late for some" of very early
+  and very late duties does not apply to him;
+- outside it: too early ("I could from 11:00") or too late, the window's edge;
+- not that day: the gentle no "Jeg kan ikke den dag, desværre." (`NoWhy::NotThatDay`);
+- cleared ("–"): as a driver who said nothing - the usual chance.
+
+**The who-can-drive list** (round G's popup): by an hourly-paid driver's name "✓ Kan 05–15" or
+"✓ Kan hele dagen" (green) for a duty within it, "Kan kun 05–15" (orange) outside it, "Kan ikke den
+dag" (grey) - that row greyed, without a tick box (asking him is a sure no). In the hourly group
+those within come first, then nothing said, then outside, then not that day (`avail_of`); "Find
+chauffør ›" after a sick call opens the same list. A player of Play together who said his day
+shows it by his name too.
+
+**The calendar:** an hourly-paid driver's empty day from today on that he said he can work is
+faintly green with its times ("05–15", "hele dagen"; "Kan arbejde 05–15" on hover).
+
+**The tab "6 Kan arbejde"** (after Kalender): the hourly paid and the players who drive, a row
+each, the next 14 days (or the 14 after), each day "05–15", "Hele dagen", "Kan ikke" or "–" - a
+day the planner set dashed. A day clicked opens a small box: "Hele dagen", "Kan ikke den dag",
+"Fra … Til … Gem", "Ryd", with who said it ("Meldt af chaufføren 4. mar 06:00", "Sat af
+planlæggeren"). Saved at once.
+
+**Who may change a day** (`avail::may`): the boss and a player who may plan, every row; a player
+who drives, only his own (the relay lets `rf_avail_act` through with `Plans` or `Drive`, the
+command checks whose row). A player's own day is `By::Driver`, the planner's `By::Planner`.
+
+**Also fixed in round H:** `rf_wishes`, `rf_wish_act`, `rf_trades`, `rf_trade_act`, `rf_reports`
+and `rf_answers` (rounds B, E and G) were answered by `ops::run` but never routed to it from
+`rosterflow::run` - the Ønsker, Bytteforslag and Rapporter popups and the answers' toast got no
+answer in the launcher. They are routed now, with `rf_avail*`.

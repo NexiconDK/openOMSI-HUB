@@ -44,6 +44,8 @@ mod pro;
 mod turnus;
 /// (NexiconDK, 4 November 2026) RosterFlow Pro's tabs Daglig drift and Kalender (`co::pro_ops`).
 mod ops;
+// (RosterFlow Pro, round H: the tab "Kan arbejde")
+mod avail;
 
 /// Several planners at once (company multiplayer): who changed what, who is in RosterFlow, each
 /// one's undo kept clear of the others' changes.
@@ -227,7 +229,11 @@ fn run(s: &mut Session, r: &mut Rf, by: live::Editor, cmd: &str, args: &Value) -
         // (RosterFlow Pro's Turnus tab: `turnus`)
         c if c.starts_with("rf_turnus") => return turnus::run(s, r, c, args),
         // (RosterFlow Pro's Daglig drift and Kalender: `ops`)
-        c if c.starts_with("rf_cal") || c.starts_with("rf_ops") => return ops::run(s, r, c, args),
+        // (round H: the tab "Kan arbejde" - who says it matters, a player only his own: `avail`)
+        c if c.starts_with("rf_avail") => return avail::run(s, r, by, c, args),
+        // (rounds B, E and G: the wishes, the swap proposals, the Monday reports and the answers
+        // come too - they were not routed here before round H)
+        c if c.starts_with("rf_cal") || c.starts_with("rf_ops") || c.starts_with("rf_wish") || c.starts_with("rf_trade") || c == "rf_reports" || c == "rf_answers" => return ops::run(s, r, c, args),
         _ => return None,
     })
 }
@@ -245,7 +251,7 @@ fn change_of(cmd: &str, args: &Value) -> Option<live::Kind> {
         },
         "rf_roster_act" if !what.starts_with("fold") => Some(live::Kind::Roster),
         "rf_turnus_act" => Some(live::Kind::Roster),
-        "rf_ops_act" | "rf_wish_act" => Some(live::Kind::Roster),
+        "rf_ops_act" | "rf_wish_act" | "rf_trade_act" | "rf_avail_act" => Some(live::Kind::Roster),
         "rf_tp_act" => Some(live::Kind::Timetable),
         _ => None,
     }
