@@ -268,6 +268,19 @@ pub fn decided(c: &Company, id: u32, date: &str) -> Option<Decided> {
     let t = &c.planning.rotas.list[k];
     let row = row_on(t, start, date)?;
     let planned = t.rows[row].days[day_of(date)];
+    // (round C: ill or on holiday - the staff's own records, whoever set them - before anything)
+    if let Some(e) = c.employee(id) {
+        let away = if e.ill_on(date) {
+            Some("sick")
+        } else if e.on_holiday(date).is_some() {
+            Some("holiday")
+        } else {
+            None
+        };
+        if let Some(note) = away {
+            return Some(Decided { turnus: t.id, row, cell: Cell::Off, planned, note: Some(note.to_string()) });
+        }
+    }
     let ex = c.planning.rotas.exceptions.iter().find(|x| x.driver == id && x.date == date);
     // (round B: a free day of his - time off in lieu, a wish granted - as an exception: off)
     if ex.is_none() {
@@ -770,13 +783,36 @@ pub fn set_driver(c: &mut Company, id: u32, row: usize, who: Option<u32>) -> Res
 }
 
 /// Driver `id`'s day on `date` set to `cell` for that date only (`note` why: `NOTES`), or back to
-/// his row's (None).
+/// his row's (None). (Round C: "Ill" and "On holiday" are his illness and his holiday of the
+/// staff card - `pro_absence` -, and any other choice for the day takes the day out of them; a day
+/// they cannot be set for - gone, no holiday days left - is a day off.)
 pub fn set_exception(c: &mut Company, driver: u32, date: &str, cell: Option<(Cell, String)>) {
+    let note = cell.as_ref().map(|x| x.1.as_str()).unwrap_or("");
+    let away = match note {
+        "sick" => Some(super::pro_absence::set_ill(c, driver, date)),
+        "holiday" => Some(super::pro_absence::set_holiday(c, driver, date)),
+        _ => None,
+    };
+    match away {
+        Some(Ok(())) => put_exception(c, driver, date, None),
+        Some(Err(_)) => put_exception(c, driver, date, Some((Cell::Off, String::new()))),
+        None => {
+            super::pro_absence::clear_ill(c, driver, date);
+            super::pro_absence::clear_holiday(c, driver, date);
+            put_exception(c, driver, date, cell);
+        }
+    }
+}
+
+/// The exception itself of driver `id` on `date` (a day off, a duty swapped - `NOTES`), or none:
+/// his illness and holidays left as they are (`pro_swap` puts back what was).
+pub fn put_exception(c: &mut Company, driver: u32, date: &str, cell: Option<(Cell, String)>) {
     let ex = &mut c.planning.rotas.exceptions;
     ex.retain(|x| !(x.driver == driver && x.date == date));
     if let Some((cell, note)) = cell {
-        // (time off in lieu and a wish granted are the driver's own: `model::FreeDay`)
-        let note = if NOTES[..4].iter().any(|n| n.0 == note) { note } else { String::new() };
+        // (time off in lieu and a wish granted are the driver's own: `model::FreeDay`; ill and on
+        // holiday too since round C - `pro_absence`: an exception is a day off or a swap)
+        let note = if note == "swap" { note } else { String::new() };
         ex.push(Exception { driver, date: date.to_string(), cell, note });
         ex.sort_by(|a, b| (a.date.as_str(), a.driver).cmp(&(b.date.as_str(), b.driver)));
     }
@@ -786,6 +822,9 @@ pub fn set_exception(c: &mut Company, driver: u32, date: &str, cell: Option<(Cel
 pub fn tidy(c: &mut Company) {
     // (step 4: the daily operations' days gone too)
     super::pro_ops::tidy(c);
+    // (round C: the days known ahead to be ill that have come; the swaps of days gone)
+    super::pro_absence::tidy(c);
+    super::pro_swap::tidy(c);
     let today = c.date.clone();
     let drivers: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
     c.planning.rotas.exceptions.retain(|x| dates::between(&today, &x.date) >= 0 && drivers.contains(&x.driver));

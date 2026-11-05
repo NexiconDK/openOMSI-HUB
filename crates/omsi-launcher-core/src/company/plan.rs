@@ -1289,16 +1289,12 @@ pub fn duty_block(p: &DayPlan, ti: usize, k: usize) -> Block {
     block_of(&t.tour, &t.duties[k], duty_key(&t.tour.line, &t.tour.tour, k))
 }
 
-fn covers(u: &Option<String>, date: &str) -> bool {
-    u.as_deref().is_some_and(|u| dates::between(date, u) >= 0)
-}
-
 /// Why someone cannot drive on `date` at all (None: they can). Only drivers drive: anyone else
 /// is away from the duties.
 fn unavailable(e: &Employee, date: &str, today: bool) -> Option<Problem> {
     if !staff::drives(e) || !e.employed_on(date) {
         Some(Problem::Away)
-    } else if covers(&e.sick_until, date) {
+    } else if e.ill_on(date) {
         Some(Problem::Sick)
     } else if e.on_holiday(date).is_some() {
         Some(Problem::Holiday)
@@ -1395,8 +1391,8 @@ pub fn day_unavailable(e: &Employee, date: &str, today: bool) -> Option<Cannot> 
         Some(Cannot::NotDriver)
     } else if !e.employed_on(date) {
         Some(Cannot::NotEmployed)
-    } else if covers(&e.sick_until, date) {
-        Some(Cannot::Ill { until: e.sick_until.clone().unwrap_or_default() })
+    } else if e.ill_on(date) {
+        Some(Cannot::Ill { until: super::pro_absence::ill_until(e, date) })
     } else if let Some(until) = e.on_holiday(date) {
         Some(Cannot::Holiday { until: until.to_string() })
     } else if let Some(f) = e.free_on(date) {
@@ -2171,6 +2167,7 @@ pub fn agency_driver() -> Employee {
         employment_next: None,
         free_days: Vec::new(),
         toil: 0.0,
+        sick_planned: Vec::new(),
     }
 }
 

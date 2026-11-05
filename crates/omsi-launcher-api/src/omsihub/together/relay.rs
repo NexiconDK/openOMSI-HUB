@@ -257,7 +257,7 @@ fn rf_tp_need(act: &str) -> Need {
 /// planning's.
 fn rf_turnus_need(act: &str) -> Need {
     match act {
-        "new" | "remove" | "rename" | "hours" | "from" | "add_row" | "remove_row" | "cell" | "driver" | "auto" | "exception" => PLANS,
+        "new" | "remove" | "rename" | "hours" | "from" | "add_row" | "remove_row" | "cell" | "driver" | "auto" | "exception" | "undo" | "redo" => PLANS,
         _ => Never,
     }
 }
@@ -267,7 +267,7 @@ fn rf_turnus_need(act: &str) -> Need {
 /// agency driver for it are the planning's.
 fn rf_ops_need(act: &str) -> Need {
     match act {
-        "ask" | "give" | "withdraw" | "withdraw_ask" | "cut" | "uncut" | "agency" | "toil_day" | "toil_back" => PLANS,
+        "ask" | "give" | "withdraw" | "withdraw_ask" | "cut" | "uncut" | "agency" | "toil_day" | "toil_back" | "unswap" => PLANS,
         // (a duty given to a player: the assigner's, as the roster's)
         "give_guest" => ASSIGN,
         _ => Never,

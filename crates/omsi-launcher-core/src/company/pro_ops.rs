@@ -254,6 +254,12 @@ pub struct Ops {
     pub toil_asked: Vec<super::pro_rest::Extra>,
     #[serde(skip_serializing_if = "is_false")]
     pub toil_default: bool,
+    /// (NexiconDK, 5 November 2026: round C) The swaps of two drivers at once, to undo before
+    /// their day begins (`pro_swap`), and the last number given one.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub swaps: Vec<super::pro_swap::Swap>,
+    #[serde(skip_serializing_if = "is_none_u32")]
+    pub last_swap: u32,
 }
 
 fn is_none_u32(x: &u32) -> bool {
@@ -390,7 +396,7 @@ pub fn driver_day(c: &Company, e: &Employee, dp: &DayPlan, duties: &[ProDuty]) -
     let mine = dp.duties_of(Who::Staff(e.id));
     let pieces: Vec<(i32, i32)> = mine.iter().map(|&(ti, k)| pay_piece(c, dp, ti, k)).collect();
     let minutes = pay::planned_minutes(c, e, date, &pieces);
-    let ill = e.sick_until.as_deref().is_some_and(|u| dates::between(date, u) >= 0);
+    let ill = e.ill_on(date);
     let holiday = e.on_holiday(date).is_some();
     let note = pt::decided(c, e.id, date).and_then(|d| d.note);
     let frame = pt::frame_on(c, e, date).map(|f| (f.from, f.to));
@@ -1140,6 +1146,8 @@ pub fn texts() -> Vec<&'static str> {
     v.extend(super::pro_rest::texts());
     v.extend(super::pro_wish::texts());
     v.extend(super::pro_toil::texts());
+    v.extend(super::pro_absence::texts());
+    v.extend(super::pro_swap::texts());
     for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP, &SAY_ANNOYED, &SAY_ANGRY, &SAY_GRUDGING] {
         v.extend(list.iter().copied());
     }

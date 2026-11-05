@@ -178,7 +178,7 @@ pub fn hour_wage(e: &Employee) -> f64 {
 
 /// Away so that the day is paid through the allowances (ill or on holiday), not by the guarantee.
 fn away_paid_otherwise(e: &Employee, date: &str) -> bool {
-    e.sick_until.as_deref().is_some_and(|u| dates::between(date, u) >= 0) || e.on_holiday(date).is_some()
+    e.ill_on(date) || e.on_holiday(date).is_some()
 }
 
 // --- RosterFlow Pro: supplements, time off in lieu (round B) ------------------------------------

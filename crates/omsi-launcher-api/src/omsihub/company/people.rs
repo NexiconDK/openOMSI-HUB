@@ -165,6 +165,18 @@ fn kinds_json(c: &Company, now: Option<&Employment>) -> Value {
     })
 }
 
+/// Days from `from` to `until` short: "6.–9. Mar", "30. Mar–2. Apr", "5. Mar" (round C).
+fn span_of_days(from: &str, until: &str) -> String {
+    let parts = |d: &str| co::dates::parse(d).map(co::dates::civil_from_days).map(|(_, m, day)| (m, day));
+    let month = |m: u32| tr(super::words::MONTHS[(m as usize).clamp(1, 12) - 1]);
+    match (parts(from), parts(until)) {
+        (Some((m1, d1)), Some(_)) if from == until => format!("{d1}. {}", month(m1)),
+        (Some((m1, d1)), Some((m2, d2))) if m1 == m2 => format!("{d1}.–{d2}. {}", month(m2)),
+        (Some((m1, d1)), Some((m2, d2))) => format!("{d1}. {}–{d2}. {}", month(m1), month(m2)),
+        _ => format!("{from}–{until}"),
+    }
+}
+
 /// What someone is doing now: two lines and their tone (`people::list::doing`).
 fn doing(c: &Company, plan: Option<&Plan>, e: &Employee) -> (String, String, &'static str) {
     let today = c.date.as_str();
@@ -337,6 +349,13 @@ fn person(c: &Company, plan: Option<&Plan>, e: &Employee) -> Value {
     let refused = e.leave.refused(&c.date);
     if refused > 0 {
         facts.push(json!([tr("Holidays rejected this year"), refused.to_string()]));
+    }
+    // (NexiconDK, 5 November 2026: RosterFlow Pro, round C - their illness and holidays from
+    // today on, however set: here, in the Turnus tab, a sick call, a holiday asked for -
+    // "Ill 6.–9. Mar", "On holiday 4.–7. Mar")
+    for (what, from, until) in co::pro_absence::spells(e, &c.date) {
+        let label = tr(if what == "sick" { "Ill" } else { "On holiday" });
+        facts.push(json!([label, span_of_days(&from, &until)]));
     }
     // (NexiconDK, 5 November 2026: RosterFlow Pro's time off in lieu saved - `pro_toil`)
     if co::pro_toil::can_save(e) && (co::pro_duties::on(c) || e.toil > 0.0) {

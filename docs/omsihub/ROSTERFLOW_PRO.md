@@ -752,3 +752,77 @@ Tested: `pro_ops::tests` (`drivers_send_wishes_now_and_then_the_same_every_time_
 `what_a_week_costs_as_planned`), the API's
 `rosterflow::ops::tests::the_wishes_time_off_in_lieu_and_what_the_week_costs` and
 `company::people::tests::a_drivers_page_shows_the_time_off_in_lieu_saved_with_rosterflow_pro`.
+
+## Round C (5 November 2026): undo in the Turnus tab, ill and on holiday one record, a swap of both drivers
+
+### Undo and redo in the Turnus tab (`omsihub/rosterflow/turnus.rs`)
+
+The toolbar's "↶ Undo" and "↷ Redo" (Danish "Fortryd" / "Gentag"), and Ctrl+Z / Ctrl+Y (or
+Ctrl+Shift+Z) while the tab is shown - not while typing in a field, nor with "New rota" open -,
+undo the tab's edits step by step and make them again: a duty put in or taken out of a day of a
+row, a week added or taken out, a rota made, renamed, deleted, made automatically, its hours, its
+start, a driver put on a row, a driver's day changed for a date (a day off, ill, on holiday, a
+swap). Each edit (`rf_turnus_act`) keeps the rotas and their exceptions, the swaps and each
+driver's illness and holidays before and after it (`Snap`); undone, they are put back as they were
+(`undo_redo`) and the corner says what: "Undone: duty 1002 taken out of rota week 2, Wednesday"
+("Fortrudt: vagt 1002 fjernet fra turnusuge 2, Onsdag"). The buttons' tooltips say what they would
+undo or do again; greyed, there is nothing. At most 60 edits are kept, the planner's own beside the
+company's session (`Rf::turnus_undo`/`turnus_redo`), forgotten when another company is opened; a
+new edit forgets what was undone. A rota is the company's at once (there is no draft to save), so
+the steps hold as long as nothing else changed the rotas: when another planner, the night (the days
+gone tidied away) or the Kalender's box changed them since, the undo is refused - "The rotas were
+changed elsewhere meanwhile: there is nothing to undo" - and the steps are forgotten.
+On Bus Company Online `undo`/`redo` need the planning permission (`together::relay`).
+
+### Ill and on holiday: the staff card's own (`co::pro_absence`)
+
+A driver's day set "Ill" or "On holiday" in his next weeks is no longer an exception of the rota of
+its own but his illness or holiday on the staff card - one record:
+
+- **Ill**: from today on (or the day after an illness that runs until the day before) it lengthens
+  `Employee::sick_until`; a day further ahead is a day he is known to be ill
+  (`Employee::sick_planned`, a sick note ahead), which becomes his illness of the day when it comes
+  (`pro_absence::tidy`, the night's). The planning (`plan::unavailable`, `day_unavailable`), the
+  pay (`pay::away_paid_otherwise`) and the calendar (`pro_ops::driver_day`) ask `Employee::ill_on`.
+- **On holiday**: an approved holiday of his by the planner (`holidays::Request`): next to one of
+  his not begun it lengthens it, else one of its own. Its working days are taken from what is left
+  of his year's when it begins (`holidays::night`); with none left it is refused ("They have not
+  enough holiday days left for it.").
+- **As in the rota** takes the day out of both (a holiday begun gives the day back); any other
+  choice for the day too. A day gone cannot be set.
+- **The other way round**: the rota's day (`pro_turnus::decided`) is off - "Ill", "On holiday" -
+  whenever his records say so, whatever set them: the staff card, a sick call (`pro_sick`), a
+  holiday asked for. The Turnus tab and the Kalender show it.
+- **The staff card** lists the spells from today on (`pro_absence::spells`): "Ill 6.–9. Mar",
+  "On holiday 4.–7. Mar" ("Syg 6.–9. Mar", "Ferie 4.–7. Mar").
+- **Older files**: an exception "Ill" or "On holiday" of the Turnus tab is moved into the records
+  when the company is opened (`pro_absence::migrate`, `store::migrate`); one that cannot be (no
+  holiday days left) stays a day off.
+
+### A swap changes both drivers at once (`co::pro_swap`)
+
+- **In the Turnus tab**: a driver's day given another duty ("swap with its driver that day too")
+  takes it from the driver whose rota has it that day, and that driver takes his day instead - his
+  duty, his frame or his day off -: two exceptions "Swapped" made together (`swap_rota`). The
+  corner says so, with the rest rules either would break in red ("⚠ Only 9 h rest after duty
+  1005"). Nobody's rota has the duty: it is the driver's alone, as before.
+- **In the who-can-drive box**: a driver on another duty then, with a free colleague who could take
+  it, can be asked ("⇄ Drives 1005 then - Kasper Dahl could take it"); his answer may be a swap.
+  The row then says who takes his duty ("⇄ Kasper Dahl takes duty 1005 instead: both changed at
+  once"), and the rest rules are checked for both - the colleague's breaches by his name; broken,
+  "Give it anyway" asks first, and both pay for it (`pro_rest::broke`). "Give the duty, with the
+  swap" gives both duties in one act (`pro_ops::give_part`) and keeps the swap
+  (`pro_swap::after_give`).
+- **Both are told** (`SWAPPED`, `SWAPPED_OFF`, `SWAPPED_TO_OFF`), and the calendar marks both days
+  "⇄" with whom (`rf_cal` cells' `swap`); their hours and costs follow from the days as they are.
+- **Undone** in the day's box ("Swaps this day", "Undo the swap" - "Fortryd bytte", `rf_ops_act`
+  `unswap`) until the first of the two duties begins (`can_undo`): the exceptions as they were, the
+  two duties given taken back; both told (`UNSWAPPED`). A swap no longer as made (a duty given
+  another way since) is forgotten, as are those of days gone (`pro_swap::tidy`).
+
+Tested: `pro_ops::tests` (`ill_set_in_the_turnus_tab_is_the_staff_cards_illness_and_the_other_way_round`,
+`a_holiday_set_in_the_turnus_tab_is_an_approved_holiday_of_his_and_counts_against_his_days`,
+`an_older_files_turnus_ill_and_holiday_days_move_into_the_staffs_records`,
+`a_swap_in_the_turnus_tab_changes_both_drivers_at_once_and_is_undone_before_its_day`,
+`a_swap_of_the_daily_operations_is_kept_told_and_undone_with_both_duties`) and the API's
+`rosterflow::turnus::tests::the_turnus_tab_undoes_and_redoes_and_ill_and_holiday_are_the_staff_cards`.

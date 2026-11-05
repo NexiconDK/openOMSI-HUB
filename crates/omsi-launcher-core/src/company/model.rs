@@ -685,6 +685,11 @@ pub struct Employee {
     /// The overtime saved as time off in lieu ("afspadsering"), in minutes (`pro_toil`).
     #[serde(default, skip_serializing_if = "is_nothing")]
     pub toil: f64,
+    /// (NexiconDK, 5 November 2026: RosterFlow Pro, round C) The days ahead they are known to be
+    /// ill, set in the Turnus tab before the day (an operation, a sick note ahead): on the day
+    /// they become `sick_until` (`pro_absence`). The same illness as the staff card's.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sick_planned: Vec<String>,
 }
 
 fn is_nothing(x: &f64) -> bool {
@@ -890,7 +895,13 @@ impl Employee {
 
     pub fn absent(&self, today: &str) -> bool {
         let until = |u: &Option<String>| u.as_deref().is_some_and(|u| dates::between(today, u) >= 0);
-        until(&self.sick_until) || self.on_holiday(today).is_some() || until(&self.training_until) || self.free_on(today).is_some()
+        self.ill_on(today) || self.on_holiday(today).is_some() || until(&self.training_until) || self.free_on(today).is_some()
+    }
+
+    /// Ill on `date`: their illness of now (`sick_until`) covers it, or it is a day ahead they are
+    /// known to be ill (`sick_planned`, round C).
+    pub fn ill_on(&self, date: &str) -> bool {
+        self.sick_until.as_deref().is_some_and(|u| dates::between(date, u) >= 0) || self.sick_planned.iter().any(|d| d == date)
     }
 
     /// (NexiconDK, 5 November 2026) Their free day of `date` besides their rota's: a wish granted,

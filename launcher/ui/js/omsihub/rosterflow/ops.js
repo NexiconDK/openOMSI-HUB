@@ -21,7 +21,10 @@
 // * Daglig drift: the day's duties without a driver, with the day's frames and who is free; "Find a
 //   driver ›" opens the same popup.
 //
-// Saved at once (`rf_ops_act`), not in RosterFlow's draft.
+// Saved at once (`rf_ops_act`), not in RosterFlow's draft. (Round C, NexiconDK 5 November 2026:
+// a driver on another duty then who could hand it to a free colleague can be asked - "⇄"; a swap
+// changes both drivers at once, shows in both their cells and is undone in the day's box -
+// "Fortryd bytte" - until its first duty begins.)
 
 import { html, useEffect, useState } from '../../../vendor/preact-htm.js';
 import { S } from '../../store.js';
@@ -144,8 +147,10 @@ function Row({ v, n, part, x }) {
       ${x.wish && x.wish.map((w) => html`<div class="bx-wish">${w}</div>`)}
       ${x.toil && giving && html`<span class="cl-seg bx-toil">${x.toil.options.map(([k, l]) => html`<button type="button" class=${(k === 'save') === !!toil ? 'on' : ''} onClick=${() => setSave(k === 'save')}>${l}</button>`)}</span>`}
       ${x.note && html`<div class="bx-sub">${x.note}</div>`}
+      ${x.offer && html`<div class="bx-swapoffer">${x.offer}</div>`}
       ${x.breach && x.breach.map((b) => html`<div class="bx-breach">${b}</div>`)}
       <${Answer} a=${x.answer} />
+      ${x.swap && html`<div class="bx-swap">${x.swap.text}</div>`}
       ${sure && html`<div class="bx-sure"><span>${x.anyway}</span>
         <span class="bx-surebtns"><button type="button" class="bx-btn line" onClick=${() => setSure(false)}>${tr('Cancel')}</button>
         <button type="button" class="bx-btn warn" onClick=${() => (setSure(false), give(true))}>${tr('Yes, do it')}</button></span></div>`}
@@ -187,6 +192,13 @@ function Missing({ v, pop }) {
       </div>
       <button type="button" class="bx-btn blue" onClick=${() => setO({ date: v.date, n: d.n, pop: true, given: null })}>${tr('Find a driver ›')}</button>
     </div>`)}
+    ${v.swaps?.list?.length > 0 && html`<div class="bx-group">${v.swaps.caps}</div>
+      ${v.swaps.list.map((w) => html`<div class="bx-row">
+        <div class="bx-grow"><div class="bx-name">${w.text}</div><div class="bx-sub">${w.duties}</div></div>
+        ${w.can
+          ? html`<button type="button" class="bx-btn line" onClick=${() => oAct('unswap', { date: v.date, no: w.no })}>${v.swaps.undo}</button>`
+          : html`<span class="bx-sub" title=${w.hint || ''}>${w.hint}</span>`}
+      </div>`)}`}
     ${v.toil?.length > 0 && html`<div class="bx-group">${v.toil_caps}</div>
       ${v.toil.map((t) => html`<div class="bx-row">
         <div class="bx-grow"><div class="bx-name">${t.name} <span class="bx-time">chf. ${t.nr}</span></div><div class=${'bx-sub' + (t.on ? ' bx-saved' : '')}>${t.what}</div></div>
@@ -344,12 +356,15 @@ function Days({ v, x, o }) {
     }
     const past = v.days[i].past ? ' past' : '';
     const star = c.wish && html`<i class="cl-star" title=${c.wish}>★</i>`;
+    // (round C: a swap he is in that day - both drivers changed at once)
+    const swap = c.swap && html`<i class="cl-swap" title=${c.swap}>⇄</i>`;
+    const tip = [c.swap, c.wish || c.tip].filter(Boolean).join(' · ');
     if (c.kind === 'off' || c.kind === 'away') {
-      out.push(html`<div class=${'cl-cell off' + past + (c.wish ? ' wish' : '')} title=${c.wish || ''}>${c.label === '–' ? '–' : html`<b>${c.label}</b>`}${star}</div>`);
+      out.push(html`<div class=${'cl-cell off' + past + (c.wish ? ' wish' : '') + (c.swap ? ' swapped' : '')} title=${tip}>${c.label === '–' ? '–' : html`<b>${c.label}</b>`}${star}${swap}</div>`);
       continue;
     }
-    out.push(html`<button type="button" class=${'cl-cell ' + c.cls + past + (c.wish ? ' wish' : '')} title=${c.wish || c.tip || ''} onClick=${() => setO({ date: v.days[i].date, n: null, pop: true, given: null })}>
-      <b>${c.label}</b>${c.sub && html`<span>${c.sub}</span>`}${star}
+    out.push(html`<button type="button" class=${'cl-cell ' + c.cls + past + (c.wish ? ' wish' : '') + (c.swap ? ' swapped' : '')} title=${tip} onClick=${() => setO({ date: v.days[i].date, n: null, pop: true, given: null })}>
+      <b>${c.label}</b>${c.sub && html`<span>${c.sub}</span>`}${star}${swap}
     </button>`);
   }
   return out;

@@ -17,7 +17,10 @@
 // * A driver's next weeks, a day of them changed for that date only (a day off, a holiday, ill, a
 //   duty swapped); the week's duties no rota has.
 //
-// A rota is saved at once (`rf_turnus_act`), not in RosterFlow's draft.
+// A rota is saved at once (`rf_turnus_act`), not in RosterFlow's draft. (Round C, NexiconDK 5
+// November 2026: "↶ Fortryd" / "↷ Gentag" and Ctrl+Z / Ctrl+Y undo and redo the tab's edits, step
+// by step - the planner's own, kept beside the company's session; a driver's day "Ill" or "On
+// holiday" is his illness or holiday of the staff card; a duty swapped changes both drivers.)
 
 import { html, useEffect, useState } from '../../../vendor/preact-htm.js';
 import { S } from '../../store.js';
@@ -80,7 +83,27 @@ const KINDS = [
   ['reserve', 'Reserve'],
 ];
 
+/** Ctrl+Z undoes the tab's last edit, Ctrl+Y (or Ctrl+Shift+Z) makes it again - not while typing,
+ * nor with a window open over the tab. */
+function useTurnusKeys() {
+  useEffect(() => {
+    const k = (e) => {
+      if (!(e.ctrlKey || e.metaKey) || S.co.popup || S.co.dialog || st().making) return;
+      const el = document.activeElement;
+      if (el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable)) return;
+      const key = e.key.toLowerCase();
+      if (key === 'z' && !e.shiftKey) tAct('undo');
+      else if (key === 'y' || (key === 'z' && e.shiftKey)) tAct('redo');
+      else return;
+      e.preventDefault();
+    };
+    addEventListener('keydown', k);
+    return () => removeEventListener('keydown', k);
+  }, []);
+}
+
 export function TurnusTab() {
+  useTurnusKeys();
   const v = useTurnus();
   if (!v) return html`<div class="rf-reading">${tr('Reading the timetable…')}</div>`;
   if (v.reading || v.off) return html`<div class="rf-reading">${v.reading}</div>`;
@@ -110,7 +133,13 @@ function Toolbar({ v, rota }) {
     if (r?.printed && r.reveal) call('open_path', { path: r.folder }).catch(() => {});
   };
   const row = t.cell?.row ?? t.place;
+  const h = v.history || {};
   return html`<div class="rf-toolbar pro-tools">
+    <span class="pair tu-history">
+      <button type="button" class="rf-ibtn tu-undo" disabled=${!h.undo?.can} title=${(h.undo?.title || '') + ' (Ctrl+Z)'} onClick=${() => tAct('undo')}><${Icon} name="livery_undo" size=${17} /><span>${tr('Undo')}</span></button>
+      <button type="button" class="rf-ibtn tu-undo" disabled=${!h.redo?.can} title=${(h.redo?.title || '') + ' (Ctrl+Y)'} onClick=${() => tAct('redo')}><${Icon} name="livery_redo" size=${17} /><span>${tr('Redo')}</span></button>
+    </span>
+    <i class="pro-sep"></i>
     <span class="pair">
       <${RfButton} label="Make the rota automatically" solid disabled=${!rota} title=${!rota ? undefined : rota.kind === 'split' ? 'Spread the split duties of Monday to Friday no other rota has over enough weeks: the weekends off' : rota.kind === 'reserve' ? "A week for each reserve driver, five days in his frame" : "Spread the week's duties no other rota has over enough weeks: every other weekend off, two days off together, the rest kept, the hours evened"} onClick=${() => tAct('auto', { id: rota.id })} />
       <${RfButton} label="Add week" disabled=${!rota} title="A week more at the end of the rota: days off to fill" onClick=${() => tAct('add_row', { id: rota.id })} />

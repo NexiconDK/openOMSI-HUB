@@ -29,7 +29,7 @@ use omsi_launcher_lib::company::pro_duties as pd;
 use omsi_launcher_lib::company::pro_cut::{self as pc, How};
 use omsi_launcher_lib::company::pro_ops::{self as po, Asked, DayIs, OpenDuty, Price, Reply, Rule};
 use omsi_launcher_lib::company::pro_rest::{self as pr, Breach};
-use omsi_launcher_lib::company::{pro_cost as pcost, pro_toil as ptl, pro_wish as pw};
+use omsi_launcher_lib::company::{pro_cost as pcost, pro_swap as psw, pro_toil as ptl, pro_wish as pw};
 use omsi_launcher_lib::company::pro_turnus::{self as pt, ProDuty, Week};
 use omsi_launcher_lib::company::{self as co, Company};
 use serde_json::{json, Value};
@@ -301,6 +301,10 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                     let mine = p.duties_of(plan::Who::Staff(e.id));
                     let mut v = cell_json(&day, ds, halves(p, &mine, sign_on), for_whom(&c, e.id, d));
                     v["date"] = json!(d);
+                    // (round C: a swap he is in that day - ⇄, and with whom)
+                    if let Some((_, other)) = psw::of_driver(&c, e.id, d) {
+                        v["swap"] = json!(trf("⇄ Swapped with %{name}", &[("name", &name_in(&c)(other))]));
+                    }
                     // (round B: his wish for the day off - ★, granted or open)
                     if let Some(w) = pw::marked(&c, e.id, d) {
                         let granted = w.state == pw::WishState::Granted;
@@ -656,16 +660,48 @@ fn duty_sub(d: &OpenDuty, date: &str) -> String {
     format!("{} {}–{} · {}", tr(FULL_DAYS[pt::day_of(date)]), clock(d.start), clock(d.end), trf("line %{l}", &[("l", &d.lines.join(", "))]))
 }
 
+/// (round C) A row whose answer is a swap: who takes his own duty, said ("⇄ Kasper Dahl takes his
+/// 1005"), and the rest rules that colleague would break with it.
+fn swap_row(c: &Company, p: &DayPlan, ds: &[ProDuty], row: &mut Value, rest: &dyn Fn(&Employee, &OpenDuty) -> Vec<Breach>) -> Vec<Breach> {
+    let Some(sw) = row.get("answer").and_then(|a| a.get("swap")).filter(|x| x.is_object()).cloned() else { return Vec::new() };
+    let (Some(with), Some(theirs)) = (sw["with"].as_u64().map(|x| x as u32), sw["theirs"].as_u64().map(|x| x as u32)) else { return Vec::new() };
+    let Some(b) = c.employee(with) else { return Vec::new() };
+    row["swap"] = json!({ "name": b.name, "text": trf("⇄ %{name} takes duty %{n} instead: both changed at once", &[("name", &b.name), ("n", &theirs.to_string())]) });
+    let Some(mine) = ds.iter().find(|x| x.number == theirs) else { return Vec::new() };
+    let od = OpenDuty { n: theirs, start: mine.start, end: mine.end, paid: mine.paid, kind: mine.kind, pieces: po::pieces_of(p, mine), why: None, part: false, lines: Vec::new() };
+    rest(b, &od)
+}
+
+/// (round C) The swaps of `date`: "Mette Krogh ⇄ Sofie Juul · 1002 ↔ 1005", and whether each can
+/// still be undone.
+fn swaps_json(c: &Company, date: &str) -> Value {
+    let gets = |x: Option<u32>| x.map_or_else(|| tr("day off"), |n| n.to_string());
+    json!({
+        "caps": tr("Swaps this day"),
+        "undo": tr("Undo the swap"),
+        "list": psw::of_day(c, date).map(|x| {
+            let can = psw::can_undo(c, x);
+            json!({ "no": x.no, "text": format!("{} ⇄ {}", name_in(c)(x.a), name_in(c)(x.b)), "duties": format!("{} ↔ {}", gets(x.a_gets), gets(x.b_gets)), "can": can, "hint": (!can).then(|| tr(psw::BEGUN)) })
+        }).collect::<Vec<_>>(),
+    })
+}
+
 /// The box's step 2 for open duty `d`: who can drive it (`rest`: the rest rules a driver would
 /// break; `fair`: those given the fewest extra duties this month first, else the cheapest).
-fn who_json(c: &Company, p: &DayPlan, d: &OpenDuty, weekly: &HashMap<u32, f64>, rest: &dyn Fn(&Employee, &OpenDuty) -> Vec<Breach>, fair: bool) -> Value {
+fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &HashMap<u32, f64>, rest: &dyn Fn(&Employee, &OpenDuty) -> Vec<Breach>, fair: bool) -> Value {
     let date = p.date.as_str();
     let cands = po::candidates(c, p, d, &|id| weekly.get(&id).copied().unwrap_or(0.0));
     let mut groups: Vec<(&str, String, Vec<((bool, usize, Cents), Value)>)> = vec![("permanent", tr("Permanent"), Vec::new()), ("reserve", tr("Reserve frame"), Vec::new()), ("hourly", tr("Hourly paid"), Vec::new())];
     let mut cant = Vec::new();
     for x in &cands {
         let Some(e) = c.employee(x.id) else { continue };
-        match &x.fit {
+        // (round C: on another duty then, with a free colleague who could take his own: he can be
+        // asked - his answer may be a swap, both changed at once)
+        let sit = matches!(x.fit, Err(Cannot::OnDuty { .. })).then(|| situation(c, p, ds, d, e, Some(x)));
+        let offer = sit.as_ref().and_then(|s| Some((s.own?.0, s.swap_with?)));
+        let asked_swap = said_of(c, p.date.as_str(), d.n, None).iter().any(|(id, r)| *id == e.id && matches!(r, Reply::Swap { .. }));
+        let fit: Result<(), Cannot> = if offer.is_some() || asked_swap { Ok(()) } else { x.fit.clone() };
+        match &fit {
             Ok(()) => {
                 let g = if x.tier == plan::TIER_RESERVE || matches!(e.employment, Employment::Reserve(_)) {
                     1
@@ -675,8 +711,23 @@ fn who_json(c: &Company, p: &DayPlan, d: &OpenDuty, weekly: &HashMap<u32, f64>, 
                     0
                 };
                 let mut row = row_json(c, p, d, None, e, x.tier, (&x.price, x.cost));
-                let breaks = rest(e, d);
+                let mut breaks = if x.fit.is_ok() { rest(e, d) } else { Vec::new() };
+                if let Some((own, with)) = offer.filter(|_| row.get("answer").is_none()) {
+                    row["offer"] = json!(trf("⇄ Drives %{own} then - %{name} could take it", &[("own", &own.to_string()), ("name", &name_in(c)(with))]));
+                }
+                // (his answer a swap: the colleague takes his own duty - the rest rules for both)
+                let b_breaks = swap_row(c, p, ds, &mut row, rest);
+                breaks.extend(b_breaks.iter().cloned());
                 with_breaches(c, &mut row, &e.name, &breaks);
+                if !b_breaks.is_empty() {
+                    let b = row["swap"]["name"].as_str().unwrap_or_default().to_string();
+                    if let Some(words) = row["breach"].as_array_mut() {
+                        let n = words.len() - b_breaks.len();
+                        for w in words.iter_mut().skip(n) {
+                            *w = json!(format!("{b}: {}", w.as_str().unwrap_or_default()));
+                        }
+                    }
+                }
                 let (extras, words) = extra_words(c, e.id, date);
                 row["extra"] = json!(words);
                 // (those who would break the rest rules after the others; the fewest extra duties
@@ -938,6 +989,8 @@ fn daily(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
         })
         .collect::<Vec<_>>());
     out["toil_caps"] = json!(tr("Time off in lieu"));
+    // (round C: the swaps of the day - both drivers changed at once -, to undo before they begin)
+    out["swaps"] = swaps_json(&c, &date);
     // step 2: the duty chosen - who can drive it, or its cut
     let Some(n) = args.get("n").and_then(Value::as_u64).map(|x| x as u32) else { return Ok(out) };
     let weekly = week_of_drivers(&c, &week, &plans, &date);
@@ -948,7 +1001,7 @@ fn daily(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
         return Ok(out);
     }
     let Some(d) = open.iter().find(|o| o.n == n) else { return Ok(out) };
-    out["duty"] = who_json(&c, p, d, &weekly, &rest, str_arg(args, "sort") == "fair");
+    out["duty"] = who_json(&c, p, &ds, d, &weekly, &rest, str_arg(args, "sort") == "fair");
     out["waiting"] = json!(po::asks_of(&c, &date, d.n).any(|a| a.reply.is_some() && a.shown_at(co::clock::now(&c), now()).is_none()));
     Ok(out)
 }
@@ -1006,6 +1059,23 @@ fn target(s: &mut Session, r: &mut Rf, c: &Company, date: &str, n: u32, part: Op
     let weekly = week_of_drivers(c, &week, &plans, date);
     let breaks = drivers(c).into_iter().map(|e| (e.id, breaches_of(c, &week, &plans, e, date, &d, &weekly))).collect();
     Ok((p, ds, d, weekly, breaks))
+}
+
+/// The week's duties and the plans of `date`'s week and the days around it (the rest rules).
+fn rest_inputs(s: &mut Session, r: &mut Rf, date: &str) -> Result<(std::sync::Arc<Week>, HashMap<String, DayPlan>), Value> {
+    let week = match super::turnus::week_duties(s, r) {
+        Some(Ok(w)) => w,
+        Some(Err(e)) => return Err(said(e, true)),
+        None => return Err(said(tr("Reading the timetable…"), false)),
+    };
+    let mut need = po::week_dates(date);
+    for x in [co::dates::add(date, -1), date.to_string(), co::dates::add(date, 1)] {
+        if !need.contains(&x) {
+            need.push(x);
+        }
+    }
+    let plans = plans_of(s, r, &need).map_err(|e| said(e, true))?;
+    Ok((week, plans))
 }
 
 /// What a click of the box or the daily operations does (`rf_ops_act`: `act` "ask" | "give" |
@@ -1069,7 +1139,7 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             edit(s, words, &mut |c| po::ask_part(c, &date, d.n, part, d.start, d.end, who.clone(), at, &|id| weekly.get(&id).copied().unwrap_or(0.0)).map(|_| ()))
         }
         "give" => {
-            let (p, _, d, weekly, breaks) = match target(s, r, &c, &date, n, part) {
+            let (p, ds, d, weekly, breaks) = match target(s, r, &c, &date, n, part) {
                 Ok(x) => x,
                 Err(v) => return Ok(v),
             };
@@ -1079,8 +1149,21 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             // (put on without a question: a reserve whose frame holds it, before noon the day before)
             let tier = po::candidates(&c, &p, &d, &|id| weekly.get(&id).copied().unwrap_or(0.0)).iter().find(|x| x.id == driver).map_or(plan::TIER_COLLEAGUE, |x| x.tier);
             let set = po::rule_of(&c, &e, &date, tier) == Rule::Set;
-            // (the rest rules broken: only after the player confirmed it - `anyway`)
-            let broken = !breaks.get(&driver).map_or(true, Vec::is_empty);
+            // (the rest rules broken: only after the player confirmed it - `anyway`; a swap's
+            // colleague too, with his new duty - round C)
+            let theirs_duty = swap.and_then(|(_, theirs)| ds.iter().find(|x| x.number == theirs).cloned());
+            let b_broken = match (swap, &theirs_duty) {
+                (Some((with, _)), Some(mine)) => {
+                    let od = OpenDuty { n: mine.number, start: mine.start, end: mine.end, paid: mine.paid, kind: mine.kind, pieces: po::pieces_of(&p, mine), why: None, part: false, lines: Vec::new() };
+                    let (week, plans) = match rest_inputs(s, r, &date) {
+                        Ok(x) => x,
+                        Err(v) => return Ok(v),
+                    };
+                    c.employee(with).is_some_and(|b| !breaches_of(&c, &week, &plans, b, &date, &od, &weekly).is_empty())
+                }
+                _ => false,
+            };
+            let broken = !breaks.get(&driver).map_or(true, Vec::is_empty) || b_broken;
             if broken && args.get("anyway").and_then(Value::as_bool) != Some(true) {
                 return Ok(said(tr("This breaks the rest rules: confirm it first."), true));
             }
@@ -1100,8 +1183,16 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             };
             let at = now();
             let words = if toil { format!("{words} {}", tr("Its overtime is saved as time off in lieu.")) } else { words };
+            let starts = theirs_duty.as_ref().map_or(d.start, |x| x.start.min(d.start));
             edit(s, words, &mut |c| {
                 po::give_asked(c, &date, n, part, driver, swap, set, extra, at)?;
+                // (round C: the swap kept - both told, undone with both duties)
+                if let Some((with, theirs)) = swap {
+                    psw::after_give(c, &date, n, driver, with, theirs, starts);
+                    if b_broken {
+                        pr::broke(c, with);
+                    }
+                }
                 if toil {
                     po::set_toil(c, &date, n, part, driver, true);
                 }
@@ -1160,6 +1251,12 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             } else {
                 json!({})
             }
+        }
+        // (round C: a swap undone before its day begins - "Fortryd bytte")
+        "unswap" => {
+            let no = args.get("no").and_then(Value::as_u64).unwrap_or(0) as u32;
+            let words = psw::of_day(&c, &date).find(|x| x.no == no).map(|x| trf("The swap of %{a} and %{b} is undone: both drive as planned.", &[("a", &name_in(&c)(x.a)), ("b", &name_in(&c)(x.b))])).unwrap_or_default();
+            edit(s, words, &mut |c| psw::undo(c, no).map(|_| ()))
         }
         "cut" => {
             let (p, ds, d, weekly, _) = match target(s, r, &c, &date, n, None) {

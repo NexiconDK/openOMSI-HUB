@@ -1068,3 +1068,167 @@ fn what_a_week_costs_as_planned() {
     assert_eq!(sun.supplements, (hour * 360.0 * pay::SUNDAY / 60.0).round() as Cents);
     assert_eq!(sun.wages, w.wages + sun.supplements);
 }
+
+// --- round C: ill and on holiday one record, a swap of both drivers ----------------------------
+
+#[test]
+fn ill_set_in_the_turnus_tab_is_the_staff_cards_illness_and_the_other_way_round() {
+    use super::super::pro_absence as pa;
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    rota(&mut c, ids[0], ids[1]);
+    let a = ids[0];
+    // today and the next days: his illness of now, one spell
+    pa::set_ill(&mut c, a, "2024-03-04").unwrap();
+    pa::set_ill(&mut c, a, "2024-03-05").unwrap();
+    pa::set_ill(&mut c, a, "2024-03-06").unwrap();
+    let e = c.employee(a).unwrap();
+    assert_eq!(e.sick_until.as_deref(), Some("2024-03-06"));
+    assert!(e.sick_planned.is_empty() && c.planning.rotas.exceptions.is_empty());
+    assert_eq!(pa::spells(e, &c.date), vec![("sick", "2024-03-04".to_string(), "2024-03-06".to_string())]);
+    // the rota's day: off, ill - and his duty is missing, as the illness
+    let d = pt::decided(&c, a, "2024-03-05").unwrap();
+    assert_eq!((d.cell, d.note.as_deref()), (Cell::Off, Some("sick")));
+    assert_eq!(driver_of(&c, &day(&c, "2024-03-05"), 1001), None);
+    // a day further ahead: known ahead, his on the day it comes
+    pa::set_ill(&mut c, a, "2024-03-11").unwrap();
+    assert_eq!(c.employee(a).unwrap().sick_planned, vec!["2024-03-11".to_string()]);
+    // (the week after he has the afternoons: a row down every week)
+    assert_eq!(driver_of(&c, &day(&c, "2024-03-11"), 1002), None);
+    assert!(c.employee(a).unwrap().ill_on("2024-03-11") && !c.employee(a).unwrap().ill_on("2024-03-08"));
+    // back as in the rota: the 5th out - ill the 4th, the 6th still known ahead
+    assert!(pa::clear_ill(&mut c, a, "2024-03-05"));
+    let e = c.employee(a).unwrap();
+    assert_eq!(e.sick_until.as_deref(), Some("2024-03-04"));
+    assert_eq!(e.sick_planned, vec!["2024-03-06".to_string(), "2024-03-11".to_string()]);
+    assert_eq!(driver_of(&c, &day(&c, "2024-03-05"), 1001), Some(Who::Staff(a)));
+    // the night: the 6th has come - his illness of the day
+    c.date = "2024-03-06".into();
+    pt::tidy(&mut c);
+    let e = c.employee(a).unwrap();
+    assert_eq!(e.sick_until.as_deref(), Some("2024-03-06"));
+    assert_eq!(e.sick_planned, vec!["2024-03-11".to_string()]);
+    // the other way round: ill on the staff card - the rota's day says so
+    c.staff.iter_mut().find(|e| e.id == ids[1]).unwrap().sick_until = Some("2024-03-07".into());
+    assert_eq!(pt::decided(&c, ids[1], "2024-03-07").unwrap().note.as_deref(), Some("sick"));
+    // a day gone cannot be set
+    assert_eq!(pa::set_ill(&mut c, a, "2024-03-05"), Err(pa::GONE));
+}
+
+#[test]
+fn a_holiday_set_in_the_turnus_tab_is_an_approved_holiday_of_his_and_counts_against_his_days() {
+    use super::super::holidays::{self, State};
+    use super::super::pro_absence as pa;
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    rota(&mut c, ids[0], ids[1]);
+    let a = ids[0];
+    let left = c.employee(a).unwrap().holiday_left;
+    for d in ["2024-03-11", "2024-03-12", "2024-03-13"] {
+        pa::set_holiday(&mut c, a, d).unwrap();
+    }
+    let e = c.employee(a).unwrap();
+    let mine: Vec<_> = e.leave.requests.iter().filter(|r| r.state == State::Approved).collect();
+    assert_eq!(mine.len(), 1, "one holiday: {:?}", e.leave.requests);
+    assert_eq!((mine[0].from.as_str(), mine[0].until.as_str()), ("2024-03-11", "2024-03-13"));
+    assert_eq!(holidays::free_days(e, None), left - mine[0].working_days());
+    assert_eq!(pt::decided(&c, a, "2024-03-12").unwrap().note.as_deref(), Some("holiday"));
+    assert_eq!(pa::spells(e, &c.date), vec![("holiday", "2024-03-11".to_string(), "2024-03-13".to_string())]);
+    // the middle day back: two holidays, its day not taken
+    assert!(pa::clear_holiday(&mut c, a, "2024-03-12"));
+    let e = c.employee(a).unwrap();
+    assert_eq!(e.on_holiday("2024-03-12"), None);
+    assert!(e.on_holiday("2024-03-11").is_some() && e.on_holiday("2024-03-13").is_some());
+    // begun (the night before it): the days taken from his year's; one back gives it back
+    holidays::night(&mut c, "2024-03-10");
+    let taken = c.employee(a).unwrap().holiday_left;
+    assert!(taken < left, "{taken} {left}");
+    assert!(pa::clear_holiday(&mut c, a, "2024-03-11"));
+    assert_eq!(c.employee(a).unwrap().holiday_left, taken + 1);
+    // none left: refused
+    c.staff.iter_mut().find(|e| e.id == ids[2]).unwrap().holiday_left = 0;
+    assert_eq!(pa::set_holiday(&mut c, ids[2], "2024-03-20"), Err(pa::NO_DAYS));
+}
+
+#[test]
+fn an_older_files_turnus_ill_and_holiday_days_move_into_the_staffs_records() {
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    rota(&mut c, ids[0], ids[1]);
+    let push = |c: &mut Company, id: u32, date: &str, note: &str| c.planning.rotas.exceptions.push(pt::Exception { driver: id, date: date.into(), cell: Cell::Off, note: note.into() });
+    push(&mut c, ids[0], "2024-03-05", "sick");
+    push(&mut c, ids[1], "2024-03-12", "holiday");
+    push(&mut c, ids[1], "2024-03-13", "");
+    super::super::pro_absence::migrate(&mut c);
+    assert_eq!(c.employee(ids[0]).unwrap().sick_planned, vec!["2024-03-05".to_string()]);
+    assert!(c.employee(ids[1]).unwrap().on_holiday("2024-03-12").is_some());
+    assert_eq!(c.planning.rotas.exceptions.len(), 1, "the day off stays: {:?}", c.planning.rotas.exceptions);
+    assert_eq!(pt::decided(&c, ids[0], "2024-03-05").unwrap().note.as_deref(), Some("sick"));
+}
+
+#[test]
+fn a_swap_in_the_turnus_tab_changes_both_drivers_at_once_and_is_undone_before_its_day() {
+    use super::super::pro_swap as ps;
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    rota(&mut c, ids[0], ids[1]);
+    let (a, b) = (ids[0], ids[1]);
+    let w = week(&c, "2024-03-03");
+    let date = "2024-03-06";
+    let before = c.inbox.messages.len() + c.messages.list.len();
+    // a takes b's afternoon: b takes a's morning - both days changed in one act
+    let made = ps::swap_rota(&mut c, a, date, 1002, &w).unwrap();
+    let s = made.swap.clone().unwrap();
+    assert_eq!((s.a, s.b, s.a_gets, s.b_gets), (a, b, Some(1002), Some(1001)));
+    assert_eq!(pt::decided(&c, a, date).unwrap().cell, Cell::Duty { n: 1002 });
+    assert_eq!(pt::decided(&c, b, date).unwrap().cell, Cell::Duty { n: 1001 });
+    let p = day(&c, date);
+    assert_eq!(driver_of(&c, &p, 1001), Some(Who::Staff(b)));
+    assert_eq!(driver_of(&c, &p, 1002), Some(Who::Staff(a)));
+    // both told
+    assert!(c.inbox.messages.len() + c.messages.list.len() >= before + 2);
+    assert_eq!(ps::of_driver(&c, b, date).map(|x| x.1), Some(a));
+    // the rest rules for both: an afternoon after a morning the day before is fine, a morning
+    // after the afternoon is short of 11 hours only if it were the next day
+    assert!(made.a_breaks.is_empty() && made.b_breaks.is_empty(), "{made:?}");
+    // undone: both days as the rota has them, both told
+    ps::undo(&mut c, s.no).unwrap();
+    assert_eq!(pt::decided(&c, a, date).unwrap().cell, Cell::Duty { n: 1001 });
+    assert_eq!(pt::decided(&c, b, date).unwrap().cell, Cell::Duty { n: 1002 });
+    assert!(c.planning.ops.swaps.is_empty() && c.planning.rotas.exceptions.is_empty());
+    // a duty on a's day off (Sunday): b has the day off instead
+    let made = ps::swap_rota(&mut c, a, "2024-03-07", 1002, &w).unwrap();
+    assert_eq!(made.swap.as_ref().unwrap().b_gets, Some(1001));
+    // the day begun: no longer undone
+    let s = made.swap.unwrap();
+    c.date = "2024-03-07".into();
+    c.clock.minute = 23 * 60;
+    assert_eq!(ps::undo(&mut c, s.no).map(|_| ()), Err(ps::BEGUN));
+    // the day gone: forgotten
+    c.date = "2024-03-08".into();
+    pt::tidy(&mut c);
+    assert!(c.planning.ops.swaps.is_empty());
+}
+
+#[test]
+fn a_swap_of_the_daily_operations_is_kept_told_and_undone_with_both_duties() {
+    use super::super::pro_swap as ps;
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    rota(&mut c, ids[0], ids[1]);
+    let date = "2024-03-05";
+    pt::set_exception(&mut c, ids[0], date, Some((Cell::Off, String::new())));
+    // b takes the open morning, his afternoon goes to y: one act, both kept as a swap
+    let y = ids[3];
+    give(&mut c, date, 1001, ids[1], Some((y, 1002))).unwrap();
+    let s = ps::after_give(&mut c, date, 1001, ids[1], y, 1002, 300);
+    assert_eq!(ps::of_day(&c, date).count(), 1);
+    pt::tidy(&mut c);
+    assert_eq!(ps::of_day(&c, date).count(), 1, "it holds");
+    ps::undo(&mut c, s.no).unwrap();
+    let p = day(&c, date);
+    assert_eq!(driver_of(&c, &p, 1001), None);
+    assert_eq!(driver_of(&c, &p, 1002), Some(Who::Staff(ids[1])));
+    assert!(c.planning.ops.calls.is_empty());
+}
+

@@ -1487,6 +1487,7 @@ pub fn hire_as(c: &mut Company, a: &Applicant, employment: Employment) -> Result
         employment_next: None,
         free_days: Vec::new(),
         toil: 0.0,
+        sick_planned: Vec::new(),
     });
     // (the induction: the fleet's models)
     if a.role == Role::Driver {

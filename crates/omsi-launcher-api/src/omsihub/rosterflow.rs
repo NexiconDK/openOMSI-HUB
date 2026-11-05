@@ -121,6 +121,10 @@ pub(crate) struct Rf {
     /// (RosterFlow Pro's Turnus tab) The duties of the company's week, of the company's
     /// generation they were made for (`turnus`).
     pub(crate) turnus_week: Option<(u64, Arc<co::pro_turnus::Week>)>,
+    /// (round C) The Turnus tab's undo and redo: the rotas and the drivers' days before and after
+    /// each edit, and the edit in words (`turnus::Step`).
+    pub(crate) turnus_undo: Vec<turnus::Step>,
+    pub(crate) turnus_redo: Vec<turnus::Step>,
     /// (RosterFlow Pro's Daglig drift and Kalender) The plans of dates outside the company's week,
     /// of the company's and the plans' generations they were made for (`ops`).
     pub(crate) ops_plans: Vec<((u64, u64), String, co::plan::DayPlan)>,

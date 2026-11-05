@@ -12,8 +12,9 @@ use super::{str_arg, usize_arg, Rf};
 use crate::Answer;
 use omsi_launcher_lib::company::model::Employment;
 use omsi_launcher_lib::company::pro_duties as pd;
+use omsi_launcher_lib::company::pro_rest as psw_rest;
 use omsi_launcher_lib::company::pro_turnus::{self as pt, Cell, Checked, ProDuty, RotaKind, Rule, Week, Weekend};
-use omsi_launcher_lib::company::{self as co, rosterflow as rf, Company};
+use omsi_launcher_lib::company::{self as co, pro_absence as pa, pro_swap as psw, rosterflow as rf, Company};
 use serde_json::{json, Value};
 use std::sync::Arc;
 
@@ -424,8 +425,152 @@ fn edit<T>(s: &mut Session, words: impl FnOnce(&T) -> String, f: impl FnOnce(&mu
     }
 }
 
-/// What a click on the Turnus tab does (`rf_turnus_act`: `act`, and what it needs).
+// --- undo and redo (round C) -----------------------------------------------------------------------
+
+/// The most edits the Turnus tab undoes.
+const UNDO_MOST: usize = 60;
+const FULL_DAYS: [&str; 7] = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+/// What the Turnus tab edits, as it is at a moment: the rotas and their exceptions, the swaps, and
+/// each driver's illness and holidays (the staff card's: `pro_absence`).
+#[derive(Clone, PartialEq)]
+pub(crate) struct Snap {
+    rotas: pt::Rotas,
+    swaps: Vec<psw::Swap>,
+    people: Vec<(u32, Option<String>, Vec<String>, co::holidays::Leave, Option<String>, u32)>,
+}
+
+/// An edit of the Turnus tab: before and after it, and it in words.
+pub(crate) struct Step {
+    before: Snap,
+    after: Snap,
+    words: String,
+}
+
+fn snap(c: &Company) -> Snap {
+    Snap {
+        rotas: c.planning.rotas.clone(),
+        swaps: c.planning.ops.swaps.clone(),
+        people: c.staff.iter().map(|e| (e.id, e.sick_until.clone(), e.sick_planned.clone(), e.leave.clone(), e.holiday_until.clone(), e.holiday_left)).collect(),
+    }
+}
+
+fn restore(c: &mut Company, x: &Snap) {
+    c.planning.rotas = x.rotas.clone();
+    c.planning.ops.swaps = x.swaps.clone();
+    for (id, sick, planned, leave, holiday, left) in &x.people {
+        if let Some(e) = c.staff.iter_mut().find(|e| e.id == *id) {
+            (e.sick_until, e.sick_planned, e.leave, e.holiday_until, e.holiday_left) = (sick.clone(), planned.clone(), leave.clone(), holiday.clone(), *left);
+        }
+    }
+}
+
+/// The edit undone (`back`) or made again: refused when the rotas were changed elsewhere since
+/// (another planner, the night) - the steps then forgotten.
+fn undo_redo(s: &mut Session, r: &mut Rf, back: bool) -> Value {
+    let step = if back { r.turnus_undo.pop() } else { r.turnus_redo.pop() };
+    let Some(step) = step else { return said(tr("Nothing to undo."), false) };
+    let Some(now) = s.company.as_ref().map(snap) else { return json!({}) };
+    let (from, to) = if back { (&step.after, &step.before) } else { (&step.before, &step.after) };
+    if now != *from {
+        r.turnus_undo.clear();
+        r.turnus_redo.clear();
+        return said(tr("The rotas were changed elsewhere meanwhile: there is nothing to undo."), true);
+    }
+    let to = to.clone();
+    if company::act(s, |c| {
+        restore(c, &to);
+        Ok(())
+    })
+    .is_err()
+    {
+        return json!({});
+    }
+    let words = if back { trf("Undone: %{what}", &[("what", &step.words)]) } else { trf("Done again: %{what}", &[("what", &step.words)]) };
+    if back {
+        r.turnus_redo.push(step);
+    } else {
+        r.turnus_undo.push(step);
+    }
+    let mut out = said(words, false);
+    out["edited"] = json!(true);
+    out
+}
+
+/// The buttons' state: what undo and redo would do.
+fn undo_json(r: &Rf) -> Value {
+    json!({
+        "undo": { "can": !r.turnus_undo.is_empty(), "title": r.turnus_undo.last().map_or_else(|| tr("Nothing to undo"), |x| trf("Undo: %{what}", &[("what", &x.words)])) },
+        "redo": { "can": !r.turnus_redo.is_empty(), "title": r.turnus_redo.last().map_or_else(|| tr("Nothing to do again"), |x| trf("Do again: %{what}", &[("what", &x.words)])) },
+    })
+}
+
+/// A day of a row in words, for the undo: "duty 1002 taken out of rota week 2, Wednesday".
+fn cell_words(was: Option<Cell>, now: Cell, row: usize, day: usize) -> String {
+    let at = format!("{}, {}", week_words(row), tr(FULL_DAYS[day.min(6)]));
+    match (was, now) {
+        (Some(Cell::Duty { n }), Cell::Off) => trf("duty %{n} taken out of %{at}", &[("n", &n.to_string()), ("at", &at)]),
+        (_, Cell::Duty { n }) => trf("duty %{n} put in %{at}", &[("n", &n.to_string()), ("at", &at)]),
+        (_, Cell::Frame { .. }) => trf("a reserve frame in %{at}", &[("at", &at)]),
+        (_, Cell::Off) => trf("a day off in %{at}", &[("at", &at)]),
+    }
+}
+
+/// A rest rule broken, in words ("⚠ Only 9 h rest after duty 1005").
+fn rest_words(b: &psw_rest::Breach) -> String {
+    let t = |m: i32| {
+        let m = m.max(0);
+        if m % 60 == 0 {
+            trf("%{h} h", &[("h", &(m / 60).to_string())])
+        } else {
+            trf("%{h} h %{m}", &[("h", &(m / 60).to_string()), ("m", &format!("{:02}", m % 60))])
+        }
+    };
+    match b {
+        psw_rest::Breach::RestAfter { minutes, n } => trf("⚠ Only %{t} rest after duty %{n}", &[("t", &t(*minutes)), ("n", &n.to_string())]),
+        psw_rest::Breach::RestBefore { minutes, n } => trf("⚠ Only %{t} rest before duty %{n}", &[("t", &t(*minutes)), ("n", &n.to_string())]),
+        psw_rest::Breach::LongDay { .. } => tr("⚠ Over 13 h on the day"),
+        psw_rest::Breach::LongWeek { .. } => tr("⚠ Over 48 h in the week"),
+    }
+}
+
+/// What a click on the Turnus tab does (`rf_turnus_act`), kept for undo and redo ("undo",
+/// "redo": the edits of this planner, at least 50 of them).
 fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
+    let what = str_arg(args, "act");
+    if what == "undo" || what == "redo" {
+        return Ok(undo_redo(s, r, what == "undo"));
+    }
+    let before = s.company.as_ref().map(snap);
+    // (a day of a row: what it was, for the words)
+    let was = (what == "cell").then(|| {
+        let id = args.get("id").and_then(Value::as_u64).unwrap_or(0) as u32;
+        s.company.as_ref().and_then(|c| c.planning.rotas.list.iter().find(|t| t.id == id).and_then(|t| t.rows.get(usize_arg(args, "row")).map(|x| x.days[usize_arg(args, "day").min(pt::DAYS - 1)])))
+    }).flatten();
+    let mut out = act_one(s, r, args)?;
+    if out.get("edited").and_then(Value::as_bool) == Some(true) {
+        if let (Some(before), Some(after)) = (before, s.company.as_ref().map(snap)) {
+            if before != after {
+                let words = match what.as_str() {
+                    "cell" => cell_words(was, cell_arg(args), usize_arg(args, "row"), usize_arg(args, "day")),
+                    _ => out["undo_words"].as_str().map(str::to_string).unwrap_or_else(|| out["say"]["text"].as_str().unwrap_or_default().to_string()),
+                };
+                r.turnus_undo.push(Step { before, after, words });
+                if r.turnus_undo.len() > UNDO_MOST {
+                    r.turnus_undo.remove(0);
+                }
+                r.turnus_redo.clear();
+            }
+        }
+    }
+    if let Some(o) = out.as_object_mut() {
+        o.remove("undo_words");
+    }
+    Ok(out)
+}
+
+/// One click of the Turnus tab (`act`).
+fn act_one(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     let what = str_arg(args, "act");
     let id = args.get("id").and_then(Value::as_u64).unwrap_or(0) as u32;
     let row = usize_arg(args, "row");
@@ -541,15 +686,58 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             let driver = args.get("driver").and_then(Value::as_u64).unwrap_or(0) as u32;
             let date = str_arg(args, "date");
             let clear = args.get("clear").and_then(Value::as_bool).unwrap_or(false);
-            let cell = (!clear).then(|| (cell_arg(args), str_arg(args, "note")));
-            let words = if clear { trf("%{day} as in the rota again.", &[("day", &day_label(&date))]) } else { trf("%{day} changed for that day only: the rota stays as it is.", &[("day", &day_label(&date))]) };
-            edit(s, |_| words.clone(), |c| {
-                if c.employee(driver).is_none() {
-                    return Err(pt::NOT_A_DRIVER);
+            let note = str_arg(args, "note");
+            let cell = cell_arg(args);
+            let Some(name) = s.company.as_ref().and_then(|c| c.employee(driver)).map(|e| e.name.clone()) else { return Ok(said(tr(pt::NOT_A_DRIVER), true)) };
+            let day = day_label(&date);
+            // (round C: ill and on holiday are the staff card's; a duty swapped changes both drivers)
+            if !clear && note == "sick" {
+                let mut out = edit(s, |_| trf("%{name} is ill on %{day}: on the staff card too.", &[("name", &name), ("day", &day)]), |c| pa::set_ill(c, driver, &date).map(|_| pt::put_exception(c, driver, &date, None)));
+                out["undo_words"] = json!(trf("%{name} ill on %{day}", &[("name", &name), ("day", &day)]));
+                return Ok(out);
+            }
+            if !clear && note == "holiday" {
+                let mut out = edit(s, |_| trf("%{name} is on holiday on %{day}: an approved holiday on the staff card, its day counted.", &[("name", &name), ("day", &day)]), |c| pa::set_holiday(c, driver, &date).map(|_| pt::put_exception(c, driver, &date, None)));
+                out["undo_words"] = json!(trf("%{name} on holiday on %{day}", &[("name", &name), ("day", &day)]));
+                return Ok(out);
+            }
+            if let (false, "swap", Cell::Duty { n }) = (clear, note.as_str(), cell) {
+                let week = match week_duties(s, r) {
+                    Some(Ok(w)) => w,
+                    Some(Err(e)) => return Ok(said(e, true)),
+                    None => return Ok(said(tr("Reading the timetable…"), false)),
+                };
+                let mut made = None;
+                let mut out = edit(s, |_| String::new(), |c| psw::swap_rota(c, driver, &date, n, &week).map(|m| made = Some(m)));
+                if let (Some(m), Some(c)) = (made, s.company.as_ref()) {
+                    let other = |id: u32| c.employee(id).map(|e| e.name.clone()).unwrap_or_default();
+                    let mut text = match &m.swap {
+                        Some(x) => trf("Swapped on %{day}: %{a} drives %{n}, %{b} %{theirs} - both changed at once, both told.", &[("day", &day), ("a", &name), ("n", &n.to_string()), ("b", &other(x.b)), ("theirs", &x.b_gets.map_or_else(|| tr("has the day off"), |t| trf("drives %{n}", &[("n", &t.to_string())])))]),
+                        None => tr(psw::NOBODY),
+                    };
+                    let mut warn = Vec::new();
+                    for (id, b) in [(driver, &m.a_breaks), (m.swap.as_ref().map_or(0, |x| x.b), &m.b_breaks)] {
+                        warn.extend(b.iter().map(|x| format!("{}: {}", other(id), rest_words(x))));
+                    }
+                    if !warn.is_empty() {
+                        text = format!("{text} {}", warn.join(" · "));
+                    }
+                    out["say"] = json!({ "text": text, "error": !warn.is_empty() });
+                    out["undo_words"] = json!(match &m.swap {
+                        Some(x) => trf("the swap of %{a} and %{b} on %{day}", &[("a", &name), ("b", &other(x.b)), ("day", &day)]),
+                        None => trf("duty %{n} for %{name} on %{day}", &[("n", &n.to_string()), ("name", &name), ("day", &day)]),
+                    });
                 }
+                return Ok(out);
+            }
+            let cell = (!clear).then(|| (cell, note));
+            let words = if clear { trf("%{day} as in the rota again.", &[("day", &day)]) } else { trf("%{day} changed for that day only: the rota stays as it is.", &[("day", &day)]) };
+            let mut out = edit(s, |_| words.clone(), |c| {
                 pt::set_exception(c, driver, &date, cell);
                 Ok(())
-            })
+            });
+            out["undo_words"] = json!(if clear { trf("%{name}'s %{day} as in the rota", &[("name", &name), ("day", &day)]) } else { trf("%{name}'s %{day} changed", &[("name", &name), ("day", &day)]) });
+            out
         }
         _ => json!({}),
     })
@@ -558,7 +746,12 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
 /// The commands of the Turnus tab (`super::run`).
 pub(super) fn run(s: &mut Session, r: &mut Rf, cmd: &str, args: &Value) -> Option<Answer> {
     Some(match cmd {
-        "rf_turnus" => view(s, r, args),
+        "rf_turnus" => view(s, r, args).map(|mut v| {
+            if v.is_object() {
+                v["history"] = undo_json(r);
+            }
+            v
+        }),
         "rf_turnus_act" => act(s, r, args),
         _ => return None,
     })
@@ -715,5 +908,62 @@ mod tests {
         // without RosterFlow Pro: nothing to show
         autopilot::set_planner(s.company.as_mut().unwrap(), Planner::RosterFlow);
         assert_eq!(view(&mut s, &mut r, &json!({})).unwrap()["off"], true);
+    }
+
+    #[test]
+    fn the_turnus_tab_undoes_and_redoes_and_ill_and_holiday_are_the_staff_cards() {
+        super::super::super::company::words::set_language("en");
+        company::test_dry();
+        let mut s = session();
+        let mut r = Rf::default();
+        let id = act(&mut s, &mut r, &json!({ "act": "new", "name": "Nord", "kind": "normal", "weeks": 2, "fill": true })).unwrap()["sel"].as_u64().unwrap();
+        let rows = |s: &Session| s.company.as_ref().unwrap().planning.rotas.list[0].rows.len();
+        let made = rows(&s);
+        act(&mut s, &mut r, &json!({ "act": "add_row", "id": id })).unwrap();
+        // a day of a row taken out: the undo's words name it
+        let (day, n) = s.company.as_ref().unwrap().planning.rotas.list[0].rows[0].days.iter().enumerate().find_map(|(k, x)| match x {
+            Cell::Duty { n } => Some((k, *n)),
+            _ => None,
+        }).expect("a duty in week 1");
+        let name = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][day];
+        act(&mut s, &mut r, &json!({ "act": "cell", "id": id, "row": 0, "day": day, "cell": { "kind": "off" } })).unwrap();
+        let v = run(&mut s, &mut r, "rf_turnus", &json!({ "sel": id })).unwrap().unwrap();
+        assert_eq!(v["history"]["undo"]["can"], true);
+        assert_eq!(v["history"]["undo"]["title"], format!("Undo: duty {n} taken out of rota week 1, {name}"));
+        assert_eq!(v["history"]["redo"]["can"], false);
+        // undone step by step: the day, then the week added; made again
+        let out = act(&mut s, &mut r, &json!({ "act": "undo" })).unwrap();
+        assert_eq!(out["say"]["text"], format!("Undone: duty {n} taken out of rota week 1, {name}"));
+        assert_eq!(s.company.as_ref().unwrap().planning.rotas.list[0].rows[0].days[day], Cell::Duty { n });
+        act(&mut s, &mut r, &json!({ "act": "undo" })).unwrap();
+        assert_eq!(rows(&s), made);
+        act(&mut s, &mut r, &json!({ "act": "redo" })).unwrap();
+        assert_eq!(rows(&s), made + 1);
+        // a new edit forgets what was undone
+        act(&mut s, &mut r, &json!({ "act": "rename", "id": id, "name": "Syd" })).unwrap();
+        assert!(r.turnus_redo.is_empty());
+        // ill and on holiday from a driver's weeks: the staff card's own
+        let d = s.company.as_ref().unwrap().staff.iter().find(|e| co::staff::drives(e)).unwrap().id;
+        act(&mut s, &mut r, &json!({ "act": "driver", "id": id, "row": 0, "driver": d })).unwrap();
+        let today = s.company.as_ref().unwrap().date.clone();
+        let ahead = co::dates::add(&today, 3);
+        let out = act(&mut s, &mut r, &json!({ "act": "exception", "driver": d, "date": today, "cell": { "kind": "off" }, "note": "sick" })).unwrap();
+        assert_eq!(out["edited"], true, "{out}");
+        assert_eq!(s.company.as_ref().unwrap().employee(d).unwrap().sick_until.as_deref(), Some(today.as_str()));
+        act(&mut s, &mut r, &json!({ "act": "exception", "driver": d, "date": ahead, "cell": { "kind": "off" }, "note": "holiday" })).unwrap();
+        let c = s.company.as_ref().unwrap();
+        assert!(c.employee(d).unwrap().on_holiday(&ahead).is_some());
+        assert!(c.planning.rotas.exceptions.is_empty(), "one record: {:?}", c.planning.rotas.exceptions);
+        // undone: the holiday gone from the staff card too
+        act(&mut s, &mut r, &json!({ "act": "undo" })).unwrap();
+        assert!(s.company.as_ref().unwrap().employee(d).unwrap().on_holiday(&ahead).is_none());
+        // back as in the rota: well again
+        act(&mut s, &mut r, &json!({ "act": "exception", "driver": d, "date": today, "clear": true })).unwrap();
+        assert!(!s.company.as_ref().unwrap().employee(d).unwrap().ill_on(&today));
+        // changed elsewhere meanwhile: nothing to undo, said
+        s.company.as_mut().unwrap().planning.rotas.list[0].name = "Andet".into();
+        let out = act(&mut s, &mut r, &json!({ "act": "undo" })).unwrap();
+        assert_eq!(out["say"]["error"], true, "{out}");
+        assert!(r.turnus_undo.is_empty());
     }
 }
