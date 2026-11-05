@@ -244,7 +244,7 @@ fn who_could_take_a_duty_comes_in_the_order_it_is_filled_in_with_its_price() {
 fn an_ai_drivers_answer_is_human_and_the_same_every_time() {
     let mut c = company();
     let e = c.staff[2].clone();
-    let free = Situation { fit: Ok(()), in_frame: false, week: 0.0, contract: Some(39.0 * 60.0), own: None, swap_with: None, can_from: None, can_until: None };
+    let free = Situation { fit: Ok(()), in_frame: false, week: 0.0, contract: Some(39.0 * 60.0), own: None, swap_with: None, can_from: None, can_until: None, tired: Default::default() };
     let r1 = ai_reply(&c, &e, "2024-03-05", 1001, 350, 660, &free);
     assert_eq!(ai_reply(&c, &e, "2024-03-05", 1001, 350, 660, &free), r1, "the same answer asked again");
     // within his frame: yes, his frame is the company's
@@ -514,7 +514,7 @@ fn said(c: &mut Company, id: u32, n: u32, reply: Reply, due: i64) {
 }
 
 fn calm() -> Situation {
-    Situation { fit: Ok(()), in_frame: false, week: 0.0, contract: Some(39.0 * 60.0), own: None, swap_with: None, can_from: None, can_until: None }
+    Situation { fit: Ok(()), in_frame: false, week: 0.0, contract: Some(39.0 * 60.0), own: None, swap_with: None, can_from: None, can_until: None, tired: Default::default() }
 }
 
 #[test]
@@ -1056,7 +1056,7 @@ fn what_a_week_costs_as_planned() {
     let k = contract_minutes(&c, &e).unwrap();
     // under his contract: the guarantee pays the week
     let w = pcost::week(&c, &e, k - 120.0, &[], 0.0, 0.0);
-    assert_eq!(w, WeekCost { wages: (hour * k / 60.0).round() as Cents, overtime: 0, supplements: 0, saved: 0.0 });
+    assert_eq!(w, WeekCost { wages: (hour * k / 60.0).round() as Cents, overtime: 0, supplements: 0, saved: 0.0, holidays: 0 });
     // two hours over it: overtime at its rate; saved as time off in lieu: not paid
     let o = pcost::week(&c, &e, k + 120.0, &[], 0.0, 0.0);
     assert_eq!(o.overtime, (hour * 120.0 * econ_uk::OVERTIME_RATE / 60.0).round() as Cents);
@@ -1064,7 +1064,7 @@ fn what_a_week_costs_as_planned() {
     assert_eq!((s.overtime, s.saved), (0, 120.0));
     assert!(s.wages < o.wages);
     // a Sunday's pieces: supplements
-    let sun = pcost::week(&c, &e, k, &[(6, vec![(8 * 60, 14 * 60)])], 0.0, 0.0);
+    let sun = pcost::week(&c, &e, k, &[("2024-03-10".to_string(), vec![(8 * 60, 14 * 60)])], 0.0, 0.0);
     assert_eq!(sun.supplements, (hour * 360.0 * pay::SUNDAY / 60.0).round() as Cents);
     assert_eq!(sun.wages, w.wages + sun.supplements);
 }
@@ -1232,3 +1232,167 @@ fn a_swap_of_the_daily_operations_is_kept_told_and_undone_with_both_duties() {
     assert!(c.planning.ops.calls.is_empty());
 }
 
+
+// --- round D: public holidays, early and late people, tired drivers ------------------------------
+
+#[test]
+fn the_public_holidays_have_their_names_and_are_paid_as_a_sunday() {
+    use super::super::pro_holiday as ph;
+    // (Denmark's: Maundy Thursday and Great Prayer Day until 2023, not the first of May)
+    assert_eq!(ph::name_in(true, "2024-03-28"), Some(ph::MAUNDY_THURSDAY));
+    assert_eq!(ph::name_in(true, "2024-03-31"), Some(ph::EASTER_SUNDAY));
+    assert_eq!(ph::name_in(true, "2024-05-19"), Some(ph::WHIT_SUNDAY));
+    assert_eq!(ph::name_in(true, "2023-05-05"), Some(ph::PRAYER_DAY));
+    assert_eq!(ph::name_in(true, "2024-04-26"), None);
+    assert_eq!(ph::name_in(true, "2024-05-01"), None);
+    assert_eq!(ph::name_in(true, "2024-12-24"), None);
+    assert_eq!(ph::name_in(true, "2024-12-26"), Some(ph::SECOND_CHRISTMAS));
+    // (the common German and Dutch ones: the first of May, no Maundy Thursday)
+    assert_eq!(ph::name_in(false, "2024-05-01"), Some(ph::LABOUR_DAY));
+    assert_eq!(ph::name_in(false, "2024-03-28"), None);
+    assert_eq!(ph::name_in(false, "2024-04-01"), Some(ph::EASTER_MONDAY));
+    // (a holiday's hours as a Sunday's, the highest counting - not on top of the evening's)
+    assert_eq!(pay::supplement_rate_on(0, [true, false], 10 * 60), pay::SUNDAY);
+    assert_eq!(pay::supplement_rate_on(0, [true, false], 19 * 60), pay::SUNDAY);
+    assert_eq!(pay::supplement_rate_on(0, [false, false], 10 * 60), 0.0);
+    // (past midnight into a holiday: the next day's)
+    assert_eq!(pay::supplement_rate_on(2, [false, true], 24 * 60 + 60), pay::SUNDAY);
+    assert_eq!(pay::supplement_rate_on(2, [true, false], 24 * 60 + 60), pay::NIGHT);
+    assert!((pay::supplement_minutes_on(0, [true, false], &[(8 * 60, 14 * 60)]) - 360.0 * pay::SUNDAY).abs() < 1e-9);
+    // (a company of Pro: Easter Monday's duty pays the supplement, and the week tells it apart)
+    use super::super::pro_cost as pcost;
+    let c = company();
+    let e = c.staff[0].clone();
+    assert!(ph::is(&c, "2024-04-01") && !ph::is(&c, "2024-04-02"));
+    let k = contract_minutes(&c, &e).unwrap();
+    let w = pcost::week(&c, &e, k, &[("2024-04-01".to_string(), vec![(8 * 60, 14 * 60)]), ("2024-04-02".to_string(), vec![(8 * 60, 14 * 60)])], 0.0, 0.0);
+    let hour = pay::hour_wage(&e);
+    assert_eq!(w.holidays, (hour * 360.0 * pay::SUNDAY / 60.0).round() as Cents);
+    assert_eq!(w.supplements, w.holidays);
+    assert!(pcost::duty_supplement(&c, &e, "2024-04-01", &[(8 * 60, 14 * 60)]) > 0);
+    assert_eq!(pcost::duty_supplement(&c, &e, "2024-04-02", &[(8 * 60, 14 * 60)]), 0);
+    // (asked on a holiday: a yes less likely)
+    assert_eq!(ph::bias(&c, "2024-04-01"), ph::YES);
+    assert_eq!(ph::bias(&c, "2024-04-02"), 1.0);
+}
+
+#[test]
+fn working_many_holidays_makes_a_driver_less_content() {
+    use super::super::pro_holiday as ph;
+    let mut c = company();
+    let id = c.staff[0].id;
+    let mut seen = Vec::new();
+    for d in ["2024-03-29", "2024-04-01", "2024-05-01", "2024-05-09", "2024-05-20"] {
+        c.staff[0].satisfaction = 70.0;
+        ph::after_day(&mut c, d, &[(id, 6 * 60, 14 * 60)]);
+        seen.push(c.staff[0].satisfaction);
+    }
+    // (the first three free of cost, from the fourth two points each)
+    assert_eq!(seen, vec![70.0, 70.0, 70.0, 70.0 - ph::COST, 70.0 - ph::COST]);
+    assert_eq!(ph::worked(&c.staff[0], "2024-05-20"), 5);
+    // (a normal day is not counted; a year later they are let go)
+    ph::after_day(&mut c, "2024-05-21", &[(id, 6 * 60, 14 * 60)]);
+    assert_eq!(c.staff[0].holidays_worked.len(), 5);
+    ph::after_day(&mut c, "2025-06-01", &[]);
+    assert!(c.staff[0].holidays_worked.is_empty());
+}
+
+#[test]
+fn early_and_late_people_like_their_duties() {
+    use super::super::pro_pref::{self as pp, ShiftPref};
+    assert_eq!((pp::kind(5 * 60), pp::kind(7 * 60 + 59), pp::kind(8 * 60), pp::kind(12 * 60 + 59), pp::kind(13 * 60), pp::kind(22 * 60)), (ShiftPref::Early, ShiftPref::Early, ShiftPref::Neither, ShiftPref::Neither, ShiftPref::Late, ShiftPref::Late));
+    let mut c = company();
+    // (each driver one, the same every time, kept)
+    let drawn: Vec<ShiftPref> = c.staff.iter().map(pp::seed).collect();
+    assert_eq!(drawn, c.staff.iter().map(pp::seed).collect::<Vec<_>>());
+    assert!(c.staff.iter().all(|e| e.shift_pref.is_some()), "hired with one");
+    c.staff[0].shift_pref = None;
+    pp::seed_all(&mut c);
+    assert_eq!(c.staff[0].shift_pref, Some(drawn[0]));
+    // (a spread over many: all three)
+    let mut e = c.staff[0].clone();
+    let kinds: Vec<ShiftPref> = (0..200).map(|k| { e.id = 1000 + k; pp::seed(&e) }).collect();
+    for want in [ShiftPref::Early, ShiftPref::Late, ShiftPref::Neither] {
+        let n = kinds.iter().filter(|x| **x == want).count();
+        assert!((40..=100).contains(&n), "{want:?} {n}");
+    }
+    // (liked: a yes more likely and a little more content; not: less of both)
+    c.staff[0].shift_pref = Some(ShiftPref::Early);
+    let e = c.staff[0].clone();
+    assert_eq!((pp::fit(&e, 5 * 60), pp::fit(&e, 10 * 60), pp::fit(&e, 15 * 60)), (1, 0, -1));
+    assert_eq!((pp::bias(&c, &e, 5 * 60), pp::bias(&c, &e, 15 * 60)), (pp::LIKED, pp::DISLIKED));
+    let id = e.id;
+    c.staff[0].satisfaction = 60.0;
+    pp::after_day(&mut c, &[(id, 5 * 60, 13 * 60)]);
+    assert!((c.staff[0].satisfaction - (60.0 + pp::GLAD)).abs() < 1e-9);
+    pp::after_day(&mut c, &[(id, 15 * 60, 23 * 60)]);
+    assert!((c.staff[0].satisfaction - (60.0 + pp::GLAD - pp::SORRY)).abs() < 1e-9);
+    // (an older file: none, drawn when opened)
+    let old: Employee = serde_json::from_value({
+        let mut v = serde_json::to_value(&c.staff[1]).unwrap();
+        v.as_object_mut().unwrap().remove("shift_pref");
+        v
+    })
+    .unwrap();
+    assert_eq!((old.shift_pref, old.worked.len(), old.holidays_worked.len()), (None, 0, 0));
+    assert_eq!(pp::of(&old), pp::seed(&old));
+}
+
+#[test]
+fn many_long_days_make_a_driver_tired_and_days_off_rest_him() {
+    use super::super::pro_tired::{self as ptd, Level, Why};
+    let day = Some((6 * 60, 14 * 60));
+    let long = Some((5 * 60, 15 * 60));
+    let level = |v: &[ptd::Day]| ptd::assess(v);
+    assert_eq!(level(&[day; 5]).level, Level::Fresh);
+    assert_eq!(level(&[day; 6]), ptd::Tired { level: Level::Tired, why: Why::Days(6) });
+    assert_eq!(level(&[day; 8]).level, Level::Worn);
+    assert_eq!(level(&[day, long, long, long, long]), ptd::Tired { level: Level::Tired, why: Why::LongInRow(4) });
+    assert_eq!(level(&[long, long, day, long, long]), ptd::Tired { level: Level::Tired, why: Why::LongDays(4) });
+    assert_eq!(level(&[long; 6]).level, Level::Worn);
+    // (two short rests: a late duty, then an early one)
+    let late = Some((14 * 60, 22 * 60));
+    let early = Some((5 * 60, 13 * 60));
+    assert_eq!(level(&[late, early, late, early]), ptd::Tired { level: Level::Tired, why: Why::ShortRests(2) });
+    // (a day off: fresh that day; one alone after a hard streak a step less; two: rested)
+    assert_eq!(level(&[long, long, long, long, long, long, None]).level, Level::Fresh);
+    assert_eq!(level(&[long, long, long, long, long, long, None, day]), ptd::Tired { level: Level::Tired, why: Why::OneDayOff });
+    assert_eq!(level(&[long, long, long, long, long, long, None, None, day]).level, Level::Fresh);
+    // (tired: fewer yeses, more sick calls, slower)
+    assert!(ptd::yes(Level::Worn) < ptd::yes(Level::Tired) && ptd::yes(Level::Tired) < 1.0);
+    assert!(ptd::sick(Level::Worn) > ptd::sick(Level::Tired) && ptd::sick(Level::Tired) > 1.0);
+    assert!(ptd::slow(Level::Tired) > 1.0);
+    // (the night keeps the day as worked, two weeks)
+    let mut c = company();
+    let id = c.staff[0].id;
+    for k in 0..16 {
+        let d = dates::add("2024-03-04", k);
+        ptd::after_day(&mut c, &d, &[(id, 5 * 60, 10 * 60), (id, 11 * 60, 15 * 60 + 30)]);
+    }
+    let e = &c.staff[0];
+    assert_eq!(e.worked.len(), ptd::KEPT as usize);
+    assert_eq!(ptd::worked_on(e, "2024-03-19"), Some((5 * 60, 15 * 60 + 30)));
+    assert_eq!(ptd::worked_on(e, "2024-03-05"), None);
+    assert_eq!(ptd::today(e, "2024-03-20", Some((5 * 60, 15 * 60))).level, Level::Worn);
+    assert_eq!(ptd::driving(&c, e, "2024-03-20"), Level::Worn);
+    assert_eq!(ptd::driving(&c, &c.staff[1], "2024-03-20"), Level::Fresh);
+}
+
+#[test]
+fn a_tired_driver_or_a_duty_not_liked_gets_fewer_yeses() {
+    use super::super::pro_pref::ShiftPref;
+    use super::super::pro_tired::Level;
+    let mut c = company();
+    c.staff[0].shift_pref = Some(ShiftPref::Neither);
+    let e = c.staff[0].clone();
+    let yes = |c: &Company, e: &Employee, tired: Level, start: i32| (1..400u32).filter(|&n| matches!(ai_reply(c, e, "2024-03-06", n, start, start + 6 * 60, &Situation { tired, ..calm() }), Reply::Yes { .. })).count();
+    let fresh = yes(&c, &e, Level::Fresh, 9 * 60);
+    let worn = yes(&c, &e, Level::Worn, 9 * 60);
+    assert!(worn + 40 < fresh, "{worn} {fresh}");
+    let mut late = e.clone();
+    late.shift_pref = Some(ShiftPref::Late);
+    let liked = yes(&c, &late, Level::Fresh, 14 * 60);
+    late.shift_pref = Some(ShiftPref::Early);
+    let disliked = yes(&c, &late, Level::Fresh, 14 * 60);
+    assert!(disliked + 30 < liked, "{disliked} {liked}");
+}

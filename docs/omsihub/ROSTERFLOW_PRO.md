@@ -826,3 +826,74 @@ Tested: `pro_ops::tests` (`ill_set_in_the_turnus_tab_is_the_staff_cards_illness_
 `a_swap_in_the_turnus_tab_changes_both_drivers_at_once_and_is_undone_before_its_day`,
 `a_swap_of_the_daily_operations_is_kept_told_and_undone_with_both_duties`) and the API's
 `rosterflow::turnus::tests::the_turnus_tab_undoes_and_redoes_and_ill_and_holiday_are_the_staff_cards`.
+
+## Round D (5 November 2026): holiday pay, early and late people, tired drivers
+
+### The public holidays (`co::pro_holiday`)
+
+- **Which days** (`name`, `is`): a company playing in Denmark (`econ_uk::country_of`) keeps the
+  Danish holidays (`service::danish_public_holiday`): New Year's Day, Maundy Thursday, Good Friday,
+  Easter Sunday, Easter Monday, Ascension Day, Whit Sunday, Whit Monday, Christmas Day and the Second
+  Day of Christmas, Great Prayer Day until 2023. Every other company keeps the common German and
+  Dutch ones (`service::common_public_holiday`): New Year's Day, Good Friday, Easter Monday, Labour
+  Day, Ascension Day, Whit Monday and the two days of Christmas. Christmas Eve and New Year's Eve
+  are no public holidays in either. These are the same functions the timetables' day types use.
+- **The calendar** (`rf_cal`): a holiday's day header has its name under the date ("✦ Easter
+  Sunday", `days[].holiday`, tooltip "Easter Sunday: a public holiday - paid as a Sunday (35 %)"),
+  and the popup's duty line names it.
+- **The pay** (`pay::supplement_rate_on`, `supplement_minutes_on`): a holiday is paid as a Sunday
+  (`pay::SUNDAY`, 35 %) all day; the highest supplement of a minute counts, as before, so a holiday
+  evening is 35 %, not 50 %. A duty past midnight is paid by the next day's (`pro_holiday::days`:
+  the day and the next). The night's pay (`pay::day`), the week's cost (`pro_cost::week`: its days
+  are now dates, `WeekCost::holidays` the holidays' share: "of it holiday pay 1.230 kr.") and a
+  driver's price in the popup ("· +410 kr. holiday pay") all count it.
+- **The drivers**: asked for an extra duty on a holiday a driver says yes less often
+  (`pro_holiday::bias`, ×0.75). Each holiday a driver works is kept (`Employee::holidays_worked`,
+  twelve months, `after_day`); from the fourth in twelve months (`MANY` = 3) each costs two points
+  of satisfaction (`COST`). The staff card says "Public holidays worked this year".
+
+### Early or late people (`co::pro_pref`)
+
+- **Who is which** (`Employee::shift_pref`): early, late or neither, about a third each. A driver
+  hired gets theirs drawn from their number and name (`seed`, the same every time); a driver of an
+  older file gets the same drawn when the company is opened (`seed_all`, `store::migrate`).
+- **Early or late** (`kind`): a duty signing on before 08:00 (`EARLY_BEFORE`) is early, one signing
+  on at 13:00 or later (`LATE_FROM`) late, the day duties between are neither.
+- **What it does**: a duty they like gives a yes more often (`bias`, ×1.25), one they do not less
+  often (×0.7); a day worked on a duty they like adds 0.4 points of satisfaction (`after_day`,
+  `GLAD`), one they do not takes 0.6 (`SORRY`). The dispatcher's own choice between two drivers
+  otherwise equal (`plan::day_plan`'s score, before experience) takes the one who likes the duty
+  (`fit`). The rotas are not changed by it: every driver goes through all the weeks of a rota.
+- **Shown**: on the staff card ("Preference: 🌅 Prefers early duties", or "No preference") and by
+  each name in the popup (`rows[].pref`: green when the duty fits, orange when not).
+
+### Tired drivers (`co::pro_tired`)
+
+- **How tired** (`assess`): from the working days up to the day (each its first sign-on and last
+  sign-off), those since the last day off - the streak -, how many there are, how many long (over
+  9 hours from sign-on to sign-off, `LONG`) and how many rests between them short (under 11 hours,
+  `pro_rest::DAILY_REST`):
+  * **Tired** ("😮‍💨 Tired"): 6 working days in a row, 4 long days or 2 short rests.
+  * **Worn out** ("🥱 Worn out"): 8 working days in a row, 6 long days, 4 short rests, or 6 days in
+    a row of which 4 long.
+  * The reason said: "6 long days in a row" (the last long days, 4 or more), "5 long days without a
+    day off", "7 working days in a row", "2 short rests without a day off".
+  * A day off ends the streak; one day off alone after a hard streak leaves them a step less tired
+    ("only one day off after a hard week"), two and they are fresh.
+- **The days** (`on_day`): the days gone as worked (`Employee::worked`, the night's pieces kept for
+  two weeks, `after_day` from `day::close_day`), the company's day and those ahead as planned. The
+  calendar reads the plans of the two weeks before the first day shown (from the company's day on);
+  the popup those of the duty's day, the duty asked for on top.
+- **What it does**: a yes to an extra duty less often (`yes`: tired ×0.8, worn out ×0.55, in
+  `pro_ops::ai_reply` through `Situation::tired`); a sick call on the day more often (`sick`: ×1.6,
+  ×2.5, `pro_sick::draws`); more minutes lost on the way, late more often (`slow`: ×1.4, ×1.8,
+  `lateness::model_with`'s driver share).
+- **Shown**: 😮‍💨 or 🥱 in the corner of the driver's cell of the day with the reason
+  (`rf_cal` cells' `tired`), in the popup's row (`rows[].tired`: "😮‍💨 Tired – 6 long days in a
+  row"), and on the staff card ("Tiredness", by the days up to yesterday). A part of a cut duty is
+  not given it.
+
+Tested: `pro_ops::tests` (`the_public_holidays_have_their_names_and_are_paid_as_a_sunday`,
+`working_many_holidays_makes_a_driver_less_content`, `early_and_late_people_like_their_duties`,
+`many_long_days_make_a_driver_tired_and_days_off_rest_him`,
+`a_tired_driver_or_a_duty_not_liked_gets_fewer_yeses`).

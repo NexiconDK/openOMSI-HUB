@@ -1880,7 +1880,10 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
     // their day filled without overtime)
     let people: Vec<&Employee> = c.staff.iter().filter(|e| unavailable(e, date, today).is_none()).chain(booked.iter().copied()).collect();
     let pick = |work: &Work, bus: &(BusKind, Option<String>), block: &Block, open: bool| -> Option<(u32, Vec<Warn>)> {
-        let mut best: Option<((u8, bool, bool, i32, u32, i64), u32, Vec<Warn>)> = None;
+        let mut best: Option<((u8, bool, bool, i32, u32, i8, i64), u32, Vec<Warn>)> = None;
+        // (RosterFlow Pro, round D: between drivers otherwise equal, the one who likes the duty -
+        // early or late, `pro_pref`)
+        let pro = super::pro_duties::on(c);
         for e in &people {
             let is_booked = super::agency::is_booked(e.id);
             if is_booked && !super::agency::within(c, e.id, block) {
@@ -1890,7 +1893,8 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
             let worked = staff::work_minutes(work.of(e.id));
             let fills = worked > 0 && !w.iter().any(|x| matches!(x, Warn::Overtime(_)));
             let first = if open { worked == 0 } else { fills };
-            let score = (TIER_BOOKED - fill_tier(c, e, date, block), staff::qualified(e, bus.0.size), first, -worked, WEEK_DAYS.saturating_sub(e.week_days), (e.experience * 10.0) as i64);
+            let liked = if pro { super::pro_pref::fit(e, block.from) } else { 0 };
+            let score = (TIER_BOOKED - fill_tier(c, e, date, block), staff::qualified(e, bus.0.size), first, -worked, WEEK_DAYS.saturating_sub(e.week_days), liked, (e.experience * 10.0) as i64);
             if best.as_ref().is_none_or(|b| score > b.0) {
                 best = Some((score, e.id, w));
             }
@@ -2168,6 +2172,9 @@ pub fn agency_driver() -> Employee {
         free_days: Vec::new(),
         toil: 0.0,
         sick_planned: Vec::new(),
+        shift_pref: None,
+        worked: Vec::new(),
+        holidays_worked: Vec::new(),
     }
 }
 

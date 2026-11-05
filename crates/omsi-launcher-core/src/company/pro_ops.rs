@@ -621,6 +621,8 @@ pub struct Situation {
     /// From when, or until when, he could work (his rest to his other work, his own hours).
     pub can_from: Option<i32>,
     pub can_until: Option<i32>,
+    /// (round D) How tired he is that day with the duty (`pro_tired`).
+    pub tired: super::pro_tired::Level,
 }
 
 /// An hourly-paid driver's own hours of the day (from, to: minutes of the day), as he says them
@@ -770,6 +772,9 @@ pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: 
     }
     // (round B: his wishes - the day off he asked for, early duties, no split duty, more hours)
     p *= super::pro_wish::bias(c, e.id, date, start, end);
+    // (round D: early or late as he likes it, a public holiday, tired - `pro_pref`, `pro_holiday`,
+    // `pro_tired`)
+    p *= super::pro_pref::bias(c, e, start) * super::pro_holiday::bias(c, date) * super::pro_tired::yes(s.tired);
     if irritated {
         return if moody.chance(p.clamp(0.08, 0.95) * IRRITATED_YES) { Reply::Grudging { say } } else { no(NoWhy::Annoyed) };
     }
@@ -1148,6 +1153,9 @@ pub fn texts() -> Vec<&'static str> {
     v.extend(super::pro_toil::texts());
     v.extend(super::pro_absence::texts());
     v.extend(super::pro_swap::texts());
+    v.extend(super::pro_holiday::texts());
+    v.extend(super::pro_pref::texts());
+    v.extend(super::pro_tired::texts());
     for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP, &SAY_ANNOYED, &SAY_ANGRY, &SAY_GRUDGING] {
         v.extend(list.iter().copied());
     }

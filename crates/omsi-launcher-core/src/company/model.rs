@@ -690,6 +690,17 @@ pub struct Employee {
     /// they become `sick_until` (`pro_absence`). The same illness as the staff card's.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub sick_planned: Vec<String>,
+    /// (NexiconDK, 5 November 2026: RosterFlow Pro, round D) Whether they like the early duties,
+    /// the late ones or neither (`pro_pref`; None: a driver of before - drawn when the company is
+    /// opened).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shift_pref: Option<super::pro_pref::ShiftPref>,
+    /// (round D) Their working days of the last two weeks, as worked (`pro_tired`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub worked: Vec<super::pro_tired::Worked>,
+    /// (round D) The public holidays they worked in the last twelve months (`pro_holiday`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub holidays_worked: Vec<String>,
 }
 
 fn is_nothing(x: &f64) -> bool {

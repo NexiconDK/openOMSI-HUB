@@ -362,6 +362,22 @@ fn person(c: &Company, plan: Option<&Plan>, e: &Employee) -> Value {
         let h = e.toil / 60.0;
         facts.push(json!([tr("Time off in lieu"), trf("%{h} h", &[("h", &num(h, if (h * 10.0).round() % 10.0 == 0.0 { 0 } else { 1 }))])]));
     }
+    // (NexiconDK, 5 November 2026: RosterFlow Pro, round D - early, late or neither; how tired
+    // after the days worked; the public holidays worked this year)
+    if co::pro_duties::on(c) && staff::drives(e) {
+        let pref = co::pro_pref::label(co::pro_pref::of(e)).unwrap_or(co::pro_pref::NO_PREFERENCE);
+        facts.push(json!([tr(co::pro_pref::SHIFTS), tr(pref)]));
+        let yesterday = co::dates::add(&c.date, -1);
+        let t = co::pro_tired::on_day(&yesterday, &|d| co::pro_tired::worked_on(e, d));
+        if let Some(l) = t.level.label() {
+            let why = t.why.words().map(|(w, n)| trf(w, &[("n", &n.to_string())]));
+            facts.push(json!([tr("Tiredness"), why.map_or_else(|| tr(l), |w| format!("{} – {w}", tr(l)))]));
+        }
+        let n = co::pro_holiday::worked(e, &c.date);
+        if n > 0 {
+            facts.push(json!([tr("Public holidays worked this year"), n.to_string()]));
+        }
+    }
     // (NexiconDK, 4 November 2026: how a driver is employed, and a change given notice)
     let employment = staff::drives(e).then(|| {
         let next = e.employment_next.as_ref().map(|x| trf("From %{date}: %{what}", &[("date", &day_label(&x.from)), ("what", &employment_text(c, &x.to))]));

@@ -29,7 +29,7 @@ use omsi_launcher_lib::company::pro_duties as pd;
 use omsi_launcher_lib::company::pro_cut::{self as pc, How};
 use omsi_launcher_lib::company::pro_ops::{self as po, Asked, DayIs, OpenDuty, Price, Reply, Rule};
 use omsi_launcher_lib::company::pro_rest::{self as pr, Breach};
-use omsi_launcher_lib::company::{pro_cost as pcost, pro_swap as psw, pro_toil as ptl, pro_wish as pw};
+use omsi_launcher_lib::company::{pro_cost as pcost, pro_holiday as ph, pro_pref as pp, pro_swap as psw, pro_tired as ptd, pro_toil as ptl, pro_wish as pw};
 use omsi_launcher_lib::company::pro_turnus::{self as pt, ProDuty, Week};
 use omsi_launcher_lib::company::{self as co, Company};
 use serde_json::{json, Value};
@@ -263,20 +263,31 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
         }
         Some(Ok(w)) => w,
     };
-    let plans = match plans_of(s, r, &dates) {
+    let mut plans = match plans_of(s, r, &dates) {
         Ok(p) => p,
         Err(e) => {
             out["reading"] = json!(e);
             return Ok(out);
         }
     };
+    // (round D: the days before the first shown from the company's day on - how tired the drivers
+    // are; one not read yet is left out)
+    let mut before = Vec::new();
+    tired_days(&c, &first, &mut before);
+    for d in before {
+        if let Some(Ok(p)) = plan_on(s, r, &d) {
+            plans.insert(d, p);
+        }
+    }
     let duties: HashMap<&str, Vec<ProDuty>> = dates.iter().filter_map(|d| plans.get(d).map(|p| (d.as_str(), duties_for(&c, &week, p)))).collect();
     let days: Vec<Value> = dates
         .iter()
         .map(|d| {
             let missing = plans.get(d).map_or(0, |p| open_items(&c, p, &duties[d.as_str()]).len());
             json!({ "date": d, "wd": tr(DAYS[pt::day_of(d)]), "name": day_name(d), "day": short_date(d), "today": *d == c.date, "past": co::dates::between(&c.date, d) < 0, "missing": missing, "label": day_label(d),
-                "missing_text": match missing { 0 => tr("all filled"), 1 => tr("duty missing"), _ => tr("duties missing") } })
+                "missing_text": match missing { 0 => tr("all filled"), 1 => tr("duty missing"), _ => tr("duties missing") },
+                // (round D: a public holiday - its name, paid as a Sunday)
+                "holiday": ph::name(&c, d).map(tr), "holiday_tip": ph::name(&c, d).map(|n| trf("%{name}: a public holiday - paid as a Sunday (35 %)", &[("name", &tr(n))])) })
         })
         .collect();
     let want = str_arg(args, "kind");
@@ -301,6 +312,13 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                     let mine = p.duties_of(plan::Who::Staff(e.id));
                     let mut v = cell_json(&day, ds, halves(p, &mine, sign_on), for_whom(&c, e.id, d));
                     v["date"] = json!(d);
+                    // (round D: tired that day - 😮‍💨, and why)
+                    if matches!(day.is, DayIs::Duties { .. }) {
+                        let t = tired_of(&c, &week, &plans, e, d, None);
+                        if let Some(words) = tired_words(t) {
+                            v["tired"] = json!({ "key": t.level.key(), "text": words });
+                        }
+                    }
                     // (round C: a swap he is in that day - ⇄, and with whom)
                     if let Some((_, other)) = psw::of_driver(&c, e.id, d) {
                         v["swap"] = json!(trf("⇄ Swapped with %{name}", &[("name", &name_in(&c)(other))]));
@@ -356,7 +374,7 @@ fn week_cost(c: &Company, week: &Week, plans: &HashMap<String, DayPlan>, sunday:
     let dates = po::week_dates(sunday);
     let mut total = pcost::WeekCost::default();
     for e in drivers(c) {
-        let mut days: Vec<(u32, Vec<(i32, i32)>)> = Vec::new();
+        let mut days: Vec<(String, Vec<(i32, i32)>)> = Vec::new();
         let mut minutes: HashMap<&str, f64> = HashMap::new();
         let (mut toil_days, mut saving) = (0.0, 0.0);
         for d in &dates {
@@ -369,7 +387,7 @@ fn week_cost(c: &Company, week: &Week, plans: &HashMap<String, DayPlan>, sunday:
                 continue;
             }
             let pieces: Vec<(i32, i32)> = p.duties_of(plan::Who::Staff(e.id)).into_iter().map(|(ti, k)| po::pay_piece(c, p, ti, k)).collect();
-            days.push((co::dates::parse(d).map(co::dates::weekday).unwrap_or(0), pieces));
+            days.push((d.clone(), pieces));
             toil_days += co::pay::toil_day(e, d).unwrap_or(0.0);
             saving += po::calls_on(c, d).filter(|x| x.driver == e.id && x.toil).map(|x| ds.iter().find(|y| y.number == x.n).map_or(0.0, |y| y.paid as f64)).sum::<f64>();
         }
@@ -377,10 +395,14 @@ fn week_cost(c: &Company, week: &Week, plans: &HashMap<String, DayPlan>, sunday:
         total += pcost::week(c, e, m, &days, toil_days, saving);
     }
     let mut parts = vec![trf("Wages of the week %{amount}", &[("amount", &eur(total.wages))]), trf("of it overtime %{amount}", &[("amount", &eur(total.overtime))]), trf("supplements %{amount}", &[("amount", &eur(total.supplements))])];
+    // (round D: the public holidays' share of the supplements)
+    if total.holidays > 0 {
+        parts.push(trf("of it holiday pay %{amount}", &[("amount", &eur(total.holidays))]));
+    }
     if total.saved >= 1.0 {
         parts.push(trf("%{h} h saved as time off in lieu", &[("h", &hours(total.saved))]));
     }
-    json!({ "parts": parts, "label": week_label(sunday), "tip": tr("As planned: the contract weeks, the overtime, the supplements of the evening, the night and the weekend, without the on-costs.") })
+    json!({ "parts": parts, "label": week_label(sunday), "tip": tr("As planned: the contract weeks, the overtime, the supplements of the evening, the night, the weekend and the public holidays, without the on-costs.") })
 }
 
 /// Why a duty is open, in words.
@@ -419,6 +441,12 @@ fn price_short(p: &Price, cost: Cents) -> (String, bool) {
 /// – within the contract", the supplements of the evening, the night and the weekend on top
 /// (`supp`: "· +180 kr. supplements").
 fn price_words(p: &Price, cost: Cents, supp: Cents) -> (String, bool) {
+    price_words_on(p, cost, supp, false)
+}
+
+/// (round D) As `price_words`, the supplements a public holiday's (`holiday`): "· +410 kr.
+/// holiday pay".
+fn price_words_on(p: &Price, cost: Cents, supp: Cents, holiday: bool) -> (String, bool) {
     let money = format!("+{}", eur(cost));
     let (mut words, over) = match p {
         Price::Frame => (trf("%{cost} – within the frame", &[("cost", &format!("+{}", eur(0)))]), false),
@@ -429,7 +457,8 @@ fn price_words(p: &Price, cost: Cents, supp: Cents) -> (String, bool) {
         Price::Agency { minutes } => (trf("%{cost} agency (%{t})", &[("cost", &money), ("t", &length(*minutes))]), false),
     };
     if supp > 0 {
-        words = format!("{words} · {}", trf("+%{cost} supplements", &[("cost", &eur(supp))]));
+        let what = if holiday { "+%{cost} holiday pay" } else { "+%{cost} supplements" };
+        words = format!("{words} · {}", trf(what, &[("cost", &eur(supp))]));
     }
     (words, over)
 }
@@ -474,6 +503,47 @@ fn span_on(c: &Company, week: &Week, plans: &HashMap<String, DayPlan>, e: &Emplo
     match po::driver_day(c, e, p, &duties_for(c, week, p)).is {
         DayIs::Duties { numbers, start, end, .. } => Some((start, end, numbers.first().copied().unwrap_or(0))),
         _ => None,
+    }
+}
+
+/// (round D) Driver `e`'s working day `date` for how tired he is (`pro_tired`): a day gone as he
+/// worked it, the others as the plans have them.
+fn work_day(c: &Company, week: &Week, plans: &HashMap<String, DayPlan>, e: &Employee, date: &str) -> ptd::Day {
+    if co::dates::between(&c.date, date) < 0 {
+        return ptd::worked_on(e, date);
+    }
+    span_on(c, week, plans, e, date).map(|x| (x.0, x.1))
+}
+
+/// (round D) How tired driver `e` is on `date` - with open duty `d` on top when given (asked
+/// for it: his day with it).
+fn tired_of(c: &Company, week: &Week, plans: &HashMap<String, DayPlan>, e: &Employee, date: &str, d: Option<&OpenDuty>) -> ptd::Tired {
+    ptd::on_day(date, &|x| {
+        let w = work_day(c, week, plans, e, x);
+        match d.filter(|_| x == date) {
+            Some(d) => Some(w.map_or((d.start, d.end), |w| (w.0.min(d.start), w.1.max(d.end)))),
+            None => w,
+        }
+    })
+}
+
+/// (round D) How tired, in words: "😮‍💨 Tired – 6 long days in a row" (None: fresh).
+fn tired_words(t: ptd::Tired) -> Option<String> {
+    let l = tr(t.level.label()?);
+    Some(match t.why.words() {
+        Some((w, n)) => format!("{l} – {}", trf(w, &[("n", &n.to_string())])),
+        None => l,
+    })
+}
+
+/// (round D) The days before `date` the plans are wanted for, to know how tired the drivers are
+/// (`pro_tired::KEPT`): from the company's day on - the days gone are known as worked.
+fn tired_days(c: &Company, date: &str, need: &mut Vec<String>) {
+    for k in (1..ptd::KEPT).rev() {
+        let x = co::dates::add(date, -k);
+        if co::dates::between(&c.date, &x) >= 0 && !need.contains(&x) {
+            need.push(x);
+        }
     }
 }
 
@@ -594,7 +664,7 @@ fn row_json(c: &Company, p: &DayPlan, d: &OpenDuty, part: Option<u8>, e: &Employ
     // (round B: the supplements of its pieces for him on top)
     let pieces: Vec<(i32, i32)> = d.pieces.iter().map(|&(ti, k)| po::pay_piece(c, p, ti, k)).collect();
     let supp = pcost::duty_supplement(c, e, date, &pieces);
-    let (words, over) = price_words(price.0, price.1, supp);
+    let (words, over) = price_words_on(price.0, price.1, supp, ph::is(c, date));
     let rule = po::rule_of(c, e, date, tier);
     let ask = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == n && a.part == part && !a.closed && a.of_staff() == Some(e.id)).max_by_key(|a| a.id);
     let shown = ask.and_then(|a| a.shown_at(game, now));
@@ -697,7 +767,7 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
         let Some(e) = c.employee(x.id) else { continue };
         // (round C: on another duty then, with a free colleague who could take his own: he can be
         // asked - his answer may be a swap, both changed at once)
-        let sit = matches!(x.fit, Err(Cannot::OnDuty { .. })).then(|| situation(c, p, ds, d, e, Some(x)));
+        let sit = matches!(x.fit, Err(Cannot::OnDuty { .. })).then(|| situation(c, p, ds, d, e, Some(x), ptd::Level::Fresh));
         let offer = sit.as_ref().and_then(|s| Some((s.own?.0, s.swap_with?)));
         let asked_swap = said_of(c, p.date.as_str(), d.n, None).iter().any(|(id, r)| *id == e.id && matches!(r, Reply::Swap { .. }));
         let fit: Result<(), Cannot> = if offer.is_some() || asked_swap { Ok(()) } else { x.fit.clone() };
@@ -925,6 +995,8 @@ fn daily(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             need.push(x);
         }
     }
+    // (round D: the days before - how tired the drivers are)
+    tired_days(&c, &date, &mut need);
     let plans = match plans_of(s, r, &need) {
         Ok(p) => p,
         Err(e) => {
@@ -1002,6 +1074,22 @@ fn daily(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     }
     let Some(d) = open.iter().find(|o| o.n == n) else { return Ok(out) };
     out["duty"] = who_json(&c, p, &ds, d, &weekly, &rest, str_arg(args, "sort") == "fair");
+    // (round D: by each driver early or late as he likes it, and how tired he would be with it)
+    if let Some(groups) = out["duty"]["groups"].as_array_mut() {
+        for row in groups.iter_mut().filter_map(|g| g["rows"].as_array_mut()).flatten() {
+            let Some(e) = row["id"].as_u64().and_then(|id| c.employee(id as u32)) else { continue };
+            if let Some(l) = pp::label(pp::of(e)) {
+                row["pref"] = json!({ "text": tr(l), "fits": pp::fit(e, d.start) });
+            }
+            let t = tired_of(&c, &week, &plans, e, &date, Some(d));
+            if let Some(words) = tired_words(t) {
+                row["tired"] = json!({ "key": t.level.key(), "text": words });
+            }
+        }
+    }
+    if let Some(name) = ph::name(&c, &date) {
+        out["duty"]["holiday"] = json!(tr(name));
+    }
     out["waiting"] = json!(po::asks_of(&c, &date, d.n).any(|a| a.reply.is_some() && a.shown_at(co::clock::now(&c), now()).is_none()));
     Ok(out)
 }
@@ -1011,7 +1099,7 @@ fn said(text: impl Into<String>, error: bool) -> Value {
 }
 
 /// What an AI driver's answer is decided from: his day in the plan `p` against open duty `d`.
-fn situation(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, e: &Employee, cand: Option<&po::Cand>) -> po::Situation {
+fn situation(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, e: &Employee, cand: Option<&po::Cand>, tired: ptd::Level) -> po::Situation {
     let fit = cand.map_or_else(|| po::fit_of(c, p, e, &d.pieces), |x| x.fit.clone());
     let in_frame = cand.is_some_and(|x| x.tier == plan::TIER_RESERVE);
     // (his own duty that day, and a free colleague who could take it)
@@ -1027,13 +1115,13 @@ fn situation(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, e: &Employe
     let from = d.pieces.iter().map(|&(ti, k)| p.tours[ti].duties[k].from).min().unwrap_or(d.start);
     let to = d.pieces.iter().map(|&(ti, k)| p.tours[ti].duties[k].to).max().unwrap_or(d.end);
     let (can_from, can_until) = po::could(p, e, &d.pieces, from, to);
-    po::Situation { fit, in_frame, week: cand.map_or(0.0, |x| x.week), contract: po::contract_minutes(c, e), own, swap_with, can_from, can_until }
+    po::Situation { fit, in_frame, week: cand.map_or(0.0, |x| x.week), contract: po::contract_minutes(c, e), own, swap_with, can_from, can_until, tired }
 }
 
 /// The duty (or part of a cut duty) of an act: the plans, the date's duties, it as an open duty,
 /// the drivers' weeks, and the rest rules it would break for each - or what to say.
 #[allow(clippy::type_complexity)]
-fn target(s: &mut Session, r: &mut Rf, c: &Company, date: &str, n: u32, part: Option<u8>) -> Result<(DayPlan, Vec<ProDuty>, OpenDuty, HashMap<u32, f64>, HashMap<u32, Vec<Breach>>), Value> {
+fn target(s: &mut Session, r: &mut Rf, c: &Company, date: &str, n: u32, part: Option<u8>) -> Result<(DayPlan, Vec<ProDuty>, OpenDuty, HashMap<u32, f64>, HashMap<u32, Vec<Breach>>, HashMap<u32, ptd::Level>), Value> {
     let week = match super::turnus::week_duties(s, r) {
         Some(Ok(w)) => w,
         Some(Err(e)) => return Err(said(e, true)),
@@ -1045,6 +1133,7 @@ fn target(s: &mut Session, r: &mut Rf, c: &Company, date: &str, n: u32, part: Op
             need.push(x);
         }
     }
+    tired_days(c, date, &mut need);
     let plans = plans_of(s, r, &need).map_err(|e| said(e, true))?;
     let p = plans.get(date).cloned().ok_or_else(|| json!({}))?;
     let ds = duties_for(c, &week, &p);
@@ -1058,7 +1147,9 @@ fn target(s: &mut Session, r: &mut Rf, c: &Company, date: &str, n: u32, part: Op
     };
     let weekly = week_of_drivers(c, &week, &plans, date);
     let breaks = drivers(c).into_iter().map(|e| (e.id, breaches_of(c, &week, &plans, e, date, &d, &weekly))).collect();
-    Ok((p, ds, d, weekly, breaks))
+    // (round D: how tired each would be with it)
+    let tired = drivers(c).into_iter().map(|e| (e.id, tired_of(c, &week, &plans, e, date, Some(&d)).level)).collect();
+    Ok((p, ds, d, weekly, breaks, tired))
 }
 
 /// The week's duties and the plans of `date`'s week and the days around it (the rest rules).
@@ -1115,7 +1206,7 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     };
     Ok(match what.as_str() {
         "ask" => {
-            let (p, ds, d, weekly, _) = match target(s, r, &c, &date, n, part) {
+            let (p, ds, d, weekly, _, tired) = match target(s, r, &c, &date, n, part) {
                 Ok(x) => x,
                 Err(v) => return Ok(v),
             };
@@ -1125,7 +1216,7 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             let mut who: Vec<(Asked, Option<Reply>)> = Vec::new();
             for id in &ids {
                 let Some(e) = c.employee(*id) else { continue };
-                let sit = situation(&c, &p, &ds, &d, e, cands.iter().find(|x| x.id == *id));
+                let sit = situation(&c, &p, &ds, &d, e, cands.iter().find(|x| x.id == *id), tired.get(id).copied().unwrap_or_default());
                 who.push((Asked::Staff { id: *id }, Some(po::ai_reply(&c, e, &date, d.n, d.start, d.end, &sit))));
             }
             if date == c.date {
@@ -1139,7 +1230,7 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             edit(s, words, &mut |c| po::ask_part(c, &date, d.n, part, d.start, d.end, who.clone(), at, &|id| weekly.get(&id).copied().unwrap_or(0.0)).map(|_| ()))
         }
         "give" => {
-            let (p, ds, d, weekly, breaks) = match target(s, r, &c, &date, n, part) {
+            let (p, ds, d, weekly, breaks, _) = match target(s, r, &c, &date, n, part) {
                 Ok(x) => x,
                 Err(v) => return Ok(v),
             };
@@ -1208,7 +1299,7 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             if date != c.date {
                 return Ok(said(tr("A player can only be given a duty of the company's day."), true));
             }
-            let (p, _, d, _, _) = match target(s, r, &c, &date, n, None) {
+            let (p, _, d, _, _, _) = match target(s, r, &c, &date, n, None) {
                 Ok(x) => x,
                 Err(v) => return Ok(v),
             };
@@ -1259,7 +1350,7 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             edit(s, words, &mut |c| psw::undo(c, no).map(|_| ()))
         }
         "cut" => {
-            let (p, ds, d, weekly, _) = match target(s, r, &c, &date, n, None) {
+            let (p, ds, d, weekly, _, _) = match target(s, r, &c, &date, n, None) {
                 Ok(x) => x,
                 Err(v) => return Ok(v),
             };
@@ -1286,7 +1377,7 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             if !co::live_pay::agency_runs_open(&c) {
                 return Ok(said(tr("Agency drivers are not used here: duties nobody covers are dropped."), true));
             }
-            let (p, _, d, _, _) = match target(s, r, &c, &date, n, part) {
+            let (p, _, d, _, _, _) = match target(s, r, &c, &date, n, part) {
                 Ok(x) => x,
                 Err(v) => return Ok(v),
             };

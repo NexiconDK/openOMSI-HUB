@@ -1488,7 +1488,14 @@ pub fn hire_as(c: &mut Company, a: &Applicant, employment: Employment) -> Result
         free_days: Vec::new(),
         toil: 0.0,
         sick_planned: Vec::new(),
+        shift_pref: None,
+        worked: Vec::new(),
+        holidays_worked: Vec::new(),
     });
+    // (RosterFlow Pro, round D: early, late or neither - `pro_pref`)
+    if let Some(e) = c.staff.last_mut() {
+        e.shift_pref = Some(super::pro_pref::seed(e));
+    }
     // (the induction: the fleet's models)
     if a.role == Role::Driver {
         super::licences::induction(c, id);

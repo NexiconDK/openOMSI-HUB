@@ -145,6 +145,8 @@ function Row({ v, n, part, x }) {
       <div class="bx-name">${x.name}${x.mood && html` <span class=${'bx-mood ' + x.mood.key}>${x.mood.text}</span>`}${x.extra && html` <span class="bx-extra">${x.extra}</span>`}</div>
       <div class=${'bx-sub' + (x.over && !toil ? ' op-over' : '') + (toil ? ' bx-saved' : '')}>${sub}</div>
       ${x.wish && x.wish.map((w) => html`<div class="bx-wish">${w}</div>`)}
+      ${x.pref && html`<div class=${'bx-pref' + (x.pref.fits > 0 ? ' fits' : x.pref.fits < 0 ? ' nofit' : '')}>${x.pref.text}</div>`}
+      ${x.tired && html`<div class=${'bx-tired ' + x.tired.key}>${x.tired.text}</div>`}
       ${x.toil && giving && html`<span class="cl-seg bx-toil">${x.toil.options.map(([k, l]) => html`<button type="button" class=${(k === 'save') === !!toil ? 'on' : ''} onClick=${() => setSave(k === 'save')}>${l}</button>`)}</span>`}
       ${x.note && html`<div class="bx-sub">${x.note}</div>`}
       ${x.offer && html`<div class="bx-swapoffer">${x.offer}</div>`}
@@ -285,7 +287,7 @@ function DayList({ date }) {
 function Pop({ date }) {
   const v = useBox(date, st().n ?? null);
   const ok = v && !v.reading && !v.off;
-  const head = !v ? [tr('Reading the timetable…'), ''] : v.cut ? [v.cut.title, v.cut.sub] : v.duty ? [v.duty.title, `${v.duty.sub} · ${v.duty.why}`] : ok ? [v.heading, v.count?.text] : [v.reading || '', ''];
+  const head = !v ? [tr('Reading the timetable…'), ''] : v.cut ? [v.cut.title, v.cut.sub] : v.duty ? [v.duty.title, `${v.duty.sub} · ${v.duty.why}${v.duty.holiday ? ` · ${v.duty.holiday}` : ''}`] : ok ? [v.heading, v.count?.text] : [v.reading || '', ''];
   const bad = ok && !v.cut && !v.duty && v.open?.length > 0;
   return html`<div class="rf-sheetdim op-popdim" onMouseDown=${(e) => e.target === e.currentTarget && closePop()}>
     <div class="rf-help op-pop" role="dialog" aria-modal="true">
@@ -358,13 +360,15 @@ function Days({ v, x, o }) {
     const star = c.wish && html`<i class="cl-star" title=${c.wish}>★</i>`;
     // (round C: a swap he is in that day - both drivers changed at once)
     const swap = c.swap && html`<i class="cl-swap" title=${c.swap}>⇄</i>`;
-    const tip = [c.swap, c.wish || c.tip].filter(Boolean).join(' · ');
+    // (round D: tired that day - 😮‍💨 / 🥱, and why)
+    const tired = c.tired && html`<i class=${'cl-tired ' + c.tired.key} title=${c.tired.text}>${c.tired.key === 'worn' ? '🥱' : '😮‍💨'}</i>`;
+    const tip = [c.tired?.text, c.swap, c.wish || c.tip].filter(Boolean).join(' · ');
     if (c.kind === 'off' || c.kind === 'away') {
       out.push(html`<div class=${'cl-cell off' + past + (c.wish ? ' wish' : '') + (c.swap ? ' swapped' : '')} title=${tip}>${c.label === '–' ? '–' : html`<b>${c.label}</b>`}${star}${swap}</div>`);
       continue;
     }
     out.push(html`<button type="button" class=${'cl-cell ' + c.cls + past + (c.wish ? ' wish' : '') + (c.swap ? ' swapped' : '')} title=${tip} onClick=${() => setO({ date: v.days[i].date, n: null, pop: true, given: null })}>
-      <b>${c.label}</b>${c.sub && html`<span>${c.sub}</span>`}${star}${swap}
+      <b>${c.label}</b>${c.sub && html`<span>${c.sub}</span>`}${star}${swap}${tired}
     </button>`);
   }
   return out;
@@ -401,7 +405,7 @@ export function CalendarTab() {
       <div class="cl-cal">
         <div class="cl-grid" style=${'grid-template-columns:' + cols}>
           <div class="cl-h left">${tr('Driver')}</div>
-          ${v.days.map((d) => html`<button type="button" class=${'cl-h day' + (d.today ? ' today' : '') + (d.past ? ' past' : '')} title=${d.label} onClick=${() => setO({ date: d.date, n: null, pop: true, given: null })}>${d.wd}<br /><span>${d.day}${d.today ? ` · ${tr('today')}` : ''}</span></button>`)}
+          ${v.days.map((d) => html`<button type="button" class=${'cl-h day' + (d.today ? ' today' : '') + (d.past ? ' past' : '') + (d.holiday ? ' holiday' : '')} title=${d.holiday_tip || d.label} onClick=${() => setO({ date: d.date, n: null, pop: true, given: null })}>${d.wd}<br /><span>${d.day}${d.today ? ` · ${tr('today')}` : ''}</span>${d.holiday && html`<em class="cl-holiday">✦ ${d.holiday}</em>`}</button>`)}
           <div class="cl-h left">${weeks > 1 ? tr('Hours a week') : tr('Hours this week')}</div>
           <div class="cl-name miss"><b>${tr('Missing a driver')}</b><span>${tr('click to fill')}</span></div>
           ${v.days.map((d) => html`<button type="button" class=${'cl-miss' + (d.missing ? ' bad' : ' ok') + (d.date === day ? ' sel' : '')} onClick=${() => setO({ date: d.date, n: null, pop: true, given: null })}>

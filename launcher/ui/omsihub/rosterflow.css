@@ -1322,3 +1322,15 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .bx-swap { margin-top: 5px; padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: color-mix(in srgb, var(--rf-accent) 80%, var(--rf-text)); background: color-mix(in srgb, var(--rf-accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--rf-accent) 35%, transparent); }
 .cl-cell .cl-swap { position: absolute; bottom: 2px; right: 4px; font-style: normal; font-size: 12px; font-weight: 800; color: var(--rf-accent); text-shadow: 0 0 3px rgba(0, 0, 0, 0.5); }
 .cl-cell.swapped { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--rf-accent) 70%, transparent); }
+
+/* RosterFlow Pro, round D: public holidays, early and late people, tired drivers */
+.cl-h.day.holiday { box-shadow: inset 0 -3px 0 #e25c5c; }
+.cl-h.day .cl-holiday { display: block; margin-top: 2px; font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: 0.02em; color: #ff8a80; text-transform: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cl-h.day.today .cl-holiday { color: #fff; }
+.cl-cell .cl-tired { position: absolute; bottom: 2px; left: 4px; font-style: normal; font-size: 12px; line-height: 1; filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5)); }
+.cl-cell .cl-tired.worn { font-size: 13px; }
+.bx-pref { margin-top: 3px; font-size: 10.5px; font-weight: 700; color: color-mix(in srgb, var(--rf-text) 70%, transparent); }
+.bx-pref.fits { color: #5cc98a; }
+.bx-pref.nofit { color: #f0a04b; }
+.bx-tired { margin-top: 3px; font-size: 10.5px; font-weight: 800; color: #f0a04b; }
+.bx-tired.worn { color: #ff6b6b; }

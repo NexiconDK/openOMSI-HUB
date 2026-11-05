@@ -249,6 +249,8 @@ pub fn model_with(c: &Company, plan: &Plan, date: &str, cut: &[Cut], controls: &
         let ai = id == PLAYER && super::together::book::ai_on(c, date, &tp.tour.line, &tp.tour.tour, k);
         let id = if ai { AGENCY } else { id };
         let Some(e) = (if ai { Some(super::together::book::ai_driver()) } else if id == AGENCY { Some(plan::agency_driver()) } else { c.employee(id).cloned() }) else { continue };
+        // (RosterFlow Pro, round D: a tired driver loses more on the way - `pro_tired`)
+        let tired = super::pro_tired::slow(super::pro_tired::driving(c, &e, date));
         let broken_at = tp.bus.and_then(|b| cut.iter().find(|x| x.vehicle == b)).copied();
         let spare = tp.bus.and_then(|b| clock::spare_of(c, date, b));
         let event = super::inbox::line_effect(c, date, &tp.tour.number).0;
@@ -398,7 +400,7 @@ pub fn model_with(c: &Company, plan: &Plan, date: &str, cut: &[Cut], controls: &
             let mut rng = Rng::of(&[&c.id, "running", &tp.tour.line, &tp.tour.tour], day * 1440 + x.dep as i64);
             let (share, peak) = band(wd, x.dep);
             let traffic = run * share * factor * if counts { 1.0 } else { 0.6 };
-            let slow = if counts { run * ((60.0 - e.skills.punctuality) / 100.0 * 0.08 + (1.0 - e.experience / 100.0).max(0.0) * 0.02) * factor } else { 0.0 };
+            let slow = if counts { run * ((60.0 - e.skills.punctuality) / 100.0 * 0.08 + (1.0 - e.experience / 100.0).max(0.0) * 0.02) * factor * tired } else { 0.0 };
             let worn = v.map_or(0.0, |v| run * (1.0 - v.condition / 100.0).max(0.0) * 0.06 * factor);
             let events = run * event * 0.4;
             let chance = run * rng.range(-0.03, 0.05) * factor;

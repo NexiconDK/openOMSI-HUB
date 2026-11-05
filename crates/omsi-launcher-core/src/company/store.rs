@@ -78,6 +78,8 @@ pub fn migrate(mut c: Company) -> Company {
     super::staff::migrate(&mut c);
     // (round C of RosterFlow Pro: the Turnus tab's ill and holiday days into the staff's records)
     super::pro_absence::migrate(&mut c);
+    // (round D: every driver early, late or neither - drawn once and kept, `pro_pref`)
+    super::pro_pref::seed_all(&mut c);
     // (version 1: a flat monthly wage of the old German reference; version 2 pays drivers by the
     // hour of duty at the UK model's rates, `pay` - every wage moved to the new market, each
     // person as far above or below it as before)

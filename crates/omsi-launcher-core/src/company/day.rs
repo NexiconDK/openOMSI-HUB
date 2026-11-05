@@ -1279,6 +1279,11 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
 
     // 7. the people tonight: the drivers paid their hours of duty (`pay`), then their night
     let paid = super::pay::day(c, &date, &pieces);
+    // (RosterFlow Pro, round D: the day as worked - tiredness -, the duties liked or not, the
+    // public holidays worked: `pro_tired`, `pro_pref`, `pro_holiday`)
+    super::pro_tired::after_day(c, &date, &pieces);
+    super::pro_pref::after_day(c, &pieces);
+    super::pro_holiday::after_day(c, &date, &pieces);
     (report.paid_hours, report.overtime_hours, report.guaranteed_hours, report.driver_wages) = (paid.hours, paid.overtime, paid.guaranteed, paid.cost);
     report.staff = staff::after_day(c, &worked, &mut rng);
     // (the day's handover notes go, what the crew asked for that is over: `crew::night`)
