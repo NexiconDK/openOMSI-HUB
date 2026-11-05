@@ -154,6 +154,9 @@ export function mountPanel(root, api, opts = {}) {
   ];
   let tab = 'overview';
   const data = {};
+  // (5 November 2026: why a tab's question failed, by its name)
+  const failed = {};
+  const asking = (w) => (failed[w] ? trf('The main server could not answer: %{why}', { why: failed[w] }) : tr('Asking the main server…'));
   let lost = false;
   let timer = null;
   let picked = { company: null, player: null };
@@ -273,7 +276,7 @@ export function mountPanel(root, api, opts = {}) {
 
   function worlds() {
     const d = data.worlds;
-    if (!d) return card(tr('Worlds'), empty(tr('Asking the main server…')));
+    if (!d) return card(tr('Worlds'), empty(asking('worlds')));
     if (!d.maps.length) return card(tr('Worlds'), empty(tr('No map is installed in the OMSI folder of the settings.')));
     const rows = d.maps.map((m) => {
       const w = m.world;
@@ -309,7 +312,7 @@ export function mountPanel(root, api, opts = {}) {
 
   function companies() {
     const d = data.companies;
-    if (!d) return [card(tr('Companies'), empty(tr('Asking the main server…')))];
+    if (!d) return [card(tr('Companies'), empty(asking('companies')))];
     const list = d.companies;
     const rows = list.map((c) => h('tr', { class: 'bco-pick' + (picked.company === c.id ? ' on' : ''), onClick: () => { picked.company = picked.company === c.id ? null : c.id; companyInfo = null; draw(); refresh(); } },
       h('td', {}, h('b', {}, c.name), c.group ? tag(tr('Group head office')) : null, h('div', { class: 'bco-sub' }, c.id)),
@@ -427,7 +430,7 @@ export function mountPanel(root, api, opts = {}) {
   let editing = null;
   function competitorsView() {
     const d = data.competitors;
-    if (!d) return [card(tr('Competitors'), empty(tr('Asking the main server…')))];
+    if (!d) return [card(tr('Competitors'), empty(asking('competitors')))];
     const ch = d.choices || {};
     const label = (list, key) => tr(((list || []).find((x) => x[0] === key) || [key, key])[1]);
     const intro = card(tr('Competitors'), h('div', { class: 'sp-dim' }, tr("The AI operators that bid in the server's tenders, on every map. The size says which packages one bids on and how many contracts it holds at once on a map; the style what it puts on its own cost, never under the abnormally low line. One bids only with buses that meet a tender's requirements. Its quality rises a point with each contract run to its term and falls five with each given up. Without a list every map keeps its own drawn operators.")));
@@ -477,7 +480,7 @@ export function mountPanel(root, api, opts = {}) {
 
   function players() {
     const d = data.players;
-    if (!d) return [card(tr('Players'), empty(tr('Asking the main server…')))];
+    if (!d) return [card(tr('Players'), empty(asking('players')))];
     const f = playerFilter.value.trim().toLowerCase();
     const list = d.players.filter((p) => !f || p.name.toLowerCase().includes(f) || p.id.includes(f));
     const rows = list.map((p) => h('tr', { class: 'bco-pick' + (picked.player === p.id ? ' on' : ''), onClick: () => { picked.player = picked.player === p.id ? null : p.id; draw(); } },
@@ -550,7 +553,7 @@ export function mountPanel(root, api, opts = {}) {
 
   function market() {
     const d = data.market;
-    if (!d) return [card(tr('Tenders and market'), empty(tr('Asking the main server…')))];
+    if (!d) return [card(tr('Tenders and market'), empty(asking('market')))];
     if (!d.maps.length) return [card(tr('Tenders and market'), empty(tr("No map has a market yet: it starts with a map's first company.")))];
     const kr = (n) => (n == null ? '-' : `${Math.round(n).toLocaleString()} kr.`);
     // (3 November 2026: the tenders' rules as they stand - changed under Rules and economy)
@@ -852,10 +855,17 @@ export function mountPanel(root, api, opts = {}) {
 
   function draw() {
     drawTabs();
-    const view = {
-      overview, worlds: () => [worlds()], companies, players, market, buses: busesView, competitors: competitorsView,
-      settings: () => [settings], log: logView,
-    }[tab]();
+    // (5 November 2026: a tab that cannot be drawn says why, instead of keeping what was there)
+    let view;
+    try {
+      view = {
+        overview, worlds: () => [worlds()], companies, players, market, buses: busesView, competitors: competitorsView,
+        settings: () => [settings], log: logView,
+      }[tab]();
+    } catch (e) {
+      console.error(e);
+      view = [card(null, empty(trf('This tab could not be shown: %{why}', { why: (e && e.message) || String(e) })))];
+    }
     body.replaceChildren(...view.flat().filter(Boolean));
   }
 
@@ -871,8 +881,16 @@ export function mountPanel(root, api, opts = {}) {
       if (tab === 'market') want.push('market');
       if (tab === 'buses') want.push('buses');
       if (tab === 'competitors') want.push('competitors');
-      const got = await Promise.all(want.map((w) => api.get(w)));
-      want.forEach((w, k) => (data[w] = got[k]));
+      // (5 November 2026: each question on its own - one that fails shows why on its tab, the
+      // others still drawn; the overview failing is the server lost)
+      const got = await Promise.allSettled(want.map((w) => api.get(w)));
+      want.forEach((w, k) => {
+        if (got[k].status === 'fulfilled') {
+          data[w] = got[k].value;
+          delete failed[w];
+        } else failed[w] = message(got[k].reason);
+      });
+      if (got[0].status === 'rejected') throw got[0].reason;
       if (tab === 'companies' && picked.company) companyInfo = await api.get('company?id=' + encodeURIComponent(picked.company)).catch(() => null);
       if (lost) say('');
       lost = false;

@@ -118,7 +118,10 @@ pub fn handle(api: &Api, auth: &Mutex<Auth>, r: &Request) -> Option<Answer> {
     let ok = |v: Value| aw::json("200 OK", v.to_string());
     let asked: Value = serde_json::from_str(&body).unwrap_or(Value::Null);
     let s = |k: &str| asked.get(k).and_then(Value::as_str).unwrap_or("").trim().to_string();
-    Some(match (route.trim_start_matches("/admin/api/"), post) {
+    // (NexiconDK, 5 November 2026: a question that breaks - a market the panel cannot read - answers
+    // with why and says so in the log, instead of leaving the panel "Asking the main server…")
+    let what = route.trim_start_matches("/admin/api/").to_string();
+    let run = || match (route.trim_start_matches("/admin/api/"), post) {
         ("overview", _) => ok(overview(api)),
         ("worlds", _) => ok(worlds(api)),
         ("companies", _) => ok(companies(api)),
@@ -135,7 +138,7 @@ pub fn handle(api: &Api, auth: &Mutex<Auth>, r: &Request) -> Option<Answer> {
         }
         ("config", true) => {
             if body.trim().is_empty() || body.len() >= aw::BODY_MAX {
-                return Some(aw::error("400 Bad Request", "no settings in the request, or too long"));
+                return aw::error("400 Bad Request", "no settings in the request, or too long");
             }
             let p = server(api).data.join(ms::CFG_FILE);
             match std::fs::write(&p, body.replace("\r\n", "\n").replace('\n', "\r\n")) {
@@ -188,7 +191,12 @@ pub fn handle(api: &Api, auth: &Mutex<Auth>, r: &Request) -> Option<Answer> {
             Err(e) => aw::error("400 Bad Request", &e),
         },
         _ => aw::error("404 Not Found", "no such request"),
-    })
+    };
+    Some(std::panic::catch_unwind(std::panic::AssertUnwindSafe(run)).unwrap_or_else(|e| {
+        let why = e.downcast_ref::<String>().cloned().or_else(|| e.downcast_ref::<&str>().map(|x| x.to_string())).unwrap_or_else(|| "unknown".into());
+        server(api).say(&format!("admin panel: the question {what} broke: {why}"));
+        aw::error("500 Internal Server Error", &format!("{what}: {why}"))
+    }))
 }
 
 /// Whole units of money.
