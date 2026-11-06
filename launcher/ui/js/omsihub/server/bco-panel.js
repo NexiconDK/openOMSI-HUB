@@ -166,6 +166,9 @@ export function mountPanel(root, api, opts = {}) {
   let logLines = [];
   let follow = true;
   let busy = false;
+  /** What the tab drew last (`snap`): drawn anew by the clock only when it changed. */
+  let shown = null;
+  const USES = { overview: ['overview'], worlds: ['worlds'], companies: ['companies', 'worlds', 'players'], players: ['players'], market: ['market'], buses: ['buses'], competitors: ['competitors'] };
 
   const said = h('div', { class: 'sp-say' });
   const say = (text, bad) => {
@@ -177,6 +180,8 @@ export function mountPanel(root, api, opts = {}) {
     try {
       const r = await api.post('command', line);
       say(done || r?.answer || tr('Done'));
+      setDirty(false);
+      shown = null;
       setTimeout(refresh, 600);
       return r?.answer;
     } catch (e) {
@@ -188,6 +193,9 @@ export function mountPanel(root, api, opts = {}) {
     try {
       const r = await api.post(path, JSON.stringify(body));
       say(done || r?.answer || tr('Done'));
+      // (sent: the tab drawn anew with what it is now)
+      setDirty(false);
+      shown = null;
       setTimeout(refresh, 600);
       return true;
     } catch (e) {
@@ -204,7 +212,22 @@ export function mountPanel(root, api, opts = {}) {
   root.replaceChildren(el);
   const tabBar = h('div', { class: 'sp-tabs' });
   const body = h('div', { style: 'display:flex;flex-direction:column;gap:12px' });
-  el.append(tabBar, body, said);
+  // (6 November 2026: the tab is not drawn anew while something in it is being edited - a
+  // tender's form, a grant - nor when what it shows has not changed; drawn anew it keeps its
+  // scroll and its open sections)
+  const hint = h('div', { class: 'sp-dim', style: 'display:none' }, tr('Not updated while you are editing'));
+  let dirty = false;
+  const setDirty = (on) => {
+    dirty = on;
+    hint.style.display = on ? '' : 'none';
+  };
+  const edited = () => {
+    if (tab !== 'log' && tab !== 'settings') setDirty(true);
+  };
+  // (on the way down: before a field's own handler, which may draw the tab anew itself)
+  body.addEventListener('input', edited, true);
+  body.addEventListener('change', edited, true);
+  el.append(tabBar, hint, body, said);
   const settings = settingsView({ config: api.config, saveConfig: api.saveConfig }, tr, say, BCO_FORM);
 
   const fact = (value, label, sub) => h('div', { class: 'sp-fact' }, h('b', {}, value), h('span', {}, label), sub ? h('div', { class: 'bco-sub' }, sub) : null);
@@ -337,14 +360,60 @@ export function mountPanel(root, api, opts = {}) {
     return out;
   }
 
+  /** (6 November 2026) What the admin gives a company: its level, research done, money in kroner
+   * with a reason - its process takes it at its next step, or its file at once when none runs it
+   * (`company_give`). */
+  function grantsOf(c, i) {
+    const give = (what, done) => post('company_give', { id: c.id, ...what }, done);
+    const amount = h('input', { type: 'number', min: 1, placeholder: tr('Kroner'), style: 'width:130px' });
+    const reason = h('input', { class: 'sp-grow', maxlength: 120, placeholder: tr('Reason (shown in its accounts)') });
+    const money2 = (sign) => {
+      const n = Math.abs(Number(amount.value) || 0);
+      if (n > 0) give({ kroner: sign * n, reason: reason.value.trim() }, trf(sign > 0 ? '%{name} is given %{amount} kr.' : '%{amount} kr. is taken from %{name}', { name: c.name, amount: money(n) }));
+    };
+    if (!i) return [h('h3', {}, tr('Money')), h('div', { class: 'sp-dim' }, tr('Asking…'))];
+    const levels = i.levels || [];
+    const levelSel = h('select', {}, ...levels.map(([n, xp]) => h('option', { value: n, selected: n === i.level }, trf('Level %{n} (from %{xp} points)', { n, xp: money(xp) }))));
+    const needWords = (t) => (t.needs || []).map((n) => (n.level ? trf('needs level %{n}', { n: n.level }) : trf('needs %{what}', { what: tr(n.done) }))).join(' · ');
+    const sections = [];
+    for (const t of i.research || []) {
+      let s = sections.find((x) => x.name === t.section);
+      if (!s) sections.push((s = { name: t.section, rows: [] }));
+      s.rows.push(t);
+    }
+    const control = (t) => {
+      if (t.stages <= 1) {
+        const box = h('input', { type: 'checkbox', checked: t.done >= 1, onChange: () => give({ research: t.key, stages: box.checked ? 1 : 0 }, trf(box.checked ? '%{what}: done' : '%{what}: taken back', { what: tr(t.title) })) });
+        return h('label', { class: 'sp-row', style: 'gap:6px;justify-content:flex-end' }, box, tr('Done'));
+      }
+      const sel = h('select', { onChange: () => give({ research: t.key, stages: Number(sel.value) }, trf('%{what}: %{n} of %{m} stages done', { what: tr(t.title), n: sel.value, m: t.stages })) },
+        ...Array.from({ length: t.stages + 1 }, (_, n) => h('option', { value: n, selected: n === t.done }, trf('%{n} of %{m} stages', { n, m: t.stages }))));
+      return sel;
+    };
+    return [
+      h('h3', {}, tr('Money')),
+      h('div', { class: 'sp-dim' }, trf('It has %{amount} kr. Given or taken, it is booked in its accounts as "Bus Company Online: <reason>".', { amount: money(i.cash_kr) })),
+      h('div', { class: 'sp-row' }, amount, reason, btn(tr('Give'), () => money2(1), 'sp-btn small main'), sureButton(tr('Take'), tr('Sure?'), () => money2(-1))),
+      h('h3', {}, tr('Level')),
+      h('div', { class: 'sp-row' },
+        h('span', {}, h('b', {}, trf('Level %{n}', { n: i.level })), ' · ', trf('%{xp} points', { xp: money(i.xp) })),
+        levelSel,
+        btn(tr('Set the level'), () => give({ level: Number(levelSel.value) }, trf('%{name} is at level %{n}', { name: c.name, n: levelSel.value })), 'sp-btn small main')),
+      h('div', { class: 'sp-dim' }, tr('Its points are set to where the level starts; the level it has already keeps its points.')),
+      h('h3', {}, tr('Research')),
+      h('div', { class: 'sp-dim' }, tr('Ticked, it is done at once - what it needs is only shown; a research under way of it is stopped and all it cost given back.')),
+      ...sections.map((s) => h('details', { class: 'bco-research' }, h('summary', {}, tr(s.name), ' ', h('span', { class: 'bco-sub' }, trf('%{n} of %{m} done', { n: s.rows.filter((t) => t.done >= t.stages).length, m: s.rows.length }))),
+        table([tr('Research'), [tr('Needs'), 'sp-hide'], ''], s.rows.map((t) => h('tr', {},
+          h('td', {}, h('b', {}, tr(t.title)), t.running ? tag(tr('under way'), 'warn') : null),
+          h('td', { class: 'sp-hide bco-sub' }, needWords(t) || '–'),
+          h('td', { class: 'sp-acts' }, control(t))))))),
+      i.waiting ? h('div', { class: 'sp-dim' }, trf('%{n} of the changes wait for its process to take them.', { n: i.waiting })) : null,
+    ];
+  }
+
   function companyCard(c) {
     if (!c) return null;
     const i = companyInfo?.id === c.id ? companyInfo : null;
-    const amount = h('input', { type: 'number', min: 1, placeholder: tr('Amount'), style: 'width:120px' });
-    const give = (sign) => {
-      const n = Math.abs(Number(amount.value) || 0);
-      if (n > 0) run(`cash ${c.id}; ${sign}${n}`, trf('%{name}: %{amount} booked as capital', { name: c.name, amount: sign + money(n) }));
-    };
     const players = data.players?.players || [];
     const newOwner = h('select', {}, ...players.map((p) => h('option', { value: p.id, selected: p.id === c.owner_id }, p.name)));
     const ROLES = [['driver', 'Driver'], ['planner', 'Planner'], ['manager', 'Manager'], ['co_owner', 'Co-owner']];
@@ -363,9 +432,8 @@ export function mountPanel(root, api, opts = {}) {
         fact(c.port || '-', tr('Port')),
       ),
       c.code ? h('div', {}, tr('Code: '), h('span', { class: 'bco-code' }, c.code)) : null,
-      !c.runs ? h('div', { class: 'sp-dim' }, tr('Its process does not run: money, owner and roles change when it does.')) : null,
-      h('h3', {}, tr('Money')),
-      h('div', { class: 'sp-row' }, amount, btn(tr('Give'), () => give('+'), 'sp-btn small main'), sureButton(tr('Take'), tr('Sure?'), () => give('-'))),
+      !c.runs ? h('div', { class: 'sp-dim' }, tr('Its process does not run: owner and roles change when it does - money, level and research at once.')) : null,
+      ...grantsOf(c, i),
       h('h3', {}, tr('Owner')),
       players.length ? h('div', { class: 'sp-row' }, newOwner, btn(tr('Make owner'), () => run(`owner ${c.id}; ${newOwner.value}`))) : h('div', { class: 'sp-dim' }, tr('No player has logged in yet.')),
       h('h3', {}, tr('Players and roles')),
@@ -854,7 +922,23 @@ export function mountPanel(root, api, opts = {}) {
 
   // --- drawing and asking -----------------------------------------------------------------------
 
-  function draw() {
+  /** What the tab shows: its data, why a question failed, what is picked. */
+  function snap() {
+    return JSON.stringify([tab, (USES[tab] || []).map((w) => [data[w] ?? null, failed[w] ?? null]), picked, tab === 'companies' ? companyInfo : null, lost]);
+  }
+
+  /** The tab drawn - `keep` (the clock's): its scroll and open sections kept; otherwise (the
+   * admin's doing) its edits are done with. */
+  function draw(keep = false) {
+    if (!keep) setDirty(false);
+    const scrolls = [];
+    const opened = new Map();
+    if (keep) {
+      for (let n = el; n; n = n.parentElement) if (n.scrollTop) scrolls.push([n, n.scrollTop]);
+      const se = document.scrollingElement;
+      if (se?.scrollTop && !scrolls.some(([n]) => n === se)) scrolls.push([se, se.scrollTop]);
+      for (const d of body.querySelectorAll('details')) opened.set(d.querySelector('summary')?.textContent || '', d.open);
+    }
     drawTabs();
     // (5 November 2026: a tab that cannot be drawn says why, instead of keeping what was there)
     let view;
@@ -868,6 +952,14 @@ export function mountPanel(root, api, opts = {}) {
       view = [card(null, empty(trf('This tab could not be shown: %{why}', { why: (e && e.message) || String(e) })))];
     }
     body.replaceChildren(...view.flat().filter(Boolean));
+    shown = snap();
+    if (keep) {
+      for (const d of body.querySelectorAll('details')) {
+        const k = d.querySelector('summary')?.textContent || '';
+        if (opened.has(k)) d.open = opened.get(k);
+      }
+      for (const [n, top] of scrolls) n.scrollTop = top;
+    }
   }
 
   /** What the tab shows, asked again (the overview always: the tabs' counts). */
@@ -921,7 +1013,7 @@ export function mountPanel(root, api, opts = {}) {
       drawTabs();
       if (!typing) fillPick();
       fillLog();
-    } else if (tab !== 'settings' && !typing && !armed) draw();
+    } else if (tab !== 'settings' && !typing && !armed && !dirty && snap() !== shown) draw(true);
     else drawTabs();
   }
 

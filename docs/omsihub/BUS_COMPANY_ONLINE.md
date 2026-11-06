@@ -1749,6 +1749,31 @@ from the next Sunday. The Staff page's hiring window starts on "Hourly paid" eve
 `employment_tests::on_the_server_the_admin_sets_the_notice`. The rest is in
 [ROSTERFLOW_PRO.md](ROSTERFLOW_PRO.md).
 
+### A level, research and money given from the admin panel (6 November 2026)
+
+The admin panel's "Companies" shows a company's level, its research and its money in kroner, and
+the admin can give it (`server_admin::company_give`, `server_grants`):
+
+- **The level** 1-10: its experience set to where the level starts (`levels::LEVEL_XP`); the level
+  it has already keeps its points.
+- **Research**, topic by topic, section by section: ticked done at once (a topic of stages: how
+  many of them) or taken back. What a topic needs (a level, another research) is shown only - the
+  admin may give it anyway. A stage under way of it is stopped and all it cost given back.
+- **Money** in kroner (`Currency::Dkk`, as the fines), given or taken, with a reason: booked as
+  capital, "Bus Company Online: <reason>", in its accounts.
+
+A company of the server lives in its own process, which saves over its file: so a grant goes into
+the admin's orders to it (`<data>/admin-orders/<id>.jsonl`, `ContractOrder::grant`), taken at its
+process's next step (`shared_tenders::take_contract_orders`, from `Online::admin_read`). When no
+process runs it, the main server takes it into its file at once, under its lock: a process started
+later reads the file with it, never taking it twice. The panel says how many changes still wait
+for its process. Each grant is in the main server's log ("admin panel: given ..."). Tested:
+`server_grants::tests`, `server_admin::tests::the_admin_gives_a_company_a_level_research_and_money`.
+
+The panel's tabs are no longer drawn anew every 3 seconds: only when what the tab shows changed,
+never while something in it is being edited ("Not updated while you are editing" - until it is
+sent, or another tab or row is picked), and keeping the scroll and the open sections when they are.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

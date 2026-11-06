@@ -207,3 +207,39 @@ fn the_admin_makes_takes_over_changes_and_deletes_competitors() {
     assert!(competitor_do(&api, &json!({ "do": "fly" })).is_err());
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// (6 November 2026) The admin gives a company of the server a level, research and money - its
+/// process not running: into its file at once, its detail showing it; what cannot be given
+/// refused with why.
+#[test]
+fn the_admin_gives_a_company_a_level_research_and_money() {
+    let dir = temp("give");
+    let (api, _) = api(&dir);
+    let data = dir.join("bco");
+    let mut c = crate::company::found(&crate::company::Founding { name: "Umove".into(), date: "2024-03-04".into(), map: "maps/Lemmental/global.cfg".into(), ..Default::default() }, "owner");
+    c.progress.xp = 202;
+    store::save(&data, &c).unwrap();
+    let v = company(&api, &c.id).unwrap();
+    assert_eq!((v["level"].as_u64(), v["xp"].as_i64(), v["waiting"].as_u64()), (Some(1), Some(202), Some(0)), "{v}");
+    let art = v["research"].as_array().unwrap().iter().find(|t| t["key"] == "articulated").unwrap().clone();
+    assert_eq!((art["done"].as_u64(), art["stages"].as_u64(), art["needs"][0]["level"].as_u64()), (Some(0), Some(1), Some(2)), "{art}");
+    assert!(company_give(&api, &json!({ "id": c.id, "level": 3 })).unwrap().contains("level 3 - in its file"));
+    company_give(&api, &json!({ "id": c.id, "research": "articulated", "stages": 1 })).unwrap();
+    company_give(&api, &json!({ "id": c.id, "research": "fuel", "stages": "2" })).unwrap();
+    company_give(&api, &json!({ "id": c.id, "kroner": "10 000", "reason": "Erstatning" })).unwrap();
+    let v = company(&api, &c.id).unwrap();
+    assert_eq!((v["level"].as_u64(), v["xp"].as_i64(), v["waiting"].as_u64()), (Some(3), Some(1_600), Some(0)));
+    let done = |key: &str| v["research"].as_array().unwrap().iter().find(|t| t["key"] == key).unwrap()["done"].as_u64();
+    assert_eq!((done("articulated"), done("fuel")), (Some(1), Some(2)));
+    let back = store::load(&data, &c.id).unwrap();
+    assert_eq!(back.cash - c.cash, Currency::Dkk.cents(10_000.0));
+    assert_eq!(back.ledger.last().unwrap().text, "Bus Company Online: Erstatning");
+    // what cannot be given
+    assert!(company_give(&api, &json!({ "id": "nobody", "level": 2 })).is_err());
+    assert!(company_give(&api, &json!({ "id": c.id, "level": 12 })).is_err());
+    assert!(company_give(&api, &json!({ "id": c.id, "research": "nope" })).is_err());
+    assert!(company_give(&api, &json!({ "id": c.id, "research": "fuel", "stages": 9 })).is_err());
+    assert!(company_give(&api, &json!({ "id": c.id, "kroner": 0 })).is_err());
+    assert!(company_give(&api, &json!({ "id": c.id })).is_err());
+    let _ = std::fs::remove_dir_all(&dir);
+}

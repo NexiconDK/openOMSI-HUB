@@ -186,6 +186,11 @@ pub fn handle(api: &Api, auth: &Mutex<Auth>, r: &Request) -> Option<Answer> {
             Ok(text) => ok(json!({ "answer": text })),
             Err(e) => aw::error("400 Bad Request", &e),
         },
+        // (6 November 2026) a level, research, money given a company
+        ("company_give", true) => match company_give(api, &asked) {
+            Ok(text) => ok(json!({ "answer": text })),
+            Err(e) => aw::error("400 Bad Request", &e),
+        },
         ("bus", true) => match bus_do(api, &asked) {
             Ok(text) => ok(json!({ "answer": text })),
             Err(e) => aw::error("400 Bad Request", &e),
@@ -346,7 +351,62 @@ fn company(api: &Api, id: &str) -> Option<Value> {
     let members: Vec<Value> = c.together.guests.iter().map(|g| json!({ "id": g.id, "name": g.name, "role": g.role.key(), "banned": g.banned, "owner": g.id == c.online.owner_id })).collect();
     o.insert("members".into(), json!(members));
     o.insert("reputation".into(), json!((c.reputation * 10.0).round() / 10.0));
+    // (6 November 2026: what the admin can give it - its level, research, money in kroner -, and
+    // the grants its process has not taken yet)
+    use super::{levels, research, server_grants as sg};
+    o.insert("level".into(), json!(levels::level(&c)));
+    o.insert("xp".into(), json!(c.progress.xp));
+    o.insert("levels".into(), json!(levels::LEVEL_XP.iter().enumerate().map(|(i, x)| json!([i + 1, x])).collect::<Vec<_>>()));
+    let topics: Vec<Value> = research::TOPICS
+        .iter()
+        .map(|t| {
+            let needs: Vec<Value> = t.needs.iter().map(|n| match n {
+                research::Need::Level(l) => json!({ "level": l }),
+                research::Need::Done(k) => json!({ "done": research::topic(k).map_or(*k, |x| x.title) }),
+            }).collect();
+            json!({
+                "key": t.key, "title": t.title, "section": t.section.label(), "stages": t.stages,
+                "done": research::stages_done(&c.research, t),
+                "running": c.research.running.as_ref().filter(|r| r.topic == t.key).map(|r| r.stage),
+                "needs": needs,
+            })
+        })
+        .collect();
+    o.insert("research".into(), json!(topics));
+    o.insert("cash_kr".into(), json!(Currency::Dkk.units(c.cash as f64).round()));
+    o.insert("waiting".into(), json!(sg::waiting(&m.data, &c)));
     Some(v)
+}
+
+/// (6 November 2026) The admin gives company `id` a level, research done (`stages`: how many of
+/// a topic's - 0 takes it back) or money in kroner (less than 0: taken), with a reason: into its
+/// orders, taken by its process at its next step - or into its file at once when none runs it
+/// (`server_grants`). What is said, or why not.
+fn company_give(api: &Api, a: &Value) -> Result<String, String> {
+    use super::server_grants::{self as sg, Grant};
+    let id = a.get("id").and_then(Value::as_str).unwrap_or("").trim().to_string();
+    let m = server(api);
+    let c = store::load(&m.data, &id).map_err(|_| "no such company".to_string())?;
+    let num = |k: &str| a.get(k).and_then(|v| v.as_f64().or_else(|| v.as_str().and_then(|t| t.trim().replace(' ', "").replace(',', ".").parse().ok())));
+    let g = if let Some(l) = num("level") {
+        Grant::level(l as u32)
+    } else if let Some(key) = a.get("research").and_then(Value::as_str) {
+        let t = super::research::TOPICS.iter().find(|t| t.key == key).ok_or_else(|| format!("no research '{key}'"))?;
+        Grant::research(key, num("stages").map_or(t.stages, |x| x.max(0.0) as u32))
+    } else if let Some(kr) = num("kroner") {
+        if !kr.is_finite() {
+            return Err("no amount".into());
+        }
+        Grant::kroner(kr, a.get("reason").and_then(Value::as_str).unwrap_or(""))
+    } else {
+        return Err("nothing to give".into());
+    };
+    g.check()?;
+    let runs = m.companies.iter().any(|p| p.id == id);
+    sg::give(&m.data, &id, &g, runs).map_err(|e| format!("{e:#}"))?;
+    let said = format!("{} ({id}): {}{}", c.name, g.said(), if runs { " - its process takes it at its next step" } else { " - in its file" });
+    m.say(&format!("admin panel: given {said}"));
+    Ok(said)
 }
 
 fn players(api: &Api) -> Value {

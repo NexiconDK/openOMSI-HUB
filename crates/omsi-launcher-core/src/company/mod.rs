@@ -83,6 +83,7 @@ pub mod server_depots;
 // (phase 7: a group's head office - the koncern-HQ, kept by the main server)
 pub mod server_hq;
 pub mod server_fines;
+pub mod server_grants;
 pub mod takeover;
 // (Bus Company Online phase 5: each depot's control room - the world's buses live)
 pub mod world_live;
