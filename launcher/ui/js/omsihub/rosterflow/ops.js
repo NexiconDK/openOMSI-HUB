@@ -133,6 +133,7 @@ async function giveIt(n, part, name, args) {
   // (round B: a driver's overtime paid or saved as time off in lieu - `args.toil`)
   const r = await oAct('give', args);
   if (r?.edited && part == null) setO({ n: null, given: tr('Duty %{n} is given to %{name}', { n, name }) });
+  return r;
 }
 
 /** A driver's row of the box: his name (and his mood, said no today already), kind and price, a
@@ -243,7 +244,14 @@ function Line({ v, n, x, picked, onPick }) {
   const [sure, setSure] = useState(false);
   const [save, setSave] = useState(null);
   const toil = x.toil ? (save ?? x.toil.on) : null;
-  const give = (anyway) => giveIt(n, null, x.name, { ...base, driver: x.id, swap: x.answer?.swap || null, anyway, toil });
+  // (6 November 2026: what the act says back when it is not given - in the row too, not only in
+  // the corner behind the box)
+  const [err, setErr] = useState(null);
+  const give = async (anyway) => {
+    setErr(null);
+    const r = await giveIt(n, null, x.name, { ...base, driver: x.id, swap: x.answer?.swap || null, anyway, toil });
+    if (r && !r.edited && r.say?.error) setErr(r.say.text);
+  };
   const price = x.toil ? (toil ? x.toil.save_price : x.toil.pay_price) : x.price;
   const giving = ['give', 'give_anyway', 'set', 'set_anyway'].includes(x.action);
   const signs = [
@@ -282,6 +290,7 @@ function Line({ v, n, x, picked, onPick }) {
     ${sure && html`<div class="wl-sure"><span>${x.anyway}</span>
       <span class="bx-surebtns"><button type="button" class="bx-btn line sm" onClick=${() => setSure(false)}>${tr('Cancel')}</button>
       <button type="button" class="bx-btn warn sm" onClick=${() => (setSure(false), give(true))}>${tr('Yes, do it')}</button></span></div>`}
+    ${err && !sure && html`<div class="wl-sure wl-err"><span>${err}</span><button type="button" class="wl-x" title=${tr('Close')} onClick=${() => setErr(null)}>✕</button></div>`}
   </div>`;
 }
 

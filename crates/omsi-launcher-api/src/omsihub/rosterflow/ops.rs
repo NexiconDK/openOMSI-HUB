@@ -722,11 +722,21 @@ fn tired_days(c: &Company, date: &str, need: &mut Vec<String>) {
 
 /// The rest rules open duty `d` of `date` would break for driver `e` (`pro_rest::breaches`):
 /// against his days before and after and his week (`weekly` its minutes without it).
-fn breaches_of(c: &Company, week: &Week, plans: &HashMap<String, DayPlan>, e: &Employee, date: &str, d: &OpenDuty, weekly: &HashMap<u32, f64>) -> Vec<Breach> {
+///
+/// `gives`: the duty of his own he gives a colleague with it (a swap answer - 6 November 2026):
+/// was it all his work that day, his day is the open duty alone.
+fn breaches_of(c: &Company, week: &Week, plans: &HashMap<String, DayPlan>, e: &Employee, date: &str, d: &OpenDuty, weekly: &HashMap<u32, f64>, gives: Option<u32>) -> Vec<Breach> {
     // (the company's day: the night's rest since his last duty is the game's own rule)
     let prev = if date == c.date { None } else { span_on(c, week, plans, e, &co::dates::add(date, -1)) };
     let next = span_on(c, week, plans, e, &co::dates::add(date, 1));
-    let own = span_on(c, week, plans, e, date);
+    let own = match gives {
+        Some(g) => plans.get(date).and_then(|p| match po::driver_day(c, e, p, &duties_for(c, week, p)).is {
+            DayIs::Duties { numbers, .. } if numbers.iter().all(|x| *x == g) => None,
+            DayIs::Duties { numbers, start, end, .. } => Some((start, end, numbers.first().copied().unwrap_or(0))),
+            _ => None,
+        }),
+        None => span_on(c, week, plans, e, date),
+    };
     let days: Vec<pr::Span> = po::week_dates(date).iter().map(|x| span_on(c, week, plans, e, x)).collect();
     // (within a reserve's frame the duty adds no working time to his week: the frame is paid)
     let p = plans.get(date);
@@ -734,7 +744,9 @@ fn breaches_of(c: &Company, week: &Week, plans: &HashMap<String, DayPlan>, e: &E
     let to = p.and_then(|p| d.pieces.iter().map(|&(ti, k)| p.tours[ti].duties[k].to).max()).unwrap_or(d.end);
     let in_frame = pt::frame_holds(c, e, date, from, to);
     let paid = if in_frame { 0 } else { d.paid };
-    let week_now = if in_frame { 0.0 } else { weekly.get(&e.id).copied().unwrap_or(0.0) };
+    // (a swap: the duty he gives away off his week)
+    let given = gives.zip(p).and_then(|(g, p)| duties_for(c, week, p).into_iter().find(|x| x.number == g)).map_or(0.0, |x| x.paid as f64);
+    let week_now = if in_frame { 0.0 } else { (weekly.get(&e.id).copied().unwrap_or(0.0) - given).max(0.0) };
     pr::breaches(d.start, d.end, prev, next, own, pr::reduced_in(&days), week_now, paid)
 }
 
@@ -952,14 +964,14 @@ fn duty_sub(d: &OpenDuty, date: &str) -> String {
 
 /// (round C) A row whose answer is a swap: who takes his own duty, said ("⇄ Kasper Dahl takes his
 /// 1005"), and the rest rules that colleague would break with it.
-fn swap_row(c: &Company, p: &DayPlan, ds: &[ProDuty], row: &mut Value, rest: &dyn Fn(&Employee, &OpenDuty) -> Vec<Breach>) -> Vec<Breach> {
+fn swap_row(c: &Company, p: &DayPlan, ds: &[ProDuty], row: &mut Value, rest: &dyn Fn(&Employee, &OpenDuty, Option<u32>) -> Vec<Breach>) -> Vec<Breach> {
     let Some(sw) = row.get("answer").and_then(|a| a.get("swap")).filter(|x| x.is_object()).cloned() else { return Vec::new() };
     let (Some(with), Some(theirs)) = (sw["with"].as_u64().map(|x| x as u32), sw["theirs"].as_u64().map(|x| x as u32)) else { return Vec::new() };
     let Some(b) = c.employee(with) else { return Vec::new() };
     row["swap"] = json!({ "name": b.name, "text": trf("⇄ %{name} takes duty %{n} instead: both changed at once", &[("name", &b.name), ("n", &theirs.to_string())]) });
     let Some(mine) = ds.iter().find(|x| x.number == theirs) else { return Vec::new() };
     let od = OpenDuty { n: theirs, start: mine.start, end: mine.end, paid: mine.paid, kind: mine.kind, pieces: po::pieces_of(p, mine), why: None, part: false, lines: Vec::new() };
-    rest(b, &od)
+    rest(b, &od, None)
 }
 
 /// (round C) The swaps of `date`: "Mette Krogh ⇄ Sofie Juul · 1002 ↔ 1005", and whether each can
@@ -978,7 +990,7 @@ fn swaps_json(c: &Company, date: &str) -> Value {
 
 /// The box's step 2 for open duty `d`: who can drive it (`rest`: the rest rules a driver would
 /// break; `fair`: those given the fewest extra duties this month first, else the cheapest).
-fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &HashMap<u32, f64>, rest: &dyn Fn(&Employee, &OpenDuty) -> Vec<Breach>, fair: bool) -> Value {
+fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &HashMap<u32, f64>, rest: &dyn Fn(&Employee, &OpenDuty, Option<u32>) -> Vec<Breach>, fair: bool) -> Value {
     let date = p.date.as_str();
     let cands = po::candidates(c, p, d, &|id| weekly.get(&id).copied().unwrap_or(0.0));
     let mut groups: Vec<(&str, String, Vec<((u8, bool, usize, Cents), Value)>)> = vec![("permanent", tr("Permanent"), Vec::new()), ("reserve", tr("Reserve frame"), Vec::new()), ("hourly", tr("Hourly paid"), Vec::new())];
@@ -1001,7 +1013,9 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
                     0
                 };
                 let mut row = row_json(c, p, d, None, e, x.tier, (&x.price, x.cost));
-                let mut breaks = if x.fit.is_ok() { rest(e, d) } else { Vec::new() };
+                // (his answer a swap: his day without the duty he gives away - as the act checks it)
+                let gives = row.get("answer").and_then(|a| a.get("swap")).and_then(|w| w.get("theirs")).and_then(Value::as_u64).map(|x| x as u32);
+                let mut breaks = if x.fit.is_ok() || gives.is_some() { rest(e, d, gives) } else { Vec::new() };
                 if let Some((own, with)) = offer.filter(|_| row.get("answer").is_none()) {
                     row["offer"] = json!(trf("⇄ Drives %{own} then - %{name} could take it", &[("own", &own.to_string()), ("name", &name_in(c)(with))]));
                 }
@@ -1132,7 +1146,7 @@ fn how_words(c: &Company, s: &pc::Sugg) -> (String, Option<String>) {
 
 /// The box's cut view for duty `n` cut for the plan `p`'s date: its parts, each with its driver
 /// or one suggested.
-fn cut_json(c: &Company, p: &DayPlan, ds: &[ProDuty], sp: &pc::Split, weekly: &HashMap<u32, f64>, rest: &dyn Fn(&Employee, &OpenDuty) -> Vec<Breach>) -> Value {
+fn cut_json(c: &Company, p: &DayPlan, ds: &[ProDuty], sp: &pc::Split, weekly: &HashMap<u32, f64>, rest: &dyn Fn(&Employee, &OpenDuty, Option<u32>) -> Vec<Breach>) -> Value {
     let date = p.date.as_str();
     let mut skip: Vec<u32> = Vec::new();
     // (the drivers given parts first: not suggested for another)
@@ -1192,7 +1206,7 @@ fn cut_json(c: &Company, p: &DayPlan, ds: &[ProDuty], sp: &pc::Split, weekly: &H
                     if let Some(m) = row.as_object_mut() {
                         m.remove("toil");
                     }
-                    with_breaches(c, &mut row, &e.name, &rest(e, &od));
+                    with_breaches(c, &mut row, &e.name, &rest(e, &od, None));
                     row["extra"] = json!(extra_words(c, e.id, date).1);
                     v["row"] = row;
                 }
@@ -1334,7 +1348,7 @@ fn daily(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     // step 2: the duty chosen - who can drive it, or its cut
     let Some(n) = args.get("n").and_then(Value::as_u64).map(|x| x as u32) else { return Ok(out) };
     let weekly = week_of_drivers(&c, &week, &plans, &date);
-    let rest = |e: &Employee, d: &OpenDuty| breaches_of(&c, &week, &plans, e, &date, d, &weekly);
+    let rest = |e: &Employee, d: &OpenDuty, gives: Option<u32>| breaches_of(&c, &week, &plans, e, &date, d, &weekly, gives);
     if let Some(sp) = pc::split_of(&c, &date, n) {
         out["cut"] = cut_json(&c, p, &ds, sp, &weekly, &rest);
         out["waiting"] = json!(c.planning.ops.asks.iter().any(|a| a.date == date && a.n == n && !a.closed && a.reply.is_some() && a.shown_at(co::clock::now(&c), now()).is_none()));
@@ -1414,7 +1428,7 @@ fn target(s: &mut Session, r: &mut Rf, c: &Company, date: &str, n: u32, part: Op
         None => po::open_duties(&p, &ds).into_iter().find(|o| o.n == n).ok_or_else(|| said(tr("That duty has a driver now."), true))?,
     };
     let weekly = week_of_drivers(c, &week, &plans, date);
-    let breaks = drivers(c).into_iter().map(|e| (e.id, breaches_of(c, &week, &plans, e, date, &d, &weekly))).collect();
+    let breaks = drivers(c).into_iter().map(|e| (e.id, breaches_of(c, &week, &plans, e, date, &d, &weekly, None))).collect();
     // (round D: how tired each would be with it)
     let tired = drivers(c).into_iter().map(|e| (e.id, tired_of(c, &week, &plans, e, date, Some(&d)).level)).collect();
     Ok((p, ds, d, weekly, breaks, tired))
@@ -1518,18 +1532,24 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             // (the rest rules broken: only after the player confirmed it - `anyway`; a swap's
             // colleague too, with his new duty - round C)
             let theirs_duty = swap.and_then(|(_, theirs)| ds.iter().find(|x| x.number == theirs).cloned());
-            let b_broken = match (swap, &theirs_duty) {
-                (Some((with, _)), Some(mine)) => {
-                    let od = OpenDuty { n: mine.number, start: mine.start, end: mine.end, paid: mine.paid, kind: mine.kind, pieces: po::pieces_of(&p, mine), why: None, part: false, lines: Vec::new() };
+            let (a_broken, b_broken) = match swap {
+                Some((with, theirs)) => {
                     let (week, plans) = match rest_inputs(s, r, &date) {
                         Ok(x) => x,
                         Err(v) => return Ok(v),
                     };
-                    c.employee(with).is_some_and(|b| !breaches_of(&c, &week, &plans, b, &date, &od, &weekly).is_empty())
+                    // (6 November 2026: his day without the duty he gives away - as the box's row
+                    // shows it; with it, a swap answer was refused while the row offered it)
+                    let a = !breaches_of(&c, &week, &plans, &e, &date, &d, &weekly, Some(theirs)).is_empty();
+                    let b = theirs_duty.as_ref().is_some_and(|mine| {
+                        let od = OpenDuty { n: mine.number, start: mine.start, end: mine.end, paid: mine.paid, kind: mine.kind, pieces: po::pieces_of(&p, mine), why: None, part: false, lines: Vec::new() };
+                        c.employee(with).is_some_and(|b| !breaches_of(&c, &week, &plans, b, &date, &od, &weekly, None).is_empty())
+                    });
+                    (a, b)
                 }
-                _ => false,
+                None => (!breaks.get(&driver).map_or(true, Vec::is_empty), false),
             };
-            let broken = !breaks.get(&driver).map_or(true, Vec::is_empty) || b_broken;
+            let broken = a_broken || b_broken;
             if broken && args.get("anyway").and_then(Value::as_bool) != Some(true) {
                 return Ok(said(tr("This breaks the rest rules: confirm it first."), true));
             }
@@ -1562,7 +1582,7 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                 if toil {
                     po::set_toil(c, &date, n, part, driver, true);
                 }
-                if broken {
+                if a_broken {
                     pr::broke(c, driver);
                 }
                 Ok(())
@@ -1893,6 +1913,49 @@ mod tests {
     fn changed(s: &mut Session) {
         company::changed(s);
         s.plan_gen += 1;
+    }
+
+    /// (6 November 2026) A driver who answered "yes, if we swap" is given the duty with the swap
+    /// when the row offers "Give with the swap": his own duty goes to the colleague, so the rest
+    /// rules are not checked against the duty he gives away (the row did not, the act refused).
+    #[test]
+    fn a_swap_answer_given_with_the_swap() {
+        company::words::set_language("en");
+        company::test_dry();
+        let mut s = session();
+        let mut r = Rf::default();
+        let ids: Vec<u32> = s.company.as_ref().unwrap().staff.iter().filter(|e| co::staff::drives(e)).map(|e| e.id).collect();
+        let date = "2024-03-05";
+        let v = daily(&mut s, &mut r, &json!({ "date": date })).unwrap();
+        let open: Vec<(u64, i64, i64)> = v["open"].as_array().unwrap().iter().map(|o| (o["n"].as_u64().unwrap(), o["start"].as_i64().unwrap_or(0), o["end"].as_i64().unwrap_or(0))).collect();
+        assert!(open.len() >= 2, "{v}");
+        // A drives an open duty; another overlapping it is asked of him, and he answers with a swap
+        let (own, n) = (open[0].0 as u32, open[1].0 as u32);
+        let (a, b) = (ids[0], ids[1]);
+        {
+            let c = s.company.as_mut().unwrap();
+            po::give_part(c, date, own, None, a, None).unwrap();
+            // (his week full already: with the duty he gives away counted, it broke the rest
+            // rules in the act only - the row offered "Give with the swap", the click did nothing)
+            for x in ["2024-03-04", "2024-03-06", "2024-03-07", "2024-03-08", "2024-03-09"] {
+                po::give_part(c, x, own, None, a, None).unwrap();
+            }
+            let game = co::clock::now(c);
+            c.planning.ops.asks.push(po::Ask { id: 900, date: date.into(), n, start: 0, end: 0, who: po::Asked::Staff { id: a }, at: 0, wait: 0, reply: Some(Reply::Swap { with: b, theirs: own, say: 0 }), closed: false, part: None, due: Some(game), closed_at: None, seen: false });
+        }
+        changed(&mut s);
+        let v = daily(&mut s, &mut r, &json!({ "date": date, "n": n })).unwrap();
+        let rows: Vec<&Value> = v["duty"]["groups"].as_array().unwrap().iter().flat_map(|g| g["rows"].as_array().unwrap().iter()).collect();
+        let row = rows.iter().find(|x| x["id"] == a).unwrap_or_else(|| panic!("A in the box: {}", v["duty"]));
+        assert_eq!(row["answer"]["key"], "swap", "{row}");
+        let swap = row["answer"]["swap"].clone();
+        let anyway = row["action"] == "give_anyway";
+        assert!(anyway || row["action"] == "give", "{row}");
+        let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": a, "swap": swap, "anyway": anyway })).unwrap();
+        assert_eq!(out["edited"], true, "the row's button gives it: {out}");
+        let c = s.company.as_ref().unwrap();
+        let calls: Vec<(u32, u32)> = c.planning.ops.calls.iter().filter(|x| x.date == date).map(|x| (x.n, x.driver)).collect();
+        assert!(calls.contains(&(n, a)) && calls.contains(&(own, b)), "both changed at once: {calls:?}");
     }
 
     #[test]
