@@ -192,7 +192,7 @@ pub const TOPICS: [Topic; 28] = [
     t("parts", S::Workshop, "Cheaper spare parts", "Each stage: the spare parts cost 10 % less in the workshop's stores.", "inventory_2", 3, 15_000_00, 0, 15, 5.0, &[]),
     t("repairs", S::Workshop, "Faster repairs", "Each stage: the repairs take 10 % less time.", "timer", 3, 20_000_00, 15, 15, 6.0, &[]),
     // the area
-    t("area", S::Area, "More concessions", "Each stage: the authority lets the company hold one concession more.", "map", 3, 60_000_00, 30, 20, 10.0, &[Need::Level(3)]),
+    t("area", S::Area, "More concessions", "Each stage: the authority lets the company hold one concession more.", "map", 10, 60_000_00, 30, 20, 10.0, &[Need::Level(3)]),
     t("park_and_ride", S::Area, "Park and ride", "Car parks at the termini: 2 % more passengers.", "local_parking", 1, 40_000_00, 25, 0, 8.0, &[Need::Done("area_1")]),
     // the tools
     t(keys::SHIFT_SCHEDULE, S::Tools, "Shift schedule", "The shift schedule of the staff besides the drivers: their core hours, and who works outside them.", "calendar_month", 1, 10_000_00, 5, 0, 4.0, &[]),

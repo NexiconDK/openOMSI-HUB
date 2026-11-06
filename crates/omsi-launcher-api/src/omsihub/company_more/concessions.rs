@@ -21,6 +21,7 @@ use omsi_launcher_lib::company::clock::{self as ck, Step};
 use omsi_launcher_lib::company::concessions::{self as cn, Outcome, Tender, Week};
 use omsi_launcher_lib::company::viborg::{self, Award};
 use omsi_launcher_lib::company::shared_tenders as co_tenders;
+use omsi_launcher_lib::company::specials::{self as sp, ShownLine};
 use omsi_launcher_lib::company::{dates, Cents, Company, Drive};
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -32,6 +33,9 @@ pub struct TendersState {
     weeks: HashMap<String, Week>,
     weeks_for: Option<(String, String, u64)>,
     reading: bool,
+    /// (6 November 2026) The other lines each map line's tours run, over the week read
+    /// (`specials::also_of`): for a tender of an older file, which has none of its own.
+    also: HashMap<String, Vec<ShownLine>>,
     /// The tender in the auction panel.
     pub selected: Option<u32>,
 }
@@ -55,6 +59,7 @@ fn weeks(s: &Session) {
     m.tenders.weeks_for = Some(key.clone());
     m.tenders.reading = true;
     let map = c.map.clone();
+    let depot = c.depot.clone();
     let _ = std::thread::Builder::new().name("company weeks".into()).spawn(move || {
         // (Monday to Sunday in their order: a day not read is a day without its lines)
         let days: Vec<Vec<core::LineInfo>> = (0..7).map(|k| core::list_lines(&map, &dates::add(&monday, k)).unwrap_or_default()).collect();
@@ -62,10 +67,18 @@ fn weeks(s: &Session) {
         for l in days.iter().find(|d| !d.is_empty()).map(|d| d.iter().map(|l| l.name.clone()).collect::<Vec<_>>()).unwrap_or_default() {
             out.insert(l.to_lowercase(), cn::week_of(&days, &l));
         }
+        // (the other lines of each, on any day of the week: a night line may run on Fridays only)
+        let mut also: HashMap<String, Vec<ShownLine>> = HashMap::new();
+        for l in days.iter().flatten() {
+            if !also.contains_key(&l.name.to_lowercase()) {
+                also.insert(l.name.to_lowercase(), sp::also_over(&days, &l.name, &[&depot]));
+            }
+        }
         let mut m = more_state().lock().unwrap_or_else(|e| e.into_inner());
         // (read for the week still wanted: else a newer read is on its way)
         if m.tenders.weeks_for.as_ref() == Some(&key) {
             m.tenders.weeks = out;
+            m.tenders.also = also;
             m.tenders.reading = false;
         }
         drop(m);
@@ -205,17 +218,17 @@ pub fn view(s: &mut Session, args: &Value) -> Value {
     let mut list: Vec<Tender> = c.concessions.tenders.clone();
     list.sort_by(|a, b| b.open().cmp(&a.open()).then(if a.open() { a.opens_at.cmp(&b.opens_at) } else { b.closes_at.cmp(&a.closes_at) }));
     // (the panel shows the one picked, else the first running or announced)
-    let (weeks, reading, selected) = {
+    let (weeks, reading, selected, also) = {
         let mut m = more(s);
         if m.tenders.selected.is_none_or(|id| !list.iter().any(|t| t.id == id)) {
             m.tenders.selected = list.first().map(|t| t.id);
         }
-        (m.tenders.weeks.clone(), m.tenders.reading, m.tenders.selected)
+        (m.tenders.weeks.clone(), m.tenders.reading, m.tenders.selected, m.tenders.also.clone())
     };
     let today_read = s.today.is_some();
     json!({
-        "tenders": tenders(&c, &list, &weeks, reading, today_read, selected),
-        "held": held(&c),
+        "tenders": tenders(&c, &list, &weeks, &also, reading, today_read, selected),
+        "held": held(&c, &also),
         "auction": auction(&c, selected, args),
         "offers": offers(&c),
         "doubling": doubling_orders(&c),
@@ -390,7 +403,27 @@ fn doubling_orders(c: &Company) -> Value {
 }
 
 /// The tenders: announced and running first, then the results (`concessions::tenders`).
-fn tenders(c: &Company, list: &[Tender], weeks: &HashMap<String, Week>, reading: bool, today_read: bool, selected: Option<u32>) -> Value {
+/// (NexiconDK, 6 November 2026) What lines a tender's tours run, for its card: each of its lines
+/// (a package's every line) with the others its tours run - "131 · also runs NE2 🌙, NE10 🌙" -,
+/// those of an older tender read from the map's week (`also`). None: no other line.
+pub fn runs_json(t: &Tender, also: &HashMap<String, Vec<ShownLine>>) -> Value {
+    let pick = |line: &str, own: &[ShownLine]| if own.is_empty() { also.get(&line.to_lowercase()).cloned().unwrap_or_default() } else { own.to_vec() };
+    let lines: Vec<(String, Vec<ShownLine>)> = match &t.package {
+        Some(p) => p.lines.iter().map(|l| (sp::display_number(&l.number), pick(&l.line, &l.also))).collect(),
+        None => vec![(sp::display_number(&t.number), pick(&t.line, &t.also))],
+    };
+    if lines.iter().all(|(_, a)| a.is_empty()) {
+        return Value::Null;
+    }
+    let rows: Vec<Value> = lines
+        .iter()
+        .map(|(n, a)| json!({ "number": n, "also": a.iter().map(|x| json!({ "number": x.number, "night": x.night })).collect::<Vec<_>>(), "text": (!a.is_empty()).then(|| tr("also runs")) }))
+        .collect();
+    let every: Vec<String> = lines.iter().flat_map(|(n, a)| std::iter::once(n.clone()).chain(a.iter().map(|x| x.number.clone()))).collect();
+    json!({ "rows": rows, "night": tr("Night line"), "label": tr("Lines it runs"), "all": every.join(", ") })
+}
+
+fn tenders(c: &Company, list: &[Tender], weeks: &HashMap<String, Week>, also: &HashMap<String, Vec<ShownLine>>, reading: bool, today_read: bool, selected: Option<u32>) -> Value {
     let note = cn::may_add_directly(c).then(|| tr("On an easy economy the map's lines are taken on directly on the Lines page and their concessions renew by themselves; tenders are offered all the same, for the practice."));
     let empty = list.is_empty().then(|| tr(if !today_read { "Reading the timetable…" } else { "No line is out to tender now. A new round comes every four weeks; a line of the map can also be applied for on the Lines page." }));
     let now = ck::now(c);
@@ -444,6 +477,8 @@ fn tenders(c: &Company, list: &[Tender], weeks: &HashMap<String, Week>, reading:
                 "id": t.id, "number": t.number, "caption": caption_of(t), "dim": !t.open(), "on": selected == Some(t.id),
                 "figures": figures, "state": state, "tone": tone, "bid": bid, "bid_tone": bid_tone, "badge": badge,
                 "chips": chips, "countdown": countdown,
+                // (6 November 2026: the other lines its tours run - 131 with the night lines NE2 and NE10)
+                "runs": runs_json(t, also),
                 // (NexiconDK, the owner's wish: what the contract asks, behind a button of its card)
                 "terms": t.market.is_some().then(|| requirements(c, t, week)), "terms_label": t.market.is_some().then(|| tr("Contract requirements")),
             })
@@ -455,7 +490,7 @@ fn tenders(c: &Company, list: &[Tender], weeks: &HashMap<String, Week>, reading:
 
 /// The concessions the company holds and its own lines (`concessions::held`): each with its bus
 /// contract (kind, payment, term, rating and points) - or commercial, without one.
-fn held(c: &Company) -> Value {
+fn held(c: &Company, also: &HashMap<String, Vec<ShownLine>>) -> Value {
     let today = c.date.clone();
     let rows: Vec<Value> = c
         .concessions
@@ -472,7 +507,9 @@ fn held(c: &Company) -> Value {
             let more = k.map(|k| format!("{}  ·  {}", kc::points_text(c, k), kc::unpaid_text(c, k)));
             let caption = c.lines.iter().find(|l| l.name.eq_ignore_ascii_case(&h.line)).map(|l| l.caption.clone()).filter(|x| !x.is_empty()).unwrap_or_else(|| h.line.clone());
             let change = k.filter(|k| matches!(k.kind, bc::Kind::Gross | bc::Kind::Net) && k.live()).map(|_| tr("Request a change"));
-            json!({ "line": h.line, "change": change, "number": h.number, "caption": caption, "until": until, "tone": if left <= cn::RENEW_BEFORE { "warn" } else { "text" }, "price": price, "more": more, "points": k.map(|k| kc::points_text(c, k)), "unpaid": k.map(|k| kc::unpaid_text(c, k)), "rag": k.map(|k| kc::rag_json(k.rag(&today))), "direct": (h.direct && k.is_none()).then(|| tr("commercial").to_uppercase()) })
+            json!({ "line": h.line, "change": change, "number": h.number, "caption": caption, "until": until, "tone": if left <= cn::RENEW_BEFORE { "warn" } else { "text" }, "price": price, "more": more, "points": k.map(|k| kc::points_text(c, k)), "unpaid": k.map(|k| kc::unpaid_text(c, k)), "rag": k.map(|k| kc::rag_json(k.rag(&today))), "direct": (h.direct && k.is_none()).then(|| tr("commercial").to_uppercase()),
+                // (6 November 2026: the other lines its tours run)
+                "also": also.get(&h.line.to_lowercase()).filter(|a| !a.is_empty()).map(|a| json!({ "text": tr("also runs"), "night": tr("Night line"), "lines": a.iter().map(|x| json!({ "number": x.number, "night": x.night })).collect::<Vec<_>>() })) })
         })
         .collect();
     let lic = eur((cn::LICENCE as f64 * c.price_index).round() as i64);

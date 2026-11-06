@@ -704,7 +704,10 @@ export function mountPanel(root, api, opts = {}) {
         const cap = number(Math.round(t.cap_hour), 90);
         const kind = [t.package ? tag(tr('Package')) : null, t.renewal && !t.event ? tag(tr('Renewal')) : null, t.event ? tag(t.event, 'warn') : null, t.applied.length ? tag(tr('Applied for')) : null, t.direct ? tag(trf('Direct: %{n}', { n: t.direct }), 'ok') : null];
         return h('tr', {},
-          h('td', {}, h('b', {}, t.number || t.line), ...kind, t.caption ? h('div', { class: 'bco-sub' }, t.caption) : null, t.event && t.from ? h('div', { class: 'bco-sub' }, `${t.from} – ${t.until}`) : null,
+          h('td', {}, h('b', {}, t.number || t.line), ...kind, t.caption ? h('div', { class: 'bco-sub' }, t.caption) : null,
+            // (6 November 2026: the other lines its tours run - "131 · also runs NE2 🌙, NE10 🌙")
+            ...(t.runs || []).map((r) => h('div', { class: 'bco-sub bco-runs' }, h('b', {}, r.number), ' · ' + tr('also runs') + ' ',
+              ...r.also.flatMap((x, k) => [k ? ', ' : '', h('b', {}, x.number), x.night ? h('span', { title: tr('Night line'), style: 'cursor:help' }, ' 🌙') : null]))), t.event && t.from ? h('div', { class: 'bco-sub' }, `${t.from} – ${t.until}`) : null,
             t.needs ? h('div', { class: 'bco-sub' }, needsText(t.needs)) : null),
           h('td', { class: 'sp-hide' }, t.opens),
           h('td', {}, t.closes),

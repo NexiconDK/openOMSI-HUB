@@ -468,6 +468,9 @@ pub fn fill_weeks(data: &Path, key: &str, date: &str, read: &mut dyn FnMut(&str)
     let Some(mut m) = load(data, key) else { return false };
     // (a special service's week is its event's days: made with it - `offer`)
     let missing: Vec<usize> = m.tenders.iter().enumerate().filter(|(_, t)| t.decided.is_none() && t.tender.week.is_none_or(|w| !w.by_day) && t.tender.market.as_ref().is_none_or(|x| x.event.is_empty())).map(|(i, _)| i).collect();
+    // (6 November 2026: an older tender without the other lines its tours run - read with them)
+    let unread: Vec<usize> = m.tenders.iter().enumerate().filter(|(i, t)| t.decided.is_none() && !t.tender.also_read && !missing.contains(i)).map(|(i, _)| i).collect();
+    let missing: Vec<usize> = missing.into_iter().chain(unread.iter().copied()).collect();
     if missing.is_empty() || m.weeks_failed == date {
         return false;
     }
@@ -485,6 +488,17 @@ pub fn fill_weeks(data: &Path, key: &str, date: &str, read: &mut dyn FnMut(&str)
     }
     for i in missing {
         let t = &mut m.tenders[i].tender;
+        // (6 November 2026: the other lines its tours run, a package's each line's)
+        t.also = super::specials::also_over(&days, &t.line, &[]);
+        if let Some(p) = t.package.as_mut() {
+            for l in p.lines.iter_mut() {
+                l.also = super::specials::also_over(&days, &l.line, &[]);
+            }
+        }
+        t.also_read = true;
+        if unread.contains(&i) {
+            continue;
+        }
         // (3 November 2026: a package's - each line's own, and the lines' together)
         match t.package.as_mut().filter(|p| p.lines.len() > 1) {
             Some(p) => {

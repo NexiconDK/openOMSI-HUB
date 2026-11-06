@@ -1774,6 +1774,24 @@ The panel's tabs are no longer drawn anew every 3 seconds: only when what the ta
 never while something in it is being edited ("Not updated while you are editing" - until it is
 sent, or another tab or row is picked), and keeping the scroll and the open sections when they are.
 
+### The lines a tender runs, and more concessions (6 November 2026)
+
+A tender is matched to the map by its `.ttl` file, but a map's night lines often run inside the
+day lines' tours: Ahlheim 5 has no `NE2.ttl` - 131's tours run the trips of NE2 and NE10 too,
+153's those of 154 and SB13. Every tender now carries the other lines its tours run
+(`Tender::also`, from each passenger trip's display line - the `.ttp` header's third line -,
+depot and empty runs not counted; `specials::also_of`), a package each of its lines'. The numbers
+are written as the pages write them (`NE02` is NE2), in natural order, a night line marked 🌙
+when its name says so (N…, NE…) or all its trips leave between 22:00 and 05:00. The launcher's
+tender cards and held concessions show "131 · kører også NE2 🌙, NE10 🌙", the web admin's
+market the same under the line. A market tender of an older file gets them the next time its
+week is read from the map (`shared_tenders::fill_weeks`, `also_read`); the launcher reads them
+for its tender page over the week it reads anyway.
+
+The research "More concessions" has ten stages instead of three, each one concession more
+(`levels::max_concessions`: one, one more at levels 3, 6, 8 and 10, and one a stage - up to 15).
+The stages already researched (`area_1` to `area_3`) stay.
+
 ## Open questions (udkast 4)
 
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the

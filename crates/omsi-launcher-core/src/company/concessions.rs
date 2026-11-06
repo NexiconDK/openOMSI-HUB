@@ -331,6 +331,14 @@ pub struct Tender {
     /// of its own (`line`; a package's first line is `line` too).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub package: Option<Package>,
+    /// (NexiconDK, 6 November 2026) The other lines its tours run (`specials::also_of`: 131's the
+    /// night lines NE2 and NE10); a package's are its lines'. Empty in an older file: the pages
+    /// read them from the map.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub also: Vec<super::specials::ShownLine>,
+    /// `also` was read from the map (an older tender's not yet: `shared_tenders::fill_weeks`).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub also_read: bool,
 }
 
 /// (NexiconDK, 3 November 2026) A package of lines let as one tender: its name ("Ahlheim By") and
@@ -354,6 +362,9 @@ pub struct PackageLine {
     pub work: Work,
     pub week: Option<Week>,
     pub sizes: Sizes,
+    /// (6 November 2026) The other lines its tours run (`Tender::also`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub also: Vec<super::specials::ShownLine>,
 }
 
 impl PackageLine {
@@ -602,6 +613,15 @@ pub struct OtherBids {
 pub const NOT_ON_SERVER: &str = "On the Bus Company Online server every line is won in its tender: it cannot be bought outright.";
 
 impl Tender {
+    /// (NexiconDK, 6 November 2026) Its lines - a package's every line - each with the other lines
+    /// its tours run (`also`; the night lines in 131's tours), the numbers as the pages write them.
+    pub fn runs(&self) -> Vec<(String, Vec<super::specials::ShownLine>)> {
+        match &self.package {
+            Some(p) => p.lines.iter().map(|l| (super::specials::display_number(&l.number), l.also.clone())).collect(),
+            None => vec![(super::specials::display_number(&self.number), self.also.clone())],
+        }
+    }
+
     /// (NexiconDK, 3 November 2026) Its lines' timetable names: a package's every line, else its one.
     pub fn lines(&self) -> Vec<String> {
         match self.package.as_ref().filter(|p| !p.lines.is_empty()) {
@@ -1113,6 +1133,8 @@ pub fn make_tender(c: &Company, l: &LineInfo, id: u32, opens_at: i64, renewal: b
         bus_day: 0,
         sizes: Sizes::of(l),
         package: None,
+        also: specials::also_of(l, &[&c.depot]),
+        also_read: true,
     };
     price(c, &mut t);
     t
@@ -1124,7 +1146,7 @@ pub fn make_tender(c: &Company, l: &LineInfo, id: u32, opens_at: i64, renewal: b
 /// number the package's name and its caption the lines' numbers -, priced anew. Each line's own
 /// is kept (`Package`) for the contracts the winner gets.
 pub fn package_of(c: &Company, first: Tender, others: Vec<Tender>, name: &str) -> Tender {
-    let line_of = |t: &Tender| PackageLine { line: t.line.clone(), number: t.number.clone(), caption: t.caption.clone(), day_tours: t.day_tours, day_km: t.day_km, work: t.work, week: t.week, sizes: t.sizes };
+    let line_of = |t: &Tender| PackageLine { line: t.line.clone(), number: t.number.clone(), caption: t.caption.clone(), day_tours: t.day_tours, day_km: t.day_km, work: t.work, week: t.week, sizes: t.sizes, also: t.also.clone() };
     let mut lines = vec![line_of(&first)];
     lines.extend(others.iter().map(line_of));
     let mut t = first;

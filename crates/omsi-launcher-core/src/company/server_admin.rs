@@ -535,6 +535,8 @@ fn market(api: &Api) -> Value {
                         // (3 November 2026: a package's name and lines, and the work's reserve buses)
                         "package": t.package.as_ref().filter(|p| p.lines.len() > 1).map(|p| p.name.clone()).unwrap_or_default(),
                         "lines": t.lines(), "reserve": x.map_or(0, |x| x.reserve),
+                        // (6 November 2026: the other lines its tours run - 131's night lines NE2 and NE10)
+                        "runs": t.runs().iter().filter(|(_, a)| !a.is_empty()).map(|(n, a)| json!({ "number": n, "also": a })).collect::<Vec<_>>(),
                         // (3 November 2026: what it asks of the buses)
                         "needs": x.and_then(|x| x.needs).map(|n| needs_json(&n)),
                     })

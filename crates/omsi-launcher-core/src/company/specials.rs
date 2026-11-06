@@ -255,6 +255,103 @@ pub fn number_of(l: &LineInfo, depots: &[&str]) -> String {
         .to_string()
 }
 
+/// (NexiconDK, 6 November 2026) A line a timetable's trips show on their displays: its number
+/// as written for the pages (`display_number`), and whether it is a night line.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
+#[serde(default)]
+pub struct ShownLine {
+    pub number: String,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub night: bool,
+}
+
+/// A display's line number as the pages write it: the zeros after a letter prefix dropped
+/// ("NE02" is NE2), the rest as the map has it.
+pub fn display_number(n: &str) -> String {
+    let n = n.trim();
+    let letters = n.chars().take_while(|c| c.is_ascii_alphabetic()).count();
+    if letters == 0 || letters == n.len() {
+        return n.to_string();
+    }
+    let (head, rest) = n.split_at(letters);
+    let digits = rest.trim_start_matches('0');
+    if digits.is_empty() || !digits.starts_with(|c: char| c.is_ascii_digit()) {
+        return n.to_string();
+    }
+    format!("{head}{digits}")
+}
+
+/// Whether a line number is a night line's by its name: N or NE before its digits ("N7", "NE10").
+fn night_name(n: &str) -> bool {
+    let u = n.to_ascii_uppercase();
+    let rest = u.strip_prefix("NE").or_else(|| u.strip_prefix('N'));
+    rest.is_some_and(|r| r.starts_with(|c: char| c.is_ascii_digit()))
+}
+
+/// A departure (seconds of the day, past 24:00 for the night after) between 22:00 and 05:00.
+fn at_night(seconds: f64) -> bool {
+    let h = (seconds / 3600.0).rem_euclid(24.0);
+    h >= 22.0 || h < 5.0
+}
+
+/// (NexiconDK, 6 November 2026) The other lines timetable `l` runs (the night buses of Ahlheim run
+/// in the day lines' tours: 131's tours have the trips of NE2 and NE10 too, 153's those of 154 and
+/// SB13): every number its passenger trips show (depot and empty runs not), but its own
+/// (`number_of`, or its name), in natural order - each a night line when its name says so or all
+/// its trips leave between 22:00 and 05:00.
+pub fn also_of(l: &LineInfo, depots: &[&str]) -> Vec<ShownLine> {
+    let own = [display_number(&number_of(l, depots)).to_lowercase(), display_number(&l.name).to_lowercase()];
+    let mut seen: Vec<(String, ShownLine, bool)> = Vec::new();
+    for t in l.tours.iter().flat_map(|t| t.trips.iter()) {
+        let n = display_number(&t.line);
+        if n.is_empty() || trip_kind(&t.line, &t.name, &t.terminus, t.stops.len(), depots).empty() {
+            continue;
+        }
+        let key = n.to_lowercase();
+        if own.contains(&key) {
+            continue;
+        }
+        let night = at_night(t.departure);
+        match seen.iter_mut().find(|x| x.0 == key) {
+            Some(x) => x.2 &= night,
+            None => seen.push((key, ShownLine { number: n, night: false }, night)),
+        }
+    }
+    let mut out: Vec<ShownLine> = seen.into_iter().map(|(_, mut s, all_night)| {
+        s.night = all_night || night_name(&s.number);
+        s
+    }).collect();
+    out.sort_by(|a, b| natural(&a.number, &b.number));
+    out
+}
+
+/// `also_of` over the days of a week (`days`: each day's lines): line `line`'s other lines on any
+/// day (a night line may run on Friday and Saturday nights only), a night line only if it is one
+/// every day it runs.
+pub fn also_over(days: &[Vec<LineInfo>], line: &str, depots: &[&str]) -> Vec<ShownLine> {
+    let mut got: Vec<ShownLine> = Vec::new();
+    for l in days.iter().flatten().filter(|l| l.name.eq_ignore_ascii_case(line)) {
+        for x in also_of(l, depots) {
+            match got.iter_mut().find(|y| y.number.eq_ignore_ascii_case(&x.number)) {
+                Some(y) => y.night &= x.night,
+                None => got.push(x),
+            }
+        }
+    }
+    got.sort_by(|a, b| natural(&a.number, &b.number));
+    got
+}
+
+/// Line numbers in natural order: "NE2" before "NE10", "154" before "SB13".
+pub fn natural(a: &str, b: &str) -> std::cmp::Ordering {
+    let split = |s: &str| {
+        let head: String = s.chars().take_while(|c| !c.is_ascii_digit()).collect::<String>().to_lowercase();
+        let num: u64 = s.chars().skip_while(|c| !c.is_ascii_digit()).take_while(char::is_ascii_digit).collect::<String>().parse().unwrap_or(0);
+        (head, num, s.to_lowercase())
+    };
+    split(a).cmp(&split(b))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -320,6 +417,28 @@ mod tests {
             termini: vec![],
             tours: vec![TourInfo { number: "1".into(), ai_group: String::new(), first: 0.0, last: 0.0, days: "daily".into(), runs: true, today: true, yesterday_night: false, next_run: None, trips: trips.iter().enumerate().map(trip).collect() }],
         }
+    }
+
+    #[test]
+    fn a_tender_says_the_other_lines_its_tours_run() {
+        // (Ahlheim 5's 131: its tours run the night lines NE2 - "NE02" on the display - and NE10
+        // too, with depot runs between)
+        let mut l = timetable("131", true, &[("131", "131_BOW-ZHI", "Zeche Hindenburg", 12), ("", "B_BOW-E", "Betriebsfahrt", 2), ("NE10", "NE10_BOW-HBF", "Ahlheim Hbf", 9), ("NE02", "NE2_HBF-ZHI", "Zeche Hindenburg", 10), ("ne2", "NE2_ZHI-HBF", "Ahlheim Hbf", 10), ("131", "131_ZHI-BOW", "Bowenhof", 12)]);
+        for (k, t) in l.tours[0].trips.iter_mut().enumerate() {
+            t.departure = if t.line.to_lowercase().starts_with("ne") { (24 * 3600 + 1800 * k) as f64 } else { (7 * 3600) as f64 };
+        }
+        let also = also_of(&l, &[]);
+        assert_eq!(also, vec![ShownLine { number: "NE2".into(), night: true }, ShownLine { number: "NE10".into(), night: true }]);
+        // (153: 154 and SB13 by day - no night lines)
+        let l = timetable("153", true, &[("153", "153_HBF-SPSH", "Harbsen", 9), ("SB13", "SB13_BFB-HBF", "Ahlheim Hbf", 6), ("154", "154_HBF-STMH", "Stoelzen Mitte", 8)]);
+        let mut day = also_of(&l, &[]);
+        for t in &mut day { t.night = false; }
+        assert_eq!(day.iter().map(|x| x.number.as_str()).collect::<Vec<_>>(), ["154", "SB13"]);
+        assert!(also_of(&timetable("5", true, &[("5", "", "Rathaus", 6)]), &[]).is_empty(), "a line of its own trips only");
+        // the numbers as the pages write them, and night lines by their name
+        assert_eq!((display_number("NE02"), display_number("N7"), display_number("131"), display_number("SB13"), display_number("E0")), ("NE2".into(), "N7".into(), "131".into(), "SB13".into(), "E0".into()));
+        assert!(night_name("NE10") && night_name("n5") && !night_name("Nord") && !night_name("SB13"));
+        assert!(at_night(23.5 * 3600.0) && at_night(25.0 * 3600.0) && !at_night(6.0 * 3600.0));
     }
 
     #[test]

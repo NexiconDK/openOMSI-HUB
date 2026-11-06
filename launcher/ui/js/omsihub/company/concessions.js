@@ -135,6 +135,21 @@ function TermsDialog({ r }) {
   </${Dialog}>`;
 }
 
+/** (NexiconDK, 6 November 2026) The other lines a line's tours run - "kører også NE2 🌙, NE10 🌙"
+ * (a night line with a moon, its word on hover). */
+function Also({ lines, night }) {
+  return lines.map((x, k) => html`${k > 0 ? ', ' : ''}<b class="co-pg-alsoline">${x.number}${x.night && html` <span class="co-pg-night" title=${night}>🌙</span>`}</b>`);
+}
+
+/** A tender's lines with the others their tours run (`concessions::runs_json`): one row a line of
+ * a package. */
+function Runs({ r }) {
+  if (!r) return null;
+  return html`<div class="co-pg-runs" title=${r.label + ': ' + r.all}>${r.rows
+    .filter((x) => x.also.length > 0 || r.rows.length > 1)
+    .map((x) => html`<span class="co-pg-run"><b>${x.number}</b>${x.also.length > 0 && html` · ${x.text} <${Also} lines=${x.also} night=${r.night} />`}</span>`)}</div>`;
+}
+
 /** A tender's card: its plate and name, its chips, its countdown, its state and your bid. */
 function Tender({ r }) {
   return html`<button type="button" class=${'cm-tender co-pg-tender' + (r.on ? ' on' : '') + (r.dim ? ' past' : '')} onClick=${() => actMore('tender_pick', { id: r.id })}>
@@ -144,6 +159,7 @@ function Tender({ r }) {
       ${r.badge && html`<${Badge} b=${r.badge} />`}
     </div>
     <div class="co-pg-chips">${(r.chips || []).map((c) => html`<${Chip} text=${c.text} tone=${c.tone} icon=${c.icon} />`)}</div>
+    <${Runs} r=${r.runs} />
     <div class="co-pg-line">
       <span class=${'co-pg-cut grow co-pg-small t-' + r.tone} title=${r.state}>${r.state}</span>
       ${r.countdown && html`<span class=${'co-pg-countdown t-' + r.countdown[1]}><${Icon} name="timer" size=${14} />${r.countdown[0]}</span>`}
@@ -299,6 +315,7 @@ function Held({ h }) {
               <b class="co-pg-itemtitle grow co-pg-cut">${r.caption || r.number}</b>
               ${r.rag ? html`<${Dot} tone=${r.rag.tone} title=${r.rag.text} /><span class=${'co-pg-small t-' + r.rag.tone} style="font-weight:800">${r.rag.text}</span>` : badge && html`<${Badge} b=${badge} />`}
             </div>
+            ${r.also && html`<span class="co-pg-itemsub">${r.also.text} <${Also} lines=${r.also.lines} night=${r.also.night} /></span>`}
             ${!r.own && html`<span class=${'co-pg-itemsub t-' + r.tone}>${r.until}</span>`}
             <span class="co-pg-itemsub">${r.own ? r.text : r.price}</span>
             ${r.points && html`<span class="co-pg-itemsub"><${Icon} name="flag" size=${13} /> ${r.points}</span>`}
