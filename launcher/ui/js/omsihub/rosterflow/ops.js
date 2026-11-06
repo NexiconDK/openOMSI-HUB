@@ -231,7 +231,8 @@ function AnswerCell({ x }) {
   const cls = a.swap ? 'swap' : a.yes ? 'yes' : a.key === 'silent' ? 'silent' : 'no';
   const label = a.swap ? tr('⇄ Swap') : a.chip;
   const tip = [a.words, x.swap?.text].filter(Boolean).join(' · ');
-  return html`<span class=${'wl-ans ' + cls} title=${tip}>${label}</span>`;
+  // (a driver's own words written small under the answer, not only on hover)
+  return html`<span class="wl-ansbox"><span class=${'wl-ans ' + cls} title=${tip}>${label}</span>${tip && html`<span class="wl-why">${tip}</span>`}</span>`;
 }
 
 /** (Round G) One driver of the who-can-drive list on one line: a tick box (to ask with the
@@ -317,7 +318,7 @@ function Who({ v, d }) {
         <span class="wl-tick">${p.action === 'ask' && html`<input type="checkbox" checked=${!!picked['g' + p.no]} onChange=${(e) => pick('g' + p.no, e.currentTarget.checked)} />`}</span>
         <span class="wl-who"><b>${p.name}</b><i class="wl-chip">${tr('a player: answers himself')}</i>${p.avail && html`<i class=${'wl-avail ' + p.avail.key}>${p.avail.text}</i>`}</span>
         <span class="wl-price"></span>
-        <span class="wl-answer">${p.action === 'waiting' ? html`<span class="wl-wait">🕒 ${tr('Waiting for an answer…')}</span>` : p.answer ? html`<span class=${'wl-ans ' + (p.answer.yes ? 'yes' : 'no')} title=${p.answer.words || ''}>${p.answer.chip}</span>` : html`<span class="wl-dim">–</span>`}
+        <span class="wl-answer">${p.action === 'waiting' ? html`<span class="wl-wait">🕒 ${tr('Waiting for an answer…')}</span>` : p.answer ? html`<span class="wl-ansbox"><span class=${'wl-ans ' + (p.answer.yes ? 'yes' : 'no')} title=${p.answer.words || ''}>${p.answer.chip}</span>${p.answer.words && html`<span class="wl-why">${p.answer.words}</span>`}</span>` : html`<span class="wl-dim">–</span>`}
           ${p.action === 'give' && html`<button type="button" class="bx-btn green sm" onClick=${() => oAct('give_guest', { date: v.date, n: d.n, guest: p.no }).then((r) => r?.edited && setO({ n: null, given: tr('Duty %{n} is given to %{name}', { n: d.n, name: p.name }) }))}>${tr('Give')}</button>`}</span>
       </div>`)}`}
     ${d.nobody &&
