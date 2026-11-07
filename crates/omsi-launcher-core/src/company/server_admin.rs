@@ -375,6 +375,30 @@ fn company(api: &Api, id: &str) -> Option<Value> {
     o.insert("research".into(), json!(topics));
     o.insert("cash_kr".into(), json!(Currency::Dkk.units(c.cash as f64).round()));
     o.insert("waiting".into(), json!(sg::waiting(&m.data, &c)));
+    // (7 November 2026: its contracts' prices as they pay today, in kroner, and its depot's areas)
+    let kr = |x: Option<i64>| x.map(|x| (Currency::Dkk.units(x as f64) * 100.0).round() / 100.0);
+    let contracts: Vec<Value> = c
+        .concessions
+        .contracts
+        .iter()
+        .filter(|k| k.live() && super::dates::between(&k.until, &c.date) <= 0)
+        .map(|k| {
+            let p = sg::Prices::of(k, c.contract_index);
+            json!({
+                "id": k.id, "line": k.line, "number": k.number, "from": k.from, "until": k.until, "kind": k.kind.label(),
+                "per_hour_kr": kr(p.per_hour), "per_bus_day_kr": kr(p.per_bus_day), "buses": p.buses, "year_kr": kr(p.year),
+            })
+        })
+        .collect();
+    o.insert("contracts".into(), json!(contracts));
+    let areas: Vec<Value> = super::depot::Area::ALL
+        .iter()
+        .map(|a| {
+            let w = c.site.works_on(*a);
+            json!({ "key": a.key(), "label": a.label(), "level": c.site.level(*a), "max": a.max(), "building": w.map(|w| w.level), "until": w.map(|w| w.until.clone()) })
+        })
+        .collect();
+    o.insert("depot".into(), json!(areas));
     Some(v)
 }
 
@@ -393,6 +417,18 @@ fn company_give(api: &Api, a: &Value) -> Result<String, String> {
     } else if let Some(key) = a.get("research").and_then(Value::as_str) {
         let t = super::research::TOPICS.iter().find(|t| t.key == key).ok_or_else(|| format!("no research '{key}'"))?;
         Grant::research(key, num("stages").map_or(t.stages, |x| x.max(0.0) as u32))
+    } else if let Some(id) = num("contract") {
+        // (7 November 2026: a contract's prices in kroner as it pays today, its buses)
+        let cents = |k: &str| num(k).filter(|x| x.is_finite()).map(|x| Currency::Dkk.cents(x));
+        let p = sg::Prices { per_hour: cents("per_hour_kr"), per_bus_day: cents("per_bus_day_kr"), buses: num("buses").map(|b| b.max(0.0) as u32), year: cents("year_kr") };
+        Grant::contract(id as u32, p, a.get("reason").and_then(Value::as_str).unwrap_or(""))
+    } else if let Some(key) = a.get("area").and_then(Value::as_str) {
+        let area = super::depot::Area::from_key(key).ok_or_else(|| sg::NO_AREA.to_string())?;
+        if a.get("finish").and_then(Value::as_bool) == Some(true) {
+            Grant::finish(area)
+        } else {
+            Grant::area(area, num("level_of_area").map_or(u32::MAX, |l| l.max(0.0) as u32))
+        }
     } else if let Some(kr) = num("kroner") {
         if !kr.is_finite() {
             return Err("no amount".into());
@@ -402,6 +438,7 @@ fn company_give(api: &Api, a: &Value) -> Result<String, String> {
         return Err("nothing to give".into());
     };
     g.check()?;
+    g.fits(&c).map_err(String::from)?;
     let runs = m.companies.iter().any(|p| p.id == id);
     sg::give(&m.data, &id, &g, runs).map_err(|e| format!("{e:#}"))?;
     let said = format!("{} ({id}): {}{}", c.name, g.said(), if runs { " - its process takes it at its next step" } else { " - in its file" });

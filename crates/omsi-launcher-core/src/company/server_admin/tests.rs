@@ -243,3 +243,41 @@ fn the_admin_gives_a_company_a_level_research_and_money() {
     assert!(company_give(&api, &json!({ "id": c.id })).is_err());
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// (7 November 2026) The panel's company: its contracts' prices in kroner as they pay today and
+/// its depot's areas - set again by the admin, in its file when no process runs it.
+#[test]
+fn the_admin_sets_a_contract_price_and_the_depot() {
+    use crate::company::bus_contracts::{make, Kind, Period, Work};
+    let dir = temp("price");
+    let (api, _) = api(&dir);
+    let data = dir.join("bco");
+    let mut c = crate::company::found(&crate::company::Founding { name: "Umove".into(), date: "2024-03-04".into(), map: "maps/Lemmental/global.cfg".into(), ..Default::default() }, "owner");
+    c.contract_index = 1.0;
+    let w = Work { hours: 10.0, km: 100.0, journeys: 20, buses: 2, days: 360 };
+    let mut k = make(&mut c, "131", "131", Kind::Gross, Period::Day, 0, &w, "2024-03-01", "2025-02-28");
+    k.per_hour = Currency::Dkk.cents(300.0);
+    c.concessions.contracts.push(k);
+    c.contract_index = 1.25;
+    store::save(&data, &c).unwrap();
+    let v = company(&api, &c.id).unwrap();
+    let k = &v["contracts"][0];
+    assert_eq!((k["number"].as_str(), k["year_kr"].as_f64(), k["buses"].as_u64()), (Some("131"), None, None), "{k}");
+    // (300 kr. agreed at index 1.0, 1.25 now: 375 kr. - to the euro cent)
+    assert!((k["per_hour_kr"].as_f64().unwrap() - 375.0).abs() < 0.1, "{k}");
+    let parking = v["depot"].as_array().unwrap().iter().find(|a| a["key"] == "parking").unwrap().clone();
+    assert_eq!((parking["level"].as_u64(), parking["max"].as_u64()), (Some(1), Some(8)));
+    assert!(company_give(&api, &json!({ "id": c.id, "contract": k["id"], "per_hour_kr": "550", "reason": "For lav pris" })).unwrap().contains("in its file"));
+    company_give(&api, &json!({ "id": c.id, "area": "parking", "level_of_area": 6 })).unwrap();
+    let v = company(&api, &c.id).unwrap();
+    assert!((v["contracts"][0]["per_hour_kr"].as_f64().unwrap() - 550.0).abs() < 0.1, "{v}");
+    assert_eq!(v["depot"].as_array().unwrap().iter().find(|a| a["key"] == "parking").unwrap()["level"].as_u64(), Some(6));
+    // what is refused: a year's price on an hourly contract, no price, no such area, a level over the top, nothing being built
+    assert!(company_give(&api, &json!({ "id": c.id, "contract": k["id"], "year_kr": 10 })).is_err());
+    assert!(company_give(&api, &json!({ "id": c.id, "contract": k["id"], "per_hour_kr": 0 })).is_err());
+    assert!(company_give(&api, &json!({ "id": c.id, "contract": 99, "per_hour_kr": 10 })).is_err());
+    assert!(company_give(&api, &json!({ "id": c.id, "area": "roof", "level_of_area": 1 })).is_err());
+    assert!(company_give(&api, &json!({ "id": c.id, "area": "wash", "level_of_area": 3 })).is_err());
+    assert!(company_give(&api, &json!({ "id": c.id, "area": "wash", "finish": true })).is_err());
+    let _ = std::fs::remove_dir_all(&dir);
+}

@@ -1774,6 +1774,33 @@ The panel's tabs are no longer drawn anew every 3 seconds: only when what the ta
 never while something in it is being edited ("Not updated while you are editing" - until it is
 sent, or another tab or row is picked), and keeping the scroll and the open sections when they are.
 
+### A contract's price and the depot set from the admin panel (7 November 2026)
+
+The same way (`server_grants::Grant`, the admin's orders), the admin panel's company has two more
+sections:
+
+- **Contracts**: its contracts still running, each with the prices it is paid by as it pays them
+  today, in kroner (`server_grants::Prices::of`): by the timetable hour, and its contract buses a
+  day and how many for a bid in two parts - else by the year. The admin types new prices (and
+  buses) and a reason; they are kept in the contract's own euro cents at the contract index it was
+  agreed at (today's price × its `index` ÷ the company's `contract_index`), so it pays them from
+  its next day. Nothing is booked, and the market's record of the tender is left as it was. The
+  company is told in its inbox ("Bus Company Online changed the price of your contract on line
+  131: … a timetable hour (reason)"). Refused: no price or 0, a contract in two parts without a
+  bus, a contract that has ended or is not the company's, a price of another way of paying than
+  the contract's (a year's price on an hourly contract).
+- **Depot**: each area (`depot::Area`: parking spaces 0-8, workshop bays 0-6, the washing bay
+  0-2, the diesel station 0-3, charging points 0-10, offices and rest rooms 0-3) with its level and
+  any building work under way. The admin sets a level (up to the area's top) - in use at once,
+  nothing paid; what a level brings (spaces, bays, washes, pumps, chargers, staff room) follows
+  from it as when built. Building work for a level it now has is done with, for a higher one it
+  goes on. "Finish the building work" brings the level under way now. The company is told in its
+  inbox.
+
+Tested: `server_grants::tests::a_contract_price_set_in_kroner_as_it_pays_today`,
+`a_depot_area_set_and_its_building_finished`, the running and not running companies' tests, and
+`server_admin::tests::the_admin_sets_a_contract_price_and_the_depot`.
+
 ### The lines a tender runs, and more concessions (6 November 2026)
 
 A tender is matched to the map by its `.ttl` file, but a map's night lines often run inside the

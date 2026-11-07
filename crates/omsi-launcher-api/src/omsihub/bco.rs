@@ -611,6 +611,8 @@ mod tests {
         texts.extend(server_depots::approval_texts().into_iter().map(String::from));
         // (phase 7: a group's head office - its refusals, and its page's words)
         texts.extend(omsi_launcher_lib::company::server_hq::texts().into_iter().map(String::from));
+        // (7 November 2026: the admin's contract prices and depot areas - refusals and messages)
+        texts.extend(omsi_launcher_lib::company::server_grants::texts().into_iter().map(String::from));
         let hq = include_str!("bco_hq.rs").split("#[cfg(test)]").next().unwrap_or("");
         texts.extend(takeover::texts().into_iter().chain([takeover::OFFERED.0, takeover::OFFERED.1, takeover::TAKEN.0, takeover::TAKEN.1, takeover::REFUSED.0, takeover::REFUSED.1]).map(String::from));
         texts.push(super::together::SERVER_CODE.to_string());

@@ -199,7 +199,7 @@ export function mountPanel(root, api, opts = {}) {
       setTimeout(refresh, 600);
       return true;
     } catch (e) {
-      say(message(e), true);
+      say(tr(message(e)), true);
       return false;
     }
   };
@@ -407,7 +407,69 @@ export function mountPanel(root, api, opts = {}) {
           h('td', {}, h('b', {}, tr(t.title)), t.running ? tag(tr('under way'), 'warn') : null),
           h('td', { class: 'sp-hide bco-sub' }, needWords(t) || '–'),
           h('td', { class: 'sp-acts' }, control(t))))))),
+      ...contractsOf(c, i, give),
+      ...depotOf(c, i, give),
       i.waiting ? h('div', { class: 'sp-dim' }, trf('%{n} of the changes wait for its process to take them.', { n: i.waiting })) : null,
+    ];
+  }
+
+  /** (7 November 2026) A company's contracts and their prices in kroner as they pay today: the
+   * admin sets them again with a reason, the company told in its inbox (`company_give`). */
+  function contractsOf(c, i, give) {
+    const list = i.contracts || [];
+    if (!list.length) return [h('h3', {}, tr('Contracts')), h('div', { class: 'sp-dim' }, tr('It has no contracts running.'))];
+    const krBox = (v) => h('input', { type: 'number', min: 0.01, step: 0.01, value: v ?? '', style: 'width:110px' });
+    const rows = list.map((k) => {
+      const hour = k.per_hour_kr != null ? krBox(k.per_hour_kr) : null;
+      const day = k.per_bus_day_kr != null ? krBox(k.per_bus_day_kr) : null;
+      const buses = k.buses != null ? h('input', { type: 'number', min: 1, step: 1, value: k.buses, style: 'width:70px' }) : null;
+      const year = k.year_kr != null ? krBox(k.year_kr) : null;
+      const reason = h('input', { class: 'sp-grow', maxlength: 120, placeholder: tr('Reason (told the company)') });
+      const field = (label, box) => (box ? h('label', { class: 'sp-row', style: 'gap:6px' }, box, h('span', { class: 'bco-sub' }, label)) : null);
+      const set = () => {
+        const what = { contract: k.id, reason: reason.value.trim() };
+        if (hour) what.per_hour_kr = Number(hour.value);
+        if (day) what.per_bus_day_kr = Number(day.value);
+        if (buses) what.buses = Number(buses.value);
+        if (year) what.year_kr = Number(year.value);
+        if ([what.per_hour_kr, what.per_bus_day_kr, what.year_kr].some((x) => x != null && !(x > 0)) || (buses && !(what.buses >= 1))) {
+          say(tr('A price is more than 0.'), true);
+          return;
+        }
+        give(what, trf('The price of the contract on line %{n} is set', { n: k.number || k.line }));
+      };
+      return h('tr', {},
+        h('td', {}, h('b', {}, k.number || k.line), h('div', { class: 'bco-sub' }, `${tr(k.kind)} · ${k.from} – ${k.until}`)),
+        h('td', {}, h('div', { class: 'sp-row', style: 'gap:10px;flex-wrap:wrap' },
+          field(tr('kr. a timetable hour'), hour), field(tr('kr. a contract bus a day'), day), field(tr('buses'), buses), field(tr('kr. a year'), year))),
+        h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end;gap:6px' }, reason, sureButton(tr('Set the price'), tr('Sure?'), set, 'sp-btn small main'))));
+    });
+    return [
+      h('h3', {}, tr('Contracts')),
+      h('div', { class: 'sp-dim' }, tr('The prices as the contract pays them today, in kroner. Set again, it pays them from its next day; nothing is booked, and the tender\'s record stays as it was.')),
+      table([tr('Line'), tr('Price'), ''], rows),
+    ];
+  }
+
+  /** (7 November 2026) A company's depot: each area's level set, or its building work finished -
+   * nothing paid, the company told (`company_give`). */
+  function depotOf(c, i, give) {
+    const areas = i.depot || [];
+    if (!areas.length) return [];
+    const rows = areas.map((a) => {
+      const sel = h('select', {}, ...Array.from({ length: a.max + 1 }, (_, n) => h('option', { value: n, selected: n === a.level }, trf('Level %{n}', { n }))));
+      return h('tr', {},
+        h('td', {}, h('b', {}, tr(a.label)), h('div', { class: 'bco-sub' }, trf('Level %{n} of %{m}', { n: a.level, m: a.max })),
+          a.building != null ? tag(trf('level %{n} being built until %{date}', { n: a.building, date: a.until }), 'warn') : null),
+        h('td', { class: 'sp-acts' }, h('div', { class: 'sp-row', style: 'justify-content:flex-end;gap:6px' },
+          sel,
+          btn(tr('Set'), () => give({ area: a.key, level_of_area: Number(sel.value) }, trf('%{what}: level %{n}', { what: tr(a.label), n: sel.value })), 'sp-btn small main'),
+          a.building != null ? btn(tr('Finish the building work'), () => give({ area: a.key, finish: true }, trf('%{what}: level %{n} finished', { what: tr(a.label), n: a.building })), 'sp-btn small') : null)));
+    });
+    return [
+      h('h3', {}, tr('Depot')),
+      h('div', { class: 'sp-dim' }, tr('Set, a level is in use at once and nothing is paid; building work for a level it now has is done with.')),
+      table([tr('Area'), ''], rows),
     ];
   }
 
