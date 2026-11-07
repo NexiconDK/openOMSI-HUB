@@ -115,9 +115,11 @@ fn each_kind_is_paid_its_own_week() {
             assert_eq!((c.staff[0].week_paid, c.staff[0].week_due.round()), (full, (39.0 * 60.0 / 7.0 * 6.0_f64).round()));
             assert_eq!(c.staff[1].week_paid, part);
             assert!((c.staff[1].week_due - 25.0 * 60.0 / 7.0 * 6.0).abs() < 1e-6, "pro rata: {}", c.staff[1].week_due);
-            // the reserve: the frame on each of its days, used or not, and the 2h05 after it
-            assert_eq!(c.staff[2].week_paid, (480 * 5 + 120 + p.sign_off) as f64);
-            assert_eq!(c.staff[2].week_due, 0.0);
+            // the reserve (round L): each frame day the hours driven, at least 7:24 - the frame
+            // 05-13 is the window, not the hours -, and a contract week as a permanent driver's
+            let least = crate::company::pro_turnus::NAMED_LEAST as f64;
+            assert_eq!(c.staff[2].week_paid, least * 5.0);
+            assert!((c.staff[2].week_due - 39.0 * 60.0 / 7.0 * 6.0).abs() < 1e-6, "{}", c.staff[2].week_due);
             // hourly paid: three hours called in on Monday (not the duty's floor), Tuesday's six
             assert_eq!(c.staff[3].week_paid, (180 + 360 + p.sign_on + p.sign_off) as f64);
             assert_eq!(c.staff[3].week_due, 0.0);
@@ -130,11 +132,13 @@ fn each_kind_is_paid_its_own_week() {
         }
     }
     // the guarantee is paid on Saturday night alone: the full-time driver's hours not driven of
-    // 39, nobody else's (the part-timer drove more than 25, the reserve was paid his frame, the
-    // hourly paid have none)
+    // 39, and the reserve's (round L: their contract week - the frame's 40 hours at most a full
+    // week, 39 -, five days of 7:24 short of it); not the part-timer's (more than 25), not the
+    // hourly paid (none)
     assert!(guaranteed[..6].iter().all(|g| *g == 0.0), "{guaranteed:?}");
     let full_short = (39.0 * 60.0 - paid(&[(360, 780)]) * 5.0) / 60.0;
-    assert!((guaranteed[6] - full_short).abs() < 1e-6, "{} {full_short}", guaranteed[6]);
+    let reserve_short = (39.0 * 60.0 - 5.0 * crate::company::pro_turnus::NAMED_LEAST as f64) / 60.0;
+    assert!((guaranteed[6] - full_short - reserve_short).abs() < 1e-6, "{} {full_short} {reserve_short}", guaranteed[6]);
     assert!(c.staff.iter().all(|e| e.week_paid == 0.0 && e.week_due == 0.0));
     // overtime above each one's own week: the part-timer's above 25 hours
     let part = &c.staff[1];
@@ -146,7 +150,7 @@ fn each_kind_is_paid_its_own_week() {
     // ill on a frame day: the allowances pay it, not the frame
     let reserve = c.staff[2].clone();
     assert_eq!(pay::day_minutes(&p, &reserve, 0, 2340.0, true, &[]).0, 0.0);
-    assert_eq!(pay::day_minutes(&p, &reserve, 0, 2340.0, false, &[]).0, 480.0);
+    assert_eq!(pay::day_minutes(&p, &reserve, 0, 2340.0, false, &[]).0, crate::company::pro_turnus::NAMED_LEAST as f64);
     assert_eq!(pay::day_minutes(&p, &reserve, 5, 2340.0, false, &[]).0, 0.0);
 }
 
@@ -420,4 +424,106 @@ fn the_player_hires_hourly_paid_and_the_game_full_time() {
         let e = c.staff.iter().find(|e| e.name == name).unwrap();
         assert_eq!(e.employment, Employment::FullTime);
     }
+}
+
+// --- (round L, NexiconDK 7 November 2026) a reserve's frame is a window, their week a contract ----
+
+/// A frame of a file of before - five days of 12 hours - is a full week, not 60 hours; a shorter
+/// frame week is that many hours (part time). One chosen is the contract.
+#[test]
+fn a_reserves_week_is_their_contract_not_the_frames_window() {
+    let long = Frame::new(3 * 60, 15 * 60, 0b001_1111);
+    assert_eq!(long.week_minutes(), 60 * 60);
+    assert_eq!(Employment::Reserve(long).week_hours(37.0), Some(37.0));
+    let short = Frame::new(5 * 60, 9 * 60, 0b001_1111);
+    assert_eq!(Employment::Reserve(short).week_hours(37.0), Some(20.0));
+    let chosen = long.with_contract(30 * 60, 0);
+    assert_eq!(Employment::Reserve(chosen).week_hours(37.0), Some(30.0));
+    assert_eq!(Employment::Reserve(long.with_contract(50 * 60, 0)).week_hours(37.0), Some(37.0), "at most a full week");
+    // an employment of an older file loads as it was: no contract chosen, no named frame
+    let old: Employment = serde_json::from_str(r#"{"kind":"reserve","from":180,"to":900,"days":31}"#).unwrap();
+    assert_eq!(old, Employment::Reserve(long));
+    let back = serde_json::to_string(&old).unwrap();
+    assert!(!back.contains("contract") && !back.contains("ram"), "{back}");
+    let kept: Employment = serde_json::from_str(&serde_json::to_string(&Employment::Reserve(long.with_contract(37 * 60, 2))).unwrap()).unwrap();
+    assert_eq!(kept, Employment::Reserve(long.with_contract(37 * 60, 2)));
+    // the hiring's choice made sound: a half hour's multiple, at most a full week
+    let c = company("2024-03-04", 0, 0);
+    let full = econ_uk::contract_week_hours(&c);
+    assert_eq!(staff::sound_employment(&c, Employment::Reserve(long.with_contract(1_000 * 60, 1))), Employment::Reserve(long.with_contract((full * 60.0) as i32, 1)));
+    assert_eq!(staff::sound_employment(&c, Employment::Reserve(long.with_contract(25 * 60 + 10, 0))), Employment::Reserve(long.with_contract(25 * 60, 0)));
+}
+
+/// A frame day pays the hours driven, at least 7:24: three hours driven are 7:24, nine are nine;
+/// a day off the frame the duties; overtime above the contract week.
+#[test]
+fn a_frame_day_pays_the_hours_driven_at_least_7_24() {
+    let c = company("2024-03-03", 0, 1);
+    let p = c.planning.flow.prefs.clone();
+    let least = crate::company::pro_turnus::NAMED_LEAST as f64;
+    let mut e = c.staff[0].clone();
+    e.employment = Employment::Reserve(Frame::new(3 * 60, 15 * 60, 0b001_1111).with_contract(37 * 60, 0));
+    let full = 39.0 * 60.0;
+    // Monday (0): nothing driven, three hours, nine hours
+    assert_eq!(pay::day_minutes(&p, &e, 0, full, false, &[]).0, least);
+    assert_eq!(pay::day_minutes(&p, &e, 0, full, false, &[(6 * 60, 9 * 60)]).0, least);
+    let nine = pay::paid_minutes(&p, &[(5 * 60, 14 * 60)]) as f64;
+    assert!(nine > least);
+    assert_eq!(pay::day_minutes(&p, &e, 0, full, false, &[(5 * 60, 14 * 60)]).0, nine);
+    // work past the window counts too
+    assert_eq!(pay::day_minutes(&p, &e, 0, full, false, &[(10 * 60, 18 * 60)]).0, pay::paid_minutes(&p, &[(10 * 60, 18 * 60)]) as f64);
+    // a Saturday, off the frame: the duties only; ill: nothing (the allowances)
+    assert_eq!(pay::day_minutes(&p, &e, 5, full, false, &[]).0, 0.0);
+    assert_eq!(pay::day_minutes(&p, &e, 0, full, true, &[]).0, 0.0);
+    // the contract week is the week overtime is above, and is guaranteed as a permanent driver's
+    let (_, due, week) = pay::day_minutes(&p, &e, 0, full, false, &[]);
+    assert_eq!(week, 37.0 * 60.0);
+    assert!((due - 37.0 * 60.0 / 7.0).abs() < 1e-9);
+    // a duty outside the frame with the week near its contract: overtime above it, not "extra"
+    let (price, _) = crate::company::pro_ops::price_of(&c, &e, plan::TIER_COLLEAGUE, 120, 37.0 * 60.0 - 60.0, false);
+    assert!(matches!(price, crate::company::pro_ops::Price::Overtime { minutes: 60, .. }), "{price:?}");
+    let (price, _) = crate::company::pro_ops::price_of(&c, &e, plan::TIER_COLLEAGUE, 120, 20.0 * 60.0, false);
+    assert_eq!(price, crate::company::pro_ops::Price::Within);
+    // a part-timer of 30 hours over five frame days: at least 6:00 a day, not 7:24 - five empty
+    // frame days are their week, no overtime
+    e.employment = Employment::Reserve(Frame::new(3 * 60, 15 * 60, 0b001_1111).with_contract(30 * 60, 0));
+    assert_eq!(pay::day_minutes(&p, &e, 0, full, false, &[]).0, 360.0);
+    assert_eq!(pay::day_minutes(&p, &e, 0, full, false, &[(5 * 60, 14 * 60)]).0, nine);
+}
+
+/// Hired as a reserve in RAM2 with a full contract and put on the reserve rota's first free row
+/// (a new one when it has none); RAM2's times changed, the reserve's window follows; the rota aims
+/// at its drivers' contract weeks.
+#[test]
+fn a_reserve_hired_in_ram2_is_put_on_the_reserve_rota() {
+    use crate::company::pro_turnus as pt;
+    let mut c = company("2024-03-04", 0, 0);
+    let ram2 = pt::named_frames(&c).into_iter().find(|f| f.name == "RAM2").unwrap();
+    let rota = pt::add(&mut c, "Reserve", true);
+    let a = applicants(&c).into_iter().find(|a| a.role == Role::Driver).unwrap();
+    let f = Frame::new(ram2.from, ram2.to, 0b001_1111).with_contract(37 * 60, ram2.id);
+    let id = staff::hire_as(&mut c, &a, Employment::Reserve(f)).unwrap();
+    assert_eq!(pt::place(&mut c, rota, id), Ok(0));
+    assert_eq!(c.planning.rotas.list[0].rows.len(), 1);
+    assert_eq!(c.planning.rotas.list[0].rows[0].driver, Some(id));
+    assert_eq!(pt::named_of(&c, &c.employee(id).unwrap().employment.frame().unwrap()).map(|n| n.name), Some("RAM2".to_string()));
+    // a permanent driver is refused on a reserve rota, and no row is left behind for them
+    let b = applicants(&c).into_iter().find(|b| b.role == Role::Driver && b.no != a.no).unwrap();
+    let other = staff::hire_as(&mut c, &b, Employment::FullTime).unwrap();
+    assert_eq!(pt::place(&mut c, rota, other), Err(pt::RESERVES_ONLY));
+    assert_eq!(c.planning.rotas.list[0].rows.len(), 1);
+    // RAM2 now 06:00-17:00: the reserve's window with it, the contract kept
+    pt::put_frame(&mut c, ram2.id, "RAM2", 6 * 60, 17 * 60).unwrap();
+    let now = c.employee(id).unwrap().employment.frame().unwrap();
+    assert_eq!((now.from, now.to, now.contract, now.ram), (6 * 60, 17 * 60, 37 * 60, ram2.id));
+    // the rota aims at its drivers' contract weeks: 37 and 25 hours, 31 on average
+    let c2 = c.employee(other).unwrap().id;
+    c.staff.iter_mut().find(|e| e.id == c2).unwrap().employment = Employment::Reserve(Frame::new(300, 780, 0b001_1111).with_contract(25 * 60, 0));
+    assert_eq!(pt::place(&mut c, rota, c2), Ok(1));
+    let t = c.planning.rotas.list[0].clone();
+    assert!((pt::target_hours(&c, &t) - 31.0).abs() < 1e-9, "{}", pt::target_hours(&c, &t));
+    // RAM2 deleted: the window kept as one of its own
+    pt::remove_frame(&mut c, ram2.id).unwrap();
+    let now = c.employee(id).unwrap().employment.frame().unwrap();
+    assert_eq!((now.from, now.to, now.ram), (6 * 60, 17 * 60, 0));
 }

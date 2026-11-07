@@ -1679,7 +1679,11 @@ pub fn sound_employment(c: &Company, e: Employment) -> Employment {
     match e {
         Employment::PartTime { hours } if !hours.is_finite() || hours >= full => Employment::FullTime,
         Employment::PartTime { hours } => Employment::PartTime { hours: (hours.max(PART_TIME_MIN) * 2.0).round() / 2.0 },
-        Employment::Reserve(f) => Employment::Reserve(Frame::new(f.from, f.to, f.days)),
+        // (round L: its contract week a half hour's multiple, from `PART_TIME_MIN` to a full week)
+        Employment::Reserve(f) => {
+            let contract = if f.contract > 0 { ((f.contract as f64 / 30.0).round() * 30.0).clamp(PART_TIME_MIN * 60.0, full * 60.0) as i32 } else { 0 };
+            Employment::Reserve(Frame::new(f.from, f.to, f.days).with_contract(contract, f.ram))
+        }
         x => x,
     }
 }

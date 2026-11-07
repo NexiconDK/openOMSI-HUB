@@ -141,7 +141,12 @@ fn kind_of(c: &Company, e: &Employee) -> (&'static str, String, String) {
     match e.employment {
         Employment::FullTime => ("full", tr("Permanent"), trf("%{h} h", &[("h", &num(co::econ_uk::contract_week_hours(c), 0))])),
         Employment::PartTime { hours } => ("part", tr("Permanent"), trf("%{h} h", &[("h", &num(hours, if hours.fract() == 0.0 { 0 } else { 1 }))])),
-        Employment::Reserve(f) => ("reserve", tr("Reserve frame"), trf("frame %{from}–%{to}", &[("from", &clock(f.from)), ("to", &clock(f.to))])),
+        // (round L: the named frame it is - "RAM1 04:00–14:00" -, and its contract week)
+        Employment::Reserve(f) => {
+            let h = f.contract_minutes(co::pay::contract_week_minutes(c)) / 60.0;
+            let name = co::pro_turnus::named_of(c, &f).map(|n| format!("{} ", n.name)).unwrap_or_default();
+            ("reserve", tr("Reserve frame"), trf("%{name}frame %{from}–%{to} · %{h} h", &[("name", &name), ("from", &clock(f.from)), ("to", &clock(f.to)), ("h", &num(h, if h.fract() == 0.0 { 0 } else { 1 }))]))
+        }
         Employment::Hourly => ("hourly", tr("Hourly"), tr("hourly paid")),
     }
 }
@@ -360,7 +365,8 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                 })
                 .collect();
             let (key, chip, sub) = kind_of(&c, e);
-            let contract = po::contract_minutes(&c, e).filter(|_| kind_rank(e) == 0);
+            // (round L: a reserve's contract week too - their hours "of 37", not the frame's window)
+            let contract = po::contract_minutes(&c, e).filter(|_| kind_rank(e) <= 1);
             let hours_of: Vec<Value> = (0..weeks)
                 .map(|w| {
                     let sunday = co::dates::add(&first, 7 * w);

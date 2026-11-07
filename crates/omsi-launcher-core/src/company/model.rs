@@ -741,8 +741,10 @@ pub enum Employment {
     /// Fewer hours a week (`hours`), guaranteed pro rata.
     PartTime { hours: f64 },
     /// A reserve driver: at the company's disposal within a frame (a daily window on given
-    /// weekdays), paid the frame on its days whether used or not; the first to cover an open
-    /// duty within it, without being asked.
+    /// weekdays); the first to cover an open duty within it, without being asked. (Round L,
+    /// NexiconDK 7 November 2026) The frame is only the window a duty may come in: their week is
+    /// a contract (`Frame::contract`: full time or fewer hours), a day of the frame pays the
+    /// hours driven, at least `pro_turnus::NAMED_LEAST` (7:24), overtime above the contract week.
     Reserve(Frame),
     /// Hourly paid: no guarantee, only the hours worked - at least `pay::HOURLY_MIN_CALL` a day
     /// called in -, at `pay::HOURLY_PREMIUM` more an hour.
@@ -756,6 +758,23 @@ pub struct Frame {
     pub from: i32,
     pub to: i32,
     pub days: u8,
+    /// (Round L) A reserve's contract week in minutes - full time or fewer hours -, apart from the
+    /// window. 0: not chosen (a file of before): the window's week, at most a full one
+    /// (`contract_minutes`).
+    #[serde(default, skip_serializing_if = "is_zero_i32")]
+    pub contract: i32,
+    /// (Round L) The company's named frame (RAM1 ...: `pro_turnus::NamedFrame`) it was chosen as:
+    /// its window follows when the named frame's times change. 0: a window of its own.
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub ram: u32,
+}
+
+fn is_zero_i32(x: &i32) -> bool {
+    *x == 0
+}
+
+fn is_zero_u32(x: &u32) -> bool {
+    *x == 0
 }
 
 impl Frame {
@@ -768,7 +787,24 @@ impl Frame {
         }
         let to = to.max(from + 60).min(from + 1440);
         let days = if days & 0x7f == 0 { 0x1f } else { days & 0x7f };
-        Frame { from, to, days }
+        Frame { from, to, days, contract: 0, ram: 0 }
+    }
+
+    /// (Round L) The same window with a contract week of `minutes` (0: none chosen) and named
+    /// frame `ram`.
+    pub fn with_contract(self, minutes: i32, ram: u32) -> Frame {
+        Frame { contract: minutes.max(0), ram, ..self }
+    }
+
+    /// (Round L) The minutes of the reserve's contract week, `full` a full week's: the one chosen
+    /// (at least an hour, at most a full week), else the window's week, at most a full one - a
+    /// frame of before of five days of 12 hours is a full week, not 60 hours.
+    pub fn contract_minutes(&self, full: f64) -> f64 {
+        if self.contract > 0 {
+            (self.contract as f64).clamp(60.0, full.max(60.0))
+        } else {
+            (self.week_minutes() as f64).min(full)
+        }
     }
 
     /// Its minutes a day.
@@ -800,7 +836,7 @@ impl Frame {
 impl Default for Frame {
     /// The plan's example: 05:00 to 13:00, Monday to Friday.
     fn default() -> Frame {
-        Frame { from: 5 * 60, to: 13 * 60, days: 0x1f }
+        Frame { from: 5 * 60, to: 13 * 60, days: 0x1f, contract: 0, ram: 0 }
     }
 }
 
@@ -829,7 +865,7 @@ impl Employment {
         match self {
             Employment::FullTime => Some(full),
             Employment::PartTime { hours } => Some(hours.clamp(1.0, full)),
-            Employment::Reserve(f) => Some(f.week_minutes() as f64 / 60.0),
+            Employment::Reserve(f) => Some(f.contract_minutes(full * 60.0) / 60.0),
             Employment::Hourly => None,
         }
     }

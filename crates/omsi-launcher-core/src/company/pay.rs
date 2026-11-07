@@ -101,19 +101,24 @@ pub fn rate_of(e: &Employee) -> f64 {
     }
 }
 
-/// The minutes of a reserve's pieces of work outside their frame, their signing on before it
-/// and off after it with them.
-fn outside_frame(p: &Prefs, f: &Frame, pieces: &[(i32, i32)]) -> i32 {
-    let ps: Vec<(i32, i32)> = pieces.iter().copied().filter(|x| x.1 >= x.0).collect();
-    let (Some(first), Some(last)) = (ps.iter().map(|x| x.0).min(), ps.iter().map(|x| x.1).max()) else { return 0 };
-    let mut m: i32 = ps.iter().map(|&(a, b)| (b.min(f.from) - a).max(0) + (b - a.max(f.to)).max(0)).sum();
-    if first < f.from {
-        m += p.sign_on;
+/// (Round L, NexiconDK 7 November 2026) A day of a frame - a reserve's own, or one of his rota,
+/// named (RAM1 ...) or not - pays the hours driven, at least `least` (`frame_least`): the frame is
+/// the window a duty may come in, not work.
+pub fn frame_day_minutes(p: &Prefs, least: i32, pieces: &[(i32, i32)]) -> i32 {
+    paid_minutes(p, pieces).max(least.max(0))
+}
+
+/// (Round L) The least a frame day of `window` minutes pays driver `e`: 7:24
+/// (`pro_turnus::NAMED_LEAST`, a fifth of 37 hours), a part-timer's contract week shared over
+/// their frame's days when that is less (30 hours over five days: 6:00), never more than the
+/// window. `full`: a full week's minutes.
+pub fn frame_least(e: &Employee, window: i32, full: f64) -> i32 {
+    let mut least = super::pro_turnus::NAMED_LEAST;
+    if let Employment::Reserve(f) = e.employment {
+        let days = f.day_count().max(1) as f64;
+        least = least.min((f.contract_minutes(full) / days).round() as i32);
     }
-    if last > f.to {
-        m += p.sign_off;
-    }
-    m
+    least.min(window.max(0))
 }
 
 /// (NexiconDK, 4 November 2026) A driver's day by their employment: the minutes paid, the
@@ -127,10 +132,12 @@ pub fn day_minutes(p: &Prefs, e: &Employee, weekday: u8, full: f64, away: bool, 
             let week = (hours * 60.0).clamp(60.0, full);
             (paid_minutes(p, pieces) as f64, if away { 0.0 } else { week / 7.0 }, week)
         }
+        // (round L: a contract week as a permanent driver's, guaranteed for the days they are
+        // there; a day of the frame the hours driven, at least 7:24 - `frame_day_minutes`)
         Employment::Reserve(f) => {
-            let week = f.week_minutes() as f64;
-            let paid = if f.on(weekday) && !away { f.minutes() + outside_frame(p, &f, pieces) } else { paid_minutes(p, pieces) };
-            (paid as f64, 0.0, week)
+            let week = f.contract_minutes(full);
+            let paid = if f.on(weekday) && !away { frame_day_minutes(p, frame_least(e, f.minutes(), full), pieces) } else { paid_minutes(p, pieces) };
+            (paid as f64, if away { 0.0 } else { week / 7.0 }, week)
         }
         Employment::Hourly => {
             let paid = match span_minutes(p, pieces) {
@@ -144,14 +151,12 @@ pub fn day_minutes(p: &Prefs, e: &Employee, weekday: u8, full: f64, away: bool, 
 
 /// A day's paid minutes (`paid`, by the employment) as a frame of the driver's rota changes them
 /// (`framed`: what his rota decides of the day's frame, None when no rota decides it).
-fn framed_paid(p: &Prefs, e: &Employee, away: bool, framed: Option<Option<(Frame, bool)>>, mine: &[(i32, i32)], paid: f64) -> f64 {
+fn framed_paid(p: &Prefs, e: &Employee, away: bool, framed: Option<Option<(Frame, bool)>>, mine: &[(i32, i32)], paid: f64, full: f64) -> f64 {
     match framed {
         None => paid,
         // (round F: a named frame of his rota - RAM1 ... - pays the hours driven, at least 7.4:
-        // its window is not work)
-        Some(Some((_, true))) if !away => paid_minutes(p, mine).max(super::pro_turnus::NAMED_LEAST) as f64,
-        // (a frame of his rota: paid whether used or not, the work outside it on top)
-        Some(Some((f, false))) if !away => (f.minutes() + outside_frame(p, &f, mine)).max(paid_minutes(p, mine)) as f64,
+        // its window is not work; round L: a frame of his rota of its own times the same)
+        Some(Some((f, _))) if !away => frame_day_minutes(p, frame_least(e, f.minutes(), full), mine) as f64,
         // (a reserve whose rota has no frame that day: the duties he drives)
         Some(_) if matches!(e.employment, Employment::Reserve(_)) => paid_minutes(p, mine) as f64,
         Some(_) => paid,
@@ -170,7 +175,7 @@ pub fn planned_minutes(c: &Company, e: &Employee, date: &str, pieces: &[(i32, i3
         return 0.0;
     }
     let (paid, _, _) = day_minutes(p, e, weekday, contract_week_minutes(c), away, pieces);
-    framed_paid(p, e, away, super::pro_turnus::decides_frame_named(c, e.id, date), pieces, paid)
+    framed_paid(p, e, away, super::pro_turnus::decides_frame_named(c, e.id, date), pieces, paid, contract_week_minutes(c))
 }
 
 /// What an hour of driver `e` costs in wages (cents, without the on-costs): his wage's hour, the
@@ -316,7 +321,7 @@ pub fn day(c: &mut Company, date: &str, pieces: &[(u32, i32, i32)]) -> Paid {
             out.hours += m / 60.0;
         }
         let (paid, due, contract) = day_minutes(&p, e, weekday, full, away, &mine);
-        let paid = framed_paid(&p, e, away, framed.iter().find(|x| x.0 == e.id).map(|x| x.1), &mine, paid);
+        let paid = framed_paid(&p, e, away, framed.iter().find(|x| x.0 == e.id).map(|x| x.1), &mine, paid, full);
         e.week_due += due;
         if paid <= 0.0 {
             continue;

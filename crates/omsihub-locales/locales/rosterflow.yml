@@ -10306,3 +10306,12 @@ _version: 2
   pl: "dzielona"
   ru: "разд."
   uk: "розд."
+# (Round L, NexiconDK 7 November 2026) A reserve in the calendar: the named frame and the contract week.
+"%{name}frame %{from}–%{to} · %{h} h":
+  de: "%{name}Rahmen %{from}–%{to} · %{h} Std."
+  da: "%{name}ramme %{from}–%{to} · %{h} t"
+  fr: "%{name}créneau %{from}–%{to} · %{h} h"
+  nl: "%{name}tijdvak %{from}–%{to} · %{h} u"
+  pl: "%{name}okno %{from}–%{to} · %{h} godz."
+  ru: "%{name}окно %{from}–%{to} · %{h} ч"
+  uk: "%{name}вікно %{from}–%{to} · %{h} год"

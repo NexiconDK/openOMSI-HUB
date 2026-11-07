@@ -15,6 +15,7 @@ use omsi_launcher_lib::company::licences::{self, Endorsement, Lack};
 use omsi_launcher_lib::company::research::keys;
 use omsi_launcher_lib::company::staff::{self, Applicant, Grade, Hours};
 use omsi_launcher_lib::company::training::{self, CourseKind};
+use omsi_launcher_lib::company::pro_turnus as pt;
 use omsi_launcher_lib::company::{self as co, Company, Employee, Employment, Frame, Licence, Role};
 use serde_json::{json, Value};
 
@@ -109,7 +110,12 @@ pub fn employment_text(c: &Company, x: &Employment) -> String {
     match x {
         Employment::FullTime => trf("Full time · %{h} h a week", &[("h", &num(co::econ_uk::contract_week_hours(c), 0))]),
         Employment::PartTime { hours } => trf("Part time · %{h} h a week", &[("h", &num(*hours, if hours.fract() == 0.0 { 0 } else { 1 }))]),
-        Employment::Reserve(f) => trf("Reserve · %{frame}", &[("frame", &frame_text(f))]),
+        // (round L: the named frame it is, and its contract week - the window is not its hours)
+        Employment::Reserve(f) => {
+            let name = pt::named_of(c, f).map(|n| format!("{} ", n.name)).unwrap_or_default();
+            let h = f.contract_minutes(co::pay::contract_week_minutes(c)) / 60.0;
+            trf("Reserve · %{frame} · %{h} h a week", &[("frame", &format!("{name}{}", frame_text(f))), ("h", &num(h, if h.fract() == 0.0 { 0 } else { 1 }))])
+        }
         Employment::Hourly => tr("Hourly paid · no guarantee"),
     }
 }
@@ -125,17 +131,36 @@ fn week_text(c: &Company, e: &Employee) -> String {
 
 /// The page's choice of employment (`employment` of the hire and of a change): `kind` its index
 /// in `Employment::KINDS`, `hours` a part-time week, `from`, `to` (minutes) and `days` (bit 0
-/// Monday) a reserve's frame.
-fn employment_of(args: &Value) -> Option<Employment> {
+/// Monday) a reserve's frame - (round L) `ram` the named frame chosen (its times then), and
+/// `full` (a full week) or `contract` (hours) the reserve's contract week.
+fn employment_of(c: &Company, args: &Value) -> Option<Employment> {
     let e = args.get("employment")?;
     let n = |k: &str| e.get(k).and_then(Value::as_f64);
     let d = Frame::default();
     Some(match e.get("kind").and_then(Value::as_u64)? {
         1 => Employment::PartTime { hours: n("hours").unwrap_or(25.0) },
-        2 => Employment::Reserve(Frame::new(n("from").map_or(d.from, |x| x as i32), n("to").map_or(d.to, |x| x as i32), n("days").map_or(d.days, |x| x as u8))),
+        2 => {
+            let full = co::econ_uk::contract_week_hours(c);
+            let ram = n("ram").map_or(0, |x| x as u32);
+            let named = pt::named_frames(c).into_iter().find(|f| ram != 0 && f.id == ram);
+            let (from, to) = match &named {
+                Some(f) => (f.from, f.to),
+                None => (n("from").map_or(d.from, |x| x as i32), n("to").map_or(d.to, |x| x as i32)),
+            };
+            let hours = if e.get("full").and_then(Value::as_bool).unwrap_or(true) { full } else { n("contract").unwrap_or(full).min(full) };
+            Employment::Reserve(Frame::new(from, to, n("days").map_or(d.days, |x| x as u8)).with_contract((hours * 60.0).round() as i32, named.map_or(0, |f| f.id)))
+        }
         3 => Employment::Hourly,
         _ => Employment::FullTime,
     })
+}
+
+/// (Round L) A driver whose change to a reserve applies later cannot be put on a reserve rota yet.
+pub const PLACED_LATER: &str = "Put them on the reserve rota on the Turnus page once the change applies.";
+
+/// (Round L) The rota the page chose to put the driver on (`employment.rota`), if any.
+fn rota_of(args: &Value) -> Option<u32> {
+    args.get("employment")?.get("rota").and_then(Value::as_u64).filter(|x| *x > 0).map(|x| x as u32)
 }
 
 /// The choice of employment as the hire and a change show it (`KindPicker`): the four kinds
@@ -149,18 +174,32 @@ fn kinds_json(c: &Company, now: Option<&Employment>) -> Value {
         Employment::PartTime { hours } => hours,
         _ => 25.0_f64.min(full - 1.0),
     };
+    // (round L: the named frames to choose from, the contract week, the reserve rotas)
+    let named = pt::named_frames(c);
+    let ram = pt::named_of(c, &f).map_or(0, |n| n.id);
+    let contract = f.contract_minutes(full * 60.0) / 60.0;
+    let rotas: Vec<Value> = c.planning.rotas.list.iter().filter(|t| t.reserve).map(|t| {
+        let free = t.rows.iter().filter(|r| r.driver.is_none()).count();
+        json!({ "id": t.id, "name": t.name, "sub": trf("%{n} free rows", &[("n", &free.to_string())]) })
+    }).collect();
     json!({
         "caps": tr("Employment").to_uppercase(),
         "kinds": Employment::KINDS.iter().map(|k| tr(k)).collect::<Vec<_>>(),
         "notes": [
             trf("Full time: %{h} hours a week guaranteed, overtime above them.", &[("h", &num(full, 0))]),
             tr("Part time: fewer hours a week, guaranteed pro rata; overtime above them."),
-            tr("Reserve: a frame on its weekdays, paid whether used or not. First to cover an open duty within it, without being asked; told of a duty given from noon the day before."),
+            tr("Reserve: a frame is the window a duty may come in, not the hours. A day of the frame pays the hours driven, at least 7:24; the contract week is guaranteed, overtime above it. First to cover an open duty within it, without being asked; told of a duty given from noon the day before."),
             tr("Hourly paid: no guarantee, only the hours worked - at least 3 a day called in - at 10 % more an hour. Called in after the reserves and colleagues."),
         ],
         "kind": cur.index(),
         "hours_label": tr("Hours a week"), "hours": hours, "hours_min": staff::PART_TIME_MIN, "hours_max": full - 0.5,
         "frame_label": tr("Daily frame"), "from": f.from, "to": f.to.rem_euclid(1440), "days": f.days,
+        "frames": named.iter().map(|n| json!({ "id": n.id, "name": n.name, "times": format!("{}–{}", hm(n.from), hm(n.to)) })).collect::<Vec<_>>(),
+        "own_frame": tr("Own frame"), "ram": ram,
+        "contract_label": tr("Contract"), "full": contract >= full - 0.01, "full_text": trf("Full time %{h} h", &[("h", &num(full, 0))]), "part_text": tr("Fewer hours"),
+        "contract": if contract >= full - 0.01 { hours } else { contract },
+        "frame_note": tr("The frame is the window a duty may come in - paid the hours driven, at least 7:24 a day."),
+        "rota_label": tr("Put on a rota"), "no_rota": tr("Not on a rota"), "rotas": rotas,
         "weekdays": WEEKDAYS.iter().map(|d| tr(d)).collect::<Vec<_>>(),
     })
 }
@@ -744,11 +783,19 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
             let Some(a) = staff::market(&c).into_iter().find(|a| a.no == no) else { return Some(Ok(json!({}))) };
             // (NexiconDK, 4 November 2026: a driver as the kind chosen - hourly paid when none,
             // `staff::HIRED_AS`)
-            let employment = employment_of(args).unwrap_or(staff::HIRED_AS);
-            match apply(s, |c| staff::hire_as(c, &a, employment)) {
-                Ok(_) => {
+            let employment = employment_of(&c, args).unwrap_or(staff::HIRED_AS);
+            // (round L: and put on the reserve rota chosen - its first free row)
+            let rota = rota_of(args);
+            match apply(s, |c| {
+                let id = staff::hire_as(c, &a, employment)?;
+                Ok(rota.map(|r| pt::place(c, r, id)))
+            }) {
+                Ok(placed) => {
                     let t = trf("%{name} works for %{company} from today.", &[("name", &a.name), ("company", &c.name)]);
                     s.say(t, false);
+                    if let Some(Err(e)) = placed {
+                        s.say(tr(e), true);
+                    }
                     Ok(json!({}))
                 }
                 Err(p) => Ok(json!({ "popup": p })),
@@ -758,10 +805,21 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
         // the server's notice on Bus Company Online, the next day from hourly paid up (at once on
         // the day they were hired) - `staff::change_employment`.
         "employment" => {
-            let Some(to) = employment_of(args) else { return Some(Ok(json!({}))) };
+            let Some(to) = employment_of(&c, args) else { return Some(Ok(json!({}))) };
             let name = c.employee(id).map(|e| e.name.clone()).unwrap_or_default();
-            match apply(s, |c| staff::change_employment(c, id, to)) {
-                Ok(from) => {
+            // (round L: put on the reserve rota chosen - when the change applies at once; one given
+            // notice is put on it on the Turnus page once it applies)
+            let rota = rota_of(args);
+            match apply(s, |c| {
+                let from = staff::change_employment(c, id, to)?;
+                let now = from.is_none();
+                let placed = rota.map(|r| if now { pt::place(c, r, id).map(|_| ()) } else { Err(PLACED_LATER) });
+                Ok((from, placed))
+            }) {
+                Ok((from, placed)) => {
+                    if let Some(Err(e)) = placed {
+                        s.say(tr(e), true);
+                    }
                     let what = s.company.as_ref().and_then(|c| c.employee(id).map(|e| employment_text(c, e.employment_next.as_ref().map_or(&e.employment, |x| &x.to)))).unwrap_or_default();
                     let t = match from {
                         Some(d) => trf("%{name}: %{what} from %{date}.", &[("name", &name), ("what", &what), ("date", &day_label(&d))]),

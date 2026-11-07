@@ -532,7 +532,6 @@ pub struct Cand {
 pub fn contract_minutes(c: &Company, e: &Employee) -> Option<f64> {
     match e.employment {
         Employment::Hourly => None,
-        Employment::Reserve(f) => Some(f.week_minutes() as f64),
         _ => staff::contract_hours(c, e).map(|h| h * 60.0),
     }
 }
@@ -558,10 +557,8 @@ pub fn price_of(c: &Company, e: &Employee, tier: u8, paid: i32, week: f64, worke
             let o = over(m as f64, full);
             (Price::Hourly { minutes: m }, cents(hour * ((m - o) as f64 + o as f64 * rate) / 60.0))
         }
-        Employment::Reserve(f) => {
-            let o = over(paid as f64, f.week_minutes() as f64);
-            (Price::Extra { minutes: paid }, cents(hour * ((paid - o) as f64 + o as f64 * rate) / 60.0))
-        }
+        // (round L: a reserve outside his frame as a permanent driver - his contract week, overtime
+        // above it)
         _ => {
             let week_of = contract_minutes(c, e).unwrap_or(full);
             match over(paid as f64, week_of) {

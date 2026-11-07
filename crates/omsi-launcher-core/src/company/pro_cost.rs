@@ -48,7 +48,6 @@ pub fn week(c: &Company, e: &Employee, minutes: f64, days: &[(String, Vec<(i32, 
     let full = pay::contract_week_minutes(c);
     let (paid, over) = match e.employment {
         Employment::Hourly => (minutes, (minutes - full).max(0.0)),
-        Employment::Reserve(f) => (minutes, (minutes - f.week_minutes() as f64).max(0.0)),
         _ => {
             let k = super::pro_ops::contract_minutes(c, e).unwrap_or(full);
             (minutes.max(k), (minutes - k).max(0.0))

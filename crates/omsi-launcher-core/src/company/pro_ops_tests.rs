@@ -146,12 +146,12 @@ fn a_drivers_day_and_the_missing_duties_of_a_day() {
     assert_eq!(open[0].why, Some(Problem::Sick));
     assert_eq!(open[0].lines, ["5"]);
     assert_eq!(driver_day(&c, &a, &p, &ds).is, DayIs::Ill);
-    // a reserve's frame, no duty in it: the frame, paid whether used or not
+    // a reserve's frame, no duty in it (round L): the frame's window, paid 7:24 - not its 8 hours
     c.staff[3].employment = Employment::Reserve(Frame::new(300, 780, 0x1f));
     let r = c.staff[3].clone();
     let dd = driver_day(&c, &r, &p, &ds);
     assert_eq!(dd.is, DayIs::Frame { from: 300, to: 780 });
-    assert!((dd.minutes - 480.0).abs() < 0.5, "{dd:?}");
+    assert!((dd.minutes - pt::NAMED_LEAST as f64).abs() < 0.5, "{dd:?}");
     // not employed yet
     c.staff[4].hired = "2024-04-01".into();
     let late = c.staff[4].clone();

@@ -34,7 +34,7 @@ drivers are full time. The hiring dialog asks for the kind when a driver is hire
 |---|---|---|---|
 | Full time | The country's full week: 37 hours at the Danish price level, else 39. A seventh of it for each day the driver is there. | The duties, from signing on to signing off, at least the duty floor (4 hours). | The full week |
 | Part time (e.g. 25 h) | Its own week, pro rata. | As full time. | Its own week |
-| Reserve with a frame (e.g. 05:00–13:00, Monday to Friday) | None beyond the frame. | On a frame day: the whole frame, whether used or not, plus work outside it. On other days: the duties. | The frame's week |
+| Reserve with a frame (e.g. RAM1 03:00–15:00, Monday to Friday; round L) | Its contract week (full time or fewer hours), as a permanent driver's - not the frame's window. | On a frame day: the hours driven, at least 7:24 (`pay::frame_day_minutes`). On other days: the duties. | Its contract week |
 | Hourly paid | None. | Only the hours worked, at least 3 hours on a day called in (no duty floor), at 10 % more an hour. | The full week |
 
 The 37-hour week applies when the company plays at the Danish price level: a server's
@@ -269,8 +269,8 @@ RosterFlow Pro no rota decides anything.
 
 A frame of a driver's row makes him a reserve within it that day (`pro_turnus::frame_on`): the
 first to cover an open duty in it (`plan::fill_tier`), listed in the day panel's "Frames this day"
-(`plan::frames_on`), and paid the frame whether used or not, the work outside it on top
-(`pay::day`). A reserve whose rota gives him no frame that day is paid the duties he drives.
+(`plan::frames_on`), and paid the hours driven, at least 7:24 (round L: every frame, named or of
+its own times - `pay::frame_day_minutes`). A reserve whose rota gives him no frame that day is paid the duties he drives.
 
 ## On the page
 
@@ -322,7 +322,7 @@ a frame, hourly paid (filter: all, permanent, frame, hourly):
   employed. A day already gone is greyed.
 - **Hours this week** on the right ("31,8 t af 37"): the minutes of his week as the pay reckons
   them (`pay::planned_minutes`: signing on and off, the bus's checks, the duty's floor, a
-  reserve's frame paid whether used or not, an hourly-paid driver's three hours, nothing for a day
+  frame day's hours driven, at least 7:24, an hourly-paid driver's three hours, nothing for a day
   ill or on holiday). The bus company's week begins on Sunday: in the company's own week the days
   gone are what he was paid so far (`Employee::week_paid`), the rest as planned
   (`pro_ops::week_minutes`). Over his week it shows orange. In 14 days or a month, one figure per
@@ -1369,6 +1369,36 @@ timetable) and `shown_number` (without it, for messages).
 Each duty of the rota - a cell, the duty picker, the exceptions' list - shows the lines it runs
 under its time ("131, 153", "131, NE2 🌙") and a small "delt" mark when it is a split duty. Hovering
 shows its times, its route (first stop → last stop), the lines and the type.
+
+## Round L: a reserve's frame is a window, their week a contract (NexiconDK, 7 November 2026)
+
+A reserve's frame ("RAM1 03:00–15:00") is only the window a duty may come in; it is not their
+hours. Before, a frame of five days of 12 hours made a 60-hour contract week and paid 12 hours a
+day whether used or not.
+
+- **Their week is a contract** (`Frame::contract`, minutes a week; `Frame::contract_minutes`):
+  full time (37 hours at the Danish price level, else 39) or fewer hours, chosen when hired or
+  when the employment changes. A file of before has none: the window's week, at most a full one -
+  a 60-hour frame week is a full week, a frame week under it that many hours (part time).
+  `Employment::week_hours` is the contract: the calendar's "31,8 t af 37", the staff card, the
+  week's price (`pro_cost::week`), the price of a duty outside the frame (`pro_ops::price_of`: as a
+  permanent driver's, overtime above the contract week) and a reserve rota's target hours
+  (`pro_turnus::target_hours`: the drivers' contract weeks) all take it.
+- **A frame day pays the hours driven, at least 7:24** (`pay::frame_day_minutes`, `frame_least`:
+  a part-timer's contract week shared over the frame's days when that is less - 30 hours over five
+  days at least 6:00 -, a window shorter than that at least the window): the reserve's own frame and every frame of a rota,
+  named (round F) or of its own times, by one rule. The contract week is guaranteed as a
+  permanent driver's (a seventh a day there, the rest paid at the week's end); overtime above it.
+- **A named frame** (`Frame::ram`): a reserve hired in RAM1 has RAM1's times, and follows when
+  RAM1's times change (`pro_turnus::bring_reserves`); a deleted named frame leaves them its times
+  as a frame of their own. The staff card shows "Reserve · RAM1 03:00–15:00 Mon–Fri · 37 h a week".
+- **The hiring window and the change of employment** (`people.js` `ReserveFields`, `people.rs`
+  `employment_of`): Reserve shows the frame (RAM1 … RAM4 with their times, or "Own frame" with
+  from and to), the weekdays, the contract (Full time 37 h / Fewer hours with the hours) and the
+  line "The frame is the window a duty may come in - paid the hours driven, at least 7:24 a day".
+  With a reserve rota there, "Put on a rota" puts them on its first free row, or a new row
+  (`pro_turnus::place`); a change that applies later is put on it on the Turnus page once it
+  applies (the page says so).
 
 ## Tests
 

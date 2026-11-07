@@ -231,8 +231,8 @@ impl Rotas {
 
 /// (Round F, NexiconDK, 5 November 2026) A frame the company names ("RAM2 07:00-18:00"): a window
 /// a reserve is at the company's disposal in, put in a rota's day as a duty is. Its day is paid
-/// the hours driven, at least `NAMED_LEAST` - not the whole window (a frame of its own times,
-/// `ram` 0, is paid whole as before). `to` past 24:00 runs into the next morning (RAM4 15:00-06:00:
+/// the hours driven, at least `NAMED_LEAST` - not the whole window (round L: a frame of its own
+/// times, `ram` 0, the same - `pay::frame_day_minutes`). `to` past 24:00 runs into the next morning (RAM4 15:00-06:00:
 /// `to` 30 * 60); a duty after midnight is then that frame's (`frame_holds`).
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct NamedFrame {
@@ -310,7 +310,36 @@ pub fn put_frame(c: &mut Company, id: u32, name: &str, from: i32, to: i32) -> Re
     };
     c.planning.rotas.frames = Some(list);
     bring_frames(c, id, Some((f.from, f.to)));
+    bring_reserves(c, id, Some((f.from, f.to)));
     Ok(id)
+}
+
+/// (Round L) The reserves employed in named frame `ram` (`Frame::ram`): their window its new times
+/// (`now`), or a window of their own with the times it had when it is deleted (None).
+fn bring_reserves(c: &mut Company, ram: u32, now: Option<(i32, i32)>) {
+    let fix = |x: &mut Employment| {
+        if let Employment::Reserve(f) = x {
+            if f.ram == ram {
+                *f = match now {
+                    Some((from, to)) => Frame::new(from, to, f.days).with_contract(f.contract, ram),
+                    None => f.with_contract(f.contract, 0),
+                };
+            }
+        }
+    };
+    for e in c.staff.iter_mut() {
+        fix(&mut e.employment);
+        if let Some(n) = e.employment_next.as_mut() {
+            fix(&mut n.to);
+        }
+    }
+}
+
+/// (Round L) The named frame a reserve's window is: the one it was chosen as, else one of the same
+/// times.
+pub fn named_of(c: &Company, f: &Frame) -> Option<NamedFrame> {
+    let list = named_frames(c);
+    list.iter().find(|n| f.ram != 0 && n.id == f.ram).or_else(|| list.iter().find(|n| n.from == f.from && n.to == f.to)).cloned()
 }
 
 /// Named frame `id` deleted: the days it was in keep its times, as frames of their own.
@@ -323,6 +352,7 @@ pub fn remove_frame(c: &mut Company, id: u32) -> Result<(), &'static str> {
     }
     c.planning.rotas.frames = Some(list);
     bring_frames(c, id, None);
+    bring_reserves(c, id, None);
     Ok(())
 }
 
@@ -673,9 +703,8 @@ pub fn times(week: &Week, day: usize, cell: Cell) -> Option<(i32, i32, i32)> {
         Cell::Off => None,
         Cell::Duty { n } => duty(week, day, n).map(|d| (d.start, d.end, d.paid)),
         // (round F: a named frame pays the hours driven, at least `NAMED_LEAST` - its window is
-        // not work)
-        Cell::Frame { from, to, ram } if ram != 0 => Some((from, to, NAMED_LEAST.min((to - from).max(0)))),
-        Cell::Frame { from, to, .. } => Some((from, to, (to - from).max(0))),
+        // not work; round L: a frame of its own times the same)
+        Cell::Frame { from, to, .. } => Some((from, to, NAMED_LEAST.min((to - from).max(0)))),
     }
 }
 
@@ -684,23 +713,23 @@ pub fn row_minutes(week: &Week, row: &Row) -> i32 {
     (0..DAYS).filter_map(|d| times(week, d, row.days[d])).map(|x| x.2).sum()
 }
 
-/// The hours a row of rota `t` aims at: its own, else a reserve rota's drivers' frames (their
-/// average), else the contract week.
+/// The hours a row of rota `t` aims at: its own, else a reserve rota's drivers' contract weeks
+/// (their average; round L: the contract, not the frame's window), else the contract week.
 pub fn target_hours(c: &Company, t: &Turnus) -> f64 {
     if let Some(h) = t.hours {
         return h;
     }
-    let frames: Vec<f64> = t.rows.iter().filter_map(|r| r.driver).filter_map(|id| c.employee(id)).filter_map(|e| e.employment.frame()).map(|f| f.week_minutes() as f64 / 60.0).collect();
-    // (round F: a reserve rota of named frames aims at five days of `NAMED_LEAST` - 37 hours: their
-    // days pay that at least, not the window)
-    let named = t.rows.iter().any(|r| r.days.iter().any(|x| matches!(x, Cell::Frame { ram, .. } if *ram != 0)));
-    if t.reserve && named {
+    let full = econ_uk::contract_week_hours(c);
+    let weeks: Vec<f64> = t.rows.iter().filter_map(|r| r.driver).filter_map(|id| c.employee(id)).filter_map(|e| e.employment.frame()).map(|f| f.contract_minutes(full * 60.0) / 60.0).collect();
+    if t.reserve && !weeks.is_empty() {
+        return weeks.iter().sum::<f64>() / weeks.len() as f64;
+    }
+    // (round F: a reserve rota of named frames without drivers yet aims at five days of
+    // `NAMED_LEAST` - 37 hours: their days pay that at least, not the window)
+    if t.reserve && t.rows.iter().any(|r| r.days.iter().any(|x| matches!(x, Cell::Frame { ram, .. } if *ram != 0))) {
         return (5 * NAMED_LEAST) as f64 / 60.0;
     }
-    if t.reserve && !frames.is_empty() {
-        return frames.iter().sum::<f64>() / frames.len() as f64;
-    }
-    econ_uk::contract_week_hours(c)
+    full
 }
 
 // --- the checks ----------------------------------------------------------------------------------
@@ -1104,6 +1133,24 @@ pub fn set_driver(c: &mut Company, id: u32, row: usize, who: Option<u32>) -> Res
     }
     rota_mut(c, id)?.rows[row].driver = who;
     Ok(())
+}
+
+/// (Round L, NexiconDK 7 November 2026) Driver `who` put on rota `id` as they are hired or their
+/// employment changes: its first row without a driver, else a new row. The row (from 0).
+pub fn place(c: &mut Company, id: u32, who: u32) -> Result<usize, &'static str> {
+    let t = c.planning.rotas.list.iter().find(|t| t.id == id).ok_or(NO_ROTA)?;
+    let (row, added) = match t.rows.iter().position(|r| r.driver.is_none()) {
+        Some(r) => (r, false),
+        None => (add_row(c, id)? - 1, true),
+    };
+    if let Err(e) = set_driver(c, id, row, Some(who)) {
+        // (the row made for them taken back)
+        if added {
+            rota_mut(c, id)?.rows.pop();
+        }
+        return Err(e);
+    }
+    Ok(row)
 }
 
 /// Driver `id`'s day on `date` set to `cell` for that date only (`note` why: `NOTES`), or back to

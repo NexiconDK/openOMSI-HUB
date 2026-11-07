@@ -702,9 +702,9 @@ fn a_frame_of_a_rota_makes_its_driver_a_reserve_that_day() {
     let e = c.staff[1].clone();
     assert_eq!(frame_on(&c, &e, "2024-03-04"), None);
     assert_eq!(decides_frame(&c, r, "2024-03-04"), Some(None));
-    // the day's pay: a's frame paid whether used or not
+    // the day's pay (round L): a's frame - its window 05-13 - paid 7:24 with no duty in it, not 8 h
     let paid = super::super::pay::day(&mut c, "2024-03-04", &[]);
-    assert!((paid.hours - 8.0).abs() < 0.01, "{paid:?}");
+    assert!((paid.hours - NAMED_LEAST as f64 / 60.0).abs() < 0.01, "{paid:?}");
 }
 
 /// (Round F) A named frame holds the duties in its window - RAM4's past midnight the next

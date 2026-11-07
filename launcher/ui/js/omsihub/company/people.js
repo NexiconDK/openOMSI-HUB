@@ -144,26 +144,51 @@ function KindPicker({ k, value, onChange }) {
     ${value.kind === 1 &&
     html`<div class="pair"><span class="co-note" style="width:140px">${k.hours_label}</span>
       <input class="co-field" type="number" min=${k.hours_min} max=${k.hours_max} step="0.5" value=${value.hours} onChange=${(e) => set({ hours: Number(e.currentTarget.value) || k.hours })} style="width:110px;height:36px" /></div>`}
-    ${value.kind === 2 &&
-    html`<div class="pair"><span class="co-note" style="width:140px">${k.frame_label}</span>
-        <input class="co-field" type="time" value=${hhmmOf(value.from)} onChange=${(e) => set({ from: minutesOf(e.currentTarget.value) })} style="width:110px;height:36px" />
-        <span class="co-note">–</span>
-        <input class="co-field" type="time" value=${hhmmOf(value.to)} onChange=${(e) => set({ to: minutesOf(e.currentTarget.value) })} style="width:110px;height:36px" /></div>
-      <div class="co-kinddays">${k.weekdays.map(
-        (d, i) => html`<button type="button" class=${value.days & (1 << i) ? 'on' : ''} onClick=${() => set({ days: value.days ^ (1 << i) || value.days })}>${d}</button>`,
-      )}</div>`}
+    ${value.kind === 2 && html`<${ReserveFields} k=${k} value=${value} set=${set} />`}
   </div>`;
 }
 
+/** (Round L, NexiconDK 7 November 2026) A reserve's choice: a named frame (RAM1 ...) or a frame
+ * of its own times, its weekdays, its contract week (full time or fewer hours) - the frame is the
+ * window a duty may come in, not the hours - and a reserve rota to put them on. */
+function ReserveFields({ k, value, set }) {
+  const frames = k.frames || [];
+  const own = !value.ram;
+  const opts = [...frames.map((f) => [f.id, `${f.name} ${f.times}`]), [0, k.own_frame]];
+  return html`<div class="pair"><span class="co-note" style="width:140px">${k.frame_label}</span>
+      <select class="co-field" value=${value.ram || 0} onChange=${(e) => set({ ram: Number(e.currentTarget.value) || 0 })} style="width:200px;height:36px">
+        ${opts.map(([id, t]) => html`<option value=${id} selected=${(value.ram || 0) === id}>${t}</option>`)}
+      </select>
+      ${own &&
+      html`<input class="co-field" type="time" value=${hhmmOf(value.from)} onChange=${(e) => set({ from: minutesOf(e.currentTarget.value) })} style="width:100px;height:36px" />
+        <span class="co-note">–</span>
+        <input class="co-field" type="time" value=${hhmmOf(value.to)} onChange=${(e) => set({ to: minutesOf(e.currentTarget.value) })} style="width:100px;height:36px" />`}</div>
+    <div class="co-kinddays">${k.weekdays.map(
+      (d, i) => html`<button type="button" class=${value.days & (1 << i) ? 'on' : ''} onClick=${() => set({ days: value.days ^ (1 << i) || value.days })}>${d}</button>`,
+    )}</div>
+    <div class="pair" style="margin-top:8px"><span class="co-note" style="width:140px">${k.contract_label}</span>
+      <${Seg} value=${value.full ? 1 : 0} options=${[[1, k.full_text], [0, k.part_text]]} onChange=${(v) => set({ full: v === 1 })} style="width:250px;height:36px" />
+      ${!value.full &&
+      html`<input class="co-field" type="number" min=${k.hours_min} max=${k.hours_max} step="0.5" value=${value.contract} onChange=${(e) => set({ contract: Number(e.currentTarget.value) || k.contract })} style="width:90px;height:36px" />
+        <span class="co-note">${k.hours_label}</span>`}</div>
+    <p class="co-note t-dim" style="margin:6px 0 0">${k.frame_note}</p>
+    ${(k.rotas || []).length > 0 &&
+    html`<div class="pair" style="margin-top:8px"><span class="co-note" style="width:140px">${k.rota_label}</span>
+      <select class="co-field" value=${value.rota || 0} onChange=${(e) => set({ rota: Number(e.currentTarget.value) || 0 })} style="width:250px;height:36px">
+        <option value="0" selected=${!value.rota}>${k.no_rota}</option>
+        ${k.rotas.map((r) => html`<option value=${r.id} selected=${value.rota === r.id}>${r.name} · ${r.sub}</option>`)}
+      </select></div>`}`;
+}
+
 /** The choice's starting value from what the page says. */
-const kindValue = (k) => ({ kind: k.kind, hours: k.hours, from: k.from, to: k.to, days: k.days });
+const kindValue = (k) => ({ kind: k.kind, hours: k.hours, from: k.from, to: k.to, days: k.days, ram: k.ram || 0, full: k.full !== false, contract: k.contract, rota: 0 });
 
 /** Hiring a driver: as which kind (`KindPicker`), then hired. */
 function HireDialog({ h, a, onClose }) {
   const [value, setValue] = useState(() => kindValue(h.kinds));
   const hire = () => act('hire', { no: a.no, employment: value }).then(onClose);
   const foot = html`<span class="rest"></span><${Btn} label=${h.cancel} onClick=${onClose} /><${Btn} kind="primary" icon="person_add" label=${h.hire} onClick=${hire} />`;
-  return html`<${Dialog} icon="person_add" title=${`${h.kinds_title}: ${a.name}`} w=${620} h=${value.kind === 2 ? 430 : 370} onClose=${onClose} foot=${foot}>
+  return html`<${Dialog} icon="person_add" title=${`${h.kinds_title}: ${a.name}`} w=${680} h=${value.kind === 2 ? 560 : 370} onClose=${onClose} foot=${foot}>
     <div class="co-caps" style="margin-bottom:10px">${h.kinds.caps}</div>
     <${KindPicker} k=${h.kinds} value=${value} onChange=${setValue} />
   </${Dialog}>`;
@@ -176,7 +201,7 @@ function EmploymentDialog({ p, onClose }) {
   const [value, setValue] = useState(() => kindValue(x.picker));
   const change = () => act('employment', { id: p.id, employment: value }).then(onClose);
   const foot = html`<span class="rest"></span><${Btn} label=${x.cancel} onClick=${onClose} /><${Btn} kind="primary" icon="badge" label=${x.ok} onClick=${change} />`;
-  return html`<${Dialog} icon="badge" title=${x.title} w=${620} h=${value.kind === 2 ? 460 : 400} onClose=${onClose} foot=${foot}>
+  return html`<${Dialog} icon="badge" title=${x.title} w=${680} h=${value.kind === 2 ? 590 : 400} onClose=${onClose} foot=${foot}>
     <div class="co-caps" style="margin-bottom:10px">${x.picker.caps}</div>
     <${KindPicker} k=${x.picker} value=${value} onChange=${setValue} />
     <p class="co-note t-dim" style="margin-top:10px">${x.notice}</p>
