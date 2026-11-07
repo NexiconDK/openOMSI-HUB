@@ -390,7 +390,7 @@ impl Sizes {
     /// The tours of a line of the day (`l`) that run.
     pub fn of(l: &LineInfo) -> Sizes {
         let mut s = Sizes::default();
-        for t in l.tours.iter().filter(|t| t.runs) {
+        for t in l.tours.iter().filter(|t| t.of_day()) {
             match network::wants_size(&t.ai_group) {
                 Some(BusSize::Articulated) => s.articulated += 1,
                 Some(BusSize::Solo) => s.solo += 1,
@@ -924,7 +924,7 @@ pub fn week_of(days: &[Vec<LineInfo>], line: &str) -> Week {
     let mut w = Week { by_day: days.len() == 7, ..Default::default() };
     for (k, day) in days.iter().enumerate() {
         let Some(l) = day.iter().find(|l| l.name.eq_ignore_ascii_case(line)) else { continue };
-        let runs: Vec<_> = l.tours.iter().filter(|t| t.runs).collect();
+        let runs: Vec<_> = l.tours.iter().filter(|t| t.of_day()).collect();
         match k {
             0..=4 => w.mon_fri = w.mon_fri.max(runs.len() as u32),
             5 => w.sat = runs.len() as u32,

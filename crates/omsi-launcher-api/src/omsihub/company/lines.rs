@@ -425,8 +425,8 @@ fn to_add(s: &mut Session, c: &Company, mine_chosen: bool) -> Value {
             } else {
                 ("Apply…", "receipt_long")
             };
-            let runs = line.tours.iter().filter(|t| t.runs).count();
-            let km: f64 = line.tours.iter().filter(|t| t.runs).flat_map(|t| t.trips.iter()).map(|t| t.km).sum();
+            let runs = line.tours.iter().filter(|t| t.of_day()).count();
+            let km: f64 = line.tours.iter().filter(|t| t.of_day()).flat_map(|t| t.trips.iter()).map(|t| t.km).sum();
             json!({
                 "name": line.name, "plate": p, "caption": caption, "label": tr(label), "icon": icon,
                 "sub": trf("%{n} tours today  ·  %{km} km", &[("n", &runs.to_string()), ("km", &format!("{km:.0}"))]),
@@ -472,7 +472,7 @@ pub fn add_view(s: &mut Session, args: &Value) -> Value {
         (false, false) => "What the line asks of the company on a day like today, against what it has. Its concession is auctioned: if your bid wins, the line comes in not planned - it runs once its tours are planned and its service is started.",
     };
     let (short_b, short_d) = n.short();
-    let runs = line.tours.iter().filter(|t| t.runs).count();
+    let runs = line.tours.iter().filter(|t| t.of_day()).count();
     let free_b = n.have_buses.saturating_sub(n.busy_buses);
     let free_d = n.have_drivers.saturating_sub(n.busy_drivers);
     let mut rows = vec![json!([tr("Tours today"), runs.to_string(), "", true]), json!([tr("Buses at its busiest"), n.buses.to_string(), trf("%{n} of %{all}", &[("n", &free_b.to_string()), ("all", &n.have_buses.to_string())]), short_b == 0])];

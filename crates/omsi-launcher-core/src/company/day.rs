@@ -845,6 +845,10 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     // 3. the plan (the roster, the dispatcher's own, what fell out in the morning: see
     // `plan`), and what breaks down on the way (the trips after it are dropped)
     let day_plan = super::plan::day_plan(c, &date, tours, &player, &live, true);
+    // (7 November 2026: the day's night tours are its own, their trips past midnight booked
+    // here; the game still drives them tomorrow morning, with the bus they had - `night_tours`)
+    let night = super::plan::night_tours(c, &day_plan);
+    c.planning.night = (!night.tours.is_empty()).then_some(night);
     let (plan, morning) = super::plan::settle_morning(c, &day_plan);
     report.notes.extend(morning);
     let (short_buses, short_drivers) = plan.short_of();

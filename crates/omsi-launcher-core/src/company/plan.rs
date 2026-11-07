@@ -239,11 +239,24 @@ pub struct Planning {
     /// date and the drivers asked for them (`pro_ops`). Kept at once.
     #[serde(default, skip_serializing_if = "super::pro_ops::Ops::is_empty")]
     pub ops: super::pro_ops::Ops,
+    /// (NexiconDK, 7 November 2026) The night tours of the day closed last still on the road past
+    /// midnight (`night_tours`): the next day's plan for the game carries them with their bus
+    /// (`live_plan`), that day planning, staffing and booking them no second time.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub night: Option<NightCarry>,
+}
+
+/// (NexiconDK, 7 November 2026) A day's night tours the next morning: the date they still run
+/// on (the day after theirs) and each with the bus it had.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+pub struct NightCarry {
+    pub date: String,
+    pub tours: Vec<LiveTour>,
 }
 
 impl Default for Planning {
     fn default() -> Self {
-        Planning { week: Vec::new(), auto: false, auto_only: None, auto_keys: None, date: String::new(), fills: Vec::new(), collapsed: Vec::new(), layouts: Vec::new(), joined: Vec::new(), flow: Default::default(), arrivals: Vec::new(), agency: Vec::new(), reserve_told: Vec::new(), rotas: Default::default(), ops: Default::default() }
+        Planning { week: Vec::new(), auto: false, auto_only: None, auto_keys: None, date: String::new(), fills: Vec::new(), collapsed: Vec::new(), layouts: Vec::new(), joined: Vec::new(), flow: Default::default(), arrivals: Vec::new(), agency: Vec::new(), reserve_told: Vec::new(), rotas: Default::default(), ops: Default::default(), night: None }
     }
 }
 
@@ -2305,6 +2318,11 @@ pub struct LiveTour {
     pub express: Vec<i32>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub swaps: Vec<LiveSwap>,
+    /// (NexiconDK, 7 November 2026) The day before's night tour, still on the road past midnight
+    /// (`Planning::night`): it runs with that day's bus, and its trips are not reported - that
+    /// day was closed with them.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub carried: bool,
 }
 
 /// A spare bus service control swapped in from departure `dep` (minutes of the day) on: its
@@ -2391,7 +2409,7 @@ impl LivePlan {
     /// passengers the model gives a trip of that length and hour (a depot run carries none),
     /// and how late it ended (s). None: not a tour the company runs.
     pub fn trip_event(&self, line: &str, tour: &str, dep: i32, km: f64, stops: usize, delay: f64) -> Option<LiveEvent> {
-        let t = self.tour(line, tour).filter(|t| !t.dropped)?;
+        let t = self.tour(line, tour).filter(|t| !t.dropped && !t.carried)?;
         let km = if km.is_finite() { km.clamp(0.0, 200.0) } else { 0.0 };
         let passengers = if stops >= 3 { super::income::by_km(super::income::LineType::Typical, &self.date, dep, km).round().max(0.0) as u32 } else { 0 };
         Some(LiveEvent::Trip { line: t.line.clone(), tour: t.tour.clone(), vehicle: t.vehicle, km, passengers, delay, completed: true, dep: Some(dep) })
@@ -2412,7 +2430,7 @@ pub fn live_plan(c: &Company, dp: &DayPlan) -> LivePlan {
     // (the trips of duties their players left, dropped: off the road)
     let off = super::together::book::dropped_departures(c, dp);
     let waits = |line: &str| waits(c, &dp.date, line);
-    let tours = dp
+    let mut tours: Vec<LiveTour> = dp
         .tours
         .iter()
         // (a line not in service runs nothing, not even in the game)
@@ -2456,7 +2474,26 @@ pub fn live_plan(c: &Company, dp: &DayPlan) -> LivePlan {
     // (the company's lines: every one it runs today - one whose concession begins on a later day
     // too, the map's own buses off it -, but one another company runs until then, `waits`)
     let lines = c.lines.iter().filter(|l| !waits(&l.name)).map(|l| l.name.clone()).collect();
+    // (7 November 2026: the day before's night tours still on the road this morning, with their
+    // bus - a tour the day has itself too is the day's own)
+    if let Some(n) = c.planning.night.as_ref().filter(|n| n.date == dp.date) {
+        for t in &n.tours {
+            if !tours.iter().any(|x| same(&x.line, &t.line) && same(&x.tour, &t.tour)) {
+                tours.push(LiveTour { carried: true, ..t.clone() });
+            }
+        }
+    }
     LivePlan { company: c.id.clone(), map: c.map.clone(), date: dp.date.clone(), depot: c.depot.clone(), game_mode: c.game_mode, tours, lines, drops_left: c.together.left_dropped }
+}
+
+/// (NexiconDK, 7 November 2026) The tours of day `dp` still on the road past midnight - a
+/// trip of theirs ends after 24:00 -, as the game runs them (`live_plan`): carried into the next
+/// day's plan for the game (`Planning::night`), which plans, staffs and books them no second
+/// time.
+pub fn night_tours(c: &Company, dp: &DayPlan) -> NightCarry {
+    let late: Vec<(String, String)> = dp.tours.iter().filter(|t| t.tour.trips.iter().any(|x| x.arr > 24 * 60)).flat_map(|t| super::studio::origins(&dp.tours, t).into_iter().map(move |o| (t.tour.line.clone(), o))).collect();
+    let tours = live_plan(c, dp).tours.into_iter().filter(|t| !t.carried && late.iter().any(|(l, o)| same(l, &t.line) && same(o, &t.tour))).collect();
+    NightCarry { date: super::dates::add(&dp.date, 1), tours }
 }
 
 /// A line won from another company of the map that runs it until its concession begins: not the

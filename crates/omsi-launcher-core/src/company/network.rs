@@ -191,7 +191,7 @@ pub fn add_line(c: &mut Company, line: &LineInfo, own: Option<&OwnLine>) -> Resu
         _ => numbers.first().cloned().unwrap_or_else(|| line.name.clone()),
     };
     let caption = own.map(|o| o.caption()).filter(|c| !c.is_empty()).unwrap_or_else(|| super::specials::caption_of(line, &[&c.depot]));
-    let runs: Vec<_> = line.tours.iter().filter(|t| t.runs).collect();
+    let runs: Vec<_> = line.tours.iter().filter(|t| t.of_day()).collect();
     c.lines.push(CompanyLine {
         name: line.name.clone(),
         sub_for: String::new(),
@@ -344,7 +344,7 @@ pub(crate) fn timetable_tours(c: &Company, lines: &[LineInfo]) -> Vec<TourOfDay>
     let mut out = Vec::new();
     for cl in &c.lines {
         let Some(line) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&cl.name)) else { continue };
-        for t in line.tours.iter().filter(|t| t.runs) {
+        for t in line.tours.iter().filter(|t| t.of_day()) {
             let mut trips: Vec<PlannedTrip> = t
                 .trips
                 .iter()
@@ -462,7 +462,7 @@ pub fn needs(c: &Company, line: &LineInfo, all: &[LineInfo], date: &str) -> Need
 pub fn refresh_lines(c: &mut Company, lines: &[LineInfo]) {
     for cl in c.lines.iter_mut() {
         if let Some(l) = lines.iter().find(|l| l.name.eq_ignore_ascii_case(&cl.name)) {
-            let runs: Vec<_> = l.tours.iter().filter(|t| t.runs).collect();
+            let runs: Vec<_> = l.tours.iter().filter(|t| t.of_day()).collect();
             cl.tours = runs.len() as u32;
             cl.km = runs.iter().flat_map(|t| t.trips.iter()).map(|t| t.km).sum();
         }
@@ -622,3 +622,7 @@ pub(crate) mod tests {
         assert_eq!(wants_size("Linie 5"), None);
     }
 }
+
+#[cfg(test)]
+#[path = "night_tests.rs"]
+mod night_tests;

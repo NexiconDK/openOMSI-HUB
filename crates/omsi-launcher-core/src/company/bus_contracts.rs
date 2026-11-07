@@ -613,7 +613,7 @@ pub fn weekdays(days: &str) -> u8 {
 /// that day (all of them when none does), their hours and kilometres, journeys with passengers,
 /// and the days of the week its tours run on (six when they do not say).
 pub fn work_of(l: &crate::LineInfo) -> Work {
-    let runs: Vec<&crate::TourInfo> = l.tours.iter().filter(|t| t.runs).collect();
+    let runs: Vec<&crate::TourInfo> = l.tours.iter().filter(|t| t.of_day()).collect();
     let tours: Vec<&crate::TourInfo> = if runs.is_empty() { l.tours.iter().collect() } else { runs };
     let mut w = Work { buses: tours.len() as u32, ..Default::default() };
     for t in &tours {

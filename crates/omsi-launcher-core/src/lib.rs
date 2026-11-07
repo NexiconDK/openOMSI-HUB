@@ -1481,6 +1481,18 @@ pub struct TourInfo {
     pub trips: Vec<TripInfo>,
 }
 
+impl TourInfo {
+    /// (NexiconDK, 7 November 2026) It is one of the date's own tours: it runs that day, and not
+    /// only as the day before's night tour whose trips past 24:00 run that morning
+    /// (`yesterday_night`). A bus company's day is its own tours - a tour belongs to the day it
+    /// begins on, its trips past midnight included -, so the day before's night tour is not
+    /// planned, staffed and booked a second time the next day (the launcher's timetable and
+    /// "what runs now" keep `runs`).
+    pub fn of_day(&self) -> bool {
+        self.runs && (self.today || !self.yesterday_night)
+    }
+}
+
 #[derive(Serialize, Clone, Debug)]
 pub struct LineInfo {
     pub name: String,

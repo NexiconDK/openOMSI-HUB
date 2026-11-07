@@ -498,7 +498,7 @@ pub(crate) fn freq_days(f: Freq) -> Vec<DayPattern> {
 /// A map line's daytime headway in minutes (its trips leaving between 06:00 and 20:00, both
 /// ways counted as one).
 pub(crate) fn map_headway(l: &core::LineInfo) -> Option<f64> {
-    let deps = l.tours.iter().filter(|t| t.runs).flat_map(|t| t.trips.iter()).filter(|t| !t.line.trim().is_empty() && (6.0 * 3600.0..20.0 * 3600.0).contains(&t.departure)).count();
+    let deps = l.tours.iter().filter(|t| t.of_day()).flat_map(|t| t.trips.iter()).filter(|t| !t.line.trim().is_empty() && (6.0 * 3600.0..20.0 * 3600.0).contains(&t.departure)).count();
     (deps >= 2).then(|| 14.0 * 60.0 / (deps as f64 / 2.0))
 }
 
@@ -557,7 +557,7 @@ pub(crate) fn outcome(c: &Company, pick: &Pick, freq: Freq, all: &[core::LineInf
 /// The map's lines the wizard offers: lines the company does not run yet (not the map's depot
 /// runs, specials or other operators' traffic, as the Lines page has it).
 pub(crate) fn map_choices<'a>(c: &Company, all: &'a [core::LineInfo]) -> Vec<&'a core::LineInfo> {
-    all.iter().filter(|x| !c.lines.iter().any(|y| y.name.eq_ignore_ascii_case(&x.name)) && co::concessions::is_line(c, x) && x.tours.iter().any(|t| t.runs)).collect()
+    all.iter().filter(|x| !c.lines.iter().any(|y| y.name.eq_ignore_ascii_case(&x.name)) && co::concessions::is_line(c, x) && x.tours.iter().any(|t| t.of_day())).collect()
 }
 
 // --- the money ---------------------------------------------------------------------------------

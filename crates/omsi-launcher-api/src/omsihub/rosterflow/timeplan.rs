@@ -495,7 +495,7 @@ fn in_service(v: &Tp, c: &Company) -> bool {
 /// most of whose departures it has, the weekday's own (`natural`) on a tie; None without trips.
 fn group_run(l: &LineDesign, lines: &[core::LineInfo], name: &str, natural: usize) -> Option<usize> {
     let li = lines.iter().find(|x| x.name.eq_ignore_ascii_case(name))?;
-    let deps: std::collections::HashSet<i32> = li.tours.iter().filter(|t| t.runs).flat_map(|t| t.trips.iter()).map(|x| (x.departure / 60.0).round() as i32).collect();
+    let deps: std::collections::HashSet<i32> = li.tours.iter().filter(|t| t.of_day()).flat_map(|t| t.trips.iter()).map(|x| (x.departure / 60.0).round() as i32).collect();
     if deps.is_empty() {
         return None;
     }

@@ -361,7 +361,7 @@ fn new_line(s: &mut Session, c: &Company, ui: &Value) -> Value {
             let choices: Vec<Value> = logic::map_choices(c, &all)
                 .iter()
                 .map(|x| {
-                    let runs = x.tours.iter().filter(|t| t.runs).count();
+                    let runs = x.tours.iter().filter(|t| t.of_day()).count();
                     let often = match logic::map_headway(x) {
                         Some(h) => count_text(runs, "1 bus out today · about every %{m} minutes", "%{n} buses out today · about every %{m} minutes").replace("%{m}", &format!("{:.0}", (h / 5.0).round().max(1.0) * 5.0)),
                         None => count_text(runs, "1 bus out today", "%{n} buses out today"),

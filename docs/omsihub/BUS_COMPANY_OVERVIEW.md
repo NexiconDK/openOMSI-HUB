@@ -85,7 +85,7 @@ There is one choice per company, which can be changed at any time in the company
    - **Own lines** are drawn in the line editor. The editor supports circular routes and separate return-trip times, shows what a line costs and brings, and the player confirms and pays.
    - Each line has a fare.
    - Special trips (depot runs, empty runs, other operators' traffic) are not lines to run.
-6. **The day and the dispatcher.** Each day, the tours of the company's lines (`network::tours_of_day`) get buses and drivers from the weekly roster (`plan`). In the morning, sick calls, late drivers and buses that did not start create open places. The dispatcher's choices are:
+6. **The day and the dispatcher.** Each day, the tours of the company's lines (`network::tours_of_day`) get buses and drivers from the weekly roster (`plan`). A tour belongs to the day it begins on (`TourInfo::of_day`): a night tour's trips past 24:00 are that day's - planned, staffed and booked with it -, not the next day's as well. The game still drives them the next morning: the day's close carries them, with their bus, into the next day's plan for the game (`Planning::night`, `plan::night_tours`), where their trips are not reported again. In the morning, sick calls, late drivers and buses that did not start create open places. The dispatcher's choices are:
    - a free colleague (standby first);
    - an agency driver;
    - the player themselves;
