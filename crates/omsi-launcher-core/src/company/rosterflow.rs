@@ -287,6 +287,8 @@ pub struct Prefs {
     /// What each bus out costs a day, and each kilometre.
     pub vehicle_fixed: Option<Cents>,
     pub per_km: Option<Cents>,
+    /// (RosterFlow Pro, round J) The planner's goals for "Make duties automatically".
+    pub goals: super::pro_duties::Goals,
     // the optimiser's settings
     pub optimise_vehicles: bool,
     pub optimise_duties: bool,
@@ -332,6 +334,7 @@ impl Default for Prefs {
             driver_fixed: None,
             vehicle_fixed: None,
             per_km: None,
+            goals: super::pro_duties::Goals::default(),
             optimise_vehicles: true,
             optimise_duties: true,
             change: super::pro_duties::Change::default(),
@@ -2519,6 +2522,14 @@ fn cut_block(c: &Company, tours: &[TourOfDay], i: usize, p: &Prefs) -> Vec<Range
             let reach = if p.continuous.on && p.continuous.hard { room(prev, n) } else { longest + longest / 4 };
             if span(k, n) < p.min_piece.value && span(prev, n) <= reach {
                 cuts.pop();
+            } else if span(k, n) < p.min_piece.value {
+                // (round J: else the cut before it earlier, where both pieces are long enough and
+                // the last within reach - no piece of a few minutes left over at the end)
+                let better = can.iter().copied().filter(|&j| j > prev && j < k).rev().find(|&j| span(prev, j) >= p.min_piece.value && span(j, n) >= p.min_piece.value && span(j, n) <= room(j, n));
+                if let Some(j) = better {
+                    cuts.pop();
+                    cuts.push(j);
+                }
             }
         }
     }
@@ -2708,6 +2719,24 @@ pub fn optimise_with(c: &Company, lines: &[LineInfo], date: &str, vehicles: bool
 /// (RosterFlow Pro's split duty, `pro_duties::SPLIT_GAP`) - split duties do not run at the
 /// weekend (NexiconDK, 4 November 2026).
 pub fn optimise_splits(c: &Company, lines: &[LineInfo], date: &str, vehicles: bool, duties: bool, splits: bool) -> (Vec<LineLayout>, Vec<JoinedDuty>) {
+    optimise_aimed(c, lines, date, vehicles, duties, splits, None)
+}
+
+/// (RosterFlow Pro, round J - NexiconDK 7 November 2026) What "Make duties automatically" aims at
+/// besides the cost (`optimise_aimed`): the planner's goals (`pro_duties::Goals`) - no duty
+/// working longer than the longest, each minute outside the target length weighed (`over` and
+/// `under`: shares of a minute's wage), a change of line in a duty weighed `line_change` (cents)
+/// when the goals want one line all the duty.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Aim {
+    pub goals: super::pro_duties::Goals,
+    pub over: f64,
+    pub under: f64,
+    pub line_change: f64,
+}
+
+/// `optimise_splits` with RosterFlow Pro's goals (`aim`; None: the cost alone, as before).
+pub fn optimise_aimed(c: &Company, lines: &[LineInfo], date: &str, vehicles: bool, duties: bool, splits: bool, aim: Option<Aim>) -> (Vec<LineLayout>, Vec<JoinedDuty>) {
     let wd = super::plandays::slot_of(c, date);
     let mut p = c.planning.flow.prefs.clone();
     p.optimise_vehicles = vehicles;
@@ -2781,6 +2810,21 @@ pub fn optimise_splits(c: &Company, lines: &[LineInfo], date: &str, vehicles: bo
         let unpaid: i32 = ps.windows(2).map(|w| w[1].from - w[0].to).filter(|g| *g >= p.split_min).sum();
         (end - start - unpaid).max(paid_floor(&p))
     };
+    // (round J: the work of pieces as one duty, and what the goals weigh it - a split's gap
+    // unpaid but its signing off and on again, as `shape` has it)
+    let work_of = |ps: &[&Cut]| -> i32 {
+        let start = ps.first().map(|x| x.from).unwrap_or(0) - p.sign_on;
+        let end = ps.iter().map(|x| x.to).max().unwrap_or(0) + p.sign_off;
+        let unpaid: i32 = ps.windows(2).map(|w| w[1].from - w[0].to).filter(|g| *g >= p.split_min).map(|g| (g - p.sign_off_split - p.sign_on_split).max(0)).sum();
+        end - start - unpaid
+    };
+    let aimed = |w: i32| -> f64 {
+        match aim {
+            Some(a) if w > a.goals.target_to => (w - a.goals.target_to) as f64 * rate * a.over,
+            Some(a) if w < a.goals.target_from => (a.goals.target_from - w) as f64 * rate * a.under,
+            _ => 0.0,
+        }
+    };
     let mut groups: Vec<Vec<usize>> = Vec::new();
     // (a duty begins where a relief point allows it, and takes a split's break where one does)
     let set = !p.points.is_empty();
@@ -2789,7 +2833,7 @@ pub fn optimise_splits(c: &Company, lines: &[LineInfo], date: &str, vehicles: bo
     for (ci, x) in cuts.iter().enumerate() {
         // (a duty of its own: its hours, and the rules of a duty as a whole it breaks alone)
         let (pen_x, hard_x) = whole_rules(&p, &[x]);
-        let alone = fixed as f64 + paid_of(&[x]) as f64 * rate + pen_x + HARD * hard_x as f64 + if unsigned(&x.at) { HARD } else { 0.0 };
+        let alone = fixed as f64 + paid_of(&[x]) as f64 * rate + pen_x + HARD * hard_x as f64 + if unsigned(&x.at) { HARD } else { 0.0 } + aimed(work_of(&[x]));
         let mut best: Option<(usize, f64)> = None;
         for (gi, g) in groups.iter().enumerate() {
             let last = &cuts[*g.last().unwrap()];
@@ -2801,13 +2845,19 @@ pub fn optimise_splits(c: &Company, lines: &[LineInfo], date: &str, vehicles: bo
             }
             let mut ps: Vec<&Cut> = g.iter().map(|&k| &cuts[k]).collect();
             let before = paid_of(&ps);
+            let work_before = work_of(&ps);
             let (pen_b, hard_b) = whole_rules(&p, &ps);
             ps.push(x);
+            // (round J: never past the longest duty the goals allow)
+            if aim.is_some_and(|a| work_of(&ps) > a.goals.longest) {
+                continue;
+            }
             if ps.windows(2).filter(|w| w[1].from - w[0].to >= p.split_min).count() > 1 {
                 continue;
             }
             let blocks: Vec<Block> = ps.iter().map(|y| Block { key: format!("{}/{}", y.tour, y.range.start), from: y.from, to: y.to, from_stop: y.at.clone(), to_stop: y.till.clone() }).collect();
-            if st::rules_of(&blocks).iter().any(|r| r.hard()) {
+            let rules = st::rules_of(&blocks);
+            if rules.iter().any(|r| r.hard()) {
                 continue;
             }
             // (the duty as a whole - its type, its length, its spread, its changes of bus - never
@@ -2823,6 +2873,33 @@ pub fn optimise_splits(c: &Company, lines: &[LineInfo], date: &str, vehicles: bo
             match pair_breaks(&p, &ps) {
                 Some(more) => penalty += more,
                 None => continue,
+            }
+            if let Some(a) = aim {
+                penalty += aimed(work_of(&ps)) - aimed(work_before);
+                if a.goals.same_line && !same(&tours[last.tour].line, &tours[x.tour].line) {
+                    penalty += a.line_change;
+                }
+                // (the breaks as the duty will have them: the way to another stop is no break -
+                // a gap of 30 minutes with 10 of them walking is no meal break)
+                let walked: Vec<Cut> = ps
+                    .iter()
+                    .enumerate()
+                    .map(|(k, y)| {
+                        let mut z = (*y).clone();
+                        if let Some(n) = ps.get(k + 1).filter(|n| !same(&y.till, &n.at)) {
+                            z.to += travel_between(c, &tours, &y.till, &n.at, None).1.max(p.change.other_stop);
+                        }
+                        z
+                    })
+                    .collect();
+                if pair_breaks(&p, &walked.iter().collect::<Vec<_>>()).is_none() {
+                    continue;
+                }
+                // (the working-time rules' soft ones, as the day's issues weigh them: overtime,
+                // a change of stops in a hurry)
+                let soft_before = st::rules_of(&blocks[..blocks.len() - 1]).iter().filter(|r| !r.hard()).count();
+                let soft_after = rules.iter().filter(|r| !r.hard()).count();
+                penalty += (soft_after as f64 - soft_before as f64) * 10_00.0;
             }
             let delta = (paid_of(&ps) - before) as f64 * rate + penalty;
             if delta < alone && best.is_none_or(|b| delta < b.1) {

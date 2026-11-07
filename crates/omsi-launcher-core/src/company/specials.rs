@@ -282,7 +282,7 @@ pub fn display_number(n: &str) -> String {
 }
 
 /// Whether a line number is a night line's by its name: N or NE before its digits ("N7", "NE10").
-fn night_name(n: &str) -> bool {
+pub fn night_name(n: &str) -> bool {
     let u = n.to_ascii_uppercase();
     let rest = u.strip_prefix("NE").or_else(|| u.strip_prefix('N'));
     rest.is_some_and(|r| r.starts_with(|c: char| c.is_ascii_digit()))

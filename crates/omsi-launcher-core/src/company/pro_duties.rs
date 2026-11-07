@@ -64,6 +64,35 @@ impl Default for Change {
     }
 }
 
+/// (Round J, NexiconDK 7 November 2026) The planner's goals for "Make duties automatically": a
+/// duty's work within `target_from`..`target_to` (7:24 to 8:30), never longer than `longest`
+/// (10:00), and one line all the duty where it can (`same_line`). The shortest piece is
+/// RosterFlow's own (`Prefs::min_piece`); split duties stay off at the weekend.
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[serde(default)]
+pub struct Goals {
+    pub target_from: i32,
+    pub target_to: i32,
+    pub longest: i32,
+    pub same_line: bool,
+}
+
+impl Default for Goals {
+    fn default() -> Self {
+        Goals { target_from: 444, target_to: 510, longest: 600, same_line: true }
+    }
+}
+
+impl Goals {
+    /// The goals within reason: a target of at least an hour, ending before the longest.
+    pub fn sane(mut self) -> Goals {
+        self.longest = self.longest.clamp(240, 780);
+        self.target_to = self.target_to.clamp(60, self.longest);
+        self.target_from = self.target_from.clamp(0, self.target_to);
+        self
+    }
+}
+
 /// The type of a duty.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
@@ -445,14 +474,89 @@ pub fn tidy_pool(c: &mut Company, wd: u8, tours: &[TourOfDay]) {
 /// "Make duties automatically": RosterFlow's Optimise of the duties alone (the blocks kept), the
 /// pool emptied - on a Saturday or a Sunday without split duties. Returns how many duties the
 /// day has.
+///
+/// (Round J) It aims at the planner's goals (`Goals`): it makes the day several ways - the cost
+/// alone as before, and the goals weighed lightly to strongly, with and without one line all the
+/// duty - and keeps the one that scores best (`score`): the fewest rules broken, no duty longer
+/// than the longest, the duties near the target, the cheapest. The duties are numbered in the
+/// order they sign on (`number_by_sign_on`).
 pub fn auto(c: &mut Company, lines: &[LineInfo], date: &str) -> usize {
     let wd = super::plandays::slot_of(c, date);
     // (split duties do not run at the weekend: a Saturday's and a Sunday's made without, NexiconDK
     // 4 November 2026)
-    let (layouts, joined) = rf::optimise_splits(c, lines, date, false, true, day_type(c, wd) == 0);
-    rf::apply(c, wd, layouts, joined);
-    clear_pool(c, wd);
-    rf::board(c, lines, date).shaped.iter().filter(|s| s.spare.is_none()).count()
+    let splits = day_type(c, wd) == 0;
+    let goals = c.planning.flow.prefs.goals.sane();
+    let mut aims: Vec<Option<rf::Aim>> = vec![None];
+    for (over, under) in [(0.5, 0.1), (1.5, 0.25), (4.0, 0.5), (10.0, 1.0)] {
+        aims.push(Some(rf::Aim { goals, over, under, line_change: 20_00.0 }));
+        if goals.same_line {
+            aims.push(Some(rf::Aim { goals: Goals { same_line: false, ..goals }, over, under, line_change: 0.0 }));
+        }
+    }
+    let mut best: Option<(f64, Company)> = None;
+    for aim in aims {
+        let (layouts, joined) = rf::optimise_aimed(c, lines, date, false, true, splits, aim);
+        let mut view = c.clone();
+        rf::apply(&mut view, wd, layouts, joined);
+        clear_pool(&mut view, wd);
+        let b = rf::board(&view, lines, date);
+        let x = score(&view, &b);
+        if best.as_ref().is_none_or(|b| x < b.0) {
+            best = Some((x, view));
+        }
+    }
+    if let Some((_, view)) = best {
+        *c = view;
+    }
+    number_by_sign_on(c, lines, date)
+}
+
+/// What a day of duties scores for "Make duties automatically" (less is better): what Optimise
+/// weighs it (`rf::weighed`: the cost, the soft rules' penalties, a hard rule a bus a day), RosterFlow
+/// Pro's red marks as dear as a hard rule, a duty working longer than the goals' longest as dear,
+/// and each minute of a duty past the target twice a minute's wage, short of it a quarter (a duty
+/// under four hours is paid four: its cost says so already).
+pub fn score(c: &Company, b: &Board) -> f64 {
+    let goals = c.planning.flow.prefs.goals.sane();
+    let (hour, ..) = rf::rates(c);
+    let rate = hour / 60.0;
+    let mut x = rf::weighed(b) as f64;
+    for (row, s) in b.shaped.iter().enumerate() {
+        if s.spare.is_some() {
+            continue;
+        }
+        x += 500_00.0 * marks(c, b, row).iter().filter(|m| m.hard).count() as f64;
+        if s.work > goals.longest {
+            x += 500_00.0;
+        }
+        if s.work > goals.target_to {
+            x += (s.work - goals.target_to) as f64 * rate * 2.0;
+        } else if s.work < goals.target_from && s.work >= SHORT_DUTY {
+            x += (goals.target_from - s.work) as f64 * rate * 0.25;
+        }
+    }
+    x
+}
+
+/// The day's duties numbered in the order they sign on, from the day type's base (1001, 2001,
+/// 3001): the numbers kept for them (`DutyNumber`) written anew; the pieces in the pool keep
+/// theirs from `POOL_FROM`. Returns how many duties the day has.
+pub fn number_by_sign_on(c: &mut Company, lines: &[LineInfo], date: &str) -> usize {
+    let wd = super::plandays::slot_of(c, date);
+    let b = rf::board(c, lines, date);
+    let base = base(c, wd);
+    let mut rows: Vec<(i32, PieceRef)> = b.shaped.iter().filter(|s| s.spare.is_none() && !is_pool_duty(c, wd, &b.tours, s)).filter_map(|s| Some((s.start, s.key.clone()?))).collect();
+    rows.sort_by_key(|r| r.0);
+    let n = b.shaped.iter().filter(|s| s.spare.is_none()).count();
+    if !on(c) {
+        return n;
+    }
+    let sh = &mut c.planning.flow.sheet;
+    sh.numbers.retain(|x| x.weekday != wd);
+    for (k, (_, key)) in rows.into_iter().enumerate() {
+        sh.numbers.push(DutyNumber { weekday: wd, key, number: base + 1 + k as u32 });
+    }
+    n
 }
 
 // --- the marks ---------------------------------------------------------------------------------

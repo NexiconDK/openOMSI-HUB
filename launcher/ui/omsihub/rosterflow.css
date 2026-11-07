@@ -991,6 +991,60 @@ button.tp-cell:hover { background: var(--tp-cell-hover); }
 .pro-types div { line-height: 1.55; color: var(--rf-soft); }
 .pro-rule { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 30px; }
 .pro-rule span:first-child { color: var(--rf-soft); }
+/* round J (NexiconDK 7 November 2026): the day in figures, the price and break columns, the rules' chip, the checklist beside the table, the blocks folded, the game's plan beside */
+.pro-sum { display: flex; flex-wrap: wrap; border: 1px solid var(--rf-line); border-radius: 5px; background: var(--rf-sheet); flex: none; }
+.pro-k { padding: 7px 14px; border-right: 1px solid var(--rf-line); display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.pro-k:last-child { border-right: 0; }
+.pro-k small { font-size: 9.4px; color: var(--rf-dim); white-space: nowrap; }
+.pro-k b { font-size: 16px; color: var(--rf-text); white-space: nowrap; font-variant-numeric: tabular-nums; display: flex; align-items: baseline; gap: 6px; }
+.pro-k.note { justify-content: center; font-size: 9.8px; line-height: 1.4; color: var(--rf-dim); flex: 1; min-width: 180px; }
+.pro-d { font-size: 10px; font-weight: 700; }
+.pro-d.good { color: var(--rf-ok, #4cc38a); }
+.pro-d.worse { color: var(--rf-warn); }
+.pro-d.same { color: var(--rf-dim); }
+.pro-st { gap: 10px !important; font-size: 14px !important; }
+.pro-fold { display: flex; align-items: center; gap: 4px; background: none; padding: 0; cursor: pointer; text-align: left; }
+.pro-fold:hover { color: var(--rf-text); }
+.pro-table.cutview .pro-rows { max-height: 300px; }
+.pro-table.cutview .pro-row { height: 28px; }
+.pro-duties { display: flex; gap: 10px; align-items: flex-start; min-height: 0; }
+.pro-duties > .pro-table { flex: 1; min-width: 0; }
+.pro-aside { width: 330px; flex: none; position: sticky; top: 0; }
+.c-p { width: 92px; flex: none; color: var(--rf-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.c-m { width: 70px; flex: none; text-align: right; color: var(--rf-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.c-r { width: 54px; flex: none; display: flex; justify-content: flex-end; }
+.pro-worked { font-style: normal; font-size: 9px; color: var(--rf-dim); margin-left: 2px; }
+.pro-rchip { display: inline-block; padding: 1px 7px; border-radius: 9px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.pro-rchip.ok { background: color-mix(in srgb, var(--rf-ok, #4cc38a) 22%, transparent); color: var(--rf-ok, #4cc38a); }
+.pro-rchip.warn { background: color-mix(in srgb, var(--rf-warn) 22%, transparent); color: var(--rf-warn); }
+.pro-rchip.bad { background: color-mix(in srgb, var(--rf-err) 22%, transparent); color: var(--rf-err); }
+.pro-piece > span { overflow: hidden; text-overflow: ellipsis; padding: 0 4px; min-width: 0; }
+.pro-gap.meal { border-width: 1.5px; background: color-mix(in srgb, var(--rf-warn) 12%, transparent); }
+.pro-gap.break { z-index: 1; }
+.pro-gap.break.inside { top: -3px; height: 9px; font-size: 7px; background: var(--rf-grid); border-radius: 2px; z-index: 2; }
+.c-m { margin-right: 8px; }
+.pro-check h3 { margin: 0 0 2px; font-size: 13.5px; color: var(--rf-text); }
+.pro-check h3 em { font-style: normal; font-size: 11px; color: var(--rf-dim); font-weight: 400; }
+.pro-sub { color: var(--rf-dim); font-size: 10.3px; margin-bottom: 10px; line-height: 1.4; }
+.pro-ck { display: grid; grid-template-columns: 16px 1fr; column-gap: 6px; padding: 5px 0; border-top: 1px solid var(--rf-line); font-size: 10.6px; }
+.pro-ck .m { font-weight: 700; grid-row: span 2; }
+.pro-ck .t { color: var(--rf-text); }
+.pro-ck em { font-style: normal; color: var(--rf-dim); font-size: 10px; line-height: 1.35; }
+.pro-ck.ok .m { color: var(--rf-ok, #4cc38a); }
+.pro-ck.info .m { color: var(--rf-accent); }
+.pro-ck.warn .m, .pro-ck.warn em { color: var(--rf-warn); }
+.pro-ck.bad .m, .pro-ck.bad em { color: var(--rf-err); }
+.pro-money div { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; font-size: 10.5px; color: var(--rf-soft); }
+.pro-money div span:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pro-money .t { border-top: 1px solid var(--rf-line); margin-top: 4px; padding-top: 5px; font-weight: 700; color: var(--rf-text); }
+.pro-cmp.on { color: var(--rf-accent); }
+.pro-cmpgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+.pro-cmpgrid .pro-sum { margin-bottom: 6px; }
+.pro-cmpgrid .pro-sum .pro-k { padding: 5px 10px; }
+.pro-cmpgrid .pro-sum .pro-k b { font-size: 13px; }
+.pro-table.slim .c-axis { min-width: 220px; }
+.pro-row.ro { cursor: default; }
+.pro-goals .rf-switch { justify-content: space-between; }
 
 /* --- RosterFlow Pro, step 3 (NexiconDK, 4 November 2026): the Turnus tab (`turnus.js`) ----------- */
 .tu-page .pro-content { gap: 8px; }

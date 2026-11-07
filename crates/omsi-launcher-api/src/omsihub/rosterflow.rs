@@ -630,6 +630,8 @@ pub(crate) fn ensure(s: &mut Session, r: &mut Rf, date: &str) -> Option<Result<C
     let board = rf::board(&view, &lines, date);
     let mut json = board_json(&view, &board);
     relief::add_mids(&mut json, &view, &board, &lines);
+    // (RosterFlow Pro, round J: the duties' prices, the day in figures, the game's own plan)
+    pro::add_day(&mut json, &view, &board, &lines, date);
     let rev = format!("{:x}", hash_of(&json.to_string()));
     let k = Cached { date: date.to_string(), generation: rf_generation(s), board: Arc::new(board), view: Arc::new(view), lines: Arc::new(lines), json: Arc::new(json), rev };
     if r.cache.as_ref().is_none_or(|old| old.date != date) {
@@ -2156,6 +2158,7 @@ mod tests {
         core.extend(st::texts());
         core.extend(co::unassign::texts());
         core.extend(co::pro_duties::texts());
+        core.extend(co::pro_dutyplan::texts());
         core.extend(pro::texts());
         core.extend(co::pro_turnus::texts());
         core.extend(turnus::texts());
@@ -2178,4 +2181,5 @@ mod tests {
         }
         assert!(missing.is_empty(), "{} missing:\n{}", missing.len(), missing.join("\n"));
     }
+
 }

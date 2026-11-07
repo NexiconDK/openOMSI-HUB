@@ -5,8 +5,10 @@
 //! draws them; and the acts that build them. Every edit is RosterFlow's own (`edit`): in the
 //! draft, Undo and Save as every other.
 
-use super::{block_label, colour_of, company, edit, issue_words, rules_applied, said, Cached, Rf, Session};
-use super::super::company::words::{tr, trf};
+use super::{colour_of, company, edit, issue_words, rules_applied, said, Cached, Rf, Session};
+use super::super::company::words::{eur, num, tr, trf};
+use omsi_launcher_lib::company::pro_dutyplan as dp;
+use omsi_launcher_lib::LineInfo;
 use omsi_launcher_lib::company::network::{PlannedTrip, TourOfDay};
 use omsi_launcher_lib::company::pro_duties as pd;
 use omsi_launcher_lib::company::rosterflow::{self as rf, Board, EvKind};
@@ -26,9 +28,34 @@ fn letter(k: usize) -> String {
     }
 }
 
-/// A piece in words: its block and letter ("1/02 C").
+/// (Round J) A block's short name: "131 · H02" (not "131/131H02").
+fn block_label(t: &TourOfDay) -> String {
+    dp::short_block(t)
+}
+
+/// The lines a piece runs, in words: its line, and the other lines its trips run ("131 → NE2 🌙").
+fn lines_words(t: &TourOfDay, trips: &[PlannedTrip]) -> String {
+    let (_, other) = dp::piece_lines(t, trips);
+    let own = t.number.trim().to_string();
+    if other.is_empty() {
+        return own;
+    }
+    let o: Vec<String> = other.iter().map(|l| if l.night { format!("{} 🌙", l.number) } else { l.number.clone() }).collect();
+    format!("{own} → {}", o.join(", "))
+}
+
+/// A piece on a duty's bar: "131 · H02 A", a night line it runs after it ("131 · H09 C → NE2 🌙")
+/// - the day lines a tour also runs are in its whole label (`piece_label`).
+fn bar_label(t: &TourOfDay, k: usize) -> String {
+    let (_, other) = dp::piece_lines(t, trips_of(t, k));
+    let night: Vec<String> = other.iter().filter(|l| l.night).map(|l| format!("{} 🌙", l.number)).collect();
+    let head = format!("{} · {} {}", t.number.trim(), dp::short_tour(&t.number, &t.tour), letter(k));
+    if night.is_empty() { head } else { format!("{head} → {}", night.join(", ")) }
+}
+
+/// A piece in words: its lines, its block and letter ("131 · H02 C", "131 → NE2 🌙 · H09 C").
 fn piece_label(tours: &[TourOfDay], i: usize, k: usize) -> String {
-    tours.get(i).map(|t| format!("{} {}", block_label(t), letter(k))).unwrap_or_default()
+    tours.get(i).map(|t| format!("{} · {} {}", lines_words(t, trips_of(t, k)), dp::short_tour(&t.number, &t.tour), letter(k))).unwrap_or_default()
 }
 
 fn trips_of(t: &TourOfDay, k: usize) -> &[PlannedTrip] {
@@ -143,7 +170,9 @@ pub(super) fn pro_json(c: &Company, board: &Board) -> Value {
         })
         .collect();
     // the duties
-    let duties: Vec<Value> = board.shaped.iter().enumerate().filter(|(row, s)| !pool_rows[*row] && s.spare.is_none()).map(|(row, s)| duty_json(c, board, row, s)).collect();
+    // (round J: in the order they sign on)
+    let mut duties: Vec<Value> = board.shaped.iter().enumerate().filter(|(row, s)| !pool_rows[*row] && s.spare.is_none()).map(|(row, s)| duty_json(c, board, row, s)).collect();
+    duties.sort_by_key(|d| (d["start"].as_i64().unwrap_or(0), d["number"].as_str().unwrap_or("").to_string()));
     // the lines and how many blocks each has
     let mut lines: Vec<Value> = Vec::new();
     for t in tours {
@@ -168,6 +197,12 @@ pub(super) fn pro_json(c: &Company, board: &Board) -> Value {
         "rules": {
             "same_stop": p.change.same_stop, "other_stop": p.change.other_stop, "sign_on": p.sign_on, "sign_off": p.sign_off,
             "continuous": rf::hm(p.continuous.value), "spread": rf::hm(pd::SPLIT_SPREAD), "split_gap": rf::hm(pd::SPLIT_GAP), "short": rf::hm(pd::SHORT_DUTY),
+            "meal": p.meal.value, "meal_after": p.meal_after,
+        },
+        // (round J: the planner's goals for "Make duties automatically")
+        "goals": {
+            "target_from": p.goals.target_from, "target_to": p.goals.target_to, "longest": p.goals.longest,
+            "min_piece": p.min_piece.value, "same_line": p.goals.same_line, "weekday_splits": true,
         },
         "trips": board.tours.iter().map(|t| t.trips.iter().filter(|x| x.counts()).count()).sum::<usize>(),
     })
@@ -186,7 +221,7 @@ fn duty_json(c: &Company, board: &Board, row: usize, s: &rf::Shaped) -> Value {
             let t = &tours[sp.tour];
             let trips = trips_of(t, sp.duty);
             json!({
-                "tour": sp.tour, "duty": sp.duty, "label": piece_label(tours, sp.tour, sp.duty), "number": line_number(t), "colour": colour_of(c, &t.line),
+                "tour": sp.tour, "duty": sp.duty, "label": piece_label(tours, sp.tour, sp.duty), "short": bar_label(t, sp.duty), "number": line_number(t), "colour": colour_of(c, &t.line),
                 "from": sp.from, "to": sp.to,
                 "from_stop": trips.first().map(|x| x.from.trim().to_string()).unwrap_or_default(),
                 "to_stop": trips.last().map(|x| x.end().trim().to_string()).unwrap_or_default(),
@@ -240,13 +275,115 @@ fn duty_json(c: &Company, board: &Board, row: usize, s: &rf::Shaped) -> Value {
     if level == "ok" {
         words.push(tr("all rules kept"));
     }
+    // (round J: the rules as a chip and a checklist, the duty's break, its breaks on the axis)
+    let (soft, hard) = dp::rule_counts(c, board, row);
+    let chip = if hard > 0 { format!("✗ {hard}") } else if soft > 0 { format!("! {soft}") } else { tr("✓ all") };
+    let checks: Vec<Value> = dp::checklist(c, board, row)
+        .iter()
+        .map(|k| {
+            let a: Vec<(&str, &str)> = k.args.iter().map(|(x, v)| (*x, v.as_str())).collect();
+            json!({ "title": tr(k.title), "level": k.level.key(), "text": trf(k.text, &a) })
+        })
+        .collect();
+    let meal = s.plan.breaks.iter().find(|b| b.meal && b.kind != rf::BreakKind::Split);
+    let split = s.splits.iter().max_by_key(|g| g.1 - g.0);
+    let pause = match (meal, split) {
+        (Some(m), _) => format!("{} min · {}", m.to - m.from, rf::clock(m.from)),
+        (None, Some(g)) if kind == pd::Kind::Split => trf("split %{time}", &[("time", &rf::hm(g.1 - g.0))]),
+        (None, Some(g)) => trf("unpaid %{time}", &[("time", &rf::hm(g.1 - g.0))]),
+        _ => "–".to_string(),
+    };
+    // (a break between two pieces a P on the axis; a meal break inside a piece - the bus standing
+    // at its terminus - a small P over it; the other layovers not drawn)
+    let inside = |b: &rf::DutyBreak| spans.iter().any(|sp| b.from >= sp.from && b.to <= sp.to);
+    let breaks: Vec<Value> = s.plan.breaks.iter().filter(|b| (b.resets || b.meal) && b.kind != rf::BreakKind::Split && (b.meal || !inside(b))).map(|b| json!({ "from": b.from, "to": b.to, "meal": b.meal, "inside": inside(b) })).collect();
+    let on_stop = spans.first().and_then(|sp| trips_of(&tours[sp.tour], sp.duty).first().map(|x| x.from.trim().to_string())).unwrap_or_default();
+    let title = trf("Duty %{d} · %{kind}", &[("d", &s.label(row)), ("kind", &tr(kind.label()))]);
+    let sub = trf("Signs on %{on} at %{a} · off %{off} at %{b} · %{n} pieces, %{c} changes of bus", &[("on", &rf::clock(on_at)), ("a", &on_stop), ("off", &rf::clock(off_at)), ("b", &off_stop), ("n", &spans.len().to_string()), ("c", &s.changeovers.to_string())]);
     json!({
         "row": row, "number": s.label(row), "kind": kind.key(), "kind_label": tr(kind.label()),
         "start": on_at, "end": off_at, "work": s.work, "paid": s.paid, "spread": s.spread(),
         "pieces": pieces, "between": between, "line_change": line_change,
         "level": level, "tip": tips.join("\n"), "detail": words.join("  ·  "),
         "locked": s.locked,
+        "soft": soft, "hard": hard, "chip": chip, "checks": checks, "pause": pause, "breaks": breaks,
+        "title": title, "sub": sub,
     })
+}
+
+/// (Round J) What the Vagter tab shows of the day that needs its date and timetable (`ensure`
+/// adds it to the board's JSON, `json`): each duty's price and its parts, the day in figures, and
+/// the game's own plan of the day (`dp::game_plan`) - its figures, its duties - with each figure's
+/// difference from it.
+pub(super) fn add_day(json: &mut Value, c: &Company, board: &Board, lines: &[LineInfo], date: &str) {
+    if json.get("pro").is_none_or(Value::is_null) {
+        return;
+    }
+    let hour = dp::hour_wage(c);
+    prices(&mut json["pro"]["duties"], c, board, date, hour);
+    let now = dp::summary(c, board, date);
+    let (g, gb) = dp::game_plan(c, lines, date);
+    let was = dp::summary(&g, &gb, date);
+    let mut plan_duties: Value = json!(pro_json(&g, &gb)["duties"].clone());
+    prices(&mut plan_duties, &g, &gb, date, hour);
+    json["pro"]["summary"] = summary_json(&now, Some(&was));
+    json["pro"]["plan"] = json!({
+        "summary": summary_json(&was, None),
+        "duties": plan_duties,
+        "line": trf("The game's plan: %{n} duties, %{h}, %{r} red", &[("n", &was.duties.to_string()), ("h", &hours(was.paid)), ("r", &was.bad.to_string())]),
+    });
+}
+
+/// Hours in words: "338 h".
+fn hours(minutes: i32) -> String {
+    trf("%{h} h", &[("h", &num(minutes as f64 / 60.0, 0))])
+}
+
+/// Each duty's price (`dp::price`) on the duties' JSON (`duties`, by their rows).
+fn prices(duties: &mut Value, c: &Company, board: &Board, date: &str, hour: f64) {
+    let Some(list) = duties.as_array_mut() else { return };
+    for d in list {
+        let Some(s) = d["row"].as_u64().and_then(|r| board.shaped.get(r as usize)) else { continue };
+        let pr = dp::price(c, s, date, hour);
+        d["price"] = json!(eur(pr.total));
+        d["price_cents"] = json!(pr.total);
+        let mut parts = vec![json!({ "label": trf("Wage %{t} × %{rate}", &[("t", &rf::hm(pr.paid)), ("rate", &eur(pr.hour.round() as i64))]), "value": eur(pr.wages) })];
+        if pr.supplements > 0 {
+            parts.push(json!({ "label": trf("Supplements, evening, night and weekend (%{t})", &[("t", &rf::hm(pr.supplement_minutes))]), "value": eur(pr.supplements) }));
+        }
+        parts.push(json!({ "label": tr("Pension, holiday pay and other employer's costs"), "value": eur(pr.oncosts) }));
+        d["price_parts"] = json!(parts);
+        d["price_total"] = json!(eur(pr.total));
+    }
+}
+
+/// The day in figures (`now`), each with its difference from the game's plan (`was`) and whether
+/// that is better: fewer duties, fewer hours, more of them driving, cheaper, fewer red.
+fn summary_json(now: &dp::Summary, was: Option<&dp::Summary>) -> Value {
+    let figure = |key: &str, label: &str, value: String, diff: Option<(f64, String)>, lower_better: Option<bool>| {
+        let (d, words) = diff.unwrap_or((0.0, String::new()));
+        let good = match lower_better {
+            _ if d.abs() < 1e-9 => Value::Null,
+            Some(true) => json!(d < 0.0),
+            Some(false) => json!(d > 0.0),
+            None => Value::Null,
+        };
+        json!({ "key": key, "label": tr(label), "value": value, "diff": if d.abs() < 1e-9 { String::new() } else { words }, "good": good })
+    };
+    let signed = |x: f64, s: String| if x > 0.0 { format!("+{s}") } else if x < 0.0 { format!("−{}", s.trim_start_matches('-')) } else { s };
+    let d = |f: &dyn Fn(&dp::Summary) -> f64, show: &dyn Fn(f64) -> String| was.map(|w| {
+        let x = f(now) - f(w);
+        (x, signed(x, show(x.abs())))
+    });
+    let figures = vec![
+        figure("duties", FIGURES[0], now.duties.to_string(), d(&|s| s.duties as f64, &|x| format!("{x}")), Some(true)),
+        figure("paid", FIGURES[1], hours(now.paid), d(&|s| s.paid as f64 / 60.0, &|x| trf("%{h} h", &[("h", &num(x, 0))])), Some(true)),
+        figure("driving", FIGURES[2], format!("{} %", num(now.driving_share(), 0)), d(&|s| s.driving_share().round(), &|x| format!("{} %", num(x, 0))), Some(false)),
+        figure("cost", FIGURES[3], eur(now.cost), d(&|s| s.cost as f64, &|x| eur(x.round() as i64)), Some(true)),
+        figure("average", FIGURES[4], rf::hm(now.average), d(&|s| s.average as f64, &|x| rf::hm(x.round() as i32)), None),
+    ];
+    let status = json!({ "ok": now.ok, "warn": now.warn, "bad": now.bad, "diff_bad": was.map(|w| now.bad as i64 - w.bad as i64) });
+    json!({ "figures": figures, "status": status })
 }
 
 /// The acts of the Pro tabs (`rf_act`'s `pro_*`), on the day `k` shows.
@@ -280,11 +417,19 @@ pub(super) fn act(s: &mut Session, r: &mut Rf, k: &Cached, what: &str, args: &Va
             let mut n = 0;
             let out = edit(s, r, tr("Duties made automatically"), |c| {
                 let before = c.clone();
-                n = pd::auto(c, &lines, &date);
+                n = pd::auto(c, lines.as_slice(), &date);
                 rf::signing::keep_points(&before, c, &lines, &date);
                 Ok(())
             });
             if out.get("edited").is_some() {
+                // (round J: numbered in the order they sign on, 1001 the first - the edit kept the
+                // numbers the duties had)
+                let _ = company::act(s, |c| {
+                    let mut v = rf::view(c);
+                    pd::number_by_sign_on(&mut v, &lines, &date);
+                    rf::keep_draft(c, &v);
+                    Ok(())
+                });
                 said(trf("%{n} duties made from the pieces: SAVE keeps them.", &[("n", &n.to_string())]), false)
             } else {
                 out
@@ -309,6 +454,27 @@ pub(super) fn act(s: &mut Session, r: &mut Rf, k: &Cached, what: &str, args: &Va
                 if let Some(v) = num("sign_off", 0, 60) {
                     p.sign_off = v;
                 }
+                // (round J: the goals of "Make duties automatically", and the shortest piece)
+                if let Some(v) = num("target_from", 0, 780) {
+                    p.goals.target_from = v;
+                    p.goals.target_to = p.goals.target_to.max(v);
+                }
+                if let Some(v) = num("target_to", 60, 780) {
+                    p.goals.target_to = v;
+                    p.goals.target_from = p.goals.target_from.min(v);
+                    p.goals.longest = p.goals.longest.max(v);
+                }
+                if let Some(v) = num("longest", 240, 780) {
+                    p.goals.longest = v;
+                    p.goals.target_to = p.goals.target_to.min(v);
+                    p.goals.target_from = p.goals.target_from.min(p.goals.target_to);
+                }
+                if let Some(v) = num("min_piece", 0, 300) {
+                    p.min_piece.value = v;
+                }
+                if let Some(v) = args.get("same_line").and_then(Value::as_bool) {
+                    p.goals.same_line = v;
+                }
                 Ok(())
             }) {
                 Ok(()) => rules_applied(s, r, &date, &was, None),
@@ -319,10 +485,16 @@ pub(super) fn act(s: &mut Session, r: &mut Rf, k: &Cached, what: &str, args: &Va
     }
 }
 
-/// Every English text this file hands to `tr`/`trf` besides its literals (the day types).
+/// (Round J) The day's figures' names (`summary_json`).
+const FIGURES: [&str; 5] = ["Duties", "Paid hours", "Driving of the paid time", "Price of the day", "Average duty"];
+
+/// Every English text this file hands to `tr`/`trf` besides its literals (the day types, the
+/// figures' names).
 #[cfg(test)]
 pub(super) fn texts() -> Vec<&'static str> {
-    DAY_TYPES.to_vec()
+    let mut v = DAY_TYPES.to_vec();
+    v.extend(FIGURES);
+    v
 }
 
 #[cfg(test)]
@@ -330,6 +502,24 @@ mod tests {
     use super::*;
     use omsi_launcher_lib::company::autopilot;
     use omsi_launcher_lib::company::model::Planner;
+
+    #[test]
+    fn the_day_in_figures_says_the_difference_from_the_games_plan() {
+        super::super::company::words::set_language("en");
+        let was = dp::Summary { duties: 44, paid: 337 * 60, driving: 190 * 60, average: 459, cost: 41_500_00, ok: 12, warn: 9, bad: 23 };
+        let now = dp::Summary { duties: 41, paid: 338 * 60, driving: 200 * 60, average: 495, cost: 41_880_00, ok: 36, warn: 5, bad: 0 };
+        let v = summary_json(&now, Some(&was));
+        let f = |key: &str| v["figures"].as_array().unwrap().iter().find(|x| x["key"] == key).unwrap().clone();
+        assert_eq!((f("duties")["value"].clone(), f("duties")["diff"].clone(), f("duties")["good"].clone()), (json!("41"), json!("−3"), json!(true)));
+        assert_eq!((f("paid")["diff"].clone(), f("paid")["good"].clone()), (json!("+1 h"), json!(false)));
+        assert_eq!(f("driving")["good"], json!(true), "more of the paid time driving is better");
+        assert_eq!(f("cost")["good"], json!(false));
+        assert!(f("average")["good"].is_null(), "the average is told, not judged");
+        assert_eq!(v["status"]["diff_bad"], json!(-23));
+        // the game's plan itself: no differences
+        let w = summary_json(&was, None);
+        assert!(w["figures"].as_array().unwrap().iter().all(|x| x["diff"] == "" && x["good"].is_null()));
+    }
 
     #[test]
     fn the_pro_tabs_get_their_blocks_pieces_pool_and_duties() {
@@ -352,6 +542,19 @@ mod tests {
         assert_eq!(duties.len(), b.shaped.len());
         assert_eq!(duties[0]["number"], "1001");
         assert!(duties.iter().all(|d| ["whole", "split", "short"].contains(&d["kind"].as_str().unwrap_or("")) && d["detail"].as_str().is_some_and(|t| t.starts_with("Signs on"))));
+        // (round J) each duty its rules as a chip, its checklist, its break; in the order they sign on
+        assert!(duties.iter().all(|d| d["chip"].as_str().is_some_and(|c| !c.is_empty()) && d["checks"].as_array().is_some_and(|k| k.len() >= 5) && d["pause"].is_string()));
+        let starts: Vec<i64> = duties.iter().map(|d| d["start"].as_i64().unwrap()).collect();
+        assert!(starts.windows(2).all(|w| w[0] <= w[1]));
+        assert!(blocks.iter().all(|b| !b["label"].as_str().unwrap().contains('/')), "short names: 5 · 01");
+        // with its date and timetable: the prices, the figures, the game's plan
+        let mut full = v.clone();
+        add_day(&mut full, &c, &b, &lines, &date);
+        let fp = &full["pro"];
+        assert!(fp["duties"].as_array().unwrap().iter().all(|d| d["price_cents"].as_i64().is_some_and(|x| x > 0) && d["price_parts"].as_array().is_some_and(|p| p.len() >= 2)));
+        assert_eq!(fp["summary"]["figures"].as_array().map(Vec::len), Some(5));
+        assert_eq!(fp["plan"]["duties"].as_array().map(Vec::len), Some(duties.len()), "nothing built: the game's plan is the day");
+        assert!(fp["plan"]["line"].as_str().is_some_and(|t| t.starts_with("The game's plan")));
         // a bus cut where it can be: the piece after it in the pool, numbered from 1501 to run
         let i = blocks.iter().position(|x| !x["reliefs"].as_array().unwrap().is_empty()).unwrap();
         let at = blocks[i]["reliefs"][0]["at"].as_u64().unwrap() as usize;

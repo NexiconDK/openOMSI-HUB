@@ -1237,3 +1237,80 @@ trips (`clock::Broken`); the dispatch shows it on the bus's row.
 
 **Multiplayer:** `rf_buses` and `rf_bus_pick` need RF_VIEW, `rf_bus_act` the planning (PLANS);
 the commands are routed in `rosterflow::run` (tested through it).
+
+# Round J (7 November 2026): the Vagter tab made stronger
+
+The player chose to keep the game's blocks and make the Vagter tab better (not to build blocks
+from the timetable's trips). Code: `co::pro_dutyplan` (the figures, the price, the checklist, the
+game's plan, the short names), `co::pro_duties::auto` and `Goals`, `rosterflow::optimise_aimed`,
+`omsihub/rosterflow/pro.rs` (`add_day`), `launcher/ui/js/omsihub/rosterflow/pro.js`.
+
+## The day in figures
+
+Over the duties a bar shows the day: the duties, the paid hours, the driving's share of the paid
+time (every trip, with passengers or not), the price of the day in the company's currency, the
+average duty, and how many duties keep every rule (✓), break a soft one (!) or a hard one (✗).
+Each figure has its difference from **the game's own plan**: the same day with nothing built on
+it - the timetable's blocks, the duties RosterFlow makes of them by itself
+(`pro_dutyplan::game_plan`). Green is better (fewer duties, fewer hours, more driving, cheaper,
+fewer red), orange worse; under it "Spillets plan: 44 vagter, 337 t, 23 røde".
+
+## The duty's break, price and rules
+
+The table has two more columns. **Pause** is the duty's meal break ("30 min · 08:10"), a split
+duty's gap ("delt 3:40"), an unpaid gap of a whole duty ("ubetalt 0:49"), or "–". The breaks a
+driving period ends at are P blocks on the axis (the meal break stronger). **Pris** is what the
+duty costs (`pro_dutyplan::price`): its paid hours at what an hour of the company's drivers costs
+on average (the market's wage without drivers), the supplements of the evening, the night and the
+weekend on the time it works (a public holiday as a Sunday), and the employer's on-costs. The
+rules are a chip: "✓ alle", "! 1" (soft rules broken), "✗ 2" (hard ones).
+
+## The checklist
+
+A duty clicked shows beside the table (it stays in view while the list scrolls) "Vagt 1002 ·
+Hel", where it signs on and off, its pieces and changes of bus, and each rule a line: the meal
+break, driving without a break, the working day against the longest duty, overtime, the target
+length (told, not a rule broken), the changes of bus (the time to change, a change of stops in a
+hurry, too many changes), the shortest piece, a split duty's spread, rest between pieces, where it
+begins and ends, its type - every issue of the duty in one of them or a line of its own. Under it
+the price: wage × hours, supplements, the employer's part, the total.
+
+## Goals for "Make duties automatically"
+
+Under the rules: the target length (7:24 to 8:30), the longest duty (10:00), the shortest piece
+(1:00; RosterFlow's own `min_piece`) and "Helst samme linje hele vagten" (on). Split duties stay
+Monday to Friday. Saved with the company (`Prefs::goals`, `pro_duties::Goals`).
+
+"Make duties automatically" now makes the day nine ways - the cost alone as before, and the goals
+weighed lightly to strongly, with and without one line all the duty
+(`rosterflow::optimise_aimed`, `Aim`) - and keeps the one that scores best
+(`pro_duties::score`): Optimise's weight (the cost, the soft rules, a hard rule as a bus a day),
+Pro's red marks and a duty longer than the longest as dear as a hard rule, each minute past the
+target twice a minute's wage. With the goals, no duty is made longer than the longest; a break
+counts without the way to another stop (30 minutes with 10 of walking is no meal break); the
+working-time rules' soft ones (overtime, a change of stops in a hurry) are weighed as the day's
+issues weigh them. A block's last piece that would be shorter than the shortest piece and cannot
+join the one before moves the cut before it earlier (`cut_block`, also for RosterFlow).
+
+The duties are then numbered in the order they sign on, 1001 the first
+(`pro_duties::number_by_sign_on`); an edit by hand keeps the numbers as before. The table lists
+the duties in the order they sign on.
+
+## Shorter names
+
+A block is "131 · H02", not "131/131H02" (`pro_dutyplan::short_tour`); a piece "131 · H02 A". A
+piece whose trips run other lines says so: "131 → NE2 🌙 · H09 C" (`piece_lines`; a night line by
+its name or all its trips between 22:00 and 05:00).
+
+## Compare with the game's plan
+
+"⇄ Sammenlign med spillets plan" in the toolbar puts your duties and the game's plan side by side,
+each with its figures and its duties (the game's read only). The list of blocks folds away with a
+click on its heading; each viewer's choice is remembered in the browser.
+
+## With the real timetable
+
+Lines 131 and 153 of Ahlheim on a Monday (36 blocks, 316 trips): the game's plan has 44 duties,
+337 paid hours, 23 red and 9 yellow. Before round J "Make duties automatically" made 45 duties,
+352 hours, 7 red, 19 yellow, the longest 12:40, eight over ten hours. See FORK.md for the figures
+after it.
