@@ -321,6 +321,8 @@ pub(super) fn run(s: &mut Session, r: &mut Rf, cmd: &str, args: &Value) -> Optio
         "rf_roster" => view(s, r, args),
         "rf_roster_act" => act(s, r, args),
         "rf_roster_service" => service_view(s, r, args),
+        // (round N: RosterFlow Pro's strip of the lines and their service)
+        "rf_roster_lines" => Ok(lines_view(s)),
         _ => return None,
     })
 }
@@ -1403,6 +1405,47 @@ fn act_on(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     })
 }
 
+/// (Round N) The lines and their service, for RosterFlow Pro's strip: each line's state today -
+/// not in service (its tours planned), in service from a moment to come, or in service since -
+/// and whether a line won in a tender is not running though its concession has begun (`late`).
+pub(super) fn lines_view(s: &mut Session) -> Value {
+    let Some(c) = s.company.clone() else { return json!({ "lines": [] }) };
+    company::week_work(s);
+    let now = co::clock::now(&c);
+    let plan = company::plan_of(s, &c.date).and_then(|p| p.ok());
+    let when = |at: i64| format!("{} {}", day_label(&co::clock::date_of(at)), co::clock::hhmm(at));
+    let mut late = Vec::new();
+    let lines: Vec<Value> = c
+        .lines
+        .iter()
+        .map(|cl| {
+            let mine: Vec<&DayTour> = plan.as_ref().map(|p| p.tours.iter().filter(|t| t.tour.line == cl.name).collect()).unwrap_or_default();
+            let covered = mine.iter().filter(|t| t.covered()).count();
+            let planned = trf("%{c} of %{t} tours planned", &[("c", &covered.to_string()), ("t", &mine.len().to_string())]);
+            let begun = co::concessions::of_line(&c, &cl.name).is_some_and(|h| co::clock::moment(&h.from, 0) <= now);
+            let (state, text, tone) = match cl.service_from {
+                None => ("off", format!("{}  ·  {planned}", tr("Not in service")), "warn"),
+                Some(at) if at != co::model::LEGACY_SERVICE && at > now => ("later", format!("{}  ·  {planned}", trf("In service from %{when}", &[("when", &when(at))])), "warn"),
+                Some(at) if at <= 0 || at == co::model::LEGACY_SERVICE => ("on", format!("{}  ·  {planned}", tr("In service")), if covered == mine.len() { "ok" } else { "warn" }),
+                Some(at) => ("on", format!("{}  ·  {planned}", trf("In service since %{when}", &[("when", &when(at))])), if covered == mine.len() { "ok" } else { "warn" }),
+            };
+            if begun && state != "on" {
+                late.push(match cl.service_from {
+                    Some(at) => trf("Line %{n} is yours since its concession began, but it only runs from %{when}.", &[("n", &cl.number), ("when", &when(at))]),
+                    None => trf("Line %{n} is yours since its concession began, but it is not in service: its tours do not run.", &[("n", &cl.number)]),
+                });
+            }
+            json!({ "line": cl.name, "number": cl.number, "state": state, "text": text, "tone": tone })
+        })
+        .collect();
+    json!({
+        "title": tr("Lines in service").to_uppercase(),
+        "lines": lines,
+        "late": late,
+        "start": tr("Start service…"), "stop": tr("Take the line out of service"),
+    })
+}
+
 // --- putting a line into service --------------------------------------------------------------------
 
 /// "Start service from" (`planning::service_dialog`): now, from tomorrow, or from a date; what
@@ -1498,5 +1541,29 @@ mod tests {
         let f = pl::Filled { duties: 9, buses: 4, unqualified: 2, busy: 0, no_bus: 0 };
         assert_eq!(open_text(&f), "2 duties still open: nobody is qualified for their bus.");
         assert_eq!(open_text(&pl::Filled::default()), "");
+    }
+
+    /// (Round N) RosterFlow Pro's strip of the lines: a line set for tomorrow says from when, one
+    /// not in service says so, and a line whose concession began today but that does not run yet
+    /// is said in the banner; a line in service is not.
+    #[test]
+    fn the_lines_strip_says_what_runs() {
+        company::test_dry();
+        super::super::super::company::words::set_language("en");
+        let mut c = co::found(&co::Founding { name: "Strip".into(), date: "2026-11-07".into(), ..Default::default() }, "Luc");
+        c.clock.minute = 1022;
+        let tomorrow = co::clock::moment("2026-11-08", 0);
+        for (n, from) in [("131", Some(tomorrow)), ("134", Some(co::clock::moment("2026-11-04", 620))), ("153", None)] {
+            c.lines.push(co::model::CompanyLine { name: n.into(), number: n.into(), numbers: vec![n.into()], added: c.date.clone(), service_from: from, ..Default::default() });
+        }
+        c.concessions.held.push(co::concessions::Concession { line: "131".into(), number: "131".into(), from: "2026-11-07".into(), until: "2026-11-21".into(), price: 1.0, direct: false, after: String::new(), options: 0, package: String::new(), with: Vec::new() });
+        let mut s = Session::default();
+        s.company = Some(c);
+        let v = lines_view(&mut s);
+        let state = |n: &str| v["lines"].as_array().unwrap().iter().find(|l| l["line"] == n).unwrap()["state"].as_str().unwrap().to_string();
+        assert_eq!((state("131"), state("134"), state("153")), ("later".into(), "on".into(), "off".into()), "{v}");
+        let late = v["late"].as_array().unwrap();
+        assert_eq!(late.len(), 1, "{v}");
+        assert!(late[0].as_str().unwrap().contains("131") && late[0].as_str().unwrap().contains("only runs from"), "{v}");
     }
 }

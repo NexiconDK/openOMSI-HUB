@@ -1629,3 +1629,18 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .pro-week { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; padding: 8px 12px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--rf-accent) 45%, transparent); background: color-mix(in srgb, var(--rf-accent) 12%, var(--rf-sheet)); font-size: 12.5px; }
 .pro-week span { flex: 1; }
 .bx-said { margin-top: 2px; font-size: 11.5px; font-style: italic; color: var(--rf-text, inherit); opacity: 0.9; }
+
+/* (round N) RosterFlow Pro's lines and their service: the strip, its buttons, the banner of a line
+   won that does not run yet. */
+.pro-svc { flex: none; border-bottom: 1px solid var(--rf-line); background: var(--rf-bar); }
+.pro-svc-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 12px; }
+.pro-svc-caps { font-size: 9.6px; font-weight: 700; letter-spacing: 0.06em; color: var(--rf-dim); margin-right: 4px; }
+.pro-svc-line { display: inline-flex; align-items: center; gap: 8px; padding: 3px 4px 3px 10px; border-radius: 3px; border: 1px solid var(--rf-line); font-size: 11.5px; }
+.pro-svc-line b { font-size: 12.5px; }
+.pro-svc-line.t-warn { border-color: color-mix(in srgb, var(--rf-warn) 60%, transparent); }
+.pro-svc-line.t-ok { border-color: color-mix(in srgb, var(--rf-ok) 50%, transparent); }
+.pro-svc-text { color: var(--rf-dim); white-space: nowrap; }
+.pro-svc-go { display: inline-flex; align-items: center; gap: 4px; height: 26px; }
+.pro-svc-late { display: flex; flex-direction: column; gap: 4px; padding: 7px 12px; background: color-mix(in srgb, var(--rf-warn) 16%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--rf-warn) 45%, transparent); font-size: 12px; font-weight: 600; }
+.pro-svc-late div { display: flex; align-items: center; gap: 8px; }
+.pro-svc-late .material-symbols-outlined, .pro-svc-late svg { color: var(--rf-warn); }

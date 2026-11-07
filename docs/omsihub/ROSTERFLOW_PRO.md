@@ -1429,6 +1429,25 @@ day whether used or not.
   timetable (`auto`). Each is numbered in the order its duties sign on; it is the draft's, so
   SAVE keeps it.
 
+## Round N: the lines' service inside Pro, the Roster tab that cannot be shown (NexiconDK, 7 November 2026)
+
+The player: "Har jeg ingen mulighed for at Start Service i RosterFlow Pro? Det er der i den normale
+RosterFlow", and later "Den vil først starte dem fra i morgen - jeg vil have 131 i drift NU".
+
+- **The lines' strip** (`roster::lines_view`, `rf_roster_lines`; `pro_service.js`): the Vognløb
+  tab and Daglig drift show every line of the company with its state today - "Ikke i drift", "I
+  drift fra søn 8 nov 00:00" (a start to come), "I drift siden …" - and how many of its tours are
+  planned, with "Start drift…" (the Roster tab's dialog: now, from tomorrow, from a date) or the
+  stop button. A line won in a tender whose concession has begun but that does not run yet (or
+  runs only later) is said in a banner on every Pro tab that shows the strip.
+- **Starting now** moves a start set for later to now (`network::start_service` takes the moment
+  asked, never before its concession begins): a line the player set for tomorrow is started today
+  with "Nu". Tested with the player's own company file and through the relay of Bus Company
+  Online (`company::relayed`): the start lands at the moment chosen.
+- **The Roster tab** (normal RosterFlow's "Vagtplan") shows the words of a refusal - the company's
+  launcher out of reach, a role that may not - with "Try again", instead of a page that broke on
+  the toolbar a refusal does not carry (`roster.js`).
+
 ## Tests
 
 `pro_duties_tests`: a duty built of departures cut out of its buses and named, a duty of two buses,

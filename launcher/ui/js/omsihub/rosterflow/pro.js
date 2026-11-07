@@ -24,6 +24,8 @@ import { S } from '../../store.js';
 import { tr } from '../bits.js';
 import { setRf, rfAct, edit, VEHICLES, DRIVERS } from './state.js';
 import { Icon, RfButton, Stepper, Switch } from './ui.js';
+// (round N: the lines' service - Start service inside Pro)
+import { ServiceStrip } from './pro_service.js';
 
 /** The views of the Pro tabs (beside `state.js`'s ROSTER, VEHICLES, DRIVERS, TIMEPLAN, ROUTES). */
 export const PRO_BLOCKS = 10;
@@ -106,6 +108,7 @@ export function ProTab({ duties }) {
   if (!pro) return html`<div class="rf-reading">${tr('RosterFlow Pro is not the planner of this company: choose it on the planning page.')}</div>`;
   return html`<div class="pro-page">
     <${Toolbar} data=${data} pro=${pro} duties=${duties} />
+    <${ServiceStrip} full=${!duties} />
     <div class="pro-main">
       ${duties ? html`<${DutiesSide} pro=${pro} />` : html`<${BlocksSide} pro=${pro} />`}
       <div class="pro-content">${duties ? html`<${Duties} data=${data} pro=${pro} />` : html`<${Blocks} data=${data} pro=${pro} />`}</div>

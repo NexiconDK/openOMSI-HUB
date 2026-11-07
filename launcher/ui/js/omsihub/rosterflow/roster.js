@@ -265,6 +265,12 @@ export function RosterTab({ p }) {
     };
   }, [drag?.from, drag?.x0]);
   if (!v) return html`<div class="rf-roster" ref=${tab}></div>`;
+  // (round N: the day could not be asked - a refusal, the company's launcher out of reach - its
+  // words shown, not a page that breaks on what a refusal does not carry)
+  if (!v.days || !v.tools) {
+    return html`<div class="rf-roster" ref=${tab}><div class="rr-body"><div class="rr-wait" style="flex-direction:column;gap:4px"><p class="err">${v.error || tr('The roster could not be shown.')}</p>
+      <button type="button" class="co-btn" style="margin-top:12px" onClick=${() => bump()}>${tr('Try again')}</button></div></div></div>`;
+  }
   return html`<div class="rf-roster" ref=${tab}>
     <${DayTabs} v=${v} />
     <${Tools} v=${v} />
@@ -828,7 +834,7 @@ function TourPanel({ d }) {
 
 /** "Start service from" (`planning::service_dialog`): now, from tomorrow, or from a date; the
  * line's next seven days as planned, and - with gaps - whether to start all the same. */
-function ServiceDialog({ d }) {
+export function ServiceDialog({ d }) {
   const [v, setV] = useState(null);
   useEffect(() => {
     rfCmd('rf_roster_service', d).then(setV).catch(() => setV(null));

@@ -39,6 +39,8 @@ import { language } from '../../i18n.js';
 import { tr } from '../bits.js';
 import { setRf, rfCmd, after, bump, say } from './state.js';
 import { Icon, RfButton } from './ui.js';
+// (round N: a line won that does not run yet, said on the day too)
+import { ServiceStrip } from './pro_service.js';
 
 /** What the tabs keep: the calendar's week, span, filter and search; the date and the duty the
  * box shows, whether its popup is open (`pop`) and the duty just given (`given`). */
@@ -668,6 +670,7 @@ export function DailyTab({ onCalendar }) {
       <span class="grow"></span>
       <span class="tu-week"><b>${v.label}</b><span>${v.count?.text || ''}</span></span>
     </div>
+    <${ServiceStrip} full=${true} />
     <div class="pro-main">
       <aside class="pro-side">
         ${v.frames.length > 0 && html`<div class="pro-caps">${tr('Frames this day')}</div>

@@ -614,6 +614,27 @@ pub(crate) mod tests {
         assert!(tours_of_day(&c, std::slice::from_ref(&l), &c.date.clone()).iter().all(|t| !t.unplanned));
     }
 
+    /// (Round N, the player: "Den vil først starte dem fra i morgen - jeg vil have 131 i drift
+    /// NU") A line set to start tomorrow is started now: its start is moved earlier, to now - not
+    /// kept at tomorrow's midnight. A concession that begins later still holds it back.
+    #[test]
+    fn a_start_set_for_tomorrow_is_moved_to_now() {
+        use super::super::concessions::tests::line;
+        use super::super::{found, Founding};
+        let mut c = found(&Founding { name: "Now".into(), date: "2026-11-07".into(), ..Default::default() }, "Luc");
+        let l = line("131", "131", 2, true);
+        add_line(&mut c, &l, None).unwrap();
+        c.clock.minute = 1022;
+        let now = super::super::clock::now(&c);
+        let tomorrow = super::super::clock::moment("2026-11-08", 0);
+        assert_eq!(start_service(&mut c, "131", tomorrow), Ok(tomorrow));
+        assert_eq!(start_service(&mut c, "131", now), Ok(now), "moved to now");
+        assert_eq!(c.lines.iter().find(|x| x.name == "131").unwrap().service_from, Some(now));
+        // (a concession that begins on Monday: not before it)
+        c.concessions.held.push(super::super::concessions::Concession { line: "131".into(), number: "131".into(), from: "2026-11-09".into(), until: "2026-12-09".into(), price: 1.0, direct: false, after: String::new(), options: 0, package: String::new(), with: Vec::new() });
+        assert_eq!(start_service(&mut c, "131", now), Ok(super::super::clock::moment("2026-11-09", 0)));
+    }
+
     #[test]
     fn a_group_name_asks_for_a_size() {
         assert_eq!(wants_size("Gelenkbus"), Some(BusSize::Articulated));
