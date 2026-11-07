@@ -1263,6 +1263,10 @@ fn on_the_server_a_player_takes_a_duty_over_from_the_companys_ai_driver() {
     b.c.together.open_claims = false;
     let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
     assert_eq!((s.duties[0].state, s.duties[0].take_over, s.duties[0].begun, s.duties[0].who.as_str()), (DutyState::Company, true, false, "Agency driver"));
+    // (7 November 2026: the trip it is taken over at - its first, not begun - told)
+    let first = s.duties[0].next.clone().expect("its first trip");
+    assert!(first.dep >= s.duties[0].from && !first.from.is_empty() && !first.to.is_empty(), "{first:?}");
+    assert!(s.duties[0].name.is_empty(), "not planned with RosterFlow Pro: no name");
     let v = ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()));
     assert_eq!(v["state"].as_str(), Some("asked"), "{v}");
     assert_eq!(b.plan().tours[0].duties[0].who, Some(Who::Agency), "the AI driver's until a yes");
@@ -1279,12 +1283,15 @@ fn on_the_server_a_player_takes_a_duty_over_from_the_companys_ai_driver() {
     b.c.clock.minute = 405;
     let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
     assert_eq!((s.duties[0].state, s.duties[0].take_over, s.duties[0].begun), (DutyState::Company, true, true));
+    let next = s.duties[0].next.clone().expect("its next trip");
+    assert!(next.dep >= 405 && next.dep > first.dep, "the next not left yet: {next:?}");
     let v = ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()));
     assert_eq!(v["state"].as_str(), Some("planned"), "{v}");
     let x = b.c.together.claim_of(&duty).cloned().unwrap();
     assert_eq!(x.ai.iter().map(|a| (a.from, a.until, a.why)).collect::<Vec<_>>(), [(0, None, book::LeftWhy::Begun)]);
     let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
     assert_eq!((s.duties[0].state, s.duties[0].begun, s.duties[0].back), (DutyState::Ai, true, true));
+    assert_eq!(s.duties[0].next.as_ref().map(|x| x.dep), Some(next.dep), "his, taken back at the same trip");
     // (given under way by whoever may: the same)
     ask(&mut b, "jan", "release", |r| r.duty = Some(duty.clone()));
     ask(&mut b, "eva", "hello", |_| {});
@@ -1301,7 +1308,14 @@ fn on_the_server_a_player_takes_a_duty_over_from_the_companys_ai_driver() {
     b.c.clock.minute = 445;
     let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
     assert_eq!((s.duties[0].state, s.duties[0].take_over), (DutyState::Company, false));
+    assert_eq!(s.duties[0].next, None, "no trip left to tell");
     assert_eq!(ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()))["error"].as_str(), Some(book::BEGUN));
+    // (7 November 2026: planned with RosterFlow Pro, the name its planning shows it by)
+    use super::super::{autopilot, model::Planner};
+    b.c.game_mode = GameMode::Normal;
+    assert_eq!(autopilot::set_planner(&mut b.c, Planner::Pro), Planner::Pro);
+    let s = snap(&ask(&mut b, "jan", "snapshot", |_| {}));
+    assert!(!s.duties.is_empty() && s.duties.iter().all(|d| d.name.parse::<u32>().is_ok()), "{:?}", s.duties.iter().map(|d| &d.name).collect::<Vec<_>>());
 }
 
 /// (NexiconDK, relief at the stop) Not at his stop in time to take the bus over, the AI drives

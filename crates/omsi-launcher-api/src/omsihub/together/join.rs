@@ -1008,7 +1008,19 @@ fn duty_row(d: &SnapDuty, open_claims: bool, ask: bool) -> Value {
         "state": state, "tone": tone, "acts": acts, "key": format!("{:?}", d.state).to_lowercase(), "guest": d.guest, "who": d.who,
         // (NexiconDK, 3 November 2026, K6: urgent - players only, paid more)
         "urgent": d.urgent,
+        // (NexiconDK, 7 November 2026: the trip it is taken over at, and the name the company's
+        // planning gives it)
+        "next": next_words(d), "name": if d.name.is_empty() { String::new() } else { trf("Duty %{n}", &[("n", &d.name)]) },
     })
+}
+
+/// (NexiconDK, 7 November 2026) The trip a duty is taken over at, in words: its next when it is
+/// under way, else its first (empty: none to tell).
+fn next_words(d: &SnapDuty) -> String {
+    let Some(n) = d.next.as_ref() else { return String::new() };
+    let hhmm = format!("{:02}:{:02}", (n.dep / 60).rem_euclid(24), n.dep.rem_euclid(60));
+    let key = if d.begun || d.state == DutyState::Ai { "Next trip %{time} from %{from} to %{to}" } else { "First trip %{time} from %{from} to %{to}" };
+    trf(key, &[("time", &hhmm), ("from", &n.from), ("to", &n.to)])
 }
 
 /// (NexiconDK, 3 November 2026, K10) The weekdays of a fixed duty (bit 0 Monday), in words.

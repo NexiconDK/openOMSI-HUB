@@ -778,6 +778,13 @@ player's own company - the boss's drivers keep theirs. Tested:
 `together::tests::on_the_server_a_player_takes_a_duty_over_from_the_companys_ai_driver`.
 When none of the AI drivers' duties of the day has a trip left to take over (the evening), the
 Duties tab says so (`join.rs`'s `NO_AI_LEFT`) instead of showing nothing.
+Each such duty (7 November 2026) tells the trip it is taken over at - "Next trip 17:12 from A to
+B" when it is under way (its next trip with passengers that has not left on the company's clock,
+`book::next_trip`, the one his Drive begins at), "First trip …" when not - and, when the company
+plans with RosterFlow Pro, the name the planning shows it by ("Duty 2003", or its own name such as
+"Duty M131-1": `pro_turnus::day_duties`, `pro_cut::number_at`) beside its times. A player's own
+duty the AI drives until he takes it back tells its trip the same way (`book::back_trip`). The
+snapshot carries them as `SnapDuty::next` and `SnapDuty::name` (both optional on the wire).
 
 ### A player in the roster of a coming day (26 October 2026)
 

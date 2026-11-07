@@ -238,7 +238,7 @@ function DutyRow({ d, again, print }) {
   };
   return html`<div class=${'tg-duty ' + d.key} title=${d.title}>
     <${Chip} number=${d.number} colour=${d.colour} />
-    <div class="what"><b>${d.times}</b><span class="cut">${d.route}</span><span class="dim cut">${d.facts}</span></div>
+    <div class="what"><b>${d.times}${d.name && html`<span class="tg-name">${d.name}</span>`}</b><span class="cut">${d.route}</span><span class="dim cut">${d.facts}</span>${d.next && html`<span class="tg-nexttrip cut"><${Icon} name="schedule" size=${14} />${d.next}</span>`}</div>
     <span class=${'state cut t-' + d.tone}>${d.state}</span>
     <span class="acts">${print && !d.single && PRINTED.includes(d.key) && html`<${Btn} icon="print_receipt" title=${print} onClick=${() => openDutyCard(d.duty, { relay: true })} />`}${d.acts.map((a) => html`<${Btn} kind=${a.kind} icon=${a.icon} label=${a.label} onClick=${() => act(a)} />`)}</span>
   </div>`;
@@ -254,8 +254,8 @@ function NextUp({ d, w, again }) {
     again();
   };
   return html`<div class=${'tg-next ' + d.key}>
-    <div class="line"><${Chip} number=${d.number} colour=${d.colour} big=${true} /><div class="when"><b>${d.times}</b><span class="dim">${d.date}</span></div></div>
-    <div class="route"><b class="cut">${d.route}</b><span class="dim cut">${d.title}  ·  ${d.facts}</span><span class=${'cut t-' + d.tone}>${d.state}</span></div>
+    <div class="line"><${Chip} number=${d.number} colour=${d.colour} big=${true} /><div class="when"><b>${d.times}${d.name && html`<span class="tg-name">${d.name}</span>`}</b><span class="dim">${d.date}</span></div></div>
+    <div class="route"><b class="cut">${d.route}</b><span class="dim cut">${d.title}  ·  ${d.facts}</span>${d.next && html`<span class="tg-nexttrip cut"><${Icon} name="schedule" size=${14} />${d.next}</span>`}<span class=${'cut t-' + d.tone}>${d.state}</span></div>
     <div class="acts">${d.acts.map((a) => html`<${Btn} kind=${a.kind} big=${a.act === 'drive'} icon=${a.icon} label=${a.label} onClick=${() => act(a)} />`)}</div>
   </div>`;
 }

@@ -4087,3 +4087,21 @@ _version: 2
   pl: "Bus Company Online zakończył budowę: %{area} poziom %{level} działa już."
   ru: "Bus Company Online завершил строительство: %{area}, уровень %{level}, уже работает."
   uk: "Bus Company Online завершив будівництво: %{area}, рівень %{level}, уже працює."
+# (NexiconDK, 7 November 2026) The trip a duty of the AI's is taken over at, in the Duties tab of
+# a company on Bus Company Online's server (omsihub/together/join.rs next_words).
+"Next trip %{time} from %{from} to %{to}":
+  de: "Nächste Fahrt %{time} ab %{from} nach %{to}"
+  da: "Næste tur %{time} fra %{from} til %{to}"
+  fr: "Prochain trajet %{time} de %{from} à %{to}"
+  nl: "Volgende rit %{time} van %{from} naar %{to}"
+  pl: "Następny kurs %{time} z %{from} do %{to}"
+  ru: "Следующий рейс %{time} из %{from} в %{to}"
+  uk: "Наступний рейс %{time} з %{from} до %{to}"
+"First trip %{time} from %{from} to %{to}":
+  de: "Erste Fahrt %{time} ab %{from} nach %{to}"
+  da: "Første tur %{time} fra %{from} til %{to}"
+  fr: "Premier trajet %{time} de %{from} à %{to}"
+  nl: "Eerste rit %{time} van %{from} naar %{to}"
+  pl: "Pierwszy kurs %{time} z %{from} do %{to}"
+  ru: "Первый рейс %{time} из %{from} в %{to}"
+  uk: "Перший рейс %{time} з %{from} до %{to}"

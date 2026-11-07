@@ -16,7 +16,7 @@ use super::super::plan::{BusOf, DayPlan, Who};
 use super::book::{self, ClaimState, Handed, LeftWhy};
 use super::code;
 use super::roles::{Perm, Role};
-use super::wire::{Card, DriveStart, DutyState, Notice, Request, SnapAsk, SnapBus, SnapDuty, SnapLine, SnapMember, SnapPart, SnapPlayer, SnapDispatch, SnapFixed, SnapResult, SnapTrip, SnapYou, Snapshot, TripList};
+use super::wire::{Card, DriveStart, DutyState, Notice, Request, SnapAsk, SnapBus, SnapDuty, SnapLine, SnapMember, SnapNext, SnapPart, SnapPlayer, SnapDispatch, SnapFixed, SnapResult, SnapTrip, SnapYou, Snapshot, TripList};
 use serde_json::{json, Value};
 
 /// A player who has not been heard from for this long is offline (s).
@@ -1085,6 +1085,41 @@ fn who_of(c: &Company, w: Option<Who>, boss: &str) -> String {
     }
 }
 
+/// (NexiconDK, 7 November 2026) The names RosterFlow Pro shows the duties of plan `p` by, by their
+/// piece (tour `ti`, its duty `k`): kept a while, for every player's snapshot every few seconds
+/// would make the day's duties again (`pro_turnus::day_duties`).
+fn pro_names(c: &Company, p: &DayPlan) -> Vec<((usize, usize), String)> {
+    use std::sync::Mutex;
+    use std::time::{Duration, Instant};
+    type Kept = (String, String, usize, Instant, Vec<((usize, usize), String)>);
+    static KEPT: Mutex<Option<Kept>> = Mutex::new(None);
+    const FOR: Duration = Duration::from_secs(30);
+    let pieces: usize = p.tours.iter().map(|t| t.duties.len()).sum();
+    // (not in the tests: companies alike run side by side there)
+    let keep = !cfg!(test);
+    if let (true, Ok(k)) = (keep, KEPT.lock()) {
+        if let Some((id, date, n, at, names)) = k.as_ref() {
+            if *id == c.id && *date == p.date && *n == pieces && at.elapsed() < FOR {
+                return names.clone();
+            }
+        }
+    }
+    let duties = super::super::pro_turnus::day_duties(c, &p.date, p.tours.iter().map(|t| t.tour.clone()).collect());
+    let mut names = Vec::new();
+    for (ti, t) in p.tours.iter().enumerate() {
+        for k in 0..t.duties.len() {
+            let n = super::super::pro_cut::number_at(p, &duties, ti, k);
+            if let Some(d) = duties.iter().find(|d| n > 0 && d.number == n) {
+                names.push(((ti, k), d.label.clone()));
+            }
+        }
+    }
+    if let (true, Ok(mut k)) = (keep, KEPT.lock()) {
+        *k = Some((c.id.clone(), p.date.clone(), pieces, Instant::now(), names.clone()));
+    }
+    names
+}
+
 /// The company's day as player `guest` sees it (None: the boss's own view of it), with the
 /// notices after `since`: what his permissions let him see.
 pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, since: u64) -> Snapshot {
@@ -1114,6 +1149,9 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
     let now = clock::now(c);
     let colour_of = |line: &str| c.lines.iter().find(|l| l.name.eq_ignore_ascii_case(line)).map(|l| l.colour.clone()).unwrap_or_default();
     if let Some(p) = here.plan {
+        // (NexiconDK, 7 November 2026: the names RosterFlow Pro shows the day's duties by)
+        let named = super::super::pro_duties::on(c).then(|| pro_names(c, p)).unwrap_or_default();
+        let to_next = |x: &super::super::network::PlannedTrip| SnapNext { dep: x.dep, from: x.from.trim().to_string(), to: x.end().trim().to_string() };
         for (ti, t) in p.tours.iter().enumerate() {
             if t.tour.unplanned {
                 continue;
@@ -1149,6 +1187,7 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                     ..Default::default()
                 };
                 let begun = now >= clock::moment(&p.date, d.from as i64);
+                sd.name = named.iter().find(|x| x.0 == (ti, k)).map(|x| x.1.clone()).unwrap_or_default();
                 // (NexiconDK: a single trip of it a player took - `book::Claim::part`)
                 if let Some((a, b)) = claim.and_then(|x| x.part) {
                     let part = &trips[a.min(trips.len())..b.min(trips.len())];
@@ -1164,6 +1203,9 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                     sd.handed = a.why == LeftWhy::HandedOver;
                     sd.ai_from = trips.get(a.from).map(|x| x.dep);
                     sd.back = mine && book::back_at(c, Some(p), &r, now).is_some();
+                    if sd.back {
+                        sd.next = book::back_trip(c, Some(p), &r, now).as_ref().map(to_next);
+                    }
                 }
                 (sd.state, sd.who, sd.why) = match claim {
                     Some(x) if mine => (state_of(x), c.together.name_of(x.guest), String::new()),
@@ -1175,6 +1217,9 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                     None if book::takes_over(c, t, k) => {
                         sd.begun = begun;
                         sd.take_over = !begun || book::joined_part(c, p, t, k, now).is_some();
+                        if sd.take_over {
+                            sd.next = book::next_trip(trips, &p.date, 0, now).map(|i| to_next(&trips[i]));
+                        }
                         (DutyState::Company, who_of(c, d.who, &boss), String::new())
                     }
                     None if book::driver_of(c, t, k).is_some() => (DutyState::Company, who_of(c, d.who, &boss), String::new()),

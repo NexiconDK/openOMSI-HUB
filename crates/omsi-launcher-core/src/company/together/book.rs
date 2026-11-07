@@ -497,7 +497,7 @@ pub fn joined_part(c: &Company, p: &DayPlan, t: &DayTour, k: usize, now: i64) ->
     }
     let d = &t.duties[k];
     let trips = &t.tour.trips[d.start..d.end];
-    trips.iter().any(|x| reportable(x) && clock::moment(&p.date, x.dep as i64) >= now).then(|| AiPart { from: 0, until: None, why: LeftWhy::Begun, at: 0, minute: (now - clock::moment(&p.date, 0)) as i32, dropped: false })
+    next_trip(trips, &p.date, 0, now).is_some().then(|| AiPart { from: 0, until: None, why: LeftWhy::Begun, at: 0, minute: (now - clock::moment(&p.date, 0)) as i32, dropped: false })
 }
 
 /// The minutes of the day `p` a claim of duty `r` takes: the duty's, or those of its trips a
@@ -1259,6 +1259,13 @@ fn reported(c: &Company, r: &DutyRef) -> Vec<i32> {
     trips_of(c, r).map(|t| (t.trip.departure / 60.0).round() as i32).collect()
 }
 
+/// (NexiconDK, 7 November 2026) The trip of `trips` (a duty's, on `date`) from `from` on that a
+/// player takes it over at on the company's clock (`now`, `clock::now`): the first with
+/// passengers that has not left yet (an index into them).
+pub fn next_trip(trips: &[PlannedTrip], date: &str, from: usize, now: i64) -> Option<usize> {
+    (from..trips.len()).find(|&i| reportable(&trips[i]) && clock::moment(date, trips[i].dep as i64) >= now)
+}
+
 /// A trip a player reports (with passengers, not a trip's second part).
 fn reportable(x: &PlannedTrip) -> bool {
     x.counts() && !x.is_second()
@@ -1510,7 +1517,15 @@ pub fn handed_over(c: &mut Company, p: Option<&DayPlan>, r: &DutyRef, guest: u32
 pub fn back_at(c: &Company, p: Option<&DayPlan>, r: &DutyRef, now: i64) -> Option<usize> {
     let a = c.together.claim_of(r)?.ai_now()?;
     let trips = trips_now(c, p, r);
-    (a.from..trips.len()).find(|&i| reportable(&trips[i]) && clock::moment(&r.date, trips[i].dep as i64) >= now)
+    next_trip(&trips, &r.date, a.from, now)
+}
+
+/// (NexiconDK, 7 November 2026) The trip player's duty `r` the AI drives is taken back at
+/// (`back_at`): the trip itself.
+pub fn back_trip(c: &Company, p: Option<&DayPlan>, r: &DutyRef, now: i64) -> Option<PlannedTrip> {
+    let a = c.together.claim_of(r)?.ai_now()?;
+    let trips = trips_now(c, p, r);
+    next_trip(&trips, &r.date, a.from, now).map(|i| trips[i].clone())
 }
 
 fn duty_ref(date: &str, line: &str, tour: &str, k: usize) -> DutyRef {

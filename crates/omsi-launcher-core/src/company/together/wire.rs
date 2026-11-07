@@ -173,6 +173,26 @@ pub struct SnapDuty {
     /// the urgent bonus to a player (`live_more::urgent`).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub urgent: bool,
+    /// (NexiconDK, 7 November 2026) The trip with passengers it is taken over at - its next on
+    /// the company's clock when it is under way, else its first (`book::next_trip`): for the AI's
+    /// duties to take over, and the player's own the AI drives until he takes it back.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub next: Option<SnapNext>,
+    /// (NexiconDK, 7 November 2026) The name the company's planning shows the duty by: RosterFlow
+    /// Pro's own name of it, else its number ("2003"); empty when the company does not plan with
+    /// RosterFlow Pro.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub name: String,
+}
+
+/// (NexiconDK, 7 November 2026) A trip to take a duty over at: when it leaves (minutes of the
+/// day), from where and to where.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct SnapNext {
+    pub dep: i32,
+    pub from: String,
+    pub to: String,
 }
 
 /// (NexiconDK, single trips) The trips of a duty a player took on their own: from where and when
