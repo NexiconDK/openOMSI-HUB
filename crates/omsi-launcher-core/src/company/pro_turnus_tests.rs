@@ -19,7 +19,7 @@ fn d_(number: u32, start: i32, end: i32) -> ProDuty {
 }
 
 fn d(number: u32, start: i32, end: i32) -> ProDuty {
-    ProDuty { number, start, end, work: end - start, paid: end - start, kind: pd::Kind::Whole, pieces: Vec::new() }
+    ProDuty { number, start, end, work: end - start, paid: end - start, kind: pd::Kind::Whole, pieces: Vec::new(), label: number.to_string(), lines: Vec::new(), from_stop: String::new(), to_stop: String::new() }
 }
 
 /// Monday to Friday two early duties (05:00-13:00, 06:00-14:00) and two late (13:00-21:00,

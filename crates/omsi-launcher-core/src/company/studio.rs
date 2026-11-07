@@ -1212,6 +1212,31 @@ fn starts(t: &TourOfDay) -> Vec<usize> {
     network::duties_of(t).iter().skip(1).map(|r| r.start).collect()
 }
 
+/// (NexiconDK, 7 November 2026, round K: RosterFlow Pro's "Afgange" tab) Block `i`'s duties
+/// begin with its trips `at` (the first left out, in order) - before any trip, a relief point or
+/// not: the planner's choice, marked on the duty (`pro_duties::M_NOT_RELIEF`). The bus and the
+/// pieces whose cuts change must not be locked.
+pub fn set_cuts_free(c: &mut Company, weekday: u8, tours: &[TourOfDay], i: usize, at: &[usize]) -> Result<(), &'static str> {
+    let t = tours.get(i).ok_or(NOT_FOUND)?;
+    if at.iter().any(|&k| k == 0 || k >= t.trips.len()) {
+        return Err(BETWEEN);
+    }
+    // (a piece whose first or last trip changes is guarded: the bus's other cuts stay)
+    for (k, r) in network::duties_of(t).iter().enumerate() {
+        let touched = (r.start > 0 && !at.contains(&r.start)) || at.iter().any(|&x| x > r.start && x < r.end) || (r.end < t.trips.len() && !at.contains(&r.end));
+        if touched {
+            guard_piece(c, weekday, tours, i, k)?;
+        }
+    }
+    set_cuts(c, weekday, tours, i, at);
+    Ok(())
+}
+
+/// The trips block `t`'s duties begin with now (the first left out): `starts`.
+pub fn starts_of(t: &TourOfDay) -> Vec<usize> {
+    starts(t)
+}
+
 /// The block's cuts kept as these starts.
 fn set_cuts(c: &mut Company, weekday: u8, tours: &[TourOfDay], i: usize, at: &[usize]) {
     let t = &tours[i];

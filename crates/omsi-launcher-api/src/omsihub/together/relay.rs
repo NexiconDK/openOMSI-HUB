@@ -223,6 +223,9 @@ fn rf_act_need(act: &str) -> Need {
         "lock_block" | "lock_duty" | "lock_rows" | "unassign_rows" | "unassign_duties" | "spare" | "spare_name" | "spare_remove" | "custom_delete" | "note" | "travel_event" | "dismiss" | "drop" => PLANS,
         // (RosterFlow Pro's Vognløb and Vagter tabs)
         "pro_cut" | "pro_pool" | "pro_dissolve" | "pro_new" | "pro_add" | "pro_auto" | "pro_rules" => PLANS,
+        // (round K: the Afgange tab - a duty looked at first changes nothing; built or named, it does)
+        "pro_build_preview" => RF_VIEW,
+        "pro_build" | "pro_name" => PLANS,
         _ => Never,
     }
 }

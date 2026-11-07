@@ -15,6 +15,8 @@
 //   (a chip), the chosen duty's checklist beside the table, the blocks' list folded at will, and
 //   the game's plan beside the duties ("Compare with the game's plan").
 //
+// * Round K: a duty's own name instead of its number ("M131-1"), set on its checklist card.
+//
 // Every edit is RosterFlow's (`rf_act`): in the draft, with Undo, until SAVE.
 
 import { html } from '../../../vendor/preact-htm.js';
@@ -35,16 +37,19 @@ export const PRO_CALENDAR = 14;
 export const PRO_AVAIL = 15;
 /** (Round I) The Busdisponering tab (`buses.js`). */
 export const PRO_BUSES = 16;
+/** (Round K) The Afgange tab (`afgange.js`). */
+export const PRO_DEPARTURES = 17;
 
 /** The Pro tabs of the title bar: those built, and those of the steps to come. */
 export const PRO_TABS = [
   { view: PRO_BLOCKS, n: 1, icon: 'airport_shuttle', label: 'Blocks', anchor: 'rf-tab-pro-blocks' },
   { view: PRO_DUTIES, n: 2, icon: 'badge', label: 'Duties', anchor: 'rf-tab-pro-duties' },
-  { view: PRO_ROTA, n: 3, icon: 'autorenew', label: 'Rota', anchor: 'rf-tab-pro-rota' },
-  { view: PRO_DAILY, n: 4, icon: 'today', label: 'Daily operations', anchor: 'rf-tab-pro-daily' },
-  { view: PRO_CALENDAR, n: 5, icon: 'event', label: 'Calendar', anchor: 'rf-tab-pro-calendar' },
-  { view: PRO_AVAIL, n: 6, icon: 'rf_can', label: 'Can work', anchor: 'rf-tab-pro-avail' },
-  { view: PRO_BUSES, n: 7, icon: 'departure_board', label: 'Bus dispatch', anchor: 'rf-tab-pro-buses' },
+  { view: PRO_DEPARTURES, n: 3, icon: 'view_list', label: 'Departures', anchor: 'rf-tab-pro-departures' },
+  { view: PRO_ROTA, n: 4, icon: 'autorenew', label: 'Rota', anchor: 'rf-tab-pro-rota' },
+  { view: PRO_DAILY, n: 5, icon: 'today', label: 'Daily operations', anchor: 'rf-tab-pro-daily' },
+  { view: PRO_CALENDAR, n: 6, icon: 'event', label: 'Calendar', anchor: 'rf-tab-pro-calendar' },
+  { view: PRO_AVAIL, n: 7, icon: 'rf_can', label: 'Can work', anchor: 'rf-tab-pro-avail' },
+  { view: PRO_BUSES, n: 8, icon: 'departure_board', label: 'Bus dispatch', anchor: 'rf-tab-pro-buses' },
 ];
 
 /** "07:05" on the clock (minutes of the service day). */
@@ -297,13 +302,24 @@ function DutyTable({ span, duties, chosen, onChoose, readOnly, slim }) {
   </div>`;
 }
 
-/** The chosen duty's checklist and price (beside the table). */
-function DutyCard({ duty }) {
+/** (Round K) A duty's own name, set where it is shown: the duty's first piece names it. */
+function NameField({ duty }) {
+  const piece = duty.pieces?.[0];
+  if (!piece) return null;
+  const set = (v) => {
+    if ((v || '').trim() !== (duty.name || '')) proEdit('pro_name', { tour: piece.tour, duty: piece.duty, name: v });
+  };
+  return html`<label class="pro-name"><span>${tr('Name')}</span><input type="text" maxlength="12" key=${duty.row + ':' + (duty.name || '')} defaultValue=${duty.name || ''} placeholder=${tr('its number')} onBlur=${(e) => set(e.target.value)} onKeyDown=${(e) => e.key === 'Enter' && e.target.blur()} /></label>`;
+}
+
+/** The chosen duty's checklist and price (beside the table; `named`: its name can be set here). */
+export function DutyCard({ duty, named }) {
   if (!duty) return html`<div class="pro-card pro-check empty"><div class="pro-caps">${tr('Checklist')}</div><div class="pro-dim">${tr('Choose a duty: each rule is told here, kept or broken, and what the duty costs.')}</div></div>`;
   const mark = (l) => (l === 'ok' ? '✓' : l === 'bad' ? '✗' : l === 'info' ? '◦' : '!');
   return html`<div class="pro-card pro-check">
     <h3>${duty.title || tr('Chosen: duty %{d}', { d: duty.number })}${duty.line_change ? html`<em> · ${tr('changes line')}</em>` : ''}</h3>
     <div class="pro-sub">${duty.sub || duty.detail}</div>
+    ${named && html`<${NameField} duty=${duty} />`}
     <div class="pro-caps">${tr('Checklist')}</div>
     ${(duty.checks || []).map((k) => html`<div class=${'pro-ck ' + k.level}><span class="m">${mark(k.level)}</span><span class="t">${k.title}</span><em>${k.text}</em></div>`)}
     ${duty.price_parts && html`<div class="pro-caps" style="margin-top:12px">${tr('Price')}</div>
@@ -358,6 +374,6 @@ function Duties({ data, pro }) {
       : html`<div class="pro-caps head">${tr('Duties')} · ${pro.duties.length} · ${pro.pool.length ? tr('every piece in a duty but %{n}', { n: pro.pool.length }) : tr('every piece in a duty')} · ${tr('in the order they sign on')}</div>
         <div class="pro-duties">
           <${DutyTable} span=${span} duties=${pro.duties} chosen=${s.duty} onChoose=${pick} />
-          <div class="pro-aside"><${DutyCard} duty=${duty} /></div>
+          <div class="pro-aside"><${DutyCard} duty=${duty} named /></div>
         </div>`}`;
 }

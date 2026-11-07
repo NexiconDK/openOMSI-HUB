@@ -49,6 +49,19 @@ pub struct DutyNumber {
     pub number: u32,
 }
 
+/// (NexiconDK, 7 November 2026, round K) The planner's own name of a duty on a weekday's plan
+/// ("M131-1"), shown instead of its number - kept by a piece of the duty, so the name follows the
+/// duty however its pieces and its number change (`name_of`, `set_name`).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+pub struct DutyName {
+    pub weekday: u8,
+    pub piece: PieceRef,
+    pub name: String,
+}
+
+/// The longest a duty's own name may be.
+pub const NAME_MAX: usize = 12;
+
 /// The least time a driver needs to change from one piece of his duty to the next: at the same
 /// stop, and between two stops (walking; a relief point's own travel time when it is longer).
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
@@ -232,7 +245,198 @@ pub fn number_rows(c: &Company, wd: u8, tours: &[TourOfDay], shaped: &mut [Shape
             s.number = n;
         }
     }
+    // (round K: the planner's own names)
+    for (row, s) in shaped.iter_mut().enumerate() {
+        if s.spare.is_none() && !pool[row] {
+            s.name = name_of(c, wd, tours, s);
+        }
+    }
 }
+
+// --- the duties' own names (round K) -------------------------------------------------------------
+
+pub const NAME_LONG: &str = "A duty's name is at most 12 characters.";
+pub const NAME_TAKEN: &str = "Another duty of the day has this name already.";
+
+/// The planner's own name of duty `s` of weekday `wd` (`tours` its blocks): the name kept by one
+/// of its pieces.
+pub fn name_of(c: &Company, wd: u8, tours: &[TourOfDay], s: &Shaped) -> Option<String> {
+    let pieces = pieces_of(tours, s);
+    sheet(c).names.iter().find(|n| n.weekday == wd && pieces.iter().any(|p| p.is(&n.piece))).map(|n| n.name.clone())
+}
+
+/// The pieces of the duty piece `p` (block, piece) is in, as they are now: its joined duty's, or
+/// itself.
+fn duty_pieces(c: &Company, wd: u8, tours: &[TourOfDay], p: (usize, usize)) -> Result<Vec<PieceRef>, &'static str> {
+    let me = piece(tours, p)?;
+    Ok(c.planning.joined.iter().find(|j| j.weekday == wd && j.pieces.iter().any(|x| x.is(&me))).map(|j| j.pieces.clone()).unwrap_or_else(|| vec![me]))
+}
+
+/// Give the duty piece `p` is in the name `name` (trimmed; empty: its number again). A name is at
+/// most `NAME_MAX` characters and no other duty of the weekday has it (whatever its case).
+pub fn set_name(c: &mut Company, wd: u8, tours: &[TourOfDay], p: (usize, usize), name: &str) -> Result<(), &'static str> {
+    let name = name.trim();
+    if name.chars().count() > NAME_MAX {
+        return Err(NAME_LONG);
+    }
+    let pieces = duty_pieces(c, wd, tours, p)?;
+    let mine = |n: &DutyName| n.weekday == wd && pieces.iter().any(|x| x.is(&n.piece));
+    if !name.is_empty() && sheet(c).names.iter().any(|n| !mine(n) && n.weekday == wd && st::piece_at(tours, &n.piece).is_some() && n.name.trim().eq_ignore_ascii_case(name)) {
+        return Err(NAME_TAKEN);
+    }
+    c.planning.flow.sheet.names.retain(|n| !mine(n));
+    if !name.is_empty() {
+        // (kept by the duty's first piece in the day)
+        let first = pieces.iter().filter_map(|x| Some((piece_time(tours, st::piece_at(tours, x)?)?.0, x))).min_by_key(|x| x.0).map(|x| x.1.clone()).unwrap_or_else(|| pieces[0].clone());
+        c.planning.flow.sheet.names.push(DutyName { weekday: wd, piece: first, name: name.to_string() });
+    }
+    Ok(())
+}
+
+/// The name a duty of `date` is shown by, by its number (`number` its kept number, as the rota,
+/// the day's operations and the messages know it): its own name, else the number.
+pub fn label_of(c: &Company, lines: &[LineInfo], date: &str, number: u32) -> String {
+    if on(c) && !sheet(c).names.is_empty() {
+        let b = rf::board(c, lines, date);
+        if let Some((row, s)) = b.shaped.iter().enumerate().find(|(row, s)| s.spare.is_none() && number_of(s, *row) == number) {
+            return s.label(row);
+        }
+    }
+    number.to_string()
+}
+
+/// The name duty `n` of `date` is told by in a message (no timetable at hand): the name kept by
+/// the piece its number is kept by, else the number.
+pub fn shown_number(c: &Company, date: &str, n: u32) -> String {
+    let wd = super::plandays::slot_of(c, date);
+    let sh = sheet(c);
+    sh.numbers.iter().find(|x| x.weekday == wd && x.number == n).and_then(|x| sh.names.iter().find(|m| m.weekday == wd && m.piece.is(&x.key))).map(|m| m.name.clone()).unwrap_or_else(|| n.to_string())
+}
+
+// --- a duty built from departures (round K: the "Afgange" tab) ----------------------------------
+
+pub const NO_DEPARTURE: &str = "Choose the departures of the duty first.";
+pub const BUILD_OVERLAP: &str = "Two of the departures chosen are at the same time: one driver cannot drive both.";
+
+/// The longest a bus stands between a run without passengers and the duty's trips for the run to
+/// go with them (`run_of`), in minutes.
+pub const RUN_GAP: i32 = 30;
+
+/// The trips of block `i` a duty built of departures `js` (trips of it) takes: from the first to
+/// the last chosen, and the runs without passengers just before and after them that the bus goes
+/// on with (at most `RUN_GAP` between) - its pull-out and pull-in, its run empty to the first trip.
+pub fn run_of(t: &TourOfDay, js: &[usize]) -> Option<(usize, usize)> {
+    let (mut a, mut b) = (*js.iter().min()?, *js.iter().max()?);
+    if b >= t.trips.len() {
+        return None;
+    }
+    // (only the runs the bus goes on with: one after a long stand - a pull-in, then hours at the
+    // depot - is not the duty's)
+    while a > 0 && !t.trips[a - 1].counts() && t.trips[a].dep - t.trips[a - 1].arr <= RUN_GAP {
+        a -= 1;
+    }
+    while b + 1 < t.trips.len() && !t.trips[b + 1].counts() && t.trips[b + 1].dep - t.trips[b].arr <= RUN_GAP {
+        b += 1;
+    }
+    Some((a, b))
+}
+
+/// The runs of a duty built of the departures `trips` (block, trip) of `tours`: each block's
+/// trips from `run_of`, in order of time; refused when two of them are at the same time.
+pub fn runs_of(tours: &[TourOfDay], trips: &[(usize, usize)]) -> Result<Vec<(usize, usize, usize)>, &'static str> {
+    let mut blocks: Vec<usize> = trips.iter().map(|x| x.0).collect();
+    blocks.sort_unstable();
+    blocks.dedup();
+    if blocks.is_empty() {
+        return Err(NO_DEPARTURE);
+    }
+    let mut runs: Vec<(usize, usize, usize)> = Vec::new();
+    for i in blocks {
+        let t = tours.get(i).ok_or(st::NOT_FOUND)?;
+        let js: Vec<usize> = trips.iter().filter(|x| x.0 == i).map(|x| x.1).collect();
+        let (a, b) = run_of(t, &js).ok_or(st::NOT_FOUND)?;
+        runs.push((i, a, b));
+    }
+    let time = |r: &(usize, usize, usize)| -> (i32, i32) {
+        let t = &tours[r.0];
+        (t.trips[r.1].dep, t.trips[r.1..=r.2].iter().map(|x| x.arr).max().unwrap_or(0))
+    };
+    runs.sort_by_key(|r| time(r).0);
+    for w in runs.windows(2) {
+        if time(&w[1]).0 < time(&w[0]).1 {
+            return Err(BUILD_OVERLAP);
+        }
+    }
+    Ok(runs)
+}
+
+/// Build a duty of the departures `trips` (block, trip) of weekday `wd` (`tours` its blocks as they
+/// are): each block cut before and after its trips (`run_of`) at whatever trip - a relief point or
+/// not -, those pieces out of the duties and the pool they were in (a duty they were part of
+/// keeps the rest; what a cut leaves of a piece after them goes to the pool), and the pieces one
+/// duty. Named `name` when it is not empty. Returns the duty's pieces.
+pub fn build_duty(c: &mut Company, wd: u8, tours: &[TourOfDay], trips: &[(usize, usize)], name: &str) -> Result<Vec<PieceRef>, &'static str> {
+    let runs = runs_of(tours, trips)?;
+    if name.trim().chars().count() > NAME_MAX {
+        return Err(NAME_LONG);
+    }
+    let mut now = tours.to_vec();
+    let mut mine: Vec<PieceRef> = Vec::new();
+    let mut left: Vec<PieceRef> = Vec::new();
+    for &(i, a, b) in &runs {
+        if rf::block_locked(c, wd, &now[i].line, &now[i].tour) {
+            return Err(st::LOCKED);
+        }
+        let was = st::starts_of(&now[i]);
+        let mut at: Vec<usize> = was.iter().copied().filter(|&x| x <= a || x > b + 1).collect();
+        if a > 0 {
+            at.push(a);
+        }
+        if b + 1 < now[i].trips.len() {
+            at.push(b + 1);
+        }
+        at.sort_unstable();
+        at.dedup();
+        if at != was {
+            st::set_cuts_free(c, wd, &now, i, &at)?;
+            now[i].cuts = Some(at.clone());
+        }
+        let pieces = network::duties_of(&now[i]);
+        let k = pieces.iter().position(|r| r.start == a).ok_or(st::NOT_FOUND)?;
+        mine.push(st::piece_ref(&now, i, k).ok_or(st::NOT_FOUND)?);
+        // (the piece a new cut after the run begins: to the pool)
+        if b + 1 < now[i].trips.len() && !was.contains(&(b + 1)) {
+            if let Some(k2) = pieces.iter().position(|r| r.start == b + 1) {
+                left.extend(st::piece_ref(&now, i, k2));
+            }
+        }
+    }
+    // (the pieces out of the duties and the pool they were in)
+    for j in c.planning.joined.iter_mut().filter(|j| j.weekday == wd) {
+        j.pieces.retain(|p| !mine.iter().any(|m| m.is(p)));
+    }
+    c.planning.joined.retain(|j| j.weekday != wd || j.pieces.len() > 1);
+    for p in &mine {
+        take_from_pool(c, wd, p);
+    }
+    for p in left {
+        // (a piece left over that is in a duty still stays in it)
+        if !c.planning.joined.iter().any(|j| j.weekday == wd && j.pieces.iter().any(|x| x.is(&p))) {
+            add_pool(c, wd, p);
+        }
+    }
+    if mine.len() > 1 {
+        c.planning.joined.push(JoinedDuty { weekday: wd, pieces: mine.clone() });
+    }
+    // (its name: kept by its first piece; a name another duty has is refused)
+    let name = name.trim();
+    if !name.is_empty() {
+        let first = st::piece_at(&now, &mine[0]).ok_or(st::NOT_FOUND)?;
+        set_name(c, wd, &now, first, name)?;
+    }
+    Ok(mine)
+}
+
 
 /// The number duty `row` of the board shows.
 pub fn number_of(s: &Shaped, row: usize) -> u32 {
@@ -469,6 +673,8 @@ pub fn clear_pool(c: &mut Company, wd: u8) {
 pub fn tidy_pool(c: &mut Company, wd: u8, tours: &[TourOfDay]) {
     let joined: Vec<PieceRef> = c.planning.joined.iter().filter(|j| j.weekday == wd).flat_map(|j| j.pieces.iter().cloned()).collect();
     c.planning.flow.sheet.pool.retain(|x| x.weekday != wd || (st::piece_at(tours, &x.piece).is_some() && !joined.iter().any(|j| j.is(&x.piece))));
+    // (round K: a name whose piece is gone goes with it)
+    c.planning.flow.sheet.names.retain(|n| n.weekday != wd || st::piece_at(tours, &n.piece).is_some());
 }
 
 /// "Make duties automatically": RosterFlow's Optimise of the duties alone (the blocks kept), the
@@ -565,6 +771,9 @@ pub const M_SPREAD: &str = "A split duty spread over %{time}, at most %{max}";
 pub const M_CHANGE: &str = "%{have} to change from %{from} to %{to}, %{need} needed";
 pub const M_CHANGE_SAME: &str = "%{have} to change buses at %{stop}, %{need} needed";
 pub const M_WEEKEND_SPLIT: &str = "Split duties do not run at the weekend";
+/// (Round K) A piece begun or ended at a stop that is no relief point (built in "Afgange").
+pub const M_NOT_RELIEF_ON: &str = "Takes over the bus at %{stop} at %{time}, which is no relief point";
+pub const M_NOT_RELIEF_OFF: &str = "Hands over the bus at %{stop} at %{time}, which is no relief point";
 
 /// A mark of a duty: what it breaks, red (`hard`) or yellow.
 #[derive(Clone, Debug, PartialEq)]
@@ -594,6 +803,17 @@ pub fn marks(c: &Company, board: &Board, row: usize) -> Vec<Mark> {
     if kind_of(s) == Kind::Split && day_type(c, board.weekday) != 0 {
         out.push(Mark { hard: false, text: M_WEEKEND_SPLIT, args: Vec::new() });
     }
+    // (round K: a piece begun or ended where no relief point is - yellow, the planner's choice)
+    for sp in &s.spans {
+        let Some(t) = board.tours.get(sp.tour) else { continue };
+        let Some(r) = network::duties_of(t).get(sp.duty).cloned() else { continue };
+        if r.start > 0 && !rf::relief_ok(c, &board.tours, &t.trips[r.start - 1], &t.trips[r.start]) {
+            out.push(Mark { hard: false, text: M_NOT_RELIEF_ON, args: vec![("stop", t.trips[r.start].from.trim().to_string()), ("time", rf::clock(t.trips[r.start].dep))] });
+        }
+        if r.end < t.trips.len() && r.end > 0 && !rf::relief_ok(c, &board.tours, &t.trips[r.end - 1], &t.trips[r.end]) {
+            out.push(Mark { hard: false, text: M_NOT_RELIEF_OFF, args: vec![("stop", t.trips[r.end - 1].end().trim().to_string()), ("time", rf::clock(t.trips[r.end - 1].arr))] });
+        }
+    }
     let change = c.planning.flow.prefs.change;
     let mut spans = s.spans.clone();
     spans.sort_by_key(|x| x.from);
@@ -622,7 +842,7 @@ pub fn marks(c: &Company, board: &Board, row: usize) -> Vec<Mark> {
 
 /// Every English text of RosterFlow Pro's duties (for the translations' check).
 pub fn texts() -> Vec<&'static str> {
-    let mut v = vec![IN_POOL, NOT_IN_POOL, OVERLAP, NO_PIECE, M_SPREAD, M_CHANGE, M_CHANGE_SAME, M_WEEKEND_SPLIT];
+    let mut v = vec![IN_POOL, NOT_IN_POOL, OVERLAP, NO_PIECE, M_SPREAD, M_CHANGE, M_CHANGE_SAME, M_WEEKEND_SPLIT, M_NOT_RELIEF_ON, M_NOT_RELIEF_OFF, NAME_LONG, NAME_TAKEN, NO_DEPARTURE, BUILD_OVERLAP];
     v.extend(Kind::LABELS);
     v
 }

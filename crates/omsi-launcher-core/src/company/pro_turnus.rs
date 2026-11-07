@@ -561,6 +561,21 @@ pub struct ProDuty {
     pub kind: pd::Kind,
     /// Its pieces: the block's line, tour, and the piece of it.
     pub pieces: Vec<(String, String, usize)>,
+    /// (Round K) The name it is shown by: the planner's own (`pro_duties::DutyName`), else its
+    /// number.
+    pub label: String,
+    /// (Round K) The lines it runs, in order ("131", "NE2 🌙" - a night line with its moon), and
+    /// the stops it begins and ends at.
+    pub lines: Vec<String>,
+    pub from_stop: String,
+    pub to_stop: String,
+}
+
+impl ProDuty {
+    /// The name it is shown by (its number when it has no label).
+    pub fn shown(&self) -> String {
+        if self.label.is_empty() { self.number.to_string() } else { self.label.clone() }
+    }
 }
 
 /// The duties of a board, by their numbers (the spare duties left out).
@@ -569,14 +584,41 @@ pub fn duties_of_board(b: &Board) -> Vec<ProDuty> {
         .iter()
         .enumerate()
         .filter(|(_, s)| s.spare.is_none())
-        .map(|(row, s)| ProDuty {
-            number: pd::number_of(s, row),
-            start: s.start,
-            end: s.end,
-            work: s.work,
-            paid: s.paid,
-            kind: pd::kind_of(s),
-            pieces: s.spans.iter().filter_map(|sp| b.tours.get(sp.tour).map(|t| (t.line.clone(), t.tour.clone(), sp.duty))).collect(),
+        .map(|(row, s)| {
+            let mut spans = s.spans.clone();
+            spans.sort_by_key(|x| x.from);
+            let trips = |sp: &rf::Span| -> Vec<super::network::PlannedTrip> {
+                b.tours.get(sp.tour).and_then(|t| super::network::duties_of(t).get(sp.duty).cloned().and_then(|r| t.trips.get(r).map(|x| x.to_vec()))).unwrap_or_default()
+            };
+            let mut lines: Vec<String> = Vec::new();
+            for sp in &spans {
+                let Some(t) = b.tours.get(sp.tour) else { continue };
+                let ts = trips(sp);
+                let mut add = |l: String| {
+                    if !l.is_empty() && !lines.contains(&l) {
+                        lines.push(l);
+                    }
+                };
+                add(t.number.trim().to_string());
+                for o in super::pro_dutyplan::piece_lines(t, &ts).1 {
+                    add(if o.night { format!("{} 🌙", o.number) } else { o.number.clone() });
+                }
+            }
+            let from_stop = spans.first().map(|sp| trips(sp)).and_then(|ts| ts.iter().find(|x| x.counts()).or(ts.first()).map(|x| x.from.trim().to_string())).unwrap_or_default();
+            let to_stop = spans.last().map(|sp| trips(sp)).and_then(|ts| ts.iter().rev().find(|x| x.counts()).or(ts.last()).map(|x| x.end().trim().to_string())).unwrap_or_default();
+            ProDuty {
+                number: pd::number_of(s, row),
+                start: s.start,
+                end: s.end,
+                work: s.work,
+                paid: s.paid,
+                kind: pd::kind_of(s),
+                pieces: s.spans.iter().filter_map(|sp| b.tours.get(sp.tour).map(|t| (t.line.clone(), t.tour.clone(), sp.duty))).collect(),
+                label: s.label(row),
+                lines,
+                from_stop,
+                to_stop,
+            }
         })
         .collect()
 }
@@ -597,16 +639,22 @@ pub fn day_duties(c: &Company, date: &str, tours: Vec<TourOfDay>) -> Vec<ProDuty
         let r = super::network::duties_of(t).get(*k)?.clone();
         Some((t.line.clone(), t.tour.clone(), t.trips[r.start].dep, t.trips[r.start].name.clone()))
     };
-    let was: Vec<((String, String, i32, String), u32)> = duties_of_board(&rf::board_of(c, slot, uncut.clone(), Vec::new())).iter().filter_map(|d| Some((first(&uncut, d)?, d.number))).collect();
+    let was: Vec<((String, String, i32, String), u32, String)> = duties_of_board(&rf::board_of(c, slot, uncut.clone(), Vec::new())).iter().filter_map(|d| Some((first(&uncut, d)?, d.number, d.label.clone()))).collect();
     let mut v = duties_of_board(&rf::board_of(c, slot, tours.clone(), Vec::new()));
     for (i, d) in v.iter_mut().enumerate() {
         let Some(key) = first(&tours, d) else { continue };
-        if let Some((_, n)) = was.iter().find(|w| w.0 == key) {
+        if let Some((_, n, label)) = was.iter().find(|w| w.0 == key) {
             d.number = *n;
+            d.label = label.clone();
             continue;
         }
-        let part = super::pro_cut::splits_on(c, date).find_map(|s| s.parts.iter().position(|p| p.pieces.first().is_some_and(|k| (&k.line, &k.tour, k.dep, &k.name) == (&key.0, &key.1, key.2, &key.3))).map(|j| s.n * 10 + j as u32));
-        d.number = part.unwrap_or(99_000 + i as u32);
+        // (a part cut off: its duty's name or number and its letter)
+        let part = super::pro_cut::splits_on(c, date).find_map(|s| s.parts.iter().position(|p| p.pieces.first().is_some_and(|k| (&k.line, &k.tour, k.dep, &k.name) == (&key.0, &key.1, key.2, &key.3))).map(|j| (s.n, j)));
+        d.number = part.map(|(n, j)| n * 10 + j as u32).unwrap_or(99_000 + i as u32);
+        d.label = match part {
+            Some((n, j)) => format!("{}{}", was.iter().find(|w| w.1 == n).map(|w| w.2.clone()).unwrap_or_else(|| n.to_string()), super::pro_cut::letter(j)),
+            None => d.number.to_string(),
+        };
     }
     v
 }

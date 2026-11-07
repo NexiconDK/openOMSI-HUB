@@ -1510,7 +1510,7 @@ fn act(s: &mut Session, r: &mut Rf, by: live::Editor, args: &Value) -> Answer {
     let label_of = |i: usize| tours.get(i).map(block_label).unwrap_or_default();
     Ok(match what.as_str() {
         // (RosterFlow Pro's tabs Vognløb and Vagter: `pro`)
-        "pro_cut" | "pro_pool" | "pro_dissolve" | "pro_new" | "pro_add" | "pro_auto" | "pro_rules" => pro::act(s, r, &k, &what, args),
+        "pro_cut" | "pro_pool" | "pro_dissolve" | "pro_new" | "pro_add" | "pro_auto" | "pro_rules" | "pro_build_preview" | "pro_build" | "pro_name" => pro::act(s, r, &k, &what, args),
         "optimise" => optimise(r, &k),
         "accept" => match r.proposal.take() {
             // (nothing better was found: the day as it is, nothing to accept)

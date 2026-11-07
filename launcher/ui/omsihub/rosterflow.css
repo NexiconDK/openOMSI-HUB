@@ -1570,3 +1570,53 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .bd-note { position: absolute; left: 18px; bottom: 14px; z-index: 20; display: flex; align-items: center; gap: 10px; padding: 7px 8px 7px 14px; border-radius: 16px; background: rgba(40, 46, 62, 0.97); color: #e6e9f2; font-size: 11px; font-weight: 600; box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45); }
 .bd-note .rf-link { color: #8fc1ff; font-weight: 800; }
 .bd-page { position: absolute; }
+
+/* RosterFlow Pro, round K (NexiconDK 7 November 2026): the "Afgange" tab - every departure of the
+   day and the duty built of them -, a duty's own name, the lines and split mark in the rota. */
+.dep-page .pro-main { gap: 0; }
+.dep-content { padding-right: 10px; }
+.dep-seg { display: inline-flex; border: 1px solid var(--rf-line); border-radius: 4px; overflow: hidden; }
+.dep-seg button { border: 0; background: transparent; color: var(--rf-dim); font: inherit; font-size: 10.5px; padding: 5px 10px; cursor: pointer; }
+.dep-seg button.on { background: rgba(var(--rf-accent-rgb), 0.18); color: var(--rf-text); font-weight: 700; }
+.dep-sel, .dep-search input, .dep-name input, .pro-name input { font: inherit; font-size: 10.5px; color: var(--rf-text); background: var(--rf-sheet); border: 1px solid var(--rf-line); border-radius: 4px; padding: 4px 7px; }
+.dep-search { display: inline-flex; align-items: center; gap: 4px; color: var(--rf-dim); }
+.dep-search input { width: 170px; }
+.dep-check { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--rf-dim); cursor: pointer; }
+.dep-table { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.dep-table .pro-rows { overflow: auto; flex: 1; }
+.dep-table .c-x { width: 18px; flex: none; }
+.dep-table .c-t { width: 42px; flex: none; font-variant-numeric: tabular-nums; }
+.dep-table .c-l { width: 74px; flex: none; display: flex; align-items: center; gap: 3px; }
+.dep-table .c-w { flex: 1; min-width: 120px; }
+.dep-table .c-b { width: 80px; flex: none; color: var(--rf-dim); white-space: nowrap; }
+.dep-table .c-d { width: 74px; flex: none; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dep-table .c-d.none { color: var(--rf-dim); font-weight: 400; }
+.dep-row { height: 28px; }
+.dep-row.dead { opacity: 0.6; }
+.dep-row.with { background: rgba(var(--rf-accent-rgb), 0.06); }
+.dep-box { display: inline-flex; width: 14px; height: 14px; align-items: center; justify-content: center; border: 1px solid var(--rf-line); border-radius: 3px; font-style: normal; font-size: 10px; font-weight: 700; }
+.dep-box.on { background: var(--rf-accent); border-color: var(--rf-accent); color: #fff; }
+.dep-box.with { border-color: var(--rf-accent); color: var(--rf-accent); }
+.dep-moon { font-size: 10px; }
+.dep-empty { font-style: normal; color: var(--rf-dim); }
+.dep-norelief { font-style: normal; color: var(--rf-warn); }
+.dep-side { width: 330px; flex: none; overflow: auto; border-left: 1px solid var(--rf-line); background: var(--rf-band); padding: 12px; }
+.dep-build { display: flex; flex-direction: column; gap: 8px; font-size: 10.6px; }
+.dep-name, .pro-name { display: flex; align-items: center; gap: 8px; }
+.dep-name span, .pro-name span { color: var(--rf-dim); font-size: 10px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.04em; }
+.dep-name input, .pro-name input { flex: 1; max-width: 160px; font-weight: 700; }
+.pro-name { margin: 6px 0 8px; }
+.dep-run { display: grid; grid-template-columns: auto 1fr; column-gap: 6px; align-items: center; padding: 5px 7px; border-radius: 4px; border-left: 3px solid var(--c); background: var(--rf-sheet); }
+.dep-run em { grid-column: 2; font-style: normal; color: var(--rf-dim); font-size: 10px; }
+.dep-err { color: var(--rf-err); font-weight: 700; }
+.dep-btns { display: flex; gap: 6px; }
+.dep-preview { display: flex; flex-direction: column; gap: 8px; }
+.dep-preview.busy { opacity: 0.6; }
+.dep-figs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.dep-figs span { display: flex; flex-direction: column; padding: 5px 7px; border: 1px solid var(--rf-line); border-radius: 4px; background: var(--rf-sheet); }
+.dep-figs small { font-size: 9px; color: var(--rf-dim); }
+.dep-figs b { font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.dep-figs b.k-split { color: var(--rf-accent); }
+.tu-delt { position: absolute; top: 2px; right: 3px; font-style: normal; font-size: 7.5px; font-weight: 700; text-transform: uppercase; padding: 0 3px; border-radius: 3px; background: color-mix(in srgb, #2fb0b8 30%, transparent); color: color-mix(in srgb, #2fb0b8 75%, var(--rf-text)); }
+.tu-lines { font-size: 8.6px; opacity: 0.85; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.dep-content { overflow: hidden; }

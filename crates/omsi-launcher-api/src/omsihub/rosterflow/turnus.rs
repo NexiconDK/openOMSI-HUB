@@ -185,12 +185,28 @@ fn place_words(c: &Company, id: u32) -> Option<String> {
     Some(format!("{} · {}", c.planning.rotas.list[k].name, week_words(row)))
 }
 
+/// (Round K) A duty's route in words: "06:02–13:40 · Betr. Eichenh. → Hauptbahnhof · 131, 153".
+fn route_words(d: &pt::ProDuty) -> String {
+    let mut out = span(d.start, d.end);
+    if !d.from_stop.is_empty() || !d.to_stop.is_empty() {
+        out.push_str(&format!(" · {} → {}", d.from_stop, d.to_stop));
+    }
+    if !d.lines.is_empty() {
+        out.push_str(&format!(" · {}", d.lines.join(", ")));
+    }
+    if d.kind == pd::Kind::Split {
+        out.push_str(&format!(" · {}", tr(pd::Kind::Split.label())));
+    }
+    out
+}
+
 /// A cell as the page draws it.
 fn cell_json(c: &Company, week: &Week, day: usize, cell: Cell) -> Value {
     match cell {
         Cell::Off => json!({ "kind": "off", "label": tr("Day off"), "cls": "off" }),
         Cell::Duty { n } => match week.get(day).and_then(|ds| ds.iter().find(|x| x.number == n)) {
-            Some(d) => json!({ "kind": "duty", "n": n, "label": n.to_string(), "time": span(d.start, d.end), "cls": kind_of(d), "paid": d.paid }),
+            // (round K: its own name, the lines it runs, a split duty marked, its route)
+            Some(d) => json!({ "kind": "duty", "n": n, "label": d.shown(), "time": span(d.start, d.end), "cls": kind_of(d), "paid": d.paid, "lines": d.lines.join(", "), "split": d.kind == pd::Kind::Split, "route": route_words(d) }),
             None => json!({ "kind": "duty", "n": n, "label": n.to_string(), "time": "?", "cls": "missing" }),
         },
         // (round F: a named frame by its name - "RAM2" -, its window's times beneath)
@@ -339,7 +355,7 @@ fn view(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                 .map(|x| {
                     let at = placed_in(d, x.number);
                     let name = at.and_then(|(id, row)| list.iter().find(|t| t.id == id).map(|t| format!("{} · {}", t.name, week_words(row))));
-                    json!({ "n": x.number, "time": span(x.start, x.end), "cls": kind_of(x), "split": x.kind == pd::Kind::Split, "hours": h1(x.paid), "rota": at.map(|a| a.0), "row": at.map(|a| a.1), "where": name })
+                    json!({ "n": x.number, "label": x.shown(), "lines": x.lines.join(", "), "route": route_words(x), "time": span(x.start, x.end), "cls": kind_of(x), "split": x.kind == pd::Kind::Split, "hours": h1(x.paid), "rota": at.map(|a| a.0), "row": at.map(|a| a.1), "where": name })
                 })
                 .collect::<Vec<_>>())
         })

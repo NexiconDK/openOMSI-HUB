@@ -233,9 +233,10 @@ function CellBox({ c, on, onClick, title, we }) {
   const mark = c.level ? html`<i class=${'tu-mark ' + c.level}>!</i>` : null;
   // (round B: the driver's wish for the day off - ★)
   const star = c.wish ? html`<i class="tu-star" title=${c.wish}>★</i>` : null;
-  const tip = [title ?? c.tip, c.wish].filter(Boolean).join(' · ') || undefined;
+  // (round K: a duty's route on hovering, the lines it runs under its time, a split duty marked)
+  const tip = [title ?? c.tip, c.route, c.wish].filter(Boolean).join(' · ') || undefined;
   return html`<button type="button" class=${'tu-cell ' + (c.cls || 'off') + (on ? ' on' : '') + (c.exception ? ' ex' : '') + (we ? ' we' : '')} title=${tip} onClick=${onClick}>
-    <b>${c.label}</b>${c.time && html`<span>${c.time}</span>`}${c.note && html`<span class="tu-ex">${c.note}</span>`}${mark}${star}
+    <b>${c.label}</b>${c.split && html`<i class="tu-delt">${tr('split')}</i>`}${c.time && html`<span>${c.time}</span>`}${c.lines && html`<span class="tu-lines">${c.lines}</span>`}${c.note && html`<span class="tu-ex">${c.note}</span>`}${mark}${star}
   </button>`;
 }
 
@@ -286,7 +287,7 @@ function CellCard({ v, rota, at }) {
       ${duties.map((d) => {
         const here = d.rota === rota.id && d.row === at.row;
         const taken = d.rota != null && !here;
-        return html`<button type="button" class=${'tu-cell ' + d.cls + (taken ? ' taken' : '') + (here ? ' on' : '')} title=${taken ? tr('In %{where}', { where: d.where }) : tr('%{h} h paid', { h: d.hours.replace('.', ',') })} onClick=${() => !taken && set({ kind: 'duty', n: d.n })}><b>${d.n}</b><span>${d.time}</span></button>`;
+        return html`<button type="button" class=${'tu-cell ' + d.cls + (taken ? ' taken' : '') + (here ? ' on' : '')} title=${[taken ? tr('In %{where}', { where: d.where }) : tr('%{h} h paid', { h: d.hours.replace('.', ',') }), d.route].filter(Boolean).join(' · ')} onClick=${() => !taken && set({ kind: 'duty', n: d.n })}><b>${d.label || d.n}</b>${d.split && html`<i class="tu-delt">${tr('split')}</i>`}<span>${d.time}</span>${d.lines && html`<span class="tu-lines">${d.lines}</span>`}</button>`;
       })}
       ${(v.named || []).map((f) => html`<button type="button" class=${'tu-cell reserve' + (now.ram === f.id ? ' on' : '')} title=${tr('A named frame: the first to cover an open duty in it; the day pays the hours driven, at least 7,4 h')} onClick=${() => set({ kind: 'frame', from: f.from, to: f.to, ram: f.id })}><b>${f.name}</b><span>${f.time}</span></button>`)}
       ${rota.kind !== 'reserve' && v.frames.map((f) => html`<button type="button" class="tu-cell reserve" title=${tr('At the company\'s disposal in these hours: the first to cover an open duty in them')} onClick=${() => set({ kind: 'frame', from: f.from, to: f.to })}><b>${tr('Reserve')}</b><span>${f.time}</span></button>`)}
@@ -339,7 +340,7 @@ function Person({ v }) {
       <div class="tu-chips">
         ${day.exception && html`<button type="button" class="tu-cell" onClick=${() => tAct('exception', { driver: p.id, date: day.date, clear: true })}><b>${tr('As in the rota')}</b></button>`}
         ${v.notes.map((n) => html`<button type="button" class=${'tu-cell off' + (day.note_key === n.key && day.kind === 'off' ? ' on' : '')} onClick=${() => ex({ kind: 'off' }, n.key)}><b>${n.label}</b></button>`).filter((_, k) => v.notes[k].key !== 'swap')}
-        ${(v.duties[day.day] || []).map((d) => html`<button type="button" class=${'tu-cell ' + d.cls + (day.kind === 'duty' && day.n === d.n ? ' on' : '')} title=${d.where ? tr('In %{where}: swap with its driver that day too', { where: d.where }) : ''} onClick=${() => ex({ kind: 'duty', n: d.n }, 'swap')}><b>${d.n}</b><span>${d.time}</span></button>`)}
+        ${(v.duties[day.day] || []).map((d) => html`<button type="button" class=${'tu-cell ' + d.cls + (day.kind === 'duty' && day.n === d.n ? ' on' : '')} title=${d.where ? tr('In %{where}: swap with its driver that day too', { where: d.where }) : ''} onClick=${() => ex({ kind: 'duty', n: d.n }, 'swap')}><b>${d.label || d.n}</b>${d.split && html`<i class="tu-delt">${tr('split')}</i>`}<span>${d.time}</span>${d.lines && html`<span class="tu-lines">${d.lines}</span>`}</button>`)}
       </div>
     </div>`}
   </div>`;

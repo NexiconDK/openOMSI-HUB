@@ -780,11 +780,14 @@ pub struct Sheet {
     pub pool: Vec<super::pro_duties::Pooled>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub numbers: Vec<super::pro_duties::DutyNumber>,
+    /// (Round K) The planner's own names of duties, by a piece of each (`pro_duties::DutyName`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub names: Vec<super::pro_duties::DutyName>,
 }
 
 impl Sheet {
     pub fn is_empty(&self) -> bool {
-        self.locks.is_empty() && self.links.is_empty() && self.notes.is_empty() && self.spares.is_empty() && self.dismissed.is_empty() && self.rows.is_empty() && self.pool.is_empty() && self.numbers.is_empty()
+        self.locks.is_empty() && self.links.is_empty() && self.notes.is_empty() && self.spares.is_empty() && self.dismissed.is_empty() && self.rows.is_empty() && self.pool.is_empty() && self.numbers.is_empty() && self.names.is_empty()
     }
 }
 
@@ -1448,6 +1451,9 @@ pub struct Shaped {
     /// (NexiconDK, 4 November 2026) Its number with RosterFlow Pro (`pro_duties::number_rows`):
     /// kept across edits, from 1001, 2001 or 3001 by the day type. None: by its row.
     pub number: Option<u32>,
+    /// (NexiconDK, 7 November 2026, round K) The planner's own name of the duty ("M131-1",
+    /// `pro_duties::DutyName`), shown instead of its number. None: its number.
+    pub name: Option<String>,
 }
 
 impl Shaped {
@@ -1467,6 +1473,9 @@ impl Shaped {
     /// Its number as the studio shows it: 1001 on, in order, a spare from 9001 (with RosterFlow
     /// Pro the number it keeps: `number`).
     pub fn label(&self, row: usize) -> String {
+        if let (None, Some(name)) = (self.spare, self.name.as_ref()) {
+            return name.clone();
+        }
         match (self.spare, self.number) {
             (Some(id), _) => format!("{}", 9000 + id),
             (None, Some(n)) => format!("{n}"),
@@ -1880,9 +1889,11 @@ pub fn board_of(c: &Company, wd: u8, tours: Vec<TourOfDay>, stack: Vec<(String, 
         // (drivers change only where a relief point allows it: a cut made before it said no)
         for r in network::duties_of(t).iter().skip(1) {
             let (Some(x), Some(n)) = (r.start.checked_sub(1).and_then(|k| t.trips.get(k)), t.trips.get(r.start)) else { continue };
-            let ok = |place: &str| uses_at(c, &tours, place).is_some_and(|u| u.relief);
-            if !(ok(x.end()) || (!same(x.end(), &n.from) && ok(&n.from))) {
-                issues.push(Issue { scope: Scope::Vehicle, row: Some(i), text: I_RELIEF_PLACE, args: vec![("stop", n.from.trim().to_string())], hard: true, penalty: 0, key: format!("{I_RELIEF_PLACE}|{}/{}/{}", t.line, t.tour, n.dep) });
+            if !relief_ok(c, &tours, x, n) {
+                // (round K: with RosterFlow Pro a duty may begin and end at any departure - the
+                // planner's choice, a yellow mark on the duty: `pro_duties::M_NOT_RELIEF`)
+                let hard = !super::pro_duties::on(c);
+                issues.push(Issue { scope: Scope::Vehicle, row: Some(i), text: I_RELIEF_PLACE, args: vec![("stop", n.from.trim().to_string())], hard, penalty: 0, key: format!("{I_RELIEF_PLACE}|{}/{}/{}", t.line, t.tour, n.dep) });
             }
         }
     }
@@ -1903,6 +1914,14 @@ pub fn board_of(c: &Company, wd: u8, tours: Vec<TourOfDay>, stack: Vec<(String, 
     }
     let figures = figures(c, &tours, &shaped, &issues, pvr, stack.len());
     Board { weekday: wd, tours, duties, shaped, issues, figures, stack }
+}
+
+/// Whether drivers may change on a bus between its trips `x` and `n` (the one after it): where
+/// the bus stands after `x` is a relief point, or - the bus running empty to another place - where
+/// `n` begins is.
+pub fn relief_ok(c: &Company, tours: &[TourOfDay], x: &PlannedTrip, n: &PlannedTrip) -> bool {
+    let ok = |place: &str| uses_at(c, tours, place).is_some_and(|u| u.relief);
+    ok(x.end()) || (!same(x.end(), &n.from) && ok(&n.from))
 }
 
 /// Where a duty (`s`) begins and ends, and takes a split's break, at a relief point that does
@@ -2046,7 +2065,7 @@ fn shape(c: &Company, tours: &[TourOfDay], d: &Duty, di: Option<usize>, key: Opt
         Some(k) => (k, true),
         None => (p.duty_types.iter().position(|t| t.fits(start, end, split)), false),
     };
-    let mut s = Shaped { duty: di, spare: None, key, spans, events, custom: n.custom.clone(), start, end, work, paid, driving, platform, splits, changeovers, kind, kind_set, locked: n.locked, issues: Vec::new(), plan: BreakPlan::default(), no_rest, points, number: None };
+    let mut s = Shaped { duty: di, spare: None, key, spans, events, custom: n.custom.clone(), start, end, work, paid, driving, platform, splits, changeovers, kind, kind_set, locked: n.locked, issues: Vec::new(), plan: BreakPlan::default(), no_rest, points, number: None, name: None };
     s.plan = break_plan(p, tours, &s);
     s
 }

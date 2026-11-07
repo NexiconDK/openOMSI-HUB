@@ -1314,3 +1314,64 @@ Lines 131 and 153 of Ahlheim on a Monday (36 blocks, 316 trips): the game's plan
 337 paid hours, 23 red and 9 yellow. Before round J "Make duties automatically" made 45 duties,
 352 hours, 7 red, 19 yellow, the longest 12:40, eight over ten hours. See FORK.md for the figures
 after it.
+
+# Round K (7 November 2026): the Afgange tab, a duty's own name, the route in the rota
+
+The player asked for a place to see every departure of the day and build the duties from it, one
+duty at a time, to name the duties, and to see in the rota which route a duty runs and whether
+it is a split duty. RosterFlow Pro has eight tabs now: "3 Afgange" comes after Vagter, and the
+tabs after it moved one number on (4 Turnus … 8 Busdisponering).
+
+## The Afgange tab (`afgange.js`, `pro.rs` `departures_json`)
+
+Every trip of the day's blocks in order of departure: its time, the line its displays show (a
+night line run inside a day line's tour - NE2 in 131's - with its moon), its first and last stop,
+its arrival, its block ("131 · H01") and the duty it is in (its name or number; "—" for a piece in
+the pool). A stop drivers cannot change at is marked ◇. Filters: all or only those without a duty,
+a line, a search box (stop, line, block or duty), and the runs without passengers (hidden unless
+asked for or part of the duty being built).
+
+## A duty built of departures (`pro_duties::build_duty`, `runs_of`, `run_of`)
+
+A click puts a departure into "Duty being built" (again: out). On each bus the duty takes the
+trips from its first departure chosen to its last, and the runs without passengers just before
+and after them (the pull-out, the run empty to the first trip, the pull-in) - `run_of`. Two runs
+at the same time are refused (`BUILD_OVERLAP`). The panel shows the duty as it would be - asked of
+the Rust side on a copy of the day, nothing kept (`pro_build_preview`): its sign-on and sign-off,
+pay, type, break, the round J checklist and its price - and takes a name.
+
+"Save duty" (`pro_build`) cuts each bus before and after its run at whatever trip
+(`studio::set_cuts_free`: a relief point or not), takes the pieces out of the duties and the pool
+they were in (a duty that had them keeps the rest; a piece a new cut leaves after the run waits in
+the pool, as a cut in Vagter does) and makes them one duty (a joined duty when it has pieces of
+several buses). It is an edit of the draft: Undo, Save and Discard as in Vagter.
+
+A piece begun or ended where drivers may not change (a relief point turned off, `relief_ok`) is
+no longer refused with RosterFlow Pro: the duty gets a yellow mark (`M_NOT_RELIEF_ON`,
+`M_NOT_RELIEF_OFF`, in the checklist under "Where it begins and ends"), and the bus's own issue
+(`I_RELIEF_PLACE`) is yellow instead of red. Without Pro it stays red.
+
+## A duty's own name (`pro_duties::DutyName`, `set_name`, `name_of`)
+
+A duty can be given a name of at most 12 characters ("M131-1") on its checklist card in Vagter or
+in Afgange; no other duty of the day may have it (whatever its case), and an empty name gives the
+number back. The name is kept by the duty's first piece (`Sheet::names`), so it follows the duty
+however its pieces and number change; it goes with a copy of a day's plan, and a name whose piece
+is gone goes with it. It is shown instead of the number everywhere the duty is: Vagter, Afgange,
+the rota's cells and pickers, the calendar, the daily operations (the open duties, the duty's
+popup), and the messages about a duty (an ill driver's call, the reserve told, "the duty is
+taken", a player asked). Internally the duty keeps its number (`DutyNumber`): the rota, the
+calls and the asks name it by that. `ProDuty::label` / `shown()`, `pro_duties::label_of` (with the
+timetable) and `shown_number` (without it, for messages).
+
+## The route in the rota (`ProDuty::lines`, `from_stop`, `to_stop`)
+
+Each duty of the rota - a cell, the duty picker, the exceptions' list - shows the lines it runs
+under its time ("131, 153", "131, NE2 🌙") and a small "delt" mark when it is a split duty. Hovering
+shows its times, its route (first stop → last stop), the lines and the type.
+
+## Tests
+
+`pro_duties_tests`: a duty built of departures cut out of its buses and named, a duty of two buses,
+the overlap refused; a name short and unique, kept after a renumbering, taken away; a duty begun
+where no relief point is marked yellow (the bus's issue yellow).

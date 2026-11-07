@@ -452,11 +452,16 @@ pub fn driver_day(c: &Company, e: &Employee, dp: &DayPlan, duties: &[ProDuty]) -
     let mut labels: Vec<String> = Vec::new();
     for &(ti, k) in &mine {
         let t = &dp.tours[ti].tour;
-        let n = duties.iter().find(|d| d.pieces.iter().any(|(l, tt, kk)| *kk == k && l.trim().eq_ignore_ascii_case(t.line.trim()) && tt.trim() == t.tour.trim())).map_or(0, |d| d.number);
+        let d = duties.iter().find(|d| d.pieces.iter().any(|(l, tt, kk)| *kk == k && l.trim().eq_ignore_ascii_case(t.line.trim()) && tt.trim() == t.tour.trim()));
+        let n = d.map_or(0, |d| d.number);
         if !numbers.contains(&n) {
             numbers.push(n);
         }
-        let label = super::pro_cut::label_of(c, dp, ti, k).unwrap_or_else(|| if n == 0 { "+".to_string() } else { n.to_string() });
+        // (round K: a duty by its own name)
+        let label = super::pro_cut::label_of(c, dp, ti, k).unwrap_or_else(|| match d {
+            Some(d) => d.shown(),
+            None => "+".to_string(),
+        });
         if !labels.contains(&label) {
             labels.push(label);
         }
@@ -1085,7 +1090,7 @@ pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i3
         };
         if let Asked::Guest { no } = w {
             let time = format!("{:02}:{:02}", start.rem_euclid(1440) / 60, start.rem_euclid(60));
-            super::crew::notify(c, Some(Who::Guest(no)), super::crew::Priority::High, ASKED_NOTICE, &[("n", n.to_string()), ("date", date.to_string()), ("time", time)], Some("phone"));
+            super::crew::notify(c, Some(Who::Guest(no)), super::crew::Priority::High, ASKED_NOTICE, &[("n", super::pro_duties::shown_number(c, date, n)), ("date", date.to_string()), ("time", time)], Some("phone"));
         }
         c.planning.ops.asks.push(Ask { id, date: date.to_string(), n, start, end, who: w, at: now, wait: 0, reply, closed: false, part, due, closed_at: None, seen: false });
         ids.push(id);
@@ -1182,14 +1187,14 @@ pub fn give_asked(c: &mut Company, date: &str, n: u32, part: Option<u8>, driver:
         super::pro_rest::count_extra(c, driver, date);
     }
     for id in others {
-        let args = vec![("n".to_string(), n.to_string()), ("date".to_string(), date.to_string())];
+        let args = vec![("n".to_string(), super::pro_duties::shown_number(c, date, n)), ("date".to_string(), date.to_string())];
         super::messages::post(c, super::messages::To::Driver { employee: id }, super::messages::Priority::Info, super::messages::DUTY_TAKEN, args, None);
     }
     // (round F: put on in his frame before noon the day before - not asked, but told: "You drive
     // duty 1004 on 2024-03-05 in your RAM2")
     if set {
         let named = super::pro_turnus::named_on(c, driver, date);
-        let mut args = vec![("n".to_string(), n.to_string()), ("date".to_string(), date.to_string())];
+        let mut args = vec![("n".to_string(), super::pro_duties::shown_number(c, date, n)), ("date".to_string(), date.to_string())];
         let template = match named {
             Some(f) => {
                 args.push(("frame".to_string(), f.name));

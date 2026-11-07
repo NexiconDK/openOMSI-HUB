@@ -185,8 +185,10 @@ pub(super) fn pro_json(c: &Company, board: &Board) -> Value {
     }
     let p = &c.planning.flow.prefs;
     let dt = pd::day_type(c, wd) as usize;
+    let departures = departures_json(c, board, &pool_rows);
     json!({
         "on": true,
+        "departures": departures,
         "day_type": tr(DAY_TYPES[dt.min(2)]),
         "base": pd::base(c, wd),
         "blocks": blocks,
@@ -308,7 +310,67 @@ fn duty_json(c: &Company, board: &Board, row: usize, s: &rf::Shaped) -> Value {
         "locked": s.locked,
         "soft": soft, "hard": hard, "chip": chip, "checks": checks, "pause": pause, "breaks": breaks,
         "title": title, "sub": sub,
+        // (round K: its own name, empty when it has none)
+        "name": s.name.clone().unwrap_or_default(),
     })
+}
+
+/// (Round K) Every trip of the day for the "Afgange" tab, in order of departure: its block and
+/// place on it, its times and stops, the line its displays show (a night line marked), whether it
+/// has passengers, and the duty it is in (its name or number; none for a piece in the pool).
+fn departures_json(c: &Company, board: &Board, pool_rows: &[bool]) -> Vec<Value> {
+    let tours = &board.tours;
+    let mut out: Vec<(i32, Value)> = Vec::new();
+    for (i, t) in tours.iter().enumerate() {
+        let pieces = co::network::duties_of(t);
+        for (j, x) in t.trips.iter().enumerate() {
+            let k = pieces.iter().position(|r| r.contains(&j)).unwrap_or(0);
+            let row = row_of(board, i, k);
+            let pool = row.is_some_and(|r| pool_rows.get(r).copied().unwrap_or(false));
+            let duty = row.filter(|_| !pool).map(|r| board.shaped[r].label(r));
+            let shown = co::specials::display_number(&x.line);
+            let line = if shown.is_empty() { line_number(t) } else { shown };
+            let night = !line.eq_ignore_ascii_case(&line_number(t)) && (co::specials::night_name(&line) || { let h = x.dep.rem_euclid(1440); h >= 22 * 60 || h < 5 * 60 });
+            let relief = j == 0 || rf::relief_ok(c, tours, &t.trips[j - 1], x);
+            out.push((x.dep, json!({
+                "i": i, "j": j, "k": k, "dep": x.dep, "arr": x.arr,
+                "from": x.from.trim(), "to": x.end().trim(),
+                "line": line, "night": night, "own": line_number(t), "colour": colour_of(c, &t.line),
+                "counts": x.counts(), "block": block_label(t),
+                "duty": duty, "row": row, "pool": pool,
+                "first": pieces.get(k).is_some_and(|r| r.start == j), "relief": relief,
+            })));
+        }
+    }
+    out.sort_by_key(|x| x.0);
+    out.into_iter().map(|x| x.1).collect()
+}
+
+/// The departures `trips` (block, trip) of an act (`[[i, j], ...]`).
+fn trips_arg(args: &Value) -> Vec<(usize, usize)> {
+    args.get("trips").and_then(Value::as_array).map(|a| a.iter().filter_map(|p| Some((p.get(0)?.as_u64()? as usize, p.get(1)?.as_u64()? as usize))).collect()).unwrap_or_default()
+}
+
+/// (Round K) The duty the departures chosen in "Afgange" would make, as the Vagter tab shows a
+/// duty - its times, break, type, rules and price - nothing kept; or why it cannot be made.
+fn build_preview(k: &Cached, trips: &[(usize, usize)], name: &str) -> Value {
+    let board = &k.board;
+    let mut v = (*k.view).clone();
+    let wd = board.weekday;
+    match pd::build_duty(&mut v, wd, &board.tours, trips, name) {
+        Err(why) => json!({ "error": tr(why) }),
+        Ok(pieces) => {
+            let tours = co::network::tours_of_day(&v, &k.lines, &k.date);
+            let after = rf::board_of(&v, wd, tours, Vec::new());
+            let Some(first) = pieces.first().and_then(|p| st::piece_at(&after.tours, p)) else { return json!({ "error": tr(st::NOT_FOUND) }) };
+            let Some(row) = row_of(&after, first.0, first.1) else { return json!({ "error": tr(st::NOT_FOUND) }) };
+            let mut d = duty_json(&v, &after, row, &after.shaped[row]);
+            let mut list = json!([d.clone()]);
+            prices(&mut list, &v, &after, &k.date, dp::hour_wage(&v));
+            d = list[0].clone();
+            json!({ "duty": d })
+        }
+    }
 }
 
 /// (Round J) What the Vagter tab shows of the day that needs its date and timetable (`ensure`
@@ -434,6 +496,21 @@ pub(super) fn act(s: &mut Session, r: &mut Rf, k: &Cached, what: &str, args: &Va
             } else {
                 out
             }
+        }
+        // (round K: the "Afgange" tab - a duty built of departures, looked at first, and a duty's
+        // own name)
+        "pro_build_preview" => build_preview(k, &trips_arg(args), args.get("name").and_then(Value::as_str).unwrap_or("")),
+        "pro_build" => {
+            let trips = trips_arg(args);
+            let name = args.get("name").and_then(Value::as_str).unwrap_or("").to_string();
+            let words = if name.trim().is_empty() { trf("A duty built of %{n} departures", &[("n", &trips.len().to_string())]) } else { trf("Duty %{d} built of %{n} departures", &[("d", name.trim()), ("n", &trips.len().to_string())]) };
+            edit(s, r, words, |c| pd::build_duty(c, wd, &tours, &trips, &name).map(|_| ()))
+        }
+        "pro_name" => {
+            let name = args.get("name").and_then(Value::as_str).unwrap_or("").to_string();
+            let number = row_of(&board, tour, duty).map(|row| board.shaped[row].number.map(|n| n.to_string()).unwrap_or_else(|| board.shaped[row].label(row))).unwrap_or_default();
+            let words = if name.trim().is_empty() { trf("Duty %{d} shown by its number again", &[("d", &number)]) } else { trf("Duty %{d} named %{name}", &[("d", &number), ("name", name.trim())]) };
+            edit(s, r, words, |c| pd::set_name(c, wd, &tours, (tour, duty), &name))
         }
         "pro_rules" => {
             // (the least times to change pieces, sign on and sign off: the company's preferences)
@@ -565,6 +642,27 @@ mod tests {
         assert_eq!(p["pool"].as_array().map(Vec::len), Some(1));
         assert_eq!(p["pool"][0]["runs_as"], "1501");
         assert!(p["blocks"][i]["pieces"].as_array().unwrap().iter().any(|x| x["pool"] == true && x["number"].is_null()));
+        // (round K) every trip of the day for the Afgange tab, in order of departure, each with its
+        // block, line and duty
+        let deps = p["departures"].as_array().unwrap();
+        assert_eq!(deps.len(), b.tours.iter().map(|t| t.trips.len()).sum::<usize>());
+        assert!(deps.windows(2).all(|w| w[0]["dep"].as_i64() <= w[1]["dep"].as_i64()));
+        assert!(deps.iter().all(|d| d["block"].as_str().is_some_and(|x| !x.is_empty()) && d["line"].is_string()));
+        assert!(deps.iter().any(|d| d["duty"].is_null() && d["pool"] == true), "the piece in the pool has no duty");
+        // a duty built of departures, looked at first: its times and checklist; two at once refused
+        let i = deps.iter().find(|d| d["counts"] == true && d["pool"] == false).unwrap()["i"].as_u64().unwrap() as usize;
+        let js: Vec<usize> = deps.iter().filter(|d| d["i"] == i && d["counts"] == true).map(|d| d["j"].as_u64().unwrap() as usize).take(2).collect();
+        let trips: Vec<(usize, usize)> = js.iter().map(|&j| (i, j)).collect();
+        let k = super::super::Cached { date: date.clone(), generation: 0, board: std::sync::Arc::new(b.clone()), view: std::sync::Arc::new(rf::view(&c)), lines: std::sync::Arc::new(lines.clone()), json: std::sync::Arc::new(json!({})), rev: String::new() };
+        let pv = build_preview(&k, &trips, "Tidlig");
+        assert!(pv["duty"]["checks"].as_array().is_some_and(|x| !x.is_empty()), "{pv}");
+        assert_eq!(pv["duty"]["number"], "Tidlig");
+        assert!(pv["duty"]["price_cents"].as_i64().is_some_and(|x| x > 0));
+        let other = deps.iter().find(|d| d["i"].as_u64() != Some(i as u64) && d["counts"] == true && d["dep"].as_i64() == Some(b.tours[i].trips[js[0]].dep as i64));
+        if let Some(o) = other {
+            let two = vec![(i, js[0]), (o["i"].as_u64().unwrap() as usize, o["j"].as_u64().unwrap() as usize)];
+            assert!(build_preview(&k, &two, "")["error"].is_string());
+        }
         // without RosterFlow Pro: no Pro part
         autopilot::set_planner(&mut c, Planner::RosterFlow);
         let b = rf::board(&c, &lines, &date);

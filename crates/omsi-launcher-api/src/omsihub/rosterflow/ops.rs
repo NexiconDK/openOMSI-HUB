@@ -131,6 +131,11 @@ fn duties_for(c: &Company, week: &Week, p: &DayPlan) -> Vec<ProDuty> {
     }
 }
 
+/// (Round K) The name duty `n` of the day (`ds`) is shown by: the planner's own, else its number.
+fn shown_of(ds: &[ProDuty], n: u32) -> String {
+    ds.iter().find(|d| d.number == n).map(|d| d.shown()).unwrap_or_else(|| n.to_string())
+}
+
 /// A driver's employment as the chip says it: its key, its word and its week or frame.
 fn kind_of(c: &Company, e: &Employee) -> (&'static str, String, String) {
     match e.employment {
@@ -1078,7 +1083,7 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
     // (round G: answers come the planner has not seen here yet - the page marks them seen)
     let unseen = c.planning.ops.asks.iter().any(|a| a.date == date && a.n == d.n && !a.seen && a.shown_at(game, now).is_some());
     let mut v = json!({
-        "n": d.n, "title": trf("Duty %{n}", &[("n", &d.n.to_string())]), "sub": duty_sub(d, date), "why": why_words(d.why), "kind": tr(d.kind.label()),
+        "n": d.n, "title": trf("Duty %{n}", &[("n", &shown_of(ds, d.n))]), "sub": duty_sub(d, date), "why": why_words(d.why), "kind": tr(d.kind.label()),
         "groups": groups, "cant": cant, "cant_label": trf("%{n} others cannot drive it", &[("n", &cant.len().to_string())]),
         "players": players, "given": given, "nobody": nobody, "can_cut": nobody && pc::can_cut_duty(c, p, d), "unseen": unseen,
         "picked_label": tr("%{n} ticked"), "ask_label": tr("Ask those ticked"),
@@ -1300,7 +1305,7 @@ fn daily(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                 why = format!("{} · {}", tr("split duty"), why);
             }
             let time = if o.kind == pd::Kind::Split { halves(p, &o.pieces, c.planning.flow.prefs.sign_on).unwrap_or_else(|| format!("{}–{}", clock(o.start), clock(o.end))).replace(" / ", " + ") } else { format!("{}–{}", clock(o.start), clock(o.end)) };
-            Some(json!({ "n": n, "cut": false, "label": n.to_string(), "time": time, "why": why, "split": o.kind == pd::Kind::Split }))
+            Some(json!({ "n": n, "cut": false, "label": shown_of(&ds, n), "time": time, "why": why, "split": o.kind == pd::Kind::Split }))
         })
         .collect::<Vec<_>>());
     out["count"] = json!({ "duties": ds.len(), "open": items.len(), "text": match items.len() { 0 => tr("Every duty has a driver."), 1 => tr("1 duty is missing a driver"), n => trf("%{n} duties are missing a driver", &[("n", &n.to_string())]) } });

@@ -113,7 +113,7 @@ pub fn call(c: &mut Company, driver: u32, n: u32, start: i32, at: i64) -> bool {
         e.sick_until = Some(until);
     }
     let from = super::messages::From::Driver { line: String::new(), tour: String::new(), name };
-    super::messages::send(c, from, super::messages::To::Control, super::messages::Priority::Urgent, SAYS, vec![("n".into(), n.to_string())], false, None);
+    super::messages::send(c, from, super::messages::To::Control, super::messages::Priority::Urgent, SAYS, vec![("n".into(), super::pro_duties::shown_number(c, &date, n))], false, None);
     c.planning.ops.sick.retain(|x| !(x.date == date && x.driver == driver));
     c.planning.ops.sick.push(SickCall { date, driver, n, start, at, seen: false });
     true
@@ -123,7 +123,7 @@ pub fn call(c: &mut Company, driver: u32, n: u32, start: i32, at: i64) -> bool {
 pub fn words(c: &Company, x: &SickCall) -> (&'static str, Vec<(String, String)>) {
     let name = c.employee(x.driver).map(|e| e.name.clone()).unwrap_or_default();
     let left = super::clock::moment(&x.date, x.start as i64) - super::clock::now(c);
-    let mut args = vec![("name".to_string(), name), ("n".to_string(), x.n.to_string())];
+    let mut args = vec![("name".to_string(), name), ("n".to_string(), super::pro_duties::shown_number(c, &x.date, x.n))];
     if left > 0 {
         args.push(("min".into(), left.to_string()));
         (CALLED, args)

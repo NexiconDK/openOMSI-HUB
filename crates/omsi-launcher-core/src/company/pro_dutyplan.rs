@@ -304,6 +304,10 @@ pub fn checklist(c: &Company, b: &Board, row: usize) -> Vec<Check> {
     for i in places {
         out.push(Check { title: T_PLACES, level: Level::of(i.hard), text: i.text, args: i.args.clone() });
     }
+    // (round K: a bus taken over or handed over where no relief point is - built in "Afgange")
+    for m in marks.iter().filter(|m| m.text == pd::M_NOT_RELIEF_ON || m.text == pd::M_NOT_RELIEF_OFF) {
+        out.push(Check { title: T_PLACES, level: Level::Warn, text: m.text, args: m.args.clone() });
+    }
     // the duty's type
     for i in take(&[rf::I_TYPE]) {
         out.push(Check { title: T_TYPE, level: Level::of(i.hard), text: C_TYPE, args: i.args.clone() });
@@ -376,6 +380,7 @@ pub fn game_plan_company(c: &Company, date: &str) -> Company {
     sh.pool.retain(|x| x.weekday != wd);
     sh.numbers.retain(|x| x.weekday != wd);
     sh.rows.retain(|x| x.weekday != wd);
+    sh.names.retain(|x| x.weekday != wd);
     g
 }
 
