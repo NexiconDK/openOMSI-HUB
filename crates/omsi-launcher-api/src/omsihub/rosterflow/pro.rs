@@ -234,6 +234,8 @@ pub(super) fn pro_json(c: &Company, board: &Board) -> Value {
         "goals": {
             "target_from": p.goals.target_from, "target_to": p.goals.target_to, "longest": p.goals.longest,
             "min_piece": p.min_piece.value, "same_line": p.goals.same_line, "weekday_splits": true,
+            // (round O: the night duties')
+            "night_from": p.goals.night_from, "night_to": p.goals.night_to, "night_least": p.goals.night_least,
         },
         "trips": board.tours.iter().map(|t| t.trips.iter().filter(|x| x.counts()).count()).sum::<usize>(),
     })
@@ -626,6 +628,18 @@ pub(super) fn act(s: &mut Session, r: &mut Rf, k: &Cached, what: &str, args: &Va
                 }
                 if let Some(v) = args.get("same_line").and_then(Value::as_bool) {
                     p.goals.same_line = v;
+                }
+                // (round O: the night duties' target and shortest night piece)
+                if let Some(v) = num("night_from", 0, 780) {
+                    p.goals.night_from = v;
+                    p.goals.night_to = p.goals.night_to.max(v);
+                }
+                if let Some(v) = num("night_to", 60, 780) {
+                    p.goals.night_to = v.min(p.goals.longest);
+                    p.goals.night_from = p.goals.night_from.min(p.goals.night_to);
+                }
+                if let Some(v) = num("night_least", 0, 600) {
+                    p.goals.night_least = v.min(p.goals.night_to);
                 }
                 Ok(())
             }) {

@@ -156,9 +156,13 @@ pub const C_PLACES_OK: &str = "Signs on at %{on}, off at %{off}";
 pub const C_REST_SHORT: &str = "Only %{time} between two pieces, at least %{min}";
 pub const C_OVERLAP: &str = "Two pieces at the same time";
 pub const C_TYPE: &str = "Fits no duty type allowed: it is %{type}";
-pub const CHECK_TEXTS: [&str; 26] = [
+/// (Round O) A night duty's target, and a split duty with night-bus work.
+pub const C_TARGET_NIGHT: &str = "%{time}, a night duty's target is %{from}–%{to}";
+pub const C_SPLIT_NIGHT: &str = "Split duties may not have night-bus work";
+pub const CHECK_TEXTS: [&str; 28] = [
     C_MEAL_NONE_NEEDED, C_MEAL_AT, C_MEAL_LATE, C_MEAL_MISSING, C_DRIVING_OK, C_DRIVING_OVER, C_DAY_OK, C_DAY_OVER, C_OVERTIME, C_TARGET, C_CHANGES_NONE, C_CHANGES_OK, C_CHANGES_MANY, C_CHANGE_SHORT,
     C_CHANGE_SAME, C_CHANGE_STOPS, C_PIECE_OK, C_PIECE_SHORT, C_SPLIT_OK, C_SPLIT_OVER, C_SPLIT_WEEKEND, C_SPLIT_LONG, C_PLACES_OK, C_REST_SHORT, C_OVERLAP, C_TYPE,
+    C_TARGET_NIGHT, C_SPLIT_NIGHT,
 ];
 
 fn arg<'a>(i: &'a rf::Issue, k: &str) -> &'a str {
@@ -242,9 +246,11 @@ pub fn checklist(c: &Company, b: &Board, row: usize) -> Vec<Check> {
     if let Some(i) = rules.iter().find(|i| rule_of(i) == Some(3)) {
         push(T_OVERTIME, Level::of(i.hard), C_OVERTIME, vec![("time", arg(i, "time").into()), ("day", hm(staff::DAY_TARGET))]);
     }
-    // the target length (told, not a rule broken)
-    let aimed = s.work >= goals.target_from && s.work <= goals.target_to;
-    push(T_TARGET, if aimed { Level::Ok } else { Level::Info }, C_TARGET, vec![("time", hm(s.work)), ("from", hm(goals.target_from)), ("to", hm(goals.target_to))]);
+    // the target length (told, not a rule broken; round O: a night duty's its own)
+    let night = pd::on(c) && rf::spans_night(&b.tours, &s.spans);
+    let (from, to) = goals.target(night);
+    let aimed = s.work >= from && s.work <= to;
+    push(T_TARGET, if aimed { Level::Ok } else { Level::Info }, if night { C_TARGET_NIGHT } else { C_TARGET }, vec![("time", hm(s.work)), ("from", hm(from)), ("to", hm(to))]);
     // the changes of bus
     let many = take(&[rf::I_CHANGEOVERS]);
     let mut changes: Vec<Check> = Vec::new();
@@ -272,6 +278,10 @@ pub fn checklist(c: &Company, b: &Board, row: usize) -> Vec<Check> {
     match short.first() {
         Some(i) => out.push(Check { title: T_PIECE, level: Level::of(i.hard), text: C_PIECE_SHORT, args: vec![("time", arg(i, "time").into()), ("min", arg(i, "min").into())] }),
         None => out.push(Check { title: T_PIECE, level: Level::Ok, text: C_PIECE_OK, args: vec![("time", hm(shortest)), ("min", hm(p.min_piece.value))] }),
+    }
+    // (round O: a split duty with night-bus work - never)
+    if marks.iter().any(|m| m.text == pd::M_NIGHT_SPLIT) {
+        out.push(Check { title: T_SPLIT, level: Level::Bad, text: C_SPLIT_NIGHT, args: Vec::new() });
     }
     // a split duty
     if pd::kind_of(s) == Kind::Split {

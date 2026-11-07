@@ -250,7 +250,11 @@ function DutiesSide({ pro }) {
       <div class="pro-rule"><span>${tr('Longest duty')}</span><${Stepper} value=${goals.longest} step=${15} min=${240} max=${780} fmt=${hm} onChange=${(v) => set('longest', v)} /></div>
       <div class="pro-rule"><span>${tr('Shortest piece')}</span><${Stepper} value=${goals.min_piece} step=${15} min=${0} max=${300} fmt=${hm} onChange=${(v) => set('min_piece', v)} /></div>
       <${Switch} on=${goals.same_line} label="Rather one line all the duty" style="width:100%;margin-top:4px" onChange=${(v) => set('same_line', v)} />
-      <div class="pro-dim" style="margin-top:6px">${tr('Split duties only Monday to Friday. The duties are numbered in the order they sign on.')}</div>
+      ${goals.night_from != null && html`<div class="pro-caps" style="margin-top:12px">${tr('Night duties')}</div>
+      <div class="pro-rule"><span>${tr('Night duty from')}</span><${Stepper} value=${goals.night_from} step=${15} min=${0} max=${780} fmt=${hm} onChange=${(v) => set('night_from', v)} /></div>
+      <div class="pro-rule"><span>${tr('Night duty to')}</span><${Stepper} value=${goals.night_to} step=${15} min=${60} max=${780} fmt=${hm} onChange=${(v) => set('night_to', v)} /></div>
+      <div class="pro-rule"><span>${tr('Shortest night duty')}</span><${Stepper} value=${goals.night_least} step=${15} min=${0} max=${600} fmt=${hm} onChange=${(v) => set('night_least', v)} /></div>`}
+      <div class="pro-dim" style="margin-top:6px">${tr('Split duties only Monday to Friday, and never with night-bus work. A night-bus driver drives one long night duty. The duties are numbered in the order they sign on.')}</div>
     </div>`}
   </aside>`;
 }

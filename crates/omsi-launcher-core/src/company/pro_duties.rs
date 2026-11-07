@@ -88,11 +88,17 @@ pub struct Goals {
     pub target_to: i32,
     pub longest: i32,
     pub same_line: bool,
+    /// (Round O, NexiconDK 7 November 2026) A night duty's (night-bus work: `rf::night_trip`)
+    /// target length (5:00 to 9:30), and the shortest piece of night work a duty is made of
+    /// (3:00): a night-bus driver drives one long night duty, not scraps of one or two hours.
+    pub night_from: i32,
+    pub night_to: i32,
+    pub night_least: i32,
 }
 
 impl Default for Goals {
     fn default() -> Self {
-        Goals { target_from: 444, target_to: 510, longest: 600, same_line: true }
+        Goals { target_from: 444, target_to: 510, longest: 600, same_line: true, night_from: 300, night_to: 570, night_least: 180 }
     }
 }
 
@@ -102,7 +108,19 @@ impl Goals {
         self.longest = self.longest.clamp(240, 780);
         self.target_to = self.target_to.clamp(60, self.longest);
         self.target_from = self.target_from.clamp(0, self.target_to);
+        self.night_to = self.night_to.clamp(60, self.longest);
+        self.night_from = self.night_from.clamp(0, self.night_to);
+        self.night_least = self.night_least.clamp(0, self.night_to);
         self
+    }
+
+    /// The target of a duty: a night duty's (`night`), else a day duty's.
+    pub fn target(&self, night: bool) -> (i32, i32) {
+        if night {
+            (self.night_from, self.night_to)
+        } else {
+            (self.target_from, self.target_to)
+        }
     }
 }
 
@@ -791,6 +809,7 @@ pub fn auto(c: &mut Company, lines: &[LineInfo], date: &str) -> usize {
 /// under four hours is paid four: its cost says so already).
 pub fn score(c: &Company, b: &Board) -> f64 {
     let goals = c.planning.flow.prefs.goals.sane();
+    let pro = on(c);
     let (hour, ..) = rf::rates(c);
     let rate = hour / 60.0;
     let mut x = rf::weighed(b) as f64;
@@ -802,10 +821,16 @@ pub fn score(c: &Company, b: &Board) -> f64 {
         if s.work > goals.longest {
             x += 500_00.0;
         }
-        if s.work > goals.target_to {
-            x += (s.work - goals.target_to) as f64 * rate * 2.0;
-        } else if s.work < goals.target_from && s.work >= SHORT_DUTY {
-            x += (goals.target_from - s.work) as f64 * rate * 0.25;
+        // (round O: a night duty at the night's target; a scrap of night work dear)
+        let night = pro && rf::spans_night(&b.tours, &s.spans);
+        let (from, to) = goals.target(night);
+        if night && s.work < goals.night_least {
+            x += rf::NIGHT_SCRAP;
+        }
+        if s.work > to {
+            x += (s.work - to) as f64 * rate * 2.0;
+        } else if s.work < from && (s.work >= SHORT_DUTY || night) {
+            x += (from - s.work) as f64 * rate * 0.25;
         }
     }
     x
@@ -838,6 +863,8 @@ pub const M_SPREAD: &str = "A split duty spread over %{time}, at most %{max}";
 pub const M_CHANGE: &str = "%{have} to change from %{from} to %{to}, %{need} needed";
 pub const M_CHANGE_SAME: &str = "%{have} to change buses at %{stop}, %{need} needed";
 pub const M_WEEKEND_SPLIT: &str = "Split duties do not run at the weekend";
+/// (Round O) A split duty with night-bus work (the user, 7 November 2026: never).
+pub const M_NIGHT_SPLIT: &str = "Split duties may not have night-bus work";
 /// (Round K) A piece begun or ended at a stop that is no relief point (built in "Afgange").
 pub const M_NOT_RELIEF_ON: &str = "Takes over the bus at %{stop} at %{time}, which is no relief point";
 pub const M_NOT_RELIEF_OFF: &str = "Hands over the bus at %{stop} at %{time}, which is no relief point";
@@ -869,6 +896,11 @@ pub fn marks(c: &Company, board: &Board, row: usize) -> Vec<Mark> {
     // (a split duty on a Saturday or a Sunday: they run Monday to Friday, in a split-duty rota)
     if kind_of(s) == Kind::Split && day_type(c, board.weekday) != 0 {
         out.push(Mark { hard: false, text: M_WEEKEND_SPLIT, args: Vec::new() });
+    }
+    // (round O: a split duty with night-bus work - never, red; made by hand it is marked, not
+    // refused, as the other rules)
+    if (kind_of(s) == Kind::Split || !s.splits.is_empty()) && rf::spans_night(&board.tours, &s.spans) {
+        out.push(Mark { hard: true, text: M_NIGHT_SPLIT, args: Vec::new() });
     }
     // (round K: a piece begun or ended where no relief point is - yellow, the planner's choice)
     for sp in &s.spans {
@@ -909,7 +941,7 @@ pub fn marks(c: &Company, board: &Board, row: usize) -> Vec<Mark> {
 
 /// Every English text of RosterFlow Pro's duties (for the translations' check).
 pub fn texts() -> Vec<&'static str> {
-    let mut v = vec![IN_POOL, NOT_IN_POOL, OVERLAP, NO_PIECE, M_SPREAD, M_CHANGE, M_CHANGE_SAME, M_WEEKEND_SPLIT, M_NOT_RELIEF_ON, M_NOT_RELIEF_OFF, NAME_LONG, NAME_TAKEN, NO_DEPARTURE, BUILD_OVERLAP];
+    let mut v = vec![IN_POOL, NOT_IN_POOL, OVERLAP, NO_PIECE, M_SPREAD, M_CHANGE, M_CHANGE_SAME, M_WEEKEND_SPLIT, M_NIGHT_SPLIT, M_NOT_RELIEF_ON, M_NOT_RELIEF_OFF, NAME_LONG, NAME_TAKEN, NO_DEPARTURE, BUILD_OVERLAP];
     v.extend(Kind::LABELS);
     v
 }

@@ -204,6 +204,29 @@ impl DutyType {
     }
 }
 
+/// (RosterFlow Pro, round O - NexiconDK 7 November 2026) A trip of night-bus work: a night line's
+/// (its display number says so: "NE2") or one running past 24:00.
+pub fn night_trip(t: &PlannedTrip) -> bool {
+    super::specials::night_name(&t.line) || t.arr > 1440
+}
+
+/// (Round O) Whether trips `r` of block `t` have night-bus work.
+pub fn night_range(t: &TourOfDay, r: Range<usize>) -> bool {
+    t.trips.get(r).is_some_and(|x| x.iter().any(night_trip))
+}
+
+/// (Round O) Whether a duty's spans (`tours` the day's blocks) have night-bus work.
+pub fn spans_night(tours: &[TourOfDay], spans: &[Span]) -> bool {
+    spans.iter().any(|sp| tours.get(sp.tour).is_some_and(|t| network::duties_of(t).get(sp.duty).is_some_and(|r| night_range(t, r.clone()))))
+}
+
+/// (Round O) The duty type a night duty is (the user, 7 November 2026: a night-bus driver drives
+/// one long night duty, whenever it signs on): the night shift's, else the allowed type that
+/// begins latest in the evening.
+pub fn night_type(p: &Prefs) -> Option<usize> {
+    p.duty_types.iter().position(|t| t.allowed && same(&t.name, TYPE_NAMES[4])).or_else(|| p.duty_types.iter().enumerate().filter(|(_, t)| t.allowed && t.start_to >= 1080).max_by_key(|(_, t)| t.start_to).map(|(k, _)| k))
+}
+
 /// The name a duty no type fits goes by.
 pub const OTHER: &str = "Other";
 /// The default duty types' names (translated when shown).
@@ -2065,6 +2088,12 @@ fn shape(c: &Company, tours: &[TourOfDay], d: &Duty, di: Option<usize>, key: Opt
         Some(k) => (k, true),
         None => (p.duty_types.iter().position(|t| t.fits(start, end, split)), false),
     };
+    // (round O: with RosterFlow Pro a night duty - night-bus work, not split - is a night shift
+    // whenever it signs on: one signing on at 00:40 is no "Other")
+    let kind = match kind {
+        None if !kind_set && !split && super::pro_duties::on(c) && spans_night(tours, &spans) => night_type(p).filter(|&k| p.duty_types[k].max_length >= end - start),
+        k => k,
+    };
     let mut s = Shaped { duty: di, spare: None, key, spans, events, custom: n.custom.clone(), start, end, work, paid, driving, platform, splits, changeovers, kind, kind_set, locked: n.locked, issues: Vec::new(), plan: BreakPlan::default(), no_rest, points, number: None, name: None };
     s.plan = break_plan(p, tours, &s);
     s
@@ -2516,6 +2545,11 @@ fn cut_block(c: &Company, tours: &[TourOfDay], i: usize, p: &Prefs) -> Vec<Range
     }
     let longest = longest_piece(p);
     let can = change_points(c, tours, i);
+    // (round O: RosterFlow Pro cuts a night bus its own way - one long night piece where the rules
+    // let it be)
+    if super::pro_duties::on(c) && t.trips.iter().any(night_trip) {
+        return cut_night_block(c, tours, i, p, &can);
+    }
     let span = |a: usize, b: usize| t.trips[a..b].iter().map(|x| x.arr).max().unwrap_or(0) - t.trips[a].dep;
     // (the trips of a piece from `a` to `b` may run as long as the driver's work then stays within
     // the limit: his signing, and the bus's check where it leaves or comes back to the depot, in)
@@ -2561,15 +2595,127 @@ fn cut_block(c: &Company, tours: &[TourOfDay], i: usize, p: &Prefs) -> Vec<Range
     out
 }
 
+/// (RosterFlow Pro, round O - NexiconDK 7 November 2026: "De fleste natbusser er på 1-2-3 timer
+/// fremfor man har en lang natbus") How a night bus (block `i`, `can` its change points) is cut:
+/// where the bus stands at the depot for a split's length (`Prefs::split_min`) it is cut - the
+/// evening's work and the night's are two pieces, never one duty split over the gap - and each
+/// part is one piece as far as the duty's rules let it: as long as the goals' longest duty, and
+/// no stretch of driving longer than the continuous limit without a break. The bus standing at
+/// its terminus long enough (`break_min`, `break_from`) is a break there when layovers count as
+/// breaks (`layover_breaks`) and the place allows breaks (a terminus and the depot do until the
+/// planner says otherwise; a stop on the way that is no relief point does not). A cut is made
+/// only where one is needed, the latest that keeps the piece before within the rules, and a last
+/// piece shorter than the goals' shortest night piece goes into the one before where both
+/// together stay within them - no scrap of two hours at the end of the night.
+fn cut_night_block(c: &Company, tours: &[TourOfDay], i: usize, p: &Prefs, can: &[usize]) -> Vec<Range<usize>> {
+    let t = &tours[i];
+    let n = t.trips.len();
+    let goals = p.goals.sane();
+    let rest = p.break_min.max(p.break_from);
+    let set = !p.points.is_empty();
+    let rests_at = |place: &str| !set || uses_at(c, tours, place).is_some_and(|u| u.breaks);
+    let span = |a: usize, b: usize| t.trips[a..b].iter().map(|x| x.arr).max().unwrap_or(0) - t.trips[a].dep;
+    let signing = |a: usize, b: usize| p.sign_on + p.sign_off + if a == 0 { p.pre_trip } else { 0 } + if b >= n { p.post_trip } else { 0 };
+    // (the trips `a..b` as one piece keep the rules: the duty's length, and driving)
+    let ok = |a: usize, b: usize| -> bool {
+        if b <= a {
+            return true;
+        }
+        if span(a, b) + signing(a, b) > goals.longest.min(staff::DAY_MAX) {
+            return false;
+        }
+        if !p.continuous.on {
+            return true;
+        }
+        let mut from = t.trips[a].dep - p.sign_on - if a == 0 { p.pre_trip } else { 0 };
+        let mut to = t.trips[a].arr;
+        for j in a + 1..b {
+            let gap = t.trips[j].dep - t.trips[j - 1].arr;
+            if gap >= rest && p.layover_breaks && rests_at(t.trips[j - 1].end()) {
+                if to - from > p.continuous.value {
+                    return false;
+                }
+                from = t.trips[j].dep;
+            }
+            to = to.max(t.trips[j].arr);
+        }
+        to + if b >= n { p.post_trip + p.sign_off } else { p.sign_off } - from <= p.continuous.value
+    };
+    // the parts: cut where the bus stands at the depot for a split's length - before its run out
+    // again, so the evening's piece ends where the bus is put away and the night's begins where it
+    // is taken out (the time it stands there no one's work)
+    let mut bounds: Vec<usize> = Vec::new();
+    for k in 1..n {
+        if t.trips[k].dep - t.trips[k - 1].arr >= p.split_min && t.trips[..k].iter().any(|x| x.counts()) && t.trips[k..].iter().any(|x| x.counts()) {
+            bounds.push(k);
+        }
+    }
+    let mut cuts: Vec<usize> = Vec::new();
+    let mut a = 0;
+    for b in bounds.iter().copied().chain(std::iter::once(n)) {
+        let mut s = a;
+        let mine: Vec<usize> = can.iter().copied().filter(|&k| k > a && k < b).collect();
+        let first = cuts.len();
+        while !ok(s, b) {
+            let fit: Vec<usize> = mine.iter().copied().filter(|&k| k > s && ok(s, k)).collect();
+            match fit.last().copied().or_else(|| mine.iter().copied().find(|&k| k > s)) {
+                Some(k) => {
+                    cuts.push(k);
+                    s = k;
+                }
+                None => break,
+            }
+        }
+        // (a last piece of the night too short: into the one before where both together keep the
+        // rules, else the cut before it earlier where both pieces are long enough)
+        if cuts.len() > first {
+            let k = *cuts.last().unwrap_or(&a);
+            let prev = if cuts.len() >= first + 2 { cuts[cuts.len() - 2] } else { a };
+            if span(k, b) < goals.night_least {
+                if ok(prev, b) {
+                    cuts.pop();
+                } else if let Some(j) = mine.iter().copied().filter(|&j| j > prev && j < k).rev().find(|&j| ok(prev, j) && ok(j, b) && span(j, b) >= goals.night_least.min(span(prev, b) / 2)) {
+                    cuts.pop();
+                    cuts.push(j);
+                }
+            }
+        }
+        if b < n {
+            cuts.push(b);
+        }
+        a = b;
+    }
+    let mut out = Vec::new();
+    let mut from = 0;
+    for k in cuts.into_iter().chain(std::iter::once(n)) {
+        if k > from {
+            out.push(from..k);
+            from = k;
+        }
+    }
+    out
+}
+
 /// What Optimise weighs a hard rule broken as: a bus a day more (`weighed`).
 const HARD: f64 = 500_00.0;
+/// (Round O) What "Make duties automatically" weighs a scrap of night work as: a duty with
+/// night-bus work shorter than the goals' shortest night piece.
+pub const NIGHT_SCRAP: f64 = 150_00.0;
 
 /// The rules of a duty as a whole Optimise weighs for pieces `ps` (in order) as one duty: its
 /// type (one the duty types allow, at its penalty), its length (Time Limitations: the spread at
 /// most and at least) and its changes of bus - the soft ones' penalties, and how many hard ones
 /// it breaks. (The duty's sign-on and sign-off as `shape` has them; a gap of a split's length a
 /// split.)
+#[cfg(test)]
 fn whole_rules(p: &Prefs, ps: &[&Cut]) -> (f64, usize) {
+    whole_rules_night(p, ps, false)
+}
+
+/// `whole_rules`, and (RosterFlow Pro, round O) `night`: the pieces have night-bus work - never a
+/// split duty (the user, 7 November 2026: "Delevagter er KUN mandag-fredag og ALDRIG natbus"), a
+/// night shift whenever it signs on.
+fn whole_rules_night(p: &Prefs, ps: &[&Cut], night: bool) -> (f64, usize) {
     let start = ps.first().map(|x| x.from).unwrap_or(0) - p.sign_on;
     let end = ps.iter().map(|x| x.to).max().unwrap_or(0) + p.sign_off;
     let split = ps.windows(2).any(|w| w[1].from - w[0].to >= p.split_min);
@@ -2591,8 +2737,12 @@ fn whole_rules(p: &Prefs, ps: &[&Cut]) -> (f64, usize) {
     if end - start > 1440 - staff::NIGHT_REST {
         hard += 1;
     }
+    if night && split {
+        hard += 1;
+    }
     match p.duty_types.iter().find(|t| t.fits(start, end, split)) {
         Some(t) if t.allowed => penalty += t.penalty as f64,
+        _ if night && !split && night_type(p).is_some_and(|k| p.duty_types[k].max_length >= end - start) => {}
         _ => hard += 1,
     }
     (penalty, hard)
@@ -2820,6 +2970,9 @@ pub fn optimise_aimed(c: &Company, lines: &[LineInfo], date: &str, vehicles: boo
         }
     }
     cuts.sort_by_key(|x| x.from);
+    // (round O: RosterFlow Pro's night-bus work - never in a split duty, its own target length)
+    let pro = super::pro_duties::on(c);
+    let night: Vec<bool> = cuts.iter().map(|x| pro && night_range(&tours[x.tour], x.range.clone())).collect();
     // pair the pieces into duties: each onto the duty it adds the least cost to, or a new one
     let (hour, fixed, _, _) = rates(c);
     let rate = hour / 60.0;
@@ -2837,12 +2990,20 @@ pub fn optimise_aimed(c: &Company, lines: &[LineInfo], date: &str, vehicles: boo
         let unpaid: i32 = ps.windows(2).map(|w| w[1].from - w[0].to).filter(|g| *g >= p.split_min).map(|g| (g - p.sign_off_split - p.sign_on_split).max(0)).sum();
         end - start - unpaid
     };
-    let aimed = |w: i32| -> f64 {
-        match aim {
-            Some(a) if w > a.goals.target_to => (w - a.goals.target_to) as f64 * rate * a.over,
-            Some(a) if w < a.goals.target_from => (a.goals.target_from - w) as f64 * rate * a.under,
-            _ => 0.0,
-        }
+    // (round O: a night duty aimed at the night's target, and a scrap of night work - shorter
+    // than the goals' shortest night piece - dear)
+    let aimed = |w: i32, ng: bool| -> f64 {
+        let Some(a) = aim else { return 0.0 };
+        let (from, to) = if ng { (a.goals.night_from, a.goals.night_to) } else { (a.goals.target_from, a.goals.target_to) };
+        let scrap = if ng && w < a.goals.night_least { NIGHT_SCRAP } else { 0.0 };
+        scrap
+            + if w > to {
+                (w - to) as f64 * rate * a.over
+            } else if w < from {
+                (from - w) as f64 * rate * a.under
+            } else {
+                0.0
+            }
     };
     let mut groups: Vec<Vec<usize>> = Vec::new();
     // (a duty begins where a relief point allows it, and takes a split's break where one does)
@@ -2851,8 +3012,8 @@ pub fn optimise_aimed(c: &Company, lines: &[LineInfo], date: &str, vehicles: boo
     let no_rest = |place: &str| set && uses_at(c, &tours, place).is_some_and(|u| !u.breaks);
     for (ci, x) in cuts.iter().enumerate() {
         // (a duty of its own: its hours, and the rules of a duty as a whole it breaks alone)
-        let (pen_x, hard_x) = whole_rules(&p, &[x]);
-        let alone = fixed as f64 + paid_of(&[x]) as f64 * rate + pen_x + HARD * hard_x as f64 + if unsigned(&x.at) { HARD } else { 0.0 } + aimed(work_of(&[x]));
+        let (pen_x, hard_x) = whole_rules_night(&p, &[x], night[ci]);
+        let alone = fixed as f64 + paid_of(&[x]) as f64 * rate + pen_x + HARD * hard_x as f64 + if unsigned(&x.at) { HARD } else { 0.0 } + aimed(work_of(&[x]), night[ci]);
         let mut best: Option<(usize, f64)> = None;
         for (gi, g) in groups.iter().enumerate() {
             let last = &cuts[*g.last().unwrap()];
@@ -2862,10 +3023,16 @@ pub fn optimise_aimed(c: &Company, lines: &[LineInfo], date: &str, vehicles: boo
             if gap < travel + staff::REST || (!splits && gap >= super::pro_duties::SPLIT_GAP) {
                 continue;
             }
+            // (round O: never a split duty with night-bus work - the user, 7 November 2026)
+            let g_night = g.iter().any(|&k| night[k]);
+            let both = g_night || night[ci];
+            if both && gap >= p.split_min {
+                continue;
+            }
             let mut ps: Vec<&Cut> = g.iter().map(|&k| &cuts[k]).collect();
             let before = paid_of(&ps);
             let work_before = work_of(&ps);
-            let (pen_b, hard_b) = whole_rules(&p, &ps);
+            let (pen_b, hard_b) = whole_rules_night(&p, &ps, g_night);
             ps.push(x);
             // (round J: never past the longest duty the goals allow)
             if aim.is_some_and(|a| work_of(&ps) > a.goals.longest) {
@@ -2881,7 +3048,7 @@ pub fn optimise_aimed(c: &Company, lines: &[LineInfo], date: &str, vehicles: boo
             }
             // (the duty as a whole - its type, its length, its spread, its changes of bus - never
             // made to break a hard rule it kept; one it breaks less of is worth that much)
-            let (pen_a, hard_a) = whole_rules(&p, &ps);
+            let (pen_a, hard_a) = whole_rules_night(&p, &ps, both);
             if hard_a > hard_b {
                 continue;
             }
@@ -2894,7 +3061,7 @@ pub fn optimise_aimed(c: &Company, lines: &[LineInfo], date: &str, vehicles: boo
                 None => continue,
             }
             if let Some(a) = aim {
-                penalty += aimed(work_of(&ps)) - aimed(work_before);
+                penalty += aimed(work_of(&ps), both) - aimed(work_before, g_night);
                 if a.goals.same_line && !same(&tours[last.tour].line, &tours[x.tour].line) {
                     penalty += a.line_change;
                 }

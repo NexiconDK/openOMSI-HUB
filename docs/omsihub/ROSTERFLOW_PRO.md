@@ -1448,6 +1448,38 @@ RosterFlow", and later "Den vil først starte dem fra i morgen - jeg vil have 13
   launcher out of reach, a role that may not - with "Try again", instead of a page that broke on
   the toolbar a refusal does not carry (`roster.js`).
 
+
+## Round O: night duties (NexiconDK, 7 November 2026)
+
+The player: "Hvorfor laver den automatiske vagtplanlægger meget korte vagter? De fleste natbusser
+er på 1-2-3 timer fremfor man har en lang natbus" - and "Delevagter er KUN mandag-fredag og ALDRIG
+natbus".
+
+- **Night-bus work** (`rosterflow::night_trip`, `spans_night`): a trip of a night line (its display
+  number says so, `specials::night_name`: "NE2") or one running past 24:00.
+- **Never a split duty with night-bus work**: "Make duties automatically" never joins pieces with
+  night-bus work over a split's gap (`optimise_aimed`, `whole_rules_night` a hard rule), on a
+  weekday either - Friday's night tours got split duties of an evening piece and a night piece
+  before. A split duty with night-bus work made by hand is marked red, not refused
+  (`pro_duties::M_NIGHT_SPLIT`; the checklist's "Delte vagter må ikke have natbus").
+- **A night shift whenever it signs on** (`rosterflow::night_type`): with RosterFlow Pro a duty
+  with night-bus work, not split, is the night shift's type even when it signs on after midnight
+  (a Saturday night's last piece from 02:40 was "Other", red).
+- **A night bus cut whole** (`cut_night_block`): Pro cuts a block with night-bus work its own way.
+  Where the bus stands at the depot for a split's length it is cut - the evening's work and the
+  night's are two pieces. Each part is one piece as far as the rules let it: no longer than the
+  goals' longest duty with its signing, and no stretch of driving longer than the continuous limit
+  without a break; the bus standing at its terminus at least `break_min` is a break there when
+  layovers count as breaks and the place allows breaks (a terminus and the depot do until the
+  planner says otherwise; a stop on the way that is no relief point does not). A cut is made only
+  where one is needed - the latest that keeps the piece before within the rules - and a last piece
+  shorter than the shortest night duty goes into the one before where both stay within the rules,
+  else the cut before it moves earlier.
+- **Night goals** (`Goals::night_from`, `night_to`, `night_least`; the goals panel's "Natvagter"):
+  a night duty aims at 5:00-9:30 (not the day's 7:24-8:30), and a duty with night-bus work shorter
+  than 3:00 weighs as dear as `NIGHT_SCRAP` in "Make duties automatically" and its score. The
+  checklist's target line says a night duty's target.
+
 ## Tests
 
 `pro_duties_tests`: a duty built of departures cut out of its buses and named, a duty of two buses,

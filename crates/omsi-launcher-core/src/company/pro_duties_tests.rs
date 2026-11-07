@@ -452,3 +452,99 @@ fn a_weekdays_plan_is_used_for_the_other_weekdays_still_on_the_games() {
     assert_eq!(fri.figures.assigned, 8, "Friday's own trips each in a duty");
     assert_eq!(unplanned_peers(&c, 0), vec![2, 3], "Wednesday and Thursday still to do");
 }
+
+/// (Round O) A tour of line 5 of `n` trips of 40 minutes from `from`, one an hour - twenty
+/// minutes at each end, a break - the trip `late` and those after it 20 minutes later (a gap of
+/// 40 minutes before it: a meal break).
+fn night_tour(no: &str, from: i32, n: i32, late: i32) -> TourInfo {
+    tour(no, (0..n).map(|k| {
+        let dep = from + k * 60 + if k >= late { 20 } else { 0 };
+        if k % 2 == 0 { tt(&format!("5 {no}-{k}"), "A", "B", dep, dep + 40) } else { tt(&format!("5 {no}-{k}"), "B", "A", dep, dep + 40) }
+    }).collect())
+}
+
+fn night_line(tours: Vec<TourInfo>) -> Vec<LineInfo> {
+    vec![LineInfo { name: "Linie5".into(), user_allowed: true, termini: vec!["A".into(), "B".into()], tours }]
+}
+
+/// Whether the duty of row `s` of `b` has night-bus work.
+fn at_night(b: &Board, s: &Shaped) -> bool {
+    rf::spans_night(&b.tours, &s.spans)
+}
+
+#[test]
+fn night_bus_work_is_never_in_a_split_duty() {
+    // a bus in the evening (16:00-19:40) and one at night (23:00-03:40): on a Monday the two
+    // might be one split duty - never, as the night bus is in it
+    let l = night_line(vec![night_tour("1", 960, 4, 9), night_tour("2", 1380, 5, 9)]);
+    let mut c = company();
+    let date = c.date.clone();
+    auto(&mut c, &l, &date);
+    let b = board(&c, &l, &date);
+    assert!(b.shaped.iter().any(|s| at_night(&b, s)), "the night bus is in a duty");
+    assert!(b.shaped.iter().filter(|s| at_night(&b, s)).all(|s| kind_of(s) != Kind::Split && s.splits.is_empty()), "no split duty with the night bus");
+    assert!(b.shaped.iter().enumerate().all(|(row, _)| marks(&c, &b, row).iter().all(|m| m.text != M_NIGHT_SPLIT)));
+    // joined by hand: a split duty, marked red - not refused
+    let mut c = company();
+    let before = board(&c, &l, &date);
+    let (one, two) = (block(&before, "1"), block(&before, "2"));
+    add_to_duty(&mut c, before.weekday, &before.tours, (one, 0), (two, 0)).unwrap();
+    let b = board(&c, &l, &date);
+    let row = row_of(&b, two, 0);
+    assert!(kind_of(&b.shaped[row]) == Kind::Split || !b.shaped[row].splits.is_empty());
+    let m = marks(&c, &b, row);
+    assert!(m.iter().any(|x| x.text == M_NIGHT_SPLIT && x.hard), "{m:?}");
+    let checks = super::super::pro_dutyplan::checklist(&c, &b, row);
+    assert!(checks.iter().any(|k| k.text == super::super::pro_dutyplan::C_SPLIT_NIGHT));
+    // a day's split duty is no night duty: not marked so
+    let l2 = vec![back_and_forth(&[("1", 360, 4), ("2", 840, 4)])];
+    let mut d = company();
+    auto(&mut d, &l2, &date);
+    let b2 = board(&d, &l2, &date);
+    assert!(b2.shaped.iter().any(|s| kind_of(s) == Kind::Split));
+    assert!((0..b2.shaped.len()).all(|row| marks(&d, &b2, row).iter().all(|m| m.text != M_NIGHT_SPLIT)));
+}
+
+#[test]
+fn a_night_duty_is_a_night_shift_whenever_it_signs_on() {
+    // a night bus from 00:30 to 03:10 (a Saturday night's): no duty type begins then - with
+    // RosterFlow Pro it is a night shift, not "Other"
+    let l = night_line(vec![night_tour("1", 1470, 3, 9)]);
+    let c = company();
+    let date = c.date.clone();
+    let b = board(&c, &l, &date);
+    let s = &b.shaped[0];
+    assert!(at_night(&b, s));
+    assert_eq!(s.kind, rf::night_type(&c.planning.flow.prefs));
+    assert!(b.issues.iter().all(|i| i.text != rf::I_TYPE), "{:?}", b.issues);
+    // without RosterFlow Pro: RosterFlow's own types, as before
+    let mut plain = company();
+    autopilot::set_planner(&mut plain, Planner::RosterFlow);
+    let b = board(&plain, &l, &date);
+    assert!(b.issues.iter().any(|i| i.text == rf::I_TYPE));
+}
+
+#[test]
+fn make_duties_automatically_keeps_a_night_bus_whole() {
+    // a night bus from 21:00 to 06:00, twenty minutes at each end and a meal break of 40 minutes
+    // at 23:40: one long night duty of about nine hours - not cut into pieces of two or three
+    let l = night_line(vec![night_tour("1", 1260, 9, 3)]);
+    let mut c = company();
+    let date = c.date.clone();
+    auto(&mut c, &l, &date);
+    let b = board(&c, &l, &date);
+    let night: Vec<&Shaped> = b.shaped.iter().filter(|s| at_night(&b, s)).collect();
+    assert_eq!(night.len(), 1, "one night duty: {:?}", b.shaped.iter().map(|s| (s.start, s.end)).collect::<Vec<_>>());
+    let goals = c.planning.flow.prefs.goals.sane();
+    assert!(night[0].work >= 8 * 60 && night[0].work <= goals.longest, "{}", night[0].work);
+    assert!(b.issues.iter().filter(|i| i.hard).all(|i| !rf::of_the_plan(i)), "no hard rule broken: {:?}", b.issues.iter().filter(|i| i.hard).collect::<Vec<_>>());
+    // and a bus that runs into the small hours after an evening piece: no scrap of night work
+    // left on its own
+    let l = night_line(vec![night_tour("1", 1080, 11, 4), night_tour("2", 1140, 4, 9)]);
+    let mut c = company();
+    auto(&mut c, &l, &date);
+    let b = board(&c, &l, &date);
+    for s in b.shaped.iter().filter(|s| at_night(&b, s)) {
+        assert!(s.work >= goals.night_least, "a scrap of night work: {}-{} {}", s.start, s.end, s.work);
+    }
+}

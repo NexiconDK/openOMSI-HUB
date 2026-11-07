@@ -110,7 +110,7 @@ fn make_duties_automatically_keeps_to_the_longest_duty_and_numbers_by_sign_on() 
     // one bus all day, one in the morning, one in the afternoon: many ways to pair the pieces
     let lines = vec![back_and_forth(&[("1", 330, 17), ("2", 390, 6), ("3", 840, 8), ("4", 420, 9)])];
     let date = c.date.clone();
-    c.planning.flow.prefs.goals = Goals { target_from: 360, target_to: 450, longest: 480, same_line: true };
+    c.planning.flow.prefs.goals = Goals { target_from: 360, target_to: 450, longest: 480, same_line: true, ..Goals::default() };
     let n = auto(&mut c, &lines, &date);
     let b = board(&c, &lines, &date);
     assert_eq!(b.figures.assigned, 40, "every trip in a duty");
