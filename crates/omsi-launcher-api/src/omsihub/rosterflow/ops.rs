@@ -299,7 +299,7 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             json!({ "date": d, "wd": tr(DAYS[pt::day_of(d)]), "name": day_name(d), "day": short_date(d), "today": *d == c.date, "past": co::dates::between(&c.date, d) < 0, "missing": missing, "label": day_label(d),
                 "missing_text": match missing { 0 => tr("all filled"), 1 => tr("duty missing"), _ => tr("duties missing") },
                 // (round G: what the answers say - a yes to give, every answer a no, still waiting)
-                "mark": mark_json(&po::mark_of(&c, d, co::clock::now(&c), now())),
+                "mark": mark_json(&c, d, &po::mark_of(&c, d, co::clock::now(&c), now())),
                 // (round D: a public holiday - its name, paid as a Sunday)
                 "holiday": ph::name(&c, d).map(tr), "holiday_tip": ph::name(&c, d).map(|n| trf("%{name}: a public holiday - paid as a Sunday (35 %)", &[("name", &tr(n))])) })
         })
@@ -653,8 +653,9 @@ fn name_in(c: &Company) -> impl Fn(u32) -> String + '_ {
 }
 
 /// An answer as the page shows it: its kind, its word, its words (translated, places filled).
-fn reply_json(c: &Company, r: &Reply) -> Value {
-    let (text, args) = po::words(r, &name_in(c));
+fn reply_json(c: &Company, r: &Reply, date: &str) -> Value {
+    // (round M: a duty in the words by its own name - "Jeg har allerede M131-1 den dag")
+    let (text, args) = po::words_by(r, &name_in(c), &|n| pd::shown_number(c, date, n));
     let words = match r {
         Reply::Text { text, .. } => format!("\"{text}\""),
         Reply::Silent => String::new(),
@@ -898,7 +899,7 @@ fn row_json(c: &Company, p: &DayPlan, d: &OpenDuty, part: Option<u8>, e: &Employ
             }
         }
         (Some(_), Some(r)) => {
-            v["answer"] = reply_json(c, r);
+            v["answer"] = reply_json(c, r, date);
             v["action"] = json!(if r.yes() { "give" } else { "none" });
         }
         (None, _) if matches!(po::mood_of(c, e.id, date, game), po::Mood::Done { .. }) => {
@@ -933,14 +934,56 @@ fn row_json(c: &Company, p: &DayPlan, d: &OpenDuty, part: Option<u8>, e: &Employ
 
 /// (Round G) A day's mark on its missing cell: "✓ 1 yes", "🕒 waiting for 3", "✗ all said no"
 /// (null: none), and the duty a click opens when the answers not seen are all for one.
-fn mark_json(m: &po::Mark) -> Value {
+fn mark_json(c: &Company, date: &str, m: &po::Mark) -> Value {
     let Some(key) = m.key() else { return Value::Null };
-    let text = match key {
-        "yes" => trf("✓ %{n} yes", &[("n", &m.yes.to_string())]),
-        "no" => tr("✗ all said no"),
-        _ => trf("🕒 waiting for %{n}", &[("n", &m.waiting.to_string())]),
+    // (round M: the yes answers by duty - "✓ 2 yes · 2003, 1 yes · 2005" -, the duty by its own
+    // name; on the cell the first two, every one in the tooltip)
+    let each: Vec<String> = m.yes_of.iter().map(|(n, k)| trf("%{n} yes · %{duty}", &[("n", &k.to_string()), ("duty", &pd::shown_number(c, date, *n))])).collect();
+    let (text, tip) = match key {
+        "yes" => {
+            let short = if each.len() > 2 { format!("{}, +{}", each[..2].join(", "), each.len() - 2) } else { each.join(", ") };
+            (format!("✓ {short}"), format!("✓ {}", each.join(", ")))
+        }
+        "no" => (tr("✗ all said no"), tr("✗ all said no")),
+        _ => {
+            let t = trf("🕒 waiting for %{n}", &[("n", &m.waiting.to_string())]);
+            (t.clone(), t)
+        }
     };
-    json!({ "key": key, "text": text, "n": if m.duties.len() == 1 { json!(m.duties[0]) } else { Value::Null } })
+    json!({ "key": key, "text": text, "tip": tip, "n": if m.duties.len() == 1 { json!(m.duties[0]) } else { Value::Null } })
+}
+
+/// (Round M) Who was asked for duty `n` of `date` and what they said, for its row in the day's
+/// list: "Asked 2 · ✓ 2 yes · ✗ 1 no · 🕒 1 waiting" (the parts that are not 0), the names in a
+/// tooltip, and how many answered (the rows with answers first). None: nobody asked.
+fn asked_json(c: &Company, date: &str, n: u32) -> Option<(Value, usize)> {
+    let (game, at) = (co::clock::now(c), now());
+    let asks: Vec<&po::Ask> = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == n && !a.closed).collect();
+    if asks.is_empty() {
+        return None;
+    }
+    let who = |a: &po::Ask| match a.who {
+        Asked::Staff { id } => name_in(c)(id),
+        Asked::Guest { no } => c.together.guest(no).map(|g| g.name.clone()).unwrap_or_default(),
+    };
+    let (mut yes, mut no, mut waiting) = (Vec::new(), Vec::new(), Vec::new());
+    for a in &asks {
+        match a.shown_at(game, at) {
+            None => waiting.push(who(a)),
+            Some(r) if r.yes() => yes.push(who(a)),
+            Some(_) => no.push(who(a)),
+        }
+    }
+    let mut parts = vec![trf("Asked %{n}", &[("n", &asks.len().to_string())])];
+    let mut tip = Vec::new();
+    for (list, one, label) in [(&yes, "✓ %{n} yes", "Yes"), (&no, "✗ %{n} no", "No"), (&waiting, "🕒 %{n} waiting", "Waiting")] {
+        if !list.is_empty() {
+            parts.push(trf(one, &[("n", &list.len().to_string())]));
+            tip.push(format!("{}: {}", tr(label), list.join(", ")));
+        }
+    }
+    let answered = yes.len() + no.len();
+    Some((json!({ "text": parts.join(" · "), "tip": tip.join("\n"), "yes": yes.len(), "no": no.len(), "waiting": waiting.len() }), answered))
 }
 
 /// (Round G) The answers come in to the company's open questions (`rf_answers`, asked by the page
@@ -961,7 +1004,7 @@ fn answers(s: &mut Session, _r: &mut Rf, _args: &Value) -> Answer {
                 Asked::Staff { id } => name_in(c)(id),
                 Asked::Guest { no } => c.together.guest(no).map(|g| g.name.clone()).unwrap_or_default(),
             };
-            json!({ "id": a.id, "date": a.date, "n": a.n, "text": trf("%{name} said yes to duty %{n}", &[("name", &name), ("n", &a.n.to_string())]) })
+            json!({ "id": a.id, "date": a.date, "n": a.n, "text": trf("%{name} said yes to duty %{n}", &[("name", &name), ("n", &pd::shown_number(c, &a.date, a.n))]) })
         })
         .collect();
     let shown = open.iter().filter(|a| a.shown_at(game, at).is_some()).count();
@@ -1051,7 +1094,17 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
                 // first when the player sorts so)
                 groups[g].2.push(((rank, !breaks.is_empty(), if fair { extras } else { 0 }, x.cost), row));
             }
-            Err(why) => cant.push(json!({ "name": e.name, "nr": e.id, "why": cannot_words(why) })),
+            Err(why) => {
+                // (round M: one asked before who now cannot - his answer still told: "Jeg har
+                // allerede 1002 den dag, beklager")
+                let (game, at) = (co::clock::now(c), now());
+                let said = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == d.n && !a.closed && a.of_staff() == Some(e.id)).max_by_key(|a| a.id).and_then(|a| a.shown_at(game, at));
+                let mut row = json!({ "name": e.name, "nr": e.id, "why": cannot_words(why) });
+                if let Some(r) = said {
+                    row["answer"] = reply_json(c, r, date);
+                }
+                cant.push(row);
+            }
         }
     }
     let groups: Vec<Value> = groups
@@ -1073,7 +1126,7 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
             .map(|g| {
                 let a = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == d.n && a.part.is_none() && !a.closed && a.who == (Asked::Guest { no: g.no })).max_by_key(|a| a.id);
                 let r = a.and_then(|a| a.shown_at(game, now));
-                let mut v = json!({ "no": g.no, "name": g.name, "action": match (a, r) { (None, _) => "ask", (Some(_), None) => "waiting", (Some(_), Some(r)) if r.yes() || r.key() == "text" => "give", _ => "none" }, "ask": a.map(|a| a.id), "answer": r.map(|r| reply_json(c, r)) });
+                let mut v = json!({ "no": g.no, "name": g.name, "action": match (a, r) { (None, _) => "ask", (Some(_), None) => "waiting", (Some(_), Some(r)) if r.yes() || r.key() == "text" => "give", _ => "none" }, "ask": a.map(|a| a.id), "answer": r.map(|r| reply_json(c, r, &date)) });
                 // (round H: what the player said he can that day, in the tab)
                 if let Some(can) = pa::guest_can(c, g.no, date) {
                     v["avail"] = avail_json(can, d.start, d.end);
@@ -1311,9 +1364,22 @@ fn daily(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                 why = format!("{} · {}", tr("split duty"), why);
             }
             let time = if o.kind == pd::Kind::Split { halves(p, &o.pieces, c.planning.flow.prefs.sign_on).unwrap_or_else(|| format!("{}–{}", clock(o.start), clock(o.end))).replace(" / ", " + ") } else { format!("{}–{}", clock(o.start), clock(o.end)) };
-            Some(json!({ "n": n, "cut": false, "label": shown_of(&ds, n), "time": time, "why": why, "split": o.kind == pd::Kind::Split }))
+            let mut row = json!({ "n": n, "cut": false, "label": shown_of(&ds, n), "time": time, "why": why, "split": o.kind == pd::Kind::Split });
+            // (round M: who was asked and what they said - "Spurgt 2 · ✓ 2 ja"; the button "See the answers ›")
+            if let Some((asked, _)) = asked_json(&c, &date, n) {
+                row["asked"] = asked;
+            }
+            Some(row)
         })
         .collect::<Vec<_>>());
+    // (round M: the duties with answers first, those with a yes before those with only noes)
+    if let Some(list) = out["open"].as_array_mut() {
+        list.sort_by_key(|r| {
+            let a = &r["asked"];
+            let (y, n, w) = (a["yes"].as_u64().unwrap_or(0), a["no"].as_u64().unwrap_or(0), a["waiting"].as_u64().unwrap_or(0));
+            if y > 0 { 0 } else if n > 0 { 1 } else if w > 0 { 2 } else { 3 }
+        });
+    }
     out["count"] = json!({ "duties": ds.len(), "open": items.len(), "text": match items.len() { 0 => tr("Every duty has a driver."), 1 => tr("1 duty is missing a driver"), n => trf("%{n} duties are missing a driver", &[("n", &n.to_string())]) } });
     // the frames of the day, and who is free all day
     out["frames"] = json!(plan::frames_on(&c, &date)
@@ -1967,6 +2033,64 @@ mod tests {
         let c = s.company.as_ref().unwrap();
         let calls: Vec<(u32, u32)> = c.planning.ops.calls.iter().filter(|x| x.date == date).map(|x| (x.n, x.driver)).collect();
         assert!(calls.contains(&(n, a)) && calls.contains(&(own, b)), "both changed at once: {calls:?}");
+    }
+
+    /// (Round M) The day's mark says the yes answers by duty ("✓ 2 yes · 1002"), every yes to it -
+    /// one seen already too -, and the day's list says of each duty who was asked and what they said,
+    /// those with answers first.
+    #[test]
+    fn the_day_says_how_many_said_yes_to_each_duty() {
+        company::words::set_language("en");
+        company::test_dry();
+        let mut s = session();
+        let mut r = Rf::default();
+        let ids: Vec<u32> = s.company.as_ref().unwrap().staff.iter().filter(|e| co::staff::drives(e)).map(|e| e.id).collect();
+        let date = "2024-03-05";
+        let v = daily(&mut s, &mut r, &json!({ "date": date })).unwrap();
+        let open: Vec<u64> = v["open"].as_array().unwrap().iter().map(|o| o["n"].as_u64().unwrap()).collect();
+        assert!(open.len() >= 2, "{v}");
+        let n = *open.last().unwrap() as u32;
+        {
+            let c = s.company.as_mut().unwrap();
+            let game = co::clock::now(c);
+            for (k, id) in ids.iter().enumerate() {
+                let reply = if k < 2 { Reply::Yes { say: 0 } } else { Reply::No { why: po::NoWhy::Plans, say: 0, own: 0 } };
+                c.planning.ops.asks.push(po::Ask { id: 900 + k as u32, date: date.into(), n, start: 0, end: 0, who: po::Asked::Staff { id: *id }, at: 0, wait: 0, reply: Some(reply), closed: false, part: None, due: Some(game - 5), closed_at: None, seen: k == 0 });
+            }
+        }
+        changed(&mut s);
+        let cal = calendar(&mut s, &mut r, &json!({})).unwrap();
+        let mark = &cal["days"][2]["mark"];
+        assert_eq!(mark["key"], "yes", "{mark}");
+        assert_eq!(mark["text"], format!("✓ 2 yes · {n}"), "every yes to the duty, the one seen too");
+        let v = daily(&mut s, &mut r, &json!({ "date": date })).unwrap();
+        let first = &v["open"][0];
+        assert_eq!(first["n"], n, "the duty answered first: {v}");
+        assert_eq!(first["asked"]["text"], "Asked 3 · ✓ 2 yes · ✗ 1 no", "{first}");
+        assert!(first["asked"]["tip"].as_str().unwrap().starts_with("Yes: "), "{first}");
+        assert!(v["open"][1].get("asked").is_none(), "nobody asked for the others");
+    }
+
+    /// (Round M) No answer leaves a place unfilled ("Jeg har allerede %{own} den dag"): every way to
+    /// say every answer, in Danish, with what fills it.
+    #[test]
+    fn no_answer_leaves_a_place_unfilled() {
+        company::words::set_language("da");
+        let mut replies = vec![Reply::Frame, Reply::Silent, Reply::Text { text: "ok".into(), yes: true }];
+        for say in 0..4u8 {
+            replies.extend([Reply::Yes { say }, Reply::Grudging { say }, Reply::Early { from: 600, say }, Reply::Late { until: 900, say }, Reply::Swap { with: 1, theirs: 1006, say }]);
+            for why in [po::NoWhy::Tired, po::NoWhy::Busy, po::NoWhy::Plans, po::NoWhy::Ill, po::NoWhy::Holiday, po::NoWhy::Licence, po::NoWhy::Long, po::NoWhy::Annoyed, po::NoWhy::Angry, po::NoWhy::DayOff, po::NoWhy::NotThatDay] {
+                replies.push(Reply::No { why, say, own: 0 });
+                replies.push(Reply::No { why, say, own: 1006 });
+            }
+        }
+        for r in &replies {
+            let (text, args) = po::words_by(r, &|_| "Nina".into(), &|n| n.to_string());
+            let a: Vec<(&str, &str)> = args.iter().map(|(k, v)| (*k, v.as_str())).collect();
+            let said = trf(&text, &a);
+            assert!(!said.contains("%{"), "{r:?}: {said}");
+        }
+        company::words::set_language("en");
     }
 
     #[test]

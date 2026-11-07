@@ -94,6 +94,10 @@ pub enum NoWhy {
     NotThatDay,
 }
 
+fn is_zero_n(n: &u32) -> bool {
+    *n == 0
+}
+
 /// A driver's answer.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(tag = "kind", rename_all = "snake_case")]
@@ -102,7 +106,13 @@ pub enum Reply {
     Yes { say: u8 },
     /// Yes, the duty is within his frame (a reserve: the frame is the company's).
     Frame,
-    No { why: NoWhy, say: u8 },
+    /// (Round M) `own`: his own duty then, when he is busy with one (`NoWhy::Busy`; 0: none told).
+    No {
+        why: NoWhy,
+        say: u8,
+        #[serde(default, skip_serializing_if = "is_zero_n")]
+        own: u32,
+    },
     /// Too early: he can from `from` (minutes of the day).
     Early { from: i32, say: u8 },
     /// Too late: he can until `until`.
@@ -678,6 +688,8 @@ pub const SAY_YES: [&str; 4] = ["Yes, that suits me fine.", "Yes, I can take it.
 pub const SAY_FRAME: &str = "Yes, it is within my frame.";
 pub const SAY_TIRED: [&str; 3] = ["I've had a long week, can we do it another time?", "Sorry, I'm worn out this week.", "I need my days off this week, sorry."];
 pub const SAY_BUSY: [&str; 2] = ["I'm driving %{own} then myself.", "I already have %{own} that day, sorry."];
+/// (Round M) Busy, his own duty not told (an answer of before, or another duty than the day's).
+pub const SAY_BUSY_ANY: [&str; 2] = ["I have another duty then myself.", "I have another duty that day, sorry."];
 pub const SAY_PLANS: [&str; 3] = ["Sorry, I have plans that day.", "That day doesn't work for me, sorry.", "No, I can't that day."];
 pub const SAY_ILL: &str = "I'm still ill, sorry.";
 pub const SAY_HOLIDAY: &str = "I'm on holiday then.";
@@ -690,14 +702,20 @@ pub const SAY_SWAP: [&str; 2] = ["I can, if %{name} takes my %{own}.", "Yes, if 
 /// The words of an answer: its English template (a key of the translations) and what fills it
 /// (`name`: a colleague's name).
 pub fn words(r: &Reply, name: &dyn Fn(u32) -> String) -> (String, Vec<(&'static str, String)>) {
+    words_by(r, name, &|n| n.to_string())
+}
+
+/// `words` with a duty shown by `duty` (round M: its own name - `pro_duties::shown_number`).
+pub fn words_by(r: &Reply, name: &dyn Fn(u32) -> String, duty: &dyn Fn(u32) -> String) -> (String, Vec<(&'static str, String)>) {
     let pick = |list: &[&str], say: u8| list[say as usize % list.len()].to_string();
     let time = |m: i32| format!("{:02}:{:02}", m.rem_euclid(1440) / 60, m.rem_euclid(60));
     match r {
         Reply::Yes { say } => (pick(&SAY_YES, *say), Vec::new()),
         Reply::Frame => (SAY_FRAME.into(), Vec::new()),
-        Reply::No { why, say } => match why {
+        Reply::No { why, say, own } => match why {
             NoWhy::Tired => (pick(&SAY_TIRED, *say), Vec::new()),
-            NoWhy::Busy => (pick(&SAY_BUSY, *say), Vec::new()),
+            NoWhy::Busy if *own != 0 => (pick(&SAY_BUSY, *say), vec![("own", duty(*own))]),
+            NoWhy::Busy => (pick(&SAY_BUSY_ANY, *say), Vec::new()),
             NoWhy::Plans => (pick(&SAY_PLANS, *say), Vec::new()),
             NoWhy::Ill => (SAY_ILL.into(), Vec::new()),
             NoWhy::Holiday => (SAY_HOLIDAY.into(), Vec::new()),
@@ -711,7 +729,7 @@ pub fn words(r: &Reply, name: &dyn Fn(u32) -> String) -> (String, Vec<(&'static 
         Reply::Grudging { say } => (pick(&SAY_GRUDGING, *say), Vec::new()),
         Reply::Early { from, say } => (pick(&SAY_EARLY, *say), vec![("time", time(*from))]),
         Reply::Late { until, say } => (pick(&SAY_LATE, *say), vec![("time", time(*until))]),
-        Reply::Swap { with, theirs, say } => (pick(&SAY_SWAP, *say), vec![("name", name(*with)), ("own", theirs.to_string())]),
+        Reply::Swap { with, theirs, say } => (pick(&SAY_SWAP, *say), vec![("name", name(*with)), ("own", duty(*theirs))]),
         Reply::Text { text, .. } => (text.clone(), Vec::new()),
         Reply::Silent => (SAY_SILENT.into(), Vec::new()),
     }
@@ -738,22 +756,24 @@ pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: 
     // (asked again the same day after a no: angry, he says no; irritated, rather no - `Mood`)
     let mood = mood_of(c, e.id, date, super::clock::now(c));
     if matches!(mood, Mood::Angry { .. } | Mood::Done { .. }) {
-        return Reply::No { why: NoWhy::Angry, say };
+        return Reply::No { why: NoWhy::Angry, say, own: 0 };
     }
     let irritated = matches!(mood, Mood::Irritated { .. });
     let mut moody = Rng::of(&[&c.id, date, "pro-mood"], ((n as i64) << 24) | e.id as i64);
     if s.in_frame && s.fit.is_ok() {
         if irritated && !moody.chance(IRRITATED_YES) {
-            return Reply::No { why: NoWhy::Annoyed, say };
+            return Reply::No { why: NoWhy::Annoyed, say, own: 0 };
         }
         // (round F: asked after noon the day before - short notice - a reserve mostly says yes,
         // not always: plans of his own)
         if !irritated && !before_noon(c, date) && !moody.chance(LATE_NOTICE_YES) {
-            return Reply::No { why: NoWhy::Plans, say };
+            return Reply::No { why: NoWhy::Plans, say, own: 0 };
         }
         return if irritated { Reply::Grudging { say } } else { Reply::Frame };
     }
-    let no = |why: NoWhy| Reply::No { why, say };
+    let no = |why: NoWhy| Reply::No { why, say, own: 0 };
+    // (round M: busy - with his own duty that day, told by its number)
+    let busy = Reply::No { why: NoWhy::Busy, say, own: s.own.map_or(0, |o| o.0) };
     match &s.fit {
         Err(Cannot::Ill { .. }) => return no(NoWhy::Ill),
         Err(Cannot::Holiday { .. }) => return no(NoWhy::Holiday),
@@ -765,14 +785,14 @@ pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: 
         Err(Cannot::OnDuty { .. }) => {
             return match (s.own, s.swap_with) {
                 (Some(own), Some(with)) if rng.chance(0.7) => Reply::Swap { with, theirs: own.0, say },
-                _ => no(NoWhy::Busy),
+                _ => busy,
             };
         }
         Err(Cannot::Rest { .. } | Cannot::NightRest { .. }) => {
             return match (s.can_from, s.can_until) {
                 (Some(from), _) => Reply::Early { from, say },
                 (None, Some(until)) => Reply::Late { until, say },
-                _ => no(NoWhy::Busy),
+                _ => busy,
             };
         }
         Ok(()) => {}
@@ -898,6 +918,9 @@ pub struct Mark {
     /// Every question answered, none of them a yes - and some of those noes not seen yet.
     pub all_no: bool,
     pub duties: Vec<u32>,
+    /// (Round M) The yes answers to each of `duties` that has any - every yes to it so far, seen
+    /// or not ("2 ja · 2003"), in the order of `duties`.
+    pub yes_of: Vec<(u32, usize)>,
 }
 
 impl Mark {
@@ -920,15 +943,13 @@ impl Mark {
 pub fn mark_of(c: &Company, date: &str, game: i64, now: u64) -> Mark {
     let mut m = Mark::default();
     let (mut yes_any, mut no_new) = (false, false);
-    for a in c.planning.ops.asks.iter().filter(|a| a.date == date && !a.closed) {
+    let open: Vec<&Ask> = c.planning.ops.asks.iter().filter(|a| a.date == date && !a.closed).collect();
+    for a in &open {
         match a.shown_at(game, now) {
             None => m.waiting += 1,
             Some(r) => {
                 if r.yes() {
                     yes_any = true;
-                    if !a.seen {
-                        m.yes += 1;
-                    }
                 } else if !a.seen {
                     no_new = true;
                 }
@@ -938,6 +959,15 @@ pub fn mark_of(c: &Company, date: &str, game: i64, now: u64) -> Mark {
             }
         }
     }
+    // (round M: every yes to a duty with an answer not seen - not only the new ones: the
+    // planner who opened the box after the first yes saw "1 yes" when two had said it)
+    for &n in &m.duties {
+        let yes = open.iter().filter(|a| a.n == n && a.shown_at(game, now).is_some_and(Reply::yes)).count();
+        if yes > 0 {
+            m.yes_of.push((n, yes));
+        }
+    }
+    m.yes = m.yes_of.iter().map(|x| x.1).sum();
     m.all_no = no_new && !yes_any && m.waiting == 0;
     m
 }
@@ -1283,7 +1313,7 @@ pub fn texts() -> Vec<&'static str> {
     v.extend(super::pro_season::texts());
     v.extend(super::pro_avail::texts());
     v.extend(super::pro_report::texts());
-    for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP, &SAY_ANNOYED, &SAY_ANGRY, &SAY_GRUDGING] {
+    for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_BUSY_ANY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP, &SAY_ANNOYED, &SAY_ANGRY, &SAY_GRUDGING] {
         v.extend(list.iter().copied());
     }
     v

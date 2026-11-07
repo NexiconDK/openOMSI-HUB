@@ -130,8 +130,8 @@ fn an_open_duty_is_cut_so_that_most_of_it_is_driven() {
     let d = open.iter().find(|o| o.n == morning).unwrap().clone();
     // nobody takes all of it: the afternoon's driver and ids[3] said no, ids[4] can until 08:00
     let said = vec![
-        (ids[1], Reply::No { why: NoWhy::Plans, say: 0 }),
-        (ids[3], Reply::No { why: NoWhy::Tired, say: 0 }),
+        (ids[1], Reply::No { why: NoWhy::Plans, say: 0, own: 0 }),
+        (ids[3], Reply::No { why: NoWhy::Tired, say: 0, own: 0 }),
         (ids[4], Reply::Late { until: 8 * 60, say: 0 }),
     ];
     let prop = propose(&c, &p, &d, &ds, &|_| 0.0, &said);

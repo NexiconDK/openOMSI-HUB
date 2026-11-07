@@ -225,7 +225,7 @@ fn rf_act_need(act: &str) -> Need {
         "pro_cut" | "pro_pool" | "pro_dissolve" | "pro_new" | "pro_add" | "pro_auto" | "pro_rules" => PLANS,
         // (round K: the Afgange tab - a duty looked at first changes nothing; built or named, it does)
         "pro_build_preview" => RF_VIEW,
-        "pro_build" | "pro_name" => PLANS,
+        "pro_build" | "pro_name" | "pro_week" => PLANS,
         _ => Never,
     }
 }

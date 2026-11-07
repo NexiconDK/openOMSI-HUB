@@ -415,3 +415,40 @@ fn a_duty_begun_where_no_relief_point_is_is_marked_yellow() {
     // the bus's own issue is yellow with RosterFlow Pro, not red
     assert!(b.issues.iter().filter(|i| i.text == rf::I_RELIEF_PLACE).all(|i| !i.hard));
 }
+
+/// (Round M) Monday planned, Tuesday - Friday still the game's: "Use for … too" copies Monday's
+/// duties where the timetable is the same, names and all, and makes a day of another timetable
+/// its own duties.
+#[test]
+fn a_weekdays_plan_is_used_for_the_other_weekdays_still_on_the_games() {
+    let mut c = company();
+    let l = lines();
+    let monday = c.date.clone();
+    assert!(unplanned_peers(&c, 0).is_empty(), "nothing planned yet: nothing to offer");
+    // Monday: a piece cut into the pool and taken out again as a duty of its own, one named
+    let b = board(&c, &l, &monday);
+    let one = block(&b, "1");
+    edit(&mut c, |c, wd, tours| cut_to_pool(c, wd, tours, one, 4)).unwrap();
+    let b = board(&c, &l, &monday);
+    let p = (block(&b, "1"), 1);
+    edit(&mut c, |c, wd, tours| new_duty(c, wd, tours, p)).unwrap();
+    edit(&mut c, |c, wd, tours| set_name(c, wd, tours, (block(&board(c, &l, &c.date.clone()), "1"), 0), "M5-1")).unwrap();
+    assert!(planned(&c, 0));
+    assert_eq!(unplanned_peers(&c, 0), vec![1, 2, 3, 4], "Tuesday to Friday still the game's");
+    assert!(unplanned_peers(&c, 5).is_empty(), "a Saturday is a day type of its own");
+    let mon = board(&c, &l, &monday);
+    // Tuesday the same timetable; Friday one bus less (another timetable)
+    let friday_lines = vec![back_and_forth(&[("1", 360, 8)])];
+    let days: Vec<(u8, String, Vec<LineInfo>)> = vec![(1, crate::company::dates::add(&monday, 1), l.clone()), (4, crate::company::dates::add(&monday, 4), friday_lines.clone())];
+    let used = use_for(&mut c, 0, (&monday, &l), &days);
+    assert_eq!(used[0], (1, Used::Copied));
+    assert!(matches!(used[1], (4, Used::Made(_))), "{used:?}");
+    let tue = board(&c, &l, &days[0].1);
+    assert_eq!(tue.shaped.len(), mon.shaped.len(), "Tuesday has Monday's duties");
+    let spans = |b: &Board| b.shaped.iter().map(|s| (s.start, s.end)).collect::<Vec<_>>();
+    assert_eq!(spans(&tue), spans(&mon));
+    assert!(tue.shaped.iter().enumerate().any(|(row, s)| s.label(row) == "M5-1"), "the name came with it");
+    let fri = board(&c, &friday_lines, &days[1].1);
+    assert_eq!(fri.figures.assigned, 8, "Friday's own trips each in a duty");
+    assert_eq!(unplanned_peers(&c, 0), vec![2, 3], "Wednesday and Thursday still to do");
+}

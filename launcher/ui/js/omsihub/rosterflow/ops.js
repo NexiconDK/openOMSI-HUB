@@ -198,8 +198,9 @@ function Missing({ v, pop }) {
       <div class="bx-grow">
         <div class="bx-name">${d.label} <span class="bx-time">${d.time}</span></div>
         <div class="bx-sub">${d.why}</div>
+        ${d.asked && html`<div class=${'bx-asked' + (d.asked.yes ? ' yes' : d.asked.no && !d.asked.waiting ? ' no' : '')} title=${d.asked.tip}>${d.asked.text}</div>`}
       </div>
-      <button type="button" class="bx-btn blue" onClick=${() => setO({ date: v.date, n: d.n, pop: true, given: null })}>${tr('Find a driver ›')}</button>
+      <button type="button" class=${'bx-btn ' + (d.asked?.yes ? 'green' : 'blue')} onClick=${() => setO({ date: v.date, n: d.n, pop: true, given: null })}>${d.asked ? tr('See the answers ›') : tr('Find a driver ›')}</button>
     </div>`)}
     ${v.swaps?.list?.length > 0 && html`<div class="bx-group">${v.swaps.caps}</div>
       ${v.swaps.list.map((w) => html`<div class="bx-row">
@@ -334,7 +335,7 @@ function Who({ v, d }) {
     html`<div class="bx-note"><b>${tr('Nobody can drive all of the duty.')}</b><span>${tr('Cut it in pieces, so that as much as possible is driven.')}</span></div>
       ${d.can_cut && html`<button type="button" class="bx-btn blue wide" onClick=${() => oAct('cut', { date: v.date, n: d.n })}>${tr('Cut the duty ›')}</button>`}
       <div style="margin-top:8px"><${Uncovered} v=${v} n=${d.n} d=${d} /></div>`}
-    ${d.cant.length > 0 && html`<details class="bx-cant"><summary>${d.cant_label}</summary>${d.cant.map((x) => html`<div class="bx-row dim"><div class="bx-grow"><div class="bx-name">${x.name}</div><div class="bx-sub">${x.why}</div></div></div>`)}</details>`}
+    ${d.cant.length > 0 && html`<details class="bx-cant" open=${d.cant.some((x) => x.answer)}><summary>${d.cant_label}</summary>${d.cant.map((x) => html`<div class="bx-row dim"><div class="bx-grow"><div class="bx-name">${x.name}</div><div class="bx-sub">${x.why}</div>${x.answer && html`<div class="bx-said">${x.answer.chip} · ${x.answer.words}</div>`}</div></div>`)}</details>`}
     ${askable && html`<div class="wl-bar"><span>${tr('%{n} ticked', { n: count })}${d.cant.length > 0 ? ` · ${d.cant_label}` : ''}</span>
       <button type="button" class="bx-btn blue" disabled=${count === 0} title=${count === 0 ? tr('Tick the drivers to ask first.') : ''} onClick=${askAll}>${tr('Ask those ticked')}</button></div>`}
   </div>`;
@@ -585,7 +586,7 @@ export function CalendarTab() {
           <div class="cl-name miss"><b>${tr('Missing a driver')}</b><span>${tr('click to fill')}</span></div>
           ${v.days.map((d) => html`<button type="button" class=${'cl-miss' + (d.missing ? ' bad' : ' ok') + (d.date === day ? ' sel' : '')} onClick=${() => setO({ date: d.date, n: null, pop: true, given: null })}>
             ${d.missing ? html`<b>${d.missing}</b><span>${d.missing_text}</span>` : html`<${Icon} name="check" size=${16} /><span>${d.missing_text}</span>`}
-            ${d.mark && html`<i class=${'cl-mark ' + d.mark.key} title=${d.mark.text} onClick=${(e) => (e.stopPropagation(), setO({ date: d.date, n: d.mark.n ?? null, pop: true, given: null }))}>${d.mark.text}</i>`}
+            ${d.mark && html`<i class=${'cl-mark ' + d.mark.key} title=${d.mark.tip || d.mark.text} onClick=${(e) => (e.stopPropagation(), setO({ date: d.date, n: d.mark.n ?? null, pop: true, given: null }))}>${d.mark.text}</i>`}
           </button>`)}
           <div></div>
           ${groups.map(([g, xs]) => html`<div class="cl-group" style=${`grid-column:1 / span ${v.days.length + 2}`}>${v.groups[g]} · ${xs.length}</div>

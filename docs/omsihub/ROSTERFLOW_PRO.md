@@ -1400,6 +1400,35 @@ day whether used or not.
   (`pro_turnus::place`); a change that applies later is put on it on the Turnus page once it
   applies (the page says so).
 
+## Round M: the answers in the day, a busy answer's duty, the other weekdays (NexiconDK, 7 November 2026)
+
+- **The day's mark by duty** (`pro_ops::mark_of`, `Mark::yes_of`; `ops.rs` `mark_json`): the
+  calendar's mark on a day with answers not seen says the yes answers by duty - "✓ 2 ja · 2003",
+  "✓ 2 ja · 2003, 1 ja · 2005" (two on the cell, every one in the tooltip), the duty by its own
+  name. It counts every yes to a duty with an answer not seen, the ones seen too: it counted only
+  the yes answers not seen, so the planner who opened the box after the first yes saw "1 ja"
+  when two had said it.
+- **Who was asked, in the day's list** (`ops.rs` `asked_json`): each duty without a driver says
+  "Spurgt 3 · ✓ 2 ja · ✗ 1 nej · 🕒 1 venter" (the parts not 0, the names in the tooltip), its
+  button "Se svar ›" (green with a yes); the duties with a yes first, then those with noes, then
+  those waiting.
+- **A busy answer names the duty** (`Reply::No::own`, `pro_ops::words_by`): a driver who has
+  another duty then (`Cannot::OnDuty` without a swap, the rest rules without a time he can) says
+  which - "Jeg har allerede M131-1 den dag, beklager", by the duty's own name
+  (`pro_duties::shown_number`); an answer of before, without it, says "Jeg har en anden vagt den
+  dag, beklager" (`SAY_BUSY_ANY`). A swap's duty is named the same way. `%{own}` was left in the
+  text. A test says every way to say every answer leaves no place unfilled in Danish.
+- **Each weekday its plan** (`pro.rs` `slot_name`, `pro_duties::unplanned_peers`, `use_for`): the
+  Vagter and Afgange tabs say the weekday they edit ("Dag: Mandag") - not "Mandag til fredag":
+  RosterFlow keeps a plan a weekday, so "Lav vagter automatisk" on a Monday left Tuesday to
+  Friday on the game's plan (and a split-duty rota with Monday's split duties only). While the
+  other weekdays Monday to Friday have no plan of their own, a bar says so with "Brug også for
+  tirsdag – fredag": a day of the same timetable (every trip matched, none left over:
+  `plandays::copy`) gets the plan copied as it is, its duties' names and pool with it; a day of
+  another timetable (Friday's night tours) gets its duties made automatically on its own
+  timetable (`auto`). Each is numbered in the order its duties sign on; it is the draft's, so
+  SAVE keeps it.
+
 ## Tests
 
 `pro_duties_tests`: a duty built of departures cut out of its buses and named, a duty of two buses,

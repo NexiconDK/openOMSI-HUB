@@ -440,7 +440,7 @@ fn the_rules_of_asking_a_reserve_the_hourly_paid_and_a_permanent_driver() {
     // round G: two permanent drivers at once, and the hourly paid alongside
     let yes = || Some(Reply::Yes { say: 0 });
     let date = tomorrow.as_str();
-    ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[1] }, yes()), (Asked::Staff { id: ids[0] }, Some(Reply::No { why: NoWhy::Plans, say: 0 }))], 10).unwrap();
+    ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[1] }, yes()), (Asked::Staff { id: ids[0] }, Some(Reply::No { why: NoWhy::Plans, say: 0, own: 0 }))], 10).unwrap();
     ask(&mut c, date, 1001, 350, 660, vec![(Asked::Staff { id: ids[3] }, yes()), (Asked::Staff { id: ids[4] }, yes())], 10).unwrap();
     // given before his yes: refused; put on (a reserve's `set`): fine
     assert_eq!(give_asked(&mut c, date, 1001, None, ids[3], None, false, true, 10), Err(NEEDS_YES));
@@ -550,7 +550,7 @@ fn an_irritated_driver_says_yes_much_less_and_grudgingly() {
     let yeses = |c: &Company| (2001..2401).filter(|n| ai_reply(c, &e, &c.date.clone(), *n, 600, 900, &calm()).yes()).count();
     let before = yeses(&c);
     assert_eq!(mood_of(&c, e.id, &c.date, game), Mood::Calm);
-    said(&mut c, e.id, 1001, Reply::No { why: NoWhy::Plans, say: 0 }, game - 18);
+    said(&mut c, e.id, 1001, Reply::No { why: NoWhy::Plans, say: 0, own: 0 }, game - 18);
     assert_eq!(mood_of(&c, e.id, &c.date, game), Mood::Irritated { at: game - 18 });
     let after = yeses(&c);
     assert!(before > 150 && (after as f64) < before as f64 * 0.6, "{before} -> {after}");
@@ -567,9 +567,9 @@ fn an_irritated_driver_says_yes_much_less_and_grudgingly() {
     // (asked again: a little less content)
     let s0 = c.employee(e.id).unwrap().satisfaction;
     let date = c.date.clone();
-    ask_part(&mut c, &date, 1002, None, 600, 900, vec![(Asked::Staff { id: e.id }, Some(Reply::No { why: NoWhy::Annoyed, say: 1 }))], 0, &|_| 0.0).unwrap();
+    ask_part(&mut c, &date, 1002, None, 600, 900, vec![(Asked::Staff { id: e.id }, Some(Reply::No { why: NoWhy::Annoyed, say: 1, own: 0 }))], 0, &|_| 0.0).unwrap();
     assert_eq!(c.employee(e.id).unwrap().satisfaction, s0 - IRRITATED_COST);
-    let (words, _) = words(&Reply::No { why: NoWhy::Annoyed, say: 1 }, &|_| String::new());
+    let (words, _) = words(&Reply::No { why: NoWhy::Annoyed, say: 1, own: 0 }, &|_| String::new());
     assert_eq!(words, "Again? No.");
 }
 
@@ -580,13 +580,13 @@ fn an_angry_driver_always_says_no_and_then_answers_no_more_today() {
     let game = crate::company::clock::now(&c);
     let id = c.staff[1].id;
     let e = c.staff[1].clone();
-    said(&mut c, id, 1001, Reply::No { why: NoWhy::Plans, say: 0 }, game - 60);
-    said(&mut c, id, 1002, Reply::No { why: NoWhy::Annoyed, say: 0 }, game - 20);
+    said(&mut c, id, 1001, Reply::No { why: NoWhy::Plans, say: 0, own: 0 }, game - 60);
+    said(&mut c, id, 1002, Reply::No { why: NoWhy::Annoyed, say: 0, own: 0 }, game - 20);
     assert_eq!(mood_of(&c, id, &c.date, game), Mood::Angry { at: game - 20 });
     assert!((2001..2101).all(|n| matches!(ai_reply(&c, &e, &c.date.clone(), n, 600, 900, &calm()), Reply::No { why: NoWhy::Angry, .. })));
     let s0 = c.employee(id).unwrap().satisfaction;
     let date = c.date.clone();
-    ask_part(&mut c, &date, 1003, None, 600, 900, vec![(Asked::Staff { id }, Some(Reply::No { why: NoWhy::Angry, say: 0 }))], 0, &|_| 0.0).unwrap();
+    ask_part(&mut c, &date, 1003, None, 600, 900, vec![(Asked::Staff { id }, Some(Reply::No { why: NoWhy::Angry, say: 0, own: 0 }))], 0, &|_| 0.0).unwrap();
     assert_eq!(c.employee(id).unwrap().satisfaction, s0 - ANGRY_COST);
     // (his angry no come: no more questions today)
     c.clock.minute += 120;
@@ -596,7 +596,7 @@ fn an_angry_driver_always_says_no_and_then_answers_no_more_today() {
     // (never below nothing, and never gone for it)
     c.staff.iter_mut().find(|e| e.id == id).unwrap().satisfaction = 1.0;
     c.planning.ops.asks.retain(|a| a.n != 1003);
-    ask_part(&mut c, &date, 1005, None, 600, 900, vec![(Asked::Staff { id }, Some(Reply::No { why: NoWhy::Angry, say: 0 }))], 0, &|_| 0.0).unwrap();
+    ask_part(&mut c, &date, 1005, None, 600, 900, vec![(Asked::Staff { id }, Some(Reply::No { why: NoWhy::Angry, say: 0, own: 0 }))], 0, &|_| 0.0).unwrap();
     assert_eq!(c.employee(id).unwrap().satisfaction, 0.0);
     assert!(c.employee(id).is_some());
 }
@@ -610,13 +610,13 @@ fn only_real_refusals_of_the_day_count_and_a_new_day_starts_calm() {
     said(&mut c, id, 1001, Reply::Early { from: 700, say: 0 }, game - 50);
     said(&mut c, id, 1002, Reply::Late { until: 700, say: 0 }, game - 40);
     said(&mut c, id, 1003, Reply::Silent, game - 30);
-    said(&mut c, id, 1004, Reply::No { why: NoWhy::Ill, say: 0 }, game - 25);
-    said(&mut c, id, 1005, Reply::No { why: NoWhy::Plans, say: 0 }, game + 30);
-    said(&mut c, id, 1006, Reply::No { why: NoWhy::Plans, say: 0 }, game - 10);
+    said(&mut c, id, 1004, Reply::No { why: NoWhy::Ill, say: 0, own: 0 }, game - 25);
+    said(&mut c, id, 1005, Reply::No { why: NoWhy::Plans, say: 0, own: 0 }, game + 30);
+    said(&mut c, id, 1006, Reply::No { why: NoWhy::Plans, say: 0, own: 0 }, game - 10);
     c.planning.ops.asks.last_mut().unwrap().closed_at = Some(game - 15);
     assert_eq!(mood_of(&c, id, &c.date, game), Mood::Calm, "too early, too late, no answer, ill, not come yet, taken back first");
     // (taken back after his no: it counts)
-    said(&mut c, id, 1007, Reply::No { why: NoWhy::Tired, say: 0 }, game - 5);
+    said(&mut c, id, 1007, Reply::No { why: NoWhy::Tired, say: 0, own: 0 }, game - 5);
     let k = c.planning.ops.last;
     assert!(withdraw_ask(&mut c, k));
     assert_eq!(mood_of(&c, id, &c.date, game), Mood::Irritated { at: game - 5 });
@@ -648,7 +648,7 @@ fn a_mood_is_about_the_duties_day_not_the_day_of_asking() {
     let no_for = |c: &mut Company, date: &str, n: u32, at: i64| {
         c.planning.ops.last += 1;
         let k = c.planning.ops.last;
-        c.planning.ops.asks.push(Ask { id: k, date: date.to_string(), n, start: 600, end: 900, who: Asked::Staff { id }, at: 0, wait: 0, reply: Some(Reply::No { why: NoWhy::Plans, say: 0 }), closed: false, part: None, due: Some(at), closed_at: None, seen: false });
+        c.planning.ops.asks.push(Ask { id: k, date: date.to_string(), n, start: 600, end: 900, who: Asked::Staff { id }, at: 0, wait: 0, reply: Some(Reply::No { why: NoWhy::Plans, say: 0, own: 0 }), closed: false, part: None, due: Some(at), closed_at: None, seen: false });
     };
     no_for(&mut c, &d15, 1001, game - 30);
     assert_eq!(mood_of(&c, id, &d15, game), Mood::Irritated { at: game - 30 });
@@ -985,7 +985,7 @@ fn a_drivers_wishes_change_his_answer_and_being_asked_anyway_annoys_him() {
     assert!(pw::bias(&c, y, &date, 300, 1100) < 1.0 && pw::bias(&c, y, &date, 300, 700) == 1.0);
     // asked on the day he wished off: a little less content
     let s0 = c.employee(e.id).unwrap().satisfaction;
-    ask_part(&mut c, &date, 1001, None, 360, 650, vec![(Asked::Staff { id: e.id }, Some(Reply::No { why: NoWhy::Plans, say: 0 }))], 0, &|_| 0.0).unwrap();
+    ask_part(&mut c, &date, 1001, None, 360, 650, vec![(Asked::Staff { id: e.id }, Some(Reply::No { why: NoWhy::Plans, say: 0, own: 0 }))], 0, &|_| 0.0).unwrap();
     assert_eq!(c.employee(e.id).unwrap().satisfaction, s0 - pw::ASKED_ANYWAY);
 }
 
@@ -1689,7 +1689,7 @@ fn the_mark_on_the_missing_cell_grey_green_red_and_seen() {
     let date = dates::add(&c.date, 1);
     let d = date.as_str();
     assert_eq!(mark_of(&c, d, crate::company::clock::now(&c), 10).key(), None);
-    let no = || Some(Reply::No { why: NoWhy::Plans, say: 0 });
+    let no = || Some(Reply::No { why: NoWhy::Plans, say: 0, own: 0 });
     ask(&mut c, d, 1001, 350, 660, vec![(Asked::Staff { id: ids[1] }, no()), (Asked::Staff { id: ids[2] }, no())], 10).unwrap();
     let now = crate::company::clock::now(&c);
     let m = mark_of(&c, d, now, 10);
@@ -1800,4 +1800,47 @@ fn the_hourly_paid_say_when_they_can_work_and_remember_it_when_asked() {
     wish(&mut c, id, super::super::pro_wish::WishKind::MoreHours);
     let after = off(&c);
     assert!(after * 2 < before, "{after} days off of 400 with the wish, {before} without");
+}
+
+/// (Round M) Busy with a duty of his own: the answer says which ("I already have 1006 that day"),
+/// by the duty's own name where it has one; an answer of before without it says "another duty".
+#[test]
+fn a_busy_answer_says_the_own_duty() {
+    let r = Reply::No { why: NoWhy::Busy, say: 1, own: 1006 };
+    let (text, args) = words(&r, &|_| String::new());
+    assert_eq!(text, SAY_BUSY[1]);
+    assert_eq!(args, vec![("own", "1006".to_string())]);
+    let (_, args) = words_by(&r, &|_| String::new(), &|n| if n == 1006 { "M131-1".into() } else { n.to_string() });
+    assert_eq!(args, vec![("own", "M131-1".to_string())]);
+    let (text, args) = words(&Reply::No { why: NoWhy::Busy, say: 0, own: 0 }, &|_| String::new());
+    assert_eq!((text.as_str(), args.len()), (SAY_BUSY_ANY[0], 0));
+    // an older file's answer has no `own`: it loads, and says "another duty"
+    let old: Reply = serde_json::from_str(r#"{"kind":"no","why":"busy","say":1}"#).unwrap();
+    assert_eq!(old, Reply::No { why: NoWhy::Busy, say: 1, own: 0 });
+    assert!(!serde_json::to_string(&Reply::No { why: NoWhy::Plans, say: 0, own: 0 }).unwrap().contains("own"));
+}
+
+/// (Round M) The day's mark counts every yes to a duty with an answer not seen yet - the planner
+/// who opened the box after the first yes saw "1 yes" when two had said it.
+#[test]
+fn the_days_mark_counts_every_yes_to_the_duty() {
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).take(3).collect();
+    assert_eq!(ids.len(), 3);
+    let game = crate::company::clock::now(&c);
+    for (k, id) in ids.iter().enumerate() {
+        said(&mut c, *id, 2003, if k < 2 { Reply::Yes { say: 0 } } else { Reply::No { why: NoWhy::Plans, say: 0, own: 0 } }, game - 10);
+    }
+    let date = c.date.clone();
+    // the first yes seen already (the box opened after it came)
+    c.planning.ops.asks[0].seen = true;
+    let m = mark_of(&c, &date, game, 0);
+    assert_eq!(m.yes_of, vec![(2003, 2)], "{m:?}");
+    assert_eq!(m.yes, 2);
+    assert_eq!(m.key(), Some("yes"));
+    // every answer seen: no mark
+    for a in c.planning.ops.asks.iter_mut() {
+        a.seen = true;
+    }
+    assert_eq!(mark_of(&c, &date, game, 0).key(), None);
 }

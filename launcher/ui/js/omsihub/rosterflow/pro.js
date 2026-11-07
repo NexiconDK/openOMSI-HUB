@@ -76,6 +76,14 @@ async function proEdit(act, args = {}) {
   return r;
 }
 
+/** (Round M) The other weekdays still on the game's plan while this one has duties of its own:
+ * each weekday has its plan, so "Use for Tuesday – Friday too" copies it (or makes theirs). */
+export function WeekBar({ pro }) {
+  if (!pro?.week) return null;
+  return html`<div class="pro-week"><${Icon} name="event_repeat" size=${18} /><span>${pro.week.text}</span>
+    <button type="button" class="bx-btn blue" onClick=${() => edit('pro_week', {})}>${pro.week.button}</button></div>`;
+}
+
 /** Where minute `m` lies on the day's axis, in per cent. */
 const at = (span, m) => ((m - span[0]) / Math.max(1, span[1] - span[0])) * 100;
 const pos = (span, from, to) => `left:${at(span, from)}%;width:${Math.max(0.15, at(span, to) - at(span, from))}%`;
@@ -340,7 +348,7 @@ function Duties({ data, pro }) {
   const mine = new Set([...(duty?.pieces || []).map((x) => x.tour), ...(s.pool ? [s.pool.tour] : [])]);
   const blocks = [...pro.blocks].sort((a, b) => (mine.has(b.i) ? 1 : 0) - (mine.has(a.i) ? 1 : 0));
   const pick = (d) => choose({ duty: s.duty === d.row ? null : d.row, piece: null });
-  return html`<${Summary} sum=${pro.summary} plan=${pro.plan} />
+  return html`<${WeekBar} pro=${pro} /><${Summary} sum=${pro.summary} plan=${pro.plan} />
     <button type="button" class="pro-caps head pro-fold" onClick=${() => setBlocksOpen(!open)}>
       <${Icon} name=${open ? 'expand_more' : 'chevron_right'} size=${14} />${tr('Blocks cut at the relief points')} · ${tr('%{n} blocks', { n: pro.blocks.length })}${open ? html` · <span class="t-err">${tr('red line = relief')}</span> · ${tr('a mark clicked cuts there, a line clicked joins again')}` : ''}
     </button>

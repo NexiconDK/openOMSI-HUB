@@ -313,6 +313,73 @@ pub fn shown_number(c: &Company, date: &str, n: u32) -> String {
     sh.numbers.iter().find(|x| x.weekday == wd && x.number == n).and_then(|x| sh.names.iter().find(|m| m.weekday == wd && m.piece.is(&x.key))).map(|m| m.name.clone()).unwrap_or_else(|| n.to_string())
 }
 
+// --- the other weekdays (round M) -------------------------------------------------------------------
+
+/// Whether weekday slot `wd` has a plan of its own: blocks laid out, duties joined, pieces in the
+/// Vagter tab's pool, duties numbered or named. None: it runs the timetable's tours and the duties
+/// RosterFlow makes by itself (the game's plan).
+pub fn planned(c: &Company, wd: u8) -> bool {
+    let sh = sheet(c);
+    c.planning.layouts.iter().any(|l| l.weekday == wd)
+        || c.planning.joined.iter().any(|j| j.weekday == wd)
+        || sh.pool.iter().any(|x| x.weekday == wd)
+        || sh.numbers.iter().any(|x| x.weekday == wd)
+        || sh.names.iter().any(|x| x.weekday == wd)
+}
+
+/// The other weekdays of weekday slot `wd`'s day type that have no plan of their own while `wd`
+/// has one (Monday to Friday only: a Saturday and a Sunday are a day type each) - the days
+/// "Use for … too" offers.
+pub fn unplanned_peers(c: &Company, wd: u8) -> Vec<u8> {
+    if wd >= 5 || !planned(c, wd) {
+        return Vec::new();
+    }
+    (0..5u8).filter(|&d| d != wd && !planned(c, d)).collect()
+}
+
+/// How a weekday got the plan of another (`use_for`).
+#[derive(Clone, Debug, PartialEq)]
+pub enum Used {
+    /// Its timetable is the same: the plan copied as it is (`plandays::copy`).
+    Copied,
+    /// Its timetable differs (Friday's night tours, say): its duties made automatically on its
+    /// own timetable (`auto`), as many as it has.
+    Made(usize),
+}
+
+/// "Use for Tuesday - Friday too" (round M): the plan of weekday slot `from` (`src` a date it runs
+/// and its timetable) onto each of `days` (a weekday slot, a date of it and that date's
+/// timetable). A day of the same timetable - every trip matched, none left over - gets the plan
+/// copied as it is, its duties' names and pool with it; another gets its duties made
+/// automatically on its own timetable. Each numbered in the order its duties sign on.
+pub fn use_for(c: &mut Company, from: u8, src: (&str, &[LineInfo]), days: &[(u8, String, Vec<LineInfo>)]) -> Vec<(u8, Used)> {
+    use super::plandays::{self as pdays, Day, What};
+    let mut out = Vec::new();
+    for (wd, date, lines) in days {
+        let mut probe = c.clone();
+        let made = pdays::copy(&mut probe, from, Day { date: src.0, lines: src.1 }, *wd, Day { date, lines }, What::ALL);
+        let exact = !made.same_plan && made.missing.is_empty() && made.gone == 0 && made.matched == made.total;
+        if exact {
+            // (the Vagter tab's own of the duties: their names, the pieces in the pool)
+            let sh = &mut probe.planning.flow.sheet;
+            let names: Vec<DutyName> = sh.names.iter().filter(|n| n.weekday == from).map(|n| DutyName { weekday: *wd, ..n.clone() }).collect();
+            sh.names.retain(|n| n.weekday != *wd);
+            sh.names.extend(names);
+            let pool: Vec<Pooled> = sh.pool.iter().filter(|x| x.weekday == from).map(|x| Pooled { weekday: *wd, piece: x.piece.clone() }).collect();
+            sh.pool.retain(|x| x.weekday != *wd);
+            sh.pool.extend(pool);
+            *c = probe;
+            number_by_sign_on(c, lines, date);
+            out.push((*wd, Used::Copied));
+        } else {
+            let n = auto(c, lines, date);
+            number_by_sign_on(c, lines, date);
+            out.push((*wd, Used::Made(n)));
+        }
+    }
+    out
+}
+
 // --- a duty built from departures (round K: the "Afgange" tab) ----------------------------------
 
 pub const NO_DEPARTURE: &str = "Choose the departures of the duty first.";

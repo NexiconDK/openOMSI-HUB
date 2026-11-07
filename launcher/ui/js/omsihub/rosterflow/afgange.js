@@ -13,7 +13,7 @@ import { S } from '../../store.js';
 import { tr } from '../bits.js';
 import { setRf, rfAct, rfCmd, edit } from './state.js';
 import { Icon, RfButton } from './ui.js';
-import { clock, hm, DutyCard } from './pro.js';
+import { clock, hm, DutyCard, WeekBar } from './pro.js';
 
 /** What the tab keeps while it is open: the departures chosen (`"i:j"`), the name, the filters. */
 const st = () => S.rf.dep || {};
@@ -119,6 +119,7 @@ function Departures({ data, pro }) {
     </div>
     <div class="pro-main">
       <div class="pro-content dep-content">
+        <${WeekBar} pro=${pro} />
         <div class="pro-caps head">${tr('Departures')} · ${pro.day_type} · ${tr('%{n} departures', { n: deps.filter((d) => d.counts).length })} · ${tr('click the departures of a duty, then save it')}</div>
         <div class="pro-table dep-table">
           <div class="pro-thead"><span class="c-x"></span><span class="c-t">${tr('Time')}</span><span class="c-l">${tr('Line')}</span><span class="c-w">${tr('From → To')}</span><span class="c-t">${tr('Arrives')}</span><span class="c-b">${tr('Block')}</span><span class="c-d">${tr('Duty')}</span></div>

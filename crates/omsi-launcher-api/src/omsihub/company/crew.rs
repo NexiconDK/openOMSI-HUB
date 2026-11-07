@@ -151,7 +151,7 @@ pub fn act(s: &mut Session, guest: u32, args: &Value) -> Answer {
             let text = s_arg(args, "text").trim().to_string();
             let reply = match s_arg(args, "kind") {
                 "yes" => Reply::Yes { say: 0 },
-                "no" => Reply::No { why: NoWhy::Plans, say: 0 },
+                "no" => Reply::No { why: NoWhy::Plans, say: 0, own: 0 },
                 "early" => Reply::Early { from: time("time"), say: 0 },
                 "late" => Reply::Late { until: time("time"), say: 0 },
                 _ if !text.is_empty() => Reply::Text { text, yes: args.get("yes").and_then(Value::as_bool).unwrap_or(false) },

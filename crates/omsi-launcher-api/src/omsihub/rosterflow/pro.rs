@@ -18,6 +18,26 @@ use serde_json::{json, Value};
 
 /// The day types' names (`pro_duties::day_type`).
 const DAY_TYPES: [&str; 3] = ["Monday to Friday", "Saturday", "Sunday"];
+/// (Round M) The weekdays, Monday first (a weekday slot's own name: each weekday has its plan).
+const WEEKDAYS: [&str; 7] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+/// (Round M) The day a slot's plan is: "Monday" (every Monday), or a date's own plan by its date.
+fn slot_name(c: &Company, wd: u8) -> String {
+    if wd < 7 {
+        return tr(WEEKDAYS[wd as usize]);
+    }
+    co::plandays::dates_of(c, wd).first().map(|d| super::super::company::words::short_date(d)).unwrap_or_else(|| tr(DAY_TYPES[pd::day_type(c, wd).min(2) as usize]))
+}
+
+/// (Round M) "Tuesday – Friday", "Tuesday, Thursday": the weekdays `days` (slots) in words.
+fn days_words(days: &[u8]) -> String {
+    let consecutive = days.windows(2).all(|w| w[1] == w[0] + 1);
+    if days.len() > 2 && consecutive {
+        format!("{} – {}", tr(WEEKDAYS[days[0] as usize]), tr(WEEKDAYS[days[days.len() - 1] as usize]))
+    } else {
+        days.iter().map(|d| tr(WEEKDAYS[*d as usize])).collect::<Vec<_>>().join(", ")
+    }
+}
 
 /// A piece's letter on its block: A, B, C ...
 fn letter(k: usize) -> String {
@@ -184,12 +204,21 @@ pub(super) fn pro_json(c: &Company, board: &Board) -> Value {
         lines.push(json!({ "line": t.line, "number": line_number(t), "colour": colour_of(c, &t.line), "blocks": n, "caption": caption }));
     }
     let p = &c.planning.flow.prefs;
-    let dt = pd::day_type(c, wd) as usize;
     let departures = departures_json(c, board, &pool_rows);
+    // (round M: the weekday edited - "Monday", not "Monday to Friday": each weekday has its plan -,
+    // and the other weekdays still on the game's plan, offered this one)
+    let peers = pd::unplanned_peers(c, wd);
+    let week = (!peers.is_empty()).then(|| {
+        json!({
+            "text": trf("%{days} still run the game's plan, not these duties.", &[("days", &days_words(&peers))]),
+            "button": trf("Use for %{days} too", &[("days", &days_words(&peers))]),
+        })
+    });
     json!({
         "on": true,
         "departures": departures,
-        "day_type": tr(DAY_TYPES[dt.min(2)]),
+        "day_type": slot_name(c, wd),
+        "week": week,
         "base": pd::base(c, wd),
         "blocks": blocks,
         "pool": pool,
@@ -497,6 +526,52 @@ pub(super) fn act(s: &mut Session, r: &mut Rf, k: &Cached, what: &str, args: &Va
                 out
             }
         }
+        // (round M: "Use for Tuesday – Friday too" - the day's plan on the other weekdays still on
+        // the game's: copied where the timetable is the same, made automatically where not)
+        "pro_week" => {
+            let Some(c0) = s.company.as_ref() else { return json!({}) };
+            let view = rf::view(c0);
+            let peers = pd::unplanned_peers(&view, wd);
+            if peers.is_empty() {
+                return said(tr("The other weekdays have plans of their own already."), true);
+            }
+            // (a date of each weekday from the company's day on, and its timetable read)
+            let mut days: Vec<(u8, String, Vec<LineInfo>)> = Vec::new();
+            let mut unread: Vec<u8> = Vec::new();
+            for d in &peers {
+                let date = (0..7).map(|k| co::dates::add(&view.date, k)).find(|x| co::plan::weekday_of(x) == *d && co::plandays::slot_of(&view, x) == *d);
+                match date.as_ref().and_then(|x| company::lines_of(s, x).map(|l| (x.clone(), l))) {
+                    Some((x, l)) => days.push((*d, x, l)),
+                    None => unread.push(*d),
+                }
+            }
+            if days.is_empty() {
+                return said(tr("Reading the timetable…"), true);
+            }
+            let (lines, date) = (k.lines.clone(), k.date.clone());
+            let mut used = Vec::new();
+            let words = trf("The plan used for %{days} too", &[("days", &days_words(&days.iter().map(|d| d.0).collect::<Vec<_>>()))]);
+            let out = edit(s, r, words, |c| {
+                used = pd::use_for(c, wd, (&date, lines.as_slice()), &days);
+                Ok(())
+            });
+            if out.get("edited").is_none() {
+                return out;
+            }
+            let copied: Vec<u8> = used.iter().filter(|u| u.1 == pd::Used::Copied).map(|u| u.0).collect();
+            let made: Vec<u8> = used.iter().filter(|u| u.1 != pd::Used::Copied).map(|u| u.0).collect();
+            let mut parts = Vec::new();
+            if !copied.is_empty() {
+                parts.push(trf("%{days}: the same timetable, the duties copied", &[("days", &days_words(&copied))]));
+            }
+            if !made.is_empty() {
+                parts.push(trf("%{days}: another timetable, its duties made automatically", &[("days", &days_words(&made))]));
+            }
+            if !unread.is_empty() {
+                parts.push(trf("%{days}: the timetable is still being read, try again", &[("days", &days_words(&unread))]));
+            }
+            said(format!("{}. {}", parts.join(" · "), tr("SAVE keeps them.")), false)
+        }
         // (round K: the "Afgange" tab - a duty built of departures, looked at first, and a duty's
         // own name)
         "pro_build_preview" => build_preview(k, &trips_arg(args), args.get("name").and_then(Value::as_str).unwrap_or("")),
@@ -571,6 +646,7 @@ const FIGURES: [&str; 5] = ["Duties", "Paid hours", "Driving of the paid time", 
 pub(super) fn texts() -> Vec<&'static str> {
     let mut v = DAY_TYPES.to_vec();
     v.extend(FIGURES);
+    v.extend(WEEKDAYS);
     v
 }
 
