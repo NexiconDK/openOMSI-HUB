@@ -427,7 +427,8 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     out["cost"] = week_cost(&c, &week, &plans, &first);
     out["wishes"] = json!({ "open": pw::open(&c).len(), "label": trf("Wishes (%{n})", &[("n", &pw::open(&c).len().to_string())]) });
     // (round E: the drivers' own swap proposals, the Monday reports, the season of the week shown)
-    let trades = ptr::open(&c).len();
+    // (round R: and the swaps two players agreed on, waiting for an approval)
+    let trades = ptr::open(&c).len() + co::crew::waiting(&c).count();
     out["trades"] = json!({ "open": trades, "label": trf("Swap proposals (%{n})", &[("n", &trades.to_string())]) });
     out["reports"] = json!({ "label": tr("Reports"), "count": c.planning.ops.reports.len(), "new": prp::unseen(&c).is_some() });
     if let Some((key, text, tip)) = pse::hint(&c, &first) {
@@ -477,6 +478,22 @@ fn trades(s: &mut Session, r: &mut Rf, _args: &Value) -> Answer {
                 "text": format!("⇄ {}", filled(&what)), "why": filled(&why), "breach": breach, "sent": trf("sent %{day}", &[("day", &day_label(&t.sent))]), "until": until })
         })
         .collect();
+    // (round R: the swaps two players of Bus Company Online agreed on, waiting for the boss)
+    let mut list = list;
+    let player = |w: Option<co::plan::Who>| match w {
+        Some(co::plan::Who::Guest(g)) => c.together.name_of(g),
+        _ => String::new(),
+    };
+    for x in co::crew::waiting(&c) {
+        let words = match plan_on(s, r, &x.mine.date) {
+            Some(Ok(p)) => co::crew::swap_words(&p, x),
+            _ => format!("{} {}", x.mine.line, x.mine.tour),
+        };
+        let tag = tr("a player");
+        list.push(json!({ "id": x.no, "player": true, "date": x.mine.date, "a": player(x.from), "b": player(x.with), "a_tag": tag, "b_tag": tag,
+            "text": format!("⇄ {words}"), "why": tr("Both players agreed: it waits for your approval."), "breach": [],
+            "sent": trf("sent %{day}", &[("day", &day_label(&x.asked))]), "until": tr("Answer before its first duty begins") }));
+    }
     Ok(json!({
         "title": tr("The drivers' swap proposals"),
         "sub": match list.len() { 0 => tr("No swap proposals to decide."), 1 => tr("1 swap proposal to decide"), n => trf("%{n} swap proposals to decide", &[("n", &n.to_string())]) },
@@ -493,6 +510,26 @@ fn trade_act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
         return Ok(v);
     }
     let id = args.get("trade").and_then(Value::as_u64).unwrap_or(0) as u32;
+    // (round R: a swap two players agreed on - approved or not here, as on the Duties tab)
+    if args.get("player").and_then(Value::as_bool).unwrap_or(false) {
+        let Some(x) = co::crew::waiting(&c).find(|x| x.no == id).cloned() else { return Ok(said(tr(co::crew::NOT_WAITING), true)) };
+        let p = match plan_on(s, r, &x.mine.date) {
+            Some(Ok(p)) => p,
+            Some(Err(e)) => return Ok(said(e, true)),
+            None => return Ok(said(tr("Reading the timetable…"), false)),
+        };
+        let yes = str_arg(args, "act") == "approve";
+        let mut state = None;
+        let res = company::act(s, |c| co::crew::decide_swap(c, &p, id, yes).map(|st| state = Some(st)));
+        return Ok(match (res, state) {
+            (Ok(()), Some(co::crew::SwapState::Accepted)) => json!({ "edited": true, "say": { "text": tr("Approved: the two players swap."), "error": false } }),
+            (Ok(()), _) => {
+                let why = s.company.as_ref().and_then(|c| c.crew.swaps.iter().find(|y| y.no == id).map(|y| y.why.clone())).unwrap_or_default();
+                json!({ "edited": true, "say": { "text": trf("Not swapped: %{why}", &[("why", &tr(&why))]), "error": !yes } })
+            }
+            (Err(e), _) => said(e.get("text").and_then(Value::as_str).map(str::to_string).unwrap_or_else(|| tr("This cannot be done")), true),
+        });
+    }
     let Some(t) = c.planning.ops.trades.iter().find(|t| t.id == id).cloned() else { return Ok(said(tr(ptr::NO_SUCH_TRADE), true)) };
     let name = name_in(&c);
     let (a, b) = (name(t.a), name(t.b));
@@ -1162,12 +1199,26 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
                 if let Some(can) = pa::guest_can(c, g.no, date) {
                     v["avail"] = avail_json(can, d.start, d.end);
                 }
+                // (round R: his wishes - kept, or which not)
+                if co::player_wish::of(c, g.no).is_some() {
+                    let week = co::player_wish::week_before(c, g.no, &date);
+                    let night = d.pieces.iter().any(|&(ti, k)| p.tours.get(ti).and_then(|t| t.duties.get(k).map(|x| co::rosterflow::night_range(&t.tour, x.start..x.end))).unwrap_or(false));
+                    let ms = co::player_wish::misses(c, g.no, &date, d.start, d.pieces.len() > 1 || d.kind == pd::Kind::Split, night, d.paid, week);
+                    v["wish"] = if ms.is_empty() { json!({ "ok": true, "text": tr("Suits the wishes") }) } else { json!({ "ok": false, "text": company::crew::misses_words(&ms) }) };
+                }
                 v
             })
             .collect()
     } else {
         Vec::new()
     };
+    // (round R: those it suits first - then those without wishes, then those it does not)
+    let mut players = players;
+    players.sort_by_key(|v| match v["wish"]["ok"].as_bool() {
+        Some(true) => 0,
+        None => 1,
+        Some(false) => 2,
+    });
     let nobody = !live && !players.iter().any(|p| p["action"] != "none");
     let given = c.planning.ops.calls.iter().find(|x| x.date == date && x.n == d.n && x.part.is_none()).and_then(|x| c.employee(x.driver)).map(|e| e.name.clone());
     // (round G: answers come the planner has not seen here yet - the page marks them seen)
@@ -1906,7 +1957,39 @@ fn wishes(s: &mut Session, r: &mut Rf, _args: &Value) -> Answer {
             v
         })
         .collect();
+    // (round R: the players' own wishes on Bus Company Online - how many of their duties keep them)
+    let players: Vec<Value> = c
+        .together
+        .wishes
+        .iter()
+        .filter(|w| !w.is_empty())
+        .map(|w| {
+            let mut said: Vec<String> = Vec::new();
+            if !w.prefer.is_empty() {
+                said.push(trf("would like %{kinds}", &[("kinds", &w.prefer.iter().map(|k| tr(k.label())).collect::<Vec<_>>().join(", "))]));
+            }
+            if !w.avoid.is_empty() {
+                said.push(trf("would rather not %{kinds}", &[("kinds", &w.avoid.iter().map(|k| tr(k.label())).collect::<Vec<_>>().join(", "))]));
+            }
+            if !w.off.is_empty() {
+                said.push(trf("off on %{days}", &[("days", &w.off.iter().map(|d| tr(company::crew::WEEKDAY_NAMES[(*d as usize).min(6)])).collect::<Vec<_>>().join(", "))]));
+            }
+            if !w.dates.is_empty() {
+                said.push(trf("off on %{days}", &[("days", &w.dates.iter().map(|d| short_date(d)).collect::<Vec<_>>().join(", "))]));
+            }
+            if let Some(m) = w.max_week {
+                said.push(trf("at most %{h} hours a week", &[("h", &(m / 60).to_string())]));
+            }
+            json!({ "name": c.together.name_of(w.guest), "text": format!("★ {}", said.join(" · ")) })
+        })
+        .collect();
+    let today = company::plan_of(s, &c.date).and_then(Result::ok);
+    let (kept, all) = co::player_wish::met(&c, today.as_ref());
+    let players_met = (!players.is_empty()).then(|| {
+        if all == 0 { tr("No duty of theirs to judge yet.") } else { trf("%{kept} of %{all} of their duties keep their wishes", &[("kept", &kept.to_string()), ("all", &all.to_string())]) }
+    });
     Ok(json!({
+        "players": players, "players_caps": tr("The players' wishes"), "players_met": players_met, "players_ok": all > 0 && kept == all,
         "title": tr("The drivers' wishes"),
         "sub": match list.len() { 0 => tr("No wishes to decide."), 1 => tr("1 wish to decide"), n => trf("%{n} wishes to decide", &[("n", &n.to_string())]) },
         "list": list,

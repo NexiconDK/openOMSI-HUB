@@ -1847,3 +1847,52 @@ The stages already researched (`area_1` to `area_3`) stay.
 The maps to start with; the price of a company and of a depot (`depot_price` until then); the
 company's share (a cap); working for several companies; who may join the server. (The limit of a
 big purchase and the bankruptcy of the whole company: decided 26 October 2026, phase 6.)
+
+## Swaps between players and their wishes (round R, 9 November 2026)
+
+**What existed before:** a player could already ask another player to swap a duty of the day, or
+give one away, from "My duties" (`crew::ask_swap` / `answer_swap`). The swap was made as soon as
+the colleague said yes, and the only check was that nothing clashed. RosterFlow Pro had wishes
+(`pro_wish`) and swap proposals (`pro_trade`), but only for the AI drivers of the staff. Its "Kan
+arbejde" tab (`pro_avail`) already took a player's own days.
+
+**Swaps** (`crew.rs`)
+- A player names the colleague's duty they would drive instead ("Their duty"), or offers their
+  own for nothing in return (`ask_swap_for`, `give`).
+- The rules are checked for both players when the swap is asked, when the colleague answers, and
+  when the boss decides (`player_rules`):
+  - no two duties too close together;
+  - two duties on one day make a split duty, which is allowed only Monday to Friday, never with
+    night-bus work, and at most 12:30 from start to end;
+  - the company's least rest after the player's day of work before;
+  - the company's most days in a row.
+- The rest and day limits are RosterFlow Pro's settings (`pro_watch`). They are checked against
+  the players' days of work, which are now kept for 14 days at the day's close
+  (`Together::days`, `player_wish::WorkDay`).
+- On the server, a swap both players agreed on waits for the boss (`SwapState::Waiting`), unless
+  the company's setting "Swap without approval" is on (`Together::swaps_free`, under the
+  company's settings).
+- The boss is told in the inbox. Whoever may give or approve duties decides with one click
+  (`decide_swap`). This works in "My duties" (`co_crew` `swap_decide`) or in RosterFlow Pro's
+  swap proposals (`rf_trade_act` with `player`). Both players are told the outcome.
+- A swap whose first duty has begun is not made.
+
+**Wishes** (`player_wish.rs`)
+- In "My duties" a player can say:
+  - which kinds of duty they would like and which they would rather not: early (before 07:00),
+    day, evening (from noon), night, split;
+  - weekdays and dates off;
+  - the most hours a week.
+- The dates off are also shown as "not that day" in RosterFlow Pro's "Kan arbejde".
+- Wishes are soft. A duty that breaks one still goes ahead, but it is told as "Wish not kept:
+  avoids night duties":
+  - on the duty itself, through `SnapDuty::misses`;
+  - where the duties are given ("Give duties");
+  - in RosterFlow Pro's "who can drive" box, which lists the players a duty suits first;
+  - to the players themselves.
+- RosterFlow Pro's "Ønsker" popup lists the players' wishes and how many of their duties keep
+  them (`player_wish::met`).
+
+**Not done:** players have no RAM frame, so a swap is not checked against one. RosterFlow Pro's
+automatic rota plans the staff, not the players, so wishes steer the giving and asking of duties
+rather than the rota builder.

@@ -328,7 +328,7 @@ function Who({ v, d }) {
     ${d.players.length > 0 && html`<div class="wl-group">${tr('Players')}</div>
       ${d.players.map((p) => html`<div class="wl-row">
         <span class="wl-tick">${p.action === 'ask' && html`<input type="checkbox" checked=${!!picked['g' + p.no]} onChange=${(e) => pick('g' + p.no, e.currentTarget.checked)} />`}</span>
-        <span class="wl-who"><b>${p.name}</b><i class="wl-chip">${tr('a player: answers himself')}</i>${p.avail && html`<i class=${'wl-avail ' + p.avail.key}>${p.avail.text}</i>`}</span>
+        <span class="wl-who"><b>${p.name}</b><i class="wl-chip">${tr('a player: answers himself')}</i>${p.avail && html`<i class=${'wl-avail ' + p.avail.key}>${p.avail.text}</i>`}${p.wish && html`<i class=${'wl-wish ' + (p.wish.ok ? 'ok' : 'miss')} title=${p.wish.text}>★ ${p.wish.text}</i>`}</span>
         <span class="wl-price"></span>
         <span class="wl-answer">${p.action === 'waiting' ? html`<span class="wl-wait">🕒 ${tr('Waiting for an answer…')}</span>` : p.answer ? html`<span class="wl-ansbox"><span class=${'wl-ans ' + (p.answer.yes ? 'yes' : 'no')} title=${p.answer.words || ''}>${p.answer.chip}</span>${p.answer.words && html`<span class="wl-why">${p.answer.words}</span>`}</span>` : html`<span class="wl-dim">–</span>`}
           ${p.action === 'give' && html`<button type="button" class="bx-btn green sm" onClick=${() => oAct('give_guest', { date: v.date, n: d.n, guest: p.no }).then((r) => r?.edited && setO({ n: null, given: tr('Duty %{n} is given to %{name}', { n: d.n, name: p.name }) }))}>${tr('Give')}</button>`}</span>
@@ -443,6 +443,9 @@ function Wishes() {
           <button type="button" class="bx-btn green" onClick=${() => decide('grant', w)}>${tr('Grant')}</button></span>
         </div>`)}
         ${v?.note && html`<div class="bx-sub" style="margin-top:10px">${v.note}</div>`}
+        ${(v?.players || []).length > 0 && html`<div class="wl-group" style="margin-top:14px">${v.players_caps}</div>
+          ${v.players_met && html`<div class=${v.players_ok ? 'bx-allok' : 'bx-sub'}>${v.players_ok ? html`<${Icon} name="check" size=${16} /> ` : ''}${v.players_met}</div>`}
+          ${v.players.map((x) => html`<div class="bx-row"><div class="bx-grow"><div class="bx-name">${x.name} <i class="wl-chip">${tr('a player: answers himself')}</i></div><div class="bx-trade">${x.text}</div></div></div>`)}`}
       </div></div>
     </div>
   </div>`;
@@ -456,7 +459,7 @@ function Trades() {
   const decide = async (act, t) => {
     let r;
     try {
-      r = await rfCmd('rf_trade_act', { act, trade: t.id });
+      r = await rfCmd('rf_trade_act', { act, trade: t.id, player: !!t.player });
     } catch (e) {
       say(e.message, true);
       return;
@@ -473,7 +476,7 @@ function Trades() {
         ${v?.list?.length === 0 && html`<div class="bx-allok"><${Icon} name="check" size=${16} /> ${v.sub}</div>`}
         ${(v?.list || []).map((t) => html`<div class="bx-row">
           <div class="bx-grow">
-            <div class="bx-name">${t.a} <span class="bx-time">chf. ${t.a_nr} · ${t.a_kind}</span> ⇄ ${t.b} <span class="bx-time">chf. ${t.b_nr} · ${t.b_kind}</span></div>
+            <div class="bx-name">${t.a} <span class="bx-time">${t.a_tag || `chf. ${t.a_nr} · ${t.a_kind}`}</span> ⇄ ${t.b} <span class="bx-time">${t.b_tag || `chf. ${t.b_nr} · ${t.b_kind}`}</span></div>
             <div class="bx-trade">${t.text}</div>
             <div class="bx-why">${t.why}</div>
             ${t.breach.map((b) => html`<div class="bx-breach">${b}</div>`)}

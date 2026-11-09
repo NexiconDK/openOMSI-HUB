@@ -227,6 +227,9 @@ function SettingsDialog({ d }) {
         <div class="co-caps">${v.online.left_caps}</div>
         <div class="pair"><${Seg} value=${v.online.left} options=${v.online.left_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_left', { left: k })} style="width:320px;height:40px" />
           <p class="co-note">${v.online.left_say}</p></div>
+        ${v.online.swaps_options && html`<div class="co-caps">${v.online.swaps_caps}</div>
+          <div class="pair"><${Seg} value=${v.online.swaps} options=${v.online.swaps_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_swaps', { swaps: k })} style="width:320px;height:40px" />
+            <p class="co-note">${v.online.swaps_say}</p></div>`}
         ${v.online.trips_options && html`<div class="co-caps">${v.online.trips_caps}</div>
           <div class="pair"><${Seg} value=${v.online.trips} options=${v.online.trips_options.map((o) => [o.value, o.label])} onChange=${(k) => act('online_trips', { trips: k })} style="width:320px;height:40px" />
             <p class="co-note">${v.online.trips_say}</p></div>`}

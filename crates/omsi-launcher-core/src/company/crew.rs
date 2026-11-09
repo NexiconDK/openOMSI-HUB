@@ -414,6 +414,9 @@ pub enum SwapState {
     Asked,
     Accepted,
     Refused,
+    /// (round R, Bus Company Online) The colleague said yes: the boss's approval is waited for
+    /// (`decide_swap`) - unless the company makes them at once (`Together::swaps_free`).
+    Waiting,
 }
 
 /// A driver asks a colleague to swap a duty.
@@ -452,6 +455,23 @@ pub const SWAP_ACCEPTED: &str = "%{name} swaps with you: you drive %{theirs}, th
 pub const SWAP_TAKEN: &str = "%{name} takes over your duty %{mine}";
 pub const SWAP_REFUSED: &str = "%{name} does not swap: %{why}";
 pub const SWAP_ASKED: &str = "%{name} asks you to swap duty %{mine}";
+
+/// (round R) The rules a swap between players keeps for both, after it (English: keys of the
+/// translations): the user's - split duties only Monday to Friday and never with night-bus work -,
+/// the company's least rest and most days in a row (RosterFlow Pro's, `pro_watch`).
+pub const SPLIT_WEEKEND: &str = "It would make a split duty at the weekend: split duties are Monday to Friday only.";
+pub const SPLIT_NIGHT: &str = "It would make a split duty with night-bus work: never.";
+pub const SPLIT_LONG: &str = "It would make a working day longer than 12:30.";
+pub const REST_SHORT: &str = "Too little rest after the day before: less than the company's least rest.";
+pub const TOO_MANY_DAYS: &str = "Too many days of work in a row: more than the company's most.";
+pub const SWAP_WAITING: &str = "%{name} says yes to the swap of %{mine}: it waits for the boss's approval";
+pub const SWAP_APPROVED: &str = "The boss approved the swap of %{mine}";
+pub const SWAP_NOT_APPROVED: &str = "The boss did not approve the swap of %{mine}: %{why}";
+pub const NOT_APPROVED: &str = "The boss said no.";
+pub const NOT_WAITING: &str = "That swap does not wait for an approval.";
+/// What the boss is told of a swap waiting (the inbox).
+pub const INBOX_TITLE: &str = "A swap waits for your approval";
+pub const INBOX_TEXT: &str = "%{a} and %{b} agreed to swap: %{what}. Approve it on the Duties tab or in RosterFlow Pro's swap proposals.";
 
 /// A duty in a few words ("5/2 duty 1, 06:00-14:30").
 fn duty_words(p: &DayPlan, r: &DutyRef) -> String {
@@ -529,10 +549,141 @@ pub fn ai_answer(c: &Company, p: &DayPlan, no: u32, from: Who, mine: &DutyRef, i
     Ok(theirs_ref)
 }
 
+/// (round R) Whether player `g`, driving `duties` of the day `p` (pieces of its plan) after a
+/// swap, keeps the rules: no two too close (`staff::REST`); two or more a split duty - Monday to
+/// Friday only, never with night-bus work, its day at most 12:30 -; the company's least rest after
+/// his day of work before (`player_wish::WorkDay`) and its most days in a row.
+pub fn player_rules(c: &Company, p: &DayPlan, g: u32, duties: &[(usize, usize)]) -> Result<(), &'static str> {
+    if duties.is_empty() {
+        return Ok(());
+    }
+    let mut ds = duties.to_vec();
+    ds.sort_by_key(|&(ti, k)| p.tours[ti].duties[k].from);
+    for w in ds.windows(2) {
+        let (a, b) = (&p.tours[w[0].0].duties[w[0].1], &p.tours[w[1].0].duties[w[1].1]);
+        if b.from < a.to + super::staff::REST {
+            return Err(YOU_CANNOT);
+        }
+    }
+    let (from, split, night, _) = super::player_wish::shape(p, &ds);
+    let to = ds.iter().map(|&(ti, k)| p.tours[ti].duties[k].to).max().unwrap_or(from);
+    if split && ds.len() > 1 {
+        if p.weekday >= 5 {
+            return Err(SPLIT_WEEKEND);
+        }
+        if night {
+            return Err(SPLIT_NIGHT);
+        }
+        if to - from > 12 * 60 + 30 {
+            return Err(SPLIT_LONG);
+        }
+    }
+    let yesterday = dates::add(&p.date, -1);
+    if let Some(y) = c.together.days.iter().find(|d| d.guest == g && d.date == yesterday) {
+        if 1440 + from - y.to < super::pro_watch::rest_min(c) {
+            return Err(REST_SHORT);
+        }
+    }
+    let mut run = 1;
+    while c.together.days.iter().any(|d| d.guest == g && d.date == dates::add(&p.date, -run)) {
+        run += 1;
+    }
+    if run > super::pro_watch::in_a_row_max(c) as i64 {
+        return Err(TOO_MANY_DAYS);
+    }
+    Ok(())
+}
+
+/// (round R) Both players' days after swap `mine` ⇄ `theirs` (None: `b` takes `mine`) checked by
+/// `player_rules`: Ok, or why not.
+fn swap_rules(c: &Company, p: &DayPlan, a: u32, mine: &DutyRef, b: u32, theirs: Option<&DutyRef>) -> Result<(), &'static str> {
+    let mine_at = mine.find(p).ok_or(NO_DUTY)?;
+    let theirs_at = theirs.and_then(|t| t.find(p));
+    let mut but = vec![mine];
+    if let Some(t) = theirs {
+        but.push(t);
+    }
+    let mut a_days = others(p, Who::Guest(a), &but);
+    a_days.extend(theirs_at);
+    let mut b_days = others(p, Who::Guest(b), &but);
+    b_days.push(mine_at);
+    player_rules(c, p, a, &a_days)?;
+    player_rules(c, p, b, &b_days)
+}
+
+/// The duties of a swap between players change hands (the duties they claimed).
+fn apply_swap(c: &mut Company, p: &DayPlan, s: &Swap, a: u32, b: u32) {
+    for x in c.together.claims.iter_mut().filter(|x| x.duty.date == p.date) {
+        if same_duty(&x.duty, &s.mine) && x.guest == a {
+            x.guest = b;
+        } else if s.theirs.as_ref().is_some_and(|t| same_duty(&x.duty, t)) && x.guest == b {
+            x.guest = a;
+        }
+    }
+}
+
+/// (round R) The swaps waiting for the boss's approval.
+pub fn waiting(c: &Company) -> impl Iterator<Item = &Swap> {
+    c.crew.swaps.iter().filter(|s| s.state == SwapState::Waiting)
+}
+
+/// (round R) "1/2 #1 ⇄ 5/3 #2" - a swap in a few words (`p` the day's plan).
+pub fn swap_words(p: &DayPlan, s: &Swap) -> String {
+    match &s.theirs {
+        Some(t) => format!("{} ⇄ {}", duty_words(p, &s.mine), duty_words(p, t)),
+        None => duty_words(p, &s.mine),
+    }
+}
+
+/// (round R) The boss (whoever gives duties or approves them) decides swap `no` waiting for his
+/// approval: on yes after the same checks again (not begun, the rules for both) the duties change
+/// hands; both players are told.
+pub fn decide_swap(c: &mut Company, p: &DayPlan, no: u32, yes: bool) -> Result<SwapState, &'static str> {
+    let s = c.crew.swaps.iter().find(|s| s.no == no && s.state == SwapState::Waiting).cloned().ok_or(NOT_WAITING)?;
+    let (Some(Who::Guest(a)), Some(Who::Guest(b))) = (s.from, s.with) else { return Err(MIXED) };
+    if s.mine.date != p.date {
+        return Err(NO_DUTY);
+    }
+    let begun = |r: &DutyRef| r.find(p).is_none_or(|(ti, k)| p.date == c.date && p.tours[ti].duties[k].from <= c.clock.minute as i32);
+    let mut why = String::new();
+    let state = if !yes {
+        why = NOT_APPROVED.to_string();
+        SwapState::Refused
+    } else if begun(&s.mine) || s.theirs.as_ref().is_some_and(begun) {
+        why = BEGUN.to_string();
+        SwapState::Refused
+    } else if let Err(e) = swap_rules(c, p, a, &s.mine, b, s.theirs.as_ref()) {
+        why = e.to_string();
+        SwapState::Refused
+    } else {
+        apply_swap(c, p, &s, a, b);
+        SwapState::Accepted
+    };
+    if let Some(x) = c.crew.swaps.iter_mut().find(|x| x.no == no) {
+        x.state = state;
+        x.why = why.clone();
+    }
+    let mine = duty_words(p, &s.mine);
+    for who in [s.from, s.with] {
+        match state {
+            SwapState::Accepted => notify(c, who, Priority::Normal, SWAP_APPROVED, &[("mine", mine.clone())], Some("phone")),
+            _ => notify(c, who, Priority::Normal, SWAP_NOT_APPROVED, &[("mine", mine.clone()), ("why", why.clone())], Some("phone")),
+        }
+    }
+    Ok(state)
+}
+
 /// Driver `from` asks `with` to swap duty `mine` of the day of `p` (the company's day or a later
 /// one). A colleague of the staff answers at once (`ai_answer`); a player of the session later
 /// (`answer_swap`). The request as it stands.
 pub fn ask_swap(c: &mut Company, p: &DayPlan, from: Who, mine: &DutyRef, with: Who) -> Result<Swap, &'static str> {
+    ask_swap_for(c, p, from, mine, with, None, false)
+}
+
+/// `ask_swap` naming the duty of colleague `with` (a player) the asker would drive instead
+/// (round R; None: their first of the day not begun, or none), or offering `mine` for nothing in
+/// return (`give`: they take it).
+pub fn ask_swap_for(c: &mut Company, p: &DayPlan, from: Who, mine: &DutyRef, with: Who, theirs: Option<DutyRef>, give: bool) -> Result<Swap, &'static str> {
     if dates::between(&c.date, &p.date) < 0 || p.date != mine.date {
         return Err(NO_DUTY);
     }
@@ -575,8 +726,18 @@ pub fn ask_swap(c: &mut Company, p: &DayPlan, from: Who, mine: &DutyRef, with: W
             }
         },
         Who::Guest(b) => {
-            // (the duty of his they would drive: the first of the day not begun)
-            s.theirs = c.together.claims.iter().filter(|x| x.guest == b && x.duty.date == p.date && x.state == ClaimState::Planned && x.part.is_none()).map(|x| x.duty.clone()).next();
+            // (the duty of his they would drive: the one named - his, planned, whole - else the first
+            // of the day not begun)
+            let planned = |x: &super::together::book::Claim| x.guest == b && x.duty.date == p.date && x.state == ClaimState::Planned && x.part.is_none();
+            s.theirs = match &theirs {
+                _ if give => None,
+                Some(t) => Some(c.together.claims.iter().find(|x| planned(x) && same_duty(&x.duty, t)).map(|x| x.duty.clone()).ok_or(NOT_YOURS)?),
+                None => c.together.claims.iter().filter(|x| planned(x)).map(|x| x.duty.clone()).next(),
+            };
+            // (round R: the rules for both after it, told at once)
+            if let Who::Guest(a) = from {
+                swap_rules(c, p, a, mine, b, s.theirs.as_ref())?;
+            }
             let asker = who_name(c, Some(from));
             notify(c, Some(with), Priority::High, SWAP_ASKED, &[("name", asker), ("mine", mine_words)], Some("phone"));
         }
@@ -611,14 +772,15 @@ pub fn answer_swap(c: &mut Company, p: &DayPlan, no: u32, by: Who, yes: bool) ->
         if clash(p, &others(p, Who::Guest(b), &but), mine_at) || theirs_at.is_some_and(|t| clash(p, &others(p, Who::Guest(a), &but), t)) {
             state = SwapState::Refused;
             why = YOU_CANNOT.to_string();
+        } else if let Err(e) = swap_rules(c, p, a, &s.mine, b, s.theirs.as_ref()) {
+            // (round R: the user's rules and the company's rest and days in a row, for both)
+            state = SwapState::Refused;
+            why = e.to_string();
+        } else if c.online.on_server && !c.together.swaps_free {
+            // (round R: on Bus Company Online's server the boss approves it - `decide_swap`)
+            state = SwapState::Waiting;
         } else {
-            for x in c.together.claims.iter_mut().filter(|x| x.duty.date == p.date) {
-                if same_duty(&x.duty, &s.mine) && x.guest == a {
-                    x.guest = b;
-                } else if s.theirs.as_ref().is_some_and(|t| same_duty(&x.duty, t)) && x.guest == b {
-                    x.guest = a;
-                }
-            }
+            apply_swap(c, p, &s, a, b);
         }
     }
     if let Some(x) = c.crew.swaps.iter_mut().find(|x| x.no == no) {
@@ -627,6 +789,14 @@ pub fn answer_swap(c: &mut Company, p: &DayPlan, no: u32, by: Who, yes: bool) ->
     }
     let name = c.together.name_of(b);
     let mine = duty_words(p, &s.mine);
+    if state == SwapState::Waiting {
+        let what = swap_words(p, &s);
+        let asker = s.from.map(|w| who_name(c, Some(w))).unwrap_or_default();
+        notify(c, s.from, Priority::Normal, SWAP_WAITING, &[("name", name.clone()), ("mine", mine.clone())], Some("phone"));
+        let m = super::inbox::Message::new(Kind::Staff, INBOX_TITLE, INBOX_TEXT).arg("a", asker).arg("b", name).arg("what", what).key(&format!("player-swap-{no}"));
+        super::inbox::post(c, m);
+        return Ok(state);
+    }
     match (state, &s.theirs) {
         (SwapState::Accepted, Some(t)) => notify(c, s.from, Priority::Normal, SWAP_ACCEPTED, &[("name", name), ("theirs", duty_words(p, t)), ("mine", mine)], Some("phone")),
         (SwapState::Accepted, None) => notify(c, s.from, Priority::Normal, SWAP_TAKEN, &[("name", name), ("mine", mine)], Some("phone")),
@@ -861,6 +1031,7 @@ pub fn texts() -> Vec<&'static str> {
     let mut v = vec![
         NOTE_LEFT, DEFECT_LOGGED, BREAKDOWN, ACCIDENT, COLLISION, NO_DUTY, NOT_YOURS, BEGUN, ASKED_ALREADY, NO_COLLEAGUE, MIXED, NO_SWAP, OFF_THAT_DAY, TWO_DUTIES, CANNOT_DRIVE, YOU_CANNOT, RATHER_NOT, SWAP_ACCEPTED, SWAP_TAKEN, SWAP_REFUSED, SWAP_ASKED, SICK_TODAY, BAD_DAYS, TOO_LONG, HAVE_THOSE, NO_DAYS, ILL_ALREADY, LEAVE_YES, LEAVE_NO, SICK_CALLED, GUEST_SICK, GUEST_LEAVE,
         "The note is empty.", "This bus has enough notes for today.",
+        SPLIT_WEEKEND, SPLIT_NIGHT, SPLIT_LONG, REST_SHORT, TOO_MANY_DAYS, SWAP_WAITING, SWAP_APPROVED, SWAP_NOT_APPROVED, NOT_APPROVED, NOT_WAITING, INBOX_TITLE, INBOX_TEXT,
     ];
     v.extend(NoteTemplate::ALL.iter().map(|t| t.text()));
     v.extend(DefectKind::ALL.iter().map(|k| k.label()));

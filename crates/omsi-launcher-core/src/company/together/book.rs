@@ -344,11 +344,22 @@ pub struct Together {
     pub free_drives: Vec<super::super::free_drive::FreeDrive>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub free_runs: Vec<super::super::free_drive::FreeRun>,
+    /// (NexiconDK, Bus Company Online, round R, 9 November 2026) Its players' wishes for their
+    /// duties (`player_wish`), and their days of work of the last two weeks (the rest, days in a
+    /// row and hours of the week a swap and a wish are checked against).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub wishes: Vec<super::super::player_wish::PlayerWish>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub days: Vec<super::super::player_wish::WorkDay>,
+    /// (round R) A swap two players agreed on is made at once, without the boss's approval (on
+    /// Bus Company Online's server; off it a swap is always made at once).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub swaps_free: bool,
 }
 
 impl Default for Together {
     fn default() -> Self {
-        Together { open_claims: true, guests: Vec::new(), claims: Vec::new(), trips: Vec::new(), left_open: false, left_dropped: false, late_reports: Vec::new(), trips_open: true, free_drives: Vec::new(), free_runs: Vec::new() }
+        Together { open_claims: true, guests: Vec::new(), claims: Vec::new(), trips: Vec::new(), left_open: false, left_dropped: false, late_reports: Vec::new(), trips_open: true, free_drives: Vec::new(), free_runs: Vec::new(), wishes: Vec::new(), days: Vec::new(), swaps_free: false }
     }
 }
 
@@ -1197,10 +1208,28 @@ pub fn after_close(c: &mut Company, closed: &str) {
             x.late = true;
         }
     }
+    // (round R: each player's day of work kept - his duties driven or under way, whole)
+    let mut worked: Vec<super::super::player_wish::WorkDay> = Vec::new();
+    for x in c.together.claims.iter().filter(|x| x.duty.date.as_str() <= closed && x.part.is_none() && matches!(x.state, ClaimState::Done | ClaimState::Driving)) {
+        match worked.iter_mut().find(|w| w.guest == x.guest && w.date == x.duty.date) {
+            Some(w) => {
+                w.from = w.from.min(x.from);
+                w.to = w.to.max(x.to);
+                w.minutes += x.to - x.from;
+            }
+            None => worked.push(super::super::player_wish::WorkDay { guest: x.guest, date: x.duty.date.clone(), from: x.from, to: x.to, minutes: x.to - x.from }),
+        }
+    }
+    for w in worked {
+        if !c.together.days.iter().any(|d| d.guest == w.guest && d.date == w.date) {
+            c.together.days.push(w);
+        }
+    }
     let today = c.date.clone();
     c.together.claims.retain(|x| x.duty.date.as_str() > closed || (x.late && x.state != ClaimState::Done && dates::between(&x.duty.date, &today) <= LATE_DAYS));
     c.together.trips.retain(|x| x.duty.date.as_str() > closed);
     super::super::free_drive::after_close(c, closed);
+    super::super::player_wish::tidy(c);
 }
 
 /// (NexiconDK, Bus Company Online: free drives, 2 November 2026) A trip of a tour of the company's

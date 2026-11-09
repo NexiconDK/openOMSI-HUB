@@ -1486,6 +1486,10 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .wl-avail { font-style: normal; flex: none; padding: 0 6px; border-radius: 9px; font-size: 9.4px; font-weight: 700; white-space: nowrap; }
 .wl-avail.in { color: var(--rf-ok); background: color-mix(in srgb, var(--rf-ok) 14%, transparent); }
 .wl-avail.out { color: var(--rf-warn); background: color-mix(in srgb, var(--rf-warn) 14%, transparent); }
+/* (round R: a player's wishes - the duty suits them, or which not) */
+.wl-wish { font-style: normal; flex: none; padding: 0 6px; border-radius: 9px; font-size: 9.4px; font-weight: 700; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.wl-wish.ok { color: var(--rf-ok); background: color-mix(in srgb, var(--rf-ok) 14%, transparent); }
+.wl-wish.miss { color: var(--rf-warn); background: color-mix(in srgb, var(--rf-warn) 14%, transparent); }
 .wl-avail.not { color: var(--rf-dim); background: var(--rf-grid); border: 1px solid var(--rf-line); }
 .wl-row.cannot { opacity: 0.55; }
 .cl-cell.off.can { background: color-mix(in srgb, var(--rf-ok) 9%, var(--rf-grid)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rf-ok) 28%, transparent); }

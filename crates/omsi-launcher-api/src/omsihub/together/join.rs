@@ -1010,6 +1010,8 @@ fn duty_row(d: &SnapDuty, open_claims: bool, ask: bool) -> Value {
         "urgent": d.urgent,
         // (NexiconDK, 7 November 2026: the trip it is taken over at, and the name the company's
         // planning gives it)
+        // (round R: the wishes of the players it does not keep - by player)
+        "misses": misses_of(d),
         "next": next_words(d), "name": if d.name.is_empty() { String::new() } else { trf("Duty %{n}", &[("n", &d.name)]) },
         // (round P: his own duty still to drive - when he signs on, and the bus waiting for him)
         "count": count_words(d), "wait": wait_words(d),
@@ -1060,6 +1062,20 @@ fn unfilled_json(s: &Snapshot) -> Value {
         trf("%{count} duties have no driver yet and sign on soon: %{list}. Give them to players below, or the AI drives them.", &[("count", &s.unfilled.len().to_string()), ("list", &list.join(", "))])
     };
     json!({ "text": text, "caps": tr("Without a driver soon").to_uppercase() })
+}
+
+/// (round R) The wishes of the players a duty does not keep, a line for each player:
+/// [{ "guest", "text" }].
+fn misses_of(d: &SnapDuty) -> Vec<Value> {
+    let mut guests: Vec<u32> = d.misses.iter().map(|m| m.guest).collect();
+    guests.dedup();
+    guests
+        .into_iter()
+        .map(|g| {
+            let ms: Vec<_> = d.misses.iter().filter(|m| m.guest == g).filter_map(|m| m.miss()).collect();
+            json!({ "guest": g, "text": super::super::company::crew::misses_words(&ms) })
+        })
+        .collect()
 }
 
 /// (NexiconDK, 7 November 2026) The trip a duty is taken over at, in words: its next when it is
@@ -1155,7 +1171,16 @@ fn view() -> Value {
     let you = s.you.clone().unwrap_or_default();
     let can = |p: Perm| you.perms.contains(&p);
     let ask = can(Perm::Drive);
-    let rows = |pick: &dyn Fn(&SnapDuty) -> bool| -> Vec<Value> { s.duties.iter().filter(|d| pick(d)).map(|d| duty_row(d, s.open_claims || can(Perm::Approve), ask)).collect() };
+    // (round R: the wishes of his own a duty does not keep, or that it suits them)
+    let me_no = you.no;
+    let mine_miss = |mut r: Value| -> Value {
+        let m = r["misses"].as_array().and_then(|a| a.iter().find(|x| x["guest"].as_u64() == Some(me_no as u64))).map(|x| x["text"].clone());
+        if let Some(t) = m {
+            r["my_miss"] = t;
+        }
+        r
+    };
+    let rows = |pick: &dyn Fn(&SnapDuty) -> bool| -> Vec<Value> { s.duties.iter().filter(|d| pick(d)).map(|d| mine_miss(duty_row(d, s.open_claims || can(Perm::Approve), ask))).collect() };
     let mine = rows(&|d| matches!(d.state, DutyState::Mine | DutyState::Asked | DutyState::Driving | DutyState::Done | DutyState::Late | DutyState::Ai));
     // (NexiconDK, 3 November 2026, K6: the urgent ones apart - open, or the AI's to take over)
     let urgent = rows(&|d| d.urgent && ask && (d.state == DutyState::Open || (d.state == DutyState::Company && d.take_over)));

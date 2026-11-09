@@ -238,7 +238,7 @@ function DutyRow({ d, again, print }) {
   };
   return html`<div class=${'tg-duty ' + d.key} title=${d.title}>
     <${Chip} number=${d.number} colour=${d.colour} />
-    <div class="what"><b>${d.times}${d.name && html`<span class="tg-name">${d.name}</span>`}</b><span class="cut">${d.route}</span><span class="dim cut">${d.facts}</span>${d.count && html`<span class="tg-count"><${Icon} name="timer" size=${14} />${d.count}</span>`}${d.wait && html`<span class="tg-wait cut"><${Icon} name="directions_bus" size=${14} />${d.wait}</span>`}${d.next && html`<span class="tg-nexttrip cut"><${Icon} name="schedule" size=${14} />${d.next}</span>`}</div>
+    <div class="what"><b>${d.times}${d.name && html`<span class="tg-name">${d.name}</span>`}</b><span class="cut">${d.route}</span><span class="dim cut">${d.facts}</span>${d.count && html`<span class="tg-count"><${Icon} name="timer" size=${14} />${d.count}</span>`}${d.wait && html`<span class="tg-wait cut"><${Icon} name="directions_bus" size=${14} />${d.wait}</span>`}${d.next && html`<span class="tg-nexttrip cut"><${Icon} name="schedule" size=${14} />${d.next}</span>`}${d.my_miss && html`<span class="tg-miss cut">★ ${d.my_miss}</span>`}</div>
     <span class=${'state cut t-' + d.tone}>${d.state}</span>
     <span class="acts">${print && !d.single && PRINTED.includes(d.key) && html`<${Btn} icon="print_receipt" title=${print} onClick=${() => openDutyCard(d.duty, { relay: true })} />`}${d.acts.map((a) => html`<${Btn} kind=${a.kind} icon=${a.icon} label=${a.label} onClick=${() => act(a)} />`)}</span>
   </div>`;
@@ -330,7 +330,9 @@ function MyWork({ v, ask }) {
  * defect of the bus he drives - each on his own duty and bus only. */
 function MyCrew({ mine }) {
   const [c, again] = usePoll('tg_relay', 4000, { cmd: 'co_crew', args: { act: 'view' } });
-  const [f, setF] = useState({ duty: null, with: '', tpl: '', note: '', kind: 'doors', defect: '', ans: null, time: '', words: '' });
+  const [f, setF] = useState({ duty: null, with: '', theirs: '0', tpl: '', note: '', kind: 'doors', defect: '', ans: null, time: '', words: '' });
+  // (round R: his wishes, as a form of its own)
+  const [wf, setWf] = useState(null);
   if (!c || c.error || !c.words) return null;
   const w = c.words;
   const put = (patch) => setF({ ...f, ...patch });
@@ -355,15 +357,27 @@ function MyCrew({ mine }) {
         <div class="tg-crew-row"><input class="tg-crew-in" maxlength="140" placeholder=${w.own} value=${f.ans?.id === a.id && f.ans.kind === 'text' ? f.words : ''} onFocus=${() => f.ans?.id !== a.id || f.ans.kind !== 'text' ? put({ ans: { id: a.id, kind: 'text' }, words: '' }) : null} onInput=${(e) => put({ words: e.currentTarget.value })} />
           <${Btn} label=${w.send} disabled=${!(f.ans?.id === a.id && f.ans.kind === 'text' && f.words.trim())} onClick=${() => answer(a, 'text', { text: f.words.trim() })} /></div>`)}`}
     ${c.swaps.length > 0 && html`<div class="tg-crew-h">${w.swaps}</div>
-      ${c.swaps.map((x) => html`<div class="tg-crew-row"><span class="cut">${x.asked_of_me ? w.asked_of_me.replace('%{name}', x.from).replace('%{mine}', x.mine.line + ' ' + x.mine.tour) : x.mine.line + ' ' + x.mine.tour + (name(x) ? ' ⇄ ' + name(x) : '')}</span>
+      ${c.swaps.map((x) => html`<div class="tg-crew-row"><span class="cut">${x.asked_of_me ? w.asked_of_me.replace('%{name}', x.from).replace('%{mine}', x.mine.line + ' ' + x.mine.tour) + (name(x) ? ' ⇄ ' + name(x) : '') : x.mine.line + ' ' + x.mine.tour + (name(x) ? ' ⇄ ' + name(x) : '')}</span>
         ${x.asked_of_me
           ? html`<${Btn} kind="primary" label=${w.accept} onClick=${() => crew({ act: 'swap_answer', no: x.no, yes: true })} /><${Btn} label=${w.refuse} onClick=${() => crew({ act: 'swap_answer', no: x.no, yes: false })} />`
           : html`<span class=${'t-' + (x.state === 'accepted' ? 'ok' : x.state === 'refused' ? 'danger' : 'warn')}>${w[x.state]}${x.why ? ': ' + x.why : ''}</span>`}</div>`)}`}
     ${mine.filter((d) => d.key === 'mine' && !d.single).map((d) => html`<div class="tg-crew-row"><span class="cut">${d.times} · ${d.route}</span>
       ${f.duty === d.title
-        ? html`<select class="tg-crew-in" value=${f.with} onChange=${(e) => put({ with: e.currentTarget.value })}><option value="">${w.with}</option>${c.players.map((p) => html`<option value=${p.no}>${p.name}</option>`)}</select>
-          <${Btn} kind="primary" label=${w.ask} disabled=${!f.with} onClick=${() => (crew({ act: 'swap', duty: d.duty, with: Number(f.with) }), put({ duty: null, with: '' }))} />`
+        ? html`<select class="tg-crew-in" value=${f.with} onChange=${(e) => put({ with: e.currentTarget.value, theirs: '0' })}><option value="">${w.with}</option>${c.players.map((p) => html`<option value=${p.no}>${p.name}</option>`)}</select>
+          ${f.with && html`<select class="tg-crew-in" title=${w.theirs} value=${f.theirs} onChange=${(e) => put({ theirs: e.currentTarget.value })}>
+            ${(c.players.find((p) => String(p.no) === f.with)?.duties || []).map((x, k) => html`<option value=${String(k)}>${w.theirs}: ${x.label}</option>`)}
+            <option value="none">${w.nothing}</option></select>`}
+          <${Btn} kind="primary" label=${w.ask} disabled=${!f.with} onClick=${() => {
+            const them = c.players.find((p) => String(p.no) === f.with)?.duties || [];
+            const pick = f.theirs === 'none' ? { give: true } : them[Number(f.theirs)] ? { theirs: them[Number(f.theirs)].duty } : {};
+            crew({ act: 'swap', duty: d.duty, with: Number(f.with), ...pick });
+            put({ duty: null, with: '', theirs: '0' });
+          }} />`
         : html`<${Btn} icon="swap_horiz" label=${w.swap} disabled=${c.players.length === 0} onClick=${() => put({ duty: d.title })} />`}</div>`)}
+    ${(c.pending || []).length > 0 && html`<div class="tg-crew-h">${w.pending_caps}</div>
+      ${c.pending.map((x) => html`<div class="tg-crew-row"><span class="cut">${x.text}</span>
+        <${Btn} kind="primary" label=${w.approve} onClick=${() => crew({ act: 'swap_decide', no: x.no, yes: true })} /><${Btn} label=${w.refuse} onClick=${() => crew({ act: 'swap_decide', no: x.no, yes: false })} /></div>`)}`}
+    ${c.wishes && html`<${Wishes} c=${c} w=${w} wf=${wf} setWf=${setWf} crew=${crew} />`}
     ${bus
       ? html`<div class="tg-crew-h">${w.bus.replace('%{bus}', bus.number)}</div>
         ${bus.notes.length ? bus.notes.map((n) => html`<div class="tg-crew-row dim">${n}</div>`) : html`<div class="tg-crew-row dim">${w.no_notes}</div>`}
@@ -378,6 +392,42 @@ function MyCrew({ mine }) {
   </section>`;
 }
 
+/** (Round R) The player's wishes for his duties: the kinds he would like and would rather not,
+ * the weekdays and dates off, the most hours a week - soft, shown where the duties are given. */
+function Wishes({ c, w, wf, setWf, crew }) {
+  const now = c.wishes;
+  const f = wf || { prefer: now.prefer, avoid: now.avoid, off: now.off, dates: now.dates, max: now.max_hours ? String(now.max_hours) : '', date: '' };
+  const put = (patch) => setWf({ ...f, ...patch });
+  // (a kind: wished, not wished, or all the same - a click goes round)
+  const state = (k) => (f.prefer.includes(k) ? 'prefer' : f.avoid.includes(k) ? 'avoid' : '');
+  const turn = (k) => {
+    const s = state(k);
+    const prefer = f.prefer.filter((x) => x !== k);
+    const avoid = f.avoid.filter((x) => x !== k);
+    if (s === '') prefer.push(k);
+    else if (s === 'prefer') avoid.push(k);
+    put({ prefer, avoid });
+  };
+  const day = (d) => put({ off: f.off.includes(d) ? f.off.filter((x) => x !== d) : [...f.off, d] });
+  const save = () => {
+    crew({ act: 'wishes', prefer: f.prefer, avoid: f.avoid, off: f.off, dates: f.dates, max_hours: f.max ? Number(f.max) : null });
+    setWf(null);
+  };
+  return html`<div class="tg-crew-h">${w.wishes_caps}</div>
+    <div class="tg-crew-row dim">${w.wishes_say}</div>
+    <div class="tg-wish-row"><span class="dim">${w.prefer} / ${w.avoid}</span>
+      ${now.kinds.map(([k, l]) => html`<button type="button" class=${'tg-wish ' + state(k)} onClick=${() => turn(k)}>${state(k) === 'prefer' ? '★ ' : state(k) === 'avoid' ? '✕ ' : ''}${l}</button>`)}</div>
+    <div class="tg-wish-row"><span class="dim">${w.off}</span>
+      ${now.weekdays.map(([d, l]) => html`<button type="button" class=${'tg-wish ' + (f.off.includes(d) ? 'avoid' : '')} onClick=${() => day(d)}>${l}</button>`)}</div>
+    <div class="tg-wish-row"><span class="dim">${w.dates}</span>
+      ${f.dates.map((d) => html`<button type="button" class="tg-wish avoid" title="✕" onClick=${() => put({ dates: f.dates.filter((x) => x !== d) })}>${d} ✕</button>`)}
+      <input class="tg-crew-in" type="date" value=${f.date} onInput=${(e) => put({ date: e.currentTarget.value })} />
+      <${Btn} label=${w.add_date} disabled=${!f.date || f.dates.includes(f.date)} onClick=${() => put({ dates: [...f.dates, f.date].sort(), date: '' })} /></div>
+    <div class="tg-wish-row"><span class="dim">${w.max}</span>
+      <input class="tg-crew-in tg-wish-h" type="number" min="4" max="60" step="1" placeholder=${w.max_ph} value=${f.max} onInput=${(e) => put({ max: e.currentTarget.value })} />
+      <span class="rest"></span><${Btn} kind="primary" icon="star" label=${w.save} disabled=${!wf} onClick=${save} /></div>`;
+}
+
 /** Give a duty of the day to a player (a role that may), or take one off. */
 function GiveRow({ d, v, again }) {
   const w = v.words;
@@ -390,7 +440,7 @@ function GiveRow({ d, v, again }) {
   };
   return html`<div class="tg-duty give">
     <${Chip} number=${d.number} colour=${d.colour} />
-    <div class="what"><b>${d.times}</b><span class="cut">${d.route}</span><span class="dim cut">${d.state}</span></div>
+    <div class="what"><b>${d.times}</b><span class="cut">${d.route}</span><span class="dim cut">${d.state}</span>${p && (d.misses || []).filter((m) => m.guest === p.no).map((m) => html`<span class="tg-miss cut">★ ${p.name}: ${m.text}</span>`)}</div>
     ${players.length > 0 &&
     html`<span class="co-select"><select class="co-field" value=${String(who)} onChange=${(e) => setWho(Number(e.currentTarget.value))}>
       ${players.map((m, k) => html`<option value=${String(k)}>${m.name}</option>`)}

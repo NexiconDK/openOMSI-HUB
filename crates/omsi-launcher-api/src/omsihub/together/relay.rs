@@ -319,7 +319,9 @@ fn rf_need(cmd: &str, args: &Value) -> Need {
 /// his own duty and his own bus only, which the boss's launcher checks besides.
 fn crew_need(act: &str) -> Need {
     match act {
-        "view" | "note" | "defect" | "swap" | "swap_answer" | "sick" | "leave" | "late" | "pro_answer" => Any(&[Perm::Drive]),
+        "view" | "note" | "defect" | "swap" | "swap_answer" | "sick" | "leave" | "late" | "pro_answer" | "wishes" => Any(&[Perm::Drive]),
+        // (round R: a swap two players agreed on, approved - whoever gives or approves duties)
+        "swap_decide" => Any(&[Perm::Approve, Perm::Assign]),
         _ => Never,
     }
 }
@@ -614,7 +616,10 @@ mod tests {
     fn a_driver_acts_on_his_own_duty_and_bus() {
         let acts = arms_in(include_str!("../company/crew.rs"), "pub fn act(");
         assert!(acts.len() >= 6, "the actions are read: {acts:?}");
-        for a in &acts {
+        // (round R: a swap two players agreed on is approved by whoever gives or approves duties)
+        assert!(!need("co_crew", &json!({ "act": "swap_decide" })).met(&[Perm::Drive]));
+        assert!(need("co_crew", &json!({ "act": "swap_decide" })).met(&[Perm::Approve]) && need("co_crew", &json!({ "act": "swap_decide" })).met(&[Perm::Assign]));
+        for a in acts.iter().filter(|a| a.as_str() != "swap_decide") {
             assert!(need("co_crew", &json!({ "act": a })).met(&[Perm::Drive]), "{a}");
             assert!(!need("co_crew", &json!({ "act": a })).met(&[Perm::Finances]), "{a}");
         }

@@ -1322,6 +1322,7 @@ pub fn texts() -> Vec<&'static str> {
     v.extend(super::pro_sick::texts());
     v.extend(super::pro_rest::texts());
     v.extend(super::pro_wish::texts());
+    v.extend(super::player_wish::texts());
     v.extend(super::pro_toil::texts());
     v.extend(super::pro_absence::texts());
     v.extend(super::pro_swap::texts());

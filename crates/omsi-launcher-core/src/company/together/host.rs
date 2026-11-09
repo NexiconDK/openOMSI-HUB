@@ -16,7 +16,7 @@ use super::super::plan::{BusOf, DayPlan, Who};
 use super::book::{self, ClaimState, Handed, LeftWhy};
 use super::code;
 use super::roles::{Perm, Role};
-use super::wire::{Card, DriveStart, DutyState, Notice, Request, SnapAsk, SnapBus, SnapDuty, SnapLine, SnapMember, SnapNext, SnapPart, SnapUnfilled, SnapPlayer, SnapDispatch, SnapFixed, SnapResult, SnapTrip, SnapYou, Snapshot, TripList};
+use super::wire::{Card, DriveStart, DutyState, Notice, Request, SnapAsk, SnapBus, SnapDuty, SnapLine, SnapMember, SnapMiss, SnapNext, SnapPart, SnapUnfilled, SnapPlayer, SnapDispatch, SnapFixed, SnapResult, SnapTrip, SnapYou, Snapshot, TripList};
 use serde_json::{json, Value};
 
 /// A player who has not been heard from for this long is offline (s).
@@ -1200,6 +1200,12 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                 };
                 let begun = now >= clock::moment(&p.date, d.from as i64);
                 sd.name = named.iter().find(|x| x.0 == (ti, k)).map(|x| x.1.clone()).unwrap_or_default();
+                // (round R: the wishes of the players who said any it does not keep)
+                if !begun && c.online.on_server {
+                    for w in c.together.wishes.iter() {
+                        sd.misses.extend(super::super::player_wish::misses_of(c, p, w.guest, ti, k).iter().map(|m| SnapMiss::of(w.guest, m)));
+                    }
+                }
                 // (NexiconDK: a single trip of it a player took - `book::Claim::part`)
                 if let Some((a, b)) = claim.and_then(|x| x.part) {
                     let part = &trips[a.min(trips.len())..b.min(trips.len())];

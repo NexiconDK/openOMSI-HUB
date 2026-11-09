@@ -375,3 +375,158 @@ fn every_crew_text_is_translated() {
 fn omsihub_tables() -> Vec<&'static str> {
     vec![include_str!("../../../omsihub-locales/locales/crew.yml")]
 }
+
+// --- round R (9 November 2026): swaps between players approved by the boss, their rules, wishes --
+
+/// Two players of a company on Bus Company Online's server: Anna on tour 2 (06:00-08:50), Ben on
+/// tour 3 (09:00-11:50).
+fn on_server() -> (Company, Vec<TourOfDay>, u32, u32) {
+    let (mut c, tours) = rostered();
+    let wd = weekday_of(&c.date);
+    set_driver(&mut c, wd, "Linie5", "2", 0, None);
+    set_driver(&mut c, wd, "Linie5", "3", 0, None);
+    c.online.on_server = true;
+    let a = c.together.guest_of("id-a", "Anna").unwrap();
+    let b = c.together.guest_of("id-b", "Ben").unwrap();
+    let claim = |r: DutyRef, g: u32| Claim { duty: r, guest: g, state: ClaimState::Planned, ..Default::default() };
+    c.together.claims.push(claim(duty("2"), a));
+    c.together.claims.push(claim(duty("3"), b));
+    (c, tours, a, b)
+}
+
+#[test]
+fn on_the_server_a_swap_the_players_agreed_on_waits_for_the_boss() {
+    let (mut c, tours, a, b) = on_server();
+    let p = day_plan(&c, &c.date, tours.clone(), &[], &[], false);
+    let s = ask_swap(&mut c, &p, Who::Guest(a), &duty("2"), Who::Guest(b)).unwrap();
+    assert_eq!(answer_swap(&mut c, &p, s.no, Who::Guest(b), true), Ok(SwapState::Waiting));
+    assert_eq!(waiting(&c).count(), 1);
+    assert!(c.inbox.messages.iter().any(|m| m.title == INBOX_TITLE), "the boss is told");
+    let still = day_plan(&c, &c.date, tours.clone(), &[], &[], false);
+    assert_eq!((who_on(&still, "2"), who_on(&still, "3")), (Some(Who::Guest(a)), Some(Who::Guest(b))), "nothing changed before the approval");
+    // a no: both keep theirs, both told
+    let mut no = c.clone();
+    take_notifications(&mut no);
+    assert_eq!(decide_swap(&mut no, &p, s.no, false), Ok(SwapState::Refused));
+    assert_eq!(take_notifications(&mut no).len(), 2);
+    assert_eq!(who_on(&day_plan(&no, &no.date, tours.clone(), &[], &[], false), "2"), Some(Who::Guest(a)));
+    // a yes: swapped
+    assert_eq!(decide_swap(&mut c, &p, s.no, true), Ok(SwapState::Accepted));
+    let after = day_plan(&c, &c.date, tours.clone(), &[], &[], false);
+    assert_eq!((who_on(&after, "2"), who_on(&after, "3")), (Some(Who::Guest(b)), Some(Who::Guest(a))));
+    assert_eq!(decide_swap(&mut c, &p, s.no, true), Err(NOT_WAITING));
+    // begun before the boss decided: not made
+    let (mut c, tours, a, b) = on_server();
+    let p = day_plan(&c, &c.date, tours.clone(), &[], &[], false);
+    let s = ask_swap(&mut c, &p, Who::Guest(a), &duty("2"), Who::Guest(b)).unwrap();
+    answer_swap(&mut c, &p, s.no, Who::Guest(b), true).unwrap();
+    c.clock.minute = 6 * 60 + 1;
+    assert_eq!(decide_swap(&mut c, &p, s.no, true), Ok(SwapState::Refused));
+    assert_eq!(c.crew.swaps.iter().find(|x| x.no == s.no).unwrap().why, BEGUN);
+    // "swap without approval": made at once
+    let (mut c, tours, a, b) = on_server();
+    c.together.swaps_free = true;
+    let p = day_plan(&c, &c.date, tours.clone(), &[], &[], false);
+    let s = ask_swap(&mut c, &p, Who::Guest(a), &duty("2"), Who::Guest(b)).unwrap();
+    assert_eq!(answer_swap(&mut c, &p, s.no, Who::Guest(b), true), Ok(SwapState::Accepted));
+    assert_eq!(who_on(&day_plan(&c, &c.date, tours, &[], &[], false), "2"), Some(Who::Guest(b)));
+}
+
+#[test]
+fn a_swap_between_players_keeps_the_rest_the_days_in_a_row_and_the_split_rules() {
+    use super::super::player_wish::WorkDay;
+    let yesterday = super::super::dates::add(DAY, -1);
+    // Ben worked until 23:00 yesterday: Anna's 06:00 duty would leave him 7 hours
+    let (mut c, tours, a, b) = on_server();
+    c.together.days.push(WorkDay { guest: b, date: yesterday.clone(), from: 15 * 60, to: 23 * 60, minutes: 8 * 60 });
+    let p = day_plan(&c, &c.date, tours.clone(), &[], &[], false);
+    assert_eq!(ask_swap(&mut c, &p, Who::Guest(a), &duty("2"), Who::Guest(b)).unwrap_err(), REST_SHORT);
+    // ... with the company's least rest at 9 hours it would keep (7 h still too little) - 06:00
+    // after 21:00 is 9 hours
+    c.together.days[0].to = 21 * 60;
+    super::super::pro_watch::set_rest_min(&mut c, 9 * 60).unwrap();
+    assert!(ask_swap(&mut c, &p, Who::Guest(a), &duty("2"), Who::Guest(b)).is_ok());
+    // six days in a row before it: a seventh is too many (the most: 6)
+    let (mut c, tours, a, b) = on_server();
+    for n in 1..=6 {
+        c.together.days.push(WorkDay { guest: b, date: super::super::dates::add(DAY, -n), from: 9 * 60, to: 12 * 60, minutes: 180 });
+    }
+    let p = day_plan(&c, &c.date, tours.clone(), &[], &[], false);
+    assert_eq!(ask_swap(&mut c, &p, Who::Guest(a), &duty("2"), Who::Guest(b)).unwrap_err(), TOO_MANY_DAYS);
+    // a split duty: Monday to Friday only, never with night-bus work, at most 12:30
+    let (c, mut tours, a, _) = on_server();
+    tours.push(tour("4", 12 * 60, 3));
+    tours.push(tour("9", 23 * 60, 2));
+    let mut p = day_plan(&c, &c.date, tours, &[], &[], false);
+    let at = |p: &DayPlan, t: &str| (p.tours.iter().position(|x| x.tour.tour == t).unwrap(), 0);
+    let (t2, t4, t9) = (at(&p, "2"), at(&p, "4"), at(&p, "9"));
+    assert_eq!(player_rules(&c, &p, a, &[t2, t4]), Ok(()), "a split duty on a Monday");
+    assert_eq!(player_rules(&c, &p, a, &[t2, t9]), Err(SPLIT_NIGHT));
+    assert_eq!(player_rules(&c, &p, a, &[t2, at(&p, "3")]), Err(YOU_CANNOT), "08:50 and 09:00: no rest between");
+    p.weekday = 5;
+    assert_eq!(player_rules(&c, &p, a, &[t2, t4]), Err(SPLIT_WEEKEND));
+    assert_eq!(player_rules(&c, &p, a, &[t4]), Ok(()), "one duty is no split");
+}
+
+#[test]
+fn a_player_names_the_duty_he_would_drive_instead() {
+    let (mut c, mut tours, a, b) = on_server();
+    tours.push(tour("4", 13 * 60, 2));
+    // (Ben's 13:00 duty listed first: his first, unless another is named)
+    c.together.claims.insert(0, Claim { duty: duty("4"), guest: b, state: ClaimState::Planned, ..Default::default() });
+    let p = day_plan(&c, &c.date, tours, &[], &[], false);
+    let s = ask_swap_for(&mut c, &p, Who::Guest(a), &duty("2"), Who::Guest(b), Some(duty("3")), false).unwrap();
+    assert_eq!(s.theirs.as_ref().map(|t| t.tour.as_str()), Some("3"));
+    assert_eq!(ask_swap_for(&mut c, &p, Who::Guest(b), &duty("4"), Who::Guest(a), Some(duty("4")), false).unwrap_err(), NOT_YOURS, "not one of the colleague's");
+    // offered for nothing in return: the colleague takes it (Anna then drives 06:00 and 13:00, a
+    // split duty on a Monday: allowed)
+    assert_eq!(ask_swap_for(&mut c, &p, Who::Guest(b), &duty("4"), Who::Guest(a), None, true).map(|s| s.theirs), Ok(None));
+}
+
+#[test]
+fn a_players_wishes_are_told_where_a_duty_does_not_keep_them() {
+    use super::super::player_wish::{self as pw, Kind, Miss, PlayerWish};
+    let (mut c, mut tours, a, b) = on_server();
+    tours.push(tour("9", 23 * 60, 2));
+    // checked: a kind both wished and avoided, too many hours, a date past
+    let bad = |w: PlayerWish| w;
+    let mut cc = c.clone();
+    assert_eq!(pw::set(&mut cc, a, bad(PlayerWish { prefer: vec![Kind::Early], avoid: vec![Kind::Early], ..Default::default() })), Err(pw::BOTH));
+    assert_eq!(pw::set(&mut cc, a, PlayerWish { max_week: Some(70 * 60), ..Default::default() }), Err(pw::BAD_HOURS));
+    assert_eq!(pw::set(&mut cc, a, PlayerWish { dates: vec!["2024-03-01".into()], ..Default::default() }), Err(pw::BAD_DAY));
+    assert_eq!(pw::set(&mut cc, 99, PlayerWish { off: vec![0], ..Default::default() }), Err(pw::NO_PLAYER));
+    // Anna would rather drive day duties, avoids nights, wishes Wednesdays and 6 March off, 10 h a week
+    pw::set(&mut c, a, PlayerWish { prefer: vec![Kind::Day], avoid: vec![Kind::Night], off: vec![2], dates: vec!["2024-03-06".into()], max_week: Some(10 * 60), ..Default::default() }).unwrap();
+    // the date off said in RosterFlow Pro's "Kan arbejde" too
+    assert_eq!(super::super::pro_avail::guest_can(&c, a, "2024-03-06"), Some(super::super::pro_avail::Can::Not));
+    let p = day_plan(&c, &c.date, tours.clone(), &[], &[], false);
+    let at = |t: &str| (p.tours.iter().position(|x| x.tour.tour == t).unwrap(), 0);
+    // her own 06:00 duty: early, not a day duty - one wish not kept
+    let (t2, k2) = at("2");
+    assert_eq!(pw::misses_of(&c, &p, a, t2, k2), vec![Miss::NotWished(vec![Kind::Day])]);
+    // Ben's 09:00 duty would keep them (a day duty) - but beside her own it makes a split one,
+    // with too little rest between: only the day kind counts here, as it is
+    let (t3, k3) = at("3");
+    assert!(pw::misses_of(&c, &p, a, t3, k3).iter().all(|m| !matches!(m, Miss::Avoids(_))));
+    // the night tour: avoided, and not a day duty
+    let (t9, k9) = at("9");
+    assert!(pw::misses_of(&c, &p, a, t9, k9).contains(&Miss::Avoids(Kind::Night)));
+    // Ben said nothing: nothing to tell
+    assert!(pw::misses_of(&c, &p, b, t9, k9).is_empty());
+    // the hours of her week: 9:30 driven since Monday (none - it is Monday) - the 10 hours kept
+    assert!(!pw::misses_of(&c, &p, a, t2, k2).iter().any(|m| matches!(m, Miss::Hours { .. })));
+    // on a Wednesday: the weekday off wished
+    let wed = pw::misses(&c, a, "2024-03-13", 9 * 60, false, false, 180, 0);
+    assert_eq!(wed, vec![Miss::DayOff(Some(2))]);
+    // and the hours of the week past the most
+    let heavy = pw::misses(&c, a, "2024-03-05", 9 * 60, false, false, 180, 9 * 60);
+    assert_eq!(heavy, vec![Miss::Hours { have: 12 * 60, max: 10 * 60 }]);
+    // met: of her one duty of the day, none keeps them all
+    assert_eq!(pw::met(&c, Some(&p)), (0, 1));
+    // the snapshot tells whoever gives the night duty that Anna avoids it
+    let mut w = PlayerWish::default();
+    w.avoid.push(Kind::Night);
+    pw::set(&mut c, a, w).unwrap();
+    assert!(super::super::pro_avail::guest_can(&c, a, "2024-03-06").is_none(), "the date no longer wished, cleared in \"Kan arbejde\"");
+    assert_eq!(pw::met(&c, Some(&p)), (1, 1), "her early duty keeps \"no nights\"");
+}

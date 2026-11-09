@@ -124,6 +124,7 @@ pub mod pro_sick;
 pub mod pro_toil;
 pub mod pro_trade;
 pub mod pro_wish;
+pub mod player_wish;
 // (NexiconDK, 9 November 2026: round Q - the duties without a driver warned of, the planner's
 // limits of rest and days in a row, the lines' economy)
 pub mod pro_watch;

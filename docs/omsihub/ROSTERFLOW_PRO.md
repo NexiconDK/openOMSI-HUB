@@ -1541,3 +1541,13 @@ not one line's. The page says what is in each figure beneath the tables.
 `pro_duties_tests`: a duty built of departures cut out of its buses and named, a duty of two buses,
 the overlap refused; a name short and unique, kept after a renumbering, taken away; a duty begun
 where no relief point is marked yellow (the bus's issue yellow).
+
+## Round R (9 November 2026): the players' swaps and wishes
+
+The calendar's "Swap proposals" now also lists swaps between players of Bus Company Online that
+both players agreed on, tagged "a player". Approve or Refuse decides them as on the Duties tab
+(`crew::decide_swap`); the rules of rest, days in a row and split duties are checked again.
+The "who can drive" box shows each player's wishes ("Suits the wishes", or "Wish not kept: …")
+and lists the players a duty suits first. The "Ønsker" popup adds the players' wishes and how
+many of their duties keep them. See BUS_COMPANY_ONLINE.md, "Swaps between players and their
+wishes".

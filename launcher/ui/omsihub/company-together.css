@@ -333,3 +333,12 @@
 .tg-unfilled { border: 1px solid color-mix(in srgb, var(--co-danger) 60%, transparent); background: color-mix(in srgb, var(--co-danger) 12%, transparent); }
 .tg-unfilled .co-caps { display: flex; align-items: center; gap: 6px; color: var(--co-danger); }
 .tg-unfilled p { margin: 0; font-weight: 600; }
+/* (round R, 9 November 2026: the players' wishes - a duty against them, and the form) */
+.tg-miss { color: var(--co-warn); font-size: var(--co-note); font-weight: 600; }
+.tg-wish-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 5px 0; font-size: var(--co-rows); }
+.tg-wish-row > .dim { min-width: 150px; }
+.tg-wish-row .rest { flex: 1; }
+.tg-wish { border: 1px solid var(--hub-hairline); background: transparent; color: inherit; border-radius: 14px; padding: 3px 10px; font: inherit; font-size: var(--co-note); cursor: pointer; }
+.tg-wish.prefer { background: color-mix(in srgb, var(--co-ok) 22%, transparent); border-color: var(--co-ok); font-weight: 700; }
+.tg-wish.avoid { background: color-mix(in srgb, var(--co-warn) 22%, transparent); border-color: var(--co-warn); font-weight: 700; }
+.tg-wish-h { width: 210px; }

@@ -134,6 +134,14 @@ fn online_part(c: &co::Company, viewer: Option<u32>) -> Value {
             { "value": "closed", "label": tr("Whole duties only") },
         ],
         "trips_say": tr(if c.together.trips_open { TRIPS_OPEN } else { TRIPS_CLOSED }),
+        // (round R: a swap two players agreed on - the boss approves it, or it is made at once)
+        "swaps_caps": tr("Swaps between players").to_uppercase(),
+        "swaps": if c.together.swaps_free { "free" } else { "approve" },
+        "swaps_options": [
+            { "value": "approve", "label": tr("The boss approves them") },
+            { "value": "free", "label": tr("Swap without approval") },
+        ],
+        "swaps_say": tr(if c.together.swaps_free { SWAPS_FREE } else { SWAPS_APPROVE }),
         // (phase 4: its depots on other maps)
         "depots": depots_part(c),
     })
@@ -269,6 +277,9 @@ const LEFT_DROPPED: &str = "Nobody drives the rest of his duty: its trips are dr
 /// (NexiconDK, 27 October 2026) Whether its players may take single trips, as the settings say it.
 const TRIPS_OPEN: &str = "A player may take a single trip of a duty the company's AI driver has - by its line, its stop, or the next free one - and the AI drives the tour on after it. The duty stays its driver's: the plan, his pay and hours do not change. Duties planned for players come first.";
 const TRIPS_CLOSED: &str = "Players take whole duties only: a duty planned for them, an open one, or one of the AI drivers' to take over.";
+/// (round R) What each choice of the swaps between players means.
+const SWAPS_APPROVE: &str = "Two players agree on a swap, then you approve it on the Duties tab or in RosterFlow Pro's swap proposals.";
+const SWAPS_FREE: &str = "A swap two players agree on is made at once - the rules of rest and split duties are checked all the same.";
 
 /// (NexiconDK) The settings' share chosen (`online_share {share}`): the company keeps it from the
 /// next day on (`online::Online::share_next`); what a player leaves of his duty (`online_left
@@ -446,6 +457,16 @@ pub fn online_act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Va
             c.together.trips_open = open;
             super::changed(s);
             s.say(tr(if open { "From now on players may take single trips." } else { "From now on players take whole duties only." }), false);
+        }
+        return Some(Ok(json!({})));
+    }
+    // (round R: swaps between players approved by the boss, or made at once)
+    if what == "online_swaps" {
+        let free = args.get("swaps").and_then(Value::as_str) == Some("free");
+        if c.together.swaps_free != free {
+            c.together.swaps_free = free;
+            super::changed(s);
+            s.say(tr(if free { "From now on a swap two players agree on is made at once." } else { "From now on you approve each swap two players agree on." }), false);
         }
         return Some(Ok(json!({})));
     }

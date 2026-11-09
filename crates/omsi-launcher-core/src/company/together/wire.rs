@@ -187,6 +187,55 @@ pub struct SnapDuty {
     /// on the company's clock (none or less: it has begun). None for every other duty.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sign_on_in: Option<i32>,
+    /// (Round R, 9 November 2026) The wishes of the players who said any it does not keep
+    /// (`player_wish::misses_of`): for whoever gives it, and the player himself. Not begun only.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub misses: Vec<SnapMiss>,
+}
+
+/// (Round R) A wish of player `guest` a duty does not keep: `kind` "avoids" (`kinds` the kinds
+/// it is that he avoids), "wishes" (`kinds` those he wishes), "day_off" (`day` the weekday, 0
+/// Monday, or None: the date) or "hours" (`have` with it, `max` - minutes a week).
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct SnapMiss {
+    pub guest: u32,
+    pub kind: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub kinds: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub day: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub have: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max: Option<i32>,
+}
+
+impl SnapMiss {
+    pub fn of(guest: u32, m: &super::super::player_wish::Miss) -> SnapMiss {
+        use super::super::player_wish::Miss;
+        let mut x = SnapMiss { guest, ..Default::default() };
+        match m {
+            Miss::Avoids(k) => (x.kind, x.kinds) = ("avoids".into(), vec![k.key().into()]),
+            Miss::NotWished(ks) => (x.kind, x.kinds) = ("wishes".into(), ks.iter().map(|k| k.key().to_string()).collect()),
+            Miss::DayOff(d) => (x.kind, x.day) = ("day_off".into(), *d),
+            Miss::Hours { have, max } => (x.kind, x.have, x.max) = ("hours".into(), Some(*have), Some(*max)),
+        }
+        x
+    }
+
+    /// Back to the wish it says.
+    pub fn miss(&self) -> Option<super::super::player_wish::Miss> {
+        use super::super::player_wish::{Kind, Miss};
+        let ks = || self.kinds.iter().filter_map(|k| Kind::from_key(k)).collect::<Vec<_>>();
+        Some(match self.kind.as_str() {
+            "avoids" => Miss::Avoids(*ks().first()?),
+            "wishes" => Miss::NotWished(ks()),
+            "day_off" => Miss::DayOff(self.day),
+            "hours" => Miss::Hours { have: self.have?, max: self.max? },
+            _ => return None,
+        })
+    }
 }
 
 /// (NexiconDK, 7 November 2026) A trip to take a duty over at: when it leaves (minutes of the
