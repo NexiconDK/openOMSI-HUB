@@ -823,6 +823,9 @@ pub fn check(c: &Company, k: usize, week: &Week) -> Checked {
         return out;
     }
     let cell = |p: usize| t.rows[p / DAYS].days[p % DAYS];
+    // (round Q: the planner's own limits - the 11 hours and six days unless chosen: `pro_watch`)
+    let min_rest = super::pro_watch::rest_min(c);
+    let max_in_a_row = super::pro_watch::in_a_row_max(c) as usize;
     let len = n * DAYS;
     // the duties: running that day, and once a day among all the rotas
     for (r, row) in t.rows.iter().enumerate() {
@@ -846,17 +849,17 @@ pub fn check(c: &Company, k: usize, week: &Week) -> Checked {
         let windows = named(cell(p)) || named(cell(q));
         if windows && rest < 0 {
             out.marks.push(Mark { row: Some(q / DAYS), day: Some(q % DAYS), rule: Rule::Rest, hard: true, text: M_OVERLAP, args: vec![("end", rf::clock(a.1.rem_euclid(1440))), ("start", rf::clock(b.0))] });
-        } else if windows && rest < MIN_REST && cell(p) != cell(q) {
-            out.marks.push(Mark { row: Some(q / DAYS), day: Some(q % DAYS), rule: Rule::Rest, hard: false, text: M_FRAME_REST, args: vec![("have", rf::hm(rest)), ("min", rf::hm(MIN_REST))] });
+        } else if windows && rest < min_rest && cell(p) != cell(q) {
+            out.marks.push(Mark { row: Some(q / DAYS), day: Some(q % DAYS), rule: Rule::Rest, hard: false, text: M_FRAME_REST, args: vec![("have", rf::hm(rest)), ("min", rf::hm(min_rest))] });
         } else if windows {
             // (the same named frame day after day: a window again, its duties checked when given)
-        } else if rest < MIN_REST {
-            out.marks.push(Mark { row: Some(q / DAYS), day: Some(q % DAYS), rule: Rule::Rest, hard: true, text: M_REST, args: vec![("have", rf::hm(rest.max(0))), ("min", rf::hm(MIN_REST))] });
+        } else if rest < min_rest {
+            out.marks.push(Mark { row: Some(q / DAYS), day: Some(q % DAYS), rule: Rule::Rest, hard: true, text: M_REST, args: vec![("have", rf::hm(rest.max(0))), ("min", rf::hm(min_rest))] });
         }
     }
     // days of work in a row (over the whole cycle, round it)
     if (0..len).all(|p| cell(p).works()) {
-        out.marks.push(Mark { row: Some(0), day: Some(0), rule: Rule::InARow, hard: true, text: M_IN_A_ROW, args: vec![("n", len.to_string()), ("max", MAX_IN_A_ROW.to_string())] });
+        out.marks.push(Mark { row: Some(0), day: Some(0), rule: Rule::InARow, hard: true, text: M_IN_A_ROW, args: vec![("n", len.to_string()), ("max", max_in_a_row.to_string())] });
     } else {
         let first_off = (0..len).find(|&p| !cell(p).works()).unwrap_or(0);
         let mut run = 0;
@@ -864,8 +867,8 @@ pub fn check(c: &Company, k: usize, week: &Week) -> Checked {
             let p = (first_off + s) % len;
             if cell(p).works() {
                 run += 1;
-                if run == MAX_IN_A_ROW + 1 {
-                    out.marks.push(Mark { row: Some(p / DAYS), day: Some(p % DAYS), rule: Rule::InARow, hard: true, text: M_IN_A_ROW, args: vec![("n", run.to_string()), ("max", MAX_IN_A_ROW.to_string())] });
+                if run == max_in_a_row + 1 {
+                    out.marks.push(Mark { row: Some(p / DAYS), day: Some(p % DAYS), rule: Rule::InARow, hard: true, text: M_IN_A_ROW, args: vec![("n", run.to_string()), ("max", max_in_a_row.to_string())] });
                 }
             } else {
                 run = 0;

@@ -328,3 +328,8 @@
 .wl-bar.busy > div { position: absolute; left: -35%; width: 35%; transition: none; animation: wl-slide 1.6s ease-in-out infinite; }
 @keyframes wl-slide { to { left: 100%; } }
 .hub-still .wl-bar.busy > div { animation: none; left: 0; width: 100%; opacity: 0.45; }
+
+/* (Round Q, 9 November 2026: the duties without a driver signing on soon - for whoever gives the duties) */
+.tg-unfilled { border: 1px solid color-mix(in srgb, var(--co-danger) 60%, transparent); background: color-mix(in srgb, var(--co-danger) 12%, transparent); }
+.tg-unfilled .co-caps { display: flex; align-items: center; gap: 6px; color: var(--co-danger); }
+.tg-unfilled p { margin: 0; font-weight: 600; }

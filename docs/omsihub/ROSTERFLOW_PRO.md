@@ -1489,6 +1489,53 @@ natbus".
   than 3:00 weighs as dear as `NIGHT_SCRAP` in "Make duties automatically" and its score. The
   checklist's target line says a night duty's target.
 
+## Round Q: the planner's watch and the lines' money (NexiconDK, 9 November 2026)
+
+**A duty without a driver soon** (`pro_watch::unfilled`). A duty of the company's day nobody drives
+yet (`pro_ops::open_duties`: nobody given it; on Bus Company Online's server the AI drivers would
+take it) that signs on within the warning time and has not begun. The warning time is two hours
+unless the planner chose another on the Daglig drift tab's side ("Warn of a duty without a driver":
+never, 1, 2, 3, 4 or 6 hours - `warn_before`, `rf_ops_act` "limits"). Shown:
+
+- as a red banner over every Pro tab (`rf_alerts`, `pro_service.js` `UnfilledBanner`, asked again
+  every half minute): "2 duties without a driver sign on within 2 h: 2003 at 16:30, 2010 at
+  17:05." - "Find a driver" opens the first one's box on the Daglig drift tab (who can drive it);
+  closed, it stays away until the list changes;
+- once a duty in the feed and the inbox ("⚠ Duty 2003 at 16:30 has no driver yet (signs on in
+  1:45)", `note`): the company's clock looks every 10 minutes (`clock::advance`, near where the
+  clock goes only - a long catch-up does not look at every day it passes); the duties told are
+  kept by date (`Ops::warned`);
+- on Bus Company Online's company page, the Duties tab, to whoever gives or plans the duties
+  (`Snapshot::unfilled`, `join.rs` `unfilled_json`): a red section "Without a driver soon".
+
+**The planner's limits** (`pro_watch::rest_min`, `in_a_row_max`): the least rest between two
+working days (11 hours unless chosen, 9 to 12 by the half hour) and the most days of work in a row
+(six unless chosen, 4 to 7), set with the steppers beside the two rules in the Turnus tab's side
+(their words follow: "10 hours of rest between duties"). The rota check takes them
+(`pro_turnus::check`); the automatic rota still builds to the drivers' rules' 11 hours and six days.
+The calendar checks each driver's own days as they are planned now - a duty given, a swap, a
+frame's duty, the days gone as worked (`work_day`) - each day of duties against the day before (a
+night duty's rest from when it really ends, past midnight: `rest_issue`) and the days of work in a
+row before it (`in_a_row`): a "!" on the cell (yellow below the limit, red below the reduced 9 hours
+or past the days in a row) with the words in its tip, and their count over the calendar ("⚠ 3 days
+break the rest or the days in a row").
+
+**Profit by line** (`pro_econ`, `rf_econ`, the calendar's button): each line this week (Monday to
+Sunday) or this month -
+
+- *so far*, the days closed: the ledger by line (`booked`: every booking that names "Line 131") -
+  the income (the contract's payments, the fares, passes, grants: `INCOME`), the penalties, the
+  diesel or power and the maintenance (`RUNNING`) - and the drivers: each day's duties at the
+  Vagter tab's price (`pro_dutyplan::price`), shared out by the minutes each duty works on each
+  line (`duty_wages`; the wages are booked for the company as a whole, not by line);
+- *the whole period (forecast)*: the contract's day for every day the line runs
+  (`contract_day`), the fares and the running booked so far and the line's average day of the last
+  28 for the days to come, the penalties as they are, every day's duties as planned (one board a
+  weekday of the planner's day plans).
+
+Not in it: the buses' purchase, leasing and insurance, the depot and the overheads - the company's,
+not one line's. The page says what is in each figure beneath the tables.
+
 ## Tests
 
 `pro_duties_tests`: a duty built of departures cut out of its buses and named, a duty of two buses,

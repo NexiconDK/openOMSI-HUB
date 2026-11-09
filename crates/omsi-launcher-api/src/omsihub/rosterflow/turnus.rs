@@ -18,6 +18,15 @@ use omsi_launcher_lib::company::{self as co, pro_absence as pa, pro_swap as psw,
 use serde_json::{json, Value};
 use std::sync::Arc;
 
+/// (Round Q) "11 hours" / "10½ hours" (the least rest).
+fn hm_words(m: i32) -> String {
+    if m % 60 == 0 {
+        trf("%{h} hours", &[("h", &(m / 60).to_string())])
+    } else {
+        trf("%{h} hours %{m} min", &[("h", &(m / 60).to_string()), ("m", &(m % 60).to_string())])
+    }
+}
+
 /// The days of a row, Sunday first (translated when shown).
 const DAYS: [&str; 7] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -273,7 +282,17 @@ fn rota_json(c: &Company, k: usize, week: &Week, sunday: &str, checked: &Checked
         })
         .collect();
     let kind = t.kind();
-    let rules: Vec<Value> = rules_of(kind).iter().map(|(rule, words)| json!({ "text": tr(words), "ok": checked.kept(*rule) })).collect();
+    // (round Q: the rest and the days in a row by the planner's own limits - `pro_watch` - set here)
+    let rest = co::pro_watch::rest_min(c);
+    let most = co::pro_watch::in_a_row_max(c);
+    let rules: Vec<Value> = rules_of(kind)
+        .iter()
+        .map(|(rule, words)| match rule {
+            Rule::Rest => json!({ "text": trf("%{t} of rest between duties", &[("t", &hm_words(rest))]), "ok": checked.kept(*rule), "edit": "rest", "value": rest, "least": co::pro_watch::REST_LEAST, "most": co::pro_watch::REST_MOST }),
+            Rule::InARow => json!({ "text": trf("At most %{n} days of work in a row", &[("n", &most.to_string())]), "ok": checked.kept(*rule), "edit": "in_a_row", "value": most, "least": co::pro_watch::IN_A_ROW_LEAST, "most": co::pro_watch::IN_A_ROW_MOST }),
+            _ => json!({ "text": tr(words), "ok": checked.kept(*rule) }),
+        })
+        .collect();
     let general: Vec<String> = checked.marks.iter().filter(|m| m.row.is_none()).map(mark_words).collect();
     let started = pt::week_of(t, sunday).is_some();
     // the weekend after each week: its Saturday and the next week's Sunday

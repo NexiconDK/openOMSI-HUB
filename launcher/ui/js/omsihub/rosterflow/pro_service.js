@@ -4,6 +4,9 @@
 // from a moment to come, in service since - and "Start service…" (the Roster tab's dialog: now,
 // from tomorrow, from a date) or "Take the line out of service". Every Pro tab says when a line won
 // in a tender is not running though its concession has begun (`roster::lines_view`).
+//
+// Round Q (9 November 2026): the red banner over every Pro tab of the duties without a driver
+// signing on soon, and the warning time chosen (`rf_alerts`, `pro_watch`).
 
 import { html, useEffect, useState } from '../../../vendor/preact-htm.js';
 import { S } from '../../store.js';
@@ -12,6 +15,8 @@ import { tr } from '../bits.js';
 import { setRf, rfCmd, after, bump } from './state.js';
 import { Icon } from './ui.js';
 import { ServiceDialog } from './roster.js';
+// (round Q: the banner's "Find a driver" opens the Daglig drift tab - read when clicked)
+import { PRO_DAILY } from './pro.js';
 
 /** The lines' service (`rf_roster_lines`), asked again when the company or the page changes. */
 function useLines() {
@@ -57,4 +62,67 @@ export function ServiceStrip({ full }) {
     </div>
     ${dialog}
   </div>`;
+}
+
+// --- round Q (NexiconDK, 9 November 2026: "Advarsel om ledige vagter") ---------------------------------
+
+/** How often the duties without a driver are asked for while RosterFlow Pro is open (ms). */
+const ALERTS_EVERY = 30000;
+
+/** The duties of the company's day without a driver signing on soon (`rf_alerts`), asked again
+ * every half minute, when the company or the page changes. */
+function useAlerts() {
+  const [v, setV] = useState(null);
+  const gen = S.co.shell?.gen ?? 0;
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    let gone = false;
+    rfCmd('rf_alerts', {})
+      .then((x) => !gone && setV(x))
+      .catch(() => !gone && setV(null));
+    const t = setTimeout(() => setTick((k) => k + 1), ALERTS_EVERY);
+    return () => {
+      gone = true;
+      clearTimeout(t);
+    };
+  }, [gen, S.rf.bump, language(), tick]);
+  return v;
+}
+
+/** The duty's box of the Daglig drift tab opened: who can drive it (the round G box). */
+function findDriver(date, n) {
+  setRf((r) => ({ view: PRO_DAILY, proSel: {}, ops: { ...(r.ops || {}), date, n, pop: true } }));
+}
+
+/** (Round Q) The red banner over every Pro tab: the duties of the day without a driver signing on
+ * within the warning time - "Find a driver" opens the first one's box; hidden until the list
+ * changes when closed. */
+export function UnfilledBanner() {
+  const v = useAlerts();
+  const [hidden, setHidden] = useState('');
+  if (!v?.text || !v.items?.length) return null;
+  const key = v.items.map((x) => x.n).join(',');
+  if (hidden === key) return null;
+  const first = v.items[0];
+  return html`<div class="pro-unfilled" role="alert">
+    <${Icon} name="warning" size=${18} />
+    <span class="pro-unfilled-text">${v.text}</span>
+    <button type="button" class="rf-btn solid pro-unfilled-go" onClick=${() => findDriver(v.date, first.n)}><${Icon} name="person" size=${16} /><span>${v.open}</span></button>
+    <button type="button" class="rf-ibtn" title=${tr('Close')} onClick=${() => setHidden(key)}><${Icon} name="close" size=${16} /></button>
+  </div>`;
+}
+
+/** (Round Q) The warning time, chosen on the Daglig drift tab's side. */
+export function WarnSetting() {
+  const v = useAlerts();
+  if (!v?.choices) return null;
+  const set = async (m) => {
+    const r = await rfCmd('rf_ops_act', { act: 'limits', warn: m }).catch((e) => ({ say: { text: e.message, error: true } }));
+    after(r);
+    bump();
+  };
+  return html`<div class="pro-caps" style="margin-top:14px">${v.label}</div>
+    <select class="pro-select" value=${v.warn} onChange=${(e) => set(Number(e.currentTarget.value))}>
+      ${v.choices.map(([m, label]) => html`<option value=${m} selected=${m === v.warn}>${label}</option>`)}
+    </select>`;
 }

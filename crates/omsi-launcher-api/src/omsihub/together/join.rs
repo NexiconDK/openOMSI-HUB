@@ -30,7 +30,7 @@ use omsi_launcher_lib::company::together::client::{self, Ended, Link};
 use omsi_launcher_lib::company::together::code::{self, CompanyCode};
 use omsi_launcher_lib::company::together::host as th;
 use omsi_launcher_lib::company::together::book::TripFilter;
-use omsi_launcher_lib::company::together::wire::{DriveStart, DutyState, Notice, Request, SnapBus, SnapDuty, SnapResult, Snapshot, TripList};
+use omsi_launcher_lib::company::together::wire::{DriveStart, DutyState, Notice, Request, SnapBus, SnapDuty, SnapResult, SnapUnfilled, Snapshot, TripList};
 use omsi_launcher_lib::company::together::{Perm, Role};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -1043,6 +1043,25 @@ fn wait_words(d: &SnapDuty) -> String {
     trf("Bus %{bus} waits at %{stop}", &[("bus", &tr(&d.bus)), ("stop", d.first.trim())])
 }
 
+/// (Round Q, NexiconDK 9 November 2026) The duties of the day without a driver signing on soon
+/// (`Snapshot::unfilled`), in words for the Duties tab's red line: null when there are none.
+fn unfilled_json(s: &Snapshot) -> Value {
+    if s.unfilled.is_empty() {
+        return Value::Null;
+    }
+    let hhmm = |m: i32| format!("{:02}:{:02}", (m / 60).rem_euclid(24), m.rem_euclid(60));
+    let within = |m: i32| if m >= 60 { if m % 60 == 0 { trf("%{h} h", &[("h", &(m / 60).to_string())]) } else { trf("%{h} h %{m} min", &[("h", &(m / 60).to_string()), ("m", &(m % 60).to_string())]) } } else { trf("%{m} min", &[("m", &m.to_string())]) };
+    let name = |x: &SnapUnfilled| if x.name.parse::<u32>().is_ok() { trf("Duty %{n}", &[("n", &x.name)]) } else { x.name.clone() };
+    let text = if s.unfilled.len() == 1 {
+        let x = &s.unfilled[0];
+        trf("%{duty} at %{time} has no driver yet - it signs on in %{in}. Give it to a player below, or the AI drives it.", &[("duty", &name(x)), ("time", &hhmm(x.start)), ("in", &within(x.within))])
+    } else {
+        let list: Vec<String> = s.unfilled.iter().map(|x| trf("%{duty} at %{time}", &[("duty", &name(x)), ("time", &hhmm(x.start))])).collect();
+        trf("%{count} duties have no driver yet and sign on soon: %{list}. Give them to players below, or the AI drives them.", &[("count", &s.unfilled.len().to_string()), ("list", &list.join(", "))])
+    };
+    json!({ "text": text, "caps": tr("Without a driver soon").to_uppercase() })
+}
+
 /// (NexiconDK, 7 November 2026) The trip a duty is taken over at, in words: its next when it is
 /// under way, else its first (empty: none to tell).
 fn next_words(d: &SnapDuty) -> String {
@@ -1228,6 +1247,9 @@ fn view() -> Value {
             "mine": d.mine, "may": d.may && (d.name.is_empty() || d.mine), "late": d.late.iter().map(|(what, m)| format!("{what} · {}", trf("+%{n} min", &[("n", &m.to_string())]))).collect::<Vec<_>>(),
             "note": tr("On duty, a spare bus reaches its trips in 15 minutes, the late buses wait for your call on the control room's page and you answer the doubling orders."),
         })),
+        // (round Q, 9 November 2026: the duties without a driver signing on soon - for whoever
+        // gives or plans the duties: `pro_watch`)
+        "unfilled": unfilled_json(s),
         "online": s.players.iter().filter(|p| p.online).count(),
         "take_note": if !ask { tr("Your role does not drive: the boss can change it.") } else if s.open_claims || can(Perm::Approve) { tr("Take an open duty: it is yours at once.") } else { tr("Ask for an open duty: the boss, or a player who may, says yes or no.") },
     })

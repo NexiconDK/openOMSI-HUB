@@ -301,6 +301,25 @@ pub struct Ops {
     pub buses: Vec<super::pro_buses::BusPick>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub downs: Vec<super::pro_buses::BusDown>,
+    /// (NexiconDK, 9 November 2026: round Q) The planner's own limits (`pro_watch`): how long
+    /// before its sign-on a duty without a driver is warned of (minutes; None the default two
+    /// hours, 0 never), the least rest between two working days (minutes; None the 11 hours) and
+    /// the most days of work in a row (None six) - and the duties warned of (date, number), the
+    /// company's moment they were last looked for.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub warn_before: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rest_min: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub in_a_row_max: Option<u32>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub warned: Vec<(String, u32)>,
+    #[serde(skip_serializing_if = "is_zero_i64")]
+    pub watched: i64,
+}
+
+fn is_zero_i64(x: &i64) -> bool {
+    *x == 0
 }
 
 fn is_none_u32(x: &u32) -> bool {
@@ -313,7 +332,7 @@ fn is_zero(x: &Cents) -> bool {
 
 impl Ops {
     pub fn is_empty(&self) -> bool {
-        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty() && self.sick.is_empty() && self.extras.is_empty() && self.grumbled.is_empty() && self.rest_fine == 0 && self.wishes.is_empty() && self.last_wish == 0 && self.wished.is_empty() && self.toil_asked.is_empty() && !self.toil_default && self.swaps.is_empty() && self.last_swap == 0 && self.trades.is_empty() && self.last_trade == 0 && self.traded.is_empty() && self.tallies.is_empty() && self.reports.is_empty() && self.avail.is_empty() && self.avail_day.is_empty() && self.buses.is_empty() && self.downs.is_empty()
+        self.calls.is_empty() && self.asks.is_empty() && self.splits.is_empty() && self.noes.is_empty() && self.sick.is_empty() && self.extras.is_empty() && self.grumbled.is_empty() && self.rest_fine == 0 && self.wishes.is_empty() && self.last_wish == 0 && self.wished.is_empty() && self.toil_asked.is_empty() && !self.toil_default && self.swaps.is_empty() && self.last_swap == 0 && self.trades.is_empty() && self.last_trade == 0 && self.traded.is_empty() && self.tallies.is_empty() && self.reports.is_empty() && self.avail.is_empty() && self.avail_day.is_empty() && self.buses.is_empty() && self.downs.is_empty() && self.warn_before.is_none() && self.rest_min.is_none() && self.in_a_row_max.is_none() && self.warned.is_empty() && self.watched == 0
     }
 }
 
@@ -1313,6 +1332,8 @@ pub fn texts() -> Vec<&'static str> {
     v.extend(super::pro_season::texts());
     v.extend(super::pro_avail::texts());
     v.extend(super::pro_report::texts());
+    v.extend(super::pro_watch::texts());
+    v.extend(super::pro_econ::texts());
     for list in [&SAY_YES[..], &SAY_TIRED, &SAY_BUSY, &SAY_BUSY_ANY, &SAY_PLANS, &SAY_EARLY, &SAY_LATE, &SAY_SWAP, &SAY_ANNOYED, &SAY_ANGRY, &SAY_GRUDGING] {
         v.extend(list.iter().copied());
     }

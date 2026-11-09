@@ -172,6 +172,8 @@ export const STROKED = {
   livery_unlock: ['M7 11h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z', 'M8 11V7.5a4 4 0 0 1 7.6-1.8'],
   // (round E: the drivers' swap proposals, the Monday report)
   rf_swap: ['M4 8h14', 'M14 4l4 4-4 4', 'M20 16H6', 'M10 12l-4 4 4 4'],
+  // (round Q: the lines' economy - a coin)
+  rf_money: ['M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z', 'M15 9.2c-.5-1-1.6-1.6-3-1.6-1.8 0-3 .9-3 2.1 0 2.9 6 1.5 6 4.5 0 1.2-1.2 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.7', 'M12 6v1.6', 'M12 16.4V18'],
   rf_report: ['M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z', 'M14 3v5h5', 'M9 17v-3', 'M12 17v-5', 'M15 17v-2'],
   // (round H: the Kan arbejde tab - a calendar day ticked)
   rf_can: ['M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'M4 10h16', 'M8 3v4', 'M16 3v4', 'M9 15l2 2 4-4'],

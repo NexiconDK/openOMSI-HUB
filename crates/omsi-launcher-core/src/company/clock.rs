@@ -1252,6 +1252,23 @@ fn trades(c: &mut Company, now: i64, w: &mut dyn World) -> Option<FeedItem> {
     Some(FeedItem { at: now, text: super::pro_trade::SENT_FEED.into(), args: vec![("a".into(), name(t.a)), ("b".into(), name(t.b))], level: Level::Info })
 }
 
+/// (RosterFlow Pro, round Q) Every `pro_watch::EVERY` minutes of the company's clock its day
+/// looked at for the duties without a driver signing on soon: each told once (`pro_watch::note`).
+fn unfilled(c: &mut Company, at: i64, w: &mut dyn World, run: &mut Run) {
+    let day0 = moment(&c.date, 0);
+    if at < day0 || at >= day0 + DAY || !super::pro_watch::due(c, at) {
+        return;
+    }
+    let date = c.date.clone();
+    let Ok(lines) = w.lines(c, &date) else { return };
+    let tours = super::network::in_service_only(super::network::tours_of_day(c, &lines, &date));
+    let dp = super::plan::day_plan(c, &date, tours, &[], &[], false);
+    let duties = super::pro_turnus::day_duties(c, &date, dp.tours.iter().map(|t| t.tour.clone()).collect());
+    for item in super::pro_watch::note(c, &dp, &duties, (at - day0) as i32) {
+        tell(c, run, item.at, &item.text, item.args, item.level);
+    }
+}
+
 fn hook(c: &mut Company, at: i64, quick: bool, run: &mut Run) {
     for item in on_minute(c, at) {
         if item.level == Level::Bad && !quick && c.clock.ask.is_none() {
@@ -1319,6 +1336,11 @@ pub fn advance(c: &mut Company, to: i64, w: &mut dyn World, quick: bool) -> Resu
         hook(c, limit, quick, &mut run);
         if let Some(item) = trades(c, limit, w) {
             tell(c, &mut run, limit, &item.text, item.args, item.level);
+        }
+        // (RosterFlow Pro, round Q: the duties without a driver signing on soon - `pro_watch`)
+        // (only near where the clock goes: a long catch-up does not look at every day it passes)
+        if to - limit <= super::pro_watch::EVERY {
+            unfilled(c, limit, w, &mut run);
         }
         // (service control: the buses running late told, Casual's controller acting)
         super::control::watch_day(c, w, quick, &mut run)?;

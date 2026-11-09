@@ -237,7 +237,7 @@ fn run(s: &mut Session, r: &mut Rf, by: live::Editor, cmd: &str, args: &Value) -
         c if c == "rf_buses" || c.starts_with("rf_bus_") => return buses::run(s, r, c, args),
         // (rounds B, E and G: the wishes, the swap proposals, the Monday reports and the answers
         // come too - they were not routed here before round H)
-        c if c.starts_with("rf_cal") || c.starts_with("rf_ops") || c.starts_with("rf_wish") || c.starts_with("rf_trade") || c == "rf_reports" || c == "rf_answers" => return ops::run(s, r, c, args),
+        c if c.starts_with("rf_cal") || c.starts_with("rf_ops") || c.starts_with("rf_wish") || c.starts_with("rf_trade") || c == "rf_reports" || c == "rf_answers" || c == "rf_alerts" || c == "rf_econ" => return ops::run(s, r, c, args),
         _ => return None,
     })
 }

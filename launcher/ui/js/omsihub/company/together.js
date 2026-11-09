@@ -413,6 +413,7 @@ function Duties({ v, ask }) {
   };
   return html`<div class="tg-cols">
     <div class="co-scroll tg-main">
+      ${v.unfilled && html`<section class="co-section tg-unfilled" role="alert"><div class="co-caps"><${Icon} name="warning" size=${15} />${v.unfilled.caps}</div><p>${v.unfilled.text}</p></section>`}
       ${v.urgent?.length > 0 && html`<section class="co-section"><div class="co-caps">${w.urgent_caps}</div><p class="note">${v.urgent_note}</p>${v.urgent.map((d) => html`<${DutyRow} d=${d} again=${ask} />`)}</section>`}
       <section class="co-section"><div class="co-caps">${w.open_caps}</div><p class="note">${v.take_note}</p>
         ${v.open.length ? v.open.map((d) => html`<${DutyRow} d=${d} again=${ask} />`) : html`<p class="dim">${v.reading ? '…' : w.no_open}</p>`}</section>

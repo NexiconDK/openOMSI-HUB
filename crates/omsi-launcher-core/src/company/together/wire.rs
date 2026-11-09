@@ -378,6 +378,20 @@ pub struct Snapshot {
     pub fixed: Vec<SnapFixed>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dispatch: Option<SnapDispatch>,
+    /// (NexiconDK, 9 November 2026: round Q) The duties of the day without a driver signing on
+    /// soon (`pro_watch::unfilled`), for whoever gives or plans the duties.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub unfilled: Vec<SnapUnfilled>,
+}
+
+/// (NexiconDK, 9 November 2026: round Q) A duty without a driver signing on soon: the name it is
+/// shown by, when it signs on (minutes of the day) and in how many minutes.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct SnapUnfilled {
+    pub name: String,
+    pub start: i32,
+    pub within: i32,
 }
 
 /// (K10) A fixed duty as the player's page lists it: its id, line number, tour, duty, weekdays

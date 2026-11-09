@@ -4147,3 +4147,37 @@ _version: 2
   pl: "Rozpoczęcie służby na %{stop}"
   ru: "Начало смены на %{stop}"
   uk: "Початок зміни на %{stop}"
+# (NexiconDK, 9 November 2026: round Q - the duties without a driver signing on soon, on a company's
+# Duties tab of Bus Company Online's server, for whoever gives or plans the duties: join.rs)
+"%{duty} at %{time} has no driver yet - it signs on in %{in}. Give it to a player below, or the AI drives it.":
+  de: "%{duty} um %{time} hat noch keine Fahrkraft - Dienstbeginn in %{in}. Gib ihn unten einer Person, sonst fährt ihn die KI."
+  da: "%{duty} kl. %{time} har endnu ingen chauffør - den møder om %{in}. Giv den til en spiller herunder, ellers kører AI'en den."
+  fr: "%{duty} à %{time} n'a pas encore de conducteur·rice - prise de service dans %{in}. Donne-le à quelqu'un ci-dessous, sinon l'IA le conduit."
+  nl: "%{duty} om %{time} heeft nog geen chauffeur - begint over %{in}. Geef hem hieronder aan iemand, anders rijdt de AI hem."
+  pl: "%{duty} o %{time} nie ma jeszcze kierowcy - początek za %{in}. Przydziel ją komuś poniżej, inaczej poprowadzi ją SI."
+  ru: "У %{duty} в %{time} ещё нет водителя - начало через %{in}. Отдай её кому-нибудь ниже, иначе её поведёт ИИ."
+  uk: "%{duty} о %{time} ще не має водія - початок через %{in}. Віддай її комусь нижче, інакше її поведе ШІ."
+"%{duty} at %{time}":
+  de: "%{duty} um %{time}"
+  da: "%{duty} kl. %{time}"
+  fr: "%{duty} à %{time}"
+  nl: "%{duty} om %{time}"
+  pl: "%{duty} o %{time}"
+  ru: "%{duty} в %{time}"
+  uk: "%{duty} о %{time}"
+"%{count} duties have no driver yet and sign on soon: %{list}. Give them to players below, or the AI drives them.":
+  de: "%{count} Dienste haben noch keine Fahrkraft und beginnen bald: %{list}. Gib sie unten Personen, sonst fährt sie die KI."
+  da: "%{count} vagter har endnu ingen chauffør og møder snart: %{list}. Giv dem til spillere herunder, ellers kører AI'en dem."
+  fr: "%{count} services n'ont pas encore de conducteur·rice et commencent bientôt : %{list}. Donne-les à des personnes ci-dessous, sinon l'IA les conduit."
+  nl: "%{count} diensten hebben nog geen chauffeur en beginnen binnenkort: %{list}. Geef ze hieronder aan spelers, anders rijdt de AI ze."
+  pl: "%{count} służb nie ma jeszcze kierowcy i wkrótce się zaczyna: %{list}. Przydziel je graczom poniżej, inaczej poprowadzi je SI."
+  ru: "У %{count} смен ещё нет водителя, и они скоро начинаются: %{list}. Отдай их игрокам ниже, иначе их поведёт ИИ."
+  uk: "%{count} змін ще не мають водія і скоро починаються: %{list}. Віддай їх гравцям нижче, інакше їх поведе ШІ."
+"Without a driver soon":
+  de: "Bald ohne Fahrkraft"
+  da: "Snart uden chauffør"
+  fr: "Bientôt sans conducteur·rice"
+  nl: "Binnenkort zonder chauffeur"
+  pl: "Wkrótce bez kierowcy"
+  ru: "Скоро без водителя"
+  uk: "Скоро без водія"

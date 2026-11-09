@@ -1844,3 +1844,132 @@ fn the_days_mark_counts_every_yes_to_the_duty() {
     }
     assert_eq!(mark_of(&c, &date, game, 0).key(), None);
 }
+
+// --- round Q (NexiconDK, 9 November 2026) --------------------------------------------------------
+
+/// A duty without a driver signing on within the warning time is warned of - not before it, not
+/// once begun, never with the warning off - and told once (the feed, the inbox).
+#[test]
+fn round_q_a_duty_without_a_driver_soon_is_warned_of_once() {
+    use super::super::pro_watch as pw;
+    let mut c = company();
+    let ids: Vec<u32> = c.staff.iter().map(|e| e.id).collect();
+    rota(&mut c, ids[0], ids[1]);
+    let date = c.date.clone();
+    // a ill that day: 1001 has nobody, 1002 its driver
+    pt::set_exception(&mut c, ids[0], &date, Some((Cell::Off, "sick".into())));
+    let p = day(&c, &date);
+    let ds = duties(&c, &date);
+    let start = ds.iter().find(|d| d.number == 1001).unwrap().start;
+    assert!(pw::unfilled(&c, &p, &ds, start - 121).is_empty(), "more than two hours before");
+    let u = pw::unfilled(&c, &p, &ds, start - 90);
+    assert_eq!(u.iter().map(|x| (x.n, x.within)).collect::<Vec<_>>(), [(1001, 90)], "1002 has its driver");
+    assert_eq!(pw::within_words(105), "1:45");
+    assert!(pw::unfilled(&c, &p, &ds, start).is_empty(), "begun");
+    // the planner's warning time
+    pw::set_warn_before(&mut c, 60).unwrap();
+    assert!(pw::unfilled(&c, &p, &ds, start - 90).is_empty());
+    assert_eq!(pw::unfilled(&c, &p, &ds, start - 45).len(), 1);
+    pw::set_warn_before(&mut c, 0).unwrap();
+    assert!(pw::unfilled(&c, &p, &ds, start - 45).is_empty(), "never");
+    assert_eq!(pw::set_warn_before(&mut c, 77), Err(pw::BAD_CHOICE));
+    pw::set_warn_before(&mut c, pw::WARN_DEFAULT).unwrap();
+    assert_eq!(c.planning.ops.warn_before, None, "the default is not kept");
+    // told once: the feed's line and the inbox's message, then never again that day
+    let f = pw::note(&mut c, &p, &ds, start - 90);
+    assert_eq!(f.len(), 1);
+    assert_eq!(f[0].text, pw::FEED);
+    assert!(f[0].args.iter().any(|(k, v)| k == "in" && v == "1:30"), "{:?}", f[0].args);
+    assert!(c.inbox.messages.iter().any(|m| m.title == pw::INBOX_TITLE), "the inbox has it");
+    assert!(pw::note(&mut c, &p, &ds, start - 60).is_empty(), "once");
+    assert_eq!(c.planning.ops.warned, [(date.clone(), 1001)]);
+    // looked at every ten minutes of the clock
+    let at = crate::company::clock::moment(&date, 300);
+    assert!(pw::due(&mut c, at));
+    assert!(!pw::due(&mut c, at + 5));
+    assert!(pw::due(&mut c, at + pw::EVERY));
+}
+
+/// The planner's limits: the rest between two working days (a night duty's from when it really
+/// ends) and the days of work in a row - chosen within their ranges, and the rota check follows.
+#[test]
+fn round_q_the_planners_limits_of_rest_and_days_in_a_row() {
+    use super::super::pro_watch as pw;
+    let mut c = company();
+    assert_eq!((pw::rest_min(&c), pw::in_a_row_max(&c)), (11 * 60, 6));
+    // a night duty off at 05:12 the next morning, then on at 14:00: 8:48 - below the 9 hours, red
+    assert_eq!(pw::rest_issue(&c, Some((19 * 60 + 40, 1440 + 312)), Some((14 * 60, 22 * 60))), Some((528, true)));
+    // 10 hours: below the 11, yellow; 12 hours: kept; no day before: nothing
+    assert_eq!(pw::rest_issue(&c, Some((6 * 60, 20 * 60)), Some((6 * 60, 14 * 60))), Some((600, false)));
+    assert_eq!(pw::rest_issue(&c, Some((6 * 60, 18 * 60)), Some((6 * 60, 14 * 60))), None);
+    assert_eq!(pw::rest_issue(&c, None, Some((6 * 60, 14 * 60))), None);
+    pw::set_rest_min(&mut c, 10 * 60).unwrap();
+    assert_eq!(pw::rest_issue(&c, Some((6 * 60, 20 * 60)), Some((6 * 60, 14 * 60))), None);
+    assert_eq!(pw::set_rest_min(&mut c, 8 * 60), Err(pw::BAD_CHOICE));
+    assert_eq!(pw::set_rest_min(&mut c, 10 * 60 + 15), Err(pw::BAD_CHOICE));
+    assert!(pw::in_a_row(&c, 7) && !pw::in_a_row(&c, 6));
+    // a rota week of seven days of work, then a week off: marked at six, not at seven
+    let w = week(&c, "2024-03-03");
+    let id = pt::add(&mut c, "Syv", false);
+    pt::add_row(&mut c, id).unwrap();
+    pt::add_row(&mut c, id).unwrap();
+    for dd in 0..pt::DAYS {
+        let n = w[dd].first().map(|x| x.number).expect("a duty every day");
+        pt::set_cell(&mut c, id, 0, dd, Cell::Duty { n }, &w).unwrap();
+    }
+    let k = c.planning.rotas.list.iter().position(|t| t.id == id).unwrap();
+    assert!(!pt::check(&c, k, &w).kept(pt::Rule::InARow));
+    pw::set_in_a_row_max(&mut c, 7).unwrap();
+    assert!(pt::check(&c, k, &w).kept(pt::Rule::InARow));
+    assert_eq!(pw::set_in_a_row_max(&mut c, 9), Err(pw::BAD_CHOICE));
+    pw::set_in_a_row_max(&mut c, 6).unwrap();
+    assert_eq!(c.planning.ops.in_a_row_max, None);
+}
+
+/// A line's money: the ledger by line (the contract, the fares, the running, the penalties), a
+/// day's duties shared out among the lines they work on, the week and the month of a date.
+#[test]
+fn round_q_a_lines_money() {
+    use super::super::model::BookingKind;
+    use super::super::pro_econ as pe;
+    use super::super::rosterflow as rf;
+    let mut c = company();
+    assert_eq!(pe::line_of_text("Line 131: gross cost contract"), Some("131"));
+    assert_eq!(pe::line_of_text("Line 5"), Some("5"));
+    assert_eq!(pe::line_of_text("Line 153 (measured)"), Some("153"));
+    assert_eq!(pe::line_of_text("Drivers: paid hours"), None);
+    let date = c.date.clone();
+    let before = pe::booked(&c, &date, &date);
+    c.book(BookingKind::Contract, 10_000_00, "Line 5: gross cost contract", false);
+    c.book(BookingKind::Fares, 500_00, "Line 5", false);
+    c.book(BookingKind::Energy, -2_000_00, "Line 5", false);
+    c.book(BookingKind::Penalty, -100_00, "Line 5: service not started", false);
+    c.book(BookingKind::Wages, -9_000_00, "Drivers: paid hours of the day", false);
+    let after = pe::booked(&c, &date, &date);
+    let m5 = |v: &[(String, pe::Money)]| v.iter().find(|x| x.0 == "5").map(|x| x.1.clone()).unwrap_or_default();
+    let (a, b) = (m5(&after), m5(&before));
+    assert_eq!((a.income - b.income, a.contract - b.contract, a.running - b.running, a.penalties - b.penalties), (10_500_00, 10_000_00, -2_000_00, -100_00));
+    assert!(after.iter().all(|x| x.0 != "Drivers:"), "the wages are no line's");
+    // the day's duties: all of line 5, their prices summed
+    let board = rf::board_of(&c, super::super::plandays::slot_of(&c, &date), tours(&c, &date), Vec::new());
+    let hour = super::super::pro_dutyplan::hour_wage(&c);
+    let wages = pe::duty_wages(&c, &board, &date, hour);
+    let all: Cents = board.shaped.iter().filter(|s| s.spare.is_none()).map(|s| super::super::pro_dutyplan::price(&c, s, &date, hour).total).sum();
+    assert_eq!(wages.len(), 1);
+    assert_eq!(wages[0].0, "5");
+    assert!((wages[0].1 - all).abs() <= 1 && all > 0, "{wages:?} {all}");
+    let mut m = pe::Money { income: 100, penalties: -10, running: -20, wages: 30, ..Default::default() };
+    assert_eq!(m.result(), 40);
+    m.add(&pe::Money { income: 5, ..Default::default() });
+    assert_eq!(m.income, 105);
+    assert_eq!(pe::week_of("2024-03-06"), ("2024-03-04".to_string(), "2024-03-10".to_string()));
+    assert_eq!(pe::month_of("2024-02-10"), ("2024-02-01".to_string(), "2024-02-29".to_string()));
+    assert_eq!(pe::dates_between("2024-03-30", "2024-04-02").len(), 4);
+    // a commercial line: its contract worth nothing a day
+    assert_eq!(pe::contract_day(&c, "Linie5", &date), 0);
+    // a line counts from its first day: not before the company had it
+    assert!(pe::runs_on(&c, "5", &date));
+    assert!(!pe::runs_on(&c, "5", &dates::add(&date, -1)));
+    c.lines[0].service_from = None;
+    assert!(!pe::runs_on(&c, "5", &date), "not in service");
+}

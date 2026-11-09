@@ -40,7 +40,7 @@ import { tr } from '../bits.js';
 import { setRf, rfCmd, after, bump, say } from './state.js';
 import { Icon, RfButton } from './ui.js';
 // (round N: a line won that does not run yet, said on the day too)
-import { ServiceStrip } from './pro_service.js';
+import { ServiceStrip, WarnSetting } from './pro_service.js';
 
 /** What the tabs keep: the calendar's week, span, filter and search; the date and the duty the
  * box shows, whether its popup is open (`pop`) and the duty just given (`given`). */
@@ -52,8 +52,8 @@ const closePop = () => setO({ pop: false, n: null, given: null });
 
 /** Escape: the popup closed first (the wishes', the swap proposals', the reports' or the day's). */
 export function opsEscape() {
-  if (st().wishes || st().trades || st().reports) {
-    setO({ wishes: false, trades: false, reports: false });
+  if (st().wishes || st().trades || st().reports || st().econ) {
+    setO({ wishes: false, trades: false, reports: false, econ: false });
     return true;
   }
   if (!st().pop) return false;
@@ -512,6 +512,39 @@ function Reports() {
   </div>`;
 }
 
+/** (Round Q, NexiconDK 9 November 2026: "Overskud pr. linje") What each line earns and costs this
+ * week or this month (`rf_econ`): the days closed so far, and the whole period as it looks - what
+ * is in each figure said beneath. */
+function Econ() {
+  const period = st().ep || 'week';
+  const [v] = useView('rf_econ', { period }, [period]);
+  const close = () => setO({ econ: false });
+  const table = (t) => html`<table class="ec-table">
+    <thead><tr>${(v.heads || []).map((h, k) => html`<th class=${k ? 'num' : ''}>${h}</th>`)}</tr></thead>
+    <tbody>${t.rows.map((x) => html`<tr>
+      <td><span class="ec-line" style=${x.colour ? `background:${x.colour}` : ''}>${x.line}</span></td>
+      <td class="num" title=${x.contract}>${x.income}</td><td class="num">${x.wages}</td><td class="num">${x.running}</td><td class="num">${x.penalties}</td>
+      <td class=${'num ec-res ' + x.tone}><b>${x.result}</b></td></tr>`)}
+      <tr class="ec-total"><td>${t.total.line}</td><td class="num">${t.total.income}</td><td class="num">${t.total.wages}</td><td class="num">${t.total.running}</td><td class="num">${t.total.penalties}</td><td class=${'num ec-res ' + t.total.tone}><b>${t.total.result}</b></td></tr>
+    </tbody></table>`;
+  return html`<div class="rf-sheetdim op-popdim" onMouseDown=${(e) => e.target === e.currentTarget && close()}>
+    <div class="rf-help op-pop op-report op-econ" role="dialog" aria-modal="true">
+      <div class="head"><div class="pro-intro-mark"><${Icon} name="rf_money" size=${20} /></div>
+        <div><b>${v?.title || tr('Reading the timetable…')}</b><span>${v?.span || v?.reading || ''}</span></div>
+        <button type="button" title=${tr('Close')} onClick=${close}><${Icon} name="close" size=${20} /></button></div>
+      <div class="op-popbody"><div class="bx">
+        <span class="cl-seg ec-tabs">${(v?.tabs || []).map(([k, label]) => html`<button type="button" class=${period === k ? 'on' : ''} onClick=${() => setO({ ep: k })}>${label}</button>`)}</span>
+        ${v?.whole && html`
+          <div class="pro-caps ec-caps">${v.so_far_title}</div>
+          ${v.so_far ? table(v.so_far) : html`<div class="pro-dim">${v.none_closed}</div>`}
+          <div class="pro-caps ec-caps">${v.whole_title}</div>
+          ${table(v.whole)}
+          <ul class="ec-explain">${v.explain.map((x) => html`<li>${x}</li>`)}</ul>`}
+      </div></div>
+    </div>
+  </div>`;
+}
+
 // --- 5 Kalender --------------------------------------------------------------------------------------
 
 const SPANS = ['week', 'two', 'month'];
@@ -535,15 +568,17 @@ function Days({ v, x, o }) {
     const swap = c.swap && html`<i class="cl-swap" title=${c.swap}>⇄</i>`;
     // (round D: tired that day - 😮‍💨 / 🥱, and why)
     const tired = c.tired && html`<i class=${'cl-tired ' + c.tired.key} title=${c.tired.text}>${c.tired.key === 'worn' ? '🥱' : '😮‍💨'}</i>`;
-    const tip = [c.tired?.text, c.swap, c.wish || c.tip].filter(Boolean).join(' · ');
+    // (round Q: the planner's limits broken that day - too little rest, too many days in a row)
+    const check = c.check && html`<i class=${'cl-check ' + c.check.key} title=${c.check.text}>!</i>`;
+    const tip = [c.check?.text, c.tired?.text, c.swap, c.wish || c.tip].filter(Boolean).join(' · ');
     if (c.kind === 'off' || c.kind === 'away') {
       // (round H: an hourly-paid driver's empty day he said he can work - a faint mark, its times)
       const avail = c.avail && html`<i class="cl-avail">${c.avail_t}</i>`;
       out.push(html`<div class=${'cl-cell off' + past + (c.wish ? ' wish' : '') + (c.swap ? ' swapped' : '') + (c.avail ? ' can' : '')} title=${[c.avail, tip].filter(Boolean).join(' · ')}>${c.label === '–' ? '–' : html`<b>${c.label}</b>`}${star}${swap}${avail}</div>`);
       continue;
     }
-    out.push(html`<button type="button" class=${'cl-cell ' + c.cls + past + (c.wish ? ' wish' : '') + (c.swap ? ' swapped' : '')} title=${tip} onClick=${() => setO({ date: v.days[i].date, n: null, pop: true, given: null })}>
-      <b>${c.label}</b>${c.sub && html`<span>${c.sub}</span>`}${star}${swap}${tired}${c.ram && html`<i class="cl-ram" title=${tr('In the frame %{name}', { name: c.ram })}>${c.ram}</i>`}
+    out.push(html`<button type="button" class=${'cl-cell ' + c.cls + past + (c.wish ? ' wish' : '') + (c.swap ? ' swapped' : '') + (c.check ? ' checked ' + c.check.key : '')} title=${tip} onClick=${() => setO({ date: v.days[i].date, n: null, pop: true, given: null })}>
+      <b>${c.label}</b>${c.sub && html`<span>${c.sub}</span>`}${star}${swap}${tired}${check}${c.ram && html`<i class="cl-ram" title=${tr('In the frame %{name}', { name: c.ram })}>${c.ram}</i>`}
     </button>`);
   }
   return out;
@@ -575,10 +610,12 @@ export function CalendarTab() {
       ${v.wishes && html`<button type="button" class=${'rf-btn cl-wishes' + (v.wishes.open ? ' has' : '')} onClick=${() => setO({ wishes: true })}><${Icon} name="star" size=${16} /><span>${v.wishes.label}</span></button>`}
       ${v.trades && html`<button type="button" class=${'rf-btn cl-wishes cl-trades' + (v.trades.open ? ' has' : '')} onClick=${() => setO({ trades: true })}><${Icon} name="rf_swap" size=${16} /><span>${v.trades.label}</span></button>`}
       ${v.reports && html`<button type="button" class=${'rf-btn cl-wishes cl-reports' + (v.reports.new ? ' has' : '')} onClick=${() => setO({ reports: true, rk: 0 })}><${Icon} name="rf_report" size=${16} /><span>${v.reports.label}</span>${v.reports.new && html`<i class="cl-dot"></i>`}</button>`}
+      <button type="button" class="rf-btn cl-wishes cl-econ" onClick=${() => setO({ econ: true })}><${Icon} name="rf_money" size=${16} /><span>${tr('Profit by line')}</span></button>
       <label class="cl-search"><${Icon} name="search" size=${16} /><input type="text" value=${o.q || ''} placeholder=${tr('Search a driver')} onInput=${(e) => setO({ q: e.currentTarget.value })} /></label>
     </div>
-    ${(v.cost || v.season) && html`<div class="cl-cost" title=${v.cost?.tip || ''}>${v.cost && html`<${Icon} name="payments" size=${16} /><b>${v.cost.parts[0]}</b>${v.cost.parts.slice(1).map((x) => html`<span>· ${x}</span>`)}`}
-      ${v.season && html`<span class=${'cl-season ' + v.season.key} title=${v.season.tip}>${v.season.text}</span>`}</div>`}
+    ${(v.cost || v.season || v.checks) && html`<div class="cl-cost" title=${v.cost?.tip || ''}>${v.cost && html`<${Icon} name="payments" size=${16} /><b>${v.cost.parts[0]}</b>${v.cost.parts.slice(1).map((x) => html`<span>· ${x}</span>`)}`}
+      ${v.season && html`<span class=${'cl-season ' + v.season.key} title=${v.season.tip}>${v.season.text}</span>`}
+      ${v.checks && html`<span class="cl-checks">${v.checks.label}</span>`}</div>`}
     <div class="cl-main">
       <div class="cl-cal">
         <div class="cl-grid" style=${'grid-template-columns:' + cols}>
@@ -605,6 +642,7 @@ export function CalendarTab() {
     ${o.wishes && html`<${Wishes} />`}
     ${o.trades && html`<${Trades} />`}
     ${o.reports && html`<${Reports} />`}
+    ${o.econ && html`<${Econ} />`}
   </div>`;
 }
 
@@ -679,6 +717,7 @@ export function DailyTab({ onCalendar }) {
           ${v.free.map((f) => html`<div class="op-line"><span class=${'op-kind ' + f.kind}>${f.chip}</span><span><b>${f.name}</b> chf. ${f.nr}</span></div>`)}`}
         <div class="pro-caps" style="margin-top:14px">${tr('Reserve frame')}</div>
         <div class="pro-dim">${tr('A reserve given a duty from 12:00 the day before is told at once.')}</div>
+        <${WarnSetting} />
       </aside>
       <div class="pro-content op-daily"><${DayList} date=${v.date} /></div>
     </div>

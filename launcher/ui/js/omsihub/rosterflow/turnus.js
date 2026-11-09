@@ -46,6 +46,14 @@ const st = () => S.rf.turnus || {};
 const setT = (patch) => setRf((r) => ({ turnus: { ...(r.turnus || {}), ...(typeof patch === 'function' ? patch(r.turnus || {}) : patch) } }));
 
 /** An action of the tab (`rf_turnus_act`). */
+/** (Round Q) The planner's own limit set: the least rest (`rest`, minutes) or the most days of
+ * work in a row (`in_a_row`) - every rota checked against it, and the calendar too. */
+async function setLimit(key, value) {
+  const r = await rfCmd('rf_ops_act', { act: 'limits', [key]: value }).catch((e) => ({ say: { text: e.message, error: true } }));
+  after(r);
+  bump();
+}
+
 async function tAct(act, args = {}) {
   let r;
   try {
@@ -174,7 +182,8 @@ function Side({ v, rota }) {
     </div>
     ${rota && html`
       <div class="pro-caps" style="margin-top:14px">${tr('Rules over the whole cycle')}</div>
-      ${rota.rules.map((r) => html`<div class=${'tu-rule' + (r.ok ? '' : ' no')}><${Icon} name=${r.ok ? 'check' : 'warning'} size=${14} /><span>${r.text}</span></div>`)}
+      ${rota.rules.map((r) => html`<div class=${'tu-rule' + (r.ok ? '' : ' no')}><${Icon} name=${r.ok ? 'check' : 'warning'} size=${14} /><span>${r.text}</span>
+        ${r.edit && html`<${Stepper} value=${r.value} step=${r.edit === 'rest' ? 30 : 1} min=${r.least} max=${r.most} fmt=${r.edit === 'rest' ? (m) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}` : String} onChange=${(x) => setLimit(r.edit, x)} style="margin-left:auto" />`}</div>`)}
       ${rota.general.map((g) => html`<div class="pro-dim t-warn">${g}</div>`)}
       <div class="pro-caps" style="margin-top:14px">${tr('The rota')}</div>
       <div class="pro-rule"><span>${tr('Name')}</span><input class="tu-name" value=${name ?? rota.name} onInput=${(e) => setName(e.target.value)} onBlur=${() => name != null && name !== rota.name && tAct('rename', { id: rota.id, name }).then(() => setName(null))} onKeyDown=${(e) => e.key === 'Enter' && e.target.blur()} /></div>

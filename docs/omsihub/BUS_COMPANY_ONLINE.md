@@ -796,6 +796,12 @@ no bus is planned yet), and the trip he begins at ("Første tur 16:30 fra … ti
 it has begun). The bus has no place of its own in the company's data (no parking bay), so where it
 waits is the duty's first stop.
 
+Whoever gives or plans the duties (round Q, 9 November 2026) sees a red section "Without a driver
+soon" at the top of the Duties tab when a duty of the day has no driver yet and signs on within
+RosterFlow Pro's warning time (two hours unless the planner chose another): "Duty 2003 at 16:30 has
+no driver yet - it signs on in 1 h 45 min. Give it to a player below, or the AI drives it."
+(`pro_watch::unfilled` on the duties the snapshot keeps for 30 seconds, `Snapshot::unfilled`).
+
 ### A player in the roster of a coming day (26 October 2026)
 
 The roster (RosterFlow's Roster) of a day to come offers every player of the company (not sent

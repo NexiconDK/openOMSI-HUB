@@ -42,6 +42,8 @@ import { AvailTab } from './avail.js';
 // (round I: the Busdisponering tab)
 import { BusesTab } from './buses.js';
 import { AfgangeTab } from './afgange.js';
+// (round Q: the duties without a driver signing on soon - a banner over every Pro tab)
+import { UnfilledBanner } from './pro_service.js';
 
 // (RosterFlow's own look, loaded with it)
 if (!document.querySelector('link[data-rf-css]')) {
@@ -245,6 +247,7 @@ export function RosterFlowPage() {
   return html`<div class=${'rf' + (p.light ? ' light' : ' dark')} ref=${ref}>
     <${TitleBar} />
     <div class="rf-body" key=${'v' + (studio ? 's' : r.view)}>${body}
+      ${pro && isProView(r.view) && html`<${UnfilledBanner} />`}
       ${!studio && html`<div class="rf-layer">${r.data?.board && html`<${TitleWindows} data=${r.data} drivers=${false} size=${{ w: size.w, h: size.h - 48 }} />`}${r.prefs && html`<${PrefsWindow} />`}</div>`}
     </div>
     ${r.intro && html`<${Opening} p=${p} since=${r.intro} onDone=${() => setRf({ intro: null })} />`}

@@ -31,6 +31,8 @@ use omsi_launcher_lib::company::pro_ops::{self as po, Asked, DayIs, OpenDuty, Pr
 use omsi_launcher_lib::company::pro_rest::{self as pr, Breach};
 use omsi_launcher_lib::company::{pro_cost as pcost, pro_holiday as ph, pro_pref as pp, pro_swap as psw, pro_tired as ptd, pro_toil as ptl, pro_wish as pw};
 use omsi_launcher_lib::company::{pro_report as prp, pro_season as pse, pro_trade as ptr};
+// (round Q: the duties without a driver warned of, the planner's limits, the lines' economy)
+use omsi_launcher_lib::company::{pro_econ as pe, pro_watch as pwa};
 use omsi_launcher_lib::company::pro_avail::{self as pa, Can};
 use omsi_launcher_lib::company::pro_turnus::{self as pt, ProDuty, Week};
 use omsi_launcher_lib::company::{self as co, Company};
@@ -341,6 +343,29 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                             v["tired"] = json!({ "key": t.level.key(), "text": words });
                         }
                     }
+                    // (round Q: the planner's limits - the rest since the day before, a night
+                    // duty's from when it really ends, and the days of work in a row)
+                    if matches!(day.is, DayIs::Duties { .. }) {
+                        let span = |x: &str| work_day(&c, &week, &plans, e, x);
+                        let mut words = Vec::new();
+                        let mut hard = false;
+                        if let Some((rest, bad)) = pwa::rest_issue(&c, span(&co::dates::add(d, -1)), span(d)) {
+                            words.push(trf("Only %{t} rest since the day before (at least %{min})", &[("t", &length(rest)), ("min", &length(pwa::rest_min(&c)))]));
+                            hard |= bad;
+                        }
+                        let most = pwa::in_a_row_max(&c);
+                        let mut run = 0u32;
+                        while run <= most + 1 && span(&co::dates::add(d, -(run as i64))).is_some() {
+                            run += 1;
+                        }
+                        if pwa::in_a_row(&c, run) {
+                            words.push(trf("Day %{n} of work in a row (at most %{max})", &[("n", &run.to_string()), ("max", &most.to_string())]));
+                            hard = true;
+                        }
+                        if !words.is_empty() {
+                            v["check"] = json!({ "key": if hard { "bad" } else { "warn" }, "text": words.join(" · ") });
+                        }
+                    }
                     // (round C: a swap he is in that day - ⇄, and with whom)
                     if let Some((_, other)) = psw::of_driver(&c, e.id, d) {
                         v["swap"] = json!(trf("⇄ Swapped with %{name}", &[("name", &name_in(&c)(other))]));
@@ -387,6 +412,12 @@ fn calendar(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             json!({ "id": e.id, "nr": e.id, "name": e.name, "kind": key, "group": group, "chip": chip, "sub": sub, "what": what, "cells": cells, "hours": hours_of, "toil": toil })
         })
         .collect();
+    // (round Q: the days that break the planner's limits of rest and days in a row, counted)
+    let checks = list.iter().flat_map(|x| x["cells"].as_array().cloned().unwrap_or_default()).filter(|v| v.get("check").is_some()).count();
+    if checks > 0 {
+        let label = if checks == 1 { tr("⚠ 1 day breaks the rest or the days in a row") } else { trf("⚠ %{n} days break the rest or the days in a row", &[("n", &checks.to_string())]) };
+        out["checks"] = json!({ "count": checks, "label": label });
+    }
     out["days"] = json!(days);
     out["drivers"] = json!(list);
     out["groups"] = json!({ "permanent": tr("Permanent drivers"), "reserve": tr("Reserves with a frame"), "hourly": tr("Hourly paid") });
@@ -1540,6 +1571,10 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     if let Some(v) = off(&c) {
         return Ok(v);
     }
+    // (round Q: the planner's limits - no day of their own)
+    if what == "limits" {
+        return Ok(limits(s, args));
+    }
     if co::dates::parse(&date).is_none() || co::dates::between(&c.date, &date) < 0 {
         return Ok(said(tr("That day has gone."), true));
     }
@@ -1932,9 +1967,228 @@ fn wish_act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
     })
 }
 
+// --- round Q (NexiconDK, 9 November 2026) ---------------------------------------------------------
+
+/// "2 t" / "1 t 30 min" / "45 min" (the warning time, how long until a sign-on).
+fn span_words(m: i32) -> String {
+    let m = m.max(0);
+    match (m / 60, m % 60) {
+        (0, x) => trf("%{m} min", &[("m", &x.to_string())]),
+        (h, 0) => trf("%{h} h", &[("h", &h.to_string())]),
+        (h, x) => trf("%{h} h %{m} min", &[("h", &h.to_string()), ("m", &x.to_string())]),
+    }
+}
+
+/// The warning time's choices as the page lists them: [minutes, words] ("Never" for 0).
+fn warn_choices() -> Value {
+    json!(pwa::WARN_CHOICES.iter().map(|&m| json!([m, if m == 0 { tr("Never") } else { trf("%{t} before", &[("t", &span_words(m))]) }])).collect::<Vec<_>>())
+}
+
+/// (Round Q) The banner of every Pro tab (`rf_alerts`): the duties of the company's day without a
+/// driver signing on within the warning time (`pro_watch::unfilled`) - in words, and each with its
+/// time - and the warning time with its choices.
+fn alerts(s: &mut Session, r: &mut Rf, _args: &Value) -> Answer {
+    let Some(c) = s.company.clone() else { return Ok(json!({})) };
+    if off(&c).is_some() {
+        return Ok(json!({}));
+    }
+    let warn = pwa::warn_before(&c);
+    let mut out = json!({ "warn": warn, "choices": warn_choices(), "label": tr("Warn of a duty without a driver") });
+    if warn <= 0 {
+        return Ok(out);
+    }
+    let Some(Ok(week)) = super::turnus::week_duties(s, r) else { return Ok(out) };
+    let date = c.date.clone();
+    let Some(Ok(p)) = plan_on(s, r, &date) else { return Ok(out) };
+    let ds = duties_for(&c, &week, &p);
+    let now = (co::clock::now(&c) - co::clock::moment(&date, 0)) as i32;
+    let u = pwa::unfilled(&c, &p, &ds, now);
+    if u.is_empty() {
+        return Ok(out);
+    }
+    let each: Vec<String> = u.iter().map(|x| trf("%{n} at %{time}", &[("n", &x.label), ("time", &co::rosterflow::clock(x.start.rem_euclid(1440)))])).collect();
+    out["text"] = json!(if u.len() == 1 {
+        trf("Duty %{n} at %{time} has no driver - it signs on in %{in}.", &[("n", &u[0].label), ("time", &co::rosterflow::clock(u[0].start.rem_euclid(1440))), ("in", &span_words(u[0].within))])
+    } else {
+        trf("%{count} duties without a driver sign on within %{t}: %{list}.", &[("count", &u.len().to_string()), ("t", &span_words(warn)), ("list", &each.join(", "))])
+    });
+    out["items"] = json!(u.iter().map(|x| json!({ "n": x.n, "label": x.label, "time": co::rosterflow::clock(x.start.rem_euclid(1440)), "in": span_words(x.within) })).collect::<Vec<_>>());
+    out["date"] = json!(date);
+    out["open"] = json!(tr("Find a driver"));
+    Ok(out)
+}
+
+/// (Round Q) The planner's limits set (`rf_ops_act` "limits"): the warning time (`warn`), the
+/// least rest (`rest`, minutes) and the most days of work in a row (`in_a_row`) - each when given.
+fn limits(s: &mut Session, args: &Value) -> Value {
+    let warn = args.get("warn").and_then(Value::as_i64).map(|x| x as i32);
+    let rest = args.get("rest").and_then(Value::as_i64).map(|x| x as i32);
+    let row = args.get("in_a_row").and_then(Value::as_u64).map(|x| x as u32);
+    let mut refused = None;
+    let out = company::act(s, |c| {
+        let r = (|| -> Result<(), &'static str> {
+            if let Some(m) = warn {
+                pwa::set_warn_before(c, m)?;
+            }
+            if let Some(m) = rest {
+                pwa::set_rest_min(c, m)?;
+            }
+            if let Some(n) = row {
+                pwa::set_in_a_row_max(c, n)?;
+            }
+            Ok(())
+        })();
+        r.map_err(|e| {
+            refused = Some(e);
+            e
+        })
+    });
+    match (out, refused) {
+        (Ok(()), _) => {
+            s.plan_gen += 1;
+            let mut v = said(tr("Saved."), false);
+            v["edited"] = json!(true);
+            v
+        }
+        (Err(_), Some(e)) => said(tr(e), true),
+        (Err(_), None) => json!({}),
+    }
+}
+
+/// (Round Q) What each line earns and costs this week or month (`rf_econ`, `period`: "week" or
+/// "month"): the days closed so far as booked with their duties (`pro_econ::booked`,
+/// `duty_wages`), and the whole period as it looks - the days to come at the contract's day
+/// (`contract_day`), the fares and the running at the line's average day of late, every day's
+/// duties at the Vagter tab's price.
+fn econ(s: &mut Session, _r: &mut Rf, args: &Value) -> Answer {
+    let Some(c) = s.company.clone() else { return Ok(json!({})) };
+    if let Some(v) = off(&c) {
+        return Ok(v);
+    }
+    let month = str_arg(args, "period") == "month";
+    let (from, to) = if month { pe::month_of(&c.date) } else { pe::week_of(&c.date) };
+    let yesterday = co::dates::add(&c.date, -1);
+    let closed_to = if yesterday.as_str() < to.as_str() { yesterday.clone() } else { to.clone() };
+    let closed = from.as_str() <= closed_to.as_str();
+    let hour = co::pro_dutyplan::hour_wage(&c);
+    // (a board a weekday of the planner's day plans: its tours as the week to come has them)
+    let mut boards: HashMap<(u8, u8), co::rosterflow::Board> = HashMap::new();
+    let mut so_far: HashMap<String, pe::Money> = HashMap::new();
+    let mut whole: HashMap<String, pe::Money> = HashMap::new();
+    let mut names: HashMap<String, String> = HashMap::new();
+    let today_wd = plan::weekday_of(&c.date) as i64;
+    let all = pe::dates_between(&from, &to);
+    for d in &all {
+        let slot = co::plandays::slot_of(&c, d);
+        let wd = plan::weekday_of(d);
+        if !boards.contains_key(&(slot, wd)) {
+            let model = co::dates::add(&c.date, (wd as i64 - today_wd).rem_euclid(7));
+            let Some(lines) = company::lines_of(s, &model) else {
+                company::week_work(s);
+                return Ok(json!({ "reading": tr("Reading the timetable…") }));
+            };
+            let tours = co::network::in_service_only(co::network::tours_of_day(&c, &lines, &model));
+            boards.insert((slot, wd), co::rosterflow::board_of(&c, slot, tours, Vec::new()));
+        }
+        let b = &boards[&(slot, wd)];
+        let past = d.as_str() <= closed_to.as_str();
+        for (n, w) in pe::duty_wages(&c, b, d, hour) {
+            // (a line counts from its first day in service)
+            if !pe::runs_on(&c, &n, d) {
+                continue;
+            }
+            whole.entry(n.clone()).or_default().wages += w;
+            if past {
+                so_far.entry(n).or_default().wages += w;
+            }
+        }
+        // (the contract's day for each line running that day)
+        let mut seen: Vec<&str> = Vec::new();
+        for t in &b.tours {
+            let n = t.number.trim();
+            if seen.contains(&n) {
+                continue;
+            }
+            seen.push(n);
+            names.entry(n.to_string()).or_insert_with(|| t.line.clone());
+            if !pe::runs_on(&c, n, d) {
+                continue;
+            }
+            let k = pe::contract_day(&c, &t.line, d);
+            let m = whole.entry(n.to_string()).or_default();
+            m.income += k;
+            m.contract += k;
+        }
+    }
+    // (the days closed: as booked)
+    if closed {
+        for (n, m) in pe::booked(&c, &from, &closed_to) {
+            let x = so_far.entry(n).or_default();
+            (x.income, x.contract, x.penalties, x.running) = (m.income, m.contract, m.penalties, m.running);
+        }
+    }
+    // (the fares and the running of the days to come: the line's average day of late - its days
+    // closed so far in the period, the penalties as they are)
+    let back = co::dates::add(&c.date, -pe::AVERAGE_DAYS);
+    let late = pe::booked(&c, &back, &yesterday);
+    let days_late = co::dates::between(&back, &c.date).min(co::dates::between(&c.founded, &c.date)).max(1) as f64;
+    let to_come = all.iter().filter(|d| d.as_str() > closed_to.as_str()).count() as f64;
+    let lines: Vec<String> = {
+        let mut v: Vec<String> = so_far.keys().chain(whole.keys()).cloned().collect();
+        v.sort_by(|a, b| a.parse::<f64>().unwrap_or(f64::MAX).partial_cmp(&b.parse::<f64>().unwrap_or(f64::MAX)).unwrap_or(std::cmp::Ordering::Equal).then(a.cmp(b)));
+        v.dedup();
+        v
+    };
+    for n in &lines {
+        let sf = so_far.get(n).cloned().unwrap_or_default();
+        let avg = late.iter().find(|x| &x.0 == n).map(|x| x.1.clone()).unwrap_or_default();
+        let w = whole.entry(n.clone()).or_default();
+        // (the contract as planned every day; the rest as booked so far and its average day to come)
+        w.income += (sf.income - sf.contract) + ((avg.income - avg.contract) as f64 / days_late * to_come).round() as Cents;
+        w.penalties += sf.penalties;
+        w.running += sf.running + (avg.running as f64 / days_late * to_come).round() as Cents;
+    }
+    let row = |n: &str, m: &pe::Money| -> Value {
+        let res = m.result();
+        json!({
+            "line": n, "colour": names.get(n).map(|l| super::colour_of(&c, l)).unwrap_or_default(),
+            "income": eur(m.income), "contract": eur(m.contract), "wages": eur(-m.wages), "running": eur(m.running), "penalties": eur(m.penalties),
+            "result": eur(res), "tone": if res >= 0 { "good" } else { "bad" },
+        })
+    };
+    let table = |set: &HashMap<String, pe::Money>| -> Value {
+        let mut sum = pe::Money::default();
+        let rows: Vec<Value> = lines.iter().filter_map(|n| set.get(n).map(|m| (n, m))).map(|(n, m)| {
+            sum.add(m);
+            row(n, m)
+        }).collect();
+        let mut total = row("", &sum);
+        total["line"] = json!(tr("All lines"));
+        json!({ "rows": rows, "total": total })
+    };
+    let period_word = if month { tr("month") } else { tr("week") };
+    let span = trf("%{from} – %{to}", &[("from", &format!("{} {}", day_name(&from), short_date(&from))), ("to", &format!("{} {}", day_name(&to), short_date(&to)))]);
+    Ok(json!({
+        "title": tr(pe::TITLE), "period": if month { "month" } else { "week" }, "span": span,
+        "tabs": [["week", tr("This week")], ["month", tr("This month")]],
+        "heads": [tr("Line"), tr("Income"), tr("Drivers (duties)"), tr("Fuel and workshop"), tr("Penalties"), tr("Result")],
+        "so_far": if closed { table(&so_far) } else { Value::Null },
+        "so_far_title": tr(pe::SO_FAR), "none_closed": tr("No day of it is closed yet."),
+        "whole": table(&whole), "whole_title": trf(pe::WHOLE, &[("period", &period_word)]),
+        "explain": [
+            tr("Income: what the line's contract pays and its fares, passes and grants, as booked. The days to come: the contract's day, the fares at the line's average day of late."),
+            tr("Drivers: every day's duties at the Vagter tab's price - the paid hours at the drivers' average wage, the supplements and the employer's costs - shared out by the minutes each duty works on each line."),
+            tr("Fuel and workshop: the diesel or power and the maintenance booked for the line's buses; the days to come at its average day."),
+            tr("Not in it: the buses' purchase, leasing and insurance, the depot and the overheads - they are the company's, not one line's."),
+        ],
+    }))
+}
+
 /// The commands of the two tabs (`super::run`).
 pub(super) fn run(s: &mut Session, r: &mut Rf, cmd: &str, args: &Value) -> Option<Answer> {
     Some(match cmd {
+        "rf_alerts" => alerts(s, r, args),
+        "rf_econ" => econ(s, r, args),
         "rf_cal" => calendar(s, r, args),
         "rf_ops" => daily(s, r, args),
         "rf_ops_act" => act(s, r, args),
@@ -2033,6 +2287,58 @@ mod tests {
         let c = s.company.as_ref().unwrap();
         let calls: Vec<(u32, u32)> = c.planning.ops.calls.iter().filter(|x| x.date == date).map(|x| (x.n, x.driver)).collect();
         assert!(calls.contains(&(n, a)) && calls.contains(&(own, b)), "both changed at once: {calls:?}");
+    }
+
+    /// (Round Q, 9 November 2026) The planner's watch: the duties without a driver signing on
+    /// within the warning time told for the banner, the limits set, a driver's seventh day of work
+    /// in a row marked on the calendar, and each line's money for the week and the month.
+    #[test]
+    fn round_q_the_banner_the_limits_the_calendar_and_the_lines_money() {
+        company::words::set_language("en");
+        company::test_dry();
+        let mut s = session();
+        let mut r = Rf::default();
+        let date = s.company.as_ref().unwrap().date.clone();
+        // nothing soon at midnight; an hour before the first open duty signs on, the banner says it
+        let v = alerts(&mut s, &mut r, &json!({})).unwrap();
+        assert!(v.get("text").is_none() && v["warn"] == 120 && v["choices"].as_array().is_some_and(|x| x.len() == 6), "{v}");
+        let day = daily(&mut s, &mut r, &json!({ "date": date })).unwrap();
+        let start = |t: &str| -> Option<i64> { Some(t.get(..2)?.parse::<i64>().ok()? * 60 + t.get(3..5)?.parse::<i64>().ok()?) };
+        let first = day["open"].as_array().unwrap().iter().filter(|o| o["cut"] == false && o["split"] == false).filter_map(|o| Some((start(o["time"].as_str()?)?, o["n"].as_u64()?))).min().expect("an open duty");
+        s.company.as_mut().unwrap().clock.minute = (first.0 - 60) as u32;
+        changed(&mut s);
+        let v = alerts(&mut s, &mut r, &json!({})).unwrap();
+        assert!(v["text"].as_str().is_some_and(|t| t.contains("no driver") || t.contains("without a driver")), "{v}");
+        assert!(v["items"].as_array().unwrap().iter().any(|x| x["n"] == first.1), "{v}");
+        // the warning time and the limits set; one not among the choices refused
+        assert_eq!(act(&mut s, &mut r, &json!({ "act": "limits", "warn": 60, "rest": 600, "in_a_row": 4 })).unwrap()["edited"], true);
+        let c = s.company.as_ref().unwrap();
+        assert_eq!((pwa::warn_before(c), pwa::rest_min(c), pwa::in_a_row_max(c)), (60, 600, 4));
+        assert_eq!(act(&mut s, &mut r, &json!({ "act": "limits", "rest": 500 })).unwrap()["say"]["error"], true);
+        // a driver given the same duty every weekday from today (line 5 has no 1001 at the weekend):
+        // the fifth marked (at most 4)
+        let a = s.company.as_ref().unwrap().staff.iter().find(|e| co::staff::drives(e)).unwrap().id;
+        {
+            let c = s.company.as_mut().unwrap();
+            for k in 0..6 {
+                po::give_part(c, &co::dates::add(&date, k), first.1 as u32, None, a, None).unwrap();
+            }
+        }
+        changed(&mut s);
+        let v = calendar(&mut s, &mut r, &json!({ "span": "two" })).unwrap();
+        let mine = v["drivers"].as_array().unwrap().iter().find(|x| x["id"] == a).unwrap();
+        let marked: Vec<&str> = mine["cells"].as_array().unwrap().iter().filter(|c| c.get("check").is_some()).filter_map(|c| c["date"].as_str()).collect();
+        let brief: Vec<String> = mine["cells"].as_array().unwrap().iter().map(|c| format!("{}:{}:{}:{}", c["date"].as_str().unwrap_or(""), c["kind"], c["label"], c.get("check").is_some())).collect();
+        assert_eq!(marked, [co::dates::add(&date, 4).as_str()], "{brief:?}");
+        assert!(v["checks"]["count"].as_u64().is_some_and(|n| n >= 1), "{}", v["checks"]);
+        // the lines' money: line 5's duties this week, what is in it said
+        let v = econ(&mut s, &mut r, &json!({ "period": "week" })).unwrap();
+        let rows = v["whole"]["rows"].as_array().unwrap();
+        assert!(rows.iter().any(|x| x["line"] == "5" && x["wages"].as_str().is_some_and(|w| w.contains('-') || w.contains('−'))), "{v}");
+        assert_eq!(v["explain"].as_array().unwrap().len(), 4);
+        let v = econ(&mut s, &mut r, &json!({ "period": "month" })).unwrap();
+        assert_eq!(v["period"], "month");
+        assert!(v["whole"]["total"]["result"].as_str().is_some(), "{v}");
     }
 
     /// (Round M) The day's mark says the yes answers by duty ("✓ 2 yes · 1002"), every yes to it -

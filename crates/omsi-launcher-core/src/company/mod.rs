@@ -124,6 +124,10 @@ pub mod pro_sick;
 pub mod pro_toil;
 pub mod pro_trade;
 pub mod pro_wish;
+// (NexiconDK, 9 November 2026: round Q - the duties without a driver warned of, the planner's
+// limits of rest and days in a row, the lines' economy)
+pub mod pro_watch;
+pub mod pro_econ;
 /// (NexiconDK, 4 November 2026) RosterFlow Pro's rota (step 3, "Turnus").
 pub mod pro_turnus;
 pub mod rankings;
