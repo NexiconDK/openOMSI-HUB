@@ -786,6 +786,16 @@ plans with RosterFlow Pro, the name the planning shows it by ("Duty 2003", or it
 duty the AI drives until he takes it back tells its trip the same way (`book::back_trip`). The
 snapshot carries them as `SnapDuty::next` and `SnapDuty::name` (both optional on the wire).
 
+A player's own duty still to drive (round P, 9 November 2026), in "Mine vagter" and "Mit
+arbejde": when to sign on on the company's clock - "Møde om 1 t 25 min", "Møde nu" (within five
+minutes after), "Undervejs siden 16:30" (`SnapDuty::sign_on_in`, the minutes to its sign-on; set
+only for his own planned duty, `DutyState::Mine` or `Late`, not a single trip of it) - where the
+bus waits ("Bus 103 Mercedes-Benz O530 Citaro venter ved Betr. Eichenh. Einsetzpunkt": the duty's
+first stop, the depot's pull-out point or where another driver hands it over; "Møder ved …" when
+no bus is planned yet), and the trip he begins at ("Første tur 16:30 fra … til …", the next when
+it has begun). The bus has no place of its own in the company's data (no parking bay), so where it
+waits is the duty's first stop.
+
 ### A player in the roster of a coming day (26 October 2026)
 
 The roster (RosterFlow's Roster) of a day to come offers every player of the company (not sent

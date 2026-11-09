@@ -163,6 +163,28 @@ pub fn gaps(s: &Shaped) -> Vec<i32> {
     spans.windows(2).map(|w| w[1].from - w[0].to).collect()
 }
 
+/// (Round P) The parts of duty `s` a split divides it into: its pieces between gaps of
+/// `SPLIT_GAP` or more, each as (from, to, minutes worked - its unpaid breaks not). A duty not
+/// split is one part.
+pub fn parts(s: &Shaped) -> Vec<(i32, i32, i32)> {
+    let mut spans = s.spans.clone();
+    spans.sort_by_key(|x| x.from);
+    let mut out: Vec<(i32, i32)> = Vec::new();
+    for sp in &spans {
+        match out.last_mut() {
+            Some(l) if sp.from - l.1 < SPLIT_GAP => l.1 = l.1.max(sp.to),
+            _ => out.push((sp.from, sp.to)),
+        }
+    }
+    out.into_iter().map(|(a, z)| (a, z, (z - a) - s.splits.iter().filter(|g| g.0 >= a && g.1 <= z).map(|g| g.1 - g.0).sum::<i32>())).collect()
+}
+
+/// (Round P) The meal break inside part `part` of duty `s` (`parts`): a break of its own long
+/// enough for the meal rule - never the gap between two parts.
+pub fn part_meal(s: &Shaped, part: (i32, i32)) -> Option<rf::DutyBreak> {
+    s.plan.breaks.iter().find(|b| b.meal && b.kind != rf::BreakKind::Split && b.from >= part.0 && b.to <= part.1).copied()
+}
+
 /// The type of duty `s`: split when two of its pieces have `SPLIT_GAP` or more between them,
 /// else short when it works less than `SHORT_DUTY`, else whole.
 pub fn kind_of(s: &Shaped) -> Kind {
@@ -865,6 +887,9 @@ pub const M_CHANGE_SAME: &str = "%{have} to change buses at %{stop}, %{need} nee
 pub const M_WEEKEND_SPLIT: &str = "Split duties do not run at the weekend";
 /// (Round O) A split duty with night-bus work (the user, 7 November 2026: never).
 pub const M_NIGHT_SPLIT: &str = "Split duties may not have night-bus work";
+/// (Round P) A part of a split duty long enough to need a meal break with none of its own (the
+/// gap between the parts is no meal break: the driver is off duty then).
+pub const M_PART_MEAL: &str = "Part %{n} of the split duty works %{time} with no meal break, one is needed after %{after}";
 /// (Round K) A piece begun or ended at a stop that is no relief point (built in "Afgange").
 pub const M_NOT_RELIEF_ON: &str = "Takes over the bus at %{stop} at %{time}, which is no relief point";
 pub const M_NOT_RELIEF_OFF: &str = "Hands over the bus at %{stop} at %{time}, which is no relief point";
@@ -901,6 +926,17 @@ pub fn marks(c: &Company, board: &Board, row: usize) -> Vec<Mark> {
     // refused, as the other rules)
     if (kind_of(s) == Kind::Split || !s.splits.is_empty()) && rf::spans_night(&board.tours, &s.spans) {
         out.push(Mark { hard: true, text: M_NIGHT_SPLIT, args: Vec::new() });
+    }
+    // (round P: each part of a split duty its own meal break when it is long enough to need one)
+    let prefs = &c.planning.flow.prefs;
+    // (RosterFlow's own meal issue already counts it: not twice)
+    let rf_meal = s.issues.iter().any(|&i| board.issues.get(i).is_some_and(|x| x.text == rf::I_MEAL || x.text == rf::I_MEAL_LATE));
+    if kind_of(s) == Kind::Split && prefs.meal.on && !rf_meal {
+        for (n, (a, z, worked)) in parts(s).into_iter().enumerate() {
+            if worked > prefs.meal_after && part_meal(s, (a, z)).is_none() {
+                out.push(Mark { hard: false, text: M_PART_MEAL, args: vec![("n", (n + 1).to_string()), ("time", rf::hm(worked)), ("after", rf::hm(prefs.meal_after))] });
+            }
+        }
     }
     // (round K: a piece begun or ended where no relief point is - yellow, the planner's choice)
     for sp in &s.spans {
@@ -941,7 +977,7 @@ pub fn marks(c: &Company, board: &Board, row: usize) -> Vec<Mark> {
 
 /// Every English text of RosterFlow Pro's duties (for the translations' check).
 pub fn texts() -> Vec<&'static str> {
-    let mut v = vec![IN_POOL, NOT_IN_POOL, OVERLAP, NO_PIECE, M_SPREAD, M_CHANGE, M_CHANGE_SAME, M_WEEKEND_SPLIT, M_NIGHT_SPLIT, M_NOT_RELIEF_ON, M_NOT_RELIEF_OFF, NAME_LONG, NAME_TAKEN, NO_DEPARTURE, BUILD_OVERLAP];
+    let mut v = vec![IN_POOL, NOT_IN_POOL, OVERLAP, NO_PIECE, M_SPREAD, M_CHANGE, M_CHANGE_SAME, M_WEEKEND_SPLIT, M_NIGHT_SPLIT, M_PART_MEAL, M_NOT_RELIEF_ON, M_NOT_RELIEF_OFF, NAME_LONG, NAME_TAKEN, NO_DEPARTURE, BUILD_OVERLAP];
     v.extend(Kind::LABELS);
     v
 }

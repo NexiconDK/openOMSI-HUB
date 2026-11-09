@@ -183,6 +183,10 @@ pub struct SnapDuty {
     /// RosterFlow Pro.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub name: String,
+    /// (Round P, 9 November 2026) The player's own duty still to drive: the minutes to its sign-on
+    /// on the company's clock (none or less: it has begun). None for every other duty.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sign_on_in: Option<i32>,
 }
 
 /// (NexiconDK, 7 November 2026) A trip to take a duty over at: when it leaves (minutes of the

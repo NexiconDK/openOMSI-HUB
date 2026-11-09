@@ -194,6 +194,62 @@ fn a_duty_of_pieces_of_two_buses_keeps_its_number_and_overlaps_are_refused() {
     assert!(b.shaped.iter().enumerate().filter(|(_, s)| !is_pool_duty(&c, wd, &b.tours, s)).all(|(row, s)| s.label(row) == "1001"));
 }
 
+/// (Round P) A split duty's parts: its pieces between gaps of an hour and a half or more.
+#[test]
+fn a_split_duty_has_parts() {
+    assert_eq!(parts(&shaped(&[(300, 540), (600, 840), (1000, 1100)])), vec![(300, 840, 540), (1000, 1100, 100)]);
+    assert_eq!(parts(&shaped(&[(300, 780)])), vec![(300, 780, 480)], "a duty not split: one part");
+    let mut s = shaped(&[(300, 540), (600, 840)]);
+    s.splits = vec![(540, 600)];
+    assert_eq!(parts(&s), vec![(300, 840, 480)], "an unpaid break inside a part not worked");
+}
+
+/// (Round P) A split duty's checklist judges each part on its own, and the gap between them is
+/// time off - never told as its meal break (the user: "it shows the gap as the meal break").
+#[test]
+fn a_split_dutys_checklist_tells_each_part_and_the_gap_as_time_off() {
+    use super::super::pro_dutyplan::{self as dp, Level};
+    let mut c = company();
+    let l = lines();
+    let b = board(&c, &l, &c.date.clone());
+    let (one, two) = (block(&b, "1"), block(&b, "2"));
+    edit(&mut c, |c, wd, tours| cut_to_pool(c, wd, tours, one, 4)).unwrap();
+    edit(&mut c, |c, wd, tours| cut_to_pool(c, wd, tours, two, 2)).unwrap();
+    let b = edit(&mut c, |c, wd, tours| add_to_duty(c, wd, tours, (one, 1), (two, 0))).unwrap();
+    let row = row_of(&b, two, 0);
+    let s = &b.shaped[row];
+    assert_eq!(kind_of(s), Kind::Split);
+    let ps = parts(s);
+    assert_eq!(ps.len(), 2, "{ps:?}");
+    let checks = dp::checklist(&c, &b, row);
+    let of = |t: &str| checks.iter().filter(|k| k.text == t).collect::<Vec<_>>();
+    assert!(of(dp::C_MEAL_AT).is_empty() && of(dp::C_MEAL_NONE_NEEDED).is_empty(), "no meal break of the whole: {checks:?}");
+    let meals: Vec<_> = checks.iter().filter(|k| k.title == dp::T_MEAL).collect();
+    assert_eq!(meals.len(), 2, "one line a part: {checks:?}");
+    assert!(meals.iter().all(|k| k.text == dp::C_PART_MEAL_NONE && k.level == Level::Ok), "short parts need none: {meals:?}");
+    assert_eq!(meals[0].args[0], ("n", "1".to_string()));
+    assert_eq!(meals[1].args[0], ("n", "2".to_string()));
+    let driving = of(dp::C_PART_DRIVING);
+    assert_eq!(driving.len(), 2, "{checks:?}");
+    let gap = of(dp::C_SPLIT_GAP);
+    assert_eq!(gap.len(), 1, "{checks:?}");
+    assert_eq!(gap[0].level, Level::Info);
+    assert_eq!(gap[0].args[0], ("time", rf::hm(ps[1].0 - ps[0].1)));
+    // a part long enough to need a meal break with none of its own: yellow, counted
+    c.planning.flow.prefs.meal.on = true;
+    c.planning.flow.prefs.meal_after = 60;
+    let b = board(&c, &l, &c.date.clone());
+    let row = row_of(&b, two, 0);
+    let m = marks(&c, &b, row);
+    let rf_meal = b.shaped[row].issues.iter().any(|&i| b.issues[i].text == rf::I_MEAL || b.issues[i].text == rf::I_MEAL_LATE);
+    assert!(rf_meal != m.iter().any(|m| m.text == M_PART_MEAL && !m.hard), "counted once - RosterFlow's issue or Pro's mark: {m:?}");
+    let checks = dp::checklist(&c, &b, row);
+    assert!(checks.iter().any(|k| k.text == dp::C_PART_MEAL_MISSING && k.level != Level::Ok), "{checks:?}");
+    assert!(checks.iter().all(|k| k.text != dp::C_MEAL_AT), "the gap never the meal break: {checks:?}");
+    let (soft, hard) = dp::rule_counts(&c, &b, row);
+    assert!(soft + hard >= 1);
+}
+
 #[test]
 fn a_piece_next_to_the_duty_on_its_bus_joins_it_again() {
     let mut c = company();

@@ -1277,7 +1277,12 @@ fn on_the_server_a_player_takes_a_duty_over_from_the_companys_ai_driver() {
     let jan = guest_no(&b, "jan");
     assert_eq!(b.plan().tours[0].duties[0].who, Some(Who::Guest(jan)));
     assert!(b.c.together.claim_of(&duty).unwrap().ai.is_empty(), "his from its start");
-    assert_eq!(snap(&ask(&mut b, "jan", "snapshot", |_| {})).duties[0].state, DutyState::Mine);
+    let mine = snap(&ask(&mut b, "jan", "snapshot", |_| {})).duties[0].clone();
+    assert_eq!(mine.state, DutyState::Mine);
+    // (round P: his own - the minutes to its sign-on on the company's clock, and its first trip)
+    let at = b.c.clock.minute as i32;
+    assert_eq!(mine.sign_on_in, Some(mine.from - at), "{mine:?}");
+    assert_eq!(mine.next.as_ref().map(|x| x.dep), Some(first.dep), "where he begins");
     // (under way: his from its next trip, the AI's until then)
     ask(&mut b, "jan", "release", |r| r.duty = Some(duty.clone()));
     b.c.clock.minute = 405;
@@ -1285,6 +1290,7 @@ fn on_the_server_a_player_takes_a_duty_over_from_the_companys_ai_driver() {
     assert_eq!((s.duties[0].state, s.duties[0].take_over, s.duties[0].begun), (DutyState::Company, true, true));
     let next = s.duties[0].next.clone().expect("its next trip");
     assert!(next.dep >= 405 && next.dep > first.dep, "the next not left yet: {next:?}");
+    assert_eq!(s.duties[0].sign_on_in, None, "not his: no sign-on told");
     let v = ask(&mut b, "jan", "take", |r| r.duty = Some(duty.clone()));
     assert_eq!(v["state"].as_str(), Some("planned"), "{v}");
     let x = b.c.together.claim_of(&duty).cloned().unwrap();

@@ -1227,6 +1227,14 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
                     None if begun && book::joined_part(c, p, t, k, now).is_none() => (DutyState::Closed, String::new(), book::BEGUN.into()),
                     None => (DutyState::Open, String::new(), String::new()),
                 };
+                // (round P: his own duty still to drive - the minutes to its sign-on, and the trip
+                // he begins at: its first, or its next when it has begun)
+                if mine && sd.part.is_none() && matches!(sd.state, DutyState::Mine | DutyState::Late) {
+                    sd.sign_on_in = Some((clock::moment(&p.date, d.from as i64) - now) as i32);
+                    if sd.next.is_none() {
+                        sd.next = book::next_trip(trips, &p.date, 0, now).map(|i| to_next(&trips[i]));
+                    }
+                }
                 // (NexiconDK, 3 November 2026, K6: urgent - the players' bonus)
                 sd.urgent = super::super::live_more::urgent(c, &p.date, &t.tour.line, &t.tour.tour);
                 s.duties.push(sd);

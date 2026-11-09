@@ -1275,6 +1275,15 @@ hurry, too many changes), the shortest piece, a split duty's spread, rest betwee
 begins and ends, its type - every issue of the duty in one of them or a line of its own. Under it
 the price: wage × hours, supplements, the employer's part, the total.
 
+A split duty (round P, 9 November 2026) is judged part by part (`pro_duties::parts`: its pieces
+between gaps of 1:30 or more). The meal break is a line a part - "Del 1: 4:07, ingen nødvendig
+(først efter 6:00)", "Del 2: 35 min kl. 16:40", or yellow "Del 2: 6:20 uden spisepause" when a
+part long enough to need one has no break of its own (`pro_duties::part_meal`; the mark
+`M_PART_MEAL`, counted in the chip) - and so is driving without a break ("Del 1: højst 3:10 af
+4:30"). The gap between the parts is its own line under "Delt" - "3:40 fri mellem delene
+(09:12–12:52)" - and never the meal break: the driver is off duty then. Before, the checklist
+took the gap (or the first break long enough) as the whole duty's meal break.
+
 ## Goals for "Make duties automatically"
 
 Under the rules: the target length (7:24 to 8:30), the longest duty (10:00), the shortest piece

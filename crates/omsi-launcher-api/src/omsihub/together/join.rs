@@ -1011,7 +1011,36 @@ fn duty_row(d: &SnapDuty, open_claims: bool, ask: bool) -> Value {
         // (NexiconDK, 7 November 2026: the trip it is taken over at, and the name the company's
         // planning gives it)
         "next": next_words(d), "name": if d.name.is_empty() { String::new() } else { trf("Duty %{n}", &[("n", &d.name)]) },
+        // (round P: his own duty still to drive - when he signs on, and the bus waiting for him)
+        "count": count_words(d), "wait": wait_words(d),
     })
+}
+
+/// (Round P, 9 November 2026) When a player signs on for his own duty, on the company's clock:
+/// "Sign-on in 1 h 25 min", "Sign on now", "Under way since 16:30" (empty: not his to drive).
+fn count_words(d: &SnapDuty) -> String {
+    let Some(m) = d.sign_on_in else { return String::new() };
+    if m > 0 {
+        let time = if m >= 60 { trf("%{h} h %{m} min", &[("h", &(m / 60).to_string()), ("m", &(m % 60).to_string())]) } else { trf("%{n} min", &[("n", &m.to_string())]) };
+        trf("Sign-on in %{time}", &[("time", &time)])
+    } else if m > -5 {
+        tr("Sign on now")
+    } else {
+        trf("Under way since %{time}", &[("time", &format!("{:02}:{:02}", (d.from / 60).rem_euclid(24), d.from.rem_euclid(60)))])
+    }
+}
+
+/// (Round P, 9 November 2026) Where his own duty's bus waits for him at its sign-on: its first
+/// stop - the depot's pull-out point, or where another driver hands it over (empty: no bus yet,
+/// or not his to drive).
+fn wait_words(d: &SnapDuty) -> String {
+    if d.sign_on_in.is_none() || d.first.trim().is_empty() {
+        return String::new();
+    }
+    if d.bus.is_empty() {
+        return trf("Signs on at %{stop}", &[("stop", d.first.trim())]);
+    }
+    trf("Bus %{bus} waits at %{stop}", &[("bus", &tr(&d.bus)), ("stop", d.first.trim())])
 }
 
 /// (NexiconDK, 7 November 2026) The trip a duty is taken over at, in words: its next when it is
@@ -1019,7 +1048,7 @@ fn duty_row(d: &SnapDuty, open_claims: bool, ask: bool) -> Value {
 fn next_words(d: &SnapDuty) -> String {
     let Some(n) = d.next.as_ref() else { return String::new() };
     let hhmm = format!("{:02}:{:02}", (n.dep / 60).rem_euclid(24), n.dep.rem_euclid(60));
-    let key = if d.begun || d.state == DutyState::Ai { "Next trip %{time} from %{from} to %{to}" } else { "First trip %{time} from %{from} to %{to}" };
+    let key = if d.begun || d.state == DutyState::Ai || d.sign_on_in.is_some_and(|m| m <= 0) { "Next trip %{time} from %{from} to %{to}" } else { "First trip %{time} from %{from} to %{to}" };
     trf(key, &[("time", &hhmm), ("from", &n.from), ("to", &n.to)])
 }
 
@@ -1287,3 +1316,33 @@ fn history_rows() -> Vec<Value> {
         })
         .collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use omsi_launcher_lib::company::together::wire::SnapNext;
+
+    fn mine(sign_on_in: Option<i32>, bus: &str) -> SnapDuty {
+        SnapDuty { from: 990, to: 1319, first: "Sater Weg ".into(), last: "Busbahnhof".into(), bus: bus.into(), state: DutyState::Mine, sign_on_in, next: Some(SnapNext { dep: 1000, from: "Sater Weg".into(), to: "Busbahnhof".into() }), ..Default::default() }
+    }
+
+    /// (Round P) His own duty still to drive tells when he signs on, where the bus waits for him,
+    /// and the trip he begins at; another's tells none of it.
+    #[test]
+    fn his_own_duty_tells_when_he_signs_on_and_where_the_bus_waits() {
+        super::super::super::company::words::set_language("en");
+        assert_eq!(count_words(&mine(Some(85), "")), "Sign-on in 1 h 25 min");
+        assert_eq!(count_words(&mine(Some(40), "")), "Sign-on in 40 min");
+        assert_eq!(count_words(&mine(Some(0), "")), "Sign on now");
+        assert_eq!(count_words(&mine(Some(-30), "")), "Under way since 16:30");
+        assert_eq!(wait_words(&mine(Some(85), "103 Citaro")), "Bus 103 Citaro waits at Sater Weg");
+        assert_eq!(wait_words(&mine(Some(85), "")), "Signs on at Sater Weg", "no bus planned yet");
+        assert_eq!(next_words(&mine(Some(85), "")), "First trip 16:40 from Sater Weg to Busbahnhof");
+        assert_eq!(next_words(&mine(Some(-30), "")), "Next trip 16:40 from Sater Weg to Busbahnhof", "begun: his next");
+        let other = SnapDuty { sign_on_in: None, state: DutyState::Player, ..mine(None, "103") };
+        assert_eq!((count_words(&other), wait_words(&other)), (String::new(), String::new()));
+        let row = duty_row(&mine(Some(85), "103 Citaro"), true, true);
+        assert_eq!((row["count"].as_str(), row["wait"].as_str()), (Some("Sign-on in 1 h 25 min"), Some("Bus 103 Citaro waits at Sater Weg")));
+    }
+}
+

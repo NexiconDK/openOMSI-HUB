@@ -159,10 +159,17 @@ pub const C_TYPE: &str = "Fits no duty type allowed: it is %{type}";
 /// (Round O) A night duty's target, and a split duty with night-bus work.
 pub const C_TARGET_NIGHT: &str = "%{time}, a night duty's target is %{from}–%{to}";
 pub const C_SPLIT_NIGHT: &str = "Split duties may not have night-bus work";
-pub const CHECK_TEXTS: [&str; 28] = [
+/// (Round P) A split duty judged part by part: each part's meal break and driving, and the gap
+/// between the parts told as what it is (time off, not a meal break).
+pub const C_PART_MEAL_NONE: &str = "Part %{n}: %{time}, none needed (only after %{after})";
+pub const C_PART_MEAL_AT: &str = "Part %{n}: %{min} at %{at}";
+pub const C_PART_MEAL_MISSING: &str = "Part %{n}: %{time} with no meal break, one needed after %{after}";
+pub const C_PART_DRIVING: &str = "Part %{n}: at most %{time} of %{max}";
+pub const C_SPLIT_GAP: &str = "%{time} off between the parts (%{from}–%{to})";
+pub const CHECK_TEXTS: [&str; 33] = [
     C_MEAL_NONE_NEEDED, C_MEAL_AT, C_MEAL_LATE, C_MEAL_MISSING, C_DRIVING_OK, C_DRIVING_OVER, C_DAY_OK, C_DAY_OVER, C_OVERTIME, C_TARGET, C_CHANGES_NONE, C_CHANGES_OK, C_CHANGES_MANY, C_CHANGE_SHORT,
     C_CHANGE_SAME, C_CHANGE_STOPS, C_PIECE_OK, C_PIECE_SHORT, C_SPLIT_OK, C_SPLIT_OVER, C_SPLIT_WEEKEND, C_SPLIT_LONG, C_PLACES_OK, C_REST_SHORT, C_OVERLAP, C_TYPE,
-    C_TARGET_NIGHT, C_SPLIT_NIGHT,
+    C_TARGET_NIGHT, C_SPLIT_NIGHT, C_PART_MEAL_NONE, C_PART_MEAL_AT, C_PART_MEAL_MISSING, C_PART_DRIVING, C_SPLIT_GAP,
 ];
 
 fn arg<'a>(i: &'a rf::Issue, k: &str) -> &'a str {
@@ -212,19 +219,42 @@ pub fn checklist(c: &Company, b: &Board, row: usize) -> Vec<Check> {
     let rule_of = |i: &rf::Issue| -> Option<usize> { st::Rule::LABELS.iter().position(|l| *l == arg(i, "rule")) };
     let mut out: Vec<Check> = Vec::new();
     let mut push = |title, level, text, args: Vec<(&'static str, String)>| out.push(Check { title, level, text, args });
-    // the meal break
+    // the meal break (round P: a split duty's part by part - the gap between them is time off,
+    // not a meal break)
+    let split = pd::kind_of(s) == Kind::Split;
+    let parts = pd::parts(s);
     let meal = take(&[rf::I_MEAL, rf::I_MEAL_LATE]);
-    if let Some(i) = meal.first() {
+    if split {
+        // (RosterFlow's own meal issue, when it has one, sets how bad a part without one is)
+        let missing = if meal.iter().any(|i| i.hard) { Level::Bad } else { Level::Warn };
+        let mut told = false;
+        for (n, &(a, z, worked)) in parts.iter().enumerate() {
+            let n = (n + 1).to_string();
+            if !p.meal.on || worked <= p.meal_after {
+                push(T_MEAL, Level::Ok, C_PART_MEAL_NONE, vec![("n", n), ("time", hm(worked)), ("after", hm(p.meal_after))]);
+            } else if let Some(m) = pd::part_meal(s, (a, z)) {
+                push(T_MEAL, Level::Ok, C_PART_MEAL_AT, vec![("n", n), ("min", format!("{} min", m.to - m.from)), ("at", rf::clock(m.from))]);
+            } else {
+                push(T_MEAL, missing, C_PART_MEAL_MISSING, vec![("n", n), ("time", hm(worked)), ("after", hm(p.meal_after))]);
+                told = true;
+            }
+        }
+        // (its issue told as RosterFlow tells it when no part is without one: a meal break late)
+        if let (Some(i), false) = (meal.first(), told) {
+            let text = if i.text == rf::I_MEAL_LATE { C_MEAL_LATE } else { C_MEAL_MISSING };
+            push(T_MEAL, Level::of(i.hard), text, vec![("time", arg(i, "time").into()), ("after", hm(p.meal_after)), ("min", hm(p.meal.value))]);
+        }
+    } else if let Some(i) = meal.first() {
         if i.text == rf::I_MEAL_LATE {
             push(T_MEAL, Level::of(i.hard), C_MEAL_LATE, vec![("time", arg(i, "time").into()), ("after", hm(p.meal_after))]);
         } else {
             push(T_MEAL, Level::of(i.hard), C_MEAL_MISSING, vec![("after", hm(p.meal_after)), ("min", hm(p.meal.value))]);
         }
-    } else if let Some(m) = s.plan.breaks.iter().find(|x| x.meal).filter(|_| p.meal.on && s.work > p.meal_after) {
+    } else if let Some(m) = s.plan.breaks.iter().find(|x| x.meal && x.kind != rf::BreakKind::Split).filter(|_| p.meal.on && s.work > p.meal_after) {
         let before: i32 = s.splits.iter().filter(|x| x.1 <= m.from).map(|x| x.1 - x.0).sum();
         push(T_MEAL, Level::Ok, C_MEAL_AT, vec![("min", format!("{} min", m.to - m.from)), ("at", rf::clock(m.from)), ("worked", hm(m.from - s.start - before))]);
     } else if s.split() {
-        // (a split duty's break is its gap)
+        // (an unpaid gap not long enough to split the duty: its break)
     } else {
         push(T_MEAL, Level::Ok, C_MEAL_NONE_NEEDED, vec![("time", hm(s.work)), ("after", hm(p.meal_after))]);
     }
@@ -232,6 +262,13 @@ pub fn checklist(c: &Company, b: &Board, row: usize) -> Vec<Check> {
     let cont = take(&[rf::I_CONTINUOUS]);
     match cont.first() {
         Some(i) => push(T_DRIVING, Level::of(i.hard), C_DRIVING_OVER, vec![("time", arg(i, "time").into()), ("max", hm(p.continuous.value)), ("min", hm(p.break_min.max(p.break_from)))]),
+        // (round P: a split duty's each part)
+        None if p.continuous.on && split => {
+            for (n, &(a, z, _)) in parts.iter().enumerate() {
+                let longest = s.plan.stretches.iter().map(|x| x.to.min(z) - x.from.max(a)).max().unwrap_or(0).max(0);
+                push(T_DRIVING, Level::Ok, C_PART_DRIVING, vec![("n", (n + 1).to_string()), ("time", hm(longest)), ("max", hm(p.continuous.value))]);
+            }
+        }
         None if p.continuous.on => push(T_DRIVING, Level::Ok, C_DRIVING_OK, vec![("time", hm(s.plan.longest())), ("max", hm(p.continuous.value))]),
         None => {}
     }
@@ -284,7 +321,11 @@ pub fn checklist(c: &Company, b: &Board, row: usize) -> Vec<Check> {
         out.push(Check { title: T_SPLIT, level: Level::Bad, text: C_SPLIT_NIGHT, args: Vec::new() });
     }
     // a split duty
-    if pd::kind_of(s) == Kind::Split {
+    if split {
+        // (round P: the gap between the parts, time off - its own line, never the meal break)
+        for w in parts.windows(2) {
+            out.push(Check { title: T_SPLIT, level: Level::Info, text: C_SPLIT_GAP, args: vec![("time", hm(w[1].0 - w[0].1)), ("from", rf::clock(w[0].1)), ("to", rf::clock(w[1].0))] });
+        }
         let over = marks.iter().any(|m| m.text == pd::M_SPREAD);
         out.push(Check { title: T_SPLIT, level: if over { Level::Bad } else { Level::Ok }, text: if over { C_SPLIT_OVER } else { C_SPLIT_OK }, args: vec![("time", hm(s.spread())), ("max", hm(pd::SPLIT_SPREAD))] });
         if marks.iter().any(|m| m.text == pd::M_WEEKEND_SPLIT) {
