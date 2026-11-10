@@ -184,6 +184,10 @@ pub struct Ask {
     /// on the day's "missing" cell counts only answers not seen (`mark_of`).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub seen: bool,
+    /// (NexiconDK, 10 November 2026) He was rung, not messaged (`call_time`): his answer came at
+    /// once - or he did not pick up.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub call: bool,
 }
 
 impl Ask {
@@ -1070,19 +1074,68 @@ pub fn answer_time(c: &Company, e: &Employee, date: &str, n: u32, start: i32, en
     }
     let silent_chance = if tired { 0.15 } else { 0.03 };
     if rng.chance(silent_chance) {
-        return (Reply::Silent, game + NO_ANSWER_AFTER);
+        // (10 November 2026: each his own time before the planner gives him up, not all at once)
+        return (Reply::Silent, game + rng.int(NO_ANSWER_AFTER / 2, NO_ANSWER_AFTER));
     }
     let mut due = game + wait.round().max(1.0) as i64;
-    // (the night: he sleeps from 23:00 to 06:00)
+    // (the night: he sleeps from 23:00 to 06:00 - but not everybody: a night owl, or an
+    // hourly-paid driver short of hours, sees the message; `NIGHT_AWAKE`)
     let m = due.rem_euclid(DAY);
     if !(6 * 60..23 * 60).contains(&m) {
+        let short = e.employment == Employment::Hourly && week < pay::contract_week_minutes(c) * 0.5;
+        if rng.chance(if short { NIGHT_AWAKE * 2.0 } else { NIGHT_AWAKE }) {
+            return (reply, due);
+        }
         let morning = if m >= 23 * 60 { due - m + DAY + 6 * 60 } else { due - m + 6 * 60 };
         if begins <= morning {
-            return (Reply::Silent, game + NO_ANSWER_AFTER);
+            // (10 November 2026: the sleepers' "no answer" each at its own time - it came for
+            // every one of them after exactly two hours)
+            return (Reply::Silent, game + rng.int(NO_ANSWER_AFTER / 4, NO_ANSWER_AFTER));
         }
         due = morning + rng.int(0, 20);
     }
     (reply, due)
+}
+
+/// (NexiconDK, 10 November 2026) The share of drivers awake at night who see a message (twice
+/// that for an hourly-paid driver short of hours).
+pub const NIGHT_AWAKE: f64 = 0.12;
+/// How likely a driver picks up when rung: by day, tired or stressed, and at night (woken).
+pub const PICK_UP_DAY: f64 = 0.88;
+pub const PICK_UP_TIRED: f64 = 0.7;
+pub const PICK_UP_NIGHT: f64 = 0.4;
+/// What being woken by the phone at night costs a driver's contentment.
+pub const WOKEN_COST: f64 = 4.0;
+
+/// Whether `game` (the company's minute) is in the drivers' night (23:00-06:00).
+pub fn in_the_night(game: i64) -> bool {
+    !(6 * 60..23 * 60).contains(&game.rem_euclid(super::clock::DAY))
+}
+
+/// (NexiconDK, 10 November 2026) What an AI driver rung for duty `n` of `date` at the company's
+/// minute `game` says (`reply`: what he decided, as he would answer a message - `ai_reply`): he
+/// picks up (`PICK_UP_DAY`, `PICK_UP_TIRED`, `PICK_UP_NIGHT`) and says it, or does not ("no
+/// answer"). Either way it is known at once - the page's call shows it in its popup. `salt`: the
+/// question's number, so that ringing again may reach him.
+#[allow(clippy::too_many_arguments)]
+pub fn call_time(c: &Company, e: &Employee, date: &str, n: u32, reply: Reply, game: i64, week: f64, salt: u32) -> (Reply, i64) {
+    let mut rng = Rng::of(&[&c.id, date, "pro-call"], ((n as i64) << 24) ^ ((e.id as i64) << 12) ^ ((salt as i64) << 40) ^ game);
+    if reply == Reply::Frame {
+        return (reply, game);
+    }
+    let over = contract_minutes(c, e).is_some_and(|k| week > k);
+    let tired = e.stress > 60.0 || e.satisfaction < 35.0 || over;
+    let pick = if in_the_night(game) {
+        PICK_UP_NIGHT
+    } else if tired {
+        PICK_UP_TIRED
+    } else {
+        PICK_UP_DAY
+    };
+    if !rng.chance(pick) {
+        return (Reply::Silent, game);
+    }
+    (reply, game)
 }
 
 /// Ask the drivers `who` for duty `n` (`part`: a part of it cut, `pro_cut`) of `date` (signing on
@@ -1097,6 +1150,33 @@ pub fn ask(c: &mut Company, date: &str, n: u32, start: i32, end: i32, who: Vec<(
 
 #[allow(clippy::too_many_arguments)]
 pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i32, end: i32, who: Vec<(Asked, Option<Reply>)>, now: u64, week: &dyn Fn(u32) -> f64) -> Result<Vec<u32>, &'static str> {
+    ask_how(c, date, n, part, start, end, who, now, week, false)
+}
+
+/// (NexiconDK, 10 November 2026) Ring AI driver `who` for duty `n` (`part`) of `date` instead of
+/// messaging him: his answer at once, or "no answer" if he does not pick up (`call_time`); woken
+/// at night, he is a little less content (`WOKEN_COST`). A question waiting for him is replaced.
+/// The question's number.
+#[allow(clippy::too_many_arguments)]
+pub fn call_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i32, end: i32, who: (Asked, Reply), now: u64, week: &dyn Fn(u32) -> f64) -> Result<u32, &'static str> {
+    if !matches!(who.0, Asked::Staff { .. }) {
+        return Err(NOT_A_DRIVER);
+    }
+    let ids = ask_how(c, date, n, part, start, end, vec![(who.0, Some(who.1))], now, week, true)?;
+    let game = super::clock::now(c);
+    if let (Some(&id), Asked::Staff { id: driver }) = (ids.first(), who.0) {
+        let picked = c.planning.ops.asks.iter().find(|a| a.id == id).is_some_and(|a| a.reply != Some(Reply::Silent));
+        if picked && in_the_night(game) {
+            if let Some(e) = c.staff.iter_mut().find(|e| e.id == driver) {
+                e.satisfaction = (e.satisfaction - WOKEN_COST).clamp(0.0, 100.0);
+            }
+        }
+    }
+    ids.first().copied().ok_or(NOBODY)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn ask_how(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i32, end: i32, who: Vec<(Asked, Option<Reply>)>, now: u64, week: &dyn Fn(u32) -> f64, call: bool) -> Result<Vec<u32>, &'static str> {
     if who.is_empty() {
         return Err(NOBODY);
     }
@@ -1129,7 +1209,7 @@ pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i3
         let (reply, due) = match (w, reply) {
             (Asked::Staff { id: e }, Some(r)) => {
                 let Some(emp) = c.employee(e).cloned() else { return Err(NOT_A_DRIVER) };
-                let (r, due) = answer_time(c, &emp, date, n, start, end, r, game, week(e));
+                let (r, due) = if call { call_time(c, &emp, date, n, r, game, week(e), id) } else { answer_time(c, &emp, date, n, start, end, r, game, week(e)) };
                 (Some(r), Some(due))
             }
             (_, r) => (r, None),
@@ -1138,7 +1218,7 @@ pub fn ask_part(c: &mut Company, date: &str, n: u32, part: Option<u8>, start: i3
             let time = format!("{:02}:{:02}", start.rem_euclid(1440) / 60, start.rem_euclid(60));
             super::crew::notify(c, Some(Who::Guest(no)), super::crew::Priority::High, ASKED_NOTICE, &[("n", super::pro_duties::shown_number(c, date, n)), ("date", date.to_string()), ("time", time)], Some("phone"));
         }
-        c.planning.ops.asks.push(Ask { id, date: date.to_string(), n, start, end, who: w, at: now, wait: 0, reply, closed: false, part, due, closed_at: None, seen: false });
+        c.planning.ops.asks.push(Ask { id, date: date.to_string(), n, start, end, who: w, at: now, wait: 0, reply, closed: false, part, due, closed_at: None, seen: false, call });
         ids.push(id);
     }
     Ok(ids)

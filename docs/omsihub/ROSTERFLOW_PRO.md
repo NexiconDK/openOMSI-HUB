@@ -502,15 +502,30 @@ Beside the calendar (and as the page of "4 Daglig drift"), one step at a time in
 "Giv vagten" works only after a yes (`give_asked`, `NEEDS_YES`), or for a reserve put on.
 
 ## The answer comes in game time (`pro_ops::answer_time`)
-Normally 5-30 minutes on the company's clock; 2-10 when the duty begins within 3 hours. Nobody
-answers between 23:00 and 06:00: asked at night he answers after 06:00 (within 20 minutes), or
-cannot be reached when the duty begins first. An hourly-paid driver short of hours (under half a
+Normally 5-30 minutes on the company's clock; 2-10 when the duty begins within 3 hours. Between
+23:00 and 06:00 most drivers sleep: asked at night one answers after 06:00 (within 20 minutes), or
+cannot be reached when the duty begins first - his "Intet svar" comes at a time of its own, 30 to
+120 minutes after the question (10 November 2026: it came for all of them after exactly two
+hours). A few are awake (`NIGHT_AWAKE`, 12 %; twice that for an hourly-paid driver short of hours)
+and answer at once. An hourly-paid driver short of hours (under half a
 full week) answers quicker (× 0.6), a tired or stressed one (stress over 60, contentment under 35,
 or over his contract) slower (× 1.6) and sometimes not at all (15 %; others 3 %): after 2 hours
-the box says "Intet svar" (`Reply::Silent`, `NO_ANSWER_AFTER`). The same question always gets the
+the box says "Intet svar" (`Reply::Silent`, between 1 and 2 hours: `NO_ANSWER_AFTER`). The same question always gets the
 same answer and time (`Rng` of the company, the day, the duty and the driver). A player answers
 himself. Questions keep their time in the save (`Ask::due`); an older question by the launcher's
 seconds.
+
+## Ringing a driver (`pro_ops::call_part`, 10 November 2026)
+Messages go out as before ("Spørg de valgte", several at once, answered in game time). Besides,
+"📞 Ring" on a driver who can be asked (or is waiting for a message) rings him, one at a time, in
+a popup: it rings a few seconds; he picks up and answers at once - what he would have answered
+a message (`ai_reply`), "Giv vagten" in the popup after a yes - or he does not ("Ring igen").
+He picks up by day mostly (`PICK_UP_DAY` 88 %, tired or stressed `PICK_UP_TIRED` 70 %), at night
+less often (`PICK_UP_NIGHT` 40 %); ringing again is another draw (the question's number,
+`call_time`). Woken at night, he is a little less content (`WOKEN_COST`). The answer is known at
+once (`Ask::call`, `due` now); a message waiting for him is replaced. The list marks who works
+that day already ("Arbejder den dag: 2003 06:00-14:00", from `driver_day`), and each group has
+"Vælg alle".
 
 ## "Klip vagten": cutting a duty for its date (`co::pro_cut`)
 When nobody can or will take the whole duty (nobody left to ask, all said no, too early, too late

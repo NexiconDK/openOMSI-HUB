@@ -501,16 +501,38 @@ fn an_ai_driver_answers_in_game_time_and_not_at_night() {
     assert!(normal.iter().all(|m| (5..=30).contains(m)), "{normal:?}");
     assert!(urgent.iter().all(|m| (2..=10).contains(m)), "{urgent:?}");
     assert!(normal.len() > 85, "a rested driver mostly answers: {}", normal.len());
-    // asked at 23:30 for the afternoon: answered between 06:00 and 06:20
-    for n in 1001..1041 {
-        let (r, d) = answer_time(&c, &e, date, n, 14 * 60, 22 * 60, yes.clone(), at(23 * 60 + 30), 0.0);
-        if r != Reply::Silent {
-            assert!((moment(date, 6 * 60)..=moment(date, 6 * 60 + 20)).contains(&d), "{}", d.rem_euclid(DAY));
+    // asked at 23:30 for the afternoon: answered between 06:00 and 06:20 - or at once by the
+    // few awake (`NIGHT_AWAKE`, 10 November 2026)
+    let night = at(23 * 60 + 30);
+    let (mut morning, mut awake) = (0, 0);
+    for n in 1001..1201 {
+        let (r, d) = answer_time(&c, &e, date, n, 14 * 60, 22 * 60, yes.clone(), night, 0.0);
+        if r == Reply::Silent {
+            continue;
+        }
+        if (moment(date, 6 * 60)..=moment(date, 6 * 60 + 20)).contains(&d) {
+            morning += 1;
+        } else {
+            assert!(d - night <= 30, "awake: at once ({})", d - night);
+            awake += 1;
         }
     }
-    // asked at 23:30 for a duty at 05:00: not reachable - no answer
-    let (r, d) = answer_time(&c, &e, date, 1001, 5 * 60, 13 * 60, yes.clone(), at(23 * 60 + 30), 0.0);
-    assert_eq!((r, d), (Reply::Silent, at(23 * 60 + 30) + NO_ANSWER_AFTER));
+    assert!(morning > 140 && (8..50).contains(&awake), "{morning} in the morning, {awake} awake");
+    // asked at 23:30 for a duty at 05:00: the sleepers are not reachable - "no answer", each at
+    // his own time (it came for all of them after exactly two hours); the few awake answer
+    let mut silent_at = Vec::new();
+    for n in 1001..1101 {
+        let (r, d) = answer_time(&c, &e, date, n, 5 * 60, 13 * 60, yes.clone(), night, 0.0);
+        if r == Reply::Silent {
+            assert!((night + NO_ANSWER_AFTER / 4..=night + NO_ANSWER_AFTER).contains(&d));
+            silent_at.push(d);
+        } else {
+            assert!(d - night <= 30);
+        }
+    }
+    silent_at.sort();
+    silent_at.dedup();
+    assert!(silent_at.len() > 20, "no answers at many different times: {}", silent_at.len());
     // tired: slower, and more often no answer
     c.staff[1].stress = 85.0;
     let t = c.staff[1].clone();
@@ -522,6 +544,16 @@ fn an_ai_driver_answers_in_game_time_and_not_at_night() {
     c.staff[2].employment = Employment::Hourly;
     let h = c.staff[2].clone();
     assert!((1001..1101).map(|n| answer_time(&c, &h, date, n, 14 * 60, 22 * 60, yes.clone(), at(10 * 60), 0.0)).filter(|x| x.0 != Reply::Silent).all(|x| x.1 - at(10 * 60) <= 18));
+    // (10 November 2026) rung: by day mostly picked up, at night less often - known at once
+    let day: Vec<(Reply, i64)> = (1001..1201).map(|n| call_time(&c, &e, date, n, yes.clone(), at(10 * 60), 0.0, 1)).collect();
+    let picked = day.iter().filter(|x| x.0 != Reply::Silent).count();
+    assert!(picked > 150, "{picked} of 200 picked up by day");
+    assert!(day.iter().all(|x| x.1 == at(10 * 60)), "at once");
+    let woken = (1001..1201).filter(|n| call_time(&c, &e, date, *n, yes.clone(), night, 0.0, 1).0 != Reply::Silent).count();
+    assert!((40..120).contains(&woken), "{woken} of 200 picked up at night");
+    // rung again (another question), one who did not pick up may
+    let again = (1001..1201).filter(|n| call_time(&c, &e, date, *n, yes.clone(), night, 0.0, 1).0 == Reply::Silent && call_time(&c, &e, date, *n, yes.clone(), night, 0.0, 2).0 != Reply::Silent).count();
+    assert!(again > 10, "{again}");
     // "no answer" is no answer
     assert!(!Reply::Silent.yes());
     assert_eq!(words(&Reply::Silent, &|_| String::new()).0, SAY_SILENT);
@@ -534,7 +566,7 @@ fn an_ai_driver_answers_in_game_time_and_not_at_night() {
 fn said(c: &mut Company, id: u32, n: u32, reply: Reply, due: i64) {
     c.planning.ops.last += 1;
     let k = c.planning.ops.last;
-    c.planning.ops.asks.push(Ask { id: k, date: c.date.clone(), n, start: 600, end: 900, who: Asked::Staff { id }, at: 0, wait: 0, reply: Some(reply), closed: false, part: None, due: Some(due), closed_at: None, seen: false });
+    c.planning.ops.asks.push(Ask { id: k, date: c.date.clone(), n, start: 600, end: 900, who: Asked::Staff { id }, at: 0, wait: 0, reply: Some(reply), closed: false, part: None, due: Some(due), closed_at: None, seen: false, call: false });
 }
 
 fn calm() -> Situation {
@@ -648,7 +680,7 @@ fn a_mood_is_about_the_duties_day_not_the_day_of_asking() {
     let no_for = |c: &mut Company, date: &str, n: u32, at: i64| {
         c.planning.ops.last += 1;
         let k = c.planning.ops.last;
-        c.planning.ops.asks.push(Ask { id: k, date: date.to_string(), n, start: 600, end: 900, who: Asked::Staff { id }, at: 0, wait: 0, reply: Some(Reply::No { why: NoWhy::Plans, say: 0, own: 0 }), closed: false, part: None, due: Some(at), closed_at: None, seen: false });
+        c.planning.ops.asks.push(Ask { id: k, date: date.to_string(), n, start: 600, end: 900, who: Asked::Staff { id }, at: 0, wait: 0, reply: Some(Reply::No { why: NoWhy::Plans, say: 0, own: 0 }), closed: false, part: None, due: Some(at), closed_at: None, seen: false, call: false });
     };
     no_for(&mut c, &d15, 1001, game - 30);
     assert_eq!(mood_of(&c, id, &d15, game), Mood::Irritated { at: game - 30 });

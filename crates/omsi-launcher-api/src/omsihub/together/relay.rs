@@ -278,6 +278,8 @@ fn rf_turnus_need(act: &str) -> Need {
 fn rf_ops_need(act: &str) -> Need {
     match act {
         "ask" | "give" | "withdraw" | "withdraw_ask" | "cut" | "uncut" | "agency" | "toil_day" | "toil_back" | "unswap" => PLANS,
+        // (NexiconDK, 10 November 2026: a driver rung about a duty - the planning's, as asking)
+        "call" => PLANS,
         // (round Q: the planner's limits - the warning time, the rest, the days in a row)
         "limits" => PLANS,
         // (round G: the answers to a duty seen - the planner's, who opened its box)

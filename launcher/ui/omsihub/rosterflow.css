@@ -1679,3 +1679,27 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .ec-total td { font-weight: 800; border-top: 2px solid var(--rf-line); border-bottom: 0; }
 .ec-explain { margin: 14px 0 0; padding-left: 18px; color: var(--rf-dim); font-size: 12px; line-height: 1.5; }
 .ec-explain li { margin-bottom: 4px; }
+
+/* (NexiconDK, 10 November 2026) Who-can-drive: a group's "Vælg alle", who works that day already marked, ringing a driver */
+.wl-group { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.wl-group .wl-all { font-size: 10px; font-weight: 700; letter-spacing: 0; text-transform: none; padding: 0 2px; }
+.wl-row.works { background: rgba(245, 166, 35, 0.10); box-shadow: inset 3px 0 0 #f5a623; }
+.wl-works { font-style: normal; flex: none; white-space: nowrap; padding: 0 6px; border-radius: 9px; font-size: 9.2px; font-weight: 700; color: #f5a623; border: 1px solid rgba(245, 166, 35, 0.55); background: rgba(245, 166, 35, 0.12); }
+.wl-answer .wl-ring { margin-left: 6px; white-space: nowrap; }
+.wl-row.works .wl-extra { display: none; }
+/* (NexiconDK, 10 November 2026) The phone call's popup */
+.wl-callpop { position: fixed; inset: 0; z-index: 5000; background: rgba(6, 9, 18, 0.55); display: flex; align-items: center; justify-content: center; }
+.wl-callpop .box { width: 380px; max-width: calc(100vw - 32px); padding: 26px 24px 20px; border-radius: 16px; background: var(--rf-panel, #232a38); border: 1px solid var(--rf-line); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45); display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; color: var(--rf-text, #e8ebf2); }
+.wl-callpop .phone { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; background: rgba(59, 160, 255, 0.16); border: 2px solid rgba(59, 160, 255, 0.6); }
+.wl-callpop .phone.ringing { animation: wl-ring 1.1s ease-in-out infinite; }
+.wl-callpop .phone.up { background: rgba(52, 199, 89, 0.16); border-color: rgba(52, 199, 89, 0.7); }
+.wl-callpop .phone.down { background: rgba(255, 69, 58, 0.14); border-color: rgba(255, 69, 58, 0.6); }
+@keyframes wl-ring { 0%, 100% { transform: rotate(0); box-shadow: 0 0 0 0 rgba(59, 160, 255, 0.45); } 10% { transform: rotate(-14deg); } 20% { transform: rotate(14deg); } 30% { transform: rotate(-10deg); } 40% { transform: rotate(10deg); } 50% { transform: rotate(0); box-shadow: 0 0 0 16px rgba(59, 160, 255, 0); } }
+@media (prefers-reduced-motion: reduce) { .wl-callpop .phone.ringing { animation: none; } }
+.wl-callpop .title { font-size: 16px; }
+.wl-callpop .dim { font-size: 12px; color: var(--rf-dim); }
+.wl-callpop .said { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; border-radius: 10px; width: 100%; }
+.wl-callpop .said.yes { background: rgba(52, 199, 89, 0.12); color: #4cd964; }
+.wl-callpop .said.no { background: rgba(255, 69, 58, 0.10); color: #ff6b61; }
+.wl-callpop .said span { color: var(--rf-text, #e8ebf2); font-size: 13px; font-style: italic; }
+.wl-callpop .btns { display: flex; gap: 8px; margin-top: 6px; }

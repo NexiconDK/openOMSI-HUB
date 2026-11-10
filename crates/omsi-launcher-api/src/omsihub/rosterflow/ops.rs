@@ -1156,6 +1156,15 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
                 }
                 let (extras, words) = extra_words(c, e.id, date);
                 row["extra"] = json!(words);
+                // (NexiconDK, 10 November 2026: who works that day already - marked, with his
+                // duties and when he signs on and off)
+                if let po::DayIs::Duties { labels, start, end, .. } = po::driver_day(c, e, p, ds).is {
+                    row["works"] = json!(trf("Works that day: %{duties} %{from}–%{to}", &[("duties", &labels.join(", ")), ("from", &co::clock::hhmm(start as i64)), ("to", &co::clock::hhmm(end as i64))]));
+                }
+                // (a driver to ring - not asked yet, or asked by message and waiting: "Ring")
+                if matches!(row["action"].as_str(), Some("ask") | Some("waiting")) {
+                    row["call"] = json!(true);
+                }
                 // (round H: what an hourly-paid driver said he can that day - within it first)
                 let rank = avail_of(c, e, date, d.start, d.end, &mut row);
                 // (those who would break the rest rules after the others; the fewest extra duties
@@ -1680,6 +1689,36 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             };
             let at = now();
             edit(s, words, &mut |c| po::ask_part(c, &date, d.n, part, d.start, d.end, who.clone(), at, &|id| weekly.get(&id).copied().unwrap_or(0.0)).map(|_| ()))
+        }
+        // (NexiconDK, 10 November 2026: a driver rung - his answer at once, or none if he does not
+        // pick up; a question waiting for him replaced)
+        "call" => {
+            let (p, ds, d, weekly, _, tired) = match target(s, r, &c, &date, n, part) {
+                Ok(x) => x,
+                Err(v) => return Ok(v),
+            };
+            let id = args.get("driver").and_then(Value::as_u64).unwrap_or(0) as u32;
+            let Some(e) = c.employee(id) else { return Ok(said(tr(po::NOT_A_DRIVER), true)) };
+            let cands = po::candidates(&c, &p, &d, &|id| weekly.get(&id).copied().unwrap_or(0.0));
+            let sit = situation(&c, &p, &ds, &d, e, cands.iter().find(|x| x.id == id), tired.get(&id).copied().unwrap_or_default());
+            let reply = po::ai_reply(&c, e, &date, d.n, d.start, d.end, &sit);
+            let name = e.name.clone();
+            let words = trf("You ring %{name} about duty %{duty}.", &[("name", &name), ("duty", &d.n.to_string())]);
+            let at = now();
+            let mut out = edit(s, words, &mut |c| po::call_part(c, &date, d.n, part, d.start, d.end, (Asked::Staff { id }, reply.clone()), at, &|id| weekly.get(&id).copied().unwrap_or(0.0)).map(|_| ()));
+            // (what the call came to, for the page's popup: picked up and said - or not)
+            if let Some(c) = s.company.as_ref() {
+                let said = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == d.n && a.part == part && a.call && a.of_staff() == Some(id)).max_by_key(|a| a.id).and_then(|a| a.reply.clone());
+                if let Some(r) = said {
+                    let picked = r != Reply::Silent;
+                    out["call"] = json!({
+                        "driver": id, "name": name, "picked": picked, "yes": r.yes(), "answer": reply_json(c, &r, &date),
+                        "title": trf("Ringing %{name}…", &[("name", &name)]),
+                        "outcome": if picked { trf("%{name} picked up", &[("name", &name)]) } else { trf("%{name} does not pick up", &[("name", &name)]) },
+                    });
+                }
+            }
+            out
         }
         "give" => {
             let (p, ds, d, weekly, breaks, _) = match target(s, r, &c, &date, n, part) {
@@ -2355,7 +2394,7 @@ mod tests {
                 po::give_part(c, x, own, None, a, None).unwrap();
             }
             let game = co::clock::now(c);
-            c.planning.ops.asks.push(po::Ask { id: 900, date: date.into(), n, start: 0, end: 0, who: po::Asked::Staff { id: a }, at: 0, wait: 0, reply: Some(Reply::Swap { with: b, theirs: own, say: 0 }), closed: false, part: None, due: Some(game), closed_at: None, seen: false });
+            c.planning.ops.asks.push(po::Ask { id: 900, date: date.into(), n, start: 0, end: 0, who: po::Asked::Staff { id: a }, at: 0, wait: 0, reply: Some(Reply::Swap { with: b, theirs: own, say: 0 }), closed: false, part: None, due: Some(game), closed_at: None, seen: false, call: false });
         }
         changed(&mut s);
         let v = daily(&mut s, &mut r, &json!({ "date": date, "n": n })).unwrap();
@@ -2444,7 +2483,7 @@ mod tests {
             let game = co::clock::now(c);
             for (k, id) in ids.iter().enumerate() {
                 let reply = if k < 2 { Reply::Yes { say: 0 } } else { Reply::No { why: po::NoWhy::Plans, say: 0, own: 0 } };
-                c.planning.ops.asks.push(po::Ask { id: 900 + k as u32, date: date.into(), n, start: 0, end: 0, who: po::Asked::Staff { id: *id }, at: 0, wait: 0, reply: Some(reply), closed: false, part: None, due: Some(game - 5), closed_at: None, seen: k == 0 });
+                c.planning.ops.asks.push(po::Ask { id: 900 + k as u32, date: date.into(), n, start: 0, end: 0, who: po::Asked::Staff { id: *id }, at: 0, wait: 0, reply: Some(reply), closed: false, part: None, due: Some(game - 5), closed_at: None, seen: k == 0, call: false });
             }
         }
         changed(&mut s);
@@ -2480,6 +2519,61 @@ mod tests {
             assert!(!said.contains("%{"), "{r:?}: {said}");
         }
         company::words::set_language("en");
+    }
+
+    /// (NexiconDK, 10 November 2026) The who-can-drive list marks who works that day already,
+    /// with his duty and times, and offers to ring a driver who can be asked: his answer comes
+    /// at once (or none if he does not pick up), the question waiting for him replaced.
+    #[test]
+    fn a_driver_who_works_that_day_is_marked_and_can_be_rung() {
+        company::words::set_language("en");
+        company::test_dry();
+        let mut s = session();
+        let mut r = Rf::default();
+        let ids: Vec<u32> = s.company.as_ref().unwrap().staff.iter().filter(|e| co::staff::drives(e)).map(|e| e.id).collect();
+        {
+            let c = s.company.as_mut().unwrap();
+            c.staff.iter_mut().find(|e| e.id == ids[2]).unwrap().employment = Employment::Hourly;
+        }
+        changed(&mut s);
+        let date = "2024-03-05";
+        let v = daily(&mut s, &mut r, &json!({ "date": date })).unwrap();
+        let open = v["open"].as_array().unwrap().clone();
+        let n = open[0]["n"].as_u64().unwrap();
+        // one duty given to the hourly driver: he works that day - marked on the other duty's list
+        let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": ids[2], "anyway": true })).unwrap();
+        let rows_of = |v: &Value| -> Vec<Value> { v["duty"]["groups"].as_array().map(|g| g.iter().flat_map(|g| g["rows"].as_array().cloned().unwrap_or_default()).collect()).unwrap_or_default() };
+        if out["edited"] == true {
+            let other = open.iter().filter_map(|d| d["n"].as_u64()).find(|m| *m != n);
+            if let Some(m) = other {
+                let v = daily(&mut s, &mut r, &json!({ "date": date, "n": m })).unwrap();
+                if let Some(row) = rows_of(&v).into_iter().find(|x| x["id"] == ids[2]) {
+                    assert!(row["works"].as_str().is_some_and(|w| w.starts_with("Works that day: ")), "{row}");
+                }
+            }
+        }
+        // ringing one who can be asked: the answer at once, the waiting question replaced
+        let v = daily(&mut s, &mut r, &json!({ "date": date })).unwrap();
+        let Some(m) = v["open"].as_array().and_then(|o| o.first()).and_then(|d| d["n"].as_u64()) else { return };
+        let v = daily(&mut s, &mut r, &json!({ "date": date, "n": m })).unwrap();
+        let Some(row) = rows_of(&v).into_iter().find(|x| x["action"] == "ask") else { return };
+        assert_eq!(row["call"], true, "{row}");
+        let id = row["id"].as_u64().unwrap() as u32;
+        assert_eq!(act(&mut s, &mut r, &json!({ "act": "ask", "date": date, "n": m, "drivers": [id] })).unwrap()["edited"], true);
+        let out = act(&mut s, &mut r, &json!({ "act": "call", "date": date, "n": m, "driver": id })).unwrap();
+        assert_eq!(out["edited"], true, "{out}");
+        let c = s.company.as_ref().unwrap().clone();
+        let game = co::clock::now(&c);
+        let mine: Vec<&po::Ask> = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == m as u32 && !a.closed && a.of_staff() == Some(id)).collect();
+        assert_eq!(mine.len(), 1, "the waiting question replaced");
+        assert!(mine[0].call && mine[0].due == Some(game), "known at once: {:?}", mine[0]);
+        // (the popup's: picked up and his answer, or not)
+        let call = &out["call"];
+        assert_eq!(call["driver"], id, "{out}");
+        assert_eq!(call["picked"].as_bool(), Some(mine[0].reply != Some(Reply::Silent)));
+        assert!(call["answer"]["chip"].is_string() && call["outcome"].is_string(), "{call}");
+        // (only who plans rings the drivers)
+        assert!(!crate::omsihub::together::relay::need("rf_ops_act", &json!({ "act": "call" })).met(&[omsi_launcher_lib::company::together::Perm::Drive]));
     }
 
     #[test]
