@@ -35,6 +35,7 @@ pub mod currency;
 pub mod control;
 pub mod crew;
 pub mod dates;
+pub mod dodgers;
 pub mod day;
 pub mod dealer;
 pub mod duty_launch;
@@ -56,6 +57,7 @@ pub mod fleetmap;
 pub mod free_drive;
 pub mod fuel;
 pub mod incidents;
+pub mod inspection;
 // (the lines' income and passengers on the UK model: fares by ticket, concessions, BSOG)
 pub mod income;
 pub mod levels;
@@ -279,6 +281,7 @@ pub fn found(f: &Founding, profile: &str) -> Company {
         messages: Default::default(),
         crew: Default::default(),
         ontime: Default::default(),
+        inspection: Default::default(),
     };
     // (Casual buys quickly; the buying chosen is kept for the other modes)
     autopilot::set_game_mode(&mut c, f.game_mode);

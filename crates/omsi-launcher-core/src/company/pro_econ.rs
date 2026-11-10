@@ -25,7 +25,7 @@ use super::rosterflow::Board;
 use super::{dates, plan};
 
 /// What a line brings in, is fined, and its buses cost to run, by the ledger's kinds.
-pub const INCOME: [BookingKind; 8] = [BookingKind::Contract, BookingKind::Fares, BookingKind::ChildFares, BookingKind::NetworkPasses, BookingKind::SchoolPasses, BookingKind::Reimbursement, BookingKind::Bsog, BookingKind::Compensation];
+pub const INCOME: [BookingKind; 9] = [BookingKind::Contract, BookingKind::Fares, BookingKind::ChildFares, BookingKind::NetworkPasses, BookingKind::SchoolPasses, BookingKind::Reimbursement, BookingKind::Bsog, BookingKind::Compensation, BookingKind::InspectionFines];
 pub const PENALTIES: [BookingKind; 2] = [BookingKind::Penalty, BookingKind::Fine];
 pub const RUNNING: [BookingKind; 2] = [BookingKind::Energy, BookingKind::Maintenance];
 /// The days of late a line's average day of fares and running is taken from.

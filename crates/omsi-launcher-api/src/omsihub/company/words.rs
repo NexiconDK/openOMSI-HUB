@@ -276,6 +276,32 @@ pub fn short_date(date: &str) -> String {
     format!("{} {}", day, tr(MONTHS[(m as usize).clamp(1, 12) - 1]))
 }
 
+/// A day as the page's language writes it, with its weekday (NexiconDK, ticket inspection round S):
+/// "Sat 5 Dec", Danish "lø 5. dec.", German "Sa. 5. Dez.", French "sam. 5 déc.", Dutch
+/// "za 5 dec.", Polish "sob. 5 gru", Russian "сб 5 дек.", Ukrainian "сб 5 груд."; `year` adds
+/// the year.
+pub fn local_day(date: &str, year: bool) -> String {
+    let Some(d) = co::dates::parse(date) else { return date.to_string() };
+    let (y, m, day) = co::dates::civil_from_days(d);
+    let (wd, m) = (co::dates::weekday(d) as usize, (m as usize).clamp(1, 12) - 1);
+    let lang = language();
+    let (days, months, dot): ([&str; 7], [&str; 12], &str) = match lang.as_str() {
+        "da" => (["ma", "ti", "on", "to", "fr", "lø", "sø"], ["jan.", "feb.", "mar.", "apr.", "maj", "jun.", "jul.", "aug.", "sep.", "okt.", "nov.", "dec."], "."),
+        "de" => (["Mo.", "Di.", "Mi.", "Do.", "Fr.", "Sa.", "So."], ["Jan.", "Feb.", "März", "Apr.", "Mai", "Juni", "Juli", "Aug.", "Sep.", "Okt.", "Nov.", "Dez."], "."),
+        "fr" => (["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."], ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."], ""),
+        "nl" => (["ma", "di", "wo", "do", "vr", "za", "zo"], ["jan.", "feb.", "mrt.", "apr.", "mei", "jun.", "jul.", "aug.", "sep.", "okt.", "nov.", "dec."], ""),
+        "pl" => (["pon.", "wt.", "śr.", "czw.", "pt.", "sob.", "niedz."], ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"], ""),
+        "ru" => (["пн", "вт", "ср", "чт", "пт", "сб", "вс"], ["янв.", "февр.", "мар.", "апр.", "мая", "июн.", "июл.", "авг.", "сент.", "окт.", "нояб.", "дек."], ""),
+        "uk" => (["пн", "вт", "ср", "чт", "пт", "сб", "нд"], ["січ.", "лют.", "бер.", "квіт.", "трав.", "черв.", "лип.", "серп.", "вер.", "жовт.", "лист.", "груд."], ""),
+        _ => (WEEKDAYS, MONTHS, ""),
+    };
+    let mut out = format!("{} {}{} {}", days[wd], day, dot, months[m]);
+    if year {
+        out = format!("{out} {y}");
+    }
+    out
+}
+
 /// A span of minutes as the pages write it, its two largest parts: "2 d 4 h", "31 d",
 /// "4 h 10 min", "3 h", "12 min".
 pub fn span_text(minutes: i64) -> String {

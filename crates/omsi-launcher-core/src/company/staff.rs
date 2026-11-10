@@ -15,7 +15,8 @@
 //! maintenance and repairs in the company's own workshop (`workshop_share`, a broken-down bus
 //! back sooner), the cleaners keep the buses clean (`Vehicle::clean`, which the passengers
 //! notice), the service centre answers the passengers' complaints and lifts the reputation, the
-//! ticket inspectors bring in the fares dodgers would not pay (`fare_gain`); the researchers'
+//! ticket inspectors keep the fare dodgers off and write their fines (`patrols`, `dodgers`,
+//! `inspection`); the researchers'
 //! work is counted by `research`.
 //!
 //! Every person has a portrait of their own (`PORTRAITS` of them): no two people of a company -
@@ -632,9 +633,9 @@ pub fn shift_of(c: &Company, date: &str, e: &Employee) -> Option<Shift> {
 /// The most of the maintenance and repairs the company's own mechanics do (the outside garage's
 /// labour and margin saved).
 pub const WORKSHOP_MAX: f64 = 0.30;
-/// What a line checked all day brings in fares that dodgers would not have paid (and their
-/// fines).
-pub const INSPECT_GAIN: f64 = 0.06;
+/// The most a line kept honest brings in fares by day (`fare_gain`: the dodgers down to
+/// `dodgers::MIN`; their fines are `inspection`'s).
+pub const INSPECT_GAIN: f64 = (super::dodgers::BASE - super::dodgers::MIN) / (1.0 - super::dodgers::BASE);
 
 /// How good someone is at their work: their experience, and the course of their work.
 fn skill(c: &Company, e: &Employee) -> f64 {
@@ -697,36 +698,76 @@ pub fn mechanics_at_work(c: &Company, date: &str) -> usize {
     c.staff.iter().filter(|e| e.role == Role::Mechanic && at_work(e, date)).count()
 }
 
-/// The lines the ticket inspectors at work check on `date`: each inspector takes one, the
-/// busiest lines first (by their kilometres), and a line is checked all day with eight hours of
-/// inspectors on it. Returns (the line's name, the share of the day checked, the inspectors).
-pub fn inspected(c: &Company, date: &str) -> Vec<(String, f64, Vec<u32>)> {
+/// A lone inspector checks this much against a pair (NexiconDK, ticket inspection round S).
+pub const LONE: f64 = 0.6;
+
+/// A patrol of the ticket inspectors: who, the line they check and when.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Patrol {
+    pub line: String,
+    pub ids: Vec<u32>,
+    pub from: i32,
+    pub to: i32,
+    /// The share of the day it checks its line (the hours between 05:00 and midnight against
+    /// eight, by the team's skill; a lone inspector `LONE` of a pair).
+    pub share: f64,
+}
+
+/// The patrols of the ticket inspectors at work on `date` (NexiconDK, ticket inspection round S,
+/// 9 November 2026): two by two in their core hours (the last one alone when they are odd), each
+/// team on a line of its own, the busiest lines first (by their kilometres); who stays on after the
+/// core hours checks the team's line alone.
+pub fn patrols(c: &Company, date: &str) -> Vec<Patrol> {
     let (sh, _) = shifts(c, date, Role::Inspector);
     let mut lines: Vec<&super::model::CompanyLine> = c.lines.iter().filter(|l| in_service(l, date)).collect();
     if sh.is_empty() || lines.is_empty() {
         return Vec::new();
     }
     lines.sort_by(|a, b| b.km.total_cmp(&a.km).then(a.name.cmp(&b.name)));
-    let mut out: Vec<(String, f64, Vec<u32>)> = Vec::new();
-    for (k, s) in sh.iter().enumerate() {
-        let line = &lines[k % lines.len()].name;
-        let skill = c.employee(s.id).map(|e| skill(c, e)).unwrap_or(0.6);
-        let share = s.within(5 * 60, 24 * 60) as f64 / 480.0 * skill;
-        match out.iter_mut().find(|x| &x.0 == line) {
-            Some(x) => {
-                x.1 = (x.1 + share).min(1.0);
-                x.2.push(s.id);
+    let skill_of = |id: u32| c.employee(id).map(|e| skill(c, e)).unwrap_or(0.6);
+    let checked = |from: i32, to: i32| Shift { id: 0, role: Role::Inspector, from, to, extra: None }.within(5 * 60, 24 * 60) as f64 / 480.0;
+    let mut out: Vec<Patrol> = Vec::new();
+    for (k, team) in sh.chunks(2).enumerate() {
+        let line = lines[k % lines.len()].name.clone();
+        let from = team.iter().map(|s| s.from).max().unwrap_or(0);
+        let to = team.iter().map(|s| s.to).min().unwrap_or(0).max(from);
+        let skill = team.iter().map(|s| skill_of(s.id)).sum::<f64>() / team.len() as f64;
+        let alone = if team.len() >= 2 { 1.0 } else { LONE };
+        out.push(Patrol { line: line.clone(), ids: team.iter().map(|s| s.id).collect(), from, to, share: (checked(from, to) * skill * alone).min(1.0) });
+        for s in team {
+            if let Some((a, b)) = s.extra.filter(|(a, b)| b > a) {
+                out.push(Patrol { line: line.clone(), ids: vec![s.id], from: a, to: b, share: (checked(a, b) * skill_of(s.id) * LONE).min(1.0) });
             }
-            None => out.push((line.clone(), share.min(1.0), vec![s.id])),
         }
     }
     out
 }
 
-/// What the ticket inspectors add to the fares of a line (its name) on `date`: 0.06 = 6 %.
+/// The lines the ticket inspectors at work check on `date` (their `patrols`, by line): the line's
+/// name, the share of the day checked (at most all of it), the inspectors.
+pub fn inspected(c: &Company, date: &str) -> Vec<(String, f64, Vec<u32>)> {
+    let mut out: Vec<(String, f64, Vec<u32>)> = Vec::new();
+    for p in patrols(c, date) {
+        match out.iter_mut().find(|x| x.0 == p.line) {
+            Some(x) => {
+                x.1 = (x.1 + p.share).min(1.0);
+                for id in p.ids {
+                    if !x.2.contains(&id) {
+                        x.2.push(id);
+                    }
+                }
+            }
+            None => out.push((p.line, p.share, p.ids)),
+        }
+    }
+    out
+}
+
+/// What the ticket inspectors add to the fares of a line (its name) on `date` by day: 0.04 = 4 %
+/// (the dodgers they keep off, `dodgers`).
 pub fn fare_gain(c: &Company, date: &str, line: &str) -> f64 {
-    // (the inspectors' working method, researched, finds more: `research::inspection_factor`)
-    inspected(c, date).iter().find(|x| x.0.eq_ignore_ascii_case(line)).map_or(0.0, |x| INSPECT_GAIN * x.1 * super::research::inspection_factor(c))
+    let d = super::dodgers::deterrence(c, date, line);
+    super::dodgers::fare_factor(super::dodgers::share(super::dodgers::BASE, d, false)) - 1.0
 }
 
 // --- the day of the roles besides the drivers ---------------------------------------------------

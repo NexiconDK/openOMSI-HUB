@@ -5,6 +5,7 @@
 // (Beta 57: `people/holidays.rs`); and the hiring rules.
 
 import { html, useEffect, useState, setCo, setUi, ui, act, useView, useSize, goKey, Icon, Btn, Seg, Chips, Select, Section, Meter, Switch, IconBtn, Slider, Tag, Dialog, fill } from './kit.js';
+import { Inspection } from './inspection.js';
 
 // --- the portraits -------------------------------------------------------------------------
 
@@ -51,14 +52,14 @@ export function Portrait({ n, name, size }) {
 // --- the page ------------------------------------------------------------------------------
 
 export function PeoplePage() {
-  const st = ui('people', { tab: 0, filter: 0, sort: 0, descending: false, open: null, hire_role: 0, group: 0, first: 0, per: 6, hours_role: 0 });
+  const st = ui('people', { tab: 0, filter: 0, sort: 0, descending: false, open: null, hire_role: 0, group: 0, first: 0, per: 6, hours_role: 0, day: 0 });
   const [ref, size] = useSize();
   // (the matrix shows as many columns as the width holds: `people::training`)
   const nameW = Math.max(170, Math.min(240, size.w * 0.2));
   const per = Math.max(1, Math.floor((size.w - nameW - 12) / 150));
   const v = useView('people', { ...st, per }, size.w > 0);
   if (!v?.tabs) return html`<div ref=${ref} style="height:100%"></div>`;
-  const tabsW = Math.min(v.tabs.length >= 7 ? 1180 : v.tabs.length >= 5 ? 1040 : 420, size.w);
+  const tabsW = Math.min(v.tabs.length >= 8 ? 1320 : v.tabs.length >= 7 ? 1180 : v.tabs.length >= 5 ? 1040 : 420, size.w);
   const b = v.body;
   let body = null;
   if (b.kind === 'person') body = html`<${Person} p=${b} />`;
@@ -69,6 +70,7 @@ export function PeoplePage() {
   else if (b.kind === 'holidays') body = html`<${Holidays} h=${b} />`;
   else if (b.kind === 'agencies') body = html`<${Agencies} a=${b} st=${st} />`;
   else if (b.kind === 'settings') body = html`<${Rules} r=${b} />`;
+  else if (b.kind === 'inspection') body = html`<${Inspection} b=${b} />`;
   return html`<div ref=${ref} style="height:100%;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:20px;flex:none;height:40px">
       <${Seg} value=${v.tab} options=${v.tabs.map((t, k) => [k, t])} onChange=${(k) => setUi('people', { tab: k, open: null })} style=${`width:${tabsW}px;height:40px`} />

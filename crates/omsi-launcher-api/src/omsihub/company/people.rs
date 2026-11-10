@@ -2,10 +2,12 @@
 //! My employees with a card for everyone and a person opened; Hire employees, the week's
 //! applicants of every role; Licences & training, who of the drivers may drive which bus and the
 //! courses; the Work schedule of the roles besides the drivers; the Holidays asked for and planned
-//! (`holidays`); the agency drivers booked ahead for a day (`agencies`); and the staff's Settings.
+//! (`holidays`); the agency drivers booked ahead for a day (`agencies`); the staff's Settings; and
+//! the ticket inspectors' checks and the lines' fare dodgers (`inspection`, round S).
 
 pub mod agencies;
 pub mod holidays;
+pub mod inspection;
 
 use super::kit::{self, Go, Popup};
 use super::words::{day_label, eur, eur_cents, grade, num, tr, trf, WEEKDAYS};
@@ -19,7 +21,7 @@ use omsi_launcher_lib::company::pro_turnus as pt;
 use omsi_launcher_lib::company::{self as co, Company, Employee, Employment, Frame, Licence, Role};
 use serde_json::{json, Value};
 
-pub const TABS: [&str; 7] = ["My employees", "Hire employees", "Licences & training", "Work schedule", "Holidays", "Agencies", "Settings"];
+pub const TABS: [&str; 8] = ["My employees", "Hire employees", "Licences & training", "Work schedule", "Holidays", "Agencies", "Settings", "Ticket inspection"];
 const SORTS: [&str; 6] = ["Name", "Role", "Wage", "Level", "Satisfaction", "Stress"];
 /// Said under a lock Casual does not open by itself.
 const NOT_RESEARCHED_BY_ITSELF: &str = "Casual does not research this by itself: switch to Normal and start it on its Research page.";
@@ -763,6 +765,7 @@ pub fn view(s: &mut Session, ui: &Value) -> Value {
         4 => holidays::part(&c, ui),
         5 => agencies::part(&c, aplan.as_ref(), ui),
         6 => settings_part(&c),
+        7 => inspection::part(&c, ui),
         _ => list_part(&c, plan.as_ref(), ui),
     };
     json!({ "tabs": tabs, "tab": tab, "info": trf("Wages %{amount} a month with the employer's share  ·  %{n} duties today", &[("amount", &eur(wages)), ("n", &duties.to_string())]), "body": body })

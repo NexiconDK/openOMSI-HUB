@@ -323,10 +323,13 @@ pub enum BookingKind {
     /// Fares a line under a gross-cost contract takes for the authority: collected and paid over
     /// the same day (they come to nothing; `income`).
     AuthorityFares,
+    /// The fines of the passengers the ticket inspectors caught without a ticket, what of them is
+    /// paid (`inspection`).
+    InspectionFines,
 }
 
 impl BookingKind {
-    pub const ALL: [BookingKind; 41] = [
+    pub const ALL: [BookingKind; 42] = [
         BookingKind::Capital,
         BookingKind::Loan,
         BookingKind::Repayment,
@@ -368,6 +371,7 @@ impl BookingKind {
         BookingKind::Reimbursement,
         BookingKind::Bsog,
         BookingKind::AuthorityFares,
+        BookingKind::InspectionFines,
     ];
 
     pub fn label(self) -> &'static str {
@@ -413,6 +417,7 @@ impl BookingKind {
             BookingKind::Reimbursement => "Concession reimbursement",
             BookingKind::Bsog => "Fuel grant (BSOG)",
             BookingKind::AuthorityFares => "Fares for the authority",
+            BookingKind::InspectionFines => "Ticket inspection fines",
         }
     }
 
@@ -1305,6 +1310,10 @@ pub struct Company {
     /// The diversions of its days (the Operations page: `ontime::Diversion`).
     #[serde(default)]
     pub ontime: super::ontime::OnTime,
+    /// What the ticket inspectors saw: their checks, the lines' fare dodgers, the months' totals
+    /// (`inspection`; a file of before: nothing seen).
+    #[serde(default)]
+    pub inspection: super::inspection::Book,
 }
 
 fn one() -> f64 {

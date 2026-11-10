@@ -879,8 +879,13 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     // paid for, `pay`)
     let mut pieces: Vec<(u32, i32, i32)> = Vec::new();
     let (pre_trip, post_trip) = (c.planning.flow.prefs.pre_trip, c.planning.flow.prefs.post_trip);
-    // (the ticket inspectors' lines bring in what dodgers would not pay: `staff::fare_gain`)
-    let checked: Vec<f64> = c.lines.iter().map(|l| 1.0 + staff::fare_gain(c, &date, &l.name)).collect();
+    // (NexiconDK, ticket inspection round S: the fare dodgers of each trip - its hour, a full bus,
+    // what the ticket inspectors keep off today and kept off the days before - and what the day
+    // shows the inspectors on the lines they check: `dodgers`, `inspection`)
+    let deter: Vec<f64> = c.lines.iter().map(|l| super::dodgers::deterrence(c, &date, &l.name)).collect();
+    let watched: Vec<String> = staff::inspected(c, &date).into_iter().map(|x| x.0).collect();
+    let mut line_days: Vec<super::inspection::LineDay> = c.lines.iter().map(|l| super::inspection::LineDay { line: l.name.clone(), ..Default::default() }).collect();
+    let mut seen: Vec<super::inspection::Seen> = Vec::new();
     // (the minutes each trip runs late, and why: `lateness`)
     let late_model = super::lateness::model(c, &plan, &date, &cut);
     let mut lat = super::lateness::Lateness::default();
@@ -1060,7 +1065,7 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                 }
                 // (what its bus can take: the rest stays at the stop - fares lost, and the
                 // reputation and the complaints hear of it)
-                {
+                let crowded = {
                     let hour = (trip.dep.rem_euclid(1440) / 60) as usize;
                     let (taken, left, crowded) = super::ownline::carried(pax, hour, v.kind.size);
                     // (3 November 2026: full by the server's rules - people left at the stop, or the
@@ -1078,7 +1083,8 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                             lines[li].crowded_morning += 1;
                         }
                     }
-                }
+                    crowded
+                };
                 // (service control: the part of a trip cut short carries nobody - on a bus contract
                 // the journey is not paid, `bus_contracts`)
                 let cut_short = late_model.get(ti).and_then(|m| m.get(j)).and_then(|x| x.as_ref()).map_or(0.0, |x| x.lost);
@@ -1089,7 +1095,27 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                 // more with drivers trained in selling them and inspectors on the line: `income`)
                 let mut take = if kind == ServiceKind::School { super::income::Takings::default() } else { rates[li].takings(pax as f64, trip.km) };
                 super::ownline::kind_takings(kind, &mut take, pax as f64, c.price_index);
-                take.tickets_by(super::incidents::fare_factor(&skilled) * checked.get(li).copied().unwrap_or(1.0));
+                let raw = super::dodgers::raw(trip.dep, crowded);
+                let d = deter.get(li).copied().unwrap_or(0.0);
+                take.tickets_by(super::incidents::fare_factor(&skilled) * super::dodgers::fare_factor(super::dodgers::share(raw, d, false)));
+                // (the dodgers aboard: fewer with a driver trained in ticket sales)
+                let met = super::dodgers::share(raw, d, skilled.ticketing);
+                if let (Some(ld), Some(cl)) = (line_days.get_mut(li), c.lines.get(li)) {
+                    ld.passengers += pax;
+                    ld.dodgers += pax as f64 * met;
+                    let m = trip.dep.rem_euclid(1440);
+                    if super::dodgers::at_night(trip.dep) {
+                        ld.night += pax as f64;
+                    } else if m >= 20 * 60 {
+                        ld.evening += pax as f64;
+                    }
+                    if crowded {
+                        ld.full += pax as f64;
+                    }
+                    if watched.iter().any(|w| w.eq_ignore_ascii_case(&cl.name)) {
+                        seen.push(super::inspection::Seen { line: cl.name.clone(), number: cl.number.clone(), dep: trip.dep, arr: trip.arr, from: trip.from.clone(), to: trip.to.clone(), pax, share: met, crowded });
+                    }
+                }
                 let comp = super::ownline::trip_payment(trip.km, per_km[li]);
                 super::incidents::trip(&mut befalls, e, &skilled, &v.number, v.kind.size, pax, c.price_index, knobs.accidents, &mut tally);
                 sums[li].take.add(&take);
@@ -1382,6 +1408,10 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
 
     // the staff besides the drivers, the research, the stores, the contracts and the inbox
     // (before the day's figures: what they book is the day's)
+    // (the ticket inspectors' checks of the day, their fines: `inspection`)
+    // (a line checked is kept even when the modelled trips carried nobody: its deterrence)
+    line_days.retain(|l| l.passengers > 0 || watched.iter().any(|w| w.eq_ignore_ascii_case(&l.line)));
+    super::inspection::close(c, &date, line_days, &seen);
     super::staff::roles_day(c, &date, &mut report);
     super::research::day(c, &date, &mut report);
     super::parts::day(c, &date, &mut report);
