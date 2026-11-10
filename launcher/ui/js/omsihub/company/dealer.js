@@ -8,7 +8,7 @@
 import { S } from '../../store.js';
 import { start } from '../../data.js';
 import { html, useEffect, useRef, useState, tr, setCo, setUi, ui, act, useView, useSize, textW, Icon, Btn, Seg, Chips, Select, Dialog, Meter, Slider, Crumbs, T } from './kit.js';
-import { layout, BusTile, PriceRow, Photo, AgeSet } from './fleet.js';
+import { layout, BusTile, PriceRow, Photo, AgeSet, Look3DButton } from './fleet.js';
 import { Bar } from './overview.js';
 import { thousands } from '../money.js';
 
@@ -152,6 +152,7 @@ function Side({ v, sheet, w = 290 }) {
   const k = Math.max(0, v.livery.options.findIndex(([p]) => p === v.livery.value));
   return html`<div class="co-busside" style=${`width:${w}px`}>
     <${Photo} file=${v.file} paint=${v.livery.value} name=${v.name} style=${`width:${w}px;height:${w * 0.62}px`} />
+    <${Look3DButton} file=${v.file} paint=${v.livery.value} name=${v.name} livery=${v.livery} />
     <div class="kind">${v.bus_kind}</div>
     <label class="co-label" style="margin-top:10px">${v.livery.label}</label>
     <${Select} value=${k} options=${v.livery.options.map(([, l]) => l)} onChange=${(i) => sheet('set', { livery: v.livery.options[i][0] })} style="margin-top:4px" />

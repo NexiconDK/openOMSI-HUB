@@ -1177,6 +1177,18 @@ new version of the brand (`Group::brand`); every depot's process looks at its he
 <map>", the group's short name, colours and logo, the group's liveries beside its own - its buses
 painted in them in its workshop. The page says which depots have not taken it yet.
 
+### The company's liveries, designed from afar
+
+(10 November 2026) On the server nobody sits at the boss's launcher, so the owner and the
+co-owners design the company's liveries from their own (`together::relay::OWNERS_ON_SERVER`: the
+fleet's "Design a livery", Casual's company page). The server checks the cash and hands the
+livery studio over; the studio opens on the player's launcher (`kit.js` `handOver`), asks the
+server what saving costs (`livery_cost`, the amounts in the company's money) and, once the
+textures are in the player's content folder, books the design there and sends the bus to the
+workshop to be painted (`livery_saved`, `lak/place.rs`). Other roles are still refused. The
+textures are only in the content folder of the player who painted them: others see the bus in
+the livery once they have its files.
+
 ### Step 5: the roles
 
 The page's Roles, its owner's to give (`server_hq::set_member`, `Group::members`): the group's

@@ -1368,10 +1368,16 @@ impl Company {
         self.loans.iter().map(|l| l.remaining).sum()
     }
 
-    /// The next fleet number: from 101 on, never one given before.
+    /// The next fleet number: from 101 on, never one given before - nor one a bus of the fleet
+    /// carries now (the company may give its buses numbers of its own: `market::set_number`).
     pub fn next_fleet_number(&mut self) -> String {
-        self.counters.fleet_number = self.counters.fleet_number.max(100) + 1;
-        self.counters.fleet_number.to_string()
+        loop {
+            self.counters.fleet_number = self.counters.fleet_number.max(100) + 1;
+            let n = self.counters.fleet_number.to_string();
+            if !self.fleet.iter().any(|v| v.number.trim().eq_ignore_ascii_case(&n)) {
+                return n;
+            }
+        }
     }
 
     /// A plate in the company's district: its short name, a letter and the fleet number

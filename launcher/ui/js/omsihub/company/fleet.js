@@ -7,6 +7,8 @@
 import { html, useEffect, useState, tr, setCo, setUi, ui, act, useView, useSize, textW, goTab, Icon, Btn, Seg, Section, Meter, Dialog, Select } from './kit.js';
 import { DealerPage } from './dealer.js';
 import { photo, wantPhoto } from '../photos.js';
+// (NexiconDK, 10 November 2026: the bus in 3D over the page, the dealer's and the fleet's)
+import { Bus3D } from '../bus3d/viewer.js';
 
 export function FleetPage() {
   const st = ui('fleet', { tab: 0 });
@@ -144,11 +146,50 @@ function BusSide({ file, name, kind, livery, onLivery, design, designTip, onDesi
   const k = Math.max(0, livery.options.findIndex(([p]) => p === livery.value));
   return html`<div class="co-busside">
     <${Photo} file=${file} paint=${livery.value} name=${name} />
+    <${Look3DButton} file=${file} paint=${livery.value} name=${name} livery=${livery} />
     <div class="kind">${kind}</div>
     <label class="co-label" style="margin-top:10px">${livery.label}</label>
     <${Select} value=${k} options=${livery.options.map(([, l]) => l)} onChange=${(i) => onLivery(livery.options[i][0])} style="margin-top:4px" />
     ${design ? html`<${Btn} kind="ghost" icon="livery_fill" label=${design} title=${designTip} style="width:100%;margin-top:10px" onClick=${onDesign} />` : html`<p class="co-note" style="margin-top:12px">${note}</p>`}
   </div>`;
+}
+
+/** (NexiconDK, 10 November 2026) The bus `file` in 3D over the page, as on the bus step:
+ * outside (turning slowly by itself), a passenger's and the driver's view, turned with the mouse
+ * (`bus3d/viewer.js`, drawn from the bus installed on this computer). It wears the livery chosen
+ * on the sheet (`paint`); `livery` (the sheet's choice, `{ label, options: [[paint, label]] }`)
+ * lets another of the bus's repaints be looked at here - only looked at: the sheet's choice stays
+ * as it was. Escape, the button or a click beside it closes it. */
+export function Look3D({ file, paint, name, livery, close }) {
+  const [look, setLook] = useState(paint || '');
+  useEffect(() => {
+    const key = (e) => {
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      close();
+    };
+    window.addEventListener('keydown', key, true);
+    return () => window.removeEventListener('keydown', key, true);
+  }, [close]);
+  const options = livery?.options || [];
+  const k = options.findIndex(([p]) => p === look);
+  return html`<div class="co-look3d" onClick=${(e) => e.target === e.currentTarget && close()}>
+    <div class="box">
+      <div class="head"><${Icon} name="directions_bus" size=${20} /><b class="cut">${name}</b><span class="grow"></span>
+        ${options.length > 1 && html`<span class="co-caps">${livery.label}</span>
+          <${Select} value=${Math.max(0, k)} options=${options.map(([, l]) => l)} onChange=${(i) => setLook(options[i][0])} style="width:260px" />`}
+        <${Btn} icon="close" label=${tr('Close')} onClick=${close} /></div>
+      <div class="stagebox"><${Bus3D} bus=${file} paint=${look} turntable=${true} class="stage" /></div>
+    </div>
+  </div>`;
+}
+
+/** The button under a bus's photo that opens it in 3D in the livery chosen (`Look3D`). */
+export function Look3DButton({ file, paint, name, livery }) {
+  const [on, setOn] = useState(false);
+  if (!file) return null;
+  return html`<${Btn} kind="ghost" icon="visibility" label=${tr('View in 3D')} style="width:100%;margin-top:10px" onClick=${() => setOn(true)} />
+    ${on && html`<${Look3D} file=${file} paint=${paint} name=${name} livery=${livery} close=${() => setOn(false)} />`}`;
 }
 
 /** A row of a price table (`fleet::price_row`). */
@@ -176,6 +217,19 @@ export function AgeSet({ a, onSet }) {
   </div>`;
 }
 
+/** (NexiconDK, 10 November 2026) The bus's fleet number, the company's own choice (`bus_number`). */
+function NumberSet({ n, onSet }) {
+  const [value, setValue] = useState(n.value);
+  useEffect(() => setValue(n.value), [n.value]);
+  const go = () => value.trim() && value.trim() !== n.value && onSet(value.trim());
+  return html`<div class="co-numberset" title=${n.tip} style="display:flex;align-items:center;gap:10px;margin-top:10px;min-height:36px">
+    <span style="min-width:120px">${n.label}</span>
+    <input class="co-field" style="width:120px;height:34px" maxlength=${n.max} value=${value}
+      onInput=${(e) => setValue(e.currentTarget.value)} onKeyDown=${(e) => e.key === 'Enter' && go()} />
+    <${Btn} label=${n.apply} style="height:34px" disabled=${!value.trim() || value.trim() === n.value} onClick=${go} />
+  </div>`;
+}
+
 /** A bus of the fleet (`Dialog::Vehicle`). */
 export function VehicleDialog({ d }) {
   const v = useView('vehicle', { id: d.id });
@@ -195,6 +249,7 @@ export function VehicleDialog({ d }) {
     <div class="co-busdialog">
       <${BusSide} file=${v.file} name=${v.name} kind=${v.bus_kind} livery=${v.livery} onLivery=${(p) => act('bus_livery', { id: d.id, livery: p })} design=${v.design} designTip=${v.design_tip} onDesign=${() => act('design_livery', { id: d.id })} />
       <div class="right">${v.rows.map((r) => html`<${PriceRow} r=${r} />`)}
+        ${v.number && html`<${NumberSet} n=${v.number} onSet=${(n) => act('bus_number', { id: d.id, number: n })} />`}
         ${v.age && html`<${AgeSet} a=${v.age} onSet=${(y) => act('bus_age', { id: d.id, year: y })} />`}
         <div class=${'co-para t-' + v.tone} style="font-weight:700;margin-top:10px;line-height:26px">${v.status}</div>
         ${v.crew && html`<${BusCrew} c=${v.crew} />`}</div>

@@ -28,6 +28,11 @@ pub const SERVER_CLOCK: &str = "On the Bus Company Online server the server's cl
 /// Bus Company Online's server - there the server's process is the boss, and nobody plays on
 /// it: the company's owner (the player who founded it) does it from his launcher.
 pub const OWNER_ON_SERVER: [&str; 10] = ["country", "online_share", "online_left", "online_trips", "depot_found", "depot_money", "bus_move", "staff_lend", "delete_company", "approval_answer"];
+/// (NexiconDK, 10 November 2026) What the boss alone does on his own launcher that the owner AND
+/// the co-owners do from afar on Bus Company Online's server: the company's liveries designed in
+/// the livery studio of their own launcher - its price asked, its design booked (and its bus
+/// painted) when it is saved there (`lak/place.rs`).
+pub const OWNERS_ON_SERVER: [&str; 3] = ["design_livery", "livery_cost", "livery_saved"];
 /// What the server's clock decides on Bus Company Online's server (the company's real time).
 pub const SERVER_CLOCK_ACTS: [&str; 1] = ["realtime"];
 
@@ -168,6 +173,8 @@ fn act_need(act: &str, what: &str) -> Need {
         "rest_local" | "toil_local" => SETTINGS,
         // the fleet
         "bus_livery" | "bus_service" | "new_take" | "bus_age" | "advert_end" => SPEND,
+        // (NexiconDK, 10 November 2026: a bus's fleet number - who buys or plans the buses)
+        "bus_number" => Any(&[Perm::Spend, Perm::Plans]),
         // the dealer
         "buying_mode" | "open_model" | "open_offer" | "open_contract" | "open_loan" | "open_repay" | "open_loan_contract" | "open_advert" => SPEND,
         a if a.starts_with("sheet_") => SPEND,
@@ -344,9 +351,10 @@ pub fn need(cmd: &str, args: &Value) -> Need {
 
 /// (NexiconDK) What a relayed command needs on a company of Bus Company Online's server (`need`
 /// its need elsewhere; `owner`: the player founded it): the owner does what the boss alone does
-/// elsewhere where it makes sense from afar (`OWNER_ON_SERVER`), and the server's clock is
+/// elsewhere where it makes sense from afar (`OWNER_ON_SERVER`), the owner and the co-owners
+/// (`co_owner`) design the company's liveries (`OWNERS_ON_SERVER`), and the server's clock is
 /// nobody's to change (`SERVER_CLOCK_ACTS`).
-pub fn on_server(need: Need, cmd: &str, args: &Value, owner: bool) -> Need {
+pub fn on_server(need: Need, cmd: &str, args: &Value, owner: bool, co_owner: bool) -> Need {
     let act = args.get("act").and_then(Value::as_str).unwrap_or("");
     // (the auction's clock stepped: +15 min, to its close, until it opens)
     if cmd == "co_more_act" && act == "tender_step" {
@@ -359,6 +367,9 @@ pub fn on_server(need: Need, cmd: &str, args: &Value, owner: bool) -> Need {
         return Need::Clock;
     }
     if owner && need == Never && OWNER_ON_SERVER.contains(&act) {
+        return Member;
+    }
+    if (owner || co_owner) && need == Never && OWNERS_ON_SERVER.contains(&act) {
         return Member;
     }
     need
@@ -449,21 +460,40 @@ mod tests {
         let country = json!({ "act": "country", "key": "dk" });
         let n = need("co_act", &country);
         assert_eq!(n, Never, "the boss's own elsewhere");
-        assert!(on_server(n, "co_act", &country, true).met(&[]));
-        assert!(!on_server(n, "co_act", &country, false).met(&Perm::ALL));
+        assert!(on_server(n, "co_act", &country, true, false).met(&[]));
+        assert!(!on_server(n, "co_act", &country, false, true).met(&Perm::ALL));
         let rt = json!({ "act": "realtime", "on": false });
         assert!(need("co_act", &rt).met(&Perm::ALL), "a co-owner switches the real time elsewhere");
-        let n = on_server(need("co_act", &rt), "co_act", &rt, true);
+        let n = on_server(need("co_act", &rt), "co_act", &rt, true, false);
         assert!(!n.met(&Perm::ALL));
         assert_eq!(n.refusal()["error"], SERVER_CLOCK);
         // (what the owner may not do elsewhere either: still not)
         let step = json!({ "act": "tender_step", "id": 1, "to": "open" });
         assert!(need("co_more_act", &step).met(&[Perm::Spend]), "elsewhere who may spend steps the auction");
-        assert_eq!(on_server(need("co_more_act", &step), "co_more_act", &step, true), Need::Clock);
+        assert_eq!(on_server(need("co_more_act", &step), "co_more_act", &step, true, false), Need::Clock);
         let date = json!({ "act": "move_date" });
-        assert!(!on_server(need("co_act", &date), "co_act", &date, true).met(&Perm::ALL));
+        assert!(!on_server(need("co_act", &date), "co_act", &date, true, true).met(&Perm::ALL));
         let view = json!({ "view": "money" });
-        assert_eq!(on_server(need("co_view", &view), "co_view", &view, true), need("co_view", &view));
+        assert_eq!(on_server(need("co_view", &view), "co_view", &view, true, false), need("co_view", &view));
+    }
+
+    /// (NexiconDK, 10 November 2026) On Bus Company Online's server the owner and the co-owners
+    /// design the company's liveries from their own launcher ("Kun chefen kan gøre dette på sin
+    /// egen launcher" was what a co-owner was told); another player does not, and elsewhere they
+    /// stay the boss's own.
+    #[test]
+    fn the_owner_and_the_co_owners_design_liveries_on_the_server() {
+        for act in OWNERS_ON_SERVER {
+            let args = json!({ "act": act, "id": 3 });
+            let n = need("co_act", &args);
+            assert_eq!(n, Never, "{act}: the boss's own elsewhere");
+            assert!(on_server(n, "co_act", &args, true, false).met(&[]), "{act}: the owner");
+            assert!(on_server(n, "co_act", &args, false, true).met(&[]), "{act}: a co-owner");
+            assert!(!on_server(n, "co_act", &args, false, false).met(&Perm::ALL), "{act}: a manager is not a co-owner");
+        }
+        // (the rest of the owner's own stays his alone)
+        let country = json!({ "act": "country", "key": "dk" });
+        assert!(!on_server(need("co_act", &country), "co_act", &country, false, true).met(&Perm::ALL));
     }
 
     /// Every action of the company's pages is in the table (a new one is refused until it is
@@ -483,7 +513,7 @@ mod tests {
             ("sandbox", include_str!("../company/sandbox.rs")),
         ];
         // (the boss's own: never from afar)
-        let own = ["logo", "move_date", "design_livery", "delete_company"];
+        let own = ["logo", "move_date", "design_livery", "livery_cost", "livery_saved", "delete_company"];
         let mut missing = Vec::new();
         for (page, src) in pages {
             for a in acts_in(src) {

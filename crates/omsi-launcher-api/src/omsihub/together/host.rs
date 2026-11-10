@@ -347,7 +347,8 @@ pub(super) fn page_for(s: &mut Session, viewer: &mut Viewer, perms: &[Perm], cmd
     let mut need = relay::need(cmd, args);
     // (NexiconDK: a company on Bus Company Online's server - its owner is its boss there)
     if let Some(c) = s.company.as_ref().filter(|c| c.online.on_server) {
-        need = relay::on_server(need, cmd, args, th::server_owner(c) == Some(viewer.guest));
+        let co_owner = c.together.guest(viewer.guest).is_some_and(|g| g.role == Role::CoOwner);
+        need = relay::on_server(need, cmd, args, th::server_owner(c) == Some(viewer.guest), co_owner);
     }
     if !need.met(perms) {
         return need.refusal();

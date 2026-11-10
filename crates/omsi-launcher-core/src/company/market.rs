@@ -289,6 +289,28 @@ pub fn set_age(c: &mut Company, id: u32, date: Option<&str>) -> Result<(), &'sta
     Ok(())
 }
 
+/// The most characters a fleet number has.
+pub const NUMBER_MAX: usize = 8;
+
+/// (NexiconDK, 10 November 2026) Give bus `id` a fleet number of the company's own choosing:
+/// letters, digits and '-', at most `NUMBER_MAX`, no other bus of the fleet's (in any case). The
+/// plate stays as it was registered; what is planned and driven goes by the bus, not its number.
+/// Returns the number it had.
+pub fn set_number(c: &mut Company, id: u32, number: &str) -> Result<String, &'static str> {
+    let n = number.trim();
+    if n.is_empty() {
+        return Err("Type a fleet number.");
+    }
+    if n.chars().count() > NUMBER_MAX || !n.chars().all(|ch| ch.is_alphanumeric() || ch == '-') {
+        return Err("A fleet number has at most 8 letters, digits or '-'.");
+    }
+    if c.fleet.iter().any(|v| v.id != id && v.number.trim().eq_ignore_ascii_case(n)) {
+        return Err("Another bus of the company already has this fleet number.");
+    }
+    let Some(v) = c.fleet.iter_mut().find(|v| v.id == id) else { return Err("This bus is not in the fleet.") };
+    Ok(std::mem::replace(&mut v.number, n.to_string()))
+}
+
 /// How a bus's value is worked out (`value_of`): its new price, the factors of its age,
 /// kilometres and condition, the market's value from them, and the most it is worth for what
 /// the company paid (None: not the company's).
@@ -683,6 +705,29 @@ pub(crate) mod tests {
         c.research.done.push(super::super::research::keys::ARTICULATED.into());
         assert!(buy_new(&mut c, &bus("Citaro G", BusSize::Articulated, Drive::Diesel), Payment::Cash, "").is_ok());
         assert_eq!(size_allowed(&c, BusSize::Double), Err("Double-deckers open at a higher company level."));
+    }
+
+    /// (NexiconDK, 10 November 2026) A bus takes a fleet number of the company's choosing: never
+    /// one another bus has, nor an empty or too long one; the plate stays, and a new bus never
+    /// gets a number the fleet carries already.
+    #[test]
+    fn the_company_numbers_its_own_buses() {
+        let mut c = company(GameMode::Normal);
+        let solo = bus("Citaro", BusSize::Solo, Drive::Diesel);
+        let a = buy_new(&mut c, &solo, Payment::Cash, "").unwrap();
+        let b = buy_new(&mut c, &solo, Payment::Cash, "").unwrap();
+        assert_eq!(set_number(&mut c, a, " 7301 ").as_deref(), Ok("101"));
+        let v = c.vehicle(a).unwrap();
+        assert_eq!((v.number.as_str(), v.plate.as_str()), ("7301", "SB-K 101"));
+        assert_eq!(set_number(&mut c, b, "7301"), Err("Another bus of the company already has this fleet number."));
+        assert!(set_number(&mut c, b, "  ").is_err() && set_number(&mut c, b, "123456789").is_err() && set_number(&mut c, b, "12 3").is_err());
+        assert!(set_number(&mut c, 999, "5").is_err());
+        assert_eq!(set_number(&mut c, b, "103").as_deref(), Ok("102"));
+        // (the next bus skips the number 103 a bus carries now)
+        let n = buy_new(&mut c, &solo, Payment::Cash, "").unwrap();
+        assert_eq!(c.vehicle(n).unwrap().number, "104");
+        // (its own number again, in another case: fine)
+        assert!(set_number(&mut c, a, "7301").is_ok());
     }
 
     #[test]

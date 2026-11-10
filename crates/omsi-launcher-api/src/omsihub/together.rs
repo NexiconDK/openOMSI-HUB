@@ -28,6 +28,7 @@ pub use host::{closing_company, give_to_guest, online_guests, quit, rail_badge, 
 pub(crate) use host::{start_with, stop_now, take_world_trips};
 // (NexiconDK: a company of a Bus Company Online server joined - `bco.rs`)
 pub(crate) use join::join_server_company;
+pub(crate) use join::relay_act;
 #[cfg(test)]
 pub(crate) use join::SERVER_CODE;
 

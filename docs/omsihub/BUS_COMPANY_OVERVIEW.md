@@ -72,6 +72,7 @@ There is one choice per company, which can be changed at any time in the company
    - Buses can be bought, leased or rented.
    - Buses are classified by category (midibus, solo, articulated, double-decker, coach) from their files.
    - Each bus has a condition, wear, km, a value, liveries and adverts.
+   - Each bus has a fleet number, 101 and up by default. The company can give a bus its own number (up to 8 letters, digits or '-', unique in the fleet; `market::set_number`) in the bus's window. The plate stays as it was registered.
 4. **Staff.** There are roles: drivers, mechanics, researchers, cleaners, service staff and ticket inspectors. Each role has its own labour market, with new applicants every week.
    - Hiring and dismissing with notice.
    - Wages by experience.

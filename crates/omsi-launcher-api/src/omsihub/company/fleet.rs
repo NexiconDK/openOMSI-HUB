@@ -185,6 +185,7 @@ pub fn vehicle_view(s: &mut Session, args: &Value) -> Value {
         "design_tip": tr("Paint the company's own livery for this bus in the livery studio: its design is paid when it is saved, a bus's painting when the bus is painted."),
         "rows": rows, "status": status, "tone": tone,
         "crew": crew_json(&c, id),
+        "number": { "label": tr("Fleet number"), "value": v.number, "apply": tr("Change"), "max": co::market::NUMBER_MAX, "tip": tr("The bus's number in the company: letters, digits or '-', at most 8, not another bus's. The plate stays as it is.") },
         "age": super::age::age_switch(v.age_from == co::registrations::AgeFrom::Manual, &v.built),
         "sell": tr(if matches!(v.tenure, Tenure::Owned { .. }) { "Sell" } else { "Give back" }),
         "service": tr("Service tomorrow"), "train": tr("Train drivers"), "close": tr("Close"),
@@ -325,6 +326,34 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
                 Ok(json!({ "hand_over": format!("livery={file}|{paint}|{vehicle}") }))
             }
         }
+        // (NexiconDK, 10 November 2026: the livery studio of a player's own launcher - the owner's
+        // or a co-owner's of a company on Bus Company Online's server, `together::relay` - asks
+        // what saving costs the company, and books it when saved: `lak/place.rs`. The amounts
+        // come in the company's money, written here.)
+        "livery_cost" => {
+            let name = str_of("name");
+            let paint = c.vehicle(id).map(|v| co::livery::paint_cost(&c, v)).unwrap_or(0);
+            let cost = co::livery::save_cost(&c, &name) + paint;
+            Ok(json!({ "company": c.name, "id": c.id, "cost": cost, "cash": c.cash, "enough": c.cash >= cost, "cost_text": eur(cost), "cash_text": eur(c.cash) }))
+        }
+        "livery_saved" => {
+            let (name, bus) = (str_of("name"), str_of("bus"));
+            if str_of("company") != c.id || name.trim().is_empty() || bus.trim().is_empty() {
+                return Some(Ok(json!({})));
+            }
+            match apply(s, |c| co::livery::save_design(c, &name, &bus)) {
+                Ok(cost) => {
+                    let mut out = json!({ "booked": true, "cost": cost, "cost_text": eur(cost) });
+                    if let Some(v) = c.vehicle(id) {
+                        if apply(s, |c| co::livery::paint(c, id, &name)).is_ok() {
+                            out["painted"] = json!(v.number);
+                        }
+                    }
+                    Ok(out)
+                }
+                Err(p) => popup(p),
+            }
+        }
         "new_take" => {
             let file = str_of("file");
             let paint = str_of("livery");
@@ -340,6 +369,19 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
                 Ok(id) => {
                     joined(s, id);
                     Ok(json!({ "joined": id }))
+                }
+                Err(p) => popup(p),
+            }
+        }
+        // (NexiconDK, 10 November 2026: the bus's fleet number, the company's own choice)
+        "bus_number" => {
+            let number = str_of("number");
+            match apply(s, |c| market::set_number(c, id, &number)) {
+                Ok(old) => {
+                    if !old.eq_ignore_ascii_case(number.trim()) {
+                        s.say(trf("Bus %{old} is now number %{n}.", &[("old", &old), ("n", number.trim())]), false);
+                    }
+                    Ok(json!({}))
                 }
                 Err(p) => popup(p),
             }

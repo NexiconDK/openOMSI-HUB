@@ -1496,3 +1496,10 @@ button.co-top-crumb:hover { background: var(--hub-hover); color: var(--hub-text)
 .co-crew-when { flex: none; font-size: var(--co-note); opacity: 0.6; }
 .co-crew-state { flex: none; font-size: var(--co-note); font-weight: 700; }
 .co-crew-none { font-size: var(--co-note); opacity: 0.55; padding: 4px 0; }
+
+/* (NexiconDK, 10 November 2026) The bus in 3D over the page - the dealer's sheet, a bus of the fleet (`fleet.js` Look3D) */
+.co-look3d { position: fixed; inset: 0; z-index: 4000; background: rgba(6, 9, 18, 0.62); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.co-look3d .box { width: min(1280px, 100%); height: min(820px, 100%); display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; background: var(--hub-panel, #1b2131); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45); }
+.co-look3d .head { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 16px; flex: none; color: var(--hub-text); font-size: var(--co-body, 15px); }
+.co-look3d .stagebox { position: relative; flex: 1; min-height: 0; background: linear-gradient(#aebbe0, #8a94b4 52%, #6b6f7c); }
+.co-look3d .head .co-caps { margin-right: 2px; }

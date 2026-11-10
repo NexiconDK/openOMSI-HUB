@@ -169,6 +169,10 @@ export async function handOver(page, opts = {}) {
       }
     }
     if (/^\d+$/.test(String(page))) setCo({ tab: Number(page), dialog: null, popup: null });
+    // (NexiconDK, 10 November 2026: the livery studio is this launcher's own - the owner and the
+    // co-owners of a company of Bus Company Online design its liveries here, its price asked of
+    // the server and its design booked there when saved: `lak/place.rs`)
+    else if (String(page).startsWith('livery=') && (await inEditor(String(page), opts))) return;
     else toast(tr('Only the boss can do this, on his own launcher.'), 'error');
     return;
   }
@@ -228,16 +232,21 @@ async function inEditor(page, opts) {
   const fn = what === 'livery' ? editors.openLivery : editors.openLineEditor;
   const company = S.co.shell?.id;
   if (!company) return false;
-  try {
-    await cmd('co_hand_over', { page });
-  } catch {
-    return false;
+  // (a company joined from afar - only the livery studio comes here: `handOver` - is not this
+  // launcher's to stop or read again; the server booked the livery, its pages are asked again)
+  const remote = !!S.co?.remote;
+  if (!remote) {
+    try {
+      await cmd('co_hand_over', { page });
+    } catch {
+      return false;
+    }
   }
   const hooks = {
     company,
     back: 'company',
     onCompanyChanged: async (id) => {
-      await cmd('co_reread', { id: id || company }).catch(() => null);
+      if (!remote) await cmd('co_reread', { id: id || company }).catch(() => null);
       refresh();
     },
   };

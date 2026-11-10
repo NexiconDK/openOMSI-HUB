@@ -38,13 +38,41 @@ fn in_game() -> bool {
     omsi_launcher_lib::list_instances().iter().any(|i| i.running)
 }
 
-/// The company `id`'s name, what saving `name` costs it (its design, and painting `vehicle`)
-/// and its cash; None when it is not the company open.
-fn company_cost(id: &str, vehicle: Option<u32>, name: &str) -> Option<(String, i64, i64)> {
-    company::with(|s| {
+/// What saving costs a bus company: its name, the cost (its design, and painting the bus) and its
+/// cash, the two written in its money.
+struct CompanyCost {
+    name: String,
+    cost: i64,
+    cash: i64,
+    cost_text: String,
+    cash_text: String,
+}
+
+/// What saving `name` costs the company `id` (and painting its bus `vehicle`): the company open
+/// here, else (NexiconDK, 10 November 2026) the company of Bus Company Online joined from afar,
+/// asked of its server - the owner and the co-owners design its liveries in the studio of their
+/// own launcher (`together::relay::OWNERS_ON_SERVER`). None: neither.
+fn company_cost(id: &str, vehicle: Option<u32>, name: &str) -> Option<CompanyCost> {
+    let here = company::with(|s| {
         let c = s.company.as_ref().filter(|c| c.id == id)?;
         let paint = vehicle.and_then(|v| c.vehicle(v)).map(|v| co_livery::paint_cost(c, v)).unwrap_or(0);
-        Some((c.name.clone(), (co_livery::save_cost(c, name) + paint) as i64, c.cash as i64))
+        let cost = co_livery::save_cost(c, name) + paint;
+        Some(CompanyCost { name: c.name.clone(), cost: cost as i64, cash: c.cash as i64, cost_text: eur(cost), cash_text: eur(c.cash) })
+    });
+    if here.is_some() {
+        return here;
+    }
+    let v = crate::omsihub::together::relay_act(json!({ "act": "livery_cost", "company": id, "id": vehicle, "name": name }))?.ok()?;
+    if v.get("id").and_then(Value::as_str) != Some(id) {
+        return None;
+    }
+    let text = |k: &str| v.get(k).and_then(Value::as_str).unwrap_or("").to_string();
+    Some(CompanyCost {
+        name: text("company"),
+        cost: v.get("cost").and_then(Value::as_i64)?,
+        cash: v.get("cash").and_then(Value::as_i64)?,
+        cost_text: text("cost_text"),
+        cash_text: text("cash_text"),
     })
 }
 
@@ -52,11 +80,11 @@ fn company_cost(id: &str, vehicle: Option<u32>, name: &str) -> Option<(String, i
 pub(super) fn cost(args: &Value) -> Answer {
     let id = arg_str(args, "company");
     let vehicle = args.get("vehicle").and_then(Value::as_u64).map(|v| v as u32);
-    let Some((name, cost, cash)) = company_cost(&id, vehicle, &arg_str(args, "name")) else { return Ok(Value::Null) };
+    let Some(k) = company_cost(&id, vehicle, &arg_str(args, "name")) else { return Ok(Value::Null) };
     Ok(json!({
-        "company": name, "cost": cost, "cash": cash, "enough": cash >= cost,
-        "label": tr("Save · %{amount}").replace("%{amount}", &eur(cost as _)),
-        "tip": tr("For %{company}: the design and the painting cost %{amount}; it has %{cash}.").replace("%{company}", &name).replace("%{amount}", &eur(cost as _)).replace("%{cash}", &eur(cash as _)),
+        "company": k.name, "cost": k.cost, "cash": k.cash, "enough": k.cash >= k.cost,
+        "label": tr("Save · %{amount}").replace("%{amount}", &k.cost_text),
+        "tip": tr("For %{company}: the design and the painting cost %{amount}; it has %{cash}.").replace("%{company}", &k.name).replace("%{amount}", &k.cost_text).replace("%{cash}", &k.cash_text),
     }))
 }
 
@@ -76,8 +104,8 @@ pub(super) fn place(args: &Value) -> Answer {
         return Err(tr("Go back to your own bus to save the livery."));
     }
     if let Some(id) = company_id.as_deref() {
-        if let Some((company, cost, cash)) = company_cost(id, vehicle, &name).filter(|x| x.2 < x.1) {
-            return Err(tr("%{company} has %{cash}: not enough for the livery (%{amount}). A loan on the company's Finances page helps.").replace("%{company}", &company).replace("%{cash}", &eur(cash as _)).replace("%{amount}", &eur(cost as _)));
+        if let Some(k) = company_cost(id, vehicle, &name).filter(|k| k.cash < k.cost) {
+            return Err(tr("%{company} has %{cash}: not enough for the livery (%{amount}). A loan on the company's Finances page helps.").replace("%{company}", &k.name).replace("%{cash}", &k.cash_text).replace("%{amount}", &k.cost_text));
         }
     }
     let own = project.placed.as_ref().map(|x| x.name.clone());
@@ -252,6 +280,20 @@ fn saved(s: Saving, files: Vec<String>) -> Value {
                     let number = s.company.as_ref().and_then(|c| c.vehicle(v)).map(|x| x.number.clone()).unwrap_or_default();
                     t = format!("{t} {}", tr("Bus %{n} is painted in it in the workshop.").replace("%{n}", &number));
                 }
+            }
+            Some(t)
+        });
+        // (NexiconDK, 10 November 2026: a company of Bus Company Online joined from afar - its
+        // owner's or a co-owner's livery booked on its server, its bus painted there)
+        let booked = booked.or_else(|| {
+            let v = crate::omsihub::together::relay_act(json!({ "act": "livery_saved", "company": id, "id": vehicle, "name": name, "bus": bus }))?.ok()?;
+            if v.get("booked").and_then(Value::as_bool) != Some(true) {
+                return None;
+            }
+            let amount = v.get("cost_text").and_then(Value::as_str).unwrap_or("");
+            let mut t = tr("'%{name}' is the company's livery: %{amount} for its design.").replace("%{name}", &name).replace("%{amount}", amount);
+            if let Some(n) = v.get("painted").and_then(Value::as_str) {
+                t = format!("{t} {}", tr("Bus %{n} is painted in it in the workshop.").replace("%{n}", n));
             }
             Some(t)
         });

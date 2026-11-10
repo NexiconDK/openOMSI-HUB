@@ -704,6 +704,17 @@ fn relayed(args: &Value) -> Answer {
     Ok(answer)
 }
 
+/// (NexiconDK, 10 November 2026) An action of the company joined from afar asked for this
+/// launcher's own parts - the livery studio's price and save for a company of Bus Company Online
+/// (`lak/place.rs`): its answer, or why not; None when no company is joined.
+pub(crate) fn relay_act(args: Value) -> Option<Answer> {
+    if joined().is_none() {
+        return None;
+    }
+    let lang = super::super::company::words::language();
+    Some(relayed(&json!({ "cmd": "co_act", "args": args, "lang": lang })))
+}
+
 /// A page's command sent to the boss's launcher now (its answer carries no day: the thread keeps
 /// that).
 fn send_page(page: Value) -> Result<Value, String> {
