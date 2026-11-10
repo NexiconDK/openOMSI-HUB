@@ -302,6 +302,14 @@ pub fn local_day(date: &str, year: bool) -> String {
     out
 }
 
+/// A weekday (0 Monday … 6 Sunday) short, as the page's language writes it (`local_day`'s):
+/// Danish "ma", German "Mo.", English "Mon".
+pub fn local_weekday(wd: usize) -> String {
+    // (2024-03-04 was a Monday)
+    let date = co::dates::add("2024-03-04", wd.min(6) as i64);
+    local_day(&date, false).split(' ').next().unwrap_or("").to_string()
+}
+
 /// A span of minutes as the pages write it, its two largest parts: "2 d 4 h", "31 d",
 /// "4 h 10 min", "3 h", "12 min".
 pub fn span_text(minutes: i64) -> String {

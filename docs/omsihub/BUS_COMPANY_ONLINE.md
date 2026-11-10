@@ -1189,6 +1189,13 @@ workshop to be painted (`livery_saved`, `lak/place.rs`). Other roles are still r
 textures are only in the content folder of the player who painted them: others see the bus in
 the livery once they have its files.
 
+### The plan of the ticket inspection
+
+(10 November 2026, ticket inspection round T) The Staff page's Ticket inspection tab - seen by who
+may see the Staff page - has the plan of the inspection duties and storaktions. Its actions
+(`insp_duty_save`, `insp_duty_remove`, `insp_date_add`, `insp_date_remove`) are relayed and need
+the staff's or the planning's permission (`together::relay`), on the server as elsewhere.
+
 ### Step 5: the roles
 
 The page's Roles, its owner's to give (`server_hq::set_member`, `Group::members`): the group's

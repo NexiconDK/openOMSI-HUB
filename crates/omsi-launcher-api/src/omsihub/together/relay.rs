@@ -180,6 +180,9 @@ fn act_need(act: &str, what: &str) -> Need {
         a if a.starts_with("sheet_") => SPEND,
         // the staff
         "hire" | "employment" | "raise" | "advertise" | "keep" | "grant_raise" | "refuse_raise" | "course_lock" | "book_course" | "train" | "set_hours" | "staff_rule" | "auto" | "follow" | "holiday_answer" | "holiday_limit" | "agency_book" | "agency_cancel" | "staff_minimum" => STAFF,
+        // (NexiconDK, ticket inspection round T: the plan of the ticket inspection - who manages
+        // the staff or plans)
+        "insp_duty_save" | "insp_duty_remove" | "insp_date_add" | "insp_date_remove" => Any(&[Perm::Staff, Perm::Plans]),
         // the lines, their fares
         "line_title" | "line_type" | "line_hof" | "line_colour" | "line_connections" | "add_line" | "remove_line" => LINES,
         "set_fare" | "set_cap" => Any(&[Perm::Lines, Perm::Spend]),
@@ -641,6 +644,22 @@ mod tests {
         // the planning's sheet of a line opens for who may look (its changes are the planners')
         assert!(ask("co_more_act", json!({ "act": "plan_timetable" }), &[Perm::Lines]));
         assert!(ask("co_more_view", json!({ "view": "planning" }), &[Perm::Service]));
+    }
+
+    /// (NexiconDK, ticket inspection round T) The plan of the ticket inspection is changed by who
+    /// manages the staff or plans - on Bus Company Online's server as elsewhere - never by a driver.
+    #[test]
+    fn the_inspection_plan_is_the_staffs_or_the_planners() {
+        for act in ["insp_duty_save", "insp_duty_remove", "insp_date_add", "insp_date_remove"] {
+            let args = json!({ "act": act });
+            let n = need("co_act", &args);
+            assert!(n.met(&[Perm::Staff]) && n.met(&[Perm::Plans]), "{act}");
+            assert!(!n.met(&[Perm::Drive]) && !n.met(&[Perm::Finances, Perm::Spend]), "{act}");
+            assert_eq!(on_server(n, "co_act", &args, false, false), n);
+            assert_eq!(n.refusal()["perm"], json!("staff"));
+        }
+        // (the Staff page, where the plan is, is seen by who manages the staff)
+        assert_eq!(tab_need(2), STAFF);
     }
 
     /// Every action of a driver's own side has its permission, a driver's: none beyond it.

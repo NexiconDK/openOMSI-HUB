@@ -702,12 +702,16 @@ fn schedule_part(c: &Company, ui: &Value) -> Value {
         Role::Service if !last.date.is_empty() => Some(json!([tr("Complaints answered yesterday"), format!("{} / {}", last.handled, last.complaints)])),
         Role::Inspector => {
             let lines: Vec<String> = staff::inspected(c, &c.date).iter().filter_map(|x| c.lines.iter().find(|l| l.name == x.0).map(|l| l.number.clone())).collect();
+            rows.push(json!([tr("Ticket inspection"), if co::inspection_plan::duties_on(c, &c.date).is_some() { tr("Inspection duties of the plan") } else { tr("Automatic (busiest lines first)") }]));
             Some(json!([tr("Lines checked today"), if lines.is_empty() { "–".into() } else { lines.join(", ") }]))
         }
         _ => None,
     };
     rows.extend(what);
-    let each: Vec<Value> = shifts.iter().map(|s| json!([c.employee(s.id).map(|e| e.name.clone()).unwrap_or_default(), shift_text(s), s.extra.is_some()])).collect();
+    // (round T: an inspector's inspection duty of the day beside their hours)
+    let planned = if role == Role::Inspector { co::inspection_plan::assigned(c, &c.date) } else { None };
+    let duty_of = |id: u32| planned.as_ref().map(|a| a.iter().find(|x| x.ids.contains(&id)).map_or_else(|| tr("Automatic (busiest lines first)"), |x| inspection::duty_short(c, &x.duty)));
+    let each: Vec<Value> = shifts.iter().map(|s| json!([c.employee(s.id).map(|e| e.name.clone()).unwrap_or_default(), shift_text(s), s.extra.is_some(), duty_of(s.id)])).collect();
     let easy = co::autopilot::on(c);
     json!({
         "kind": "schedule", "chips": chips, "pick": pick, "open": open,
@@ -758,6 +762,10 @@ pub fn view(s: &mut Session, ui: &Value) -> Value {
     let plan = s.plan.clone();
     // (the Agencies tab's day picked: its open duties, when its timetable is read)
     let aplan = if tab == 5 { agencies::plan_for(s, ui) } else { None };
+    // (round T: the stops a storaktion may stand at - the timetable of the company's day, as read)
+    let stops: Vec<co::inspection_plan::StopLines> = if tab == 7 { s.today.as_ref().filter(|t| t.map == c.map).map(|t| co::inspection_plan::stops_of(&c, &t.lines)).unwrap_or_default() } else { Vec::new() };
+    // (round T: the stops a boarding got on and off at, by the same timetable)
+    let names: inspection::TripStops = if tab == 7 { s.today.as_ref().filter(|t| t.map == c.map).map(|t| inspection::trip_stops(&c, &t.lines)).unwrap_or_default() } else { Default::default() };
     let body = match tab {
         1 => hire_part(&c, ui),
         2 => training_part(&c, ui),
@@ -765,7 +773,7 @@ pub fn view(s: &mut Session, ui: &Value) -> Value {
         4 => holidays::part(&c, ui),
         5 => agencies::part(&c, aplan.as_ref(), ui),
         6 => settings_part(&c),
-        7 => inspection::part(&c, ui),
+        7 => inspection::part(&c, ui, &stops, &names),
         _ => list_part(&c, plan.as_ref(), ui),
     };
     json!({ "tabs": tabs, "tab": tab, "info": trf("Wages %{amount} a month with the employer's share  ·  %{n} duties today", &[("amount", &eur(wages)), ("n", &duties.to_string())]), "body": body })
@@ -937,6 +945,8 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
         }
         "holiday_answer" | "holiday_limit" => return holidays::act(s, what, args),
         "agency_book" | "agency_cancel" => return agencies::act(s, what, args),
+        // (NexiconDK, ticket inspection round T: the plan of the ticket inspection)
+        "insp_duty_save" | "insp_duty_remove" | "insp_date_add" | "insp_date_remove" => inspection::act(s, what, args),
         "staff_minimum" => {
             let Some(role) = role_of(args.get("role").and_then(Value::as_str).unwrap_or("")) else { return Some(Ok(json!({}))) };
             let n = args.get("n").and_then(Value::as_u64).unwrap_or(0).min(99) as u32;

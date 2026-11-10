@@ -389,7 +389,7 @@ function Schedule({ s }) {
           ${s.rows.map(([a, b]) => html`<div class="co-payrow"><span class="cut">${a}</span><b>${b}</b></div>`)}
         </${Section}>
         ${s.each.length > 0 && html`<div class="co-caps" style="margin:16px 0 10px">${s.each_title}</div>
-          <div class="co-scroll" style="flex:1;min-height:0">${s.each.map(([name, hours, stays]) => html`<div class="co-eachrow"><b class="cut">${name}</b><span class=${stays ? 't-warn' : 't-soft'}>${hours}</span></div>`)}</div>`}
+          <div class="co-scroll" style="flex:1;min-height:0">${s.each.map(([name, hours, stays, duty]) => html`<div class="co-eachrow"><b class="cut">${name}</b>${duty && html`<span class="co-eachduty cut" title=${duty}>${duty}</span>`}<span class=${stays ? 't-warn' : 't-soft'}>${hours}</span></div>`)}</div>`}
       </div>
     </div>
   </div>`;

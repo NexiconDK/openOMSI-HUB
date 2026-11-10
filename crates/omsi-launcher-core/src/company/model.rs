@@ -1314,6 +1314,10 @@ pub struct Company {
     /// (`inspection`; a file of before: nothing seen).
     #[serde(default)]
     pub inspection: super::inspection::Book,
+    /// (round T) The boss's plan of the ticket inspection: inspection duties of the week and of
+    /// single dates, storaktions (`inspection_plan`; a file of before: nothing planned).
+    #[serde(default)]
+    pub inspection_plan: super::inspection_plan::Plan,
 }
 
 fn one() -> f64 {

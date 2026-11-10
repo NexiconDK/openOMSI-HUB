@@ -1113,7 +1113,7 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
                         ld.full += pax as f64;
                     }
                     if watched.iter().any(|w| w.eq_ignore_ascii_case(&cl.name)) {
-                        seen.push(super::inspection::Seen { line: cl.name.clone(), number: cl.number.clone(), dep: trip.dep, arr: trip.arr, from: trip.from.clone(), to: trip.to.clone(), pax, share: met, crowded });
+                        seen.push(super::inspection::Seen { line: cl.name.clone(), number: cl.number.clone(), dep: trip.dep, arr: trip.arr, from: trip.from.clone(), to: trip.to.clone(), pax, share: met, crowded, stops: trip.stops });
                     }
                 }
                 let comp = super::ownline::trip_payment(trip.km, per_km[li]);

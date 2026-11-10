@@ -589,6 +589,13 @@ pub fn shifts(c: &Company, date: &str, role: Role) -> (Vec<Shift>, i32) {
     if role == Role::Driver {
         return (Vec::new(), 0);
     }
+    // (NexiconDK, ticket inspection round T: on a day the boss planned, the inspectors work the
+    // hours of their inspection duties - who has none, the core hours: `inspection_plan`)
+    if role == Role::Inspector {
+        if let Some(a) = super::inspection_plan::assigned(c, date) {
+            return (super::inspection_plan::shifts(c, date, &a), 0);
+        }
+    }
     let h = c.staff_rules.hours_of(role);
     let len = h.length();
     let people: Vec<&Employee> = c.staff.iter().filter(|e| e.role == role && at_work(e, date)).collect();
@@ -636,6 +643,11 @@ pub const WORKSHOP_MAX: f64 = 0.30;
 /// The most a line kept honest brings in fares by day (`fare_gain`: the dodgers down to
 /// `dodgers::MIN`; their fines are `inspection`'s).
 pub const INSPECT_GAIN: f64 = (super::dodgers::BASE - super::dodgers::MIN) / (1.0 - super::dodgers::BASE);
+
+/// How good employee `id` is at their work (`skill`; 0.6 when they are not found).
+pub fn skill_of(c: &Company, id: u32) -> f64 {
+    c.employee(id).map(|e| skill(c, e)).unwrap_or(0.6)
+}
 
 /// How good someone is at their work: their experience, and the course of their work.
 fn skill(c: &Company, e: &Employee) -> f64 {
@@ -711,6 +723,10 @@ pub struct Patrol {
     /// The share of the day it checks its line (the hours between 05:00 and midnight against
     /// eight, by the team's skill; a lone inspector `LONE` of a pair).
     pub share: f64,
+    /// (round T) The inspection duty of the boss's plan it works (`inspection_plan`; 0: the
+    /// automatic patrols), and a storaktion's stop.
+    pub duty: u32,
+    pub stop: Option<String>,
 }
 
 /// The patrols of the ticket inspectors at work on `date` (NexiconDK, ticket inspection round S,
@@ -718,6 +734,10 @@ pub struct Patrol {
 /// team on a line of its own, the busiest lines first (by their kilometres); who stays on after the
 /// core hours checks the team's line alone.
 pub fn patrols(c: &Company, date: &str) -> Vec<Patrol> {
+    // (round T: a day the boss planned has the plan's patrols and storaktions)
+    if let Some(a) = super::inspection_plan::assigned(c, date) {
+        return super::inspection_plan::patrols(c, date, &a);
+    }
     let (sh, _) = shifts(c, date, Role::Inspector);
     let mut lines: Vec<&super::model::CompanyLine> = c.lines.iter().filter(|l| in_service(l, date)).collect();
     if sh.is_empty() || lines.is_empty() {
@@ -733,10 +753,10 @@ pub fn patrols(c: &Company, date: &str) -> Vec<Patrol> {
         let to = team.iter().map(|s| s.to).min().unwrap_or(0).max(from);
         let skill = team.iter().map(|s| skill_of(s.id)).sum::<f64>() / team.len() as f64;
         let alone = if team.len() >= 2 { 1.0 } else { LONE };
-        out.push(Patrol { line: line.clone(), ids: team.iter().map(|s| s.id).collect(), from, to, share: (checked(from, to) * skill * alone).min(1.0) });
+        out.push(Patrol { line: line.clone(), ids: team.iter().map(|s| s.id).collect(), from, to, share: (checked(from, to) * skill * alone).min(1.0), duty: 0, stop: None });
         for s in team {
             if let Some((a, b)) = s.extra.filter(|(a, b)| b > a) {
-                out.push(Patrol { line: line.clone(), ids: vec![s.id], from: a, to: b, share: (checked(a, b) * skill_of(s.id) * LONE).min(1.0) });
+                out.push(Patrol { line: line.clone(), ids: vec![s.id], from: a, to: b, share: (checked(a, b) * skill_of(s.id) * LONE).min(1.0), duty: 0, stop: None });
             }
         }
     }
