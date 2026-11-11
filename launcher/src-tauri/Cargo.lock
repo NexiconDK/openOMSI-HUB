@@ -3247,6 +3247,7 @@ dependencies = [
  "omsi-cfg",
  "omsi-launcher-core",
  "omsi-model",
+ "omsi-o3d",
  "omsi-sim",
  "omsi-texture",
  "omsi-vehicle",
