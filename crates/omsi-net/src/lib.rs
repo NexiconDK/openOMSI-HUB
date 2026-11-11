@@ -48,7 +48,7 @@
 //!                                                light programs around the client; client →
 //!                                                host: its own people on foot
 //! DESC|c|<id>|<file>|<scheme>|<line>|<dest>      host → client: what a car is
-//! DESC|p|<id>|<file>                             either way: what a person is
+//! DESC|p|<id>|<file>[|<clothes>|<i>|<company>]    either way: what a person is (an inspector)
 //! WANT|<id>|c<id>,p<id>,…                        client → host: descriptions lost on the way
 //! CLAIM|<id>|<person>,…                          client → host: waiting people its bus takes
 //! GRANT|<person>,… / DENY|<person>,…             host → client: handed over, or not

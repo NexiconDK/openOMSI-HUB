@@ -101,9 +101,10 @@ impl Humans {
         self.sim.avatar(key, &*world.data(), cmd, kind);
     }
 
-    /// One of the host's people appears here (client; see `PeopleSim::mirror_add`).
-    pub fn mirror_add(&mut self, world: &World, id: u32, ty: usize, pose: &MirrorPose) -> bool {
-        self.sim.mirror_add(&*world.data(), id, ty, pose)
+    /// One of the host's people appears here (client; see `PeopleSim::mirror_add`) - (NexiconDK,
+    /// ticket inspection) in clothes `variant` (see `PeopleSim::mirror_add_dressed`, `dress_of`).
+    pub fn mirror_add_dressed(&mut self, world: &World, id: u32, ty: usize, variant: Option<usize>, pose: &MirrorPose) -> bool {
+        self.sim.mirror_add_dressed(&*world.data(), id, ty, variant, pose)
     }
 
     /// `--riders n` (see `PeopleSim::seed_riders`).

@@ -442,6 +442,9 @@ impl Api {
                 "line_list": line_badges(c, map_colours.entry(c.map.clone()).or_insert_with(|| crate::lines::map_line_colours(&c.map))),
                 // (NexiconDK, 3 November 2026, K7: its share driven live)
                 "live": super::live_more::live_share(c),
+                // (NexiconDK, 11 November 2026: its ticket inspectors' clothes - every player's game
+                // in its map's world dresses them so, `inspectors::dress_world`)
+                "inspectors": inspectors_json(c),
             }));
         }
         // (his own first, then by name - a depot right under its head office)
@@ -652,6 +655,14 @@ pub fn find_server(code: &CompanyCode, body: &Value) -> std::result::Result<(Str
 /// each its number and colour - the colour the line editor gave it on the map (`map`: by the
 /// timetable's name, `lines::map_line_colours`), else the company's own, else the one its
 /// pages give it (`rosterflow::line_colour`'s palette).
+/// (NexiconDK, ticket inspection, 11 November 2026) How a company's ticket inspectors look in
+/// the game, for the players' games in its map's world (`server_api` `companies`): its tag (as
+/// their clothes are named, `inspection_game::variant`) and the looks it uses (`letters`); its
+/// colour and short name are the row's own.
+pub fn inspectors_json(c: &super::model::Company) -> Value {
+    json!({ "slug": super::inspection_game::slug(c), "looks": super::inspection_game::letters(c).iter().map(|l| l.to_string()).collect::<Vec<_>>() })
+}
+
 pub fn line_badges(c: &super::model::Company, map: &std::collections::HashMap<String, String>) -> Vec<Value> {
     c.lines
         .iter()

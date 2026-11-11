@@ -123,7 +123,9 @@ impl Mirror {
 #[derive(Default)]
 struct Upstream {
     tracks: HashMap<u32, Track<PersonState>>,
-    files: HashMap<u32, String>,
+    /// What they are (`Desc::Person`: their figure, and - an inspector - their uniform), by the
+    /// client's ids.
+    looks: HashMap<u32, Desc>,
     /// Their ids here, by the client's.
     ids: HashMap<u32, u32>,
     offset: Option<f64>,
@@ -284,10 +286,7 @@ impl LanWorld {
             let id = wire(p.id);
             seen.insert(id);
             if v.described.insert(id) {
-                lan.send_desc_up(&Desc::Person {
-                    id,
-                    file: Humans::type_file(&p.ty),
-                });
+                lan.send_desc_up(&person_desc(id, &p));
             }
             let q = quant(p.pos.x, p.pos.y, p.pos.z, p.heading);
             let q = [q[0], q[1], q[2], q[3] ^ ((p.activity as i64) << 40)];
@@ -318,10 +317,7 @@ impl LanWorld {
             let id = wire(p.id);
             seen.insert(id);
             if v.described.insert(id) {
-                lan.send_desc_up(&Desc::Person {
-                    id,
-                    file: Humans::type_file(&p.ty),
-                });
+                lan.send_desc_up(&person_desc(id, &p));
             }
             let place = PersonPlace::Aboard {
                 bus: nw::PLAYER_BUS | lan.my_id,
@@ -372,8 +368,8 @@ impl LanWorld {
         let _ = h.take_claims();
         let epoch = *self.epoch.get_or_insert_with(Instant::now);
         for (id, d) in lan.take_descs_up() {
-            if let Desc::Person { id: pid, file } = d {
-                self.ups.entry(id).or_default().files.insert(pid, file);
+            if let Desc::Person { id: pid, .. } = d {
+                self.ups.entry(id).or_default().looks.insert(pid, d);
             }
         }
         for (id, at, f) in lan.take_world_up() {
@@ -440,7 +436,7 @@ impl LanWorld {
                 if pose.aboard.map(|a| !h.knows_bus(a.0)).unwrap_or(false) {
                     continue;
                 }
-                let Some(ty) = up.files.get(pid).and_then(|f| h.type_by_file(f)) else {
+                let Some((ty, variant)) = up.looks.get(pid).and_then(|d| dressed(h, d)) else {
                     continue;
                 };
                 if self.next_up_id < 1 << 29 {
@@ -448,7 +444,7 @@ impl LanWorld {
                 }
                 let local = self.next_up_id;
                 self.next_up_id += 1;
-                let added = h.mirror_add(world, local, ty, &pose);
+                let added = h.mirror_add_dressed(world, local, ty, variant, &pose);
                 crate::view_sync::apply_people(h, view, world, renderer, scene);
                 if added {
                     up.ids.insert(*pid, local);
@@ -592,7 +588,7 @@ impl LanWorld {
             let Gather { mut frame, mut seen, mut descs, mut ids_hash } = g;
             // the riders of our own bus, and the other players' people and riders: everybody
             // sees everybody's passengers
-            let mut others: Vec<(PersonState, String)> = Vec::new();
+            let mut others: Vec<(PersonState, Desc)> = Vec::new();
             if let Some(h) = h_ref {
                 for p in h.lan_riders() {
                     let Some((_, l, lh, seat)) = p.aboard else { continue };
@@ -612,7 +608,7 @@ impl LanWorld {
                                 seat: seat.map(|s| s.min(254) as u8),
                             },
                         },
-                        Humans::type_file(&p.ty),
+                        person_desc(p.id, &p),
                     ));
                 }
             }
@@ -622,7 +618,7 @@ impl LanWorld {
                 }
                 let bus_near = players_at.iter().any(|(pp, pos)| pp == peer && (*pos - at).truncate().length() < CAR_RADIUS);
                 for (pid, track) in &up.tracks {
-                    let (Some(local), Some(last), Some(file)) = (up.ids.get(pid), track.samples.last(), up.files.get(pid)) else {
+                    let (Some(local), Some(last), Some(look)) = (up.ids.get(pid), track.samples.last(), up.looks.get(pid)) else {
                         continue;
                     };
                     let near = match last.v.place {
@@ -637,16 +633,22 @@ impl LanWorld {
                     if let PersonPlace::Foot { ref mut waiting, .. } = st.place {
                         *waiting = None;
                     }
-                    others.push((st, file.clone()));
+                    // (what the client said it is - its uniform too, which the host draws only if it
+                    // has it: a dedicated server's world makes none)
+                    let mut look = look.clone();
+                    if let Desc::Person { ref mut id, .. } = look {
+                        *id = st.id;
+                    }
+                    others.push((st, look));
                 }
             }
-            for (st, file) in others {
+            for (st, look) in others {
                 let key = (true, st.id);
                 seen.insert(key);
                 ids_hash ^= fnv(&(st.id as u64 | 1 << 40).to_le_bytes());
                 if !view.described.contains_key(&key) {
                     view.described.insert(key, 0);
-                    descs.push(Desc::Person { id: st.id, file });
+                    descs.push(look);
                 }
                 let q = person_q(&st);
                 let due = match view.sent.get(&key) {
@@ -1274,13 +1276,13 @@ impl Mirror {
             if pose.aboard.map(|a| !h.knows_bus(a.0)).unwrap_or(false) {
                 continue;
             }
-            let Some(Desc::Person { file, .. }) = m.descs.get(&(true, *id)) else {
+            let Some(look) = m.descs.get(&(true, *id)) else {
                 continue;
             };
-            let Some(ty) = h.type_by_file(file) else {
+            let Some((ty, variant)) = dressed(h, look) else {
                 continue;
             };
-            let added = h.mirror_add(world, *id, ty, &pose);
+            let added = h.mirror_add_dressed(world, *id, ty, variant, &pose);
             crate::view_sync::apply_people(h, &mut view.people, world, renderer, scene);
             if added {
                 m.drawn_people.insert(*id);
@@ -1370,10 +1372,7 @@ fn gather_people(view: &mut View, h: &Humans, at: DVec3, g: &mut Gather) {
         g.ids_hash ^= fnv(&(p.id as u64 | 1 << 40).to_le_bytes());
         if !view.described.contains_key(&key) {
             view.described.insert(key, 0);
-            g.descs.push(Desc::Person {
-                id: p.id,
-                file: Humans::type_file(&p.ty),
-            });
+            g.descs.push(person_desc(p.id, &p));
         }
         let (place, q) = match p.aboard {
             Some((bus, l, lh, seat)) => (
@@ -1527,6 +1526,20 @@ fn person_pose(a: &PersonState, b: &PersonState, k: f64) -> MirrorPose {
     }
 }
 
+/// (NexiconDK, ticket inspection, 11 November 2026) What one of our people is, as the others are
+/// told: its figure, the clothes it wears, and - one of a bus company's ticket inspectors -
+/// that, and whose (so that every game draws it in its company's uniform: `dressed`).
+fn person_desc(id: u32, p: &omsi_sim::people::LanPerson) -> Desc {
+    Desc::Person { id, file: Humans::type_file(&p.ty), paint: p.paint.clone(), inspector: p.inspector, company: if p.inspector { p.company() } else { String::new() } }
+}
+
+/// The figure and the clothes to draw a person described so (`PeopleSim::dress_of`: an inspector
+/// in its company's uniform, or the nearest this game has), or None.
+fn dressed(h: &Humans, d: &Desc) -> Option<(usize, Option<usize>)> {
+    let Desc::Person { file, paint, inspector, .. } = d else { return None };
+    h.dress_of(file, paint, *inspector)
+}
+
 fn describe_car(args: &LanConfig, c: &crate::traffic::AiCar) -> Desc {
     let (line, destination) = if c.is_bus() {
         car_display(&c.vehicle)
@@ -1552,11 +1565,9 @@ fn describe(
     r: EntityRef,
 ) -> Option<Desc> {
     if r.person {
-        let p = humans?.lan_people_by_id(r.id)?;
-        Some(Desc::Person {
-            id: r.id,
-            file: Humans::type_file(&p),
-        })
+        let (ty, paint, inspector) = humans?.lan_look_by_id(r.id)?;
+        let company = if inspector { omsi_sim::people::inspect::company_of(&paint).unwrap_or_default() } else { String::new() };
+        Some(Desc::Person { id: r.id, file: Humans::type_file(&ty), paint, inspector, company })
     } else {
         let c = traffic?.cars.iter().find(|c| c.id == r.id as u64)?;
         Some(describe_car(args, c))

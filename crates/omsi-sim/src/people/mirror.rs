@@ -48,6 +48,27 @@ pub struct LanPerson {
     pub activity: Activity,
     pub aboard: Option<(u64, Vec3, f64, Option<usize>)>,
     pub waiting: Option<(i64, usize)>,
+    /// (NexiconDK, ticket inspection) The `.cti` item it wears (empty: its figure's own
+    /// clothes), and whether it is one of a bus company's ticket inspectors - the other games
+    /// draw it so (`dress_of`).
+    pub paint: String,
+    pub inspector: bool,
+}
+
+impl LanPerson {
+    /// The bus company an inspector works for: its tag, as its clothes are named
+    /// (`~Inspector_<look>_<company>`); empty for anybody else.
+    pub fn company(&self) -> String {
+        super::inspect::company_of(&self.paint).unwrap_or_default()
+    }
+}
+
+/// The clothes person `p` wears (its `.cti` item's name; empty: the figure's own) and whether it
+/// is a ticket inspector.
+fn clothes_of(p: &Person) -> (String, bool) {
+    let paint = p.variant.checked_sub(1).and_then(|v| p.ty.variants.get(v)).map(|v| v.name.trim().to_string()).unwrap_or_default();
+    let inspector = super::inspect::is_inspector_variant(&paint) || matches!(&p.state, State::Pax(x) if x.task == Task::Inspecting);
+    (paint, inspector)
 }
 
 impl PeopleSim {
@@ -64,6 +85,8 @@ impl PeopleSim {
             .filter(|p| p.puppet.is_none() && !p.remote)
             .filter_map(|p| match p.place {
                 Place::Bus(BusId::Player, l) => Some(LanPerson {
+                    paint: clothes_of(p).0,
+                    inspector: clothes_of(p).1,
                     id: p.id,
                     ty: p.ty.clone(),
                     pos: p.position,
@@ -152,7 +175,10 @@ impl PeopleSim {
                     State::Pax(x) if aboard.is_none() && x.task == Task::ToBus && x.bus.is_some_and(|b| matches!(b, BusId::Ai(k) if remote_bus_player(k).is_some())) => x.stop.map(|s| (s, STEPPED_UP)),
                     _ => None,
                 };
+                let (paint, inspector) = clothes_of(p);
                 Some(LanPerson {
+                    paint,
+                    inspector,
                     id: p.id,
                     ty: p.ty.clone(),
                     pos: p.position,
@@ -262,6 +288,46 @@ impl PeopleSim {
         })
     }
 
+    /// (NexiconDK, ticket inspection, 11 November 2026) The figure and the clothes to draw a
+    /// person another game describes (`file` its figure, `paint` the `.cti` item it wears,
+    /// `inspector` one of a bus company's ticket inspectors): that figure in clothes of that name
+    /// (1 up; None: as any passenger). An inspector whose figure - or whose clothes on it - this
+    /// game has not is drawn in another figure that has those clothes, else the same look of
+    /// another company's (`~Inspector_<look>_…`); without any, in its own figure as a passenger.
+    /// Nobody else ever wears an inspector's clothes here. None: neither the figure nor an
+    /// inspector's to draw it in. Only the clothes this game read with its figures count: nothing
+    /// is made or read here (a dedicated server's world draws nothing and makes none).
+    pub fn dress_of(&self, file: &str, paint: &str, inspector: bool) -> Option<(usize, Option<usize>)> {
+        let wears = |t: &HumanType, name: &str| t.variants.iter().position(|v| v.name.trim().eq_ignore_ascii_case(name.trim())).map(|v| v + 1);
+        let own = if file.trim().is_empty() { None } else { self.type_by_file(file) };
+        let paint = paint.trim();
+        let uniform = inspector || super::inspect::is_inspector_variant(paint);
+        if !paint.is_empty() && (uniform || !super::inspect::is_inspector_variant(paint)) {
+            if let Some((t, v)) = own.and_then(|t| wears(&self.types[t], paint).map(|v| (t, v))) {
+                return Some((t, Some(v)));
+            }
+        }
+        if !uniform {
+            return own.map(|t| (t, None));
+        }
+        // (an inspector: the same uniform on another figure, the same look of another company)
+        if !paint.is_empty() {
+            if let Some((t, v)) = self.types.iter().enumerate().find_map(|(k, t)| wears(t, paint).map(|v| (k, v))) {
+                return Some((t, Some(v)));
+            }
+        }
+        if let Some(look) = super::inspect::look_of(paint) {
+            let prefix = super::inspect::variant_name(look, "");
+            let same_look = |t: &HumanType| t.variants.iter().position(|v| v.name.trim().len() > prefix.len() && v.name.trim()[..prefix.len()].eq_ignore_ascii_case(&prefix)).map(|v| v + 1);
+            let mut order: Vec<usize> = own.into_iter().collect();
+            order.extend((0..self.types.len()).filter(|k| Some(*k) != own));
+            if let Some((t, v)) = order.into_iter().find_map(|k| same_look(&self.types[k]).map(|v| (k, v))) {
+                return Some((t, Some(v)));
+            }
+        }
+        own.map(|t| (t, None))
+    }
+
     /// The file of a human type relative to its content root (`Humans/…/x.hum`).
     pub fn type_file(ty: &HumanType) -> String {
         let p = ty.def.path.to_string_lossy().replace('\\', "/");
@@ -279,13 +345,27 @@ impl PeopleSim {
         ty: usize,
         pose: &MirrorPose,
     ) -> bool {
+        self.mirror_add_dressed(world, id, ty, None, pose)
+    }
+
+    /// (NexiconDK, ticket inspection) `mirror_add` in clothes `variant` (the figure's `.cti`
+    /// item, 1 up: `dress_of`; None: as any passenger, never an inspector's uniform).
+    pub fn mirror_add_dressed(
+        &mut self,
+        world: &dyn World,
+        id: u32,
+        ty: usize,
+        variant: Option<usize>,
+        pose: &MirrorPose,
+    ) -> bool {
         if self.people.iter().any(|p| p.id == id) {
             return false;
         }
         let state = State::Idle;
-        let Some(i) =
-            self.spawn_as(world, pose.pos, pose.heading, state, Some(ty))
-        else {
+        self.force_variant = variant;
+        let spawned = self.spawn_as(world, pose.pos, pose.heading, state, Some(ty));
+        self.force_variant = None;
+        let Some(i) = spawned else {
             return false;
         };
         self.next_id -= 1;
@@ -377,6 +457,15 @@ impl PeopleSim {
     }
 
     /// The type of one of our people (host).
+    /// (NexiconDK, ticket inspection) Person `id`'s figure, the clothes it wears and whether it
+    /// is a ticket inspector (`LanPerson::paint`, `inspector`), for its description.
+    pub fn lan_look_by_id(&self, id: u32) -> Option<(Arc<HumanType>, String, bool)> {
+        self.people.iter().find(|p| p.id == id && !p.remote).map(|p| {
+            let (paint, inspector) = clothes_of(p);
+            (p.ty.clone(), paint, inspector)
+        })
+    }
+
     pub fn lan_people_by_id(&self, id: u32) -> Option<Arc<HumanType>> {
         self.people
             .iter()

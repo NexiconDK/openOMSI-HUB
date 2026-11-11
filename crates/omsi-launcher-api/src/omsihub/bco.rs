@@ -80,6 +80,17 @@ fn state() -> MutexGuard<'static, State> {
     STATE.lock().unwrap_or_else(|e| e.into_inner())
 }
 
+/// (NexiconDK, ticket inspection, 11 November 2026) The server's companies driven in the same
+/// map's world as company `company` (itself too), as the server listed them last: their
+/// inspectors' clothes are made before a game joins that world (`inspectors::dress_world`).
+pub(crate) fn companies_of_world(company: &str) -> Vec<Value> {
+    let s = state();
+    let Some(l) = s.linked.as_ref() else { return Vec::new() };
+    let map = |c: &Value| c.get("map").and_then(Value::as_str).unwrap_or("").trim().to_ascii_lowercase();
+    let Some(mine) = l.companies.iter().find(|c| c.get("id").and_then(Value::as_str) == Some(company)).map(map).filter(|m| !m.is_empty()) else { return Vec::new() };
+    l.companies.iter().filter(|c| map(c) == mine).cloned().collect()
+}
+
 /// What `bco.json` keeps: the server's code, and the keys the servers gave this computer for its
 /// Steam IDs (by the server's session and the Steam ID).
 fn kept_path() -> PathBuf {

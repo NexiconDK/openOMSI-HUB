@@ -43,6 +43,22 @@ pub fn variant_name(look: char, tag: &str) -> String {
     format!("{INSPECTOR_PREFIX}{}_{}", look.to_ascii_uppercase(), tag)
 }
 
+/// (NexiconDK, 11 November 2026) The look (`A`, `B`, `C`) of an inspector's clothes by their
+/// name (`variant_name`), or None.
+pub fn look_of(name: &str) -> Option<char> {
+    let rest = name.trim().get(INSPECTOR_PREFIX.len()..).filter(|_| is_inspector_variant(name))?;
+    let mut c = rest.chars();
+    let look = c.next()?.to_ascii_uppercase();
+    (matches!(look, 'A' | 'B' | 'C') && c.next() == Some('_')).then_some(look)
+}
+
+/// The company (its tag) of an inspector's clothes by their name (`variant_name`), or None.
+pub fn company_of(name: &str) -> Option<String> {
+    look_of(name)?;
+    let tag = name.trim().get(INSPECTOR_PREFIX.len() + 2..)?.trim();
+    (!tag.is_empty()).then(|| tag.to_string())
+}
+
 /// The ticket inspection of the player's bus.
 #[derive(Debug, Clone, Default)]
 pub struct InspectState {
@@ -648,5 +664,99 @@ mod run_tests {
         h.force_variant = Some(2);
         let i = h.spawn_as(&world, DVec3::ZERO, 0.0, State::Idle, Some(0)).unwrap();
         assert_eq!(h.people[i].variant, 2);
+    }
+
+    /// A figure `Humans/<file>` of a content root `root` with these `.cti` items besides its own
+    /// clothes.
+    fn figure(root: &std::path::Path, file: &str, items: &[&str]) -> Arc<HumanType> {
+        let hum = root.join("Humans").join(file);
+        let dir = hum.parent().unwrap().to_path_buf();
+        std::fs::create_dir_all(dir.join("tex")).unwrap();
+        std::fs::write(&hum, "[model]\nmodel.cfg\n").unwrap();
+        std::fs::write(dir.join("model.cfg"), "[CTC]\nColorscheme\ntex\n0\n\n[CTCTexture]\nfarbschema\nbody.jpg\n").unwrap();
+        for (k, item) in items.iter().enumerate() {
+            std::fs::write(dir.join(format!("tex/{k}_{}.cti", item.trim_start_matches('~'))), format!("[item]\n{item}\nfarbschema\nbody_{k}.dds\n")).unwrap();
+        }
+        Arc::new(HumanType::load(&hum).unwrap())
+    }
+
+    /// (NexiconDK, 11 November 2026) Another game's inspector is drawn in its company's uniform:
+    /// on its own figure where this game has both; on another figure that has the uniform; in the
+    /// same look of another company; else as a passenger. A passenger keeps its clothes by name
+    /// and never gets a uniform. Nothing is made: only the clothes read with the figures count.
+    #[test]
+    fn another_games_inspector_is_dressed_in_its_companys_uniform() {
+        let root = std::env::temp_dir().join(format!("omsi-dress-of-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let man = figure(&root, "aXYZ/man02.hum", &["Variante1", "~Inspector_C_umove", "~Inspector_A_umove"]);
+        let woman = figure(&root, "aXYZ/woman02.hum", &["~Inspector_C_citybus"]);
+        let plain = figure(&root, "Other/m1.hum", &[]);
+        let mut h = PeopleSim::new(std::path::Path::new("/nonexistent"), 400);
+        h.types = vec![plain, man, woman];
+        h.pool_types = 3;
+        let (m, w, p) = (1usize, 2usize, 0usize);
+        // its own figure in its own uniform
+        assert_eq!(h.dress_of("Humans/aXYZ/man02.hum", "~Inspector_C_umove", true), Some((m, Some(2))));
+        // (the item's number counts the figure's items: the uniform, not "Variante1")
+        assert_eq!(h.types[m].variants[1].name.trim(), "~Inspector_C_umove");
+        // a figure this game has not: the uniform on another figure that has it
+        assert_eq!(h.dress_of("Humans/Gone/x.hum", "~Inspector_C_citybus", true), Some((w, Some(1))));
+        // a uniform nobody here has: the same look of another company (its own figure first)
+        assert_eq!(h.dress_of("Humans/aXYZ/man02.hum", "~Inspector_C_viborg", true), Some((m, Some(2))));
+        assert_eq!(h.dress_of("Humans/Other/m1.hum", "~Inspector_A_viborg", true), Some((m, Some(3))));
+        // no look of it here at all: a passenger in its own figure; neither: not drawn
+        assert_eq!(h.dress_of("Humans/Other/m1.hum", "~Inspector_B_viborg", true), Some((p, None)));
+        assert_eq!(h.dress_of("Humans/Gone/x.hum", "~Inspector_B_viborg", true), None);
+        // a passenger: its clothes by name, else any - never a uniform
+        assert_eq!(h.dress_of("Humans/aXYZ/man02.hum", "Variante1", false), Some((m, Some(1))));
+        assert_eq!(h.dress_of("Humans/aXYZ/man02.hum", "", false), Some((m, None)));
+        assert_eq!(h.dress_of("Humans/aXYZ/man02.hum", "Nichtda", false), Some((m, None)));
+        // (an older game's description: the figure alone)
+        assert_eq!(h.dress_of("Humans/aXYZ/woman02.hum", "", false), Some((w, None)));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    /// An inspector drawn for another game keeps its uniform, and the riders of our bus are told
+    /// the others with their clothes and what they are.
+    #[test]
+    fn a_mirrored_inspector_keeps_its_uniform_and_ours_are_told_so() {
+        let world = crate::world_data::WorldData::default();
+        let root = std::env::temp_dir().join(format!("omsi-dress-mirror-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let mut h = PeopleSim::new(std::path::Path::new("/nonexistent"), 400);
+        h.types = vec![figure(&root, "aXYZ/man02.hum", &["~Inspector_B_umove"])];
+        h.pool_types = 1;
+        let at = |x: f64| MirrorPose { pos: DVec3::new(x, 5.0, 0.0), heading: 0.0, vel: glam::DVec2::ZERO, activity: Activity::Stand, aboard: None, waiting: None };
+        let pose = at(5.0);
+        let (t, v) = h.dress_of("Humans/aXYZ/man02.hum", "~Inspector_B_umove", true).unwrap();
+        assert!(h.mirror_add_dressed(&world, 1 << 29, t, v, &pose));
+        let p = h.people.iter().find(|p| p.id == 1 << 29).unwrap();
+        assert_eq!((p.variant, p.remote), (1, true));
+        // (a passenger mirrored: never in the uniform)
+        for k in 0..40 {
+            assert!(h.mirror_add(&world, (1 << 29) + 1 + k, 0, &at(100.0 + k as f64 * 50.0)));
+        }
+        assert!(h.people.iter().filter(|p| p.id > 1 << 29).all(|p| p.variant == 0));
+        // our own inspector aboard our bus: told with its uniform and as an inspector
+        h.force_variant = Some(1);
+        let i = h.spawn_as(&world, DVec3::ZERO, 0.0, State::Idle, Some(0)).unwrap();
+        h.force_variant = None;
+        h.people[i].place = Place::Bus(BusId::Player, Vec3::ZERO);
+        let ours = h.lan_riders();
+        let me = ours.iter().find(|x| x.id == h.people[i].id).unwrap();
+        assert_eq!((me.paint.as_str(), me.inspector, me.company().as_str()), ("~Inspector_B_umove", true, "umove"));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    /// The look and the company of an inspector's clothes come back from their name - the same
+    /// name on every game for the same company and look.
+    #[test]
+    fn the_uniforms_name_says_its_look_and_company() {
+        let n = variant_name('c', "umove");
+        assert_eq!(n, "~Inspector_C_umove");
+        assert_eq!((look_of(&n), company_of(&n).as_deref()), (Some('C'), Some("umove")));
+        assert_eq!((look_of("Variante1"), company_of("Variante1")), (None, None));
+        assert_eq!(look_of("~Inspector_X_umove"), None);
+        assert_eq!(company_of("~Inspector_A_"), None);
     }
 }

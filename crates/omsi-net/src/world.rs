@@ -539,7 +539,7 @@ impl EntityRef {
 ///
 /// ```text
 /// DESC|c|<id>|<vehicle file>|<paint scheme index or ->|<line>|<destination>|<paint scheme name>
-/// DESC|p|<id>|<human file>
+/// DESC|p|<id>|<human file>|<clothes>|<what>|<company>
 /// ```
 ///
 /// The files are relative to a content root (`Vehicles/…/x.bus`, `Humans/…/x.hum`) and are
@@ -548,6 +548,14 @@ impl EntityRef {
 /// index counts the repaints installed on the sender, and a game with other repaints in
 /// its content folder took another one by that number (#2018). A sender without the name
 /// leaves it empty and the index is taken.
+///
+/// (NexiconDK, ticket inspection, 11 November 2026) A person's clothes go by name the same way
+/// (`<clothes>`: the `.cti` item it wears, empty its figure's own), `<what>` says what it is
+/// (`i`: one of a bus company's ticket inspectors, empty a passenger) and `<company>` whose
+/// (the company's tag, as its inspectors' clothes are named: `~Inspector_<look>_<company>`) - so
+/// that every game draws the inspectors in a bus in their company's uniform. An older game
+/// sends the human file alone and reads only it: its people come in their own clothes, as
+/// before.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Desc {
     Car {
@@ -561,7 +569,20 @@ pub enum Desc {
     Person {
         id: u32,
         file: String,
+        /// The `.cti` item it wears (empty: its figure's own clothes).
+        paint: String,
+        /// One of a bus company's ticket inspectors.
+        inspector: bool,
+        /// The bus company it works for (its tag; empty: none).
+        company: String,
     },
+}
+
+impl Desc {
+    /// A person in its figure's own clothes (a passenger).
+    pub fn person(id: u32, file: String) -> Desc {
+        Desc::Person { id, file, paint: String::new(), inspector: false, company: String::new() }
+    }
 }
 
 impl Desc {
@@ -582,8 +603,14 @@ impl Desc {
                 crate::clean_text(destination, 64),
                 crate::clean_text(paint, 64)
             ),
-            Desc::Person { id, file } => {
-                format!("DESC|p|{id}|{}", crate::clean_text(file, 260))
+            Desc::Person { id, file, paint, inspector, company } => {
+                let file = crate::clean_text(file, 260);
+                // (a passenger in its own clothes as before: an older game reads the same)
+                if paint.trim().is_empty() && !*inspector && company.trim().is_empty() {
+                    format!("DESC|p|{id}|{file}")
+                } else {
+                    format!("DESC|p|{id}|{file}|{}|{}|{}", crate::clean_text(paint, 64), if *inspector { "i" } else { "" }, crate::clean_text(company, 32))
+                }
             }
         }
     }
@@ -606,6 +633,9 @@ impl Desc {
             "p" => Some(Desc::Person {
                 id,
                 file: content_file(parts[3], &["hum"])?,
+                paint: crate::clean_text(parts.get(4).copied().unwrap_or(""), 64),
+                inspector: parts.get(5).is_some_and(|w| w.trim() == "i"),
+                company: crate::clean_text(parts.get(6).copied().unwrap_or(""), 32),
             }),
             _ => None,
         }
@@ -635,6 +665,27 @@ pub fn content_file(p: &str, exts: &[&str]) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// (NexiconDK, ticket inspection) An inspector's description carries its clothes, what it is
+    /// and its company, both ways compatible: an older game reads the human file of it (and
+    /// draws a passenger), one of ours reads an older game's as a passenger in its own clothes.
+    #[test]
+    fn an_inspectors_description_carries_its_uniform_and_company() {
+        let d = Desc::Person { id: 9, file: "Humans/aXYZ/man02.hum".into(), paint: "~Inspector_C_umove".into(), inspector: true, company: "umove".into() };
+        let text = d.encode();
+        assert_eq!(text, "DESC|p|9|Humans/aXYZ/man02.hum|~Inspector_C_umove|i|umove");
+        let parts: Vec<&str> = text.split('|').collect();
+        assert_eq!(Desc::decode(&parts).unwrap(), d);
+        // (an older game: `parts[3]` alone - the figure; the rest it never looked at)
+        assert_eq!(content_file(parts[3], &["hum"]).as_deref(), Some("Humans/aXYZ/man02.hum"));
+        // (an older game's description: a passenger in its own clothes)
+        let old: Vec<&str> = "DESC|p|9|Humans/aXYZ/man02.hum".split('|').collect();
+        assert_eq!(Desc::decode(&old).unwrap(), Desc::person(9, "Humans/aXYZ/man02.hum".into()));
+        // (a field with a bar or a control character in it never breaks the message)
+        let odd = Desc::Person { id: 1, file: "Humans/x.hum".into(), paint: "a|b\nc".into(), inspector: false, company: "x|y".into() };
+        let parts: Vec<String> = odd.encode().split('|').map(str::to_string).collect();
+        assert_eq!(parts.len(), 7, "{parts:?}");
+    }
 
     fn car(id: u32, x: f64) -> CarState {
         CarState {
@@ -845,19 +896,11 @@ mod tests {
             let parts: Vec<&str> = bad.split('|').collect();
             assert!(Desc::decode(&parts).is_none(), "{bad}");
         }
-        let p = Desc::Person {
-            id: 5,
-            file: "Humans\\Generic\\m1.hum".into(),
-        };
+        let p = Desc::person(5, "Humans\\Generic\\m1.hum".into());
         let text = p.encode();
+        assert_eq!(text, "DESC|p|5|Humans\\Generic\\m1.hum", "a passenger as an older game sends one");
         let parts: Vec<&str> = text.split('|').collect();
-        assert_eq!(
-            Desc::decode(&parts).unwrap(),
-            Desc::Person {
-                id: 5,
-                file: "Humans/Generic/m1.hum".into()
-            }
-        );
+        assert_eq!(Desc::decode(&parts).unwrap(), Desc::person(5, "Humans/Generic/m1.hum".into()));
         let refs = vec![
             EntityRef { person: false, id: 3 },
             EntityRef { person: true, id: 16_777_215 },

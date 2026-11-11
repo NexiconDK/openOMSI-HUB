@@ -1205,8 +1205,24 @@ the duty's inbox - inspectors who get on a few stops ahead (an inbox action `"in
 out by the player's plugin) or why not -, once a trip. What the inspectors did on his trip comes
 back as the request `"inspection"` (`inspection_game::GameCheck` as JSON in its text; the Drive
 permission and a duty of his own claimed, as for `msg_tell`), booked by the boss's launcher with
-the player's name on it (`inspection_game::book_game`). Other players of a LAN session see the
-inspectors' bus without them: only the driver's own game puts them aboard.
+the player's name on it (`inspection_game::book_game`).
+
+(11 November 2026) Every player in the map's world sees the inspectors in the bus in its
+company's uniform - players of other companies too. A person's description between the games
+(`omsi_net::world::Desc::Person`, `DESC|p|<id>|<file>|<clothes>|<i>|<company>`) carries the
+`.cti` item it wears, whether it is an inspector and whose; an older game reads the figure alone
+and draws a passenger, as before. The driver's game tells its riders and its people on foot so
+(`lan_world::person_desc`); the world's host passes on what the driver's game said - it draws them
+only in what it has (a dedicated server's world draws nothing and makes no clothes) - and every
+game dresses them by the description (`PeopleSim::dress_of`): the figure in that uniform; a figure
+this game has not, another figure in the uniform; a uniform it has not, the same look of another
+company; else a passenger. Nobody else ever wears a uniform. The clothes are made before a game
+joins the world (`company::inspectors::dress_world`): the server lists each company's
+inspectors' looks and tag with its colours and short name (`server_api::inspectors_json` in
+`companies`), and the player's launcher makes the clothes of every company of that map, each
+once (waited for at most 20 s; what is not made by then is seen from the next game on). The
+positions and poses go as every passenger's - boarding, the aisle, the pay pose, getting off -,
+and so do the dodgers who flee.
 
 ### Step 5: the roles
 

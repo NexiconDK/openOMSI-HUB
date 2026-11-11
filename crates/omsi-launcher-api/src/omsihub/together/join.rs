@@ -730,6 +730,15 @@ pub(crate) fn relay_act(args: Value) -> Option<Answer> {
     Some(relayed(&json!({ "cmd": "co_act", "args": args, "lang": lang })))
 }
 
+/// (NexiconDK, ticket inspection, 11 November 2026) The inspectors' clothes of the companies
+/// driven in the joined company's map's world (`company::inspectors::dress_world`).
+fn dress_world() {
+    let company = joined().as_ref().and_then(|j| j.snap.as_ref()).map(|s| s.card.id.clone()).unwrap_or_default();
+    if !company.is_empty() {
+        super::super::company::inspectors::dress_world(&company);
+    }
+}
+
 /// A page's command sent to the boss's launcher now (its answer carries no day: the thread keeps
 /// that).
 fn send_page(page: Value) -> Result<Value, String> {
@@ -889,6 +898,11 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
     d.display_font = core::busfonts::BusFonts::load().font_for(&start.bus);
     d.set_vars = super::super::hub_more::setvars(&start.bus, &start.paint);
     core::log_to_file(&format!("company session: {} drives {} {} duty {} for the boss's company{}", name, start.line, start.tour, r.duty + 1, d.lan.as_deref().and_then(|l| l.strip_prefix("join:")).map(|w| format!(", in the world at {w}")).unwrap_or_default()));
+    // (NexiconDK, 11 November 2026: in a map's world, the inspectors of every company driven there
+    // in their uniforms - this game draws theirs as it sees them in their buses)
+    if d.lan.is_some() {
+        dress_world();
+    }
     let launched = core::launch(&d).map_err(|e| format!("{e:#}"))?;
     core::log_to_file(&format!("game {}: {}", launched.pid, launched.command));
     p.launched();
@@ -951,6 +965,7 @@ fn take_bus(args: &Value, p: &dyn Platform) -> Answer {
     d.display_font = core::busfonts::BusFonts::load().font_for(&start.bus);
     d.set_vars = super::super::hub_more::setvars(&start.bus, &start.paint);
     core::log_to_file(&format!("company session: {} takes bus {} ({}) out for a free drive, in the world at {world}", name, start.number, start.bus));
+    dress_world();
     let launched = core::launch(&d).map_err(|e| format!("{e:#}"))?;
     core::log_to_file(&format!("game {}: {}", launched.pid, launched.command));
     p.launched();

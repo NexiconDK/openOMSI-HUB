@@ -61,18 +61,29 @@ fn hex(h: &str) -> Option<[u8; 3]> {
 
 /// The company's clothes for each look it uses (`letters`).
 pub fn dresses(c: &Company) -> Vec<Dress> {
-    let colour = hex(&c.colours[0]).unwrap_or([0xF5, 0x82, 0x20]);
-    let name = if c.short.trim().chars().count() >= 2 { c.short.trim().to_string() } else { c.name.trim().chars().take(14).collect() };
-    ig::letters(c).into_iter().map(|look| Dress { look, colour, company: name.clone(), text: "BILLETKONTROL".into() }).collect()
+    dresses_of(&c.short, &c.name, c.colours.first().map(String::as_str).unwrap_or(""), &ig::letters(c))
+}
+
+/// A company's clothes for each of its looks `letters`, from its short name (else its name), its
+/// first colour (`#rrggbb`) - as the server lists the companies too (`dress_world`).
+pub fn dresses_of(short: &str, name: &str, colour: &str, letters: &[char]) -> Vec<Dress> {
+    let colour = hex(colour).unwrap_or([0xF5, 0x82, 0x20]);
+    let name = if short.trim().chars().count() >= 2 { short.trim().to_string() } else { name.trim().chars().take(14).collect() };
+    letters.iter().filter(|l| matches!(l.to_ascii_uppercase(), 'A' | 'B' | 'C')).map(|look| Dress { look: look.to_ascii_uppercase(), colour, company: name.clone(), text: "BILLETKONTROL".into() }).collect()
 }
 
 /// Dress the company's inspectors for the game (said in the launcher's log; the drive starts
 /// whatever comes of it).
 pub fn dress(c: &Company) {
+    dress_all(&ig::slug(c), &dresses(c));
+}
+
+/// Dress the inspectors of the company tagged `slug` in clothes `dresses` (each made once: a
+/// later call finds them made).
+fn dress_all(slug: &str, dresses: &[Dress]) {
     let (Ok(root), Some(content)) = (core::root_dir(), core::content_dir()) else { return };
-    let slug = ig::slug(c);
     let all = figures(&root, Some(&content));
-    for d in dresses(c) {
+    for d in dresses {
         let (mut done, mut men, mut women) = (0, 0, 0);
         for hum in all.iter().take(TRIED) {
             if done >= FIGURES {
@@ -83,7 +94,7 @@ pub fn dress(c: &Company) {
             if (woman && women >= FIGURES / 2 && men < FIGURES / 2) || (!woman && men >= FIGURES / 2 && women < FIGURES / 2) {
                 continue;
             }
-            match dress_figure(hum, &root, &content, &d, &slug) {
+            match dress_figure(hum, &root, &content, d, slug) {
                 Ok(x) => {
                     done += 1;
                     if woman {
@@ -99,8 +110,47 @@ pub fn dress(c: &Company) {
             }
         }
         if done == 0 {
-            core::log_to_file(&format!("inspectors: no figure for the look {} (they board in their own clothes)", d.look));
+            core::log_to_file(&format!("inspectors: no figure for the look {} of {slug} (they board in their own clothes)", d.look));
         }
+    }
+}
+
+/// How long a game joining a map's world waits for the inspectors' clothes of its companies
+/// (the first time; made once, a later game finds them made). What is not made by then is made
+/// on meanwhile and seen from the next game on.
+const WORLD_WAIT: std::time::Duration = std::time::Duration::from_secs(20);
+
+/// (NexiconDK, ticket inspection, 11 November 2026) A company's inspectors' clothes as the
+/// server lists it (`server_api::inspectors_json` beside its short name and colours): its tag
+/// and its clothes. None: a server of before.
+pub fn world_dresses(row: &serde_json::Value) -> Option<(String, Vec<Dress>)> {
+    let ins = row.get("inspectors")?;
+    let slug = ins.get("slug").and_then(serde_json::Value::as_str).map(str::trim).filter(|s| !s.is_empty())?.to_string();
+    let letters: Vec<char> = ins.get("looks").and_then(serde_json::Value::as_array).map(|a| a.iter().filter_map(|l| l.as_str()?.chars().next()).collect()).unwrap_or_default();
+    let text = |k: &str| row.get(k).and_then(serde_json::Value::as_str).unwrap_or("").to_string();
+    let colour = row.get("colours").and_then(|c| c.get(0)).and_then(serde_json::Value::as_str).unwrap_or("");
+    Some((slug, dresses_of(&text("short"), &text("name"), colour, &letters)))
+}
+
+/// (NexiconDK, ticket inspection, 11 November 2026) Before a game joins the map's world of
+/// company `company` (Bus Company Online): the clothes of the inspectors of every company driven
+/// in that world (`bco::companies_of_world`) - so that this game draws theirs in their uniforms
+/// as it sees them in their buses (`lan_world`'s descriptions name the clothes). Made beside
+/// the figures in this computer's content folder, waited for at most `WORLD_WAIT`.
+pub fn dress_world(company: &str) {
+    let all: Vec<(String, Vec<Dress>)> = super::super::bco::companies_of_world(company).iter().filter_map(world_dresses).filter(|x| !x.1.is_empty()).collect();
+    if all.is_empty() {
+        return;
+    }
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        for (slug, ds) in &all {
+            dress_all(slug, ds);
+        }
+        let _ = tx.send(());
+    });
+    if rx.recv_timeout(WORLD_WAIT).is_err() {
+        core::log_to_file("inspectors: the world's companies' clothes not all made yet - made on meanwhile, seen from the next game on");
     }
 }
 
@@ -121,5 +171,21 @@ mod tests {
         assert_eq!(got, ["Humans/aXYZ/man02.hum", "Humans/aXYZ/man01.hum", "Humans/aXYZ/woman01.hum", "Humans/Other/man04.hum"]);
         let _ = std::fs::remove_dir_all(&dir);
         assert_eq!((hex("#F58220"), hex("x")), (Some([0xF5, 0x82, 0x20]), None));
+    }
+
+    /// (NexiconDK, 11 November 2026) A company of the server's list: its inspectors' clothes as
+    /// its own launcher makes them - the same tag, look, colour and name, so the same items.
+    #[test]
+    fn a_listed_company_is_dressed_as_its_own_launcher_dresses_it() {
+        let row = serde_json::json!({ "id": "x", "name": "Umove Aarhus", "short": "UMOVE", "colours": ["#F58220", "#222222"], "map": "Lemmental", "inspectors": { "slug": "umove", "looks": ["A", "B", "C"] } });
+        let (slug, ds) = world_dresses(&row).unwrap();
+        assert_eq!(slug, "umove");
+        assert_eq!(ds, dresses_of("UMOVE", "Umove Aarhus", "#F58220", &['A', 'B', 'C']));
+        assert_eq!(ds.iter().map(|d| d.look).collect::<String>(), "ABC");
+        assert!(ds.iter().all(|d| d.colour == [0xF5, 0x82, 0x20] && d.company == "UMOVE"));
+        // (a server of before lists none)
+        assert!(world_dresses(&serde_json::json!({ "id": "x", "name": "Old" })).is_none());
+        // (a short name too short: the name's first letters)
+        assert_eq!(dresses_of("U", "Citybus Nord", "#123456", &['C'])[0].company, "Citybus Nord");
     }
 }
