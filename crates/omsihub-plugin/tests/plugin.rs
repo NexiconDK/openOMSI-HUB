@@ -25,6 +25,10 @@ struct Game {
     asked: Vec<String>,
     /// The stops closed the navigator was told, and the way round (`duty.set_closed_stops`).
     closed: Vec<(Vec<String>, String)>,
+    /// (round U) The inspectors put in the bus (n, stops, clothes, stop) and the share of riders
+    /// without a ticket asked for.
+    inspected: Vec<(u8, u32, String, String)>,
+    dodger_share: Option<f32>,
 }
 
 impl PluginIo for Game {
@@ -94,6 +98,14 @@ impl PluginIo for Game {
     }
     fn duty_set_closed_stops(&mut self, stops: Vec<String>, via: &str) -> bool {
         self.closed.push((stops, via.to_string()));
+        true
+    }
+    fn people_inspect(&mut self, n: u8, stops: u32, variant: &str, stop: &str) -> Option<u32> {
+        self.inspected.push((n, stops, variant.to_string(), stop.to_string()));
+        Some(self.inspected.len() as u32)
+    }
+    fn people_set_dodger_share(&mut self, v: f32) -> bool {
+        self.dodger_share = Some(v);
         true
     }
     fn duty_start(&mut self, line: &str, tour: &str, trip: usize, stop: usize) -> Result<(), String> {
@@ -785,4 +797,81 @@ fn the_board_carries_the_company_s_parts_and_service_control_speaks() {
     }
     let board = panel_text(&ps, "omsihub_board").unwrap();
     assert!(!board.contains("Fare box") && board.contains("Relief 08:05"), "{board}");
+}
+
+/// (NexiconDK, ticket inspection round U) The company's share of riders without a ticket is
+/// given to the game; its inspectors get on at the stop of the trip planned, the driver is told,
+/// what they found is reported; the driver asks control for inspectors once a trip (Ctrl+K).
+#[test]
+fn the_company_s_inspectors_board_the_trip_and_their_findings_are_reported() {
+    let plugins = plugins_dir("inspection");
+    install::install(&plugins).unwrap();
+    let dir = install::plugin_dir(&plugins);
+    let inspection = bridge::Inspection {
+        share: 0.05,
+        shares: vec![bridge::TripShare { departure: 28_830.0, share: 0.07 }],
+        boardings: vec![bridge::Boarding { departure: 28_830.0, board: 2, stops: 3, n: 2, variant: "~Inspector_A_stadtbus".into(), names: vec!["Lene".into(), "Mikkel".into()] }],
+        can_order: true,
+        variant: "~Inspector_A_stadtbus".into(),
+    };
+    bridge::write_assignment(&dir, &Assignment { auto_start: false, inspection: Some(inspection), ..assignment() }).unwrap();
+    let mut ps = Plugins::load(&[plugins.clone()], &HostConfig::default());
+    let trip = three_stops();
+    let mut game = Game { trips: vec![trip.clone()], ..Game::default() };
+    let at = |game: &mut Game, next: usize, at_stop: bool| {
+        game.duty = Some(io::Duty { line: "10".into(), tour: "2".into(), trip: 1, trips: 1, next, at_stop, current: trip.clone(), ..io::Duty::default() });
+    };
+    at(&mut game, 0, true);
+    for _ in 0..3 {
+        ps.frame(&mut game);
+    }
+    assert_eq!(game.dodger_share, Some(0.07), "the trip's share");
+    assert!(game.inspected.is_empty(), "not at the first stop");
+    at(&mut game, 1, false);
+    ps.frame(&mut game);
+    at(&mut game, 1, true);
+    ps.frame(&mut game);
+    assert_eq!(game.inspected, vec![(2, 3, "~Inspector_A_stadtbus".to_string(), "Markt".to_string())]);
+    // (once)
+    ps.frame(&mut game);
+    assert_eq!(game.inspected.len(), 1);
+    // they get off: told, and reported
+    game.events = vec![GameEvent { name: "inspection_done", args: vec![InfoValue::Num(23.0), InfoValue::Num(2.0), InfoValue::Num(1.0), InfoValue::Num(3.0), InfoValue::Text("Markt".into()), InfoValue::Text("Hauptbahnhof".into()), InfoValue::Num(2.0)] }];
+    ps.frame(&mut game);
+    game.events.clear();
+    let reports = ReportReader::default().read_new(&dir);
+    let r = reports.iter().find(|r| r.kind == "inspection").expect("the inspection reported");
+    let i = r.inspection.clone().unwrap();
+    assert_eq!((i.checked, i.caught, i.fled, i.stops, i.board_stop.as_str(), i.leave_stop.as_str(), i.ordered), (23, 2, 1, 3, "Markt", "Hauptbahnhof", false));
+    assert_eq!(i.names, vec!["Lene".to_string(), "Mikkel".to_string()]);
+    assert_eq!((r.line.as_str(), r.departure), ("10", Some(28_830.0)));
+    // Ctrl+K: control asked for inspectors, once on this trip
+    let key = |k: &str, down: bool| GameEvent { name: "key", args: vec![InfoValue::Text(k.into()), InfoValue::Bool(down)] };
+    for _ in 0..2 {
+        game.events = vec![key("ControlLeft", true), key("KeyK", true)];
+        ps.frame(&mut game);
+        game.events = vec![key("KeyK", false), key("ControlLeft", false)];
+        ps.frame(&mut game);
+    }
+    game.events.clear();
+    let replies = bridge::ReplyReader::default().read_new(&dir);
+    assert_eq!(replies.iter().filter(|r| r.kind == "quick" && r.key == "request_inspection").count(), 1, "{replies:?}");
+    // control's answer: inspectors on their way, carried out by the plugin (no card of its own)
+    let ordered = bridge::InboxAction { kind: "inspection".into(), departure: 28_830.0, label: "Ticket inspection".into(), board: 3, stops: 1, n: 2, variant: "~Inspector_A_stadtbus".into(), names: vec!["Ida".into()], ..bridge::InboxAction::default() };
+    let msg = bridge::InboxMsg { id: 5, time: "08:03".into(), from: "Control".into(), priority: "info".into(), text: "Ticket inspectors Ida get on in about 1 stops".into(), action: Some(ordered), state: "sent".into(), state_label: "Sent".into(), ..bridge::InboxMsg::default() };
+    bridge::write_inbox(&dir, &bridge::Inbox { line: "10".into(), tour: "2".into(), messages: vec![msg], ..bridge::Inbox::default() }).unwrap();
+    for _ in 0..6 {
+        ps.frame(&mut game);
+    }
+    at(&mut game, 2, false);
+    ps.frame(&mut game);
+    at(&mut game, 2, true);
+    ps.frame(&mut game);
+    assert_eq!(game.inspected.last(), Some(&(2, 1, "~Inspector_A_stadtbus".to_string(), "Hauptbahnhof".to_string())), "{:?}", game.inspected);
+    game.events = vec![GameEvent { name: "inspection_done", args: vec![InfoValue::Num(5.0), InfoValue::Num(0.0), InfoValue::Num(0.0), InfoValue::Num(1.0), InfoValue::Text("Hauptbahnhof".into()), InfoValue::Text("Zoo".into()), InfoValue::Num(2.0)] }];
+    ps.frame(&mut game);
+    game.events.clear();
+    let reports = ReportReader::default().read_new(&dir);
+    let last = reports.iter().filter(|r| r.kind == "inspection").last().and_then(|r| r.inspection.clone()).unwrap();
+    assert!(last.ordered && last.names == vec!["Ida".to_string()], "{last:?}");
 }

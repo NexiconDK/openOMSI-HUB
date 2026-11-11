@@ -265,10 +265,12 @@ pub enum Quick {
     RoadClosed,
     RequestRelief,
     RequestTalk,
+    /// (round U) Ask control for ticket inspectors ("Bestil kontrol", once a trip).
+    RequestInspection,
 }
 
 impl Quick {
-    pub const ALL: [Quick; 7] = [Quick::DelayTraffic, Quick::Breakdown, Quick::Accident, Quick::AggressivePassenger, Quick::RoadClosed, Quick::RequestRelief, Quick::RequestTalk];
+    pub const ALL: [Quick; 8] = [Quick::DelayTraffic, Quick::Breakdown, Quick::Accident, Quick::AggressivePassenger, Quick::RoadClosed, Quick::RequestRelief, Quick::RequestTalk, Quick::RequestInspection];
 
     pub fn key(self) -> &'static str {
         match self {
@@ -279,6 +281,7 @@ impl Quick {
             Quick::RoadClosed => "road_closed",
             Quick::RequestRelief => "request_relief",
             Quick::RequestTalk => "request_talk",
+            Quick::RequestInspection => "request_inspection",
         }
     }
 
@@ -296,6 +299,7 @@ impl Quick {
             Quick::RoadClosed => "Road closed",
             Quick::RequestRelief => "Request relief",
             Quick::RequestTalk => "Request to talk",
+            Quick::RequestInspection => "Request ticket inspection",
         }
     }
 
@@ -303,7 +307,7 @@ impl Quick {
         match self {
             Quick::Breakdown | Quick::Accident | Quick::AggressivePassenger => Priority::Urgent,
             Quick::RoadClosed | Quick::RequestRelief => Priority::Instruction,
-            Quick::DelayTraffic | Quick::RequestTalk => Priority::Info,
+            Quick::DelayTraffic | Quick::RequestTalk | Quick::RequestInspection => Priority::Info,
         }
     }
 
@@ -317,6 +321,7 @@ impl Quick {
             Quick::RoadClosed => "back_hand",
             Quick::RequestRelief => "group",
             Quick::RequestTalk => "chat",
+            Quick::RequestInspection => "badge",
         }
     }
 }
@@ -388,6 +393,9 @@ pub struct Msg {
     pub outcome: String,
     /// Control has seen to a driver's message (its row leaves the Operations page).
     pub done: bool,
+    /// (round U) Ticket inspectors the driver asked for, coming (the driver's game carries it out
+    /// by itself: `inspection_game::answer`).
+    pub inspection: Option<super::inspection_game::Ordered>,
 }
 
 impl Msg {
@@ -815,7 +823,62 @@ pub fn driver_says(c: &mut Company, line: &str, tour: &str, name: &str, q: Quick
     }
     let at = ck::now(c);
     ck::tell(c, run, at, DRIVER_TOLD, vec![ck::arg("n", &n), ck::arg("tour", tour), ck::arg("why", q.label())], if q.priority() == Priority::Urgent { Level::Bad } else { Level::Warn });
+    // (round U: ticket inspectors asked for - control answers at once: who comes, where and when,
+    // carried out by the driver's game; or nobody is near)
+    if q == Quick::RequestInspection {
+        inspectors_asked(c, line, tour, dp, id);
+    }
     id
+}
+
+/// Control's answer to the driver of `line`/`tour` asking for ticket inspectors (`asked`: the
+/// driver's message): to the duty, with the inspectors coming (`Msg::inspection`) or why none.
+fn inspectors_asked(c: &mut Company, line: &str, tour: &str, dp: Option<&DayPlan>, asked: u64) {
+    use super::inspection_game as ig;
+    let own;
+    let dp = match dp {
+        Some(p) => Some(p),
+        None => {
+            own = super::remote::plan_on(c, &c.date.clone());
+            own.as_ref()
+        }
+    };
+    let now = c.clock.minute as i32;
+    let answer = match dp {
+        Some(p) => ig::answer(c, p, line, tour, now),
+        None => Err(ig::NOBODY_NEAR),
+    };
+    let to = To::Duty { line: line.to_string(), tour: tour.to_string() };
+    let reply = match answer {
+        Ok((o, at)) => {
+            let args = vec![ck::arg("names", &o.names.join(" & ")), ck::arg("n", &ig::AHEAD.to_string()), ck::arg("time", &ck::hhmm(ck::moment(&c.date, at as i64)))];
+            let id = send(c, From::Control, to, Priority::Info, ig::ON_THEIR_WAY, args, false, None);
+            if let Some(m) = c.messages.get_mut(id) {
+                m.inspection = Some(o.clone());
+            }
+            if let Some(m) = c.messages.get_mut(asked) {
+                m.args.push(("dep".into(), o.dep.to_string()));
+            }
+            id
+        }
+        Err(why) => {
+            if let Some(dep) = dp.and_then(|p| p.tours.iter().find(|t| t.tour.line.eq_ignore_ascii_case(line) && t.tour.tour.eq_ignore_ascii_case(tour))).and_then(|t| t.tour.trips.iter().find(|x| x.arr > now)).map(|x| x.dep) {
+                if why != ig::ASKED_ALREADY {
+                    if let Some(m) = c.messages.get_mut(asked) {
+                        m.args.push(("dep".into(), dep.to_string()));
+                    }
+                }
+            }
+            send(c, From::Control, to, Priority::Info, why, Vec::new(), false, None)
+        }
+    };
+    if let Some(r) = c.messages.get_mut(reply) {
+        r.re = Some(asked);
+    }
+    if let Some(m) = c.messages.get_mut(asked) {
+        m.done = true;
+        m.state = State::Read;
+    }
 }
 
 /// The bus of a tour broke down (or had an accident) now, as its driver says: the day's incident

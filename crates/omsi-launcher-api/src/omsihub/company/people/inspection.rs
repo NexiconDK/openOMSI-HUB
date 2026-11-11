@@ -216,6 +216,10 @@ pub fn trip_stops(c: &Company, lines: &[omsi_launcher_lib::LineInfo]) -> TripSto
 /// boarding): its trip.
 fn stretch_text(k: &co::inspection::Check, names: &TripStops) -> String {
     let trip = if k.from.is_empty() { k.to.clone() } else { format!("{} → {}", k.from, k.to) };
+    // (round U: the player's trip, where the game's inspectors got on and off)
+    if !k.game.is_empty() && !k.from.is_empty() && k.stops > 0 {
+        return trf("%{from} → %{to} (%{n} stops)", &[("from", &k.from), ("to", &k.to), ("n", &k.stops.to_string())]);
+    }
     if k.off == 0 || k.stops < 2 {
         return trip;
     }
@@ -289,6 +293,8 @@ pub fn part(c: &Company, ui: &Value, stops: &[StopLines], names: &TripStops) -> 
             "trip": if k.stop.is_empty() { stretch_text(k, names) } else if k.from.is_empty() { k.to.clone() } else { format!("{} → {}", k.from, k.to) },
             "who": team(&k.names), "checked": k.checked, "caught": k.caught,
             "fines": if k.caught > 0 { eur(k.caught as i64 * k.fine) } else { "–".into() },
+            // (round U: a trip a player drove, checked in the game)
+            "game": if k.game.is_empty() { Value::Null } else if k.game == c.profile { json!(tr("Your trip")) } else { json!(k.game) },
         })
     };
     // (round T: a storaktion's buses together under its stop, where its first bus came)
@@ -379,12 +385,20 @@ pub fn part(c: &Company, ui: &Value, stops: &[StopLines], names: &TripStops) -> 
         })
         .collect();
     lines.sort_by(|a, b| b.0.total_cmp(&a.0));
+    // (round U: how the inspectors look in the game)
+    let look = json!({
+        "title": tr("The inspectors in the game").to_uppercase(),
+        "note": tr("When you drive a duty, the company's inspectors get on some of its trips and check the passengers. Choose their clothes: the figures are made from the passengers installed in the game."),
+        "options": co::inspection_game::Look::ALL.iter().map(|l| json!({ "key": l.key(), "label": tr(l.label()), "on": *l == c.inspection_plan.look })).collect::<Vec<_>>(),
+        "game_tag": tr("In the game"),
+    });
     let parts = [tr("Overview"), tr("Plan")];
     json!({
         "kind": "inspection",
         "empty": empty,
         "parts": parts, "part": shown,
         "plan": (shown == 1 && empty.is_none()).then(|| plan_part(c, stops)),
+        "look": look,
         "planned_tag": tr("planned"), "auto_tag": tr("automatic"),
         "today_title": format!("{}  ·  {}", tr("Today's teams"), local_day(&c.date, false)).to_uppercase(), "teams": teams,
         "no_teams": tr("No ticket inspectors at work today."),
@@ -437,6 +451,14 @@ pub fn act(s: &mut super::super::Session, what: &str, args: &Value) -> Result<Va
         }
         "insp_date_add" => super::super::act(s, |c| plan::add_date(c, date.as_deref().unwrap_or(""))),
         "insp_date_remove" => super::super::act(s, |c| plan::remove_date(c, date.as_deref().unwrap_or(""))),
+        // (round U: the inspectors' clothes in the game)
+        "insp_look" => {
+            let look = args.get("look").and_then(Value::as_str).and_then(co::inspection_game::Look::of);
+            super::super::act(s, |c| {
+                c.inspection_plan.look = look.ok_or("That look is not known.")?;
+                Ok(())
+            })
+        }
         _ => Ok(()),
     };
     Ok(r.err().map(|p| json!({ "popup": p })).unwrap_or(json!({})))

@@ -51,7 +51,9 @@ pub struct Plan {
     pub dates: Vec<DateDuties>,
     /// The last duty number given.
     #[serde(default)]
-    pub next: u32,
+    pub next: u32,    /// (round U) How the inspectors look in the game (`inspection_game::Look`).
+    #[serde(default)]
+    pub look: super::inspection_game::Look,
 }
 
 /// A date planned otherwise.

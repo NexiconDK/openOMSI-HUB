@@ -58,6 +58,7 @@ pub mod free_drive;
 pub mod fuel;
 pub mod incidents;
 pub mod inspection;
+pub mod inspection_game;
 pub mod inspection_plan;
 // (the lines' income and passengers on the UK model: fares by ticket, concessions, BSOG)
 pub mod income;

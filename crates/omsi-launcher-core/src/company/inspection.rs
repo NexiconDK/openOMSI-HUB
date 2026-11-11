@@ -55,6 +55,10 @@ pub struct Book {
     pub days: Vec<Day>,
     #[serde(default)]
     pub months: Vec<MonthTotal>,
+    /// (round U) What the inspectors did on the trips the players drove, as their games reported
+    /// it (`inspection_game::book_game`), by date: the day's close takes them.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub game: Vec<(String, Check)>,
 }
 
 /// A day closed.
@@ -177,6 +181,10 @@ pub struct Check {
     pub alight: u32,
     #[serde(default)]
     pub stops: u32,
+    /// (round U) A check on a trip a player drove, as the game reported it: the driver's name
+    /// (empty: the model's).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub game: String,
 }
 
 /// A month's checks added up.
@@ -325,7 +333,7 @@ pub fn close(c: &mut Company, date: &str, mut lines: Vec<LineDay>, seen: &[Seen]
                 let aboard = s.pax as f64 * rng.range(ON_BOARD.0, ON_BOARD.1);
                 let checked = aboard.min(most).round() as u32;
                 let caught = (0..checked).filter(|_| rng.chance(s.share * (1.0 - super::inspection_plan::ACTION_ESCAPE))).count() as u32;
-                checks.push(Check { line: s.line.clone(), number: s.number.clone(), dep: s.dep, arr: s.arr, from: s.from.clone(), to: s.to.clone(), team: p.ids.clone(), names: names.clone(), checked, caught, fine: each, duty: p.duty, stop: stop.clone(), at, off: at, board: 0, alight: 0, stops: s.stops });
+                checks.push(Check { line: s.line.clone(), number: s.number.clone(), dep: s.dep, arr: s.arr, from: s.from.clone(), to: s.to.clone(), team: p.ids.clone(), names: names.clone(), checked, caught, fine: each, duty: p.duty, stop: stop.clone(), at, off: at, board: 0, alight: 0, stops: s.stops, game: String::new() });
             }
             continue;
         }
@@ -346,7 +354,7 @@ pub fn close(c: &mut Company, date: &str, mut lines: Vec<LineDay>, seen: &[Seen]
             let aboard = (s.pax as f64 * rng.range(ON_BOARD.0, ON_BOARD.1) * (1.0 + frac)).min(s.pax as f64);
             let checked = aboard.min(most).min(rate * minutes).round() as u32;
             let caught = (0..checked).filter(|_| rng.chance(s.share * (1.0 - ESCAPE))).count() as u32;
-            checks.push(Check { line: s.line.clone(), number: s.number.clone(), dep: s.dep, arr: s.arr, from: s.from.clone(), to: s.to.clone(), team: p.ids.clone(), names: names.clone(), checked, caught, fine: each, duty: p.duty, stop: String::new(), at: on, off, board, alight, stops: n });
+            checks.push(Check { line: s.line.clone(), number: s.number.clone(), dep: s.dep, arr: s.arr, from: s.from.clone(), to: s.to.clone(), team: p.ids.clone(), names: names.clone(), checked, caught, fine: each, duty: p.duty, stop: String::new(), at: on, off, board, alight, stops: n, game: String::new() });
             let ready = off + rng.int(TRANSFER.0, TRANSFER.1) as i32;
             cur = next_bus(&trips, s, alight, ready, p.to).or_else(|| {
                 // (no bus passes there: the next one from either end)
@@ -354,6 +362,12 @@ pub fn close(c: &mut Company, date: &str, mut lines: Vec<LineDay>, seen: &[Seen]
             });
         }
     }
+    // (round U: the players' trips are checked in their games - what the games reported; the model
+    // does not check those trips again)
+    let game = super::inspection_game::of_day(c, date);
+    checks.retain(|k| !game.iter().any(|g| (g.line.eq_ignore_ascii_case(&k.line) || g.number.eq_ignore_ascii_case(&k.number)) && (k.dep - g.dep).abs() <= 1));
+    checks.extend(game);
+    c.inspection.game.retain(|(d, _)| d != date);
     checks.sort_by(|a, b| a.at.cmp(&b.at).then(a.number.cmp(&b.number)));
     // (the paid fines, a line a booking)
     let mut written: Cents = 0;

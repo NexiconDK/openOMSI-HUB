@@ -13,7 +13,7 @@
 --   data/status.json      plugin -> Omsi-Hub: how the duty stands (for the dispatcher)
 -- A game without the file functions gets the handshake and the reports in its log instead.
 
-local VERSION = "1.6.2"
+local VERSION = "1.7.0"
 local BRIDGE = 1
 local PANEL = "omsihub"
 
@@ -348,6 +348,12 @@ messages.setup(tr, { send = send_out, issued = issued, assignment = assignment, 
   trip_ended(run, { trip = d.trip, how = how, delay = delay() })
 end })
 
+-- (NexiconDK, round U) the company's ticket inspectors in the bus (inspection.lua)
+local inspection = require("inspection")
+inspection.setup(tr, { report = report, quick = messages.quick, inbox = messages.has_inbox }, assignment)
+messages.on_inspection(inspection.ordered, inspection.ask)
+omsi.on("inspection_done", function(...) inspection.done(...) end)
+
 omsi.on("duty", function(line, tour)
   -- (a short-turn takes the same duty again at its next trip: no new duty)
   if messages.turned(line, tour) then return panel() end
@@ -370,6 +376,7 @@ end)
 omsi.on("stop_arrive", function(_, _, number, d)
   trip.arrive(number, d)
   messages.arrive(number)
+  inspection.arrive(number)
 end)
 omsi.on("stop_depart", function(_, _, number, d) trip.depart(number, d) end)
 omsi.on("jolt", function() trip.jolt() end)
@@ -493,6 +500,8 @@ omsi.on("key", function(key, down)
   if type(key) == "string" and (key:match("^Control") or key:match("^Alt") or key:match("^Shift")) then modifiers[key] = down or nil end
   if card.key(key, down, next(modifiers) ~= nil) then return end
   if messages.key(key, down) then return end
+  -- (Ctrl+K: ticket inspectors asked for, round U)
+  if key == "KeyK" and down and (modifiers.ControlLeft or modifiers.ControlRight) and inspection.ask() then return end
   if key == "F10" and down and (company_duty() or duty_now()) and fn("ui.focus") then
     omsi.ui.focus(not omsi.ui.focused())
     panel()
@@ -539,6 +548,7 @@ end)
 
 omsi.every(2, function()
   watch_trips()
+  inspection.tick()
   panel()
 end)
 omsi.every(5, live_notices)

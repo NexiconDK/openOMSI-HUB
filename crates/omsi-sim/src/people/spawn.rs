@@ -97,6 +97,8 @@ impl PeopleSim {
             ped: None,
             bodies: BodyOps::default(),
             served_stop: None,
+            force_variant: None,
+            inspect: Default::default(),
             ai_visits: HashMap::new(),
             last_door_open: HashMap::new(),
             runner_rolls: HashSet::new(),
@@ -474,11 +476,18 @@ impl PeopleSim {
             let idx = kind.map(|k| k % self.types.len()).unwrap_or(pick);
             let t = &self.types[idx];
             let tk = Arc::as_ptr(t) as usize;
-            // the default clothes or one of the `.cti` variants, alike likely
-            let n_var = t.variants.len() as u64 + 1;
+            // (NexiconDK, round U: an inspector's clothes asked for - `inspect` - are worn)
+            if let Some(v) = self.force_variant.filter(|v| *v <= t.variants.len() && kind.is_some()) {
+                choice = Some((idx, v));
+                break;
+            }
+            // the default clothes or one of the `.cti` variants, alike likely - never the
+            // inspectors' uniforms (`super::inspect::is_inspector_variant`), which are theirs alone
+            let allowed: Vec<usize> = (0..=t.variants.len()).filter(|v| *v == 0 || !super::inspect::is_inspector_variant(&t.variants[*v - 1].name)).collect();
+            let n_var = allowed.len() as u64;
             let v0 = (self.rand() % n_var) as usize;
             // a clothing variant nobody near wears in this figure
-            let var = (0..n_var as usize).map(|k| (v0 + k) % n_var as usize).find(|v| !near.contains(&(tk, *v)));
+            let var = (0..n_var as usize).map(|k| allowed[(v0 + k) % n_var as usize]).find(|v| !near.contains(&(tk, *v)));
             let figure_free = !near.iter().any(|n| n.0 == tk);
             match var {
                 Some(v) if figure_free || attempt >= 6 || kind.is_some() => {
@@ -486,7 +495,7 @@ impl PeopleSim {
                     break;
                 }
                 Some(v) if choice.is_none() => choice = Some((idx, v)),
-                None if choice.is_none() && attempt == 9 => choice = Some((idx, v0)),
+                None if choice.is_none() && attempt == 9 => choice = Some((idx, allowed[v0])),
                 _ => {}
             }
         }

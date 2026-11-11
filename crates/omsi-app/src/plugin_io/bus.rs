@@ -275,6 +275,8 @@ fn person_state(p: &omsi_sim::people::Person) -> &'static str {
             Task::InBusToExit => "leaving",
             Task::WalkingToBusstop => "to_stop",
             Task::SittingInBus => "seated",
+            // (NexiconDK, round U: a ticket inspector aboard)
+            Task::Inspecting => "inspecting",
             Task::Nothing if x.inside.is_some() => "riding",
             Task::Nothing => "waiting",
         },

@@ -38,6 +38,8 @@ impl PeopleSim {
             ai_req.insert(bn.id, (vec![false; bn.cabin.entries.len()], vec![false; bn.cabin.exits.len()]));
         }
         self.pax_req = ai_req;
+        // (NexiconDK, round U: the ticket inspectors aboard the player's bus, `inspect`)
+        self.inspect_tick(dt, buses, bus_ix, world);
         // (`remove` as a mask, brought up to date with what was added to it before each
         // look: a search of the list per person was quadratic)
         let mut gone = std::mem::take(&mut self.scratch.gone);

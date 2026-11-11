@@ -223,7 +223,14 @@ fn start(s: &mut Session, args: &Value, p: &dyn crate::Platform) -> Result<Value
     core::log_to_file(&format!("company duty launcher: {} {} duty {} on {} with {}", st.line, st.tour, sheet.duty.duty + 1, st.date, st.bus));
     // (the add-on's plugin told of the company's duty: `addon.rs`)
     let crew = crew_of(s, &c, &sheet);
-    super::super::addon::assign_duty(&d, Some((&c.name, &format!("{} {} {}", st.line, st.tour, sheet.duty.duty + 1), plugin_parts(&c, &sheet))), Some(crew), Some(&c.id));
+    let mut parts = plugin_parts(&c, &sheet);
+    // (round U: the company's ticket inspection in the game, and its inspectors' clothes beside the
+    // figures they are made of)
+    parts.inspection = plan_of(s, &sheet.duty.date).and_then(Result::ok).and_then(|p| game_inspection(&c, &p, &sheet.duty.line, &sheet.duty.tour));
+    if parts.inspection.is_some() {
+        super::inspectors::dress(&c);
+    }
+    super::super::addon::assign_duty(&d, Some((&c.name, &format!("{} {} {}", st.line, st.tour, sheet.duty.duty + 1), parts)), Some(crew), Some(&c.id));
     let launched = core::launch(&d).map_err(|e| format!("{e:#}"))?;
     core::log_to_file(&format!("game {}: {}", launched.pid, launched.command));
     p.launched();
@@ -282,6 +289,20 @@ pub fn note_words(n: &co::crew::Note) -> String {
         (Some(t), false) => format!("{}: {}", tr(t.text()), n.text),
         (None, _) => n.text.clone(),
     }
+}
+
+/// (round U) The company's ticket inspection on the duty of tour `tour` of line `line` for the
+/// plugin (`co::inspection_game::for_duty`): departures in seconds of the day.
+pub(crate) fn game_inspection(c: &Company, dp: &co::plan::DayPlan, line: &str, tour: &str) -> Option<omsihub_plugin::bridge::Inspection> {
+    use omsihub_plugin::bridge::{Boarding, Inspection, TripShare};
+    let g = co::inspection_game::for_duty(c, dp, line, tour)?;
+    Some(Inspection {
+        share: g.share,
+        shares: g.shares.into_iter().map(|t| TripShare { departure: t.dep as f64 * 60.0, share: t.share }).collect(),
+        boardings: g.boardings.into_iter().map(|b| Boarding { departure: b.dep as f64 * 60.0, board: b.board, stops: b.stops, n: b.n, variant: b.variant, names: b.names }).collect(),
+        can_order: g.can_order,
+        variant: g.variant,
+    })
 }
 
 /// The company's side of the duty for the plugin's board in the game: its sheet (signing on,
@@ -344,7 +365,7 @@ pub(crate) fn plugin_parts(c: &Company, sheet: &Sheet) -> super::super::addon::P
         early: co::econ_uk::ON_TIME_EARLY,
         late: co::econ_uk::ON_TIME_LATE,
     });
-    super::super::addon::Parts { sheet: rows, controls, fare, contract }
+    super::super::addon::Parts { sheet: rows, controls, fare, contract, inspection: None }
 }
 
 /// What the duty launcher does.

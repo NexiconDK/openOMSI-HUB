@@ -18,6 +18,7 @@ resvg = { version = "0.45", default-features = false }
 omsi-cfg = { path = "../omsi-cfg" }
 omsi-launcher-core = { path = "../omsi-launcher-core" }
 omsi-model = { path = "../omsi-model" }
+omsi-o3d = { path = "../omsi-o3d" }
 omsi-sim = { path = "../omsi-sim" }
 omsi-texture = { path = "../omsi-texture" }
 omsi-vehicle = { path = "../omsi-vehicle" }

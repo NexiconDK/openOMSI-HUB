@@ -312,6 +312,23 @@ pub trait PluginIo {
     fn people_set_density(&mut self, _v: f32) -> bool {
         false
     }
+    /// (NexiconDK, round U) Ticket inspectors come into the player's bus standing at a stop
+    /// (`stop`: its name, for the report) and ride `stops` stops, `n` of them, in the clothes
+    /// `variant` (a figure's `.cti` item; "": their own). The run's number; None: they cannot
+    /// (no bus, inspectors aboard already).
+    fn people_inspect(&mut self, _n: u8, _stops: u32, _variant: &str, _stop: &str) -> Option<u32> {
+        None
+    }
+    /// (NexiconDK, round U) The share of the people boarding the player's bus who ride without a
+    /// ticket (0 to 0.5).
+    fn people_set_dodger_share(&mut self, _v: f32) -> bool {
+        false
+    }
+    /// (NexiconDK, round U) Whether ticket inspectors ride in the player's bus now, and the
+    /// riders without a ticket aboard.
+    fn people_inspection(&self) -> Option<(bool, u32)> {
+        None
+    }
 
     // --- duty and timetable -------------------------------------------------------------
     fn duty(&self) -> Option<Duty> {

@@ -11,6 +11,7 @@
 pub mod bake;
 pub mod colour;
 pub mod export;
+pub mod inspector;
 pub mod model;
 pub mod paint;
 pub mod shapes;

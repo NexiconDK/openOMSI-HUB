@@ -182,7 +182,7 @@ fn act_need(act: &str, what: &str) -> Need {
         "hire" | "employment" | "raise" | "advertise" | "keep" | "grant_raise" | "refuse_raise" | "course_lock" | "book_course" | "train" | "set_hours" | "staff_rule" | "auto" | "follow" | "holiday_answer" | "holiday_limit" | "agency_book" | "agency_cancel" | "staff_minimum" => STAFF,
         // (NexiconDK, ticket inspection round T: the plan of the ticket inspection - who manages
         // the staff or plans)
-        "insp_duty_save" | "insp_duty_remove" | "insp_date_add" | "insp_date_remove" => Any(&[Perm::Staff, Perm::Plans]),
+        "insp_duty_save" | "insp_duty_remove" | "insp_date_add" | "insp_date_remove" | "insp_look" => Any(&[Perm::Staff, Perm::Plans]),
         // the lines, their fares
         "line_title" | "line_type" | "line_hof" | "line_colour" | "line_connections" | "add_line" | "remove_line" => LINES,
         "set_fare" | "set_cap" => Any(&[Perm::Lines, Perm::Spend]),
@@ -650,7 +650,7 @@ mod tests {
     /// manages the staff or plans - on Bus Company Online's server as elsewhere - never by a driver.
     #[test]
     fn the_inspection_plan_is_the_staffs_or_the_planners() {
-        for act in ["insp_duty_save", "insp_duty_remove", "insp_date_add", "insp_date_remove"] {
+        for act in ["insp_duty_save", "insp_duty_remove", "insp_date_add", "insp_date_remove", "insp_look"] {
             let args = json!({ "act": act });
             let n = need("co_act", &args);
             assert!(n.met(&[Perm::Staff]) && n.met(&[Perm::Plans]), "{act}");

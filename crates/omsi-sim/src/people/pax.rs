@@ -47,6 +47,9 @@ pub enum Task {
     InBusToExit,
     WalkingToBusstop,
     SittingInBus,
+    /// (NexiconDK, ticket inspection round U) A ticket inspector aboard the player's bus: walks
+    /// from passenger to passenger and checks their tickets (`inspect`), then gets off.
+    Inspecting,
 }
 
 impl Task {
@@ -60,6 +63,7 @@ impl Task {
             Task::InBusToExit => "WalkingInBusToExit",
             Task::WalkingToBusstop => "WalkingToBusstop",
             Task::SittingInBus => "SittingInBus",
+            Task::Inspecting => "Inspecting",
         }
     }
 }
@@ -209,6 +213,9 @@ pub struct Pax {
     /// (NexiconDK, 1 November 2026) In a wheelchair at the door of the player's bus, waiting
     /// for its ramp (`ramp`): left behind by its driver if it goes without them.
     pub ramp_wait: Option<BusId>,
+    /// (NexiconDK, ticket inspection round U) Rides without a ticket: neither stamps nor buys
+    /// one (not a season ticket's `TICKET_NONE`); caught when the inspectors check them.
+    pub dodger: bool,
 }
 
 impl Pax {
@@ -282,6 +289,7 @@ impl Pax {
             late: None,
             no_room: None,
             ramp_wait: None,
+            dodger: false,
         }
     }
 

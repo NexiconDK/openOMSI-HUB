@@ -119,4 +119,18 @@ pub static FNS: &[ApiFn] = &[
         let v = a.num(0)?.clamp(0.0, 3.0) as f32;
         Ok::<_, ApiError>(c.io().people_set_density(v))
     }),
+    def!("people.inspect", "people", [p("stops", "integer"), o("n", "integer"), o("variant", "string"), o("stop", "string")], "integer or nil", "(Omsi-Hub) Ticket inspectors come into the player's bus, which stands at a stop (`stop`: its name, kept for the report), by its front door: `n` of them (1 to 4, default 2) in the clothes `variant` (a figure's `.cti` item, e.g. `~Inspector_A_umove`; none or unknown: their own). They check the riders one by one, catch those without a ticket and get off after `stops` stops (1 to 12); some riders without a ticket get off as they come in. When they are off, the event `inspection_done` comes with (checked, caught, fled, stops, board_stop, leave_stop, team). The run's number; nil: no bus, or inspectors aboard already.", NEW, TrafficWrite, false, |c, a| {
+        let stops = a.int(0)?.clamp(1, 12) as u32;
+        let n = a.opt_int(1)?.unwrap_or(2).clamp(1, 4) as u8;
+        let variant = a.opt_str(2)?.unwrap_or_default();
+        let stop = a.opt_str(3)?.unwrap_or_default();
+        Ok::<_, ApiError>(c.io().people_inspect(n, stops, &variant, &stop).map(|x| Value::Int(x as i64)))
+    }),
+    def!("people.set_dodger_share", "people", [p("share", "number")], "boolean", "(Omsi-Hub) The share of the people boarding the player's bus who ride without a ticket (0 to 0.5): they neither stamp nor buy one, and ticket inspectors catch them (`people.inspect`).", NEW, TrafficWrite, false, |c, a| {
+        let v = a.num(0)?.clamp(0.0, 0.5) as f32;
+        Ok::<_, ApiError>(c.io().people_set_dodger_share(v))
+    }),
+    def!("people.inspection", "people", [], "table or nil", "(Omsi-Hub) The ticket inspection of the player's bus: `{aboard, dodgers}` - inspectors aboard now, and the riders without a ticket.", NEW, None, false, |c, a| {
+        Ok::<_, ApiError>(c.io().people_inspection().map(|(aboard, dodgers)| rec(vec![("aboard", Value::from(aboard)), ("dodgers", Value::Int(dodgers as i64))])))
+    }),
 ];

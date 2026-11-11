@@ -112,6 +112,12 @@ impl App {
                 let args = vec![omsi_plugin::InfoValue::Text(name.trim().to_string()), crate::plugins::num_f32(price)];
                 crate::plugins::queue_event(&mut self.integrations.plugin_events, "ticket_sold", args);
             }
+            // (NexiconDK, round U: the ticket inspectors got off - what they did)
+            for o in h.take_inspections() {
+                let num = |x: u32| omsi_plugin::InfoValue::Num(x as f64);
+                let args = vec![num(o.checked), num(o.caught), num(o.fled), num(o.stops), omsi_plugin::InfoValue::Text(o.board_stop.clone()), omsi_plugin::InfoValue::Text(o.leave_stop.clone()), num(o.team)];
+                crate::plugins::queue_event(&mut self.integrations.plugin_events, "inspection_done", args);
+            }
             if hurt > 0 {
                 self.service_msg = Some(("Pedestrian knocked down!".into(), 6.0));
                 crate::plugins::queue_event(&mut self.integrations.plugin_events, "pedestrian", vec![omsi_plugin::InfoValue::Num(hurt as f64)]);

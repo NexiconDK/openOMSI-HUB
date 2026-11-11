@@ -159,7 +159,7 @@ function Plan({ p }) {
 
 /** A trip checked. */
 const CheckRow = ({ k, grouped }) => html`<div class=${'ti-crow' + (k.caught > 0 ? ' caught' : '')}>
-  <span>${k.time}</span><span class="ti-line">${k.line}</span><span class="cut" title=${k.trip}>${k.trip}</span><span class="cut t-soft" title=${k.who}>${grouped ? '' : k.who}</span>
+  <span>${k.time}</span><span class="ti-line">${k.line}</span><span class="cut" title=${k.trip}>${k.game ? html`<${Tag} text=${k.game} tone="accent" /> ` : ''}${k.trip}</span><span class="cut t-soft" title=${k.who}>${grouped ? '' : k.who}</span>
   <span>${k.checked}</span><b class=${k.caught > 0 ? 't-warn' : 't-dim'}>${k.caught}</b><span class=${k.caught > 0 ? '' : 't-dim'}>${k.fines}</span>
 </div>`;
 
@@ -179,6 +179,11 @@ export function Inspection({ b }) {
         ${b.teams.length === 0 && html`<p class="co-note t-dim">${b.no_teams}</p>`}
         ${b.teams.map((t) => html`<div class="ti-team">${t.stop ? html`<span class="ti-line action">${t.stop}</span>` : html`<span class="ti-line">${t.line}</span>`}<b class="cut">${t.who}</b>${t.planned && html`<${Tag} text=${b.planned_tag} tone="accent" />`}${t.auto && html`<${Tag} text=${b.auto_tag} tone="ok" />`}${t.alone && html`<${Tag} text=${b.alone} tone="warn" />`}<span class="t-soft">${t.time}</span></div>`)}
       </${Section}>
+      ${b.look && html`<${Section} title=${b.look.title} style="flex:none;margin-top:14px">
+        <p class="co-note t-dim" style="margin:-4px 0 10px">${b.look.note}</p>
+        <div class="ti-looks">${b.look.options.map((o) => html`<button type="button" class=${'ti-look' + (o.on ? ' on' : '')} onClick=${() => !o.on && act('insp_look', { look: o.key })}>
+          <span class=${'ti-swatch ' + o.key}></span><span>${o.label}</span>${o.on ? html`<${Icon} name="check" size=${16} class="t-accent" />` : ''}</button>`)}</div>
+      </${Section}>`}
       <${Section} title=${b.totals_title} style="flex:none;margin-top:14px">
         <div class="ti-totals">
           <span></span>${b.totals.map((t) => html`<b>${t.label}</b>`)}

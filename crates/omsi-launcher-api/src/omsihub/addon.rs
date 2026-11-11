@@ -317,6 +317,9 @@ pub struct Parts {
     pub controls: Vec<bridge::ControlNote>,
     pub fare: Option<bridge::Fare>,
     pub contract: Option<bridge::ContractNote>,
+    /// (round U) The company's ticket inspection on the duty: riders without a ticket, the
+    /// inspectors boarding some of its trips (`company::launch::game_inspection`).
+    pub inspection: Option<bridge::Inspection>,
 }
 
 /// Give the plugin the duty of a drive about to start, where the plugin is on (otherwise
@@ -361,6 +364,7 @@ pub fn assign_duty(d: &core::Duty, company: Option<(&str, &str, Parts)>, crew: O
         controls: parts.controls,
         fare: parts.fare,
         contract: parts.contract,
+        inspection: parts.inspection,
         ..Assignment::default()
     };
     write_texts(&install::plugin_dir(&dir));
@@ -459,6 +463,24 @@ pub fn book() -> Vec<bridge::Report> {
                 core::log_to_file(&format!("add-on: a trip of line {} not booked: {e:#}", t.line));
             }
         }
+        // (round U: what the company's ticket inspectors did on the trip - to the company's queue
+        // where the duty is this launcher's company's, otherwise to the boss's launcher of the
+        // company session he joined: `together::join`)
+        if let Some(g) = game_check(r, a) {
+            match a.filter(|a| !a.company_id.is_empty()) {
+                Some(a) => {
+                    if let Err(e) = core::company::remote::queue(&data, &a.company_id, &core::company::remote::Order::Inspection { check: g }) {
+                        core::log_to_file(&format!("add-on: an inspection of the trip not queued: {e:#}"));
+                    }
+                }
+                None => {
+                    let mut k = GAME_CHECKS.lock().unwrap_or_else(|e| e.into_inner());
+                    k.push(g);
+                    let over = k.len().saturating_sub(8);
+                    k.drain(..over);
+                }
+            }
+        }
         // (a handover note, a defect of the walk-around, a fault on the way: to the company's
         // queue, which the launcher carries out with the company's rules - `remote::take`)
         if let Some((company, o)) = a.and_then(|a| crew_order(r, a)) {
@@ -469,6 +491,40 @@ pub fn book() -> Vec<bridge::Report> {
     }
     let _ = save(&c);
     new
+}
+
+/// (round U) What the inspectors did on a joined player's trips, for the boss's launcher
+/// (`together::join` sends them: `take_game_checks`).
+static GAME_CHECKS: std::sync::Mutex<Vec<core::company::inspection_game::GameCheck>> = std::sync::Mutex::new(Vec::new());
+
+/// The inspection reports of the game not yet sent to the boss's launcher of a company session.
+pub fn take_game_checks() -> Vec<core::company::inspection_game::GameCheck> {
+    std::mem::take(&mut *GAME_CHECKS.lock().unwrap_or_else(|e| e.into_inner()))
+}
+
+/// What an inspection report of the plugin (a report `"inspection"`) books: the company's check
+/// of the trip, its date the company's day (left empty here). None: not one, or without a line.
+pub fn game_check(r: &bridge::Report, a: Option<&Assigned>) -> Option<core::company::inspection_game::GameCheck> {
+    let i = r.inspection.as_ref().filter(|_| r.kind == "inspection")?;
+    let line = if r.line.trim().is_empty() { r.number.trim() } else { r.line.trim() };
+    if line.is_empty() {
+        return None;
+    }
+    let short = |x: &str| x.chars().filter(|c| !c.is_control()).take(64).collect::<String>();
+    Some(core::company::inspection_game::GameCheck {
+        line: short(line),
+        dep: r.departure.map_or(0, |d| (d / 60.0).round() as i32),
+        date: String::new(),
+        checked: i.checked.min(core::company::inspection_game::MOST_CHECKED),
+        caught: i.caught.min(i.checked),
+        fled: i.fled,
+        stops: i.stops.min(40),
+        board_stop: short(&i.board_stop),
+        leave_stop: short(&i.leave_stop),
+        names: i.names.iter().take(8).map(|n| short(n)).collect(),
+        ordered: i.ordered,
+        driver: a.map(|a| short(&a.driver)).unwrap_or_default(),
+    })
 }
 
 /// What a crew report of the plugin (`bridge::Report::is_crew`) orders the company of the

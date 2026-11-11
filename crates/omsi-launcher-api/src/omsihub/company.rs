@@ -33,6 +33,7 @@ mod dutycard;
 mod due;
 pub(crate) mod fleet;
 mod home;
+mod inspectors;
 pub(crate) mod inbox;
 pub mod kit;
 pub mod late;

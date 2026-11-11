@@ -547,6 +547,22 @@ impl HostState {
                     }
                 }
             },
+            // (round U: what the company's ticket inspectors did on a trip his game drove, booked as
+            // the boss's launcher books its own player's - `inspection_game::book_game`)
+            "inspection" if !can(Perm::Drive) => Err(not_allowed(Perm::Drive)),
+            "inspection" => match req.driving.as_ref().filter(|r| c.together.claim_for(r, guest).is_some()) {
+                None => Err(refusal(book::NO_DUTY)),
+                Some(r) => {
+                    let line = r.line.clone();
+                    match serde_json::from_str::<super::super::inspection_game::GameCheck>(&req.text).ok().filter(|_| req.text.len() <= 4000) {
+                        Some(g) if g.line.trim().eq_ignore_ascii_case(line.trim()) || g.line.trim().is_empty() => {
+                            let g = super::super::inspection_game::GameCheck { line, date: c.date.clone(), driver: name.clone(), ..g };
+                            super::super::inspection_game::book_game(c, &g).map_err(refusal)
+                        }
+                        _ => Err(refusal(UNKNOWN)),
+                    }
+                }
+            },
             "say" => {
                 let text = book::clean(&req.text, 160);
                 if !text.is_empty() {

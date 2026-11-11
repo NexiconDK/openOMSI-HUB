@@ -268,6 +268,11 @@ pub struct PeopleSim {
     pub bodies: BodyOps,
     /// Stop the player's bus is serving (standing at it).
     pub served_stop: Option<i64>,
+    /// (NexiconDK, round U) The clothing variant the next `spawn_as` with a figure asked for
+    /// gives (an inspector's uniform: `inspect`); taken by it.
+    pub force_variant: Option<usize>,
+    /// (NexiconDK, round U) The ticket inspection in the player's bus (`inspect`).
+    pub inspect: super::inspect::InspectState,
     /// Timetable buses at a stop: id → (stop, time the visit began).
     pub ai_visits: HashMap<u64, (i64, f64)>,
     /// When each bus last had a door open (the passengers' clock).

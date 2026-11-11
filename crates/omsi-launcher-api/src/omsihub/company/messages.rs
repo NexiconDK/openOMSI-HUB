@@ -84,7 +84,23 @@ fn action_of(a: &Action) -> InboxAction {
         What::Layover { saved } => (0.0, *saved, String::new()),
         What::Swap { .. } => (0.0, 0, String::new()),
     };
-    InboxAction { kind: a.what.key().to_string(), departure: a.dep as f64 * 60.0, part, minutes, stop, label: tr(a.what.label()) }
+    InboxAction { kind: a.what.key().to_string(), departure: a.dep as f64 * 60.0, part, minutes, stop, label: tr(a.what.label()), ..InboxAction::default() }
+}
+
+/// (round U) Ticket inspectors the driver asked for, as control answered: the plugin puts them in
+/// the bus by itself (an action `"inspection"`).
+fn ordered_of(o: &co::inspection_game::Ordered) -> InboxAction {
+    InboxAction {
+        kind: "inspection".into(),
+        departure: o.dep as f64 * 60.0,
+        label: tr("Ticket inspection"),
+        board: o.board,
+        stops: o.stops,
+        n: o.n,
+        variant: o.variant.clone(),
+        names: o.names.clone(),
+        ..InboxAction::default()
+    }
 }
 
 fn choice(key: &str, label: &str, icon: &str) -> Choice {
@@ -94,7 +110,12 @@ fn choice(key: &str, label: &str, icon: &str) -> Choice {
 /// The inbox of the driver of tour `tour` of line `line`, in the page's language: the plugin's
 /// and the phone's.
 pub fn inbox(c: &Company, line: &str, tour: &str, dp: Option<&DayPlan>) -> Inbox {
-    inbox_of(&c.name, c.messages.of_driver(line, tour, None, INBOX_KEPT), line, tour, dp)
+    let mut i = inbox_of(&c.name, c.messages.of_driver(line, tour, None, INBOX_KEPT), line, tour, dp);
+    // (round U: ticket inspectors are asked for only where the company has some at work today)
+    if co::staff::patrols(c, &c.date).is_empty() {
+        i.quick.retain(|q| q.key != Quick::RequestInspection.key());
+    }
+    i
 }
 
 /// The inbox of messages `list` (the newest first) of company `company`'s duty (`line`, `tour`):
@@ -109,7 +130,7 @@ pub fn inbox_of<'a>(company: &str, list: impl IntoIterator<Item = &'a Msg>, line
             mine: m.from_driver(),
             priority: m.priority.key().to_string(),
             text: text(m),
-            action: m.action.as_ref().map(action_of),
+            action: m.action.as_ref().map(action_of).or_else(|| m.inspection.as_ref().map(ordered_of)),
             state: m.state.key().to_string(),
             state_label: tr(m.state.label()),
             reply: Canned::of(&m.reply).map(|r| tr(r.label())).unwrap_or_default(),

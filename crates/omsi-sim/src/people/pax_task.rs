@@ -225,7 +225,7 @@ impl PeopleSim {
                 p.reach = false;
                 p.look_driver = false;
             }
-            Task::Nothing => {}
+            Task::Nothing | Task::Inspecting => {}
         }
     }
 
@@ -382,11 +382,16 @@ impl PeopleSim {
                             pp.group_tickets = group_tickets;
                             pp.stands_by_choice = prefer_seat == Some(false);
                             let price = self.tickets.as_ref().and_then(|t| t.tickets.get(id.saturating_sub(1) as usize)).map(|t| t.value).unwrap_or(0.0);
+                            // (NexiconDK, round U: into the player's bus some ride without a ticket - the
+                            // company's share of dodgers for the line and hour, `inspect`)
+                            let dodger = bn.id == BusId::Player && mobility.is_none() && self.draw_dodger();
+                            let (tk, id, price) = if dodger { (TICKET_NONE, 0, 0.0) } else { (tk, id, price) };
                             let pp = self.pax_mut(i).unwrap();
                             pp.seat = Some(k);
                             pp.ticket = tk;
                             pp.ticket_id = id;
                             pp.price = if id > 0 { price } else { 0.0 };
+                            pp.dodger = dodger;
                             self.set_task(i, Task::WalkingToBus, buses, bus_ix, world);
                         }
                     }
@@ -472,7 +477,7 @@ impl PeopleSim {
                     self.set_task(i, Task::InBusToExit, buses, bus_ix, world);
                 }
             }
-            Task::Nothing => {}
+            Task::Nothing | Task::Inspecting => {}
         }
     }
 

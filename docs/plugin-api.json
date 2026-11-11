@@ -2521,6 +2521,47 @@
       "permission": null
     },
     {
+      "name": "people.inspect",
+      "group": "people",
+      "since": "0.2.22",
+      "doc": "(Omsi-Hub) Ticket inspectors come into the player's bus, which stands at a stop (`stop`: its name, kept for the report), by its front door: `n` of them (1 to 4, default 2) in the clothes `variant` (a figure's `.cti` item, e.g. `~Inspector_A_umove`; none or unknown: their own). They check the riders one by one, catch those without a ticket and get off after `stops` stops (1 to 12); some riders without a ticket get off as they come in. When they are off, the event `inspection_done` comes with (checked, caught, fled, stops, board_stop, leave_stop, team). The run's number; nil: no bus, or inspectors aboard already.",
+      "params": [
+        {
+          "name": "stops",
+          "type": "integer",
+          "optional": false
+        },
+        {
+          "name": "n",
+          "type": "integer",
+          "optional": true
+        },
+        {
+          "name": "variant",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "stop",
+          "type": "string",
+          "optional": true
+        }
+      ],
+      "returns": "integer or nil",
+      "multi": false,
+      "permission": "traffic_write"
+    },
+    {
+      "name": "people.inspection",
+      "group": "people",
+      "since": "0.2.22",
+      "doc": "(Omsi-Hub) The ticket inspection of the player's bus: `{aboard, dodgers}` - inspectors aboard now, and the riders without a ticket.",
+      "params": [],
+      "returns": "table or nil",
+      "multi": false,
+      "permission": null
+    },
+    {
       "name": "people.list",
       "group": "people",
       "since": "0.2.22",
@@ -2544,6 +2585,22 @@
       "params": [
         {
           "name": "value",
+          "type": "number",
+          "optional": false
+        }
+      ],
+      "returns": "boolean",
+      "multi": false,
+      "permission": "traffic_write"
+    },
+    {
+      "name": "people.set_dodger_share",
+      "group": "people",
+      "since": "0.2.22",
+      "doc": "(Omsi-Hub) The share of the people boarding the player's bus who ride without a ticket (0 to 0.5): they neither stamp nor buy one, and ticket inspectors catch them (`people.inspect`).",
+      "params": [
+        {
+          "name": "share",
           "type": "number",
           "optional": false
         }
@@ -4419,6 +4476,20 @@
       ],
       "doc": "A ticket was sold at the cash desk: its name and price as the bus's ticket list has them.",
       "since": "0.2.21"
+    },
+    {
+      "name": "inspection_done",
+      "args": [
+        "checked",
+        "caught",
+        "fled",
+        "stops",
+        "board_stop",
+        "leave_stop",
+        "team"
+      ],
+      "doc": "(Omsi-Hub) The ticket inspectors of `people.inspect` got off the player's bus: the riders they checked, those they caught without a ticket, those without one who got off as they came in, the stops they rode, the stops they got on and off at, and how many they were.",
+      "since": "0.2.22"
     },
     {
       "name": "ui_click",

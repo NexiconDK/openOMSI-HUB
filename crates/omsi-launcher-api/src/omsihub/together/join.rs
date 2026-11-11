@@ -467,6 +467,12 @@ fn messages_link(base: &str, d: &Drive) {
                 take_answer(j, &v);
             }
         }
+    }    // (round U: what the company's ticket inspectors did on his trips, booked by the boss's launcher)
+    for g in super::super::addon::take_game_checks() {
+        let mut q = req.clone();
+        q.what = "inspection".into();
+        q.text = serde_json::to_string(&g).unwrap_or_default();
+        let _ = client::send(base, &q, client::TIMEOUT);
     }
 }
 

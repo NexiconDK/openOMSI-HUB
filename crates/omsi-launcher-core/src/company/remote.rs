@@ -52,6 +52,8 @@ pub enum Order {
     /// The player calls in sick for `days` days from today, or is well again.
     Sick { days: u32 },
     Well,
+    /// (round U) What the ticket inspectors did on a trip the player drove (the game's report).
+    Inspection { check: super::inspection_game::GameCheck },
 }
 
 /// An order from the phone's JSON, strictly: an object of exactly the fields of one order.
@@ -85,6 +87,11 @@ pub fn parse(v: &Value) -> Option<Order> {
         }
         "sick" if has(&["do", "days"]) => Some(Order::Sick { days: o.get("days")?.as_u64().filter(|n| (1..=crew::SICK_MAX as u64).contains(n))? as u32 }),
         "well" if has(&["do"]) => Some(Order::Well),
+        "inspection" if has(&["do", "check"]) => {
+            let g: super::inspection_game::GameCheck = serde_json::from_value(o.get("check")?.clone()).ok()?;
+            let short = |x: &str| x.chars().count() <= 64 && !x.chars().any(char::is_control);
+            (short(&g.line) && short(&g.board_stop) && short(&g.leave_stop) && short(&g.driver) && g.names.len() <= 8 && g.names.iter().all(|n| short(n)) && (g.date.is_empty() || day_of(&Value::String(g.date.clone())).is_some())).then_some(Order::Inspection { check: g })
+        }
         _ => None,
     }
 }
@@ -135,6 +142,12 @@ pub fn apply(c: &mut Company, o: &Order) -> Result<(), &'static str> {
         Order::Well => {
             crew::back_at_work(c);
             Ok(())
+        }
+        // (the game's report knows no date: the company's day)
+        Order::Inspection { check } => {
+            let date = if check.date.is_empty() { c.date.clone() } else { check.date.clone() };
+            let driver = if check.driver.trim().is_empty() { by.clone() } else { check.driver.clone() };
+            super::inspection_game::book_game(c, &super::inspection_game::GameCheck { date, driver, ..check.clone() })
         }
     }
 }

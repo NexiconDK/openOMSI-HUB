@@ -644,8 +644,11 @@ declared to call the function (a plain `.lua` file has them all).
 | --- | --- | --- | --- |
 | `omsi.people.counts()` | walking, waiting, riding | The people of the map near the camera: walking, waiting at stops, riding a bus. | 0.2.22 |
 | `omsi.people.density()` | number or nil | The people setting: 0 to 3, 1 the map's own amount. | 0.2.22 |
+| `omsi.people.inspect(stops, [n], [variant], [stop])` | integer or nil | (Omsi-Hub) Ticket inspectors come into the player's bus, which stands at a stop (`stop`: its name, kept for the report), by its front door: `n` of them (1 to 4, default 2) in the clothes `variant` (a figure's `.cti` item, e.g. `~Inspector_A_umove`; none or unknown: their own). They check the riders one by one, catch those without a ticket and get off after `stops` stops (1 to 12); some riders without a ticket get off as they come in. When they are off, the event `inspection_done` comes with (checked, caught, fled, stops, board_stop, leave_stop, team). The run's number; nil: no bus, or inspectors aboard already. *Permission: `traffic_write`.* | 0.2.22 |
+| `omsi.people.inspection()` | table or nil | (Omsi-Hub) The ticket inspection of the player's bus: `{aboard, dodgers}` - inspectors aboard now, and the riders without a ticket. | 0.2.22 |
 | `omsi.people.list([radius])` | list of tables | The people (within `radius` m of the player's bus, when given): `{id, x, y, z, state, aboard, ai_bus, stop, destination, ticket, complaint}`. `state`: `"strolling"`, `"idle"`, `"standing"`, `"waiting"`, `"to_bus"`, `"boarding"`, `"riding"`, `"seated"`, `"leaving"`, `"to_stop"`; `aboard` in the player's bus; `complaint` 0 to 3 (3: they leave). | 0.2.22 |
 | `omsi.people.set_density(value)` | boolean | Changes the people setting (0 to 3). *Permission: `traffic_write`.* | 0.2.22 |
+| `omsi.people.set_dodger_share(share)` | boolean | (Omsi-Hub) The share of the people boarding the player's bus who ride without a ticket (0 to 0.5): they neither stamp nor buy one, and ticket inspectors catch them (`people.inspect`). *Permission: `traffic_write`.* | 0.2.22 |
 | `omsi.people.stops()` | list of tables | The stops near the camera where people wait: `{id, name, x, y, z, waiting}`. | 0.2.22 |
 | `omsi.people.waiting(stop)` | integer | How many people wait at a stop (its map object id). | 0.2.22 |
 
@@ -881,6 +884,7 @@ declared to call the function (a plain `.lua` file has them all).
 | `trip_done` | `trip`, `how`, `driving`, `comfort`, `tickets` | A trip of the duty ended, once: its number in the duty, `"arrived"`, `"skipped"` or `"given_up"`, then its ratings in per cent (driving, comfort, ticket selling). | 0.2.21 |
 | `jolt` | `along`, `across`, `speed_kmh`, `passengers` | The bus braked, sped up or cornered hard enough to cost driving rating (m/s², signed); at most one a second. | 0.2.21 |
 | `ticket_sold` | `name`, `price` | A ticket was sold at the cash desk: its name and price as the bus's ticket list has them. | 0.2.21 |
+| `inspection_done` | `checked`, `caught`, `fled`, `stops`, `board_stop`, `leave_stop`, `team` | (Omsi-Hub) The ticket inspectors of `people.inspect` got off the player's bus: the riders they checked, those they caught without a ticket, those without one who got off as they came in, the stops they rode, the stops they got on and off at, and how many they were. | 0.2.22 |
 | `ui_click` | `panel`, `element` | A button (or another clickable part) of one of the plugin's panels was clicked; `element` is `nil` for the panel itself. Enter in a text field is a click on it. | 0.2.21 |
 | `ui_focus` | `focused` | The panels got the mouse or gave it back (also by Esc, or a menu of the game opening). | 0.2.21 |
 | `ui_change` | `panel`, `element`, `value` | A checkbox (`true`/`false`), slider (its number), text field (its text, at every key) or tabs element (the tab's number from 1) of the plugin's panels was changed by the player. | 0.2.22 |

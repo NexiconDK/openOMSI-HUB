@@ -188,6 +188,65 @@ pub struct Assignment {
     /// The duty strip, the bus's handover notes and the walk-around of a company's duty
     /// (`lua/duty_strip.lua`; None: a drive of the player's own).
     pub crew: Option<Crew>,
+    /// (NexiconDK, ticket inspection round U) The company's ticket inspection on the duty
+    /// (`lua/inspection.lua`; None: a drive of the player's own, or no inspectors).
+    pub inspection: Option<Inspection>,
+}
+
+/// (NexiconDK, ticket inspection round U) The company's ticket inspection on a duty: the
+/// share of the riders without a ticket on each of its trips, the inspectors who board some of
+/// them (where the company's inspectors patrol its line), and whether the driver may ask control
+/// for them ("Bestil kontrol").
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Inspection {
+    /// The share without a ticket of the trips not listed in `shares` (0 to 0.5).
+    pub share: f64,
+    pub shares: Vec<TripShare>,
+    pub boardings: Vec<Boarding>,
+    /// The company has inspectors at work today: the quick button to control is there.
+    pub can_order: bool,
+    /// The inspectors' clothes (a figure's `.cti` item, `~Inspector_<look>_<company>`) by look,
+    /// and the look of each boarding where it is not given.
+    pub variant: String,
+}
+
+/// A trip of the duty (when it leaves its first stop, seconds of the day) and its share of
+/// riders without a ticket.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct TripShare {
+    pub departure: f64,
+    pub share: f64,
+}
+
+/// Inspectors boarding a trip of the duty: at its stop `board` (from 1; the plugin takes the
+/// next one the bus calls at from there), riding `stops` stops, `n` of them in clothes `variant`,
+/// their names (the report names them).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Boarding {
+    pub departure: f64,
+    pub board: u32,
+    pub stops: u32,
+    pub n: u32,
+    pub variant: String,
+    pub names: Vec<String>,
+}
+
+/// (NexiconDK, round U) What the inspectors did in the bus (a report `"inspection"`).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct InspectionDone {
+    pub checked: u32,
+    pub caught: u32,
+    pub fled: u32,
+    pub stops: u32,
+    pub board_stop: String,
+    pub leave_stop: String,
+    pub names: Vec<String>,
+    /// The driver asked control for them.
+    pub ordered: bool,
 }
 
 /// A piece of the duty as the duty strip shows it: signing on, a trip, a break, signing off
@@ -314,6 +373,8 @@ pub struct Report {
     pub faults: Vec<String>,
     pub fault_state: Vec<(String, f32)>,
     pub reported: Vec<String>,
+    /// (NexiconDK, round U, `"inspection"`) What the ticket inspectors did on the trip.
+    pub inspection: Option<InspectionDone>,
 }
 
 impl Report {
@@ -341,7 +402,7 @@ pub struct Choice {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct InboxAction {
-    /// `"short_turn"`, `"out_of_service"`, `"layover"`, `"swap"`, `"hold"`, `"relief"`.
+    /// `"short_turn"`, `"out_of_service"`, `"layover"`, `"swap"`, `"hold"`, `"relief"`, `"inspection"` (round U: ticket inspectors the driver asked for).
     pub kind: String,
     /// The trip it is done at: when it leaves its first stop (seconds of the day).
     pub departure: f64,
@@ -349,10 +410,18 @@ pub struct InboxAction {
     pub part: f64,
     /// A hold's minutes.
     pub minutes: i32,
-    /// A relief's stop (its name).
+    /// A relief's stop (its name); the stop ticket inspectors get on at (`"inspection"`).
     pub stop: String,
     /// What it is, in a few words.
     pub label: String,
+    /// (NexiconDK, round U, `"inspection"`: inspectors the driver asked for, carried out by
+    /// itself) The stop they get on at (from 1, the trip's), the stops they ride, how many, their
+    /// clothes and names.
+    pub board: u32,
+    pub stops: u32,
+    pub n: u32,
+    pub variant: String,
+    pub names: Vec<String>,
 }
 
 /// A message in the driver's inbox, in the player's language.

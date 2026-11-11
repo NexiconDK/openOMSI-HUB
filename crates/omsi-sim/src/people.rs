@@ -74,6 +74,7 @@ pub mod seating;
 pub mod pax_tick;
 pub mod pax_task;
 pub mod pax_driver;
+pub mod inspect;
 pub mod runners;
 pub mod passed_by;
 pub mod greetings;

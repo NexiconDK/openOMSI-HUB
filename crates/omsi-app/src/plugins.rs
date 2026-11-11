@@ -763,6 +763,21 @@ impl PluginIo for Io<'_> {
         app.settings.pax_density = v;
         true
     }
+    fn people_inspect(&mut self, n: u8, stops: u32, variant: &str, stop: &str) -> Option<u32> {
+        let app = self.app_mut()?;
+        let world = app.world.clone()?;
+        let h = app.session.humans.as_mut()?;
+        h.sim.inspect(&*world.data(), n, stops, variant, stop).ok()
+    }
+    fn people_set_dodger_share(&mut self, v: f32) -> bool {
+        let Some(h) = self.app_mut().and_then(|a| a.session.humans.as_mut()) else { return false };
+        h.sim.set_dodger_share(v);
+        true
+    }
+    fn people_inspection(&self) -> Option<(bool, u32)> {
+        let h = self.app()?.session.humans.as_ref()?;
+        Some((h.inspecting(), h.dodgers_aboard()))
+    }
 
     // --- duty, timetable, map ---
     fn duty(&self) -> Option<op::Duty> {

@@ -19,7 +19,7 @@ use std::path::{Path, PathBuf};
 /// The plugin's name: its folder in the plugins folder.
 pub const NAME: &str = "omsihub";
 /// The plugin's version; `lua/main.lua` says the same (a test keeps the two the same).
-pub const VERSION: &str = "1.6.2";
+pub const VERSION: &str = "1.7.0";
 /// The plugin's files.
 pub const FILES: &[(&str, &str)] = &[
     ("main.lua", include_str!("../lua/main.lua")),
@@ -34,6 +34,7 @@ pub const FILES: &[(&str, &str)] = &[
     ("duty_strip.lua", include_str!("../lua/duty_strip.lua")),
     ("ontime.lua", include_str!("../lua/ontime.lua")),
     ("company.lua", include_str!("../lua/company.lua")),
+    ("inspection.lua", include_str!("../lua/inspection.lua")),
 ];
 /// The texts the plugin shows (`tr` in `lua/main.lua`), in English: Omsi-Hub puts their
 /// translations into the assignment (`bridge::Assignment::texts`).
@@ -251,6 +252,12 @@ pub const TEXTS: &[&str] = &[
     "Roadworks on the line today: expect delays",
     "Diversion on the line today: expect delays",
     "Diversion on the line today",
+    // the company's ticket inspectors in the bus (`lua/inspection.lua`)
+    "Ticket inspection gets on at %{stop}",
+    "Ticket inspection",
+    "Inspection: %{checked} checked, %{caught} without a ticket",
+    "Control has been asked on this trip already",
+    "Control is asked for ticket inspectors",
 ];
 
 /// The sounds of the control room's messages (`lua/messages.lua`), made here as small WAV files:

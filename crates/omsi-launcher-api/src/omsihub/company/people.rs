@@ -946,7 +946,7 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
         "holiday_answer" | "holiday_limit" => return holidays::act(s, what, args),
         "agency_book" | "agency_cancel" => return agencies::act(s, what, args),
         // (NexiconDK, ticket inspection round T: the plan of the ticket inspection)
-        "insp_duty_save" | "insp_duty_remove" | "insp_date_add" | "insp_date_remove" => inspection::act(s, what, args),
+        "insp_duty_save" | "insp_duty_remove" | "insp_date_add" | "insp_date_remove" | "insp_look" => inspection::act(s, what, args),
         "staff_minimum" => {
             let Some(role) = role_of(args.get("role").and_then(Value::as_str).unwrap_or("")) else { return Some(Ok(json!({}))) };
             let n = args.get("n").and_then(Value::as_u64).unwrap_or(0).min(99) as u32;

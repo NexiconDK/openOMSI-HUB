@@ -33,6 +33,8 @@ local DIM = "#9AA3AD"
 local tr = function(t) return t end
 local hook = {}
 local inbox = nil
+-- (round U: inspection.lua's - inspectors control sends, the driver asking for them)
+local on_inspection, ask_inspection = nil, nil
 local open = false
 local quick = false
 local shown = false
@@ -335,9 +337,14 @@ function M.read()
     if type(m) == "table" and m.id and not m.mine and not omsi.data.msg_seen[m.id] then
       omsi.data.msg_seen[m.id] = true
       if m.state == "sent" then reply("delivered", m.id) end
+      -- (round U: the company's answer to inspectors asked for - carried out by itself)
+      if type(m.action) == "table" and m.action.kind == "inspection" then
+        if on_inspection then on_inspection(m.action) end
+        answered[m.id] = "Read"
+      end
       toast(m.text or "", m.from, ICON[m.priority] or "chat", COLOR[m.priority], m.priority == "urgent" and 20 or 10)
       sound(m.priority)
-      if m.action then open = true end
+      if m.action and m.action.kind ~= "inspection" then open = true end
     end
   end
   -- (what Omsi-Hub's inbox says now wins)
@@ -382,6 +389,21 @@ function M.tick()
   if hold or shown then panel() end
 end
 
+-- (NexiconDK, round U) a quick button sent by another module (Ctrl+K: ticket inspectors)
+-- whether control's inbox of a company's duty is there (a company session's player has it too)
+function M.has_inbox()
+  return inbox ~= nil
+end
+
+function M.quick(key)
+  reply("quick", 0, key)
+end
+
+-- (round U) who carries out the company's answer to inspectors asked for, and who asks
+function M.on_inspection(carry_out, ask)
+  on_inspection, ask_inspection = carry_out, ask
+end
+
 -- a click of the inbox; whether it was this module's
 function M.click(p, element)
   if p ~= PANEL then return false end
@@ -390,6 +412,10 @@ function M.click(p, element)
     open, quick = false, false
   elseif e == "msg_quick" then
     quick = not quick
+  elseif e == "msg_q_request_inspection" and ask_inspection then
+    -- (inspectors: once a trip - inspection.lua says so)
+    ask_inspection()
+    quick = false
   elseif e:sub(1, 6) == "msg_q_" then
     local key = e:sub(7)
     reply("quick", 0, key)

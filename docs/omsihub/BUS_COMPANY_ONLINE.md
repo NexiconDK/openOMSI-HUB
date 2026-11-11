@@ -1196,6 +1196,18 @@ may see the Staff page - has the plan of the inspection duties and storaktions. 
 (`insp_duty_save`, `insp_duty_remove`, `insp_date_add`, `insp_date_remove`) are relayed and need
 the staff's or the planning's permission (`together::relay`), on the server as elsewhere.
 
+(11 November 2026, round U) The look of the inspectors in the game (`insp_look`: A uniform and
+yellow vest, B plain clothes, C the company's uniform, or mixed; `inspection_plan::Plan::look`) is
+relayed with the same permission. A player of a company session who drives a duty of the company
+asks control for inspectors with the quick button "Request ticket inspection" (Ctrl+K in the
+game): it goes to the boss's launcher as every quick button does (`msg_tell`), which answers in
+the duty's inbox - inspectors who get on a few stops ahead (an inbox action `"inspection"`, carried
+out by the player's plugin) or why not -, once a trip. What the inspectors did on his trip comes
+back as the request `"inspection"` (`inspection_game::GameCheck` as JSON in its text; the Drive
+permission and a duty of his own claimed, as for `msg_tell`), booked by the boss's launcher with
+the player's name on it (`inspection_game::book_game`). Other players of a LAN session see the
+inspectors' bus without them: only the driver's own game puts them aboard.
+
 ### Step 5: the roles
 
 The page's Roles, its owner's to give (`server_hq::set_member`, `Group::members`): the group's
