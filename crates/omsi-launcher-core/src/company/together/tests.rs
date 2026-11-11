@@ -976,6 +976,47 @@ fn a_trip_the_world_saw_him_drive_after_he_left_is_his() {
     assert_eq!((report.measured, report.dropped), (3, 0), "{report:?}");
 }
 
+/// (NexiconDK, 11 November 2026) A bus taken out for a free drive whose player is gone - his
+/// launcher closed without saying his game ended, or the server's process started again with
+/// nobody heard from - is free again after a while: it stayed "out" for good, 12 hours and more.
+/// One of an earlier day still out goes at the next close.
+#[test]
+fn a_free_drive_ends_when_its_player_is_gone() {
+    use super::super::free_drive;
+    let mut b = boss();
+    b.c.online.on_server = true;
+    market::buy_new(&mut b.c, &MarketBus { file: "Vehicles/Citaro/Citaro.bus".into(), name: "Citaro".into(), ..Default::default() }, Payment::Cash, "").unwrap();
+    let spare = b.c.fleet[1].id;
+    b.c.clock.minute = 300;
+    let p = b.plan();
+    ask(&mut b, "jan", "hello", |_| {});
+    let v = ask(&mut b, "jan", "take_bus", |r| r.target = spare);
+    assert!(v.get("start").is_some(), "{v}");
+    let jan = guest_no(&b, "jan");
+    let lines = timetable();
+    // still heard from: his bus stays out
+    let soon = Here { plan: Some(&p), lines: &lines, now: now() + 30, lead: 10 };
+    b.st.watch(&mut b.c, &soon);
+    assert!(free_drive::out_of(&b.c, jan).is_some());
+    // not heard from for longer than a player who left: the bus is free again
+    let later = Here { plan: Some(&p), lines: &lines, now: now() + host::LEFT_AFTER + 5, lead: 10 };
+    assert!(b.st.watch(&mut b.c, &later));
+    assert!(free_drive::out_of(&b.c, jan).is_none(), "his bus is back");
+    assert!(free_drive::buses(&b.c, &p, 300).iter().find(|x| x.id == spare).is_some_and(|x| x.busy.is_none()));
+    // (the server started again: nobody known online - a drive of long ago ends too)
+    b.c.together.free_drives.push(free_drive::FreeDrive { guest: jan, vehicle: spare, date: b.c.date.clone(), from: 300, since: 1, done: false });
+    let mut fresh = HostState::default();
+    let restarted = Here { plan: Some(&p), lines: &lines, now: now(), lead: 10 };
+    fresh.watch(&mut b.c, &restarted);
+    assert!(free_drive::out_of(&b.c, jan).is_none());
+    // (a drive of an earlier day still out goes at the close)
+    let old = super::super::dates::add(&b.c.date, -2);
+    b.c.together.free_drives.push(free_drive::FreeDrive { guest: jan, vehicle: spare, date: old, from: 300, since: now(), done: false });
+    let closed = b.c.date.clone();
+    free_drive::after_close(&mut b.c, &closed);
+    assert!(b.c.together.free_drives.is_empty(), "{:?}", b.c.together.free_drives);
+}
+
 #[test]
 fn a_player_back_takes_his_duty_back_from_the_ai_at_its_next_trip() {
     let mut b = boss();

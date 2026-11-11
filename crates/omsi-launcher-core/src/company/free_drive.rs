@@ -237,8 +237,10 @@ pub fn close(c: &mut Company, date: &str) -> (Cents, f64) {
 }
 
 /// After the close of `closed`: the drives and runs of that day and before go (a drive still out
-/// stays until his game ends).
+/// stays until his game ends - but (11 November 2026) never past the next day: one of an earlier
+/// day still "out" is over, the bus free again).
 pub fn after_close(c: &mut Company, closed: &str) {
     c.together.free_runs.retain(|r| r.date.as_str() > closed);
-    c.together.free_drives.retain(|d| d.date.as_str() > closed || !d.done);
+    let before = super::dates::add(closed, -1);
+    c.together.free_drives.retain(|d| d.date.as_str() > closed || (!d.done && d.date.as_str() > before.as_str()));
 }

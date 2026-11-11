@@ -1672,6 +1672,20 @@ tab "Competitors").
 Tested: `competitors::tests`,
 `server_admin::tests::the_admin_makes_takes_over_changes_and_deletes_competitors`.
 
+### A free drive's bus comes back (11 November 2026)
+
+A bus taken out for a free drive (`free_drive::take`) was the player's until his launcher said
+his game had ended (`free_done`) - after the world took the drive's account. When the world had
+stopped already (nobody left in it: `idle_stop`) the launcher asked it again and again and never
+gave the bus back; a launcher closed, or the server's process started again, never said it at
+all: the bus stayed "out" with his name on it for good. Now:
+
+- the host ends a free drive whose player has not been heard from for `LEFT_AFTER` (60 s) - as
+  his duties go to the AI - or is not known online at all after a restart (`HostState::watch`);
+- the player's launcher gives the world's account up `FREE_GIVE_UP` (3 min) after the game went
+  and gives the bus back all the same (the drive's run is lost: its km, fares and pay);
+- a drive of an earlier day still out goes at the next close (`free_drive::after_close`).
+
 ### Driving yourself pays (3 November 2026, K1-K5)
 
 Decided: a company of the server does better with its players driving than with AI drivers alone

@@ -46,6 +46,11 @@ const EVERY: Duration = Duration::from_millis(2500);
 /// went: the world tells the company first what became of it - his bus handed over to the AI on
 /// the way is no duty left (`book::handed_over`).
 const WORLD_DONE_AFTER: Duration = Duration::from_secs(15);
+/// (NexiconDK, 11 November 2026) A free drive's account the world could not take this long after
+/// its game went (the world stopped - nobody left in it, `idle_stop` - or cannot be reached) is
+/// given up: the bus is given back all the same, the drive's run is lost. It stayed "out" for
+/// good before: the launcher asked the world again and again and never gave the bus back.
+const FREE_GIVE_UP: Duration = Duration::from_secs(180);
 /// After this many failed messages in a row the boss's launcher is looked for again.
 const LOST_AFTER: u32 = 2;
 /// How many notices are kept.
@@ -374,7 +379,11 @@ fn run(stop: Arc<AtomicBool>) {
                         (Some(s), Some(world)) => post_free_drive(world, &req.name, &company, vehicle, &s),
                         _ => true,
                     };
-                    if posted {
+                    let give_up = d.gone.is_some_and(|t| t.elapsed() >= FREE_GIVE_UP);
+                    if !posted && give_up {
+                        core::log_to_file("company session: the free drive's account not taken by the world: given up, the bus given back");
+                    }
+                    if posted || give_up {
                         req.what = "free_done".into();
                     } else {
                         done = false;

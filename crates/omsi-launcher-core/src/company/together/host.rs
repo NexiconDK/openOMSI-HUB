@@ -792,6 +792,20 @@ impl HostState {
                 self.left_duty(c, here, &r, guest, why);
             }
         }
+        // (NexiconDK, 11 November 2026: a bus taken out for a free drive whose player is gone - his
+        // launcher closed or lost, the server's process started again - is free again: it stayed
+        // "out" for good, his name on it, when his launcher never said his game had ended)
+        let gone_free: Vec<u32> = c
+            .together
+            .free_drives
+            .iter()
+            .filter(|d| !d.done && now.saturating_sub(d.since) > LEFT_AFTER)
+            .filter(|d| self.online.iter().find(|o| o.guest == d.guest).is_none_or(|o| now.saturating_sub(o.seen) > LEFT_AFTER))
+            .map(|d| d.guest)
+            .collect();
+        for guest in gone_free {
+            super::super::free_drive::end(c, guest);
+        }
         // (NexiconDK: single trips taken whose game never came to the stop - left past the AI's
         // wait for him there: the company's again, said)
         let stale = book::stale_trips(c, clock::now(c), STALE_AFTER);
