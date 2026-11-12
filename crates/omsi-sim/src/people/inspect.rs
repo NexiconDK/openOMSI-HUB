@@ -25,6 +25,9 @@ pub const ESCAPE: f64 = 0.15;
 pub const CHECK_SECS: (f64, f64) = (2.0, 4.0);
 /// Seconds walking to a rider before the inspector passes them by (somebody in the way).
 pub const WALK_GIVE_UP: f32 = 12.0;
+/// (NexiconDK, 12 November 2026) How far from the door they came in by an inspector with
+/// nobody to check goes to stand (m): into the bus, out of the doorway.
+pub const STAND_FROM_DOOR: f32 = 2.0;
 /// Seconds of the people's clock after which the inspectors get off at the next stop whatever
 /// (a bus standing for good, a driver who never stops).
 pub const RUN_GIVE_UP: f64 = 30.0 * 60.0;
@@ -41,6 +44,17 @@ pub fn is_inspector_variant(name: &str) -> bool {
 /// name made safe for a file name).
 pub fn variant_name(look: char, tag: &str) -> String {
     format!("{INSPECTOR_PREFIX}{}_{}", look.to_ascii_uppercase(), tag)
+}
+
+/// (NexiconDK, 12 November 2026) The figures of `all` that wear an inspector's uniform among
+/// their clothes and are not in `kept`: kept for the inspectors when a map's `humans.txt` cuts
+/// the people down to its own (`PeopleSim::use_map_humans`).
+pub fn uniformed(all: &[Arc<HumanType>], kept: &[Arc<HumanType>]) -> Vec<Arc<HumanType>> {
+    all.iter()
+        .filter(|t| t.variants.iter().any(|v| is_inspector_variant(&v.name)))
+        .filter(|t| !kept.iter().any(|x| Arc::ptr_eq(x, t)))
+        .cloned()
+        .collect()
 }
 
 /// (NexiconDK, 11 November 2026) The look (`A`, `B`, `C`) of an inspector's clothes by their
@@ -102,6 +116,9 @@ pub struct Inspector {
     pub phase: Phase,
     pub timer: f32,
     pub out: bool,
+    /// (NexiconDK, 12 November 2026) Out of the doorway: walked to a rider or to a place to
+    /// stand. With nobody to check they stood in the door for good, riding along there.
+    pub placed: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -110,6 +127,9 @@ pub enum Phase {
     Walking,
     Checking,
     Leaving,
+    /// (NexiconDK, 12 November 2026) Nobody to check: walking into the bus, to stand there
+    /// (`stand_place`) until somebody is.
+    ToPlace,
 }
 
 /// What a run came to.
@@ -137,6 +157,20 @@ pub fn stop_served(moved: &mut bool, speed: f64, doors_open: bool) -> bool {
         return true;
     }
     false
+}
+
+/// (NexiconDK, 12 November 2026) Where inspector `k` of a run with nobody to check stands: a
+/// standing place of the cabin (else the floor in front of a seat) at least `STAND_FROM_DOOR`
+/// from the door they came in by, among those people walk to from it - the nearest such for the
+/// first, the next ones for the others. None: no such place (they stay where they are).
+pub fn stand_place(cabin: &Cabin, k: usize) -> Option<Vec3> {
+    let door = cabin.entries.first().or(cabin.exits.first())?;
+    let group = door.point.and_then(|p| cabin.point_group.get(p).copied());
+    let ok = |s: &&super::cabin::Seat| !s.mobility && group.is_none_or(|g| s.group == g) && (s.floor - door.inside).length() >= STAND_FROM_DOOR;
+    let standing: Vec<&super::cabin::Seat> = cabin.seats.iter().filter(ok).filter(|s| s.height <= 0.0).collect();
+    let mut places: Vec<Vec3> = if standing.is_empty() { cabin.seats.iter().filter(ok).map(|s| s.floor).collect() } else { standing.iter().map(|s| s.floor).collect() };
+    places.sort_by(|a, b| (*a - door.inside).length().total_cmp(&(*b - door.inside).length()));
+    places.get(k.min(places.len().saturating_sub(1))).copied()
 }
 
 /// The rider an inspector at `from` goes to next: the nearest of `riders` (person id, place in
@@ -217,7 +251,7 @@ impl PeopleSim {
             self.force_variant = None;
             let Some(i) = i else { continue };
             self.people[i].place = Place::Bus(BusId::Player, local);
-            team.push(Inspector { person: self.people[i].id, target: None, phase: Phase::Free, timer: 0.0, out: false });
+            team.push(Inspector { person: self.people[i].id, target: None, phase: Phase::Free, timer: 0.0, out: false, placed: false });
         }
         if team.is_empty() {
             return Err("No inspector could come in.");
@@ -327,7 +361,29 @@ impl PeopleSim {
             match m.phase {
                 Phase::Free => {
                     let taken: Vec<u32> = run.team.iter().filter_map(|x| x.target).collect();
-                    let Some(t) = next_rider(here, &riders, &run.visited, &taken) else { continue };
+                    let Some(t) = next_rider(here, &riders, &run.visited, &taken) else {
+                        // (nobody to check - an empty bus, or all checked before they were out
+                        // of the door: into the bus to stand, out of the doorway)
+                        if !m.placed {
+                            run.team[k].placed = true;
+                            let all = bn.cabin.all_points();
+                            let from = bn.cabin.omsi_nearest(here.as_vec3(), &all, false, true, None, None);
+                            let to = stand_place(&bn.cabin, k).and_then(|at| bn.cabin.omsi_nearest(at, &all, false, true, None, None));
+                            if let (Some(_), Some(_), Some(p)) = (from, to.filter(|t| Some(*t) != from), self.pax_mut(i)) {
+                                p.reach = false;
+                                p.talking = false;
+                                p.pt = from;
+                                p.pt_target = to;
+                                p.short = false;
+                                p.st = 5;
+                                p.pax_state = 1.0;
+                                run.team[k].phase = Phase::ToPlace;
+                                run.team[k].timer = 0.0;
+                            }
+                        }
+                        continue;
+                    };
+                    run.team[k].placed = true;
                     let goal = riders.iter().find(|r| r.0 == t).map(|r| r.1).unwrap_or(here);
                     let seat = self.index_of(t).and_then(|j| self.pax(j)).and_then(|x| x.seat);
                     let all = bn.cabin.all_points();
@@ -420,6 +476,19 @@ impl PeopleSim {
                         p.talking = false;
                     }
                 }
+                Phase::ToPlace => {
+                    run.team[k].timer += dt;
+                    let st = self.pax(i).map(|p| p.st).unwrap_or(0);
+                    // (there, or held up: stands where it got to; somebody to check goes first)
+                    let someone = { let taken: Vec<u32> = run.team.iter().filter_map(|x| x.target).collect(); next_rider(here, &riders, &run.visited, &taken).is_some() };
+                    if st == 7 || st == 0 || someone || run.team[k].timer > WALK_GIVE_UP {
+                        run.team[k].phase = Phase::Free;
+                        if let Some(p) = self.pax_mut(i) {
+                            p.st = 0;
+                            p.pax_state = 0.0;
+                        }
+                    }
+                }
                 Phase::Leaving => {}
             }
         }
@@ -489,7 +558,9 @@ mod run_tests {
     /// A solo bus of three seats along the aisle: the front door's threshold (x 1.1, y 4), the
     /// aisle from y 4 to y -3, the rear door's (y -3).
     fn cabin() -> Arc<Cabin> {
-        let dir = std::env::temp_dir().join(format!("omsi-inspect-cabin-{}", std::process::id()));
+        static N: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+        let n = N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let dir = std::env::temp_dir().join(format!("omsi-inspect-cabin-{}-{n}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::write(dir.join("test.bus"), "[boundingbox]\n2.5\n12\n3\n0\n0\n1.5\n\n[passengercabin]\ncabin.cfg\n\n[paths]\npaths.cfg\n").unwrap();
         std::fs::write(dir.join("paths.cfg"), "[pathpnt]\n1.1\n4\n0.4\n\n[pathpnt]\n0\n4\n0.5\n\n[pathpnt]\n0\n0\n0.5\n\n[pathpnt]\n0\n-3\n0.5\n\n[pathpnt]\n1.1\n-3\n0.4\n\n[pathlink]\n0\n1\n\n[pathlink]\n1\n2\n\n[pathlink]\n2\n3\n\n[pathlink]\n3\n4\n").unwrap();
@@ -502,7 +573,11 @@ mod run_tests {
 
     /// A figure with its own clothes, another item and the inspectors' uniform.
     fn human() -> Arc<HumanType> {
-        let dir = std::env::temp_dir().join(format!("omsi-inspect-hum-{}", std::process::id()));
+        // (a folder of its own each time: the tests run side by side, and one removing the folder
+        // another reads gave a figure without its clothes)
+        static N: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+        let n = N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let dir = std::env::temp_dir().join(format!("omsi-inspect-hum-{}-{n}", std::process::id()));
         std::fs::create_dir_all(dir.join("tex")).unwrap();
         std::fs::write(dir.join("person.hum"), "[model]\nmodel.cfg\n").unwrap();
         std::fs::write(dir.join("model.cfg"), "[CTC]\nColorscheme\ntex\n0\n\n[CTCTexture]\nfarbschema\nbody.jpg\n").unwrap();
@@ -618,6 +693,54 @@ mod run_tests {
         assert!(h.take_inspections().is_empty(), "told once");
         // (nobody of the run is left inside the bus)
         assert!(!h.people.iter().any(|p| matches!(&p.state, State::Pax(x) if x.task == Task::Inspecting)));
+    }
+
+    /// (NexiconDK, 12 November 2026) In a bus nobody rides in the inspectors go in and stand in
+    /// the bus - not in the doorway, where they rode along for good - and check who boards.
+    #[test]
+    fn with_nobody_to_check_the_inspectors_leave_the_doorway() {
+        let world = crate::world_data::WorldData::default();
+        let c = cabin();
+        let mut h = PeopleSim::new(std::path::Path::new("/nonexistent"), 50);
+        h.types = vec![human()];
+        h.pool_types = 1;
+        h.last_buses = Arc::new(vec![bus(&c, 0.0, true)]);
+        h.inspect(&world, 2, 3, "~Inspector_A_test", "Banegården").unwrap();
+        let door = c.entries[0].inside;
+        let places: Vec<Vec3> = (0..2).filter_map(|k| stand_place(&c, k)).collect();
+        assert_eq!(places.len(), 2);
+        assert!(places.iter().all(|p| (*p - door).length() >= STAND_FROM_DOOR), "{places:?}");
+        assert_ne!(places[0], places[1], "each its own place");
+        for _ in 0..300 {
+            frame(&mut h, &world, bus(&c, 0.0, true), 0.1);
+        }
+        let team: Vec<Vec3> = h.people.iter().filter_map(|p| match &p.state {
+            State::Pax(x) if x.task == Task::Inspecting => Some(x.pos.as_vec3()),
+            _ => None,
+        }).collect();
+        assert_eq!(team.len(), 2);
+        assert!(team.iter().all(|p| (*p - door).length() > 1.5), "out of the doorway: {team:?} (door {door:?})");
+        // somebody gets on and sits down: checked all the same
+        rider(&mut h, &world, &c, 0, true);
+        for _ in 0..300 {
+            frame(&mut h, &world, bus(&c, 10.0, false), 0.1);
+        }
+        assert_eq!(h.dodgers_aboard(), 0, "the rider who came after them is checked");
+    }
+
+    /// (NexiconDK, 12 November 2026) A map whose `humans.txt` lists its own people keeps the
+    /// figures in the inspectors' uniforms all the same (after the pool, never passengers).
+    #[test]
+    fn the_uniformed_figures_stay_beside_a_maps_own_people() {
+        let dressed = human();
+        let dir = std::env::temp_dir().join(format!("omsi-inspect-plain-{}", std::process::id()));
+        let plain = figure(&dir, "Other/plain.hum", &["Variante1"]);
+        std::fs::remove_dir_all(&dir).ok();
+        let all = vec![plain.clone(), dressed.clone()];
+        let got = uniformed(&all, &[plain.clone()]);
+        assert_eq!(got.len(), 1);
+        assert!(Arc::ptr_eq(&got[0], &dressed));
+        assert!(uniformed(&all, &[plain, dressed]).is_empty(), "listed by the map already");
     }
 
     /// Some of the riders without a ticket get off as the inspectors come in (`ESCAPE` of

@@ -941,6 +941,15 @@ fn with_faults(c: &Company, mut s: DriveStart) -> DriveStart {
     s
 }
 
+/// (NexiconDK, ticket inspection, 12 November 2026) A player's start with the company's ticket
+/// inspection on its duty (`inspection_game::for_duty`), as the boss's own launcher gives its game.
+fn with_inspection(c: &Company, p: &DayPlan, r: &DutyRef, mut s: DriveStart) -> DriveStart {
+    s.inspection = super::super::inspection_game::for_duty(c, p, &r.line, &r.tour);
+    // (and their clothes, to be made on his computer: the ones asked for with "Bestil kontrol" too)
+    s.uniform = s.inspection.as_ref().map(|_| serde_json::json!({ "inspectors": super::super::server_api::inspectors_json(c), "short": c.short, "name": c.name, "colours": c.colours }));
+    s
+}
+
 /// How a player's game starts on duty `r` of the day `p` (planned for a player: not another's).
 fn start_of(c: &Company, here: &Here, p: &DayPlan, r: &DutyRef) -> Result<DriveStart, &'static str> {
     if here.lines.is_empty() {
@@ -951,7 +960,7 @@ fn start_of(c: &Company, here: &Here, p: &DayPlan, r: &DutyRef) -> Result<DriveS
     // launcher sees whether its bus is installed there)
     sheet.hitches.retain(|h| !matches!(h, Hitch::NotYours(_) | Hitch::NoDriver | Hitch::Over | Hitch::NotInstalled(_)));
     let st = dl::start(&sheet, here.lines, here.lead).map_err(|h| h.words().0)?;
-    Ok(with_faults(c, DriveStart::of(&bus_now(c, p, st, &sheet.planned))))
+    Ok(with_inspection(c, p, r, with_faults(c, DriveStart::of(&bus_now(c, p, st, &sheet.planned)))))
 }
 
 /// How a player's game starts on duty `r` of the day `p` from its trip `from` (an index into its
@@ -964,7 +973,7 @@ fn start_from(c: &Company, here: &Here, p: &DayPlan, r: &DutyRef, from: usize) -
     sheet.hitches.retain(|h| !matches!(h, Hitch::NotYours(_) | Hitch::NoDriver | Hitch::Over | Hitch::NotInstalled(_) | Hitch::Driven));
     sheet.planned = sheet.planned.split_off(from.min(sheet.planned.len()));
     let st = dl::start(&sheet, here.lines, here.lead).map_err(|h| h.words().0)?;
-    Ok(with_faults(c, DriveStart::of(&bus_now(c, p, st, &sheet.planned))))
+    Ok(with_inspection(c, p, r, with_faults(c, DriveStart::of(&bus_now(c, p, st, &sheet.planned)))))
 }
 
 /// (NexiconDK, single trips) How player `guest`'s game starts on the trips of duty `r` of the day
@@ -989,7 +998,7 @@ fn start_part(c: &Company, here: &Here, p: &DayPlan, r: &DutyRef, guest: u32, a:
     // trip another player took: what is more than his trips - not a last trip it hands on halfway)
     sheet.planned = all[a..book::free_until(c, r, guest, b, n).max(b)].to_vec();
     let whole = dl::part_of(&sheet, here.lines);
-    let mut out = with_faults(c, DriveStart::of(&st));
+    let mut out = with_inspection(c, p, r, with_faults(c, DriveStart::of(&st)));
     if let (Some(x), Some(w)) = (part, whole) {
         if w.first == x.first && w.trips > x.trips {
             out.more = w.trips - x.trips - usize::from(w.to_stop.is_some());

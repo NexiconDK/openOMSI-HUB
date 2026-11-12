@@ -386,6 +386,51 @@ pub fn assign_duty(d: &core::Duty, company: Option<(&str, &str, Parts)>, crew: O
     }
 }
 
+/// (round U) The company's ticket inspection on a duty as the plugin takes it
+/// (`inspection_game::for_duty`): departures in seconds of the day.
+pub fn inspection_of(g: core::company::inspection_game::ForGame) -> bridge::Inspection {
+    use bridge::{Boarding, Inspection, TripShare};
+    Inspection {
+        share: g.share,
+        shares: g.shares.into_iter().map(|t| TripShare { departure: t.dep as f64 * 60.0, share: t.share }).collect(),
+        boardings: g.boardings.into_iter().map(|b| Boarding { departure: b.dep as f64 * 60.0, board: b.board, stops: b.stops, n: b.n, variant: b.variant, names: b.names }).collect(),
+        can_order: g.can_order,
+        variant: g.variant,
+    }
+}
+
+/// (NexiconDK, ticket inspection, 12 November 2026) Give the plugin a joined player's drive of a
+/// company session (Bus Company Online's too): no company duty of this launcher's - no board,
+/// no sign-on, its line and tour the game's own - but the company's ticket inspection on it
+/// (`inspection`, from the boss's side's start), and what it reports goes to the session
+/// (`book`: `game_check` without a company here). An assignment of an earlier drive of the
+/// player's own company is no longer the plugin's. Said in the launcher's log when it fails.
+pub fn assign_session(d: &core::Duty, inspection: Option<bridge::Inspection>) {
+    let mut c = load();
+    let Ok(dir) = game_plugins_dir(&c) else { return };
+    if install::status(&dir).state != install::State::On {
+        return;
+    }
+    let config = core::load_config();
+    let driver = d.profile.clone().filter(|p| !p.trim().is_empty()).unwrap_or(config.profile);
+    let a = Assignment {
+        driver: driver.trim().to_string(),
+        map: d.map.clone(),
+        bus: d.bus.clone(),
+        display_font: d.display_font.clone().unwrap_or_default(),
+        inspection,
+        ..Assignment::default()
+    };
+    write_texts(&install::plugin_dir(&dir));
+    match assign(a, &language()) {
+        Ok(v) => {
+            c.assigned = Some(Assigned { issued: v["issued"].as_u64().unwrap_or(0), driver: driver.trim().to_string(), map: d.map.clone(), bus: d.bus.clone(), ..Default::default() });
+            let _ = save(&c);
+        }
+        Err(e) => core::log_to_file(&format!("add-on: no assignment for the plugin: {e}")),
+    }
+}
+
 /// The plugin's folder in the game Omsi-Hub starts now (None: the plugin is not on there).
 pub fn game_plugin_dir() -> Option<PathBuf> {
     game_plugins_dir(&load()).ok().map(|d| install::plugin_dir(&d))

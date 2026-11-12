@@ -538,6 +538,19 @@ pub struct DriveStart {
     pub fault_state: Vec<(String, f32)>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub defects: Vec<String>,
+    /// (NexiconDK, ticket inspection, 12 November 2026) The company's ticket inspection on the
+    /// duty in his game (`inspection_game::for_duty`): the riders without a ticket, the company's
+    /// inspectors boarding some of its trips, whether he may ask control for them. It was the
+    /// boss's own launcher's alone: a joined player - every player of Bus Company Online - saw
+    /// inspectors only when he asked for them. None: none today, or a boss's launcher of before.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inspection: Option<super::super::inspection_game::ForGame>,
+    /// (NexiconDK, 12 November 2026) The company's inspectors' clothes, as the server lists its
+    /// companies (`server_api::inspectors_json` beside `short`, `name` and `colours`): his
+    /// launcher makes them before his game starts. They came only from the list of the world's
+    /// companies his launcher had last read, and the inspectors came in their own clothes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uniform: Option<Value>,
 }
 
 fn is_zero(n: &usize) -> bool {
@@ -615,6 +628,8 @@ impl DriveStart {
             lines: Vec::new(),
             fault_state: Vec::new(),
             defects: Vec::new(),
+            inspection: None,
+            uniform: None,
             vehicle: s.vehicle,
             km: s.km.filter(|k| k.is_finite() && *k >= 0.0),
             fuel: s.fuel.filter(|f| f.is_finite()).map(|f| f.clamp(0.0, 1.0)),

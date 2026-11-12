@@ -117,14 +117,16 @@ pub fn letters(c: &Company) -> Vec<char> {
 }
 
 /// A trip of the duty and its share without a ticket.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
 pub struct TripShare {
     pub dep: i32,
     pub share: f64,
 }
 
 /// Inspectors boarding a trip of the duty.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
 pub struct Boarding {
     pub dep: i32,
     /// The stop they get on at (from 1), the stops they ride, how many.
@@ -135,8 +137,10 @@ pub struct Boarding {
     pub names: Vec<String>,
 }
 
-/// The company's inspection on the player's duty.
-#[derive(Clone, Debug, Default, PartialEq)]
+/// The company's inspection on the player's duty (also a joined player's, Bus Company Online's
+/// too: sent with his start, `together::wire::DriveStart::inspection`).
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
 pub struct ForGame {
     pub share: f64,
     pub shares: Vec<TripShare>,

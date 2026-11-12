@@ -115,6 +115,16 @@ fn dress_all(slug: &str, dresses: &[Dress]) {
     }
 }
 
+/// (NexiconDK, 12 November 2026) Dress the inspectors of the company a joined player drives for,
+/// as the boss's side sent them with his start (`DriveStart::uniform`, a row as the server lists
+/// the companies: `world_dresses`) - before his game starts, so that it has them.
+pub fn dress_listed(row: &serde_json::Value) {
+    match world_dresses(row) {
+        Some((slug, ds)) if !ds.is_empty() => dress_all(&slug, &ds),
+        _ => core::log_to_file("inspectors: the company's clothes not told with the start"),
+    }
+}
+
 /// How long a game joining a map's world waits for the inspectors' clothes of its companies
 /// (the first time; made once, a later game finds them made). What is not made by then is made
 /// on meanwhile and seen from the next game on.

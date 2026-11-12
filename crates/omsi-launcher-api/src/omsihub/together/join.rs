@@ -903,6 +903,12 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
     if d.lan.is_some() {
         dress_world();
     }
+    // (NexiconDK, 12 November 2026: the company's ticket inspection on his duty, to his plugin - as
+    // the boss's own launcher gives its game: the inspectors on patrol board his trips too)
+    if let Some(u) = start.uniform.as_ref() {
+        super::super::company::inspectors::dress_listed(u);
+    }
+    super::super::addon::assign_session(&d, start.inspection.clone().map(super::super::addon::inspection_of));
     let launched = core::launch(&d).map_err(|e| format!("{e:#}"))?;
     core::log_to_file(&format!("game {}: {}", launched.pid, launched.command));
     p.launched();

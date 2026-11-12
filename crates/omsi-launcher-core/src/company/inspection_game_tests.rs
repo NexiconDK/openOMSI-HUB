@@ -180,3 +180,25 @@ fn the_day_s_close_takes_the_game_s_check_instead_of_the_model_s() {
     assert!(day.checks.len() <= model.checks.len());
     assert!(c.inspection.game.is_empty(), "taken by the close");
 }
+
+/// (NexiconDK, 12 November 2026) A joined player's start carries the company's inspection on his
+/// duty (Bus Company Online's players saw inspectors only when they asked for them): sent and
+/// read back as it was; a start of a boss's launcher of before (without it) reads as none.
+#[test]
+fn a_joined_player_s_start_carries_the_inspection_of_his_duty() {
+    use crate::company::together::wire::DriveStart;
+    let mut c = company();
+    with_inspectors(&mut c, 2);
+    let dp = plan(&c);
+    let g = (1..=4).filter_map(|t| for_duty(&c, &dp, "Linie5", &t.to_string())).find(|g| !g.boardings.is_empty()).expect("a tour boarded");
+    let s = DriveStart { line: "Linie5".into(), tour: "1".into(), inspection: Some(g.clone()), ..Default::default() };
+    let back: DriveStart = serde_json::from_str(&serde_json::to_string(&s).unwrap()).unwrap();
+    // (the shares as JSON reads them back: to the last digit or so)
+    let b = back.inspection.expect("sent");
+    assert_eq!((&b.boardings, b.can_order, &b.variant, b.shares.len()), (&g.boardings, g.can_order, &g.variant, g.shares.len()));
+    assert!((b.share - g.share).abs() < 1e-9 && b.shares.iter().zip(&g.shares).all(|(x, y)| x.dep == y.dep && (x.share - y.share).abs() < 1e-9));
+    let mut old = serde_json::to_value(&DriveStart { line: "Linie5".into(), ..Default::default() }).unwrap();
+    assert!(old.get("inspection").is_none(), "none: not sent");
+    old["unknown"] = serde_json::json!(1);
+    assert_eq!(serde_json::from_value::<DriveStart>(old).unwrap().inspection, None);
+}

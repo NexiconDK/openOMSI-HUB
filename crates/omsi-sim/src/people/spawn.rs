@@ -661,9 +661,19 @@ impl PeopleSim {
             list.len(),
             path.display()
         );
+        // (NexiconDK, 12 November 2026: the figures a bus company's ticket inspectors wear their
+        // uniform on - made on a few installed ones, `inspect` - stay too, after the pool: never
+        // drawn as passengers, there for the inspectors. With a map's list without them the
+        // inspectors came in their own clothes)
+        let kept: Vec<Arc<HumanType>> = picked.iter().chain(figures.iter()).cloned().collect();
+        let dressed = super::inspect::uniformed(&self.types[..self.pool_types.min(self.types.len())], &kept);
+        if !dressed.is_empty() {
+            log::info!("humans: {} figures in the ticket inspectors' clothes kept for them", dressed.len());
+        }
         self.pool_types = picked.len();
         self.types = picked;
         self.types.extend(figures);
+        self.types.extend(dressed);
     }
 
     /// People the moving bus has just knocked down. OMSI counts them in the driver's

@@ -294,15 +294,7 @@ pub fn note_words(n: &co::crew::Note) -> String {
 /// (round U) The company's ticket inspection on the duty of tour `tour` of line `line` for the
 /// plugin (`co::inspection_game::for_duty`): departures in seconds of the day.
 pub(crate) fn game_inspection(c: &Company, dp: &co::plan::DayPlan, line: &str, tour: &str) -> Option<omsihub_plugin::bridge::Inspection> {
-    use omsihub_plugin::bridge::{Boarding, Inspection, TripShare};
-    let g = co::inspection_game::for_duty(c, dp, line, tour)?;
-    Some(Inspection {
-        share: g.share,
-        shares: g.shares.into_iter().map(|t| TripShare { departure: t.dep as f64 * 60.0, share: t.share }).collect(),
-        boardings: g.boardings.into_iter().map(|b| Boarding { departure: b.dep as f64 * 60.0, board: b.board, stops: b.stops, n: b.n, variant: b.variant, names: b.names }).collect(),
-        can_order: g.can_order,
-        variant: g.variant,
-    })
+    co::inspection_game::for_duty(c, dp, line, tour).map(super::super::addon::inspection_of)
 }
 
 /// The company's side of the duty for the plugin's board in the game: its sheet (signing on,
