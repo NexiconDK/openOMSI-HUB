@@ -51,7 +51,7 @@ pub fn variant_name(look: char, tag: &str) -> String {
 /// the people down to its own (`PeopleSim::use_map_humans`).
 pub fn uniformed(all: &[Arc<HumanType>], kept: &[Arc<HumanType>]) -> Vec<Arc<HumanType>> {
     all.iter()
-        .filter(|t| t.variants.iter().any(|v| is_inspector_variant(&v.name)))
+        .filter(|t| t.def.grown_up() && t.variants.iter().any(|v| is_inspector_variant(&v.name)))
         .filter(|t| !kept.iter().any(|x| Arc::ptr_eq(x, t)))
         .cloned()
         .collect()
@@ -224,7 +224,7 @@ impl PeopleSim {
         // the figures that have the clothes, a different one for each where there are
         let mut wearing: Vec<(usize, usize)> = Vec::new();
         if !variant.trim().is_empty() {
-            for (k, t) in self.types.iter().enumerate() {
+            for (k, t) in self.types.iter().enumerate().filter(|(_, t)| t.def.grown_up()) {
                 if let Some(v) = t.variants.iter().position(|s| s.name.trim().eq_ignore_ascii_case(variant.trim())) {
                     wearing.push((k, v + 1));
                 }
@@ -244,7 +244,13 @@ impl PeopleSim {
             let w = bn.world(local);
             let (kind, var) = match wearing.get(k % wearing.len().max(1)) {
                 Some(&(t, v)) => (Some(t), Some(v)),
-                None => (None, None),
+                // (nobody wears the uniform here: a grown-up of the people in their own clothes -
+                // never a child's figure)
+                None => {
+                    let adults: Vec<usize> = (0..self.pool_types.min(self.types.len())).filter(|t| self.types[*t].def.grown_up()).collect();
+                    let pick = (!adults.is_empty()).then(|| adults[(self.rand() % adults.len() as u64) as usize]);
+                    (pick, None)
+                }
             };
             self.force_variant = var;
             let i = self.spawn_as(world, w, bn.heading, State::Pax(Box::new(pax)), kind);
@@ -741,6 +747,40 @@ mod run_tests {
         assert_eq!(got.len(), 1);
         assert!(Arc::ptr_eq(&got[0], &dressed));
         assert!(uniformed(&all, &[plain, dressed]).is_empty(), "listed by the map already");
+    }
+
+    /// (NexiconDK, 12 November 2026) A child's figure in the uniform never checks the tickets:
+    /// the grown-up's does; with no grown-up in the uniform, a grown-up in its own clothes.
+    #[test]
+    fn a_child_is_never_an_inspector() {
+        let world = crate::world_data::WorldData::default();
+        let c = cabin();
+        let dir = std::env::temp_dir().join(format!("omsi-inspect-child-{}", std::process::id()));
+        let _ = figure(&dir, "Kids/kid.hum", &["~Inspector_A_test"]);
+        let hum = dir.join("Humans/Kids/kid.hum");
+        std::fs::write(&hum, "[model]\nmodel.cfg\n\n[age]\n8\n").unwrap();
+        let child = Arc::new(HumanType::load(&hum).unwrap());
+        std::fs::remove_dir_all(&dir).ok();
+        assert!(!child.def.grown_up());
+        let mut h = PeopleSim::new(std::path::Path::new("/nonexistent"), 50);
+        h.types = vec![child.clone(), human()];
+        h.pool_types = 2;
+        h.last_buses = Arc::new(vec![bus(&c, 0.0, true)]);
+        h.inspect(&world, 3, 2, "~Inspector_A_test", "Banegården").unwrap();
+        let team: Vec<&Person> = h.people.iter().filter(|p| matches!(&p.state, State::Pax(x) if x.task == Task::Inspecting)).collect();
+        assert_eq!(team.len(), 3);
+        assert!(team.iter().all(|p| !Arc::ptr_eq(&p.ty, &child)), "no child in the team");
+        assert!(uniformed(&[child.clone()], &[]).is_empty(), "nor kept for them");
+        // (only the child wears it: a grown-up in its own clothes)
+        let mut h = PeopleSim::new(std::path::Path::new("/nonexistent"), 50);
+        let plain_dir = std::env::temp_dir().join(format!("omsi-inspect-adult-{}", std::process::id()));
+        let adult = figure(&plain_dir, "Grown/adult.hum", &["Variante1"]);
+        std::fs::remove_dir_all(&plain_dir).ok();
+        h.types = vec![child.clone(), adult.clone()];
+        h.pool_types = 2;
+        h.last_buses = Arc::new(vec![bus(&c, 0.0, true)]);
+        h.inspect(&world, 2, 2, "~Inspector_A_test", "").unwrap();
+        assert!(h.people.iter().filter(|p| matches!(&p.state, State::Pax(x) if x.task == Task::Inspecting)).all(|p| Arc::ptr_eq(&p.ty, &adult)));
     }
 
     /// Some of the riders without a ticket get off as the inspectors come in (`ESCAPE` of

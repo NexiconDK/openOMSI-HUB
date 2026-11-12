@@ -35,6 +35,13 @@ pub enum Mobility {
 }
 
 impl Human {
+    /// (NexiconDK, 12 November 2026) A grown-up on foot: 18 or older by its `[age]` (a figure
+    /// without one counts as one), neither in a wheelchair nor with a pram - who may be a bus
+    /// company's ticket inspector (a child's figure in the uniform had checked the tickets).
+    pub fn grown_up(&self) -> bool {
+        self.age.unwrap_or(40) >= 18 && self.mobility.is_none()
+    }
+
     pub fn load(path: &Path) -> Result<Human, omsi_cfg::CfgError> {
         let f = CfgFile::read(path)?;
         let mut h = Human { path: f.path.clone(), walk_param: [1.4, 66.0, 1.0, 1.0, 0.0], ..Default::default() };

@@ -33,6 +33,11 @@ fn figures(root: &Path, content: Option<&Path>) -> Vec<PathBuf> {
                 if !name.ends_with(".hum") || name.contains("driver") || name.contains("child") || name.contains("kid") || name.contains("rollstuhl") || name.contains("wheelchair") {
                     continue;
                 }
+                // (NexiconDK, 12 November 2026: grown-ups alone, by the figure's own `[age]` - a
+                // child's figure without "child" in its name had worn the uniform)
+                if omsi_content::human::Human::load(&p).is_ok_and(|h| !h.grown_up()) {
+                    continue;
+                }
                 // (aXYZ's figures whose clothes come out cleanest first - woman01's back has
                 // islands that take the vest's colour onto its shoulder -, then the rest)
                 let rank = match BEST.iter().position(|b| name.replace('\\', "/").ends_with(b)) {
@@ -64,11 +69,17 @@ pub fn dresses(c: &Company) -> Vec<Dress> {
     dresses_of(&c.short, &c.name, c.colours.first().map(String::as_str).unwrap_or(""), &ig::letters(c))
 }
 
-/// A company's clothes for each of its looks `letters`, from its short name (else its name), its
+/// The most letters of a company's name on the inspectors' backs.
+const BACK_MOST: usize = 14;
+
+/// A company's clothes for each of its looks `letters`, from its name (its short name when the
+/// name is longer than `BACK_MOST`), its
 /// first colour (`#rrggbb`) - as the server lists the companies too (`dress_world`).
 pub fn dresses_of(short: &str, name: &str, colour: &str, letters: &[char]) -> Vec<Dress> {
     let colour = hex(colour).unwrap_or([0xF5, 0x82, 0x20]);
-    let name = if short.trim().chars().count() >= 2 { short.trim().to_string() } else { name.trim().chars().take(14).collect() };
+    // (NexiconDK, 12 November 2026: the company's name where it fits on the back - "UMOVE", not its
+    // short name "UMO" -, else its short name)
+    let name = if name.trim().chars().count() <= BACK_MOST || short.trim().chars().count() < 2 { name.trim().chars().take(BACK_MOST).collect() } else { short.trim().to_string() };
     letters.iter().filter(|l| matches!(l.to_ascii_uppercase(), 'A' | 'B' | 'C')).map(|look| Dress { look: look.to_ascii_uppercase(), colour, company: name.clone(), text: "BILLETKONTROL".into() }).collect()
 }
 
@@ -192,10 +203,14 @@ mod tests {
         assert_eq!(slug, "umove");
         assert_eq!(ds, dresses_of("UMOVE", "Umove Aarhus", "#F58220", &['A', 'B', 'C']));
         assert_eq!(ds.iter().map(|d| d.look).collect::<String>(), "ABC");
-        assert!(ds.iter().all(|d| d.colour == [0xF5, 0x82, 0x20] && d.company == "UMOVE"));
+        assert!(ds.iter().all(|d| d.colour == [0xF5, 0x82, 0x20] && d.company == "Umove Aarhus"), "the name, where it fits");
         // (a server of before lists none)
         assert!(world_dresses(&serde_json::json!({ "id": "x", "name": "Old" })).is_none());
         // (a short name too short: the name's first letters)
         assert_eq!(dresses_of("U", "Citybus Nord", "#123456", &['C'])[0].company, "Citybus Nord");
+        // (NexiconDK, 12 November 2026) "Umove", not its short name "UMO"; a name too long for
+        // the back: the short name
+        assert_eq!(dresses_of("UMO", "Umove", "#123456", &['A'])[0].company, "Umove");
+        assert_eq!(dresses_of("HVV", "Hamburger Verkehrsverbund", "#123456", &['A'])[0].company, "HVV");
     }
 }

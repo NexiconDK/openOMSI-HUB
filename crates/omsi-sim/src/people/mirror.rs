@@ -312,7 +312,7 @@ impl PeopleSim {
         }
         // (an inspector: the same uniform on another figure, the same look of another company)
         if !paint.is_empty() {
-            if let Some((t, v)) = self.types.iter().enumerate().find_map(|(k, t)| wears(t, paint).map(|v| (k, v))) {
+            if let Some((t, v)) = self.types.iter().enumerate().filter(|(_, t)| t.def.grown_up()).find_map(|(k, t)| wears(t, paint).map(|v| (k, v))) {
                 return Some((t, Some(v)));
             }
         }
@@ -320,7 +320,7 @@ impl PeopleSim {
             let prefix = super::inspect::variant_name(look, "");
             let same_look = |t: &HumanType| t.variants.iter().position(|v| v.name.trim().len() > prefix.len() && v.name.trim()[..prefix.len()].eq_ignore_ascii_case(&prefix)).map(|v| v + 1);
             let mut order: Vec<usize> = own.into_iter().collect();
-            order.extend((0..self.types.len()).filter(|k| Some(*k) != own));
+            order.extend((0..self.types.len()).filter(|k| Some(*k) != own && self.types[*k].def.grown_up()));
             if let Some((t, v)) = order.into_iter().find_map(|k| same_look(&self.types[k]).map(|v| (k, v))) {
                 return Some((t, Some(v)));
             }
