@@ -293,9 +293,10 @@ impl Api {
         match ask.what.as_str() {
             "info" => self.info(),
             "login" => self.login(&ask, now),
-            "companies" | "join" | "found" | "me" | "world" | "course" | "test" | "hq" | "hq_do" => {
+            "companies" | "join" | "found" | "me" | "world" | "course" | "test" | "hq" | "hq_do" | "livery_begin" | "livery_part" | "livery_end" | "livery_get" => {
                 let Some(id) = self.player_of(&ask.session, now) else { return refusal(LOGGED_OUT) };
                 match ask.what.as_str() {
+                    "livery_begin" | "livery_part" | "livery_end" | "livery_get" => self.livery(&id, &ask, now),
                     "companies" => self.companies(&id),
                     "join" => self.join(&id, &ask.company),
                     "found" => self.found(&id, &ask),
@@ -445,6 +446,11 @@ impl Api {
                 // (NexiconDK, 11 November 2026: its ticket inspectors' clothes - every player's game
                 // in its map's world dresses them so, `inspectors::dress_world`)
                 "inspectors": inspectors_json(c),
+                // (NexiconDK, 12 November 2026: its own liveries - shared on the server, fetched
+                // before a game joins its map's world; and its designs, which its owners' launchers
+                // send up once when the server lacks them)
+                "liveries": super::shared_livery::list(&m.data, &c.id),
+                "designs": c.designs.iter().map(|d| json!({ "name": d.name, "bus": d.bus })).collect::<Vec<_>>(),
             }));
         }
         // (his own first, then by name - a depot right under its head office)
@@ -454,6 +460,70 @@ impl Api {
         let month = server_day(&m).get(..7).unwrap_or("").to_string();
         let ranking = super::live_more::ranking(m.players.players.iter().map(|p| (p.name.as_str(), p.months.as_slice())), &month, 5);
         json!({ "ok": true, "player": player_json(&me), "companies": list, "found": founding(&m, &me), "month": { "month": month, "ranking": ranking } })
+    }
+
+    /// (NexiconDK, 12 November 2026) A company's own liveries shared (`shared_livery`): sent up by
+    /// its owner or a co-owner - `livery_begin` (the livery: which of its files the server lacks),
+    /// `livery_part` (a part of one, base64), `livery_end` (kept) - and fetched by any player
+    /// (`livery_get`: a part of a file by its hash).
+    fn livery(&self, id: &str, ask: &Ask, now: i64) -> Value {
+        use super::shared_livery as sl;
+        let (data, me) = {
+            let m = self.server();
+            let Some(me) = m.players.get(id).cloned() else { return refusal(LOGGED_OUT) };
+            (m.data.clone(), me)
+        };
+        let a = &ask.args;
+        let num = |k: &str| a.get(k).and_then(Value::as_u64).unwrap_or(0);
+        let text = |k: &str| a.get(k).and_then(Value::as_str).unwrap_or("").to_string();
+        if ask.what == "livery_get" {
+            return match sl::read_part(&data, &text("sha"), num("offset"), sl::PART) {
+                Ok((b, size)) => json!({ "ok": true, "data": sl::b64_encode(&b), "size": size }),
+                Err(e) => refusal(e),
+            };
+        }
+        // (sending up: the company's owner or a co-owner)
+        let cid = ask.company.trim();
+        let c = {
+            let m = self.server();
+            if cid.is_empty() || !company_ids(&m.data).iter().any(|c| c == cid) {
+                return refusal(NO_COMPANY);
+            }
+            match store::load(&m.data, cid) {
+                Ok(c) => c,
+                Err(_) => return refusal(NO_COMPANY),
+            }
+        };
+        let owner = c.online.owner_id == me.id || c.together.guests.iter().any(|g| g.id == me.id && !g.banned && g.role == super::together::Role::CoOwner);
+        if !owner {
+            return refusal(sl::NOT_OWNER);
+        }
+        match ask.what.as_str() {
+            "livery_part" => {
+                let Some(bytes) = sl::b64_decode(&text("data")).filter(|b| b.len() <= sl::PART) else { return refusal(sl::BAD_PART) };
+                match sl::put_part(&data, &text("sha"), num("size"), num("offset"), &bytes) {
+                    Ok(done) => json!({ "ok": true, "done": done }),
+                    Err(e) => refusal(e),
+                }
+            }
+            what => {
+                let Ok(mut s) = serde_json::from_value::<sl::Shared>(a.get("livery").cloned().unwrap_or(Value::Null)) else { return refusal(sl::BAD_LIVERY) };
+                if let Err(e) = sl::check(&mut s) {
+                    return refusal(e);
+                }
+                if what == "livery_begin" {
+                    return json!({ "ok": true, "need": sl::missing(&data, &s) });
+                }
+                let name = s.name.clone();
+                match sl::keep(&data, cid, s, &me.name, now) {
+                    Ok(()) => {
+                        self.server().say(&format!("livery '{name}' of {} shared by {}", c.name, me.name));
+                        json!({ "ok": true })
+                    }
+                    Err(e) => refusal(e),
+                }
+            }
+        }
     }
 
     /// (Phase 7) Head office `group`'s page for its owner (`server_hq::view`).
@@ -841,6 +911,28 @@ mod tests {
         let eve = ask(json!({ "v": API_VERSION, "secret": secret, "do": "login", "steam": "76561198000000077", "name": "Eve" }));
         let not_his = ask(json!({ "v": API_VERSION, "secret": secret, "do": "world", "session": eve["session"], "company": cid }));
         assert_eq!(not_his["error"], NOT_MEMBER);
+        // (NexiconDK, 12 November 2026: its owner shares a livery of his - Eve, none of its owners,
+        // may not, but fetches it)
+        {
+            use crate::company::shared_livery as sl;
+            let (tex, cti) = (b"a texture".to_vec(), b"[CTCTexture]".to_vec());
+            let file = |p: &str, b: &[u8]| json!({ "path": p, "size": b.len(), "sha": sl::sha_of(b) });
+            let livery = json!({ "name": "Lemtal Blau", "bus": "Vehicles/A/A.bus", "files": [file("Vehicles/A/Texture/LiveryStudio/0001_x/a.dds", &tex), file("Vehicles/A/Texture/~LiveryStudio_0001_x.cti", &cti)] });
+            let eves = ask(json!({ "v": API_VERSION, "secret": secret, "do": "livery_begin", "session": eve["session"], "company": cid, "args": { "livery": livery } }));
+            assert_eq!(eves["error"], sl::NOT_OWNER);
+            let need = q("livery_begin", json!({ "company": cid, "args": { "livery": livery } }));
+            assert_eq!(need["need"].as_array().map(Vec::len), Some(2));
+            assert_eq!(q("livery_end", json!({ "company": cid, "args": { "livery": livery } }))["error"], sl::NOT_ALL_THERE);
+            for b in [&tex, &cti] {
+                let part = q("livery_part", json!({ "company": cid, "args": { "sha": sl::sha_of(b), "size": b.len(), "offset": 0, "data": sl::b64_encode(b) } }));
+                assert_eq!(part["done"], true, "{part}");
+            }
+            assert_eq!(q("livery_end", json!({ "company": cid, "args": { "livery": livery } }))["ok"], true);
+            let row = &q("companies", json!({}))["companies"][0];
+            assert_eq!((row["liveries"][0]["name"].as_str(), row["liveries"][0]["by"].as_str(), row["liveries"][0]["files"].as_array().map(Vec::len)), (Some("Lemtal Blau"), Some("Mathias"), Some(2)));
+            let got = ask(json!({ "v": API_VERSION, "secret": secret, "do": "livery_get", "session": eve["session"], "args": { "sha": sl::sha_of(&tex), "offset": 0 } }));
+            assert_eq!((sl::b64_decode(got["data"].as_str().unwrap()), got["size"].as_u64()), (Some(tex.clone()), Some(tex.len() as u64)));
+        }
         // (the players kept)
         let kept_players = crate::company::server_players::Players::load(&api.server().data).unwrap();
         assert_eq!(kept_players.players.len(), 2);

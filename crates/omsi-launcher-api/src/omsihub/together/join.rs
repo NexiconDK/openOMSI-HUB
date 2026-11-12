@@ -735,6 +735,8 @@ pub(crate) fn relay_act(args: Value) -> Option<Answer> {
 fn dress_world() {
     let company = joined().as_ref().and_then(|j| j.snap.as_ref()).map(|s| s.card.id.clone()).unwrap_or_default();
     if !company.is_empty() {
+        // (NexiconDK, 12 November 2026: and the companies' own liveries, fetched from the server)
+        super::super::bco_liveries::fetch_world(&company);
         super::super::company::inspectors::dress_world(&company);
     }
 }

@@ -91,6 +91,25 @@ pub(crate) fn companies_of_world(company: &str) -> Vec<Value> {
     l.companies.iter().filter(|c| map(c) == mine).cloned().collect()
 }
 
+/// (NexiconDK, 12 November 2026) The server's companies asked for again without the page - their
+/// liveries as the server has them now, before a game joins a map's world (`bco_liveries`).
+pub(crate) fn refresh_companies() {
+    if state().linked.is_none() {
+        return;
+    }
+    if let Ok(v) = question("companies", json!({})) {
+        if let Some(l) = state().linked.as_mut() {
+            l.companies = v.get("companies").and_then(Value::as_array).cloned().unwrap_or_default();
+        }
+    }
+}
+
+/// (NexiconDK, 12 November 2026) Company `company` as the server listed it last, when it is one
+/// of the server's.
+pub(crate) fn company_row(company: &str) -> Option<Value> {
+    state().linked.as_ref()?.companies.iter().find(|c| c.get("id").and_then(Value::as_str) == Some(company)).cloned()
+}
+
 /// What `bco.json` keeps: the server's code, and the keys the servers gave this computer for its
 /// Steam IDs (by the server's session and the Steam ID).
 fn kept_path() -> PathBuf {
@@ -252,7 +271,10 @@ fn refresh() -> Value {
                 l.month = v.get("month").cloned().unwrap_or(Value::Null);
             }
             s.error = None;
+            let companies = s.linked.as_ref().map(|l| l.companies.clone()).unwrap_or_default();
             drop(s);
+            // (NexiconDK, 12 November 2026: the liveries of his companies the server lacks, sent up)
+            super::bco_liveries::share_kept(companies);
             view()
         }
         Err((e, a)) => fail(&e, a),

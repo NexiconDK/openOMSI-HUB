@@ -299,8 +299,12 @@ fn saved(s: Saving, files: Vec<String>) -> Value {
         });
         if let Some(t) = booked {
             text = t;
-            changed = Some(id);
+            changed = Some(id.clone());
         }
+        // (NexiconDK, 12 November 2026: a company of Bus Company Online - its livery's files sent
+        // to the server, so that every player there sees its buses in it)
+        let files = project.placed.as_ref().map(|p| p.files.clone()).unwrap_or_default();
+        crate::omsihub::bco_liveries::share(id, name.clone(), project.bus.clone(), files);
     }
     omsi_launcher_lib::log_to_file(&format!("livery studio: '{name}' saved into the game for {}", project.bus));
     json!({ "done": { "project": project, "name": name, "text": text, "company": changed } })

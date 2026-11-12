@@ -96,6 +96,7 @@ pub mod server_players;
 pub mod server_found;
 // (phase 6: the maps' worlds kept running while the machine can carry them)
 pub mod server_machine;
+pub mod shared_livery;
 pub mod shared_tenders;
 pub mod sealed;
 pub mod ownline;

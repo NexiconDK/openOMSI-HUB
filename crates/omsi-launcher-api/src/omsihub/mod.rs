@@ -38,6 +38,8 @@ pub mod together;
 pub mod company_host;
 // (NexiconDK: Bus Company Online, the launcher's side - phase 2 step 2)
 pub mod bco;
+/// (NexiconDK, 12 November 2026) A company's own liveries shared through the server.
+pub mod bco_liveries;
 // (NexiconDK, Bus Company Online phase 7: a group's head office)
 pub mod bco_hq;
 // NexiconDK, 1 November 2026: Multiplayer > My server - a dedicated server run from the launcher
