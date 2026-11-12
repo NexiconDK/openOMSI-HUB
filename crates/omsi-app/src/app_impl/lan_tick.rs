@@ -336,6 +336,22 @@ impl omsi_lan::host::LanHost for AppLanHost<'_> {
     }
 
     fn set_destination(&self, v: &mut omsi_sim::VehicleInstance, hof: Option<&omsi_vehicle::Hof>, line: &str, destination: &str) {
+        // (NexiconDK, 12 November 2026: a destination our depot file lacks - a free text the other
+        // player typed onto his sign - is shown as one here too: the sign stood on the last
+        // destination of the file he had picked, "Pause")
+        if let Some(h) = hof.filter(|h| !destination.trim().is_empty() && omsi_sim::timetable_run::find_terminus(h, destination).is_none()) {
+            let (free, ti) = h.with_free_text([destination.trim(), ""]);
+            let free = std::sync::Arc::new(free);
+            v.host.hof = Some(free.clone());
+            crate::schedule::set_ai_destination_at(v, &free, line, ti, &[]);
+            return;
+        }
+        // (one of the file's again: its own depot file, not a copy with a free text in it)
+        if let Some(h) = hof {
+            if v.host.hof.as_ref().is_some_and(|x| x.termini.len() != h.termini.len()) {
+                v.host.hof = Some(std::sync::Arc::new(h.clone()));
+            }
+        }
         crate::schedule::set_ai_destination(v, hof, line, destination, &[]);
     }
 

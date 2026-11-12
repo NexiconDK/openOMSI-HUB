@@ -1150,6 +1150,21 @@ pub fn clean_text(s: &str, max: usize) -> String {
         .to_string()
 }
 
+/// (NexiconDK, 12 November 2026) Whether a repaint installed here (`ours`, its name in its
+/// `.cti`) is the one another game named (`sent`, as it came over the network: `clean_text` to
+/// `MAX_FIELD`). The name sent is cleaned - trimmed, a `|` made a space, cut to 64 characters -
+/// and was compared with the installed name as it is: a repaint whose name has a space at its
+/// end, a `|` in it or more than 64 characters was never found, and the other player's bus came
+/// in the bus's own plain paint although both had the same repaints.
+pub fn same_paint(ours: &str, sent: &str) -> bool {
+    let sent = sent.trim();
+    if sent.is_empty() {
+        return false;
+    }
+    let ours = clean_text(ours, MAX_FIELD);
+    ours.eq_ignore_ascii_case(sent) || ours.to_lowercase() == sent.to_lowercase()
+}
+
 /// The longest vehicle path taken from the network.
 const MAX_VEHICLE_PATH: usize = 260;
 

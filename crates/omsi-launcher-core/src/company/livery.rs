@@ -193,5 +193,9 @@ mod tests {
         let mut later = c.clone();
         later.site.jobs.clear();
         assert_eq!(paint(&mut later, id, "Stadtbus Orange"), Err("The bus wears this livery already."));
+        // (NexiconDK, 12 November 2026) another of its liveries picked: worn, the house one off
+        super::super::market::set_livery(&mut later, id, "Movia 5C 1600");
+        let v = later.vehicle(id).unwrap();
+        assert_eq!((v.livery.as_str(), v.house_livery.as_deref()), ("Movia 5C 1600", None));
     }
 }

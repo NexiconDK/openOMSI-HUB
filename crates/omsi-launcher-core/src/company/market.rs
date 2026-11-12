@@ -552,10 +552,15 @@ pub fn service(c: &mut Company, id: u32) -> Result<(), &'static str> {
     super::depot::order(c, id, super::depot::JobKind::Service).map(|_| ())
 }
 
-/// Give a bus another of its liveries.
+/// Give a bus another of its liveries - (NexiconDK, 12 November 2026) off its house livery too:
+/// the house livery won at the start, and a bus painted in one went on wearing it whatever was
+/// picked (a design whose files another computer has: the model's plain white, in every game).
 pub fn set_livery(c: &mut Company, id: u32, livery: &str) {
     if let Some(v) = c.fleet.iter_mut().find(|v| v.id == id) {
         v.livery = livery.to_string();
+        if v.house_livery.as_deref().is_some_and(|h| !h.trim().eq_ignore_ascii_case(livery.trim())) {
+            v.house_livery = None;
+        }
     }
 }
 

@@ -1620,3 +1620,18 @@ fn explicit_targets_remain_exact() {
 
 #[path = "tests/join_rejections.rs"]
 mod join_rejections;
+
+/// (NexiconDK, 12 November 2026) Another player's repaint is found by the name his game sent -
+/// cleaned and cut as the network carries it - also where the installed name has a space at its
+/// end, a bar in it or more than 64 characters (his bus came in its plain paint).
+#[test]
+fn another_players_repaint_is_found_by_the_name_sent() {
+    let long = "Movia 5C København Nørreport - Husum Torv (Arriva) Citaro G 2012 version 3 with adverts";
+    for ours in ["5C ", " 5C", "Movia | 5C", long, "MOVIA 5C ØSTERBRO"] {
+        let sent = clean_text(ours, 64);
+        assert!(same_paint(ours, &sent), "{ours:?} as sent {sent:?}");
+    }
+    assert!(same_paint("movia 5c østerbro", "MOVIA 5C ØSTERBRO"));
+    assert!(!same_paint("5C", "5A"));
+    assert!(!same_paint("5C", ""), "no name: none");
+}

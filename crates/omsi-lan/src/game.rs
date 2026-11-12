@@ -1073,9 +1073,15 @@ pub fn paint_name(args: &LanConfig, ty: &omsi_sim::VehicleType) -> String {
 }
 
 
-/// Line and destination as our bus shows them: the duty's, or what the IBIS was set to.
+/// Line and destination as our bus shows them: the duty's, or what the IBIS was set to - and
+/// (NexiconDK, 12 November 2026) a free text typed onto the sign, on a duty too: the others
+/// went on seeing the duty's destination, or the last one picked from the list ("Pause").
 fn line_and_destination(v: &omsi_sim::VehicleInstance, duty: Option<(&str, &str)>) -> (String, String) {
-    if let Some((l, d)) = duty {
+    let free = match (v.var("IBIS_TerminusIndex"), v.host.hof.as_ref()) {
+        (Some(i), Some(h)) if i >= 0.0 => h.termini.get(i as usize).is_some_and(|t| t.texture_id == omsi_vehicle::hof::FREE_TEXT),
+        _ => false,
+    };
+    if let Some((l, d)) = duty.filter(|_| !free) {
         return (l.to_string(), d.to_string());
     }
     let line = v
@@ -1703,7 +1709,7 @@ fn new_remote(
     } else {
         ty.paint_schemes
             .iter()
-            .position(|s| s.name.eq_ignore_ascii_case(&pose.paint))
+            .position(|s| omsi_net::same_paint(&s.name, &pose.paint))
     };
     let (mut vehicle, hof) =
         lan_host.remote_vehicle(args, ty, scheme, clock.cloned().unwrap_or_else(|| args.start_clock()));

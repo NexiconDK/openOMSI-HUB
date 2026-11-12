@@ -1066,7 +1066,7 @@ impl Mirror {
             let scheme = if paint.is_empty() {
                 scheme.map(|s| s as usize)
             } else {
-                ty.paint_schemes.iter().position(|p| p.name.trim().eq_ignore_ascii_case(&paint))
+                ty.paint_schemes.iter().position(|p| omsi_net::same_paint(&p.name, &paint))
             };
             t.add_mirror_car(
                 world,

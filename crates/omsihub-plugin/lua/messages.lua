@@ -36,6 +36,9 @@ local inbox = nil
 -- (round U: inspection.lua's - inspectors control sends, the driver asking for them)
 local on_inspection, ask_inspection = nil, nil
 local open = false
+-- (NexiconDK, 12 November 2026: put away with × or F9 - an instruction still waiting no longer
+-- brings it back, a new one does; it stood on the screen for good, × or not)
+local dismissed = false
 local quick = false
 local shown = false
 local seq = 0
@@ -279,8 +282,14 @@ local function children()
   if #list == 0 then
     out[#out + 1] = { type = "text", text = tr("No messages"), size = 13, color = DIM }
   end
-  for k = 1, math.min(SHOWN, #list) do
-    local m = list[k]
+  -- (the newest, and every one still waiting for an answer however old: one below them could
+  -- not be answered, and the inbox stayed open for it)
+  local rows = {}
+  for k, m in ipairs(list) do
+    if k <= SHOWN or waiting(m) then rows[#rows + 1] = { k, m } end
+  end
+  for _, row in ipairs(rows) do
+    local k, m = row[1], row[2]
     out[#out + 1] = { type = "divider" }
     out[#out + 1] = { type = "row", children = {
       { type = "icon", name = m.mine and "near_me" or (ICON[m.priority] or "chat"), size = 16, color = COLOR[m.priority] or DIM },
@@ -313,7 +322,7 @@ end
 
 local function panel()
   if not fn("ui.set") then return end
-  local want = (open or any_waiting() or hold ~= nil) and inbox ~= nil
+  local want = (open or (not dismissed and (any_waiting() or hold ~= nil))) and inbox ~= nil
   if not want then
     if shown and fn("ui.remove") then omsi.ui.remove(PANEL) end
     shown = false
@@ -344,7 +353,7 @@ function M.read()
       end
       toast(m.text or "", m.from, ICON[m.priority] or "chat", COLOR[m.priority], m.priority == "urgent" and 20 or 10)
       sound(m.priority)
-      if m.action and m.action.kind ~= "inspection" then open = true end
+      if m.action and m.action.kind ~= "inspection" then open, dismissed = true, false end
     end
   end
   -- (what Omsi-Hub's inbox says now wins)
@@ -409,7 +418,7 @@ function M.click(p, element)
   if p ~= PANEL then return false end
   local e = element or ""
   if e == "msg_close" then
-    open, quick = false, false
+    open, quick, dismissed = false, false, true
   elseif e == "msg_quick" then
     quick = not quick
   elseif e == "msg_q_request_inspection" and ask_inspection then
@@ -445,7 +454,9 @@ end
 -- F9: the inbox shown or put away; whether it was this module's
 function M.key(key, down)
   if key == "F9" and down and inbox then
-    open = not open
+    -- (what is on the screen goes, also when it opened by itself for an instruction)
+    open = not shown
+    dismissed = not open
     panel()
     return true
   end

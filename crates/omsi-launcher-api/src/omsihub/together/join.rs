@@ -972,6 +972,13 @@ fn take_bus(args: &Value, p: &dyn Platform) -> Answer {
     d.set_vars = super::super::hub_more::setvars(&start.bus, &start.paint);
     core::log_to_file(&format!("company session: {} takes bus {} ({}) out for a free drive, in the world at {world}", name, start.number, start.bus));
     dress_world();
+    // (NexiconDK, 12 November 2026: no duty - the control room's messages of an earlier duty are
+    // not his now: they stood in his game's inbox, opened for an old instruction for good - nor
+    // is an earlier drive's assignment)
+    if let Some(dir) = super::super::addon::game_plugin_dir() {
+        let _ = bridge::write_inbox(&dir, &bridge::Inbox::default());
+    }
+    super::super::addon::assign_session(&d, None);
     let launched = core::launch(&d).map_err(|e| format!("{e:#}"))?;
     core::log_to_file(&format!("game {}: {}", launched.pid, launched.command));
     p.launched();

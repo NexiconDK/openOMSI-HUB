@@ -591,6 +591,46 @@ fn a_message_comes_with_a_card_and_an_accepted_short_turn_turns_the_duty_back() 
     assert!(!reports.iter().any(|r| r.kind == "duty_end"), "{reports:?}");
 }
 
+/// (NexiconDK, 12 November 2026) The inbox open for an instruction goes with × and stays away -
+/// it came back at once and stood on the screen for good -, an instruction older than the five
+/// newest messages can still be answered, and a new instruction opens it again.
+#[test]
+fn the_inbox_goes_with_its_cross_and_an_old_instruction_can_be_answered() {
+    let plugins = plugins_dir("inbox_close");
+    install::install(&plugins).unwrap();
+    let dir = install::plugin_dir(&plugins);
+    bridge::write_assignment(&dir, &Assignment { auto_start: false, ..assignment() }).unwrap();
+    // (the instruction below six newer messages)
+    let mut ib = inbox();
+    let newer: Vec<bridge::InboxMsg> = (10..16).map(|id| bridge::InboxMsg { id, time: "08:10".into(), from: "Dispatcher".into(), priority: "info".into(), text: format!("Note {id}"), state: "read".into(), ..bridge::InboxMsg::default() }).collect();
+    ib.messages.splice(0..0, newer);
+    bridge::write_inbox(&dir, &ib).unwrap();
+    let mut ps = Plugins::load(&[plugins.clone()], &HostConfig::default());
+    let mut game = Game { trips: vec![three_stops()], ..Game::default() };
+    game.duty = Some(io::Duty { line: "10".into(), tour: "2".into(), trip: 0, trips: 1, next: 1, current: three_stops(), ..io::Duty::default() });
+    for _ in 0..6 {
+        ps.frame(&mut game);
+    }
+    let panel = panel_text(&ps, "omsihub_msgs").expect("open for the instruction");
+    assert!(panel.contains("msg_accept_2"), "the old instruction can be answered: {panel}");
+    // ×: gone, and it stays gone
+    game.events = vec![ui("ui_click", &["omsihub_msgs", "msg_close"])];
+    ps.frame(&mut game);
+    game.events.clear();
+    for _ in 0..6 {
+        ps.frame(&mut game);
+    }
+    assert!(panel_text(&ps, "omsihub_msgs").is_none(), "put away");
+    // a new instruction opens it again
+    let turn = bridge::InboxAction { kind: "hold".into(), minutes: 2, label: "Hold".into(), ..bridge::InboxAction::default() };
+    ib.messages.insert(0, bridge::InboxMsg { id: 20, time: "08:20".into(), from: "Dispatcher".into(), priority: "instruction".into(), text: "Hold 2 min".into(), action: Some(turn), state: "sent".into(), ..bridge::InboxMsg::default() });
+    bridge::write_inbox(&dir, &ib).unwrap();
+    for _ in 0..8 {
+        ps.frame(&mut game);
+    }
+    assert!(panel_text(&ps, "omsihub_msgs").is_some_and(|p| p.contains("msg_accept_20")), "opened for the new one");
+}
+
 /// A company's duty with its crew: signing on at the depot at 07:50, line 5 to Rathaus, a break
 /// there, back, and handing the bus over at Rathaus at 09:20.
 fn crew() -> bridge::Crew {

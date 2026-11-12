@@ -835,12 +835,13 @@ fn log_debug_props(vehicle: &omsi_sim::VehicleInstance) {
 /// preview (`--export-glb`) both come here, so the preview shows what is driven.
 pub(crate) fn paint_scheme(vt: &omsi_sim::VehicleType, paint: Option<&str>) -> Option<usize> {
     let asked = paint.map(str::trim).filter(|p| !p.is_empty());
-    let found = asked.and_then(|p| {
-        vt.paint_schemes
-            .iter()
-            .position(|s| s.name.eq_ignore_ascii_case(p))
-            .or_else(|| p.parse::<usize>().ok().filter(|i| *i < vt.paint_schemes.len()))
-    });
+    let names: Vec<&str> = vt.paint_schemes.iter().map(|s| s.name.as_str()).collect();
+    let found = asked.and_then(|p| scheme_named(&names, p));
+    if let (Some(p), Some(i)) = (asked, found) {
+        if !names[i].eq_ignore_ascii_case(p) && p.parse::<usize>().is_err() {
+            log::info!("paint scheme '{p}' taken as '{}' (the nearest name)", names[i]);
+        }
+    }
     if let (Some(p), None) = (asked, found) {
         log::warn!(
             "paint scheme '{p}' not found; available: {:?}",
@@ -848,6 +849,27 @@ pub(crate) fn paint_scheme(vt: &omsi_sim::VehicleType, paint: Option<&str>) -> O
         );
     }
     found
+}
+
+/// The scheme of `names` that `asked` names: the same name (any case), its number - and
+/// (NexiconDK, 12 November 2026) the same name written another way ("Movia_5C" for "Movia 5C"),
+/// else the first of a family it begins ("Movia_5C": "Movia 5C 1600", "Movia 5C 1601" ... - a
+/// pack's numbered variants of one livery). A company's bus named so was drawn in the model's
+/// own white, in its driver's game and in everybody else's.
+pub(crate) fn scheme_named(names: &[&str], asked: &str) -> Option<usize> {
+    let asked = asked.trim();
+    if let Some(i) = names.iter().position(|n| n.eq_ignore_ascii_case(asked)) {
+        return Some(i);
+    }
+    if let Some(i) = asked.parse::<usize>().ok().filter(|i| *i < names.len()) {
+        return Some(i);
+    }
+    let norm = |s: &str| s.to_lowercase().replace(['_', '-'], " ").split_whitespace().collect::<Vec<_>>().join(" ");
+    let want = norm(asked);
+    if want.is_empty() {
+        return None;
+    }
+    names.iter().position(|n| norm(n) == want).or_else(|| names.iter().position(|n| norm(n).strip_prefix(&want).is_some_and(|rest| rest.starts_with(' '))))
 }
 
 // The paint scheme of a coupled part for the lead's, and the bus options of `--setvar`:
@@ -866,6 +888,20 @@ pub(crate) fn recorded_entry_pos(ep: &omsi_map::global::EntryPoint, object: DVec
 #[cfg(test)]
 mod preparation_tests {
     use super::*;
+
+    /// (NexiconDK, 12 November 2026) A repaint asked for by a name written another way, or by
+    /// its family's name, is found; another is not.
+    #[test]
+    fn a_repaint_is_found_by_a_name_written_another_way() {
+        let names = ["Demonstrator", "Movia 5C 1600", "Movia 5C 1601", "Movia_5A", "5"];
+        assert_eq!(scheme_named(&names, "movia 5c 1601"), Some(2));
+        assert_eq!(scheme_named(&names, "Movia_5C"), Some(1), "the first of the family");
+        assert_eq!(scheme_named(&names, "Movia 5A"), Some(3));
+        assert_eq!(scheme_named(&names, "1"), Some(1), "by its number");
+        assert_eq!(scheme_named(&names, "5"), Some(4), "a name before a number");
+        assert_eq!(scheme_named(&names, "Movia 5"), None, "not a word's beginning");
+        assert_eq!(scheme_named(&names, "Arriva"), None);
+    }
 
     /// A consist read on a worker follows its couplings (turned round at a reversed front
     /// coupling) without running any script; the parts are coupled to the live vehicle later.
