@@ -4,7 +4,15 @@ use omsi_plugin::{HostConfig, Plugin, PluginIo, Plugins, Remote};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+/// The demo plugin's library, built once for all the tests (NexiconDK, 12 November 2026: each
+/// test built it and copied it, side by side - on Windows one build replaced the file another
+/// test was copying, "The system cannot find the file specified", and the beta build failed).
 fn demo_library() -> PathBuf {
+    static BUILT: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+    BUILT.get_or_init(build_demo_library).clone()
+}
+
+fn build_demo_library() -> PathBuf {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".into());
     let release = !cfg!(debug_assertions);
