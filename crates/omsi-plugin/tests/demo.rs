@@ -23,9 +23,11 @@ fn build_demo_library() -> PathBuf {
     }
     assert!(cmd.status().unwrap().success(), "building the demo plugin");
     let name = format!("{}omsi_demo_plugin{}", std::env::consts::DLL_PREFIX, std::env::consts::DLL_SUFFIX);
-    // the test binary is target/<profile>/deps/…; the library sits in target/<profile>
+    // the library sits in target/<profile>, above the test binary: target/<profile>/deps/… - or
+    // (NexiconDK, 12 November 2026: Cargo's newer layout, the Windows runner's since the evening)
+    // target/<profile>/build/<package>/<hash>/out/…, where two folders up was not it
     let exe = std::env::current_exe().unwrap();
-    exe.parent().unwrap().parent().unwrap().join(name)
+    exe.ancestors().map(|d| d.join(&name)).find(|p| p.is_file()).unwrap_or_else(|| panic!("{name} above {}", exe.display()))
 }
 
 /// A plugins folder with the demo as `Demo\demo.dll`, listed in `Demo\demo.opl`.
