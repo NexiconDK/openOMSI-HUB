@@ -88,6 +88,22 @@ fn info_carries_the_freetex_pictures_and_an_older_info_has_none() {
     assert!(p.encode_info().len() <= MAX_DATAGRAM);
 }
 
+/// (NexiconDK, round V) A player on patrol: his figure goes with the inspector's uniform after
+/// it; nothing else may.
+#[test]
+fn a_figure_goes_with_an_inspector_s_uniform_only() {
+    let mut p = pose(1.5);
+    p.figure = "Humans/aXYZ/man01.hum#~Inspector_A_umove".into();
+    let q = Pose::decode_info(&p.encode_info().split('|').collect::<Vec<_>>()).unwrap();
+    assert_eq!(q.figure, p.figure);
+    assert_eq!((figure_file(&q.figure), figure_clothes(&q.figure).as_deref()), ("Humans/aXYZ/man01.hum", Some("~Inspector_A_umove")));
+    for bad in ["Humans/aXYZ/man01.hum#party", "Humans/aXYZ/man01.hum#~Inspector_A_../../x"] {
+        p.figure = bad.into();
+        let q = Pose::decode_info(&p.encode_info().split('|').collect::<Vec<_>>()).unwrap();
+        assert_eq!(q.figure, "Humans/aXYZ/man01.hum", "{bad}");
+    }
+}
+
 #[test]
 fn info_drops_freetex_pictures_that_leave_the_vehicle() {
     let mut p = pose(1.5);

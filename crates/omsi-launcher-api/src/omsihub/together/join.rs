@@ -123,6 +123,8 @@ struct Joined {
     cut_off: Option<Drive>,
     /// How far his plugin's replies to the control room's messages were read.
     replies: bridge::ReplyReader,
+    /// (NexiconDK, round V) The game of his ticket-inspection duty (its process), while it runs.
+    patrol_game: Option<u32>,
 }
 
 static JOINED: Mutex<Option<Joined>> = Mutex::new(None);
@@ -423,6 +425,8 @@ fn run(stop: Arc<AtomicBool>) {
                 if let Some(d) = drive.as_ref().filter(|d| !done && d.free.is_none()) {
                     messages_link(&base, d);
                 }
+                // (round V: the drivers' calls to his ticket-inspection duty, to his game's inbox)
+                patrol_link();
             }
             Err(_) => {
                 let mut g = joined();
@@ -554,6 +558,8 @@ pub(super) fn call(cmd: &str, args: &Value, p: &dyn Platform) -> Option<Answer> 
         "tg_drive" => drive(args, p, "start"),
         // (NexiconDK, Bus Company Online: a free drive with a bus of the company)
         "tg_take_bus" => take_bus(args, p),
+        // (NexiconDK, round V: a ticket-inspection duty in the map's world)
+        "tg_take_patrol" => take_patrol(args, p),
         // (Beta 63: a duty the AI drives since he left it, back from its next trip)
         "tg_take_back" => drive(args, p, "take_back"),
         "tg_status" => Ok(status()),
@@ -791,7 +797,7 @@ fn join_as(text: &str, me: Me) -> Value {
     }
     leave();
     let stop = Arc::new(AtomicBool::new(false));
-    *joined() = Some(Joined { text: text.trim().to_string(), code, me, base: None, snap: None, since: 0, notices: Vec::new(), lost: None, failures: 0, drive: None, stop: stop.clone(), wake: true, said: None, logo: None, logo_asked: false, link: Link::new(unix_now()), ended: None, cut_off: None, replies: Default::default() });
+    *joined() = Some(Joined { text: text.trim().to_string(), code, me, base: None, snap: None, since: 0, notices: Vec::new(), lost: None, failures: 0, drive: None, stop: stop.clone(), wake: true, said: None, logo: None, logo_asked: false, link: Link::new(unix_now()), ended: None, cut_off: None, replies: Default::default(), patrol_game: None });
     let _ = std::thread::Builder::new().name("company session".into()).spawn(move || run(stop));
     view()
 }
@@ -923,6 +929,141 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
         j.wake = true;
     }
     Ok(json!({ "launched": serde_json::to_value(launched).unwrap_or(Value::Null) }))
+}
+
+/// (NexiconDK, ticket inspection round V, 12 November 2026) A ticket-inspection duty on line `line`
+/// of the company (or his of today again): taken on the boss's side, which says how the game
+/// starts on it - on foot at a stop of the line in the company's uniform, in the map's world
+/// `world`, no bus.
+fn take_patrol(args: &Value, p: &dyn Platform) -> Answer {
+    let line = args.get("line").and_then(Value::as_str).unwrap_or("").trim().to_string();
+    let Some(world) = args.get("world").and_then(Value::as_str).map(str::trim).filter(|w| !w.is_empty()).map(str::to_string) else {
+        return Ok(json!({ "error": tr("A ticket-inspection duty is worked in the map's world of Bus Company Online.") }));
+    };
+    let running = company::with(|s| s.in_game()) || joined().as_ref().is_some_and(|j| j.drive.as_ref().is_some_and(|d| game_runs(d.pid)) || j.patrol_game.is_some_and(game_runs));
+    if running {
+        return Ok(json!({ "error": tr("A game is running: close it first.") }));
+    }
+    let root = core::load_config().root;
+    if !omsi_cfg::missing_original_essentials(std::path::Path::new(&root)).is_empty() {
+        return Ok(json!({ "error": tr("A session needs the original OMSI 2.") }));
+    }
+    let v = match send_now("take_patrol", |q| q.text = line.clone()) {
+        Ok(v) => v,
+        Err(e) => return Ok(json!({ "error": e })),
+    };
+    let Some(start) = v.get("start").and_then(|x| serde_json::from_value::<DriveStart>(x.clone()).ok()).filter(|s| s.patrol.is_some()) else {
+        return Ok(json!({ "error": refusal_words(&v) }));
+    };
+    let pt = start.patrol.clone().unwrap_or_default();
+    let base: core::Duty = serde_json::from_value(args.get("base").cloned().unwrap_or(Value::Null)).map_err(|e| format!("base: {e}"))?;
+    let mut d = start.duty(base);
+    // (no bus, no tour of his: on foot at a stop of the line - the tour only says where)
+    d.line = None;
+    d.tour = None;
+    d.trip = None;
+    d.legs = Vec::new();
+    d.whole_tour = false;
+    d.entry = None;
+    d.drive_on = None;
+    if let Err(e) = core::server_timetable::fetch(&world) {
+        core::log_to_file(&format!("company session: the world's timetable not fetched ({e}): the game's own"));
+    }
+    d.lan = Some(format!("join:{world}"));
+    d.lan_name = joined().as_ref().map(|j| j.me.name.clone());
+    let clean = |x: &str| x.replace('|', " ");
+    d.patrol = Some(format!("{}|{}|{}|{}|{}|{}", clean(&start.company), clean(&pt.line), clean(&pt.tour), pt.until, clean(&eur(pt.fine)), clean(&pt.variant)));
+    core::log_to_file(&format!("company session: {} on a ticket-inspection duty on line {} until {:02}:{:02}, in the world at {world}", driver(), pt.number, pt.until.rem_euclid(1440) / 60, pt.until.rem_euclid(60)));
+    // (the uniforms: his company's, and those of every company driven in the world)
+    if let Some(u) = start.uniform.as_ref() {
+        super::super::company::inspectors::dress_listed(u);
+    }
+    dress_world();
+    if let Some(dir) = super::super::addon::game_plugin_dir() {
+        let _ = bridge::write_inbox(&dir, &patrol_inbox(&[]));
+    }
+    super::super::addon::assign_session(&d, None);
+    let launched = core::launch(&d).map_err(|e| format!("{e:#}"))?;
+    core::log_to_file(&format!("game {}: {}", launched.pid, launched.command));
+    p.launched();
+    if let Some(j) = joined().as_mut() {
+        j.patrol_game = Some(launched.pid);
+        j.wake = true;
+    }
+    Ok(json!({ "launched": serde_json::to_value(launched).unwrap_or(Value::Null) }))
+}
+
+/// (round V) The inspector's inbox: the drivers' calls to his duty, the newest first.
+fn patrol_inbox(calls: &[omsi_launcher_lib::company::inspection_patrol::Call]) -> bridge::Inbox {
+    use omsi_launcher_lib::company::inspection_patrol::CALLED;
+    let hhmm = |m: i32| format!("{:02}:{:02}", m.rem_euclid(1440) / 60, m.rem_euclid(60));
+    let company = joined().as_ref().and_then(|j| j.snap.as_ref()).map(|s| s.card.name.clone()).unwrap_or_default();
+    bridge::Inbox {
+        company,
+        messages: calls
+            .iter()
+            .rev()
+            .map(|c| bridge::InboxMsg {
+                id: c.id,
+                time: hhmm(c.at),
+                from: tr("Control"),
+                priority: "instruction".into(),
+                text: trf(CALLED, &[("line", &c.line), ("tour", &c.tour), ("stop", &c.stop), ("time", &hhmm(c.at))]),
+                state: "delivered".into(),
+                state_label: tr("Delivered"),
+                ..Default::default()
+            })
+            .collect(),
+        ..Default::default()
+    }
+}
+
+/// (round V) While his ticket-inspection game runs: the drivers' calls to his duty (the last
+/// snapshot's) written to his plugin's inbox; its end let go.
+fn patrol_link() {
+    let Some(pid) = joined().as_ref().and_then(|j| j.patrol_game) else { return };
+    if !game_runs(pid) {
+        if let Some(j) = joined().as_mut() {
+            j.patrol_game = None;
+        }
+        return;
+    }
+    let calls = joined().as_ref().and_then(|j| j.snap.as_ref()).and_then(|s| s.patrol.as_ref()).map(|p| p.calls.clone()).unwrap_or_default();
+    if calls.is_empty() {
+        return;
+    }
+    super::super::company::words::set_language(&super::super::addon::language());
+    if let Some(dir) = super::super::addon::game_plugin_dir() {
+        let _ = bridge::write_inbox(&dir, &patrol_inbox(&calls));
+    }
+}
+
+/// (round V) The "Ticket inspection" tab: the duties to take, or his own of today.
+fn patrol_json(s: &Snapshot, j: &Joined) -> Value {
+    if s.patrols.is_empty() && s.patrol.is_none() {
+        return Value::Null;
+    }
+    let hhmm = |m: i32| format!("{:02}:{:02}", m.rem_euclid(1440) / 60, m.rem_euclid(60));
+    let mine = s.patrol.as_ref().map(|p| json!({
+        "line": p.line, "number": p.number, "times": format!("{} – {}", hhmm(p.from), hhmm(p.to)),
+        "calls": p.calls.len(),
+    }));
+    json!({
+        "offers": s.patrols.iter().map(|o| json!({
+            "line": o.line, "number": o.number, "colour": o.colour,
+            "times": format!("{} – {}", hhmm(o.from), hhmm(o.to)),
+            "team": if o.team.is_empty() { tr("Alone") } else { trf("With %{names}", &[("names", &o.team.join(", "))]) },
+        })).collect::<Vec<_>>(),
+        "mine": mine,
+        "running": j.patrol_game.is_some_and(game_runs),
+        "words": {
+            "caps": tr("Ticket inspection"),
+            "note": tr("Work as one of the company's ticket inspectors in the map's world: you start on foot at a stop of the line in the company's uniform. Get into a bus (G by its door) and press K by a passenger to check the ticket - a passenger without one gets a penalty fare. What you find counts for the company like its own inspectors' checks, and you are paid for your time on duty. Drivers of the line who ask for ticket inspection are sent to you."),
+            "take": tr("Take this duty"), "go": tr("Start the game"), "mine": tr("Your ticket-inspection duty today"),
+            "calls": tr("Calls from drivers"), "running": tr("Your game is running."),
+            "none": tr("No line of the company is in service now."),
+        },
+    })
 }
 
 /// (NexiconDK, Bus Company Online, 2 November 2026) A free drive with bus `vehicle` of the
@@ -1186,7 +1327,7 @@ fn view() -> Value {
         "field": tr("Session code (HUB-…)"), "join": tr("Join"), "back": tr("Back"),
         "need": [tr("Both need the same version of Omsi-Hub."), tr("The same network, the same VPN (Hamachi, Radmin VPN, ZeroTier, Tailscale), or the boss's tunnel."), tr("The boss's company map, and the buses of your duties, installed.")],
         "leave": tr("Leave"), "connecting": tr("Looking for the boss's launcher…"),
-        "tab_work": tr("My work"), "tab_duties": tr("Duties"), "tab_trips": tr("Single trips"), "tab_free": tr("Free drive"), "tab_team": tr("Team"), "tab_news": tr("News"),
+        "tab_work": tr("My work"), "tab_duties": tr("Duties"), "tab_trips": tr("Single trips"), "tab_free": tr("Free drive"), "tab_patrol": tr("Ticket inspection"), "tab_team": tr("Team"), "tab_news": tr("News"),
         "open_caps": tr("Open duties").to_uppercase(), "no_open": tr("No open duty right now: the boss can give you one."),
         "mine_caps": tr("My duties").to_uppercase(), "no_mine": tr("No duty of yours yet: ask for an open one."),
         "rest_caps": tr("The rest of the day").to_uppercase(),
@@ -1313,6 +1454,8 @@ fn view() -> Value {
         "trips": ask && s.trips_open,
         // (NexiconDK, 2 November 2026: a free drive with a bus of the company - `tg_take_bus`)
         "free": free_json(s, j),
+        // (round V: ticket inspection as one of the company's inspectors - `tg_take_patrol`)
+        "patrol": patrol_json(s, j),
         "asks": asks, "members": members, "giveable": giveable, "roles": if can(Perm::Players) { roles_json() } else { Value::Null },
         "history": history_rows(), "driving": driving, "notices": notices, "last_notice": j.notices.last().map(|n| n.n).unwrap_or(0),
         // (NexiconDK, 3 November 2026: `live_more` - urgent tasks K6, fixed duties K10, the dispatcher K13)

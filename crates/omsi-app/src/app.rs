@@ -488,7 +488,8 @@ impl App {
                 // and the player found himself on foot, with no word why)
                 // (NexiconDK: a relief at a stop has no bus of its own yet - the AI's is handed
                 // over to it there: `relief`)
-                let first = if self.args.relief_at.is_some() { Ok(None) } else { spawn_player(&self.args, &w, &renderer, &mut scene) };
+                // (NexiconDK, round V: a ticket inspector on patrol has no bus at all)
+                let first = if self.args.relief_at.is_some() || self.args.patrol.is_some() { Ok(None) } else { spawn_player(&self.args, &w, &renderer, &mut scene) };
                 let spawned = match first {
                     Err(e) if self.args.bus.is_some() => {
                         log::warn!("the bus could not be put down ({e:#}); trying again");

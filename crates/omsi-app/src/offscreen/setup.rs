@@ -305,6 +305,7 @@ impl<'a> Offscreen<'a> {
             cabin_air,
             srv_admin,
             srv_pax: Default::default(),
+            srv_patrol: Default::default(),
             srv_clock,
             srv_metar,
             srv_metar_due,

@@ -55,6 +55,8 @@ pub(crate) struct NetState {
     /// (NexiconDK) A player's bus that left people at their stop, and what the host's waiting
     /// people do for a bus, between the games (`pax_signals`).
     pub(crate) pax_signals: crate::pax_signals::PaxSignals,
+    /// (NexiconDK, round V) On patrol as a ticket inspector, and (host) the inspectors' book.
+    pub(crate) patrol: crate::patrol::PatrolState,
 }
 
 /// What the game talks to besides itself: the OMSI and Lua plugins, Discord, Steam, the

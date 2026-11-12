@@ -55,6 +55,7 @@ impl Offscreen<'_> {
             ref mut sim_view,
             ref mut humans_off,
             ref mut srv_pax,
+            ref mut srv_patrol,
             ref mut lan_world_off,
             ref mut real_time,
             ref mut schedule,
@@ -143,6 +144,15 @@ impl Offscreen<'_> {
                 if text.starts_with("relief ") {
                     let peers = crate::relief::PeerInfo::of(l);
                     for (to, r) in crate::relief::host_command(from, &text, schedule.as_mut(), traffic.as_mut(), humans_off.as_ref(), &peers) {
+                        l.command(to, &r);
+                    }
+                    continue;
+                }
+                // (NexiconDK, round V: a ticket inspector's check, answered here or by a driver's game)
+                if text.starts_with("ticket ") {
+                    let day = parse_time(&args.time) + *srv_clock + srv_admin.shift;
+                    let replies = srv_patrol.command(from, &text, humans_off.as_mut(), traffic.as_ref(), lan_world_off, &*l, day);
+                    for (to, r) in replies {
                         l.command(to, &r);
                     }
                     continue;
@@ -242,6 +252,11 @@ impl Offscreen<'_> {
                     // (the map's ground: x east, y north - z is up)
                     crate::company_server::watch(l.peers().filter(|p| p.has_pose).map(|p| (p.pose.name.clone(), p.pose.x, p.pose.y, p.pose.tour.clone())), now);
                     crate::company_server::take_trips(&args.map);
+                    // (round V: what the ticket inspectors on patrol did, for their companies)
+                    srv_patrol.tick(l);
+                    for (name, seen) in srv_patrol.take_seen() {
+                        crate::company_server::patrol_seen(&args.map, &name, &seen);
+                    }
                     // (relief at the stop: the trips of players' duties the AI drove after all)
                     for k in schedule.as_mut().map(|s| s.sim.take_kept_reliefs()).unwrap_or_default() {
                         if let Some(name) = l.peers().find(|p| p.pose.id == k.peer).map(|p| p.pose.name.clone()) {

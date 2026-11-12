@@ -235,7 +235,7 @@ pub(crate) fn take_trips(map: &str) {
                 log::warn!("server: the free drive of {name} not taken: {why}");
                 continue;
             }
-            let w = omsi_launcher_lib::company::store::WorldTrip { name: name.clone(), trip: t.clone(), at: unix_now() as u64, kept: false, handed: false };
+            let w = omsi_launcher_lib::company::store::WorldTrip { name: name.clone(), trip: t.clone(), at: unix_now() as u64, kept: false, handed: false, patrol: None };
             match omsi_launcher_lib::company::store::append_world_trip(&c.data, &company, &w) {
                 Ok(()) => {
                     TAKEN_TRIPS.lock().unwrap_or_else(|e| e.into_inner()).push(key);
@@ -267,7 +267,7 @@ pub(crate) fn take_trips(map: &str) {
             continue;
         };
         let t = omsi_launcher_lib::TripRun { line, ..t };
-        let w = omsi_launcher_lib::company::store::WorldTrip { name: name.clone(), trip: t.clone(), at: unix_now() as u64, kept: false, handed: false };
+        let w = omsi_launcher_lib::company::store::WorldTrip { name: name.clone(), trip: t.clone(), at: unix_now() as u64, kept: false, handed: false, patrol: None };
         match omsi_launcher_lib::company::store::append_world_trip(&c.data, &company, &w) {
             Ok(()) => {
                 let mut taken = TAKEN_TRIPS.lock().unwrap_or_else(|e| e.into_inner());
@@ -294,10 +294,30 @@ pub(crate) fn relief_kept(map: &str, name: &str, line: &str, tour: &str, departu
         return;
     };
     let trip = omsi_launcher_lib::TripRun { line, tour: tour.trim().to_string(), departure, time: unix_now() as u64, ..Default::default() };
-    let w = omsi_launcher_lib::company::store::WorldTrip { name: name.to_string(), trip, at: unix_now() as u64, kept: true, handed: false };
+    let w = omsi_launcher_lib::company::store::WorldTrip { name: name.to_string(), trip, at: unix_now() as u64, kept: true, handed: false, patrol: None };
     match omsi_launcher_lib::company::store::append_world_trip(&c.data, &company, &w) {
         Ok(()) => log::info!("server: {name} was not at his stop in time: the AI drove line {} tour {tour} at {:.0} for {company}", w.trip.line, departure),
         Err(e) => log::warn!("server: the relief the AI drove not written for {company}: {e:#}"),
+    }
+}
+
+/// (NexiconDK, ticket inspection round V) What player `name` did as a ticket inspector on patrol
+/// (`patrol::HostBook`): written for the company it names, when it runs on the map `map`
+/// (`WorldTrip::patrol`) - its process books it (`inspection_patrol::book_seen`), and that it is
+/// his patrol.
+pub(crate) fn patrol_seen(map: &str, name: &str, seen: &omsi_launcher_lib::company::inspection_patrol::PatrolSeen) {
+    let Some(c) = COMPANIES.get() else { return };
+    let plans = omsi_launcher_lib::company::plan::live_plans(&c.data);
+    let same_map = |m: &str| online::map_folder(m) == online::map_folder(map);
+    if !plans.iter().any(|p| same_map(&p.map) && p.company == seen.company) {
+        log::warn!("server: the ticket inspection of {name}: no company '{}' on this map", seen.company);
+        return;
+    }
+    let trip = omsi_launcher_lib::TripRun { line: seen.line.clone(), time: unix_now() as u64, ..Default::default() };
+    let w = omsi_launcher_lib::company::store::WorldTrip { name: name.to_string(), trip, at: unix_now() as u64, kept: false, handed: false, patrol: Some(seen.clone()) };
+    match omsi_launcher_lib::company::store::append_world_trip(&c.data, &seen.company, &w) {
+        Ok(()) => log::info!("server: {name}'s ticket inspection ({}: line {}, {} checked, {} caught, {:.0} min) written for {}", seen.kind, seen.line, seen.checked, seen.caught, seen.minutes, seen.company),
+        Err(e) => log::warn!("server: the ticket inspection of {name} not written for {}: {e:#}", seen.company),
     }
 }
 
@@ -314,7 +334,7 @@ pub(crate) fn handed_over(map: &str, name: &str, line: &str, tour: &str, departu
         return;
     };
     let trip = omsi_launcher_lib::TripRun { line, tour: tour.trim().to_string(), departure, completed: done, time: unix_now() as u64, ..Default::default() };
-    let w = omsi_launcher_lib::company::store::WorldTrip { name: name.to_string(), trip, at: unix_now() as u64, kept: false, handed: true };
+    let w = omsi_launcher_lib::company::store::WorldTrip { name: name.to_string(), trip, at: unix_now() as u64, kept: false, handed: true, patrol: None };
     match omsi_launcher_lib::company::store::append_world_trip(&c.data, &company, &w) {
         Ok(()) => log::info!("server: {name} handed his bus over to the AI on line {} tour {tour} at {:.0}: written for {company}", w.trip.line, departure),
         Err(e) => log::warn!("server: the hand-over of {name} not written for {company}: {e:#}"),

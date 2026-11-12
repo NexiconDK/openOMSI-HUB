@@ -8,6 +8,7 @@ impl App {
     pub(crate) fn tick_lan(&mut self, dt: f32) {
         let walker = self.walker_pose();
         let radio_keyed = self.voice_radio_held();
+        let patrol_figure = self.patrol_figure();
         let Some(lan) = self.net.lan.as_mut() else {
             // (the session is over: the plugin is told so)
             self.sound.voice = None;
@@ -32,7 +33,7 @@ impl App {
             walker,
             inside_of: self.net.inside_remote,
             radio_keyed,
-            figure: self.player.as_ref().and_then(|p| p.driver.as_ref()).map(|d| d.human_type().def.path.clone()),
+            figure: patrol_figure.or_else(|| self.player.as_ref().and_then(|p| p.driver.as_ref()).map(|d| d.human_type().def.path.clone())),
             drawn: self.world.is_some() && self.renderer.is_some() && self.scene.is_some(),
         };
         let config = self.args.lan_config();
@@ -74,6 +75,14 @@ impl App {
         let cmds = self.net.lan.as_mut().map(|l| l.take_commands()).unwrap_or_default();
         for (from, text) in cmds {
             self.lan_command(from, &text);
+        }
+        // (NexiconDK, round V: on patrol as a ticket inspector; the host's book of the inspectors)
+        self.patrol_tick(dt);
+        if let Some(l) = self.net.lan.as_ref().filter(|l| l.role == omsi_net::Role::Host) {
+            self.net.patrol.host.tick(l);
+            for (name, seen) in self.net.patrol.host.take_seen() {
+                crate::company_server::patrol_seen(&self.args.map, &name, &seen);
+            }
         }
         // (NexiconDK: waiting at a stop for the bus taken over: `relief`)
         if self.net.lan.as_ref().is_some_and(|l| l.role == omsi_net::Role::Client) {
@@ -118,6 +127,25 @@ impl App {
                 }
             } else if from == 1 {
                 self.relief_answer(rest);
+            }
+            return;
+        }
+        // (NexiconDK, round V: a ticket inspector's check - the host's word, or a driver's game asked)
+        if text.starts_with("ticket ") {
+            if lan.role == omsi_net::Role::Host {
+                let day = self.clock.time;
+                let lan = self.net.lan.as_ref().unwrap();
+                let replies = self.net.patrol.host.command(from, text, self.session.humans.as_mut(), self.session.traffic.as_ref(), &self.net.lan_world, lan, day);
+                if let Some(l) = self.net.lan.as_mut() {
+                    for (to, r) in replies {
+                        if to == l.my_id {
+                            continue;
+                        }
+                        l.command(to, &r);
+                    }
+                }
+            } else {
+                self.ticket_client_command(from, &text["ticket ".len()..]);
             }
             return;
         }

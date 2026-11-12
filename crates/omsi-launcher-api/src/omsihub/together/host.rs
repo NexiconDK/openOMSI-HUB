@@ -141,6 +141,20 @@ pub(crate) fn take_world_trips(s: &mut Session, lines: &[core::LineInfo], trips:
             core::log_to_file(&format!("company {}: a trip from the world of {} (not a player of the company): not booked", c.id, w.name));
             continue;
         };
+        // (NexiconDK, ticket inspection round V: what he did as a ticket inspector on patrol, as the
+        // world saw it - a bus ridden booked as a check of the day, his time paid)
+        if let Some(seen) = w.patrol.as_ref() {
+            match co::inspection_patrol::book_seen(c, no, &name, seen) {
+                Ok(pay) => {
+                    core::log_to_file(&format!("company {}: {name} on patrol: {} {} {} checked, {} caught, {:.0} min, paid {pay}", c.id, seen.kind, seen.line, seen.checked, seen.caught, seen.minutes));
+                    if pay > 0 {
+                        paid.push(co::online::Pay { player: id.clone(), name: name.clone(), cents: pay, line: "Ticket inspection".into(), tour: String::new(), departure: 0.0, at: now, class: None, exam: None, minutes: seen.minutes });
+                    }
+                }
+                Err(why) => core::log_to_file(&format!("company {}: {name} on patrol ({}): {why}", c.id, seen.kind)),
+            }
+            continue;
+        }
         // (NexiconDK, 2 November 2026: the whole of a free drive with a bus of the company - its
         // fares, the bus's tank and his pay, `free_drive::book_run`)
         if t.free && t.tour.trim().is_empty() {

@@ -431,6 +431,13 @@ pub struct Snapshot {
     /// soon (`pro_watch::unfilled`), for whoever gives or plans the duties.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub unfilled: Vec<SnapUnfilled>,
+    /// (NexiconDK, ticket inspection round V) The ticket-inspection duties the player may take
+    /// now (none: not on the server, or he may not drive), and the one he has today with the
+    /// drivers' calls to it.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub patrols: Vec<super::super::inspection_patrol::Offer>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub patrol: Option<super::super::inspection_patrol::PlayerPatrol>,
 }
 
 /// (NexiconDK, 9 November 2026: round Q) A duty without a driver signing on soon: the name it is
@@ -551,6 +558,24 @@ pub struct DriveStart {
     /// companies his launcher had last read, and the inspectors came in their own clothes.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uniform: Option<Value>,
+    /// (NexiconDK, ticket inspection round V) Not a drive: a ticket-inspection duty - his game
+    /// starts on foot at a stop of its line in the company's inspector's uniform.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub patrol: Option<PatrolStart>,
+}
+
+/// (round V) How a player's game starts on a ticket-inspection duty: the line (the timetable's
+/// name) and its number, a tour of it whose bus passes a stop soon (where he starts), when the
+/// duty ends (minute of the day), the fine (cents) and the uniform's clothes.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
+#[serde(default)]
+pub struct PatrolStart {
+    pub line: String,
+    pub number: String,
+    pub tour: String,
+    pub until: i32,
+    pub fine: i64,
+    pub variant: String,
 }
 
 fn is_zero(n: &usize) -> bool {
@@ -630,6 +655,7 @@ impl DriveStart {
             defects: Vec::new(),
             inspection: None,
             uniform: None,
+            patrol: None,
             vehicle: s.vehicle,
             km: s.km.filter(|k| k.is_finite() && *k >= 0.0),
             fuel: s.fuel.filter(|f| f.is_finite()).map(|f| f.clamp(0.0, 1.0)),

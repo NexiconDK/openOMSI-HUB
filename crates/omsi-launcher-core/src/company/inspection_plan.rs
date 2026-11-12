@@ -54,6 +54,9 @@ pub struct Plan {
     pub next: u32,    /// (round U) How the inspectors look in the game (`inspection_game::Look`).
     #[serde(default)]
     pub look: super::inspection_game::Look,
+    /// (round V) The players' ticket-inspection duties (`inspection_patrol`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub players: Vec<super::inspection_patrol::PlayerPatrol>,
 }
 
 /// A date planned otherwise.

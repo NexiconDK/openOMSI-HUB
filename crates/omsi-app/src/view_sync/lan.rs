@@ -98,7 +98,7 @@ pub(crate) fn apply_lan(
                 d.hide(r, scene);
             }
             // their own figure at the wheel (a figure picked by their id otherwise)
-            v.driver = crate::driver::DriverFigure::new_named(w, r, scene, rv.vehicle(), omsi_net::human_path(&rv.last.figure).as_deref(), 1000 + *id as u64);
+            v.driver = crate::driver::DriverFigure::new_named(w, r, scene, rv.vehicle(), omsi_net::human_path(omsi_net::figure_file(&rv.last.figure)).as_deref(), 1000 + *id as u64);
         }
         if let Some(d) = v.driver.as_mut() {
             d.update(r, scene, rv.vehicle(), &v.render, dt.max(1.0 / 120.0), rv.last.walker.is_none(), false);

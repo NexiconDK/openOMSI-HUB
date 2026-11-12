@@ -180,6 +180,10 @@ pub struct WorldTrip {
     /// (`book::handed_over`).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub handed: bool,
+    /// (NexiconDK, ticket inspection round V) Not a trip: what he did as a ticket inspector of the
+    /// company on patrol in the world, as the world saw it (`inspection_patrol::PatrolSeen`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub patrol: Option<super::inspection_patrol::PatrolSeen>,
 }
 
 /// The company's trips taken by a map's world (`WorldTrip`), a JSON line each.

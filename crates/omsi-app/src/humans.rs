@@ -101,6 +101,11 @@ impl Humans {
         self.sim.avatar(key, &*world.data(), cmd, kind);
     }
 
+    /// (NexiconDK, round V) The same, made in the clothes `item` (`PeopleSim::avatar_in`).
+    pub fn avatar_in(&mut self, key: u32, world: &World, cmd: AvatarCmd, kind: u64, item: &str) {
+        self.sim.avatar_in(key, &*world.data(), cmd, kind, item);
+    }
+
     /// One of the host's people appears here (client; see `PeopleSim::mirror_add`) - (NexiconDK,
     /// ticket inspection) in clothes `variant` (see `PeopleSim::mirror_add_dressed`, `dress_of`).
     pub fn mirror_add_dressed(&mut self, world: &World, id: u32, ty: usize, variant: Option<usize>, pose: &MirrorPose) -> bool {

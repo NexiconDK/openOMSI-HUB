@@ -844,11 +844,24 @@ fn inspectors_asked(c: &mut Company, line: &str, tour: &str, dp: Option<&DayPlan
         }
     };
     let now = c.clock.minute as i32;
+    let to = To::Duty { line: line.to_string(), tour: tour.to_string() };
+    // (round V: a player on patrol on the line - he is told, and goes himself)
+    let towards = dp.and_then(|p| p.tours.iter().find(|t| t.tour.line.eq_ignore_ascii_case(line) && t.tour.tour.eq_ignore_ascii_case(tour))).and_then(|t| t.tour.trips.iter().find(|x| x.arr > now)).map(|x| x.to.clone()).unwrap_or_default();
+    if let Some(name) = super::inspection_patrol::call(c, line, tour, &towards, now, asked) {
+        let reply = send(c, From::Control, to, Priority::Info, super::inspection_patrol::PLAYER_COMES, vec![ck::arg("name", &name)], false, None);
+        if let Some(r) = c.messages.get_mut(reply) {
+            r.re = Some(asked);
+        }
+        if let Some(m) = c.messages.get_mut(asked) {
+            m.done = true;
+            m.state = State::Read;
+        }
+        return;
+    }
     let answer = match dp {
         Some(p) => ig::answer(c, p, line, tour, now),
         None => Err(ig::NOBODY_NEAR),
     };
-    let to = To::Duty { line: line.to_string(), tour: tour.to_string() };
     let reply = match answer {
         Ok((o, at)) => {
             let args = vec![ck::arg("names", &o.names.join(" & ")), ck::arg("n", &ig::AHEAD.to_string()), ck::arg("time", &ck::hhmm(ck::moment(&c.date, at as i64)))];

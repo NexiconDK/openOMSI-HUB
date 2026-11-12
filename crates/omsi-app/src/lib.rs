@@ -132,6 +132,8 @@ mod ground_gap;
 mod on_foot;
 // NexiconDK, Bus Company Online: relief at the stop
 mod relief;
+// (NexiconDK, round V) a player as a ticket inspector
+mod patrol;
 mod roadside;
 mod pax_signals;
 use omsi_scene::route_arrows;
@@ -559,6 +561,7 @@ pub(crate) fn make_app(mut args: Args, server_cfg: Option<server::ServerCfg>) ->
             args.time = t;
         }
         place_on_duty(&mut args);
+        duty_start::place_on_patrol(&mut args);
     }
     if let Some(out) = args.export_glb.clone() {
         return run_export(&args, &out).map(|_| None);
@@ -891,6 +894,7 @@ fn assemble_app(args: Args, settings: settings::Settings) -> App {
             remotes: Default::default(),
             lan_world: Default::default(),
             pax_signals: Default::default(),
+            patrol: Default::default(),
         },
         service_msg: clock_note.map(|m| (m, 10.0)),
         settings,

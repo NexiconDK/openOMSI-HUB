@@ -80,6 +80,8 @@ struct Offscreen<'a> {
     /// (NexiconDK) The players' buses that left people, and the people's gestures, to the
     /// players' games (`pax_signals`).
     srv_pax: crate::pax_signals::PaxSignals,
+    /// (NexiconDK, round V) The ticket inspectors on patrol in the world (`patrol`).
+    srv_patrol: crate::patrol::HostBook,
     srv_clock: f64,
     srv_metar: Option<String>,
     srv_metar_due: std::time::Instant,

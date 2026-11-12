@@ -3905,6 +3905,10 @@ pub struct Duty {
     /// is handed over there.
     #[serde(default)]
     pub relief: Option<bool>,
+    /// (NexiconDK, ticket inspection round V) A ticket-inspection duty in a LAN world, no bus:
+    /// `<company>|<line>|<tour>|<until>|<fine>|<clothes>` (the game's `--patrol`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub patrol: Option<String>,
     /// (NexiconDK, Bus Company Online: single trips) How many trips of the tour after the duty's
     /// the player may drive on with, one at a time (the game menu's "Drive on"; `--drive-on`).
     #[serde(default)]
@@ -4301,6 +4305,9 @@ fn duty_args_for_root(d: &Duty, root: &Path) -> Result<Vec<String>> {
     // (in a LAN world only: the AI's bus there is handed over)
     if d.relief.unwrap_or(false) && d.lan.as_deref().is_some_and(|l| l.trim().starts_with("join:")) {
         a.push("--relief".into());
+    }
+    if let Some(p) = d.patrol.as_deref().map(str::trim).filter(|p| !p.is_empty() && d.lan.as_deref().is_some_and(|l| l.trim().starts_with("join:"))) {
+        a.extend(["--patrol".into(), p.to_string()]);
     }
     // (a single trip of the company's: the trips after it the player may drive on with)
     if let Some(n) = d.drive_on.filter(|n| *n > 0 && d.legs.iter().any(|x| !x.trim().is_empty()) && d.free_line.as_deref().is_none_or(|r| r.trim().is_empty())) {

@@ -86,6 +86,9 @@ pub(crate) struct OnFoot {
     pub kneel: bool,
     /// How far down the eyes are on their way (0 standing .. 1 kneeling).
     pub crouch: f32,
+    /// (NexiconDK, ticket inspection round V) The clothes the walker wears: a bus company's
+    /// inspector's uniform on patrol (empty: the figure's own).
+    pub clothes: String,
 }
 
 /// What a walk leads to once walked.
@@ -370,6 +373,7 @@ impl App {
             arrive: None,
             kneel: false,
             crouch: 0.0,
+            clothes: String::new(),
         });
         self.view = "foot".into();
         self.service_msg = Some(("On foot: W A S D walk, Shift runs, C kneels, F4 free camera / F1 back, G sits down (by the driver's place: back at the wheel), Ctrl+Shift+G steps out of the bus".into(), 7.0));
@@ -500,6 +504,7 @@ impl App {
             arrive: None,
             kneel: false,
             crouch: 0.0,
+            clothes: String::new(),
         });
         self.view = "foot".into();
     }
@@ -762,6 +767,13 @@ impl App {
                     } else {
                         self.use_seat();
                     }
+                }
+                true
+            }
+            // (NexiconDK, round V: on patrol, K by a passenger checks the ticket)
+            KeyCode::KeyK if !ctrl && self.net.patrol.on() => {
+                if pressed && !repeat {
+                    self.patrol_check();
                 }
                 true
             }
@@ -1190,7 +1202,7 @@ pub(crate) fn tick(cx: &mut OnFootCx, dt: f32) {
     if let (Some(h), Some(w), Some(r), Some(scene)) = (cx.people.humans.as_mut(), cx.world.world.as_ref(), cx.gfx.renderer.as_ref(), cx.gfx.scene.as_mut()) {
         // (stepping through a door the feet keep to the step, not to the road under it)
         let cmd = AvatarCmd { pos: f.pos, heading: f.heading, vel: f.vel, lift: f.lift, seat: f.seat, floor: f.inside.map(|_| f.pos.z).or(f.transit.map(|_| f.pos.z)), aboard: f.inside };
-        h.avatar(AVATAR_KEY, w, cmd, f.kind);
+        h.avatar_in(AVATAR_KEY, w, cmd, f.kind, &f.clothes);
         crate::view_sync::apply_people(h, &mut cx.gfx.gfx.sim_view.people, w, r, scene);
         h.avatar_show(AVATAR_KEY, show);
     }
@@ -1274,9 +1286,10 @@ pub(crate) fn remote_walkers(cx: &mut OnFootCx) {
         // the figure they are drawn as at their wheel: their own, as their game draws
         // them, or the one of the map's drivers that stands in for it here - not a
         // passenger picked by their id, who got off the bus in someone else's clothes
+        let clothes = omsi_net::figure_clothes(&figure).unwrap_or_default();
         let kind = at_wheel
             .or_else(|| {
-                omsi_net::human_path(&figure)
+                omsi_net::human_path(omsi_net::figure_file(&figure))
                     .map(|rel| omsi_cfg::resolve_path(&cx.common.args.root, &rel))
                     .filter(|p| omsi_cfg::vfs::exists(p))
                     .and_then(|p| crate::driver::cached_type(&p))
@@ -1285,6 +1298,9 @@ pub(crate) fn remote_walkers(cx: &mut OnFootCx) {
             .or_else(|| crate::driver::driver_type(w, 1000 + id as u64))
             .map(|t| h.type_index(t) as u64)
             .unwrap_or(id as u64 * 13 + 5);
+        // (NexiconDK, round V: a player on patrol in his company's inspector's uniform - his
+        // figure if it has it here, else one that does)
+        let kind = if clothes.is_empty() { kind } else { h.type_wearing(&clothes, Some(kind as usize)).map_or(kind, |k| k as u64) };
         // (the figure is chosen when the avatar is made: one that changed - their INFO
         // naming theirs after the first steps - makes it again)
         if cx.net.remote_walkers.iter().any(|&(i, k)| i == id && k != kind) {
@@ -1304,7 +1320,7 @@ pub(crate) fn remote_walkers(cx: &mut OnFootCx) {
             None if wk.seated => continue,
             None => AvatarCmd { pos: DVec3::new(wk.x, wk.y, wk.z), heading: wk.heading as f64, vel: DVec2::new(hh.sin(), hh.cos()) * wk.speed as f64, lift: 0.0, seat: None, floor: w.walk_height(wk.x, wk.y).filter(|g| wk.z > g + 0.25).map(|_| wk.z), aboard: None },
         };
-        h.avatar(REMOTE_KEY + id, w, cmd, kind);
+        h.avatar_in(REMOTE_KEY + id, w, cmd, kind, &clothes);
         crate::view_sync::apply_people(h, &mut cx.gfx.gfx.sim_view.people, w, r, scene);
         if !cx.net.remote_walkers.iter().any(|&(i, _)| i == id) {
             log::info!("LAN: player {id} got up and walks at ({:.1}, {:.1})", wk.x, wk.y);
@@ -1394,6 +1410,7 @@ mod tests {
             arrive: None,
             kneel: false,
             crouch: 0.0,
+            clothes: String::new(),
         }
     }
 

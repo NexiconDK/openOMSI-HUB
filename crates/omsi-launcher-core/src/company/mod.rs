@@ -60,6 +60,8 @@ pub mod incidents;
 pub mod inspection;
 pub mod inspection_game;
 pub mod inspection_plan;
+/// (NexiconDK, round V) a player as a ticket inspector
+pub mod inspection_patrol;
 // (the lines' income and passengers on the UK model: fares by ticket, concessions, BSOG)
 pub mod income;
 pub mod levels;

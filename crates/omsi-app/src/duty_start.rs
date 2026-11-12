@@ -134,6 +134,56 @@ fn place_at_garage(args: &mut Args) {
     }
 }
 
+/// (NexiconDK, ticket inspection round V) On a ticket-inspection duty (`--patrol`): where he starts
+/// on foot - the stop of the patrol's line where its tour (the launcher's pick: one whose bus
+/// passes soon) has its next bus (`args.patrol_at`). No tour is driven, none claimed. Unknown: on
+/// foot where the game starts.
+pub(crate) fn place_on_patrol(args: &mut Args) {
+    let Some(spec) = args.patrol.as_deref().and_then(crate::patrol::Spec::parse) else { return };
+    if args.spawn.is_some() || args.is_resuming() {
+        return;
+    }
+    args.on_foot = true;
+    if spec.tour.is_empty() {
+        return;
+    }
+    let clock = start_clock(args);
+    let map_cfg = omsi_cfg::resolve_path(&args.root, &args.map);
+    let world = match World::open(&args.root, &map_cfg, clock.date_code()) {
+        Ok(w) => w,
+        Err(e) => {
+            log::warn!("patrol start: {e:#}");
+            return;
+        }
+    };
+    world.index();
+    struct Keep(Preopened, Option<(PathBuf, i32, World)>);
+    impl Drop for Keep {
+        fn drop(&mut self) {
+            *self.0 .0.lock() = self.1.take();
+        }
+    }
+    let keep = Keep(args.preopened.clone(), Some((map_cfg, clock.date_code(), world)));
+    let world = &keep.1.as_ref().unwrap().2;
+    let mut sch = schedule::Schedule::new(&args.root, world, &clock);
+    let now = parse_time(&args.time);
+    let Ok(mut duty) = sch.player_duty(world, &spec.line, &spec.tour, now, None, true) else {
+        log::info!("patrol start: line {} tour {} not in the timetable: on foot where the game starts", spec.line, spec.tour);
+        return;
+    };
+    let map = world.navigation_map();
+    duty.learn_places(&map.places);
+    match relief_stop(&duty, None, now) {
+        Some((k, stop, at, heading)) => {
+            log::info!("patrol start: at stop '{}' of line {} ({} at {}), on foot at ({:.1}, {:.1})", duty.trips[k].stops[stop].name.trim(), spec.line, duty.trips[k].name, schedule::hhmm(duty.trips[k].stops[stop].dep), at.x, at.y);
+            args.patrol_at = Some([at.x, at.y, at.z, heading]);
+            args.spawn = Some(format!("{},{},{}", at.x, at.y, heading));
+            args.on_foot = false;
+        }
+        None => log::info!("patrol start: no stop of line {} with a known place: on foot where the game starts", spec.line),
+    }
+}
+
 /// With a duty (`--schedule --line`): the trip it starts with and the stop of it (`args.
 /// duty_trip`, `args.duty_first_stop`), and with `--auto-entry` the entry point nearest to
 /// that stop by road (`args.entry`).

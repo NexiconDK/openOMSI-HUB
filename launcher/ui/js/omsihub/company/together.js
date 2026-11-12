@@ -136,6 +136,50 @@ function FreeDrive({ v, ask }) {
   </div></div>`;
 }
 
+/** (NexiconDK, round V, 12 November 2026) "Ticket inspection": a ticket-inspection duty on a
+ * line of the company (`tg_take_patrol`) - his game starts on foot at a stop of the line in the
+ * company's uniform, in the map's world; K by a passenger checks the ticket. His own of today
+ * started again from here. */
+function Patrol({ v, ask }) {
+  const p = v.patrol;
+  if (!p) return null;
+  const w = p.words || {};
+  const go = async (line) => {
+    let base;
+    try {
+      base = await duty();
+    } catch (e) {
+      toast(e.message, 'error');
+      return;
+    }
+    const world = bcoCompany ? await worldOf(bcoCompany) : null;
+    if (!world) return;
+    try {
+      await run('tg_take_patrol', { line, base, world });
+    } finally {
+      if (S.worldLoad) set({ worldLoad: null });
+    }
+    ask();
+  };
+  const row = (o) => html`<div class="tg-duty trip freebus">
+    <${Chip} number=${o.number} colour=${o.colour} />
+    <div class="what"><b class="cut">${o.times}</b><span class="dim cut">${o.team}</span></div>
+    <span class="acts"><${Btn} kind="primary" icon="badge" label=${w.take} disabled=${p.running} onClick=${() => go(o.line)} /></span>
+  </div>`;
+  return html`<div class="tg-cols one"><div class="co-scroll tg-main">
+    <section class="co-section"><div class="co-caps">${w.caps}</div><p class="note">${w.note}</p>
+      ${p.mine && html`<div class="tg-duty trip freebus">
+        <${Chip} number=${p.mine.number} />
+        <div class="what"><b class="cut">${w.mine}</b><span class="dim cut">${p.mine.times}${p.mine.calls ? '  ·  ' + w.calls + ': ' + p.mine.calls : ''}</span></div>
+        <span class="acts">${p.running
+          ? html`<span class="dim">${w.running}</span>`
+          : html`<${Btn} kind="primary" icon="play_arrow" label=${w.go} onClick=${() => go(p.mine.line)} />`}</span>
+      </div>`}
+      ${!p.mine && (p.offers.length ? p.offers.map(row) : html`<p class="dim">${w.none}</p>`)}
+    </section>
+  </div></div>`;
+}
+
 /** The company of a Bus Company Online server the player is in (`tg_view`'s `bco`). */
 let bcoCompany = null;
 let worldWaiting = false;
@@ -610,10 +654,11 @@ function Joined({ v, ask }) {
     ['duties', w.tab_duties, 'route', v.can.approve ? v.asks.length : v.open.length],
     ...(v.trips ? [['trips', w.tab_trips, 'alt_route', 0]] : []),
     ...(v.free ? [['free', w.tab_free, 'garage', 0]] : []),
+    ...(v.patrol ? [['patrol', w.tab_patrol, 'badge', 0]] : []),
     ['team', w.tab_team, 'group', v.online],
     ['news', w.tab_news, 'forum', 0],
   ];
-  const body = { work: MyWork, duties: Duties, trips: Trips, free: FreeDrive, team: Team, news: News }[tab] || MyWork;
+  const body = { work: MyWork, duties: Duties, trips: Trips, free: FreeDrive, patrol: Patrol, team: Team, news: News }[tab] || MyWork;
   return html`<div class="tg-company">
     <div class="tg-head">
       <${Btn} icon="chevron_left" label=${w.back} style="width:120px;height:38px" onClick=${back} />

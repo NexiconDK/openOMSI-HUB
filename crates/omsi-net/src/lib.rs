@@ -979,7 +979,7 @@ impl Pose {
             self.table,
             clean_text(&self.tour, MAX_FIELD),
         );
-        let figure = human_path(&self.figure).unwrap_or_default();
+        let figure = figure_field(&self.figure).unwrap_or_default();
         // the display texts get what room is left in one datagram (long vehicle and figure
         // paths and a destination in another alphabet made an INFO too long to be taken in:
         // the others never learnt which bus the player drove)
@@ -1016,7 +1016,7 @@ impl Pose {
             table: u32::from_str_radix(parts[10].trim(), 16).ok()?,
             tour: parts.get(11).map(|t| clean_text(t, MAX_FIELD)).unwrap_or_default(),
             texts: parts.get(12).map(|t| decode_texts(t, MAX_TEXTS, MAX_TEXT_LEN)).unwrap_or_default(),
-            figure: parts.get(13).and_then(|f| human_path(f)).unwrap_or_default(),
+            figure: parts.get(13).and_then(|f| figure_field(f)).unwrap_or_default(),
             freetex: parts.get(14).map(|t| remote_text::only_relative(decode_texts(t, MAX_FREETEX, MAX_FREETEX_LEN))).unwrap_or_default(),
             ..Default::default()
         })
@@ -1180,6 +1180,31 @@ pub fn vehicle_path(bus: &str) -> Option<String> {
 /// [`vehicle_path`] (relative, no `..`, no drive letters), for the driver and walker figure.
 pub fn human_path(hum: &str) -> Option<String> {
     relative_path(hum, &["hum"])
+}
+
+/// (NexiconDK, ticket inspection round V) The clothes a player's figure wears after it in
+/// `INFO`'s figure field (`<.hum>#<item>`): only a bus company's ticket inspector's uniform
+/// (`~Inspector_<look>_<company>`), so that the others draw a player on patrol in it.
+pub fn figure_clothes(figure: &str) -> Option<String> {
+    let (_, item) = figure.split_once('#')?;
+    let item = item.trim();
+    let ok = item.starts_with("~Inspector_") && item.len() <= 48 && item[1..].chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+    ok.then(|| item.to_string())
+}
+
+/// The figure file of `INFO`'s figure field, without the clothes after it.
+pub fn figure_file(figure: &str) -> &str {
+    figure.split_once('#').map_or(figure, |x| x.0)
+}
+
+/// `INFO`'s figure field as it may go: the figure file (`human_path`), and an inspector's
+/// clothes after it (`figure_clothes`); None without a figure.
+pub fn figure_field(figure: &str) -> Option<String> {
+    let file = human_path(figure_file(figure))?;
+    Some(match figure_clothes(figure) {
+        Some(c) => format!("{file}#{c}"),
+        None => file,
+    })
 }
 
 fn relative_path(path: &str, exts: &[&str]) -> Option<String> {

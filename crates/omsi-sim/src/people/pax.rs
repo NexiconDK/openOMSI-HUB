@@ -216,6 +216,9 @@ pub struct Pax {
     /// (NexiconDK, ticket inspection round U) Rides without a ticket: neither stamps nor buys
     /// one (not a season ticket's `TICKET_NONE`); caught when the inspectors check them.
     pub dodger: bool,
+    /// (NexiconDK, ticket inspection round V) Checked by a player inspector already
+    /// (`ticket::check_ticket`).
+    pub checked: bool,
 }
 
 impl Pax {
@@ -290,6 +293,7 @@ impl Pax {
             no_room: None,
             ramp_wait: None,
             dodger: false,
+            checked: false,
         }
     }
 

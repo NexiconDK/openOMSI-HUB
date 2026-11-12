@@ -171,7 +171,7 @@ pub struct LanWorld {
 
 /// The line a timetable bus shows and the depot terminus it is set to, `#<index>` (host;
 /// `#-1` for none, so that a client still knows it is a timetable bus).
-fn car_display(v: &omsi_sim::VehicleInstance) -> (String, String) {
+pub(crate) fn car_display(v: &omsi_sim::VehicleInstance) -> (String, String) {
     let line = v
         .ty
         .program
@@ -210,6 +210,12 @@ impl LanWorld {
             Some(Desc::Car { file, paint, .. }) => Some((file.clone(), paint.clone())),
             _ => None,
         }
+    }
+
+    /// (NexiconDK, round V, host) The player whose rider has id `id` in the other clients' games
+    /// (`relayed_id`), and that rider's id on the wire from him (`wire_up`).
+    pub(crate) fn relayed_owner(&self, id: u32) -> Option<(u32, u32)> {
+        self.ups.iter().find_map(|(peer, up)| up.ids.iter().find(|(_, local)| relayed_id(**local) == id).map(|(pid, _)| (*peer, *pid)))
     }
 
     /// The host handed its car `id` over to us (our own bus stands in its place now): it goes

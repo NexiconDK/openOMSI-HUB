@@ -77,6 +77,14 @@ pub(crate) struct Args {
     /// the player may drive on with, one at a time (the game menu's "Drive on", `relief`).
     #[arg(long, default_value_t = 0)]
     pub(crate) drive_on: u32,
+    /// (NexiconDK, ticket inspection round V) A ticket-inspection duty of a bus company in a
+    /// map's world: `<company>|<line>|<tour>|<until, minutes of the day>|<fine>|<clothes>` - on
+    /// foot at a stop of the line (where the tour passes soon) in the uniform (`patrol`).
+    #[arg(long)]
+    pub(crate) patrol: Option<String>,
+    /// Where the patrol starts (x, y, z, heading), as `duty_start::place_on_patrol` found it.
+    #[arg(skip)]
+    pub(crate) patrol_at: Option<[f64; 4]>,
     /// (NexiconDK, Bus Company Online, 2 November 2026) The company's bus's odometer (km): the
     /// bus starts with it, not with a reading of its own age (`[kmcounter_init]`). A situation's
     /// reading wins.

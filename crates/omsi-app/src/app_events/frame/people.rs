@@ -85,6 +85,11 @@ impl App {
                 self.relief_begin(at);
             }
         }
+        // (NexiconDK, round V) --patrol: on foot at the stop of the patrol's line, in the uniform
+        if self.world.is_some() && self.args.patrol_at.is_some() {
+            let at = self.args.patrol_at.take();
+            self.patrol_begin(at);
+        }
         // --on-foot: the bus the start put down goes, the player stands beside it
         if self.args.on_foot && self.world.is_some() {
             self.args.on_foot = false;

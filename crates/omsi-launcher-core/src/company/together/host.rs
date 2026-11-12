@@ -16,7 +16,7 @@ use super::super::plan::{BusOf, DayPlan, Who};
 use super::book::{self, ClaimState, Handed, LeftWhy};
 use super::code;
 use super::roles::{Perm, Role};
-use super::wire::{Card, DriveStart, DutyState, Notice, Request, SnapAsk, SnapBus, SnapDuty, SnapLine, SnapMember, SnapMiss, SnapNext, SnapPart, SnapUnfilled, SnapPlayer, SnapDispatch, SnapFixed, SnapResult, SnapTrip, SnapYou, Snapshot, TripList};
+use super::wire::{Card, DriveStart, PatrolStart, DutyState, Notice, Request, SnapAsk, SnapBus, SnapDuty, SnapLine, SnapMember, SnapMiss, SnapNext, SnapPart, SnapUnfilled, SnapPlayer, SnapDispatch, SnapFixed, SnapResult, SnapTrip, SnapYou, Snapshot, TripList};
 use serde_json::{json, Value};
 
 /// A player who has not been heard from for this long is offline (s).
@@ -367,7 +367,23 @@ impl HostState {
         let result: Result<(), Value> = match req.what.as_str() {
             "hello" | "snapshot" => Ok(()),
             "take" | "release" | "start" | "take_back" | "report" | "assign" | "unassign" | "answer" if p.is_none() && !late => Err(refusal(READING)),
-            "take_trip" | "next_trip" | "trips" | "take_bus" if p.is_none() => Err(refusal(READING)),
+            "take_trip" | "next_trip" | "trips" | "take_bus" | "take_patrol" if p.is_none() => Err(refusal(READING)),
+            // (NexiconDK, ticket inspection round V: a ticket-inspection duty taken - or his of today
+            // again - and how his game starts on it)
+            "take_patrol" if !can(Perm::Drive) => Err(not_allowed(Perm::Drive)),
+            "take_patrol" => {
+                let minute = c.clock.minute as i32;
+                let line = req.text.trim().to_string();
+                let date = c.date.clone();
+                let have = super::super::inspection_patrol::of(c, guest, &date, minute).filter(|x| line.is_empty() || x.line.eq_ignore_ascii_case(&line)).cloned();
+                let got = match have {
+                    Some(x) => Ok(x),
+                    None => super::super::inspection_patrol::take(c, guest, &name, &line, minute),
+                };
+                got.map_err(refusal).map(|pp| {
+                    extra = json!({ "start": patrol_start(c, p.unwrap(), &pp) });
+                })
+            }
             // (NexiconDK, Bus Company Online, 2 November 2026: a bus of the company taken out for a
             // free drive - how his game starts with it - and his game over with it)
             "take_bus" if !can(Perm::Drive) => Err(not_allowed(Perm::Drive)),
@@ -895,6 +911,32 @@ fn free_start(c: &Company, p: &DayPlan, id: u32) -> DriveStart {
     }
 }
 
+/// (NexiconDK, ticket inspection round V) How a player's game starts on his ticket-inspection duty
+/// `pp`: on foot at a stop of its line (where a tour of it passes soon), in the company's uniform.
+fn patrol_start(c: &Company, p: &DayPlan, pp: &super::super::inspection_patrol::PlayerPatrol) -> DriveStart {
+    let minute = c.clock.minute as i32;
+    let tour = p
+        .tours
+        .iter()
+        .filter(|t| t.tour.line.eq_ignore_ascii_case(&pp.line))
+        .filter_map(|t| t.tour.trips.iter().filter(|x| x.counts() && x.arr > minute).map(|x| x.dep).min().map(|d| (d, t.tour.tour.clone())))
+        .min_by_key(|x| (x.0 - minute).abs())
+        .map(|x| x.1)
+        .unwrap_or_default();
+    let ig = super::super::inspection_game::variant(c, c.inspection_plan.look.letter(0));
+    DriveStart {
+        company: c.id.clone(),
+        map: c.map.clone(),
+        date: c.date.clone(),
+        time: minute.rem_euclid(1440),
+        hof: c.depot.clone(),
+        lines: c.lines.iter().map(|l| l.name.clone()).collect(),
+        uniform: Some(serde_json::json!({ "inspectors": super::super::server_api::inspectors_json(c), "short": c.short, "name": c.name, "colours": c.colours })),
+        patrol: Some(PatrolStart { line: pp.line.clone(), number: pp.number.clone(), tour, until: pp.to, fine: super::super::inspection::fine(c), variant: ig }),
+        ..Default::default()
+    }
+}
+
 /// (NexiconDK, free drives) The company's buses as player `guest` may take one out now, and the one
 /// he has out (`Snapshot::free_buses`, `free_drive`).
 fn free_buses(c: &Company, p: &DayPlan, guest: u32) -> (Vec<SnapBus>, Option<SnapBus>) {
@@ -1190,6 +1232,12 @@ pub fn snapshot(c: &Company, here: &Here, st: &HostState, guest: Option<u32>, si
     // (NexiconDK, free drives: the company's buses to take out, for one who may drive)
     if let (Some(g), Some(p), true, true) = (guest, here.plan, c.online.on_server, can(Perm::Drive)) {
         (s.free_buses, s.free_drive) = free_buses(c, p, g);
+        // (round V: the ticket-inspection duties to take, and his own of today)
+        let minute = c.clock.minute as i32;
+        s.patrol = super::super::inspection_patrol::of(c, g, &c.date, minute).cloned();
+        if s.patrol.is_none() {
+            s.patrols = super::super::inspection_patrol::offers(c, &c.date, minute);
+        }
     }
     let now = clock::now(c);
     let colour_of = |line: &str| c.lines.iter().find(|l| l.name.eq_ignore_ascii_case(line)).map(|l| l.colour.clone()).unwrap_or_default();

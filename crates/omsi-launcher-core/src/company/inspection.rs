@@ -399,6 +399,7 @@ pub fn close(c: &mut Company, date: &str, mut lines: Vec<LineDay>, seen: &[Seen]
         })
         .collect();
     super::inspection_plan::prune(c, date);
+    super::inspection_patrol::prune(c, date);
     let day = Day { date: date.to_string(), lines, checks, written, paid, planned };
     // (the month's totals)
     let month = dates::month_of(date);
