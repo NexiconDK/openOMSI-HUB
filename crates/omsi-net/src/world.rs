@@ -56,7 +56,7 @@ pub const STANDING_EVERY: f32 = 1.0;
 /// Lights are sent this often (s).
 pub const LIGHTS_EVERY: f32 = 1.0;
 
-const CAR_BITS: usize = 24 + 19 + 19 + 17 + 12 + 8 + 8 + 11 + 8 + 2 + 1 + 1 + 2;
+const CAR_BITS: usize = 24 + 19 + 19 + 17 + 12 + 8 + 8 + 11 + 8 + 2 + 1 + 1 + 2 + 8 + 1;
 const PERSON_FOOT_BITS: usize = 24 + 2 + 2 + 19 + 19 + 17 + 8 + 6 + 1;
 const PERSON_WAIT_BITS: usize = 32 + 8;
 const PERSON_ABOARD_BITS: usize = 24 + 2 + 2 + 24 + 12 + 13 + 10 + 8 + 8;
@@ -90,6 +90,13 @@ pub struct CarState {
     pub lights: bool,
     /// `AI_Scheduled_AtStation` as the host gives it: 0, 1 (boarding), -1 (leaving).
     pub at_station: i8,
+    /// (14 November 2026) The host's people's requests for its doors (`PAX_Entry<i>_Req` in the
+    /// low four bits, `PAX_Exit<i>_Req` in the high four, doors 0 to 3), and whether one of them
+    /// asked for the next stop (`int_haltewunsch`): a player's game runs the bus's script on
+    /// its copy, which opens the doors for those - without them only the front opened while the
+    /// host's people walked out of the back.
+    pub doors: u8,
+    pub stop_asked: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -293,6 +300,8 @@ pub fn encode(frame: &WorldFrame, protocol: u8) -> Vec<Vec<u8>> {
                 },
                 2,
             );
+            w.put(c.doors as u64, 8);
+            w.put(c.stop_asked as u64, 1);
         }
         w.put((pi - p0) as u64, 8);
         for p in &people[p0..pi] {
@@ -416,6 +425,8 @@ pub fn decode(data: &[u8], protocol: u8) -> Option<WorldFrame> {
             2 => -1,
             _ => 0,
         };
+        let doors = r.get(8)? as u8;
+        let stop_asked = r.get(1)? == 1;
         f.cars.push(CarState {
             id,
             x,
@@ -430,6 +441,8 @@ pub fn decode(data: &[u8], protocol: u8) -> Option<WorldFrame> {
             brake,
             lights,
             at_station,
+            doors,
+            stop_asked,
         });
     }
     let n = r.get(8)?;
@@ -702,6 +715,8 @@ mod tests {
             brake: true,
             lights: true,
             at_station: -1,
+            doors: 0b1001_0001,
+            stop_asked: true,
         }
     }
 
@@ -771,12 +786,14 @@ mod tests {
         };
         let d = encode(&f, 4);
         assert_eq!(d.len(), 1);
-        // (two parked spaces add 9 bytes: 1 + 1 + 7 + 2 x 32 bits)
-        assert!(d[0].len() <= 132, "{} bytes", d[0].len());
+        // (two parked spaces add 9 bytes: 1 + 1 + 7 + 2 x 32 bits; each car's door and stop
+        // requests 9 bits)
+        assert!(d[0].len() <= 135, "{} bytes", d[0].len());
         let g = decode(&d[0], 4).unwrap();
         assert_eq!((g.seq, g.host_ms), (65535, 123_456_789));
         assert_eq!(g.cars.len(), 2);
         let (a, b) = (&f.cars[0], &g.cars[0]);
+        assert_eq!((b.doors, b.stop_asked), (a.doors, a.stop_asked));
         assert!((a.x - b.x).abs() < 0.006 && (a.y - b.y).abs() < 0.006 && (a.z - b.z).abs() < 0.006);
         assert!((a.heading - b.heading).abs() < 0.05);
         assert!((a.pitch - b.pitch).abs() < 0.051 && (a.bank - b.bank).abs() < 0.051);

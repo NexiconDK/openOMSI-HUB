@@ -100,6 +100,8 @@ struct Mirror {
     drawn_people: HashSet<u32>,
     /// Distance each car has rolled (its wheels).
     odometer: HashMap<u32, f32>,
+    /// The AI buses whose stop request the host said and we pressed (`int_haltewunsch`).
+    stop_asked: HashSet<u32>,
     /// The host's clock minus ours (ms), from the frames that came fastest.
     offset: Option<f64>,
     play: PlayClock,
@@ -857,6 +859,7 @@ impl Mirror {
             m.drawn_people.clear();
             m.shown.clear();
             m.odometer.clear();
+            m.stop_asked.clear();
             log::info!(
                 "LAN: {}",
                 if want_on {
@@ -1017,6 +1020,7 @@ impl Mirror {
             m.drawn_cars.remove(&id);
             m.shown.remove(&id);
             m.odometer.remove(&id);
+            m.stop_asked.remove(&id);
         }
         let new: Vec<u32> = m
             .cars
@@ -1124,6 +1128,8 @@ impl Mirror {
                 c.blinker = a.blinker;
                 c.brake = a.brake;
                 c.at_station = a.at_station;
+                c.doors = a.doors;
+                c.stop_asked = a.stop_asked;
             }
             work.push((i, c, far as u8 as f64));
         }
@@ -1152,6 +1158,17 @@ impl Mirror {
                 };
             }
             car.body.steer = c.steer;
+            // (14 November 2026: the host's people's door requests, and their stop request
+            // pressed once, for the bus's script here to open the doors they use)
+            for d in 0..4 {
+                car.vehicle.set_pax_var("Entry", d, "Req", (c.doors >> d & 1) as f32);
+                car.vehicle.set_pax_var("Exit", d, "Req", (c.doors >> (d + 4) & 1) as f32);
+            }
+            if c.stop_asked && m.stop_asked.insert(c.id) {
+                car.vehicle.trigger("int_haltewunsch");
+            } else if !c.stop_asked {
+                m.stop_asked.remove(&c.id);
+            }
             shown.push((*i, c.id));
         }
         // the scripts (lamps, indicators, doors, wheels) run in parallel, as the
@@ -1362,6 +1379,11 @@ fn gather_cars(view: &mut View, t: &Traffic, at: DVec3, args: &LanConfig, g: &mu
             } else {
                 0
             },
+            doors: (0..4).fold(0u8, |m, i| {
+                let on = |kind| c.vehicle.pax_req(kind, i).is_some_and(|v| v > 0.5) as u8;
+                m | on("Entry") << i | on("Exit") << (i + 4)
+            }),
+            stop_asked: c.bus.as_ref().is_some_and(|b| b.stop_asked),
         });
     }
 

@@ -273,6 +273,7 @@ impl PeopleSim {
         self.claimed.clear();
         self.mirror_wait.clear();
         self.mirror_seat.clear();
+        self.mirror_aisle.clear();
     }
 
     /// The human type of a file relative to a content root (`Humans/…/x.hum`).
@@ -399,7 +400,29 @@ impl PeopleSim {
             Some((bus, local, lheading, seat)) => {
                 p.place = Place::Bus(BusId::Ai(bus), local);
                 p.lheading = lheading;
-                p.vel = DVec2::ZERO;
+                // (their pace up the aisle, from where they were: walking, not sliding)
+                let now = self.time;
+                let pace = match self.mirror_aisle.get(&id) {
+                    Some(&(b, was, since, pace)) if b == BusId::Ai(bus) => {
+                        let d = (local - was).truncate().length() as f64;
+                        if d > 0.002 {
+                            let v = (d / (now - since).max(0.016)).min(3.0);
+                            self.mirror_aisle.insert(id, (b, local, now, pace + (v - pace) * 0.5));
+                            pace + (v - pace) * 0.5
+                        } else if now - since > 0.3 {
+                            self.mirror_aisle.insert(id, (b, was, since, 0.0));
+                            0.0
+                        } else {
+                            pace
+                        }
+                    }
+                    _ => {
+                        self.mirror_aisle.insert(id, (BusId::Ai(bus), local, now, 0.0));
+                        0.0
+                    }
+                };
+                let h = pose.heading.to_radians();
+                p.vel = DVec2::new(h.sin(), h.cos()) * if seat.is_some() { 0.0 } else { pace };
                 // (NexiconDK, 31 October 2026: in their place - on a seat they sit, as the host
                 // has them; they stood beside every seat of a timetable bus, `mirror_facts`)
                 match seat {
@@ -418,6 +441,7 @@ impl PeopleSim {
             None => {
                 p.place = Place::Ground;
                 self.mirror_seat.remove(&id);
+                self.mirror_aisle.remove(&id);
             }
         }
     }
@@ -448,6 +472,7 @@ impl PeopleSim {
         self.claimed.remove(&id);
         self.mirror_wait.remove(&id);
         self.mirror_seat.remove(&id);
+        self.mirror_aisle.remove(&id);
         self.mirror_gestures.remove(&id);
     }
 

@@ -514,6 +514,10 @@ pub struct PeopleSim {
     /// (NexiconDK, 31 October 2026) The host's people in their places in a timetable bus
     /// (client): (the bus, the place in its cabin) - a seat they sit on (`mirror_facts`).
     pub mirror_seat: HashMap<u32, (BusId, usize)>,
+    /// (NexiconDK, 14 November 2026) One of the host's people aboard a timetable bus here: the
+    /// point of its cabin they were last at, when they last moved, and their pace from it (m/s)
+    /// - the host sends none for them, and walking up the aisle they slid, frozen mid-stride.
+    pub mirror_aisle: HashMap<u32, (BusId, glam::Vec3, f64, f64)>,
     /// How the player's bus is driven, for its riders' complaints.
     pub comfort: RideComfort,
     /// LAN play (host): the waiting people handed over to another player's bus, by stop and

@@ -161,6 +161,10 @@ pub struct BusService {
     pub express: bool,
     /// A LAN player takes it over at a stop of the trip (`ReliefHold`).
     pub relief: Option<ReliefHold>,
+    /// (NexiconDK, 14 November 2026) A passenger asked for the next stop (`int_haltewunsch`,
+    /// `Traffic::request_stop`) and it has not left that stop yet: the LAN players' games press
+    /// it on their copy of the bus too, so its script opens the same doors there.
+    pub stop_asked: bool,
     /// How far the front stop was last frame (m; infinite when not measured yet).
     near_d: f32,
     /// Whether it serves the front stop, once that is settled (`SKIP_DECIDE`).
@@ -400,6 +404,7 @@ impl BusService {
         BusService {
             stops: stops.into(),
             phase: Phase::Running,
+            stop_asked: false,
             phase_t: 0.0,
             boarding: 0.0,
             held_over: 0.0,
@@ -508,6 +513,7 @@ impl BusService {
         self.near_d = f32::INFINITY;
         self.serve = None;
         self.stops = stops.into();
+        self.stop_asked = false;
         self.phase = Phase::Running;
         self.phase_t = 0.0;
         self.boarding = 0.0;
@@ -656,6 +662,7 @@ impl BusService {
             st.signal_time = 0.0;
             return;
         }
+        self.stop_asked = false;
         self.set_phase(Phase::Running);
         // the blinker stays on while it pulls out
         st.signal = out_signal(bay);

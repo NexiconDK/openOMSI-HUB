@@ -77,6 +77,9 @@ pub fn holds_phone(id: u32, share: f32) -> bool {
 
 /// How far somebody on their way to the stop may be from the bus they wave to (m).
 pub const WAVE_TO_REACH: f64 = 80.0;
+/// (LAN client) How long another game's person's gesture for a bus is shown at most (s): the
+/// hail of somebody waiting is over long before.
+const MIRROR_GESTURE_SECS: f64 = 75.0;
 
 impl PeopleSim {
     /// The key of person `i`'s lots: their group's (all of them do the same), else their own.
@@ -188,11 +191,14 @@ impl PeopleSim {
     /// gesture, the bus here and where it is.
     pub fn mirror_gesture_now(&self, id: u32) -> Option<(Gesture, Option<BusId>, DVec3)> {
         let g = self.mirror_gestures.get(&id)?;
+        // (14 November 2026: one the host never ended is not held up for ever - a seated rider
+        // sat with the arm still up for the bus they had boarded)
+        let fresh = self.time - g.since < MIRROR_GESTURE_SECS;
         let shown = match g.gesture {
-            Gesture::Hail => self.gestures.signal > 0.0,
-            Gesture::Full => self.gestures.full > 0.0,
+            Gesture::Hail => self.gestures.signal > 0.0 && fresh,
+            Gesture::Full => self.gestures.full > 0.0 && fresh,
             Gesture::Wave => self.gestures.wave > 0.0 && self.time - g.since < WAVE_SECS,
-            Gesture::WaveTo => self.gestures.wave > 0.0,
+            Gesture::WaveTo => self.gestures.wave > 0.0 && fresh,
         };
         shown.then(|| (g.gesture, g.bus, self.mirror_bus_at(g)))
     }

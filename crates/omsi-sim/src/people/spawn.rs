@@ -198,6 +198,7 @@ impl PeopleSim {
             claimed: HashMap::new(),
             mirror_wait: HashMap::new(),
             mirror_seat: HashMap::new(),
+            mirror_aisle: HashMap::new(),
             comfort: RideComfort::default(),
             handed: Vec::new(),
             scratch: Default::default(),

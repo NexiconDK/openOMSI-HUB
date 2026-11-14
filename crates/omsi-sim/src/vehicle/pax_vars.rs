@@ -100,6 +100,15 @@ impl VehicleInstance {
         }
     }
 
+    /// (NexiconDK, 14 November 2026) `PAX_<kind><i>_Req` as it stands (the people's request for
+    /// that door), when the vehicle has it.
+    pub fn pax_req(&self, kind: &str, i: usize) -> Option<f32> {
+        match side(kind) {
+            Some(s) if i < PAX_DOORS => self.value_of(self.pax_vars().req[s][i]),
+            _ => self.var(&format!("PAX_{kind}{i}_Req")),
+        }
+    }
+
     /// The door animation `door_<k>`, else `door<k>`, when the vehicle has either.
     pub fn door_anim(&self, k: usize) -> Option<f32> {
         match self.pax_vars().door.get(k) {

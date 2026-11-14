@@ -304,6 +304,9 @@ impl TrafficSim {
     pub fn request_stop(&mut self, id: u64) {
         if let Some(c) = self.cars.iter_mut().find(|c| c.id == id) {
             c.vehicle.trigger("int_haltewunsch");
+            if let Some(b) = c.bus.as_mut() {
+                b.stop_asked = true;
+            }
         }
     }
 }
