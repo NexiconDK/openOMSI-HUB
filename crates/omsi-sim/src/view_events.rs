@@ -91,6 +91,10 @@ pub struct FrameSnapshot {
     /// The timetable buses near the viewer as their drivers read them
     /// (`TrafficSim::snapshot_drivers`).
     drivers: drivers::Drivers,
+    /// (NexiconDK, 14 November 2026) The AI bus the player is in on foot (kept over `clear`):
+    /// drawn as from inside it - its cockpit, its switches, the meshes of `[viewpoint]` 2 - as
+    /// the player's own bus is, not as the street sees it (no wheel, no buttons). Only that one.
+    pub inside: Option<u64>,
 }
 
 /// One AI car of a [`FrameSnapshot`].
@@ -150,26 +154,29 @@ impl FrameSnapshot {
     /// the meshes of a car out of sight are left out.
     pub fn add_car(&mut self, id: u64, vehicle: &crate::VehicleInstance) {
         let start = self.parts.len() as u32;
+        let inside = self.inside == Some(id);
         if vehicle.ai_visuals {
             let meshes = (0..vehicle.mesh_props.len()).map(|i| (vehicle.mesh_local_transform(i), &vehicle.mesh_props[i]));
-            self.add_part(vehicle.position, &vehicle.ty, vehicle.body_rotation(), meshes);
+            self.add_part(vehicle.position, &vehicle.ty, vehicle.body_rotation(), meshes, inside);
             for t in &vehicle.trailers {
                 let meshes = (0..t.mesh_props.len()).map(|i| (t.mesh_local_transform(i), &t.mesh_props[i]));
-                self.add_part(t.position, &t.ty, t.body_rotation(), meshes);
+                self.add_part(t.position, &t.ty, t.body_rotation(), meshes, inside);
             }
         }
         let parts = Span { start, len: self.parts.len() as u32 - start };
         self.cars.push(CarFrame { id, shown: vehicle.ai_visuals, parts, looks: None });
     }
 
-    fn add_part<'a>(&mut self, position: glam::DVec3, ty: &Arc<VehicleType>, rotation: glam::Mat4, meshes: impl Iterator<Item = (glam::Mat4, &'a crate::vehicle::MeshProps)>) {
+    fn add_part<'a>(&mut self, position: glam::DVec3, ty: &Arc<VehicleType>, rotation: glam::Mat4, meshes: impl Iterator<Item = (glam::Mat4, &'a crate::vehicle::MeshProps)>, inside: bool) {
         let start = self.meshes.len() as u32;
         for (i, (local, p)) in meshes.enumerate() {
-            // (a mesh drawn only from some views: an AI car is seen from outside)
+            // (a mesh drawn only from some views: an AI car is seen from outside - the one the
+            // player is in, from inside)
             let vp = ty.meshes.get(i).map(|m| ty.model.meshes[m.def_index].viewpoint).unwrap_or(0);
+            let shown = if inside { vp == 0 || vp & 2 != 0 } else { vp == 0 || vp & 4 != 0 };
             let frame = MeshFrame {
                 local,
-                visible: p.visible && (vp == 0 || vp & 4 != 0),
+                visible: p.visible && shown,
                 interior: p.interior,
                 alpha: Span::push(&mut self.alpha, &p.slot_alpha),
                 light: Span::push(&mut self.light, &p.slot_light),
@@ -304,6 +311,9 @@ impl crate::people::PeopleSim {
             // their lots, another game's as it says
             let near = self.eye.is_none_or(|eye| (p.position - eye.pos).length_squared() <= 300.0 * 300.0);
             let gesture = if !near {
+                None
+            } else if p.remote && (p.place != crate::people::Place::Ground || self.mirror_seat.contains_key(&p.id)) {
+                // (14 November 2026: aboard a bus, nobody hails one)
                 None
             } else if p.remote {
                 self.mirror_gesture_now(p.id).map(|(g, bus, at)| (g, bus.unwrap_or(crate::people::BusId::Ai(u64::MAX - p.id as u64)), at))

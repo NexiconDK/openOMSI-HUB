@@ -127,6 +127,12 @@ pub(super) fn traffic(cx: TrafficCx, dt: f32) {
             });
             t.update_audio(a, ear, street, muffled || riding.is_some(), riding, cx.common.settings.vol_ai);
         }
+        // (14 November 2026: the AI bus ridden in on foot is seen from inside too - its cockpit,
+        // wheel and switches drawn; only that bus)
+        t.snapshot.inside = cx.people.on_foot.as_ref().and_then(|f| match f.inside {
+            Some((omsi_sim::people::BusId::Ai(id), _)) => Some(id),
+            _ => None,
+        });
         cx.perf.profile.add(crate::profile_keys::ProfKey::TrafficAudio, __t3.elapsed().as_secs_f64());
         let __t4 = Instant::now();
         t.camera = cx.view.camera.as_ref().map(|c| c.position);
