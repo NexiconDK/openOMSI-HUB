@@ -681,8 +681,10 @@ pub fn view(s: &mut Session, _args: &Value) -> Value {
                 }
             }
             let by_player = tele.is_some();
-            // (the world's AI bus: what it carries there)
-            let tele = tele.or_else(|| world_bus.map(|wb| Telemetry { passengers: Some(wb.passengers as f64), ..Default::default() }));
+            // (the world's AI bus: what it carries there - 14 November 2026: when the world has
+            // people aboard it; the world makes people only around the players, so a bus far
+            // from them carried "0" on the map: then what the model reckons it carries, "≈ N")
+            let tele = tele.or_else(|| world_bus.filter(|wb| wb.passengers > 0).map(|wb| Telemetry { passengers: Some(wb.passengers as f64), ..Default::default() }));
             markers.push(Marker { key: key.clone(), b: bi, live, vehicle: if rental { None } else { vehicle }, rental, player: by_player, world: world_bus.is_some() || by_player && m.world.is_some(), telemetry: tele });
             if let Some(br) = broken {
                 markers.push(Marker { key: format!("{key}|broken"), b: bi, live: br, vehicle: tp.bus, rental: false, player: false, world: false, telemetry: None });
