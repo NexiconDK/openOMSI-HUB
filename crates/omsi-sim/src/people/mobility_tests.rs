@@ -320,7 +320,7 @@ fn a_wheelchair_waits_for_the_ramp() {
     let walker = human("ramp-walker", "");
     let mut h = PeopleSim::new(Path::new("/nonexistent"), 200);
     h.people = vec![person(&chair, 1, Task::WalkingToBus, DVec3::ZERO), person(&walker, 2, Task::WalkingToBus, DVec3::ZERO)];
-    h.player_ramps = vec![super::ramp::Ramp { var: "pandus_2_mov".into(), entries: vec![1], exits: vec![0], door: 2 }];
+    h.player_ramps = vec![super::ramp::Ramp { var: "pandus_2_mov".into(), entries: vec![1], exits: vec![0], door: 2, event: Some("pandus_2".into()) }];
     let b = bus(&c, -2.0, 0.0);
     h.see_ramps(&[0.0], 0.1);
     assert!(h.waits_for_ramp(0, &b, 1, true), "in: the ramp is in");
@@ -368,4 +368,53 @@ fn leaving_without_the_ramp_leaves_the_wheelchair_behind() {
     let left = h.take_left_behind();
     assert_eq!(left.iter().map(|l| (l.count, l.full)).collect::<Vec<_>>(), [(1, false)], "{left:?}");
     assert_eq!(h.pax(0).unwrap().ramp_wait, None, "counted once");
+}
+
+/// (NexiconDK, 14 November 2026) A timetable bus with a ramp: somebody in a wheelchair waits at
+/// its door, its driver folds the ramp out (its mouse event) and holds the bus; out, in they roll;
+/// a moment after nobody wants it, folded back in. A ramp that never comes out is not waited for.
+#[test]
+fn a_timetable_bus_s_driver_folds_its_ramp_out_for_a_wheelchair() {
+    let c = cabin("ai-ramp", 0.35, false);
+    let chair = human("ai-ramp-chair", "wheelchair");
+    let mut h = PeopleSim::new(Path::new("/nonexistent"), 200);
+    h.people = vec![person(&chair, 1, Task::WalkingToBus, DVec3::ZERO)];
+    let ramp = super::ramp::Ramp { var: "pandus_2_mov".into(), entries: vec![1], exits: vec![0], door: 2, event: Some("pandus_2".into()) };
+    h.ai_ramps.insert(3, super::ramp::AiRamps { ramps: Arc::new(vec![ramp]), seen: vec![Default::default()], ours: vec![false], fired: vec![f64::NEG_INFINITY], wanted: vec![f64::NEG_INFINITY], failed: vec![false], last: 0.0 });
+    let mut b = bus(&c, -2.0, 0.0);
+    b.id = BusId::Ai(3);
+    let see = |h: &mut PeopleSim, v: f32| h.ai_ramps.get_mut(&3).unwrap().seen[0].see(v, 0.1);
+    see(&mut h, 0.0);
+    assert!(h.waits_for_ramp(0, &b, 1, true), "in: the ramp is in");
+    h.ai_ramps_tick();
+    assert_eq!(h.take_ai_ramp_events(), vec![(3, "pandus_2".to_string())], "folded out");
+    assert!(h.take_holds().iter().any(|x| x.0 == 3), "the bus held");
+    h.ai_ramps_tick();
+    assert!(h.take_ai_ramp_events().is_empty(), "once");
+    for k in 1..=10 {
+        see(&mut h, 18.0 * k as f32);
+    }
+    for _ in 0..5 {
+        see(&mut h, 180.0);
+    }
+    assert!(!h.waits_for_ramp(0, &b, 1, true), "out: in they roll");
+    // nobody wants it a moment later: folded back in
+    h.time += 5.0;
+    h.ai_ramps.get_mut(&3).unwrap().last = h.time;
+    h.ai_ramps_tick();
+    assert_eq!(h.take_ai_ramp_events(), vec![(3, "pandus_2".to_string())], "folded in");
+    // a ramp that does not come out: not waited for
+    let mut g = PeopleSim::new(Path::new("/nonexistent"), 200);
+    g.people = vec![person(&chair, 1, Task::WalkingToBus, DVec3::ZERO)];
+    g.ai_ramps = h.ai_ramps.clone();
+    let r = g.ai_ramps.get_mut(&3).unwrap();
+    r.seen = vec![Default::default()];
+    r.ours = vec![false];
+    r.fired = vec![f64::NEG_INFINITY];
+    assert!(g.waits_for_ramp(0, &b, 1, true));
+    g.ai_ramps_tick();
+    g.time += 13.0;
+    g.ai_ramps.get_mut(&3).unwrap().last = g.time;
+    g.ai_ramps_tick();
+    assert!(!g.waits_for_ramp(0, &b, 1, true), "it did not come out: in they roll");
 }

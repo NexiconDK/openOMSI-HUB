@@ -140,10 +140,13 @@ fn place_at_garage(args: &mut Args) {
 /// foot where the game starts.
 pub(crate) fn place_on_patrol(args: &mut Args) {
     let Some(spec) = args.patrol.as_deref().and_then(crate::patrol::Spec::parse) else { return };
+    // (on foot whatever: with a place to start at given, there - 14 November 2026: before, a
+    // start with one left him off his feet, and K did nothing)
+    args.on_foot = true;
     if args.spawn.is_some() || args.is_resuming() {
+        log::info!("patrol start: on foot where the start puts him (line {})", spec.line);
         return;
     }
-    args.on_foot = true;
     if spec.tour.is_empty() {
         return;
     }

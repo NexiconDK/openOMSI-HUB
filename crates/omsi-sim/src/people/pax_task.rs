@@ -89,8 +89,15 @@ impl PeopleSim {
                 p.pt = bn.cabin.omsi_nearest(local, &all, false, false, None, None);
                 p.st = 5;
                 if !detailed {
-                    // a bus not the player's: at the place at once (sub_62a358 + task 7)
-                    self.set_task(i, Task::SittingInBus, buses, bus_ix, world);
+                    // a bus not the player's: no ticket here (its driver's), on to the place on
+                    // foot - (NexiconDK, 14 November 2026) as in the player's bus; Omsi.exe
+                    // put them at the place at once (sub_62a358 + task 7), and they were seen
+                    // to jump from the doorway into their seat
+                    p.ticket = TICKET_NONE;
+                    self.route_to_place(i, bn);
+                    if self.pax(i).is_some_and(|p| p.pt_target.is_none()) {
+                        self.set_task(i, Task::SittingInBus, buses, bus_ix, world);
+                    }
                     return;
                 }
                 let ticket = p.ticket;

@@ -290,6 +290,14 @@ impl TrafficSim {
         }
     }
 
+    /// (NexiconDK, 14 November 2026) A mouse event of timetable bus `id`'s fired, as a click in the
+    /// player's bus fires it (its driver folds its ramp out or in, `PeopleSim::ai_ramps_tick`).
+    pub fn fire_event(&mut self, id: u64, event: &str) {
+        if let Some(c) = self.cars.iter_mut().find(|c| c.id == id) {
+            c.vehicle.trigger(event);
+        }
+    }
+
     /// A passenger of the timetable bus `id` asked for its next stop: its script gets the same
     /// vehicle trigger as the player's bus (`int_haltewunsch`), which the stock AI door scripts
     /// open the doors for.

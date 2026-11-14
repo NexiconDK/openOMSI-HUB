@@ -771,8 +771,12 @@ impl App {
                 true
             }
             // (NexiconDK, round V: on patrol, K by a passenger checks the ticket)
-            KeyCode::KeyK if !ctrl && self.net.patrol.on() => {
+            KeyCode::KeyK if !ctrl && (self.net.patrol.on() || self.args.patrol.is_some()) => {
                 if pressed && !repeat {
+                    // (14 November 2026: on patrol but not begun yet - begun now)
+                    if !self.net.patrol.on() {
+                        self.patrol_begin(None);
+                    }
                     self.patrol_check();
                 }
                 true

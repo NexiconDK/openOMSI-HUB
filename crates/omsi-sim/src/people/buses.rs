@@ -359,6 +359,10 @@ impl PeopleSim {
                     accel: DVec2::ZERO,
                     trailers,
                 });
+                // (NexiconDK, 14 November 2026: its ramps, for anyone in a wheelchair)
+                if let Some(bn) = out.last().cloned() {
+                    self.see_ai_ramps(c.id, &c.vehicle, &bn.cabin, &bn);
+                }
             }
             self.ai_visits = visits;
             let alive: HashSet<u64> = t.cars.iter().map(|c| c.id).chain(self.remote_now.iter().chain(self.placed_now.iter()).filter_map(|b| match b.id {

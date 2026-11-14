@@ -162,13 +162,16 @@ impl App {
     /// K on foot: the ticket of the rider nearest him in the bus he is in.
     pub(crate) fn patrol_check(&mut self) {
         if !self.net.patrol.on() {
+            log::info!("patrol: K, but no ticket-inspection duty (--patrol {:?})", self.args.patrol);
             return;
         }
         if self.net.patrol.over {
             self.service_msg = Some((tr("Your ticket-inspection duty is over."), 5.0));
             return;
         }
-        let Some((bus, at)) = self.session.humans.as_ref().and_then(|h| h.avatar_aboard(crate::on_foot::AVATAR_KEY)) else {
+        let aboard = self.session.humans.as_ref().and_then(|h| h.avatar_aboard(crate::on_foot::AVATAR_KEY));
+        log::info!("patrol: K - the walker aboard {:?}, inside {:?}, seated {:?}", aboard.map(|a| a.0), self.session.on_foot.as_ref().and_then(|f| f.inside.map(|x| x.0)), self.session.on_foot.as_ref().and_then(|f| f.seat.map(|x| x.0)));
+        let Some((bus, at)) = aboard else {
             self.service_msg = Some((tr("Get into a bus first: K by a passenger checks the ticket."), 4.0));
             return;
         };

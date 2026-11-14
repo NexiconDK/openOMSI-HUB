@@ -270,6 +270,12 @@ pub(crate) fn humans_after_step(
         let (alighting, waiting) = h.stop_wishes();
         t.set_stop_wishes(alighting, waiting);
         t.bus_loads = h.bus_loads();
+        // (NexiconDK, 14 November 2026: the timetable buses' drivers fold their ramps out for
+        // anyone in a wheelchair, and in again - holding the bus meanwhile)
+        h.ai_ramps_tick();
+        for (id, ev) in h.take_ai_ramp_events() {
+            t.sim.fire_event(id, &ev);
+        }
         for (id, stop, secs) in h.take_holds() {
             t.hold_boarding(id, stop, secs);
         }

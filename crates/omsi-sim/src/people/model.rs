@@ -315,6 +315,11 @@ pub struct PeopleSim {
     /// (else out) at door number n (the app tells the driver).
     pub player_ramps: Vec<super::ramp::Ramp>,
     pub ramp_seen: Vec<super::ramp::RampSeen>,
+    /// (NexiconDK, 14 November 2026) The timetable buses' ramps: by bus type, by bus, and the
+    /// mouse events to fire on them (`ramp::ai_ramps_tick`).
+    pub ai_ramp_kinds: HashMap<std::path::PathBuf, Arc<Vec<super::ramp::Ramp>>>,
+    pub ai_ramps: HashMap<u64, super::ramp::AiRamps>,
+    pub ai_ramp_events: Vec<(u64, String)>,
     pub ramp_wanted: Option<(bool, usize)>,
     /// When the driver was last told of it (the people's clock).
     pub ramp_told: f64,

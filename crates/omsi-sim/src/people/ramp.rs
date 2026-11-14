@@ -31,6 +31,9 @@ pub struct Ramp {
     pub entries: Vec<usize>,
     pub exits: Vec<usize>,
     pub door: usize,
+    /// (NexiconDK, 14 November 2026) The mouse event that folds it out and in (clicked in the
+    /// player's bus; a timetable bus's driver "clicks" it, `ai_ramps_tick`). None: unknown.
+    pub event: Option<String>,
 }
 
 /// Whether a name says ramp.
@@ -65,7 +68,8 @@ pub fn ramps_of(ty: &crate::vehicle::VehicleType, cabin: &Cabin) -> Vec<Ramp> {
         let wings = |doors: &[Door]| (0..doors.len()).filter(|&k| door_number(cabin, &doors[k]) == door).collect::<Vec<usize>>();
         let (entries, exits) = (wings(&cabin.entries), wings(&cabin.exits));
         log::info!("{}: a ramp at door {door} ({}, moved by {})", ty.def.path.display(), m.file, anim.variable.trim());
-        out.push(Ramp { var: anim.variable.trim().to_string(), entries, exits, door });
+        let event = m.mouse_event.as_deref().map(str::trim).filter(|e| !e.is_empty()).map(str::to_string);
+        out.push(Ramp { var: anim.variable.trim().to_string(), entries, exits, door, event });
     }
     out
 }
@@ -147,8 +151,20 @@ impl PeopleSim {
     /// in (`entering`, an entry) or out (an exit) - waits for its ramp: there is one there and
     /// it is not out. The driver is told (`ramp_wanted`).
     pub(super) fn waits_for_ramp(&mut self, i: usize, bn: &BusNow, door: usize, entering: bool) -> bool {
-        if bn.id != BusId::Player || self.mobility(i) != Some(omsi_content::human::Mobility::Wheelchair) {
+        if self.mobility(i) != Some(omsi_content::human::Mobility::Wheelchair) {
             return false;
+        }
+        // (NexiconDK, 14 November 2026: a timetable bus's ramp - its driver folds it out,
+        // `ai_ramps_tick`; one he could not fold out is not waited for)
+        if let BusId::Ai(id) = bn.id {
+            let now = self.time;
+            let Some(r) = self.ai_ramps.get_mut(&id) else { return false };
+            let Some(k) = r.ramps.iter().position(|x| x.event.is_some() && if entering { x.entries.contains(&door) } else { x.exits.contains(&door) }) else { return false };
+            if r.seen[k].out() || r.failed[k] {
+                return false;
+            }
+            r.wanted[k] = now;
+            return true;
         }
         let Some(k) = self.player_ramps.iter().position(|r| if entering { r.entries.contains(&door) } else { r.exits.contains(&door) }) else { return false };
         if self.ramp_seen.get(k).is_some_and(|s| s.out()) {
@@ -156,6 +172,120 @@ impl PeopleSim {
         }
         self.ramp_wanted = Some((entering, self.player_ramps[k].door));
         true
+    }
+}
+
+/// (NexiconDK, 14 November 2026) A timetable bus's ramps as its driver works them: what is seen of
+/// each, whether he folded it out, when he last did something with it, when somebody last
+/// wanted it, whether it would not come out.
+#[derive(Debug, Clone)]
+pub struct AiRamps {
+    pub ramps: Arc<Vec<Ramp>>,
+    pub seen: Vec<RampSeen>,
+    pub(super) ours: Vec<bool>,
+    pub(super) fired: Vec<f64>,
+    pub wanted: Vec<f64>,
+    pub failed: Vec<bool>,
+    pub(super) last: f64,
+}
+
+/// How long after he folds a ramp out it must be out (s): else it does not come out (a script
+/// that does not do it so), and nobody waits for it.
+const OUT_WITHIN: f64 = 12.0;
+/// How long after the last one who wanted it he folds it back in (s).
+const IN_AFTER: f64 = 3.0;
+/// How near a ramp's door (m) somebody in a wheelchair wants it.
+const WANTS_NEAR: f32 = 6.0;
+
+impl PeopleSim {
+    /// Timetable bus `id` (`v`, cabin `cabin`) seen this frame, the bus `bn` it is to the people:
+    /// its ramps' variables read, and the ramps wanted by anyone in a wheelchair by one of its
+    /// doors - waiting outside, or inside on the way out (here or in another game, a mirror).
+    pub fn see_ai_ramps(&mut self, id: u64, v: &VehicleInstance, cabin: &Cabin, bn: &BusNow) {
+        let key = v.ty.def.path.clone();
+        let ramps = match self.ai_ramp_kinds.get(&key) {
+            Some(r) => r.clone(),
+            None => {
+                let r = Arc::new(ramps_of(&v.ty, cabin).into_iter().filter(|r| r.event.is_some()).collect::<Vec<_>>());
+                self.ai_ramp_kinds.insert(key, r.clone());
+                r
+            }
+        };
+        if ramps.is_empty() {
+            return;
+        }
+        let now = self.time;
+        let n = ramps.len();
+        let r = self.ai_ramps.entry(id).or_insert_with(|| AiRamps { ramps: ramps.clone(), seen: vec![RampSeen::default(); n], ours: vec![false; n], fired: vec![f64::NEG_INFINITY; n], wanted: vec![f64::NEG_INFINITY; n], failed: vec![false; n], last: now });
+        let dt = (now - r.last).clamp(0.0, 1.0) as f32;
+        r.last = now;
+        for (k, ramp) in ramps.iter().enumerate() {
+            r.seen[k].see(v.var(&ramp.var).unwrap_or(0.0), dt);
+        }
+        // (standing at a stop: whoever in a wheelchair is by a door with a ramp)
+        if bn.speed.abs() > 0.5 {
+            return;
+        }
+        let doors: Vec<(usize, Vec3)> = ramps.iter().enumerate().flat_map(|(k, x)| x.entries.iter().filter_map(|d| cabin.entries.get(*d)).chain(x.exits.iter().filter_map(|d| cabin.exits.get(*d))).map(move |d| (k, d.inside)).collect::<Vec<_>>()).collect();
+        let mut want = vec![false; n];
+        for p in self.people.iter().filter(|p| p.ty.def.mobility == Some(omsi_content::human::Mobility::Wheelchair)) {
+            let local = match p.place {
+                Place::Bus(b, l) if b == BusId::Ai(id) => l,
+                Place::Ground => bn.to_local(p.position),
+                _ => continue,
+            };
+            for (k, at) in &doors {
+                if (local.truncate() - at.truncate()).length() < WANTS_NEAR {
+                    want[*k] = true;
+                }
+            }
+        }
+        if let Some(r) = self.ai_ramps.get_mut(&id) {
+            for (k, w) in want.into_iter().enumerate() {
+                if w {
+                    r.wanted[k] = now;
+                }
+            }
+        }
+    }
+
+    /// Once a frame: the timetable buses' drivers fold their ramps out for whoever wants one, and
+    /// back in once nobody has for a moment (`take_ai_ramp_events`), holding the bus meanwhile.
+    pub fn ai_ramps_tick(&mut self) {
+        let now = self.time;
+        let mut fire = Vec::new();
+        let mut holds = Vec::new();
+        self.ai_ramps.retain(|_, r| now - r.last < 30.0);
+        for (id, r) in self.ai_ramps.iter_mut() {
+            for k in 0..r.ramps.len() {
+                let Some(ev) = r.ramps[k].event.clone() else { continue };
+                let want = now - r.wanted[k] < 1.5;
+                if want && !r.ours[k] && !r.failed[k] && !r.seen[k].out() {
+                    fire.push((*id, ev));
+                    r.ours[k] = true;
+                    r.fired[k] = now;
+                } else if r.ours[k] && !r.seen[k].out() && now - r.fired[k] > OUT_WITHIN {
+                    // (it did not come out: nobody waits for it)
+                    log::info!("timetable bus {id}: its ramp ({}) did not come out", r.ramps[k].var);
+                    r.ours[k] = false;
+                    r.failed[k] = true;
+                } else if r.ours[k] && r.seen[k].out() && now - r.wanted[k] > IN_AFTER {
+                    fire.push((*id, ev));
+                    r.ours[k] = false;
+                    r.fired[k] = now;
+                }
+                if (want && !r.failed[k]) || r.ours[k] {
+                    holds.push((*id, None, 3.0));
+                }
+            }
+        }
+        self.ai_ramp_events.extend(fire);
+        self.holds.extend(holds);
+    }
+
+    /// The ramps' mouse events to fire on the timetable buses (`TrafficSim::fire_event`).
+    pub fn take_ai_ramp_events(&mut self) -> Vec<(u64, String)> {
+        std::mem::take(&mut self.ai_ramp_events)
     }
 }
 
