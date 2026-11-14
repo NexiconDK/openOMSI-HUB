@@ -33,7 +33,7 @@
 // "missing" cell for the answers come and not seen ("✓ 1 ja", "🕒 venter på 3", "✗ alle sagde nej"),
 // and a yes said at the bottom wherever RosterFlow Pro is open (`AnswerWatch`).
 
-import { html, useEffect, useState } from '../../../vendor/preact-htm.js';
+import { html, useEffect, useRef, useState } from '../../../vendor/preact-htm.js';
 import { S } from '../../store.js';
 import { language } from '../../i18n.js';
 import { tr } from '../bits.js';
@@ -242,7 +242,7 @@ function AnswerCell({ x }) {
 /** (Round G) One driver of the who-can-drive list on one line: a tick box (to ask with the
  * others ticked), the name with its signs (mood, wish, early/late, tired, short notice, a swap
  * possible, the rest rules - the words on hover), the price, his answer, and the one thing. */
-function Line({ v, n, x, picked, onPick, onRing }) {
+function Line({ v, n, x, picked, onPick, onRing, ringing }) {
   const base = { date: v.date, n };
   const [sure, setSure] = useState(false);
   const [save, setSave] = useState(null);
@@ -287,10 +287,12 @@ function Line({ v, n, x, picked, onPick, onRing }) {
     <span class="wl-tick">${x.action === 'ask' && html`<input type="checkbox" checked=${picked} title=${tr('Tick to ask')} onChange=${(e) => onPick(e.currentTarget.checked)} />`}</span>
     <span class="wl-who" title=${x.sub}><b>${x.name}</b><i class="wl-chip">${x.chip}</i>${x.avail && html`<i class=${'wl-avail ' + x.avail.key}>${x.avail.text}</i>`}${x.works && html`<i class="wl-works" title=${x.works}>${x.works}</i>`}${x.extra && html`<i class="wl-extra">${x.extra}</i>`}${signs.map(([g, t, k]) => html`<i class=${'wl-sign ' + k} title=${t}>${g}</i>`)}</span>
     <span class=${'wl-price' + (x.over && !toil ? ' op-over' : '') + (toil ? ' bx-saved' : '')} title=${x.sub}>${price}</span>
-    <span class="wl-answer"><${AnswerCell} x=${x} />
+    <span class="wl-answer">${ringing
+      ? html`<span class="wl-wait">📞 ${tr('Ringing %{name}…', { name: x.name })}</span>`
+      : html`<${AnswerCell} x=${x} />
       ${x.toil && giving && html`<span class="cl-seg wl-toil">${x.toil.options.map(([k, l]) => html`<button type="button" class=${(k === 'save') === !!toil ? 'on' : ''} onClick=${() => setSave(k === 'save')}>${l}</button>`)}</span>`}
       ${!sure && button()}
-      ${!sure && x.call && html`<button type="button" class="bx-btn line sm wl-ring" onClick=${() => onRing(x)}>📞 ${tr('Call')}</button>`}</span>
+      ${!sure && x.call && html`<button type="button" class="bx-btn line sm wl-ring" onClick=${() => onRing(x)}>📞 ${tr('Call')}</button>`}`}</span>
     ${sure && html`<div class="wl-sure"><span>${x.anyway}</span>
       <span class="bx-surebtns"><button type="button" class="bx-btn line sm" onClick=${() => setSure(false)}>${tr('Cancel')}</button>
       <button type="button" class="bx-btn warn sm" onClick=${() => (setSure(false), give(true))}>${tr('Yes, do it')}</button></span></div>`}
@@ -364,11 +366,17 @@ function Who({ v, d }) {
     if (r?.edited) setPicked({});
   };
   // (NexiconDK, 10 November 2026: a driver rung - one at a time, in a popup: it rings, then he
-  // picks up and answers at once, or he does not)
+  // picks up and answers at once, or he does not. 14 November 2026: the call is made only once it
+  // has rung a while - before, his answer showed in the list behind the popup at once, while it
+  // still rang; hung up meanwhile, nobody was rung. His line says "Ringer…" until it is clear.)
   const [call, setCall] = useState(null);
+  const live = useRef(null);
   const ring = async (x) => {
     const mine = { id: x.id, name: x.name, phase: 'ringing', at: Date.now() };
+    live.current = mine.at;
     setCall(mine);
+    await new Promise((ok) => setTimeout(ok, 2200 + Math.random() * 2800));
+    if (live.current !== mine.at) return;
     let r;
     try {
       r = await rfCmd('rf_ops_act', { act: 'call', date: v.date, n: d.n, driver: x.id });
@@ -376,21 +384,25 @@ function Who({ v, d }) {
       r = { say: { text: e.message, error: true } };
     }
     const res = r?.call;
-    // (it rings a few seconds before he picks up; longer before it is clear he does not)
-    const wait = res ? (res.picked ? 2200 + Math.random() * 2800 : 6500 + Math.random() * 2500) : 0;
+    // (longer before it is clear he does not pick up)
+    const more = res && !res.picked ? 4300 + Math.random() * 2500 : 0;
     setTimeout(() => {
-      setCall((c) => (c && c.at === mine.at ? { ...mine, phase: 'done', res, error: r?.say?.error ? r.say.text : null } : c));
+      if (live.current === mine.at) setCall({ ...mine, phase: 'done', res, error: r?.say?.error ? r.say.text : null });
       after(r);
       bump();
-    }, Math.max(0, wait - (Date.now() - mine.at)));
+    }, more);
+  };
+  const hangUp = () => {
+    live.current = null;
+    setCall(null);
   };
   return html`<div class="bx wl">
-    ${call && html`<${CallPop} call=${call} onClose=${() => setCall(null)} onAgain=${() => ring({ id: call.id, name: call.name })}
-      onGive=${() => (setCall(null), giveIt(d.n, null, call.name, { date: v.date, n: d.n, driver: call.id, swap: call.res?.answer?.swap || null }))} />`}
+    ${call && html`<${CallPop} call=${call} onClose=${hangUp} onAgain=${() => ring({ id: call.id, name: call.name })}
+      onGive=${() => (hangUp(), giveIt(d.n, null, call.name, { date: v.date, n: d.n, driver: call.id, swap: call.res?.answer?.swap || null }))} />`}
     <div class="bx-top"><button type="button" class="rf-link bx-back" onClick=${back}><${Icon} name="chevron_left" size=${16} /><span>${tr('Back')}</span></button>
       ${d.sort && html`<span class="cl-seg bx-sort">${d.sort.options.map(([k, l]) => html`<button type="button" class=${d.sort.value === k ? 'on' : ''} onClick=${() => setO({ sort: k })}>${l}</button>`)}</span>`}</div>
     ${d.given && html`<div class="bx-given"><span>${tr('given to %{name}', { name: d.given })}</span><button type="button" class="rf-link" onClick=${() => oAct('withdraw', { date: v.date, n: d.n })}>${tr('Take it back')}</button></div>`}
-    ${d.groups.map((g) => html`<div class="wl-group"><span>${g.label}</span><${PickAll} rows=${g.rows} picked=${picked} setPicked=${setPicked} /></div>${g.rows.map((x) => html`<${Line} v=${v} n=${d.n} x=${x} onRing=${ring} picked=${!!picked['d' + x.id]} onPick=${(on) => pick('d' + x.id, on)} />`)}`)}
+    ${d.groups.map((g) => html`<div class="wl-group"><span>${g.label}</span><${PickAll} rows=${g.rows} picked=${picked} setPicked=${setPicked} /></div>${g.rows.map((x) => html`<${Line} v=${v} n=${d.n} x=${x} onRing=${ring} ringing=${call?.phase === 'ringing' && call.id === x.id} picked=${!!picked['d' + x.id]} onPick=${(on) => pick('d' + x.id, on)} />`)}`)}
     ${d.players.length > 0 && html`<div class="wl-group">${tr('Players')}</div>
       ${d.players.map((p) => html`<div class="wl-row">
         <span class="wl-tick">${p.action === 'ask' && html`<input type="checkbox" checked=${!!picked['g' + p.no]} onChange=${(e) => pick('g' + p.no, e.currentTarget.checked)} />`}</span>
