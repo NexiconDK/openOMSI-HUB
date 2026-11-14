@@ -576,6 +576,10 @@ pub struct PatrolStart {
     pub until: i32,
     pub fine: i64,
     pub variant: String,
+    /// (14 November 2026) The company's currency, for the fine as his game writes it.
+    pub currency: super::super::currency::Currency,
+    /// (14 November 2026) The company's inspector who walks with him (none: alone).
+    pub partner: String,
 }
 
 fn is_zero(n: &usize) -> bool {

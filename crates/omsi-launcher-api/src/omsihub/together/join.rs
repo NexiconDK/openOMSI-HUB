@@ -972,7 +972,12 @@ fn take_patrol(args: &Value, p: &dyn Platform) -> Answer {
     d.lan = Some(format!("join:{world}"));
     d.lan_name = joined().as_ref().map(|j| j.me.name.clone());
     let clean = |x: &str| x.replace('|', " ");
-    d.patrol = Some(format!("{}|{}|{}|{}|{}|{}", clean(&start.company), clean(&pt.line), clean(&pt.tour), pt.until, clean(&eur(pt.fine)), clean(&pt.variant)));
+    // (the fine in the company's own money - 14 November 2026: it was written in euros)
+    let was = super::super::company::words::currency();
+    super::super::company::words::set_currency(pt.currency);
+    let fine = eur(pt.fine);
+    super::super::company::words::set_currency(was);
+    d.patrol = Some(format!("{}|{}|{}|{}|{}|{}|{}", clean(&start.company), clean(&pt.line), clean(&pt.tour), pt.until, clean(&fine), clean(&pt.variant), clean(&pt.partner)));
     core::log_to_file(&format!("company session: {} on a ticket-inspection duty on line {} until {:02}:{:02}, in the world at {world}", driver(), pt.number, pt.until.rem_euclid(1440) / 60, pt.until.rem_euclid(60)));
     // (the uniforms: his company's, and those of every company driven in the world)
     if let Some(u) = start.uniform.as_ref() {

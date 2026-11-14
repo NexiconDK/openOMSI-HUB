@@ -519,6 +519,8 @@ impl App {
                 tags,
                 notices: &self.menus.notices,
                 notice_anchor: self.menus.navigator.as_ref().and_then(|n| n.screen_rect()),
+                // (round V: what checking a ticket found, large - not over the game menu)
+                ticket: self.net.patrol.card.as_ref().filter(|_| self.menus.game_menu.is_none()).map(|c| ui::TicketCard { title: &c.title, line: &c.line, tone: c.tone, alpha: c.alpha() }),
             };
             ui.draw_at(r, scene, &frame, dt, hud[0]);
         }

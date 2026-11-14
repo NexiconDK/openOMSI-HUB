@@ -4,7 +4,9 @@
 //! His game starts on foot at a stop of the patrol's line (`duty_start::place_on_patrol`), his
 //! walker in the company's inspector's uniform - the others draw him in it too (`INFO`'s figure
 //! carries the clothes, `omsi_net::figure_clothes`). He walks into a bus (G by its door) and K by
-//! a rider checks their ticket: the nearest rider not checked yet (`PeopleSim::nearest_rider`).
+//! a rider checks their ticket: the one he faces, not checked yet (`PeopleSim::rider_ahead`) - one
+//! a press. The company's inspector of the day's patrol goes with him (`Mate`): in the uniform he
+//! follows him in and out of the buses and checks riders near him himself, counted as his.
 //! Whether they have one is the word of the game that runs them (`PeopleSim::check_ticket`),
 //! asked over the session's commands (`LanSession::command`):
 //!
@@ -32,7 +34,7 @@ use std::collections::{HashMap, HashSet};
 /// an unchecked line, `dodgers::BASE`).
 pub(crate) const AI_SHARE: f32 = 0.08;
 /// How near a rider must be (m) for K to check them.
-const REACH: f32 = 2.6;
+const REACH: f32 = 3.5;
 /// Seconds an answer is waited for, and between two hellos to the host.
 const WAIT: f32 = 5.0;
 const HELLO_EVERY: f32 = 20.0;
@@ -46,8 +48,9 @@ const TIME_EVERY: f64 = 1800.0;
 /// The id a client's person has in the other games from here up (`lan_world::RELAYED`).
 const RELAYED_FROM: u32 = 0xC0_0000;
 
-/// The patrol as the launcher gave it (`--patrol <company>|<line>|<tour>|<until>|<fine>|<clothes>`:
-/// `until` minutes of the day, `fine` as the company writes it).
+/// The patrol as the launcher gave it (`--patrol <company>|<line>|<tour>|<until>|<fine>|<clothes>|<partner>`:
+/// `until` minutes of the day, `fine` as the company writes it, `partner` the company's inspector
+/// who goes with him - none: alone).
 #[derive(Debug, Clone, Default, PartialEq)]
 pub(crate) struct Spec {
     pub company: String,
@@ -56,6 +59,7 @@ pub(crate) struct Spec {
     pub until: i32,
     pub fine: String,
     pub clothes: String,
+    pub partner: String,
 }
 
 impl Spec {
@@ -68,9 +72,73 @@ impl Spec {
             until: f.get(3).and_then(|x| x.parse().ok()).unwrap_or(24 * 60),
             fine: f.get(4).unwrap_or(&"").to_string(),
             clothes: f.get(5).filter(|c| c.starts_with("~Inspector_")).unwrap_or(&"").to_string(),
+            partner: f.get(6).unwrap_or(&"").to_string(),
         };
         (!spec.company.is_empty() && !spec.line.is_empty()).then_some(spec)
     }
+}
+
+/// (14 November 2026) The inspector's card on the screen (`ui::TicketCard`): a headline, a line
+/// under it, its tone (0 information, 1 a valid ticket, 2 none), how long it stays (s).
+#[derive(Debug, Clone, Default)]
+pub(crate) struct Card {
+    pub title: String,
+    pub line: String,
+    pub tone: u8,
+    left: f32,
+    total: f32,
+}
+
+impl Card {
+    /// How far it shows (0 to 1): in quickly, out in the last half second.
+    pub(crate) fn alpha(&self) -> f32 {
+        ((self.total - self.left) / 0.15).min(self.left / 0.5).clamp(0.0, 1.0)
+    }
+}
+
+/// The avatar key of his partner (the walker's is `on_foot::AVATAR_KEY`, the others' from
+/// `on_foot::REMOTE_KEY`, a relief driver's `relief::DRIVER_KEY`).
+pub(crate) const MATE_KEY: u32 = 3_000_000;
+/// How far behind him the partner walks (m, along his way), how near a rider must be to him, and
+/// the seconds between two of his checks.
+const MATE_GAP: f64 = 1.4;
+const MATE_REACH: f32 = 2.6;
+const MATE_EVERY: f32 = 7.0;
+
+/// Where someone is: on the ground (the world), or aboard a bus (its cabin's point).
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum Spot {
+    Ground(glam::DVec3),
+    Bus(BusId, glam::Vec3),
+}
+
+impl Spot {
+    /// How far apart (m, over the floor); not the same bus or ground: none (infinite).
+    fn dist(&self, o: &Spot) -> f64 {
+        match (self, o) {
+            (Spot::Ground(a), Spot::Ground(b)) => (*a - *b).truncate().length(),
+            (Spot::Bus(a, x), Spot::Bus(b, y)) if a == b => (*x - *y).truncate().length() as f64,
+            _ => f64::INFINITY,
+        }
+    }
+}
+
+/// (14 November 2026) His partner, the company's inspector: walks his way behind him (his trail),
+/// into the bus he goes into, and checks the riders near him there now and then.
+#[derive(Default)]
+struct Mate {
+    /// Where the walker has been, oldest first (every 15 cm).
+    trail: std::collections::VecDeque<Spot>,
+    at: Option<Spot>,
+    /// Facing: in the world (on the ground), in the bus's frame (aboard).
+    heading: f64,
+    speed: f64,
+    kind: Option<u64>,
+    /// Seconds to his next check.
+    next: f32,
+    /// The riders he asked about (their ids), and the one he faces with the seconds left.
+    ids: HashSet<u32>,
+    face: Option<(u32, f32)>,
 }
 
 /// What he found in the bus he is in.
@@ -96,6 +164,10 @@ pub(crate) struct PatrolState {
     pub(crate) checked: u32,
     pub(crate) caught: u32,
     over: bool,
+    /// What the screen shows him now.
+    pub(crate) card: Option<Card>,
+    /// His partner (`Spec::partner`).
+    mate: Mate,
     /// The drivers' games told (`ticket ask`): the inspectors in their bus, said once each.
     told_driver: HashSet<u32>,
     pub(crate) host: HostBook,
@@ -122,6 +194,12 @@ fn hhmm(m: i32) -> String {
 }
 
 impl App {
+    /// The inspector's card shown: `title` large, `line` under it (the game's log has it too).
+    fn patrol_card(&mut self, title: String, line: String, tone: u8, secs: f32) {
+        log::info!("patrol card: {title}{}{line}", if line.is_empty() { "" } else { " - " });
+        self.net.patrol.card = Some(Card { title, line, tone, left: secs, total: secs });
+    }
+
     /// The figure the others draw him as, with the uniform after it (`INFO`).
     pub(crate) fn patrol_figure(&self) -> Option<std::path::PathBuf> {
         let clothes = self.net.patrol.clothes();
@@ -155,24 +233,28 @@ impl App {
         }
         log::info!("patrol: ticket inspection on line {} for {} until {}", spec.line, spec.company, hhmm(spec.until));
         self.service_msg = Some((tr("Ticket inspection on line %{line} until %{time}: get into a bus, then K by a passenger checks the ticket.").replace("%{line}", &spec.line).replace("%{time}", &hhmm(spec.until)), 12.0));
+        if !spec.partner.is_empty() {
+            log::info!("patrol: with {}", spec.partner);
+            self.patrol_card(tr("%{name} goes with you").replace("%{name}", &spec.partner), tr("Your partner follows you into the buses and checks tickets too."), 0, 7.0);
+        }
         self.net.patrol.spec = Some(spec);
         self.net.patrol.read = true;
     }
 
-    /// K on foot: the ticket of the rider nearest him in the bus he is in.
+    /// K on foot: the ticket of the rider he faces in the bus he is in - one at a time.
     pub(crate) fn patrol_check(&mut self) {
         if !self.net.patrol.on() {
             log::info!("patrol: K, but no ticket-inspection duty (--patrol {:?})", self.args.patrol);
             return;
         }
         if self.net.patrol.over {
-            self.service_msg = Some((tr("Your ticket-inspection duty is over."), 5.0));
+            self.patrol_card(tr("Your ticket-inspection duty is over."), String::new(), 0, 4.0);
             return;
         }
         let aboard = self.session.humans.as_ref().and_then(|h| h.avatar_aboard(crate::on_foot::AVATAR_KEY));
         log::info!("patrol: K - the walker aboard {:?}, inside {:?}, seated {:?}", aboard.map(|a| a.0), self.session.on_foot.as_ref().and_then(|f| f.inside.map(|x| x.0)), self.session.on_foot.as_ref().and_then(|f| f.seat.map(|x| x.0)));
         let Some((bus, at)) = aboard else {
-            self.service_msg = Some((tr("Get into a bus first: K by a passenger checks the ticket."), 4.0));
+            self.patrol_card(tr("Get into a bus first: K by a passenger checks the ticket."), String::new(), 0, 3.5);
             return;
         };
         if self.net.patrol.ride.bus != Some(bus) {
@@ -180,8 +262,12 @@ impl App {
             self.net.patrol.ride.bus = Some(bus);
         }
         let but: Vec<u32> = self.net.patrol.asked.iter().copied().collect();
-        let Some(id) = self.session.humans.as_ref().and_then(|h| h.nearest_rider(bus, at, REACH, &but)) else {
-            self.service_msg = Some((tr("Nobody to check within reach: walk up to a passenger."), 3.0));
+        let heading = self.session.on_foot.as_ref().map(|f| f.heading).unwrap_or(0.0);
+        let Some(id) = self.session.humans.as_ref().and_then(|h| h.rider_ahead(bus, at, heading, REACH, &but)) else {
+            // (14 November 2026: those near him checked already - said so)
+            let checked_near = self.session.humans.as_ref().and_then(|h| h.rider_ahead(bus, at, heading, REACH, &[])).is_some();
+            let text = if checked_near { tr("Everybody near you is checked: walk on through the bus.") } else { tr("Nobody to check within reach: walk up to a passenger.") };
+            self.patrol_card(text, String::new(), 0, 3.0);
             return;
         };
         self.net.patrol.asked.insert(id);
@@ -191,7 +277,7 @@ impl App {
                 l.command(1, &format!("ticket check {id}"));
             }
             self.net.patrol.pending.push((id, 0.0));
-            self.service_msg = Some((tr("Ticket, please…"), 2.0));
+            self.patrol_card(tr("Ticket, please…"), String::new(), 0, WAIT);
         } else {
             let r = self.session.humans.as_mut().map(|h| h.check_ticket(id, AI_SHARE)).unwrap_or(Ticket::Gone);
             self.patrol_result(id, r);
@@ -202,6 +288,8 @@ impl App {
     fn patrol_result(&mut self, id: u32, r: Ticket) {
         let p = &mut self.net.patrol;
         p.pending.retain(|x| x.0 != id);
+        let by_mate = p.mate.ids.remove(&id);
+        let mate = p.spec.as_ref().map(|s| s.partner.clone()).unwrap_or_default();
         let fine = p.spec.as_ref().map(|s| s.fine.clone()).unwrap_or_default();
         match r {
             Ticket::Valid => {
@@ -217,24 +305,35 @@ impl App {
             Ticket::Checked | Ticket::Gone => {}
         }
         let (n, c) = (p.ride.checked.to_string(), p.ride.caught.to_string());
-        let text = match r {
-            Ticket::Valid => tr("Valid ticket. (%{n} checked in this bus)").replace("%{n}", &n),
-            Ticket::Caught => tr("No ticket! A penalty fare of %{fine} is written. (%{n} checked, %{c} without a ticket)").replace("%{fine}", &fine).replace("%{n}", &n).replace("%{c}", &c),
-            Ticket::Checked => tr("Checked already."),
-            Ticket::Gone => tr("That passenger is no longer there."),
+        let counts = tr("%{n} checked in this bus, %{c} without a ticket").replace("%{n}", &n).replace("%{c}", &c);
+        let (title, line, tone) = match r {
+            Ticket::Valid => (tr("Valid ticket"), counts, 1),
+            Ticket::Caught => (tr("No ticket!"), format!("{}  ·  {counts}", tr("A penalty fare of %{fine} is written.").replace("%{fine}", &fine)), 2),
+            Ticket::Checked => (tr("Checked already."), counts, 0),
+            Ticket::Gone => (tr("That passenger is no longer there."), String::new(), 0),
         };
-        self.service_msg = Some((text, 4.0));
+        // (his partner's check: said with his name, only what he found)
+        if by_mate {
+            if matches!(r, Ticket::Valid | Ticket::Caught) {
+                self.patrol_card(format!("{mate}: {title}"), line, tone, 3.5);
+            }
+            return;
+        }
+        self.patrol_card(title, line, tone, 4.0);
     }
 
     /// Out of the bus: what he found in it said, and the next bus starts afresh.
     fn patrol_ride_over(&mut self) {
         let p = &mut self.net.patrol;
         if p.ride.checked > 0 {
-            self.service_msg = Some((tr("In this bus: %{n} checked, %{c} without a ticket. Today: %{t} checked, %{a} without.").replace("%{n}", &p.ride.checked.to_string()).replace("%{c}", &p.ride.caught.to_string()).replace("%{t}", &p.checked.to_string()).replace("%{a}", &p.caught.to_string()), 6.0));
+            let line = tr("In this bus: %{n} checked, %{c} without a ticket. Today: %{t} checked, %{a} without.").replace("%{n}", &p.ride.checked.to_string()).replace("%{c}", &p.ride.caught.to_string()).replace("%{t}", &p.checked.to_string()).replace("%{a}", &p.caught.to_string());
+            self.patrol_card(tr("Out of the bus"), line, 0, 6.0);
         }
+        let p = &mut self.net.patrol;
         p.ride = Ride::default();
         p.asked.clear();
         p.pending.clear();
+        p.mate.ids.clear();
     }
 
     /// Once a frame (his game): the hello to the host, answers that did not come, out of a bus,
@@ -247,6 +346,13 @@ impl App {
             }
             self.patrol_begin(None);
             self.net.patrol.read = true;
+        }
+        // (the card's time)
+        if let Some(c) = self.net.patrol.card.as_mut() {
+            c.left -= dt;
+            if c.left <= 0.0 {
+                self.net.patrol.card = None;
+            }
         }
         let Some(spec) = self.net.patrol.spec.clone() else { return };
         let client = self.net.lan.as_ref().is_some_and(|l| l.role == omsi_net::Role::Client);
@@ -271,8 +377,13 @@ impl App {
             for id in &lost {
                 p.asked.remove(id);
             }
-            self.service_msg = Some((tr("No answer about that ticket: try again."), 3.0));
+            // (his partner's unanswered: not said)
+            let his = lost.iter().filter(|id| !p.mate.ids.remove(id)).count();
+            if his > 0 {
+                self.patrol_card(tr("No answer about that ticket: try again."), String::new(), 0, 3.0);
+            }
         }
+        self.patrol_mate(dt);
         let aboard = self.session.humans.as_ref().and_then(|h| h.avatar_aboard(crate::on_foot::AVATAR_KEY)).map(|x| x.0);
         let p = &mut self.net.patrol;
         if p.ride.bus.is_some() && aboard != p.ride.bus {
@@ -296,6 +407,160 @@ impl App {
                 l.command(1, "ticket end");
             }
             self.service_msg = Some((tr("Your ticket-inspection duty is over: thank you. You may end the game now."), 12.0));
+        }
+    }
+
+    /// (14 November 2026) His partner this frame: a step along his trail, aboard where he is, and
+    /// now and then a rider near him checked.
+    fn patrol_mate(&mut self, dt: f32) {
+        let Some(spec) = self.net.patrol.spec.clone() else { return };
+        if spec.partner.is_empty() {
+            return;
+        }
+        let Some(f) = self.session.on_foot.as_ref() else {
+            if let Some(h) = self.session.humans.as_mut() {
+                h.avatar_show(MATE_KEY, false);
+            }
+            return;
+        };
+        let (me, my_heading, my_z, my_kind) = (match f.inside {
+            Some((b, l)) => Spot::Bus(b, l),
+            None => Spot::Ground(f.pos),
+        }, f.heading, f.pos.z, f.kind);
+        let dt64 = dt.max(1e-3) as f64;
+        let m = &mut self.net.patrol.mate;
+        // (his trail, and the point of it the gap behind him)
+        if m.trail.back().is_none_or(|b| b.dist(&me) > 0.15) {
+            m.trail.push_back(me);
+        }
+        let (mut len, mut prev, mut goal) = (0.0, me, None);
+        for i in (0..m.trail.len()).rev() {
+            let d = prev.dist(&m.trail[i]);
+            len += if d.is_finite() { d } else { 0.6 };
+            prev = m.trail[i];
+            if len >= MATE_GAP {
+                goal = Some(i);
+                break;
+            }
+        }
+        if let Some(i) = goal {
+            m.trail.drain(..i);
+        }
+        while m.trail.len() > 400 {
+            m.trail.pop_front();
+        }
+        let goal = goal.map(|_| m.trail[0]);
+        // (first: just behind him)
+        if m.at.is_none() {
+            let h = my_heading.to_radians();
+            m.at = Some(match me {
+                Spot::Ground(p) => Spot::Ground(p - glam::DVec3::new(h.sin(), h.cos(), 0.0) * MATE_GAP),
+                s => s,
+            });
+            m.heading = my_heading;
+        }
+        let mut at = m.at.unwrap();
+        m.speed = 0.0;
+        if let Some(g) = goal {
+            let d = at.dist(&g);
+            if !d.is_finite() || d > 8.0 {
+                at = g;
+            } else if d > 0.02 {
+                let step = (d * 2.5).clamp(0.6, 3.5) * dt64;
+                let k = (step / d).min(1.0);
+                let (dx, dy) = match (at, g) {
+                    (Spot::Ground(a), Spot::Ground(b)) => {
+                        at = Spot::Ground(a + (b - a) * k);
+                        (b.x - a.x, b.y - a.y)
+                    }
+                    (Spot::Bus(bus, a), Spot::Bus(_, b)) => {
+                        at = Spot::Bus(bus, a + (b - a) * k as f32);
+                        ((b.x - a.x) as f64, (b.y - a.y) as f64)
+                    }
+                    _ => (0.0, 0.0),
+                };
+                m.speed = step.min(d) / dt64;
+                if dx.hypot(dy) > 1e-4 {
+                    m.heading = dx.atan2(dy).to_degrees();
+                }
+            }
+        }
+        m.at = Some(at);
+        // (a rider he checks: faced)
+        if let Some((_, left)) = m.face.as_mut() {
+            *left -= dt;
+        }
+        if m.face.is_some_and(|x| x.1 <= 0.0) {
+            m.face = None;
+        }
+        let face = m.face.map(|x| x.0);
+        let clothes = spec.clothes.clone();
+        let Some(h) = self.session.humans.as_mut() else { return };
+        let Some(w) = self.world.as_ref() else { return };
+        let m = &mut self.net.patrol.mate;
+        if let (Some(id), Spot::Bus(b, l)) = (face, at) {
+            if let Some((rb, rl)) = h.rider_at(id).filter(|x| x.0 == b) {
+                let d = rl - l;
+                if d.truncate().length() > 0.1 {
+                    m.heading = (d.x as f64).atan2(d.y as f64).to_degrees();
+                }
+                let _ = rb;
+            }
+        }
+        // (his figure: one of those that have the uniform, not the walker's own if another has)
+        let kind = *m.kind.get_or_insert_with(|| {
+            let n = h.types.len().max(1) as u64;
+            (1..n)
+                .map(|d| ((my_kind + d) % n) as usize)
+                .find(|k| !clothes.is_empty() && h.type_wearing(&clothes, Some(*k)) == Some(*k))
+                .or_else(|| h.type_wearing(&clothes, None))
+                .map(|k| k as u64)
+                .unwrap_or(my_kind + 1)
+        });
+        let cmd = match at {
+            Spot::Ground(p) => {
+                let r = m.heading.to_radians();
+                crate::humans::AvatarCmd { pos: p, heading: m.heading, vel: glam::DVec2::new(r.sin(), r.cos()) * m.speed, lift: 0.0, seat: None, floor: None, aboard: None }
+            }
+            Spot::Bus(b, l) => {
+                let world_heading = h.bus_heading(b, l).unwrap_or(0.0) + m.heading;
+                let r = world_heading.to_radians();
+                crate::humans::AvatarCmd { pos: glam::DVec3::new(f.pos.x, f.pos.y, my_z), heading: world_heading, vel: glam::DVec2::new(r.sin(), r.cos()) * m.speed, lift: 0.0, seat: None, floor: Some(my_z), aboard: Some((b, l)) }
+            }
+        };
+        h.avatar_in(MATE_KEY, w, cmd, kind, &clothes);
+        h.avatar_show(MATE_KEY, true);
+        // (a check now and then, aboard the bus he is in)
+        m.next -= dt;
+        let Spot::Bus(bus, l) = at else {
+            m.next = m.next.max(4.0);
+            return;
+        };
+        if !matches!(me, Spot::Bus(b, _) if b == bus) || m.next > 0.0 || self.net.patrol.over {
+            return;
+        }
+        let n = self.net.patrol.checked;
+        self.net.patrol.mate.next = MATE_EVERY + (n % 4) as f32;
+        let but: Vec<u32> = self.net.patrol.asked.iter().copied().collect();
+        let Some(id) = h.nearest_rider(bus, l, MATE_REACH, &but) else { return };
+        if self.net.patrol.ride.bus != Some(bus) {
+            self.patrol_ride_over();
+            self.net.patrol.ride.bus = Some(bus);
+        }
+        let p = &mut self.net.patrol;
+        p.asked.insert(id);
+        p.mate.ids.insert(id);
+        p.mate.face = Some((id, 3.0));
+        log::info!("patrol: {} checks rider {id}", spec.partner);
+        let client = self.net.lan.as_ref().is_some_and(|l| l.role == omsi_net::Role::Client);
+        if client {
+            if let Some(l) = self.net.lan.as_mut() {
+                l.command(1, &format!("ticket check {id}"));
+            }
+            self.net.patrol.pending.push((id, 0.0));
+        } else {
+            let r = self.session.humans.as_mut().map(|h| h.check_ticket(id, AI_SHARE)).unwrap_or(Ticket::Gone);
+            self.patrol_result(id, r);
         }
     }
 
@@ -536,6 +801,8 @@ mod tests {
         let s = Spec::parse("c17|Linie5|3|840|750 kr.|~Inspector_A_umove").unwrap();
         assert_eq!((s.company.as_str(), s.line.as_str(), s.tour.as_str(), s.until, s.fine.as_str(), s.clothes.as_str()), ("c17", "Linie5", "3", 840, "750 kr.", "~Inspector_A_umove"));
         assert_eq!(Spec::parse("c17|Linie5|3|840|x|party").unwrap().clothes, "");
+        assert_eq!(Spec::parse("c17|Linie5|3|840|x|~Inspector_A|Mette Holm").unwrap().partner, "Mette Holm");
+        assert_eq!(s.partner, "");
         assert!(Spec::parse("|Linie5").is_none());
     }
 

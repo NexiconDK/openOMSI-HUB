@@ -54,6 +54,9 @@ pub struct PlayerPatrol {
     pub paid_minutes: f64,
     /// The drivers who asked for ticket inspection while he was on patrol.
     pub calls: Vec<Call>,
+    /// (14 November 2026) The company's inspectors of the day's patrol on that line, who go with
+    /// him (the first walks beside him in his game).
+    pub team: Vec<String>,
 }
 
 /// A driver's call for ticket inspection to a player on patrol.
@@ -136,7 +139,7 @@ pub fn take(c: &mut Company, guest: u32, name: &str, line: &str, now: i32) -> Re
         return Err(DAY_OVER);
     }
     let o = offers(c, &date, now).into_iter().find(|o| same(&o.line, line)).ok_or(NO_LINE)?;
-    let p = PlayerPatrol { date, guest, name: name.to_string(), line: o.line, number: o.number, from: o.from, to: o.to, ..Default::default() };
+    let p = PlayerPatrol { date, guest, name: name.to_string(), line: o.line, number: o.number, from: o.from, to: o.to, team: o.team, ..Default::default() };
     c.inspection_plan.players.push(p.clone());
     Ok(p)
 }

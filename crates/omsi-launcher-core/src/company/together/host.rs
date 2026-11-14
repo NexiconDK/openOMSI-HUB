@@ -932,7 +932,7 @@ fn patrol_start(c: &Company, p: &DayPlan, pp: &super::super::inspection_patrol::
         hof: c.depot.clone(),
         lines: c.lines.iter().map(|l| l.name.clone()).collect(),
         uniform: Some(serde_json::json!({ "inspectors": super::super::server_api::inspectors_json(c), "short": c.short, "name": c.name, "colours": c.colours })),
-        patrol: Some(PatrolStart { line: pp.line.clone(), number: pp.number.clone(), tour, until: pp.to, fine: super::super::inspection::fine(c), variant: ig }),
+        patrol: Some(PatrolStart { line: pp.line.clone(), number: pp.number.clone(), tour, until: pp.to, fine: super::super::inspection::fine(c), variant: ig, currency: c.currency, partner: pp.team.first().cloned().unwrap_or_default() }),
         ..Default::default()
     }
 }

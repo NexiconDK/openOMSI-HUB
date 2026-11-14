@@ -392,6 +392,16 @@ pub struct DropdownView<'a> {
 }
 
 /// Everything the interface draws in a frame.
+/// (round V) The ticket inspector's card: a headline, a line under it, its tone (0 information, 1
+/// a valid ticket, 2 none) and how far it has faded in (0 to 1).
+#[derive(Clone, Copy, Debug)]
+pub struct TicketCard<'a> {
+    pub title: &'a str,
+    pub line: &'a str,
+    pub tone: u8,
+    pub alpha: f32,
+}
+
 pub struct Frame<'a> {
     /// Physical pixels per logical one.
     pub scale: f32,
@@ -454,6 +464,9 @@ pub struct Frame<'a> {
     /// Where the navigator is on the screen (the notifications stand over it, or under it
     /// in a top corner); none: they go to the top middle.
     pub notice_anchor: Option<[f32; 4]>,
+    /// (NexiconDK, ticket inspection round V, 14 November 2026) The ticket inspector's card: what
+    /// checking a ticket found, large in the lower middle of the picture (`draw_ticket`).
+    pub ticket: Option<TicketCard<'a>>,
     /// What kind of menu the lines belong to.
     pub menu_kind: MenuKind,
     /// The open list's title and the small line above it (the line a tour list is of).
@@ -743,6 +756,7 @@ impl Ui {
         // --- the notifications: cards over the navigator (under it when it is in a top
         // corner; at the top middle without it)
         self.draw_notices(r, scene, f, s);
+        self.draw_ticket(r, scene, f, s);
         if let Some(fps) = f.fps {
             // (on a small flat card, as the other plates: over a bright sky bare text was hard to read)
             let l = self.text.label_op(r, scene, &format!("{fps:.0} fps"), (12.0 * s).round() as u32, [184, 184, 184, 0], 1.0);
@@ -1023,6 +1037,61 @@ impl Ui {
     /// its colour, the text wrapped to as many rows as it needs. A card comes in rising a
     /// little and fading, and goes fading while the room it took closes; the newest stands
     /// on top of the stack.
+    /// (round V) The ticket inspector's card: a dark card in the lower middle of the picture with
+    /// a coloured band on its left, the headline large, the line under it.
+    fn draw_ticket(&mut self, r: &Renderer, scene: &mut Scene, f: &Frame, s: f32) {
+        let Some(c) = f.ticket else { return };
+        let k = (c.alpha.clamp(0.0, 1.0) * 16.0).round() / 16.0;
+        if k <= 0.0 {
+            return;
+        }
+        let rgb: [u8; 3] = match c.tone {
+            1 => [76, 183, 130],
+            2 => [229, 83, 75],
+            _ => [184, 184, 184],
+        };
+        let icon = match c.tone {
+            1 => "check_circle",
+            2 => "error",
+            _ => "confirmation_number",
+        };
+        let (tpx, lpx, ipx) = ((22.0 * s).round() as u32, (15.0 * s).round() as u32, (34.0 * s).round() as u32);
+        let (pad, band) = (18.0 * s, 6.0 * s);
+        let max_text = (480.0 * s).min(f.width - 80.0 * s).max(120.0 * s);
+        let title = self.text.label_op(r, scene, c.title, tpx, [245, 245, 245, 0], k);
+        let rows: Vec<String> = if c.line.trim().is_empty() {
+            Vec::new()
+        } else {
+            let tc = &self.text;
+            wrap_rows(c.line, max_text, 0.0, &|t: &str| tc.width_raw(t, lpx as f32))
+        };
+        let lh = (lpx as f32 * 1.45).round();
+        let tw = rows.iter().map(|t| self.text.width_raw(t, lpx as f32)).fold(title.w as f32, f32::max);
+        let text_x = band + pad + ipx as f32 + 14.0 * s;
+        let w = (text_x + tw + pad).max(300.0 * s).min(f.width - 16.0 * s).round();
+        let h = (pad * 2.0 + title.h as f32 + if rows.is_empty() { 0.0 } else { 6.0 * s + lh * rows.len() as f32 }).max(ipx as f32 + pad * 2.0).round();
+        let x0 = ((f.width - w) * 0.5).round();
+        let y0 = (f.height * 0.68 - h * 0.5 + (1.0 - k) * 12.0 * s).round();
+        self.text.shadow(r, scene, [x0, y0, x0 + w, y0 + h], 10.0 * s, 22.0 * s, 5.0 * s, (90.0 * k) as u8);
+        self.text.rounded(r, scene, [x0, y0, x0 + w, y0 + h], 10.0 * s, [24, 24, 24, (240.0 * k) as u8]);
+        self.text.rounded(r, scene, [x0, y0, x0 + band, y0 + h], 3.0 * s, [rgb[0], rgb[1], rgb[2], (255.0 * k) as u8]);
+        if let Some(t) = self.text.icon(r, scene, icon, ipx, [rgb[0], rgb[1], rgb[2], (255.0 * k) as u8]) {
+            let ix = (x0 + band + pad).round();
+            let iy = (y0 + (h - ipx as f32) * 0.5).round();
+            scene.overlays.push((t, [ix, iy, ix + ipx as f32, iy + ipx as f32]));
+        }
+        let lx = (x0 + text_x).round();
+        let mut y = (y0 + pad).round();
+        scene.overlays.push((title.tex, [lx, y, lx + title.w as f32, y + title.h as f32]));
+        y += title.h as f32 + 6.0 * s;
+        for row in &rows {
+            let l = self.text.label_op(r, scene, row, lpx, [210, 210, 210, 0], k);
+            let ly = (y + (lh - l.h as f32) * 0.5).round();
+            scene.overlays.push((l.tex, [lx, ly, lx + l.w as f32, ly + l.h as f32]));
+            y += lh;
+        }
+    }
+
     fn draw_notices(&mut self, r: &Renderer, scene: &mut Scene, f: &Frame, s: f32) {
         if f.notices.is_empty() {
             return;
@@ -1580,7 +1649,7 @@ mod tests {
         let camera = omsi_render::Camera { position: glam::DVec3::new(0.0, 0.0, -1.0e6), yaw: 0.0, pitch: -89.0, roll: 0.0, fov_deg: 60.0, near: 0.5, far: 10.0 };
         let lighting = omsi_render::Lighting { sky_color: glam::Vec3::new(0.32, 0.38, 0.46), ..Default::default() };
         for (name, cursor) in [("pauze.png", (-1.0, -1.0)), ("pauze-muis.png", (120.0, 300.0))] {
-            let frame = Frame { scale: 1.0, ui_scale: 1.0, opacity: 0.9, width: w as f32, height: h as f32, cursor, vr: false, tooltip: None, chat: None, chat_size: 1.0, notes: &[], fps: None, paused: true, menu: Some((0, &items[..])), menu_top: None, menu_disabled: &[], timetable: None, info: None, info_room: None, tutorial: None, tags: Vec::new(), notices: &[], notice_anchor: None, menu_kind: MenuKind::Game, menu_head: None, menu_preview: None, pane_first: None, menu_tabs: None, menu_kbd: false, dropdown: None, steer_cross: None, tooltip_above: false, menu_peek: None, perf: None, perf_detailed: false, perf_touch: None };
+            let frame = Frame { scale: 1.0, ui_scale: 1.0, opacity: 0.9, width: w as f32, height: h as f32, cursor, vr: false, tooltip: None, chat: None, chat_size: 1.0, notes: &[], fps: None, paused: true, menu: Some((0, &items[..])), menu_top: None, menu_disabled: &[], timetable: None, info: None, info_room: None, tutorial: None, tags: Vec::new(), notices: &[], notice_anchor: None, ticket: None, menu_kind: MenuKind::Game, menu_head: None, menu_preview: None, pane_first: None, menu_tabs: None, menu_kbd: false, dropdown: None, steer_cross: None, tooltip_above: false, menu_peek: None, perf: None, perf_detailed: false, perf_touch: None };
             // (frames enough for the eases to settle)
             for _ in 0..40 {
                 scene.overlays.clear();

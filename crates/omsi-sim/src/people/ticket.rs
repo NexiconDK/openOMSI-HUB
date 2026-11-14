@@ -91,6 +91,38 @@ impl PeopleSim {
         }
     }
 
+    /// (14 November 2026) The rider he faces (`heading`, the walker's, OMSI's degrees in the
+    /// world) within `reach` m of `at` in bus `bus`: the nearest in front of him - one he is
+    /// beside counts too -, not one of `but`. One at a time: the passenger he turns to.
+    pub fn rider_ahead(&self, bus: BusId, at: Vec3, heading: f64, reach: f32, but: &[u32]) -> Option<u32> {
+        let bn = self.last_buses.iter().find(|b| b.id == bus);
+        let local = bn.map(|b| (heading - b.heading_at(at)).to_radians());
+        let fwd = local.map(|h| glam::Vec2::new(h.sin() as f32, h.cos() as f32));
+        self.people
+            .iter()
+            .filter(|p| p.puppet.is_none() && !but.contains(&p.id))
+            .filter(|p| !super::inspect::is_inspector_variant(&p.variant.checked_sub(1).and_then(|v| p.ty.variants.get(v)).map(|v| v.name.clone()).unwrap_or_default()))
+            .filter(|p| !matches!(&p.state, State::Pax(x) if x.task == Task::Inspecting))
+            .filter_map(|p| match p.place {
+                Place::Bus(b, l) if b == bus => {
+                    let d = (l - at).truncate();
+                    let dist = d.length();
+                    if dist > reach {
+                        return None;
+                    }
+                    // (in front of him; right beside him too)
+                    let cos = fwd.map_or(1.0, |f| if dist < 1e-3 { 1.0 } else { f.dot(d / dist) });
+                    if cos < 0.35 && dist > 1.0 {
+                        return None;
+                    }
+                    Some((p.id, dist * (1.0 + (1.0 - cos.max(-1.0)) * 1.5)))
+                }
+                _ => None,
+            })
+            .min_by(|a, b| a.1.total_cmp(&b.1))
+            .map(|x| x.0)
+    }
+
     /// Where avatar `key` is: aboard a bus (and where in it), else None.
     pub fn avatar_aboard(&self, key: u32) -> Option<(BusId, Vec3)> {
         let id = self.avatars.get(&key)?;
@@ -123,6 +155,20 @@ impl PeopleSim {
     pub fn rider_bus(&self, id: u32) -> Option<BusId> {
         match self.people.iter().find(|p| p.id == id && !p.remote)?.place {
             Place::Bus(b, _) => Some(b),
+            Place::Ground => None,
+        }
+    }
+
+    /// (14 November 2026) The heading (OMSI's degrees, in the world) of bus `bus` where the point
+    /// `local` of its cabin is.
+    pub fn bus_heading(&self, bus: BusId, local: Vec3) -> Option<f64> {
+        self.last_buses.iter().find(|b| b.id == bus).map(|b| b.heading_at(local))
+    }
+
+    /// Where rider `id` is aboard: the bus, and the point of its cabin.
+    pub fn rider_at(&self, id: u32) -> Option<(BusId, Vec3)> {
+        match self.people.iter().find(|p| p.id == id)?.place {
+            Place::Bus(b, l) => Some((b, l)),
             Place::Ground => None,
         }
     }

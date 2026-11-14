@@ -758,6 +758,18 @@ impl App {
                 }
                 true
             }
+            // (NexiconDK, round V: on patrol, K by a passenger checks the ticket - 14 November 2026:
+            // with the free camera too, which had every key: K did nothing at all)
+            KeyCode::KeyK if !ctrl && (self.net.patrol.on() || self.args.patrol.is_some()) => {
+                if pressed && !repeat {
+                    // (14 November 2026: on patrol but not begun yet - begun now)
+                    if !self.net.patrol.on() {
+                        self.patrol_begin(None);
+                    }
+                    self.patrol_check();
+                }
+                true
+            }
             // the free camera's keys are its own
             _ if self.session.on_foot.as_ref().map(|f| f.cam == FootCam::Free).unwrap_or(false) => false,
             KeyCode::KeyG => {
@@ -767,17 +779,6 @@ impl App {
                     } else {
                         self.use_seat();
                     }
-                }
-                true
-            }
-            // (NexiconDK, round V: on patrol, K by a passenger checks the ticket)
-            KeyCode::KeyK if !ctrl && (self.net.patrol.on() || self.args.patrol.is_some()) => {
-                if pressed && !repeat {
-                    // (14 November 2026: on patrol but not begun yet - begun now)
-                    if !self.net.patrol.on() {
-                        self.patrol_begin(None);
-                    }
-                    self.patrol_check();
                 }
                 true
             }
