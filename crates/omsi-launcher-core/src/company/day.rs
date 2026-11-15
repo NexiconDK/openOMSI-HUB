@@ -612,10 +612,13 @@ pub(super) fn why_not(c: &Company, tp: &TourPlan, k: usize, j: usize, broken_at:
     let has_driver = d.driver.is_some_and(|id| id == super::plan::AGENCY || c.employee(id).is_some()) || super::together::book::ai_on(c, &c.date, &tp.tour.line, &tp.tour.tour, k) || tp.world_ai(c, d);
     let broke = broken_at.is_some_and(|x| x.lost(trip.dep));
     let late = d.dropped_before.is_some_and(|t| trip.dep < t);
+    // (NexiconDK, 15 November 2026: begun without a driver, given one later - the trips that left
+    // before then had nobody: `unmanned`)
+    let nobody_then = super::unmanned::until(c, &tp.tour.line, &tp.tour.tour, k).is_some_and(|t| trip.dep < t);
     let rest_runs = rest.is_none_or(|(d2, at)| (d2.driver.is_some() || tp.world_ai(c, d2)) && d2.dropped_before.is_none_or(|t| at >= t));
     if !has_bus {
         Some((DropWhy::NoBus, tp.bus_problem.or(Some(Problem::Unassigned)), None))
-    } else if !has_driver {
+    } else if !has_driver || nobody_then {
         Some((DropWhy::NoDriver, d.problem.or(Some(Problem::Unassigned)), Some(k)))
     } else if !rest_runs {
         match rest {

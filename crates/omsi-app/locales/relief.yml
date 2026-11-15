@@ -432,6 +432,22 @@ _version: 2
   pl: "%{name} idzie z tobą"
   ru: "%{name} идёт с вами"
   uk: "%{name} іде з вами"
+"%{names} go with you":
+  de: "%{names} gehen mit Ihnen"
+  da: "%{names} går med dig"
+  fr: "%{names} vous accompagnent"
+  nl: "%{names} gaan met je mee"
+  pl: "%{names} idą z tobą"
+  ru: "%{names} идут с вами"
+  uk: "%{names} ідуть з вами"
+"Your partners follow you into the buses, and in a bus each checks passengers of his own.":
+  de: "Ihre Kollegen folgen Ihnen in die Busse, und im Bus kontrolliert jeder eigene Fahrgäste."
+  da: "Dine makkere følger dig ind i busserne, og i bussen tjekker hver især sine egne passagerer."
+  fr: "Vos collègues vous suivent dans les bus, et dans le bus chacun contrôle ses propres voyageurs."
+  nl: "Je collega's volgen je de bussen in, en in de bus controleert ieder zijn eigen reizigers."
+  pl: "Twoi partnerzy idą za tobą do autobusów, a w autobusie każdy sprawdza własnych pasażerów."
+  ru: "Напарники идут за вами в автобусы, а в автобусе каждый проверяет своих пассажиров."
+  uk: "Напарники йдуть за вами в автобуси, а в автобусі кожен перевіряє своїх пасажирів."
 "Your partner follows you into the buses and checks tickets too.":
   de: "Ihr Kollege folgt Ihnen in die Busse und kontrolliert ebenfalls Fahrkarten."
   da: "Din makker følger dig ind i busserne og tjekker også billetter."

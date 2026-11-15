@@ -578,7 +578,8 @@ pub struct PatrolStart {
     pub variant: String,
     /// (14 November 2026) The company's currency, for the fine as his game writes it.
     pub currency: super::super::currency::Currency,
-    /// (14 November 2026) The company's inspector who walks with him (none: alone).
+    /// (14 November 2026) The company's inspectors who walk with him, their names between
+    /// `inspection_patrol::TEAM_SEP` (none: alone; a game of before 15 November 2026 reads one).
     pub partner: String,
 }
 

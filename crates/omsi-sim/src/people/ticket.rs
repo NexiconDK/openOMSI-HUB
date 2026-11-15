@@ -173,6 +173,36 @@ impl PeopleSim {
         }
     }
 
+    /// (NexiconDK, 15 November 2026) The riders aboard bus `bus` within `reach` m of `at` (its
+    /// cabin's frame), nearest first, with where they are: those `nearest_rider` would take - for an
+    /// inspector who goes with the player to choose his own among them.
+    pub fn riders_around(&self, bus: BusId, at: Vec3, reach: f32, but: &[u32]) -> Vec<(u32, Vec3)> {
+        let mut v: Vec<(u32, Vec3, f32)> = self
+            .people
+            .iter()
+            .filter(|p| p.puppet.is_none() && !but.contains(&p.id))
+            .filter(|p| !super::inspect::is_inspector_variant(&p.variant.checked_sub(1).and_then(|v| p.ty.variants.get(v)).map(|v| v.name.clone()).unwrap_or_default()))
+            .filter(|p| !matches!(&p.state, State::Pax(x) if x.task == Task::Inspecting))
+            .filter_map(|p| match p.place {
+                Place::Bus(b, l) if b == bus => Some((p.id, l, (l - at).length())),
+                _ => None,
+            })
+            .filter(|x| x.2 <= reach)
+            .collect();
+        v.sort_by(|a, b| a.2.total_cmp(&b.2));
+        v.into_iter().map(|x| (x.0, x.1)).collect()
+    }
+
+    /// (15 November 2026) The way aboard bus `bus` from `from` to beside `to` (its cabin's frame):
+    /// along its paths as the people walk them, to the path point nearest `to`. Empty: no cabin
+    /// known, or no way between them (another section nobody walks into).
+    pub fn aisle_way(&self, bus: BusId, from: Vec3, to: Vec3) -> Vec<Vec3> {
+        let Some(b) = self.last_buses.iter().find(|b| b.id == bus) else { return Vec::new() };
+        let g = &b.cabin.graph;
+        let (Some(a), Some(z)) = (g.nearest(from), g.nearest(to)) else { return Vec::new() };
+        g.route_points(a, z).unwrap_or_default().into_iter().filter_map(|i| g.points.get(i).copied()).collect()
+    }
+
     /// The riders run here aboard bus `bus` (their ids).
     pub fn riders_of(&self, bus: BusId) -> Vec<u32> {
         self.people.iter().filter(|p| !p.remote && p.puppet.is_none() && matches!(p.place, Place::Bus(b, _) if b == bus)).map(|p| p.id).collect()

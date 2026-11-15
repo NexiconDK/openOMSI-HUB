@@ -675,6 +675,24 @@ mod tests {
         assert_eq!(back.inspection_plan, Plan::default());
     }
 
+    /// (NexiconDK, 15 November 2026: "jeg skulle have været på vagt lige nu med 4 andre, men der
+    /// står kun en her") A player on patrol goes with the whole team of the line's duty.
+    #[test]
+    fn a_player_on_patrol_goes_with_the_whole_team_of_the_duty() {
+        use super::super::inspection_patrol as ip;
+        let mut c = company();
+        let ids = with_inspectors(&mut c, 4);
+        let date = all_at_work(&c, &ids, 1);
+        save(&mut c, Some(&date), Duty { lines: vec!["Linie5".into()], from: 6 * 60, to: 14 * 60, size: 4, ..Default::default() }).unwrap();
+        let o = ip::offers(&c, &date, 7 * 60);
+        let five = o.iter().find(|x| x.line == "Linie5").expect("Linie5 offered");
+        assert_eq!((five.from, five.to, five.team.len()), (7 * 60, 14 * 60, 4), "{:?}", five.team);
+        // (his game is told all four)
+        let arg = ip::team_arg(&five.team);
+        assert_eq!(arg.split(ip::TEAM_SEP).collect::<Vec<_>>(), five.team.iter().map(String::as_str).collect::<Vec<_>>());
+        assert_eq!(ip::team_arg(&["Anna, Bo".to_string(), " ".to_string(), "Eva".to_string()]), "Anna  Bo,Eva");
+    }
+
     #[test]
     fn a_weekday_duty_picks_its_team_and_sets_their_hours() {
         let mut c = company();

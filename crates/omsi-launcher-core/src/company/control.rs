@@ -694,7 +694,11 @@ impl ArgsOf for Message {
 /// day's plan as it runs now. A quick run (closing the day at once, catching up, the game's
 /// clock) only for Casual's controller, every half hour: nobody reads notices then.
 pub fn watch_day(c: &mut Company, w: &mut dyn World, quick: bool, run: &mut Run) -> Result<(), String> {
-    if quick && !super::autopilot::on(c) {
+    // (NexiconDK, 15 November 2026: the duties begun without a driver kept - `unmanned` -, also on
+    // a server's quick run: its players plan while the clock catches up)
+    let control = !quick || super::autopilot::on(c);
+    let unmanned = !quick || c.online.on_server;
+    if !control && !unmanned {
         return Ok(());
     }
     let every = if quick { 30 } else { WATCH_EVERY };
@@ -707,7 +711,12 @@ pub fn watch_day(c: &mut Company, w: &mut dyn World, quick: bool, run: &mut Run)
     let lines = w.lines(c, &date)?;
     let tours = network::in_service_only(network::tours_of_day(c, &lines, &date));
     let dp = plan::day_plan(c, &date, tours, &[], &[], false);
-    watch(c, &dp, run);
+    if unmanned {
+        super::unmanned::note(c, &dp, now);
+    }
+    if control {
+        watch(c, &dp, run);
+    }
     Ok(())
 }
 

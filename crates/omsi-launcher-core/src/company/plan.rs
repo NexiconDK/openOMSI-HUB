@@ -2109,6 +2109,19 @@ pub fn day_plan(c: &Company, date: &str, tours: Vec<TourOfDay>, player: &[(Strin
             let cover_from = cover.and_then(|_| super::control::cover_from(c, date, &t.tour.line, &t.tour.tour, k));
             out[i].duties[k].late = Some(LatePiece { until, cover, from_, cover_from });
         }
+        // (NexiconDK, 15 November 2026: a duty that ran without a driver until its end stays
+        // without one today - a driver given in the evening drove none of it: `unmanned`)
+        for t in out.iter_mut() {
+            for (k, d) in t.duties.iter_mut().enumerate() {
+                if d.who.is_some() && super::unmanned::ran_without(c, date, &t.tour.line, &t.tour.tour, k, d.to) {
+                    d.who = None;
+                    d.from_ = Source::None;
+                    d.late = None;
+                    d.warn.clear();
+                    d.problem = d.problem.or(Some(Problem::Unassigned));
+                }
+            }
+        }
     }
     DayPlan { date: date.to_string(), weekday: wd, today, tours: out, disruptions: dis }
 }
@@ -3004,6 +3017,53 @@ mod tests {
         assert_eq!(r.covered, 1);
         assert_eq!(c.fleet.len(), n);
         assert!(c.month(&dates::month_of(&r.date)).get(BookingKind::Rent) < 0);
+    }
+
+    /// (NexiconDK, 15 November 2026: "3 ubesatte vagter i dag, de har kørt men jeg kan stadig
+    /// besætte dem") A duty begun without a driver: one given later drives only what is left, and
+    /// one given after its end drives nothing of it - its trips stay dropped (`unmanned`).
+    #[test]
+    fn a_duty_that_ran_without_a_driver_is_not_driven_by_one_given_afterwards() {
+        use super::super::unmanned;
+        let mut c = quiet(1, 2);
+        c.planning.auto = false;
+        let wd = weekday_of(&c.date);
+        let b = c.fleet[0].id;
+        set_bus(&mut c, wd, "Linie5", "1", Some(b));
+        // four trips: 06:00, 07:00, 08:00, 09:00 (the last back at 09:50)
+        let tours = vec![tour("1", 6 * 60, 4)];
+        let id = c.staff[0].id;
+        let fresh = |c: &mut Company| c.clock.today = Some(super::super::clock::DayScript { date: c.date.clone(), ..Default::default() });
+        let look = |c: &mut Company, at: i32| {
+            c.clock.minute = at as u32;
+            let p = day_plan(c, &c.date.clone(), tours.clone(), &[], &[], false);
+            unmanned::note(c, &p, at);
+            p
+        };
+        // nobody at 06:00, nor at 07:30; then a driver: he drives the trips from 08:00
+        fresh(&mut c);
+        assert!(look(&mut c, 7 * 60 + 30).tours[0].duties[0].open());
+        set_driver(&mut c, wd, "Linie5", "1", 0, Some(Who::Staff(id)));
+        assert_eq!(look(&mut c, 8 * 60).tours[0].duties[0].who, Some(Who::Staff(id)));
+        assert_eq!(unmanned::until(&c, "Linie5", "1", 0), Some(7 * 60 + 30));
+        assert_eq!(close_day(&mut c.clone(), tours.clone(), &[]).dropped, 2);
+        // nobody until it was over: a driver given in the evening drives none of it
+        set_driver(&mut c, wd, "Linie5", "1", 0, None);
+        fresh(&mut c);
+        look(&mut c, 7 * 60);
+        let p = look(&mut c, 20 * 60);
+        assert!(p.tours[0].duties[0].open() && unmanned::ended(&c, &p, p.tours[0].duties[0].to));
+        set_driver(&mut c, wd, "Linie5", "1", 0, Some(Who::Staff(id)));
+        assert!(look(&mut c, 21 * 60).tours[0].duties[0].open());
+        assert_eq!(close_day(&mut c.clone(), tours.clone(), &[]).dropped, 4);
+        // one that had its driver when it began is never counted so, even without him later
+        fresh(&mut c);
+        look(&mut c, 6 * 60 + 30);
+        set_driver(&mut c, wd, "Linie5", "1", 0, None);
+        look(&mut c, 20 * 60);
+        set_driver(&mut c, wd, "Linie5", "1", 0, Some(Who::Staff(id)));
+        assert_eq!(look(&mut c, 21 * 60).tours[0].duties[0].who, Some(Who::Staff(id)));
+        assert_eq!(close_day(&mut c.clone(), tours, &[]).dropped, 0);
     }
 
     #[test]

@@ -76,6 +76,7 @@ pub mod names;
 pub mod network;
 pub mod ontime;
 pub mod ops_assistant;
+pub mod unmanned;
 // (NexiconDK: Bus Company Online - the companies on the main server, and the main server itself)
 pub mod main_server;
 pub mod online;

@@ -231,6 +231,10 @@ pub struct DayScript {
     /// What service control last saw of the day (`control::watch`).
     #[serde(default)]
     pub watch: super::control::Watch,
+    /// (NexiconDK, 15 November 2026) The duties that began today without a driver, and until when
+    /// they had none (`unmanned`): a driver given later drives only what was left.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub unmanned: Vec<super::unmanned::Seen>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

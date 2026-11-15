@@ -2009,3 +2009,54 @@ Tested: `ops_assistant::tests` (the plan's rules and filling it, who is at the d
 driver's duty given to a colleague, told once), `market::tests::several_leased_buses_go_back_at_once`,
 `server_hq::tests::the_head_office_gives_a_depots_leased_buses_back`, the translations
 `people::desk::tests`.
+
+## A duty that ran without a driver (15 November 2026)
+
+NexiconDK: "Jeg har 3 ubesatte vagter i dag, de har kørt men jeg kan stadig besætte dem, så det
+ligner de er kørt? ... Det burde man ikke kunne?" The day's close counted a duty by its driver at
+midnight: one given a driver in the evening, after it had run without one, ran all its trips -
+paid, no fine.
+
+Now (`company::unmanned`):
+- The clock looks at the day with service control (`control::watch_day`, also on a server's quick
+  catch-up): each duty that has begun is kept as it began (`DayScript::unmanned`): with a driver,
+  or without one until the minute it was last seen so. One that had a driver when it began is
+  never counted so, even if the day's plan shows it without one for a moment later.
+- A driver given later drives only what was left: the trips that left before then are dropped,
+  with the fine (`day::why_not`).
+- One that had nobody until its end stays without a driver today, whatever is given afterwards -
+  the roster's weekday changed, a colleague for the day, a duty of RosterFlow Pro given
+  (`plan::day_plan`).
+- The pages: RosterFlow Pro's daily operations no longer lists it to fill (nor counts it on the
+  calendar), shows it under "Over without a driver", and refuses asking, ringing, giving and the
+  agency for it; one begun without a driver says that whoever takes it now drives the rest. The
+  planning's "Give to" for today only says "This duty is over" (the roster's weekday still can be
+  changed).
+
+The operations assistant only ever gave duties that had not begun.
+
+Tested: `plan::tests::a_duty_that_ran_without_a_driver_is_not_driven_by_one_given_afterwards`.
+
+## The inspectors who go with a player on patrol (15 November 2026)
+
+NexiconDK: "Når jeg er på billetkontrol sammen med en anden en, følger han instant med mig? Også
+inde i selve bussen ... følger han bare med mig fremfor at tjekke andre? Samt jeg skulle have været
+på vagt lige nu med 4 andre, men der står kun en her?"
+
+- **The whole team** (`inspection_patrol::offers`): everybody of the line's planned duty goes with
+  him, and those of the line's other patrols within his hours - four at most (`MOST_TEAM`). His
+  game is told all their names (`team_arg`, commas between); it used to take the first only.
+- **At a walker's pace** (`omsi-app` `patrol`: `Mate`, `walk_trail`): each walks his way behind him
+  (1.4 m, the next ones 0.9 m further) at 1.35 m/s, hurrying up to 4.5 m/s when he got ahead - no
+  longer put beside him whenever he was 8 m ahead. They get into a bus through its door where he
+  did; one still outside 5 s after him steps aboard (the bus leaves); 40 m behind (a lift, a ride)
+  they are put behind him.
+- **In the bus each his own** (`Doing::Look`/`ToRider`/`Check`): each walks the aisle's paths
+  (`PeopleSim::aisle_way`) to the nearest rider within 14 m that is neither within 1.6 m of the
+  player (his) nor another's, stands beside them for 3 s and checks the ticket (counted as the
+  player's, said with the partner's name); one not reached in 12 s is passed by. When the player
+  gets out, they walk to the door he left by and follow him out (at most 10 s).
+
+Tested: `inspection_plan::tests::a_player_on_patrol_goes_with_the_whole_team_of_the_duty`,
+`patrol::tests::the_team_of_the_launcher_is_read`,
+`patrol::tests::a_partner_walks_the_way_and_steps_aboard_at_the_door`.

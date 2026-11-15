@@ -971,6 +971,11 @@ fn give_driver(s: &mut Session, p: &DayPlan, ti: usize, k: usize, who: Option<Wh
     let Some(c) = s.company.as_ref() else { return Ok(json!({})) };
     let rostered = pl::roster(c, p.weekday, &line, &tour).and_then(|r| r.duties.get(k).copied().flatten());
     let today_only = p.today && t.duties[k].problem.is_some_and(|x| x != Problem::Unassigned) && rostered.is_some() && who != Some(Who::Player);
+    // (NexiconDK, 15 November 2026: one that ran without a driver until its end - for today it
+    // can no longer be given; the roster's weekday still can: `co::unmanned`)
+    if today_only && t.duties[k].who.is_none() && co::unmanned::ended(c, p, t.duties[k].to) {
+        return popup(s, "schedule", "This duty is over", tr("This duty is over: it ran without a driver and can no longer be given today."), tr("Give it a driver for the days to come."), None);
+    }
     let wd = p.weekday;
     let r = if today_only {
         let fill = match who {

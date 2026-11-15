@@ -27,6 +27,16 @@ pub const DEFAULT_LEN: i32 = 4 * 60;
 pub const SLACK: i32 = 30;
 /// The most minutes of one report of his time.
 pub const MOST_MINUTES: f64 = 12.0 * 60.0;
+/// (15 November 2026) The most of the company's inspectors who go with him in his game (a planned
+/// duty's team is four at most: `inspection_plan::TEAM`).
+pub const MOST_TEAM: usize = 4;
+/// How the names of those who go with him are written for his game (`--patrol`'s last field).
+pub const TEAM_SEP: char = ',';
+
+/// Those who go with him as his game is told (`TEAM_SEP` between the names, none in a name).
+pub fn team_arg(team: &[String]) -> String {
+    team.iter().map(|n| n.replace(TEAM_SEP, " ").trim().to_string()).filter(|n| !n.is_empty()).collect::<Vec<_>>().join(&TEAM_SEP.to_string())
+}
 
 /// Refusals and words (English: keys of the translations).
 pub const NO_LINE: &str = "The company runs no such line today.";
@@ -119,7 +129,22 @@ pub fn offers(c: &Company, date: &str, now: i32) -> Vec<Offer> {
     for l in lines_of(c, date) {
         let p = patrols.iter().filter(|p| p.stop.is_none() && same(&p.line, &l.name) && p.to > now).min_by_key(|p| p.from);
         let (from, to, team) = match p {
-            Some(p) => (p.from.max(now), p.to.min(now.max(p.from) + MAX_LEN), p.ids.iter().filter_map(|id| c.employee(*id).map(|e| e.name.clone())).collect()),
+            Some(p) => {
+                let (from, to) = (p.from.max(now), p.to.min(now.max(p.from) + MAX_LEN));
+                // (NexiconDK, 15 November 2026: "jeg skulle have været på vagt lige nu med 4 andre,
+                // men der står kun en her" - everybody of the duty goes with him, and those of the
+                // line's other patrols in his hours too; `MOST_TEAM` at most)
+                let mut ids: Vec<u32> = p.ids.clone();
+                for q in patrols.iter().filter(|q| q.stop.is_none() && same(&q.line, &l.name) && q.from < to && q.to > from) {
+                    for id in &q.ids {
+                        if !ids.contains(id) {
+                            ids.push(*id);
+                        }
+                    }
+                }
+                let team: Vec<String> = ids.iter().filter_map(|id| c.employee(*id).map(|e| e.name.clone())).take(MOST_TEAM).collect();
+                (from, to, team)
+            }
             None => (now, now + DEFAULT_LEN, Vec::new()),
         };
         if to - from >= 30 {

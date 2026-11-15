@@ -1318,6 +1318,9 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .bx-ans.silent { background: var(--rf-hover2); border-color: var(--rf-line); color: var(--rf-dim); }
 .bx-note { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; padding: 9px 11px; border-radius: 8px; border: 1px solid #c9a227; background: color-mix(in srgb, #e0b23c 16%, var(--rf-grid)); color: color-mix(in srgb, #e0b23c 45%, var(--rf-text)); }
 .bx-drop { color: var(--rf-err); font-size: 10.5px; }
+/* (15 November 2026) a duty over without a driver: shown, no longer to be given */
+.bx-row.bx-gone { opacity: 0.55; }
+.bx-gone-say { margin: 2px 0 4px; }
 .bx-given { display: flex; align-items: center; gap: 8px; margin-top: 6px; color: var(--rf-ok); font-weight: 700; }
 .bx-cant { margin-top: 12px; color: var(--rf-dim); }
 .bx-cant summary { cursor: pointer; padding: 6px 0; border-top: 1px solid var(--rf-line); }

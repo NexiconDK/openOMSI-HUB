@@ -204,6 +204,11 @@ function Missing({ v, pop }) {
       </div>
       <button type="button" class=${'bx-btn ' + (d.asked?.yes ? 'green' : 'blue')} onClick=${() => setO({ date: v.date, n: d.n, pop: true, given: null })}>${d.asked ? tr('See the answers ›') : tr('Find a driver ›')}</button>
     </div>`)}
+    ${!pop && v.gone && html`<div class="bx-group">${v.gone.caps}</div>
+      <div class="bx-sub bx-gone-say">${v.gone.say}</div>
+      ${v.gone.list.map((d) => html`<div class="bx-row bx-gone">
+        <div class="bx-grow"><div class="bx-name">${d.label} <span class="bx-time">${d.time}</span></div><div class="bx-sub">${d.why}</div></div>
+      </div>`)}`}
     ${v.swaps?.list?.length > 0 && html`<div class="bx-group">${v.swaps.caps}</div>
       ${v.swaps.list.map((w) => html`<div class="bx-row">
         <div class="bx-grow"><div class="bx-name">${w.text}</div><div class="bx-sub">${w.duties}</div></div>

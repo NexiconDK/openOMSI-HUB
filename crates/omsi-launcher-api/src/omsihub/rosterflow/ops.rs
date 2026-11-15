@@ -870,9 +870,13 @@ fn extra_words(c: &Company, id: u32, date: &str) -> (usize, String) {
 /// duties cut for the date with a part still without a driver (n, is it cut).
 fn open_items(c: &Company, p: &DayPlan, ds: &[ProDuty]) -> Vec<(u32, bool)> {
     let covered = pc::covered(c, p);
-    let mut v: Vec<(i32, u32, bool)> = po::open_duties(p, ds).into_iter().filter(|o| !o.pieces.iter().all(|x| covered.contains(x))).map(|o| (o.start, o.n, false)).collect();
+    // (NexiconDK, 15 November 2026: not one that is over today - it ran without a driver)
+    let mut v: Vec<(i32, u32, bool)> = po::open_duties(p, ds).into_iter().filter(|o| !o.pieces.iter().all(|x| covered.contains(x)) && !over(c, p, &o.pieces)).map(|o| (o.start, o.n, false)).collect();
     for sp in pc::splits_on(c, &p.date) {
-        let open = sp.parts.iter().any(|part| pc::part_pieces(p, part).iter().any(|&(ti, k)| p.tours[ti].duties[k].who.is_none()));
+        let open = sp.parts.iter().any(|part| {
+            let pieces = pc::part_pieces(p, part);
+            pieces.iter().any(|&(ti, k)| p.tours[ti].duties[k].who.is_none()) && !over(c, p, &pieces)
+        });
         if open {
             v.push((sp.parts.first().map_or(0, |x| x.from), sp.n, true));
         }
@@ -880,6 +884,23 @@ fn open_items(c: &Company, p: &DayPlan, ds: &[ProDuty]) -> Vec<(u32, bool)> {
     v.sort();
     v.into_iter().map(|x| (x.1, x.2)).collect()
 }
+
+/// (NexiconDK, 15 November 2026: "de har kørt men jeg kan stadig besætte dem ... Det burde man
+/// ikke kunne?") The pieces of a duty without a driver are all over: on the company's day, its
+/// clock past their end. Nobody can be given it any more today (`co::unmanned`).
+fn over(c: &Company, p: &DayPlan, pieces: &[(usize, usize)]) -> bool {
+    let open: Vec<&(usize, usize)> = pieces.iter().filter(|&&(ti, k)| p.tours[ti].duties[k].who.is_none()).collect();
+    !open.is_empty() && open.iter().all(|&&(ti, k)| co::unmanned::ended(c, p, p.tours[ti].duties[k].to))
+}
+
+/// When the first of those pieces without a driver began, if one has: whoever is given it now
+/// drives from now on, the trips before had nobody.
+fn begun_at(c: &Company, p: &DayPlan, pieces: &[(usize, usize)]) -> Option<i32> {
+    pieces.iter().filter(|&&(ti, k)| p.tours[ti].duties[k].who.is_none()).map(|&(ti, k)| p.tours[ti].duties[k].from).filter(|&f| co::unassign::begun(c, p, f)).min()
+}
+
+/// The duty is over without a driver (`over`).
+const OVER: &str = "This duty is over: it ran without a driver and can no longer be given today.";
 
 /// A part of a cut duty as an open duty of its own (its pieces, when it signs on and off).
 fn part_duty(c: &Company, p: &DayPlan, n: u32, part: &pc::Part) -> OpenDuty {
@@ -1455,6 +1476,10 @@ fn daily(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                 why = format!("{} · {}", tr("split duty"), why);
             }
             let time = if o.kind == pd::Kind::Split { halves(p, &o.pieces, c.planning.flow.prefs.sign_on).unwrap_or_else(|| format!("{}–{}", clock(o.start), clock(o.end))).replace(" / ", " + ") } else { format!("{}–{}", clock(o.start), clock(o.end)) };
+            // (15 November 2026: begun without a driver - whoever takes it drives the rest)
+            if let Some(from) = begun_at(&c, p, &o.pieces) {
+                why = format!("{} · {}", why, trf("began at %{time} without a driver: whoever takes it now drives the rest", &[("time", &clock(from))]));
+            }
             let mut row = json!({ "n": n, "cut": false, "label": shown_of(&ds, n), "time": time, "why": why, "split": o.kind == pd::Kind::Split });
             // (round M: who was asked and what they said - "Spurgt 2 · ✓ 2 ja"; the button "See the answers ›")
             if let Some((asked, _)) = asked_json(&c, &date, n) {
@@ -1470,6 +1495,16 @@ fn daily(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             let (y, n, w) = (a["yes"].as_u64().unwrap_or(0), a["no"].as_u64().unwrap_or(0), a["waiting"].as_u64().unwrap_or(0));
             if y > 0 { 0 } else if n > 0 { 1 } else if w > 0 { 2 } else { 3 }
         });
+    }
+    // (15 November 2026: what is over without a driver today - shown, no longer to be given)
+    let covered = pc::covered(&c, p);
+    let gone: Vec<Value> = open
+        .iter()
+        .filter(|o| !o.pieces.iter().all(|x| covered.contains(x)) && over(&c, p, &o.pieces))
+        .map(|o| json!({ "n": o.n, "label": shown_of(&ds, o.n), "time": format!("{}–{}", clock(o.start), clock(o.end)), "why": trf("line %{l}", &[("l", &o.lines.join(", "))]) }))
+        .collect();
+    if !gone.is_empty() {
+        out["gone"] = json!({ "caps": trf("Over without a driver (%{n})", &[("n", &gone.len().to_string())]), "say": tr("These ran today without a driver: they can no longer be given."), "list": gone });
     }
     out["count"] = json!({ "duties": ds.len(), "open": items.len(), "text": match items.len() { 0 => tr("Every duty has a driver."), 1 => tr("1 duty is missing a driver"), n => trf("%{n} duties are missing a driver", &[("n", &n.to_string())]) } });
     // the frames of the day, and who is free all day
@@ -1595,6 +1630,9 @@ fn target(s: &mut Session, r: &mut Rf, c: &Company, date: &str, n: u32, part: Op
         }
         None => po::open_duties(&p, &ds).into_iter().find(|o| o.n == n).ok_or_else(|| said(tr("That duty has a driver now."), true))?,
     };
+    if over(c, &p, &d.pieces) {
+        return Err(said(tr(OVER), true));
+    }
     let weekly = week_of_drivers(c, &week, &plans, date);
     let breaks = drivers(c).into_iter().map(|e| (e.id, breaches_of(c, &week, &plans, e, date, &d, &weekly, None))).collect();
     // (round D: how tired each would be with it)

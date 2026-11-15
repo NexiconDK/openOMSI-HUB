@@ -134,6 +134,8 @@ mod tests {
                 "Leasing (%{n})", "%{n} months left", "%{n} days left", "Back now: %{amount}", "Runs today", "%{n} leased buses  ·  %{amount} a month in all", "Tick all", "Tick none", "Give back the ticked buses",
                 "Buses %{list} go back to the leasing company today.", "From then on the company saves %{amount} a month.", "Give back %{n} leased buses?", "Give back for %{amount}", "%{n} leased buses went back (%{amount}).",
                 "None of these buses is leased.", "The group's leased buses", "No depot has leased buses.", "Ordered: %{what} goes back to the leasing company", "Operations assistant", "Operations assistants",
+                "This duty is over", "This duty is over: it ran without a driver and can no longer be given today.", "Give it a driver for the days to come.",
+                "began at %{time} without a driver: whoever takes it now drives the rest", "Over without a driver (%{n})", "These ran today without a driver: they can no longer be given.",
             ]
             .map(String::from),
         );

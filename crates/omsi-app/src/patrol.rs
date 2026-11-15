@@ -5,8 +5,9 @@
 //! walker in the company's inspector's uniform - the others draw him in it too (`INFO`'s figure
 //! carries the clothes, `omsi_net::figure_clothes`). He walks into a bus (G by its door) and K by
 //! a rider checks their ticket: the one he faces, not checked yet (`PeopleSim::rider_ahead`) - one
-//! a press. The company's inspector of the day's patrol goes with him (`Mate`): in the uniform he
-//! follows him in and out of the buses and checks riders near him himself, counted as his.
+//! a press. The company's inspectors of the day's patrol go with him (`Mate`, four at most): in the
+//! uniform they follow him at a walker's pace in and out of the buses, through the doors, and in a
+//! bus each walks the aisle to riders of his own and checks them, counted as his.
 //! Whether they have one is the word of the game that runs them (`PeopleSim::check_ticket`),
 //! asked over the session's commands (`LanSession::command`):
 //!
@@ -49,8 +50,8 @@ const TIME_EVERY: f64 = 1800.0;
 const RELAYED_FROM: u32 = 0xC0_0000;
 
 /// The patrol as the launcher gave it (`--patrol <company>|<line>|<tour>|<until>|<fine>|<clothes>|<partner>`:
-/// `until` minutes of the day, `fine` as the company writes it, `partner` the company's inspector
-/// who goes with him - none: alone).
+/// `until` minutes of the day, `fine` as the company writes it, `partner` the company's inspectors
+/// who go with him, their names between commas - none: alone).
 #[derive(Debug, Clone, Default, PartialEq)]
 pub(crate) struct Spec {
     pub company: String,
@@ -96,14 +97,39 @@ impl Card {
     }
 }
 
-/// The avatar key of his partner (the walker's is `on_foot::AVATAR_KEY`, the others' from
-/// `on_foot::REMOTE_KEY`, a relief driver's `relief::DRIVER_KEY`).
+/// The avatar keys of his partners: this and on, one each (the walker's is `on_foot::AVATAR_KEY`,
+/// the others' from `on_foot::REMOTE_KEY`, a relief driver's `relief::DRIVER_KEY`).
 pub(crate) const MATE_KEY: u32 = 3_000_000;
-/// How far behind him the partner walks (m, along his way), how near a rider must be to him, and
-/// the seconds between two of his checks.
+/// (15 November 2026) The most partners drawn (`inspection_patrol::MOST_TEAM`).
+const MOST_MATES: usize = 4;
+/// How far behind him the first partner walks (m, along his way), and each next one further.
 const MATE_GAP: f64 = 1.4;
-const MATE_REACH: f32 = 2.6;
-const MATE_EVERY: f32 = 7.0;
+const MATE_SPACING: f64 = 0.9;
+/// (NexiconDK, 15 November 2026: "følger han instant med mig?") How fast they walk (m/s), the
+/// most they hurry when he got ahead, and how far behind him (m, along his way) they are put
+/// beside him at once (a long way behind: he took a lift, a train, a bus as a rider).
+const WALK: f64 = 1.35;
+const HURRY: f64 = 4.5;
+const SNAP: f64 = 40.0;
+/// Seconds after he got into a bus that one still outside steps aboard (the bus leaves), and that
+/// one still aboard after he got out steps off.
+const BOARD_WAIT: f32 = 5.0;
+const LEAVE_WAIT: f32 = 10.0;
+/// ("også inde i selve bussen ... så følger han bare med mig fremfor at tjekke andre?") Aboard,
+/// each walks the aisle to a rider of his own (m/s): within `MATE_LOOK` m, not one this near the
+/// walker (his), nor another's; stands beside them (`BESIDE`) for the ticket `MATE_CHECK` s; gives
+/// up one he cannot reach in `MATE_GIVE_UP` s.
+const AISLE_WALK: f64 = 1.1;
+const MATE_LOOK: f32 = 14.0;
+const HIS: f32 = 1.6;
+const BESIDE: f32 = 0.9;
+const MATE_CHECK: f32 = 3.0;
+const MATE_GIVE_UP: f32 = 12.0;
+
+/// The names of those who go with him (`Spec::partner`: `inspection_patrol::TEAM_SEP` between them).
+pub(crate) fn team_of(partner: &str) -> Vec<String> {
+    partner.split(',').map(str::trim).filter(|n| !n.is_empty()).take(MOST_MATES).map(String::from).collect()
+}
 
 /// Where someone is: on the ground (the world), or aboard a bus (its cabin's point).
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -121,24 +147,174 @@ impl Spot {
             _ => f64::INFINITY,
         }
     }
+
+    fn bus(&self) -> Option<BusId> {
+        match self {
+            Spot::Bus(b, _) => Some(*b),
+            Spot::Ground(_) => None,
+        }
+    }
 }
 
-/// (14 November 2026) His partner, the company's inspector: walks his way behind him (his trail),
-/// into the bus he goes into, and checks the riders near him there now and then.
+/// The heading (OMSI's degrees) of a step `dx`, `dy`; None for none.
+fn heading_of(dx: f64, dy: f64) -> Option<f64> {
+    (dx.hypot(dy) > 1e-4).then(|| dx.atan2(dy).to_degrees())
+}
+
+/// Where the walker has been, every 15 cm, oldest first; `first` the number of the oldest kept
+/// (the partners keep their place in it by number).
 #[derive(Default)]
+struct Trail {
+    pts: std::collections::VecDeque<Spot>,
+    first: u64,
+}
+
+impl Trail {
+    fn end(&self) -> u64 {
+        self.first + self.pts.len() as u64
+    }
+
+    fn get(&self, i: u64) -> Option<Spot> {
+        i.checked_sub(self.first).and_then(|k| self.pts.get(k as usize)).copied()
+    }
+
+    /// The way from point `i` to the newest (m); a step through a door counts `0.6`.
+    fn len_from(&self, i: u64) -> f64 {
+        let k = i.saturating_sub(self.first) as usize;
+        self.pts.iter().skip(k).zip(self.pts.iter().skip(k + 1)).map(|(a, b)| a.dist(b)).map(|d| if d.is_finite() { d } else { 0.6 }).sum()
+    }
+
+    /// The point `gap` m back from the newest along the way (its number), or the oldest.
+    fn back(&self, gap: f64) -> u64 {
+        let mut len = 0.0;
+        for k in (1..self.pts.len()).rev() {
+            let d = self.pts[k].dist(&self.pts[k - 1]);
+            len += if d.is_finite() { d } else { 0.6 };
+            if len >= gap {
+                return self.first + k as u64 - 1;
+            }
+        }
+        self.first
+    }
+
+    /// The newest point aboard bus `bus` (its number).
+    fn last_in(&self, bus: BusId) -> Option<u64> {
+        self.pts.iter().rposition(|p| p.bus() == Some(bus)).map(|k| self.first + k as u64)
+    }
+}
+
+/// `at` walked `step` m along the trail from point `cursor` on: a step between the ground and a
+/// bus is taken at once (through its door). The new place, the next point to walk to, the
+/// heading walked (in the world on the ground, in the bus's frame aboard).
+fn walk_trail(t: &Trail, mut at: Spot, mut cursor: u64, mut step: f64) -> (Spot, u64, Option<f64>) {
+    let mut heading = None;
+    while step > 1e-6 {
+        let Some(g) = t.get(cursor) else { break };
+        let d = at.dist(&g);
+        if !d.is_finite() || d <= step {
+            if d.is_finite() {
+                step -= d;
+            }
+            heading = heading_between(&at, &g).or(heading);
+            at = g;
+            cursor += 1;
+            continue;
+        }
+        let k = step / d;
+        heading = heading_between(&at, &g).or(heading);
+        at = match (at, g) {
+            (Spot::Ground(a), Spot::Ground(b)) => Spot::Ground(a + (b - a) * k),
+            (Spot::Bus(bus, a), Spot::Bus(_, b)) => Spot::Bus(bus, a + (b - a) * k as f32),
+            _ => g,
+        };
+        step = 0.0;
+    }
+    (at, cursor, heading)
+}
+
+fn heading_between(a: &Spot, b: &Spot) -> Option<f64> {
+    match (a, b) {
+        (Spot::Ground(a), Spot::Ground(b)) => heading_of(b.x - a.x, b.y - a.y),
+        (Spot::Bus(x, a), Spot::Bus(y, b)) if x == y => heading_of((b.x - a.x) as f64, (b.y - a.y) as f64),
+        _ => None,
+    }
+}
+
+/// `at` walked `step` m along `way` (a bus's frame), the points reached taken off it. The new
+/// place, and the heading walked.
+fn walk_way(mut at: glam::Vec3, way: &mut Vec<glam::Vec3>, mut step: f32) -> (glam::Vec3, Option<f64>) {
+    let mut heading = None;
+    while step > 1e-6 {
+        let Some(&g) = way.first() else { break };
+        let d = (g - at).truncate().length();
+        heading = heading_of((g.x - at.x) as f64, (g.y - at.y) as f64).or(heading);
+        if d <= step {
+            step -= d;
+            at = g;
+            way.remove(0);
+        } else {
+            at += (g - at) * (step / d);
+            step = 0.0;
+        }
+    }
+    (at, heading)
+}
+
+/// What a partner does.
+#[derive(Debug, Clone, PartialEq)]
+enum Doing {
+    /// Walks the walker's way behind him.
+    Follow,
+    /// Aboard with him: looks for a rider of his own.
+    Look { wait: f32 },
+    /// Walks the aisle to that rider.
+    ToRider { id: u32, way: Vec<glam::Vec3>, t: f32 },
+    /// Stands by them for the ticket.
+    Check { id: u32, left: f32 },
+    /// The walker got out: to the door he left by (trail point `exit`), then out after him.
+    Leave { way: Vec<glam::Vec3>, exit: u64, t: f32 },
+}
+
+/// (14 November 2026; 15 November 2026: each of the team, each his own way) One of the company's
+/// inspectors who go with him: walks his way behind him at a walker's pace (hurrying when he got
+/// ahead), into the bus he goes into through its door, and aboard checks riders of his own.
 struct Mate {
-    /// Where the walker has been, oldest first (every 15 cm).
-    trail: std::collections::VecDeque<Spot>,
+    name: String,
     at: Option<Spot>,
     /// Facing: in the world (on the ground), in the bus's frame (aboard).
     heading: f64,
     speed: f64,
     kind: Option<u64>,
-    /// Seconds to his next check.
-    next: f32,
-    /// The riders he asked about (their ids), and the one he faces with the seconds left.
-    ids: HashSet<u32>,
-    face: Option<(u32, f32)>,
+    /// The trail point he walks to next.
+    cursor: u64,
+    doing: Doing,
+    /// Seconds outside while the walker is in a bus (`BOARD_WAIT`).
+    board: f32,
+}
+
+impl Mate {
+    fn new(name: String, cursor: u64) -> Mate {
+        Mate { name, at: None, heading: 0.0, speed: 0.0, kind: None, cursor, doing: Doing::Follow, board: 0.0 }
+    }
+
+    /// The rider he is busy with.
+    fn rider(&self) -> Option<u32> {
+        match self.doing {
+            Doing::ToRider { id, .. } | Doing::Check { id, .. } => Some(id),
+            _ => None,
+        }
+    }
+
+    /// Put `gap` m behind the walker on his trail, following again.
+    fn snap(&mut self, t: &Trail, gap: f64) {
+        let i = t.back(gap);
+        if let Some(p) = t.get(i) {
+            self.at = Some(p);
+        }
+        self.cursor = i + 1;
+        self.doing = Doing::Follow;
+        self.board = 0.0;
+    }
 }
 
 /// What he found in the bus he is in.
@@ -166,8 +342,11 @@ pub(crate) struct PatrolState {
     over: bool,
     /// What the screen shows him now.
     pub(crate) card: Option<Card>,
-    /// His partner (`Spec::partner`).
-    mate: Mate,
+    /// His partners (`Spec::partner`), the walker's way they follow, and the riders each asked
+    /// about (their ids: the partner's number).
+    mates: Vec<Mate>,
+    trail: Trail,
+    mate_of: HashMap<u32, usize>,
     /// The drivers' games told (`ticket ask`): the inspectors in their bus, said once each.
     told_driver: HashSet<u32>,
     pub(crate) host: HostBook,
@@ -233,9 +412,17 @@ impl App {
         }
         log::info!("patrol: ticket inspection on line {} for {} until {}", spec.line, spec.company, hhmm(spec.until));
         self.service_msg = Some((tr("Ticket inspection on line %{line} until %{time}: get into a bus, then K by a passenger checks the ticket.").replace("%{line}", &spec.line).replace("%{time}", &hhmm(spec.until)), 12.0));
-        if !spec.partner.is_empty() {
-            log::info!("patrol: with {}", spec.partner);
-            self.patrol_card(tr("%{name} goes with you").replace("%{name}", &spec.partner), tr("Your partner follows you into the buses and checks tickets too."), 0, 7.0);
+        let team = team_of(&spec.partner);
+        match team.len() {
+            0 => {}
+            1 => {
+                log::info!("patrol: with {}", team[0]);
+                self.patrol_card(tr("%{name} goes with you").replace("%{name}", &team[0]), tr("Your partner follows you into the buses and checks tickets too."), 0, 7.0);
+            }
+            _ => {
+                log::info!("patrol: with {}", team.join(", "));
+                self.patrol_card(tr("%{names} go with you").replace("%{names}", &team.join(", ")), tr("Your partners follow you into the buses, and in a bus each checks passengers of his own."), 0, 8.0);
+            }
         }
         self.net.patrol.spec = Some(spec);
         self.net.patrol.read = true;
@@ -288,8 +475,9 @@ impl App {
     fn patrol_result(&mut self, id: u32, r: Ticket) {
         let p = &mut self.net.patrol;
         p.pending.retain(|x| x.0 != id);
-        let by_mate = p.mate.ids.remove(&id);
-        let mate = p.spec.as_ref().map(|s| s.partner.clone()).unwrap_or_default();
+        let by = p.mate_of.remove(&id);
+        let by_mate = by.is_some();
+        let mate = by.and_then(|k| p.mates.get(k)).map(|m| m.name.clone()).unwrap_or_default();
         let fine = p.spec.as_ref().map(|s| s.fine.clone()).unwrap_or_default();
         match r {
             Ticket::Valid => {
@@ -333,7 +521,7 @@ impl App {
         p.ride = Ride::default();
         p.asked.clear();
         p.pending.clear();
-        p.mate.ids.clear();
+        p.mate_of.clear();
     }
 
     /// Once a frame (his game): the hello to the host, answers that did not come, out of a bus,
@@ -378,12 +566,12 @@ impl App {
                 p.asked.remove(id);
             }
             // (his partner's unanswered: not said)
-            let his = lost.iter().filter(|id| !p.mate.ids.remove(id)).count();
+            let his = lost.iter().filter(|id| p.mate_of.remove(id).is_none()).count();
             if his > 0 {
                 self.patrol_card(tr("No answer about that ticket: try again."), String::new(), 0, 3.0);
             }
         }
-        self.patrol_mate(dt);
+        self.patrol_mates(dt);
         let aboard = self.session.humans.as_ref().and_then(|h| h.avatar_aboard(crate::on_foot::AVATAR_KEY)).map(|x| x.0);
         let p = &mut self.net.patrol;
         if p.ride.bus.is_some() && aboard != p.ride.bus {
@@ -410,157 +598,281 @@ impl App {
         }
     }
 
-    /// (14 November 2026) His partner this frame: a step along his trail, aboard where he is, and
-    /// now and then a rider near him checked.
-    fn patrol_mate(&mut self, dt: f32) {
+    /// (14 November 2026; 15 November 2026: the whole team, each his own way) His partners this
+    /// frame: on the ground a walker's step along his way behind him, into the bus he goes into
+    /// through its door; aboard with him each to a rider of his own, checked; out after him.
+    fn patrol_mates(&mut self, dt: f32) {
         let Some(spec) = self.net.patrol.spec.clone() else { return };
-        if spec.partner.is_empty() {
+        let names = team_of(&spec.partner);
+        if names.is_empty() {
             return;
         }
         let Some(f) = self.session.on_foot.as_ref() else {
             if let Some(h) = self.session.humans.as_mut() {
-                h.avatar_show(MATE_KEY, false);
+                for k in 0..MOST_MATES as u32 {
+                    h.avatar_show(MATE_KEY + k, false);
+                }
             }
             return;
         };
-        let (me, my_heading, my_z, my_kind) = (match f.inside {
+        let (me, my_heading, my_z, my_kind, my_pos) = (match f.inside {
             Some((b, l)) => Spot::Bus(b, l),
             None => Spot::Ground(f.pos),
-        }, f.heading, f.pos.z, f.kind);
+        }, f.heading, f.pos.z, f.kind, f.pos);
         let dt64 = dt.max(1e-3) as f64;
-        let m = &mut self.net.patrol.mate;
-        // (his trail, and the point of it the gap behind him)
-        if m.trail.back().is_none_or(|b| b.dist(&me) > 0.15) {
-            m.trail.push_back(me);
+        let over = self.net.patrol.over;
+        let p = &mut self.net.patrol;
+        if p.mates.len() != names.len() {
+            let end = p.trail.end();
+            p.mates = names.into_iter().map(|n| Mate::new(n, end)).collect();
         }
-        let (mut len, mut prev, mut goal) = (0.0, me, None);
-        for i in (0..m.trail.len()).rev() {
-            let d = prev.dist(&m.trail[i]);
-            len += if d.is_finite() { d } else { 0.6 };
-            prev = m.trail[i];
-            if len >= MATE_GAP {
-                goal = Some(i);
-                break;
+        if p.trail.pts.back().is_none_or(|b| b.dist(&me) > 0.15) {
+            p.trail.pts.push_back(me);
+        }
+        let Some(h) = self.session.humans.as_ref() else { return };
+        let mut checks: Vec<(usize, u32, BusId)> = Vec::new();
+        let p = &mut self.net.patrol;
+        for k in 0..p.mates.len() {
+            let gap = MATE_GAP + MATE_SPACING * k as f64;
+            let taken: Vec<u32> = p.mates.iter().enumerate().filter(|(j, _)| *j != k).filter_map(|(_, m)| m.rider()).chain(p.asked.iter().copied()).chain(p.mate_of.keys().copied()).collect();
+            let m = &mut p.mates[k];
+            // (first: behind him, on his way)
+            if m.at.is_none() {
+                let a = my_heading.to_radians();
+                m.at = Some(match me {
+                    Spot::Ground(g) => Spot::Ground(g - glam::DVec3::new(a.sin(), a.cos(), 0.0) * gap),
+                    s => s,
+                });
+                m.heading = my_heading;
+                m.cursor = p.trail.end();
             }
-        }
-        if let Some(i) = goal {
-            m.trail.drain(..i);
-        }
-        while m.trail.len() > 400 {
-            m.trail.pop_front();
-        }
-        let goal = goal.map(|_| m.trail[0]);
-        // (first: just behind him)
-        if m.at.is_none() {
-            let h = my_heading.to_radians();
-            m.at = Some(match me {
-                Spot::Ground(p) => Spot::Ground(p - glam::DVec3::new(h.sin(), h.cos(), 0.0) * MATE_GAP),
-                s => s,
-            });
-            m.heading = my_heading;
-        }
-        let mut at = m.at.unwrap();
-        m.speed = 0.0;
-        if let Some(g) = goal {
-            let d = at.dist(&g);
-            if !d.is_finite() || d > 8.0 {
-                at = g;
-            } else if d > 0.02 {
-                let step = (d * 2.5).clamp(0.6, 3.5) * dt64;
-                let k = (step / d).min(1.0);
-                let (dx, dy) = match (at, g) {
-                    (Spot::Ground(a), Spot::Ground(b)) => {
-                        at = Spot::Ground(a + (b - a) * k);
-                        (b.x - a.x, b.y - a.y)
+            let at = m.at.unwrap_or(me);
+            m.speed = 0.0;
+            // (what he does now: aboard with the walker, his own riders; the walker got out, after him)
+            match (at.bus(), me.bus()) {
+                (Some(b), Some(w)) if b == w => {
+                    if m.doing == Doing::Follow || matches!(m.doing, Doing::Leave { .. }) {
+                        m.doing = Doing::Look { wait: 0.4 + 0.3 * k as f32 };
                     }
-                    (Spot::Bus(bus, a), Spot::Bus(_, b)) => {
-                        at = Spot::Bus(bus, a + (b - a) * k as f32);
-                        ((b.x - a.x) as f64, (b.y - a.y) as f64)
+                }
+                (Some(b), _) => {
+                    if !matches!(m.doing, Doing::Follow | Doing::Leave { .. }) {
+                        match p.trail.last_in(b) {
+                            Some(exit) => {
+                                let local = match p.trail.get(exit) {
+                                    Some(Spot::Bus(_, l)) => l,
+                                    _ => glam::Vec3::ZERO,
+                                };
+                                let Spot::Bus(_, from) = at else { continue };
+                                let mut way = h.aisle_way(b, from, local);
+                                way.push(local);
+                                m.doing = Doing::Leave { way, exit, t: 0.0 };
+                            }
+                            None => m.snap(&p.trail, gap),
+                        }
                     }
-                    _ => (0.0, 0.0),
-                };
-                m.speed = step.min(d) / dt64;
-                if dx.hypot(dy) > 1e-4 {
-                    m.heading = dx.atan2(dy).to_degrees();
+                }
+                (None, _) => {
+                    if m.doing != Doing::Follow {
+                        m.doing = Doing::Follow;
+                    }
+                }
+            }
+            let at = m.at.unwrap_or(me);
+            match &mut m.doing {
+                Doing::Follow => {
+                    let ahead = p.trail.get(m.cursor).map_or(0.0, |g| {
+                        let d = at.dist(&g);
+                        if d.is_finite() {
+                            d
+                        } else {
+                            0.6
+                        }
+                    }) + p.trail.len_from(m.cursor);
+                    if ahead - gap > SNAP {
+                        m.snap(&p.trail, gap);
+                        continue;
+                    }
+                    // (he got into a bus and it may leave: one still outside steps aboard)
+                    if me.bus().is_some() && at.bus().is_none() {
+                        m.board += dt;
+                        if m.board > BOARD_WAIT {
+                            if let Some(i) = (m.cursor..p.trail.end()).find(|i| p.trail.get(*i).is_some_and(|x| x.bus().is_some())) {
+                                m.at = p.trail.get(i);
+                                m.cursor = i + 1;
+                                m.board = 0.0;
+                                continue;
+                            }
+                        }
+                    } else {
+                        m.board = 0.0;
+                    }
+                    if ahead > gap {
+                        m.speed = ((ahead - gap) * 1.5).clamp(WALK, HURRY);
+                        let step = (m.speed * dt64).min(ahead - gap);
+                        let (to, cursor, heading) = walk_trail(&p.trail, at, m.cursor, step);
+                        m.at = Some(to);
+                        m.cursor = cursor;
+                        if let Some(hd) = heading {
+                            m.heading = hd;
+                        }
+                    }
+                }
+                Doing::Look { wait } => {
+                    *wait -= dt;
+                    let Spot::Bus(b, l) = at else { continue };
+                    if *wait > 0.0 || over {
+                        continue;
+                    }
+                    *wait = 0.6;
+                    let walker = match me {
+                        Spot::Bus(w, wl) if w == b => Some(wl),
+                        _ => None,
+                    };
+                    let mine = h.riders_around(b, l, MATE_LOOK, &taken).into_iter().find(|(_, rp)| walker.is_none_or(|wl| (*rp - wl).truncate().length() > HIS));
+                    if let Some((id, rp)) = mine {
+                        let mut way = h.aisle_way(b, l, rp);
+                        if way.is_empty() {
+                            // (no paths known: straight towards them, to stand beside them)
+                            let d = (rp - l).truncate();
+                            let len = d.length();
+                            if len > BESIDE {
+                                way.push(l + (rp - l) * ((len - BESIDE * 0.8) / len));
+                            }
+                        }
+                        m.doing = Doing::ToRider { id, way, t: 0.0 };
+                    }
+                }
+                Doing::ToRider { id, way, t } => {
+                    let Spot::Bus(b, l) = at else { continue };
+                    *t += dt;
+                    let id = *id;
+                    let rider = h.rider_at(id).filter(|x| x.0 == b).map(|x| x.1);
+                    let Some(rp) = rider.filter(|_| !p.asked.contains(&id) && *t <= MATE_GIVE_UP) else {
+                        m.doing = Doing::Look { wait: 0.3 };
+                        continue;
+                    };
+                    let (to, heading) = walk_way(l, way, (AISLE_WALK * dt64) as f32);
+                    m.speed = if (to - l).length() > 1e-4 { AISLE_WALK } else { 0.0 };
+                    m.at = Some(Spot::Bus(b, to));
+                    if let Some(hd) = heading {
+                        m.heading = hd;
+                    }
+                    if way.is_empty() || (rp - to).truncate().length() <= BESIDE {
+                        if let Some(hd) = heading_of((rp.x - to.x) as f64, (rp.y - to.y) as f64) {
+                            m.heading = hd;
+                        }
+                        if over {
+                            m.doing = Doing::Look { wait: 1.0 };
+                        } else {
+                            checks.push((k, id, b));
+                            m.doing = Doing::Check { id, left: MATE_CHECK };
+                        }
+                    }
+                }
+                Doing::Check { id, left } => {
+                    *left -= dt;
+                    if let (Spot::Bus(b, l), Some((_, rp))) = (at, h.rider_at(*id).filter(|x| Some(x.0) == at.bus())) {
+                        let _ = b;
+                        if let Some(hd) = heading_of((rp.x - l.x) as f64, (rp.y - l.y) as f64) {
+                            m.heading = hd;
+                        }
+                    }
+                    if *left <= 0.0 {
+                        m.doing = Doing::Look { wait: 0.4 };
+                    }
+                }
+                Doing::Leave { way, exit, t } => {
+                    *t += dt;
+                    let exit = *exit;
+                    let Spot::Bus(b, l) = at else { continue };
+                    let (to, heading) = walk_way(l, way, (WALK * 1.2 * dt64) as f32);
+                    m.speed = if (to - l).length() > 1e-4 { WALK * 1.2 } else { 0.0 };
+                    m.at = Some(Spot::Bus(b, to));
+                    if let Some(hd) = heading {
+                        m.heading = hd;
+                    }
+                    // (at the door he left by - or the bus is going: out after him)
+                    if way.is_empty() || *t > LEAVE_WAIT {
+                        match p.trail.get(exit + 1) {
+                            Some(out) => {
+                                m.at = Some(out);
+                                m.cursor = exit + 2;
+                                m.doing = Doing::Follow;
+                            }
+                            None => m.snap(&p.trail, gap),
+                        }
+                    }
                 }
             }
         }
-        m.at = Some(at);
-        // (a rider he checks: faced)
-        if let Some((_, left)) = m.face.as_mut() {
-            *left -= dt;
+        // (the trail kept from where the partner furthest behind is)
+        let keep = p.mates.iter().map(|m| m.cursor).min().unwrap_or(p.trail.end()).saturating_sub(2);
+        while p.trail.first < keep && !p.trail.pts.is_empty() {
+            p.trail.pts.pop_front();
+            p.trail.first += 1;
         }
-        if m.face.is_some_and(|x| x.1 <= 0.0) {
-            m.face = None;
+        while p.trail.pts.len() > 4000 {
+            p.trail.pts.pop_front();
+            p.trail.first += 1;
         }
-        let face = m.face.map(|x| x.0);
+        let first = p.trail.first;
+        for (k, m) in p.mates.iter_mut().enumerate() {
+            if m.cursor < first {
+                m.snap(&p.trail, MATE_GAP + MATE_SPACING * k as f64);
+            }
+        }
+        // (their figures: of those that have the uniform, each another, not the walker's own if
+        // another has it)
         let clothes = spec.clothes.clone();
         let Some(h) = self.session.humans.as_mut() else { return };
         let Some(w) = self.world.as_ref() else { return };
-        let m = &mut self.net.patrol.mate;
-        if let (Some(id), Spot::Bus(b, l)) = (face, at) {
-            if let Some((rb, rl)) = h.rider_at(id).filter(|x| x.0 == b) {
-                let d = rl - l;
-                if d.truncate().length() > 0.1 {
-                    m.heading = (d.x as f64).atan2(d.y as f64).to_degrees();
-                }
-                let _ = rb;
-            }
-        }
-        // (his figure: one of those that have the uniform, not the walker's own if another has)
-        let kind = *m.kind.get_or_insert_with(|| {
-            let n = h.types.len().max(1) as u64;
-            (1..n)
-                .map(|d| ((my_kind + d) % n) as usize)
-                .find(|k| !clothes.is_empty() && h.type_wearing(&clothes, Some(*k)) == Some(*k))
-                .or_else(|| h.type_wearing(&clothes, None))
-                .map(|k| k as u64)
-                .unwrap_or(my_kind + 1)
-        });
-        let cmd = match at {
-            Spot::Ground(p) => {
-                let r = m.heading.to_radians();
-                crate::humans::AvatarCmd { pos: p, heading: m.heading, vel: glam::DVec2::new(r.sin(), r.cos()) * m.speed, lift: 0.0, seat: None, floor: None, aboard: None }
-            }
-            Spot::Bus(b, l) => {
-                let world_heading = h.bus_heading(b, l).unwrap_or(0.0) + m.heading;
-                let r = world_heading.to_radians();
-                crate::humans::AvatarCmd { pos: glam::DVec3::new(f.pos.x, f.pos.y, my_z), heading: world_heading, vel: glam::DVec2::new(r.sin(), r.cos()) * m.speed, lift: 0.0, seat: None, floor: Some(my_z), aboard: Some((b, l)) }
-            }
-        };
-        h.avatar_in(MATE_KEY, w, cmd, kind, &clothes);
-        h.avatar_show(MATE_KEY, true);
-        // (a check now and then, aboard the bus he is in)
-        m.next -= dt;
-        let Spot::Bus(bus, l) = at else {
-            m.next = m.next.max(4.0);
-            return;
-        };
-        if !matches!(me, Spot::Bus(b, _) if b == bus) || m.next > 0.0 || self.net.patrol.over {
-            return;
-        }
-        let n = self.net.patrol.checked;
-        self.net.patrol.mate.next = MATE_EVERY + (n % 4) as f32;
-        let but: Vec<u32> = self.net.patrol.asked.iter().copied().collect();
-        let Some(id) = h.nearest_rider(bus, l, MATE_REACH, &but) else { return };
-        if self.net.patrol.ride.bus != Some(bus) {
-            self.patrol_ride_over();
-            self.net.patrol.ride.bus = Some(bus);
-        }
+        let n = h.types.len().max(1) as u64;
+        let wearing: Vec<u64> = (0..n as usize).filter(|t| !clothes.is_empty() && h.type_wearing(&clothes, Some(*t)) == Some(*t)).map(|t| t as u64).filter(|t| *t != my_kind % n).collect();
         let p = &mut self.net.patrol;
-        p.asked.insert(id);
-        p.mate.ids.insert(id);
-        p.mate.face = Some((id, 3.0));
-        log::info!("patrol: {} checks rider {id}", spec.partner);
-        let client = self.net.lan.as_ref().is_some_and(|l| l.role == omsi_net::Role::Client);
-        if client {
-            if let Some(l) = self.net.lan.as_mut() {
-                l.command(1, &format!("ticket check {id}"));
+        for (k, m) in p.mates.iter_mut().enumerate() {
+            let kind = *m.kind.get_or_insert_with(|| match wearing.len() {
+                0 => h.type_wearing(&clothes, None).map(|t| t as u64).unwrap_or(my_kind + 1 + k as u64),
+                l => wearing[k % l],
+            });
+            let Some(at) = m.at else { continue };
+            let cmd = match at {
+                Spot::Ground(g) => {
+                    let r = m.heading.to_radians();
+                    crate::humans::AvatarCmd { pos: g, heading: m.heading, vel: glam::DVec2::new(r.sin(), r.cos()) * m.speed, lift: 0.0, seat: None, floor: None, aboard: None }
+                }
+                Spot::Bus(b, l) => {
+                    let world_heading = h.bus_heading(b, l).unwrap_or(0.0) + m.heading;
+                    let r = world_heading.to_radians();
+                    crate::humans::AvatarCmd { pos: glam::DVec3::new(my_pos.x, my_pos.y, my_z), heading: world_heading, vel: glam::DVec2::new(r.sin(), r.cos()) * m.speed, lift: 0.0, seat: None, floor: Some(my_z), aboard: Some((b, l)) }
+                }
+            };
+            h.avatar_in(MATE_KEY + k as u32, w, cmd, kind, &clothes);
+            h.avatar_show(MATE_KEY + k as u32, true);
+        }
+        // (their checks: as his, said with their names)
+        for (k, id, bus) in checks {
+            if self.net.patrol.ride.bus != Some(bus) {
+                self.patrol_ride_over();
+                self.net.patrol.ride.bus = Some(bus);
             }
-            self.net.patrol.pending.push((id, 0.0));
-        } else {
-            let r = self.session.humans.as_mut().map(|h| h.check_ticket(id, AI_SHARE)).unwrap_or(Ticket::Gone);
-            self.patrol_result(id, r);
+            let p = &mut self.net.patrol;
+            if p.asked.contains(&id) {
+                continue;
+            }
+            p.asked.insert(id);
+            p.mate_of.insert(id, k);
+            log::info!("patrol: {} checks rider {id}", p.mates.get(k).map(|m| m.name.as_str()).unwrap_or(""));
+            let client = self.net.lan.as_ref().is_some_and(|l| l.role == omsi_net::Role::Client);
+            if client {
+                if let Some(l) = self.net.lan.as_mut() {
+                    l.command(1, &format!("ticket check {id}"));
+                }
+                self.net.patrol.pending.push((id, 0.0));
+            } else {
+                let r = self.session.humans.as_mut().map(|h| h.check_ticket(id, AI_SHARE)).unwrap_or(Ticket::Gone);
+                self.patrol_result(id, r);
+            }
         }
     }
 
@@ -804,6 +1116,47 @@ mod tests {
         assert_eq!(Spec::parse("c17|Linie5|3|840|x|~Inspector_A|Mette Holm").unwrap().partner, "Mette Holm");
         assert_eq!(s.partner, "");
         assert!(Spec::parse("|Linie5").is_none());
+    }
+
+    /// (NexiconDK, 15 November 2026) The whole team goes with him, four at most.
+    #[test]
+    fn the_team_of_the_launcher_is_read() {
+        assert_eq!(team_of("Mette Holm"), ["Mette Holm"]);
+        assert_eq!(team_of("Mette Holm, Bo Lund,,Eva Kjær ,Ali Nur,Ida Bech"), ["Mette Holm", "Bo Lund", "Eva Kjær", "Ali Nur"]);
+        assert!(team_of(" ").is_empty());
+        let s = Spec::parse("c17|Linie5|3|840|x|~Inspector_A|Mette Holm,Bo Lund").unwrap();
+        assert_eq!(team_of(&s.partner).len(), 2);
+    }
+
+    /// ("følger han instant med mig?") A partner walks the walker's way at a walker's pace, and
+    /// steps into the bus through its door where the walker did - not there at once.
+    #[test]
+    fn a_partner_walks_the_way_and_steps_aboard_at_the_door() {
+        let g = |x: f64| Spot::Ground(glam::DVec3::new(x, 0.0, 0.0));
+        let bus = BusId::Ai(7);
+        let mut t = Trail::default();
+        for k in 0..=40 {
+            t.pts.push_back(g(k as f64 * 0.25));
+        }
+        t.pts.push_back(Spot::Bus(bus, glam::Vec3::new(0.0, 5.0, 0.0)));
+        t.pts.push_back(Spot::Bus(bus, glam::Vec3::new(0.0, 4.0, 0.0)));
+        // a second at a walker's pace: 1.35 m along, still outside, heading east
+        let (at, cursor, hd) = walk_trail(&t, g(0.0), 1, WALK);
+        assert!(matches!(at, Spot::Ground(p) if (p.x - WALK).abs() < 1e-6), "{at:?}");
+        assert_eq!(cursor, 6);
+        assert!((hd.unwrap() - 90.0).abs() < 1e-6);
+        // at the door: aboard at the walker's first point inside, then on along the aisle
+        let (at, cursor, _) = walk_trail(&t, g(10.0), 41, 0.5);
+        assert!(matches!(at, Spot::Bus(b, l) if b == bus && (l.y - 4.5).abs() < 1e-5), "{at:?}");
+        assert_eq!(cursor, 42);
+        assert!((t.len_from(0) - 11.6).abs() < 1e-9);
+        assert_eq!(t.last_in(bus), Some(42));
+        assert_eq!(t.back(1.0), 41);
+        // aboard: along the aisle's points
+        let mut way = vec![glam::Vec3::new(0.0, 3.0, 0.0), glam::Vec3::new(0.5, 3.0, 0.0)];
+        let (at, hd) = walk_way(glam::Vec3::new(0.0, 4.0, 0.0), &mut way, 1.25);
+        assert!((at - glam::Vec3::new(0.25, 3.0, 0.0)).length() < 1e-5 && way.len() == 1, "{at:?}");
+        assert!((hd.unwrap() - 90.0).abs() < 1e-6);
     }
 
     #[test]

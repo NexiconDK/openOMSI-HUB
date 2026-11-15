@@ -943,6 +943,13 @@ fn give_driver(s: &mut Session, p: &DayPlan, ti: usize, k: usize, who: Option<Wh
         }
     }
     let Some(c) = s.company.as_ref() else { return json!({}) };
+    // (NexiconDK, 15 November 2026: one that ran without a driver until its end - for today it
+    // can no longer be given; the roster's weekday still can: `co::unmanned`)
+    let d = &p.tours[ti].duties[k];
+    if d.who.is_none() && co::unmanned::ended(c, p, d.to) && (today_only(c, p, ti, k, who) || matches!(who, Some(Who::Staff(id)) if co::agency::is_booked(id))) {
+        let p = company::popup(s, Popup::new("schedule", "This duty is over", tr("This duty is over: it ran without a driver and can no longer be given today."), tr("Give it a driver for the days to come."), None));
+        return json!({ "popup": p });
+    }
     let t = &p.tours[ti];
     let (line, tour) = (t.tour.line.clone(), t.tour.tour.clone());
     let blocks: Vec<co::network::TourOfDay> = p.tours.iter().map(|t| t.tour.clone()).collect();
