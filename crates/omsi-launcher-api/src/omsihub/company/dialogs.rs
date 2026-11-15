@@ -628,6 +628,11 @@ fn time(s: &mut Session) -> Value {
     })
 }
 
+/// The bus ids of a confirmation's `name` ("12,15,17").
+fn ids_of(name: &str) -> Vec<u32> {
+    name.split(',').filter_map(|x| x.trim().parse().ok()).collect()
+}
+
 // --- a confirmation ----------------------------------------------------------------------------------
 
 /// A confirmation (`Confirm`): its title, its words, its button (`what`: sell, dismiss,
@@ -647,6 +652,22 @@ fn confirm(s: &mut Session, args: &Value) -> Value {
                 Tenure::Rented { .. } => tr("The rented bus goes back today; the days rented are paid."),
             };
             (format!("{} {}", v.number, v.name), text, tr(if matches!(v.tenure, Tenure::Owned { .. }) { "Sell" } else { "Give back" }), "warning", true)
+        }
+        // (NexiconDK, 15 November 2026: the leased buses ticked on the fleet's Leasing tab, their
+        // ids in `name`)
+        "give_back" => {
+            let ids = ids_of(&name);
+            let (found, fees, owed, saved) = co::market::give_back_cost(&c, &ids);
+            if found.is_empty() {
+                return json!({ "gone": true });
+            }
+            let buses: Vec<String> = found.iter().filter_map(|id| c.vehicle(*id)).map(|v| v.number.clone()).collect();
+            let mut text = trf("Buses %{list} go back to the leasing company today.", &[("list", &buses.join(", "))]);
+            text.push(' ');
+            text.push_str(&trf("Giving them back early costs %{amount} (three monthly rates each), and the month's rates up to today %{owed}.", &[("amount", &eur(fees)), ("owed", &eur(owed))]));
+            text.push(' ');
+            text.push_str(&trf("From then on the company saves %{amount} a month.", &[("amount", &eur(saved))]));
+            (trf("Give back %{n} leased buses?", &[("n", &found.len().to_string())]), text, trf("Give back for %{amount}", &[("amount", &eur(fees + owed))]), "exit_to_app", true)
         }
         "dismiss" => {
             let Some(e) = c.employee(id) else { return json!({ "gone": true }) };
@@ -1496,6 +1517,17 @@ pub fn act(s: &mut Session, what: &str, args: &Value, _p: &dyn crate::Platform) 
         // a confirmation answered
         "confirmed" => match str_of("what").as_str() {
             "sell" => done(apply(s, |c| co::market::sell(c, id)).map(|_| ())),
+            "give_back" => {
+                let ids = ids_of(&str_of("name"));
+                match apply(s, |c| co::market::give_back(c, &ids)) {
+                    Ok((n, cost)) => {
+                        let t = trf("%{n} leased buses went back (%{amount}).", &[("n", &n.to_string()), ("amount", &eur(cost))]);
+                        s.say(t, false);
+                        Ok(json!({ "given_back": n }))
+                    }
+                    Err(p) => Ok(json!({ "popup": p })),
+                }
+            }
             "dismiss" => match apply(s, |c| co::staff::dismiss(c, id)) {
                 Ok(until) => {
                     let t = trf("Their last day is %{date}.", &[("date", &day_label(&until))]);

@@ -89,8 +89,8 @@ pub const UNKNOWN_ACT: &str = "The server did not understand that: both need the
 /// Every text of this file (for the translations' check).
 pub fn texts() -> Vec<&'static str> {
     let mut v = vec![NOT_MADE, NOT_A_GROUP, NOT_ITS_DEPOT, BAD_RULE, NOT_YOURS, NO_LOAN, SMALL_LOAN, NO_SUCH_LOAN, UNKNOWN_ACT, SAME_DEPOT, NOT_SENT_ORDER];
-    v.extend([ORDER_MOVED, ORDER_LENT, ORDER_HOME, ORDER_FAILED, BRAND_TAKEN, CALLED_IN].iter().flat_map(|t| [t.0, t.1]));
-    v.extend([BAD_SHORT, BAD_COLOUR, NO_SUCH_DESIGN, NO_NAME, NOT_OWNER, NO_SUCH_PLAYER, BAD_ROLE, IS_OWNER, ONLY_OWNER_CLOSES, CLOSING_ALREADY]);
+    v.extend([ORDER_MOVED, ORDER_LENT, ORDER_HOME, ORDER_GIVEN_BACK, ORDER_FAILED, BRAND_TAKEN, CALLED_IN].iter().flat_map(|t| [t.0, t.1]));
+    v.extend([BAD_SHORT, BAD_COLOUR, NO_SUCH_DESIGN, NO_NAME, NOT_OWNER, NO_SUCH_PLAYER, BAD_ROLE, IS_OWNER, ONLY_OWNER_CLOSES, CLOSING_ALREADY, NOT_LEASED, GIVEN_BACK_ALREADY]);
     v
 }
 
@@ -529,6 +529,10 @@ pub const NOT_SENT_ORDER: &str = "The order could not be given: the server says 
 pub const ORDER_MOVED: (&str, &str) = ("The head office sent %{bus} to %{other}", "By the head office's order %{bus} is on its way to %{other}, there on %{day}.");
 pub const ORDER_LENT: (&str, &str) = ("The head office lent %{name} to %{other}", "By the head office's order %{name} goes to %{other} tomorrow for %{n} days.");
 pub const ORDER_HOME: (&str, &str) = ("The head office called in %{amount}", "The group's treasury was short at its day's close: %{amount} sent home.");
+pub const ORDER_GIVEN_BACK: (&str, &str) = ("The head office gave %{bus} back", "By the head office's order the leased bus %{bus} went back to the leasing company early: %{amount}.");
+/// Why a leased bus cannot be given back by the head office's order.
+pub const NOT_LEASED: &str = "This bus is not leased.";
+pub const GIVEN_BACK_ALREADY: &str = "This bus goes back already.";
 pub const ORDER_FAILED: (&str, &str) = ("%{depot} could not do the order", "%{depot} could not do the head office's order (%{what}): %{why}");
 
 /// Head office `g` orders depot `from` (by `by`): `what` is `move_bus` (its bus `bus` to depot
@@ -541,7 +545,7 @@ pub fn order(data: &Path, g: &mut Company, by: &str, from: &str, mut o: Order) -
     let depots = server_depots::depots_of(data, &g.id);
     let home = o.what == "send_home";
     // (a depot closed: its buses to another depot, or none - all sold)
-    let to_none = o.what == "close" && o.to.is_empty();
+    let to_none = (o.what == "close" && o.to.is_empty()) || o.what == "give_back";
     if !depots.iter().any(|d| d.id == from) || (!home && !to_none && !depots.iter().any(|d| d.id == o.to)) {
         return Err(NOT_ITS_DEPOT);
     }
@@ -561,6 +565,17 @@ pub fn order(data: &Path, g: &mut Company, by: &str, from: &str, mut o: Order) -
             if !matches!(v.tenure, super::model::Tenure::Owned { .. }) {
                 return Err(server_depots::NOT_OWNED);
             }
+        }
+        // (15 November 2026: a leased bus of the depot's given back early)
+        "give_back" => {
+            let v = d.vehicle(o.bus).ok_or(server_depots::NO_SUCH_BUS)?;
+            if !matches!(v.tenure, super::model::Tenure::Leased { .. }) {
+                return Err(NOT_LEASED);
+            }
+            if orders_waiting(data, &d).iter().any(|x| x.what == "give_back" && x.bus == o.bus) {
+                return Err(GIVEN_BACK_ALREADY);
+            }
+            o.to.clear();
         }
         "lend" => {
             if !(1..=90).contains(&o.days) {
@@ -631,6 +646,11 @@ pub fn take_orders_closing(data: &Path, c: &mut Company) -> (bool, bool) {
                 let r = server_depots::move_bus(data, c, o.bus, &o.to, cfg.bus_move_price, cfg.bus_move_days).map(|day| {
                     Message::new(Kind::Finance, ORDER_MOVED.0, ORDER_MOVED.1).arg("bus", bus.clone()).arg("other", other.clone()).arg("day", day)
                 });
+                (bus, r)
+            }
+            "give_back" => {
+                let bus = c.vehicle(o.bus).map(|v| format!("{} {}", v.number, v.name)).unwrap_or_else(|| o.bus.to_string());
+                let r = super::market::give_back(c, &[o.bus]).map(|(_, cost)| Message::new(Kind::Finance, ORDER_GIVEN_BACK.0, ORDER_GIVEN_BACK.1).arg("bus", bus.clone()).arg("amount", cost.to_string()));
                 (bus, r)
             }
             "lend" => {
@@ -936,7 +956,19 @@ pub fn view(data: &Path, g: &Company, me: &str, around: &Around) -> Value {
     let fleet: Vec<Value> = depots
         .iter()
         .map(|d| {
-            let buses: Vec<Value> = d.fleet.iter().map(|v| json!({ "id": v.id, "number": v.number, "name": v.name, "kind": v.kind.label(), "owned": matches!(v.tenure, super::model::Tenure::Owned { .. }), "workshop": v.workshop_until.is_some() })).collect();
+            // (NexiconDK, 15 November 2026: a leased bus's lease - its rate, its end, what giving it
+            // back early costs - for the head office's list of the group's leased buses)
+            let buses: Vec<Value> = d
+                .fleet
+                .iter()
+                .map(|v| {
+                    let lease = match &v.tenure {
+                        super::model::Tenure::Leased { monthly, until, .. } => json!({ "monthly": monthly, "until": until, "back": -super::market::sale_offer(d, v) }),
+                        _ => Value::Null,
+                    };
+                    json!({ "id": v.id, "number": v.number, "name": v.name, "kind": v.kind.label(), "owned": matches!(v.tenure, super::model::Tenure::Owned { .. }), "workshop": v.workshop_until.is_some(), "lease": lease })
+                })
+                .collect();
             let staff: Vec<Value> = d
                 .staff
                 .iter()
@@ -955,7 +987,7 @@ pub fn view(data: &Path, g: &Company, me: &str, around: &Around) -> Value {
                 .filter(|o| o.hq == g.id)
                 .map(|o| {
                     let what = match o.what.as_str() {
-                        "move_bus" => d.vehicle(o.bus).map(|v| format!("{} {}", v.number, v.name)).unwrap_or_default(),
+                        "move_bus" | "give_back" => d.vehicle(o.bus).map(|v| format!("{} {}", v.number, v.name)).unwrap_or_default(),
                         "close" => d.name.clone(),
                         _ => d.staff.iter().find(|e| e.id == o.employee).map(|e| e.name.clone()).unwrap_or_default(),
                     };
@@ -1056,6 +1088,19 @@ pub fn act(data: &Path, g: &mut Company, by: (&str, &str), what: &str, args: &Va
                 gr.members.retain(|m| !(m.role == DEPOT_MANAGER && m.depot == depot));
             }
             Ok(format!("ordered {depot} closed, its buses {}", if to.is_empty() { "sold".to_string() } else { format!("to {to}") }))
+        }
+        // (NexiconDK, 15 November 2026: leased buses of a depot ticked on the head office's list,
+        // given back early - an order each, done by the depot at its next step)
+        "give_back" => {
+            let depot = s("depot");
+            let buses: Vec<u32> = args.get("buses").and_then(Value::as_array).map(|a| a.iter().filter_map(Value::as_u64).map(|x| x as u32).collect()).unwrap_or_default();
+            if buses.is_empty() {
+                return Err(NOT_LEASED);
+            }
+            for bus in &buses {
+                order(data, g, by, &depot, Order { what: "give_back".to_string(), bus: *bus, ..Default::default() })?;
+            }
+            Ok(format!("ordered {depot}: {} leased buses given back", buses.len()))
         }
         "move_bus" | "lend" => {
             let (from, to) = (s("from"), s("to"));
@@ -1371,6 +1416,40 @@ mod tests {
         assert!(g.inbox.messages.iter().any(|m| m.title == ORDER_FAILED.0));
         let _ = std::fs::remove_dir_all(&dir);
     }
+    /// (NexiconDK, 15 November 2026) The head office's list of the group's leased buses: what each
+    /// costs to give back early, and those ticked given back by the depot at its next step - an
+    /// owned bus is not, nor one ordered back already.
+    #[test]
+    fn the_head_office_gives_a_depots_leased_buses_back() {
+        use super::super::market::{self, MarketBus, Payment};
+        use super::super::model::{BusKind, BusSize, Drive};
+        let (dir, root, data) = folder("give_back");
+        let mut c = company(&data, "umove", "Umove", "Grundorf");
+        server_depots::found(&data, &root, &mut c, "Ahlheim", 100_000_00, 250_000_00, 1_800_000_000).unwrap();
+        c.online.big_purchase = Some(Cents::MAX / 4);
+        c.cash = 5_000_000_00;
+        let b = MarketBus { file: "Vehicles/MB_Citaro/Citaro.bus".into(), name: "Citaro".into(), kind: BusKind { size: BusSize::Solo, drive: Drive::Diesel }, ..Default::default() };
+        let l1 = market::lease(&mut c, &b, "").unwrap();
+        let l2 = market::lease(&mut c, &b, "").unwrap();
+        let own = market::buy_new(&mut c, &b, Payment::Cash, "").unwrap();
+        store::save(&data, &c).unwrap();
+        let mut g = store::load(&data, "umove.hq").unwrap();
+        let around = Around { running: vec![], depot_price: 0, maps: vec![], time: String::new(), bus_move: (5000_00, 2), players: Vec::new() };
+        let v = view(&data, &g, "p1", &around);
+        let depot = v["fleet"].as_array().unwrap().iter().find(|d| d["id"] == "umove").unwrap().clone();
+        let leased: Vec<&Value> = depot["buses"].as_array().unwrap().iter().filter(|x| !x["lease"].is_null()).collect();
+        assert_eq!(leased.len(), 2);
+        assert!(leased[0]["lease"]["back"].as_i64().unwrap() > 0);
+        assert_eq!(act(&data, &mut g, ("p1", "Mathias"), "give_back", &json!({ "depot": "umove", "buses": [own] }), 1), Err(NOT_LEASED));
+        act(&data, &mut g, ("p1", "Mathias"), "give_back", &json!({ "depot": "umove", "buses": [l1, l2] }), 1).unwrap();
+        assert_eq!(act(&data, &mut g, ("p1", "Mathias"), "give_back", &json!({ "depot": "umove", "buses": [l1] }), 1), Err(GIVEN_BACK_ALREADY));
+        assert_eq!(orders_waiting(&data, &c).len(), 2);
+        assert!(take_orders(&data, &mut c));
+        assert_eq!(c.fleet.iter().map(|v| v.id).collect::<Vec<_>>(), vec![own]);
+        assert_eq!(c.inbox.messages.iter().filter(|m| m.title == ORDER_GIVEN_BACK.0).count(), 2);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
     /// (NexiconDK, 2 November 2026) The owner closes a depot: at its next step its own buses are on
     /// their way to the depot he chose, the rest of it wound up and what is left the treasury's; its
     /// rule and its manager's role go at once; ordered once, by the owner alone. The head office

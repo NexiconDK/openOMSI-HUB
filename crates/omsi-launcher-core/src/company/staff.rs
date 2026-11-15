@@ -158,6 +158,9 @@ pub fn drives(e: &Employee) -> bool {
 
 /// The roles besides the drivers: they work by their role's hours (`Hours`).
 pub const OTHERS: [Role; 5] = [Role::Mechanic, Role::Researcher, Role::Cleaner, Role::Service, Role::Inspector];
+/// (15 November 2026) Every role paid by its shifts: the others, and the operations assistants -
+/// who work by their own shift plan (`ops_assistant`), not by a role's hours.
+pub const PAID: [Role; 6] = [Role::Mechanic, Role::Researcher, Role::Cleaner, Role::Service, Role::Inspector, Role::Operations];
 
 /// A role's name for many ("Mechanics"; English, translated when shown).
 pub fn plural(role: Role) -> &'static str {
@@ -168,6 +171,7 @@ pub fn plural(role: Role) -> &'static str {
         Role::Cleaner => "Cleaners",
         Role::Service => "Service employees",
         Role::Inspector => "Ticket inspectors",
+        Role::Operations => "Operations assistants",
     }
 }
 
@@ -180,6 +184,7 @@ pub fn activity(role: Role) -> &'static str {
         Role::Cleaner => "Cleaning buses",
         Role::Service => "Working in the service centre",
         Role::Inspector => "Checking tickets",
+        Role::Operations => "Running the day while no boss is online",
     }
 }
 
@@ -192,6 +197,7 @@ pub fn icon(role: Role) -> &'static str {
         Role::Cleaner => "cleaning_services",
         Role::Service => "support_agent",
         Role::Inspector => "confirmation_number",
+        Role::Operations => "headphones",
     }
 }
 
@@ -203,6 +209,7 @@ fn key(role: Role) -> &'static str {
         Role::Cleaner => "cleaner",
         Role::Service => "service",
         Role::Inspector => "inspector",
+        Role::Operations => "operations",
     }
 }
 
@@ -300,6 +307,7 @@ pub fn courses_for(role: Role) -> &'static [CourseKind] {
         Role::Researcher | Role::Cleaner => &[CourseKind::FirstAid],
         Role::Service => &[CourseKind::CustomerService, CourseKind::FirstAid],
         Role::Inspector => &[CourseKind::CustomerService, CourseKind::Ticketing, CourseKind::FirstAid],
+        Role::Operations => &[CourseKind::CustomerService, CourseKind::FirstAid],
     }
 }
 
@@ -313,6 +321,10 @@ pub fn hireable(c: &Company, role: Role) -> Result<(), &'static str> {
     // `live_pay` K4)
     if role == Role::Driver {
         super::live_pay::may_hire_driver(c)?;
+    }
+    // (15 November 2026: the operations assistants, on a server's company only)
+    if role == Role::Operations {
+        super::ops_assistant::hireable(c)?;
     }
     Ok(())
 }
@@ -589,6 +601,10 @@ pub fn shifts(c: &Company, date: &str, role: Role) -> (Vec<Shift>, i32) {
     if role == Role::Driver {
         return (Vec::new(), 0);
     }
+    // (15 November 2026: the operations assistants work the shifts of their own plan)
+    if role == Role::Operations {
+        return (super::ops_assistant::day_shifts(c, date), 0);
+    }
     // (NexiconDK, ticket inspection round T: on a day the boss planned, the inspectors work the
     // hours of their inspection duties - who has none, the core hours: `inspection_plan`)
     if role == Role::Inspector {
@@ -624,7 +640,7 @@ pub fn shifts(c: &Company, date: &str, role: Role) -> (Vec<Shift>, i32) {
 
 /// The shifts of every role besides the drivers on `date`.
 pub fn all_shifts(c: &Company, date: &str) -> Vec<Shift> {
-    OTHERS.iter().flat_map(|r| shifts(c, date, *r).0).collect()
+    PAID.iter().flat_map(|r| shifts(c, date, *r).0).collect()
 }
 
 /// Someone's shift on `date` (None: a driver, or not at work).
@@ -838,7 +854,7 @@ pub fn roles_day(c: &mut Company, date: &str, report: &mut super::day::DayReport
     let mut all: Vec<Shift> = Vec::new();
     let mut pressure: Vec<(Role, f64)> = Vec::new();
     // 1. the hours paid, role by role
-    for role in OTHERS {
+    for role in PAID {
         let (sh, uncovered) = shifts(c, date, role);
         let (want, got) = workload(c, date, role, &sh);
         pressure.push((role, if want > 0.0 && role != Role::Researcher { ((want / got.max(0.1) - 1.0) * 1.5).clamp(0.0, 1.0) } else { 0.0 }));
@@ -1221,6 +1237,7 @@ fn legacy_market_wage(role: Role, experience: f64, price_index: f64) -> Cents {
         Role::Cleaner => (2_250_00.0, 350_00.0),
         Role::Service => (2_550_00.0, 650_00.0),
         Role::Inspector => (2_600_00.0, 600_00.0),
+        Role::Operations => (2_900_00.0, 800_00.0),
     };
     let x = experience.clamp(0.0, 100.0) / 100.0;
     (((base + top * x) * price_index / 10_00.0).round() as Cents) * 10_00
@@ -1316,6 +1333,10 @@ pub fn market(c: &Company) -> Vec<Applicant> {
     let mut out = drivers_market(c, &mut used);
     for role in OTHERS {
         out.extend(role_market(c, role, &mut used));
+    }
+    // (15 November 2026: operations assistants apply to a server's company only)
+    if super::ops_assistant::hireable(c).is_ok() {
+        out.extend(role_market(c, Role::Operations, &mut used));
     }
     // (a face of their gender's: the men's faces for men's names, the women's for women's)
     let mut free = free_portraits(c, &held_portraits(c));
@@ -2110,6 +2131,7 @@ mod tests {
         let (id0, week) = (c.id.clone(), c.taken.clone());
         let mut round = 0;
         while ids.len() < n {
+            assert!(round < 500, "no applicants of {role:?}");
             for a in applicants_of(c, role) {
                 if ids.len() < n {
                     ids.push(hire(c, &a).unwrap());
@@ -2133,7 +2155,13 @@ mod tests {
         let all = market(&c);
         for role in Role::ALL {
             let mine: Vec<&Applicant> = all.iter().filter(|a| a.role == role).collect();
-            assert_eq!(mine.len(), if role == Role::Driver { 6 } else { 3 }, "{role:?}");
+            // (15 November 2026: operations assistants apply to a server's company only)
+            let want = match role {
+                Role::Driver => 6,
+                Role::Operations => 0,
+                _ => 3,
+            };
+            assert_eq!(mine.len(), want, "{role:?}");
             // (wages around the role's market)
             for a in mine {
                 let m = market_wage(role, a.experience, &Level::of(&c)) as f64;
@@ -2154,6 +2182,10 @@ mod tests {
         assert_eq!(e.role, Role::Inspector);
         assert!(!drives(e) && e.types.is_empty());
         assert_eq!(applicants_of(&c, Role::Inspector).len(), 2);
+        // (on a server: three operations assistants apply too)
+        c.online.on_server = true;
+        assert_eq!(applicants_of(&c, Role::Operations).len(), 3);
+        c.online.on_server = false;
     }
 
     #[test]
@@ -2179,7 +2211,8 @@ mod tests {
         }
         assert!(unique(&faces(&c)));
         // many weeks of hiring: still no face twice, and new faces before old ones
-        for role in Role::ALL {
+        // (the operations assistants apply to a server's company only)
+        for role in Role::ALL.into_iter().filter(|r| *r != Role::Operations) {
             hire_n(&mut c, role, 8);
         }
         assert!(unique(&faces(&c)));

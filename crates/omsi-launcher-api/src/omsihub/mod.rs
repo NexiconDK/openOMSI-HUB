@@ -96,6 +96,7 @@ pub const TABLES: &[(&str, &str)] = &[
     ("relief.yml", include_str!("../../../omsi-app/locales/relief.yml")),
     ("nearby.yml", include_str!("../../../omsi-app/locales/nearby.yml")),
     ("ramp.yml", include_str!("../../../omsi-app/locales/ramp.yml")),
+    ("drift.yml", include_str!("../../../omsi-app/locales/drift.yml")),
 ];
 
 /// Upstream's tables with ours taken in: a text upstream's `app.yml` has keeps its

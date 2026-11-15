@@ -353,6 +353,8 @@ pub fn minimum(c: &Company, role: Role) -> usize {
                 0
             }
         }
+        // (the operations assistants are the boss's to plan: `ops_assistant`)
+        Role::Operations => 0,
     }
 }
 

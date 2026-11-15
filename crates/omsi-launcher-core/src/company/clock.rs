@@ -697,6 +697,10 @@ fn begin_day(c: &mut Company, w: &mut dyn World) -> Result<(), String> {
     if c.game_mode.rules().repair_roster && !c.online.on_server {
         let r = plan::repair_day(c, &date, tours.clone());
         plan::tell_repaired(c, &r);
+    } else if c.game_mode.rules().repair_roster {
+        // (NexiconDK, 15 November 2026: on a server an operations assistant repairs it while no
+        // boss is online - `ops_assistant::morning`)
+        super::ops_assistant::morning(c, &date, tours.clone());
     }
     let mut dp = plan::day_plan(c, &date, tours.clone(), &[], &[], false);
     // (decided 26 October 2026: the players the roster gives duties of the day - theirs now)
@@ -1269,6 +1273,23 @@ fn unfilled(c: &mut Company, at: i64, w: &mut dyn World, run: &mut Run) {
     }
 }
 
+/// (NexiconDK, 15 November 2026) Every `ops_assistant::EVERY` minutes of the company's clock the
+/// operations assistant at his desk looks at the day (`ops_assistant::look`).
+fn assistant(c: &mut Company, at: i64, w: &mut dyn World, run: &mut Run) {
+    let day0 = moment(&c.date, 0);
+    if at < day0 || at >= day0 + DAY || !super::ops_assistant::due(c, at) || super::ops_assistant::covering(c).is_none() || !super::pro_duties::on(c) {
+        return;
+    }
+    let date = c.date.clone();
+    let Ok(lines) = w.lines(c, &date) else { return };
+    let tours = super::network::in_service_only(super::network::tours_of_day(c, &lines, &date));
+    let dp = super::plan::day_plan(c, &date, tours, &[], &[], false);
+    let duties = super::pro_turnus::day_duties(c, &date, dp.tours.iter().map(|t| t.tour.clone()).collect());
+    for item in super::ops_assistant::look(c, &dp, &duties, (at - day0) as i32) {
+        tell(c, run, item.at, &item.text, item.args, item.level);
+    }
+}
+
 fn hook(c: &mut Company, at: i64, quick: bool, run: &mut Run) {
     for item in on_minute(c, at) {
         if item.level == Level::Bad && !quick && c.clock.ask.is_none() {
@@ -1341,6 +1362,11 @@ pub fn advance(c: &mut Company, to: i64, w: &mut dyn World, quick: bool) -> Resu
         // (only near where the clock goes: a long catch-up does not look at every day it passes)
         if to - limit <= super::pro_watch::EVERY {
             unfilled(c, limit, w, &mut run);
+        }
+        // (NexiconDK, 15 November 2026: the operations assistant at his desk while no boss is
+        // online - `ops_assistant`)
+        if to - limit <= super::ops_assistant::EVERY {
+            assistant(c, limit, w, &mut run);
         }
         // (service control: the buses running late told, Casual's controller acting)
         super::control::watch_day(c, w, quick, &mut run)?;

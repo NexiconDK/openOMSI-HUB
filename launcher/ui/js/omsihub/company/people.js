@@ -59,7 +59,7 @@ export function PeoplePage() {
   const per = Math.max(1, Math.floor((size.w - nameW - 12) / 150));
   const v = useView('people', { ...st, per }, size.w > 0);
   if (!v?.tabs) return html`<div ref=${ref} style="height:100%"></div>`;
-  const tabsW = Math.min(v.tabs.length >= 8 ? 1320 : v.tabs.length >= 7 ? 1180 : v.tabs.length >= 5 ? 1040 : 420, size.w);
+  const tabsW = Math.min(v.tabs.length >= 9 ? 1460 : v.tabs.length >= 8 ? 1320 : v.tabs.length >= 7 ? 1180 : v.tabs.length >= 5 ? 1040 : 420, size.w);
   const b = v.body;
   let body = null;
   if (b.kind === 'person') body = html`<${Person} p=${b} />`;
@@ -71,12 +71,56 @@ export function PeoplePage() {
   else if (b.kind === 'agencies') body = html`<${Agencies} a=${b} st=${st} />`;
   else if (b.kind === 'settings') body = html`<${Rules} r=${b} />`;
   else if (b.kind === 'inspection') body = html`<${Inspection} b=${b} />`;
+  else if (b.kind === 'desk') body = html`<${Desk} d=${b} />`;
   return html`<div ref=${ref} style="height:100%;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:20px;flex:none;height:40px">
       <${Seg} value=${v.tab} options=${v.tabs.map((t, k) => [k, t])} onChange=${(k) => setUi('people', { tab: k, open: null })} style=${`width:${tabsW}px;height:40px`} />
       ${size.w - tabsW > 320 && html`<span class="co-note grow cut" style="text-align:right">${v.info}</span>`}
     </div>
     <div style="flex:1;min-height:0;margin-top:18px">${body}</div>
+  </div>`;
+}
+
+// --- the operations assistants (15 November 2026) --------------------------------------------
+
+/** The operations assistants' desk (`people/desk.rs`): who is at it now, the week's shift plan
+ * (early, late, night for every day), filled at once or by hand, the agency, what they did. */
+function Desk({ d }) {
+  const names = d.choices.map((x) => x.name);
+  const hire = html`<${Btn} kind="primary" icon="groups" label=${d.hire} onClick=${() => setUi('people', { tab: 1, hire_role: d.hire_role })} />`;
+  return html`<div class="co-scroll" style="height:100%">
+    <div class="co-desk">
+      <p class="co-para" style="max-width:980px;margin:0">${d.say}</p>
+      <div class=${'co-desk-now t-' + d.now_tone}><${Icon} name="headphones" size=${20} /><span>${d.now}</span></div>
+      ${d.none ? html`<p class="co-para t-soft">${d.none}</p><div>${hire}</div>` : html`
+        <div class="co-desk-tools">
+          <${Btn} kind="primary" icon="autorenew" label=${d.fill} title=${d.fill_tip} onClick=${() => act('desk_fill')} />
+          <${Btn} icon="delete" label=${d.clear} onClick=${() => act('desk_clear')} />
+          <span class="grow"></span>
+          ${hire}
+        </div>
+        <div class="co-desk-grid" style="grid-template-columns: 150px repeat(7, minmax(96px, 1fr))">
+          <span></span>${d.days.map((x) => html`<b class="day">${x}</b>`)}
+          ${d.rows.map((r, s) => html`
+            <span class="shift"><b>${r.name}</b><span class="t-dim">${r.hours}</span></span>
+            ${r.cells.map((cell, day) => {
+              const k = Math.max(0, d.choices.findIndex((x) => x.id === cell.id));
+              return html`<span class=${'cell' + (cell.id ? ' on' : '')}><${Select} value=${k} options=${names} h=${34} style="width:100%"
+                onChange=${(i) => act('desk_slot', { shift: s, day, id: d.choices[i]?.id || 0 })} /></span>`;
+            })}`)}
+        </div>
+        <${Switch} checked=${d.agency} label=${d.agency_label} onChange=${(on) => act('desk_agency', { on })} />
+        ${d.agency_note && html`<p class="co-note t-warn" style="margin:0">${d.agency_note}</p>`}
+        <div class="co-desk-cols">
+          <${Section} title=${d.staff_caps}>
+            ${d.staff.map((e) => html`<div class="co-desk-person"><${Portrait} n=${e.portrait} name=${e.name} size=${36} />
+              <span class="grow"><b>${e.name}</b><br /><span class="t-dim">${e.shifts}</span>${e.away && html`<br /><span class="t-warn">${e.away}</span>`}</span></div>`)}
+          </${Section}>
+          <${Section} title=${d.log_caps}>
+            ${d.log.length === 0 ? html`<p class="t-dim">${d.no_log}</p>` : d.log.map((x) => html`<div class="co-desk-log"><span class="t-dim">${x.when}</span><span>${x.text}</span></div>`)}
+          </${Section}>
+        </div>`}
+    </div>
   </div>`;
 }
 

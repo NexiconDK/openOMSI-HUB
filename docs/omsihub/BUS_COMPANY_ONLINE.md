@@ -1957,3 +1957,55 @@ arbejde" tab (`pro_avail`) already took a player's own days.
 **Not done:** players have no RAM frame, so a swap is not checked against one. RosterFlow Pro's
 automatic rota plans the staff, not the players, so wishes steer the giving and asking of duties
 rather than the rota builder.
+
+## Leased buses given back together, and the operations assistants (15 November 2026)
+
+The player's request (NexiconDK): "nemmere at se en liste over leasede busser ... og en nemmere
+måde at markere de busser man vil aflevere tilbage før tid", and "en Drifts Assistent som kan
+overvåge sygemeldinger osv. og kører biksen mens man er offline ... Evt. en vagtplan over Drift
+Assistenter". His choices: the assistant takes over when no boss is online. He handles sick
+calls and open duties, breakdowns and the agency. His shifts are a fixed plan of early, late and
+night for every weekday. The leasing list is both on the depot's fleet page and in the head
+office.
+
+**Leased buses** (`market::leased`, `give_back_cost`, `give_back`)
+- The fleet page has a tab "Leasing (n)", second, with every leased bus. Each row shows when the
+  lease ends (the soonest first), the monthly rate, what giving it back now costs (three monthly
+  rates, `sale_offer`) and whether it is planned on a tour today.
+- Ticked buses are given back together after one confirmation (`confirm`'s `give_back`, the bus
+  ids in `name`). The confirmation states the fees, the month's rates up to today and what the
+  company saves each month. If the cash does not cover them all, none goes back.
+- The head office's Fleet and staff tab lists every depot's leased buses (`server_hq::view` gives
+  each leased bus its `lease`). The ticked ones become one order per bus (`give_back`), which the
+  depot carries out at its next step (`take_orders`: `ORDER_GIVEN_BACK` in its inbox). A bus
+  already ordered back is refused (`GIVEN_BACK_ALREADY`), and so is one that is not leased
+  (`NOT_LEASED`).
+
+**Operations assistants** (`ops_assistant.rs`, the Staff page's last tab `people/desk.rs`)
+- `Role::Operations` is hired like the other staff, on a server's company only
+  (`ops_assistant::hireable`; no applicants or chip appear off the server). The wage is about a
+  driver's, paid by the shifts of the plan (`staff::PAID`, `ops_assistant::day_shifts`).
+- The shift plan (`Desk::grid`) has three shifts for each weekday: early 04-12, late 12-20 and
+  night 20-04. Each shift has one assistant or nobody. An assistant works at most five shifts a
+  week, with eleven hours between two shifts (the week wraps round). Shifts can be set by hand
+  (`set_slot`) or filled at once (`auto_fill`: nights first, the fewest shifts first, keeping to
+  yesterday's shift). An assistant who is ill, on holiday or on a course is not at the desk.
+- He runs the day (`covering`) while he is on shift and no owner, co-owner or manager is online.
+  The company's process sets `Desk::chiefs_online` in `together::host::watch`.
+- Every five minutes he looks at the day (`clock` → `ops_assistant::look`, RosterFlow Pro). He
+  takes the first duty without a driver that signs on within three hours and gives it to the
+  first of the company's drivers who can take it (`pro_ops::candidates`). That driver's sick call
+  counts as seen.
+- If nobody of the company can take it, an agency driver is sent (`Fill::Agency`), where the
+  server lets agency drivers run duties and the desk allows it (`Desk::no_agency`). Otherwise the
+  log says the duty falls out. He handles one duty per look, and each duty is logged once.
+- With the standard planner, the assistant on the early shift (or on at midnight) repairs the
+  morning's roster as off the server (`ops_assistant::morning` → `plan::repair_day`).
+- While he runs the day he counts as the dispatcher on duty (`live_more::dispatcher_on`), so the
+  spare bus for a breakdown leaves sooner.
+- What he did goes into the feed and his log (`Desk::log`, the last 80), and the tab shows it.
+
+Tested: `ops_assistant::tests` (the plan's rules and filling it, who is at the desk, a sick
+driver's duty given to a colleague, told once), `market::tests::several_leased_buses_go_back_at_once`,
+`server_hq::tests::the_head_office_gives_a_depots_leased_buses_back`, the translations
+`people::desk::tests`.

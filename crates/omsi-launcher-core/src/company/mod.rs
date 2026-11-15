@@ -75,6 +75,7 @@ pub mod model;
 pub mod names;
 pub mod network;
 pub mod ontime;
+pub mod ops_assistant;
 // (NexiconDK: Bus Company Online - the companies on the main server, and the main server itself)
 pub mod main_server;
 pub mod online;
@@ -288,6 +289,7 @@ pub fn found(f: &Founding, profile: &str) -> Company {
         ontime: Default::default(),
         inspection: Default::default(),
         inspection_plan: Default::default(),
+        ops_desk: Default::default(),
     };
     // (Casual buys quickly; the buying chosen is kept for the other modes)
     autopilot::set_game_mode(&mut c, f.game_mode);

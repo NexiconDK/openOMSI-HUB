@@ -483,9 +483,48 @@ function HqDepotFleet({ d, h, act, busy }) {
   </${Section}>`;
 }
 
+/** (NexiconDK, 15 November 2026) The group's leased buses, every depot's: ticked, and given back
+ * early by an order to each depot (asked first, with what each costs). */
+function HqLeased({ h, act, busy }) {
+  const w = h.words;
+  const rows = h.fleet.flatMap((d) => d.buses.filter((b) => b.lease && !d.orders.some((o) => o.includes(b.label))).map((b) => ({ ...b, depot: d.id, depot_name: d.name })));
+  const [ticked, setTicked] = useState([]);
+  const [asking, setAsking] = useState(false);
+  const key = (r) => `${r.depot}/${r.id}`;
+  const here = ticked.filter((k) => rows.some((r) => key(r) === k));
+  const chosen = rows.filter((r) => here.includes(key(r)));
+  const flip = (r) => setTicked(here.includes(key(r)) ? here.filter((k) => k !== key(r)) : [...here, key(r)]);
+  const go = async () => {
+    setAsking(false);
+    for (const d of [...new Set(chosen.map((r) => r.depot))]) {
+      await act('give_back', { depot: d, buses: chosen.filter((r) => r.depot === d).map((r) => r.id) });
+    }
+    setTicked([]);
+  };
+  return html`<${Section} title=${`${w.leased_caps} · ${rows.length}`}>
+    <p class="co-para dim">${w.leased_say}</p>
+    ${rows.length === 0 ? html`<p class="dim">${w.leased_none}</p>` : html`
+      <div class="bco-hq-list">${rows.map((r) => html`<label class="bco-hq-row bco-hq-lease">
+        <input type="checkbox" checked=${here.includes(key(r))} onChange=${() => flip(r)} />
+        <span class="cut grow"><b>${r.label}</b> <span class="dim">· ${r.depot_name}</span></span>
+        <span class="dim cut">${r.lease.rate}</span><span class="dim cut">${r.lease.until}</span><span class="cut">${r.lease.back}</span>
+      </label>`)}</div>
+      <div class="bco-hq-line"><span class="grow"></span>
+        <${Btn} label=${here.length === rows.length ? w.none : w.all} onClick=${() => setTicked(here.length === rows.length ? [] : rows.map(key))} />
+        <${Btn} kind="danger" icon="exit_to_app" label=${`${w.give_back} (${here.length})`} disabled=${busy || !here.length} onClick=${() => setAsking(true)} />
+      </div>`}
+    ${asking && html`<${Dialog} icon="warning" title=${w.give_back_ask.replace('%{n}', String(chosen.length))} w=${560} onClose=${() => setAsking(false)}
+      foot=${html`<span class="rest"></span><${Btn} label=${w.cancel} onClick=${() => setAsking(false)} /><${Btn} kind="danger" icon="exit_to_app" label=${w.yes} disabled=${busy} onClick=${go} />`}>
+      <p class="co-para">${w.leased_say}</p>
+      ${chosen.map((r) => html`<p class="bco-hq-note">${r.label} · ${r.depot_name} — ${r.lease.back}</p>`)}
+    </${Dialog}>`}
+  </${Section}>`;
+}
+
 /** Fleet and staff across the depots. */
 function HqFleet({ h, act, busy }) {
   return html`<div class="bco-hq-col">
+    <${HqLeased} h=${h} act=${act} busy=${busy} />
     <p class="co-para dim">${h.move_say} ${h.lend_say}</p>
     ${h.fleet.map((d) => html`<${HqDepotFleet} key=${d.id} d=${d} h=${h} act=${act} busy=${busy} />`)}
   </div>`;

@@ -6,6 +6,7 @@
 //! the ticket inspectors' checks and the lines' fare dodgers (`inspection`, round S).
 
 pub mod agencies;
+pub mod desk;
 pub mod holidays;
 pub mod inspection;
 
@@ -21,7 +22,7 @@ use omsi_launcher_lib::company::pro_turnus as pt;
 use omsi_launcher_lib::company::{self as co, Company, Employee, Employment, Frame, Licence, Role};
 use serde_json::{json, Value};
 
-pub const TABS: [&str; 8] = ["My employees", "Hire employees", "Licences & training", "Work schedule", "Holidays", "Agencies", "Settings", "Ticket inspection"];
+pub const TABS: [&str; 9] = ["My employees", "Hire employees", "Licences & training", "Work schedule", "Holidays", "Agencies", "Settings", "Ticket inspection", "Operations assistants"];
 const SORTS: [&str; 6] = ["Name", "Role", "Wage", "Level", "Satisfaction", "Stress"];
 /// Said under a lock Casual does not open by itself.
 const NOT_RESEARCHED_BY_ITSELF: &str = "Casual does not research this by itself: switch to Normal and start it on its Research page.";
@@ -482,8 +483,10 @@ fn person(c: &Company, plan: Option<&Plan>, e: &Employee) -> Value {
 
 fn hire_part(c: &Company, ui: &Value) -> Value {
     let market = staff::market(c);
-    let pick = ui.get("hire_role").and_then(Value::as_u64).unwrap_or(0).min(Role::ALL.len() as u64 - 1) as usize;
-    let chips: Vec<String> = Role::ALL.iter().map(|r| format!("{}  {}", tr(staff::plural(*r)), market.iter().filter(|a| a.role == *r).count())).collect();
+    // (15 November 2026: the operations assistants - the last role - on a server's company only)
+    let roles = if co::ops_assistant::hireable(c).is_ok() { Role::ALL.len() } else { Role::ALL.len() - 1 };
+    let pick = ui.get("hire_role").and_then(Value::as_u64).unwrap_or(0).min(roles as u64 - 1) as usize;
+    let chips: Vec<String> = Role::ALL.iter().take(roles).map(|r| format!("{}  {}", tr(staff::plural(*r)), market.iter().filter(|a| a.role == *r).count())).collect();
     let role = Role::ALL[pick];
     let mut foot = trf("New applicants come on %{date}. Every role has its own market: wages around what the market pays for their experience.", &[("date", &day_label(&co::network::next_monday(c)))]);
     // (NexiconDK, 3 November 2026: the AI drivers left in the map's pool on the server - `live_pay`, K4)
@@ -755,7 +758,9 @@ fn settings_part(c: &Company) -> Value {
 pub fn view(s: &mut Session, ui: &Value) -> Value {
     let Some(c) = s.company.clone() else { return Value::Null };
     let tab = ui.get("tab").and_then(Value::as_u64).unwrap_or(0).min(TABS.len() as u64 - 1) as usize;
-    let shown = if co::autopilot::on(&c) && tab < 2 { 2 } else { TABS.len() };
+    // (15 November 2026: the operations assistants' tab on a server's company only - the last)
+    let shown = if co::autopilot::on(&c) && tab < 2 { 2 } else if c.online.on_server { TABS.len() } else { TABS.len() - 1 };
+    let tab = tab.min(shown - 1);
     let tabs: Vec<String> = TABS.iter().enumerate().take(shown).map(|(k, t)| if k == 0 { format!("{} ({})", tr(t), c.staff.len()) } else { tr(t) }).collect();
     let wages: i64 = c.staff.iter().map(|e| staff::monthly_cost(&c, e)).sum();
     let duties: usize = s.plan.as_ref().map(|p| p.tours.iter().filter(|t| !t.by_player && !t.live && !t.tour.unplanned).map(|t| t.duties.len()).sum()).unwrap_or(0);
@@ -774,6 +779,7 @@ pub fn view(s: &mut Session, ui: &Value) -> Value {
         5 => agencies::part(&c, aplan.as_ref(), ui),
         6 => settings_part(&c),
         7 => inspection::part(&c, ui, &stops, &names),
+        8 => desk::part(&c),
         _ => list_part(&c, plan.as_ref(), ui),
     };
     json!({ "tabs": tabs, "tab": tab, "info": trf("Wages %{amount} a month with the employer's share  ·  %{n} duties today", &[("amount", &eur(wages)), ("n", &duties.to_string())]), "body": body })
@@ -955,6 +961,7 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Result<Value, St
                 Ok(())
             }))
         }
+        w if w.starts_with("desk_") => return desk::act(s, w, args),
         _ => return None,
     })
 }

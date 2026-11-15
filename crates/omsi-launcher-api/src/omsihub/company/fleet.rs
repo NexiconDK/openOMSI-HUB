@@ -41,10 +41,21 @@ pub fn view(s: &mut Session, ui: &Value) -> Value {
     let Some(c) = s.company.clone() else { return Value::Null };
     let tab = ui.get("tab").and_then(Value::as_u64).unwrap_or(0) as usize;
     // (Casual: the buses and the dealer; the advertising runs on as it was signed)
-    let shown = if co::autopilot::on(&c) && tab < 2 { 2 } else { 3 };
-    let tabs: Vec<String> = [trf("Our buses (%{n})", &[("n", &c.fleet.len().to_string())]), tr("Dealer"), tr("Advertising")].into_iter().take(shown).collect();
-    let mut out = json!({ "tabs": tabs, "tab": tab.min(2) });
+    let casual = co::autopilot::on(&c) && tab != 2;
+    // (NexiconDK, 15 November 2026: the leased buses on a tab of their own, after our buses - its
+    // key 3, the others' keys as they were; `order` is how they are shown)
+    let leased = market::leased(&c).len();
+    let tabs: Vec<Value> = vec![
+        json!(trf("Our buses (%{n})", &[("n", &c.fleet.len().to_string())])),
+        json!(tr("Dealer")),
+        if casual { Value::Null } else { json!(tr("Advertising")) },
+        json!(trf("Leasing (%{n})", &[("n", &leased.to_string())])),
+    ];
+    let order: Vec<usize> = if casual { vec![0, 3, 1] } else { vec![0, 3, 1, 2] };
+    let tab = if order.contains(&tab) { tab } else { 0 };
+    let mut out = json!({ "tabs": tabs, "order": order, "tab": tab });
     out["body"] = match tab {
+        3 => leasing(&c, s.plan.as_ref()),
         2 => adverts(&c),
         1 => Value::Null,
         _ => {
@@ -79,6 +90,44 @@ fn our_buses(c: &Company, plan: Option<&co::day::Plan>, left: &std::collections:
     json!({
         "kind": "buses", "order": order, "buses": buses,
         "empty": tr("The fleet is empty. Buy buses at the dealer - new, second-hand or one of the day's offers - or lease one for years or rent one for a few days: each is a bus installed in your OMSI."),
+        "to_dealer": tr("To the dealer"),
+    })
+}
+
+/// (NexiconDK, 15 November 2026: "nemmere at se en liste over leasede busser ... og en nemmere
+/// måde at markere de busser man vil aflevere tilbage før tid") The leased buses as a list: when
+/// each lease ends, its rate, what giving it back today costs, whether it runs today; ticked ones
+/// are given back together (`confirm`'s `give_back`).
+fn leasing(c: &Company, plan: Option<&co::day::Plan>) -> Value {
+    let list = market::leased(c);
+    let monthly_all: co::Cents = list.iter().map(|v| match v.tenure {
+        Tenure::Leased { monthly, .. } => monthly,
+        _ => 0,
+    }).sum();
+    let rows: Vec<Value> = list
+        .iter()
+        .map(|v| {
+            let Tenure::Leased { monthly, until, .. } = &v.tenure else { return Value::Null };
+            let days = co::dates::between(&c.date, until).max(0);
+            let left = if days >= 61 { trf("%{n} months left", &[("n", &(days as f64 / 30.44).round().to_string())]) } else { trf("%{n} days left", &[("n", &days.to_string())]) };
+            let runs = plan.is_some_and(|p| p.tours.iter().any(|t| t.bus == Some(v.id)));
+            json!({
+                "id": v.id, "number": v.number, "name": v.name, "file": v.bus, "livery": v.livery,
+                "rate": trf("%{amount} a month", &[("amount", &eur(*monthly))]),
+                "until": trf("Until %{date}", &[("date", &day_label(until))]), "left": left, "soon": days <= 60,
+                "cost": trf("Back now: %{amount}", &[("amount", &eur(-market::sale_offer(c, v)))]),
+                "runs": runs.then(|| tr("Runs today")),
+            })
+        })
+        .collect();
+    json!({
+        "kind": "leasing", "rows": rows,
+        "sum": trf("%{n} leased buses  ·  %{amount} a month in all", &[("n", &list.len().to_string()), ("amount", &eur(monthly_all))]),
+        "empty": tr("No leased buses. A new bus at the dealer can be leased: a rate every month instead of the price now."),
+        "say": tr("Tick the buses you want to give back before their lease ends. Each costs three monthly rates, and the month's rate up to today."),
+        "all": tr("Tick all"), "none": tr("Tick none"),
+        "button": tr("Give back the ticked buses"),
+        "runs_tip": tr("Planned on a tour today: the tour loses its bus when it goes back."),
         "to_dealer": tr("To the dealer"),
     })
 }

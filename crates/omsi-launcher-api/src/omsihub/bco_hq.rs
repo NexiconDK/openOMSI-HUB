@@ -206,7 +206,16 @@ fn view(h: &Value, cur: Currency) -> Value {
                     } else {
                         String::new()
                     };
-                    json!({ "id": v["id"], "label": format!("{} {}", s(v, "number"), s(v, "name")), "kind": tr(&s(v, "kind")), "owned": owned, "note": note })
+                    // (NexiconDK, 15 November 2026: a leased bus's lease, for the list of the group's
+                    // leased buses)
+                    let lease = v.get("lease").filter(|l| l.is_object()).map(|l| {
+                        json!({
+                            "rate": trf("%{amount} a month", &[("amount", &eur(n(l, "monthly")))]),
+                            "until": trf("Until %{date}", &[("date", &day_label(&s(l, "until")))]),
+                            "back": trf("Back now: %{amount}", &[("amount", &eur(n(l, "back")))]), "cost": n(l, "back"), "monthly": n(l, "monthly"),
+                        })
+                    });
+                    json!({ "id": v["id"], "label": format!("{} {}", s(v, "number"), s(v, "name")), "kind": tr(&s(v, "kind")), "owned": owned, "note": note, "lease": lease })
                 })
                 .collect();
             let staff: Vec<Value> = arr("staff")
@@ -228,6 +237,7 @@ fn view(h: &Value, cur: Currency) -> Value {
                 .map(|o| match s(o, "do").as_str() {
                     "move_bus" => trf("Ordered: %{what} to %{other}", &[("what", &s(o, "what")), ("other", &s(o, "to"))]),
                     "close" => trf("Ordered: %{what} closes", &[("what", &s(o, "what"))]),
+                    "give_back" => trf("Ordered: %{what} goes back to the leasing company", &[("what", &s(o, "what"))]),
                     _ => trf("Ordered: %{what} lent to %{other} for %{n} days", &[("what", &s(o, "what")), ("other", &s(o, "to")), ("n", &n(o, "days").to_string())]),
                 })
                 .collect();
@@ -307,6 +317,12 @@ fn view(h: &Value, cur: Currency) -> Value {
             "management": tr("Management"), "depot_manager": tr("Depot manager"), "remove": tr("Remove"),
             "player": tr("Player"), "role": tr("Role"), "give": tr("Give the role"), "no_members": tr("Nobody yet: the owner runs the group alone."),
             "buses": tr("Buses"), "staff": tr("Staff"), "move": tr("Move the bus"), "lend": tr("Lend"), "days": tr("Days"),
+            // (15 November 2026: the group's leased buses, ticked and given back early)
+            "leased_caps": tr("The group's leased buses"),
+            "leased_say": tr("Tick the leased buses to give back before their lease ends: each costs three monthly rates, paid by its depot, which does the order at its next step."),
+            "leased_none": tr("No depot has leased buses."),
+            "give_back": tr("Give back the ticked buses"), "give_back_ask": tr("Give back %{n} leased buses?"),
+            "all": tr("Tick all"), "none": tr("Tick none"), "yes": tr("Give back"),
             "on_way": tr("On the way"), "orders": tr("Orders waiting for the depot"), "no_buses": tr("No buses."), "no_staff": tr("No staff."),
             "depots": tr("Depots"), "asks": tr("Waiting for your approval"), "approve": tr("Approve"), "refuse": tr("Refuse"),
             "news": tr("News"), "no_news": tr("Nothing new."),

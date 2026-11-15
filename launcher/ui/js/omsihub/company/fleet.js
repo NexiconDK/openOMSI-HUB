@@ -14,11 +14,13 @@ export function FleetPage() {
   const st = ui('fleet', { tab: 0 });
   const v = useView('fleet', { tab: st.tab });
   if (!v?.tabs) return null;
-  const w = v.tabs.length === 2 ? 380 : 560;
+  // (15 November 2026: the tabs by their keys, shown in `order` - the Leasing tab, key 3, second)
+  const order = v.order || v.tabs.map((_, k) => k);
+  const w = order.length <= 2 ? 380 : order.length === 3 ? 560 : 720;
   return html`<div style="height:100%;display:flex;flex-direction:column">
-    <${Seg} value=${v.tab} options=${v.tabs.map((t, k) => [k, t])} onChange=${(k) => setUi('fleet', { tab: k })} style=${`width:${w}px;max-width:100%;height:40px;flex:none`} />
+    <${Seg} value=${v.tab} options=${order.map((k) => [k, v.tabs[k]])} onChange=${(k) => setUi('fleet', { tab: k })} style=${`width:${w}px;max-width:100%;height:40px;flex:none`} />
     <div style="flex:1;min-height:0;margin-top:16px">
-      ${v.tab === 1 ? html`<${DealerPage} />` : v.tab === 2 ? html`<${Adverts} a=${v.body} />` : html`<${Buses} b=${v.body} />`}
+      ${v.tab === 1 ? html`<${DealerPage} />` : v.tab === 2 ? html`<${Adverts} a=${v.body} />` : v.tab === 3 ? html`<${Leasing} l=${v.body} />` : html`<${Buses} b=${v.body} />`}
     </div>
   </div>`;
 }
@@ -99,6 +101,41 @@ function Buses({ b }) {
           </${BusTile}>`;
         })}
       </div>
+    </div>
+  </div>`;
+}
+
+// --- the leased buses (15 November 2026) ---------------------------------------------------
+
+/** The leased buses as a list (`fleet::leasing`): tick the ones to give back before their lease
+ * ends, and give them back together (the confirmation says what it costs). */
+function Leasing({ l }) {
+  const [ticked, setTicked] = useState([]);
+  if (!l || l.kind !== 'leasing') return null;
+  const here = ticked.filter((id) => l.rows.some((r) => r.id === id));
+  const flip = (id) => setTicked(here.includes(id) ? here.filter((x) => x !== id) : [...here, id]);
+  if (!l.rows.length) {
+    return html`<div><p class="co-para" style="max-width:860px;margin-top:4px">${l.empty}</p>
+      <${Btn} kind="primary" icon="directions_bus" label=${l.to_dealer} style="height:40px;margin-top:18px" onClick=${() => setUi('fleet', { tab: 1 })} /></div>`;
+  }
+  const give = () => setCo({ dialog: { kind: 'confirm', what: 'give_back', name: here.join(',') } });
+  return html`<div style="height:100%;display:flex;flex-direction:column">
+    <div class="co-lease-head">
+      <div class="grow"><b>${l.sum}</b><p class="co-para t-soft" style="margin:4px 0 0">${l.say}</p></div>
+      <${Btn} label=${here.length === l.rows.length ? l.none : l.all} onClick=${() => setTicked(here.length === l.rows.length ? [] : l.rows.map((r) => r.id))} />
+      <${Btn} kind="danger" icon="exit_to_app" label=${`${l.button} (${here.length})`} disabled=${!here.length} onClick=${give} />
+    </div>
+    <div class="co-scroll" style="flex:1;min-height:0;margin-top:12px">
+      ${l.rows.map((r) => html`<label class=${'co-lease' + (here.includes(r.id) ? ' on' : '')} data-bus=${r.id}>
+        <input type="checkbox" checked=${here.includes(r.id)} onChange=${() => flip(r.id)} />
+        <${Photo} file=${r.file} paint=${r.livery} name=${r.name} style="width:72px;height:40px;border-radius:6px;flex:none" />
+        <span class="who"><b>${r.number}</b><span class="cut">${r.name}</span></span>
+        <span class="rate">${r.rate}</span>
+        <span class="end"><span>${r.until}</span><span class=${r.soon ? 't-warn' : 't-dim'}>${r.left}</span></span>
+        <span class="cost">${r.cost}</span>
+        <span class="runs">${r.runs && html`<span class="t-warn" title=${l.runs_tip}><${Icon} name="schedule" size=${16} /> ${r.runs}</span>`}</span>
+        <button type="button" class="co-iconbtn" title=${r.name} onClick=${(e) => (e.preventDefault(), setCo({ dialog: { kind: 'vehicle', id: r.id } }))}><${Icon} name="open_in_new" size=${16} /></button>
+      </label>`)}
     </div>
   </div>`;
 }

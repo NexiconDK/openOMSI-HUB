@@ -1503,3 +1503,31 @@ button.co-top-crumb:hover { background: var(--hub-hover); color: var(--hub-text)
 .co-look3d .head { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 16px; flex: none; color: var(--hub-text); font-size: var(--co-body, 15px); }
 .co-look3d .stagebox { position: relative; flex: 1; min-height: 0; background: linear-gradient(#aebbe0, #8a94b4 52%, #6b6f7c); }
 .co-look3d .head .co-caps { margin-right: 2px; }
+
+/* the fleet's Leasing tab (15 November 2026): the leased buses ticked to give back together */
+.co-lease-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.co-lease-head .grow { flex: 1; min-width: 260px; }
+.co-lease { display: grid; grid-template-columns: 22px 72px minmax(120px, 1.4fr) 1fr 1.2fr 1fr minmax(90px, 0.8fr) 32px; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: var(--co-rows); }
+.co-lease:hover { background: rgba(var(--co-white), var(--aw-05)); }
+.co-lease.on { background: rgba(var(--co-white), var(--aw-08, 0.08)); }
+.co-lease .who { display: flex; flex-direction: column; min-width: 0; }
+.co-lease .photo { display: flex; align-items: center; justify-content: center; background: linear-gradient(#263046, #181f2e); color: #e8ebf2; font-size: 12px; font-weight: 700; overflow: hidden; }
+.co-lease .end { display: flex; flex-direction: column; font-size: var(--co-note); }
+.co-lease .rate, .co-lease .cost { font-size: var(--co-note); }
+.co-lease .runs span { display: inline-flex; align-items: center; gap: 4px; font-size: var(--co-note); }
+@media (max-width: 760px) { .co-lease { grid-template-columns: 22px 60px 1fr 1fr 32px; } .co-lease .rate, .co-lease .runs { display: none; } }
+
+/* the operations assistants' desk (15 November 2026) */
+.co-desk { display: flex; flex-direction: column; gap: 16px; padding-right: 8px; }
+.co-desk-now { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: var(--co-body); }
+.co-desk-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.co-desk-tools .grow { flex: 1; }
+.co-desk-grid { display: grid; gap: 8px; align-items: center; overflow-x: auto; }
+.co-desk-grid .day { text-align: center; font-size: var(--co-note); text-transform: capitalize; }
+.co-desk-grid .shift { display: flex; flex-direction: column; font-size: var(--co-note); }
+.co-desk-grid .cell { border-radius: 8px; }
+.co-desk-grid .cell.on { box-shadow: inset 3px 0 0 var(--co-ok, #3fb37f); }
+.co-desk-cols { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(320px, 2fr); gap: 18px; }
+.co-desk-person { display: flex; align-items: center; gap: 12px; padding: 6px 0; font-size: var(--co-rows); }
+.co-desk-log { display: grid; grid-template-columns: 110px 1fr; gap: 10px; padding: 4px 0; font-size: var(--co-note); }
+@media (max-width: 900px) { .co-desk-cols { grid-template-columns: 1fr; } }

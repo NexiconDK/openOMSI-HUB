@@ -342,3 +342,7 @@
 .tg-wish.prefer { background: color-mix(in srgb, var(--co-ok) 22%, transparent); border-color: var(--co-ok); font-weight: 700; }
 .tg-wish.avoid { background: color-mix(in srgb, var(--co-warn) 22%, transparent); border-color: var(--co-warn); font-weight: 700; }
 .tg-wish-h { width: 210px; }
+/* the head office's list of the group's leased buses (15 November 2026) */
+.bco-hq-lease { justify-content: flex-start; cursor: pointer; border-radius: 6px; padding: 2px 4px; }
+.bco-hq-lease:hover { background: rgba(var(--co-white), var(--aw-05)); }
+.bco-hq-lease > span:not(.grow) { flex: none; max-width: 22%; }

@@ -359,6 +359,8 @@ pub fn role_hour(role: Role) -> (f64, f64) {
         Role::Cleaner => (980.0, 0.12),
         Role::Service => (1100.0, 0.25),
         Role::Inspector => (1150.0, 0.20),
+        // (15 November 2026: control-room staff, about the drivers')
+        Role::Operations => (1300.0, 0.30),
     }
 }
 

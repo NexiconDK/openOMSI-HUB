@@ -462,7 +462,9 @@ pub fn set_dispatcher(c: &mut Company, guest: u32, name: &str, on: bool, now: u6
 
 /// K13: whether a player is on the dispatcher's duty.
 pub fn dispatcher_on(c: &Company) -> bool {
-    c.online.on_server && c.online.dispatcher.is_some()
+    // (NexiconDK, 15 November 2026: an operations assistant at his desk while no boss is online
+    // is the dispatcher on duty too - `ops_assistant`)
+    c.online.on_server && (c.online.dispatcher.is_some() || super::ops_assistant::covering(c).is_some())
 }
 
 /// K13: the dispatcher's duty ends when he is no longer online (`online`: is he?). Whether it did.

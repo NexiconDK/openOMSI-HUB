@@ -817,6 +817,9 @@ impl HostState {
         let now = here.now;
         let on = |g: u32| self.is_online(g, now);
         let off_duty = super::super::live_more::dispatcher_left(c, &on);
+        // (NexiconDK, 15 November 2026: a boss of the company online - its owner, a co-owner, a
+        // manager - runs the day himself; while none is, the operations assistant on shift does)
+        c.ops_desk.chiefs_online = self.online_now(now).any(|o| c.together.guest(o.guest).is_some_and(|g| matches!(g.role, super::roles::Role::CoOwner | super::roles::Role::Manager)));
         let silent: Vec<(u32, LeftWhy)> = self.online.iter().filter(|o| here.now.saturating_sub(o.seen) > LEFT_AFTER).map(|o| (o.guest, LeftWhy::Silent)).collect();
         let away: Vec<(u32, LeftWhy)> = self.gone.iter().copied().chain(silent).collect();
         for (guest, why) in away {

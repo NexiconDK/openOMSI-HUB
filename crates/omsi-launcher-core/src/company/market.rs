@@ -539,6 +539,57 @@ pub fn sell(c: &mut Company, id: u32) -> Result<Cents, &'static str> {
     Ok(amount)
 }
 
+/// (NexiconDK, 15 November 2026: "en nemmere måde at markere de busser man vil aflevere tilbage
+/// før tid") The leased buses of the fleet, the lease ending first first.
+pub fn leased(c: &Company) -> Vec<&Vehicle> {
+    let mut out: Vec<&Vehicle> = c.fleet.iter().filter(|v| matches!(v.tenure, Tenure::Leased { .. })).collect();
+    out.sort_by(|a, b| {
+        let end = |v: &Vehicle| match &v.tenure {
+            Tenure::Leased { until, .. } => until.clone(),
+            _ => String::new(),
+        };
+        end(a).cmp(&end(b)).then(a.number.cmp(&b.number))
+    });
+    out
+}
+
+/// What giving the leased buses `ids` back early costs together: the buses of them that are
+/// leased (others are left out), what giving them back costs (`sale_offer`, as a positive sum) and
+/// what they owe of the month up to today (`part_month`), and the monthly rates saved.
+pub fn give_back_cost(c: &Company, ids: &[u32]) -> (Vec<u32>, Cents, Cents, Cents) {
+    let today = c.date.clone();
+    let (mut found, mut fees, mut owed, mut monthly_all) = (Vec::new(), 0, 0, 0);
+    for id in ids {
+        let Some(v) = c.vehicle(*id) else { continue };
+        let Tenure::Leased { monthly, .. } = v.tenure else { continue };
+        if found.contains(id) {
+            continue;
+        }
+        found.push(*id);
+        fees += -sale_offer(c, v);
+        owed += -part_month(c, v, &today).iter().map(|p| p.1).sum::<Cents>();
+        monthly_all += monthly;
+    }
+    (found, fees, owed, monthly_all)
+}
+
+/// Give the leased buses `ids` back early, all at once (`sell` for each): refused as a whole when
+/// the cash does not cover them all. Returns how many went back and what it cost.
+pub fn give_back(c: &mut Company, ids: &[u32]) -> Result<(usize, Cents), &'static str> {
+    let (found, fees, owed, _) = give_back_cost(c, ids);
+    if found.is_empty() {
+        return Err("None of these buses is leased.");
+    }
+    if !c.can_pay(fees + owed) {
+        return Err("Not enough cash.");
+    }
+    let mut cost = 0;
+    for id in &found {
+        cost -= sell(c, *id)?;
+    }
+    Ok((found.len(), cost))
+}
+
 /// Send a bus to the workshop for a service: a job of the workshop's (`depot::order`) that
 /// the night starts, so the bus runs today and is in a bay tomorrow when one is free - back
 /// the day after, in the condition a service brings (the work is paid with the maintenance
@@ -843,6 +894,36 @@ pub(crate) mod tests {
         // a European bus keeps the company's plate
         let eu = buy_new(&mut c, &bus("Citaro", BusSize::Solo, Drive::Diesel), Payment::Cash, "").unwrap();
         assert!(c.vehicle(eu).unwrap().plate.starts_with("SB-K "));
+    }
+
+    /// (15 November 2026) The leased buses listed by when their lease ends, and several given back
+    /// at once: three monthly rates each, all or none when the cash is short.
+    #[test]
+    fn several_leased_buses_go_back_at_once() {
+        let mut c = company(GameMode::Normal);
+        c.cash = 5_000_000_00;
+        let solo = bus("Citaro", BusSize::Solo, Drive::Diesel);
+        let a = lease(&mut c, &solo, "").unwrap();
+        let b = lease(&mut c, &solo, "").unwrap();
+        let owned = buy_new(&mut c, &solo, Payment::Cash, "").unwrap();
+        if let Tenure::Leased { until, .. } = &mut c.fleet.iter_mut().find(|v| v.id == b).unwrap().tenure {
+            *until = "2027-01-01".into();
+        }
+        assert_eq!(leased(&c).iter().map(|v| v.id).collect::<Vec<_>>(), vec![b, a]);
+        let Tenure::Leased { monthly, .. } = c.vehicle(a).unwrap().tenure else { panic!() };
+        let (found, fees, _, saved) = give_back_cost(&c, &[a, b, owned, a]);
+        assert_eq!(found, vec![a, b]);
+        assert_eq!((fees, saved), (6 * monthly, 2 * monthly));
+        // short of cash: none goes back
+        let cash = c.cash;
+        c.cash = 3 * monthly;
+        assert_eq!(give_back(&mut c, &[a, b]), Err("Not enough cash."));
+        assert_eq!(c.fleet.len(), 3);
+        c.cash = cash;
+        let (n, cost) = give_back(&mut c, &[a, b, owned]).unwrap();
+        assert_eq!((n, cost), (2, 6 * monthly));
+        assert_eq!(c.fleet.iter().map(|v| v.id).collect::<Vec<_>>(), vec![owned]);
+        assert_eq!(give_back(&mut c, &[owned]), Err("None of these buses is leased."));
     }
 
     #[test]

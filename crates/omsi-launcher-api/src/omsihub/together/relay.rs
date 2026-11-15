@@ -147,7 +147,7 @@ fn act_need(act: &str, what: &str) -> Need {
         "dispatcher" => SERVICE,
         // the confirmed action is what counts
         "confirmed" => match what {
-            "sell" => SPEND,
+            "sell" | "give_back" => SPEND,
             "dismiss" | "holiday" => STAFF,
             "remove_line" => LINES,
             "game_mode" | "sandbox" => SETTINGS,
@@ -156,7 +156,7 @@ fn act_need(act: &str, what: &str) -> Need {
         "logo_remove" | "rosterflow" | "planner" | "realtime" | "game_mode" | "sandbox" | "currency" => SETTINGS,
         // (NexiconDK: a picture sent from afar, kept beside the company)
         "logo_data" => SETTINGS,
-        "sell" => SPEND,
+        "sell" | "give_back" => SPEND,
         // (NexiconDK, phase 6 step 3: a depot asks its head office for a big purchase)
         "approval_ask" => SPEND,
         // (NexiconDK, 3 November 2026: his own driving's pay - the owner's and the co-owners', who
@@ -183,6 +183,9 @@ fn act_need(act: &str, what: &str) -> Need {
         // (NexiconDK, ticket inspection round T: the plan of the ticket inspection - who manages
         // the staff or plans)
         "insp_duty_save" | "insp_duty_remove" | "insp_date_add" | "insp_date_remove" | "insp_look" => Any(&[Perm::Staff, Perm::Plans]),
+        // (NexiconDK, 15 November 2026: the operations assistants' shift plan - who manages the
+        // staff or plans)
+        "desk_slot" | "desk_fill" | "desk_clear" | "desk_agency" => Any(&[Perm::Staff, Perm::Plans]),
         // the lines, their fares
         "line_title" | "line_type" | "line_hof" | "line_colour" | "line_connections" | "add_line" | "remove_line" => LINES,
         "set_fare" | "set_cap" => Any(&[Perm::Lines, Perm::Spend]),

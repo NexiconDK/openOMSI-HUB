@@ -902,10 +902,13 @@ pub enum Role {
     Cleaner,
     Service,
     Inspector,
+    /// (NexiconDK, 15 November 2026: "Driftsassistent") Keeps the day's service going on Bus
+    /// Company Online while no boss is online, by his shift plan (`ops_assistant`).
+    Operations,
 }
 
 impl Role {
-    pub const ALL: [Role; 6] = [Role::Driver, Role::Mechanic, Role::Researcher, Role::Cleaner, Role::Service, Role::Inspector];
+    pub const ALL: [Role; 7] = [Role::Driver, Role::Mechanic, Role::Researcher, Role::Cleaner, Role::Service, Role::Inspector, Role::Operations];
 
     /// Its name (English, translated when shown).
     pub fn label(self) -> &'static str {
@@ -916,6 +919,7 @@ impl Role {
             Role::Cleaner => "Cleaner",
             Role::Service => "Service employee",
             Role::Inspector => "Ticket inspector",
+            Role::Operations => "Operations assistant",
         }
     }
 }
@@ -1318,6 +1322,10 @@ pub struct Company {
     /// single dates, storaktions (`inspection_plan`; a file of before: nothing planned).
     #[serde(default)]
     pub inspection_plan: super::inspection_plan::Plan,
+    /// (NexiconDK, 15 November 2026) The operations assistants' desk: their shift plan, what they
+    /// may decide and what they did (`ops_assistant`; a file of before: nobody on it).
+    #[serde(default)]
+    pub ops_desk: super::ops_assistant::Desk,
 }
 
 fn one() -> f64 {
