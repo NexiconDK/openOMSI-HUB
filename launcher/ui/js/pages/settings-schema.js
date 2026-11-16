@@ -392,6 +392,12 @@ const general = {
         { type: 'toggle', key: 'machine_translation', label: 'Translate the remaining texts automatically (offline, downloads 620 MB once)' },
         { type: 'toggle', key: 'launcher_rest', label: 'The launcher rests while a game runs (gives the graphics card to the game)' },
         { type: 'toggle', key: 'discord_status', label: 'Discord Rich Presence', help: 'Shows the launcher or your map, bus, line and multiplayer status in Discord.' },
+        // (openOMSI #3798: each part of the status on its own)
+        { type: 'toggle', key: 'discord_map', label: 'Discord: the map', when: (s) => s.discord_status === true },
+        { type: 'toggle', key: 'discord_bus', label: 'Discord: the bus', when: (s) => s.discord_status === true },
+        { type: 'toggle', key: 'discord_line', label: 'Discord: the line and tour', when: (s) => s.discord_status === true },
+        { type: 'toggle', key: 'discord_stop', label: 'Discord: the next stop and the delay', when: (s) => s.discord_status === true },
+        { type: 'toggle', key: 'discord_players', label: 'Discord: multiplayer and the number of players', when: (s) => s.discord_status === true },
         { type: 'toggle', key: 'voice_chat', label: 'Voice chat through GreenTeaSpeak (multiplayer)', help: 'Players near you are heard from where they stand, when GreenTeaSpeak runs with the openOMSI plugin and the server names a voice server.' },
         // (larger for those who find the texts hard to read, smaller for more of the picture)
         { type: 'slider', key: 'ui_scale', label: 'Game interface size', min: 0.5, max: 2, step: 0.05, def: 1, format: pct, store: r2 },

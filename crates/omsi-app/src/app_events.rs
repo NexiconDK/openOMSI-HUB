@@ -485,6 +485,7 @@ impl ApplicationHandler for App {
         omsi_render::pipeline_cache::save();
         // ("playing now" ends with the game)
         self.integrations.presence = None;
+        self.integrations.discord_max.forget();
         if let Some(lan) = self.net.lan.take() {
             // dropping the session says goodbye (BYE) to the host or the players
             drop(lan);

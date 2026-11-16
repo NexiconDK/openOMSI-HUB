@@ -19,6 +19,10 @@ impl App {
                     self.integrations.discord =
                         crate::discord::Discord::start(&self.settings.discord_app_id);
                 }
+                // (openOMSI #3798: each part as the settings choose - the map, the bus, the line,
+                // the next stop and the delay, the players online and the server's room)
+                let show = self.settings.discord_show;
+                let max = if show.players && self.integrations.discord.is_some() { self.discord_server_max() } else { 0 };
                 if let Some(d) = self.integrations.discord.as_ref() {
                     let bus = self.player.as_ref().map(|p| {
                         let definition = &p.vehicle.ty.def;
@@ -26,13 +30,20 @@ impl App {
                         let full = omsi_launcher_lib::display_bus_name(&format!("{} {short}", definition.manufacturer));
                         (short, full)
                     });
-                    let duty = self.session.duty.as_ref().map(|d| (d.line.as_str(), d.tour.as_str()));
-                    d.set(crate::discord::Presence::for_game(
-                        self.world.as_ref().map(|w| w.global.name.as_str()),
-                        bus.as_ref().map(|(short, full)| (short.as_str(), full.as_str())),
-                        duty,
-                        self.net.lan.is_some(),
-                    ));
+                    let duty = self.session.duty.as_ref();
+                    let next_stop = duty.zip(self.player.as_ref()).and_then(|(d, p)| {
+                        let stop = d.trips.get(d.trip_index)?.stops.get(d.next_stop)?;
+                        Some((stop.name.as_str(), p.vehicle.host.tt_delay))
+                    });
+                    let game = crate::discord::Game {
+                        map: self.world.as_ref().map(|w| w.global.name.as_str()),
+                        bus: bus.as_ref().map(|(short, full)| (short.as_str(), full.as_str())),
+                        duty: duty.map(|d| (d.line.as_str(), d.tour.as_str())),
+                        next_stop,
+                        // (the players: the others the session knows, and this one)
+                        players: self.net.lan.as_ref().map(|lan| (lan.session, lan.peer_count() + 1, max)),
+                    };
+                    d.set(crate::discord::Presence::for_game(&game, show));
                 }
             }
         }
@@ -126,5 +137,17 @@ impl App {
         // Omsi-Hub: the phone and tablet companion (`companion=1`): sign-on, duty, the bus's
         // screens
         crate::companion::each_frame(self);
+    }
+
+    /// (openOMSI #3798) The room of the server played on, for Discord's party (0: not known yet):
+    /// the host's own limit, or a client's server asked once (`ServerLimit`).
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    fn discord_server_max(&mut self) -> usize {
+        let Some(lan) = self.net.lan.as_ref() else { return 0 };
+        if lan.role == omsi_net::Role::Host {
+            return 64;
+        }
+        let Some(target) = self.args.lan_join.clone() else { return 0 };
+        self.integrations.discord_max.get(&target, |t| omsi_net::ws::query(t, false).ok().map(|i| i.max_players))
     }
 }

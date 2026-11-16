@@ -880,6 +880,7 @@ fn assemble_app(args: Args, settings: settings::Settings) -> App {
             plugin_panels: Default::default(),
             discord: None,
             discord_t: 0.0,
+            discord_max: Default::default(),
             #[cfg(steam)]
             steam,
             update_watch,

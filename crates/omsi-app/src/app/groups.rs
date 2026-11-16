@@ -84,6 +84,8 @@ pub(crate) struct Integrations {
     /// Discord's "Playing openOMSI" status, and when it was last brought up to date.
     pub(crate) discord: Option<crate::discord::Discord>,
     pub(crate) discord_t: f32,
+    /// (openOMSI #3798) The server's player limit, asked once per server for Discord's party.
+    pub(crate) discord_max: crate::discord::ServerLimit,
     // Steamworks API layer and it's last updated time
     #[cfg(steam)]
     pub(crate) steam: Option<crate::steam::Steam>,
