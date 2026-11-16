@@ -2060,3 +2060,47 @@ på vagt lige nu med 4 andre, men der står kun en her?"
 Tested: `inspection_plan::tests::a_player_on_patrol_goes_with_the_whole_team_of_the_duty`,
 `patrol::tests::the_team_of_the_launcher_is_read`,
 `patrol::tests::a_partner_walks_the_way_and_steps_aboard_at_the_door`.
+
+### Off the player aboard, and a woman's or a man's figure (16 November 2026)
+
+NexiconDK: "De stiller sig stadig klods op af mig inde i bussen - Men de er to nu... Dog skulle det
+forestille at være to kvinder men den ene er en mand?"
+
+- **Off the player and each other** (`stand_aside`, `Doing::Step`): they got aboard at the point
+  where the player did and, with no rider of their own to check, stood there - on him and on each
+  other. Now one within 1.2 m of him or 0.9 m of another of them walks the aisle to the nearest
+  point of the cabin's paths (`PeopleSim::aisle_spots`) 1.5 m off him, 0.9 m off the others (where
+  they are and are going) and 0.5 m off the riders; no such point: he stays.
+- **A woman or a man by the name** (`inspection_patrol::team_arg`, `GENDER_SEP`): the launcher writes
+  `/f` or `/m` after each name by the first name (`staff::female_name`, as the faces follow it);
+  the game draws each in a figure of that gender in the uniform (`figure_for`: a woman's by her
+  voice or file, `view_sync::people::avatars::is_female`), not the player's own where another is;
+  none of that gender in the uniform: any in it.
+
+- **Not left on the road** (NexiconDK: "så løber de igennem bussen og falder ud bagved og kort tid
+  efter spawner de i bussen igen?"): with the player standing just inside the door they stopped 1.4 m
+  behind him along his way - outside - and when the bus drove off they were drawn on the road, it
+  passing through them, until put aboard 5 s later. Now one outside while the player is in walks on
+  to the door and in (the gap is not kept across a door); one still outside when the bus moved off
+  (its door point 3 m from where the player got in: `moved_off`, `PeopleSim::bus_point_world`) is
+  put aboard at once, at most 3 s after; and one still aboard when the bus moved off from where the
+  player got out steps out at once (it used to ride on up to 10 s).
+
+Tested: `patrol::tests::a_bus_that_moved_off_is_seen`,
+`patrol::tests::a_partner_aboard_steps_off_the_walker_and_the_others`,
+`patrol::tests::a_partner_is_drawn_as_a_woman_or_a_man_by_the_name`, and the two above.
+
+## AI buses pull in beside the people at the stop (16 November 2026)
+
+NexiconDK: "Når A.I busserne skal ind til et stoppested, kan de finde på at stoppe fordi
+menneskerne står for tæt? Kan man gøre noget og hvad?"
+
+An AI bus stopped for anybody waiting for a bus who stood 0.3 m inside its side, and looked at where
+their step took them two seconds on - so a queue at the kerb's edge, or people walking to its doors,
+held it short of its stop (`TrafficSim::people_stop`). Now (`obstacles::foot_in_way`) a bus stops
+for somebody waiting for a bus (or walking to its doors) only where they stand 0.8 m or more inside
+its side (`WAITING_INSIDE`: out in the road), where they stand now; anybody else - strollers, people
+crossing, the players on foot, and everybody for a car - as before (0.3 m outside its side, their
+step two seconds on).
+
+Tested: `obstacles::foot_tests::a_bus_pulls_in_beside_the_people_waiting_at_the_kerb`.

@@ -689,8 +689,13 @@ mod tests {
         assert_eq!((five.from, five.to, five.team.len()), (7 * 60, 14 * 60, 4), "{:?}", five.team);
         // (his game is told all four)
         let arg = ip::team_arg(&five.team);
-        assert_eq!(arg.split(ip::TEAM_SEP).collect::<Vec<_>>(), five.team.iter().map(String::as_str).collect::<Vec<_>>());
-        assert_eq!(ip::team_arg(&["Anna, Bo".to_string(), " ".to_string(), "Eva".to_string()]), "Anna  Bo,Eva");
+        assert_eq!(arg.split(ip::TEAM_SEP).map(|n| n.split(ip::GENDER_SEP).next().unwrap()).collect::<Vec<_>>(), five.team.iter().map(String::as_str).collect::<Vec<_>>());
+        // (16 November 2026: each a woman or a man by the first name, for the figure drawn)
+        for (n, e) in arg.split(ip::TEAM_SEP).zip(&five.team) {
+            let f = staff::female_name(e).map(|f| if f { "f" } else { "m" });
+            assert_eq!(n.split(ip::GENDER_SEP).nth(1), f, "{n}");
+        }
+        assert_eq!(ip::team_arg(&["Mia, Schulz".to_string(), " ".to_string(), "Paul/Richter".to_string(), "Agency driver".to_string()]), "Mia  Schulz/f,Paul Richter/m,Agency driver");
     }
 
     #[test]

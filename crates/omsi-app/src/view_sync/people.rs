@@ -26,7 +26,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 mod animation;
-mod avatars;
+pub(crate) mod avatars;
 pub(crate) use avatars::{set_hour, speak};
 
 /// About how long one person's pose and skinning takes (s), and the work worth a helper

@@ -33,9 +33,23 @@ pub const MOST_TEAM: usize = 4;
 /// How the names of those who go with him are written for his game (`--patrol`'s last field).
 pub const TEAM_SEP: char = ',';
 
-/// Those who go with him as his game is told (`TEAM_SEP` between the names, none in a name).
+/// (NexiconDK, 16 November 2026: "det skulle forestille at være to kvinder men den ene er en
+/// mand?") After a name, whether a woman (`/f`) or a man (`/m`) by the first name
+/// (`staff::female_name`; neither known: nothing): his game draws each in a figure of theirs.
+pub const GENDER_SEP: char = '/';
+
+/// Those who go with him as his game is told (`TEAM_SEP` between the names, none in a name; each
+/// with `GENDER_SEP` and `f` or `m` after it where known).
 pub fn team_arg(team: &[String]) -> String {
-    team.iter().map(|n| n.replace(TEAM_SEP, " ").trim().to_string()).filter(|n| !n.is_empty()).collect::<Vec<_>>().join(&TEAM_SEP.to_string())
+    team.iter()
+        .map(|n| n.replace([TEAM_SEP, GENDER_SEP, '|'], " ").trim().to_string())
+        .filter(|n| !n.is_empty())
+        .map(|n| match super::staff::female_name(&n) {
+            Some(f) => format!("{n}{GENDER_SEP}{}", if f { 'f' } else { 'm' }),
+            None => n,
+        })
+        .collect::<Vec<_>>()
+        .join(&TEAM_SEP.to_string())
 }
 
 /// Refusals and words (English: keys of the translations).

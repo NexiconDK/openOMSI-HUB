@@ -6,6 +6,23 @@ use super::*;
 pub const PLAYER_BOX_MARGIN: f32 = 0.5;
 /// Somebody on foot more than this far above or below a car's way is not in it (m).
 pub const PEOPLE_LEVEL: f64 = 2.5;
+/// (NexiconDK, 16 November 2026: "når A.I busserne skal ind til et stoppested, kan de finde på
+/// at stoppe fordi menneskerne står for tæt?") How far inside a bus's side somebody waiting for a
+/// bus (or walking to its doors) must stand for it to stop (m): they stand at the kerb it pulls up
+/// beside and go to its doors - 0.3 m held a bus short of its stop for a queue at the kerb's edge,
+/// or for them stepping towards it (their step was looked at two seconds on). Anybody else: this
+/// far outside its side, where they are and where their step takes them.
+pub const WAITING_INSIDE: f64 = 0.8;
+pub const PEOPLE_CLEAR: f64 = 0.3;
+
+/// Whether somebody on foot at `rel` from a point of a car's way (`fwd`, `right` its direction
+/// and its right there), stepping `step` by the time the car gets there, is in its way: `half`
+/// its half width; `bus_waiting`, a bus and somebody waiting for one (`WAITING_INSIDE`, where
+/// they stand only).
+pub fn foot_in_way(rel: DVec2, step: DVec2, fwd: DVec2, right: DVec2, half: f64, bus_waiting: bool) -> bool {
+    let (half, ats) = if bus_waiting { (half - WAITING_INSIDE, [rel, rel]) } else { (half + PEOPLE_CLEAR, [rel, rel + step]) };
+    ats.iter().any(|at| at.dot(fwd).abs() <= 0.55 && at.dot(right).abs() < half)
+}
 
 /// Another vehicle more than this far above or below a car's way (where the way passes it)
 /// is not in it (m): the road under a bridge is some 4.5 m below the deck.
@@ -44,7 +61,7 @@ impl TrafficSim {
     /// drove at full speed through a passenger walking off a bus across the road, through
     /// somebody leaving a stop, or through anybody standing in the carriageway. A
     /// timetable bus ignores the people waiting at the kerb for it unless they stand well
-    /// inside its path (it pulls up right beside them).
+    /// inside its path (it pulls up right beside them: `WAITING_INSIDE`, `foot_in_way`).
     pub fn people_stop(&self, i: usize, way: &[(usize, f32)]) -> Option<(f32, DVec2)> {
         if self.people.is_empty() {
             return None;
@@ -90,16 +107,8 @@ impl TrafficSim {
                     if (p.z - q.z).abs() > PEOPLE_LEVEL {
                         continue;
                     }
-                    let half = if *waiting && car.is_bus() {
-                        car.half_width as f64 - 0.3
-                    } else {
-                        car.half_width as f64 + 0.3
-                    };
-                    for at in [p.truncate(), p.truncate() + *pv * t] {
-                        let rel = at - c;
-                        if rel.dot(fwd).abs() <= 0.55 && rel.dot(right).abs() < half {
-                            return Some((d - 1.5, p.truncate()));
-                        }
+                    if foot_in_way(p.truncate() - c, *pv * t, fwd, right, car.half_width as f64, *waiting && car.is_bus()) {
+                        return Some((d - 1.5, p.truncate()));
                     }
                 }
                 s += 1.0;
@@ -601,4 +610,30 @@ pub fn in_player_box(p: DVec3, centre: DVec3, fwd: DVec2, right: DVec2, wide: f6
     let rel = p.truncate() - centre.truncate();
     let (x, y) = (rel.dot(right), rel.dot(fwd));
     x.abs() <= wide && y <= ahead && y >= -behind && (p.z - centre.z).abs() < 4.0
+}
+
+#[cfg(test)]
+mod foot_tests {
+    use super::*;
+
+    /// (NexiconDK, 16 November 2026) A bus pulling in beside a queue at the kerb's edge, and
+    /// people stepping to its doors, does not stop for them; for one standing well out in the
+    /// road it does; a car stops for them all.
+    #[test]
+    fn a_bus_pulls_in_beside_the_people_waiting_at_the_kerb() {
+        let (fwd, right) = (DVec2::new(0.0, 1.0), DVec2::new(1.0, 0.0));
+        let hw = 1.25;
+        // a queue 0.4 m inside its side, and one stepping 1.2 m towards its door
+        let kerb = DVec2::new(hw - 0.4, 0.2);
+        let step = DVec2::new(-1.2, 0.0);
+        assert!(!foot_in_way(kerb, DVec2::ZERO, fwd, right, hw, true));
+        assert!(!foot_in_way(DVec2::new(hw + 0.2, 0.0), step, fwd, right, hw, true));
+        // well out in the road
+        assert!(foot_in_way(DVec2::new(hw - 1.0, 0.0), DVec2::ZERO, fwd, right, hw, true));
+        // not waiting, or a car: as before
+        assert!(foot_in_way(kerb, DVec2::ZERO, fwd, right, hw, false));
+        assert!(foot_in_way(DVec2::new(hw + 0.2, 0.0), step, fwd, right, hw, false));
+        // ahead or behind the point looked at: not here
+        assert!(!foot_in_way(DVec2::new(0.0, 0.8), DVec2::ZERO, fwd, right, hw, false));
+    }
 }

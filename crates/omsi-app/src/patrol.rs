@@ -112,9 +112,21 @@ const WALK: f64 = 1.35;
 const HURRY: f64 = 4.5;
 const SNAP: f64 = 40.0;
 /// Seconds after he got into a bus that one still outside steps aboard (the bus leaves), and that
-/// one still aboard after he got out steps off.
-const BOARD_WAIT: f32 = 5.0;
+/// one still aboard after he got out steps off. (NexiconDK, 16 November 2026: "så løber de igennem
+/// bussen og falder ud bagved og kort tid efter spawner de i bussen igen?") Outside while he is in,
+/// they walk on to the door (not `MATE_GAP` behind him: that left them on the pavement while he
+/// stood inside the door); and as soon as the bus has moved off (`MOVED` m from where he got in or
+/// out) one outside is aboard and one aboard out - not left on the road it drove through.
+const BOARD_WAIT: f32 = 3.0;
 const LEAVE_WAIT: f32 = 10.0;
+const MOVED: f64 = 3.0;
+
+/// Whether bus `bus` has moved off from where the trail went through its door: its cabin's point
+/// `local` (the trail's point inside) now this far from `ground` (its point outside) - `world`
+/// the point where the cabin's point is now (None: the bus is gone).
+fn moved_off(world: Option<glam::DVec3>, ground: glam::DVec3) -> bool {
+    world.is_none_or(|w| (w - ground).truncate().length() > MOVED)
+}
 /// ("også inde i selve bussen ... så følger han bare med mig fremfor at tjekke andre?") Aboard,
 /// each walks the aisle to a rider of his own (m/s): within `MATE_LOOK` m, not one this near the
 /// walker (his), nor another's; stands beside them (`BESIDE`) for the ticket `MATE_CHECK` s; gives
@@ -125,10 +137,61 @@ const HIS: f32 = 1.6;
 const BESIDE: f32 = 0.9;
 const MATE_CHECK: f32 = 3.0;
 const MATE_GIVE_UP: f32 = 12.0;
+/// (NexiconDK, 16 November 2026: "de stiller sig stadig klods op af mig inde i bussen") Aboard
+/// with no one to check, one this near the walker (m) or `APART` near another of them steps aside
+/// along the aisle: to where he is further than `AWAY` from the walker, `APART` from the others
+/// and `CLEAR` from the riders - the nearest such point of its paths; on for `STEP_FOR` s at most.
+const NEAR: f32 = 1.2;
+const AWAY: f32 = 1.5;
+const APART: f32 = 0.9;
+const CLEAR: f32 = 0.5;
+const STEP_FOR: f32 = 8.0;
 
-/// The names of those who go with him (`Spec::partner`: `inspection_patrol::TEAM_SEP` between them).
-pub(crate) fn team_of(partner: &str) -> Vec<String> {
-    partner.split(',').map(str::trim).filter(|n| !n.is_empty()).take(MOST_MATES).map(String::from).collect()
+/// Those who go with him (`Spec::partner`: `inspection_patrol::TEAM_SEP` between them): the name,
+/// and whether a woman (`/f`) or a man (`/m`) where the launcher said (`inspection_patrol::GENDER_SEP`).
+pub(crate) fn team_of(partner: &str) -> Vec<(String, Option<bool>)> {
+    partner
+        .split(',')
+        .map(|n| match n.rsplit_once('/') {
+            Some((name, g)) if matches!(g.trim(), "f" | "m") => (name.trim().to_string(), Some(g.trim() == "f")),
+            _ => (n.trim().to_string(), None),
+        })
+        .filter(|(n, _)| !n.is_empty())
+        .take(MOST_MATES)
+        .collect()
+}
+
+/// (NexiconDK, 16 November 2026: "det skulle forestille at være to kvinder men den ene er en
+/// mand?") The figure partner `k` is drawn as: of the figures `wearing` the uniform (each: its
+/// type, whether a woman's), one of the partner's gender (`female`; not known: any), not the
+/// walker's own (`mine`) where another is, the `k`-th of them; none of that gender: any of them.
+fn figure_for(wearing: &[(u64, bool)], female: Option<bool>, mine: u64, k: usize) -> Option<u64> {
+    let of = |g: Option<bool>| -> Vec<u64> { wearing.iter().filter(|(_, f)| g.is_none_or(|g| *f == g)).map(|x| x.0).collect() };
+    let mut list = of(female);
+    if list.is_empty() {
+        list = of(None);
+    }
+    if list.len() > 1 {
+        list.retain(|t| *t != mine);
+    }
+    (!list.is_empty()).then(|| list[k % list.len()])
+}
+
+/// Where a partner aboard at `at` with no one to check steps aside to (the bus's frame): None
+/// where he is will do - the walker (`walker`) and the others (`others`: where they are and are
+/// going) not too near (`NEAR`, `APART`) - or no point of the aisle's (`spots`) is free. Free:
+/// `AWAY` from the walker, `APART` from the others, `CLEAR` from the riders (`riders`).
+fn stand_aside(at: glam::Vec3, walker: Option<glam::Vec3>, others: &[glam::Vec3], riders: &[glam::Vec3], spots: &[glam::Vec3]) -> Option<glam::Vec3> {
+    let d = |a: glam::Vec3, b: glam::Vec3| (a - b).truncate().length();
+    let crowded = walker.is_some_and(|w| d(at, w) < NEAR) || others.iter().any(|o| d(at, *o) < APART);
+    if !crowded {
+        return None;
+    }
+    spots
+        .iter()
+        .copied()
+        .filter(|s| walker.is_none_or(|w| d(*s, w) >= AWAY) && others.iter().all(|o| d(*s, *o) >= APART) && riders.iter().all(|r| d(*s, *r) >= CLEAR))
+        .min_by(|a, b| d(*a, at).total_cmp(&d(*b, at)))
 }
 
 /// Where someone is: on the ground (the world), or aboard a bus (its cabin's point).
@@ -271,6 +334,8 @@ enum Doing {
     ToRider { id: u32, way: Vec<glam::Vec3>, t: f32 },
     /// Stands by them for the ticket.
     Check { id: u32, left: f32 },
+    /// Steps aside along the aisle, off the walker and the others (`stand_aside`).
+    Step { way: Vec<glam::Vec3>, t: f32 },
     /// The walker got out: to the door he left by (trail point `exit`), then out after him.
     Leave { way: Vec<glam::Vec3>, exit: u64, t: f32 },
 }
@@ -280,6 +345,8 @@ enum Doing {
 /// ahead), into the bus he goes into through its door, and aboard checks riders of his own.
 struct Mate {
     name: String,
+    /// A woman (`team_of`), for the figure drawn.
+    female: Option<bool>,
     at: Option<Spot>,
     /// Facing: in the world (on the ground), in the bus's frame (aboard).
     heading: f64,
@@ -293,8 +360,8 @@ struct Mate {
 }
 
 impl Mate {
-    fn new(name: String, cursor: u64) -> Mate {
-        Mate { name, at: None, heading: 0.0, speed: 0.0, kind: None, cursor, doing: Doing::Follow, board: 0.0 }
+    fn new(name: String, female: Option<bool>, cursor: u64) -> Mate {
+        Mate { name, female, at: None, heading: 0.0, speed: 0.0, kind: None, cursor, doing: Doing::Follow, board: 0.0 }
     }
 
     /// The rider he is busy with.
@@ -416,12 +483,13 @@ impl App {
         match team.len() {
             0 => {}
             1 => {
-                log::info!("patrol: with {}", team[0]);
-                self.patrol_card(tr("%{name} goes with you").replace("%{name}", &team[0]), tr("Your partner follows you into the buses and checks tickets too."), 0, 7.0);
+                log::info!("patrol: with {}", team[0].0);
+                self.patrol_card(tr("%{name} goes with you").replace("%{name}", &team[0].0), tr("Your partner follows you into the buses and checks tickets too."), 0, 7.0);
             }
             _ => {
-                log::info!("patrol: with {}", team.join(", "));
-                self.patrol_card(tr("%{names} go with you").replace("%{names}", &team.join(", ")), tr("Your partners follow you into the buses, and in a bus each checks passengers of his own."), 0, 8.0);
+                let names = team.iter().map(|t| t.0.as_str()).collect::<Vec<_>>().join(", ");
+                log::info!("patrol: with {names}");
+                self.patrol_card(tr("%{names} go with you").replace("%{names}", &names), tr("Your partners follow you into the buses, and in a bus each checks passengers of his own."), 0, 8.0);
             }
         }
         self.net.patrol.spec = Some(spec);
@@ -624,7 +692,7 @@ impl App {
         let p = &mut self.net.patrol;
         if p.mates.len() != names.len() {
             let end = p.trail.end();
-            p.mates = names.into_iter().map(|n| Mate::new(n, end)).collect();
+            p.mates = names.into_iter().map(|(n, f)| Mate::new(n, f, end)).collect();
         }
         if p.trail.pts.back().is_none_or(|b| b.dist(&me) > 0.15) {
             p.trail.pts.push_back(me);
@@ -635,6 +703,24 @@ impl App {
         for k in 0..p.mates.len() {
             let gap = MATE_GAP + MATE_SPACING * k as f64;
             let taken: Vec<u32> = p.mates.iter().enumerate().filter(|(j, _)| *j != k).filter_map(|(_, m)| m.rider()).chain(p.asked.iter().copied()).chain(p.mate_of.keys().copied()).collect();
+            // (where the others are aboard, and where they are going)
+            let others: Vec<(BusId, glam::Vec3)> = p
+                .mates
+                .iter()
+                .enumerate()
+                .filter(|(j, _)| *j != k)
+                .filter_map(|(_, o)| match o.at {
+                    Some(Spot::Bus(b, l)) => Some((b, l, o)),
+                    _ => None,
+                })
+                .flat_map(|(b, l, o)| {
+                    let to = match &o.doing {
+                        Doing::ToRider { way, .. } | Doing::Step { way, .. } => way.last().copied(),
+                        _ => None,
+                    };
+                    std::iter::once((b, l)).chain(to.map(|t| (b, t)))
+                })
+                .collect();
             let m = &mut p.mates[k];
             // (first: behind him, on his way)
             if m.at.is_none() {
@@ -693,11 +779,17 @@ impl App {
                         m.snap(&p.trail, gap);
                         continue;
                     }
-                    // (he got into a bus and it may leave: one still outside steps aboard)
-                    if me.bus().is_some() && at.bus().is_none() {
+                    // (he got into a bus and it may leave: one still outside walks on to its door, and
+                    // steps aboard at once when it moved off, or in `BOARD_WAIT` s)
+                    let boarding = me.bus().is_some() && at.bus().is_none();
+                    if boarding {
                         m.board += dt;
-                        if m.board > BOARD_WAIT {
-                            if let Some(i) = (m.cursor..p.trail.end()).find(|i| p.trail.get(*i).is_some_and(|x| x.bus().is_some())) {
+                        if let Some(i) = (m.cursor..p.trail.end()).find(|i| p.trail.get(*i).is_some_and(|x| x.bus().is_some() && x.bus() == me.bus())) {
+                            let moved = match (p.trail.get(i.saturating_sub(1)), p.trail.get(i)) {
+                                (Some(Spot::Ground(g)), Some(Spot::Bus(b, l))) => moved_off(h.bus_point_world(b, l), g),
+                                _ => false,
+                            };
+                            if m.board > BOARD_WAIT || moved {
                                 m.at = p.trail.get(i);
                                 m.cursor = i + 1;
                                 m.board = 0.0;
@@ -707,6 +799,7 @@ impl App {
                     } else {
                         m.board = 0.0;
                     }
+                    let gap = if boarding { 0.0 } else { gap };
                     if ahead > gap {
                         m.speed = ((ahead - gap) * 1.5).clamp(WALK, HURRY);
                         let step = (m.speed * dt64).min(ahead - gap);
@@ -721,7 +814,7 @@ impl App {
                 Doing::Look { wait } => {
                     *wait -= dt;
                     let Spot::Bus(b, l) = at else { continue };
-                    if *wait > 0.0 || over {
+                    if *wait > 0.0 {
                         continue;
                     }
                     *wait = 0.6;
@@ -729,7 +822,17 @@ impl App {
                         Spot::Bus(w, wl) if w == b => Some(wl),
                         _ => None,
                     };
-                    let mine = h.riders_around(b, l, MATE_LOOK, &taken).into_iter().find(|(_, rp)| walker.is_none_or(|wl| (*rp - wl).truncate().length() > HIS));
+                    let mine = if over { None } else { h.riders_around(b, l, MATE_LOOK, &taken).into_iter().find(|(_, rp)| walker.is_none_or(|wl| (*rp - wl).truncate().length() > HIS)) };
+                    if mine.is_none() {
+                        // (no one to check: not on the walker, nor on another of them)
+                        let near: Vec<glam::Vec3> = others.iter().filter(|o| o.0 == b).map(|o| o.1).collect();
+                        let riders: Vec<glam::Vec3> = h.riders_around(b, l, 30.0, &[]).into_iter().map(|r| r.1).collect();
+                        if let Some(spot) = stand_aside(l, walker, &near, &riders, &h.aisle_spots(b)) {
+                            let mut way = h.aisle_way(b, l, spot);
+                            way.push(spot);
+                            m.doing = Doing::Step { way, t: 0.0 };
+                        }
+                    }
                     if let Some((id, rp)) = mine {
                         let mut way = h.aisle_way(b, l, rp);
                         if way.is_empty() {
@@ -782,6 +885,19 @@ impl App {
                         m.doing = Doing::Look { wait: 0.4 };
                     }
                 }
+                Doing::Step { way, t } => {
+                    *t += dt;
+                    let Spot::Bus(b, l) = at else { continue };
+                    let (to, heading) = walk_way(l, way, (AISLE_WALK * dt64) as f32);
+                    m.speed = if (to - l).length() > 1e-4 { AISLE_WALK } else { 0.0 };
+                    m.at = Some(Spot::Bus(b, to));
+                    if let Some(hd) = heading {
+                        m.heading = hd;
+                    }
+                    if way.is_empty() || *t > STEP_FOR {
+                        m.doing = Doing::Look { wait: 0.6 };
+                    }
+                }
                 Doing::Leave { way, exit, t } => {
                     *t += dt;
                     let exit = *exit;
@@ -792,8 +908,12 @@ impl App {
                     if let Some(hd) = heading {
                         m.heading = hd;
                     }
-                    // (at the door he left by - or the bus is going: out after him)
-                    if way.is_empty() || *t > LEAVE_WAIT {
+                    // (at the door he left by - or the bus is going, or gone: out after him)
+                    let gone = match (p.trail.get(exit), p.trail.get(exit + 1)) {
+                        (Some(Spot::Bus(bb, l)), Some(Spot::Ground(g))) => moved_off(h.bus_point_world(bb, l), g),
+                        _ => false,
+                    };
+                    if way.is_empty() || *t > LEAVE_WAIT || gone {
                         match p.trail.get(exit + 1) {
                             Some(out) => {
                                 m.at = Some(out);
@@ -828,13 +948,15 @@ impl App {
         let Some(h) = self.session.humans.as_mut() else { return };
         let Some(w) = self.world.as_ref() else { return };
         let n = h.types.len().max(1) as u64;
-        let wearing: Vec<u64> = (0..n as usize).filter(|t| !clothes.is_empty() && h.type_wearing(&clothes, Some(*t)) == Some(*t)).map(|t| t as u64).filter(|t| *t != my_kind % n).collect();
+        // (the figures in the uniform, each a woman's or a man's; no uniform: the grown-ups)
+        let female = |t: usize| crate::view_sync::people::avatars::is_female(&h.types[t]);
+        let mut wearing: Vec<(u64, bool)> = (0..n as usize).filter(|t| !clothes.is_empty() && h.type_wearing(&clothes, Some(*t)) == Some(*t)).map(|t| (t as u64, female(t))).collect();
+        if wearing.is_empty() {
+            wearing = (0..h.types.len()).filter(|t| h.types[*t].def.grown_up()).map(|t| (t as u64, female(t))).collect();
+        }
         let p = &mut self.net.patrol;
         for (k, m) in p.mates.iter_mut().enumerate() {
-            let kind = *m.kind.get_or_insert_with(|| match wearing.len() {
-                0 => h.type_wearing(&clothes, None).map(|t| t as u64).unwrap_or(my_kind + 1 + k as u64),
-                l => wearing[k % l],
-            });
+            let kind = *m.kind.get_or_insert_with(|| figure_for(&wearing, m.female, my_kind % n, k).unwrap_or(my_kind + 1 + k as u64));
             let Some(at) = m.at else { continue };
             let cmd = match at {
                 Spot::Ground(g) => {
@@ -1121,11 +1243,56 @@ mod tests {
     /// (NexiconDK, 15 November 2026) The whole team goes with him, four at most.
     #[test]
     fn the_team_of_the_launcher_is_read() {
-        assert_eq!(team_of("Mette Holm"), ["Mette Holm"]);
-        assert_eq!(team_of("Mette Holm, Bo Lund,,Eva Kjær ,Ali Nur,Ida Bech"), ["Mette Holm", "Bo Lund", "Eva Kjær", "Ali Nur"]);
+        let names = |s: &str| team_of(s).into_iter().map(|t| t.0).collect::<Vec<_>>();
+        assert_eq!(names("Mette Holm"), ["Mette Holm"]);
+        assert_eq!(names("Mette Holm, Bo Lund,,Eva Kjær ,Ali Nur,Ida Bech"), ["Mette Holm", "Bo Lund", "Eva Kjær", "Ali Nur"]);
         assert!(team_of(" ").is_empty());
         let s = Spec::parse("c17|Linie5|3|840|x|~Inspector_A|Mette Holm,Bo Lund").unwrap();
         assert_eq!(team_of(&s.partner).len(), 2);
+        // (16 November 2026: a woman or a man, where the launcher said)
+        assert_eq!(team_of("Mette Holm/f,Bo Lund/m,Kim Berg, /f"), [("Mette Holm".to_string(), Some(true)), ("Bo Lund".to_string(), Some(false)), ("Kim Berg".to_string(), None)]);
+    }
+
+    /// (NexiconDK, 16 November 2026: "det skulle forestille at være to kvinder men den ene er en
+    /// mand?") Each is drawn as a figure of their gender in the uniform, not the walker's own
+    /// where another is; none of that gender: one of the other.
+    #[test]
+    fn a_partner_is_drawn_as_a_woman_or_a_man_by_the_name() {
+        // (figures 2 and 5 a woman's, 3 a man's; the walker is 2)
+        let w = [(2, true), (3, false), (5, true)];
+        assert_eq!(figure_for(&w, Some(true), 2, 0), Some(5));
+        assert_eq!(figure_for(&w, Some(true), 2, 1), Some(5));
+        assert_eq!(figure_for(&w, Some(false), 2, 0), Some(3));
+        assert_eq!((figure_for(&w, Some(true), 3, 0), figure_for(&w, Some(true), 3, 1)), (Some(2), Some(5)));
+        assert_eq!(figure_for(&[(3, false)], Some(true), 3, 0), Some(3));
+        assert_eq!(figure_for(&w, None, 2, 1), Some(5));
+        assert_eq!(figure_for(&[], Some(true), 0, 0), None);
+    }
+
+    /// ("så løber de igennem bussen og falder ud bagved") The bus moved off from where the walker got
+    /// in or out: they step aboard or out at once.
+    #[test]
+    fn a_bus_that_moved_off_is_seen() {
+        let g = glam::DVec3::new(10.0, 0.0, 0.0);
+        assert!(!moved_off(Some(glam::DVec3::new(10.5, 0.4, 1.2)), g));
+        assert!(moved_off(Some(glam::DVec3::new(10.0, -3.5, 0.0)), g));
+        assert!(moved_off(None, g));
+    }
+
+    /// ("de stiller sig stadig klods op af mig inde i bussen") Aboard with no one to check, one on
+    /// the walker or on another of them steps aside to the nearest free point of the aisle.
+    #[test]
+    fn a_partner_aboard_steps_off_the_walker_and_the_others() {
+        let v = |y: f32| glam::Vec3::new(0.0, y, 0.0);
+        let spots: Vec<glam::Vec3> = (0..10).map(|k| v(k as f32)).collect();
+        // on the walker (at 4): to the nearest point 1.5 m off him and off the rider at 6
+        assert_eq!(stand_aside(v(4.3), Some(v(4.0)), &[], &[v(6.0)], &spots), Some(v(2.0)));
+        // two on one point: the second steps off the first, not onto the walker
+        assert_eq!(stand_aside(v(2.0), Some(v(4.0)), &[v(2.0)], &[], &spots), Some(v(1.0)));
+        // free where he is: stays
+        assert_eq!(stand_aside(v(1.0), Some(v(4.0)), &[v(2.0)], &[], &spots), None);
+        // no free point: stays
+        assert_eq!(stand_aside(v(4.3), Some(v(4.0)), &[], &[], &[v(4.0), v(5.0)]), None);
     }
 
     /// ("følger han instant med mig?") A partner walks the walker's way at a walker's pace, and

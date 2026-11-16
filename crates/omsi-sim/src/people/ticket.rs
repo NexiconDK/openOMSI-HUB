@@ -203,6 +203,19 @@ impl PeopleSim {
         g.route_points(a, z).unwrap_or_default().into_iter().filter_map(|i| g.points.get(i).copied()).collect()
     }
 
+    /// (NexiconDK, 16 November 2026: "de stiller sig stadig klods op af mig inde i bussen") The
+    /// points of bus `bus`'s paths (its cabin's frame), where people walk and stand: where an
+    /// inspector with no one to check steps aside to. Empty: no cabin known.
+    pub fn aisle_spots(&self, bus: BusId) -> Vec<Vec3> {
+        self.last_buses.iter().find(|b| b.id == bus).map(|b| b.cabin.graph.points.clone()).unwrap_or_default()
+    }
+
+    /// (16 November 2026) Where the point `local` of bus `bus`'s cabin is in the world now, as of
+    /// the last tick: whether the bus moved off from where someone got in or out.
+    pub fn bus_point_world(&self, bus: BusId, local: Vec3) -> Option<glam::DVec3> {
+        self.last_buses.iter().find(|b| b.id == bus).map(|b| b.world(local))
+    }
+
     /// The riders run here aboard bus `bus` (their ids).
     pub fn riders_of(&self, bus: BusId) -> Vec<u32> {
         self.people.iter().filter(|p| !p.remote && p.puppet.is_none() && matches!(p.place, Place::Bus(b, _) if b == bus)).map(|p| p.id).collect()

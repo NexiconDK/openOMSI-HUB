@@ -115,7 +115,7 @@ pub(super) fn pool() -> Option<Arc<Pool>> {
 }
 
 /// Whether a content human is a woman: her voice set (`F…`), else her file's name.
-fn is_female(t: &HumanType) -> bool {
+pub(crate) fn is_female(t: &HumanType) -> bool {
     let v = t.def.voice.trim().to_ascii_uppercase();
     if v.starts_with('F') || v.starts_with('W') {
         return true;
