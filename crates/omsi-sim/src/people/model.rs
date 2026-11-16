@@ -53,6 +53,13 @@ pub struct DoorWants {
     pub places: Vec<(String, bool)>,
 }
 
+/// (openOMSI #3310) What happened at the cash desk that the bus's sounds follow.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SaleEvent {
+    /// The passenger put coins on the desk (`ev_ticketsale_givemoney`).
+    PassengerGaveMoney,
+}
+
 /// A bus as the passengers know it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BusId {
@@ -339,6 +346,9 @@ pub struct PeopleSim {
     pub content: u32,
     pub ticket_requests: u32,
     pub ticket_points: u32,
+    /// (openOMSI #3310) The cash desk's events since the app last took them, for the bus's
+    /// sounds (`take_money_events`).
+    pub sale_events: Vec<(BusId, SaleEvent)>,
     /// `PAX_Entry<i>_Req`: somebody at the kerb wants in through entry `i`.
     pub entry_req: Vec<bool>,
     /// `PAX_Exit<i>_Req`: somebody inside wants out through exit `i`.

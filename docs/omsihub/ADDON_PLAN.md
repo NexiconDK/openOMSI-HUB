@@ -813,3 +813,23 @@ repository. Each is marked "Omsi-Hub (fork-local)" in the code.
     merge of upstream meets the rename there and in the few places that use it.
   - Everything that looks for a program falls back to the old name, so a folder of openOMSI's
     own still works as the chosen game (§3, step 2).
+
+### openOMSI changes brought over by hand (16 November 2026)
+
+The sync with openOMSI's main (`omsihub-sync.yml`) is off on this repository ("disabled_fork");
+the last merge was openOMSI 0.2.48 (14 October 2026). NexiconDK asked for these since; each was
+fitted to this fork's code rather than merged, and is marked with its pull request in the code:
+
+- **#3706 and #3892, the GPS screen in the cockpit (`[navigatortexture]`).** openOMSI moved its
+  navigator into a crate of its own (`omsi-navigator`, 16 October 2026); here the screen is drawn
+  by `crates/omsi-app/src/navigator/screen.rs` with the panel's own `paint_panel`
+  (docs/NAVIGATORTEXTURE.md, "For developers"). The model, simulation, scene and GPU parts are
+  openOMSI's as they were.
+- **#3798, Discord's status.** openOMSI's `omsi-platform/src/discord.rs` with the texts in
+  English (openOMSI translates them with an interface-text module this fork does not have),
+  Omsi-Hub's name and Discord application, and without the buttons to a website and a community
+  (NexiconDK: none). The players online: the session's peers and this player.
+- **#3310, the cash desk (not merged in openOMSI).** The coins' sounds
+  (`ev_ticketsale_givemoney`, `ev_ticketsale_takemoney`), every piece of money on the desk
+  clickable, and the next sale held until the driver has taken the last payment - except in
+  `auto` boarding, where the game takes it with the ticket.

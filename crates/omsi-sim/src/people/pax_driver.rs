@@ -197,6 +197,12 @@ impl PeopleSim {
             if self.desk_busy.is_some_and(|d| d != self.people[i].id) {
                 return;
             }
+            // (openOMSI #3310) the last passenger's money still on the desk: the driver takes it
+            // first (a click on it, or the change tray's key) - in `auto` boarding the game plays
+            // the driver and took it with the ticket
+            if !auto && payment_on_desk(self.money.as_ref()) {
+                return;
+            }
             let k = 1 + self.rand() % 2;
             self.say_ex(i, &format!("Ticket_{id}_{k}"), false);
             self.ticket_requests += 1;
@@ -221,6 +227,11 @@ impl PeopleSim {
                 let coins = if self.exact_fare || auto { m.exact_coins_for(value) } else { m.omsi_coins_for(value) };
                 paid = m.value_of(&coins);
                 if let Some((pos, var, parent)) = point {
+                    // (openOMSI #3310: the coins' sound, `ev_ticketsale_givemoney`)
+                    let coin_kinds = m.currency.as_ref().map(|c| c.coins.len()).unwrap_or(0);
+                    if coins.iter().any(|&c| c < coin_kinds) {
+                        self.sale_events.push((bn.id, SaleEvent::PassengerGaveMoney));
+                    }
                     // (put there when the view catches up: `view_sync::apply_people`)
                     self.bodies.ops.push(BodyOp::Coins { coins, point: pos, var, change: false, parent });
                 }
@@ -249,8 +260,12 @@ impl PeopleSim {
             self.ticket_cash += value;
             self.sales.push((name, value));
             *taken_ticket = true;
-            if let Some(m) = self.money.as_mut() {
-                m.clear(false);
+            // (openOMSI #3310: the payment stays on the desk until the driver takes it; in
+            // `auto` boarding the game takes it with the ticket)
+            if auto {
+                if let Some(m) = self.money.as_mut() {
+                    m.clear(false);
+                }
             }
             self.paid = None;
             let pp = self.pax_mut(i).unwrap();
@@ -346,4 +361,10 @@ impl PeopleSim {
         }
         self.pardon_max = self.pardon_max.max(self.pardons);
     }
+}
+
+/// (openOMSI #3310) Whether a passenger's payment still lies on the desk (not the change on
+/// the tray): the next sale waits for the driver to take it.
+pub(crate) fn payment_on_desk(m: Option<&super::money::Money>) -> bool {
+    m.is_some_and(|m| m.placed.iter().any(|p| !p.3))
 }

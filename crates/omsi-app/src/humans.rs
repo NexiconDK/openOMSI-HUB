@@ -123,9 +123,12 @@ impl Humans {
     }
 
     /// OMSI's `change_take`: the driver takes back the coins lying on the change tray.
+    /// (openOMSI #3310) and the passenger's payment on the desk with it: the next sale waits
+    /// for it to be taken.
     pub fn take_change_tray(&mut self) {
         if let Some(m) = self.sim.money.as_mut() {
             m.clear(true);
+            m.clear(false);
         }
     }
 

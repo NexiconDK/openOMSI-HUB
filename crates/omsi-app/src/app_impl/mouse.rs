@@ -542,10 +542,16 @@ impl App {
                     self.input.dragging = false;
                     return;
                 }
-                // a coin of the change on the tray: picked up again
-                if let Some((m, k)) = self.session.humans.as_mut().and_then(|h| h.sim.money.as_mut()).and_then(|m| crate::money::change_hit(m, o, d, &p.vehicle).map(|k| (m, k))) {
-                    log::info!("a coin of the change picked up again");
+                // a coin of the change on the tray, or (openOMSI #3310) a coin or a note the
+                // passenger put on the desk: picked up - a coin with the bus's sound of it
+                if let Some((m, k)) = self.session.humans.as_mut().and_then(|h| h.sim.money.as_mut()).and_then(|m| crate::money::money_hit(m, o, d, &p.vehicle).map(|k| (m, k))) {
+                    log::info!("a piece of money picked up");
+                    let coin_kinds = m.currency.as_ref().map(|c| c.coins.len()).unwrap_or(0);
+                    let coin = m.placed.get(k).is_some_and(|piece| piece.2 < coin_kinds);
                     m.take_coin(k);
+                    if coin {
+                        p.vehicle.host.fired_triggers.push("ev_ticketsale_takemoney".into());
+                    }
                     self.input.dragging = false;
                     return;
                 }

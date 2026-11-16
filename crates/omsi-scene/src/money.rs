@@ -74,18 +74,17 @@ fn mesh_of(bus: &VehicleInstance, name: &str) -> Mat4 {
         .unwrap_or(Mat4::IDENTITY)
 }
 
-/// The coin of the change lying on the tray a ray from `origin` along `dir` points at
-/// (its place in `Money::placed`), the nearest: within 2 cm of a coin's middle, as near
-/// as a coin is wide. A click on it picks it up again, as in Omsi.exe (#1354, #2399: the
-/// coins could not be clicked).
-pub fn change_hit(m: &Money, origin: DVec3, dir: Vec3, bus: &VehicleInstance) -> Option<usize> {
+/// The piece of money a ray from `origin` along `dir` points at - a coin of the change on
+/// the tray, or (openOMSI #3310) a coin or a note the passenger put on the desk - (its place
+/// in `Money::placed`), the nearest: within 2 cm of its middle. A click on it picks it up, as
+/// in Omsi.exe (#1354, #2399: the coins could not be clicked).
+pub fn money_hit(m: &Money, origin: DVec3, dir: Vec3, bus: &VehicleInstance) -> Option<usize> {
     let rot = bus.body_rotation();
     let o = (origin - bus.position).as_vec3();
     let dir = dir.normalize_or_zero();
     m.placed
         .iter()
         .enumerate()
-        .filter(|(_, p)| p.3)
         .filter_map(|(k, (_, local, _, _, parent))| {
             let on = parent.as_deref().map(|n| mesh_of(bus, n)).unwrap_or(Mat4::IDENTITY);
             let c = (rot * on * *local).transform_point3(Vec3::ZERO);

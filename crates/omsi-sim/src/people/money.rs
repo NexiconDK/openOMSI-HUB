@@ -276,6 +276,28 @@ mod tests {
         assert_eq!(m.placed.len(), 2);
     }
 
+    /// (openOMSI #3310) The next sale waits while a passenger's payment lies on the desk; the
+    /// change on the tray does not hold it, and the payment taken (a click on each piece, or
+    /// the change tray's key: `clear(false)`) lets it go.
+    #[test]
+    fn the_next_sale_waits_for_the_payment_to_be_taken() {
+        use super::super::pax_driver::payment_on_desk;
+        let mut m = Money { currency: None, dir: PathBuf::new(), meshes: HashMap::new(), placed: Vec::new(), hidden: Vec::new(), rng: 7 };
+        assert!(!payment_on_desk(None) && !payment_on_desk(Some(&m)));
+        m.placed.push((11, Mat4::IDENTITY, 1, true, None));
+        assert!(!payment_on_desk(Some(&m)), "change on the tray");
+        m.placed.push((10, Mat4::IDENTITY, 0, false, None));
+        m.placed.push((12, Mat4::IDENTITY, 7, false, None));
+        assert!(payment_on_desk(Some(&m)));
+        m.take_coin(1);
+        assert!(payment_on_desk(Some(&m)), "a note still there");
+        m.take_coin(1);
+        assert!(!payment_on_desk(Some(&m)));
+        m.placed.push((13, Mat4::IDENTITY, 0, false, None));
+        m.clear(false);
+        assert!(!payment_on_desk(Some(&m)) && m.placed.len() == 1);
+    }
+
     fn money_with_currency(coins: &[f32], bills: &[f32]) -> Money {
         Money {
             currency: Some(Currency {

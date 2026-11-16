@@ -104,7 +104,7 @@ use runners::*;
 pub use avatar::{AvatarCmd, SeatSpot};
 pub use bodies::{BodyOp, BodyOps};
 pub use mirror::{placed_bus_id, remote_bus_id, remote_bus_player, LanPerson, MirrorPose};
-pub use model::{BusId, DoorWants, Eye, Footfall, PeopleSim, Person, Place, State, VoiceLine};
+pub use model::{BusId, DoorWants, SaleEvent, Eye, Footfall, PeopleSim, Person, Place, State, VoiceLine};
 pub use money::Money;
 pub use passed_by::{Gesture, LeftBehind, MirrorGesture, WAVE_SECS};
 pub use greetings::{holds_phone, GestureShares, Greet, SHARE_STEPS};
