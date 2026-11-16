@@ -56,6 +56,7 @@ pub static EVENTS: &[EventDef] = &[
     ev("indicator", &["new", "old"], NEW, "The indicators changed: `\"off\"`, `\"left\"`, `\"right\"` or `\"hazard\"`."),
     ev("headlights", &["new", "old"], NEW, "The headlights changed: 0 off, 1 side lights, 2 dipped, 3 high beam."),
     ev("horn", &["down"], NEW, "The horn started (`true`) or stopped."),
+    ev("bus_trigger", &["name"], NEW, "(Omsi-Hub) A script trigger of the player's bus ran from outside its scripts: a click in the cab (a button of a tablet or an IBIS), a key, a plugin's `bus.trigger` - its name as the bus's scripts have it (`omsi.bus.triggers`), keys' `_off` too."),
     ev("handbrake", &["on"], NEW, "The parking brake was put on (`true`) or released."),
     ev("stop_request", &["on"], NEW, "A passenger asked to stop (`true`), or the request went out."),
     ev("passengers", &["count", "old"], NEW, "The number of passengers aboard the player's bus changed."),

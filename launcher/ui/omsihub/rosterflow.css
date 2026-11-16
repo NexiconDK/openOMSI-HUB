@@ -1687,6 +1687,8 @@ button.cl-cell:hover { outline: 1px solid color-mix(in srgb, var(--k) 70%, trans
 .wl-group { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .wl-group .wl-all { font-size: 10px; font-weight: 700; letter-spacing: 0; text-transform: none; padding: 0 2px; }
 .wl-row.works { background: rgba(245, 166, 35, 0.10); box-shadow: inset 3px 0 0 #f5a623; }
+/* (16 November 2026) asked or rung about another duty that day already, and what came of it */
+.wl-contacted { font-style: normal; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 6px; border-radius: 9px; font-size: 9.2px; font-weight: 700; color: #6fb6ff; border: 1px solid rgba(111, 182, 255, 0.55); background: rgba(111, 182, 255, 0.12); }
 .wl-works { font-style: normal; flex: none; white-space: nowrap; padding: 0 6px; border-radius: 9px; font-size: 9.2px; font-weight: 700; color: #f5a623; border: 1px solid rgba(245, 166, 35, 0.55); background: rgba(245, 166, 35, 0.12); }
 .wl-answer .wl-ring { margin-left: 6px; white-space: nowrap; }
 .wl-row.works .wl-extra { display: none; }

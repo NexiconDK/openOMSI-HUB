@@ -990,6 +990,9 @@ fn with_faults(c: &Company, mut s: DriveStart) -> DriveStart {
 /// inspection on its duty (`inspection_game::for_duty`), as the boss's own launcher gives its game.
 fn with_inspection(c: &Company, p: &DayPlan, r: &DutyRef, mut s: DriveStart) -> DriveStart {
     s.inspection = super::super::inspection_game::for_duty(c, p, &r.line, &r.tour);
+    // (16 November 2026: the company's lines - only a free drive picks from them in the game's
+    // "Line and tour"; on a duty they go to his plugin, for a VCP tablet's list)
+    s.lines = c.lines.iter().map(|l| l.name.clone()).collect();
     // (and their clothes, to be made on his computer: the ones asked for with "Bestil kontrol" too)
     s.uniform = s.inspection.as_ref().map(|_| serde_json::json!({ "inspectors": super::super::server_api::inspectors_json(c), "short": c.short, "name": c.name, "colours": c.colours }));
     s

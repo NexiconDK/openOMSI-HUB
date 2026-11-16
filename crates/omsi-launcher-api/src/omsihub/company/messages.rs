@@ -76,6 +76,42 @@ pub fn to_label(c: &Company, to: &To, dp: Option<&DayPlan>) -> String {
     }
 }
 
+/// (NexiconDK, 16 November 2026: "der står Til 'Linje vognløb'? Men hvem præcis?") Who message
+/// `m` goes to, in words, for the list: a duty's with the driver's name - the one whose message it
+/// answers, else who drives the tour now by the day's plan `dp`; a duty without a line and a tour
+/// (control's answer to a driver on a free drive or a ticket-inspection duty) is his name alone -
+/// it read "Line  tour " ("Linje  vognløb").
+pub fn to_label_of(c: &Company, m: &Msg, dp: Option<&DayPlan>) -> String {
+    let To::Duty { line, tour } = &m.to else { return to_label(c, &m.to, dp) };
+    let answered = m.re.and_then(|id| c.messages.get(id)).and_then(|x| match &x.from {
+        From::Driver { name, .. } if !name.trim().is_empty() => Some(name.trim().to_string()),
+        _ => None,
+    });
+    let name = answered.or_else(|| driver_of(c, line, tour, dp));
+    if line.trim().is_empty() {
+        return name.unwrap_or_else(|| tr("A driver without a duty"));
+    }
+    let duty = to_label(c, &m.to, dp);
+    match name {
+        Some(n) => format!("{duty} · {n}"),
+        None => duty,
+    }
+}
+
+/// Who drives tour `tour` of line `line` by the day's plan: the duty under way at the company's
+/// time on its own day, else its first with a driver.
+fn driver_of(c: &Company, line: &str, tour: &str, dp: Option<&DayPlan>) -> Option<String> {
+    let t = dp?.tours.iter().find(|t| t.tour.line.eq_ignore_ascii_case(line) && t.tour.tour == tour)?;
+    let now = (ck::now(c).rem_euclid(1440)) as i32;
+    let d = t.duties.iter().filter(|d| d.who.is_some()).find(|d| dp.is_some_and(|p| p.today) && d.from <= now && now <= d.to).or_else(|| t.duties.iter().find(|d| d.who.is_some()))?;
+    Some(match d.who? {
+        co::plan::Who::Staff(id) => c.employee(id)?.name.clone(),
+        co::plan::Who::Player => tr("You"),
+        co::plan::Who::Agency => tr("Agency driver"),
+        co::plan::Who::Guest(g) => crate::omsihub::together::guest_label(c, g),
+    })
+}
+
 fn action_of(a: &Action) -> InboxAction {
     let (part, minutes, stop) = match &a.what {
         What::ShortTurn { part, .. } | What::OutOfService { part, .. } => (*part, 0, String::new()),
@@ -323,7 +359,7 @@ pub fn log_json(c: &Company, dp: Option<&DayPlan>) -> Vec<Value> {
                 "id": m.id,
                 "time": ck::hhmm(m.at),
                 "from": from_label(m, dp),
-                "to": to_label(c, &m.to, dp),
+                "to": to_label_of(c, m, dp),
                 "text": text(m),
                 "prio": { "key": m.priority.key(), "label": tr(m.priority.label()) },
                 "state": { "key": m.state.key(), "label": tr(m.state.label()) },
@@ -463,6 +499,24 @@ pub fn texts() -> Vec<&'static str> {
 mod tests {
     use super::*;
 
+    /// (NexiconDK, 16 November 2026) Control's answer to a driver's message names him in the list:
+    /// a driver without a duty (a free drive, a ticket-inspection duty) by his name alone - it read
+    /// "Linje  vognløb" -, a duty's with his name after it.
+    #[test]
+    fn the_list_says_which_driver_a_message_goes_to() {
+        super::super::words::set_language("en");
+        let mut c = omsi_launcher_lib::company::found(&omsi_launcher_lib::company::Founding { name: "Link".into(), date: "2024-03-04".into(), ..Default::default() }, "Luc");
+        let free = msg::send(&mut c, From::Driver { line: String::new(), tour: String::new(), name: "Merete Gregersen".into() }, To::Control, Priority::Info, Quick::RequestTalk.label(), Vec::new(), false, None);
+        let duty = msg::send(&mut c, From::Driver { line: "Linie5".into(), tour: "1".into(), name: "Malthe Jepsen".into() }, To::Control, Priority::Info, Quick::DelayTraffic.label(), Vec::new(), false, None);
+        msg::acknowledge(&mut c, free, From::Manager { name: "Dootar".into() }, false).unwrap();
+        msg::acknowledge(&mut c, duty, From::Manager { name: "Dootar".into() }, false).unwrap();
+        let log = log_json(&c, None);
+        let to: Vec<&str> = log.iter().take(2).map(|m| m["to"].as_str().unwrap()).collect();
+        assert_eq!(to, ["Line Linie5 tour 1 · Malthe Jepsen", "Merete Gregersen"]);
+        // (a message to a duty without an answer to name him: the duty alone; a driver of none: so said)
+        assert_eq!(to_label_of(&c, &Msg { to: To::Duty { line: String::new(), tour: String::new() }, ..c.messages.get(free).unwrap().clone() }, None), "A driver without a duty");
+    }
+
     #[test]
     fn a_reply_line_is_taken_in_once_and_a_quick_button_reaches_control() {
         super::super::words::set_language("en");
@@ -483,7 +537,7 @@ mod tests {
         let ib = inbox(&c, "Linie5", "1", None);
         assert_eq!(ib.messages.iter().map(|m| m.id).collect::<Vec<_>>(), vec![last.id, id]);
         assert!(ib.messages[0].mine && ib.messages[1].text == msg::DIVERSION && ib.messages[1].state == "read");
-        assert_eq!((ib.quick.len(), ib.replies.len()), (7, 4));
+        assert_eq!((ib.quick.len(), ib.replies.len()), (10, 4));
     }
 
     #[test]

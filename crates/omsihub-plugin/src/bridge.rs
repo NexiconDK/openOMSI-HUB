@@ -191,6 +191,11 @@ pub struct Assignment {
     /// (NexiconDK, ticket inspection round U) The company's ticket inspection on the duty
     /// (`lua/inspection.lua`; None: a drive of the player's own, or no inspectors).
     pub inspection: Option<Inspection>,
+    /// (NexiconDK, 16 November 2026: "vi skal have den til at vise de linjer man kun selv har i
+    /// Bus Company Online") The company's lines on the map, as the timetable names them (its
+    /// `.ttl`s) - empty: a drive of the player's own, every line. `lua/tablet.lua` hands them to a
+    /// VCP tablet's plugin, which lists only these.
+    pub lines: Vec<String>,
 }
 
 /// (NexiconDK, ticket inspection round U) The company's ticket inspection on a duty: the

@@ -1057,6 +1057,16 @@ fn offer(m: &mut Market, now_map: &MapNow, asks: &[MarketAsk], date: &str, now: 
             let opens = clock::moment(&dates::add(&from, -RENEW_OPENS), minute).max(now + 30);
             let closes = clock::moment(&dates::add(&from, -RENEW_DECIDED), minute);
             add_lines(m, template, &ls, &h.package, opens, closes, Some((&c.id, &from)), cfg);
+            // (16 November 2026: what its holder runs the lines with, for the winner to take over)
+            if let Some(x) = m.tenders.last_mut().and_then(|t| t.tender.market.as_mut()) {
+                let mut buses: Vec<u32> = Vec::new();
+                let mut drivers: Vec<u32> = Vec::new();
+                for l in &ls {
+                    buses.extend(super::takeover::buses_of_line(c, &l.name).into_iter().filter(|b| !buses.contains(b)).collect::<Vec<_>>());
+                    drivers.extend(super::takeover::drivers_of_line(c, &l.name).into_iter().filter(|d| !drivers.contains(d)).collect::<Vec<_>>());
+                }
+                (x.take_buses, x.take_drivers) = (buses.len() as u32, drivers.len() as u32);
+            }
             said.push(format!("{}: the concession of {} on line {} out to tender again from {} {} to {}, open to every company", m.map, c.name, if h.package.is_empty() { &h.line } else { &h.package }, clock::date_of(opens), clock::hhmm(opens), clock::date_of(closes)));
         }
     }
@@ -1422,7 +1432,7 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
                 // to it - `takeover`)
                 if renewal && !d.winner.is_empty() && !from.is_empty() {
                     for (line, number) in &lines {
-                        super::takeover::offer(data, c, &d.winner, line, number, &from);
+                        super::takeover::offer(data, c, &d.winner, &d.name, line, number, &from);
                     }
                 }
                 let level = if mine_bid || renewal { Level::Bad } else { Level::Minor };

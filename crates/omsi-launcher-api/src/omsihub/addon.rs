@@ -320,6 +320,8 @@ pub struct Parts {
     /// (round U) The company's ticket inspection on the duty: riders without a ticket, the
     /// inspectors boarding some of its trips (`company::launch::game_inspection`).
     pub inspection: Option<bridge::Inspection>,
+    /// (16 November 2026) The company's lines (the timetable's names): `Assignment::lines`.
+    pub lines: Vec<String>,
 }
 
 /// Give the plugin the duty of a drive about to start, where the plugin is on (otherwise
@@ -365,6 +367,7 @@ pub fn assign_duty(d: &core::Duty, company: Option<(&str, &str, Parts)>, crew: O
         fare: parts.fare,
         contract: parts.contract,
         inspection: parts.inspection,
+        lines: parts.lines,
         ..Assignment::default()
     };
     write_texts(&install::plugin_dir(&dir));
@@ -405,7 +408,7 @@ pub fn inspection_of(g: core::company::inspection_game::ForGame) -> bridge::Insp
 /// (`inspection`, from the boss's side's start), and what it reports goes to the session
 /// (`book`: `game_check` without a company here). An assignment of an earlier drive of the
 /// player's own company is no longer the plugin's. Said in the launcher's log when it fails.
-pub fn assign_session(d: &core::Duty, inspection: Option<bridge::Inspection>) {
+pub fn assign_session(d: &core::Duty, inspection: Option<bridge::Inspection>, lines: &[String]) {
     let mut c = load();
     let Ok(dir) = game_plugins_dir(&c) else { return };
     if install::status(&dir).state != install::State::On {
@@ -419,6 +422,8 @@ pub fn assign_session(d: &core::Duty, inspection: Option<bridge::Inspection>) {
         bus: d.bus.clone(),
         display_font: d.display_font.clone().unwrap_or_default(),
         inspection,
+        // (16 November 2026: the company's lines, for a VCP tablet's list)
+        lines: lines.to_vec(),
         ..Assignment::default()
     };
     write_texts(&install::plugin_dir(&dir));

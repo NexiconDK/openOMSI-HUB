@@ -346,18 +346,40 @@ fn offers(c: &Company) -> Value {
         .iter()
         .filter(|o| o.answer.is_none())
         .map(|o| {
+            // (16 November 2026: the drivers who ran the line come with it, whatever the answer -
+            // only the buses are a choice)
+            let (has_buses, has_drivers) = (!o.buses.is_empty(), !o.drivers.is_empty());
+            let title = match (has_buses, has_drivers) {
+                (true, true) => trf("%{name}'s buses and drivers of line %{n}", &[("name", &o.name), ("n", &o.number)]),
+                (false, true) => trf("%{name}'s drivers of line %{n}", &[("name", &o.name), ("n", &o.number)]),
+                _ => trf("%{name}'s buses of line %{n}", &[("name", &o.name), ("n", &o.number)]),
+            };
+            let mut say = Vec::new();
+            if has_buses {
+                say.push(trf("%{count} buses at their book value, %{amount} together, taken over on %{date}, the day your term begins.", &[("count", &o.buses.len().to_string()), ("amount", &eur(o.total())), ("date", &day_label(&o.date))]));
+            }
+            if has_drivers {
+                say.push(trf("%{count} drivers come with the line on their terms - their wages %{amount} a month together - from %{date}.", &[("count", &o.drivers.len().to_string()), ("amount", &eur(o.drivers.iter().map(|d| d.wage).sum())), ("date", &day_label(&o.date))]));
+            }
+            let choices = if has_buses {
+                vec![json!({ "label": tr("Take over the buses"), "primary": true }), json!({ "label": tr("Not the buses"), "no": true })]
+            } else {
+                vec![json!({ "label": tr("Understood"), "no": true })]
+            };
             json!({
                 "id": o.id, "number": o.number,
-                "title": trf("%{name}'s buses of line %{n}", &[("name", &o.name), ("n", &o.number)]),
-                "say": trf("%{count} buses at their book value, %{amount} together, taken over on %{date}, the day your term begins.", &[("count", &o.buses.len().to_string()), ("amount", &eur(o.total())), ("date", &day_label(&o.date))]),
+                "title": title,
+                "say": say.join(" "),
                 "buses": o.buses.iter().map(|b| json!([b.label, eur(b.value)])).collect::<Vec<_>>(),
+                "drivers": o.drivers.iter().map(|d| json!([d.name, eur(d.wage)])).collect::<Vec<_>>(),
+                "choices": choices,
             })
         })
         .collect();
     if rows.is_empty() {
         return Value::Null;
     }
-    json!({ "title": tr("Buses offered"), "rows": rows, "yes": tr("Take them over"), "no": tr("No, thank you") })
+    json!({ "title": tr("Buses and drivers offered"), "rows": rows, "yes": tr("Take them over"), "no": tr("No, thank you") })
 }
 
 /// (NexiconDK, 3 November 2026) The authority's doubling orders (`doubling`): those to answer -
@@ -608,7 +630,11 @@ fn requirements(c: &Company, t: &Tender, week: Option<Week>) -> Value {
         row("Bidding", trf("Three days: from %{open} to %{close}", &[("open", &when(c, t.opens_at)), ("close", &when(c, t.closes_at))])),
         row("The term", trf("From %{date}. Option: %{d} days more, at most %{n} times, when run satisfactorily (not red, at most 2 % of its journeys dropped)", &[("date", &day_label(&from)), ("d", &co_tenders::OPTION_DAYS.to_string()), ("n", &co_tenders::OPTIONS.to_string())])),
         row("Renewal", tr("The next term is announced six days before it begins, takes bids from five days before and is decided two days before it: the winner has two days to make ready.")),
-        row("The buses", tr("The winner may take over the buses its last operator ran the line with, at their book value.")),
+        // (NexiconDK, 16 November 2026: the drivers too, and how many - a renewal's holder's)
+        row("Buses and drivers", match t.market.as_ref().filter(|m| t.renewal || !m.holder.is_empty()).map(|m| (m.take_buses, m.take_drivers)).filter(|x| x.0 + x.1 > 0) {
+            Some((b, d)) => trf("The %{drivers} drivers its last operator runs the line with come with it to the winner on their terms; the winner may take over its %{buses} buses at their book value.", &[("buses", &b.to_string()), ("drivers", &d.to_string())]),
+            None => tr("The drivers its last operator ran the line with come with it to the winner on their terms; the winner may take over its buses at their book value."),
+        }),
         row("The cap", trf("%{amount}: an ask above it does not count", &[("amount", &money(t, t.reference))])),
         row("Payment", tr("Asks are a price a timetable hour. The contract pays it each day for the timetable hours run: a journey not run is not paid.")),
     ];
@@ -1274,9 +1300,20 @@ pub fn act(s: &mut Session, what: &str, args: &Value) -> Option<Answer> {
         "takeover_yes" | "takeover_no" => {
             let offer = args.get("offer").and_then(Value::as_str).unwrap_or("").to_string();
             let data = super::super::data();
-            match apply(s, |c| omsi_launcher_lib::company::takeover::answer(&data, c, &offer, what == "takeover_yes")) {
+            // (16 November 2026: its drivers come with the line in any case - only the buses are
+            // answered)
+            let yes = what == "takeover_yes";
+            let drivers = s.company.as_ref().and_then(|c| c.online.takeover.offers.iter().find(|o| o.id == offer)).is_some_and(|o| !o.drivers.is_empty());
+            let buses = s.company.as_ref().and_then(|c| c.online.takeover.offers.iter().find(|o| o.id == offer)).is_some_and(|o| !o.buses.is_empty());
+            match apply(s, |c| omsi_launcher_lib::company::takeover::answer(&data, c, &offer, yes)) {
                 Ok(_) => {
-                    s.say(tr(if what == "takeover_yes" { "The buses are yours on the day your term begins." } else { "The buses stay with their company." }), false);
+                    s.say(tr(match (yes, buses, drivers) {
+                        (true, _, true) => "The buses and the drivers are yours on the day your term begins.",
+                        (true, _, false) => "The buses are yours on the day your term begins.",
+                        (false, true, true) => "The drivers come on the day your term begins; the buses stay with their company.",
+                        (false, false, true) => "The drivers come on the day your term begins.",
+                        (false, _, false) => "The buses stay with their company.",
+                    }), false);
                     Ok(json!({}))
                 }
                 Err(p) => Ok(json!({ "popup": p })),

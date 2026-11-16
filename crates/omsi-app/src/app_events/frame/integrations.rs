@@ -117,6 +117,13 @@ impl App {
                 }
             });
         }
+        // (Omsi-Hub, 16 November 2026) the bus's triggers run from outside: `bus_trigger` - a
+        // tablet's buttons, which a plugin answers (Bus Company Online's messages)
+        if let Some(p) = self.player.as_mut() {
+            for name in p.vehicle.take_pressed() {
+                crate::plugins::queue_event(&mut self.integrations.plugin_events, "bus_trigger", vec![omsi_plugin::InfoValue::Text(name)]);
+            }
+        }
         if let (Some(h), Some(p)) = (self.session.humans.as_mut(), self.player.as_ref()) {
             let hurt = steps::people_in_career(&mut self.session.career, h, p, self.settings.collision_pedestrians);
             for (name, price) in h.take_sales() {

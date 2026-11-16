@@ -647,7 +647,7 @@ mod tests {
         // (7 November 2026: the admin's contract prices and depot areas - refusals and messages)
         texts.extend(omsi_launcher_lib::company::server_grants::texts().into_iter().map(String::from));
         let hq = include_str!("bco_hq.rs").split("#[cfg(test)]").next().unwrap_or("");
-        texts.extend(takeover::texts().into_iter().chain([takeover::OFFERED.0, takeover::OFFERED.1, takeover::TAKEN.0, takeover::TAKEN.1, takeover::REFUSED.0, takeover::REFUSED.1]).map(String::from));
+        texts.extend(takeover::texts().into_iter().chain([takeover::OFFERED.0, takeover::OFFERED.1, takeover::TAKEN.0, takeover::TAKEN.1, takeover::REFUSED.0, takeover::REFUSED.1, takeover::DRIVERS_OFFERED.0, takeover::DRIVERS_OFFERED.1, takeover::DRIVERS_TAKEN.0, takeover::DRIVERS_TAKEN.1, takeover::DRIVERS_CAME.0, takeover::DRIVERS_CAME.1]).map(String::from));
         texts.push(super::together::SERVER_CODE.to_string());
         texts.push(omsi_launcher_lib::company::together::host::NO_TICKET.to_string());
         for (lead, own) in ["tr(\"", "trf(\""].into_iter().flat_map(|l| [(l, own), (l, hq)]) {

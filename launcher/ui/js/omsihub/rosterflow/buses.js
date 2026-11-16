@@ -181,15 +181,17 @@ function DayView({ v, filter, onPick, sel }) {
 }
 
 function WeekView({ v, filter, onDay }) {
-  const rows = (v.buses || []).filter((b) => filter === 'all' || (filter === 'workshop' ? b.cells.some((c) => c.key === 'workshop') : b.kind === filter));
-  const cols = `220px repeat(${v.days.length}, minmax(80px, 1fr))`;
+  const rows = (v.buses || []).filter((b) => filter === 'all' || (filter === 'workshop' ? (b.cells || []).some((c) => c.key === 'workshop') : b.kind === filter));
+  // (the answer of the day before the week's arrives: nothing to lay out yet)
+  const days = v.days || [];
+  const cols = `220px repeat(${Math.max(days.length, 1)}, minmax(80px, 1fr))`;
   return html`<div class="cl-grid bd-week" style=${'grid-template-columns:' + cols}>
     <div class="cl-h left">${tr('Bus')}</div>
-    ${v.days.map((d) => html`<button type="button" class=${'cl-h day' + (d.today ? ' today' : '')} onClick=${() => onDay(d.date)}>${d.wd}<span>${d.day}${d.today ? ` · ${tr('today')}` : ''}</span></button>`)}
+    ${days.map((d) => html`<button type="button" class=${'cl-h day' + (d.today ? ' today' : '')} onClick=${() => onDay(d.date)}>${d.wd}<span>${d.day}${d.today ? ` · ${tr('today')}` : ''}</span></button>`)}
     <div class="cl-name miss"><b>${v.words.missing}</b></div>
-    ${v.missing.map((m) => html`<button type="button" class=${'cl-miss ' + (m.n ? 'bad' : 'ok')} onClick=${() => onDay(m.date)}>${m.n ? html`<b>${m.n}</b>${v.words.blocks}` : '✓'}</button>`)}
+    ${(v.missing || []).map((m) => html`<button type="button" class=${'cl-miss ' + (m.n ? 'bad' : 'ok')} onClick=${() => onDay(m.date)}>${m.n ? html`<b>${m.n}</b>${v.words.blocks}` : '✓'}</button>`)}
     ${rows.map((bus) => html`<div class="cl-name"><b>${tr('Bus')} ${bus.number}</b><span>${bus.facts}</span></div>
-      ${bus.cells.map((c) => html`<button type="button" class=${'cl-cell bd-wcell ' + c.key} onClick=${() => onDay(c.date)}>${c.text}</button>`)}`)}
+      ${(bus.cells || []).map((c) => html`<button type="button" class=${'cl-cell bd-wcell ' + c.key} onClick=${() => onDay(c.date)}>${c.text}</button>`)}`)}
   </div>`;
 }
 
@@ -206,7 +208,8 @@ export function BusesTab() {
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
   }, [b.pick]);
-  if (!v) return html`<div class="rf-reading">${tr('Reading the timetable…')}</div>`;
+  // (just after a switch between day and week the last answer is still the other view's)
+  if (!v || (!v.off && v.mode && v.mode !== mode)) return html`<div class="rf-reading">${tr('Reading the timetable…')}</div>`;
   if (v.off) return html`<div class="rf-reading">${v.reading}</div>`;
   const w = v.words || {};
   const go = (d) => setB({ date: d, pick: null });

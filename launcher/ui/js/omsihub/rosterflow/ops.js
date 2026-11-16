@@ -290,7 +290,7 @@ function Line({ v, n, x, picked, onPick, onRing, ringing }) {
   };
   return html`<div class=${'wl-row' + (x.breach ? ' breach' : '') + (picked ? ' picked' : '') + (x.action === 'cannot' ? ' cannot' : '') + (x.works ? ' works' : '')}>
     <span class="wl-tick">${x.action === 'ask' && html`<input type="checkbox" checked=${picked} title=${tr('Tick to ask')} onChange=${(e) => onPick(e.currentTarget.checked)} />`}</span>
-    <span class="wl-who" title=${x.sub}><b>${x.name}</b><i class="wl-chip">${x.chip}</i>${x.avail && html`<i class=${'wl-avail ' + x.avail.key}>${x.avail.text}</i>`}${x.works && html`<i class="wl-works" title=${x.works}>${x.works}</i>`}${x.extra && html`<i class="wl-extra">${x.extra}</i>`}${signs.map(([g, t, k]) => html`<i class=${'wl-sign ' + k} title=${t}>${g}</i>`)}</span>
+    <span class="wl-who" title=${x.sub}><b>${x.name}</b><i class="wl-chip">${x.chip}</i>${x.avail && html`<i class=${'wl-avail ' + x.avail.key}>${x.avail.text}</i>`}${x.works && html`<i class="wl-works" title=${x.works}>${x.works}</i>`}${x.contacted && html`<i class="wl-contacted" title=${x.contacted}>${x.contacted}</i>`}${x.extra && html`<i class="wl-extra">${x.extra}</i>`}${signs.map(([g, t, k]) => html`<i class=${'wl-sign ' + k} title=${t}>${g}</i>`)}</span>
     <span class=${'wl-price' + (x.over && !toil ? ' op-over' : '') + (toil ? ' bx-saved' : '')} title=${x.sub}>${price}</span>
     <span class="wl-answer">${ringing
       ? html`<span class="wl-wait">📞 ${tr('Ringing %{name}…', { name: x.name })}</span>`
@@ -411,7 +411,7 @@ function Who({ v, d }) {
     ${d.players.length > 0 && html`<div class="wl-group">${tr('Players')}</div>
       ${d.players.map((p) => html`<div class="wl-row">
         <span class="wl-tick">${p.action === 'ask' && html`<input type="checkbox" checked=${!!picked['g' + p.no]} onChange=${(e) => pick('g' + p.no, e.currentTarget.checked)} />`}</span>
-        <span class="wl-who"><b>${p.name}</b><i class="wl-chip">${tr('a player: answers himself')}</i>${p.avail && html`<i class=${'wl-avail ' + p.avail.key}>${p.avail.text}</i>`}${p.wish && html`<i class=${'wl-wish ' + (p.wish.ok ? 'ok' : 'miss')} title=${p.wish.text}>★ ${p.wish.text}</i>`}</span>
+        <span class="wl-who"><b>${p.name}</b><i class="wl-chip">${tr('a player: answers himself')}</i>${p.avail && html`<i class=${'wl-avail ' + p.avail.key}>${p.avail.text}</i>`}${p.wish && html`<i class=${'wl-wish ' + (p.wish.ok ? 'ok' : 'miss')} title=${p.wish.text}>★ ${p.wish.text}</i>`}${p.contacted && html`<i class="wl-contacted" title=${p.contacted}>${p.contacted}</i>`}</span>
         <span class="wl-price"></span>
         <span class="wl-answer">${p.action === 'waiting' ? html`<span class="wl-wait">🕒 ${tr('Waiting for an answer…')}</span>` : p.answer ? html`<span class="wl-ansbox"><span class=${'wl-ans ' + (p.answer.yes ? 'yes' : 'no')} title=${p.answer.words || ''}>${p.answer.chip}</span>${p.answer.words && html`<span class="wl-why">${p.answer.words}</span>`}</span>` : html`<span class="wl-dim">–</span>`}
           ${p.action === 'give' && html`<button type="button" class="bx-btn green sm" onClick=${() => oAct('give_guest', { date: v.date, n: d.n, guest: p.no }).then((r) => r?.edited && setO({ n: null, given: tr('Duty %{n} is given to %{name}', { n: d.n, name: p.name }) }))}>${tr('Give')}</button>`}</span>

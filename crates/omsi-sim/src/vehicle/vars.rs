@@ -132,7 +132,18 @@ impl VehicleInstance {
                 &mut self.host,
             );
         }
+        if fired {
+            if self.pressed.len() >= super::PRESSED_KEPT {
+                self.pressed.remove(0);
+            }
+            self.pressed.push(name.to_string());
+        }
         fired
+    }
+
+    /// (Omsi-Hub) The triggers fired from outside since the last call, oldest first.
+    pub fn take_pressed(&mut self) -> Vec<String> {
+        std::mem::take(&mut self.pressed)
     }
 
     /// The script variables as `names` would leave them, run one after another, with the
@@ -142,9 +153,11 @@ impl VehicleInstance {
         let (state, vm) = (self.state.clone(), self.vm.clone());
         let (fired, fired_files, messages, time_written) = (self.host.fired_triggers.len(), self.host.fired_file_triggers.len(), self.host.messages.clone(), self.host.time_written);
         let fired_vars = self.host.fired_trigger_vars.len();
+        let pressed = self.pressed.len();
         for n in names {
             self.trigger(n);
         }
+        self.pressed.truncate(pressed);
         let out = self.state.vars.clone();
         self.state = state;
         self.vm = vm;

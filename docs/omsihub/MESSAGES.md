@@ -172,3 +172,38 @@ Kept small, for the sessions working beside this one:
   (`Assigned`'s company duty, `duty_link`, `game_plugin_dir`), `company.rs` (the session's link
   and the relayed sender), `together/join.rs` and `host.rs` (the player's own plugin, the
   sender's name); `ops.js` (three imports and uses).
+
+## The VCP tablet in the bus (16 November 2026)
+
+NexiconDK: *"Opkald - Altså besked fra Bus Company Online skal snakke sammen med denne tablet,
+begge veje"*, and *"vi skal have den til at vise de linjer man kun selv har i Bus Company
+Online"*. The tablet is UrbanBacon / Linje 5C's VCP tablet: a bus's
+`Script\IBIS_Tablet\IBIS_Tablet.osc` (made by its author's generator - not changed here) with its
+own Lua plugin (`plugins\IBIS_Tablet\main.lua`: the departures, taking a trip over) and a DLL
+that draws the trip's map (`plugins\IBIS_Tablet_kort`). Its call page (8) had buttons that only
+said "Sendt: ..." on the tablet, and its message page (9) two messages written into the script.
+
+* **The game** tells the plugins the bus's triggers run from outside its scripts - a click in
+  the cab, a key, a plugin (`bus_trigger`, `VehicleInstance::pressed`, `take_pressed`).
+* **Omsi-Hub's plugin** (`crates/omsihub-plugin/lua/tablet.lua`), while the player's bus has the
+  tablet (`Tablet_page`) and a company's inbox is there:
+  * control's two newest messages on the message page (`Tablet_M1_*`, `Tablet_M2_*`: sender,
+    time, title - Info, Instruction, Urgent -, text), and one just sent on its screen
+    (`Tablet_Toast`); a tap marks it read (`read`); an instruction tapped twice within 8 s is
+    accepted and carried out as the inbox's Accept does (`messages.accept`); declined with F9 or
+    on the phone;
+  * the call page's buttons to control as quick messages: Tab_anmod `request_talk`, Tab_op1
+    `delay_traffic`, Tab_op2 `question_trip`, Tab_op3 `road_closed`, Tab_op4 `question_bus`,
+    Tab_op5 `breakdown`, Tab_op6 `passengers_left`, Tab_op7 `accident` (`Quick::QuestionTrip`,
+    `QuestionBus` and `PassengersLeft` are new, in every list of the quick buttons);
+  * the company's lines on the map to the other plugins every 10 s: topic
+    `omsihub_company_lines`, `{ lines = { the timetable's names } }` - empty on a drive of the
+    player's own.
+* **The company's lines** come with the assignment (`Assignment::lines`): the company's own duty
+  (`company/launch.rs`), and a joined player's duty, free drive and ticket inspection
+  (`DriveStart::lines`, set for duties too by `with_inspection`; it still picks the free drive's
+  "Line and tour" only).
+* **The tablet's plugin** (its `main.lua`, handed back to NexiconDK) lists only those lines - near
+  stop and the extended search - while the list is not empty.
+
+Tested: `omsihub-plugin`'s `a_vcp_tablet_shows_control_s_messages_and_its_buttons_go_to_control`.

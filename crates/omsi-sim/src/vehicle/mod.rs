@@ -96,7 +96,14 @@ pub struct AiFrame {
     pub engine_off: bool,
 }
 
+/// The triggers `VehicleInstance::pressed` keeps until the game takes them.
+pub const PRESSED_KEPT: usize = 32;
+
 pub struct VehicleInstance {
+    /// (Omsi-Hub, 16 November 2026) The script triggers fired from outside since the game last
+    /// took them (`take_pressed`): a click in the cab, a key, a plugin - for the plugins'
+    /// `bus_trigger` (a tablet's buttons, which a plugin answers). At most `PRESSED_KEPT`.
+    pub pressed: Vec<String>,
     /// Latest electronic destination selection waiting for the current animation.
     pub(crate) pending_destination: Option<crate::timetable_run::PendingDestination>,
     /// `A_Trans_*` taken over OMSI's frames (see [`OmsiFrames`]).

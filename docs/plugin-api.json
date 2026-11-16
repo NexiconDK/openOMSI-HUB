@@ -4602,6 +4602,14 @@
       "since": "0.2.22"
     },
     {
+      "name": "bus_trigger",
+      "args": [
+        "name"
+      ],
+      "doc": "(Omsi-Hub) A script trigger of the player's bus ran from outside its scripts: a click in the cab (a button of a tablet or an IBIS), a key, a plugin's `bus.trigger` - its name as the bus's scripts have it (`omsi.bus.triggers`), keys' `_off` too.",
+      "since": "0.2.22"
+    },
+    {
       "name": "handbrake",
       "args": [
         "on"

@@ -19,7 +19,7 @@ use std::path::{Path, PathBuf};
 /// The plugin's name: its folder in the plugins folder.
 pub const NAME: &str = "omsihub";
 /// The plugin's version; `lua/main.lua` says the same (a test keeps the two the same).
-pub const VERSION: &str = "1.7.1";
+pub const VERSION: &str = "1.8.0";
 /// The plugin's files.
 pub const FILES: &[(&str, &str)] = &[
     ("main.lua", include_str!("../lua/main.lua")),
@@ -35,6 +35,7 @@ pub const FILES: &[(&str, &str)] = &[
     ("ontime.lua", include_str!("../lua/ontime.lua")),
     ("company.lua", include_str!("../lua/company.lua")),
     ("inspection.lua", include_str!("../lua/inspection.lua")),
+    ("tablet.lua", include_str!("../lua/tablet.lua")),
 ];
 /// The texts the plugin shows (`tr` in `lua/main.lua`), in English: Omsi-Hub puts their
 /// translations into the assignment (`bridge::Assignment::texts`).
@@ -189,6 +190,13 @@ pub const TEXTS: &[&str] = &[
     "F9: messages · F10: use the panels with the mouse",
     "Hold over: carry on",
     "Sent to control",
+    // a VCP tablet's message page (`lua/tablet.lua`)
+    "Info",
+    "Instruction",
+    "Urgent",
+    "tap twice to accept",
+    "New message from %{from}",
+    "Tap the message again to accept",
     // the duty strip, the handover notes and the walk-around (`lua/duty_strip.lua`)
     "in %{h} h %{m} min",
     "in %{m} min",

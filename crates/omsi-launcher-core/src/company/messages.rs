@@ -267,10 +267,16 @@ pub enum Quick {
     RequestTalk,
     /// (round U) Ask control for ticket inspectors ("Bestil kontrol", once a trip).
     RequestInspection,
+    /// (NexiconDK, 16 November 2026: the VCP tablet's call page - "Tur, Spørgsmål", "Bus,
+    /// Spørgsmål", "Passagerer efterladt") A question about the trip or the bus, and people
+    /// left at a stop.
+    QuestionTrip,
+    QuestionBus,
+    PassengersLeft,
 }
 
 impl Quick {
-    pub const ALL: [Quick; 8] = [Quick::DelayTraffic, Quick::Breakdown, Quick::Accident, Quick::AggressivePassenger, Quick::RoadClosed, Quick::RequestRelief, Quick::RequestTalk, Quick::RequestInspection];
+    pub const ALL: [Quick; 11] = [Quick::DelayTraffic, Quick::Breakdown, Quick::Accident, Quick::AggressivePassenger, Quick::RoadClosed, Quick::RequestRelief, Quick::RequestTalk, Quick::RequestInspection, Quick::QuestionTrip, Quick::QuestionBus, Quick::PassengersLeft];
 
     pub fn key(self) -> &'static str {
         match self {
@@ -282,6 +288,9 @@ impl Quick {
             Quick::RequestRelief => "request_relief",
             Quick::RequestTalk => "request_talk",
             Quick::RequestInspection => "request_inspection",
+            Quick::QuestionTrip => "question_trip",
+            Quick::QuestionBus => "question_bus",
+            Quick::PassengersLeft => "passengers_left",
         }
     }
 
@@ -300,6 +309,9 @@ impl Quick {
             Quick::RequestRelief => "Request relief",
             Quick::RequestTalk => "Request to talk",
             Quick::RequestInspection => "Request ticket inspection",
+            Quick::QuestionTrip => "Question about the trip",
+            Quick::QuestionBus => "Question about the bus",
+            Quick::PassengersLeft => "Passengers left behind",
         }
     }
 
@@ -307,7 +319,7 @@ impl Quick {
         match self {
             Quick::Breakdown | Quick::Accident | Quick::AggressivePassenger => Priority::Urgent,
             Quick::RoadClosed | Quick::RequestRelief => Priority::Instruction,
-            Quick::DelayTraffic | Quick::RequestTalk | Quick::RequestInspection => Priority::Info,
+            Quick::DelayTraffic | Quick::RequestTalk | Quick::RequestInspection | Quick::QuestionTrip | Quick::QuestionBus | Quick::PassengersLeft => Priority::Info,
         }
     }
 
@@ -322,6 +334,8 @@ impl Quick {
             Quick::RequestRelief => "group",
             Quick::RequestTalk => "chat",
             Quick::RequestInspection => "badge",
+            Quick::QuestionTrip | Quick::QuestionBus => "chat",
+            Quick::PassengersLeft => "group",
         }
     }
 }

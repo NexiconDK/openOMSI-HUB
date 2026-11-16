@@ -220,6 +220,7 @@ impl VehicleInstance {
             offs.iter().sum::<f32>() / offs.len().max(1) as f32
         };
         VehicleInstance {
+            pressed: Vec::new(),
             pending_destination: None,
             a_trans: OmsiFrames::default(),
             particles: ParticleSet::new(ty.model.particle_systems(), std::ptr::addr_of!(host) as u64 ^ 0x9e37_79b9),

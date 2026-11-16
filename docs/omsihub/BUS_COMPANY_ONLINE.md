@@ -2104,3 +2104,26 @@ crossing, the players on foot, and everybody for a car - as before (0.3 m outsid
 step two seconds on).
 
 Tested: `obstacles::foot_tests::a_bus_pulls_in_beside_the_people_waiting_at_the_kerb`.
+
+## The drivers go with a line that changes company (16 November 2026)
+
+NexiconDK: *"Under udbud i 'Kontraktkrav' ... 'Vinderen må overtage de busser, dens sidste
+operatør kørte linjen med' - Det skal også gælde chaufførerne - Og evt. skrive antal busser og
+chauffører?"*, then *"Chaufførerne SKAL følge med - uanset hvad - busserne er valgfrie"*.
+
+* **Who drove a line** (`takeover::note_crew`, at each day's close from the day's plan): each
+  driver's days on each line of the last 28 (`Takeover::crew`; a company of the server's only).
+* **The line's drivers** (`drivers_of_line`): a driver with 3 days or more on it and none more on
+  another line - or whom the roster (`planning::week`) gives it most of his duties; not one
+  leaving or lent.
+* **A renewal lost** (`takeover::offer`): the buses offered as before, and the drivers go with the
+  line whatever the winner answers - as a transfer of an undertaking: kept as the loser's sale at
+  once (`Sale::drivers`), told to both (`DRIVERS_TAKEN`, `DRIVERS_OFFERED`). On the new term's first
+  day each leaves the loser (his week's guarantee paid, off its roster) and joins the winner with
+  a number of its own on his terms - wage, employment, seniority (`<id>.drivers.jsonl`,
+  `DRIVERS_CAME`). The winner answers the buses only (Concessions page: "Take over the buses" /
+  "Not the buses"; "Understood" for drivers alone).
+* **The tender's requirements** say so, with a renewal's numbers: the holder's buses and drivers
+  of its lines when it was put out again (`Shared::take_buses`, `take_drivers`).
+
+Tested: `takeover::tests::the_drivers_who_ran_the_line_go_with_it_the_buses_are_a_choice`.

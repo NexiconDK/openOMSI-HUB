@@ -916,7 +916,7 @@ fn drive(args: &Value, p: &dyn Platform, what: &str) -> Answer {
     if let Some(u) = start.uniform.as_ref() {
         super::super::company::inspectors::dress_listed(u);
     }
-    super::super::addon::assign_session(&d, start.inspection.clone().map(super::super::addon::inspection_of));
+    super::super::addon::assign_session(&d, start.inspection.clone().map(super::super::addon::inspection_of), &start.lines);
     let launched = core::launch(&d).map_err(|e| format!("{e:#}"))?;
     core::log_to_file(&format!("game {}: {}", launched.pid, launched.command));
     p.launched();
@@ -987,7 +987,7 @@ fn take_patrol(args: &Value, p: &dyn Platform) -> Answer {
     if let Some(dir) = super::super::addon::game_plugin_dir() {
         let _ = bridge::write_inbox(&dir, &patrol_inbox(&[]));
     }
-    super::super::addon::assign_session(&d, None);
+    super::super::addon::assign_session(&d, None, &start.lines);
     let launched = core::launch(&d).map_err(|e| format!("{e:#}"))?;
     core::log_to_file(&format!("game {}: {}", launched.pid, launched.command));
     p.launched();
@@ -1126,7 +1126,7 @@ fn take_bus(args: &Value, p: &dyn Platform) -> Answer {
     if let Some(dir) = super::super::addon::game_plugin_dir() {
         let _ = bridge::write_inbox(&dir, &bridge::Inbox::default());
     }
-    super::super::addon::assign_session(&d, None);
+    super::super::addon::assign_session(&d, None, &start.lines);
     let launched = core::launch(&d).map_err(|e| format!("{e:#}"))?;
     core::log_to_file(&format!("game {}: {}", launched.pid, launched.command));
     p.launched();

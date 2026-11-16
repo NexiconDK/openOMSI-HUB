@@ -898,6 +898,7 @@ declared to call the function (a plain `.lua` file has them all).
 | `indicator` | `new`, `old` | The indicators changed: `"off"`, `"left"`, `"right"` or `"hazard"`. | 0.2.22 |
 | `headlights` | `new`, `old` | The headlights changed: 0 off, 1 side lights, 2 dipped, 3 high beam. | 0.2.22 |
 | `horn` | `down` | The horn started (`true`) or stopped. | 0.2.22 |
+| `bus_trigger` | `name` | (Omsi-Hub) A script trigger of the player's bus ran from outside its scripts: a click in the cab (a button of a tablet or an IBIS), a key, a plugin's `bus.trigger` - its name as the bus's scripts have it (`omsi.bus.triggers`), keys' `_off` too. | 0.2.22 |
 | `handbrake` | `on` | The parking brake was put on (`true`) or released. | 0.2.22 |
 | `stop_request` | `on` | A passenger asked to stop (`true`), or the request went out. | 0.2.22 |
 | `passengers` | `count`, `old` | The number of passengers aboard the player's bus changed. | 0.2.22 |

@@ -408,6 +408,38 @@ function M.quick(key)
   reply("quick", 0, key)
 end
 
+-- (NexiconDK, 16 November 2026) for the VCP tablet (tablet.lua): the inbox as read last, and
+-- the driver's answers from its message page
+function M.inbox()
+  return inbox
+end
+
+-- whether message `id` is an instruction still waiting for the driver's answer
+function M.waits(id)
+  local m = find(id)
+  return m ~= nil and waiting(m)
+end
+
+-- accept instruction `id`, as its Accept button does; whether it was waiting
+function M.accept(id)
+  local m = find(id)
+  if not (m and waiting(m)) then return false end
+  reply("accept", id)
+  answered[id] = "Accepted"
+  carry(m.action)
+  panel()
+  return true
+end
+
+-- message `id` read (once; not an instruction's answer)
+function M.mark_read(id)
+  local m = find(id)
+  if not m or m.mine or answered[id] or m.state == "read" or m.state == "accepted" or m.state == "declined" then return end
+  -- (an instruction read still waits for Accept or Decline)
+  if not waiting(m) then answered[id] = "Read" end
+  reply("read", id)
+end
+
 -- (round U) who carries out the company's answer to inspectors asked for, and who asks
 function M.on_inspection(carry_out, ask)
   on_inspection, ask_inspection = carry_out, ask

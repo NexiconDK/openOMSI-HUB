@@ -581,6 +581,13 @@ pub struct Shared {
     /// renewal the last term's). Its contract fines a bus that breaks them.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub needs: Option<super::server_buses::Needs>,
+    /// (NexiconDK, 16 November 2026: "evt. skrive antal busser og chauffører") A renewal's: the
+    /// buses of its own and the drivers its holder ran the line with when it was put out again
+    /// (`takeover::buses_of_line`, `drivers_of_line`) - what the winner may take over.
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub take_buses: u32,
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub take_drivers: u32,
     /// (NexiconDK, 3 November 2026) The bid in two parts: the cap of the amount a contract bus a
     /// day (euro cents; 0: a bid of the timetable hour alone, as before), and the authority's
     /// reckoning of a contract bus a day (`bus_contracts::bus_day_price`).

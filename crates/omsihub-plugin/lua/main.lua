@@ -13,7 +13,7 @@
 --   data/status.json      plugin -> Omsi-Hub: how the duty stands (for the dispatcher)
 -- A game without the file functions gets the handshake and the reports in its log instead.
 
-local VERSION = "1.7.1"
+local VERSION = "1.8.0"
 local BRIDGE = 1
 local PANEL = "omsihub"
 
@@ -349,6 +349,12 @@ messages.setup(tr, { send = send_out, issued = issued, assignment = assignment, 
 end })
 
 -- (NexiconDK, round U) the company's ticket inspectors in the bus (inspection.lua)
+-- (16 November 2026) a VCP tablet in the bus (tablet.lua): control's messages on its message
+-- page, its call page's buttons to control, the company's lines to the tablet's plugin
+local tablet = require("tablet")
+tablet.setup(tr, messages, assignment)
+omsi.on("bus_trigger", function(name) tablet.trigger(name) end)
+
 local inspection = require("inspection")
 inspection.setup(tr, { report = report, quick = messages.quick, inbox = messages.has_inbox }, assignment)
 messages.on_inspection(inspection.ordered, inspection.ask)
@@ -445,6 +451,7 @@ local function display_font()
 end
 
 omsi.on("vehicle", function(name)
+  tablet.vehicle()
   if name then display_font() end
   -- (the notices once the player is in the bus and sees them)
   if name and assignment then show_notices(assignment.notices) end
@@ -541,6 +548,7 @@ end
 omsi.every(1, function()
   board.update((not assignment or assignment.board ~= false) and signon.at_work(), company_duty() and parts() or {}, assignment, { trip.boarded_on_trip(), trip.boarded_total(), fn("bus.passengers") and omsi.bus.passengers() or nil })
   messages.tick()
+  tablet.tick(1)
   strip.update(company_duty() and signon.at_work())
   if signon.at_work() then ontime.tick(1) end
   dispatch()

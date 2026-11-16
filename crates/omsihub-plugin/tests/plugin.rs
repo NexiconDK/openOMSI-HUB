@@ -29,6 +29,11 @@ struct Game {
     /// without a ticket asked for.
     inspected: Vec<(u8, u32, String, String)>,
     dodger_share: Option<f32>,
+    /// (16 November 2026) The bus has a VCP tablet (`Tablet_page`), and the strings and variables
+    /// the plugins set on it.
+    tablet: bool,
+    strings: BTreeMap<String, String>,
+    vars_set: Vec<(String, f32)>,
 }
 
 impl PluginIo for Game {
@@ -40,13 +45,21 @@ impl PluginIo for Game {
         true
     }
     fn var(&mut self, name: &str) -> Option<f32> {
-        (name == "Velocity").then_some(self.speed)
+        match name {
+            "Velocity" => Some(self.speed),
+            "Tablet_page" if self.tablet => Some(9.0),
+            _ => None,
+        }
     }
-    fn set_var(&mut self, _: &str, _: f32) {}
-    fn string(&mut self, _: &str) -> Option<String> {
-        None
+    fn set_var(&mut self, name: &str, v: f32) {
+        self.vars_set.push((name.into(), v));
     }
-    fn set_string(&mut self, _: &str, _: &str) {}
+    fn string(&mut self, name: &str) -> Option<String> {
+        self.strings.get(name).cloned()
+    }
+    fn set_string(&mut self, name: &str, text: &str) {
+        self.strings.insert(name.into(), text.into());
+    }
     fn fire(&mut self, _: &str, _: bool) {}
     fn dt(&self) -> f32 {
         1.0
@@ -914,4 +927,60 @@ fn the_company_s_inspectors_board_the_trip_and_their_findings_are_reported() {
     let reports = ReportReader::default().read_new(&dir);
     let last = reports.iter().filter(|r| r.kind == "inspection").last().and_then(|r| r.inspection.clone()).unwrap();
     assert!(last.ordered && last.names == vec!["Ida".to_string()], "{last:?}");
+}
+
+/// (NexiconDK, 16 November 2026: "besked fra Bus Company Online skal snakke sammen med denne
+/// tablet, begge veje") A VCP tablet in the bus: control's two newest messages on its message
+/// page, a new one popped up on it; its call page's buttons go to control as quick messages; an
+/// instruction tapped twice is accepted; the company's lines go to the tablet's own plugin.
+#[test]
+fn a_vcp_tablet_shows_control_s_messages_and_its_buttons_go_to_control() {
+    let plugins = plugins_dir("tablet");
+    install::install(&plugins).unwrap();
+    // (the tablet's own plugin, as it hears the company's lines)
+    std::fs::write(plugins.join("IBIS_Tablet.lua"), "omsi.on('message', function(from, topic, data)\n  if topic == 'omsihub_company_lines' then omsi.message('lines: ' .. table.concat(data.lines, ','), 1) end\nend)\n").unwrap();
+    let dir = install::plugin_dir(&plugins);
+    bridge::write_assignment(&dir, &Assignment { auto_start: false, lines: vec!["Linie10".into(), "N3".into()], ..assignment() }).unwrap();
+    let mut ps = Plugins::load(&[plugins.clone()], &HostConfig::default());
+    let first = three_stops();
+    // (the string variables its script declares - set_str writes only those the bus has)
+    let declared = ["Afs", "Tid", "Titel", "Tekst"].iter().flat_map(|f| [format!("Tablet_M1_{f}"), format!("Tablet_M2_{f}")]).chain(["Tablet_Toast".to_string()]);
+    let mut game = Game { tablet: true, trips: vec![first.clone()], strings: declared.map(|k| (k, String::new())).collect(), ..Game::default() };
+    game.duty = Some(io::Duty { line: "10".into(), tour: "2".into(), trip: 0, trips: 1, next: 1, current: first.clone(), ..io::Duty::default() });
+    // (the inbox comes while the game runs: not popped up for what was there before)
+    for _ in 0..3 {
+        ps.frame(&mut game);
+    }
+    bridge::write_inbox(&dir, &inbox()).unwrap();
+    for _ in 0..4 {
+        ps.frame(&mut game);
+    }
+    assert!(game.messages.iter().any(|m| m == "lines: Linie10,N3"), "{:?}", game.messages);
+    let s = |k: &str| game.strings.get(k).cloned().unwrap_or_default();
+    assert_eq!((s("Tablet_M1_Afs"), s("Tablet_M1_Tid"), s("Tablet_M1_Tekst")), ("Dispatcher".into(), "08:01".into(), "Short-turn on the 08:00 trip".into()));
+    assert!(s("Tablet_M1_Titel").starts_with("Instruction") && s("Tablet_M1_Titel").contains("tap twice"), "{}", s("Tablet_M1_Titel"));
+    assert_eq!((s("Tablet_M2_Titel"), s("Tablet_M2_Tekst")), ("Urgent".into(), "You are running 9 min late".into()));
+    assert!(s("Tablet_Toast").starts_with("New message from Dispatcher"), "{}", s("Tablet_Toast"));
+    // the call page's buttons: "Bus, Nedbrud" and "Anmod om opkald" to control
+    let mut replies = bridge::ReplyReader::default();
+    let _ = replies.read_new(&dir);
+    let press = |name: &str| GameEvent { name: "bus_trigger", args: vec![InfoValue::Text(name.into())] };
+    for e in [press("Tab_op5"), press("Tab_anmod"), press("Tab_msg2"), press("Tab_msg1"), press("Tab_msg1")] {
+        game.events = vec![e];
+        ps.frame(&mut game);
+    }
+    game.events.clear();
+    ps.frame(&mut game);
+    let got = replies.read_new(&dir);
+    let kinds: Vec<(&str, u64, &str)> = got.iter().map(|r| (r.kind.as_str(), r.id, r.key.as_str())).collect();
+    assert_eq!(kinds, [("quick", 0, "breakdown"), ("quick", 0, "request_talk"), ("read", 1, ""), ("read", 2, ""), ("accept", 2, "")]);
+    assert_eq!(game.strings.get("Tablet_Toast").map(String::as_str), Some("Accepted"));
+    // a bus without the tablet: nothing set on it
+    let mut other = Game { trips: vec![first.clone()], ..Game::default() };
+    other.events = vec![press("Tab_op5")];
+    let mut ps2 = Plugins::load(&[plugins.clone()], &HostConfig::default());
+    for _ in 0..3 {
+        ps2.frame(&mut other);
+    }
+    assert!(other.strings.keys().all(|k| !k.starts_with("Tablet_")), "{:?}", other.strings);
 }

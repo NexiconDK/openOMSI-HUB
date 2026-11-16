@@ -721,6 +721,40 @@ fn name_in(c: &Company) -> impl Fn(u32) -> String + '_ {
 }
 
 /// An answer as the page shows it: its kind, its word, its words (translated, places filled).
+/// (NexiconDK, 16 November 2026: "når jeg allerede har skrevet/ringet til en chauffør, så kan jeg
+/// se det et sted inden jeg ringer igen om en anden vagt") What `who` was already asked or rung
+/// about that day, of other duties than `n`: the newest question of each duty, the newest first
+/// (three at most), with its answer as it is known at the company's minute `game` and the
+/// launcher's second `now`. None: not asked about another.
+fn contacted(c: &Company, date: &str, n: u32, who: &Asked, game: i64, now: u64) -> Option<String> {
+    let mut asks: Vec<&po::Ask> = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n != n && a.who == *who).collect();
+    asks.sort_by_key(|a| std::cmp::Reverse(a.id));
+    let mut seen = std::collections::HashSet::new();
+    asks.retain(|a| seen.insert((a.n, a.part)));
+    if asks.is_empty() {
+        return None;
+    }
+    let words: Vec<String> = asks
+        .iter()
+        .take(3)
+        .map(|a| {
+            let duty = pd::shown_number(c, date, a.n);
+            let state = match a.shown_at(game, now) {
+                Some(Reply::Silent) => tr("did not pick up"),
+                Some(r) => trf("answered: %{answer}", &[("answer", &ANSWERS.iter().find(|x| x.0 == r.key()).map(|x| tr(x.1)).unwrap_or_default())]),
+                None if a.closed => tr("taken back"),
+                None => tr("no answer yet"),
+            };
+            match (a.call, a.due) {
+                (true, Some(at)) => format!("📞 {}", trf("Rung at %{time} about duty %{duty}: %{state}", &[("time", &clock(at as i32)), ("duty", &duty), ("state", &state)])),
+                (true, None) => format!("📞 {}", trf("Rung about duty %{duty}: %{state}", &[("duty", &duty), ("state", &state)])),
+                (false, _) => format!("✉ {}", trf("Asked about duty %{duty}: %{state}", &[("duty", &duty), ("state", &state)])),
+            }
+        })
+        .collect();
+    Some(words.join(" · "))
+}
+
 fn reply_json(c: &Company, r: &Reply, date: &str) -> Value {
     // (round M: a duty in the words by its own name - "Jeg har allerede M131-1 den dag")
     let (text, args) = po::words_by(r, &name_in(c), &|n| pd::shown_number(c, date, n));
@@ -1182,6 +1216,11 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
                 if let po::DayIs::Duties { labels, start, end, .. } = po::driver_day(c, e, p, ds).is {
                     row["works"] = json!(trf("Works that day: %{duties} %{from}–%{to}", &[("duties", &labels.join(", ")), ("from", &co::clock::hhmm(start as i64)), ("to", &co::clock::hhmm(end as i64))]));
                 }
+                // (16 November 2026: asked or rung about another duty that day already - and what
+                // came of it)
+                if let Some(w) = contacted(c, date, d.n, &Asked::Staff { id: e.id }, co::clock::now(c), now()) {
+                    row["contacted"] = json!(w);
+                }
                 // (a driver to ring - not asked yet, or asked by message and waiting: "Ring")
                 if matches!(row["action"].as_str(), Some("ask") | Some("waiting")) {
                     row["call"] = json!(true);
@@ -1224,7 +1263,7 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
             .map(|g| {
                 let a = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == d.n && a.part.is_none() && !a.closed && a.who == (Asked::Guest { no: g.no })).max_by_key(|a| a.id);
                 let r = a.and_then(|a| a.shown_at(game, now));
-                let mut v = json!({ "no": g.no, "name": g.name, "action": match (a, r) { (None, _) => "ask", (Some(_), None) => "waiting", (Some(_), Some(r)) if r.yes() || r.key() == "text" => "give", _ => "none" }, "ask": a.map(|a| a.id), "answer": r.map(|r| reply_json(c, r, &date)) });
+                let mut v = json!({ "no": g.no, "name": g.name, "contacted": contacted(c, date, d.n, &Asked::Guest { no: g.no }, game, now), "action": match (a, r) { (None, _) => "ask", (Some(_), None) => "waiting", (Some(_), Some(r)) if r.yes() || r.key() == "text" => "give", _ => "none" }, "ask": a.map(|a| a.id), "answer": r.map(|r| reply_json(c, r, &date)) });
                 // (round H: what the player said he can that day, in the tab)
                 if let Some(can) = pa::guest_can(c, g.no, date) {
                     v["avail"] = avail_json(can, d.start, d.end);
@@ -2612,6 +2651,37 @@ mod tests {
         assert!(call["answer"]["chip"].is_string() && call["outcome"].is_string(), "{call}");
         // (only who plans rings the drivers)
         assert!(!crate::omsihub::together::relay::need("rf_ops_act", &json!({ "act": "call" })).met(&[omsi_launcher_lib::company::together::Perm::Drive]));
+    }
+
+    /// (NexiconDK, 16 November 2026) A driver asked or rung about another duty that day already:
+    /// his row on this duty's list says so, the newest of each duty, with what came of it.
+    #[test]
+    fn a_driver_asked_about_another_duty_shows_it() {
+        company::words::set_language("en");
+        company::test_dry();
+        let s = session();
+        let mut c = s.company.as_ref().unwrap().clone();
+        let date = "2024-03-05";
+        let id = c.staff.iter().find(|e| co::staff::drives(e)).unwrap().id;
+        let game = co::clock::now(&c);
+        let ask = |no: u32, n: u32, reply: Option<Reply>, due: Option<i64>, closed: bool, call: bool| po::Ask { id: no, date: date.into(), n, start: 0, end: 0, who: Asked::Staff { id }, at: 0, wait: 0, reply, closed, part: None, due, closed_at: None, seen: false, call };
+        let none = contacted(&c, date, 5, &Asked::Staff { id }, game, now());
+        assert_eq!(none, None);
+        // duty 7: asked by message (taken back), then rung - he did not pick up; duty 9: asked, his
+        // answer not come yet; duty 5 itself and another day are not said
+        c.planning.ops.asks.extend([
+            ask(901, 7, None, Some(game + 30), true, false),
+            ask(902, 7, Some(Reply::Silent), Some(game - 10), false, true),
+            ask(903, 9, Some(Reply::Silent), Some(game + 60), false, false),
+            ask(904, 5, None, Some(game + 60), false, false),
+            po::Ask { date: "2024-03-06".into(), ..ask(905, 11, None, None, false, false) },
+        ]);
+        let words = contacted(&c, date, 5, &Asked::Staff { id }, game, now()).unwrap();
+        let (seven, nine) = (pd::shown_number(&c, date, 7), pd::shown_number(&c, date, 9));
+        assert_eq!(words, format!("✉ Asked about duty {nine}: no answer yet · 📞 Rung at {} about duty {seven}: did not pick up", clock((game - 10) as i32)));
+        // on duty 7's own list: only 9 (and 5)
+        let on_seven = contacted(&c, date, 7, &Asked::Staff { id }, game, now()).unwrap();
+        assert!(!on_seven.contains(&format!("duty {seven}:")) && on_seven.contains(&format!("duty {nine}:")), "{on_seven}");
     }
 
     #[test]

@@ -224,6 +224,8 @@ fn start(s: &mut Session, args: &Value, p: &dyn crate::Platform) -> Result<Value
     // (the add-on's plugin told of the company's duty: `addon.rs`)
     let crew = crew_of(s, &c, &sheet);
     let mut parts = plugin_parts(&c, &sheet);
+    // (16 November 2026: the company's lines, for a VCP tablet's list in the game)
+    parts.lines = c.lines.iter().map(|l| l.name.clone()).collect();
     // (round U: the company's ticket inspection in the game, and its inspectors' clothes beside the
     // figures they are made of)
     parts.inspection = plan_of(s, &sheet.duty.date).and_then(Result::ok).and_then(|p| game_inspection(&c, &p, &sheet.duty.line, &sheet.duty.tour));
@@ -357,7 +359,7 @@ pub(crate) fn plugin_parts(c: &Company, sheet: &Sheet) -> super::super::addon::P
         early: co::econ_uk::ON_TIME_EARLY,
         late: co::econ_uk::ON_TIME_LATE,
     });
-    super::super::addon::Parts { sheet: rows, controls, fare, contract, inspection: None }
+    super::super::addon::Parts { sheet: rows, controls, fare, contract, inspection: None, lines: Vec::new() }
 }
 
 /// What the duty launcher does.
