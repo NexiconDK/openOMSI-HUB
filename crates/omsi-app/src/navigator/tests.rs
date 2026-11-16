@@ -1348,6 +1348,49 @@ fn preview_map_styles() {
     if let Some(sh) = sheet {
         sh.save(format!("{dir}/minimap-all.png")).unwrap();
     }
+    // --- (16 November 2026) the bus's GPS screen, `[navigatortexture]` 800 x 480: as usual;
+    // the map alone, north up, the bus in the middle; the route behind it; zoomed in twice
+    let looks = [
+        ("usual", ScreenLook::default()),
+        ("bare-north-centred", ScreenLook { no_nav_ui: true, fixed_north: true, nav_center: true, ..ScreenLook::default() }),
+        ("history", ScreenLook { show_history: true, ..ScreenLook::default() }),
+        ("zoomed", ScreenLook { map_scale: 2.0, ..ScreenLook::default() }),
+    ];
+    let (sw, sh_) = (800u32, 480u32);
+    let mut gps: Option<image::RgbaImage> = None;
+    for (k, (name, look)) in looks.into_iter().enumerate() {
+        let (mut n, net) = setup("flat", "classic", false);
+        let route: Vec<usize> = (0..3).map(|j| find(&net, (1.5, j as f64 * 200.0), (1.5, (j + 1) as f64 * 200.0))).collect();
+        n.set_route("0/trip", route, true, n.global_version + (1 << 40));
+        let stop = |name: &str, y: f64, min: f64| NavStop { object_id: 0, position: DVec3::new(4.0, y, 0.0), name: name.into(), arrival: 7.0 * 3600.0 + min * 60.0, closed: None };
+        let f = NavFrame { line: Some("314".into()), terminus: Some("Großweier".into()), stops: vec![stop("Stadttheater", 300.0, 52.0), stop("Altstadtring", 450.0, 53.0), stop("Alter Bahnhof", 590.0, 55.0)], delay: Some(20.0), speed_kmh: 34.0, time: 7.0 * 3600.0 + 51.0 * 60.0, language: "ENG", ..at((1.5, 260.0), 0.0) };
+        n.follow(&f);
+        n.follow(&f);
+        n.speed_avg = 9.0;
+        n.next_dist = Some(160.0);
+        n.zoom = 110.0 + 34.0 * 2.2;
+        let bus = f.bus.truncate();
+        let built = settle(&mut n, Box::new(move |n: &mut Navigator| n.panel_ground(bus)));
+        let s = screen::screen_scale((sw, sh_));
+        let (lay, rows) = screen::screen_layout((sw, sh_), s, f.stops.len(), look.no_nav_ui);
+        n.roads = None;
+        n.route_mesh.0 = u64::MAX;
+        n.painting = Some(look);
+        let vehicles = traffic_round();
+        let p = n.paint_panel((sw as f32, sh_ as f32), &lay, &f, rows, &vehicles);
+        n.painting = None;
+        let t = target(sw, sh_);
+        let view = t.create_view(&Default::default());
+        let mut att = omsi_ui::Attachments::default();
+        n.render_panel_to(&device, &queue, &view, (sw, sh_), p, built, true, Some(&mut att));
+        let img = read_back(&device, &queue, &t, (sw, sh_), [0, 0, 0]);
+        img.save(format!("{dir}/gps-{name}.png")).unwrap();
+        let g = gps.get_or_insert_with(|| image::RgbaImage::from_pixel(2 * (sw + 24) + 24, 2 * (sh_ + 24) + 24, image::Rgba([70, 84, 96, 255])));
+        image::imageops::overlay(g, &img, (24 + (k as u32 % 2) * (sw + 24)) as i64, (24 + (k as u32 / 2) * (sh_ + 24)) as i64);
+    }
+    if let Some(g) = gps {
+        g.save(format!("{dir}/gps-all.png")).unwrap();
+    }
     // --- the city map: classic and the map's own picture, dark and light
     let (w, h) = (1280.0f32, 760.0f32);
     let cs = 1.0f32;

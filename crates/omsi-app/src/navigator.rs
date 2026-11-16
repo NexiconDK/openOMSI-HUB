@@ -462,6 +462,14 @@ pub struct Navigator {
     /// Omsi-Hub: the map's own picture under the small map and the city map (`nav_map`,
     /// `city_map`; openOMSI #2782/#2929): its layers and the ground built from them.
     look: ground::MapLook,
+    /// (Omsi-Hub, 16 November 2026: openOMSI's `[navigatortexture]`) The player's bus's GPS
+    /// screen, how it was last drawn, and - while it is being painted - how it looks.
+    screen: Option<screen::Screen>,
+    screen_state: screen::ScreenState,
+    painting: Option<screen::ScreenLook>,
+    /// The route behind the bus (`showHistory`) as built: the route's version, how far along
+    /// it, the anchor and its vertices.
+    history_mesh: (u64, usize, DVec2, u32),
 }
 
 /// A press held on the small navigator: where the cursor was, the panel then (x0, y0, x1,
@@ -618,6 +626,10 @@ impl Navigator {
             stop_names: None,
             entries: Vec::new(),
             look: ground::MapLook::default(),
+            screen: None,
+            screen_state: Default::default(),
+            painting: None,
+            history_mesh: (u64::MAX, 0, DVec2::ZERO, 0),
         }
     }
 
@@ -1366,8 +1378,9 @@ impl Navigator {
     pub fn frame(&mut self, renderer: &Renderer, scene: &mut Scene, f: &NavFrame) {
         self.panel_overlay = None;
         self.dock_slot = None;
-        // (with the navigator off the route is still followed for OMSI 2's arrows)
-        if !self.enabled && !self.city.open && !self.arrows && self.shown < 0.01 {
+        // (with the navigator off the route is still followed for OMSI 2's arrows, and for
+        // the bus's GPS screen)
+        if !self.enabled && !self.city.open && !self.arrows && self.shown < 0.01 && !self.screen_wants_frame() {
             return;
         }
         let target = if self.enabled { 1.0 } else { 0.0 };
@@ -1451,6 +1464,8 @@ impl Navigator {
                 .map(str::to_string);
         }
         self.first = false;
+        // (the bus's GPS screen: drawn whether or not the panel shows)
+        self.frame_screen(renderer, scene, f);
         if !self.enabled && self.shown < 0.01 {
             self.panel_rect = [0.0; 4];
             // (followed for the route arrows alone, with the city map shut: nothing to draw)
@@ -1565,7 +1580,7 @@ impl Navigator {
             self.drawn_at = self.time;
             self.frames_since_drawn = 0;
             if let Some(lay) = self.layout {
-                self.draw(renderer, &view, (w, h), &lay, f, sched);
+                self.draw(renderer, &view, (w, h), &lay, f, sched, None);
             }
         }
         // (the small navigator steps aside while the city map is open)
@@ -1579,21 +1594,31 @@ impl Navigator {
         }
     }
 
-    /// Draw the small navigator into its texture (`size` pixels), laid out as `lay`.
-    fn draw(&mut self, renderer: &Renderer, target: &wgpu::TextureView, size: (u32, u32), lay: &crate::nav_panel::Layout, f: &NavFrame, sched: usize) {
+    /// Draw the small navigator into its texture (`size` pixels), laid out as `lay` - or, with
+    /// `screen` (its attachments; `painting` says how it looks), the bus's GPS screen.
+    #[allow(clippy::too_many_arguments)]
+    fn draw(&mut self, renderer: &Renderer, target: &wgpu::TextureView, size: (u32, u32), lay: &crate::nav_panel::Layout, f: &NavFrame, sched: usize, screen: Option<&mut omsi_ui::Attachments>) {
         let reach = self.map_zoom(lay) * 3.5 + 150.0;
         let vehicles = map_vehicles(f.traffic.filter(|_| self.show_ai), f.bus, reach);
         // (Omsi-Hub: the map's own picture under it, `nav_map`)
         let new_look = self.look.nav.new_look() && self.look.data.is_some();
         let ground_built = if new_look { self.panel_ground(f.bus.truncate()) } else { None };
         let p = self.paint_panel((size.0 as f32, size.1 as f32), lay, f, sched, &vehicles);
-        self.render_panel(&renderer.device, &renderer.queue, target, size, p, ground_built, new_look);
+        self.render_panel_to(&renderer.device, &renderer.queue, target, size, p, ground_built, new_look, screen);
     }
 
     /// The small navigator as painted (`p`) onto the GPU and drawn into `target`, with the
     /// map's own picture under it when `new_look` (a ground just built goes up first).
+    #[cfg(test)]
     #[allow(clippy::too_many_arguments)]
     fn render_panel(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, target: &wgpu::TextureView, size: (u32, u32), p: PanelPaint, ground_built: Option<ground::Built>, new_look: bool) {
+        self.render_panel_to(device, queue, target, size, p, ground_built, new_look, None);
+    }
+
+    /// As `render_panel`; with `screen` (the attachments of the bus's GPS screen) drawn there:
+    /// solid, whether or not the panel shows.
+    #[allow(clippy::too_many_arguments)]
+    fn render_panel_to(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, target: &wgpu::TextureView, size: (u32, u32), p: PanelPaint, ground_built: Option<ground::Built>, new_look: bool, screen_att: Option<&mut omsi_ui::Attachments>) {
         let ground = self.look.panel.filter(|_| new_look);
         let three_d = self.look.nav == ground::MapStyle::ThreeD;
         let Some(gpu) = self.gpu.as_mut() else { return };
@@ -1614,6 +1639,9 @@ impl Navigator {
         if let Some(v) = p.route {
             gpu.upload(device, queue, 1, &v);
         }
+        if let Some(v) = p.history {
+            gpu.upload(device, queue, screen::HISTORY_BUFFER, &v);
+        }
         let (n_bg, n_traffic) = (p.bg.len(), p.traffic.len());
         let n_world = n_traffic + p.vehicles.len();
         let mut all = p.bg.verts;
@@ -1626,13 +1654,16 @@ impl Navigator {
         let clip_panel = [0.0, 0.0, size.0 as f32, size.1 as f32];
         // (the opacity setting is the background's: the map and the text stay solid)
         let flat = Layer::flat(clip_panel, p.radius, 1.0);
-        let backdrop = Layer::flat(clip_panel, p.radius, if self.cockpit_display { self.opacity } else { crate::ui::backdrop(self.opacity).min(1.0) });
+        let on_screen = screen_att.is_some();
+        let backdrop = Layer::flat(clip_panel, p.radius, if on_screen { 1.0 } else if self.cockpit_display { self.opacity } else { crate::ui::backdrop(self.opacity).min(1.0) });
         // (the ground is built round its own anchor: its layers are moved there)
         let off = ground.map(|g| g.anchor - p.anchor).unwrap_or_default();
         let ground_layer = Layer { view_proj: p.map_layer.view_proj * Mat4::from_translation(Vec3::new(off.x as f32, off.y as f32, 0.0)), ..p.map_layer };
         let mut layers = [flat, p.map_layer, backdrop, ground_layer, ground_layer.with_shadow(), ground_layer.with_depth()];
+        // (the bus's screen is solid however far the panel has faded)
+        let shown = if on_screen { 1.0 } else { self.shown };
         for l in layers.iter_mut() {
-            l.opacity *= self.shown;
+            l.opacity *= shown;
         }
         let roads_n = if ground.is_some() { 0 } else { self.roads.as_ref().map(|r| r.verts as u32).unwrap_or(0) };
         let surface_n = if ground.is_some() { 0 } else { p.surface_n };
@@ -1646,12 +1677,16 @@ impl Navigator {
             Draw { buffer: ground::PANEL_BUFFERS + 1, range: 0..if three_d { sh_n } else { 0 }, layer: 4, texture: 0 },
             Draw { buffer: ground::PANEL_BUFFERS + 2, range: 0..if three_d { so_n } else { 0 }, layer: 5, texture: 0 },
             Draw { buffer: 2, range: n_bg..n_bg + n_traffic, layer: 1, texture: 0 },
+            Draw { buffer: screen::HISTORY_BUFFER, range: 0..if p.history_on { self.history_mesh.3 } else { 0 }, layer: 1, texture: 0 },
             Draw { buffer: 1, range: 0..self.route_mesh.3, layer: 1, texture: 0 },
             Draw { buffer: 2, range: n_bg + n_traffic..n_bg + n_world, layer: 1, texture: 0 },
             Draw { buffer: 2, range: n_ui_start..all.len() as u32, layer: 0, texture: 0 },
         ];
         let mut enc = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("navigator") });
-        gpu.render(device, queue, &mut enc, target, size, Some(wgpu::Color::TRANSPARENT), &layers, &draws);
+        match screen_att {
+            Some(att) => gpu.render_with(att, device, queue, &mut enc, target, size, Some(wgpu::Color::BLACK), &layers, &draws),
+            None => gpu.render(device, queue, &mut enc, target, size, Some(wgpu::Color::TRANSPARENT), &layers, &draws),
+        }
         queue.submit([enc.finish()]);
     }
 
@@ -1671,9 +1706,14 @@ impl Navigator {
         let wd = words(f.language);
         self.atlas.begin_frame();
         let panel = Rect::new(0.0, 0.0, pw, ph);
-        let radius = 7.0 * s;
+        // (the bus's GPS screen, `[navigatortexture]`: square, solid, as its options say)
+        let look = self.painting;
+        let bare = look.is_some_and(|l| l.no_nav_ui);
+        let history_on = look.is_some_and(|l| l.show_history);
+        let radius = if look.is_some() { 0.0 } else { 7.0 * s };
         let map = lay.map;
-        let zoom = self.map_zoom(lay);
+        let zoom = self.map_zoom(lay) / look.map(|l| if l.map_scale.is_finite() { l.map_scale.clamp(0.25, 4.0) } else { 1.0 }).unwrap_or(1.0);
+        let cam_heading = if look.is_some_and(|l| l.fixed_north) { 0.0 } else { self.cam_heading };
         let vp = [map.x, map.y, map.w, map.h.max(1.0)];
 
         // --- roads (buffer 0): rebuilt when the bus went far or tiles brought lanes
@@ -1706,9 +1746,9 @@ impl Navigator {
         let surface_verts = self.minimap_surface(anchor);
         let surface_n = if self.show_surface { self.surface_mesh.map(|m| m.2).unwrap_or(0) } else { 0 };
         let rel = |p: DVec3| Vec3::new((p.x - anchor.x) as f32, (p.y - anchor.y) as f32, 0.0);
-        let hd = self.cam_heading.to_radians();
+        let hd = cam_heading.to_radians();
         let fwd = DVec2::new(hd.sin(), hd.cos());
-        let look_at = f.bus.truncate() - anchor + fwd * zoom * 0.28;
+        let look_at = f.bus.truncate() - anchor + if look.is_some_and(|l| l.nav_center) { DVec2::ZERO } else { fwd * zoom * 0.28 };
         // (Omsi-Hub's flat 2D map, `nav_map = flat`: seen from above)
         let flat_map = self.look.nav == ground::MapStyle::Flat && self.look.data.is_some();
         let pitch = if flat_map { 88.0f64 } else { PITCH }.to_radians();
@@ -1736,10 +1776,32 @@ impl Navigator {
             route_verts = Some(Vec::new());
             self.route_mesh = (self.route.version, self.jam_version, anchor, 0, 0);
         }
+        // --- the route behind the bus on the screen (`showHistory`): the lanes driven, the one
+        // it is on included, in the route's colour without the jams
+        let mut history_verts = None;
+        if history_on {
+            match (route_net, self.route.lanes.is_empty()) {
+                (Some(rn), false) => {
+                    let upto = (self.route.progress + 1).min(self.route.lanes.len());
+                    if (self.history_mesh.0, self.history_mesh.1, self.history_mesh.2) != (self.route.version, upto, anchor) {
+                        let mut p = Painter::new();
+                        let style = RouteStyle { extra_m: -0.9, min_px: 4.0, arrows: None, max_len: 12_000.0, near: Some((anchor, ROAD_RADIUS * 1.6)), end: None };
+                        build_route(&mut p, rn, &self.route.lanes[..upto], anchor, 0.0, &HashMap::new(), &style, 0);
+                        self.history_mesh = (self.route.version, upto, anchor, p.len());
+                        history_verts = Some(p.verts);
+                    }
+                }
+                _ if self.history_mesh.3 != 0 => {
+                    history_verts = Some(Vec::new());
+                    self.history_mesh = (self.route.version, 0, anchor, 0);
+                }
+                _ => {}
+            }
+        }
 
         // --- background (half transparent), traffic, markers, text
         let mut bg = Painter::new();
-        bg.rounded(panel, radius, if self.cockpit_display { Color::rgba(10, 10, 10, 1.0) } else { PANEL });
+        bg.rounded(panel, radius, if self.cockpit_display || look.is_some() { Color::rgba(10, 10, 10, 1.0) } else { PANEL });
         // the map's own ground under the roads (the panel's opacity setting dims it as it does the panel)
         if self.look.nav.new_look() && self.look.data.is_some() {
             bg.rect(map, omsi_mapdraw::style::palette(self.light).land);
@@ -1773,9 +1835,11 @@ impl Navigator {
 
         let mut ui = Painter::new();
         // the far end of the map fades into the panel
-        ui.gradient(Rect::new(map.x, map.y, map.w, map.h * 0.3), Color::rgba(10, 10, 10, 0.75), Color::rgba(10, 10, 10, 0.0));
+        if !bare {
+            ui.gradient(Rect::new(map.x, map.y, map.w, map.h * 0.3), Color::rgba(10, 10, 10, 0.75), Color::rgba(10, 10, 10, 0.0));
+        }
         // the next turn: an arrow and how far, top left of the map
-        if let Some((dir, angle, dist, street)) = self.next_turn.as_ref() {
+        if let Some((dir, angle, dist, street)) = self.next_turn.as_ref().filter(|_| !bare) {
             let icon = match *dir {
                 2 => "u_turn_left",
                 -1 if *angle < 60.0 => "turn_slight_left",
@@ -1797,7 +1861,7 @@ impl Navigator {
             }
         }
         // the street the bus is on, bottom middle of the map
-        if let Some(n) = self.street_here.as_deref() {
+        if let Some(n) = self.street_here.as_deref().filter(|_| !bare) {
             let px = 11.5 * s;
             let n = self.fonts.fit(n, px, Weight::Medium, map.w * 0.7);
             let w = self.fonts.width(&n, px, Weight::Medium) + 14.0 * s;
@@ -1811,7 +1875,8 @@ impl Navigator {
         let signs = crate::stop_signs::style();
         let markers = spaced_markers(f.stops.iter().enumerate().filter_map(|(k, st)| project(vpm, vp, rel(st.position)).filter(|p| map.contains(*p)).map(|p| (k, p))), 20.0 * s);
         let served = crate::stop_signs::served(f.duty, &self.stop_pos);
-        for q in served.iter().rev().take(2).filter_map(|q| project(vpm, vp, rel(*q))).filter(|p| map.contains(*p) && markers.iter().all(|(_, m)| m.distance(*p) >= 14.0 * s)) {
+        // (on a screen showing the trip's history: all of them)
+        for q in served.iter().rev().take(if history_on { usize::MAX } else { 2 }).filter_map(|q| project(vpm, vp, rel(*q))).filter(|p| map.contains(*p) && markers.iter().all(|(_, m)| m.distance(*p) >= 14.0 * s)) {
             crate::stop_signs::draw(&mut ui, signs, crate::stop_signs::Kind::Passed, q, 13.5 * s);
         }
         for (k, sp) in markers.into_iter().rev() {
@@ -1832,7 +1897,7 @@ impl Navigator {
         // the other players: an arrow each, their name above it (before the lines' tags)
         for pl in &f.players {
             let Some(p) = project(vpm, vp, rel(pl.position)).filter(|p| map.contains(*p)) else { continue };
-            let a = (angle_diff(self.cam_heading, pl.heading) as f32).to_radians();
+            let a = (angle_diff(cam_heading, pl.heading) as f32).to_radians();
             arrow(&mut ui, p, a, 7.5 * s, 1.25, Color::rgba(10, 10, 10, 0.8), PLAYER);
             let px = 9.5 * s;
             let name = self.fonts.fit(&pl.name, px, Weight::Bold, 90.0 * s);
@@ -1848,13 +1913,13 @@ impl Navigator {
         }
         // (30 October 2026) the bus he waits for at his stop: where it is, or at the map's edge the
         // way to it
-        if let Some(b) = f.awaited.as_ref() {
+        if let Some(b) = f.awaited.as_ref().filter(|_| !bare) {
             let inner = Rect::new(map.x + 16.0 * s, map.y + 30.0 * s, (map.w - 32.0 * s).max(1.0), (map.h - 46.0 * s).max(1.0));
             let (p, a) = match project(vpm, vp, rel(b.position)).filter(|p| inner.contains(*p)) {
-                Some(p) => (Some(p), (angle_diff(self.cam_heading, b.heading) as f32).to_radians()),
+                Some(p) => (Some(p), (angle_diff(cam_heading, b.heading) as f32).to_radians()),
                 None => {
                     let d = b.position.truncate() - f.bus.truncate();
-                    let a = (angle_diff(self.cam_heading, d.x.atan2(d.y).to_degrees()) as f32).to_radians();
+                    let a = (angle_diff(cam_heading, d.x.atan2(d.y).to_degrees()) as f32).to_radians();
                     (project(vpm, vp, rel(f.bus)).map(|o| edge_point(inner, o, Vec2::new(a.sin(), -a.cos()))), a)
                 }
             };
@@ -1870,7 +1935,7 @@ impl Navigator {
                 ui.text_in(&mut self.atlas, &self.fonts, &label, px, Weight::Bold, r, Align::Center, LINE_TEXT);
             }
         }
-        for (pos, color, l, ends) in &lines {
+        for (pos, color, l, ends) in lines.iter().filter(|_| !bare) {
             let Some(p) = project(vpm, vp, rel(*pos)).filter(|p| map.contains(*p)) else { continue };
             let px = 9.5 * s;
             // (a rounded chip in its kind's colour, the duty's own line on its yellow plate -
@@ -1888,112 +1953,117 @@ impl Navigator {
         }
         // the bus: a plain white arrow
         if let Some(bp) = project(vpm, vp, rel(f.bus)) {
-            let a = (angle_diff(self.cam_heading, f.heading) as f32).to_radians();
+            let a = (angle_diff(cam_heading, f.heading) as f32).to_radians();
             arrow(&mut ui, bp, a, 9.0 * s, 1.25, Color::rgba(10, 10, 10, 0.8), TEXT);
         }
 
-        // top bar: speed (and the limit) · line ……… game time
-        let top = lay.head;
-        ui.rect(top, BAR);
-        let pad = 11.0 * s;
-        let base = top.y + top.h * 0.5 + self.fonts.cap_height(17.0 * s, Weight::Bold) * 0.5;
-        let mut x = pad;
-        let units = crate::units::Units::now();
-        let (speed, unit) = units.speed(f.speed_kmh.abs());
-        x += ui.text(&mut self.atlas, &self.fonts, &format!("{speed:.0}"), 17.0 * s, Weight::Bold, Vec2::new(x, base), Align::Left, TEXT);
-        x += 4.0 * s;
-        let unit = if units == crate::units::Units::Metric { wd.kmh } else { unit };
-        x += ui.text(&mut self.atlas, &self.fonts, unit, 12.0 * s, Weight::Medium, Vec2::new(x, base), Align::Left, TEXT_DIM);
-        let limit = net.and_then(|n| {
-            let lane = if self.route.on_route { self.route.lanes.get(self.route.progress).copied() } else { None };
-            let lane = lane.or_else(|| n.nearest_lane_near(f.bus, LaneKind::Street).filter(|l| l.2 < 8.0).map(|l| l.0))?;
-            let v = n.lanes.get(lane)?.speed_limit_kmh;
-            (v > 1.0 && v < 200.0).then_some(v)
-        });
-        self.speed_limit = limit;
-        if let Some(v) = limit {
-            x += 10.0 * s;
-            let c = Vec2::new(x + 10.0 * s, top.center().y);
-            ui.circle(c, 10.5 * s, Color::rgba(200, 40, 40, 1.0));
-            ui.circle(c, 8.3 * s, Color::rgba(235, 235, 235, 1.0));
-            let t = format!("{:.0}", units.speed_limit(v));
-            let px = if t.len() > 2 { 7.5 } else { 9.0 } * s;
-            ui.text(&mut self.atlas, &self.fonts, &t, px, Weight::Black, Vec2::new(c.x, c.y + self.fonts.cap_height(px, Weight::Black) * 0.5), Align::Center, Color::rgba(15, 15, 15, 1.0));
-        }
-        let hh = (f.time / 3600.0) as i32 % 24;
-        let mm = ((f.time % 3600.0) / 60.0) as i32;
-        let time_text = format!("{hh:02}:{mm:02}");
-        let day_text = wd.days[f.weekday.clamp(0, 6) as usize];
-        let time_w = self.fonts.width(&time_text, 14.0 * s, Weight::Bold);
-        let day_w = self.fonts.width(day_text, 12.0 * s, Weight::Medium);
-        ui.text(&mut self.atlas, &self.fonts, &time_text, 14.0 * s, Weight::Bold, Vec2::new(pw - pad, base), Align::Right, TEXT);
-        ui.text(&mut self.atlas, &self.fonts, day_text, 12.0 * s, Weight::Medium, Vec2::new(pw - pad - time_w - 5.0 * s, base), Align::Right, TEXT_DIM);
+        // (none of the bars, the schedule or the marks on the bare screen, `noNavUI`)
+        if !bare {
+            // top bar: speed (and the limit) · line ……… game time
+            let top = lay.head;
+            ui.rect(top, BAR);
+            let pad = 11.0 * s;
+            let base = top.y + top.h * 0.5 + self.fonts.cap_height(17.0 * s, Weight::Bold) * 0.5;
+            let mut x = pad;
+            let units = crate::units::Units::now();
+            let (speed, unit) = units.speed(f.speed_kmh.abs());
+            x += ui.text(&mut self.atlas, &self.fonts, &format!("{speed:.0}"), 17.0 * s, Weight::Bold, Vec2::new(x, base), Align::Left, TEXT);
+            x += 4.0 * s;
+            let unit = if units == crate::units::Units::Metric { wd.kmh } else { unit };
+            x += ui.text(&mut self.atlas, &self.fonts, unit, 12.0 * s, Weight::Medium, Vec2::new(x, base), Align::Left, TEXT_DIM);
+            let limit = net.and_then(|n| {
+                let lane = if self.route.on_route { self.route.lanes.get(self.route.progress).copied() } else { None };
+                let lane = lane.or_else(|| n.nearest_lane_near(f.bus, LaneKind::Street).filter(|l| l.2 < 8.0).map(|l| l.0))?;
+                let v = n.lanes.get(lane)?.speed_limit_kmh;
+                (v > 1.0 && v < 200.0).then_some(v)
+            });
+            self.speed_limit = limit;
+            if let Some(v) = limit {
+                x += 10.0 * s;
+                let c = Vec2::new(x + 10.0 * s, top.center().y);
+                ui.circle(c, 10.5 * s, Color::rgba(200, 40, 40, 1.0));
+                ui.circle(c, 8.3 * s, Color::rgba(235, 235, 235, 1.0));
+                let t = format!("{:.0}", units.speed_limit(v));
+                let px = if t.len() > 2 { 7.5 } else { 9.0 } * s;
+                ui.text(&mut self.atlas, &self.fonts, &t, px, Weight::Black, Vec2::new(c.x, c.y + self.fonts.cap_height(px, Weight::Black) * 0.5), Align::Center, Color::rgba(15, 15, 15, 1.0));
+            }
+            let hh = (f.time / 3600.0) as i32 % 24;
+            let mm = ((f.time % 3600.0) / 60.0) as i32;
+            let time_text = format!("{hh:02}:{mm:02}");
+            let day_text = wd.days[f.weekday.clamp(0, 6) as usize];
+            let time_w = self.fonts.width(&time_text, 14.0 * s, Weight::Bold);
+            let day_w = self.fonts.width(day_text, 12.0 * s, Weight::Medium);
+            ui.text(&mut self.atlas, &self.fonts, &time_text, 14.0 * s, Weight::Bold, Vec2::new(pw - pad, base), Align::Right, TEXT);
+            ui.text(&mut self.atlas, &self.fonts, day_text, 12.0 * s, Weight::Medium, Vec2::new(pw - pad - time_w - 5.0 * s, base), Align::Right, TEXT_DIM);
 
-        // Temperatures stay in the navigator header on every bus. The simulator always keeps
-        // Cabinair_Temp, while scripts that model heating/air conditioning can overwrite it.
-        let temp = format!("EXT {:.0}°C | INT {:.0}°C", f.outside_temp, f.inside_temp);
-        let center = match f.line.as_deref().map(str::trim).filter(|l| !l.is_empty()) {
-            Some(line) => format!("{temp} | {line}"),
-            None => temp,
-        };
-        let left_edge = (if limit.is_some() { x + 24.0 * s } else { x }) + 6.0 * s;
-        let right_edge = pw - pad - time_w - 5.0 * s - day_w - 6.0 * s;
-        if right_edge > left_edge {
-            let rect = Rect::new(left_edge, top.y, right_edge - left_edge, top.h);
-            let center = self.fonts.fit(&center, 11.5 * s, Weight::Bold, rect.w);
-            ui.text_in(&mut self.atlas, &self.fonts, &center, 11.5 * s, Weight::Bold, rect, Align::Center, TEXT_DIM);
-        }
-
-        // bottom bar: the next stop (or the player's own destination); its distance, the time
-        // to it, the planned time and whether the bus is early or late
-        let next = lay.next_text();
-        self.paint_next(&mut ui, f, next, s);
-        // (the schedule's handle at the bar's right end: a chevron - down to show it, up to
-        // put it away; beside the map, towards it)
-        if let Some(h) = lay.handle {
-            ui.rect(Rect::new(next.right(), lay.next.y, lay.next.right() - next.right(), lay.next.h), BAR);
-            let on = self.schedule;
-            let lit = self.panel_hover == Some(HoverPart::Handle);
-            ui.rounded(h, 6.0 * s, Color::WHITE.alpha(if lit { 0.2 } else { 0.08 }));
-            ui.rounded_border(h, 6.0 * s, 1.0, Color::WHITE.alpha(if lit { 0.35 } else { 0.16 }));
-            let icon = match (on, lay.beside) {
-                (true, true) => "chevron_right",
-                (true, false) => "expand_less",
-                (false, _) => "expand_more",
+            // Temperatures stay in the navigator header on every bus. The simulator always keeps
+            // Cabinair_Temp, while scripts that model heating/air conditioning can overwrite it.
+            let temp = format!("EXT {:.0}°C | INT {:.0}°C", f.outside_temp, f.inside_temp);
+            let center = match f.line.as_deref().map(str::trim).filter(|l| !l.is_empty()) {
+                Some(line) => format!("{temp} | {line}"),
+                None => temp,
             };
-            ui.icon(&mut self.atlas, icon, h.center(), h.w * 0.8, if on { TEXT_DIM } else { crate::nav_duty::NOW });
-        }
-        // the schedule: the next stops with their planned times - under the bar, or beside
-        // the map; or a plugin's board there, which the plugins' panels draw over it (a
-        // hairline over it, as over the schedule)
-        if let Some(area) = lay.board.filter(|_| self.schedule && (sched > 0 || self.dock.is_some())) {
-            if lay.beside {
-                ui.rect(Rect::new(area.x, area.y, 1.0, area.h), Color::WHITE.alpha(0.1));
+            let left_edge = (if limit.is_some() { x + 24.0 * s } else { x }) + 6.0 * s;
+            let right_edge = pw - pad - time_w - 5.0 * s - day_w - 6.0 * s;
+            if right_edge > left_edge {
+                let rect = Rect::new(left_edge, top.y, right_edge - left_edge, top.h);
+                let center = self.fonts.fit(&center, 11.5 * s, Weight::Bold, rect.w);
+                ui.text_in(&mut self.atlas, &self.fonts, &center, 11.5 * s, Weight::Bold, rect, Align::Center, TEXT_DIM);
             }
-            if sched > 0 {
-                self.paint_schedule(&mut ui, f, area, sched, s);
-            } else if !lay.beside {
-                let pad = 11.0 * s;
-                ui.rect(Rect::new(area.x + pad, area.y, area.w - 2.0 * pad, 1.0), Color::WHITE.alpha(0.06));
+
+            // bottom bar: the next stop (or the player's own destination); its distance, the time
+            // to it, the planned time and whether the bus is early or late
+            let next = lay.next_text();
+            self.paint_next(&mut ui, f, next, s);
+            // (the schedule's handle at the bar's right end: a chevron - down to show it, up to
+            // put it away; beside the map, towards it)
+            if let Some(h) = lay.handle {
+                ui.rect(Rect::new(next.right(), lay.next.y, lay.next.right() - next.right(), lay.next.h), BAR);
+                let on = self.schedule;
+                let lit = self.panel_hover == Some(HoverPart::Handle);
+                ui.rounded(h, 6.0 * s, Color::WHITE.alpha(if lit { 0.2 } else { 0.08 }));
+                ui.rounded_border(h, 6.0 * s, 1.0, Color::WHITE.alpha(if lit { 0.35 } else { 0.16 }));
+                let icon = match (on, lay.beside) {
+                    (true, true) => "chevron_right",
+                    (true, false) => "expand_less",
+                    (false, _) => "expand_more",
+                };
+                ui.icon(&mut self.atlas, icon, h.center(), h.w * 0.8, if on { TEXT_DIM } else { crate::nav_duty::NOW });
             }
-        }
-        // (the size just changed with Ctrl + the wheel: the new one, over the map)
-        self.size_note(&mut ui, Vec2::new(map.center().x, map.y + 22.0 * s), s);
-        // (the mouse over an edge or a corner: a mark along it, where a drag sizes the panel)
-        if let Some(HoverPart::Grip(crate::nav_panel::Grip::Size { left, right, top, bottom })) = self.panel_hover {
-            let (t, c) = (3.0 * s.max(1.0), crate::nav_duty::NOW.alpha(0.9));
-            let (len_x, len_y) = ((pw * 0.25).min(80.0 * s), (ph * 0.25).min(80.0 * s));
-            let (x0, x1) = if left { (0.0, len_x) } else if right { (pw - len_x, pw) } else { (pw * 0.5 - len_x, pw * 0.5 + len_x) };
-            let (y0, y1) = if top { (0.0, len_y) } else if bottom { (ph - len_y, ph) } else { (ph * 0.5 - len_y, ph * 0.5 + len_y) };
-            if top || bottom {
-                ui.rect(Rect::new(x0, if top { 0.0 } else { ph - t }, x1 - x0, t), c);
+            // the schedule: the next stops with their planned times - under the bar, or beside
+            // the map; or a plugin's board there, which the plugins' panels draw over it (a
+            // hairline over it, as over the schedule)
+            if let Some(area) = lay.board.filter(|_| (self.schedule || look.is_some()) && (sched > 0 || self.dock.is_some())) {
+                if lay.beside {
+                    ui.rect(Rect::new(area.x, area.y, 1.0, area.h), Color::WHITE.alpha(0.1));
+                }
+                if sched > 0 {
+                    self.paint_schedule(&mut ui, f, area, sched, s);
+                } else if !lay.beside {
+                    let pad = 11.0 * s;
+                    ui.rect(Rect::new(area.x + pad, area.y, area.w - 2.0 * pad, 1.0), Color::WHITE.alpha(0.06));
+                }
             }
-            if left || right {
-                ui.rect(Rect::new(if left { 0.0 } else { pw - t }, y0, t, y1 - y0), c);
+            // (the size just changed with Ctrl + the wheel: the new one, over the map)
+            if look.is_none() {
+                self.size_note(&mut ui, Vec2::new(map.center().x, map.y + 22.0 * s), s);
+            }
+            // (the mouse over an edge or a corner: a mark along it, where a drag sizes the panel)
+            if let Some(HoverPart::Grip(crate::nav_panel::Grip::Size { left, right, top, bottom })) = self.panel_hover.filter(|_| look.is_none()) {
+                let (t, c) = (3.0 * s.max(1.0), crate::nav_duty::NOW.alpha(0.9));
+                let (len_x, len_y) = ((pw * 0.25).min(80.0 * s), (ph * 0.25).min(80.0 * s));
+                let (x0, x1) = if left { (0.0, len_x) } else if right { (pw - len_x, pw) } else { (pw * 0.5 - len_x, pw * 0.5 + len_x) };
+                let (y0, y1) = if top { (0.0, len_y) } else if bottom { (ph - len_y, ph) } else { (ph * 0.5 - len_y, ph * 0.5 + len_y) };
+                if top || bottom {
+                    ui.rect(Rect::new(x0, if top { 0.0 } else { ph - t }, x1 - x0, t), c);
+                }
+                if left || right {
+                    ui.rect(Rect::new(if left { 0.0 } else { pw - t }, y0, t, y1 - y0), c);
+                }
             }
         }
 
-        PanelPaint { bg, traffic: dy, vehicles: cars, ui, roads: road_verts, route: route_verts, surface: surface_verts, surface_n, map_layer, radius, anchor }
+        PanelPaint { bg, traffic: dy, vehicles: cars, ui, roads: road_verts, route: route_verts, history: history_verts, history_on, surface: surface_verts, surface_n, map_layer, radius, anchor }
     }
 }
 
@@ -2008,6 +2078,10 @@ struct PanelPaint {
     ui: Painter,
     roads: Option<Vec<omsi_ui::Vertex>>,
     route: Option<Vec<omsi_ui::Vertex>>,
+    /// The route behind the bus on the GPS screen (`showHistory`) when it was built anew, and
+    /// whether it is drawn.
+    history: Option<Vec<omsi_ui::Vertex>>,
+    history_on: bool,
     /// The map's own surface (buffer 6) when it was built anew, and how much of it is drawn.
     surface: Option<Vec<omsi_ui::Vertex>>,
     surface_n: u32,
@@ -2443,6 +2517,10 @@ use surface::ground;
 pub(crate) mod ground;
 mod city_map;
 pub use city_map::*;
+mod screen;
+pub use screen::Screen;
+#[cfg(test)]
+use screen::ScreenLook;
 #[cfg(test)]
 mod tests;
 
