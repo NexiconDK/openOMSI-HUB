@@ -241,6 +241,10 @@ fn a_concession_ending_goes_out_to_every_company() {
     // (A did not bid on its own renewal: it went to B)
     assert!(matches!(&a.concessions.tenders.iter().find(|t| t.line == "Linie5").unwrap().outcome, Some(cn::Outcome::NoBid { winner, .. }) if winner == "GoCollective"));
     assert!(cn::of_line(&a, "Linie5").is_some(), "A runs it until its term ends");
+    // (18 November 2026) both told in their inboxes - not only in the feed that runs by
+    let mail = |c: &Company, title: &str| c.inbox.messages.iter().any(|m| m.title == title && m.value("n") == Some("5"));
+    assert!(mail(&a, MAIL_CONCESSION_LOST.0) && a.inbox.messages.iter().any(|m| m.value("who") == Some("GoCollective")), "{:?}", a.inbox.messages);
+    assert!(mail(&b, MAIL_WON.0) && !mail(&b, MAIL_LOST.0), "{:?}", b.inbox.messages);
     let _ = std::fs::remove_dir_all(&data);
 }
 

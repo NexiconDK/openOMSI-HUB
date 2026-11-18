@@ -157,3 +157,32 @@ fn the_drivers_who_ran_the_line_go_with_it_the_buses_are_a_choice() {
     assert!(!step(&data, &mut b), "once");
     let _ = std::fs::remove_dir_all(&data);
 }
+
+/// (NexiconDK, 18 November 2026: "gøre så chaufførerne i hvert fald ryger videre, også til A.I
+/// selskaber") A line lost to a company of the game - an operator of the map, a rival - takes its
+/// drivers too: told at once, off the staff and the roster on the day, on the server or not; the
+/// buses stay.
+#[test]
+fn the_drivers_go_with_a_line_lost_to_a_company_of_the_game_too() {
+    for server in [true, false] {
+        let mut a = company("Umove", "umove");
+        a.online.on_server = server;
+        let ids = drivers(&mut a);
+        let wd = crate::company::plan::weekday_of(&a.date);
+        let x = market::buy_new(&mut a, &MarketBus { name: "Citaro".into(), ..Default::default() }, Payment::Cash, "").unwrap();
+        crate::company::plan::set_bus(&mut a, wd, "Linie5", "1", Some(x));
+        crate::company::plan::set_driver(&mut a, wd, "Linie5", "1", 0, Some(Who::Staff(ids[1])));
+        let date = "2024-03-08";
+        assert_eq!(to_ai(&mut a, "Midttrafik Rute", "Linie5", "5", date), 1);
+        assert_eq!(to_ai(&mut a, "Midttrafik Rute", "Linie5", "5", date), 0, "once");
+        assert!(a.inbox.messages.iter().any(|m| m.title == DRIVERS_TAKEN.0 && m.value("name") == Some("Midttrafik Rute")));
+        let staff = a.staff.len();
+        assert!(!leave_due(&mut a), "not before its day");
+        a.date = date.into();
+        assert!(leave_due(&mut a));
+        assert_eq!(a.staff.len(), staff - 1);
+        assert!(a.employee(ids[1]).is_none() && a.employee(ids[0]).is_some() && a.vehicle(x).is_some());
+        assert!(a.planning.week.iter().all(|t| !t.duties.contains(&Some(Who::Staff(ids[1])))), "off the roster");
+        assert!(a.online.takeover.sales.is_empty());
+    }
+}

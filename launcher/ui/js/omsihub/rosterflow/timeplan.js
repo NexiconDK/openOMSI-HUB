@@ -282,11 +282,11 @@ function ContextBar({ v, onHeight }) {
   };
   return html`<div class=${'tp-bar' + (fit ? ` fit${Math.min(fit, 2)}` : '') + (fit >= 3 ? ' wrap' : '')} data-rf="rf-tp-bar" ref=${bar}>
     ${v.lines.length > 0 && html`<span class="tp-select" style="flex:0 1 220px;min-width:110px"><select value=${String(lineAt)} onChange=${(e) => pickLine(Number(e.currentTarget.value))}>${v.lines.map((l, k) => html`<option value=${String(k)}>${l.label}</option>`)}</select><${Icon} name="expand_more" size=${18} /></span>`}
-    <button type="button" class=${'tp-new' + (wide ? '' : ' narrow')} data-rf="rf-tp-new-line" title=${tr('New line: draw its route in the line editor, then make its timetable here')} onClick=${() => {
+    ${!S.co?.remote && html`<button type="button" class=${'tp-new' + (wide ? '' : ' narrow')} data-rf="rf-tp-new-line" title=${tr('New line: draw its route in the line editor, then make its timetable here')} onClick=${() => {
       if (v.dirty && !t.leaving) return tpSet({ leaving: true });
       tpSet({ leaving: false });
       newLine();
-    }}><${Icon} name="add" size=${wide ? 18 : 20} />${wide && html`<span>${tr('New line')}</span>`}</button>
+    }}><${Icon} name="add" size=${wide ? 18 : 20} />${wide && html`<span>${tr('New line')}</span>`}</button>`}
     <span class="tp-select" style="flex:0 1 150px;min-width:96px"><select value=${String(t.day)} onChange=${(e) => tpSet({ day: Number(e.currentTarget.value), cell: null, text: '', adding: null, chart: null, issuesOpen: false, sel: null, picked: [], scroll: 0, runCopy: null })}>${v.days.map((d, k) => html`<option value=${String(k)}>${d}</option>`)}</select><${Icon} name="expand_more" size=${18} /></span>
     <button type="button" class=${'tp-runcopy' + (t.runCopy ? ' on' : '') + (wide ? '' : ' narrow')} data-rf="rf-tp-runcopy" title=${tr('Copy timings to… other day groups: the running times of this one, for both directions or the one shown')} onClick=${(e) => tpSet({ copying: null, runCopy: t.runCopy ? null : { x: e.currentTarget.offsetLeft, to: [], both: true } })}><${Icon} name="content_copy" size=${16} />${wide && html`<span>${tr('Copy timings to…')}</span>`}</button>
     ${v.calendar?.length > 0 && fit < 2 && html`<${DayStrip} v=${v} />`}

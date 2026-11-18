@@ -193,9 +193,84 @@ pub fn reach(c: &Company) -> f64 {
     (0.6 + 0.4 * per_bus / REACH_PAX).clamp(0.7, 1.4)
 }
 
+/// (NexiconDK, 18 November 2026: "i Web admin skal det være muligt at ændre priser på 'Reklame' i
+/// 'Flåde'" - "jeg får 900 kr pr reklame? I virkeligheden koster en reklame nemt 10.000 pr. bus pr.
+/// måned") What an advertiser pays a bus a month on Bus Company Online's server, as its admin sets
+/// it (`company-server.cfg`'s `ad_rear`, `ad_sides`, `ad_wrap` in kroner - 0: the game's own
+/// reckoning, `price`; `ad_varies` 1: up and down with the passengers and the reputation round
+/// it, 0: just that).
+#[derive(Clone, Debug, PartialEq)]
+pub struct AdPrices {
+    pub rear: Cents,
+    pub sides: Cents,
+    pub wrap: Cents,
+    pub varies: bool,
+}
+
+/// The admin's advert prices by default (kroner a bus a month): a rear poster as the owner knows
+/// it, the side panels and a full wrap in the proportions of the UK data (`AdKind::base`).
+pub const AD_DEFAULT_KR: [f64; 3] = [10_000.0, 25_000.0, 70_000.0];
+
+impl Default for AdPrices {
+    fn default() -> AdPrices {
+        let kr = super::server_fines::Fines::cents;
+        AdPrices { rear: kr(AD_DEFAULT_KR[0]), sides: kr(AD_DEFAULT_KR[1]), wrap: kr(AD_DEFAULT_KR[2]), varies: false }
+    }
+}
+
+impl AdPrices {
+    pub fn of_keys(kv: &std::collections::HashMap<String, String>) -> AdPrices {
+        let d = AdPrices::default();
+        let num = |k: &str| kv.get(k).and_then(|v| v.trim().replace(',', ".").parse::<f64>().ok()).filter(|x| x.is_finite() && *x >= 0.0);
+        let kr = |k: &str, d: Cents| num(k).map_or(d, |x| super::server_fines::Fines::cents(x.min(10_000_000.0)));
+        AdPrices { rear: kr("ad_rear", d.rear), sides: kr("ad_sides", d.sides), wrap: kr("ad_wrap", d.wrap), varies: num("ad_varies").map_or(d.varies, |x| x != 0.0) }
+    }
+
+    /// Of the main server's folder `data`.
+    pub fn of(data: &std::path::Path) -> AdPrices {
+        AdPrices::of_keys(&super::server_fines::settings(data))
+    }
+
+    /// Its price of `kind` (0: the game's own).
+    pub fn of_kind(&self, kind: AdKind) -> Cents {
+        match kind {
+            AdKind::Rear => self.rear,
+            AdKind::Sides => self.sides,
+            AdKind::FullWrap => self.wrap,
+        }
+    }
+}
+
+/// The admin's price of `kind`, if the company is a server's and it set one; and whether it is
+/// fixed.
+fn admin_price(c: &Company, kind: AdKind) -> Option<(Cents, bool)> {
+    let p = c.online.ad_prices.as_ref().filter(|_| c.online.on_server)?;
+    let set = p.of_kind(kind);
+    (set > 0).then_some((set, !p.varies))
+}
+
+/// The admin's prices of an existing `company-server.cfg` (`main_server`): added when missing.
+pub const AD_CFG: &str = "
+# what an advertiser pays a bus a month (kroner; 0: the game's own reckoning by the passengers and
+# the reputation): a poster on the rear, the side panels, a full wrap; ad_varies 1: up and down
+# round it with the passengers and the reputation, 0: exactly it
+ad_rear = 10000
+ad_sides = 25000
+ad_wrap = 70000
+ad_varies = 0
+";
+
 /// An advertiser's price for an advert of `kind` on a bus of the company a month.
 pub fn price(c: &Company, kind: AdKind) -> Cents {
     let rep = 0.85 + 0.3 * c.reputation.clamp(0.0, 100.0) / 100.0;
+    // (18 November 2026: on the server, the admin's)
+    if let Some((set, fixed)) = admin_price(c, kind) {
+        // (exactly the admin's price; round it, whole units of the company's currency)
+        if fixed {
+            return set;
+        }
+        return c.currency.cents(c.currency.units(set as f64 * reach(c) * rep).round());
+    }
     let cents = uk::value(c, Item::Fares, kind.base()) * reach(c) * rep;
     // (whole units of the company's currency)
     c.currency.cents(c.currency.units(cents).round())
@@ -224,7 +299,9 @@ pub fn offers(c: &Company) -> Vec<AdOffer> {
         let buses = *rng.pick(sizes).unwrap_or(&1);
         let months = *rng.pick(terms).unwrap_or(&12);
         let noise = rng.range(0.9, 1.1);
-        let per_bus = c.currency.cents(c.currency.units(price(c, kind) as f64 * noise).round());
+        // (the admin's fixed price: exactly it)
+        let fixed = admin_price(c, kind).is_some_and(|x| x.1);
+        let per_bus = if fixed { price(c, kind) } else { c.currency.cents(c.currency.units(price(c, kind) as f64 * noise).round()) };
         let no = (week.rem_euclid(1_000_000) as u32) * 100 + k as u32;
         if c.adverts.taken.contains(&no) {
             continue;
@@ -448,5 +525,32 @@ mod tests {
         assert_eq!(penalty(&k), 100_00);
         assert_eq!(add_months("2024-01-31", 1), "2024-02-29");
         assert_eq!(add_months("2024-11-15", 3), "2025-02-15");
+    }
+
+    /// (NexiconDK, 18 November 2026: "jeg får 900 kr pr reklame? I virkeligheden koster en reklame
+    /// nemt 10.000 pr. bus pr. måned") On the server the admin's prices: exactly them by default
+    /// (10,000 kr. a rear poster), round them with the passengers and the reputation when he says
+    /// so, the game's own reckoning where he sets 0; off the server the game's own.
+    #[test]
+    fn the_server_s_admin_sets_what_an_advert_pays() {
+        let mut c = company(levels::LEVEL_XP[7], 4);
+        let own = price(&c, AdKind::Rear);
+        c.online.on_server = true;
+        c.online.ad_prices = Some(AdPrices::default());
+        let kr = super::super::server_fines::Fines::cents;
+        assert_eq!(price(&c, AdKind::Rear), kr(10_000.0));
+        assert_eq!(price(&c, AdKind::FullWrap), kr(70_000.0));
+        assert!(offers(&c).iter().all(|o| o.per_bus == price(&c, o.kind)), "fixed: no haggling");
+        let kv: std::collections::HashMap<String, String> = [("ad_rear", "12000"), ("ad_sides", "0"), ("ad_varies", "1")].into_iter().map(|(k, v)| (k.to_string(), v.to_string())).collect();
+        c.online.ad_prices = Some(AdPrices::of_keys(&kv));
+        let r = price(&c, AdKind::Rear) as f64 / kr(12_000.0) as f64;
+        assert!((0.55..=1.65).contains(&r), "{r}");
+        assert_eq!(price(&c, AdKind::Sides), {
+            c.online.on_server = false;
+            price(&c, AdKind::Sides)
+        }, "0: the game's own");
+        c.online.on_server = false;
+        assert_eq!(price(&c, AdKind::Rear), own, "off the server: the game's own");
+        assert!(AD_CFG.contains("ad_rear = 10000"));
     }
 }

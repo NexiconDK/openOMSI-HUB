@@ -2127,3 +2127,40 @@ chauffører?"*, then *"Chaufførerne SKAL følge med - uanset hvad - busserne er
   of its lines when it was put out again (`Shared::take_buses`, `take_drivers`).
 
 Tested: `takeover::tests::the_drivers_who_ran_the_line_go_with_it_the_buses_are_a_choice`.
+
+### A tender's outcome in the inbox, and drivers to a company of the game (18 November 2026)
+
+NexiconDK: *"Hvis jeg taber et udbud som jeg havde en kontrakt på, hvorfor får jeg så ikke en mail
+om det?"*, then *"gøre så chaufførerne i hvert fald ryger videre, også til A.I selskaber?"*
+
+* **The inbox**: a tender's outcome was told only in the clock's feed, which runs by. Now a mail
+  too (`shared_tenders::MAIL_WON`, `MAIL_LOST` - lost with a bid of its own -,
+  `MAIL_CONCESSION_LOST` - a line of its own lost, bid or not), on the server and in a game of its
+  own (`clock`).
+* **Drivers to a company of the game** (`takeover::to_ai`): a renewal won by an operator of the
+  map or a rival - no player's company - takes the line's drivers all the same (`DRIVERS_TAKEN`,
+  a sale to nobody); on the new term's first day they leave, their week's guarantee paid, off the
+  roster (`leave_due`, at each day's close, on the server or not). The buses stay.
+
+Tested: `shared_tenders::tests` (the renewal's mails),
+`takeover::tests::the_drivers_go_with_a_line_lost_to_a_company_of_the_game_too`.
+
+### No line of its own, "Other company" from a server company, the admin's advert prices (18 November 2026)
+
+* **No line of its own** (NexiconDK: *"'Lav en ny linje' på 'Startskærm' skal fjernes - Det skal
+  ikke være muligt overhovedet i Bus Company Multiplayer"*): a company of the server gets its lines
+  from the map's tenders only. Gone there: the home's "Make a new line" (`home::view`), the Lines
+  page's (`lines::to_add`'s `make`), the Casual wizard's "Draw your own stops"; on a company joined
+  from afar also RosterFlow's Timeplan "New line" and Routes "New route".
+* **"Other company" on the home of a company joined from afar** asked the server for the
+  chooser - a view it refuses - and the page broke on the answer. It now leaves the joined
+  company for the launcher's own companies, as leaving does (`home.js`), and the chooser says a
+  refused view instead of breaking.
+* **The admin's advert prices** (*"jeg får 900 kr pr reklame? I virkeligheden koster en reklame nemt
+  10.000 pr. bus pr. måned"*): the web admin's Rules and economy, "Adverts on the buses" -
+  `ad_rear`, `ad_sides`, `ad_wrap` (kroner a bus a month; 10,000, 25,000 and 70,000 by default; 0:
+  the game's own reckoning) and `ad_varies` (round the price with the passengers and the
+  reputation; off: exactly it, no haggling in the offers). A company of the server takes them as
+  it loads (`Online::ad_prices`, `adverts::AdPrices`); a contract signed keeps its price.
+  Tested: `adverts::tests::the_server_s_admin_sets_what_an_advert_pays`,
+  `home::tests::a_new_company_is_told_what_to_do_first`.

@@ -93,6 +93,9 @@ pub struct Online {
     /// map's pool as last counted, and when (K4; not kept).
     #[serde(skip)]
     pub live: Option<super::live_pay::LiveCfg>,
+    /// (18 November 2026) The admin's advert prices (`adverts::AdPrices`; not kept).
+    #[serde(skip)]
+    pub ad_prices: Option<super::adverts::AdPrices>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub drives_free: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -215,7 +218,7 @@ fn default_share() -> u8 {
 
 impl Default for Online {
     fn default() -> Self {
-        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, live: None, drives_free: Vec::new(), live_days: Vec::new(), pool_free: None, agency: None, fixed: Vec::new(), boss_drives: Vec::new(), dispatcher: None, supplements: Vec::new(), supplements_at: 0, pool_read: 0, subs: Vec::new(), sub_out: Vec::new(), sub_in: Vec::new(), sub_read: 0, changes: Vec::new(), roadworks: Vec::new(), roadworks_at: 0, majeure: Vec::new(), majeure_at: 0, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
+        Online { on_server: false, owner: String::new(), owner_id: String::new(), share: DEFAULT_SHARE, share_next: None, world_trips_read: 0, hq: String::new(), transfers_read: 0, buses_read: 0, people_read: 0, fines: None, price_level: None, live: None, ad_prices: None, drives_free: Vec::new(), live_days: Vec::new(), pool_free: None, agency: None, fixed: Vec::new(), boss_drives: Vec::new(), dispatcher: None, supplements: Vec::new(), supplements_at: 0, pool_read: 0, subs: Vec::new(), sub_out: Vec::new(), sub_in: Vec::new(), sub_read: 0, changes: Vec::new(), roadworks: Vec::new(), roadworks_at: 0, majeure: Vec::new(), majeure_at: 0, doubling: Default::default(), doubling_rules: None, buses: None, buses_at: 0, takeover: Default::default(), red_days: 0, notices_read: 0, world: Default::default(), big_purchase: None, approved: 0, asks: Vec::new(), asks_read: 0, group: None, brand: 0, orders_read: 0, admin_read: 0, group_roles: Vec::new() }
     }
 }
 
@@ -733,6 +736,9 @@ impl Host {
         // its map's pool: `live_pay`, K1-K5)
         if c.online.on_server && c.online.live.is_none() {
             c.online.live = Some(super::live_pay::LiveCfg::of(&self.data));
+        }
+        if c.online.on_server && c.online.ad_prices.is_none() {
+            c.online.ad_prices = Some(super::adverts::AdPrices::of(&self.data));
         }
         if c.online.on_server && super::live_pay::cfg(c).pool > 0 && (c.online.pool_free.is_none() || (real - c.online.pool_read).abs() >= 300) {
             let others = super::live_pay::others_drivers(&self.data, c);

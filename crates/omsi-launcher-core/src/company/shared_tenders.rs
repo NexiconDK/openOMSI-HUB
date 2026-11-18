@@ -34,6 +34,7 @@
 use super::clock::{self, Level, Run};
 use super::concessions::{self as cn, OtherBids, Rival, Shared, Standing, Tender};
 use super::dates;
+use super::inbox;
 use super::model::{BookingKind, Cents, Company, Drive, GameMode};
 use super::online;
 use super::rng::Rng;
@@ -1420,24 +1421,36 @@ pub fn sync(data: &Path, c: &mut Company) -> (bool, bool) {
             cn::Event::Won { until, .. } if package => {
                 won = true;
                 let numbers = lines.iter().map(|l| l.1.clone()).collect::<Vec<_>>().join(", ");
-                clock::tell(c, &mut run, closes, PACKAGE_WON, vec![clock::arg("n", &number), clock::arg("lines", numbers), clock::arg("amount", amount), clock::arg("date", until)], Level::Good);
+                clock::tell(c, &mut run, closes, PACKAGE_WON, vec![clock::arg("n", &number), clock::arg("lines", &numbers), clock::arg("amount", amount), clock::arg("date", &until)], Level::Good);
+                mail(c, MAIL_WON, &format!("{number} ({numbers})"), vec![clock::arg("amount", amount), clock::arg("until", until)], Level::Good);
             }
             cn::Event::Won { until, .. } => {
                 won = true;
-                clock::tell(c, &mut run, closes, "Line %{n} won for %{amount}: the concession runs until %{date}", vec![clock::arg("n", &number), clock::arg("amount", amount), clock::arg("date", until)], Level::Good);
+                clock::tell(c, &mut run, closes, "Line %{n} won for %{amount}: the concession runs until %{date}", vec![clock::arg("n", &number), clock::arg("amount", amount), clock::arg("date", &until)], Level::Good);
+                mail(c, MAIL_WON, &number, vec![clock::arg("amount", amount), clock::arg("until", until)], Level::Good);
             }
             cn::Event::Lost { winner, .. } if winner.is_empty() => clock::tell(c, &mut run, closes, "Nobody bid for line %{n}", vec![clock::arg("n", &number)], Level::Minor),
             cn::Event::Lost { winner, .. } => {
                 // (its concession won by another company: the buses it ran the line with offered
                 // to it - `takeover`)
-                if renewal && !d.winner.is_empty() && !from.is_empty() {
+                if renewal && !from.is_empty() {
                     for (line, number) in &lines {
-                        super::takeover::offer(data, c, &d.winner, &d.name, line, number, &from);
+                        if d.winner.is_empty() {
+                            // (18 November 2026: won by a company of the game - its drivers go too)
+                            super::takeover::to_ai(c, &d.name, line, number, &from);
+                        } else {
+                            super::takeover::offer(data, c, &d.winner, &d.name, line, number, &from);
+                        }
                     }
                 }
                 let level = if mine_bid || renewal { Level::Bad } else { Level::Minor };
                 let text = if renewal { "Line %{n} went to %{who} for %{amount}: your concession ends with its term" } else { "Line %{n} went to %{who} for %{amount}" };
-                clock::tell(c, &mut run, closes, text, vec![clock::arg("n", &number), clock::arg("who", winner), clock::arg("amount", amount)], level);
+                clock::tell(c, &mut run, closes, text, vec![clock::arg("n", &number), clock::arg("who", &winner), clock::arg("amount", amount)], level);
+                if renewal {
+                    mail(c, MAIL_CONCESSION_LOST, &number, vec![clock::arg("who", &winner), clock::arg("amount", amount)], Level::Bad);
+                } else if mine_bid {
+                    mail(c, MAIL_LOST, &number, vec![clock::arg("who", &winner), clock::arg("amount", amount)], Level::Bad);
+                }
             }
             cn::Event::Ended { .. } => {}
         }
@@ -1501,6 +1514,23 @@ pub fn satisfactory(k: &super::bus_contracts::Contract, today: &str) -> bool {
 }
 
 /// (3 November 2026) A package won (`concessions::Package`).
+/// (NexiconDK, 18 November 2026: "Hvis jeg taber et udbud som jeg havde en kontrakt på, hvorfor
+/// får jeg så ikke en mail om det?") What came of a tender of the market goes to the inbox too -
+/// won, lost with a bid of its own, and above all a concession of its own lost - not only to the
+/// clock's feed, which runs by: (title, text).
+pub const MAIL_WON: (&str, &str) = ("Tender won: line %{n}", "You won the tender of line %{n} with an ask of %{amount} a timetable hour. The concession runs until %{until}: plan its tours on the Planning page.");
+pub const MAIL_LOST: (&str, &str) = ("Tender lost: line %{n}", "The tender of line %{n} went to %{who} with an ask of %{amount} a timetable hour.");
+pub const MAIL_CONCESSION_LOST: (&str, &str) = ("Your line %{n} goes to %{who}", "The tender of your line %{n} went to %{who} with an ask of %{amount} a timetable hour. Your concession ends with its term, and %{who} runs the line after it.");
+
+/// The tender's outcome posted to the inbox.
+pub(crate) fn mail(c: &mut Company, (title, text): (&str, &str), n: &str, args: Vec<(String, String)>, level: Level) {
+    let mut m = inbox::Message::new(inbox::Kind::Lines, title, text).arg("n", n.to_string()).level(level);
+    for (k, v) in args {
+        m = m.arg(&k, v);
+    }
+    inbox::post(c, m);
+}
+
 pub const PACKAGE_WON: &str = "The package %{n} (lines %{lines}) won for %{amount}: its concessions run until %{date}";
 
 /// The authority told a company it takes its option (`options`).

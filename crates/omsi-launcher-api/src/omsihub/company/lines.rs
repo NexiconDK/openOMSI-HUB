@@ -379,6 +379,11 @@ fn to_add(s: &mut Session, c: &Company, mine_chosen: bool) -> Value {
         "title": tr("Add a line"), "make": tr("Make a new line"),
         "make_tip": tr(if rf { "Draw a line of the company's own in the line editor: you confirm and pay for its route there, then make its timetable in RosterFlow's Timeplan" } else { "Draw a line of the company's own in the line editor: it shows what the line costs and brings, and you confirm and pay for it there" }),
     });
+    // (18 November 2026: on Bus Company Online's server no line of the company's own - the map's
+    // go out to tender)
+    if c.online.on_server {
+        out["make"] = Value::Null;
+    }
     let Some(today) = s.today.as_ref() else {
         out["reading"] = json!(tr("Reading the timetable…"));
         return out;

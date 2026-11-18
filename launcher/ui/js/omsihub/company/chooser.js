@@ -29,6 +29,8 @@ export function Chooser() {
   const [asking, setAsking] = useState(null);
   const cloud = useCloud();
   if (!v) return null;
+  // (a view refused or failed: said, not a broken page)
+  if (v.error || !v.companies) return html`<div class="co-empty">${v.error || tr('Reading your companies…')}</div>`;
   const step = S.co.chooser;
   if (step === 'mode') return html`<${Modes} v=${v.modes} n=${v.companies.tiles.length} />`;
   if (step === 'join') return html`<${JoinPage} />`;

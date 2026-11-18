@@ -856,6 +856,8 @@ pub fn close_day_with(c: &mut Company, tours: Vec<TourOfDay>, unassigned: &[(Str
     report.notes.extend(morning);
     // (16 November 2026: who drove each line - the winner of a line may take its drivers over)
     super::takeover::note_crew(c, &day_plan);
+    // (18 November 2026: drivers going with a line lost to a company of the game, on their day)
+    super::takeover::leave_due(c);
     let (short_buses, short_drivers) = plan.short_of();
     (report.uncovered, report.short_buses, report.short_drivers) = (plan.uncovered() as u32, short_buses as u32, short_drivers as u32);
     // (as the company's clock went through the day: `clock::breakdowns`; a rental bus ordered

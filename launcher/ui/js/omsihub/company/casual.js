@@ -221,7 +221,7 @@ function NewLine({ v, st }) {
         ? html`<p class="co-para">${v.reading}</p>`
         : v.step === 0
           ? html`<div class="co-scroll"><div class="co-choices">
-              <${Choice} icon="location_on" title=${v.draw.title} text=${v.draw.text} on=${st.pick === 'draw'} onClick=${() => put({ pick: 'draw', step: 1 })} />
+              ${v.draw && html`<${Choice} icon="location_on" title=${v.draw.title} text=${v.draw.text} on=${st.pick === 'draw'} onClick=${() => put({ pick: 'draw', step: 1 })} />`}
               ${v.choices.map((x) => html`<${Choice} plate=${{ number: x.number, colour: '' }} title=${x.caption} text=${x.text} on=${st.pick === x.name} onClick=${() => put({ pick: x.name, step: 1, ...(x.freq ? { freq: x.freq } : {}) })} />`)}
             </div></div>`
           : v.step === 1

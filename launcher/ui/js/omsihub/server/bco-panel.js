@@ -81,6 +81,11 @@ export const BCO_FIELDS = [
   ['urgent_bonus', 'Urgent tasks pay more (%)', 'number', 'A short-notice doubling the admin ordered (players only) or rail replacement: a player who drives it is paid this much more'],
   ['loyalty_bonus', 'A fixed duty pays more (%)', 'number', 'A duty a company gives a player for good on its weekday'],
   ['boss_duties', "The boss's duties a week", 'number', 'The owner or a co-owner driving this many duties live in a week raises the working environment by 10 points; 0: never'],
+  ['Adverts on the buses'],
+  ['ad_rear', 'A rear advert a bus a month (kroner)', 'number', "What an advertiser pays the company; 0: the game's own reckoning by the passengers and the reputation"],
+  ['ad_sides', 'Side panels a bus a month (kroner)', 'number'],
+  ['ad_wrap', 'A full wrap a bus a month (kroner)', 'number'],
+  ['ad_varies', 'The price varies', BOOL, 'Up and down round it with the passengers and the reputation. Off: exactly the price. A contract signed keeps its price'],
   ["The authority's fines (kroner)"],
   ['fine_dropped_minute', 'A journey not run, a minute', 'number'],
   ['fine_wrong_bus', 'A smaller bus than the timetable asks', 'number'],
@@ -108,6 +113,7 @@ export const BCO_DEFAULTS = {
   found_trips: '20', found_course: '1', course_price: '5000', course_days: '3', found_test: '1', cap_per_hour: '0', cap_per_bus_day: '0', tender_cap_factor: '1.5', tender_low_share: '85', tender_round_weeks: '4', tender_award: 'viborg', calendar: 'map', doubling_price: '650', doubling_full: '100', tender_reserve: '10', fine_dropped_minute: '20.83',
   fine_wrong_bus: '2500', fine_diesel_on_electric: '2500', fine_wrong_fuel: '2500', fine_wrong_floor: '2500', fine_inspection: '1000', fine_early: '2500', fine_late: '2500', fine_driving: '2000', fine_temperature: '1500',
   fine_route: '2500', fine_ticket: '2500', fine_red_light: '2500', web_admin: '0',
+  ad_rear: '10000', ad_sides: '25000', ad_wrap: '70000', ad_varies: '0',
 };
 
 /** (3 November 2026) What a tender may ask of the buses (`server_buses::FloorRule`, `FuelRule`). */

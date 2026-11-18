@@ -202,7 +202,7 @@ function ToAdd({ a, mine }) {
   if (!a) return null;
   return html`<section class="co-section">
     <div class="co-caps" style="display:flex;align-items:center;margin:-6px 0 8px"><span class="grow">${a.title}</span>
-      <${Btn} kind="ghost" icon="route" label=${a.make} title=${a.make_tip} style="height:32px" onClick=${() => handOver('line-editor')} /></div>
+      ${a.make && !S.co?.remote && html`<${Btn} kind="ghost" icon="route" label=${a.make} title=${a.make_tip} style="height:32px" onClick=${() => handOver('line-editor')} />`}</div>
     ${a.reading
       ? html`<p class="co-para">${a.reading}</p>`
       : a.error

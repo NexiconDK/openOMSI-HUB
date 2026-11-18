@@ -326,7 +326,7 @@ function RouteBar({ v }) {
       ${!line && html`<option value="">–</option>`}
       ${options.map(([k, label]) => html`<option value=${k}>${label}</option>`)}
     </select><${Icon} name="expand_more" size=${18} /></span>
-    <button type="button" class="tp-new narrow" title=${tr('New route: click its stops on the map')} onClick=${fresh}><${Icon} name="add" size=${20} /></button>
+    ${!S.co?.remote && html`<button type="button" class="tp-new narrow" title=${tr('New route: click its stops on the map')} onClick=${fresh}><${Icon} name="add" size=${20} /></button>`}
     <span class="tp-select rt-days" style="flex:0 1 200px;min-width:110px" title=${tr('The days the route runs, as its kind of service has them: the Timeplan makes its trips on these days')}>
       <select value=${line?.service || 'regular'} disabled=${!line} onChange=${(e) => le('kind', { kind: e.currentTarget.value })}>
         ${KINDS.map(([k, label]) => html`<option value=${k}>${tr(label)}</option>`)}
@@ -428,7 +428,7 @@ function StopsPanel({ v }) {
   const dragged = useRef(null);
   if (!line) {
     return html`<div class="rt-side"><div class="rt-empty"><p>${v.none}</p>
-      <button type="button" class="rt-act primary" onClick=${() => le('new_line').then(() => rtSet({ sel: L.view?.sel ?? null }))}><${Icon} name="add" size=${17} /><span>${tr('New route')}</span></button></div></div>`;
+      ${!S.co?.remote && html`<button type="button" class="rt-act primary" onClick=${() => le('new_line').then(() => rtSet({ sel: L.view?.sel ?? null }))}><${Icon} name="add" size=${17} /><span>${tr('New route')}</span></button>`}</div></div>`;
   }
   const d = line.directions[v.dir];
   const colour = line.colour;

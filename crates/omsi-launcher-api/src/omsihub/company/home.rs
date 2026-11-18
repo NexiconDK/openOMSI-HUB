@@ -304,6 +304,11 @@ pub fn view(s: &mut super::Session) -> Value {
         .collect();
     // the ways under the tiles
     let mut ways = vec![("dealer", "Dealer", "airport_shuttle"), ("adverts", "Advertising", "campaign"), ("loan", "Take a loan", "receipt_long"), ("new_line", "Make a new line", "alt_route"), ("licences", "Train drivers", "key"), ("my_duties", "My duties", "schedule"), ("rankings", "Rankings", "stars"), ("statistics", "Statistics", "trending_up")];
+    // (NexiconDK, 18 November 2026: "'Lav en ny linje' på 'Startskærm' skal fjernes - Det skal ikke
+    // være muligt overhovedet i Bus Company Multiplayer" - its lines come from the map's tenders)
+    if c.online.on_server {
+        ways.retain(|w| w.0 != "new_line");
+    }
     if c.last_report.is_some() {
         ways.push(("report", "Show the report", "description"));
     }
@@ -335,5 +340,11 @@ mod tests {
             assert_eq!(tos.contains(&format!("tab:{k}")), k != SANDBOX_TAB && (k != TOGETHER_TAB || super::super::super::together::enabled()), "page {k}");
         }
         assert_eq!(v["sections"][1]["tiles"][0]["lines"][0][0], "Reading the timetable…");
+        let ways = |v: &Value| v["ways"].as_array().unwrap().iter().map(|w| w["to"].as_str().unwrap().to_string()).collect::<Vec<_>>();
+        assert!(ways(&v).contains(&"new_line".to_string()));
+        // (18 November 2026) on Bus Company Online's server: no line of its own to make
+        s.company.as_mut().unwrap().online.on_server = true;
+        let v = view(&mut s);
+        assert!(!ways(&v).contains(&"new_line".to_string()) && ways(&v).contains(&"dealer".to_string()), "{:?}", ways(&v));
     }
 }

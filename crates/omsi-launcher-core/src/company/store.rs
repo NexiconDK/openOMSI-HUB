@@ -122,6 +122,8 @@ pub fn load(data: &Path, id: &str) -> Result<Company> {
         // (its rules of driving yourself: a player's pay, the quality, the surcharge, the pool -
         // `live_pay`)
         c.online.live = Some(super::live_pay::LiveCfg::of(data));
+        // (18 November 2026: the admin's advert prices)
+        c.online.ad_prices = Some(super::adverts::AdPrices::of(data));
         c.online.doubling_rules = Some(super::doubling::Rules::of(data));
         // (the admin's corrections of the buses: their floor, fuel, size and screens)
         super::server_buses::refresh(data, &mut c);

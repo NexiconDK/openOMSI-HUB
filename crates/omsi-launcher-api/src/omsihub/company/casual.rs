@@ -344,7 +344,8 @@ fn freq_of(name: &str) -> Freq {
 /// `freq` Quiet/Normal/Busy).
 fn new_line(s: &mut Session, c: &Company, ui: &Value) -> Value {
     let step = ui.get("step").and_then(Value::as_u64).unwrap_or(0).min(2);
-    let pick = ui.get("pick").and_then(Value::as_str).map(|p| if p == "draw" { Pick::Draw } else { Pick::Map(p.to_string()) });
+    // (18 November 2026: on Bus Company Online's server no line of the company's own to draw)
+    let pick = ui.get("pick").and_then(Value::as_str).filter(|p| !(c.online.on_server && *p == "draw")).map(|p| if p == "draw" { Pick::Draw } else { Pick::Map(p.to_string()) });
     let freq = freq_of(ui.get("freq").and_then(Value::as_str).unwrap_or("Normal"));
     let mut out = json!({
         "page": "new_line", "head": head(NEW_LINE, tr("Three steps: the timetable, the shifts and the drivers are made by themselves."), None),
@@ -370,7 +371,7 @@ fn new_line(s: &mut Session, c: &Company, ui: &Value) -> Value {
                     json!({ "name": x.name, "number": co::specials::number_of(x, &[&depot]), "caption": co::specials::caption_of(x, &[&depot]), "text": often, "freq": headway })
                 })
                 .collect();
-            out["draw"] = json!({ "title": tr("Draw your own stops"), "text": tr("Click the stops on the map in the line editor: the way between them is found over the roads.") });
+            out["draw"] = if c.online.on_server { Value::Null } else { json!({ "title": tr("Draw your own stops"), "text": tr("Click the stops on the map in the line editor: the way between them is found over the roads.") }) };
             out["choices"] = json!(choices);
         }
         1 => {

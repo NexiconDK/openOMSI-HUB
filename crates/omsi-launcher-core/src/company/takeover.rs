@@ -268,6 +268,62 @@ pub fn drivers_of_line(c: &Company, line: &str) -> Vec<u32> {
     out
 }
 
+/// (NexiconDK, 18 November 2026: "gøre så chaufførerne i hvert fald ryger videre, også til A.I
+/// selskaber") Company `c` lost its line `line` (`number`) to a company of the game - an operator
+/// or a rival, no player's (named `name`) - from `date`: the drivers who ran it go with the line
+/// all the same, on that day (`leave_due`); its buses stay its own. Told. How many drivers.
+pub fn to_ai(c: &mut Company, name: &str, line: &str, number: &str, date: &str) -> usize {
+    let drivers = drivers_of_line(c, line);
+    let id = format!("{}/{}/{date}", c.id, line.to_lowercase());
+    if drivers.is_empty() || c.online.takeover.sales.iter().any(|s| s.id == id) {
+        return 0;
+    }
+    let n = drivers.len();
+    c.online.takeover.sales.push(Sale { id, to: String::new(), name: name.to_string(), date: date.to_string(), buses: Vec::new(), drivers });
+    let m = Message::new(Kind::Staff, DRIVERS_TAKEN.0, DRIVERS_TAKEN.1).arg("name", name.to_string()).arg("n", number.to_string()).arg("count", n.to_string()).arg("date", date.to_string());
+    inbox::post(c, m);
+    n
+}
+
+/// The drivers going to a company of the game (`to_ai`) whose day has come: off the staff, their
+/// week's guarantee paid - on the server or not. Whether any went.
+pub fn leave_due(c: &mut Company) -> bool {
+    let due: Vec<Sale> = c.online.takeover.sales.iter().filter(|s| s.to.is_empty() && super::dates::between(&s.date, &c.date) >= 0).cloned().collect();
+    for s in &due {
+        for id in &s.drivers {
+            let _ = let_go(None, c, &s.id, &s.to, *id);
+        }
+        c.online.takeover.sales.retain(|x| x.id != s.id);
+    }
+    !due.is_empty()
+}
+
+/// Driver `id` of a sale (`sale`, to company `to`) leaves `c`: still here and not leaving
+/// already, its week's guarantee paid, off the staff and the roster - to a player's company,
+/// written to its file (`data`); to one of the game, gone. Whether it went.
+fn let_go(data: Option<&Path>, c: &mut Company, sale: &str, to: &str, id: u32) -> bool {
+    if !c.staff.iter().any(|e| e.id == id && e.notice_until.is_none() && e.lent.is_none() && e.lend.is_none()) {
+        return false;
+    }
+    super::pay::settle(c, id);
+    let Some(e) = c.staff.iter().find(|e| e.id == id).cloned() else { return false };
+    if let (Some(data), false) = (data, to.is_empty()) {
+        let t = Transfer { id: sale.to_string(), from: c.id.clone(), name: c.name.clone(), employee: e };
+        if append(&drivers_file(data, to), &t).is_err() {
+            return false;
+        }
+    }
+    c.staff.retain(|x| x.id != id);
+    c.staff_rules.asks.retain(|a| a.id != id);
+    for t in c.planning.week.iter_mut() {
+        for w in t.duties.iter_mut().filter(|w| **w == Some(Who::Staff(id))) {
+            *w = None;
+        }
+    }
+    c.online.takeover.crew.retain(|x| x.driver != id);
+    true
+}
+
 /// Company `c` lost its line `line` (`number`) to company `winner` (named `winner_name`) from
 /// `date`: the buses of its own it ran the line with offered to it at their book value, and (16
 /// November 2026) the drivers who ran it going with the line - kept as a sale at once, told. How
@@ -359,7 +415,8 @@ pub fn step(data: &Path, c: &mut Company) -> bool {
         }
     }
     // (its sales whose day has come: the buses it still owns leave, sold)
-    let due: Vec<Sale> = c.online.takeover.sales.iter().filter(|s| super::dates::between(&s.date, &c.date) >= 0).cloned().collect();
+    // (a company of the game's: `leave_due`)
+    let due: Vec<Sale> = c.online.takeover.sales.iter().filter(|s| !s.to.is_empty() && super::dates::between(&s.date, &c.date) >= 0).cloned().collect();
     for s in due {
         let today = c.date.clone();
         for id in &s.buses {
@@ -377,23 +434,7 @@ pub fn step(data: &Path, c: &mut Company) -> bool {
         // (16 November 2026: the drivers taken, still here and not leaving: their week's guarantee
         // paid, off the staff and the roster)
         for id in &s.drivers {
-            if !c.staff.iter().any(|e| e.id == *id && e.notice_until.is_none() && e.lent.is_none() && e.lend.is_none()) {
-                continue;
-            }
-            super::pay::settle(c, *id);
-            let Some(e) = c.staff.iter().find(|e| e.id == *id).cloned() else { continue };
-            let t = Transfer { id: s.id.clone(), from: c.id.clone(), name: c.name.clone(), employee: e };
-            if append(&drivers_file(data, &s.to), &t).is_err() {
-                continue;
-            }
-            c.staff.retain(|x| x.id != *id);
-            c.staff_rules.asks.retain(|a| a.id != *id);
-            for t in c.planning.week.iter_mut() {
-                for w in t.duties.iter_mut().filter(|w| **w == Some(Who::Staff(*id))) {
-                    *w = None;
-                }
-            }
-            c.online.takeover.crew.retain(|x| x.driver != *id);
+            let _ = let_go(Some(data), c, &s.id, &s.to, *id);
         }
         c.online.takeover.sales.retain(|x| x.id != s.id);
         changed = true;

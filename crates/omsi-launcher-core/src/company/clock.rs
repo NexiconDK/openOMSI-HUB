@@ -1173,12 +1173,27 @@ fn apply(c: &mut Company, due: Due, quick: bool, run: &mut Run) {
             let Some((ev, amount)) = cn::close(c, id) else { return };
             let mine = !t.offers.is_empty();
             match ev {
-                cn::Event::Won { until, .. } => tell(c, run, t.closes_at, "Line %{n} won for %{amount}: the concession runs until %{date}", vec![arg("n", &t.number), arg("amount", amount), arg("date", until)], Level::Good),
+                cn::Event::Won { until, .. } => {
+                    tell(c, run, t.closes_at, "Line %{n} won for %{amount}: the concession runs until %{date}", vec![arg("n", &t.number), arg("amount", amount), arg("date", &until)], Level::Good);
+                    // (18 November 2026: in the inbox too)
+                    super::shared_tenders::mail(c, super::shared_tenders::MAIL_WON, &t.number, vec![arg("amount", amount), arg("until", until)], Level::Good);
+                }
                 cn::Event::Lost { winner, .. } if winner.is_empty() => tell(c, run, t.closes_at, "Nobody bid for line %{n}", vec![arg("n", &t.number)], Level::Minor),
                 cn::Event::Lost { winner, .. } => {
                     let level = if mine || t.renewal { Level::Bad } else { Level::Minor };
                     let text = if t.renewal { "Line %{n} went to %{who} for %{amount}: your concession ends with its term" } else { "Line %{n} went to %{who} for %{amount}" };
-                    tell(c, run, t.closes_at, text, vec![arg("n", &t.number), arg("who", winner), arg("amount", amount)], level);
+                    tell(c, run, t.closes_at, text, vec![arg("n", &t.number), arg("who", &winner), arg("amount", amount)], level);
+                    use super::shared_tenders::{mail, MAIL_CONCESSION_LOST, MAIL_LOST};
+                    if t.renewal {
+                        // (18 November 2026: its drivers go with the line to the rival, the day
+                        // after its concession ends)
+                        if let Some(until) = cn::of_line(c, &t.line).map(|h| h.until.clone()) {
+                            super::takeover::to_ai(c, &winner, &t.line, &t.number, &super::dates::add(&until, 1));
+                        }
+                        mail(c, MAIL_CONCESSION_LOST, &t.number, vec![arg("who", &winner), arg("amount", amount)], Level::Bad);
+                    } else if mine {
+                        mail(c, MAIL_LOST, &t.number, vec![arg("who", &winner), arg("amount", amount)], Level::Bad);
+                    }
                 }
                 cn::Event::Ended { .. } => {}
             }

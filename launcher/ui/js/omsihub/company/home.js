@@ -3,7 +3,8 @@
 // glance, operations, people, business, the company) chosen above them, each tile saying how
 // that part is doing - and under them the ways to what is often wanted.
 
-import { html, setCo, setUi, ui, useView, useSize, textW, goTab, handOver, act, cmd, Icon, Seg, seen } from './kit.js';
+import { S, set } from '../../store.js';
+import { html, setCo, setUi, ui, useView, useSize, textW, goTab, handOver, act, cmd, Icon, Seg, seen, freshCo } from './kit.js';
 import { ComingRows } from './agenda.js';
 
 const TABS_H = 40;
@@ -96,6 +97,7 @@ export function openTo(to) {
       goTab(4);
       return act('open_loan');
     case 'new_line':
+      if (S.co?.remote) return null;
       return handOver('line-editor');
     case 'my_duties':
       setUi('career', { part: 0 });
@@ -109,6 +111,11 @@ export function openTo(to) {
     case 'report':
       return act('show_report');
     case 'chooser':
+      // (NexiconDK, 18 November 2026: a company joined from afar - Bus Company Online, Play
+      // together - is the server's: its clock not this launcher's to stop, nor its chooser to
+      // show (the server refuses it, and the page broke on it). This launcher's own companies,
+      // as when a joined company is left.)
+      if (S.co?.remote) return set({ co: freshCo({ chooser: 'companies' }), page: 'company' });
       // (the clock stops: `chooser::to_companies`)
       return cmd('co_act', { act: 'play', speed: 0 }).finally(() => setCo({ chooser: 'companies' }));
     default:
@@ -117,7 +124,10 @@ export function openTo(to) {
 }
 
 export function HomePage() {
-  const v = useView('home');
+  const got = useView('home');
+  // (18 November 2026: a company joined from afar - Bus Company Online, Play together - makes no
+  // line of its own from here)
+  const v = got?.ways && S.co?.remote ? { ...got, ways: got.ways.filter((w) => w.to !== 'new_line') } : got;
   const [ref, size] = useSize();
   const st = ui('home', { cat: 0 });
   let body = null;
