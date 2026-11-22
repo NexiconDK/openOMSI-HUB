@@ -404,6 +404,10 @@ fn view(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
         .collect::<Vec<_>>());
     // the drivers, and who can go on a row of the rota chosen
     let reserve = sel.and_then(|id| list.iter().find(|t| t.id == id)).is_some_and(|t| t.reserve);
+    // (NexiconDK, 22 November 2026: the rota's time, and whether each driver likes it)
+    use omsi_launcher_lib::company::pro_pref as pp;
+    let slot = sel.and_then(|id| list.iter().find(|t| t.id == id)).and_then(|t| pp::slot_of_rota(t, &|d, n| week.get(d).and_then(|ds| ds.iter().find(|x| x.number == n)).map(|x| x.start)));
+    out["slot"] = json!(slot.map(|s| tr(pp::rota_label(s))));
     out["drivers"] = json!(c
         .staff
         .iter()
@@ -414,7 +418,11 @@ fn view(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                 Employment::Reserve(_) => reserve,
                 _ => !reserve,
             };
-            json!({ "id": e.id, "name": e.name, "nr": e.id, "kind": tr(e.employment.label()), "hours": co::staff::contract_hours(&c, e).map(|h| format!("{h:.1}")), "where": place_words(&c, e.id), "fits": fits })
+            // (22 November 2026: his rota and week of it apart, so the page groups the drivers)
+            let at = pt::place_of(&c, e.id);
+            json!({ "id": e.id, "name": e.name, "nr": e.id, "kind": tr(e.employment.label()), "hours": co::staff::contract_hours(&c, e).map(|h| format!("{h:.1}")), "where": place_words(&c, e.id), "fits": fits,
+                "rota": at.map(|(k, _)| c.planning.rotas.list[k].id), "rota_name": at.map(|(k, _)| c.planning.rotas.list[k].name.clone()), "week": at.map(|(_, row)| week_words(row)),
+                "pref": tr(pp::label(pp::of(e)).unwrap_or(pp::NO_PREFERENCE)), "suits": slot.map_or(0, |s| pp::fit_kind(pp::of(e), s)) })
         })
         .collect::<Vec<_>>());
     if let Some(k) = sel.and_then(|id| list.iter().position(|t| t.id == id)) {

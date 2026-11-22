@@ -477,7 +477,7 @@ fn the_rules_of_asking_a_reserve_the_hourly_paid_and_a_permanent_driver() {
 /// every time.
 #[test]
 fn an_ai_driver_answers_in_game_time_and_not_at_night() {
-    use crate::company::clock::{moment, DAY};
+    use crate::company::clock::moment;
     let mut c = company();
     let e = c.staff[1].clone();
     let date = "2024-03-06";
@@ -779,8 +779,9 @@ fn the_rest_rules_eleven_hours_a_day_of_thirteen_a_week_of_forty_eight() {
     // 8 hours: always (14 hours before the day after: fine); before the day after too
     assert_eq!(breaches(6 * 60, 15 * 60, Some((14 * 60, 22 * 60, 1005)), Some((5 * 60, 12 * 60, 2001)), None, 0, 0.0, 540), vec![Breach::RestAfter { minutes: 8 * 60, n: 1005 }]);
     assert_eq!(breaches(14 * 60, 23 * 60, None, Some((6 * 60, 12 * 60, 2001)), None, 3, 0.0, 540), vec![Breach::RestBefore { minutes: 7 * 60, n: 2001 }]);
-    // a day of more than 13 hours with his own morning duty
-    assert_eq!(breaches(15 * 60, 20 * 60, None, None, Some((5 * 60, 11 * 60, 1001)), 0, 0.0, 300), vec![Breach::LongDay { minutes: 15 * 60 }]);
+    // (22 November 2026) a day of 15 hours with his own morning duty: allowed; of 16: too long
+    assert!(breaches(15 * 60, 20 * 60, None, None, Some((5 * 60, 11 * 60, 1001)), 0, 0.0, 300).is_empty());
+    assert_eq!(breaches(15 * 60, 21 * 60, None, None, Some((5 * 60, 11 * 60, 1001)), 0, 0.0, 360), vec![Breach::LongDay { minutes: 16 * 60 }]);
     // a week over 48 hours
     assert_eq!(breaches(6 * 60, 14 * 60, None, None, None, 0, 42.0 * 60.0, 480), vec![Breach::LongWeek { minutes: 50 * 60 }]);
     // the reduced rests of a week
@@ -1391,7 +1392,7 @@ fn working_many_holidays_makes_a_driver_less_content() {
 #[test]
 fn early_and_late_people_like_their_duties() {
     use super::super::pro_pref::{self as pp, ShiftPref};
-    assert_eq!((pp::kind(5 * 60), pp::kind(7 * 60 + 59), pp::kind(8 * 60), pp::kind(12 * 60 + 59), pp::kind(13 * 60), pp::kind(22 * 60)), (ShiftPref::Early, ShiftPref::Early, ShiftPref::Neither, ShiftPref::Neither, ShiftPref::Late, ShiftPref::Late));
+    assert_eq!((pp::kind(5 * 60), pp::kind(7 * 60 + 59), pp::kind(8 * 60), pp::kind(12 * 60 + 59), pp::kind(13 * 60), pp::kind(22 * 60)), (ShiftPref::Early, ShiftPref::Early, ShiftPref::Day, ShiftPref::Day, ShiftPref::Late, ShiftPref::LateNight));
     let mut c = company();
     // (each driver one, the same every time, kept)
     let drawn: Vec<ShiftPref> = c.staff.iter().map(pp::seed).collect();
@@ -1400,12 +1401,12 @@ fn early_and_late_people_like_their_duties() {
     c.staff[0].shift_pref = None;
     pp::seed_all(&mut c);
     assert_eq!(c.staff[0].shift_pref, Some(drawn[0]));
-    // (a spread over many: all three)
+    // (a spread over many: all five - 22 November 2026)
     let mut e = c.staff[0].clone();
     let kinds: Vec<ShiftPref> = (0..200).map(|k| { e.id = 1000 + k; pp::seed(&e) }).collect();
-    for want in [ShiftPref::Early, ShiftPref::Late, ShiftPref::Neither] {
+    for (want, most) in [(ShiftPref::Early, 90), (ShiftPref::Day, 60), (ShiftPref::Late, 60), (ShiftPref::LateNight, 35), (ShiftPref::Neither, 60)] {
         let n = kinds.iter().filter(|x| **x == want).count();
-        assert!((40..=100).contains(&n), "{want:?} {n}");
+        assert!((8..=most).contains(&n), "{want:?} {n}");
     }
     // (liked: a yes more likely and a little more content; not: less of both)
     c.staff[0].shift_pref = Some(ShiftPref::Early);
@@ -2004,4 +2005,49 @@ fn round_q_a_lines_money() {
     assert!(!pe::runs_on(&c, "5", &dates::add(&date, -1)));
     c.lines[0].service_from = None;
     assert!(!pe::runs_on(&c, "5", &date), "not in service");
+}
+
+/// (NexiconDK, 22 November 2026) Rung by the owner a driver free to take the duty says yes about
+/// 85 times in a hundred, by an operations assistant about 60; what he cannot stays a no.
+#[test]
+fn a_driver_rung_by_the_owner_says_yes_more_often_than_to_an_assistant() {
+    let c = company();
+    let e = c.staff[2].clone();
+    let free = Situation { fit: Ok(()), in_frame: false, week: 0.0, contract: Some(39.0 * 60.0), own: None, swap_with: None, can_from: None, can_until: None, tired: Default::default() };
+    // (a day duty, at 08:00-15:00: neither too early nor too late)
+    let yes = |by: Caller| (1001..1401).filter(|n| matches!(called_reply(&c, &e, "2024-03-05", *n, 480, 900, &free, by), Reply::Yes { .. })).count() as f64 / 400.0;
+    let (owner, assistant) = (yes(Caller::Owner), yes(Caller::Assistant));
+    assert!((0.78..=0.92).contains(&owner), "{owner}");
+    assert!((0.52..=0.68).contains(&assistant), "{assistant}");
+    let ill = Situation { fit: Err(Cannot::Ill { until: "2024-03-06".into() }), ..free.clone() };
+    assert!(matches!(called_reply(&c, &e, "2024-03-05", 1001, 480, 900, &ill, Caller::Owner), Reply::No { why: NoWhy::Ill, .. }));
+}
+
+/// (NexiconDK, 22 November 2026: "Aften/Nat") A day person likes day duties and not night ones; an
+/// evening-and-night person both late and night ones, not early ones; a rota's time is what three in
+/// four of its duties are; days on disliked duties are counted.
+#[test]
+fn day_and_night_people_and_a_rota_s_time() {
+    use super::super::pro_pref::{self as pp, ShiftPref};
+    use ShiftPref::*;
+    assert_eq!((pp::fit_kind(Day, Day), pp::fit_kind(Day, LateNight), pp::fit_kind(Day, Early)), (1, -1, 0));
+    assert_eq!((pp::fit_kind(LateNight, Late), pp::fit_kind(LateNight, LateNight), pp::fit_kind(LateNight, Early)), (1, 1, -1));
+    assert_eq!((pp::fit_kind(Late, LateNight), pp::fit_kind(Early, LateNight)), (-1, -1));
+    let mut t = super::super::pro_turnus::Turnus::default();
+    let mut row = super::super::pro_turnus::Row::default();
+    for d in 1..6 {
+        row.days[d] = Cell::Duty { n: 1000 + d as u32 };
+    }
+    t.rows = vec![row.clone(), row];
+    let early = |_: usize, _: u32| Some(6 * 60);
+    assert_eq!(pp::slot_of_rota(&t, &early), Some(Early));
+    let mixed = |d: usize, _: u32| Some(if d % 2 == 0 { 6 * 60 } else { 15 * 60 });
+    assert_eq!(pp::slot_of_rota(&t, &mixed), None);
+    let mut c = company();
+    c.staff[0].shift_pref = Some(Early);
+    let id = c.staff[0].id;
+    pp::after_day(&mut c, &[(id, 15 * 60, 23 * 60)]);
+    pp::after_day(&mut c, &[(id, 15 * 60, 23 * 60)]);
+    pp::after_day(&mut c, &[(id, 5 * 60, 13 * 60)]);
+    assert_eq!(c.staff[0].disliked, 1);
 }

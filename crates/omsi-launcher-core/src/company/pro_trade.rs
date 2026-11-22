@@ -253,7 +253,7 @@ fn candidates(c: &Company, week: &Week) -> (Vec<Cand>, Vec<Cand>) {
                 let (fa_now, fa_then) = (pro_pref::fit(ea, sa), pro_pref::fit(ea, sb));
                 let (fb_now, fb_then) = (pro_pref::fit(eb, sb), pro_pref::fit(eb, sa));
                 if fa_then > fa_now && fb_then >= fb_now {
-                    let why = if pro_pref::kind(sb) == pro_pref::ShiftPref::Late { Why::Late } else { Why::Early };
+                    let why = if matches!(pro_pref::kind(sb), pro_pref::ShiftPref::Late | pro_pref::ShiftPref::LateNight) { Why::Late } else { Why::Early };
                     let both = fb_then > fb_now;
                     reasoned.push(Cand { t: Trade { why, both, ..t.clone() }, w: if both { 3.0 } else { 2.0 } });
                 }

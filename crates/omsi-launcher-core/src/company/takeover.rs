@@ -17,6 +17,10 @@
 //! answers - as a transfer of an undertaking: on the new term's first day each leaves the loser,
 //! his week's guarantee paid, and joins the winner on his terms (wage, employment, seniority):
 //! `<id>.drivers.jsonl`. The buses stay the winner's choice.
+//!
+//! (NexiconDK, 22 November 2026: "Der skal være en mulighed for chauffør overtagelse - At sige nej
+//! for det selskab som overtager") The winner may say no to the drivers too (`answer_both`): they
+//! stay with the loser, told. Unanswered they come, as before.
 
 use super::inbox::{self, Kind, Message};
 use super::market;
@@ -73,6 +77,8 @@ pub struct Offer {
     pub answer: Option<bool>,
     /// (16 November 2026) The drivers who ran the line, who go with it (empty: an offer of before).
     pub drivers: Vec<OfferDriver>,
+    /// (22 November 2026) The answer about the drivers (None: not answered - they come).
+    pub drivers_answer: Option<bool>,
 }
 
 /// (16 November 2026) A driver of an offer: his id in the seller's staff, his name and wage.
@@ -122,6 +128,8 @@ struct Answer {
     name: String,
     /// The buses taken.
     yes: bool,
+    /// (22 November 2026) The drivers taken (None: an answer of before - they come).
+    drivers: Option<bool>,
 }
 
 /// (16 November 2026) A driver handed to the winner of his line.
@@ -159,6 +167,8 @@ pub const REFUSED: (&str, &str) = ("%{name} does not take over your buses of lin
 /// (16 November 2026) The drivers' messages.
 pub const DRIVERS_OFFERED: (&str, &str) = ("Drivers come with line %{n}", "%{name} ran line %{n} with %{count} drivers. They come with the line, on their terms, on %{date}, the day your term begins: the Concessions page.");
 pub const DRIVERS_TAKEN: (&str, &str) = ("Your drivers of line %{n} go to %{name}", "The %{count} drivers of yours that ran line %{n} go with it to %{name}, on their terms, on %{date}.");
+/// (22 November 2026) The loser told the winner does not take its drivers.
+pub const DRIVERS_REFUSED: (&str, &str) = ("%{name} does not take over your drivers of line %{n}", "%{name} won line %{n} and does not take over the %{count} drivers of yours who ran it: they stay with you.");
 pub const DRIVERS_CAME: (&str, &str) = ("%{count} drivers from %{name}", "%{count} drivers who drove line %{n} for %{name} work for you from today, on their terms: the Staff page.");
 
 fn dir(data: &Path) -> PathBuf {
@@ -338,7 +348,7 @@ pub fn offer(data: &Path, c: &mut Company, winner: &str, winner_name: &str, line
     if (buses.is_empty() && drivers.is_empty()) || winner == c.id {
         return 0;
     }
-    let o = Offer { id: format!("{}/{}/{date}", c.id, line.to_lowercase()), from: c.id.clone(), name: c.name.clone(), line: line.to_string(), number: number.to_string(), date: date.to_string(), buses, answer: None, drivers };
+    let o = Offer { id: format!("{}/{}/{date}", c.id, line.to_lowercase()), from: c.id.clone(), name: c.name.clone(), line: line.to_string(), number: number.to_string(), date: date.to_string(), buses, answer: None, drivers, drivers_answer: None };
     if append(&offers_file(data, winner), &o).is_err() {
         return 0;
     }
@@ -359,9 +369,26 @@ pub fn answer(data: &Path, c: &mut Company, id: &str, yes: bool) -> Result<(), &
     if yes && c.cash < o.total() {
         return Err(NO_CASH);
     }
-    append(&answers_file(data, &o.from), &Answer { id: o.id.clone(), from: c.id.clone(), name: c.name.clone(), yes }).map_err(|_| NOT_WRITTEN)?;
+    append(&answers_file(data, &o.from), &Answer { id: o.id.clone(), from: c.id.clone(), name: c.name.clone(), yes, drivers: None }).map_err(|_| NOT_WRITTEN)?;
     if let Some(x) = c.online.takeover.offers.iter_mut().find(|x| x.id == id) {
         x.answer = Some(yes);
+    }
+    Ok(())
+}
+
+/// (22 November 2026) The buyer `c` answers offer `id` about its buses (`buses`: all of them on
+/// its day, or none) and its drivers (`drivers`: they come, or stay with the seller).
+pub fn answer_both(data: &Path, c: &mut Company, id: &str, buses: bool, drivers: bool) -> Result<(), &'static str> {
+    let o = c.online.takeover.offers.iter().find(|o| o.id == id && o.answer.is_none()).cloned().ok_or(NO_OFFER)?;
+    let buses = buses && !o.buses.is_empty();
+    if buses && c.cash < o.total() {
+        return Err(NO_CASH);
+    }
+    let drivers = drivers || o.drivers.is_empty();
+    append(&answers_file(data, &o.from), &Answer { id: o.id.clone(), from: c.id.clone(), name: c.name.clone(), yes: buses, drivers: Some(drivers) }).map_err(|_| NOT_WRITTEN)?;
+    if let Some(x) = c.online.takeover.offers.iter_mut().find(|x| x.id == id) {
+        x.answer = Some(buses);
+        x.drivers_answer = Some(drivers);
     }
     Ok(())
 }
@@ -399,6 +426,18 @@ pub fn step(data: &Path, c: &mut Company) -> bool {
         changed = true;
         let Ok(a) = serde_json::from_str::<Answer>(&line) else { continue };
         let Some((_, number, date, buses)) = offered(c, &a.id) else { continue };
+        // (22 November 2026: the drivers said no to - they stay; told)
+        if a.drivers == Some(false) {
+            if let Some(i) = c.online.takeover.sales.iter().position(|s| s.id == a.id && !s.drivers.is_empty()) {
+                let count = c.online.takeover.sales[i].drivers.len();
+                c.online.takeover.sales[i].drivers.clear();
+                if c.online.takeover.sales[i].buses.is_empty() {
+                    c.online.takeover.sales.remove(i);
+                }
+                let m = Message::new(Kind::Staff, DRIVERS_REFUSED.0, DRIVERS_REFUSED.1).arg("name", a.name.clone()).arg("n", number.clone()).arg("count", count.to_string());
+                inbox::post(c, m);
+            }
+        }
         if buses.is_empty() {
             continue;
         }

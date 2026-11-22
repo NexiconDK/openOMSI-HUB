@@ -1566,3 +1566,75 @@ The "who can drive" box shows each player's wishes ("Suits the wishes", or "Wish
 and lists the players a duty suits first. The "Ønsker" popup adds the players' wishes and how
 many of their duties keep them. See BUS_COMPANY_ONLINE.md, "Swaps between players and their
 wishes".
+
+## Who rings, "Send SMS", "Vælg alle der kan" (22 November 2026)
+
+NexiconDK: *"Chaufførerne skal være mere tilbøjelig til at tage vagten hvis ejeren / medejeren
+ringer og spørger om en vagt - Hvis det er en Drift assistent skal de være mere besværlige - Måske
+60% chance for de tager vagten og hvis ejeren/medejer ringer skal det være 85%. Det er når man ringer
+til dem."* Then: *"Kan vi lave en 'Send SMS' funktion ligesom 'Ring' - Den skal fungere ligesom
+'Spørg de valgte'? Og måske en 'Vælg alle der kan' funktion?"*
+
+* **Who rings** (`pro_ops::Caller`, `called_reply`): a driver free to take the duty takes it on the
+  phone 85 times in a hundred when the owner rings (the boss of his own company, the owner of a
+  server's company, a co-owner), 60 when another role does (a planner, a manager); 25 less when it
+  takes him over his contract's week, much less irritated. What he cannot (ill, on holiday, his
+  rest, another duty) stays a no; whether he picks up at all is as before. The questions asked in
+  writing keep their own reckoning (`ai_reply`).
+* **The operations assistant rings too** (`ops_assistant::look`): each driver who can takes the
+  duty 60 times in a hundred; after a no the next one is rung, after the last the agency or the
+  log's "nobody".
+* **"Send SMS"** beside "Ring" on each driver who can be asked: he alone is asked, his answer comes
+  in as those ticked do (`rf_ops_act` "ask" with `sms`).
+* **"Vælg alle der kan"** in the bar at the bottom: every one who can be asked ticked - the
+  permanent drivers, the reserves, the hourly paid and the players - or, all ticked, none.
+
+Tested: `pro_ops_tests::a_driver_rung_by_the_owner_says_yes_more_often_than_to_an_assistant`.
+
+## Overtime on an open duty (22 November 2026)
+
+NexiconDK: *"Kan vi lave en funktion der gør at en chauffør som allerede har en vagt den dag at tage
+overarbejde? ... Så skal vagten 'klippes'"*, *"En vagt må MAKS være 15 timer men chaufføren må kun
+'KØRE' i 10 timer"*, *"Det skal også gælde den anden vej med at møde tidligere"*, *"Skal
+Driftsassistenten også bruge det = Ja"*, *"Måske gør så man kan sende SMS eller ringe til de
+chauffører som er på arbejde?"*
+
+* **Who** (`pro_overtime::offers`): a driver whose own duty ends at most 45 minutes before the open
+  duty begins (near where it begins, at least the game's 20 minutes' rest between two pieces of work kept) goes on with its first part; one whose
+  own duty begins at most 45 minutes after it ends begins earlier with its last part. The most of it
+  his day takes - the whole duty, or the duty cut in two at one of its relief points: at most ten
+  hours behind the wheel (`staff::DAY_MAX`), at most 15 hours from his first sign-on to his last
+  sign-off (`pro_rest::SPREAD_MAX`, 13 before), his rest kept.
+* **The box**: a group "Kan tage overarbejde" at the top - "Fri kl. 14:40 – kan køre til kl. 17:00
+  (+2:00)", "Møder kl. 23:00 – kan møde kl. 21:00" - with "Ring" and "Send SMS". Either cuts the duty
+  there for the date (`pro_overtime::take`, `pro_cut::cut`) and asks about his part; the rest stays
+  open for another driver (the cut view). His yes is given as any part's.
+* **Behind the wheel now** (`ops::wheel_until`): rung, he does not pick up ("kører og tager ikke
+  telefonen – send en SMS"); a text he answers after his piece of work - also in the ordinary list.
+* **The operations assistant** (`ops_assistant::look`): when no free driver says yes he rings a
+  driver about overtime (60 in a hundred), gives him his part and leaves the rest open for his next
+  look.
+
+Tested: `pro_overtime::tests::a_driver_goes_on_after_his_own_duty_as_far_as_his_ten_hours_allow`.
+
+## Morning, day, evening, evening and night - in the rotas too (22 November 2026)
+
+NexiconDK: *"tager 'systemet' ikke højde for om chaufføren foretrækker morgen, dag eller
+aftendelen?"*, then *"Yes - Det hele er fint. Og så måske lave en der hedder 'Aften/Nat'
+præference?"*
+
+* **Five preferences** (`pro_pref::ShiftPref`): early (🌅, a duty signing on before 08:00), day (☀,
+  before 13:00), late (🌙, before 20:00), late and night (🌃, 20:00 or later - and the late ones),
+  none. A day person dislikes night duties, a late person early and night ones, an early person late
+  and night ones. Drivers of before: about half of "none" come to "day", a third of "late" to "late and
+  night" (`seed_all`, once - the same every time).
+* **A rota's time** (`slot_of_rota`): what three in four of its duties are - a morning, day, evening or
+  night rota; else mixed. Shown above the list of who begins in a week.
+* **Who begins in a week**: each driver with his preference, ✓ when he likes the rota's time, ⚠ when
+  not; those who like it first.
+* **"Lav turnus automatisk"** (`pro_turnus::fill_by_pref`): the weeks without a driver get the drivers
+  on no rota - those who like its time first, then those it is all the same to, then the others.
+* **Week after week on duties he does not like** (`Employee::disliked`, +1 a disliked day, −1 a liked
+  one): at 10 he asks for another rota (`pro_wish::WishKind::OtherRota`, in Ønsker).
+
+Tested: `pro_ops::tests::day_and_night_people_and_a_rota_s_time`, `early_and_late_people_like_their_duties`.

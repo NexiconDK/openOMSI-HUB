@@ -316,14 +316,34 @@ function WeekendBox({ w, kind }) {
 function PlaceCard({ v, rota, row }) {
   const r = rota.rows[row];
   const fit = v.drivers.filter((d) => d.fits);
+  // (NexiconDK, 22 November 2026: "Det står meget forvirrende med de chauffører som allerede har en
+  // turnus" - the free ones first; this rota's own, by its week; the others' folded, by rota)
+  // (22 November 2026: those who like the rota's time first - ✓; those who do not last - ⚠)
+  const bySuit = (a, b) => (b.suits || 0) - (a.suits || 0) || a.nr - b.nr;
+  const free = fit.filter((d) => d.rota == null).sort(bySuit);
+  const mine = fit.filter((d) => d.rota === rota.id);
+  const others = fit.filter((d) => d.rota != null && d.rota !== rota.id).sort(bySuit);
+  const byRota = [];
+  for (const d of others) {
+    let g = byRota.find((x) => x.id === d.rota);
+    if (!g) byRota.push((g = { id: d.rota, name: d.rota_name, rows: [] }));
+    g.rows.push(d);
+  }
+  const mark = (d) => (d.suits > 0 ? html`<i class="tu-suits ok">✓</i>` : d.suits < 0 ? html`<i class="tu-suits no">⚠</i>` : null);
+  const chip = (d, sub) => html`<button type="button" class=${'tu-person-chip' + (r.start?.id === d.id ? ' on' : '')} title=${[d.pref, d.where ? tr('Now on %{where}', { where: d.where }) : ''].filter(Boolean).join(' · ')} onClick=${() => tAct('driver', { id: rota.id, row, driver: d.id })}>
+    <b>${d.name}${mark(d)}</b><span>chf. ${d.nr}${sub ? ` · ${sub}` : ''}</span><span class="tu-pref">${d.pref}</span>
+  </button>`;
+  const hours = (d) => `${d.kind}${d.hours ? ` ${d.hours.replace('.', ',')} t` : ''}`;
   return html`<div class="pro-card tu-pick">
-    <div class="pro-caps">${tr('Rota week %{r}: who begins in it', { r: row + 1 })}${r.start ? ` · ${r.start.name}` : ''}</div>
-    <div class="tu-chips">
-      ${fit.map((d) => html`<button type="button" class=${'tu-person-chip' + (r.start?.id === d.id ? ' on' : '')} title=${d.where ? tr('Now on %{where}', { where: d.where }) : ''} onClick=${() => tAct('driver', { id: rota.id, row, driver: d.id })}>
-        <b>${d.name}</b><span>chf. ${d.nr} · ${d.kind}${d.hours ? ` ${d.hours.replace('.', ',')} t` : ''}${d.where ? ` · ${d.where}` : ''}</span>
-      </button>`)}
-      ${r.start && html`<button type="button" class="tu-person-chip" onClick=${() => tAct('driver', { id: rota.id, row, driver: null })}><b>${tr('No driver')}</b><span>${tr('the week stays in the rota')}</span></button>`}
-    </div>
+    <div class="pro-caps">${tr('Rota week %{r}: who begins in it', { r: row + 1 })}${r.start ? ` · ${r.start.name}` : ''}${v.slot ? ` · ${v.slot}` : ''}</div>
+    ${r.start && html`<div class="tu-chips"><button type="button" class="tu-person-chip" onClick=${() => tAct('driver', { id: rota.id, row, driver: null })}><b>${tr('No driver')}</b><span>${tr('the week stays in the rota')}</span></button></div>`}
+    <div class="tu-pick-group">${tr('Without a rota (%{n})', { n: free.length })}</div>
+    <div class="tu-chips">${free.length ? free.map((d) => chip(d, hours(d))) : html`<span class="pro-dim">${tr('Every driver is in a rota.')}</span>`}</div>
+    ${mine.length > 0 && html`<div class="tu-pick-group">${tr('In this rota (%{n})', { n: mine.length })}</div>
+      <div class="tu-chips">${mine.map((d) => chip(d, d.week))}</div>`}
+    ${byRota.length > 0 && html`<details class="tu-pick-others"><summary>${tr('In another rota (%{n}) – move one here', { n: others.length })}</summary>
+      ${byRota.map((g) => html`<div class="tu-pick-group sub">${g.name}</div><div class="tu-chips">${g.rows.map((d) => chip(d, d.week))}</div>`)}
+    </details>`}
     <div class="pro-dim" style="margin-top:6px">${rota.reserve ? tr('A reserve rota is for the reserve drivers.') : tr('Full- and part-time drivers go in a rota; the reserves in a reserve rota, the hourly paid in none.')}</div>
     ${r.start && html`<button type="button" class="rf-link tu-small" onClick=${() => setT({ driver: r.start.id })}>${tr('Show %{name}\'s next weeks', { name: r.start.name })}</button>`}
     ${r.driver && r.driver.id !== r.start?.id && html`<button type="button" class="rf-link tu-small" onClick=${() => setT({ driver: r.driver.id })}>${tr('Show %{name}\'s next weeks', { name: r.driver.name })}</button>`}

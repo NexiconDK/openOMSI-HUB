@@ -116,6 +116,7 @@ pub mod pro_dutyplan;
 /// (NexiconDK, 4 November 2026) RosterFlow Pro's daily operations, calendar and asking drivers
 /// (step 4, "Daglig drift" and "Kalender").
 pub mod pro_ops;
+pub mod pro_overtime;
 /// (NexiconDK, 5 November 2026) RosterFlow Pro, round C: ill and on holiday set in the Turnus tab
 /// are the staff card's own; a swap that changes both drivers at once.
 pub mod pro_absence;

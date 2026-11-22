@@ -28,8 +28,10 @@ use serde::{Deserialize, Serialize};
 pub const DAILY_REST: i32 = 11 * 60;
 pub const REDUCED_REST: i32 = 9 * 60;
 pub const REDUCED_TIMES: usize = 3;
-/// A working day's span, its first sign-on to its last sign-off (24 hours less the daily rest).
-pub const SPREAD_MAX: i32 = 13 * 60;
+/// A working day's span, its first sign-on to its last sign-off. (NexiconDK, 22 November 2026: "En
+/// vagt må MAKS være 15 timer men chaufføren må kun 'KØRE' i 10 timer" - 15 hours, 24 less the
+/// reduced rest; behind the wheel `staff::DAY_MAX`.)
+pub const SPREAD_MAX: i32 = 15 * 60;
 /// A week's working time.
 pub const WEEK_MAX: f64 = 48.0 * 60.0;
 

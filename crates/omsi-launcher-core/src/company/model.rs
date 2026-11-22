@@ -700,6 +700,10 @@ pub struct Employee {
     /// opened).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub shift_pref: Option<super::pro_pref::ShiftPref>,
+    /// (22 November 2026) Days worked on duties they do not like, less those they like (`pro_pref::after_day`):
+    /// at `pro_pref::ASKS_ROTA_AFTER` they ask for another rota.
+    #[serde(default, skip_serializing_if = "is_zero_u16")]
+    pub disliked: u16,
     /// (round D) Their working days of the last two weeks, as worked (`pro_tired`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub worked: Vec<super::pro_tired::Worked>,
@@ -775,6 +779,10 @@ pub struct Frame {
 }
 
 fn is_zero_i32(x: &i32) -> bool {
+    *x == 0
+}
+
+fn is_zero_u16(x: &u16) -> bool {
     *x == 0
 }
 

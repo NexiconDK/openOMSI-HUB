@@ -208,7 +208,7 @@ fn more_act_need(act: &str) -> Need {
         "pe_day" | "pe_sel" | "pe_pdir" | "pe_from" | "pe_close" => RF_VIEW,
         a if a.starts_with("pe_") => Any(&[Perm::Lines, Perm::Plans]),
         "depot_build" | "depot_cancel" | "depot_order" | "parts_auto" | "parts_buy" | "research_info" | "research_start" | "research_pause" | "research_stop" => SPEND,
-        "tender_pick" | "tender_bid" | "tender_buy" | "tender_step" | "tender_drive" | "takeover_yes" | "takeover_no" | "change_decline" | "tender_complain" | "sub_propose" | "sub_answer" | "sub_end" | "joint_propose" => SPEND,
+        "tender_pick" | "tender_bid" | "tender_buy" | "tender_step" | "tender_drive" | "takeover_yes" | "takeover_no" | "takeover_answer" | "change_decline" | "tender_complain" | "sub_propose" | "sub_answer" | "sub_end" | "joint_propose" => SPEND,
         // (NexiconDK, 3 November 2026, K13: who runs the day's service answers the doubling orders too)
         "doubling_yes" | "doubling_no" => Any(&[Perm::Spend, Perm::Service]),
         "goal_take" | "goal_give_up" | "net_take" | "net_cancel" | "net_top_up" | "fuel_sign" | "cleaning_sign" | "cleaning_end" | "contract_hand_back" => SPEND,
@@ -286,6 +286,8 @@ fn rf_ops_need(act: &str) -> Need {
         "ask" | "give" | "withdraw" | "withdraw_ask" | "cut" | "uncut" | "agency" | "toil_day" | "toil_back" | "unswap" => PLANS,
         // (NexiconDK, 10 November 2026: a driver rung about a duty - the planning's, as asking)
         "call" => PLANS,
+        // (NexiconDK, 22 November 2026: overtime on an open duty - asked or rung, as "call")
+        "overtime" => PLANS,
         // (round Q: the planner's limits - the warning time, the rest, the days in a row)
         "limits" => PLANS,
         // (round G: the answers to a duty seen - the planner's, who opened its box)

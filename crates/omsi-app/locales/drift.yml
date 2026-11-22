@@ -483,3 +483,21 @@ _version: 2
   pl: "Te odbyły się dziś bez kierowcy: nie można ich już obsadzić."
   ru: "Эти смены сегодня прошли без водителя: их больше нельзя назначить."
   uk: "Ці зміни сьогодні пройшли без водія: їх більше не можна призначити."
+
+# (22 November 2026) The operations assistant gives a part of a duty as overtime
+"%{who} gave duty %{n} (%{time}) to %{driver} as overtime until %{until}; the rest is open":
+  de: "%{who} hat Dienst %{n} (%{time}) als Überstunden bis %{until} an %{driver} gegeben; der Rest ist offen"
+  da: "%{who} gav vagt %{n} (%{time}) til %{driver} som overarbejde til kl. %{until}; resten er åben"
+  fr: "%{who} a donné le service %{n} (%{time}) à %{driver} en heures supplémentaires jusqu'à %{until} ; le reste est ouvert"
+  nl: "%{who} gaf dienst %{n} (%{time}) aan %{driver} als overwerk tot %{until}; de rest is open"
+  pl: "%{who} dał(a) służbę %{n} (%{time}) kierowcy %{driver} jako nadgodziny do %{until}; reszta jest otwarta"
+  ru: "%{who} отдал(а) смену %{n} (%{time}) водителю %{driver} как сверхурочную до %{until}; остальное открыто"
+  uk: "%{who} віддав(ла) зміну %{n} (%{time}) водієві %{driver} як понаднормову до %{until}; решта відкрита"
+"%{who} gave duty %{n} (%{time}) to %{driver} as overtime from %{until}; the rest is open":
+  de: "%{who} hat Dienst %{n} (%{time}) als Überstunden ab %{until} an %{driver} gegeben; der Rest ist offen"
+  da: "%{who} gav vagt %{n} (%{time}) til %{driver} som overarbejde fra kl. %{until}; resten er åben"
+  fr: "%{who} a donné le service %{n} (%{time}) à %{driver} en heures supplémentaires à partir de %{until} ; le reste est ouvert"
+  nl: "%{who} gaf dienst %{n} (%{time}) aan %{driver} als overwerk vanaf %{until}; de rest is open"
+  pl: "%{who} dał(a) służbę %{n} (%{time}) kierowcy %{driver} jako nadgodziny od %{until}; reszta jest otwarta"
+  ru: "%{who} отдал(а) смену %{n} (%{time}) водителю %{driver} как сверхурочную с %{until}; остальное открыто"
+  uk: "%{who} віддав(ла) зміну %{n} (%{time}) водієві %{driver} як понаднормову з %{until}; решта відкрита"

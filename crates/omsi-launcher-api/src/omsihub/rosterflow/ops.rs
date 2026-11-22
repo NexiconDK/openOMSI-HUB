@@ -1299,12 +1299,51 @@ fn who_json(c: &Company, p: &DayPlan, ds: &[ProDuty], d: &OpenDuty, weekly: &Has
         "picked_label": tr("%{n} ticked"), "ask_label": tr("Ask those ticked"),
         "sort": { "value": if fair { "fair" } else { "cheap" }, "options": [["cheap", tr("Cheapest first")], ["fair", tr("Fewest extra first")]] },
     });
+    // (NexiconDK, 22 November 2026: overtime - a driver who works that day goes on with its first
+    // part, or begins earlier with its last, as far as his day allows; rung or written to)
+    let at = now;
+    let ot: Vec<Value> = co::pro_overtime::offers(c, p, d, ds)
+        .iter()
+        .filter_map(|o| {
+            let e = c.employee(o.driver)?;
+            let hm = |m: i32| co::clock::hhmm(m.rem_euclid(1440) as i64);
+            let extra = format!("+{}:{:02}", o.minutes() / 60, o.minutes() % 60);
+            let words = match (o.earlier, o.whole) {
+                (false, true) => trf("Off at %{at} - can take all of it, until %{to}", &[("at", &hm(o.at)), ("to", &hm(o.to))]),
+                (false, false) => trf("Off at %{at} - can drive until %{to} (%{extra})", &[("at", &hm(o.at)), ("to", &hm(o.to)), ("extra", &extra)]),
+                (true, true) => trf("Begins at %{at} - can take all of it, from %{from}", &[("at", &hm(o.at)), ("from", &hm(o.from))]),
+                (true, false) => trf("Begins at %{at} - can begin at %{from} (%{extra})", &[("at", &hm(o.at)), ("from", &hm(o.from)), ("extra", &extra)]),
+            };
+            let mut row = json!({ "id": o.driver, "name": e.name, "own": o.own.to_string(), "words": words, "whole": o.whole, "earlier": o.earlier });
+            if let Some(until) = wheel_until(c, p, o.driver) {
+                row["driving"] = json!(trf("Driving now, until %{t}", &[("t", &hm(until))]));
+            }
+            if let Some(w) = contacted(c, &p.date, d.n, &Asked::Staff { id: o.driver }, game, at) {
+                row["contacted"] = json!(w);
+            }
+            Some(row)
+        })
+        .collect();
+    if !ot.is_empty() {
+        v["overtime"] = json!(ot);
+        v["overtime_label"] = json!(tr("Can work overtime"));
+    }
     if let Value::Object(m) = uncovered(c, p, d) {
         for (k, x) in m {
             v[k] = x;
         }
     }
     v
+}
+
+/// (22 November 2026) When driver `id` is behind the wheel now on the company's day (`p` its plan):
+/// the minute his piece of work ends. A call does not reach him then; a text he reads after it.
+fn wheel_until(c: &Company, p: &DayPlan, id: u32) -> Option<i32> {
+    if p.date != c.date {
+        return None;
+    }
+    let now = co::clock::now(c).rem_euclid(co::clock::DAY) as i32;
+    p.duties_of(plan::Who::Staff(id)).into_iter().map(|(ti, k)| plan::duty_block(p, ti, k)).find(|b| b.from <= now && now < b.to).map(|b| b.to)
 }
 
 /// (Round H) What `can` says by a name for a duty from `start` to `end`: within it ("✓ Can
@@ -1696,10 +1735,22 @@ fn rest_inputs(s: &mut Session, r: &mut Rf, date: &str) -> Result<(std::sync::Ar
     Ok((week, plans))
 }
 
+/// (NexiconDK, 22 November 2026) Who rings a driver: the boss of the company on its own launcher,
+/// the owner of a server's company or a co-owner - the owner; a player of another role - like an
+/// operations assistant.
+fn caller_of(c: &Company, by: super::live::Editor) -> po::Caller {
+    use omsi_launcher_lib::company::together::Role;
+    match by {
+        super::live::Editor::Boss => po::Caller::Owner,
+        super::live::Editor::Guest(g) if co::together::host::server_owner(c) == Some(g) || c.together.guests.iter().any(|x| x.no == g && x.role == Role::CoOwner) => po::Caller::Owner,
+        super::live::Editor::Guest(_) => po::Caller::Assistant,
+    }
+}
+
 /// What a click of the box or the daily operations does (`rf_ops_act`: `act` "ask" | "give" |
 /// "give_guest" | "withdraw_ask" | "withdraw" | "cut" | "uncut" | "agency"; `date`, `n`, `part`
 /// for a part of a cut duty, and what it needs).
-fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
+fn act(s: &mut Session, r: &mut Rf, by: super::live::Editor, args: &Value) -> Answer {
     let what = str_arg(args, "act");
     let date = str_arg(args, "date");
     let n = args.get("n").and_then(Value::as_u64).unwrap_or(0) as u32;
@@ -1760,12 +1811,25 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             if date == c.date {
                 who.extend(guests.iter().filter(|g| c.together.guest(**g).is_some_and(|x| !x.banned)).map(|g| (Asked::Guest { no: *g }, None)));
             }
+            // (22 November 2026: "Send SMS" - one driver asked in a text, as "Ask those ticked")
+            let sms = args.get("sms").and_then(Value::as_bool).unwrap_or(false);
             let words = match ids.as_slice() {
+                [one] if sms => trf("An SMS goes to %{name} about duty %{duty}: the answer comes in here.", &[("name", &name_in(&c)(*one)), ("duty", &d.n.to_string())]),
                 [one] => trf("%{name} is asked for duty %{duty}: the answer comes in here.", &[("name", &name_in(&c)(*one)), ("duty", &d.n.to_string())]),
                 _ => trf("%{n} asked for duty %{duty}: their answers come in here.", &[("n", &who.len().to_string()), ("duty", &d.n.to_string())]),
             };
             let at = now();
-            edit(s, words, &mut |c| po::ask_part(c, &date, d.n, part, d.start, d.end, who.clone(), at, &|id| weekly.get(&id).copied().unwrap_or(0.0)).map(|_| ()))
+            // (22 November 2026: one behind the wheel now reads it after his piece of work)
+            let wheel: Vec<(u32, i64)> = ids.iter().filter_map(|id| wheel_until(&c, &p, *id).map(|t| (*id, co::clock::moment(&date, t as i64)))).collect();
+            edit(s, words, &mut |c| {
+                let asked = po::ask_part(c, &date, d.n, part, d.start, d.end, who.clone(), at, &|id| weekly.get(&id).copied().unwrap_or(0.0))?;
+                for a in c.planning.ops.asks.iter_mut().filter(|a| asked.contains(&a.id)) {
+                    if let Some(&(_, after)) = wheel.iter().find(|w| a.of_staff() == Some(w.0)) {
+                        a.due = a.due.map(|x| x.max(after));
+                    }
+                }
+                Ok(())
+            })
         }
         // (NexiconDK, 10 November 2026: a driver rung - his answer at once, or none if he does not
         // pick up; a question waiting for him replaced)
@@ -1776,9 +1840,20 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
             };
             let id = args.get("driver").and_then(Value::as_u64).unwrap_or(0) as u32;
             let Some(e) = c.employee(id) else { return Ok(said(tr(po::NOT_A_DRIVER), true)) };
+            // (22 November 2026: behind the wheel now - he does not pick up; a text reaches him)
+            if wheel_until(&c, &p, id).is_some() {
+                let name = e.name.clone();
+                return Ok(json!({ "call": {
+                    "driver": id, "name": name, "picked": false, "yes": false, "answer": Value::Null,
+                    "title": trf("Ringing %{name}…", &[("name", &name)]),
+                    "outcome": trf("%{name} is driving and does not pick up - send an SMS: he answers after his trip", &[("name", &name)]),
+                }}));
+            }
             let cands = po::candidates(&c, &p, &d, &|id| weekly.get(&id).copied().unwrap_or(0.0));
             let sit = situation(&c, &p, &ds, &d, e, cands.iter().find(|x| x.id == id), tired.get(&id).copied().unwrap_or_default());
-            let reply = po::ai_reply(&c, e, &date, d.n, d.start, d.end, &sit);
+            // (NexiconDK, 22 November 2026: the owner or a co-owner rung - 85 in a hundred take
+            // it; another role - 60)
+            let reply = po::called_reply(&c, e, &date, d.n, d.start, d.end, &sit, caller_of(&c, by));
             let name = e.name.clone();
             let words = trf("You ring %{name} about duty %{duty}.", &[("name", &name), ("duty", &d.n.to_string())]);
             let at = now();
@@ -1793,6 +1868,71 @@ fn act(s: &mut Session, r: &mut Rf, args: &Value) -> Answer {
                         "title": trf("Ringing %{name}…", &[("name", &name)]),
                         "outcome": if picked { trf("%{name} picked up", &[("name", &name)]) } else { trf("%{name} does not pick up", &[("name", &name)]) },
                     });
+                }
+            }
+            out
+        }
+        // (NexiconDK, 22 November 2026) Overtime: a driver who works that day rung or written to
+        // about the part of the duty his day takes (`pro_overtime`) - the duty cut there for the
+        // date, the rest left open. `mode` "call" | "sms".
+        "overtime" => {
+            let (p, ds, d, weekly, _, tired) = match target(s, r, &c, &date, n, None) {
+                Ok(x) => x,
+                Err(v) => return Ok(v),
+            };
+            let id = args.get("driver").and_then(Value::as_u64).unwrap_or(0) as u32;
+            let Some(e) = c.employee(id).cloned() else { return Ok(said(tr(po::NOT_A_DRIVER), true)) };
+            let Some(o) = co::pro_overtime::of_driver(&c, &p, &d, &ds, id) else { return Ok(said(tr("He cannot take overtime on that duty any more."), true)) };
+            let call = str_arg(args, "mode") == "call";
+            let name = e.name.clone();
+            // (behind the wheel: he does not pick up - a text he answers after his trip)
+            let wheel = wheel_until(&c, &p, id);
+            if call && wheel.is_some() {
+                return Ok(json!({ "call": {
+                    "driver": id, "name": name, "picked": false, "yes": false, "answer": Value::Null,
+                    "title": trf("Ringing %{name}…", &[("name", &name)]),
+                    "outcome": trf("%{name} is driving and does not pick up - send an SMS: he answers after his trip", &[("name", &name)]),
+                }}));
+            }
+            let base = situation(&c, &p, &ds, &d, &e, None, tired.get(&id).copied().unwrap_or_default());
+            let sit = po::Situation { fit: Ok(()), in_frame: false, own: None, swap_with: None, can_from: None, can_until: None, ..base };
+            let reply = if call { po::called_reply(&c, &e, &date, d.n, o.from, o.to, &sit, caller_of(&c, by)) } else { po::ai_reply(&c, &e, &date, d.n, o.from, o.to, &sit) };
+            let part: Option<u8> = if o.whole { None } else { Some(if o.earlier { 1 } else { 0 }) };
+            let hm = |m: i32| co::clock::hhmm(m.rem_euclid(1440) as i64);
+            let words = if call {
+                trf("You ring %{name} about overtime on duty %{duty}, %{from}–%{to}.", &[("name", &name), ("duty", &d.n.to_string()), ("from", &hm(o.from)), ("to", &hm(o.to))])
+            } else {
+                trf("An SMS goes to %{name} about overtime on duty %{duty}, %{from}–%{to}: the answer comes in here.", &[("name", &name), ("duty", &d.n.to_string()), ("from", &hm(o.from)), ("to", &hm(o.to))])
+            };
+            let at = now();
+            let mut out = edit(s, words, &mut |c| {
+                let got = co::pro_overtime::take(c, &p, &d, &o)?;
+                debug_assert_eq!(got, part);
+                if call {
+                    po::call_part(c, &date, d.n, part, o.from, o.to, (Asked::Staff { id }, reply.clone()), at, &|id| weekly.get(&id).copied().unwrap_or(0.0)).map(|_| ())
+                } else {
+                    let asked = po::ask_part(c, &date, d.n, part, o.from, o.to, vec![(Asked::Staff { id }, Some(reply.clone()))], at, &|id| weekly.get(&id).copied().unwrap_or(0.0))?;
+                    // (read after his trip, when he is behind the wheel now)
+                    if let Some(until) = wheel {
+                        let after = co::clock::moment(&date, until as i64);
+                        for a in c.planning.ops.asks.iter_mut().filter(|a| asked.contains(&a.id)) {
+                            a.due = a.due.map(|x| x.max(after));
+                        }
+                    }
+                    Ok(())
+                }
+            });
+            if call {
+                if let Some(c) = s.company.as_ref() {
+                    let said = c.planning.ops.asks.iter().filter(|a| a.date == date && a.n == d.n && a.part == part && a.call && a.of_staff() == Some(id)).max_by_key(|a| a.id).and_then(|a| a.reply.clone());
+                    if let Some(r) = said {
+                        let picked = r != Reply::Silent;
+                        out["call"] = json!({
+                            "driver": id, "name": name, "picked": picked, "yes": r.yes(), "answer": reply_json(c, &r, &date), "part": part,
+                            "title": trf("Ringing %{name}…", &[("name", &name)]),
+                            "outcome": if picked { trf("%{name} picked up", &[("name", &name)]) } else { trf("%{name} does not pick up", &[("name", &name)]) },
+                        });
+                    }
                 }
             }
             out
@@ -2384,13 +2524,13 @@ fn econ(s: &mut Session, _r: &mut Rf, args: &Value) -> Answer {
 }
 
 /// The commands of the two tabs (`super::run`).
-pub(super) fn run(s: &mut Session, r: &mut Rf, cmd: &str, args: &Value) -> Option<Answer> {
+pub(super) fn run(s: &mut Session, r: &mut Rf, by: super::live::Editor, cmd: &str, args: &Value) -> Option<Answer> {
     Some(match cmd {
         "rf_alerts" => alerts(s, r, args),
         "rf_econ" => econ(s, r, args),
         "rf_cal" => calendar(s, r, args),
         "rf_ops" => daily(s, r, args),
-        "rf_ops_act" => act(s, r, args),
+        "rf_ops_act" => act(s, r, by, args),
         "rf_wishes" => wishes(s, r, args),
         "rf_wish_act" => wish_act(s, r, args),
         "rf_trades" => trades(s, r, args),
@@ -2481,7 +2621,7 @@ mod tests {
         let swap = row["answer"]["swap"].clone();
         let anyway = row["action"] == "give_anyway";
         assert!(anyway || row["action"] == "give", "{row}");
-        let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": a, "swap": swap, "anyway": anyway })).unwrap();
+        let out = act(&mut s, &mut r, Default::default(), &json!({ "act": "give", "date": date, "n": n, "driver": a, "swap": swap, "anyway": anyway })).unwrap();
         assert_eq!(out["edited"], true, "the row's button gives it: {out}");
         let c = s.company.as_ref().unwrap();
         let calls: Vec<(u32, u32)> = c.planning.ops.calls.iter().filter(|x| x.date == date).map(|x| (x.n, x.driver)).collect();
@@ -2510,10 +2650,10 @@ mod tests {
         assert!(v["text"].as_str().is_some_and(|t| t.contains("no driver") || t.contains("without a driver")), "{v}");
         assert!(v["items"].as_array().unwrap().iter().any(|x| x["n"] == first.1), "{v}");
         // the warning time and the limits set; one not among the choices refused
-        assert_eq!(act(&mut s, &mut r, &json!({ "act": "limits", "warn": 60, "rest": 600, "in_a_row": 4 })).unwrap()["edited"], true);
+        assert_eq!(act(&mut s, &mut r, Default::default(), &json!({ "act": "limits", "warn": 60, "rest": 600, "in_a_row": 4 })).unwrap()["edited"], true);
         let c = s.company.as_ref().unwrap();
         assert_eq!((pwa::warn_before(c), pwa::rest_min(c), pwa::in_a_row_max(c)), (60, 600, 4));
-        assert_eq!(act(&mut s, &mut r, &json!({ "act": "limits", "rest": 500 })).unwrap()["say"]["error"], true);
+        assert_eq!(act(&mut s, &mut r, Default::default(), &json!({ "act": "limits", "rest": 500 })).unwrap()["say"]["error"], true);
         // a driver given the same duty every weekday from today (line 5 has no 1001 at the weekend):
         // the fifth marked (at most 4)
         let a = s.company.as_ref().unwrap().staff.iter().find(|e| co::staff::drives(e)).unwrap().id;
@@ -2618,7 +2758,7 @@ mod tests {
         let open = v["open"].as_array().unwrap().clone();
         let n = open[0]["n"].as_u64().unwrap();
         // one duty given to the hourly driver: he works that day - marked on the other duty's list
-        let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": ids[2], "anyway": true })).unwrap();
+        let out = act(&mut s, &mut r, Default::default(), &json!({ "act": "give", "date": date, "n": n, "driver": ids[2], "anyway": true })).unwrap();
         let rows_of = |v: &Value| -> Vec<Value> { v["duty"]["groups"].as_array().map(|g| g.iter().flat_map(|g| g["rows"].as_array().cloned().unwrap_or_default()).collect()).unwrap_or_default() };
         if out["edited"] == true {
             let other = open.iter().filter_map(|d| d["n"].as_u64()).find(|m| *m != n);
@@ -2636,8 +2776,8 @@ mod tests {
         let Some(row) = rows_of(&v).into_iter().find(|x| x["action"] == "ask") else { return };
         assert_eq!(row["call"], true, "{row}");
         let id = row["id"].as_u64().unwrap() as u32;
-        assert_eq!(act(&mut s, &mut r, &json!({ "act": "ask", "date": date, "n": m, "drivers": [id] })).unwrap()["edited"], true);
-        let out = act(&mut s, &mut r, &json!({ "act": "call", "date": date, "n": m, "driver": id })).unwrap();
+        assert_eq!(act(&mut s, &mut r, Default::default(), &json!({ "act": "ask", "date": date, "n": m, "drivers": [id] })).unwrap()["edited"], true);
+        let out = act(&mut s, &mut r, Default::default(), &json!({ "act": "call", "date": date, "n": m, "driver": id })).unwrap();
         assert_eq!(out["edited"], true, "{out}");
         let c = s.company.as_ref().unwrap().clone();
         let game = co::clock::now(&c);
@@ -2756,14 +2896,14 @@ mod tests {
         assert!(v["duty"].get("agency").is_none());
         assert_eq!(v["duty"]["nobody"], false);
         // the hourly driver asked: waiting for his answer; given before it: refused
-        let out = act(&mut s, &mut r, &json!({ "act": "ask", "date": date, "n": n, "drivers": [ids[2]] })).unwrap();
+        let out = act(&mut s, &mut r, Default::default(), &json!({ "act": "ask", "date": date, "n": n, "drivers": [ids[2]] })).unwrap();
         assert_eq!(out["edited"], true, "{out}");
         let v = daily(&mut s, &mut r, &json!({ "date": date, "n": n })).unwrap();
         assert_eq!(v["duty"]["groups"][2]["rows"][0]["action"], "waiting");
         assert_eq!(v["waiting"], true);
         // (round G: ticked again while asked - not asked twice; the day's cell marked grey, the
         // answers watched say one waiting)
-        let again = act(&mut s, &mut r, &json!({ "act": "ask", "date": date, "n": n, "drivers": [ids[2]] })).unwrap();
+        let again = act(&mut s, &mut r, Default::default(), &json!({ "act": "ask", "date": date, "n": n, "drivers": [ids[2]] })).unwrap();
         assert_eq!(again["say"]["text"], "Those ticked are asked already.", "{again}");
         let cal = calendar(&mut s, &mut r, &json!({})).unwrap();
         assert_eq!(cal["days"][2]["mark"]["key"], "waiting", "{}", cal["days"][2]);
@@ -2784,15 +2924,15 @@ mod tests {
         assert_eq!((w["shown"].as_u64(), w["yes"].as_array().map(Vec::len)), (Some(1), Some(yes as usize)), "{w}");
         let v = daily(&mut s, &mut r, &json!({ "date": date, "n": n })).unwrap();
         assert_eq!(v["duty"]["unseen"], true);
-        assert_eq!(act(&mut s, &mut r, &json!({ "act": "seen", "date": date, "n": n })).unwrap()["seen"], true);
+        assert_eq!(act(&mut s, &mut r, Default::default(), &json!({ "act": "seen", "date": date, "n": n })).unwrap()["seen"], true);
         assert_eq!(daily(&mut s, &mut r, &json!({ "date": date, "n": n })).unwrap()["duty"]["unseen"], false);
         assert!(calendar(&mut s, &mut r, &json!({})).unwrap()["days"][2]["mark"].is_null(), "seen: no mark");
         if !yes {
-            let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": ids[2] })).unwrap();
+            let out = act(&mut s, &mut r, Default::default(), &json!({ "act": "give", "date": date, "n": n, "driver": ids[2] })).unwrap();
             assert_eq!(out["say"]["error"], true, "{out}");
         }
         // put on: the reserve's that day, the duty no longer open
-        let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": ids[1] })).unwrap();
+        let out = act(&mut s, &mut r, Default::default(), &json!({ "act": "give", "date": date, "n": n, "driver": ids[1] })).unwrap();
         assert_eq!(out["edited"], true, "{out}");
         // (round F: not asked, but told)
         assert!(s.company.as_ref().unwrap().messages.list.iter().any(|m| m.text == co::messages::RESERVE_SET), "the reserve told");
@@ -2802,13 +2942,13 @@ mod tests {
         assert_eq!(v["drivers"][1]["cells"][2]["kind"], "duty", "{}", v["drivers"][1]["cells"][2]);
         assert_eq!(v["drivers"][1]["cells"][2]["numbers"][0], n);
         // taken back: open again
-        act(&mut s, &mut r, &json!({ "act": "withdraw", "date": date, "n": n })).unwrap();
+        act(&mut s, &mut r, Default::default(), &json!({ "act": "withdraw", "date": date, "n": n })).unwrap();
         let v = daily(&mut s, &mut r, &json!({ "date": date })).unwrap();
         assert!(v["open"].as_array().unwrap().iter().any(|o| o["n"] == n));
         // the agency only when its setting is on: refused off
-        assert_eq!(act(&mut s, &mut r, &json!({ "act": "agency", "date": date, "n": n })).unwrap()["say"]["error"], true);
+        assert_eq!(act(&mut s, &mut r, Default::default(), &json!({ "act": "agency", "date": date, "n": n })).unwrap()["say"]["error"], true);
         // a day gone: refused
-        assert_eq!(act(&mut s, &mut r, &json!({ "act": "give", "date": "2024-03-01", "n": n, "driver": ids[1] })).unwrap()["say"]["error"], true);
+        assert_eq!(act(&mut s, &mut r, Default::default(), &json!({ "act": "give", "date": "2024-03-01", "n": n, "driver": ids[1] })).unwrap()["say"]["error"], true);
         // a rota's driver ill that day: his duty open as the illness
         let week = super::super::turnus::week_duties(&mut s, &mut r).unwrap().unwrap();
         {
@@ -2874,10 +3014,10 @@ mod tests {
         assert_eq!(v["duty"]["sort"]["value"], "cheap");
         assert_eq!(daily(&mut s, &mut r, &json!({ "date": date, "n": n, "sort": "fair" })).unwrap()["duty"]["sort"]["value"], "fair");
         // not confirmed: refused; confirmed: his, a little less content and more stressed
-        let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": ids[0] })).unwrap();
+        let out = act(&mut s, &mut r, Default::default(), &json!({ "act": "give", "date": date, "n": n, "driver": ids[0] })).unwrap();
         assert_eq!(out["say"]["error"], true, "{out}");
         let before = s.company.as_ref().unwrap().employee(ids[0]).unwrap().clone();
-        let out = act(&mut s, &mut r, &json!({ "act": "give", "date": date, "n": n, "driver": ids[0], "anyway": true })).unwrap();
+        let out = act(&mut s, &mut r, Default::default(), &json!({ "act": "give", "date": date, "n": n, "driver": ids[0], "anyway": true })).unwrap();
         assert_eq!(out["edited"], true, "{out}");
         let after = s.company.as_ref().unwrap().employee(ids[0]).unwrap().clone();
         assert_eq!(after.satisfaction, (before.satisfaction - pr::BREAK_COST).clamp(0.0, 100.0));
@@ -3024,7 +3164,7 @@ mod tests {
         assert_eq!(row["toil"]["on"], false, "{row}");
         assert!(row["toil"]["save"].as_str().unwrap().contains("Time off in lieu"), "{row}");
         assert!(row["toil"]["pay"].as_str().unwrap().contains("overtime"), "{row}");
-        let out = act(&mut s, &mut r, &json!({ "act": "give", "date": saturday, "n": n, "driver": ids[0], "anyway": true, "toil": true })).unwrap();
+        let out = act(&mut s, &mut r, Default::default(), &json!({ "act": "give", "date": saturday, "n": n, "driver": ids[0], "anyway": true, "toil": true })).unwrap();
         assert_eq!(out["edited"], true, "{out}");
         assert!(out["say"]["text"].as_str().unwrap().contains("saved as time off in lieu"), "{out}");
         assert!(s.company.as_ref().unwrap().planning.ops.calls.iter().any(|x| x.date == saturday && x.driver == ids[0] && x.toil));
@@ -3036,14 +3176,14 @@ mod tests {
         let t = v["toil"].as_array().unwrap().iter().find(|x| x["id"] == ids[0]).cloned().expect("his saved hours");
         assert_eq!(t["on"], false);
         assert_eq!(t["what"], "10.0 h saved");
-        let out = act(&mut s, &mut r, &json!({ "act": "toil_day", "date": wednesday, "driver": ids[0] })).unwrap();
+        let out = act(&mut s, &mut r, Default::default(), &json!({ "act": "toil_day", "date": wednesday, "driver": ids[0] })).unwrap();
         assert_eq!(out["edited"], true, "{out}");
         assert_eq!(out["open"]["n"], week[3][0].number, "{out}");
         let cal = calendar(&mut s, &mut r, &json!({})).unwrap();
         assert_eq!(cal["drivers"][0]["cells"][3]["kind"], "toil", "{}", cal["drivers"][0]["cells"][3]);
         assert!(cal["drivers"][0]["toil"].as_str().unwrap().starts_with("toil "), "{}", cal["drivers"][0]);
         // taken back: as planned again
-        let out = act(&mut s, &mut r, &json!({ "act": "toil_back", "date": wednesday, "driver": ids[0] })).unwrap();
+        let out = act(&mut s, &mut r, Default::default(), &json!({ "act": "toil_back", "date": wednesday, "driver": ids[0] })).unwrap();
         assert_eq!(out["edited"], true, "{out}");
         assert_eq!(s.company.as_ref().unwrap().employee(ids[0]).unwrap().toil, 600.0);
     }

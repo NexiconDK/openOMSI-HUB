@@ -38,7 +38,7 @@ pub struct PieceKey {
     pub name: String,
 }
 
-fn same(a: &str, b: &str) -> bool {
+pub(crate) fn same(a: &str, b: &str) -> bool {
     a.trim().eq_ignore_ascii_case(b.trim())
 }
 
@@ -185,7 +185,7 @@ impl Seg {
         Block { key: format!("cut/{}/{}/{}", t.line, t.tour, self.a), from: self.from(dp), to: self.to(dp), from_stop: t.trips[self.a].from.clone(), to_stop: t.trips[self.b - 1].to.clone() }
     }
 
-    fn counts(&self, dp: &DayPlan) -> bool {
+    pub(crate) fn counts(&self, dp: &DayPlan) -> bool {
         dp.tours[self.ti].tour.trips[self.a..self.b].iter().any(|x| x.counts())
     }
 
@@ -257,7 +257,7 @@ pub fn number_at(dp: &DayPlan, duties: &[ProDuty], ti: usize, k: usize) -> u32 {
 }
 
 /// Whether driver `e` can drive the stretches `segs` beside his other work of the day.
-fn fit_segs(c: &Company, dp: &DayPlan, e: &super::model::Employee, segs: &[Seg]) -> Result<(), Cannot> {
+pub(crate) fn fit_segs(c: &Company, dp: &DayPlan, e: &super::model::Employee, segs: &[Seg]) -> Result<(), Cannot> {
     match pt::decided(c, e.id, &dp.date).and_then(|d| d.note).as_deref() {
         Some("sick") => return Err(Cannot::Ill { until: dp.date.clone() }),
         Some("holiday") => return Err(Cannot::Holiday { until: dp.date.clone() }),
@@ -373,7 +373,7 @@ impl Proposal {
 
 /// Where a duty may be cut: (piece of it, trip) - inside a piece at a relief point
 /// (`studio::can_cut`), or `usize::MAX` for "after this piece" (between two pieces).
-fn cut_points(c: &Company, dp: &DayPlan, units: &[Seg]) -> Vec<(usize, usize)> {
+pub(crate) fn cut_points(c: &Company, dp: &DayPlan, units: &[Seg]) -> Vec<(usize, usize)> {
     let tours: Vec<TourOfDay> = dp.tours.iter().map(|t| t.tour.clone()).collect();
     let mut v = Vec::new();
     for (u, s) in units.iter().enumerate() {
@@ -408,7 +408,7 @@ pub fn can_cut_duty(c: &Company, dp: &DayPlan, d: &OpenDuty) -> bool {
 }
 
 /// The parts of the duty `units` cut at `chosen` (points of `cut_points`).
-fn parts_at(units: &[Seg], chosen: &[(usize, usize)]) -> Vec<Vec<Seg>> {
+pub(crate) fn parts_at(units: &[Seg], chosen: &[(usize, usize)]) -> Vec<Vec<Seg>> {
     let mut out: Vec<Vec<Seg>> = vec![Vec::new()];
     for (u, s) in units.iter().enumerate() {
         let mut ats: Vec<usize> = chosen.iter().filter(|x| x.0 == u && x.1 != usize::MAX).map(|x| x.1).collect();

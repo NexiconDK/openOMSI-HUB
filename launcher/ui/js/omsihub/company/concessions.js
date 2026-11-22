@@ -53,7 +53,7 @@ function Offers({ o }) {
         <p class="co-pg-note" style="margin:0">${r.say}</p>
         <div class="co-pg-chips">${r.buses.map(([b, v]) => html`<${Chip} text=${b + ' · ' + v} tone="dim" icon="directions_bus" />`)}${(r.drivers || []).map(([d, w]) => html`<${Chip} text=${d + ' · ' + w} tone="dim" icon="badge" />`)}</div>
         <div class="co-pg-line">${r.choices
-          ? r.choices.map((ch) => html`<${Btn} kind=${ch.primary ? 'primary' : undefined} icon=${ch.no ? 'close' : 'check_circle'} label=${ch.label} onClick=${() => actMore(ch.no ? 'takeover_no' : 'takeover_yes', { offer: r.id })} />`)
+          ? r.choices.map((ch) => html`<${Btn} kind=${ch.primary ? 'primary' : undefined} icon=${ch.no ? 'close' : 'check_circle'} label=${ch.label} onClick=${() => (ch.answer ? actMore('takeover_answer', { offer: r.id, ...ch.answer }) : actMore(ch.no ? 'takeover_no' : 'takeover_yes', { offer: r.id }))} />`)
           : html`<${Btn} kind="primary" icon="check_circle" label=${o.yes} onClick=${() => actMore('takeover_yes', { offer: r.id })} />
           <${Btn} icon="close" label=${o.no} onClick=${() => actMore('takeover_no', { offer: r.id })} />`}</div>
       </div>`,

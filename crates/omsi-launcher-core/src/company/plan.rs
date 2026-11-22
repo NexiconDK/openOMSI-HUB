@@ -2235,6 +2235,7 @@ pub fn agency_driver() -> Employee {
         toil: 0.0,
         sick_planned: Vec::new(),
         shift_pref: None,
+        disliked: 0,
         worked: Vec::new(),
         holidays_worked: Vec::new(),
     }

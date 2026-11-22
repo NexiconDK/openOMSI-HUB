@@ -1396,7 +1396,39 @@ pub fn auto(c: &mut Company, id: u32, week: &Week) -> Result<usize, &'static str
             row.driver = d;
         }
     }
-    Ok(rota.rows.len())
+    let n = rota.rows.len();
+    fill_by_pref(c, k, week);
+    Ok(n)
+}
+
+/// (NexiconDK, 22 November 2026: "Lav turnus automatisk sætter så vidt muligt morgenmennesker i
+/// morgenturnusser") The weeks of rota `k` without a driver get the drivers on no rota who may be
+/// on it - those who like its time (`pro_pref::slot_of_rota`) first, then those it is all the same
+/// to, then the others. How many were put on.
+pub fn fill_by_pref(c: &mut Company, k: usize, week: &Week) -> usize {
+    let Some(t) = c.planning.rotas.list.get(k) else { return 0 };
+    let (id, reserve) = (t.id, t.reserve);
+    let slot = super::pro_pref::slot_of_rota(t, &|d, n| week.get(d).and_then(|ds| ds.iter().find(|x| x.number == n)).map(|x| x.start));
+    let empty: Vec<usize> = t.rows.iter().enumerate().filter(|(_, r)| r.driver.is_none()).map(|(i, _)| i).collect();
+    let mut free: Vec<(i8, u32)> = c
+        .staff
+        .iter()
+        .filter(|e| staff::drives(e) && e.notice_until.is_none() && e.agency_no == 0 && place_of(c, e.id).is_none())
+        .filter(|e| match e.employment {
+            Employment::Hourly => false,
+            Employment::Reserve(_) => reserve,
+            _ => !reserve,
+        })
+        .map(|e| (slot.map_or(0, |s| super::pro_pref::fit_kind(super::pro_pref::of(e), s)), e.id))
+        .collect();
+    free.sort_by_key(|(f, id)| (std::cmp::Reverse(*f), *id));
+    let mut put = 0;
+    for (row, (_, who)) in empty.into_iter().zip(free) {
+        if set_driver(c, id, row, Some(who)).is_ok() {
+            put += 1;
+        }
+    }
+    put
 }
 
 /// (Round F) The first of the two days off together of the week of named frame `i` (Sunday 0):

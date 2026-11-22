@@ -186,3 +186,38 @@ fn the_drivers_go_with_a_line_lost_to_a_company_of_the_game_too() {
         assert!(a.online.takeover.sales.is_empty());
     }
 }
+
+/// (NexiconDK, 22 November 2026: "Der skal være en mulighed for chauffør overtagelse - At sige nej
+/// for det selskab som overtager") The winner says no to the drivers and yes to the buses: the
+/// loser told, its drivers stay on its day, its buses go.
+#[test]
+fn the_winner_may_say_no_to_the_drivers() {
+    let data = temp("no-drivers");
+    let (mut a, mut b) = (company("Umove", "umove"), company("GoCollective", "gocollective"));
+    let ids = drivers(&mut a);
+    let wd = crate::company::plan::weekday_of(&a.date);
+    let x = market::buy_new(&mut a, &MarketBus { name: "Citaro".into(), ..Default::default() }, Payment::Cash, "").unwrap();
+    crate::company::plan::set_bus(&mut a, wd, "Linie5", "1", Some(x));
+    crate::company::plan::set_driver(&mut a, wd, "Linie5", "1", 0, Some(Who::Staff(ids[1])));
+    let date = "2024-03-08";
+    assert_eq!(offer(&data, &mut a, "gocollective", "GoCollective", "Linie5", "5", date), 2);
+    assert!(step(&data, &mut b));
+    let o = b.online.takeover.offers[0].clone();
+    b.cash += o.total();
+    answer_both(&data, &mut b, &o.id, true, false).unwrap();
+    assert_eq!((b.online.takeover.offers[0].answer, b.online.takeover.offers[0].drivers_answer), (Some(true), Some(false)));
+    assert_eq!(answer_both(&data, &mut b, &o.id, true, true), Err(NO_OFFER), "once");
+    assert!(step(&data, &mut a));
+    assert!(a.inbox.messages.iter().any(|m| m.title == DRIVERS_REFUSED.0) && a.inbox.messages.iter().any(|m| m.title == TAKEN.0));
+    assert!(a.online.takeover.sales[0].drivers.is_empty() && a.online.takeover.sales[0].buses == [x]);
+    let staff_a = a.staff.len();
+    a.date = date.into();
+    assert!(step(&data, &mut a));
+    assert_eq!(a.staff.len(), staff_a, "the drivers stay");
+    assert!(a.employee(ids[1]).is_some() && a.vehicle(x).is_none());
+    let staff_b = b.staff.len();
+    b.date = date.into();
+    assert!(step(&data, &mut b));
+    assert_eq!(b.staff.len(), staff_b);
+    let _ = std::fs::remove_dir_all(&data);
+}

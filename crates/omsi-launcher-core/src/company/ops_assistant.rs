@@ -56,6 +56,9 @@ pub const ON_SERVER_ONLY: &str = "Operations assistants work for companies on Bu
 
 /// What an assistant did (the feed's words and the log's).
 pub const COVERED: &str = "%{who} gave duty %{n} (%{time}) to %{driver}";
+/// (22 November 2026) A part of it as overtime: going on until, or beginning earlier from, `until`.
+pub const OVERTIME: &str = "%{who} gave duty %{n} (%{time}) to %{driver} as overtime until %{until}; the rest is open";
+pub const OVERTIME_EARLIER: &str = "%{who} gave duty %{n} (%{time}) to %{driver} as overtime from %{until}; the rest is open";
 pub const AGENCY: &str = "%{who} sent an agency driver for duty %{n} (%{time})";
 pub const NOBODY: &str = "%{who} found nobody for duty %{n} (%{time}): it falls out";
 pub const REPAIRED: &str = "%{who} repaired today's roster: %{n} places given anew";
@@ -63,7 +66,7 @@ pub const REPAIRED: &str = "%{who} repaired today's roster: %{n} places given an
 /// Every English text of the desk (for the translations' check).
 pub fn texts() -> Vec<&'static str> {
     let mut v = SHIFT_NAMES.to_vec();
-    v.extend([NOT_ASSISTANT, BAD_SHIFT, TOO_MANY, NO_REST, ON_SERVER_ONLY, COVERED, AGENCY, NOBODY, REPAIRED]);
+    v.extend([NOT_ASSISTANT, BAD_SHIFT, TOO_MANY, NO_REST, ON_SERVER_ONLY, COVERED, OVERTIME, OVERTIME_EARLIER, AGENCY, NOBODY, REPAIRED]);
     v
 }
 
@@ -319,7 +322,12 @@ pub fn look(c: &mut Company, dp: &DayPlan, duties: &[ProDuty], now: i32) -> Vec<
         let mut args = vec![("who".to_string(), name.clone()), ("n".to_string(), label.clone()), ("time".to_string(), time)];
         // (the company's own drivers who can, in the order a duty is filled in - the agency
         // drivers booked for the day among them)
-        let best = super::pro_ops::candidates(c, dp, d, &|_| 0.0).into_iter().find(|x| x.fit.is_ok());
+        // (NexiconDK, 22 November 2026: he rings them - each takes it as an assistant asks,
+        // `pro_ops::ASSISTANT_CALL_YES`, the next one rung after a no)
+        let best = super::pro_ops::candidates(c, dp, d, &|_| 0.0).into_iter().filter(|x| x.fit.is_ok()).find(|x| {
+            let mut rng = super::rng::Rng::of(&[&c.id, &date, "assistant-call"], ((d.n as i64) << 24) | x.id as i64);
+            rng.chance(super::pro_ops::ASSISTANT_CALL_YES)
+        });
         if let Some(x) = best {
             if super::pro_ops::give(c, &date, d.n, x.id, None).is_ok() {
                 let driver = c.employee(x.id).map(|e| e.name.clone()).unwrap_or_default();
@@ -330,6 +338,22 @@ pub fn look(c: &mut Company, dp: &DayPlan, duties: &[ProDuty], now: i32) -> Vec<
                 }
                 args.push(("driver".to_string(), driver));
                 return vec![log(c, at, who, COVERED, args)];
+            }
+        }
+        // (NexiconDK, 22 November 2026: nobody free said yes - a driver who works that day rung
+        // about overtime, its part his, the rest of the duty left open for the next look)
+        let extra = super::pro_overtime::offers(c, dp, d, duties).into_iter().find(|o| {
+            let mut rng = super::rng::Rng::of(&[&c.id, &date, "assistant-overtime"], ((d.n as i64) << 24) | o.driver as i64);
+            rng.chance(super::pro_ops::ASSISTANT_CALL_YES)
+        });
+        if let Some(o) = extra {
+            if let Ok(part) = super::pro_overtime::take(c, dp, d, &o) {
+                if super::pro_ops::give_part(c, &date, d.n, part, o.driver, None).is_ok() {
+                    let driver = c.employee(o.driver).map(|e| e.name.clone()).unwrap_or_default();
+                    args.push(("driver".to_string(), driver));
+                    args.push(("until".to_string(), super::rosterflow::clock((if o.earlier { o.from } else { o.to }).rem_euclid(1440))));
+                    return vec![log(c, at, who, if o.earlier { OVERTIME_EARLIER } else { OVERTIME }, args)];
+                }
             }
         }
         if !c.ops_desk.no_agency && super::live_pay::agency_runs_open(c) {

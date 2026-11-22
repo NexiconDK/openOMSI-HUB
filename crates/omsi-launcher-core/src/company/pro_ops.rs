@@ -774,6 +774,45 @@ pub const SAY_NOT_THAT_DAY: &str = "I can't that day, sorry.";
 /// anyone, and then yes or no by how content and how stressed he is and his hours this week
 /// against his contract (over it: tired), the hourly paid glad of the hours.
 pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: i32, s: &Situation) -> Reply {
+    reply_of(c, e, date, n, start, end, s, None)
+}
+
+/// (NexiconDK, 22 November 2026: "Chaufførerne skal være mere tilbøjelig til at tage vagten hvis
+/// ejeren / medejeren ringer og spørger om en vagt - Hvis det er en Drift assistent skal de være mere
+/// besværlige - Måske 60% chance for de tager vagten og hvis ejeren/medejer ringer skal det være
+/// 85%") Who rings a driver about a duty.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Caller {
+    /// The owner or a co-owner (the boss of a company of one's own).
+    Owner,
+    /// An operations assistant, or a player of another role.
+    Assistant,
+}
+
+impl Caller {
+    /// How likely a driver free to take the duty says yes on the phone.
+    pub fn yes(self) -> f64 {
+        match self {
+            Caller::Owner => OWNER_CALL_YES,
+            Caller::Assistant => ASSISTANT_CALL_YES,
+        }
+    }
+}
+
+pub const OWNER_CALL_YES: f64 = 0.85;
+pub const ASSISTANT_CALL_YES: f64 = 0.60;
+/// How much less likely, rung, when the duty takes him over his contract's week.
+pub const CALL_OVER_COST: f64 = 0.25;
+
+/// A driver's answer on the phone (`ai_reply`): rung by `by`, one free to take the duty takes it
+/// as readily as `Caller::yes` says (less when it takes him over his week, much less irritated);
+/// what he cannot - ill, his rest, another duty - stays so.
+pub fn called_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: i32, s: &Situation, by: Caller) -> Reply {
+    reply_of(c, e, date, n, start, end, s, Some(by))
+}
+
+#[allow(clippy::too_many_arguments)]
+fn reply_of(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: i32, s: &Situation, called: Option<Caller>) -> Reply {
     let mut rng = Rng::of(&[&c.id, date, "pro-ask"], ((n as i64) << 24) | e.id as i64);
     let say = rng.int(0, 11) as u8;
     // (asked again the same day after a no: angry, he says no; irritated, rather no - `Mood`)
@@ -857,8 +896,14 @@ pub fn ai_reply(c: &Company, e: &Employee, date: &str, n: u32, start: i32, end: 
     // (round D: early or late as he likes it, a public holiday, tired - `pro_pref`, `pro_holiday`,
     // `pro_tired`)
     p *= super::pro_pref::bias(c, e, start) * super::pro_holiday::bias(c, date) * super::pro_tired::yes(s.tired);
+    // (22 November 2026: rung - as readily as who rings him says)
+    if let Some(by) = called {
+        p = by.yes() - if over { CALL_OVER_COST } else { 0.0 };
+    }
     // (round H: within what he said he can - glad of it)
-    let p = if inside { (p.clamp(0.08, 0.95) * super::pro_avail::INSIDE_YES).min(super::pro_avail::INSIDE_MOST) } else { p.clamp(0.08, 0.95) };
+    let p = if called.is_some() {
+        p.clamp(0.08, 0.95)
+    } else if inside { (p.clamp(0.08, 0.95) * super::pro_avail::INSIDE_YES).min(super::pro_avail::INSIDE_MOST) } else { p.clamp(0.08, 0.95) };
     if irritated {
         return if moody.chance(p * IRRITATED_YES) { Reply::Grudging { say } } else { no(NoWhy::Annoyed) };
     }

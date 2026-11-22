@@ -34,6 +34,9 @@ pub enum WishKind {
     NoSplit,
     /// More hours.
     MoreHours,
+    /// (22 November 2026) Another rota: his duties have not suited him for a while
+    /// (`pro_pref::ASKS_ROTA_AFTER`).
+    OtherRota,
 }
 
 /// Where a wish stands.
@@ -87,11 +90,13 @@ pub const SAYS_DAY_OFF: &str = "I'd like the day off on %{date}, if possible.";
 pub const SAYS_EARLY: &str = "I'd like early duties, if possible.";
 pub const SAYS_NO_SPLIT: &str = "I'd rather not have split duties.";
 pub const SAYS_MORE: &str = "I'd like more hours.";
+pub const SAYS_OTHER_ROTA: &str = "I'd like another rota - my duties haven't suited me for a while.";
 /// The wishes in short, as the lists show them.
 pub const DAY_OFF: &str = "Wants the day off %{date}";
 pub const EARLY: &str = "Would like early duties";
 pub const NO_SPLIT: &str = "Wants no split duty";
 pub const MORE: &str = "Would like more hours";
+pub const OTHER_ROTA: &str = "Would like another rota";
 /// Refusals of the acts.
 pub const NO_SUCH_WISH: &str = "That wish is no longer open.";
 pub const WISH_GONE: &str = "That day has gone.";
@@ -177,6 +182,7 @@ pub fn short(w: &Wish, day: &dyn Fn(&str) -> String) -> (&'static str, Vec<(&'st
         WishKind::Early => (EARLY, Vec::new()),
         WishKind::NoSplit => (NO_SPLIT, Vec::new()),
         WishKind::MoreHours => (MORE, Vec::new()),
+        WishKind::OtherRota => (OTHER_ROTA, Vec::new()),
     }
 }
 
@@ -212,11 +218,14 @@ pub fn daily(c: &mut Company) -> Vec<u32> {
             continue;
         }
         let mut rng = Rng::of(&[&c.id, &today, "pro-wish"], id as i64);
-        if !rng.chance(chance(&e)) {
+        // (22 November 2026: weeks on duties he does not like - he asks for another rota, sure)
+        let unsuited = e.disliked >= super::pro_pref::ASKS_ROTA_AFTER && !c.planning.ops.wishes.iter().any(|w| w.driver == id && w.wish == WishKind::OtherRota && w.state == WishState::Open);
+        if !unsuited && !rng.chance(chance(&e)) {
             continue;
         }
         let roll = rng.int(0, 99);
         let kind = match e.employment {
+            _ if unsuited => WishKind::OtherRota,
             Employment::Hourly if roll < 70 => WishKind::MoreHours,
             Employment::PartTime { .. } if roll < 30 => WishKind::MoreHours,
             Employment::FullTime | Employment::PartTime { .. } if roll >= 85 => WishKind::NoSplit,
@@ -239,7 +248,13 @@ pub fn daily(c: &mut Company) -> Vec<u32> {
             WishKind::Early => (SAYS_EARLY, Vec::new()),
             WishKind::NoSplit => (SAYS_NO_SPLIT, Vec::new()),
             WishKind::MoreHours => (SAYS_MORE, Vec::new()),
+            WishKind::OtherRota => (SAYS_OTHER_ROTA, Vec::new()),
         };
+        if kind == WishKind::OtherRota {
+            if let Some(x) = c.staff.iter_mut().find(|x| x.id == id) {
+                x.disliked = 0;
+            }
+        }
         c.planning.ops.wishes.push(Wish { id: wid, driver: id, wish: kind, sent: today.clone(), state: WishState::Open, decided: None });
         let from = messages::From::Driver { line: String::new(), tour: String::new(), name: e.name.clone() };
         messages::send(c, from, messages::To::Control, messages::Priority::Info, text, args, false, None);
@@ -350,5 +365,5 @@ pub fn tidy(c: &mut Company) {
 
 /// Every English text of this module.
 pub fn texts() -> Vec<&'static str> {
-    vec![SAYS_DAY_OFF, SAYS_EARLY, SAYS_NO_SPLIT, SAYS_MORE, DAY_OFF, EARLY, NO_SPLIT, MORE, NO_SUCH_WISH, WISH_GONE, SENT_FEED, NOTE_DAY_OFF, NOTE_EARLY, NOTE_NO_SPLIT, NOTE_MORE]
+    vec![SAYS_DAY_OFF, SAYS_EARLY, SAYS_NO_SPLIT, SAYS_MORE, DAY_OFF, EARLY, NO_SPLIT, MORE, NO_SUCH_WISH, WISH_GONE, SENT_FEED, SAYS_OTHER_ROTA, OTHER_ROTA, NOTE_DAY_OFF, NOTE_EARLY, NOTE_NO_SPLIT, NOTE_MORE]
 }

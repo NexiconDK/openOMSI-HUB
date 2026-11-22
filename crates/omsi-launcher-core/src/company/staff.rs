@@ -1571,6 +1571,7 @@ pub fn hire_as(c: &mut Company, a: &Applicant, employment: Employment) -> Result
         toil: 0.0,
         sick_planned: Vec::new(),
         shift_pref: None,
+        disliked: 0,
         worked: Vec::new(),
         holidays_worked: Vec::new(),
     });

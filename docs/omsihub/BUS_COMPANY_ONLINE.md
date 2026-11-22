@@ -2164,3 +2164,13 @@ Tested: `shared_tenders::tests` (the renewal's mails),
   it loads (`Online::ad_prices`, `adverts::AdPrices`); a contract signed keeps its price.
   Tested: `adverts::tests::the_server_s_admin_sets_what_an_advert_pays`,
   `home::tests::a_new_company_is_told_what_to_do_first`.
+
+### The winner may say no to the drivers (22 November 2026)
+
+NexiconDK: *"Der skal være en mulighed for chauffør overtagelse - At sige nej for det selskab som
+overtager."* The winner of a line now answers its buses and its drivers on the Concessions page
+(`takeover::answer_both`, `rf` "takeover_answer"): both, only the drivers, only the buses, or
+neither (only one of them offered: yes or no). The drivers said no to stay with the loser, which is
+told (`DRIVERS_REFUSED`); unanswered they come, as before. The tender's terms say so ("may come with
+it ... the winner chooses"). A line lost to a company of the game keeps its drivers going
+(`to_ai`): nobody there to answer. Tested: `takeover::tests::the_winner_may_say_no_to_the_drivers`.
